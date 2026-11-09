@@ -331,7 +331,25 @@ r = evaluateProposal(prop('sojusz_pelny'), ctx({
   proposerRespekt: 25,
   responderRespekt: 75,
 }));
-ok(r.accepted, 'hegemon AI 3×, dokładnie zauf 90 + rel 130 -> accept (granica)');
+ok(!r.accepted && /Brak gotowości do sojuszu \(gotowość 0\.\d+, wymagana 0\.\d+\)/.test(r.reason), 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Grecy (gotowość ~0.64 < 0.68) -> gotowość ZOSTAJE: odrzut z czytelnym komunikatem: ' + r.reason);
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 0.33,
+  proposerRespekt: 25,
+  responderRespekt: 75,
+  responderPlayer: { typCywilizacji: 'chinczycy' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(r.accepted, 'runda 2 (A): hegemon AI 3×, dokładnie 90/130, Chińczycy (bonus lojalności, gotowość >= 0.68) -> accept mimo hegemona (bramka siły pominięta)');
+r = evaluateProposal(prop('sojusz_pelny'), ctx({
+  relation: rel(90, 40),
+  militaryRatio: 1,
+  proposerRespekt: 40,
+  responderRespekt: 60,
+  responderPlayer: { typCywilizacji: 'zulusi' },
+  proposerPlayer: { typCywilizacji: 'rzymianie' },
+}));
+ok(!r.accepted && r.reason.includes('Brak gotowości do sojuszu'), 'runda 2 (A): 130/90 + gotowość poniżej progu (Zulusi) -> odrzut: ' + r.reason);
 r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(89, 41), militaryRatio: 1 }));
 ok(!r.accepted && /Relacji 130 i Zaufania 90/.test(r.reason) && /masz Zaufanie 89/.test(r.reason), 'komunikat blokady PL: ' + r.reason);
 r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(90, 39), militaryRatio: 1 }));

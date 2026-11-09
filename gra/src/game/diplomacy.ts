@@ -178,6 +178,8 @@ export const DIPLOMACY_PARAMS = {
   progSojuszRelacja:         130,
   /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (= próg sojuszu 130); premia siły nie obniża */
   progUmowaMinRelacja:       130,
+  /** Relacja >= 151 = AI proponuje NAP bezterminowy (wydzielone z progSojuszRelacja, runda 2 C) */
+  progNapBezterminowyRelacja: 151,
 
   // ---- starting values (wartosci startowe) ----
   startZaufanie: 20,
@@ -489,6 +491,7 @@ const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progMinimalnyRelacja',
   'progSojuszRelacja',
   'progUmowaMinRelacja',
+  'progNapBezterminowyRelacja',
   'progNapRelacja',
   'progGraniceRelacja',
   'progPoboczneHandel',
@@ -653,8 +656,8 @@ export function diplomacyAllianceMinZaufanie(
  * R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (Maciej 2026-11-09): "rdzeń" sojuszu =
  * Relacja >= progSojuszRelacja (130, po ulgach słodzika/delcie agresora, nie poniżej
  * progUmowaMinRelacja) ORAZ Zaufanie >= progSojuszZaufanie (90, po ulgach słodzika). Gdy rdzeń
- * spełniony, bramki SIŁY (hegemon, kara siły respondenta, słaby proponent, gotowość AI) nie
- * blokują sojuszu. Wiarygodność, wojna i duplikat traktatu nadal obowiązują.
+ * spełniony, bramki SIŁY (hegemon, kara siły respondenta, słaby proponent) nie
+ * blokują sojuszu. GOTOWOŚĆ AI (willingnessAlly) zostaje (runda 2, decyzja A). Wiarygodność, wojna i duplikat traktatu nadal obowiązują.
  */
 export function allianceCoreMet(
   zaufanie: number,
@@ -1367,16 +1370,18 @@ export function aiDiplomacyStance(
     aiRespektShare,
     p,
   );
-  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę z JSON.
   const agresorDeltaSojusz = deltaRelacjiSojusz(context.celAgresorAktywny === true);
+  // Runda 2 (B): rdzeń 130/90 pomija hegemona i karę siły (gotowość zostaje) — jak evaluateProposal.
+  const coreMet = allianceCoreMet(zaufanie, score, p.progSojuszRelacja + agresorDeltaSojusz, p);
+  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
   let minAllyScore = diplomacyTreatyMinRelacja(
     p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz,
     p,
   );
 
   let allyW = 0;
-  if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
+  if ((coreMet || (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore))) {
     const loyaltyBonus: number =
       aiPlayer.typCywilizacji === TypCywilizacji.Chinczycy ? 0.20
       : aiPlayer.typCywilizacji === TypCywilizacji.Inkowie ? 0.15
@@ -1393,7 +1398,7 @@ export function aiDiplomacyStance(
         0,
         1,
       );
-    } else if (aiMilOverOther > 1) {
+    } else if (aiMilOverOther > 1 && !coreMet) {
       // Hegemon / silniejsze AI — mniejsza motywacja sojuszu równoprawnego.
       allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
     }

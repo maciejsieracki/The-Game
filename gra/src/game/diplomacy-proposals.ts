@@ -1193,7 +1193,7 @@ export function evaluateProposal(
       // diplomacyTreatyMinRelacja i tak nie zejdzie poniżej progUmowaMinRelacja (twarda podłoga).
       const sojuszEase = sweetenerEasePoints(payload, pnOpts);
       // R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1: rdzeń 130 Relacji + 90 Zaufania
-      // (po słodziku/agresorze) wyłącza bramki siły (hegemon, kara siły, słaby proponent, gotowość).
+      // (po słodziku/agresorze) wyłącza bramki siły (hegemon, kara siły, słaby proponent); gotowość AI zostaje (runda 2).
       const relThresholdCore = p.progSojuszRelacja - sojuszEase + deltaRelacjiSojusz(proponentAgresor);
       const coreMet = allianceCoreMet(relation.zaufanie, score, relThresholdCore, p, sojuszEase);
       const minZ = coreMet
@@ -1202,7 +1202,11 @@ export function evaluateProposal(
       const minScore = coreMet
         ? diplomacyTreatyMinRelacja(relThresholdCore, p)
         : diplomacyTreatyMinRelacja(relThresholdCore - adj.ease.scoreThresholdDelta + adj.penaltyScore, p);
-      const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
+      // Runda 2 (A): gotowość AI ZOSTAJE przy rdzeniu 130/90 — pomijamy tylko karę siły (penaltyAlly).
+      const minAlly = Math.max(
+        0,
+        p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + (coreMet ? 0 : adj.penaltyAlly),
+      );
 
       if (!coreMet && adj.hegemonBlocksAlliance) {
         return {
@@ -1224,8 +1228,11 @@ export function evaluateProposal(
       ) {
         return { accepted: false, pwBalance: -1, reason: 'Za słaby proponent bez pełnej relacji — sojusz nierealny' };
       }
-      if (!coreMet && stance.willingnessAlly < minAlly) {
-        return { accepted: false, pwBalance: -1, reason: 'Brak gotowości do sojuszu' };
+      if (stance.willingnessAlly < minAlly) {
+        return {
+          accepted: false, pwBalance: -1,
+          reason: `Brak gotowości do sojuszu (gotowość ${stance.willingnessAlly.toFixed(2)}, wymagana ${minAlly.toFixed(2)})`,
+        };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
         return { accepted: false, pwBalance: -1, reason: 'Sojusz tego typu już istnieje' };

@@ -5915,7 +5915,7 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
-import { deltaRelacjiSojusz } from './diplomacy';
+import { deltaRelacjiSojusz, allianceCoreMet } from './diplomacy';
 import { diplomacyMiastoWagaBilansu } from './diplomacy-value-catalog';
 import {
   shouldHonorAllianceWarObligation,
@@ -6964,7 +6964,7 @@ export function decideAIDiplomacy(
       // R-WEB-DIPLO-NAP-TRUST-30-Q1: AI proponuje pakt dopiero przy Zaufaniu ≥ progNapZaufanie.
       && rel.relation.zaufanie >= dipP.progNapZaufanie
     ) {
-      const napIndefinite = score >= dipP.progSojuszRelacja;
+      const napIndefinite = score >= dipP.progNapBezterminowyRelacja;
       komendy.push({
         type:     'zaproponuj_pakt',
         targetId: rel.partnerId,
@@ -7018,7 +7018,14 @@ export function decideAIDiplomacy(
       partnerRespekt,
       dipP,
     );
-    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly - bias.allyThresholdEase;
+    // Runda 2 (B): rdzeń 130/90 (Relacja + Zaufanie) pomija hegemona i karę siły — gotowość zostaje.
+    const sojuszCoreMet = allianceCoreMet(
+      rel.relation.zaufanie,
+      score,
+      dipP.progSojuszRelacja + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined),
+      dipP,
+    );
+    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + (sojuszCoreMet ? 0 : sojuszAdj.penaltyAlly) - bias.allyThresholdEase;
     // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner z aktywną flagą agresora — wyższy próg Relacji na sojusz.
     const minSojuszScore = diplomacyTreatyMinRelacja(
       dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore
@@ -7030,10 +7037,12 @@ export function decideAIDiplomacy(
     const effWillingnessAlly = Math.min(1, stance.willingnessAlly * dyplomacjaAktywnosc);
     if (
       !rel.stanWojny &&
-      !sojuszAdj.hegemonProposerNoAlliance &&
-      effWillingnessAlly >= minSojuszAlly &&
-      score >= minSojuszScore &&
-      rel.relation.zaufanie >= diplomacyAllianceMinZaufanie(sojuszAdj, aiMilRatio, dipP)
+      (sojuszCoreMet || (
+        !sojuszAdj.hegemonProposerNoAlliance &&
+        score >= minSojuszScore &&
+        rel.relation.zaufanie >= diplomacyAllianceMinZaufanie(sojuszAdj, aiMilRatio, dipP)
+      )) &&
+      effWillingnessAlly >= minSojuszAlly
     ) {
       const allianceKind: 'defensywny' | 'pelny' =
         rw < 0.45 || stance.willingnessWar < 0.35 ? 'defensywny' : 'pelny';

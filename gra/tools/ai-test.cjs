@@ -1659,6 +1659,52 @@ console.log('\n--- T9k: decideAIDiplomacy Priorytet 3b (zaproponuj_pakt) — zyw
 }
 
 
+console.log('\n--- T9l: R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 r2 (C): NAP bezterminowy od progNapBezterminowyRelacja=151 (nie od progSojuszRelacja=130) ---');
+{
+  const mk = (z, r) => decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    agresja: 0.2,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 2,
+    relacje: [{
+      partnerId: 'peaceful-1', stanWojny: false, respektWzgledny: 0.5, hasNapTreaty: false,
+      relation: { zaufanie: z, respekt: r, status: 'pokoj' },
+    }],
+  }).find(c => c.type === 'zaproponuj_pakt');
+  const at130 = mk(60, 70);   // score 130 = progSojuszRelacja, < 151
+  const at150 = mk(60, 90);   // score 150
+  const at151 = mk(61, 90);   // score 151 = progNapBezterminowyRelacja
+  assert(at130 && at130.turns === 15, `T9l: Relacja 130 -> NAP na 15 tur (got ${JSON.stringify(at130)})`);
+  assert(at150 && at150.turns === 15, `T9l: Relacja 150 -> NAP na 15 tur (got ${JSON.stringify(at150)})`);
+  assert(at151 && at151.turns === 0, `T9l: Relacja 151 -> NAP bezterminowy turns=0 (got ${JSON.stringify(at151)})`);
+}
+
+console.log('\n--- T9m: r2 (B): AI proponuje sojusz wg reguly 130/90 — hegemon-proponent pominiety, gotowosc zostaje ---');
+{
+  const mk = (typ, z, r, rw) => decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    myTypCywilizacji: typ,
+    agresja: 0.1,
+    relacje: [{
+      partnerId: 'p-1', partnerTypCywilizacji: 'rzymianie',
+      relation: { zaufanie: z, respekt: r, status: 'pokoj' },
+      respektWzgledny: rw,
+      stanWojny: false,
+    }],
+  }).map(c => c.type);
+  // rw 0.75 => AI ~3x silniejsze (> progSojuszHegemonProposerMaxMil 2.38): wczesniej blokada hegemona-proponenta.
+  const core = mk('grecy', 95, 70, 0.75);
+  assert(core.includes('zaproponuj_sojusz'), `T9m: 95/165, AI 3x silniejsze (Grecy) -> rdzen 130/90 pomija hegemona, sojusz proponowany (got ${JSON.stringify(core)})`);
+  const noCoreTrust = mk('grecy', 89, 70, 0.75);
+  assert(!noCoreTrust.includes('zaproponuj_sojusz'), `T9m: Zaufanie 89 (<90) -> rdzen niespelniony, hegemon blokuje (got ${JSON.stringify(noCoreTrust)})`);
+  const noCoreRel = mk('grecy', 95, 34, 0.75);
+  assert(!noCoreRel.includes('zaproponuj_sojusz'), `T9m: Relacja 129 (<130) -> rdzen niespelniony (got ${JSON.stringify(noCoreRel)})`);
+  // Gotowosc zostaje: Zulusi (-0.20) przy dokladnie 90/130, rowna sila -> willingnessAlly ~0.34 < 0.6 -> brak sojuszu mimo rdzenia.
+  const lowWill = mk('zulusi', 90, 40, 0.5);
+  assert(!lowWill.includes('zaproponuj_sojusz'), `T9m: 90/130 + niska gotowosc (Zulusi) -> brak propozycji sojuszu (got ${JSON.stringify(lowWill)})`);
+}
+
+
 // ============================================================================
 // TESTY T2-SOJUSZ/HANDEL: decideAIDiplomacy v0.2 — sojusz i handel
 // ============================================================================

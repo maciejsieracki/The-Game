@@ -115,7 +115,7 @@ Każdy medalion (twój i rozmówcy) pokazuje **portret władcy** dobrany wg **cy
 
 ### 76.3. Ikonowy pasek akcji + SZYBKA UMOWA
 
-Zamiast listy tekstowej — **pasek ikon 46px** na dole panelu: WOJNA / POKÓJ / SOJUSZ / PAKT / HANDEL / DAR / WASAL, z pigułką nazwy na hover; niedostępne akcje są wyszarzone (`disabled`) z **konkretnym powodem** w tooltipie (np. „zablokowana — wymaga Zaufania 91, masz 64"), nie tylko ogólnym „wymaga relacji X". Osobny przycisk **SZYBKA UMOWA** automatycznie wypełnia koszyk negocjacji **uczciwą ofertą** (algorytm greedy do progu uczciwości `diplomacyFairGivePn`) — punkt startowy do dalszej ręcznej korekty, nie gotowa umowa do ślepego zatwierdzenia.
+Zamiast listy tekstowej — **pasek ikon 46px** na dole panelu: WOJNA / POKÓJ / SOJUSZ / PAKT / HANDEL / DAR / WASAL, z pigułką nazwy na hover; niedostępne akcje są wyszarzone (`disabled`) z **konkretnym powodem** w tooltipie (np. „zablokowana — wymaga Zaufania 90, masz 64"), nie tylko ogólnym „wymaga relacji X". Osobny przycisk **SZYBKA UMOWA** automatycznie wypełnia koszyk negocjacji **uczciwą ofertą** (algorytm greedy do progu uczciwości `diplomacyFairGivePn`) — punkt startowy do dalszej ręcznej korekty, nie gotowa umowa do ślepego zatwierdzenia.
 
 ### 76.4. Zerwij traktat (−15 Zaufania)
 
@@ -169,7 +169,7 @@ Od paczki DYPLOMACJA FINAL wszystkie blokady w panelu (§76.3) czytają **wprost
 | **Handel** (¤/Praca/dostęp do złoża) | Relacja ≥ **40** |
 | **Pakt o nieagresji (NAP)** | Relacja ≥ **50** **oraz** Zaufanie ≥ **40** |
 | **Otwarte granice / prawo przemarszu** | Relacja ≥ **100** **oraz** Zaufanie ≥ **45** |
-| **Sojusz** | Relacja ≥ **151** **oraz** Zaufanie ≥ **91** (przeskalowane wg trudności gry) |
+| **Sojusz** | Relacja ≥ **130** **oraz** Zaufanie ≥ **90** (przeskalowane wg trudności gry); przy spełnieniu obu progów AI nie odrzuca sojuszu z powodu przewagi sił (hegemon, kara siły), ale nadal musi mieć dość „gotowości do sojuszu" |
 | **Umowa Handlowa** (traktat pod szlaki handlowe, Część VIII §53.3) | Osobny traktat, próg AI-propozycji ≈ **40** relacji (decyzja 2026-07-21) — **wymagany**, żeby jakikolwiek szlak handlowy istniał; sam pokój **już nie wystarcza** (zmiana 2026-07-23) |
 
 **Poprzednia wersja tego poradnika podawała Handel ≥100 i NAP ≥110 — to były nieaktualne liczby; realny próg Handlu to 40, a NAP to dual-gate 50/40, nie pojedynczy próg 110.**

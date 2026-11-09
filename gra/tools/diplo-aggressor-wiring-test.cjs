@@ -66,7 +66,7 @@ check('main: relacje gracza i AI niosa flage (celAgresorAktywny)',
   count(main, 'celAgresorAktywny: czyAgresorAktywny(') === 2 && main.includes('agresorPozostaleTury: (doTuryFlagiAgresora(otherId, turn) ?? turn) - turn || undefined,'));
 check('ai.ts: prog sojuszu/paktu i kontekst stance',
   ai.includes('+ deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)')
-  && count(ai, 'deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)') === 2
+  && count(ai, 'deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)') === 3 // r2: +1 w rdzeniu sojuszu 130/90 (sojuszCoreMet)
   && ai.includes('celAgresorAktywny: rel.celAgresorAktywny === true,'));
 check('diplomacy.ts: prog i mnoznik willingnessAlly w aiDiplomacyStance',
   dip.includes('+ agresorDeltaSojusz,') && dip.includes('mnoznikWillingnessAlly(context.celAgresorAktywny === true)'));
