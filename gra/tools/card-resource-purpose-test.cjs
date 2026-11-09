@@ -161,6 +161,22 @@ for (const rel of ['budynki/port.md', 'budynki/magazyn.md', 'budynki/sad.md', 'u
   const txt = fs.readFileSync(path.join(wikiDir, rel), 'utf8');
   check(`[A] wiki ${rel}: brak „+N złota/złoto” przy produkcji (klasa A → podatek)`, !/\+\d+ złot(a|o)\b/.test(txt), (txt.match(/\+\d+ złot\S*/g) || []));
 }
+// Katalogi zbiorcze PORADNIKA (28 ulepszenia, 45 budynki) i wikiBundle.json: bez „+N złoto” przy produkcji budynków/ulepszeń (klasa A).
+// WYJĄTKI klasy B/C (zostają): cuda świata (91-katalog-cudow-antyk.md, 15-kultura-religia-cuda.md: bonus `pieniadz` cudu = dochód z tras do skarbca,
+// wonders-data.ts:250-262, ZAŁOŻENIE r4) oraz encyklopedia/pojecia/bogactwo.md (suwak zamożności → skarbiec, ‹+2 złota/t›).
+const poradnikDir = path.join(GRA, '..', 'docs', 'PORADNIK-GRACZA');
+for (const f of ['28-katalog-ulepszen.md', '45-katalog-budynkow.md']) {
+  const txt = fs.readFileSync(path.join(poradnikDir, f), 'utf8');
+  check(`[A] PORADNIK ${f}: brak „+N złoto/złota” przy produkcji (klasa A → podatek)`, !/\+\d+ złot(a|o)\b/.test(txt), (txt.match(/\+\d+ złot\S*/g) || []));
+  check(`[A] PORADNIK ${f}: produkcja pokazana jako „podatek”`, /\+\d+ podatek/.test(txt));
+}
+{
+  const wb = fs.readFileSync(path.join(GRA, 'src/data/wikiBundle.json'), 'utf8');
+  const hits = [...wb.matchAll(/.{0,60}\+\d+ złot(?:a|o)\b.{0,40}/g)].map((m) => m[0]);
+  const WYJATEK_B = /(każde miasto|Piramidy|Zamiast 40% zamożności|zamiast 40% zamożności)/;
+  check('[A] wikiBundle.json: każde „+N złoto/złota” to wyjątek klasy B (cuda × miasto / suwak zamożności)', hits.every((h) => WYJATEK_B.test(h)), hits.filter((h) => !WYJATEK_B.test(h)));
+  check('[A] wikiBundle.json: Obóz łowiecki i Warzelnia soli dają podatek', /Daje: \*\*\+1 żywność, \+1 podatek\*\*/.test(wb) && /Daje: \*\*\+1 podatek, \+1 żywność\*\*/.test(wb));
+}
 check('[A] wiki budynki/port.md i magazyn.md: kategoria „Pieniadz” zamieniona na „Podatek”',
   !/kategorii \*\*Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/port.md'), 'utf8'))
   && !/kategorii \*\*Produkcja\+Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/magazyn.md'), 'utf8')));

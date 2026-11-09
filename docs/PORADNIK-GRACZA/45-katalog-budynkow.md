@@ -31,14 +31,14 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
 | Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 ¤; +15% Pancerz (wizyta) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
 | Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
-| Port handlowy | Pieniadz | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 złoto | [Port handlowy](../encyklopedia/budynki/port.md) |
+| Port handlowy | Podatek | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 podatek | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
 | Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
 | Studnia | Zdrowie | Kamień | Gospodarka wodna | 15 pracy | 1 ¤/t | +1 szczęście | [Studnia](../encyklopedia/budynki/studnia.md) |
 | Mury | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury](../encyklopedia/budynki/mury.md) |
 | Koszary | Wojsko | Brąz | Wojskowosc | 25 pracy | 2 ¤/t | +2 praca; +20% miękkie (wizyta) | [Koszary](../encyklopedia/budynki/koszary.md) |
-| Magazyn | Produkcja+Pieniadz | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 złoto | [Magazyn](../encyklopedia/budynki/magazyn.md) |
+| Magazyn | Produkcja+Podatek | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 podatek | [Magazyn](../encyklopedia/budynki/magazyn.md) |
 | Stela / Pomnik | Kultura | Kamień | Murarstwo | 15 pracy | 0 ¤/t | +1 kultura | [Stela / Pomnik](../encyklopedia/budynki/stela.md) |
 | Palac | Kultura/Administracja | Kamień | — | 40 pracy | 2 ¤/t | +3 kultura, +1 szczęście (+5% mnożnik) | [Palac](../encyklopedia/budynki/palac.md) |
 | Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Hutnictwo żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 ¤; +15% Pancerz (wizyta) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
@@ -48,7 +48,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | Katapulta; +10% miękkie | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
 | Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +5 kultura (obok Biblioteki) | [Akademia](../encyklopedia/budynki/akademia.md) |
 | Teatr | Kultura | Żelazo | Filozofia | 55 pracy | 2 ¤/t | +4 kultura, +3 szczęście | [Teatr](../encyklopedia/budynki/teatr.md) |
-| Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 złoto, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
+| Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 podatek, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
 | Pretorium | Administracja | Żelazo | Prawo | 75 pracy | 3 ¤/t | +2 praca, +3 ¤, +5 kultura; Prawo regionalne | [Pretorium](../encyklopedia/budynki/pretorium.md) |
 | Łaźnia publiczna | Zdrowie | Żelazo | Medycyna | 50 pracy | 2 ¤/t | +1 żywność, +1 kultura, +3 szczęście | [Łaźnia publiczna](../encyklopedia/budynki/laznia_publiczna.md) |
 | Akademia wojskowa | Wojsko | Żelazo | Sztuka wojenna | 80 pracy | 4 ¤/t | +3 praca, +2 ¤; +20% miękkie (wizyta) | [Akademia wojskowa](../encyklopedia/budynki/akademia_wojskowa.md) |
@@ -96,7 +96,7 @@ Daje: **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) j
 ### Przykład liczbowy
 
 Koszt **30** pracy przy **7** pracy/t na budynki (70%) → **~4** tury budowy.
-Bonus **+6 praca, +1 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+6 praca, +1 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/kuznia.md`](../encyklopedia/budynki/kuznia.md)
 
@@ -110,22 +110,22 @@ Daje **Pieniądz na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnik
 ### Przykład liczbowy
 
 Koszt **25** pracy przy **7** pracy/t na budynki (70%) → **~3** tury budowy.
-Bonus **+3 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+3 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/targowisko.md`](../encyklopedia/budynki/targowisko.md)
 
 ### Port handlowy
 
-**Port handlowy** (Pieniadz) odblokowuje się w epoce **Brąz** po technologii **Żegluga**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Port handlowy** (Podatek) odblokowuje się w epoce **Brąz** po technologii **Żegluga**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
-Na poziomie 1 daje: **+1 praca, +5 złoto**. Każdy kolejny poziom dodaje: **+3 złoto**.
+Na poziomie 1 daje: **+1 praca, +5 podatek**. Każdy kolejny poziom dodaje: **+3 podatek**.
 **Wymagania:** wybrzeze morskie lub rzeka.
 
 
 ### Przykład liczbowy
 
 Koszt **30** pracy przy **7** pracy/t na budynki (70%) → **~4** tury budowy.
-Bonus **+1 praca, +5 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 praca, +5 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/port.md`](../encyklopedia/budynki/port.md)
 
@@ -220,16 +220,16 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Magazyn
 
-**Magazyn** (Produkcja+Pieniadz) odblokowuje się w epoce **Brąz** po technologii **Handel**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom).
+**Magazyn** (Produkcja+Podatek) odblokowuje się w epoce **Brąz** po technologii **Handel**. Pierwsze wzniesienie kosztuje **20** pracy; każdy kolejny poziom +**8**. Utrzymanie: **1** ¤ na turę (rosnie o **0** per poziom).
 
-Na poziomie 1 daje: **+1 praca, +1 złoto**. Każdy kolejny poziom dodaje: **+1 praca, +1 złoto**.
+Na poziomie 1 daje: **+1 praca, +1 podatek**. Każdy kolejny poziom dodaje: **+1 praca, +1 podatek**.
 **Wymagania:** brak.
 
 
 ### Przykład liczbowy
 
 Koszt **20** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
-Bonus **+1 praca, +1 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 praca, +1 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/magazyn.md`](../encyklopedia/budynki/magazyn.md)
 
@@ -275,7 +275,7 @@ Daje **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A, po wiz
 ### Przykład liczbowy
 
 Koszt **60** pracy przy **7** pracy/t na budynki (70%) → **~8** tury budowy.
-Bonus **+8 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+8 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/kuznia_zelaza.md`](../encyklopedia/budynki/kuznia_zelaza.md)
 
@@ -287,7 +287,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 ### Przykład liczbowy
 
 Koszt **90** pracy przy **7** pracy/t na budynki (70%) → **~12** tury budowy.
-Bonus **+12 praca, +3 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+12 praca, +3 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/wielka_kuznia.md`](../encyklopedia/budynki/wielka_kuznia.md)
 
@@ -318,7 +318,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 ### Przykład liczbowy
 
 Koszt **65** pracy przy **7** pracy/t na budynki (70%) → **~9** tury budowy.
-Bonus **+4 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+4 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/warsztat_oblezniczy.md`](../encyklopedia/budynki/warsztat_oblezniczy.md)
 
@@ -357,7 +357,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Sąd** (Administracja) odblokowuje się w epoce **Żelazo** po technologii **Kodeks prawa**. Pierwsze wzniesienie kosztuje **55** pracy; każdy kolejny poziom +**12**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
-Na poziomie 1 daje: **+2 złoto, +1 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 złoto, +1 kultura, +1 szczęście**.
+Na poziomie 1 daje: **+2 podatek, +1 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 podatek, +1 kultura, +1 szczęście**.
 **Wymagania:** brak.
 **Uwaga:** Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.
 
@@ -365,7 +365,7 @@ Na poziomie 1 daje: **+2 złoto, +1 kultura, +2 szczęście**. Każdy kolejny po
 ### Przykład liczbowy
 
 Koszt **55** pracy przy **7** pracy/t na budynki (70%) → **~7** tury budowy.
-Bonus **+2 złoto, +1 kultura, +2 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+2 podatek, +1 kultura, +2 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/sad.md`](../encyklopedia/budynki/sad.md)
 
@@ -379,7 +379,7 @@ Daje **+2 Pracy/t**, **+3 Pieniądza/t**, **+5 Kultury/t** oraz **Prawo** miasta
 ### Przykład liczbowy
 
 Koszt **75** pracy przy **7** pracy/t na budynki (70%) → **~10** tury budowy.
-Bonus **+2 praca, +3 złoto, +5 kultura** — Prawo regionalne, nie obrona.
+Bonus **+2 praca, +3 podatek, +5 kultura** — Prawo regionalne, nie obrona.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/pretorium.md`](../encyklopedia/budynki/pretorium.md)
 
@@ -410,7 +410,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 ### Przykład liczbowy
 
 Koszt **80** pracy przy **7** pracy/t na budynki (70%) → **~11** tury budowy.
-Bonus **+3 praca, +2 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+3 praca, +2 podatek** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/akademia_wojskowa.md`](../encyklopedia/budynki/akademia_wojskowa.md)
 
