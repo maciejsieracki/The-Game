@@ -90,6 +90,15 @@ function ok(c, m) { if (c) { pass++; console.log('  OK:', m); } else { fail++; c
   ok(cyclicExchangeLinesForDeal({ ...deal, handelSurowiecCykliczny: undefined }, 0, 'X').length === 0, 'inne traktaty bez wierszy wymiany');
   html = treatiesColumnHtml({ activeTreaties: [] }, undefined);
   ok(html.includes('Brak aktywnych traktatów'), 'pusta lista nadal pokazuje „Brak aktywnych traktatów"');
+
+  // 7) Wiązanie w main.ts (tick nie jest importowalny w Node — sprawdzamy źródło):
+  //    zapis stanu dostawy w applyCyclicDeliveryOutcome, wpis „dostawa niezrealizowana",
+  //    mapowanie widza na gracza (ME) i przekazanie wierszy do treatiesColumnHtml.
+  const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
+  const applyFn = mainSrc.slice(mainSrc.indexOf('function applyCyclicDeliveryOutcome('), mainSrc.indexOf('function applyCyclicDeliveryOutcome(') + 4000);
+  ok(applyFn.includes('item.ostatniaDostawa = cyclicDeliveryRecord(turn, delivered, sellerAtFault, buyerAtFault)'), 'main.ts: applyCyclicDeliveryOutcome zapisuje ostatniaDostawa');
+  ok(applyFn.includes("id: `cyclic-trade-fail-${deal.id}-${item.surowiecKey}-t${turn}`") && applyFn.includes("kind: 'diplo'"), 'main.ts: nieudana dostawa trafia do borderMarchEventLog (kind diplo)');
+  ok(mainSrc.includes('const viewerId = a === ME() ? a : b;') && mainSrc.includes('cyclicExchangeLinesForDeal(d, viewerId, ownerDiploLabel(partnerId))'), 'main.ts: widz = gracz (ME), wiersze przekazane do panelu');
 } finally {
   for (const f of [entryFile, BUNDLE]) { try { fs.unlinkSync(f); } catch {} }
 }

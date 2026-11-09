@@ -21772,12 +21772,13 @@ async function boot(): Promise<void> {
       exchanges?: { text: string; status: 'ok' | 'fail' | 'pending'; statusText: string }[];
       frequencyLabel?: string;
     }[] {
-      const partnerId = a === ME() ? b : a;
+      // Widz = gracz (ME, jedna ze stron pary); partner = druga strona.
+      const viewerId = a === ME() ? a : b;
+      const partnerId = viewerId === a ? b : a;
       return activeDeals
         .filter(d => dealInvolvesOwners(d, a, b))
         .map(d => {
-          const exchanges = cyclicExchangeLinesForDeal(d, a === partnerId ? b : a, ownerDiploLabel(partnerId));
-          // (widz = strona różna od partnera; przy a===ME() partner to b, więc widz = a)
+          const exchanges = cyclicExchangeLinesForDeal(d, viewerId, ownerDiploLabel(partnerId));
           return {
             id: d.id,
             label: treatyDisplayLabel(d.rodzaj),
