@@ -1,3 +1,9 @@
+## ROBOCZA 1bf57e44 -- 2026-11-06 -- FALA 580: Obwódka heksagonalna wokół generała (7 hexów, kolor cywilizacji) (testowa)
+
+- R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1 (1d216c7eb)
+- Weryfikacja: tsc 0, general-hex-ring-outline 28/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO wizualnie (brak Chromium); okluzja przez górę poza obrysem niesprawdzona; dług REPIN Rust
+
 ## ROBOCZA 24ca2f05 -- 2026-11-06 -- FALA 579: Falanga: Atak 7, Obrona 12, Przebicie 4, bonus +30% vs Włócznik (testowa)
 
 - R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 (0d328bfaa)
