@@ -4,8 +4,8 @@
  * Run from gra/:  node tools/diplo-alliance-gate-test.cjs   (opcjonalnie ESBUILD_PATH=...)
  *
  * Pokrywa:
- *  A) scenariusz ze zrzutu: Zaufanie 100 + Respekt 48 = Relacja 148 < progSojuszRelacja 151
- *     -> akcja „Sojusz" zablokowana z powodem po polsku (Relacji 151, masz 148), a przy 151+ odblokowana;
+ *  A) scenariusz ze zrzutu: Zaufanie 100 + Respekt 28 = Relacja 128 < progSojuszRelacja 130
+ *     -> akcja „Sojusz" zablokowana z powodem po polsku (Relacji 130, masz 128), a przy 130+ odblokowana;
  *  B) relationTierDisplay: tier „Sojusz" (4) wyłącznie przy faktycznym traktacie (emblemat = lista = silnik);
  *  C) main.ts: wszystkie 3 miejsca tieru UI używają relationTierDisplay (zero surowego relationTier).
  */
@@ -50,12 +50,17 @@ function lockCtx(zaufanie, respekt) {
     progDarRelacja: P.progDarRelacja,
   };
 }
-const l148 = B.resolveDiplomacyActionLock(lockCtx(100, 48));
-ok(P.progSojuszRelacja === 151, 'próg Relacji sojuszu = 151 (dane)');
-ok(l148.locked === true, 'Relacja 148 < 151 -> sojusz zablokowany');
-ok(/Relacji 151 \(masz 148\)/.test(l148.note), 'powód po polsku: ' + l148.note);
-const l151 = B.resolveDiplomacyActionLock(lockCtx(100, 51));
-ok(l151.locked === false, 'Relacja 151 + Zaufanie 100 -> sojusz odblokowany');
+const l128 = B.resolveDiplomacyActionLock(lockCtx(100, 28));
+ok(P.progSojuszRelacja === 130, 'próg Relacji sojuszu = 130 (dane)');
+ok(P.progSojuszZaufanie === 90, 'próg Zaufania sojuszu = 90 (dane)');
+ok(l128.locked === true, 'Relacja 128 < 130 -> sojusz zablokowany');
+ok(/Relacji 130 \(masz 128\)/.test(l128.note), 'powód po polsku: ' + l128.note);
+const l130 = B.resolveDiplomacyActionLock(lockCtx(100, 30));
+ok(l130.locked === false, 'Relacja 130 + Zaufanie 100 -> sojusz odblokowany');
+const l89 = B.resolveDiplomacyActionLock(lockCtx(89, 50));
+ok(l89.locked === true && /Zaufania 90 \(masz 89\)/.test(l89.note), 'Zaufanie 89 < 90 -> zablokowany: ' + l89.note);
+const l90 = B.resolveDiplomacyActionLock(lockCtx(90, 40));
+ok(l90.locked === false, 'Relacja 130 + Zaufanie 90 -> sojusz odblokowany');
 
 // B) tier do wyświetlenia
 const hi = { zaufanie: 100, respekt: 52, status: 'pokoj' };

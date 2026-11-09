@@ -109,12 +109,12 @@ const ctx = (o = {}) => Object.assign(
 // ===========================================================================
 // 1. DIPLOMACY_PARAMS -- mirror of data/diplomacy.json (panel C/E + starts)
 // ===========================================================================
-eq(DIPLOMACY_PARAMS.progSojuszZaufanie,      91, 'prog Sojusz Zaufanie = 91');
+eq(DIPLOMACY_PARAMS.progSojuszZaufanie,      90, 'prog Sojusz Zaufanie = 91');
 eq(DIPLOMACY_PARAMS.progWymianaTechZaufanie, 70, 'prog Wymiana tech Zaufanie = 70');
 eq(DIPLOMACY_PARAMS.progWasalizacjaRespekt,  70, 'prog Wasalizacja Respekt = 70');
 eq(DIPLOMACY_PARAMS.progMinimalnyRelacja,    30, 'prog Minimalny Relacja = 30');
-eq(DIPLOMACY_PARAMS.progSojuszRelacja,      151, 'prog Sojusz Relacja = 151');
-eq(DIPLOMACY_PARAMS.progUmowaMinRelacja,    151, 'prog Umowa min Relacja = 151');
+eq(DIPLOMACY_PARAMS.progSojuszRelacja,      130, 'prog Sojusz Relacja = 151');
+eq(DIPLOMACY_PARAMS.progUmowaMinRelacja,    130, 'prog Umowa min Relacja = 151');
 eq(DIPLOMACY_PARAMS.progNapRelacja,        110, 'prog NAP Relacja = 110');
 eq(DIPLOMACY_PARAMS.progHandelRelacja,     0, 'prog Handel Relacja = 0');
 eq(DIPLOMACY_PARAMS.startZaufanie,           20, 'start Zaufanie = 20');
@@ -261,7 +261,7 @@ eq(applyDiplomaticEvent(rel(20, 30), 'wymiana_tech_gratis').zaufanie,   25, 'wym
   eq(s.willingnessTrade, 0, 'main: trade 0 when Relacja(15) < 30');
 }
 {
-  // alliance gated by Zaufanie>=91 AND Relacja>=151
+  // alliance gated by Zaufanie>=90 AND Relacja>=130
   const sNo = aiDiplomacyStance(mkPlayer('g', TypCywilizacji.Grecy), mkPlayer('o', TypCywilizacji.Grecy),
                                 rel(50, 80), ctx());
   eq(sNo.willingnessAlly, 0, 'main: ally 0 when Zaufanie(50) < 91 even if Relacja 130');
@@ -359,8 +359,8 @@ eq(relationTier(rel(0, 0, 'sojusz')),     4, 'status=sojusz -> tier 4 (Sojusz), 
 // score-based tiers (status neutralni/pokoj)
 eq(relationTier(rel(10, 10)),  1, 'score=20 (< 30) -> tier 1 (Wrogi)');
 eq(relationTier(rel(25, 25)),  2, 'score=50 (>= 30, < 60) -> tier 2 (Neutralny; typowy start gry)');
-eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 151) -> tier 3 (Przyjazny)');
-eq(relationTier(rel(80, 72)),  4, 'score=152 (>= 151) -> tier 4 (Sojusz)');
+eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 130) -> tier 3 (Przyjazny)');
+eq(relationTier(rel(80, 72)),  4, 'score=152 (>= 130) -> tier 4 (Sojusz)');
 
 // granice (boundary values)
 eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> tier 2 (Neutralny), granica');

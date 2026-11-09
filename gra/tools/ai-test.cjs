@@ -1666,7 +1666,7 @@ console.log('\n--- T9k: decideAIDiplomacy Priorytet 3b (zaproponuj_pakt) — zyw
 console.log('\n--- T2S-a: zaproponuj_sojusz gdy rowny partner + willingnessAlly >= PROG_SOJUSZ ---');
 {
   // Scenariusz: rowny partner (rw=0.55 in [0.4,0.7]), wysoka relacja.
-  // Realne progi sojuszu (data/diplomacy.json): progSojuszZaufanie=91, progSojuszRelacja=151
+  // Realne progi sojuszu (data/diplomacy.json): progSojuszZaufanie=90, progSojuszRelacja=130
   // -- zaufanie=95, respekt=70 (score=165) przekracza oba z zapasem.
   // allyW wyliczone przez aiDiplomacyStance >= PROG_SOJUSZ(0.6) -> zaproponuj_sojusz
   const cmds = decideAIDiplomacy({

@@ -161,7 +161,7 @@ eq('load: flaga przywrócona', M.czyAgresorAktywny(1, T0 + 1), true);
 eq('load: casus belli przywrócony', M.maCasusBelliAktywne(2, 1, T0 + 1), true);
 M.resetStanAgresora();
 
-// 11. Silnik AI: REALNE aiDiplomacyStance. Próg sojuszu bez flagi = progSojuszRelacja (151).
+// 11. Silnik AI: REALNE aiDiplomacyStance. Próg sojuszu bez flagi = progSojuszRelacja (130) przy Respekcie 50/50 (zero ulgi z różnicy Respektu) i Zaufaniu >= 90.
 const P = { typCywilizacji: E.TypCywilizacji.Rzymianie };
 const O = { typCywilizacji: E.TypCywilizacji.Grecy };
 const ctx0 = { isMinorCiv: false, militaryRatio: 1, currentTurn: 100, turnsAtWar: 0 };
@@ -171,18 +171,21 @@ for (let z = 0; z <= 100; z += 1) {
   for (let r = 0; r <= 100; r += 1) {
     const rel = { zaufanie: z, respekt: r, status: 'pokoj' };
     rows.push({
+      r,
       s: E.relationScore(rel),
       off: E.aiDiplomacyStance(P, O, rel, ctx0).willingnessAlly,
       on: E.aiDiplomacyStance(P, O, rel, ctxOn).willingnessAlly,
     });
   }
 }
-const tOff = Math.min(...rows.filter(x => x.off > 0).map(x => x.s));
-const tOn = Math.min(...rows.filter(x => x.on > 0).map(x => x.s));
-eq('prog sojuszu bez flagi (progSojuszRelacja)', tOff, 151);
-eq('prog sojuszu z flaga = bez flagi + delta z JSON', tOn - tOff, D);
+const rowsEq = rows.filter(x => x.r === 50);
+const tOff = Math.min(...rowsEq.filter(x => x.off > 0).map(x => x.s));
+const tOn = Math.min(...rowsEq.filter(x => x.on > 0).map(x => x.s));
+eq('prog sojuszu bez flagi (Respekt 50: Zaufanie 90 + 50 = 140 >= 130)', tOff, 140);
+// Bez flagi wiąże Zaufanie 90 (90+50=140); z flagą wiąże Relacja 130 + delta z JSON.
+eq('prog sojuszu z flaga = progSojuszRelacja + delta z JSON', tOn, 130 + D);
 // N-1 / N / N+1 wokół progu (tylko wartości osiągalne przez relationScore).
-const atScore = (sc, key) => rows.filter(x => x.s === sc).map(x => x[key]);
+const atScore = (sc, key) => rowsEq.filter(x => x.s === sc).map(x => x[key]);
 eq('N-1 bez flagi: brak sojuszu', atScore(tOff - 1, 'off').every(v => v === 0), true);
 eq('N bez flagi: sojusz możliwy', atScore(tOff, 'off').some(v => v > 0), true);
 eq('N-1 z flaga (poniżej nowego progu): brak sojuszu', atScore(tOn - 1, 'on').every(v => v === 0), true);

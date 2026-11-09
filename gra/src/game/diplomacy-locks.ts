@@ -10,7 +10,7 @@
  *
  * Progi pochodzą z SILNIKA (DIPLOMACY_PARAMS / diplomacy.json), NIE z makiety —
  * np. Sojusz wojskowy w makiecie pokazuje „wymaga Zaufania 90", silnik ma
- * progSojuszZaufanie=91 (po przeskalowaniu wg trudności) → używamy 91.
+ * progSojuszZaufanie=90 (po przeskalowaniu wg trudności) → używamy 90.
  *
  * Id akcji odpowiadają data/diplomacy.json `akcje_dyplomatyczne` (main.ts
  * buildAudienceActions, diplomacyActionIdFromLabel):
