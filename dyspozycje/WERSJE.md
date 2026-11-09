@@ -1,3 +1,9 @@
+## ROBOCZA 13638b14 -- 2026-11-06 -- FALA 590: FISHING-BOATS: łodzie rybackie +6 żywności/+6 Pracy/+6 podatku (testowa)
+
+- FISHBOAT 0d471edf9
+- Weryfikacja: tsc, logic 213, ai 296, fishing-boats-666 22/0, sidecar PASS
+- Limity: NIE_ZMIERZONO plon miasta z N ławicami; ai-major-economy, pr141-f04 czerwone przed zmianą; DECYZJA Ha'amonga
+
 ## ROBOCZA b6cb2788 -- 2026-11-06 -- FALA 589: BATTLE-SKIP: pomiń do wyniku = ten sam wynik co AUTO; AI ulepsza jednostki wg zasad gracza (testowa)
 
 - BATSKIP b5aed5dfe + AIREPL af2e1cefb
