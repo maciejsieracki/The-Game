@@ -6,3 +6,6 @@ ALLOWLISTA: gra/data/units.json, gra/src/game/combat.ts (tylko jeśli pole nie j
 
 ## DODATEK 1 (2026-11-09) — rozszerzenie decyzji właściciela (temat dopiero wystartowany)
 Falanga: OBRONA = 12 (dziś 10), PRZEBICIE = 4 (dziś 2; jak Thorakites), Bonus vs Spearman = 30. „Zaktualizuj w statystykach wszystkie elementy”: zaktualizuj WSZYSTKIE pola Falangi zależne od tych wartości w units.json i w pochodnych — `Obrona`, `meleeDefence`, `Przebicie`, `piercing`, `fieldPower` (przelicz wg wzoru używanego dla pozostałych jednostek; zgłoś wzór), ewentualne `Top3`/Opis/Uwagi/karta jednostki/CIVPEDIA/wiki/PORADNIK cytujące statystyki Falangi (generatory --check, wikiBundle), testy statystyk i balansu jednostek (fieldPower tabele, rankingi), tabele porównawcze. Uwaga w polu `Uwagi` Falangi („ZAŁOŻENIE: zastępuje Włócznik — do potwierdzenia”) NIE zmieniaj. Zgłoś w raporcie nowy fieldPower i wpływ na ranking mocy jednostek (Moc militarna).
+
+## DODATEK 2 (2026-11-09) — ATAK = 7
+Falanga finalnie: ATAK = 7 (dziś 6; zaktualizuj `Atak` i `meleeAttack`), OBRONA = 12, PRZEBICIE = 4, Bonus vs Spearman = 30. Pozostałe pola bez zmian. Przelicz `fieldPower` i wszystkie pochodne wg DODATKU 1.
