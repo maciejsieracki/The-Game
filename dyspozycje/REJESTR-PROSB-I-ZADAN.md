@@ -9105,3 +9105,7 @@ DECYZJA WŁAŚCICIELA ABC=A („obrona własnej ziemi widzi wszystko”). R-WEB-
 - Testy: terminology 777/0, diplo-active-treaties 15/0, tech-cards-top5 594/0, building-cards-top5 1179/0, cyclic-trade 53/0, quick-actions-labels 38/0, logic 213/213, ai-test 289/0, tsc 0. MD5 Gra-ROBOCZA.html 15aa8dde8f2dea7a0f119a78489a86db (Raw zgodne; audio-pack bez zmian).
 - OTWARTE ABC: klasa C terminologii (podział handlu w cityPanel 10 literałów, handelBrutto/Netto w tooltipie 14, „Mnożnik handlu/waluty” w wiki 9 plików, poradniki 45/07 nieaktualne wobec silnika, grupa budynków „Handel i pieniądz”); wymiana jednorazowa A/B/C; styl: „Tarasy (Chiny, Inkowie)”, „2 glina” w Cegielni. NIE_ZMIERZONO: żywa gra/Chromium.
 - W KOLEJCE: R-WEB-CARDS-RESOURCE-PURPOSE-Q1, R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1.
+
+## 2026-11-09 — Decyzje właściciela (ABC): terminologia klasa C + wymiana jednorazowa
+- Wymiana „Jednorazowo”: PODPIS W FORMULARZU (bez nowego stanu; nie zmieniamy domyślnego trybu).
+- Klasa C: podział handlu w cityPanel i handelBrutto/Netto w tooltipach → „podatek”; wiki „Mnożnik handlu/waluty” → „Mnożnik podatku/waluty”; grupa „Handel i pieniądz” → „Podatek i pieniądz”. Temat: R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1 (kolejka po CARDS-RESOURCE-PURPOSE).
