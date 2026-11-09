@@ -1,3 +1,9 @@
+## ROBOCZA 2de57742 -- 2026-11-06 -- FALA 574: Bitwa: jednostki z 0 HP znikają z pola (testowa)
+
+- R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1 (f59c78156): cios śmiertelny nie ustawia hp=1 (rout-before-death tylko przy hp>0), uciekająca jednostka trafiona do 0 ginie; logika _resolveBlowOutcome
+- Weryfikacja: tsc 0, logic 213/213, battle-dead-units-removed PASS, battle-dead-unit-disappearance PASS, walka-morale-przewaga-mocy 123/123, audio-sidecar PASS
+- Limity: Chromium/wizualnie NIE_ZMIERZONO; battle-loot-test 4 FAIL istnieje na bazie; zmiana zamienia dawne ucieczki z hp=1 na realne zgony (większe straty) — NIE_ZMIERZONO balans
+
 ## ROBOCZA 79ba238f -- 2026-11-06 -- FALA 573: Nowe koszty budowy: drewno + kamień + cegła wg epoki, Garncarstwo poziom 1 (testowa)
 
 - R-WEB-BUILDING-COSTS-ERA-RESOURCES-IMPL-Q1 (729e28ed6): koszt_surowce 32 budynków (Kamień: drewno=kamień; Brąz: drewno=kamień=cegła; Żelazo: cegła=kamień=drewno), Garncarstwo Poziom 2→1, wiki Garncarstwo, SPEC aneks
