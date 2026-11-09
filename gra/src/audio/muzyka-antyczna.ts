@@ -5,7 +5,7 @@
 // BRĄZU (era>=2) i jako uśpiony fallback KAMIENIA (gdyby zabrakło plików).
 //
 // KAMIEŃ (era===1) gra domyślnie z prawdziwych nagrań (./filePlayer.ts,
-// kamienPlaylist) zamiast syntezy — router: usesFilePlayer(). Jeśli katalog
+// eraMusicPlaylist, pula kumulatywna kamień+brąz+żelazo) zamiast syntezy — router: usesFilePlayer(). Jeśli katalog
 // utwory/kamien/ jest pusty, ta funkcja zwraca false i kamień automatycznie
 // wraca do syntezy poniżej — bez żadnej dodatkowej konfiguracji.
 //
@@ -14,10 +14,10 @@
 //   setMood(mood)                      — płynne przejście (crossfade ~4 s);
 //                                        bez efektu w kamieniu-plikowym (ta
 //                                        sama playlista niezależnie od mood)
-//   setEra(era: number)                — 1=Kamień, 2=Brąz; era>=3 gra (na razie)
-//                                        brązem; crossfade epoki ~6 s (nagroda!);
+//   setEra(era: number)                — 1=Kamień, 2=Brąz, 3+=Żelazo; pula plikowa KUMULATYWNA
+//                                        (awans dołącza utwory, nie przerywa); synteza: crossfade ~6 s;
 //                                        przełącza też kamień(pliki)<->brąz(synteza)
-//   getEra(): 1|2
+//   getEra(): 1|2 (era syntezy; epoka muzyki plikowej 1..3 = getMusicTier())
 //   setMusicVolume(v: 0..1) / stopMusic() / isMusicPlaying() / getMood()
 //
 // API NOWE — intro (ekrany przed rozgrywką, poza systemem era x mood):
@@ -98,7 +98,7 @@
 // ============================================================================
 
 import {
-  kamienPlaylist, brazPlaylist, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
+  eraMusicPlaylist, setEraMusicTier, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
   bitwaPlaylist, zwyciestwoPlaylist, porazkaPlaylist,
   diplomacyPlaylistForCiv, allDiplomacyPlaylists,
 } from './filePlayer';
@@ -1399,14 +1399,16 @@ let engines: EngineAudio[] = [];
 let playing = false;
 let volume = 0.8;
 let moodNow: Mood = 'mapa';
-let eraNow: Era = 1; // gra zaczyna w epoce kamienia
+let eraNow: Era = 1; // gra zaczyna w epoce kamienia (era SYNTEZY: 1|2)
+let tierNow = 1;     // epoka MUZYKI plikowej 1..3 (kamień/brąz/żelazo, pula kumulatywna)
 
 function volCurve(v: number): number { return Math.pow(Math.max(0, Math.min(1, v)), 1.6); }
 
-/** Playlista plikowa właściwa dla danej epoki (1=kamień, 2=brąz i dalsze —
- *  Era zwęża wszystkie epoki >=2 do 2, patrz setEra()). */
-function activeFilePlaylist(era: Era): FilePlaylist {
-  return era === 1 ? kamienPlaylist : brazPlaylist;
+/** Playlista plikowa gry: JEDNA, kumulatywna po epokach (kamień; +brąz; +żelazo
+ *  — zakres puli ustawia setEra() przez setEraMusicTier()). Parametr `era`
+ *  zostaje dla zgodności sygnatur routera. */
+function activeFilePlaylist(_era: Era): FilePlaylist {
+  return eraMusicPlaylist;
 }
 
 /** Czy dana epoka gra z prawdziwych plików zamiast syntezy poniżej. false gdy
@@ -1656,25 +1658,29 @@ export function setMood(mood: Mood): void {
 }
 
 /**
- * Zmiana EPOKI: 1 = kamień, 2 = brąz; era >= 3 (żelazo itd.) gra na razie
- * brązem. Crossfade ~6 s — awans epoki ma być słyszalną nagrodą (dotyczy
- * przejść w obrębie syntezy). Przejścia kamień(pliki) <-> brąz(synteza) nie
- * mają crossfade próbek (inny tor odtwarzania) — playlista/silnik po prostu
- * się zatrzymuje i startuje drugi, natychmiast.
- * Można wołać też przed startem muzyki (ustawia epokę startową).
+ * Zmiana EPOKI: 1 = kamień, 2 = brąz, 3+ = żelazo. Muzyka plikowa jest
+ * KUMULATYWNA: awans NIE przełącza playlisty, tylko DOŁĄCZA utwory epoki do
+ * puli (brąz = kamień + brąz; żelazo = kamień + brąz + żelazo) — grający utwór
+ * dogrywa się bez przerwy i crossfade, nowe wchodzą w shuffle kolejnych tur.
+ * Synteza (fallback, gdy cała pula pusta) zna tylko 2 epoki (1|2), a era>=3
+ * gra w niej brązem; jej przejścia mają crossfade ~6 s (ERA_XFADE).
+ * Obniżenie epoki (np. wczytanie zapisu) zawęża pulę, też bez przerywania
+ * grającego utworu. Można wołać też przed startem muzyki.
  */
 export function setEra(era: number): void {
-  const e: Era = era >= 2 ? 2 : 1;
-  if (e === eraNow) return;
-  const prevPlaylist = activeFilePlaylist(eraNow);
+  const t = era >= 3 ? 3 : era >= 2 ? 2 : 1;
+  if (t === tierNow) return;
+  const prevEra = eraNow;
   const wasFilePlayer = usesFilePlayer(eraNow);
-  eraNow = e;
+  tierNow = t;
+  eraNow = t >= 2 ? 2 : 1;
+  setEraMusicTier(t); // pula plikowa zawsze zsynchronizowana z epoką, także przed startem
   if (!playing) return; // tylko zapamiętaj epokę startową, bez efektu dźwiękowego
-  const nextPlaylist = activeFilePlaylist(eraNow);
+  const pl = activeFilePlaylist(eraNow);
   const nowFilePlayer = usesFilePlayer(eraNow);
   if (wasFilePlayer && !nowFilePlayer) {
-    // playlista plikowa -> synteza
-    prevPlaylist.stop();
+    // playlista plikowa -> synteza (pula epoki pusta)
+    pl.stop();
     if (ctx === null) {
       const w = window as unknown as { AudioContext?: typeof AudioContext;
         webkitAudioContext?: typeof AudioContext };
@@ -1691,24 +1697,22 @@ export function setEra(era: number): void {
     // synteza -> playlista plikowa
     for (const eng of engines) eng.fadeOutAndDispose(ERA_XFADE);
     engines = [];
-    nextPlaylist.setVolume(volume);
-    nextPlaylist.start();
+    pl.setVolume(volume);
+    pl.start();
     return;
   }
   if (wasFilePlayer && nowFilePlayer) {
-    // playlista plikowa -> INNA playlista plikowa (kamień<->brąz) —
-    // przełączenie natychmiastowe, bez crossfade próbek (jak w pozostałych
-    // przejściach cross-mode powyżej — inny tor odtwarzania niż respawn()).
-    prevPlaylist.stop();
-    nextPlaylist.setVolume(volume);
-    nextPlaylist.start();
+    // plik -> plik: pula już rozszerzona/zawężona wyżej; grający utwór dogrywa się.
     return;
   }
-  if (!nowFilePlayer) respawn(ERA_XFADE); // oba w syntezie
+  if (!nowFilePlayer && eraNow !== prevEra) respawn(ERA_XFADE); // oba w syntezie
 }
 
-/** Aktualna epoka muzyki (1 = kamień, 2 = brąz). */
+/** Aktualna epoka muzyki (1 = kamień, 2 = brąz; żelazo raportuje jako 2 — era syntezy). */
 export function getEra(): Era { return eraNow; }
+
+/** Epoka muzyki plikowej 1..3 (kamień/brąz/żelazo) — zakres kumulatywnej puli. */
+export function getMusicTier(): number { return tierNow; }
 
 /** Głośność 0..1 (krzywa percepcyjna ^1.6). Dotyczy syntezy ORAZ obu playlist
  *  plikowych (kamień + intro) — jeden suwak/preferencja dla całej muzyki. */
@@ -1717,8 +1721,7 @@ export function setMusicVolume(v: number): void {
   if (ctx && graf) {
     graf.sum.gain.setTargetAtTime(volCurve(volume), ctx.currentTime, 0.05);
   }
-  kamienPlaylist.setVolume(volume);
-  brazPlaylist.setVolume(volume);
+  eraMusicPlaylist.setVolume(volume);
   introPlaylist.setVolume(volume);
   for (const pl of allDiplomacyPlaylists()) pl.setVolume(volume);
   preBattlePlaylist.setVolume(volume);

@@ -1,7 +1,10 @@
 'use strict';
 /**
  * muzyka-era-live-e2e-test.cjs — R-MUZYKA-ERA-LIVE-E2E-Q1 (Operator Sonnet 5,
- * 2026-08-31, worktree izolowany).
+ * 2026-08-31, worktree izolowany); zaktualizowany w R-WEB-MUSIC-ERA-CUMULATIVE-PLAYLIST-Q1:
+ * muzyka KUMULATYWNA — zmiana epoki NIE zatrzymuje i NIE podmienia playlisty (pula się
+ * rozszerza/zawęża, grający utwór dogrywa się): asercje C/D oczekują BRAKU pause() i BRAKU
+ * nowych instancji <audio> po setEra(), zamiast dawnego brąz-zamiast-kamienia.
  *
  * KONTEKST: Final Control retroaktywnego audytu `P-AUDYT-RETRO-MUZYKA-BRAZ-KROK10-Q1`
  * (Zarzut #1) ustalił, że dotychczasowy live-test Playwright (`era-change-toast-live-test.cjs`)
@@ -70,18 +73,14 @@ function assert(label, cond, detail) {
 }
 
 const SRC_MUZYKA = path.join(GRA_DIR, 'src', 'audio', 'muzyka-antyczna.ts');
-
-/** Mutacja E (kryterium końca 3): w gałęzi "playlista plikowa -> INNA playlista plikowa"
- *  usuwa DOKŁADNIE jedno wywołanie `prevPlaylist.stop();` (ta sama linia co w scenariuszu C/C'
- *  jednostkowym) — poprzednia playlista przestaje się zatrzymywać przy zmianie epoki. */
+/** Mutacja E: w gałęzi "plik -> plik" wstawia restart playlisty (stop+start) — zmiana epoki
+ *  zaczyna przerywać grający utwór; asercje "ZERO pause()" muszą zaczerwienieć. */
 function applyMutation() {
   const src = fs.readFileSync(SRC_MUZYKA, 'utf8');
-  const anchor = '    // playlista plikowa -> INNA playlista plikowa (kamień<->brąz) —\n'
-    + '    // przełączenie natychmiastowe, bez crossfade próbek (jak w pozostałych\n'
-    + '    // przejściach cross-mode powyżej — inny tor odtwarzania niż respawn()).\n'
-    + '    prevPlaylist.stop();\n';
+  const anchor = '    // plik -> plik: pula już rozszerzona/zawężona wyżej; grający utwór dogrywa się.\n'
+    + '    return;\n';
   if (!src.includes(anchor)) throw new Error('applyMutation: kotwica nie znaleziona (źródło się zmieniło?)');
-  const mutated = src.replace(anchor, anchor.replace('    prevPlaylist.stop();\n', '    // MUTACJA-TEST: prevPlaylist.stop(); usunięte celowo\n'));
+  const mutated = src.replace(anchor, anchor.replace('    return;\n', '    pl.stop(); pl.setVolume(volume); pl.start(); // MUTACJA-TEST: restart playlisty przy zmianie epoki\n    return;\n'));
   fs.writeFileSync(SRC_MUZYKA, mutated, 'utf8');
   return src; // oryginał do przywrócenia
 }
@@ -233,11 +232,11 @@ async function runScenario(chromium, { mutated }) {
     localAssert('B. isMusicPlaying()===true', start.playing === true, start);
     const probe0 = await page.evaluate(() => window.__audioProbe);
     const brazIds = idsWithEvent(probe0.events, 'play');
-    localAssert('B. co najmniej 1 realny play() (playlista brązu wystartowała)', brazIds.size >= 1, probe0.events);
+    localAssert('B. co najmniej 1 realny play() (kumulatywna playlista wystartowała)', brazIds.size >= 1, probe0.events);
     const tCheckpointB = lastEventT(probe0.events);
     const maxIdCheckpointB = maxConstructedId(probe0.events);
 
-    console.log('\n-- C. Realny setEra(1): Brąz -> Kamień --');
+    console.log('\n-- C. Realny setEra(1): Brąz -> Kamień (pula zawężona, grający utwór dogrywa się) --');
     await page.evaluate(() => window.__musicEraTestDebug.setEra(1));
     await wait(900);
     const afterToKamien = await page.evaluate(() => ({
@@ -245,18 +244,15 @@ async function runScenario(chromium, { mutated }) {
       playing: window.__musicEraTestDebug.isMusicPlaying(),
     }));
     localAssert('C. getEra()===1 po realnym setEra(1)', afterToKamien.era === 1, afterToKamien);
-    localAssert('C. isMusicPlaying() nadal true (playlista dalej gra, tylko inna)', afterToKamien.playing === true, afterToKamien);
+    localAssert('C. isMusicPlaying() nadal true (playlista nie przerwana)', afterToKamien.playing === true, afterToKamien);
     const probe1 = await page.evaluate(() => window.__audioProbe);
-    const pausedBrazIds = idsWithEvent(probe1.events, 'pause', tCheckpointB);
-    let anyBrazPaused = false;
-    for (const id of pausedBrazIds) if (brazIds.has(id)) anyBrazPaused = true;
-    localAssert('C. poprzednia playlista (brąz, instancje ' + JSON.stringify([...brazIds]) + ') faktycznie zatrzymana (pause() zaobserwowane po setEra(1))', anyBrazPaused, probe1.events);
-    const kamienIds = idsWithEvent(probe1.events, 'play', tCheckpointB, maxIdCheckpointB + 1);
-    localAssert('C. NOWA (dotąd nieistniejąca) instancja <audio> faktycznie zagrała po setEra(1) — inna playlista, nie ta sama', kamienIds.size >= 1, { probe: probe1.events, maxIdCheckpointB });
+    const pausesC = probe1.events.filter((e) => e.type === 'pause' && e.t > tCheckpointB);
+    localAssert('C. ZERO pause() po setEra(1) — grający utwór NIE jest zatrzymany (muzyka kumulatywna)', pausesC.length === 0, pausesC);
+    localAssert('C. ZERO nowych instancji <audio> po setEra(1) (brak przełączenia playlisty)', maxConstructedId(probe1.events) === maxIdCheckpointB, { max: maxConstructedId(probe1.events), maxIdCheckpointB });
     const tCheckpointC = lastEventT(probe1.events);
     const maxIdCheckpointC = maxConstructedId(probe1.events);
 
-    console.log('\n-- D. Realny setEra(2) z powrotem: Kamień -> Brąz --');
+    console.log('\n-- D. Realny setEra(2) z powrotem: Kamień -> Brąz (pula rozszerzona o brąz) --');
     await page.evaluate(() => window.__musicEraTestDebug.setEra(2));
     await wait(900);
     const afterToBraz = await page.evaluate(() => ({
@@ -266,12 +262,9 @@ async function runScenario(chromium, { mutated }) {
     localAssert('D. getEra()===2 po realnym setEra(2)', afterToBraz.era === 2, afterToBraz);
     localAssert('D. isMusicPlaying() nadal true', afterToBraz.playing === true, afterToBraz);
     const probe2 = await page.evaluate(() => window.__audioProbe);
-    const pausedKamienIds = idsWithEvent(probe2.events, 'pause', tCheckpointC);
-    let anyKamienPaused = false;
-    for (const id of pausedKamienIds) if (kamienIds.has(id)) anyKamienPaused = true;
-    localAssert('D. playlista kamienia (instancje ' + JSON.stringify([...kamienIds]) + ') faktycznie zatrzymana po powrocie do brązu', anyKamienPaused, probe2.events);
-    const brazIds2 = idsWithEvent(probe2.events, 'play', tCheckpointC, maxIdCheckpointC + 1);
-    localAssert('D. NOWA instancja <audio> faktycznie zagrała po setEra(2) (brąz wraca ze świeżymi elementami po releaseEl w stop())', brazIds2.size >= 1, { probe: probe2.events, maxIdCheckpointC });
+    const pausesD = probe2.events.filter((e) => e.type === 'pause' && e.t > tCheckpointC);
+    localAssert('D. ZERO pause() po setEra(2) — awans nie przerywa utworu', pausesD.length === 0, pausesD);
+    localAssert('D. ZERO nowych instancji <audio> po setEra(2)', maxConstructedId(probe2.events) === maxIdCheckpointC, { max: maxConstructedId(probe2.events), maxIdCheckpointC });
 
     console.log('\n-- F. Konsola czysta --');
     localAssert('zero console.error / pageerror w całym scenariuszu', consoleErrors.length === 0, consoleErrors);
@@ -296,7 +289,7 @@ async function main() {
   }
 
   if (MUTATE) {
-    console.log('[muzyka-era-live-e2e-test] TRYB MUTACYJNY -- mutuję źródło, oczekuję CZERWONEGO wyniku na asercjach C/pause(braz).');
+    console.log('[muzyka-era-live-e2e-test] TRYB MUTACYJNY -- mutuję źródło, oczekuję CZERWONEGO wyniku na asercjach C/D (ZERO pause).');
     const original = applyMutation();
     let result;
     try {
