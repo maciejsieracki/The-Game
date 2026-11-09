@@ -969,6 +969,9 @@ import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { attemptGeneralPurchase, canRecruitGeneral, canSpawnQueuedGeneral, planGeneralLimitDemotions, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
+  unitReplaceFullCost, canAffordUnitReplace, unitReplaceStockMissingLabel, unitReplaceStockText, mergeStockPaid,
+} from './game/unit-replace-cost';
+import {
   aiGeneralCampaignToSave,
   aiWarTargetHasReachableLandNeighbor,
   chooseAiGeneralWarTarget,
@@ -7226,22 +7229,24 @@ async function boot(): Promise<void> {
 
     // -------------------------------------------------------------------
     // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md) — decyzje UX wdrożone:
-    //   koszt = max(0, koszt_nowej - koszt_starej) w Pieniądzu (dopłata; sidegrade/
-    //     downgrade = 0, bez zwrotu);
+    //   koszt = PEŁNY koszt rekrutacji nowej jednostki (R-WEB-UNIT-REPLACE-COST-AND-PROMOTION-IMPL-Q1,
+    //     decyzja właściciela 2026-11-09, D1 = C; zastępuje dawną "dopłatę różnicy"): Pieniądz
+    //     nowej jednostki + jej Surowiec/Surowiec (ilość) z puli państwa (unitStockCost,
+    //     deductBuildingStockCostAcrossCities -- ten sam mechanizm co rekrutacja), gracz I AI
+    //     (game/unit-replace-cost.ts). Brak Pieniądza/surowca = zamiana niedostępna;
+    //   jednostka ZACHOWUJE doświadczenie (battlesSurvived, bonusy pancerza/parametrów, wódz,
+    //     armia) i NIE zużywa Manpower/Ludności -- zmienia się tylko typ, kategoria, HP, ruch;
     //   tura = zużywa ruch (ruchLeft = 0 po zamianie);
     //   zasięg = CAŁE terytorium gracza (decyzja właściciela, zmiana zakresu 2026-07-19) —
     //     dowolny heks należący do gracza (isPlayerTerritoryHex), NIE tylko garnizon miasta;
-    //     gdy jednostka stoi w mieście, bramka koszary/braz-access nadal per to miasto,
-    //     poza miastem — "OR po wszystkich miastach gracza" (replaceAvailabilityCtxEmpireWide);
+    //     bramki budynków/wody ZAWSZE jako "OR po wszystkich miastach państwa"
+    //     (replaceAvailabilityCtxEmpireWide) -- także gdy jednostka stoi w mieście (ujednolicone:
+    //     wcześniej garnizon liczył Koszary tylko z TEGO miasta, pole z unii wszystkich);
     //   HP = zachowany % (newHp = round(newMaxHp * oldHp/oldMaxHp), min 1);
     //   limit = raz na turę na jednostkę (RuntimeUnit.replaceUsedThisTurn, reset w N: End turn);
     //   nacja = tylko własna (unitAllowedForCivNation w availableReplacementsFor, niezmienione);
     //   zakres = JEDNA zaznaczona karta w stosie (selectedId), nie cały stos;
-    //   ludność = POMINIĘTA (decyzja właściciela 2026-07-19: "Zastąp" kosztuje WYŁĄCZNIE
-    //     Pieniądz — wszystkie 73 jednostki w units.json mają dziś "Ludność"=1, więc
-    //     różnicowanie kosztów ludności i tak nic by nie dało; rozliczenie wycofane);
-    //   manpower = POMINIĘTE — unitManpowerCost() zależy wyłącznie od epoki imperium, nie
-    //     od typu jednostki, więc nie ma tu roli do odegrania w obecnym modelu danych.
+    //   awans między typami = wyłącznie pole "Zastąp specjalnie" w units.json (tabela awansów, D3 = C).
     // -------------------------------------------------------------------
 
     /** Miasto-garnizon jednostki, o ile stoi na heksie WŁASNEGO miasta (cityAtUnit już filtruje ownerId). */
@@ -7257,44 +7262,14 @@ async function boot(): Promise<void> {
       return isPlayerTerritoryHex(u.q, u.r, playerCityNodes(), nodes, 0);
     }
 
-    /** Kontekst dostępności dla availableReplacementsFor — jak productionCtxForCity (cityPanel.ts),
-     *  per-miasto garnizonu (bramka koszary/braz-access per to miasto, gdy jednostka w nim stoi).
+    /** Kontekst dostępności dla availableReplacementsFor — bramka koszary/braz-access "OR po
+     *  wszystkich miastach państwa" (decyzja właściciela: Zastąp działa w całym terytorium, nie
+     *  tylko w garnizonie; unia builtBuildingIds ze wszystkich miast gracza -> built.has('koszary')
+     *  zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek). Używany ZAWSZE (jednostka w mieście
+     *  i w polu, gracz i AI) -- jedna reguła zamiast dwóch rozjeżdżających się.
      *  Cienki wrapper nad buildReplaceAvailabilityCtx (game/unit-replace-context.ts) — zbiera
      *  dane zamknięte nad main.ts, samo składanie AvailabilityContext (w tym wymagane pole
      *  empireResourceStock, UNIT-REPLACE-EVOCATI-Q1) żyje w testowalnej, pure funkcji. */
-    function replaceAvailabilityCtxForCity(city: City): AvailabilityContext {
-      const ownImprovements = placedImprovementsForOwner(city.ownerId);
-      return buildReplaceAvailabilityCtx({
-        epoch: empireEpochForOwner(city.ownerId),
-        builtBuildingIds: cityBuilt.get(city.id) ?? [],
-        civBonusy: civBonusyForOwnerId(city.ownerId),
-        civKey: civKeyForOwnerId(city.ownerId),
-        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-        // Temat #4: grant "z trasy" dolicza się AND-owo (braz syntetycznie,
-        // zelazo OR-em) — patrz placedImprovementsWithBrazTradeGrant/
-        // hasKopalniaNaZlozuZelazaOrTradeGrant.
-        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
-        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
-        empireResourceStock: citySurowceSumForOwner(city.ownerId),
-        // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
-        // bramka co productionCtxForCity (cityPanel.ts).
-        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
-        kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
-        ownerId: city.ownerId,
-        difficulty: effectiveGameDifficultyForOwner(city.ownerId),
-        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
-        // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
-        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
-        cityHasRiver: cityHasRiverAccess(city),
-      });
-    }
-
-    /** Kontekst dostępności dla availableReplacementsFor, gdy jednostka stoi w POLU (w granicach
-     *  terytorium, bez miasta pod nią) — bramka koszary/braz-access "OR po wszystkich miastach
-     *  gracza" (decyzja właściciela: Zastąp działa w całym terytorium, nie tylko w garnizonie;
-     *  unia builtBuildingIds ze wszystkich miast gracza -> built.has('koszary') /
-     *  cityHasPiecHutniczy() zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek).
-     *  Cienki wrapper nad buildReplaceAvailabilityCtx — patrz replaceAvailabilityCtxForCity. */
     function replaceAvailabilityCtxEmpireWide(ownerId = 0): AvailabilityContext {
       const builtUnion = new Set<string>();
       for (const c of cities) {
@@ -7320,12 +7295,10 @@ async function boot(): Promise<void> {
       });
     }
 
-    /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy poza terytorium gracza).
-     *  W garnizonie miasta -> bramka per to miasto; w polu (w granicach terytorium, bez miasta
-     *  pod jednostką) -> bramka "OR po wszystkich miastach gracza". */
+    /** Kontekst dostępności zamienników jednostki `u` -- ZAWSZE unia po miastach właściciela
+     *  (Koszary w którymkolwiek mieście), niezależnie czy `u` stoi w garnizonie czy w polu. */
     function unitReplaceCtx(u: RuntimeUnit): AvailabilityContext {
-      const city = unitReplaceGarrisonCity(u);
-      return city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide(u.ownerId);
+      return replaceAvailabilityCtxEmpireWide(u.ownerId);
     }
 
     /** Lista zamienników do WYŚWIETLENIA w modalu Zastąp (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3):
@@ -7340,8 +7313,11 @@ async function boot(): Promise<void> {
     }
 
     /** Upgrade AI units once per owner turn using the same current-availability gates and
-     * positive gold delta as the player's Replace action. Cross-Typ special substitutions
-     * are excluded because their role equivalence is not established. */
+     * the SAME full-recruitment cost function as the player's Replace action (money + resource
+     * stock from the state pool; R-WEB-UNIT-REPLACE-COST-AND-PROMOTION-IMPL-Q1, D1 = C, D2 = A:
+     * no per-turn cap, naturally limited by the stock cost). Cross-Typ promotion only through the
+     * units.json "Zastąp specjalnie" table (D3 = C): the newest same-Typ target wins; when there is
+     * none, a strictly later-era special target from the table is used. */
     function upgradeAiUnitsForEra(ownerId: number): void {
       const techs = Array.from(unlockedTechSetForOwner(ownerId));
       for (const u of units) {
@@ -7351,14 +7327,35 @@ async function boot(): Promise<void> {
           candidates: unit => availableReplacementsFor(unit.typeId, data, techs, unitReplaceCtx(unit))
             .map(item => data.units.find(def => def.Jednostka === item.id))
             .filter((def): def is NonNullable<typeof def> => Boolean(def)),
-          newestSameRole: (unit, candidates) => newestAvailableSameTypeUnit(
-            unit.typeId, candidates.map(def => def.Jednostka), data.units,
-          ),
+          newestSameRole: (unit, candidates) => {
+            const sameType = newestAvailableSameTypeUnit(
+              unit.typeId, candidates.map(def => def.Jednostka), data.units,
+            );
+            if (sameType) return sameType;
+            // D3 = C: awans między typami tylko wg tabeli ("Zastąp specjalnie").
+            const oldDef = lookupUnitDef(unit.typeId);
+            const special = String(oldDef?.['Zastąp specjalnie'] ?? '').split('/').map(x => x.trim()).filter(Boolean);
+            const oldEpoch = oldDef ? epochNumber(oldDef.Epoka) : 0;
+            return candidates
+              .filter(def => special.includes(def.Jednostka) && epochNumber(String(def.Epoka)) > oldEpoch)
+              .sort((a, b) => epochNumber(String(b.Epoka)) - epochNumber(String(a.Epoka)))[0] ?? null;
+          },
           epochNumber,
           unitCost: (unitId, unit) => unitProductionItem(
             unitId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
             ownerId, effectiveGameDifficultyForOwner(ownerId),
           )?.koszt ?? 0,
+          stockCost: target => unitStockCost(data.units.find(def => def.Jednostka === target.Jednostka)),
+          canPayStock: cost => canAffordUnitReplace(
+            { money: 0, stock: cost }, 0, ownerSurowcePoolFor(ownerId),
+          ),
+          payStock: (cost, unit) => {
+            deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+            (unit as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
+              (unit as { stockPaid?: Record<string, number> }).stockPaid, cost,
+            );
+            markCityStateDirty();
+          },
           currentTreasury: () => ownerTreasury(ownerId),
           setTreasury: value => setOwnerTreasury(ownerId, value),
           oldMaxHp: (unit, def) => effectiveRuntimeUnitMaxHp(unit, def),
@@ -7719,7 +7716,7 @@ async function boot(): Promise<void> {
       };
     }
 
-    /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
+    /** Pełny koszt rekrutacji Pieniądzem jednostki `typeId` (koszt "Zastąp" = pełna rekrutacja nowej). */
     function replaceUnitMoneyCost(typeId: string): number {
       const item = unitProductionItem(
         typeId, data, civBonusyForOwnerId(0), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
@@ -7743,22 +7740,26 @@ async function boot(): Promise<void> {
         showHintMessage('Zastąp: brak dostępnych zamienników tego typu.', 2500);
         return;
       }
-      const oldCost = replaceUnitMoneyCost(u.typeId);
       const orderedReplacements = sortByUnitPowerDescending(
         replacements,
         item => lookupUnitDef(item.id),
       );
+      const ownerPool = ownerSurowcePoolFor(u.ownerId);
       showUnitReplacePicker({
         unitName: u.typeId,
         skarb: player.skarbiec,
         options: orderedReplacements.map(it => {
           const udef = lookupUnitDef(it.id);
+          // D1 = C: pełny koszt rekrutacji nowej jednostki (Pieniądz + surowiec z puli państwa).
+          const fullCost = unitReplaceFullCost(udef, replaceUnitMoneyCost(it.id));
           return {
             id: it.id,
             name: it.nazwa,
             icon: unitIconSvg(udef, it.id),
-            surcharge: Math.max(0, it.koszt - oldCost),
-            blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(u).empireResourceStock) ?? undefined,
+            moneyCost: fullCost.money,
+            stockText: unitReplaceStockText(fullCost),
+            blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(u).empireResourceStock)
+              ?? unitReplaceStockMissingLabel(fullCost, ownerPool) ?? undefined,
             atk: unitAtak(udef),
             def: unitObrona(udef),
             hpMax: effectiveMaxHp(
@@ -7786,9 +7787,15 @@ async function boot(): Promise<void> {
         return;
       }
 
-      const surcharge = Math.max(0, replaceUnitMoneyCost(newTypeId) - replaceUnitMoneyCost(u.typeId));
-      if (player.skarbiec < surcharge) {
-        showHintMessage('Zastąp: brak Pieniądza na dopłatę (' + surcharge + ' 💰)', 3000);
+      // D1 = C (właściciel 2026-11-09): pełny koszt rekrutacji nowej jednostki -- Pieniądz + surowiec.
+      const fullCost = unitReplaceFullCost(newDef, replaceUnitMoneyCost(newTypeId));
+      const stockMissing = unitReplaceStockMissingLabel(fullCost, ownerSurowcePoolFor(u.ownerId));
+      if (stockMissing) {
+        showHintMessage('Zastąp: ' + stockMissing, 3000);
+        return;
+      }
+      if (player.skarbiec < fullCost.money) {
+        showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
         return;
       }
 
@@ -7802,7 +7809,14 @@ async function boot(): Promise<void> {
       const oldHp = u.hp ?? oldMaxHp;
       const newHp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
 
-      player.skarbiec -= surcharge;
+      player.skarbiec -= fullCost.money;
+      if (Object.keys(fullCost.stock).length > 0) {
+        deductBuildingStockCostAcrossCities(cities, u.ownerId, fullCost.stock);
+        (u as { stockPaid?: Record<string, number> }).stockPaid = mergeStockPaid(
+          (u as { stockPaid?: Record<string, number> }).stockPaid, fullCost.stock,
+        );
+        markCityStateDirty();
+      }
 
       const oldTypeId = u.typeId;
       const isSuper = newDef['Super-jednostka'] === 'TAK';
@@ -7821,7 +7835,8 @@ async function boot(): Promise<void> {
       const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
       showHintMessage(
         oldTypeId + ' → ' + newTypeId
-          + (surcharge > 0 ? ' (dopłata ' + surcharge + ' 💰)' : ' (bez dopłaty)')
+          + ' (koszt ' + fullCost.money + ' 💰'
+          + (unitReplaceStockText(fullCost) ? ' + ' + unitReplaceStockText(fullCost) : '') + ')'
           + (replaceCity ? (' — ' + replaceCity.name) : ''),
         3500,
       );

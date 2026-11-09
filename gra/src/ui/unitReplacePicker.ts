@@ -19,15 +19,17 @@ export interface UnitReplaceOption {
   id: string;
   name: string;
   icon: string;
-  /** max(0, koszt_nowej - koszt_starej) w Pieniądzu -- decyzja UX "Zastąp". */
-  surcharge: number;
+  /** PEŁNY koszt rekrutacji nowej jednostki w Pieniądzu (D1 = C, właściciel 2026-11-09). */
+  moneyCost: number;
+  /** Pełny koszt surowcowy nowej jednostki, tekst po polsku (np. "25 Brąz"); puste = brak. */
+  stockText?: string;
   atk: number;
   def: number;
   hpMax: number;
   /**
    * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): przyczyna niedostępności z powodu braku
    * zapasu surowca (np. „Brak w magazynie państwa: Drewno”). Ustawiona → pozycja wyszarzona,
-   * nie do wyboru, z tą przyczyną jako tooltip i tekst. Brak = dostępna (dopłata ograniczona
+   * nie do wyboru, z tą przyczyną jako tooltip i tekst. Brak = dostępna (koszt ograniczony
    * tylko skarbcem, jak dotąd).
    */
   blockedReason?: string;
@@ -140,7 +142,7 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   hdr.className = 'civ-urp-hdr';
   hdr.innerHTML =
     '<div><div class="civ-urp-title">Zastąp — ' + esc(opts.unitName) + '</div>' +
-    '<div class="civ-urp-sub">Dopłata = koszt nowej − koszt starej · zużywa ruch tej tury</div></div>';
+    '<div class="civ-urp-sub">Koszt = pełna rekrutacja nowej jednostki; zachowuje doświadczenie · zużywa ruch tej tury</div></div>';
   hdr.appendChild(document.createRange().createContextualFragment(mapUnitCloseBtnHtml('Anuluj')));
   panel.appendChild(hdr);
   hdr.querySelector('.mu-close-btn')?.addEventListener('click', () => {
@@ -159,7 +161,7 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   }
 
   for (const o of opts.options) {
-    const affordable = opts.skarb >= o.surcharge && !o.blockedReason;
+    const affordable = opts.skarb >= o.moneyCost && !o.blockedReason;
     const item = document.createElement('div');
     item.className = 'civ-urp-item' + (affordable ? '' : ' disabled');
     item.setAttribute('role', 'button');
@@ -183,8 +185,11 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
     item.appendChild(body);
 
     const cost = document.createElement('div');
-    cost.className = 'civ-urp-cost' + (o.surcharge === 0 ? ' free' : affordable ? '' : ' short');
-    cost.innerHTML = o.surcharge === 0 ? 'bez dopłaty' : `${o.surcharge} 💰`;
+    const noCost = o.moneyCost === 0 && !o.stockText;
+    cost.className = 'civ-urp-cost' + (noCost ? ' free' : affordable ? '' : ' short');
+    cost.textContent = noCost
+      ? 'bez kosztu'
+      : `${o.moneyCost} 💰` + (o.stockText ? ` + ${o.stockText}` : '');
     if (o.blockedReason) {
       cost.title = o.blockedReason;
       item.title = o.blockedReason;
@@ -193,7 +198,7 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
       why.textContent = o.blockedReason;
       body.appendChild(why);
     } else if (!affordable) {
-      cost.title = `Za mało Pieniądza (${opts.skarb}/${o.surcharge})`;
+      cost.title = `Za mało Pieniądza (${opts.skarb}/${o.moneyCost})`;
     }
     item.appendChild(cost);
 
