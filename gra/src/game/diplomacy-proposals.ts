@@ -26,7 +26,8 @@ import {
 } from './diplomacy-treaties';
 import { RodzajTraktatu } from '../types/diplomacy';
 import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
-import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
+import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
+import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -1306,6 +1307,10 @@ export function evaluateProposal(
             turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
             lostCitiesInWar: Math.max(0, ctx.warState.lostCitiesResponder),
             // DODATEK 1 (przewaga >20%): zmeczenie wojna zdejmuje blokade (ten sam wzor co wearyFactor nizej).
+            // ZALOZENIE (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1, odpowiedz na zarzut 4): lostCitiesTotal = tylko
+            // miasta utracone przez respondenta (AI), jak w istniejacym wearyFactor nizej. ai.ts (propozycja AI->gracz)
+            // dodaje dodatkowo zdobyteMiastaPartnera, bo tam ta wartosc jest dostepna w kontekscie. Roznica istniala
+            // przed ta zmiana; ujednolicenie zmienia wearyFactor i wymaga osobnej decyzji (nie robione tutaj).
             wearinessLevel: warWearinessLevel({
               turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
               lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
