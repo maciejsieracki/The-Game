@@ -1,0 +1,44 @@
+id,nazwa,epoka,techUnlock,lancuch_tech_zawiera_Garncarstwo,koszt_HEAD_1be32fb0a_drewno/kamien/cegla,koszt_ERA-RESOURCES_59367a77f_drewno/kamien/cegla,zgodnosc_HEAD_z_ERA,mnoznik_efektywny_(x2*epoka),ocena_motywu,kandydat,wariantA_kamien_na_ceramike_JSON_drewno/kamien/cegla/ceramika,wariantA_ceramika_efektywna_w_grze,wariantB_cegla_na_ceramike_JSON_drewno/kamien/cegla/ceramika,wariantB_ceramika_efektywna_w_grze,uwagi
+stolarnia,Stolarnia,1,Obróbka drewna,NIE,25/0/0,25/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+kamieniarski,Warsztat kamieniarski,1,Murarstwo,NIE,30/30/0,30/30/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+kuznia,Kuźnia brązu,2,Brązownictwo,TAK,30/30/0,30/30/0,TAK,4,D,NIE,,,,,formy/tygle - slaba
+odlewnia_brazu,Odlewnia brązu,2,Brązownictwo,TAK,40/40/0,40/40/0,TAK,4,C,TAK,,,,,tygle i formy gliniane - motyw dobry; ale koszt obok rudy/kamienia; budynek konwertera
+odlewnia_zelaza,Odlewnia żelaza,3,Hutnictwo żelaza,TAK,50/50/50,50/50/50,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+wielka_odlewnia,Wielka odlewnia,4,Obróbka żelaza,TAK,70/70/70,70/70/70,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+targowisko,Targowisko (Rynek),1,Wymiana,TAK,30/0/0,30/30/0,NIE,2,C,TAK,,,,,stragan z naczyniami - epoka Kamienia; kosztuje dzis tylko drewno; ryzyko startowe
+port,Port handlowy,2,Żegluga,NIE,30/30/0,30/30/0,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+port_wielki,Port wielki,3,Inżynieria,TAK,50/50/50,50/50/50,TAK,8,C,TAK,,,,,amfory transportowe - motyw handlowy; lancuch Inzynierii zawiera Garncarstwo; ale poprzednik (Port; Zegluga) NIE gwarantuje Garncarni
+spichlerz,Spichlerz,1,Garncarstwo,TAK,40/0/0,40/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+spichlerz_ii,Spichlerz Królewski,2,Pismo,TAK,50/50/50,50/50/50,TAK,4,A,TAK,50/0/50/50,200,50/50/0/50,200,pithoi/dolia - wielkie naczynia na zboze; Spichlerz I juz zuzywa ceramike (drain); II drain tez | ceramika zastepuje cały składnik 1:1 (bez nowego składnika); efektywna = JSON x mnoznik
+garncarnia,Garncarnia,1,Garncarstwo,TAK,30/0/0,30/0/0,TAK,2,X,NIE,,,,,PRODUCENT ceramiki - zabronione (petla)
+cegielnia,Cegielnia,2,Garncarstwo,TAK,30/30/0,30/30/0,TAK,4,X,NIE,,,,,konkuruje o glina; ceramika nie jest materialem cegielni
+kamienne_kregi,Kamienne kręgi,1,Mistycyzm,NIE,40/40/0,40/40/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+swiatynia,Świątynia,2,Religia,TAK,40/40/40,40/40/40,TAK,4,C,TAK,,,,,naczynia kultowe/ofiarne - slabsza motywacja materialowa
+biblioteka,Biblioteka,2,Pismo,TAK,30/30/30,30/30/30,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+studnia,Studnia,1,Gospodarka wodna,NIE,25/25/0,25/25/0,TAK,2,C,NIE,,,,,cembrowina/rury - ale tech Gospodarka wodna NIE wymaga Garncarstwa
+akwedukt,Akwedukt,2,Budownictwo,TAK,60/60/60,60/60/60,TAK,4,A,TAK,60/0/60/60,240,60/60/0/60,240,rury i kanaly z wypalanej gliny (terakota); historycznie zgodne | ceramika zastepuje cały składnik 1:1 (bez nowego składnika); efektywna = JSON x mnoznik
+mennica,Mennica,2,Waluta,TAK,40/40/40,40/40/40,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+palisada,Palisada drewniana,1,Obróbka drewna,NIE,60/0/0,60/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+mury,Mury,2,Budownictwo,TAK,80/80/80,80/80/80,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+koszary,Koszary,2,Wojskowość,TAK,40/40/0,40/40/0,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+emporion,Emporion,2,Handel,TAK,60/60/60,60/60/60,TAK,4,B,TAK,60/0/60/60,240,60/60/0/60,240,amfory handlowe - towar morski; wymaga Targowiska | ceramika zastepuje cały składnik 1:1 (bez nowego składnika); efektywna = JSON x mnoznik; wariant kandydata B (decyzja ABC pyt.1)
+magazyn,Magazyn,2,Handel,TAK,30/30/30,30/30/30,TAK,4,A,TAK,30/0/30/30,120,30/30/0/30,120,amfory/dzbany magazynowe - magazyn surowcow; najsilniejszy kandydat | ceramika zastepuje cały składnik 1:1 (bez nowego składnika); efektywna = JSON x mnoznik
+stela,Stela / Pomnik,1,Murarstwo,NIE,30/30/0,30/30/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+palac,Pałac,1,-,NIE,0/0/0,0/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+palac_ii,Pałac II,2,-,NIE,50/50/0,50/50/0,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+palac_iii,Pałac III,3,-,NIE,70/70/70,70/70/70,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+kuznia_zelaza,Kuźnia żelaza,3,Hutnictwo żelaza,TAK,50/50/50,50/50/50,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+wielka_kuznia,Wielka Kuźnia,4,Obróbka żelaza,TAK,80/80/80,80/80/80,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+fort,Cytadela,3,Inżynieria,TAK,100/100/100,100/100/100,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+baszta,Baszta,3,Inżynieria,TAK,100/100/100,100/100/100,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+warsztat_oblezniczy,Warsztat oblężniczy,3,Oblężnictwo,TAK,50/50/50,50/50/50,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+akademia,Akademia,3,Filozofia,TAK,70/70/70,70/70/70,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+teatr,Teatr,3,Filozofia,TAK,50/50/50,50/50/50,TAK,8,D,NIE,,,,,maski/naczynia - slaba
+sad,Sąd,3,Prawo,TAK,50/50/50,50/50/50,TAK,8,D,NIE,,,,,dzbany - slaba
+dom_starszyzny,Dom Starszyzny,1,-,NIE,30/0/0,30/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+dwor_zarzadcy,Dwór Zarządcy,2,Kodeks,TAK,30/30/30,30/30/30,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+pretorium,Pretorium,3,Prawo,TAK,50/50/50,50/50/50,TAK,8,-,NIE,,,,,brak motywu ceramicznego
+trybunal,Trybunał,2,Kodeks,TAK,40/40/40,40/40/40,TAK,4,-,NIE,,,,,brak motywu ceramicznego
+garnizon,Garnizon,1,-,NIE,30/0/0,30/0/0,TAK,2,-,NIE,,,,,brak motywu ceramicznego
+laznia_publiczna,Łaźnia publiczna,3,Medycyna,TAK,60/60/60,60/60/60,TAK,8,B,TAK,60/0/60/60,480,60/60/0/60,480,rury; kafle; naczynia termalne; Zelazo - wymaga Studni; Medycyny | ceramika zastepuje cały składnik 1:1 (bez nowego składnika); efektywna = JSON x mnoznik; wariant kandydata B (decyzja ABC pyt.1)
+akademia_wojskowa,Akademia wojskowa,3,Sztuka wojenna,TAK,70/70/70,70/70/70,TAK,8,-,NIE,,,,,brak motywu ceramicznego
