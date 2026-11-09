@@ -1,0 +1,15 @@
+# R-WEB-BUILDING-COST-STONE-BRICK-IMPL-Q1 — dispatch (2026-11-09)
+
+GOAL: wdrożenie decyzji właściciela po analizie R-WEB-BUILDING-COST-STONE-BRICK-ANALYSIS-Q1 (raporty 01-operator-r1.md, 02-tabela-budynkow.csv, 03-operator-r2.md w runs/ tamtego tematu; gałęzie wf-stone-brick-r2 / worktree-wf_158f6139-7a4-1, SHA 841aebf6e, abb2e1ea4).
+DECYZJE WŁAŚCICIELA (2026-11-09):
+ 1. Epoka Kamienia: kamień zastępuje drewno 1:1 (tyle samo kamienia, ile dziś drewna) — tylko budynki odblokowane PO dostępności kamienia (Murarstwo): ZAKRES = Warsztat kamieniarski (`kamieniarski`: drewno 30 → kamień 30; wariant A, bez zmian drzewka). Kamienne kręgi i Stela bez zmian. (Wariant B ze Studnią NIE jest wdrażany.)
+ 2. Epoka Brązu: wszystkie budynki „po Cegielni” (10): biblioteka, spichlerz_ii, swiatynia, magazyn, emporion, dwor_zarzadcy, trybunal, mury, akwedukt, mennica — wymagają TYLE SAMO cegły, ile dziś kamienia (1:1 w całości: kamień → cegła; drewno bez zmian; wariant C analizy). Wartości JSON: biblioteka 30/0/30, spichlerz_ii 40/0/50, dwor_zarzadcy 30/0/30, trybunal 30/0/40, magazyn 50/0/30, emporion 80/0/60, mennica 30/0/40, mury 40/0/80, akwedukt 30/0/60, swiatynia 30/0/40 (drewno/kamień/cegła).
+ 3. Budynki które mogą stać PRZED Cegielnią (kuznia, odlewnia_brazu, port, koszary, palac_ii) oraz cegielnia zostają na kamieniu (reguła „nie wcześniej niż jest cegła”).
+BAZA: origin/main (FALA 569+). Operator: SONNET 5.5 (uzasadnienie: dane + SPEC + testy + karty/opisy + weryfikacja bramek AI/produkcji).
+ZAKRES:
+1. `gra/data/buildings.json`: zmiana `koszt_surowce` zgodnie z pkt 1–2 (tylko te pola).
+2. Zaktualizuj SPEC (dyspozycje/SPEC-KOSZTY-SUROWCOWE-BUDYNKOW.md — aneks decyzji), testy `gra/tools/koszty-surowcowe-test.cjs`, `building-epoch-cost-implementation-test.cjs` i inne wynikające (nie osłabiaj — dopasuj do nowej reguły, wskaż zmienione asercje w raporcie); dodaj test bramki: żaden budynek nie kosztuje cegły/kamienia wcześniej niż surowiec dostępny (kamień po Murarstwie; cegła tylko budynki gwarantowanie po Cegielni).
+3. Teksty: `uwagi` kamieniarskiego („epoka Kamienia = wyłącznie drewno”), `building-cards-top5.json`, `top3`, opisy kosztów na kartach i w PORADNIKU/wiki dla zmienionych budynków (generatory --check).
+4. Zweryfikuj AI: konwerter cegły przed konsumentem (ai.ts CONVERTER_FOR_RESOURCE), ai-resource-needs, building-resource-gate — brak zakleszczenia kolejki AI przy cywilizacji bez gliny (zgłoś w raporcie, nie zmieniaj bez potrzeby). Zgłoś ryzyko podaży kamienia (Kamieniołom wymaga Wzgórz/Gór).
+5. Dług Rust: wpis w LEDGER (REPIN building_costs.rs) — bez zmian w rust-port.
+ALLOWLISTA: gra/data/buildings.json, gra/data/building-cards-top5.json, gra/tools/koszty-surowcowe-test.cjs, building-epoch-cost-implementation-test.cjs, card-resource-purpose-test.cjs i inne testy kosztów/kart wskazane w raporcie, gra/tools/card-text-corrections.cjs i generatory kart, docs/PORADNIK-GRACZA/*, docs/encyklopedia/budynki/*, gra/src/data/wikiBundle.json (generator), dyspozycje/SPEC-KOSZTY-SUROWCOWE-BUDYNKOW.md, runs/<ID>/. Zakaz: gra/src/**, WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy.
