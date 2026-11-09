@@ -438,3 +438,42 @@ export function disbandStockRefund(
   }
   return out;
 }
+
+/**
+ * Ślad zużycia surowców przy werbunku, zapisany na obiekcie jednostki jako `stockPaid`
+ * (ustawiany przy ukończeniu rekrutacji, main.ts). Typ trzymany tutaj, a nie w
+ * RuntimeUnit (units/setup.ts), żeby zmiana mieściła się w allowliście tematu.
+ * Brak pola / brak obiektu -> undefined.
+ */
+export function stockPaidOf(unit: object | null | undefined): Record<string, number> | undefined {
+  if (!unit) return undefined;
+  return (unit as { stockPaid?: Record<string, number> }).stockPaid;
+}
+
+/**
+ * Rozwiązanie jednostki gracza: dodaje zwrot (100% `stockPaid`) do puli PAŃSTWA właściciela
+ * tym samym mechanizmem co produkcja (creditOwnerResourceStock, z capem magazynu).
+ * Zwraca faktycznie dopisane ilości per surowiec (po obcięciu capem). Nadwyżka ponad cap
+ * przepada -- wywołujący pokazuje w hincie wyłącznie zwróconą ilość.
+ * Pure -- nie dotyka skarbca (pieniądz nie wraca).
+ */
+export function disbandStockRefundCredit<T extends StockCitySource>(
+  cities: ReadonlyArray<T>,
+  ownerId: number,
+  unit: object,
+  capPerType?: number,
+): Record<string, number> {
+  const credited: Record<string, number> = {};
+  for (const [key, amount] of Object.entries(disbandStockRefund(stockPaidOf(unit)))) {
+    const got = creditOwnerResourceStock(cities, ownerId, key, amount, capPerType);
+    if (got > 0) credited[key] = got;
+  }
+  return credited;
+}
+
+/** Fragment hintu: „+5 Drewno, +3 Brąz" (etykiety PL, bez surowych id); '' gdy pusto. */
+export function formatDisbandStockRefundHint(credited: Readonly<Record<string, number>>): string {
+  return Object.entries(credited)
+    .map(([key, amount]) => '+' + amount + ' ' + stockResourceLabel(key))
+    .join(', ');
+}
