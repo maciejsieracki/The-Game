@@ -42871,6 +42871,8 @@ async function boot(): Promise<void> {
         setZoomLod(dist, minDist, maxDist);
         // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: LOD drobnych części figurek/miast przy oddaleniu (no-op przy braku zmiany kubełka)
         unitRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
+        // R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: pas obwódki wodza min. kilka px przy oddaleniu (no-op bez wodzów)
+        unitRenderer.applyGeneralRingLod(dist, camera.fov, canvas.clientHeight);
         cityRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
         // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
         // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i

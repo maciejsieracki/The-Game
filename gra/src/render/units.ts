@@ -33,6 +33,7 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
+import { createGeneralHexRing, generalRingWorldWidth, generalRingY, GENERAL_RING_HEX_OFFSETS, type GeneralHexRing } from './generalHexRing';
 import {
   MAP_HEX_HIGHLIGHT_BASE_OPACITY,
 } from './buildHighlight';
@@ -5778,6 +5779,17 @@ export class UnitRenderer {
     this.smallPartLod.apply(this.tokens.values(), this.scene, this.lodTokensVersion, camDist, fovDeg, viewportH, minPx);
   }
 
+  /**
+   * R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: grubość obwódki 7 hexów wokół wodza = co najmniej kilka px
+   * ekranu (przy oddaleniu) i skalowana z zoomem (przy zbliżeniu). Wołane co klatkę obok applySmallPartLod;
+   * przelicza narożniki tylko przy realnej zmianie grubości.
+   */
+  applyGeneralRingLod(camDist: number, fovDeg: number, viewportH: number): void {
+    if (this.generalRings.size === 0) return;
+    const w = generalRingWorldWidth(camDist, fovDeg, viewportH);
+    for (const entry of this.generalRings.values()) entry.ring.setWidth(w);
+  }
+
   /** Fast hex lookup by "q,r" key. */
   private hexGrid: Map<string, Hex>;
 
@@ -5789,6 +5801,13 @@ export class UnitRenderer {
 
   /** Per-token unique geometries (stored for disposal -- not shared singletons). */
   private tokenGeos: Map<string, THREE.BufferGeometry[]> = new Map();
+
+  /**
+   * R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: obwódka 7 hexów wokół wodza, klucz = unit.id.
+   * Pas jest osobnym obiektem sceny (nie dzieckiem żetonu), więc nie wchodzi w scalanie
+   * części statycznych (mergeUnitStaticParts) ani w pulę materiałów żetonu.
+   */
+  private readonly generalRings = new Map<string, { ring: GeneralHexRing; ownerId: number; q: number; r: number }>();
   /** R-WEB-MEMORY-STATIC-FOOTPRINT-Q1: pula wspólnych geometrii TEGO renderera (nie globalna — Z6). */
   private readonly geoPool = new GeometryContentPool();
   /** R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1: pula wspólnych materiałów TEGO renderera (kolejność rysowania bez zmian). */
@@ -6187,7 +6206,9 @@ export class UnitRenderer {
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
         const vitals = stackDisplay?.vitalsByRepId?.get(unit.id);
-        applyUnitCommanderStar(tokenObj, vitals ? vitals.hasCommander : unit.isGeneral === true);
+        const hasCmd = vitals ? vitals.hasCommander : unit.isGeneral === true;
+        applyUnitCommanderStar(tokenObj, hasCmd);
+        this._syncGeneralRing(unit, hasCmd);
         if (vitals) {
           // Odznaki ulepszeń budynkowych — poziom OSOBNO dla ścieżki A
           // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
@@ -6217,6 +6238,10 @@ export class UnitRenderer {
       }
     }
 
+    for (const id of [...this.generalRings.keys()]) {
+      if (!presentIds.has(id)) this._removeGeneralRing(id);
+    }
+
     // Remove tokens whose units are gone
     for (const [id, obj] of this.tokens) {
       if (!presentIds.has(id)) {
@@ -6231,6 +6256,10 @@ export class UnitRenderer {
     }
 
     this._applyStackDisplay(units, stackDisplay);
+    // Obwódka wodza gaśnie razem z żetonem (mgła wojny, ukryty non-reprezentant stosu).
+    for (const [id, entry] of this.generalRings) {
+      entry.ring.mesh.visible = this.tokens.get(id)?.visible === true;
+    }
   }
 
   /** Jedna figurka na heks (reprezentant); reszta ukryta; badge ×N. */
@@ -6470,6 +6499,12 @@ export class UnitRenderer {
     const obj = this.tokens.get(id);
     if (obj) {
       obj.position.set(x, y, z);
+    }
+    // R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: pas wodza podąża za żetonem w trakcie marszu (X/Z; wysokość pasa stała).
+    const gr = this.generalRings.get(id);
+    if (gr) {
+      gr.ring.mesh.position.x = x;
+      gr.ring.mesh.position.z = z;
     }
   }
 
@@ -6718,6 +6753,7 @@ export class UnitRenderer {
       this._disposeToken(id, obj);
     }
     this.tokens.clear();
+    for (const id of [...this.generalRings.keys()]) this._removeGeneralRing(id);
     this.tokenMaterials.clear();
     this.tokenGeos.clear();
     this.unmergedParts.clear();
@@ -6873,6 +6909,34 @@ export class UnitRenderer {
     this.tokenGeos.set(id, geos);
     obj.userData['staticMerged'] = true;
     this.lodTokensVersion++;
+  }
+
+  /** Obwódka 7 hexów: tworzy/aktualizuje pas dla wodza, usuwa go, gdy wódz zniknął lub zmienił hex. */
+  private _syncGeneralRing(unit: RuntimeUnit, hasCommander: boolean): void {
+    const cur = this.generalRings.get(unit.id);
+    if (!hasCommander) {
+      if (cur) this._removeGeneralRing(unit.id);
+      return;
+    }
+    if (cur && cur.ownerId === unit.ownerId && cur.q === unit.q && cur.r === unit.r) return;
+    if (cur) this._removeGeneralRing(unit.id);
+    const ring = createGeneralHexRing(this._ringColorForOwner(unit.ownerId));
+    // Wysokość = najwyższy teren spośród 7 hexów obrysu (pas nie tonie za wyższym sąsiadem).
+    const tops = GENERAL_RING_HEX_OFFSETS.map(([dq, dr]) => this.topYAt(unit.q + dq, unit.r + dr));
+    const { x, z } = axialToWorld(unit.q, unit.r, HEX_R);
+    ring.mesh.position.set(x, generalRingY(tops), z);
+    ring.mesh.visible = this.tokens.get(unit.id)?.visible !== false;
+    ring.mesh.userData['generalRingFor'] = unit.id;
+    this.scene.add(ring.mesh);
+    this.generalRings.set(unit.id, { ring, ownerId: unit.ownerId, q: unit.q, r: unit.r });
+  }
+
+  private _removeGeneralRing(id: string): void {
+    const entry = this.generalRings.get(id);
+    if (!entry) return;
+    this.scene.remove(entry.ring.mesh);
+    entry.ring.dispose();
+    this.generalRings.delete(id);
   }
 
   /**
