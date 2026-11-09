@@ -8,3 +8,6 @@ ZAKRES:
 2. Naprawa: wspólna skala; kropka i wypełnienie zgodne z wartością dla Skarb/Nauka/Zamożność we wszystkich kombinacjach (0/50/50, 50/50/0, 100/0/0, 33-kroki 10%); zgodnie z poprzednim THUMB-ALIGN (kropka na końcu kolorowej części).
 3. Test: `gra/tools/tax-slider-default-panel-scale-test.cjs` (strukturalny + jeśli możliwe Chromium zrzut 3 pozycji; pomiar offsetLeft kropki vs oczekiwane % toru, tolerancja ±1 px), plus istniejące testy tax-slider.
 ALLOWLISTA: gra/src/ui/* (suwaki podatków), gra/src/main.ts (tylko jeśli konieczne), gra/styles/* lub CSS tych komponentów, nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev w gra/, git add -A, push/deploy. Wizualna weryfikacja w przeglądarce wymagana (zrzut przed/po).
+
+## DODATEK 1 (2026-11-09) — runda 1 ODRZUCONA, start od nowa
+Runda 1 wykonała niewłaściwe zadanie (koszty budynków kamień/cegła, zmiany w buildings.json) zamiast suwaków. TEN TEMAT DOTYCZY WYŁĄCZNIE suwaków podziału podatków (Skarb/Nauka/Zamożność). ZAKAZ zmian w gra/data/buildings.json, kartach, kosztach i dokumentach SPEC. Jedyna ścieżka zadania: diagnoza i naprawa skali pozycji kropki i wypełnienia suwaków (Nauka 50% pokazuje ~83% toru). Nie zadawaj ABC o budynki. Kod produktu: tylko pliki z ALLOWLISTY powyżej. Baza: origin/main.
