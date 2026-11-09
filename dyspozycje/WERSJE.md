@@ -1,3 +1,9 @@
+## ROBOCZA 982acd2f -- 2026-11-06 -- FALA 572: Pokój AI↔AI: bilans nie może być ujemny dla żadnej AI (testowa)
+
+- R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (c8b4a18c9): próg minBilansPW=0 w trzech ścieżkach pokoju AI↔AI (runAiAiPeaceTick, runWarWearinessTick, auto-pokój po 2 miastach); gracz nadal może przyjąć ujemny
+- Weryfikacja: tsc 0, logic 213/213, diplo-peace-ai-ai-nonnegative 20/0, peace-balance-accept 29/0, war-peace-gate 11/0, sim 22/0, truce-r1 30/0, ai-war-weariness-peace 93/0, audio-sidecar PASS
+- Limity: Wojny AI↔AI mogą trwać dłużej gdy przegranego nie stać na wyrównanie — NIE_ZMIERZONO w żywej grze (zalecany LIVE-AUDIT); odstępstwo allowlisty war-weariness.ts i main.ts zatwierdzone
+
 ## ROBOCZA 3614a4ba -- 2026-11-06 -- FALA 571: Zastąp za pełny koszt rekrutacji + poprawka listy ulepszeń (Trzoda/Owce) (testowa)
 
 - R-WEB-UNIT-REPLACE-COST-AND-PROMOTION-IMPL-Q1 (f4e1276fa): pełny koszt Pieniądz+surowiec, doświadczenie zachowane, Koszary jedną regułą, gracz i AI; R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1 (e25e9ad12): tooltip Trzoda/Owce/Lama zgodny z silnikiem (bramka epoki Inków)
