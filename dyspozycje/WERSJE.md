@@ -1,3 +1,9 @@
+## ROBOCZA e4edbc4e -- 2026-11-06 -- FALA 570: Suwaki podatków: równa skala 0–100% (Nauka) (testowa)
+
+- R-WEB-TAX-SLIDER-DEFAULT-PANEL-NOT-EQUAL-Q1 (b6df1c162): max=100 dla Skarb/Nauka/Zamożność w panelu domyślnym i panelu miasta; limit Nauki 60% nadal w adjustHandelSplit
+- Weryfikacja: tsc 0, logic 213/213, tax-slider-default-panel-scale 3/0 (Chromium, max odchyłka 0,4 px), thumb-align 3/0, adjust-handel-split 46/0, audio-sidecar PASS
+- Limity: Panel miasta w przeglądarce NIE_ZMIERZONO (zmiana domyślnego max); zrzuty przed/po poza repo
+
 ## ROBOCZA 291fba4b -- 2026-11-06 -- FALA 569: Zwrot surowców przy rozwiązaniu jednostki + auto-łączenie z wodzem (testowa)
 
 - R-WEB-DISBAND-REFUND-RESOURCES-Q1 (a322ea643): 100% surowców werbunku wraca do puli państwa przy rozwiązaniu (cap magazynu, hint); R-WEB-ARMY-FOLLOW-LEADER-AUTO-MERGE-NO-PROMPT-Q1 (8f6da5357): tryb Idź do wodza łączy bez monitu
