@@ -1,0 +1,73 @@
+strzelec,epoka_s,typ_s,missileAttack,meleeAttack_s,ammo,cel,epoka_c,typ_c,armor,meleeDef_celu,HP_celu,hit_pct,dmg_bez_pancerza,dmg_na_trafienie,wsp_redukcji,E_dmg_na_strzal,E_dmg_cala_amunicja,pct_HP_celu_z_calej_amunicji,podloga_min1
+Procarz,Brąz,Slinger,4,1,15,Wojownik,Kamień,Swordsman,2,4,22,37.0,4,2,0.5,0.74,11.1,50.5,
+Procarz,Brąz,Slinger,4,1,15,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,4,1,0.25,0.36,5.4,19.3,MIN1
+Procarz,Brąz,Slinger,4,1,15,Włócznik,Brąz,Spearman,6,8,32,33.0,6,2,0.33,0.66,9.9,30.9,MIN1
+Procarz,Brąz,Slinger,4,1,15,Falanga,Żelazo,Falangite,8,10,40,31.0,4,1,0.25,0.31,4.7,11.6,MIN1
+Procarz,Brąz,Slinger,4,1,15,Hastati,Żelazo,Swordsman,9,7,38,34.0,4,1,0.25,0.34,5.1,13.4,MIN1
+Procarz,Brąz,Slinger,4,1,15,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,4,1,0.25,0.31,4.7,11.1,MIN1
+Procarz,Brąz,Slinger,4,1,15,Konnica,Brąz,Mount,8,10,56,31.0,4,1,0.25,0.31,4.7,8.3,MIN1
+Procarz,Brąz,Slinger,4,1,15,Rydwan konny,Brąz,Mount,6,8,112,33.0,4,1,0.25,0.33,5.0,4.4,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Wojownik,Kamień,Swordsman,2,4,22,37.0,4,2,0.5,0.74,11.1,50.5,
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,4,1,0.25,0.36,5.4,19.3,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Włócznik,Brąz,Spearman,6,8,32,33.0,6,2,0.33,0.66,9.9,30.9,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Falanga,Żelazo,Falangite,8,10,40,31.0,4,1,0.25,0.31,4.7,11.6,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Hastati,Żelazo,Swordsman,9,7,38,34.0,4,1,0.25,0.34,5.1,13.4,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,4,1,0.25,0.31,4.7,11.1,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Konnica,Brąz,Mount,8,10,56,31.0,4,1,0.25,0.31,4.7,8.3,MIN1
+Procarz (Huaracoc),Brąz,Slinger,4,1,15,Rydwan konny,Brąz,Mount,6,8,112,33.0,4,1,0.25,0.33,5.0,4.4,MIN1
+Łucznik,Kamień,Distance,3,2,12,Wojownik,Kamień,Swordsman,2,4,22,38.0,3,1,0.33,0.38,4.6,20.7,MIN1
+Łucznik,Kamień,Distance,3,2,12,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,37.0,3,1,0.33,0.37,4.4,15.9,MIN1
+Łucznik,Kamień,Distance,3,2,12,Włócznik,Brąz,Spearman,6,8,32,34.0,3,1,0.33,0.34,4.1,12.8,MIN1
+Łucznik,Kamień,Distance,3,2,12,Falanga,Żelazo,Falangite,8,10,40,32.0,3,1,0.33,0.32,3.8,9.6,MIN1
+Łucznik,Kamień,Distance,3,2,12,Hastati,Żelazo,Swordsman,9,7,38,35.0,3,1,0.33,0.35,4.2,11.1,MIN1
+Łucznik,Kamień,Distance,3,2,12,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,32.0,3,1,0.33,0.32,3.8,9.1,MIN1
+Łucznik,Kamień,Distance,3,2,12,Konnica,Brąz,Mount,8,10,56,32.0,3,1,0.33,0.32,3.8,6.9,MIN1
+Łucznik,Kamień,Distance,3,2,12,Rydwan konny,Brąz,Mount,6,8,112,34.0,3,1,0.33,0.34,4.1,3.6,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Wojownik,Kamień,Swordsman,2,4,22,37.0,6,4,0.67,1.48,17.8,80.7,
+Łucznik egipski,Kamień,Distance,6,1,12,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,6,2,0.33,0.72,8.6,30.9,
+Łucznik egipski,Kamień,Distance,6,1,12,Włócznik,Brąz,Spearman,6,8,32,33.0,7,1,0.14,0.33,4.0,12.4,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Falanga,Żelazo,Falangite,8,10,40,31.0,6,1,0.17,0.31,3.7,9.3,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Hastati,Żelazo,Swordsman,9,7,38,34.0,6,1,0.17,0.34,4.1,10.7,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,6,1,0.17,0.31,3.7,8.9,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Konnica,Brąz,Mount,8,10,56,31.0,6,1,0.17,0.31,3.7,6.6,MIN1
+Łucznik egipski,Kamień,Distance,6,1,12,Rydwan konny,Brąz,Mount,6,8,112,33.0,6,1,0.17,0.33,4.0,3.5,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Wojownik,Kamień,Swordsman,2,4,22,37.0,5,3,0.6,1.11,15.5,70.6,
+Łucznik akadyjski,Brąz,Distance,5,1,14,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,5,1,0.2,0.36,5.0,18.0,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Włócznik,Brąz,Spearman,6,8,32,33.0,6,1,0.17,0.33,4.6,14.4,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Falanga,Żelazo,Falangite,8,10,40,31.0,5,1,0.2,0.31,4.3,10.8,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Hastati,Żelazo,Swordsman,9,7,38,34.0,5,1,0.2,0.34,4.8,12.5,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,5,1,0.2,0.31,4.3,10.3,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Konnica,Brąz,Mount,8,10,56,31.0,5,1,0.2,0.31,4.3,7.8,MIN1
+Łucznik akadyjski,Brąz,Distance,5,1,14,Rydwan konny,Brąz,Mount,6,8,112,33.0,5,1,0.2,0.33,4.6,4.1,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Wojownik,Kamień,Swordsman,2,4,22,38.0,4,2,0.5,0.76,10.6,48.4,
+Łucznik asyryjski,Brąz,Distance,4,2,14,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,37.0,4,1,0.25,0.37,5.2,18.5,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Włócznik,Brąz,Spearman,6,8,32,34.0,5,1,0.2,0.34,4.8,14.9,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Falanga,Żelazo,Falangite,8,10,40,32.0,4,1,0.25,0.32,4.5,11.2,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Hastati,Żelazo,Swordsman,9,7,38,35.0,4,1,0.25,0.35,4.9,12.9,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,32.0,4,1,0.25,0.32,4.5,10.7,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Konnica,Brąz,Mount,8,10,56,32.0,4,1,0.25,0.32,4.5,8.0,MIN1
+Łucznik asyryjski,Brąz,Distance,4,2,14,Rydwan konny,Brąz,Mount,6,8,112,34.0,4,1,0.25,0.34,4.8,4.2,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Wojownik,Kamień,Swordsman,2,4,22,37.0,6,4,0.67,1.48,23.7,107.6,
+Łucznik nubijski,Brąz,Distance,6,1,16,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,6,2,0.33,0.72,11.5,41.1,
+Łucznik nubijski,Brąz,Distance,6,1,16,Włócznik,Brąz,Spearman,6,8,32,33.0,7,1,0.14,0.33,5.3,16.5,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Falanga,Żelazo,Falangite,8,10,40,31.0,6,1,0.17,0.31,5.0,12.4,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Hastati,Żelazo,Swordsman,9,7,38,34.0,6,1,0.17,0.34,5.4,14.3,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,6,1,0.17,0.31,5.0,11.8,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Konnica,Brąz,Mount,8,10,56,31.0,6,1,0.17,0.31,5.0,8.9,MIN1
+Łucznik nubijski,Brąz,Distance,6,1,16,Rydwan konny,Brąz,Mount,6,8,112,33.0,6,1,0.17,0.33,5.3,4.7,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Wojownik,Kamień,Swordsman,2,4,22,37.0,4,2,0.5,0.74,4.4,20.2,
+Oszczepnik,Kamień,Distance,4,1,6,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,36.0,4,1,0.25,0.36,2.2,7.7,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Włócznik,Brąz,Spearman,6,8,32,33.0,5,1,0.2,0.33,2.0,6.2,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Falanga,Żelazo,Falangite,8,10,40,31.0,4,1,0.25,0.31,1.9,4.7,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Hastati,Żelazo,Swordsman,9,7,38,34.0,4,1,0.25,0.34,2.0,5.4,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,31.0,4,1,0.25,0.31,1.9,4.4,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Konnica,Brąz,Mount,8,10,56,31.0,4,1,0.25,0.31,1.9,3.3,MIN1
+Oszczepnik,Kamień,Distance,4,1,6,Rydwan konny,Brąz,Mount,6,8,112,33.0,4,1,0.25,0.33,2.0,1.8,MIN1
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Wojownik,Kamień,Swordsman,2,4,22,44.0,12,10,0.83,4.4,88.0,400.0,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Wojownik z mieczem i tarczą,Brąz,Swordsman,4,5,28,43.0,12,8,0.67,3.44,68.8,245.7,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Włócznik,Brąz,Spearman,6,8,32,40.0,12,6,0.5,2.4,48.0,150.0,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Falanga,Żelazo,Falangite,8,10,40,38.0,12,4,0.33,1.52,30.4,76.0,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Hastati,Żelazo,Swordsman,9,7,38,41.0,12,3,0.25,1.23,24.6,64.7,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Hieros Lochos (Święty Zastęp),Żelazo,Swordsman,6,10,42,38.0,12,6,0.5,2.28,45.6,108.6,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Konnica,Brąz,Mount,8,10,56,38.0,12,4,0.33,1.52,30.4,54.3,
+Konnica łucznicza asyryjska,Żelazo,Mount,12,8,20,Rydwan konny,Brąz,Mount,6,8,112,40.0,12,6,0.5,2.4,48.0,42.9,

@@ -1,0 +1,41 @@
+atakujacy,cel,armor_celu,meleeAtk,meleeDef_celu,hit_pct,weaponDamage,piercing,dmg_na_cios,E_dmg_cios,HP_celu,E_ciosow_do_zabicia
+Wojownik,Wojownik,2,4,4,40.0,4,1,3,1.2,22,18.3
+Wojownik,Wojownik z mieczem i tarczą,4,4,5,39.0,4,1,1,0.39,28,71.8
+Wojownik,Włócznik,6,4,8,36.0,4,1,1,0.36,32,88.9
+Wojownik,Falanga,8,4,10,34.0,4,1,1,0.34,40,117.6
+Wojownik,Hastati,9,4,7,37.0,4,1,1,0.37,38,102.7
+Wojownik,Hieros Lochos (Święty Zastęp),6,4,10,34.0,4,1,1,0.34,42,123.5
+Wojownik,Konnica,8,4,10,34.0,4,1,1,0.34,56,164.7
+Wojownik,Rydwan konny,6,4,8,36.0,4,1,1,0.36,112,311.1
+Wojownik z mieczem i tarczą,Wojownik,2,6,4,42.0,6,2,6,2.52,22,8.7
+Wojownik z mieczem i tarczą,Wojownik z mieczem i tarczą,4,6,5,41.0,6,2,4,1.64,28,17.1
+Wojownik z mieczem i tarczą,Włócznik,6,6,8,38.0,6,2,2,0.76,32,42.1
+Wojownik z mieczem i tarczą,Falanga,8,6,10,36.0,6,2,2,0.72,40,55.6
+Wojownik z mieczem i tarczą,Hastati,9,6,7,39.0,6,2,2,0.78,38,48.7
+Wojownik z mieczem i tarczą,Hieros Lochos (Święty Zastęp),6,6,10,36.0,6,2,2,0.72,42,58.3
+Wojownik z mieczem i tarczą,Konnica,8,6,10,36.0,6,2,2,0.72,56,77.8
+Wojownik z mieczem i tarczą,Rydwan konny,6,6,8,38.0,6,2,2,0.76,112,147.4
+Włócznik,Wojownik,2,5,4,41.0,5,2,5,2.05,22,10.7
+Włócznik,Wojownik z mieczem i tarczą,4,5,5,40.0,5,2,3,1.2,28,23.3
+Włócznik,Włócznik,6,5,8,37.0,5,2,2,0.74,32,43.2
+Włócznik,Falanga,8,5,10,35.0,5,2,2,0.7,40,57.1
+Włócznik,Hastati,9,5,7,38.0,5,2,2,0.76,38,50.0
+Włócznik,Hieros Lochos (Święty Zastęp),6,5,10,35.0,5,2,2,0.7,42,60.0
+Włócznik,Konnica,8,5,10,35.0,5,2,2,0.7,56,80.0
+Włócznik,Rydwan konny,6,5,8,37.0,5,2,2,0.74,112,151.4
+Hastati,Wojownik,2,7,4,43.0,7,3,8,3.44,22,6.4
+Hastati,Wojownik z mieczem i tarczą,4,7,5,42.0,7,3,6,2.52,28,11.1
+Hastati,Włócznik,6,7,8,39.0,7,3,4,1.56,32,20.5
+Hastati,Falanga,8,7,10,37.0,7,3,3,1.11,40,36.0
+Hastati,Hastati,9,7,7,40.0,7,3,3,1.2,38,31.7
+Hastati,Hieros Lochos (Święty Zastęp),6,7,10,37.0,7,3,4,1.48,42,28.4
+Hastati,Konnica,8,7,10,37.0,7,3,3,1.11,56,50.5
+Hastati,Rydwan konny,6,7,8,39.0,7,3,4,1.56,112,71.8
+Hieros Lochos (Święty Zastęp),Wojownik,2,8,4,44.0,10,4,12,5.28,22,4.2
+Hieros Lochos (Święty Zastęp),Wojownik z mieczem i tarczą,4,8,5,43.0,10,4,10,4.3,28,6.5
+Hieros Lochos (Święty Zastęp),Włócznik,6,8,8,40.0,10,4,8,3.2,32,10.0
+Hieros Lochos (Święty Zastęp),Falanga,8,8,10,38.0,10,4,6,2.28,40,17.5
+Hieros Lochos (Święty Zastęp),Hastati,9,8,7,41.0,10,4,5,2.05,38,18.5
+Hieros Lochos (Święty Zastęp),Hieros Lochos (Święty Zastęp),6,8,10,38.0,10,4,8,3.04,42,13.8
+Hieros Lochos (Święty Zastęp),Konnica,8,8,10,38.0,10,4,6,2.28,56,24.6
+Hieros Lochos (Święty Zastęp),Rydwan konny,6,8,8,40.0,10,4,8,3.2,112,35.0
