@@ -1,3 +1,9 @@
+## ROBOCZA b06a7c4f -- 2026-11-06 -- FALA 588: Audiencja dyplomacji pokazuje liczbę rekrutów (bieżąca / maks.) obu stron (testowa)
+
+- R-WEB-DIPLO-PANEL-CIV-RECRUITS-LEVEL-Q1 (77dd059f1)
+- Weryfikacja: tsc 0, diplo-panel-recruits-level 22/22, diplomacy-audience-actions 20/20, diplomacy-relacje-ai-ai-audiencja 20/20, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO wizualnie/Chromium; dług REPIN Rust UI
+
 ## ROBOCZA a7e83a3e -- 2026-11-06 -- FALA 587: Klawisz F odkrywa mapę tylko gdy włączone w ustawieniach nowej gry; lista Rekruci bez wewnętrznego suwaka (testowa)
 
 - R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1 (d35f4ad37) + R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1 (4c20910c6)
