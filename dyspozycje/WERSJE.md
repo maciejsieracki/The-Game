@@ -1,3 +1,9 @@
+## ROBOCZA cfb6e783 -- 2026-11-06 -- FALA 576: Panel rekrutacji: Rekrutuj wszystkie + Targowisko bez kamienia (testowa)
+
+- R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1 (50f21fd3c): licznik domyślnie 0, dwa przyciski „Rekrutuj wszystkie”, reset udanych, komunikat PL; R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (6b5255dec): Targowisko samo drewno 30, Studnia i Kamienne kręgi z kamieniem
+- Weryfikacja: tsc 0, logic 213/213, empire-recruit-all 31/0 (Chromium), real-render 26/0, plan 17/0, mass-recruit 30/0, koszty-surowcowe 160/0, building-cost-resource-availability 58/0, audio-sidecar PASS
+- Limity: Wygląd przycisków w przeglądarce NIE_ZMIERZONO; live-test vite NIE_ZMIERZONO; budynki-koszt-pracy-50 40 FAIL dług sprzed
+
 ## ROBOCZA a9427601 -- 2026-11-06 -- FALA 575: Stadnina tylko na złożu konia w Kamieniu/Brązie + emblemat sojuszu spójny z listą (testowa)
 
 - R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (7b0b59d9c): epoka<3 tylko złoże konia, od Żelaza po odblokowaniu Konia bez złoża (gracz, AI, auto-ulepszenia, tooltip); R-WEB-DIPLO-ALLIANCE-BLOCKED-AT-TRUST-100-Q1 (138ed3e47): tier „Sojusz” tylko przy aktywnym traktacie (relationTierDisplay)
