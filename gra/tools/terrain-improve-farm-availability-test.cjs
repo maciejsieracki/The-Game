@@ -55,16 +55,16 @@ const city = { q: CQ, r: CR, pop: 8, level: 1, civ: 'rzymianie' };
 const TN = [{ ...city, ownerId: 0 }];
 
 /** Nazwy z sekcji "Mozliwe ulepszenia" wg tooltipa. */
-function tooltipPossible(map, civ = 'rzymianie') {
+function tooltipPossible(map, civ = 'rzymianie', era = 1) {
   const hex = map.hexes[K(HQ, HR)];
-  const html = buildHexContextTooltipHtml({ q: HQ, r: HR, hex, playerCivType: civ, map, currentEra: 1, esc: s => String(s) });
+  const html = buildHexContextTooltipHtml({ q: HQ, r: HR, hex, playerCivType: civ, map, currentEra: era, esc: s => String(s) });
   const names = [...html.matchAll(/<div class="cp-sub cp-possible"><b>([^<]+)<\/b>/g)].map(m => m[1]);
   const built = (html.match(/Ulepszenia postawione[\s\S]*?(?=<div class="cp-yield-head|$)/) || [''])[0];
   return { html, names, built };
 }
-function engine(map, key) {
+function engine(map, key, civ = 'rzymianie', era = 1) {
   const q = buildImprovementQualifier({
-    map, cityNodes: [city], territoryNodes: TN, playerOwnerIdNum: 0, playerCivArchetype: 'rzymianie', playerEra: 1,
+    map, cityNodes: [city], territoryNodes: TN, playerOwnerIdNum: 0, playerCivArchetype: civ, playerEra: era,
     researchedTechs: new Set(['Rolnictwo', 'Irygacja', 'Hodowla', 'Oswojenie zwierząt', 'Nawadnianie']),
   });
   return q(key, HQ, HR);
@@ -114,6 +114,21 @@ for (const name of ['S2 Laka goła', 'S3 Laka+rzeka', 'S6 Laka+rzeka+glina (bez 
   ok(row.bydlo.tooltip === row.bydlo.engine, `${name}: Trzoda tooltip(${row.bydlo.tooltip}) == silnik(${row.bydlo.engine})`);
 }
 ok(result['S4 Wzgorza'].row.owce.tooltip === result['S4 Wzgorza'].row.owce.engine, 'S4: Owce tooltip == silnik na Wzgorzach');
+
+// R-WEB-TERRAIN-IMPROVE-FARM-MISSING-ON-HEX-Q1 runda 2: bramka cywilizacji/epoki Nowego Swiata
+// (isLivestockAllowed: Inkowie, bydlo/owce dopiero od epoki 3). Tooltip == silnik dla kazdej epoki.
+for (const era of [1, 2, 3]) {
+  const map = mkMap({ nakladka: 'brak' });        // Laka goła
+  const mapH = mkMap({ terenBazowy: 'wzgorza' }); // Wzgorza
+  const tl = tooltipPossible(map, 'inkowie', era);
+  const th = tooltipPossible(mapH, 'inkowie', era);
+  const eng = (m, k) => engine(m, k, 'inkowie', era);
+  const tBydlo = tl.names.includes('Trzoda'), eBydlo = eng(map, 'bydlo');
+  const tOwce = th.names.includes('Owce'), eOwce = eng(mapH, 'owce');
+  ok(tBydlo === eBydlo, `Inkowie era ${era}, Laka goła: Trzoda tooltip(${tBydlo}) == silnik(${eBydlo})`);
+  ok(tOwce === eOwce, `Inkowie era ${era}, Wzgorza: Owce tooltip(${tOwce}) == silnik(${eOwce})`);
+  ok(tBydlo === (era >= 3) && tOwce === (era >= 3), `Inkowie era ${era}: Trzoda/Owce oferowane tylko od epoki 3`);
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
