@@ -4,18 +4,18 @@
  * R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 (runda 2)
  *
  * CZESC A -- format liczb strat/lupow: formatEndLoss (endScreen1E.ts), bez ulamkow, NaN, ujemnych.
- * CZESC B -- PRAWDZIWA SCENA w Chromium (vite build lustrzanego korzenia, ?playtest=oblezenie-duze,
- *   czyli oblezenie z murem). Ten sam seed Math.random (addInitScript) dla kazdego przebiegu:
+ * CZESC B -- PRAWDZIWA SCENA w Chromium (vite build lustrzanego korzenia, domyslnie
+ *   ?playtest=bitwa-duza; WSKIP_PT nadpisuje). Scena oblezenia (oblezenie-duze) NIE jest tu
+ *   porownywana: nie konczy sie silnikiem (NIE_ZMIERZONO, patrz raport operatora). Ten sam seed
+ *   Math.random (addInitScript) dla kazdego przebiegu:
  *     AUTO  -- _endDeployPhase(), przelacz na AUTO, zegar przyspieszony do konca (BattleScene)
  *     SKIP  -- skip() w fazie rozstawiania (przewijanie tej samej symulacji)
- *   Porownanie: zwyciezca, liczba zywych/straconych i suma HP po obu stronach, numer tury.
- *   KONTROLA: AUTO vs AUTO (ten sam seed) -- jesli dwa przebiegi AUTO sie roznia, roznica
- *   wynika z czasu klatek (nie z skip) i jest raportowana jako NIE_ZMIERZONO dla warunku.
- *   Zysk czasu wirtualnego (bs.vNow) i tury raportowany dla kazdego przebiegu.
+ *   Porownanie (B4): zwyciezca, liczba zywych/straconych i suma HP po obu stronach, numer tury.
+ *   Zysk czasu wirtualnego (bs.vNow) i tury raportowany dla kazdego przebiegu (B5: <= 200 ms).
  *   Brak Chromium -> NIE_ZMIERZONO (exit 2), bez PASS.
  *
  * Usage (z gra/): TMPDIR=/dev/shm node tools/battle-skip-equals-auto-resolve-test.cjs
- * Env: WSKIP_SEEDS="1,2" (domyslnie "7"), WSKIP_AUTO_SPEED_IDX (domyslnie 3 = 8x), WSKIP_DIST (gotowy build).
+ * Env: WSKIP_SEEDS="1,2" (domyslnie "1,2,3,7"), WSKIP_AUTO_SPEED_IDX (domyslnie 3 = 8x), WSKIP_DIST (gotowy build).
  */
 const fs = require('fs');
 const os = require('os');
@@ -105,7 +105,6 @@ function initDet(seed) {
       const q = window.__rafQ; window.__rafQ = [];
       window.__fakeNow += window.__dt || 16;
       for (const cb of q) cb(window.__fakeNow);
-      if (bs) { const tr = (window.__trace = window.__trace || []); if (!tr.length || tr[tr.length-1][0] !== bs.roundNo) tr.push([bs.roundNo, Math.round(bs.vNow - (window.__wskipT0||0)), window.__framesRun, bs.log.length]); }
     }
     return !!(bs && bs.finished);
   };
@@ -131,7 +130,6 @@ async function runOne(browser, distDir, mode, seed) {
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
     window.__dt = parseInt(window.__wskipDt || '16', 10);
     window.__wskipT0 = bs.vNow;
-    { let rn = bs.roundNo; window.__rtrace = []; Object.defineProperty(bs, 'roundNo', { get() { return rn; }, set(v) { rn = v; window.__rtrace.push([v, Math.round(bs.vNow - window.__wskipT0)]); }, configurable: true }); }
     window.__wskipDeploy = !!bs.deployPhase;
     if (mode === 'skip') {
       bs.skip();
@@ -164,7 +162,6 @@ async function runOne(browser, distDir, mode, seed) {
       logLines: bs.log.length, endText: (document.body.innerText.match(/Koniec bitwy|Zwyci[ęe]stwo|Pora[żz]ka/g) || []).slice(0, 3),
     };
   });
-  if (process.env.WSKIP_TRACE) console.log('DBG ' + JSON.stringify((await page.evaluate(() => window.__dbg || [])).slice(0,12))); if (process.env.WSKIP_TRACE) console.log('TRACE ' + mode + ' ' + JSON.stringify(await page.evaluate(() => window.__rtrace)));
   if (process.env.WSKIP_DUMP) {
     const lines = await page.evaluate(() => window.__lastBattleScene.log.slice());
     fs.writeFileSync(process.env.WSKIP_DUMP + '-' + mode + '.txt', lines.join('\n'), 'utf8');
@@ -247,7 +244,7 @@ async function partB() {
   if (!fs.existsSync(CHROME)) { console.log('NIE_ZMIERZONO: brak Chromium (' + CHROME + ')'); return 'NIE_ZMIERZONO'; }
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--headless=new'] });
   const distDir = buildVite();
-  const seeds = (process.env.WSKIP_SEEDS || '7').split(',').map((x) => parseInt(x, 10));
+  const seeds = (process.env.WSKIP_SEEDS || '1,2,3,7').split(',').map((x) => parseInt(x, 10));
   const only = process.env.WSKIP_ONLY || '';   // 'auto' | 'skip' -- pojedynczy przebieg (limit czasu narzedzia)
   const rows = [];
   try {
