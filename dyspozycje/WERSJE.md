@@ -1,3 +1,9 @@
+## ROBOCZA 1868e3be -- 2026-11-06 -- FALA 567: Widowiskowy ekran eliminacji + reguła pokoju AI (przewaga 20%) (testowa)
+
+- R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1 (e33e2c964); R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1 (512401eac)
+- Weryfikacja: tsc 0, logic 213/213, elimination-spectacle 84/0, peace-balance 29/0, war-peace-gate 11/0, sim 22/0, truce-r1 30/0, audio-sidecar PASS
+- Limity: Eliminacja w żywej grze i Chromium: NIE_ZMIERZONO; długi testowe eliminacja-lup-kwoty 34/4, wydarzenia-eliminacja-podboj-karta 24/4 istniały na main
+
 ## ROBOCZA 15aa8dde -- 2026-11-06 -- FALA 566: TERM + TREAT: handel vs podatek w tekstach i korekta jezykowa kart; umowy wymiany surowcow w Aktywnych traktatach (testowa)
 
 - teksty gracza: produkcja pola/budynku/ulepszenia/technologii/cudu = podatek, handel tylko wymiana (40+ plikow, CIVPEDIA); korekta: klucz/bez ktorych; kolumna Aktywne traktaty: partner, towar, czestotliwosc, status ostatniej dostawy + powiadomienie o nieudanej dostawie
