@@ -39,12 +39,13 @@ async function loadBattleScene({ restoreWideFallback = false } = {}) {
           build.onLoad({ filter: /battleScene\.ts$/ }, args => {
             if (path.resolve(args.path) !== path.resolve(sourcePath)) return null;
             let contents = fs.readFileSync(args.path, 'utf8');
+            // Anchor = current production band (body-bounded, outer side capped at 5 rows from the body).
             const narrow = `const wingRowLo = topWing
-          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 3)
-          : Math.max(PLAY_MID_ROW + 1, idealRow[idx]! - 3);
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
+          : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
         const wingRowHi = topWing
-          ? Math.min(PLAY_MID_ROW - 1, idealRow[idx]! + 3)
-          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 3);`;
+          ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);`;
             const wide = `const wingRowLo = topWing ? PLAY_ROW0 + 1 : PLAY_MID_ROW + Math.ceil(RANK_WIDTH / 2) + 1;
         const wingRowHi = topWing ? PLAY_MID_ROW - Math.ceil(RANK_WIDTH / 2) - 2 : PLAY_ROW1 - 1;`;
             assert.equal(contents.split(narrow).length - 1, 2, 'mutation locates both production fallback blocks');

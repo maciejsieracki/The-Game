@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "cfb6e78373922c6f290a3b7660135f82",
-  "bundleSha256": "611c498c5adab34f75beab34eb5d8f89af8e8a78b3bdde1e7606acecba082e01",
-  "bundleBytes": 14337453,
+  "bundleMd5": "7558ec530d200fe840fc98a214150d1f",
+  "bundleSha256": "be6bb9ab75b11889dd57462558691c28f31acb0bd083aa11360ce8e4b5a378ee",
+  "bundleBytes": 14347479,
   "sourceSnapshot": {
-    "source": "FC merge",
+    "source": "FC c8ee037fb + ab4646dc6",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 576: R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1 (50f21fd3c): licznik domyślnie 0, dwa przyciski „Rekrutuj wszystkie”, reset udanych, komunikat PL; R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (6b5255dec): Targowisko samo drewno 30, Studnia i Kamienne kręgi z kamieniem"
+    "FALA 581: R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (c8ee037fb) + R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (ab4646dc6)"
   ],
   "verification": [
-    "tsc 0, logic 213/213, empire-recruit-all 31/0 (Chromium), real-render 26/0, plan 17/0, mass-recruit 30/0, koszty-surowcowe 160/0, building-cost-resource-availability 58/0, audio-sidecar PASS"
+    "tsc 0, logic 213/213, building-upkeep-resources 48/0, upkeep 91/0, unit-replace-army-multi-select 36/36, unit-replace 15/15, unit-replace-full-cost 40/0, audio-sidecar PASS"
   ],
   "limits": [
-    "Wygląd przycisków w przeglądarce NIE_ZMIERZONO; live-test vite NIE_ZMIERZONO; budynki-koszt-pracy-50 40 FAIL dług sprzed"
+    "NIE_ZMIERZONO w przeglądarce ani symulacja AI; dług REPIN Rust (building_costs.rs); podglądy HUD per owner"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-09T19:56:32",
+  "hubGeneratedAt": "2026-11-09T21:34:20",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "cfb6e78373922c6f290a3b7660135f82",
-      "sizeBytes": 14337453
+      "md5": "7558ec530d200fe840fc98a214150d1f",
+      "sizeBytes": 14347479
     }
   ],
-  "md5": "cfb6e78373922c6f290a3b7660135f82",
+  "md5": "7558ec530d200fe840fc98a214150d1f",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

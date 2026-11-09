@@ -1485,6 +1485,8 @@ function initialBattleRoleOf(bu: BattleUnit): InitialBattleRole {
 function isMounted(bu: BattleUnit): boolean {
   const cat = normName(String(bu.kategoria ?? ''));
   if (cat === 'konnica' || cat === 'rydwan') return true;
+  // units.json Typ "Mount" (incl. super units whose category is 'super')
+  if (normName(String((bu.stats as any)?.['Typ'] ?? '')) === 'mount') return true;
   const n = normName(String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa ?? ''));
   return n.includes('konnic') || n.includes('jazd') || n.includes('jezdz') ||
          n.includes('kawaler') || n.includes('rydwan') || n.includes('chariot') ||
@@ -5239,30 +5241,50 @@ export class BattleScene {
         idealRow[index] = clampRow(slot.row);
         idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
       });
+      // Row span of the non-mounted body: wing horse must stay OUTSIDE it.
+      const mountedSet = new Set<BattleUnit>(formation.mounted);
+      let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
+      for (const slot of slots) {
+        if (mountedSet.has(slot.unit)) continue;
+        bodyMinRow = Math.min(bodyMinRow, clampRow(slot.row));
+        bodyMaxRow = Math.max(bodyMaxRow, clampRow(slot.row));
+      }
 
       return units.map((bu, idx) => {
         // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
         let col = idealCol[idx]!;
         let row = idealRow[idx]!;
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const tileScore = (c: number, r: number): number => {
           if (!freeOk(c, r)) return -1;
           let s = 100 - Math.abs(r - idealRow[idx]!) * 3 - Math.abs(c - idealCol[idx]!) * 2;
           const kind = this.terrainMap.at(c, r);
-          if (kind === BTerrain.Plains) s += 40;
+          // R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1: the terrain bonus
+          // (+40 plains vs -15 forest) used to outweigh the 2-per-column
+          // distance, so on rough ground a wing horse slid ~10 columns off its
+          // wing slot -- straight to the front of the line. Mounted wings get a
+          // small terrain nudge only (they must stay on their wing slot).
+          if (mountedWing) {
+            if (kind === BTerrain.Plains) s += 6;
+            else if (kind === BTerrain.Ford) s += 3;
+            else if (kind === BTerrain.Forest) s -= 4;
+          } else if (kind === BTerrain.Plains) s += 40;
           else if (kind === BTerrain.Ford) s += 20;
           else if (kind === BTerrain.Forest) s -= 15;
           return s;
         };
         let bestScore = -1;
         const playerDeploy = this._deployMode && side === this._playerControlSide();
-        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
+        // R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1: the wing search band
+        // used to reach from the slot up to the map mid-row, i.e. INTO the body's
+        // rows. Now it is bounded by the body's row span (outer side up to 6 rows).
         const wingRowLo = topWing
-          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 3)
-          : Math.max(PLAY_MID_ROW + 1, idealRow[idx]! - 3);
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
+          : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
         const wingRowHi = topWing
-          ? Math.min(PLAY_MID_ROW - 1, idealRow[idx]! + 3)
-          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 3);
+          ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
         const rowLo = mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
@@ -5276,7 +5298,9 @@ export class BattleScene {
             // `sc > bestScore`), wiec pominiecie go nie zmienia wyniku -- a przy 500 vs 500 tnie
             // ~2200 wywolan tileScore na jednostke do kilkudziesieciu.
             if (140 - Math.abs(rr - idealRow[idx]!) * 3 <= bestScore) continue;
-            for (const cc of [
+            // A wing horse may fall back (rear-ward) when its slot is blocked,
+            // but never move AHEAD of its wing rank (= in front of the line).
+            for (const cc of mountedWing ? [clampCol(idealCol[idx]! + extra * rankStep)] : [
               clampCol(idealCol[idx]! + extra * rankStep),
               clampCol(idealCol[idx]! - extra * rankStep),
             ]) {
@@ -16862,6 +16886,13 @@ export class BattleScene {
       idealRow[index] = clampRow(slot.row);
       idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
     });
+    const mountedSet = new Set<BattleUnit>(formation.mounted);
+    let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
+    for (const slot of slots) {
+      if (mountedSet.has(slot.unit)) continue;
+      bodyMinRow = Math.min(bodyMinRow, clampRow(slot.row));
+      bodyMaxRow = Math.max(bodyMaxRow, clampRow(slot.row));
+    }
 
     const placed: RuntimeBattleUnit[] = [];
     for (let idx = 0; idx < units.length; idx++) {
@@ -16875,11 +16906,11 @@ export class BattleScene {
         const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
         const wingRowLo = topWing
-          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 3)
-          : Math.max(PLAY_MID_ROW + 1, idealRow[idx]! - 3);
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
+          : Math.max(bodyMaxRow === -Infinity ? PLAY_MID_ROW + 1 : bodyMaxRow + 1, idealRow[idx]! - 3);
         const wingRowHi = topWing
-          ? Math.min(PLAY_MID_ROW - 1, idealRow[idx]! + 3)
-          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 3);
+          ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
         const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;

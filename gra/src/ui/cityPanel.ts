@@ -218,6 +218,7 @@ import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../gam
 import {
   buildingUpkeep,
   buildingResourceUpkeep,
+  readBuildingResourceUpkeepRatio,
   addResourceCosts,
   unitResourceUpkeep,
   canAffordUnitRecruitStock,
@@ -6747,25 +6748,36 @@ function formatResourceUpkeepText(
     .join(' · ');
 }
 
+/** R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: współczynnik utrzymania surowcowego dla widoku (jak w ticku). */
+function buildingResourceUpkeepRatioForView(): number {
+  const d = gameData();
+  if (!d?.econParams) return 1;
+  return readBuildingResourceUpkeepRatio(
+    d.econParams as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
+    cfg.difficulty ?? 'normal',
+  );
+}
+
 function buildingUpkeepDisplay(
   def: BuildingDef,
   level: number,
 ): { gold: number; resources: Record<string, number> } {
   return {
     gold: buildingUpkeep(def as unknown as BuildingRecord, level),
-    resources: buildingResourceUpkeep(def),
+    resources: buildingResourceUpkeep(def, level, buildingResourceUpkeepRatioForView()),
   };
 }
 
 function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameData,
+  city?: City,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const id of built) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
-    addResourceCosts(out, buildingResourceUpkeep(def));
+    addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1, buildingResourceUpkeepRatioForView()));
   }
   return out;
 }
@@ -7929,7 +7941,7 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
     return card;
   }
   const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
   const summary = el('div', 'bld-owned-summary');
   summary.innerHTML =
     formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep) +
@@ -8309,7 +8321,8 @@ export function appendUnitRecruitCompactRow(
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpowerCompact(mpCost),
-    maxQuantity: maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
+    // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: Super-jednostka = max 1 sztuka w jednym zamówieniu.
+    maxQuantity: udef['Super-jednostka'] === 'TAK' ? 1 : maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
     manpowerAvailable: mpAvailable,
     manpowerRequired: mpCost,
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
@@ -9521,7 +9534,7 @@ function renderBuildingsOwned(
     : `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`;
   if (built && data && built.length > 0 && compact) {
     const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
     if (totalUpkeep === 0 && Object.keys(totalResUpkeep).length === 0) {
       titleHtml += `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`;
     } else {
@@ -9537,7 +9550,7 @@ function renderBuildingsOwned(
     if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak)')); return; }
     if (!compact) {
       const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data, city);
       const summary = el('div', 'bld-owned-summary');
       summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep);
       mount.appendChild(summary);

@@ -751,9 +751,9 @@
     "Surowiec (ilość)": 25,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
-    "Atak": 6,
+    "Atak": 7,
     "Uderzenie": 6,
-    "Obrona": 10,
+    "Obrona": 12,
     "Ruch": 1,
     "Ruch w bitwie (heksy)": 3,
     "Health": 40,
@@ -767,7 +767,7 @@
     "Uwagi": "najlepsza Obrona frontalna / anty-szarża | ZAŁOŻENIE: zastępuje Włócznik — do potwierdzenia",
     "Rola (linia)": "Wręcz",
     "Pancerz": 6,
-    "Przebicie": 2,
+    "Przebicie": 4,
     "Kara obrony z flanki (%)": 50,
     "Kara obrony z tyłu (%)": 80,
     "Morale bazowe": 75,
@@ -777,7 +777,7 @@
     "Klasa": "Specjalna",
     "Nacja": "Grecja",
     "Bonus vs Swordsman %": 0,
-    "Bonus vs Spearman %": 0,
+    "Bonus vs Spearman %": 30,
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
@@ -786,22 +786,22 @@
     "Zmiana na": "Falangite",
     "Zastąp specjalnie": "—",
     "Dostępna w epokach": "Brąz;Żelazo",
-    "meleeAttack": 5,
-    "meleeDefence": 10,
+    "meleeAttack": 7,
+    "meleeDefence": 12,
     "weaponDamage": 4,
-    "piercing": 2,
+    "piercing": 4,
     "armor": 8,
     "chargeBonus": 7,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 52.5,
+    "fieldPower": 58.5,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 5,
     "Opis": "Specjalna formacja piechoty zastępująca Włócznika, wyjątkowo odporna w obronie.",
     "Top3": [
       {
-        "tytul": "Obrona 10",
-        "tekst": "Najwyższa wartość obrony wśród jednostek tej partii (remis z Hieros Lochos), niezwykle trudna do przełamania frontalnie."
+        "tytul": "Obrona 12",
+        "tekst": "Najwyższa wartość obrony wśród jednostek tej partii, bez remisu, niezwykle trudna do przełamania frontalnie."
       },
       {
         "tytul": "Bonus vs Mount 50%",
@@ -875,7 +875,7 @@
     "Top3": [
       {
         "tytul": "Atak 8 i Obrona 10",
-        "tekst": "Najwyższy Atak w tej partii i Obrona na równi z Falangą — łącznie najmocniejszy profil bojowy, przewyższa Wojownika z mieczem i tarczą (Atak 6, Obrona 6) na obu osiach."
+        "tekst": "Najwyższy Atak w tej partii i Obrona zaraz za Falangą (10 wobec 12) — łącznie najmocniejszy profil bojowy, przewyższa Wojownika z mieczem i tarczą (Atak 6, Obrona 6) na obu osiach."
       },
       {
         "tytul": "Status Super-jednostki",
@@ -5398,8 +5398,8 @@
     "Opis": "Sumeryjska formacja muru tarcz, najbardziej defensywna jednostka tej partii, poświęcająca atak i mobilność na rzecz niezłomnej obrony.",
     "Top3": [
       {
-        "tytul": "Najwyższa Obrona w partii",
-        "tekst": "Obrona 10 — najwyższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu."
+        "tytul": "Druga Obrona w partii",
+        "tekst": "Obrona 10 — druga wartość spośród jednostek tej partii (razem z Hieros Lochos), zaraz za Falangą (12)."
       },
       {
         "tytul": "Najwyższy Pancerz w partii",

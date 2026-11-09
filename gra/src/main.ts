@@ -981,7 +981,7 @@ import {
   type AiGeneralWarCampaign,
 } from './game/ai-general-war-campaign';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
-  enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
+  enqueueRecruitment, reservedUnitTypeNamesOfOwner, generalSyncTargets, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
@@ -1131,7 +1131,7 @@ import {
   villageEventHex,
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -3783,7 +3783,7 @@ async function boot(): Promise<void> {
       // `units`) tymi samymi czystymi prymitywami silnika (`previewOwnerBuildingResourceUpkeep`/
       // `totalUnitResourceUpkeep`, economy-upkeep.ts — te same funkcje, które `turn-economy.ts`
       // woła wewnątrz ticku pod `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep`; budynki
-      // nie zależą od poziomu, patrz `buildingResourceUpkeep()` JSDoc — zero rozjazdu z tickiem).
+      // zależą od poziomu i współczynnika z danych, patrz `buildingResourceUpkeep()` w economy-upkeep.ts — zero rozjazdu z tickiem).
       // Wpis obecny, ale pusty `{}` (owner naprawdę nie ma dziś kosztu) NIE trafia w ten fallback
       // — `??` reaguje tylko na `undefined`, nie na pusty obiekt.
       // / EN: both maps are cleared on every save-load / new game (5 spots) and populated ONLY
@@ -3792,7 +3792,7 @@ async function boot(): Promise<void> {
       // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
       // using the exact same pure primitives the turn engine itself calls (no drift risk).
       const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
-        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt);
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
       const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
@@ -4533,6 +4533,13 @@ async function boot(): Promise<void> {
       });
     }
 
+    /** R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: nazwy jednostek zarezerwowane przez cywilizację --
+     *  żywe (cały roster `units`) + opłacone w kolejkach rekrutacji WSZYSTKICH jej miast. Jedno źródło
+     *  prawdy dla limitu 1 Super-jednostki (ukrywanie przycisków, rekrutacja, zbiorczy panel, Zastąp, AI). */
+    function reservedUnitTypeNamesForOwner(ownerId: number): Set<string> {
+      return reservedUnitTypeNamesOfOwner(ownerId, units, cities, c => cityProd.get(c));
+    }
+
     /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji).
      *  R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): ownerId-agnostyczna — gracz
      *  (ownerId=0, domyślny) i AI (ownerId>0, wywołanie z runAiPhase) dzielą DOKŁADNIE
@@ -4595,6 +4602,15 @@ async function boot(): Promise<void> {
       // widoczny / EN: defense-in-depth — reject a Naval-type purchase for a city without water
       // access even if it somehow reaches this function outside the normal UI-filtered path.
       const unitDefForGate = data.units.find(u => u.Jednostka === itemId);
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: limit 1 Super-jednostki egzekwowany tu (nie tylko
+      // ukryciem przycisku): żywe + kolejki WSZYSTKICH miast + ilość w tej partii. Gracz i AI.
+      {
+        const superMsg = superUnitLimitViolation(unitDefForGate, itemId, reservedUnitTypeNamesForOwner(ownerId), requestedQuantity);
+        if (superMsg) {
+          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          return false;
+        }
+      }
       if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
         if (ownerId === 0) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
@@ -4742,6 +4758,13 @@ async function boot(): Promise<void> {
 
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       if (!unitDef) return false;
+      {
+        const superMsg = superUnitLimitViolation(unitDef, itemId, reservedUnitTypeNamesForOwner(ownerId), count);
+        if (superMsg) {
+          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          return false;
+        }
+      }
       if ((unitDef.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
         if (ownerId === 0) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
@@ -4885,6 +4908,8 @@ async function boot(): Promise<void> {
       const out = executeEmpireRecruitment({
         typLabel: label,
         ilosc: quantity,
+        maxTotal: unitDef?.['Super-jednostka'] === 'TAK' ? 1 : undefined,
+        maxTotalReason: SUPER_UNIT_LIMIT_BLOCK_PL,
         miasta: inputs,
         afford,
         purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
@@ -7292,7 +7317,7 @@ async function boot(): Promise<void> {
         placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
         empireResourceStock: citySurowceSumForOwner(ownerId),
-        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
+        aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId,
         difficulty: effectiveGameDifficultyForOwner(ownerId),
@@ -7528,8 +7553,14 @@ async function boot(): Promise<void> {
       const def = lookupUnitDef(best.id);
       if (!def) return;
       const nextHpMaxBase = unitHealth(def);
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 r2: synchronizacja form nie może wytworzyć drugiej
+      // Super-jednostki (wielu wodzów naraz) -- cel przechodzi tylko tyle razy, ile limit pozwala.
+      const ownGenerals = units.filter(g => g.ownerId === ownerId && g.isGeneral === true);
+      const syncTargets = new Set<RuntimeUnit>(generalSyncTargets(
+        ownGenerals, best.id, def, reservedUnitTypeNamesForOwner(ownerId),
+      ));
       for (const general of units) {
-        if (general.ownerId !== ownerId || general.isGeneral !== true || general.typeId === best.id) continue;
+        if (!syncTargets.has(general)) continue;
         const oldDef = lookupUnitDef(general.typeId);
         const oldHpMax = effectiveRuntimeUnitMaxHp(general, oldDef);
         const nextHpMax = effectiveMaxHp(
@@ -7730,7 +7761,135 @@ async function boot(): Promise<void> {
       return item?.koszt ?? 0;
     }
 
-    /** Otwórz modal wyboru zamiennika dla jednostki `u` (akcja "Zastąp" w ArmyStackHud). */
+    /**
+     * R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1: cele akcji "Zastąp" na stosie `stack`.
+     * Źródłem prawdy jest ZBIÓR ZAZNACZONY checkboxami panelu armii (stackPickState) -- NIGDY
+     * zapamiętana selectedId / pierwsza karta (wódz). Bez zaznaczenia: jedyna jednostka stosu
+     * (stos 1-osobowy) albo brak celów (gracz ma najpierw zaznaczyć jednostki).
+     */
+    function unitReplaceTargetsOnStack(stack: readonly RuntimeUnit[]): RuntimeUnit[] {
+      const picked = pickedUnitsOnStack(stack);
+      if (picked.length > 0) return picked;
+      return stack.length === 1 ? [stack[0]!] : [];
+    }
+
+    function unitReplaceEligible(u: RuntimeUnit): boolean {
+      return u.ownerId === 0 && isUnitInPlayerTerritory(u) && u.replaceUsedThisTurn !== true
+        && computeUnitReplacements(u).length > 0;
+    }
+
+    /** Akcja "Zastąp" z panelu: działa na zaznaczonych jednostkach, grupami wg typu (wódz osobno). */
+    function openUnitReplaceForSelection(active: RuntimeUnit): void {
+      const stack = playerStackAt(active);
+      const targets = unitReplaceTargetsOnStack(stack);
+      if (targets.length === 0) {
+        showHintMessage('Zastąp: zaznacz w panelu armii jednostki do zastąpienia (pola wyboru).', 3200);
+        return;
+      }
+      const eligible = targets.filter(unitReplaceEligible);
+      if (eligible.length === 0) {
+        // Brak kwalifikujących się: komunikat przyczyny dla pierwszej zaznaczonej jednostki.
+        openUnitReplacePicker(targets[0]!);
+        return;
+      }
+      const groups = new Map<string, RuntimeUnit[]>();
+      for (const t of eligible) {
+        const key = (t.isGeneral === true ? 'G:' : 'U:') + t.typeId;
+        const g = groups.get(key);
+        if (g) g.push(t); else groups.set(key, [t]);
+      }
+      const skipped = targets.length - eligible.length;
+      const note = skipped > 0
+        ? 'pominięto ' + skipped + ' z ' + targets.length + ' zaznaczonych (już zastąpione w tej turze lub brak zamienników)'
+        : '';
+      openUnitReplaceGroupPicker([...groups.values()], 0, note);
+    }
+
+    /** Pełny koszt rekrutacji nowej jednostki `typeId` razy `k` (Pieniądz + surowiec). */
+    function unitReplaceCostTimes(newDef: any, typeId: string, k: number): { money: number; stock: Record<string, number> } {
+      const one = unitReplaceFullCost(newDef, replaceUnitMoneyCost(typeId));
+      const stock: Record<string, number> = {};
+      for (const [key, amount] of Object.entries(one.stock)) stock[key] = amount * k;
+      return { money: one.money * k, stock };
+    }
+
+    /** Ile z `n` jednostek da się zastąpić na `typeId` przy aktualnym skarbcu i puli państwa. */
+    function unitReplaceAffordableCount(newDef: any, typeId: string, n: number, ownerId: number): number {
+      const pool = ownerSurowcePoolFor(ownerId);
+      // Limit Super-jednostki (egzekwowany per sztuka w performUnitReplace): typ zablokowany -> 0,
+      // typ Super bez zajętego slotu -> najwyżej 1 zamiana w jednej serii.
+      const reserved = reservedUnitTypeNamesForOwner(ownerId);
+      if (superUnitLimitViolation(newDef, typeId, reserved, 1)) return 0;
+      const cap = superUnitLimitViolation(newDef, typeId, reserved, 2) ? 1 : n;
+      let ok = 0;
+      for (let k = 1; k <= Math.min(n, cap); k++) {
+        const c = unitReplaceCostTimes(newDef, typeId, k);
+        if (player.skarbiec < c.money || unitReplaceStockMissingLabel(c, pool)) break;
+        ok = k;
+      }
+      return ok;
+    }
+
+    function openUnitReplaceGroupPicker(groups: RuntimeUnit[][], index: number, note = ''): void {
+      const group = groups[index]?.filter(unitReplaceEligible) ?? [];
+      if (group.length === 0) {
+        if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+        return;
+      }
+      const sample = group[0]!;
+      const n = group.length;
+      const ownerPool = ownerSurowcePoolFor(sample.ownerId);
+      const ordered = sortByUnitPowerDescending(
+        computeUnitReplacements(sample),
+        item => lookupUnitDef(item.id),
+      );
+      const label = (sample.isGeneral === true ? '★ Wódz: ' : '') + sample.typeId;
+      showUnitReplacePicker({
+        unitName: label,
+        count: n,
+        groupLabel: groups.length > 1 ? 'grupa ' + (index + 1) + '/' + groups.length : undefined,
+        note: note || undefined,
+        skarb: player.skarbiec,
+        options: ordered.map(it => {
+          const udef = lookupUnitDef(it.id);
+          const unit = unitReplaceFullCost(udef, replaceUnitMoneyCost(it.id));
+          const total = unitReplaceCostTimes(udef, it.id, n);
+          const affordableCount = unitReplaceAffordableCount(udef, it.id, n, sample.ownerId);
+          return {
+            id: it.id,
+            name: it.nazwa,
+            icon: unitIconSvg(udef, it.id),
+            moneyCost: unit.money,
+            stockText: unitReplaceStockText(unit),
+            totalMoneyCost: total.money,
+            totalStockText: unitReplaceStockText(total),
+            affordableCount,
+            blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(sample).empireResourceStock)
+              ?? superUnitLimitViolation(udef, it.id, reservedUnitTypeNamesForOwner(sample.ownerId), 1)
+              ?? (affordableCount === 0 ? (unitReplaceStockMissingLabel(unit, ownerPool) ?? undefined) : undefined),
+            atk: unitAtak(udef),
+            def: unitObrona(udef),
+            hpMax: effectiveMaxHp(unitHealth(udef), unitParametryBonusFrac(sample), veteranCombatBonusFrac(sample)),
+          };
+        }),
+        onPick: (newTypeId) => {
+          let done = 0;
+          for (const gu of group) {
+            if (performUnitReplace(gu.id, newTypeId, true)) done++;
+            else break;
+          }
+          const failed = n - done;
+          showHintMessage(
+            'Zastąp: ' + sample.typeId + ' → ' + newTypeId + ' ×' + done
+              + (failed > 0 ? ' (nie zastąpiono ' + failed + ' z ' + n + ' — brak zasobów/limit)' : ''),
+            3800,
+          );
+          if (index + 1 < groups.length) openUnitReplaceGroupPicker(groups, index + 1);
+        },
+      });
+    }
+
+    /** Otwórz modal wyboru zamiennika dla jednostki `u` (pojedyncza jednostka; komunikaty przyczyn). */
     function openUnitReplacePicker(u: RuntimeUnit): void {
       if (u.ownerId !== 0) return;
       if (!isUnitInPlayerTerritory(u)) {
@@ -7780,29 +7939,38 @@ async function boot(): Promise<void> {
     }
 
     /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
-    function performUnitReplace(unitId: string, newTypeId: string): void {
+    function performUnitReplace(unitId: string, newTypeId: string, quiet = false): boolean {
       const u = units.find(x => x.id === unitId);
-      if (!u || u.ownerId !== 0) return;
-      if (!isUnitInPlayerTerritory(u)) return;
-      if (u.replaceUsedThisTurn) return;
+      if (!u || u.ownerId !== 0) return false;
+      if (!isUnitInPlayerTerritory(u)) return false;
+      if (u.replaceUsedThisTurn) return false;
       const newDef = lookupUnitDef(newTypeId);
-      if (!newDef) return;
+      if (!newDef) return false;
+      // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
+      // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
+      {
+        const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(u.ownerId), 1);
+        if (superMsg) {
+          if (!quiet) showHintMessage('Zastąp: ' + superMsg, 3200);
+          return false;
+        }
+      }
       // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
       if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
-        showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
+        return false;
       }
 
       // D1 = C (właściciel 2026-11-09): pełny koszt rekrutacji nowej jednostki -- Pieniądz + surowiec.
       const fullCost = unitReplaceFullCost(newDef, replaceUnitMoneyCost(newTypeId));
       const stockMissing = unitReplaceStockMissingLabel(fullCost, ownerSurowcePoolFor(u.ownerId));
       if (stockMissing) {
-        showHintMessage('Zastąp: ' + stockMissing, 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: ' + stockMissing, 3000);
+        return false;
       }
       if (player.skarbiec < fullCost.money) {
-        showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
-        return;
+        if (!quiet) showHintMessage('Zastąp: brak Pieniądza (' + fullCost.money + ' 💰)', 3000);
+        return false;
       }
 
       const oldDef = lookupUnitDef(u.typeId);
@@ -7839,6 +8007,7 @@ async function boot(): Promise<void> {
       // Etykieta miasta w toaście: garnizon jednostki, a poza miastem (całe terytorium
       // gracza) — pierwsze miasto gracza jako fallback (ten sam wzorzec co disbandPlayerUnit).
       const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
+      if (quiet) return true;
       showHintMessage(
         oldTypeId + ' → ' + newTypeId
           + ' (koszt ' + fullCost.money + ' 💰'
@@ -7846,6 +8015,7 @@ async function boot(): Promise<void> {
           + (replaceCity ? (' — ' + replaceCity.name) : ''),
         3500,
       );
+      return true;
     }
 
     function buildPlayerCityListEntries(): CityListEntry[] {
@@ -8396,9 +8566,20 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** Poziom budynku wg epoki/techu właściciela — TA SAMA formuła co tick (turn-economy buildingsByOwner). */
+    function buildingLevelForOwnerBuilding(bdef: { epokaWejscia: number; maksPoziom: number; poziomTechGate?: unknown }, ownerId: number): number {
+      return buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        empireEpochForOwner(ownerId),
+        bdef.maksPoziom,
+        (bdef.poziomTechGate as Record<string, string> | null | undefined) ?? null,
+        unlockedTechSetForOwner(ownerId),
+      );
+    }
+
     function buildingResourceUpkeepForCityId(cityId: string, ownerId: number): Record<string, number> {
       const builtIds = cityBuilt.get(cityId) ?? [];
-      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings);
+      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
     }
 
     function garrisonUpkeepForCity(city: City): number {
@@ -8473,8 +8654,7 @@ async function boot(): Promise<void> {
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
         // samoczynnie, bo liczymy z bieżącego rosteru `units`, nie z historii).
-        getAliveUnitTypeNames: (ownerId: number) =>
-          new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
+        getAliveUnitTypeNames: (ownerId: number) => reservedUnitTypeNamesForOwner(ownerId),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
         isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
@@ -17717,9 +17897,7 @@ async function boot(): Promise<void> {
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
-        aliveUnitTypeNames: new Set(
-          units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId),
-        ),
+        aliveUnitTypeNames: reservedUnitTypeNamesForOwner(city.ownerId),
         buildingCostPace: player.buildingCostPace ?? 'niski',
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
@@ -21186,6 +21364,8 @@ async function boot(): Promise<void> {
         0, playerCities, data.buildings, cityBuilt,
         playerEconUnitsForUpkeep,
         typeId => data.units.find(u => u.Jednostka === typeId),
+        bdef => buildingLevelForOwnerBuilding(bdef, 0),
+        readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
@@ -24851,9 +25031,10 @@ async function boot(): Promise<void> {
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
-        const replaceDisabled = !isUnitInPlayerTerritory(active)
-          || active.replaceUsedThisTurn === true
-          || computeUnitReplacements(active).length === 0;
+        const replaceTargets = unitReplaceTargetsOnStack(stack);
+        const replaceDisabled = replaceTargets.length > 0
+          ? !replaceTargets.some(unitReplaceEligible)
+          : false;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       const splitDests = findSplitDestHexes(
@@ -25049,7 +25230,7 @@ async function boot(): Promise<void> {
       } else if (actionId === 'merge') {
         openMergePanelForSelected();
       } else if (actionId === 'replace') {
-        openUnitReplacePicker(u);
+        openUnitReplaceForSelection(u);
       } else if (actionId === 'sentry') {
         const enteringSentry = u.sentry !== true;
         if (enteringSentry) {
@@ -39788,9 +39969,7 @@ async function boot(): Promise<void> {
                     civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                     placedImprovements: ow.placedImprovements,
                     hasKopalniaNaZlozuZelaza: ow.hasKopalniaNaZlozuZelaza,
-                    aliveUnitTypeNames: new Set(
-                      units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-                    ),
+                    aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
                     buildingCostPace: player.buildingCostPace ?? 'niski',
                     ownerId,
                     difficulty: effectiveGameDifficultyForOwner(ownerId),
@@ -41317,9 +41496,7 @@ async function boot(): Promise<void> {
                           placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
                           // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
-                          aliveUnitTypeNames: new Set(
-                            units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-                          ),
+                          aliveUnitTypeNames: reservedUnitTypeNamesForOwner(ownerId),
                           buildingCostPace: player.buildingCostPace ?? 'niski',
                           ownerId,
                           difficulty: effectiveGameDifficultyForOwner(ownerId),
@@ -42838,6 +43015,8 @@ async function boot(): Promise<void> {
         setZoomLod(dist, minDist, maxDist);
         // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2: LOD drobnych części figurek/miast przy oddaleniu (no-op przy braku zmiany kubełka)
         unitRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
+        // R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1: pas obwódki wodza min. kilka px przy oddaleniu (no-op bez wodzów)
+        unitRenderer.applyGeneralRingLod(dist, camera.fov, canvas.clientHeight);
         cityRenderer.applySmallPartLod(dist, camera.fov, canvas.clientHeight);
         // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
         // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i

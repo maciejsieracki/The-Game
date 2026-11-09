@@ -2026,6 +2026,84 @@ export function setPaused(prod: CityProduction, paused: boolean): CityProduction
 // Rekrutacja (kolejka jednostek za Pieniadz)
 // ---------------------------------------------------------------------------
 
+/** Komunikat PL przy odrzuceniu drugiej sztuki Super-jednostki (R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1). */
+export const SUPER_UNIT_LIMIT_BLOCK_PL =
+  'Limit Super-jednostki: tylko 1 sztuka na cywilizację (żywa, w kolejce rekrutacji lub po zamianie).';
+
+/**
+ * R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zbiór nazw jednostek ZAREZERWOWANYCH przez cywilizację
+ * = żywe (cały roster, wszystkie armie/garnizony) + opłacone w kolejkach rekrutacji WSZYSTKICH miast
+ * (`rekrutacja`, a dla starych zapisów także jednostki w legacy `kolejka`). Limit "max 1 Super-jednostka"
+ * liczy więc cały stan cywilizacji, nie tylko żywych na mapie w danej turze. Pure -- wołający podaje dane.
+ */
+export function reservedUnitTypeNames(
+  aliveTypeIds: Iterable<string>,
+  cityProductions: Iterable<CityProduction | undefined | null>,
+): Set<string> {
+  const out = new Set<string>(aliveTypeIds);
+  for (const prod of cityProductions) {
+    if (!prod) continue;
+    for (const it of prod.rekrutacja ?? []) if (it.kind === 'jednostka') out.add(it.id);
+    for (const it of prod.kolejka ?? []) if (it.kind === 'jednostka') out.add(it.id);
+  }
+  return out;
+}
+
+/**
+ * Egzekucja limitu po stronie wykonania: zwraca komunikat PL, gdy zakup/zamiana `quantity` sztuk
+ * jednostki `typeId` złamałaby limit 1 Super-jednostki (już zarezerwowana albo quantity > 1); inaczej null.
+ */
+export function superUnitLimitViolation(
+  def: Pick<UnitDef, 'Super-jednostka'> | undefined | null,
+  typeId: string,
+  reserved: ReadonlySet<string> | undefined,
+  quantity = 1,
+): string | null {
+  if (!def || def['Super-jednostka'] !== 'TAK') return null;
+  if (quantity > 1 || reserved?.has(typeId)) return SUPER_UNIT_LIMIT_BLOCK_PL;
+  return null;
+}
+
+/**
+ * R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 r2: rezerwacja cywilizacji `ownerId` wyliczona z
+ * PRZEKAZANYCH danych (wszystkie jednostki i miasta gry, filtrowane po właścicielu). Pure -- main.ts
+ * podaje roster, miasta i produkcję miast; testowalne bez uruchamiania boot().
+ */
+export function reservedUnitTypeNamesOfOwner(
+  ownerId: number,
+  units: Iterable<{ ownerId: number; typeId: string }>,
+  cities: Iterable<{ id: string; ownerId: number }>,
+  prodOf: (cityId: string) => CityProduction | undefined | null,
+): Set<string> {
+  const alive: string[] = [];
+  for (const u of units) if (u.ownerId === ownerId) alive.push(u.typeId);
+  const prods: Array<CityProduction | undefined | null> = [];
+  for (const c of cities) if (c.ownerId === ownerId) prods.push(prodOf(c.id));
+  return reservedUnitTypeNames(alive, prods);
+}
+
+/**
+ * R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 r2: wodzowie, których synchronizacja formy do `targetTypeId`
+ * może przejść bez złamania limitu Super. Każde przekształcenie dodaje cel do rezerwacji, więc przy
+ * Super przekształci się co najwyżej JEDEN wódz (a tylko gdy cel nie jest już zarezerwowany).
+ */
+export function generalSyncTargets<T extends { typeId: string }>(
+  generals: readonly T[],
+  targetTypeId: string,
+  targetDef: Pick<UnitDef, 'Super-jednostka'> | undefined | null,
+  reserved: ReadonlySet<string>,
+): T[] {
+  const taken = new Set(reserved);
+  const out: T[] = [];
+  for (const g of generals) {
+    if (g.typeId === targetTypeId) continue;
+    if (superUnitLimitViolation(targetDef, targetTypeId, taken, 1)) continue;
+    out.push(g);
+    taken.add(targetTypeId);
+  }
+  return out;
+}
+
 /** Dodaj oplacona jednostke na koniec kolejki rekrutacji. */
 export function enqueueRecruitment(prod: CityProduction, item: ProductionItem): CityProduction {
   if (item.kind !== 'jednostka') return prod;

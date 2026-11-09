@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "1c3b9a14dca3cbf89ff4dc3187967195898e7271dfd8f0c50a8c36f24fbbc6f8",
+    "csvSha256": "50e2cebc6ca9ba9bbc0cbfb818ef16dcc41f3729c48193fb23a85a2e27ccba32",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -1003,7 +1003,7 @@
         "dowod": "gra/data/terrain-improvements.json:340; gra/data/terrain-improvements.json:349"
       },
       {
-        "tytul": "19 narodowych jednostek z żelaza, np. Falanga (Obrona 10)",
+        "tytul": "19 narodowych jednostek z żelaza, np. Falanga (Obrona 12)",
         "zdanie": "Narodowe jednostki epoki Żelaza rekrutujesz w mieście z Koszarami.",
         "dowod": "gra/data/units.json:743; gra/data/units.json:891; gra/src/game/production.ts:1075; gra/src/game/production.ts:1092"
       }
@@ -1023,7 +1023,7 @@
       },
       {
         "czynnosc": "Rekrutuj jednostki z żelaza (w mieście z Koszarami)",
-        "korzysc": "wystawić narodową piechotę epoki Żelaza (np. Falanga z Obroną 10)"
+        "korzysc": "wystawić narodową piechotę epoki Żelaza (np. Falanga z Obroną 12)"
       }
     ],
     "ukryte": []

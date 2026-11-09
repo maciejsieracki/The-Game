@@ -141,6 +141,9 @@ export function executeEmpireRecruitment(args: {
   ilosc: number;
   miasta: readonly RecruitCityInput[];
   afford?: RecruitAffordResult;
+  /** Twardy limit sztuk w jednym zamówieniu (np. 1 dla Super-jednostki). */
+  maxTotal?: number;
+  maxTotalReason?: string;
   purchase: (cityId: string, count: number) => boolean;
 }): EmpireRecruitOutcome {
   const requested = toCount(args.ilosc);
@@ -152,7 +155,9 @@ export function executeEmpireRecruitment(args: {
     const why = args.miasta.find(c => c.blockedReason)?.blockedReason;
     return none(`Brak miasta zdolnego do rekrutacji ${args.typLabel}${why ? ` (${why})` : ''}.`);
   }
-  const cap = args.afford ? Math.min(requested, args.afford.max) : requested;
+  const hardCap = args.maxTotal !== undefined ? toCount(args.maxTotal) : Infinity;
+  const cap = Math.min(args.afford ? Math.min(requested, args.afford.max) : requested, hardCap);
+  if (cap <= 0 && hardCap === 0) return none(args.maxTotalReason ?? 'Limit zamówienia osiągnięty.');
   if (cap <= 0) return none(`Nie można zrekrutować ${args.typLabel}: ${args.afford?.limiter ?? 'brak zasobów'}.`);
   // Jedna runda ponownego planowania: sztuki miast, które silnik odrzucił (np. oblężenie między planem
   // a zakupem), są rozkładane na pozostałe zdolne miasta (odrzucone wykluczone; kolejka przyjętych
@@ -190,7 +195,9 @@ export function executeEmpireRecruitment(args: {
     return { requested, accepted, perCity, changed: true,
       message: `Zamówiono ${accepted} × ${args.typLabel} w ${perCity.length} ${perCity.length === 1 ? 'mieście' : 'miastach'}.` };
   }
-  const reason = cap < requested ? (args.afford?.limiter ?? 'brak zasobów') : 'odmowa miasta';
+  const reason = cap < requested
+    ? (hardCap < requested && hardCap <= (args.afford?.max ?? Infinity) ? (args.maxTotalReason ?? 'limit') : (args.afford?.limiter ?? 'brak zasobów'))
+    : 'odmowa miasta';
   return { requested, accepted, perCity, changed: true,
     message: `Przyjęto ${accepted} z ${requested} × ${args.typLabel} (${reason}).` };
 }

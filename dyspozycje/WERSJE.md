@@ -1,3 +1,33 @@
+## ROBOCZA 7558ec53 -- 2026-11-06 -- FALA 581: Utrzymanie surowcowe budynków = utrzymanie w Pieniądzu; Zastąp w panelu armii działa na zaznaczonych jednostkach (testowa)
+
+- R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (c8ee037fb) + R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (ab4646dc6)
+- Weryfikacja: tsc 0, logic 213/213, building-upkeep-resources 48/0, upkeep 91/0, unit-replace-army-multi-select 36/36, unit-replace 15/15, unit-replace-full-cost 40/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce ani symulacja AI; dług REPIN Rust (building_costs.rs); podglądy HUD per owner
+
+## ROBOCZA 1bf57e44 -- 2026-11-06 -- FALA 580: Obwódka heksagonalna wokół generała (7 hexów, kolor cywilizacji) (testowa)
+
+- R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1 (1d216c7eb)
+- Weryfikacja: tsc 0, general-hex-ring-outline 28/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO wizualnie (brak Chromium); okluzja przez górę poza obrysem niesprawdzona; dług REPIN Rust
+
+## ROBOCZA 24ca2f05 -- 2026-11-06 -- FALA 579: Falanga: Atak 7, Obrona 12, Przebicie 4, bonus +30% vs Włócznik (testowa)
+
+- R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 (0d328bfaa)
+- Weryfikacja: tsc 0, falanga-bonus 15/15, unit-power 6/0, unit-power-sort 13/0, combat-test 6/6, card-resource-purpose 102/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce; tech-cards-top5-test (brak playwright); dług: REPIN Rust Falanga
+
+## ROBOCZA 17a57af1 -- 2026-11-06 -- FALA 578: Konnica i rydwany domyślnie na skrzydłach szyku (nie z przodu) (testowa)
+
+- R-WEB-ARMY-CAVALRY-FLANK-NOT-APPLIED-DEFAULT-Q1 (e9869a967)
+- Weryfikacja: tsc 0, battle-cavalry-flank-default 960 checks PASS, battle-initial-placement-runtime PASS, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce; dług: placement fallback przy zablokowanych polach, REPIN Rust
+
+## ROBOCZA 48bb2f40 -- 2026-11-06 -- FALA 577: Limit 1 Super-jednostki liczy cały stan cywilizacji (testowa)
+
+- R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1 (84844fc73)
+- Weryfikacja: tsc 0, logic 213/213, super-unit-limit-one 40/0, unit-replace-full-cost 40/0, empire-recruit-plan 17/0, recruit-list-visibility 9/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w przeglądarce
+
 ## ROBOCZA cfb6e783 -- 2026-11-06 -- FALA 576: Panel rekrutacji: Rekrutuj wszystkie + Targowisko bez kamienia (testowa)
 
 - R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1 (50f21fd3c): licznik domyślnie 0, dwa przyciski „Rekrutuj wszystkie”, reset udanych, komunikat PL; R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (6b5255dec): Targowisko samo drewno 30, Studnia i Kamienne kręgi z kamieniem
