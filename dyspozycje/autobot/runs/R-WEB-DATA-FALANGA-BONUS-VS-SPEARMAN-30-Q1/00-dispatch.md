@@ -1,0 +1,5 @@
+# R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 — dispatch (2026-11-09)
+GOAL (decyzja właściciela): Falanga (Grecja, Żelazo, Typ Falangite) ma mieć „Bonus vs Spearman %” = 30 (dziś brak/0). Pozostałe parametry Falangi bez zmian. Efekt: Falanga zadaje +30% obrażeń jednostkom typu Spearman (włócznikom). 
+BAZA: origin/main (FALA 576+). Operator: HAIKU 5.5 (zmiana 1 pola danych + testy).
+ZAKRES: gra/data/units.json (tylko Falanga: `Bonus vs Spearman %` = 30; sprawdź czy silnik czyta to pole dla Typ Falangite jak dla innych jednostek — `combat.ts` Bonus vs ... ; jeśli nie czyta, zgłoś w raporcie i napraw minimalnie w ramach allowlisty), opis/karta/Top3 jednostki jeśli cytuje bonusy (generatory --check), testy statystyk jednostek (units-data/combat bonus), nowy test `gra/tools/falanga-bonus-vs-spearman-test.cjs` (Falanga atakuje Spearman → obrażenia ×1,3 względem bazy; inne typy bez zmian), wpis dług REPIN Rust (units.json).
+ALLOWLISTA: gra/data/units.json, gra/src/game/combat.ts (tylko jeśli pole nie jest czytane), karty/opisy jednostek, testy, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów.
