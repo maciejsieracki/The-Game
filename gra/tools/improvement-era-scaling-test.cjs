@@ -76,7 +76,7 @@ const YIELD_TABLE = {
   wyrab:           { handel: T(1) },
   tartak:          { praca: T(3), handel: T(3) },
   tarasy:          { zywnosc: T(3), praca: T(2), handel: T(2) },
-  lodzie_rybackie: { zywnosc: T(2), praca: T(3), handel: T(3) },
+  lodzie_rybackie: { zywnosc: T(6), praca: T(6), handel: T(6) },
   warzelnia_soli:  { pieniadz: T(1), zywnosc: T(1), praca: T(1), handel: T(3) },
   droga:           { handel: T(2) },
   droga_brukowana: { handel: T(3) },

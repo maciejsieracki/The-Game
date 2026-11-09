@@ -19,7 +19,7 @@ Ulepszenia stawiasz z lewego panelu mapy (**Budowa**) na heksach w **swoim** ter
 | Owce | Kamień | 20 | +1 żywność, +2 praca | Wzgórza | Oswojenie zwierząt | [Owce](../encyklopedia/ulepszenia/owce.md) |
 | Tartak | Kamień | 25 | +3 praca | Ląd w terytorium (łąka, lasy, wzgórza…) | Obróbka drewna | [Tartak](../encyklopedia/ulepszenia/tartak.md) |
 | Wycinka | Kamień | 0 (wycinka) | — | Las | — | [Wycinka](../encyklopedia/ulepszenia/wyrab.md) |
-| Łodzie rybackie | Kamień | 20 | +2 żywność, +3 praca | Wybrzeże, Morze (ryby) | Żegluga | [Łodzie rybackie](../encyklopedia/ulepszenia/lodzie_rybackie.md) |
+| Łodzie rybackie | Kamień | 20 | +6 żywność, +6 praca, +6 podatek | Wybrzeże, Morze (ryby) | Żegluga | [Łodzie rybackie](../encyklopedia/ulepszenia/lodzie_rybackie.md) |
 | Glinianka | Brąz | 20 | +1 praca | złoże Gliny | Garncarstwo | [Glinianka](../encyklopedia/ulepszenia/glinianka.md) |
 | Irygacja | Brąz | 30 | +5 żywność | Łąka, Równina, Pustynia | Irygacja | [Irygacja](../encyklopedia/ulepszenia/irygacja.md) |
 | Posterunek (Strażnica) | Brąz | 30 | —; +50% obrona (obóz) | ląd w/na krawędzi własnego zasięgu | — | [Posterunek (Strażnica)](../encyklopedia/ulepszenia/posterunek.md) |
@@ -109,7 +109,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Łodzie rybackie
 
-**Łodzie rybackie** (epoka **Kamień**) kosztuje **20** pracy i wymaga technologii **Żegluga**. Daje: **+2 żywność, +3 praca**.
+**Łodzie rybackie** (epoka **Kamień**) kosztuje **20** pracy i wymaga technologii **Żegluga**. Daje: **+6 żywność, +6 praca, +6 podatek**.
 Dozwolony teren: Wybrzeże, Morze (ryby).
 **Warunek:** ławica ryb
 

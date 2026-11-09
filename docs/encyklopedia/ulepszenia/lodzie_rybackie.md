@@ -36,11 +36,11 @@ Ulepszenie **Łodzie rybackie** na polu w **twoim terytorium**. Teren: Wybrzeże
 
 **Budowa:** **20 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +2 żywność/t, +3 praca/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +6 żywność/t, +6 praca/t, +6 podatek/t (oprócz plonu bazowego terenu).
 
-**Zwrot pracy (uproszczenie):** czysty zysk **+2**/t vs bez ulepszenia → **10 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
+**Zwrot pracy (uproszczenie):** czysty zysk **+6** pracy/t vs bez ulepszenia → **ok. 4 tury** na „odrobienie" 20 pracy (ignorując bazę pola).
 
-**Przykład:** łąka daje 1 żywność/t; **Łodzie rybackie** +2 → **3 żywności/t** z tego heksu dla miasta właściciela.
+**Przykład:** łąka daje 1 żywność/t; **Łodzie rybackie** +6 → **7 żywności/t** z tego heksu dla miasta właściciela.
 
 ---
 

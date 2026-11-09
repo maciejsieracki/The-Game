@@ -78,7 +78,7 @@ console.log('\nAC-E1: bonusy JSON (przez improvementBonusForKey)');
   eq(f.zywnosc, 3, 'farma +3 zywnosc');
   eq(M.improvementBonusForKey('irygacja').zywnosc, 5, 'irygacja +5');
   eq(M.improvementBonusForKey('tarasy').zywnosc, 3, 'tarasy +3');
-  eq(M.improvementBonusForKey('lodzie_rybackie').praca, 3, 'lodzie +3 praca');
+  eq(M.improvementBonusForKey('lodzie_rybackie').praca, 6, 'lodzie +6 praca (R-WEB-FISHING-BOATS-YIELD-6-6-6-Q1)');
   eq(M.improvementBonusForKey('bydlo').zywnosc, 2, 'bydlo +2 zywnosc');
   eq(M.improvementBonusForKey('bydlo').praca, 4, 'bydlo +4 praca (data/terrain-improvements.json; stary pin +3 przestarzały)');
   eq(M.improvementBonusForKey('owce').zywnosc, 1, 'owce +1');
