@@ -109,7 +109,7 @@ function render(root: HTMLElement, force = true): void {
       + `<div class="erp-info"><span class="erp-name" title="${esc(r.label)}">${esc(r.label)}</span>`
       + `<span class="erp-meta">${meta}</span>${queuedLine}</div>`
       + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 0 ? ' disabled' : ''}>−</button>`
-      + `<input type="number" min="1" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
+      + `<input type="number" min="0" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
       + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
       + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
@@ -117,7 +117,8 @@ function render(root: HTMLElement, force = true): void {
   const html = `<div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
     + `<button type="button" data-erp="close" aria-label="Zamknij">Zamknij</button></div>`
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
-    + `Liczniki są niezależne i nie zerują się po „Rekrutuj”.</div>`
+    + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
+    + `i zeruje przyjęte pozycje.</div>`
     + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-all">${allBtn}</div>`
@@ -142,7 +143,7 @@ function onClick(ev: Event): void {
   if (!id) return;
   if (act === 'inc' || act === 'dec') {
     drafts.set(id, clampQty(getEmpireRecruitDraft(id) + (act === 'inc' ? 1 : -1)));
-    render(root);
+    syncControls(root, false);
   } else if (act === 'go') {
     const res = panelCfg.onOrder(id, getEmpireRecruitDraft(id));
     lastMessage = res.message;
@@ -178,19 +179,48 @@ function orderAll(root: HTMLElement): void {
   render(root);
 }
 
+/**
+ * Odświeża tylko stan przycisków (disabled) i wartość pola — BEZ przebudowy DOM. Przebudowa między
+ * mousedown a mouseup (np. blur pola po wpisaniu liczby odpala change) gubiła kliknięcie przycisku.
+ * `keepInput` = true podczas pisania: pole zostaje takie, jak wpisał gracz.
+ */
+function syncControls(root: HTMLElement, keepInput: boolean): void {
+  if (!panelCfg) return;
+  const total = panelCfg.getRows().reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+  root.querySelectorAll<HTMLButtonElement>('[data-erp="go-all"]').forEach(b => { b.disabled = total <= 0; });
+  root.querySelectorAll<HTMLElement>('[data-unit]').forEach(rowEl => {
+    const id = rowEl.getAttribute('data-unit') ?? '';
+    const q = getEmpireRecruitDraft(id);
+    const blocked = rowEl.classList.contains('is-blocked');
+    const dec = rowEl.querySelector<HTMLButtonElement>('[data-erp="dec"]');
+    const inc = rowEl.querySelector<HTMLButtonElement>('[data-erp="inc"]');
+    const go = rowEl.querySelector<HTMLButtonElement>('[data-erp="go"]');
+    const input = rowEl.querySelector<HTMLInputElement>('[data-erp="qty"]');
+    if (dec) dec.disabled = q <= 0;
+    if (inc) inc.disabled = q >= MAX_QTY;
+    if (go) go.disabled = blocked || q <= 0;
+    if (input && !keepInput) input.value = String(q);
+  });
+}
+
 function onInput(ev: Event): void {
   const t = ev.target as HTMLInputElement | null;
   if (!t || t.getAttribute('data-erp') !== 'qty') return;
   const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
-  if (!id) return;
+  const root = document.getElementById(ROOT_ID);
+  if (!id || !root) return;
   drafts.set(id, clampQty(t.valueAsNumber));
+  syncControls(root, true); // przyciski reagują od razu, zanim gracz kliknie gdziekolwiek indziej
 }
 
 function onChange(ev: Event): void {
   const t = ev.target as HTMLInputElement | null;
   if (!t || t.getAttribute('data-erp') !== 'qty') return;
+  const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
   const root = document.getElementById(ROOT_ID);
-  if (root) render(root);
+  if (!id || !root) return;
+  drafts.set(id, clampQty(t.valueAsNumber)); // np. 999+ lub wartość ujemna → przycięta
+  syncControls(root, false);
 }
 
 /** Nowa gra / wczytanie: zamyka panel i czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */

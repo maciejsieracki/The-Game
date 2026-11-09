@@ -105,6 +105,40 @@ async function main() {
     check('przy sumie 0 oba „Rekrutuj wszystkie” są nieaktywne', await allBtns.evaluateAll(els => els.every(b => b.disabled)));
     check('pojedyncze „Rekrutuj” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="go"]').isDisabled());
     check('„−” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="dec"]').isDisabled());
+    check('pole liczby ma min=0 (zgodne z domyślnym 0)', await row('Wojownik').locator('[data-erp="qty"]').getAttribute('min') === '0');
+    check('opis panelu opisuje „Rekrutuj wszystkie” (nie stare „nie zerują się”)',
+      await page.locator('#civ-empire-recruit-panel .erp-sub').innerText().then(t => /Rekrutuj wszystkie/.test(t) && !/nie zerują/.test(t)));
+
+    // ---- prawdziwa klawiatura + mysz: wpis liczby i pierwszy klik bez dispatchEvent('change') ----
+    const wojIn = row('Wojownik').locator('[data-erp="qty"]');
+    await wojIn.click();
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('3');
+    check('po wpisaniu 3 z klawiatury „Rekrutuj wszystkie” od razu aktywne (bez blur)',
+      await allBtns.evaluateAll(els => els.every(b => !b.disabled)));
+    check('po wpisaniu 3 z klawiatury „Rekrutuj” tej pozycji aktywne',
+      await row('Wojownik').locator('[data-erp="go"]').isEnabled());
+    await allBtns.first().click(); // prawdziwy klik myszą: blur pola odpala change, a klik MUSI przejść
+    let stReal = await state();
+    check('PIERWSZY klik „Rekrutuj wszystkie” po wpisaniu liczby zamawia (onOrder 1 raz, Wojownik 3)',
+      JSON.stringify(stReal.purchases) === JSON.stringify([['Wojownik', 3]]), stReal.purchases);
+    check('pierwszy klik: Wojownik w kolejce 3', total(stReal, 'Wojownik') === 3, stReal.cities);
+    await row('Taran').locator('[data-erp="qty"]').click();
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('2');
+    await row('Taran').locator('[data-erp="go"]').click(); // pojedyncze „Rekrutuj” prawdziwą myszą
+    stReal = await state();
+    check('pojedyncze „Rekrutuj” po wpisaniu 2 zamawia Tarana 2 (ta sama ścieżka)',
+      JSON.stringify(stReal.purchases) === JSON.stringify([['Wojownik', 3], ['Taran', 2]]), stReal.purchases);
+    check('pojedyncze „Rekrutuj” nie zeruje licznika Tarana', await qty('Taran') === 2, await qty('Taran'));
+    // przywrócenie czystego stanu dla dalszych scenariuszy
+    await page.evaluate(() => {
+      window.__st.purchases.length = 0;
+      window.__st.cities.forEach(c => { c.q.length = 0; });
+      window.__st.gold = 1000;
+    });
+    await setQty('Taran', 0);
+    await setQty('Wojownik', 0);
 
     // ---- rekrutacja tylko pozycji > 0 ----
     await setQty('Wojownik', 2);
