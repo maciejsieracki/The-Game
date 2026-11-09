@@ -1,3 +1,9 @@
+## ROBOCZA a7e83a3e -- 2026-11-06 -- FALA 587: Klawisz F odkrywa mapę tylko gdy włączone w ustawieniach nowej gry; lista Rekruci bez wewnętrznego suwaka (testowa)
+
+- R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1 (d35f4ad37) + R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1 (4c20910c6)
+- Weryfikacja: tsc 0, logic 213/213, fog-reveal-key-f 25/0, empire-army-city-recruit-no-inner-scroll 16/0, empire-recruit-panel-no-inner-scroll 17/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO live; długi D-FOG-F-MEASURE/PLAYTEST/REPIN-RUST
+
 ## ROBOCZA 7922c193 -- 2026-11-06 -- FALA 586: AI rekrutuje wg składu armii per cywilizacja (wręcz/dystans/konnica) (testowa)
 
 - R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (871762a74 + 3aa8973c6)
