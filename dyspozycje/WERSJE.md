@@ -1,3 +1,9 @@
+## ROBOCZA c893f4f5 -- 2026-11-06 -- FALA 582: Żelazo: Hutnictwo = surowiec/kopalnie, jednostki epoki Żelaza po Sztuce wojennej (testowa)
+
+- R-WEB-TECH-IRON-GATING-IMPL-Q1 (0fbca7540)
+- Weryfikacja: tsc 0, logic 213/213, iron-gating-impl 130/0, tech-unlock-units 126/0, tech-cards-top5 594/0, building-tech-gate 91/0, ai-difficulty-bonus 97/0, super-unit-limit-one 40/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO w grze/tempo AI; dług REPIN Rust (tech.json, units.json, tech-cards-top5), poradnik gracza z starymi bramkami
+
 ## ROBOCZA 7558ec53 -- 2026-11-06 -- FALA 581: Utrzymanie surowcowe budynków = utrzymanie w Pieniądzu; Zastąp w panelu armii działa na zaznaczonych jednostkach (testowa)
 
 - R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (c8ee037fb) + R-WEB-UNIT-REPLACE-ARMY-PANEL-SELECTS-GENERAL-Q1 (ab4646dc6)

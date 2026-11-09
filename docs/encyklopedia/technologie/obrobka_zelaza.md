@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Obróbka żelaza** — epoka **Żelazo** (poziom 9), koszt **370** PN (tempo Szybka), wymaga: Hutnictwo żelaza + Drogi brukowane. Odblokowuje budynki: Wielka odlewnia, Wielka Kuźnia; jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański; surowce: stal (prereq).
+**Obróbka żelaza** — epoka **Żelazo** (poziom 9), koszt **370** PN (tempo Szybka), wymaga: Hutnictwo żelaza + Drogi brukowane. Odblokowuje budynki: Wielka odlewnia, Wielka Kuźnia; surowce: stal (prereq).
 
 ---
 
@@ -30,7 +30,7 @@
 
 ### Co odblokowuje
 - **Budynki:** Wielka odlewnia, Wielka Kuźnia
-- **Jednostki:** Gaesatae, Soldurii, Wojownik germański, Berserker germański
+- **Jednostki:** brak (jednostki epoki Żelaza odblokowuje Sztuka wojenna)
 - **Ulepszenia terenu:** brak
 - **Surowce:** stal (prereq)
 
