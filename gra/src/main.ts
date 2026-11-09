@@ -1163,7 +1163,7 @@ import {
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
-  aiDiplomacyStance, relationTier, loadDiplomacyParams, getEffectiveDiplomacyParams,
+  aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   computeTickZaufanieDelta,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
@@ -7995,7 +7995,7 @@ async function boot(): Promise<void> {
           ikonaId: civTypeForOwner(otherId),
           kolorHex: civKolorHexFn(otherId),
           layer,
-          tier: relationTier(rel),
+          tier: relationTierDisplay(rel, hasAllianceDealBetween(ME(), otherId)),
           zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
           // R-MOC-HUD-GLOWNY-Q1=C: lista dyplomacji (karta per-cywilizacja) -> respekt
           // EFEKTYWNY, dla spójności z ekranem audiencji (otwieranym z tej samej listy),
@@ -8082,7 +8082,7 @@ async function boot(): Promise<void> {
         civName: ownerDiploLabel(ownerId),
         ikonaId: civTypeForOwner(ownerId),
         kolorHex: civKolorHexFn(ownerId),
-        tier: relationTier(rel),
+        tier: relationTierDisplay(rel, hasAllianceDealBetween(ME(), ownerId)),
         wars,
         alliances,
         deals,
@@ -21753,6 +21753,11 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** Czy między a i b istnieje aktywny traktat sojuszu (jedno źródło prawdy dla emblematu/list). */
+    function hasAllianceDealBetween(a: number, b: number): boolean {
+      return activeDeals.some(d => dealInvolvesOwners(d, a, b) && isAllianceDealKind(d.rodzaj));
+    }
+
     function isAllianceDealKind(rodzaj: ActiveDeal['rodzaj']): boolean {
       const k = normalizeTreatyKind(rodzaj);
       return k === 'sojusz_pelny' || k === 'sojusz_defensywny' || k === RodzajTraktatu.SojuszWojskowy;
@@ -24422,7 +24427,7 @@ async function boot(): Promise<void> {
               sojuszZaufanie: dip.progSojuszZaufanie,
               techZaufanie: dip.progWymianaTechZaufanie,
             },
-            tier: relationTier(rel),
+            tier: relationTierDisplay(rel, hasAllianceDealBetween(ME(), ownerId)),
             layer: layer === 'pre_contact' ? 'full' : layer,
             contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
             actions: audienceActionsList,

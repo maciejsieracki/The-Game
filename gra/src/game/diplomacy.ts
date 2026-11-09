@@ -1500,6 +1500,20 @@ export function relationTier(rel: Relation): 0 | 1 | 2 | 3 | 4 {
   return 4;                                                // Sojusz (>= 151)
 }
 
+/**
+ * R-WEB-DIPLO-ALLIANCE-BLOCKED-AT-TRUST-100-Q1 (DODATEK 1) — tier DO WYŚWIETLENIA.
+ * `relationTier` zwraca 4 („Sojusz") także dla samego score >= progSojuszRelacja bez traktatu
+ * (to „próg sojuszu osiągnięty", nie sojusz) — emblemat/„Relacja: Sojusz" mówił wtedy „sojusz",
+ * a listy „Sojusze"/„W sojuszu z" (liczone z activeDeals) pokazywały „brak". Jedno źródło prawdy
+ * dla UI = faktyczny traktat sojuszu: tier 4 TYLKO gdy istnieje aktywny sojusz (i brak wojny).
+ */
+export function relationTierDisplay(rel: Relation, hasAllianceDeal: boolean): 0 | 1 | 2 | 3 | 4 {
+  const t = relationTier(rel);
+  if (t === 0) return 0;
+  if (hasAllianceDeal) return 4;
+  return t === 4 ? 3 : t;
+}
+
 // ---------------------------------------------------------------------------
 // PotegaKomponenty + PotegaWagi + computePotegaNacji
 // (CYWILIZACJE lane — warstwa 1 modelu Respektu)
