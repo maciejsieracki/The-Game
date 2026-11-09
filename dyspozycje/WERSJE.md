@@ -1,3 +1,9 @@
+## ROBOCZA 7922c193 -- 2026-11-06 -- FALA 586: AI rekrutuje wg składu armii per cywilizacja (wręcz/dystans/konnica) (testowa)
+
+- R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (871762a74 + 3aa8973c6)
+- Weryfikacja: tsc 0, ai-army-composition-per-civ 341/0, ai-test 296/0, army-recruitment-concentration 30/0, ai-era-unit-promotion 17/0, audio-sidecar PASS
+- Limity: NIE_ZMIERZONO skład po ~50 turach w grze; tempo zakupu droższych jednostek specjalnych; dług REPIN Rust ai.rs, ai-params §9
+
 ## ROBOCZA a6e383cc -- 2026-11-06 -- FALA 585: Sojusz: Relacja 130 + Zaufanie 90, AI proponuje wg tej reguły, próg gotowości AI 0,54, NAP bezterminowy od 151 (testowa)
 
 - R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (262d628f2)
