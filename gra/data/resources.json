@@ -57,7 +57,7 @@
     "Surowiec": "Złoto",
     "Typ": "surowy",
     "Źródło / budynek": "Kopalnia złota + szlaki handlowe",
-    "Uwagi": "magazyn państwa (klucz stock: zloto) ≠ Pieniądz (skarbiec); Kopalnia 1/t; Mennica zużywa 1 Złoto/t w stolicy przy mnożniku handlu"
+    "Uwagi": "magazyn państwa (klucz stock: zloto) ≠ Pieniądz (skarbiec); Kopalnia 1/t; Mennica zużywa 1 Złoto/t w stolicy przy mnożniku podatku"
   },
   {
     "Surowiec": "Cegła",

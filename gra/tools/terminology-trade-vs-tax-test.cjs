@@ -130,6 +130,13 @@ check('[B] buildings.json: „Port handlowy” i grupa „Handel i pieniądz” 
 check('[B] buildings.json: Emporion „+5% handlu” (premia trasy) pozostaje', /"tytul": "\+5% handlu"/.test(buildingsJson));
 check('[B] tech.json: technologia „Handel” pozostaje', /"Technologia": "Handel"/.test(read('data/tech.json')));
 
+// Notatki deweloperskie w polach danych (uwagi / Uwagi) — ten sam błąd klasy A, choć nie są
+// renderowane na karcie; wiki (generate-encyklopedia.cjs: „Uwaga:”) może je wydrukować.
+check('[A] buildings.json Mennica uwagi: „mnożnik podatku→pieniądz”', /mnoznik podatku→pieniądz \(economy\.ts\)/.test(buildingsJson) && !/mnoznik handlu/.test(buildingsJson));
+check('[A] terrain-improvements.json: brak „Handel (plon heksa)” w uwagach', !/Handel \(plon heksa\)/.test(read('data/terrain-improvements.json')));
+check('[A] terrain-yields.json Uwagi: „+podatek (+2)” w lesie', /\+podatek \(\+2\), \+praca \(\+3\)/.test(read('data/terrain-yields.json')) && !/\+handel \(\+2\)/.test(read('data/terrain-yields.json')));
+check('[A] resources.json Uwagi: Mennica „mnożnik podatku”', /przy mnożniku podatku"/.test(read('data/resources.json')));
+
 // ---------------------------------------------------------------- [J] poprawki językowe
 for (const rule of FORBIDDEN_LANG) {
   const hit1 = techStrings.find(([, t]) => rule.re.test(t));
