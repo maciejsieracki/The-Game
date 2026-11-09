@@ -115,5 +115,24 @@ ok(followLeaderAutoMergeDecision([wodz], [follower], [], 5, 5, LIMIT) === 'none'
   ok(d === 'none', 'wchodzacy wodz (isGeneral) nie jest scalany automatycznie');
 }
 
+// 10) wiring w main.ts (asercja zrodlowa): decyzja podpieta w promptMergeIfCoLocated PRZED showArmyMergePanel;
+//     gałąź merge omija panel (applyMerge(true)), limit-blocked pokazuje hint, ręczny onMerge = applyMerge(false)
+{
+  const src = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
+  const fnAt = src.indexOf('function promptMergeIfCoLocated(');
+  const panelAt = src.indexOf('showArmyMergePanel({', fnAt);
+  const decAt = src.indexOf('const followDecision = followLeaderAutoMergeDecision(', fnAt);
+  const mergeAt = src.indexOf("if (followDecision === 'merge') {", fnAt);
+  const limitAt = src.indexOf("if (followDecision === 'limit-blocked') {", fnAt);
+  const hintAt = src.indexOf('Nie dołączono do armii wodza', fnAt);
+  ok(fnAt >= 0 && decAt > fnAt && decAt < panelAt, 'main.ts: decyzja followLeader w promptMergeIfCoLocated przed showArmyMergePanel');
+  ok(mergeAt > decAt && mergeAt < panelAt && src.slice(mergeAt, panelAt).includes('applyMerge(true)'),
+    'main.ts: galaz merge wywoluje applyMerge(true) i omija panel');
+  ok(limitAt > decAt && limitAt < panelAt && hintAt > limitAt && hintAt < panelAt,
+    'main.ts: galaz limit-blocked pokazuje hint przed panelem');
+  ok(src.indexOf('onMerge: () => applyMerge(false)', fnAt) > panelAt,
+    'main.ts: reczny onMerge wspoldzieli applyMerge(false)');
+}
+
 console.log('\narmy-follow-leader-auto-merge-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);
