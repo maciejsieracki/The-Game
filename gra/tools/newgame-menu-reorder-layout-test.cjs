@@ -4,7 +4,7 @@
  * R-WEB-NEWGAME-MENU-REORDER-Q1 — geometria układu kroku 4 (ustawienia nowej gry) w realnym Chromium.
  *
  * Sprawdza przy zoomie 100% i 150% oraz 3 rozmiarach okna (1280×800, 1600×1000, 1920×1080):
- *  - 12 kart głównej siatki (`.sett-grid .srow`) w dwóch kolumnach, wiersze wyrównane,
+ *  - 14 kart głównej siatki (`.sett-grid .srow`) w dwóch kolumnach, wiersze wyrównane,
  *  - każda karta da się przewinąć w obszarze `.content` i jest w nim w całości widoczna,
  *  - karty nie nachodzą na siebie ani na panel „Twój start" (`.start-preview`),
  *  - przycisk „Dalej" (`.nav .next`) osiągalny i nieprzykryty,
@@ -127,7 +127,7 @@ async function main() {
       await page.waitForSelector('.civ-newgame .sett-grid .srow');
 
       const cardsLoc = page.locator('.civ-newgame .sett-grid .srow');
-      assert.strictEqual(await cardsLoc.count(), 13, `${tag}: 13 cards in main grid`); // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: +Automatyzacja budowy
+      assert.strictEqual(await cardsLoc.count(), 14, `${tag}: 14 cards in main grid`); // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: +Automatyzacja budowy; R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: +Odkrywanie klawiszem F
 
       // Stan początkowy: układ kolumn, rozłączność kart, panel „Twój start", etykiety.
       const base = await page.evaluate((rectSrc) => {
@@ -154,7 +154,7 @@ async function main() {
       base.labels.forEach((l, i) => assert(!l.clipped, `${tag}: label ${i} "${l.text}" not clipped`));
 
       // Każda karta przewijana w obszarze `.content` jest w nim w całości widoczna i nie wchodzi na nawigację.
-      for (let i = 0; i < 13; i++) {
+      for (let i = 0; i < 14; i++) {
         await cardsLoc.nth(i).scrollIntoViewIfNeeded();
         const g = await page.evaluate(({ rectSrc, idx }) => {
           const rect = eval(rectSrc);
@@ -184,7 +184,7 @@ async function main() {
       await page.screenshot({ path: path.join(EVIDENCE, `ustawienia-${tag}-gora.png`) });
       await page.evaluate(() => { const c = document.querySelector('.civ-newgame .content'); c.scrollTop = c.scrollHeight; });
       await page.screenshot({ path: path.join(EVIDENCE, `ustawienia-${tag}-dol.png`) });
-      console.log(`  OK  ${tag}: 13 cards, 2 columns, all visible in scroll area, no overlap, Dalej reachable`);
+      console.log(`  OK  ${tag}: 14 cards, 2 columns, all visible in scroll area, no overlap, Dalej reachable`);
 
       if (vp.zoom === 1 && vp.w === 1600) {
         await page.locator('.civ-newgame .btn-adv').click();
