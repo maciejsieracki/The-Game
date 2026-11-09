@@ -58,7 +58,9 @@ ok(buildings.length === 43, `pełny katalog budynków ma 43 rekordy (ma ${buildi
 // przepisany WYŁĄCZNIE z powodu zatwierdzonej zmiany kosztów (Kamień: drewno=kamień dla tech
 // poz. 2-3; Brąz: drewno=kamień=cegła; Żelazo: cegła=kamień=drewno; 36 rekordów, reszta bez
 // zmian) — wartości pilnuje koszty-surowcowe-test. Poprzednia wartość: 033cb1b7...e5a4.
-const RESOURCE_BASELINE_SHA256 = '71bed2878090dd9d26a88f2ade6c9a62bf2f31b00753c101f9974c71ddb5d542';
+// R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (2026-11-09): fingerprint przepisany WYŁĄCZNIE z powodu
+// zmiany koszt_surowce Targowiska (drewno 30 + kamień 30 -> samo drewno 30). Poprzednia wartość: 71bed287...d542.
+const RESOURCE_BASELINE_SHA256 = '4855006679bf59f7a1a1e5709ff44374bf76a611acfa15c76bd7a7a4e4b07dea';
 const resourceCanonical = buildings.map(b => `${b.id}\t${JSON.stringify(b.koszt_surowce ?? null)}`).join('\n');
 const resourceSha = crypto.createHash('sha256').update(resourceCanonical).digest('hex');
 ok(resourceSha === RESOURCE_BASELINE_SHA256, `koszt_surowce wszystkich budynków bez zmian (sha256 ${resourceSha})`);

@@ -128,3 +128,34 @@ W dzisiejszej grze o trzech epokach Pancerz dobija do **30%** — Wielka Kuźnia
    od ilości. Dodanie typu do kosztu budowy dokłada więc automatycznie 5/turę tego surowca — tyle samo, ile płacą
    dotychczasowe surowce budynku (reguła właściciela spełniona bez zmiany kodu). Skutek: +30 typów surowców
    w 32 zmienionych budynkach = maks. +150 szt./turę, jeśli wszystkie stoją naraz.
+
+---
+
+# ANEKS 2026-11-09 (2) — R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (decyzja właściciela)
+
+**Zmienia jedną pozycję aneksu z 2026-11-09 (punkt 2):** Targowisko (Rynek, `targowisko`, epoka Kamienia,
+technologia Wymiana, poziom 2) NIE wymaga kamienia. Koszt surowcowy wraca do samego drewna:
+`koszt_surowce` = **drewno 30** (było drewno 30 + kamień 30 po FALA 573; przed FALA 573 było tak samo: samo drewno).
+
+Powód: ABC prereq Murarstwa (kamień dostępny dopiero z Murarstwem) — właściciel zdecydował, że Targowisko
+ma być budowalne bez Murarstwa. Pozostałe budynki Kamienia z kamieniem **bez zmian**:
+
+| Budynek | Koszt surowcowy | Status |
+|---|---|---|
+| Studnia | drewno 25 + kamień 25 | ZOSTAJE z kamieniem — czeka na dostępność kamienia (Murarstwo) |
+| Kamienne kręgi | drewno 40 + kamień 40 | ZOSTAJE z kamieniem — czeka na dostępność kamienia (Murarstwo) |
+| Targowisko (Rynek) | drewno 30 | ZMIANA: kamień usunięty, bez prereq Murarstwa |
+
+**Skutki w danych i testach:**
+- Utrzymanie surowcowe Targowiska: automatycznie z `koszt_surowce` (1/turę za każdy typ obecny w kosztach,
+  mechanizm `economy-upkeep.ts`) — Targowisko płaci teraz 1 szt. drewna/turę zamiast drewna i kamienia.
+- Wyjątki „kamień bez Murarstwa” (`building-cost-resource-availability-test.cjs`): `['kamienne_kregi', 'studnia']`.
+- Fingerprint `koszt_surowce` (`budynki-koszt-pracy-50-test.cjs`): przepisany na `4855006679bf…07dea`
+  (poprzednio `71bed287…d542`) — wyłącznie z powodu tej zmiany.
+- Testy `koszty-surowcowe-test.cjs` (sekcja A): Targowisko usunięte z mapy „drewno = kamień”; teraz
+  wymagane wyłącznie drewno (gałąź „poziom 1/bez techu”).
+- Karta Targowiska (`building-cards-top5.json`) nie zawiera tekstu o kamieniu — bez zmian.
+
+**Dług REPIN Rust (do wykonania w planie portu Rust, nie w tej paczce):** odświeżyć dane kosztów Targowiska
+w porcie (`koszt_surowce` drewno 30, bez kamienia) i fingerprint kosztów budynków w testach portu, gdy REPIN
+danych budynków wróci do kolejki.
