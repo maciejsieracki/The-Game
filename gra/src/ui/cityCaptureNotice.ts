@@ -5,6 +5,10 @@
 
 import { brandIconSvg } from './icons/brandAssets';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import {
+  ensureSpectacleStyles, eliminationSpectacleHtml, startCountUp,
+  type EliminationSpectacleData,
+} from './eliminationSpectacle';
 
 const OVERLAY_ID = 'city-capture-notice';
 
@@ -37,6 +41,10 @@ export interface CityCaptureNoticeOpts {
    *  prostu ich tu nie ma — modal renderuje dokładnie to, co dostał.
    *  EN: structural capture balance — label/value rows, not one glued sentence. */
   reportRows?: readonly CaptureReportRow[];
+  /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: dane „widowiskowego" ekranu eliminacji. Gdy podane
+   *  (i `eliminatedCivLabel`), modal pokazuje nagłówek/dokonania/statystyki wojenne/docenienie,
+   *  a dotychczasowy BILANS ZDOBYCIA zostaje pod spodem bez zmian. */
+  spectacle?: EliminationSpectacleData;
 }
 
 /**
@@ -250,13 +258,19 @@ export function showCityCaptureNotice(
   });
 
   const box = document.createElement('div');
-  box.className = 'civ-ccn' + (eliminated ? ' civ-ccn-elim' : '');
+  const spectacle = eliminated ? opts?.spectacle : undefined;
+  if (spectacle) ensureSpectacleStyles();
+  box.className = 'civ-ccn' + (eliminated ? ' civ-ccn-elim' : '') + (spectacle ? ' civ-ccn-spectacle' : '');
   box.innerHTML =
     '<div class="civ-ccn-hdr">' +
-      '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
+      (spectacle
+        ? eliminationSpectacleHtml(spectacle) +
+          '<div class="civ-ccn-name">' + esc(cityName) + '</div>' +
+          '<div class="civ-ccn-elim-sub">Ostatnie miasto przejęte, cywilizacja wyeliminowana</div>'
+        : '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
       '<div class="civ-ccn-title">' + (eliminated ? 'ELIMINACJA!' : 'Miasto zdobyte') + '</div>' +
-      '<div class="civ-ccn-name">' + esc(cityName) + '</div>' +
-      (eliminated
+      '<div class="civ-ccn-name">' + esc(cityName) + '</div>') +
+      (eliminated && !spectacle
         ? '<div class="civ-ccn-elim-sub">' + esc(eliminated) + ' — ostatnie miasto przejęte, cywilizacja wyeliminowana</div>'
           // Ścieżka zapasowa: jeden sklejony string pokazujemy WYŁĄCZNIE gdy wołający nie dał
           // wierszy (GOAL 2 — inaczej ta sama treść byłaby na ekranie dwa razy).
@@ -278,6 +292,7 @@ export function showCityCaptureNotice(
   box.addEventListener('click', (e) => e.stopPropagation());
   root.appendChild(box);
   document.body.appendChild(root);
+  if (spectacle) startCountUp(box);
 
   keyHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -308,20 +323,25 @@ export function showCaptureReportNotice(opts: {
    *  własną stratą gracza nagłówek „BILANS ZDOBYCIA".
    *  EN: names the list for what it actually shows — a gain balance or a loss balance. */
   rowsTitle?: string;
+  /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: „widowiskowy" ekran eliminacji (karta ELIMINACJA). */
+  spectacle?: EliminationSpectacleData;
 }): void {
   close();
   ensureStyles();
+  if (opts.spectacle) ensureSpectacleStyles();
 
   root = document.createElement('div');
   root.className = 'civ-ccn-overlay';
   root.addEventListener('click', (e) => { if (e.target === root) close(); });
 
   const box = document.createElement('div');
-  box.className = 'civ-ccn civ-ccn-elim';
+  box.className = 'civ-ccn civ-ccn-elim' + (opts.spectacle ? ' civ-ccn-spectacle' : '');
   box.innerHTML =
     '<div class="civ-ccn-hdr">' +
-      '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
-      '<div class="civ-ccn-title">' + esc(opts.title) + '</div>' +
+      (opts.spectacle
+        ? eliminationSpectacleHtml(opts.spectacle)
+        : '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
+      '<div class="civ-ccn-title">' + esc(opts.title) + '</div>') +
       '<div class="civ-ccn-name">' + esc(opts.cityName) + '</div>' +
       (opts.subtitle ? '<div class="civ-ccn-elim-sub">' + esc(opts.subtitle) + '</div>' : '') +
       reportRowsHtml(opts.rows, opts.rowsTitle) +
@@ -336,6 +356,7 @@ export function showCaptureReportNotice(opts: {
   box.addEventListener('click', (e) => e.stopPropagation());
   root.appendChild(box);
   document.body.appendChild(root);
+  if (opts.spectacle) startCountUp(box);
 
   keyHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {

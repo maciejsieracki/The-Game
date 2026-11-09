@@ -139,7 +139,13 @@ import { CIV_PUBLISH_MARKERS } from './buildInfo';
 import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
 import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon, setCityMapBadgeLeaderPortrait } from './render/cityMapStatChip';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
-import { leaderPortraitUrl } from './ui/leaderPortraits';
+import { leaderPortraitUrl, leaderName as leaderNameForCiv } from './ui/leaderPortraits';
+import {
+  type ChronicleMap, type EliminationSpectacleData,
+  buildEliminationSpectacle, noteUnitProduced, noteBattleOutcome, noteCityCapture,
+  noteEmpireSize, noteWonderBuilt, chronicleFor, newChronicle,
+  serializeChronicles, restoreChronicles,
+} from './ui/eliminationSpectacle';
 import { civIconSvg } from './ui/icons/brandAssets';
 import {
   beginTurnTransition,
@@ -2196,6 +2202,12 @@ async function boot(): Promise<void> {
     /** Follow-up „Power-zdobycze" (2026-07-21): trwały bonus Power po eliminacji
      *  wroga, per zwycięzca (ownerId) — patrz eliminateOwner()/buildObjectivePowerForOwner. */
     const zdobyczePowerByOwner = new Map<number, number>();
+    /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: kroniki (liczniki) per cywilizacja do ekranu
+     *  eliminacji — wyprodukowane/stracone/zniszczone jednostki, bitwy, miasta, rekordy.
+     *  Zapis: meta.civChronicleByOwner (brak w starych zapisach => wpisy `legacy`). */
+    const civChronicleByOwner: ChronicleMap = new Map();
+    /** Ostatnio zbudowane dane ekranu eliminacji, kluczem jest etykieta wyeliminowanej cywilizacji. */
+    const eliminationSpectacleByLabel = new Map<string, EliminationSpectacleData>();
     /** Audyt #13 (2026-07-22): heksy wiosek zlupionych w tej sesji (klucz "q,r") — mapa
      *  wraca do stanu z generatora (wioska.istnieje=true) po regeneracji z seeda przy
      *  load/nowej grze, wiec stan zlupienia trzeba trzymac osobno i reaplikowac po
@@ -4434,6 +4446,7 @@ async function boot(): Promise<void> {
         pancerzBonusProc: birthProgress.pancerzBonusProc,
         parametryBonusProc: birthProgress.parametryBonusProc,
       });
+      chronicleNoteProducedUnit(units[units.length - 1]);
       maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
       if (city.ownerId === 0) {
         if (endTurnInProgress) {
@@ -4446,6 +4459,73 @@ async function boot(): Promise<void> {
         `[Produkcja] Tura ${turn} ${city.name}: jednostka ${completed.id} @ (${city.q},${city.r}) (−${d.kosztManpower} MP)`,
       );
       return { prod: prodAfterAdvance };
+    }
+
+    /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: jednostka bojowa zeszła z linii produkcji. */
+    function chronicleNoteProducedUnit(u: RuntimeUnit | undefined): void {
+      if (!u || isBarbarian(u.ownerId)) return;
+      if (u.category === 'osadnik' || u.category === 'robotnik') return;
+      noteUnitProduced(civChronicleByOwner, u.ownerId, turn);
+    }
+
+    /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: rekordy (maks. miasta, szczyt ludności) co turę. */
+    function chronicleTickEmpireSizes(): void {
+      const byOwner = new Map<number, { n: number; pop: number }>();
+      for (const c of cities) {
+        const e = byOwner.get(c.ownerId) ?? { n: 0, pop: 0 };
+        e.n++; e.pop += Math.max(0, Number(c.population) || 0);
+        byOwner.set(c.ownerId, e);
+      }
+      for (const [oid, e] of byOwner) {
+        if (isBarbarian(oid)) continue;
+        const existing = civChronicleByOwner.get(oid);
+        if (existing?.legacy) continue;
+        if (!existing) chronicleFor(civChronicleByOwner, oid, Math.max(1, turn - 1));
+        noteEmpireSize(civChronicleByOwner, oid, e.n, e.pop, turn);
+      }
+    }
+
+    /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: dane widowiskowego ekranu eliminacji (migawka
+     *  tuż PRZED eliminateOwner; wszystkie liczby z realnych liczników / stanu gry). */
+    function buildSpectacleForElimination(
+      lastCity: City, elimOwner: number, captorOwner: number, label: string, elimPower: number,
+    ): EliminationSpectacleData {
+      const key = civTypeForOwner(elimOwner);
+      const row = data.civs.cywilizacje.find(
+        (c: { ikonaId?: string; typCywilizacji?: string }) => c.ikonaId === key || c.typCywilizacji === key,
+      ) as { ikonaId?: string; kolorHex?: string } | undefined;
+      const ikonaId = row?.ikonaId ?? key;
+      const era = empireEpochForOwner(elimOwner);
+      const capId = capitalCityIdByOwner.get(elimOwner);
+      const capName = (capId ? cities.find(c => c.id === capId)?.name : undefined) ?? null;
+      const captorBarb = isBarbarian(captorOwner);
+      let captorPower: number | null = null;
+      if (!captorBarb) {
+        try { captorPower = buildObjectivePowerForOwner(captorOwner).power; } catch { captorPower = null; }
+      }
+      const captorChron = civChronicleByOwner.get(captorOwner);
+      return buildEliminationSpectacle({
+        civLabel: label,
+        iconSvg: ikonaId ? civIconSvg(ikonaId, 24) : undefined,
+        colorHex: row?.kolorHex,
+        era,
+        fallTurn: turn,
+        rulerName: leaderNameForCiv(ikonaId, era),
+        portraitUrl: leaderPortraitUrl(ikonaId, era),
+        capitalName: capName,
+        elimOwner,
+        captorOwner,
+        captorLabel: civLabelForOwner(captorOwner),
+        captorIsPlayer: captorOwner === 0,
+        chronicles: civChronicleByOwner,
+        currentCities: 1,
+        currentPopulation: Math.max(0, Number(lastCity.population) || 0),
+        wonders: placedWorldWonders.filter(w => w.ownerId === elimOwner && !w.ruin).length,
+        techs: countTechForOwner(elimOwner),
+        elimPower: Number.isFinite(elimPower) ? elimPower : null,
+        captorPower,
+        captorMaxCities: captorChron && !captorChron.legacy && captorChron.maxCities > 0 ? captorChron.maxCities : null,
+      });
     }
 
     /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji).
@@ -5007,6 +5087,7 @@ async function boot(): Promise<void> {
         ownerId: site.ownerId,
         ruin: false,
       });
+      noteWonderBuilt(civChronicleByOwner, site.ownerId, turn);
       wonderBuildSites = wonderBuildSites.filter(s => s !== site);
       hideDecorAtHex(keyOf(site.q, site.r));
       syncWonderRender();
@@ -10017,6 +10098,8 @@ async function boot(): Promise<void> {
       subtitle: string;
       rows: CaptureReportRow[];
       rowsTitle: string;
+      /** R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: widowiskowy ekran (tylko karta ELIMINACJA). */
+      spectacle?: EliminationSpectacleData;
     }>();
 
     const CITY_CAPTURE_EVENT_PREFIX = 'capture-';
@@ -10101,6 +10184,7 @@ async function boot(): Promise<void> {
         // Naglowek listy nazywa to, co gracz na niej widzi: bilans ZDOBYCIA, gdy zdobywal,
         // bilans STRATY, gdy tracil. „BILANS ZDOBYCIA" nad wlasna strata byl czescia zarzutu 2.
         rowsTitle: playerCaptured ? 'Bilans zdobycia' : 'Bilans straty',
+        spectacle: elim ? eliminationSpectacleByLabel.get(elim) : undefined,
       });
 
       warEventLog.unshift({
@@ -10133,6 +10217,7 @@ async function boot(): Promise<void> {
         subtitle: info.subtitle,
         rows: info.rows,
         rowsTitle: info.rowsTitle,
+        spectacle: info.spectacle,
       });
       return true;
     }
@@ -10330,7 +10415,7 @@ async function boot(): Promise<void> {
       // dziedziczylaby „przekierowanych" ownerow z poprzedniej partii.
       aiSurplusRedirectedOwners.clear();
       capitalCityIdByOwner.clear();
-      zdobyczePowerByOwner.clear();
+      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
         aiOwnerCivMap.set(oid, civ);
         setupAiOwnerEpoch(oid, _menuEpochId || 'kamien');
@@ -12075,7 +12160,11 @@ async function boot(): Promise<void> {
       emitOrDeferNotice('wonder-completed', humanSeats.activeHumanOwnerId, () => showWonderCompletedNotice(opts));
     }
     function showCityCaptureNoticeDeferred(...args: Parameters<typeof showCityCaptureNotice>): void {
-      emitOrDeferNotice('city-capture', humanSeats.activeHumanOwnerId, () => showCityCaptureNotice(...args));
+      const [cityNm, capOpts] = args;
+      const spectacle = capOpts?.eliminatedCivLabel
+        ? eliminationSpectacleByLabel.get(capOpts.eliminatedCivLabel) : undefined;
+      const withSpectacle = spectacle ? { ...capOpts, spectacle } : capOpts;
+      emitOrDeferNotice('city-capture', humanSeats.activeHumanOwnerId, () => showCityCaptureNotice(cityNm, withSpectacle));
     }
     /** Poczatek tury gracza: odpal odlozone modale aktywnego fotela (kolejnosc wystapienia). Bezpieczne
      *  z definicji: no-op w EOT i gdy otwarta bitwa/audiencja (kolejka zostaje do ponowienia). */
@@ -16929,6 +17018,7 @@ async function boot(): Promise<void> {
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
         city.ownerId = newOwner;
         settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
+        noteCityCapture(civChronicleByOwner, oldOwner, newOwner, turn); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
         // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
         // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
@@ -33064,6 +33154,8 @@ async function boot(): Promise<void> {
         });
       }
 
+      const chronAtkOwner = atkRoster[0]?.ownerId;
+      const chronDefOwner = defRoster[0]?.ownerId;
       applyPostBattleMap({
         units,
         map,
@@ -33091,6 +33183,23 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: straty obu stron do kronik (atrybucja per
+      // właściciel). Polegli = jednostki rosteru, których nie ma już w `units`. Wirtualna
+      // Milicja (poza units[]) nie jest liczona.
+      if (chronAtkOwner !== undefined && chronDefOwner !== undefined) {
+        const aliveIds = new Set(units.map(u => u.id));
+        // Straty liczone per właściciel KAŻDEJ jednostki rosteru (sojusznicy w jednej bitwie).
+        const deadByOwnerOf = (roster: RuntimeUnit[]): Map<number, number> => {
+          const m = new Map<number, number>();
+          for (const u of roster) {
+            if (isMilitiaUnit(u) || aliveIds.has(u.id)) continue;
+            m.set(u.ownerId, (m.get(u.ownerId) ?? 0) + 1);
+          }
+          return m;
+        };
+        noteBattleOutcome(civChronicleByOwner, chronAtkOwner, chronDefOwner,
+          deadByOwnerOf(atkRoster), deadByOwnerOf(defRoster), turn);
+      }
       if (cityOnHex && fallenMilitia) {
         // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: cala Milicja polegla => okres odnowy (tury globalne).
         // Auto-bitwa: przegrana obrona = cala Milicja zniszczona (wagi linii nie zabijaja dystansu).
@@ -34215,6 +34324,10 @@ async function boot(): Promise<void> {
       });
       const eliminatedDetails = captureReportOneLine(eliminationRows);
       capitalCaptureReportSlot = { rows: eliminationRows, oneLine: eliminatedDetails };
+      eliminationSpectacleByLabel.set(
+        eliminatedCivLabel,
+        buildSpectacleForElimination(city, oldOwner, newOwner, eliminatedCivLabel, lostPower),
+      );
       recordCityCaptureEvent({
         cityId: city.id,
         cityName: city.name,
@@ -34511,6 +34624,7 @@ async function boot(): Promise<void> {
       reportRows: CaptureReportRow[];
     } {
       const oldOwner = city.ownerId;
+      noteCityCapture(civChronicleByOwner, oldOwner, atkOwner, turn); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
       // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyCityCaptureAfterBattle, które
       // (post-battle-map.ts, gdy !isBarbarian(atkOwner)) woła applyPostCaptureLawOnCapture i
       // kasuje bezwarunkowo rebelPreviousOwnerId/rebelProtectionTurnsRemaining — ten drugi
@@ -35800,6 +35914,7 @@ async function boot(): Promise<void> {
           zlozeGrants: zlozeGrants.slice(),
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+          civChronicleByOwner: serializeChronicles(civChronicleByOwner),
           capitalCityIdByOwner: Array.from(capitalCityIdByOwner.entries()),
           // Audyt #44: aiSkarbiecByOwner nie bylo w snapshotcie -- czyszczone przy
           // load bez odtworzenia, wiec skarbiec AI zerowal sie po kazdym wczytaniu.
@@ -36593,6 +36708,7 @@ async function boot(): Promise<void> {
           if (u.retreatedThisTurn) u.retreatedThisTurn = false;
         }
         turn++;
+        chronicleTickEmpireSizes(); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
 
         // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — TRWAJĄCA PARTIA (stan b) oraz
         // NOWA PARTIA (stan c). Granica tury jest wybrana świadomie, z trzech powodów:
@@ -38274,6 +38390,7 @@ async function boot(): Promise<void> {
                   pancerzBonusProc: recBirthProgress.pancerzBonusProc,
                   parametryBonusProc: recBirthProgress.parametryBonusProc,
                 });
+                chronicleNoteProducedUnit(units[units.length - 1]); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
                 // R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1: only an AI-owned completed
                 // unit may join compatible active field units on its birth hex.
                 // `isAiOwner` includes every human hot-seat owner, while the
@@ -43448,7 +43565,7 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
-      zdobyczePowerByOwner.clear();
+      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
       battlePowerPtsByOwner.clear();
       lootedVillageHexKeys.clear();
       stoneForceWarPendingOwners.clear();
@@ -43759,7 +43876,7 @@ async function boot(): Promise<void> {
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
-      zdobyczePowerByOwner.clear();
+      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       gameOver = false;
@@ -44014,7 +44131,7 @@ async function boot(): Promise<void> {
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
-      zdobyczePowerByOwner.clear();
+      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       gameOver = false;
@@ -44248,7 +44365,7 @@ async function boot(): Promise<void> {
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
-      zdobyczePowerByOwner.clear();
+      zdobyczePowerByOwner.clear(); civChronicleByOwner.clear(); eliminationSpectacleByLabel.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       gameOver = false;
@@ -44834,6 +44951,16 @@ async function boot(): Promise<void> {
       if (savedPts?.length) {
         for (const [oid, n] of savedPts) battlePowerPtsByOwner.set(oid, n);
       }
+      // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: kroniki. Zapis sprzed liczników (brak pola) =>
+      // wpisy `legacy` dla istniejących właścicieli => ekran pokazuje „brak danych", nie zera.
+      civChronicleByOwner.clear();
+      if (Array.isArray(saved.meta?.civChronicleByOwner)) {
+        restoreChronicles(civChronicleByOwner, saved.meta?.civChronicleByOwner);
+      } else {
+        for (const c of cities) {
+          if (!civChronicleByOwner.has(c.ownerId)) civChronicleByOwner.set(c.ownerId, newChronicle(undefined, true));
+        }
+      }
       capitalCityIdByOwner.clear();
       const savedCapitalIds = saved.meta?.capitalCityIdByOwner as Array<[number, string]> | undefined;
       if (savedCapitalIds?.length) {
@@ -44880,7 +45007,9 @@ async function boot(): Promise<void> {
       if (savedAiBadana?.length) {
         for (const [oid, t] of savedAiBadana) aiBadanaByOwner.set(oid, t);
       }
-      zdobyczePowerByOwner.clear();
+      // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1 (runda 2, zarzut 1): BEZ czyszczenia civChronicleByOwner
+      // tutaj — kroniki zostały już odtworzone wyżej (ok. l. 44948); ponowny clear kasowałby je.
+      zdobyczePowerByOwner.clear(); eliminationSpectacleByLabel.clear();
       const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;
       if (savedZdobycze?.length) {
         for (const [oid, n] of savedZdobycze) zdobyczePowerByOwner.set(oid, n);
