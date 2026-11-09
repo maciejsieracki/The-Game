@@ -24292,6 +24292,22 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * Pula rekrutów cywilizacji do audiencji: `rekruci` = bieżąca pula (suma city.manpower
+     * miast ownera, jak panel werbu / getEmpireRekruciTotal), `max` = suma maksimum puli
+     * miast tego ownera (cityManpowerMax). Ten sam mnożnik maxMult co panel werbu.
+     */
+    function audienceRecruitsForOwner(ownerId: number): { rekruci: number; max: number } {
+      const ep = empireEpochForOwner(ownerId);
+      const maxMult = civManpowerMultsForOwner(ownerId).maxMult;
+      let max = 0;
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        max += cityManpowerMax(c.population, ep, maxMult);
+      }
+      return { rekruci: empirePoborTotals(cities, ownerId, ep, maxMult).rekruci, max };
+    }
+
+    /**
      * R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): wariant EFEKTYWNY audienceRelTotal —
      * WYŁĄCZNIE dla pola `relacjaTotal` w payloadzie getState() ekranu audiencji
      * (main.ts, showDiplomacyAudience), które trafia na TEN SAM ekran co
@@ -24545,6 +24561,10 @@ async function boot(): Promise<void> {
           const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
+          // Rekruci w audiencji: bieżąca pula + maks. (suma miast) obu stron — ta sama
+          // definicja co panel werbu (empirePoborTotals.rekruci, mnożnik civManpowerMults).
+          const recruitsPlayer = audienceRecruitsForOwner(ME());
+          const recruitsOther = audienceRecruitsForOwner(ownerId);
           const pairMeta = getDiploPairMeta(ME(), ownerId);
           const dip = _diplomacyParams();
           let _fsPakt = false;
@@ -24592,6 +24612,10 @@ async function boot(): Promise<void> {
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             playerPower,
             otherPower,
+            playerRecruits: recruitsPlayer.rekruci,
+            playerRecruitsMax: recruitsPlayer.max,
+            otherRecruits: recruitsOther.rekruci,
+            otherRecruitsMax: recruitsOther.max,
             powerRatioLabel: powerLine.ratioLabel,
             personalityTags: diplomacyPersonalityTags(civKeyForOwner(ownerId)),
             activeTreaties: activeTreatiesForPair(ME(), ownerId),

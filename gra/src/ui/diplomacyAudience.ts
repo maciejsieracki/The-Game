@@ -36,6 +36,7 @@ import {
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
+import { formatFullNumber } from './formatCompactNumber';
 import { civBrandLineForKey } from './civBrandDisplay';
 import type { TradeGoodsCategories } from '../game/diplomacy-goods';
 import { renderNegotiationTableDealSideHtml, negotiationTableDealSideHasContent } from './diplomacyDealDisplay';
@@ -98,6 +99,14 @@ export interface DiplomacyAudienceState {
   playerPower?: number;
   /** Obiektywna Moc rozmówcy. */
   otherPower?: number;
+  /** Pula rekrutów (Manpower bieżący) gracza — suma miast imperium (ta sama definicja co panel werbu). */
+  playerRecruits?: number;
+  /** Maksimum puli rekrutów gracza (suma miast). */
+  playerRecruitsMax?: number;
+  /** Pula rekrutów (Manpower bieżący) rozmówcy — suma miast jego imperium. */
+  otherRecruits?: number;
+  /** Maksimum puli rekrutów rozmówcy (suma miast). */
+  otherRecruitsMax?: number;
   /** Stosunek tekstowy np. „2:1". */
   powerRatioLabel?: string;
   /**
@@ -555,6 +564,10 @@ function handleAudienceEscape(): void {
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
+
+const REKRUCI_TOOLTIP_PL =
+  'Rekruci = pula werbu cywilizacji (Manpower): ile jednostek może teraz zrekrutować. '
+  + 'Suma puli wszystkich jej miast; odnawia się co turę, a werbunek ją zużywa.';
 
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 
@@ -1274,11 +1287,37 @@ function cultureLineHtml(st: DiplomacyAudienceState): string {
 }
 
 /** Pasek atrybutu (Moc militarna / Potencjał sojuszniczy) — bez wartości bezwzględnej 0..100. */
-function attrBarHtml(label: string, valueLabel: string, pct: number, tone: 'you' | 'them' | 'gold'): string {
+function attrBarHtml(
+  label: string,
+  valueLabel: string,
+  pct: number,
+  tone: 'you' | 'them' | 'gold',
+  tooltip?: string,
+): string {
   const p = Math.max(0, Math.min(100, Math.round(pct)));
+  const tip = tooltip ? ' title="' + esc(tooltip) + '"' : '';
   return (
-    '<div class="da-attr-row"><span>' + esc(label) + '</span><span class="v">' + esc(valueLabel) + '</span></div>' +
+    '<div class="da-attr-row"' + tip + '><span>' + esc(label) + '</span><span class="v">' + esc(valueLabel) + '</span></div>' +
     '<div class="da-abar ' + tone + '"><i style="width:' + p + '%"></i></div>'
+  );
+}
+
+/** Wiersz „Rekruci” (pula werbu cywilizacji): wartość „bieżąca / maks.” z spacjami tysięcy. Brak danych = pusty. */
+function recruitsAttrHtml(
+  current: number | undefined,
+  max: number | undefined,
+  tone: 'you' | 'them',
+): string {
+  if (current === undefined || max === undefined) return '';
+  const cur = Math.max(0, Math.round(current));
+  const mx = Math.max(0, Math.round(max));
+  const pct = mx > 0 ? (cur / mx) * 100 : 0;
+  return attrBarHtml(
+    'Rekruci',
+    formatFullNumber(cur) + ' / ' + formatFullNumber(mx),
+    pct,
+    tone,
+    REKRUCI_TOOLTIP_PL,
   );
 }
 
@@ -1347,7 +1386,7 @@ function otherLeaderHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, reputacja, skarbiec, dobra handlowe. */
-function playerCardHtml(st: DiplomacyAudienceState): string {
+export function playerCardHtml(st: DiplomacyAudienceState): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.playerPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
@@ -1369,6 +1408,7 @@ function playerCardHtml(st: DiplomacyAudienceState): string {
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
         attrBarHtml('Moc militarna', String(st.playerPower ?? 0), powerPct, 'you') +
+        recruitsAttrHtml(st.playerRecruits, st.playerRecruitsMax, 'you') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
       (st.playerWiarygodnosc !== undefined
@@ -1424,6 +1464,7 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
         attrBarHtml('Moc militarna', String(st.otherPower ?? 0), powerPct, 'them') +
+        recruitsAttrHtml(st.otherRecruits, st.otherRecruitsMax, 'them') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
       '<div>' +
