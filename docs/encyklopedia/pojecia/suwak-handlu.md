@@ -46,7 +46,7 @@ Przy domyślnym udziale **20%** zamożności miasto dostaje na normalnej trudno�
 
 ## Co jeszcze wchodzi do puli Daniny
 
-**Pieniądz z budynków** (np. Targowisko) oraz **Pieniądz z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do tej samej puli Daniny netto miasta i dzielą się identycznym suwakiem, zamiast omijać podział.
+**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do tej samej puli Daniny netto miasta i dzielą się identycznym suwakiem, zamiast omijać podział.
 
 Dochód z tras handlowych trafia w całości do skarbca i omija korupcję, suwak oraz Mennicę. Targowisko zwiększa dochód z tras o 62% (łatwy), 50% (normalny) lub 38% (trudny), a nie lokalną pulę Daniny/Podatku.
 

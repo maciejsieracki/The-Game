@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Magazyn** — budynek (Produkcja+Pieniadz), epoka Brąz. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Handel**. **Dodatkowo (2026-07-24):** każdy zbudowany Magazyn w imperium podnosi o **+100** pojemność wspólnego magazynu surowców całego państwa (na każdy typ surowca).
+**Magazyn** — budynek (Produkcja+Podatek), epoka Brąz. Koszt od **20** pracy, utrzymanie **1** ¤/t. Technologia **Handel**. **Dodatkowo (2026-07-24):** każdy zbudowany Magazyn w imperium podnosi o **+100** pojemność wspólnego magazynu surowców całego państwa (na każdy typ surowca).
 
 ---
 
@@ -43,7 +43,7 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 - Ignorowanie utrzymania: 1 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
 - Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
 - Mylenie tego magazynu z zapasami **żywności** (Spichlerz) — to dwa osobne systemy z różnymi wzorami pojemności.
-**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Pieniadz · Magazyn surowców państwa (Część III §21.5b, Część VIII §53.2)
+**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Podatek · Magazyn surowców państwa (Część III §21.5b, Część VIII §53.2)
 
 ---
 

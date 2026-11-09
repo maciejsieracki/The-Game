@@ -177,6 +177,26 @@ for (const f of ['28-katalog-ulepszen.md', '45-katalog-budynkow.md']) {
   check('[A] wikiBundle.json: każde „+N złoto/złota” to wyjątek klasy B (cuda × miasto / suwak zamożności)', hits.every((h) => WYJATEK_B.test(h)), hits.filter((h) => !WYJATEK_B.test(h)));
   check('[A] wikiBundle.json: Obóz łowiecki i Warzelnia soli dają podatek', /Daje: \*\*\+1 żywność, \+1 podatek\*\*/.test(wb) && /Daje: \*\*\+1 podatek, \+1 żywność\*\*/.test(wb));
 }
+// [A] r4b: produkcja budynków/ulepszeń/cech nie może mówić „pieniądz” (klasa A → podatek). Wzorce bez okna znaków,
+// żeby nie łapać wyjątków klasy C (cuda: „+200 Pieniądza przy ukończeniu cudu”, „+3 Pieniądz/turę” w Piramidach) ani klasy B (Mennica, skarbiec).
+const PIENIADZ_KLASA_A = /\+\d+ Pieniądza\/t\b|Pieniądz\/t\b|Pieniądz na turę|Pieniądz \(¤\) na turę|Pieniądz z budynków|Pieniądz z zamiany Pracy|Daje Pieniądz\b|\| Pieniadz \||\| Pieniądz \||budynek \(Pieniądz\)|budynek \(Pieniadz\)/g;
+{
+  const wb = fs.readFileSync(path.join(GRA, 'src/data/wikiBundle.json'), 'utf8');
+  const hitsWb = [...wb.matchAll(PIENIADZ_KLASA_A)].map((m) => m[0]);
+  check('[A] wikiBundle.json: brak „pieniądz” przy produkcji budynków/ulepszeń (klasa A → podatek)', hitsWb.length === 0, hitsWb);
+  for (const f of ['28-katalog-ulepszen.md', '45-katalog-budynkow.md', '06-miasto-spoleczenstwo.md', '08-ekonomia-imperium.md']) {
+    const t = fs.readFileSync(path.join(poradnikDir, f), 'utf8');
+    const h = [...t.matchAll(PIENIADZ_KLASA_A)].map((m) => m[0]);
+    check(`[A] PORADNIK ${f}: brak „pieniądz” przy produkcji (klasa A)`, h.length === 0, h);
+  }
+  for (const f of fs.readdirSync(path.join(wikiDir, 'budynki'))) {
+    if (!f.endsWith('.md')) continue;
+    const t = fs.readFileSync(path.join(wikiDir, 'budynki', f), 'utf8');
+    const h = [...t.matchAll(PIENIADZ_KLASA_A)].map((m) => m[0]);
+    if (h.length) check(`[A] encyklopedia budynki/${f}: brak „pieniądz” przy produkcji (klasa A)`, false, h);
+  }
+  check('[A] encyklopedia budynki: przynajmniej jedno „Podatek/t” (kontrola, że zmiana weszła)', fs.readdirSync(path.join(wikiDir, 'budynki')).some((f) => /Podatek\/t|podatku\/t/.test(fs.readFileSync(path.join(wikiDir, 'budynki', f), 'utf8'))), []);
+}
 check('[A] wiki budynki/port.md i magazyn.md: kategoria „Pieniadz” zamieniona na „Podatek”',
   !/kategorii \*\*Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/port.md'), 'utf8'))
   && !/kategorii \*\*Produkcja\+Pieniadz\*\*/.test(fs.readFileSync(path.join(wikiDir, 'budynki/magazyn.md'), 'utf8')));

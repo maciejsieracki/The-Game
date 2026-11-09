@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Port handlowy** — budynek (Pieniadz), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Żegluga**.
+**Port handlowy** — budynek (Podatek), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Żegluga**.
 
 ---
 
@@ -35,7 +35,7 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 - Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
 - Ignorowanie utrzymania: 2 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
 - Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Pieniadz
+**Powiązane:** Produkcja miejska · Utrzymanie · Podatek
 
 ---
 

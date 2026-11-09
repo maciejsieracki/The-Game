@@ -3,7 +3,7 @@
 > **Poradnik gracza (Pełny)** · Część VII §45 · dane: `gra/data/buildings.json`
 > Pełne karty Wiki: `docs/encyklopedia/budynki/` · spis: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`
 
-> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Pieniądz/t**, nie mnożnik handlu. **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
+> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Podatek/t**, nie mnożnik handlu. **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
 
 Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. **Maks. poziomów** zależy od budynku (np. Targowisko **3**, Mury **2**, kuźnie wojskowe często **1**) — patrz karta w Civpedii, nie zakładaj „zawsze 10". Część budynków dodatkowo kosztuje **surowce z magazynu** przy wejściu do kolejki (Część VIII §53.2).
 
@@ -30,7 +30,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Stolarnia | Produkcja | Kamień | Obróbka drewna | 20 pracy | 1 ¤/t | +5 praca | [Stolarnia](../encyklopedia/budynki/stolarnia.md) |
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
 | Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 ¤; +15% Pancerz (wizyta) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
-| Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
+| Targowisko (Rynek) | Podatek | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
 | Port handlowy | Podatek | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 podatek | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
 | Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
@@ -89,7 +89,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 **Kuźnia brązu** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Koszt **30** pracy ( **maks. 1 poziom** — wyższy tier = awans na Kuźnię żelaza). Utrzymanie: **2** ¤/t.
 
-Daje: **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** miasto po zbudowaniu kuźni.
+Daje: **+6 Pracy/t**, **+1 podatku/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** miasto po zbudowaniu kuźni.
 **Wymagania:** dostęp do **Rudy (miedź)** w imperium.
 
 
@@ -102,9 +102,9 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Targowisko (Rynek)
 
-**Targowisko (Rynek)** (Pieniądz) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
+**Targowisko (Rynek)** (Podatek) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
 
-Daje **Pieniądz na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnika %** handlu ani Daniny.
+Daje **Podatek na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnika %** handlu ani Daniny.
 
 
 ### Przykład liczbowy
@@ -268,7 +268,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Kuźnia żelaza** (Produkcja+Wojsko) — **upgrade Kuźni brązu** w epoce **Żelazo** (tech **Hutnictwo żelaza**). Koszt **60** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Daje **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A, po wizycie).
+Daje **+8 Pracy/t**, **+2 podatku/t**, **+15% Pancerza** (ścieżka A, po wizycie).
 **Wymagania:** Kuźnia brązu w mieście + **żelazo** w imperium.
 
 
@@ -311,7 +311,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 **Warsztat oblężniczy** (Wojsko) w epoce **Żelazo** po tech **Oblężnictwo**. Koszt **65** pracy + kamień; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-**+4 Pracy/t**, **+2 Pieniądza/t**, **+10% miękkich** (ścieżka B). **Odblokowuje Katapultę** w rekrutacji miasta.
+**+4 Pracy/t**, **+2 podatku/t**, **+10% miękkich** (ścieżka B). **Odblokowuje Katapultę** w rekrutacji miasta.
 **Wymagania:** Koszary w tym mieście.
 
 
@@ -373,7 +373,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Pretorium** (Administracja) — **tylko miasta regionalne** (upgrade Dworu Zarządcy). Epoka **Żelazo**, tech **Prawo**. Koszt **75** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Daje **+2 Pracy/t**, **+3 Pieniądza/t**, **+5 Kultury/t** oraz **Prawo** miasta regionalnego. **Bez bonusu obrony** i bez mnożnika podatkowego.
+Daje **+2 Pracy/t**, **+3 podatku/t**, **+5 Kultury/t** oraz **Prawo** miasta regionalnego. **Bez bonusu obrony** i bez mnożnika podatkowego.
 
 
 ### Przykład liczbowy
@@ -403,7 +403,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Akademia wojskowa** (Wojsko) w epoce **Żelazo** po tech **Sztuka wojenna**. Koszt **80** pracy; **maks. 1 poziom**. Utrzymanie: **4** ¤/t.
 
-**Obok Koszar** (niezależny budynek). **+3 Pracy/t**, **+2 Pieniądza/t**, **+20% miękkich** (ścieżka B, po wizycie). Z Koszarami = +40%; z Warsztatem do +50%.
+**Obok Koszar** (niezależny budynek). **+3 Pracy/t**, **+2 podatku/t**, **+20% miękkich** (ścieżka B, po wizycie). Z Koszarami = +40%; z Warsztatem do +50%.
 **Wymagania:** Koszary w tym mieście.
 
 

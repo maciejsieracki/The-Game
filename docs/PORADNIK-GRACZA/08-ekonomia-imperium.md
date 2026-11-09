@@ -85,7 +85,7 @@ Gdy cywilizacja **odkryje Walutę** i zbuduje **Mennicę w stolicy**, dzieją si
 
 ### 49.3c. Co jeszcze wchodzi do puli Daniny
 
-**Pieniądz z budynków** (np. Targowisko) oraz **Pieniądz z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
+**Podatek z budynków** (np. Targowisko) oraz **Podatek z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
 
 ### 49.4. Strategie gracza
 

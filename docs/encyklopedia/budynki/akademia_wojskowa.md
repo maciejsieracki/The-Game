@@ -24,7 +24,7 @@
 ### Co robi
 Akademia wojskowa stoi **obok Koszar** (niezależny budynek, nie upgrade).
 
-1. **Ekonomia:** **+3 Pracy/t**, **+2 Pieniądza/t**
+1. **Ekonomia:** **+3 Pracy/t**, **+2 podatku/t**
 2. **Ścieżka B:** **+20% parametrów miękkich** (wszystko poza Pancerzem) dla jednostek po **wizycie** w mieście
 
 **Kumulacja ścieżki B w jednym mieście:**

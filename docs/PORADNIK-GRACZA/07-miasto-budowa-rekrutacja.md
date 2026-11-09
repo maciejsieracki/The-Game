@@ -156,7 +156,7 @@ Pełny katalog z tabelą i kartami Wiki: [`45-katalog-budynkow.md`](45-katalog-b
 | Kategoria | Po co |
 |-----------|-------|
 | Produkcja | Praca, czasem złoto (stolarnia, kuźnia, wielka kuźnia) |
-| Pieniądz | Targowisko, port |
+| Podatek | Targowisko, port |
 | Żywność | Spichlerz |
 | Nauka | Biblioteka, Akademia |
 | Kultura | Świątynia, teatr, pałac, stela |
