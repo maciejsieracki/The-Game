@@ -81,7 +81,8 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-bar-lbl{display:flex;justify-content:space-between;align-items:baseline;
   font-size:0.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:0.32em;}
 .civ-army-list-hud .al-bar-lbl .al-bar-val{color:#d4d9e2;font-weight:700;text-transform:none;letter-spacing:0;}
-.civ-army-list-hud .al-mvbar{height:6px;background:rgba(0,0,0,.35);border-radius:999px;margin-top:0.14em;overflow:hidden;}
+.civ-army-list-hud .al-mvbar{height:6px;background:rgba(0,0,0,.35);border-radius:999px;margin-top:0.14em;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(111,176,240,.28);}
 .civ-army-list-hud .al-mvbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#1d4e8f,#6fb0f0);transition:width .2s;}
 .civ-army-list-hud .al-hpbar{height:6px;background:rgba(0,0,0,.35);border-radius:999px;margin-top:0.14em;overflow:hidden;}
 .civ-army-list-hud .al-hpbar i{display:block;height:100%;border-radius:999px;transition:width .2s,background-color .2s;}

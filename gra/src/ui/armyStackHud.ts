@@ -21,6 +21,7 @@ import {
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
 import { formatJednostkiCount } from './formatPl';
+import { pctClamped } from './sideListHud.css';
 import { unitIconSvg } from './icons/brandAssets';
 
 import type { ArmyCommanderTitle } from './armyStackLabel';
@@ -155,6 +156,9 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-card-hp i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);}
 .civ-army-stack .ash-card-mv{font-size:0.62em;color:var(--civ-text-muted,#8a8070);text-align:center;margin-top:4px;
   letter-spacing:.04em;}
+.civ-army-stack .ash-card-mvbar{height:4px;background:rgba(0,0,0,.35);border-radius:2px;margin-top:3px;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(111,176,240,.28);}
+.civ-army-stack .ash-card-mvbar i{display:block;height:100%;background:linear-gradient(90deg,#1d4e8f,#6fb0f0);transition:width .2s;}
 .civ-army-stack .ash-body{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px;}
 .civ-army-stack .ash-stats-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
 .civ-army-stack .ash-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;flex:0 0 auto;min-width:120px;}
@@ -319,7 +323,8 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
           ? '<div class="ash-card-role">' + esc(c.commanderTitle!) + '</div><div class="ash-card-commander-type">' + esc(c.name) + '</div>'
           : '<div class="ash-card-name">' + esc(c.name) + '</div>')
         + '<div class="ash-card-hp"><i style="width:' + hpPct + '%"></i></div>'
-        + '<div class="ash-card-mv">' + c.ruchLeft + '/' + c.ruchMax + ' ruch</div>'
+        + '<div class="ash-card-mv" title="Ruch: ' + c.ruchLeft + ' z ' + c.ruchMax + '">' + c.ruchLeft + '/' + c.ruchMax + ' ruch</div>'
+        + '<div class="ash-card-mvbar" title="Ruch: ' + c.ruchLeft + ' z ' + c.ruchMax + '"><i style="width:' + pctClamped(c.ruchLeft, c.ruchMax) + '%"></i></div>'
         + '</div>';
     }
     html += '</div>';
