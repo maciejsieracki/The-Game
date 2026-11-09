@@ -49,3 +49,7 @@ DEPLOY/PUSH: NIE WYKONANO
 3. Super-jednostki (limit 1) poza programem procentowym — pozostają w osobnej logice (bez zmian).
 4. Dług: REPIN Rust (ai.rs, ai-params 45 kluczy); ai-params.json bywa generowany z Excela (tools/export-ai-params.py) — nowa sekcja §9 trzeba dodać do źródła Excel, inaczej regeneracja ją usunie.
 5. Środowisko: node_modules to symlink do kopii esbuild/typescript poza repo (ignorowany przez .gitignore), do usunięcia po rundzie wraz z /tmp; brak `git add -A`.
+
+## COMMIT
+
+Kod + dane + test + ten raport: 871762a746f891441d2dae68214bc92117ed75b2 (rodzic b765e4994 = origin/main, gałąź worktree-wf_1095f8a8-e38-1). Push/deploy: NIE WYKONANO.
