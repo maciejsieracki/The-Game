@@ -6,6 +6,7 @@ import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczn
 import {
   effectiveNastawienieScores,
   nastawienieHintPl,
+  warRelationCapApplies,
   nastawienieLabelFromScore,
   TRAKTAT_HANDLOWY_LABEL,
   wiarygodnoscBadgeHtml,
@@ -1263,8 +1264,16 @@ function stanceBadgeHtml(st: DiplomacyAudienceState): string {
   const cls = hostile ? 'da-stance-badge hostile' : 'da-stance-badge';
   return (
     '<span class="' + cls + '" title="' + esc(nastawienieHintPl(atWar)) + '">' +
-    esc(label) + '</span>'
+    esc(label) + '</span>' + warCapNoteHtml(st)
   );
+}
+
+/** Dopisek „limit wojenny 29” — tylko przy wojnie, gdy surowa wartość jest obcinana w etykiecie. */
+function warCapNoteHtml(st: DiplomacyAudienceState): string {
+  if (!warRelationCapApplies(st.zaufanie, st.respekt, audienceAtWar(st))) return '';
+  return ' <span class="da-war-cap-note" title="' + esc(
+    'Limit wojenny: w wojnie nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”.',
+  ) + '">(limit wojenny 29)</span>';
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
@@ -1445,7 +1454,7 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
   const atWar = audienceAtWar(st);
-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt);
   return (
     '<div class="da-card them">' +
       (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
@@ -1530,7 +1539,7 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
     '<div class="da-rel-row relacja-total"' + tip + '>'
     + '<span>Relacja</span>'
     + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
-    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>'
+    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)' + warCapNoteHtml(st) + '</span>'
     + '</div>'
     + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );
@@ -2215,7 +2224,7 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
     '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
   ).join('') || '<div class="da-empty">Brak czynników.</div>';
   const atWar = audienceAtWar(st);
-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt);
   const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
   return (
     '<div class="da-relbreak">' +
@@ -2224,7 +2233,8 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
       '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja '
         + (st.relacjaTotal ?? (st.zaufanie + st.respekt)) + ' / 200</b> · '
         + '<b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · '
-        + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
+        + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b>'
+        + warCapNoteHtml(st) + '</div>' +
     '</div>'
   );
 }
