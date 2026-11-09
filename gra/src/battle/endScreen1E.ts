@@ -85,6 +85,16 @@ function statTileHtml(
   );
 }
 
+/**
+ * R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: straty/łupy jako liczby całkowite
+ * z separatorem tysięcy (bez ułamków zmiennoprzecinkowych typu 2443.1999999999925).
+ * NaN/Infinity/ujemne => 0.
+ */
+export function formatEndLoss(v: number): string {
+  const n = Number.isFinite(v) ? Math.max(0, Math.round(v)) : 0;
+  return n.toLocaleString('pl-PL');
+}
+
 export function showEndScreen1E(
   _overlay: HTMLElement,
   p: EndScreen1EParams,
@@ -128,8 +138,8 @@ export function showEndScreen1E(
   const playerSide = p.playerSide ?? 'atk';
   const playerStats = playerSide === 'atk' ? p.atk : p.def;
   const enemyStats = playerSide === 'atk' ? p.def : p.atk;
-  const playerLost = Math.max(0, playerStats.hpMax - playerStats.hp);
-  const enemyLost = Math.max(0, enemyStats.hpMax - enemyStats.hp);
+  const playerLost = formatEndLoss(playerStats.hpMax - playerStats.hp);
+  const enemyLost = formatEndLoss(enemyStats.hpMax - enemyStats.hp);
 
   const card = document.createElement('div');
   Object.assign(card.style, {
@@ -157,7 +167,7 @@ export function showEndScreen1E(
       statTileHtml('−' + playerLost, 'Twoje straty', BATTLE_PLAYER_TEXT, 'rgba(58,106,208,0.35)', 'rgba(58,106,208,0.07)') +
       statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_ENEMY_TEXT, 'rgba(200,64,64,0.35)', 'rgba(200,64,64,0.07)') +
       statTileHtml(
-        loot > 0 ? '+' + loot : '0',
+        loot > 0 ? '+' + formatEndLoss(loot) : '0',
         loot > 0 ? (p.lootNote ?? 'Łupy · złoto') : 'Łupy',
         loot > 0 ? BATTLE_GOLD : BATTLE_TEXT_DIM,
         loot > 0 ? 'rgba(232,216,138,0.35)' : 'rgba(232,216,138,0.25)',

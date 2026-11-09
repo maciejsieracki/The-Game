@@ -1109,6 +1109,12 @@ const MORALE_HIT_LOSS_SCALE = 100;   // moraleLost = (dmg/maxHp)*100 -- loss off
 // (a "shaken by losses" ripple), within MORALE_DEATH_RADIUS tiles.
 const MORALE_ALLY_DEATH_LOSS = 12;
 const STALL_TURN_LIMIT = 6;   // tury bez zmiany HP/morale/strat -> rozstrzygnij bitwe (anty-pat)
+// R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 (runda 2): bezpiecznik przewijania (skip).
+// Pomiar: scena ?playtest=oblezenie-duze nie konczy sie silnikiem (stan ustalony, tury
+// rosna bez konca), wiec przewijanie musi miec sufit. Sufit liczony w TURACH (nie w czasie
+// wirtualnym), o rzedy wiekszy niz rozgrywane bitwy (zrzuty wlasciciela: tura 11).
+// Po przekroczeniu rozstrzygniecie = ten sam wynik co PAT silnika (morale), nie rachunek natychmiastowy.
+const FF_MAX_ROUNDS = 400;
 const MORALE_DEATH_RADIUS    = 3;    // Manhattan tiles within which allies are shaken
 
 // ---------------------------------------------------------------------------
@@ -2542,6 +2548,15 @@ export class BattleScene {
   private vTimers: { due: number; cb: () => void; id: number }[] = [];
   private vTimerSeq = 0;             // monotonic id for stable ordering of equal-due timers
 
+  // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: "Pomin do wyniku" = SZYBKIE PRZEWINIECIE
+  // tej samej symulacji (ten sam silnik co walka automatyczna), nie osobny uproszczony
+  // rachunek. W trybie FF kroki animacji (dawniej wymagajace osobnej klatki rAF) ida do
+  // kolejki _ffQueue, a petla klatki wykonuje wiele krokow wirtualnego czasu na klatke.
+  private _ffActive = false;
+  private _ffQueue: (() => void)[] = [];
+  private _ffVirtualMs = 0;
+  private _ffPendingAuto = false;      // skip() z trybu recznego w trakcie animacji: AUTO po dokonczeniu rozkazu
+
   // CHANGE2: master visibility toggle for ALL over-head stat bars (morale/ammo/
   // HP), flipped by the "H" key. Default true (bars shown). When false every
   // living unit's billboard bar GROUP is hidden; toggling back on restores it
@@ -3643,6 +3658,41 @@ export class BattleScene {
   }
 
   skip(): void {
+    if (this.finished || this._ffActive) return;
+    // Tabela bonusu muru per obronca (dla testu parytetu Pomin == taktyka): snapshot z TEJ SAMEJ
+    // funkcji, ktorej uzywa _singleBlow w walce, zrobiony PRZED zmiana stanu sceny. To nie jest
+    // osobny rachunek wyniku -- wynik i tak liczy przewijana symulacja.
+    this.lastInstantDefBonus = this.def
+      .filter(u => !u.dead)
+      .map(u => ({ q: u.q, r: u.r, onWall: !!u.onWallWalkway, pct: this._wallBonusProcFor(u) }));
+    // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1: ta sama symulacja co walka AUTO,
+    // tylko przewinieta (bez osobnego uproszczonego rachunku z zerowymi stratami).
+    if (this.deployPhase) this._endDeployPhase();
+    if (!this.started) { this._skipInstantFallback(); return; }
+    this.paused = false;
+    // Tryb FF wlaczamy PRZED startem tury: kroki ruchu/ciosu zarejestrowane przez _raf() w pierwszej
+    // turze musza trafic do kolejki FF, a nie do prawdziwego requestAnimationFrame (inaczej pierwsza
+    // tura czekalaby do konca budzetu klatki FF i zuzywala ~64 s czasu bitwy).
+    this._ffActive = true;
+    this._ffVirtualMs = 0;
+    this._ffQueue = [];
+    // Tryb reczny w trakcie animacji rozkazu gracza (busy): jednostka wykonujaca rozkaz ma jeszcze
+    // acted=false, wiec natychmiastowe przejscie na AUTO zaplanowaloby ja drugi raz (duplikat
+    // aktywacji). Zamiast tego FF dokancza rozpoczety rozkaz (cala kolejke gracza) i dopiero
+    // wtedy przechodzi na AUTO (patrz _runFastForward).
+    this._ffPendingAuto = this._manualMode && this.busy;
+    if (!this._ffPendingAuto) this._ffEnterAuto();
+    this.hint.textContent = 'Przewijanie bitwy do wyniku...';
+  }
+
+  /** Przejscie na AUTO przy skip(): gra sama za obie strony, start tury jesli czeka na rozkazy. */
+  private _ffEnterAuto(): void {
+    if (this._manualMode) this._toggleManualMode();
+    if (this._battleAwaitingOrders) this._kickoffBattleTurn();
+  }
+
+  /** Awaryjny rachunek natychmiastowy (tylko gdy przewiniecie niemozliwe lub przekroczylo limit). */
+  private _skipInstantFallback(): void {
     if (this.finished) return;
     this.finished = true;
     // R1: "Pomin" nie rozgrywa wylomu -- machina oblezenicza w skladzie atakujacego
@@ -8693,7 +8743,7 @@ export class BattleScene {
       ru.group.position.set(x, baseY + hop, z);
       ru.hpBarGroup.position.set(x, baseY + HPBAR_Y, z);
       if (p < 1) {
-        requestAnimationFrame(step);
+        this._raf(step);
       } else {
         ru.group.position.set(to.x, toTopY, to.z);
         ru.hpBarGroup.position.set(to.x, toTopY + HPBAR_Y, to.z);
@@ -8701,7 +8751,7 @@ export class BattleScene {
         done();
       }
     };
-    requestAnimationFrame(step);
+    this._raf(step);
   }
 
   // -------------------------------------------------------------------------
@@ -9083,9 +9133,9 @@ export class BattleScene {
         });
         return;
       }
-      requestAnimationFrame(stepAnim);
+      this._raf(stepAnim);
     };
-    requestAnimationFrame(stepAnim);
+    this._raf(stepAnim);
   }
 
   // ---- Ranged: ONE shot with a flying projectile, single blow on landing ----
@@ -9178,6 +9228,13 @@ export class BattleScene {
       // Advance the speed-scaled virtual clock from the wall clock, THEN drive
       // every battle ticker off that virtual time so animations honour the
       // current speed multiplier (1x/2x/4x/8x) without breaking their shape.
+      if (this._ffActive && !this.paused) {
+        this.vLastWall = t;
+        this._runFastForward();
+        this._updateArmyMoraleBars();
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
       this._advanceVClock(t);
       // Drain the virtual-time scheduler BEFORE the per-frame tickers so newly
       // due actions are applied this frame (the speed fix -- see _drainTimers).
@@ -9308,6 +9365,54 @@ export class BattleScene {
    * _advanceVClock() by (wall delta) * speedMul.
    */
   private _now(): number { return this.vNow; }
+
+  /** requestAnimationFrame dla krokow przeplywu walki; w trybie FF (skip) wykonywane synchronicznie w petli FF. */
+  private _raf(cb: () => void): void {
+    if (this._ffActive) { this._ffQueue.push(cb); return; }
+    requestAnimationFrame(cb);
+  }
+
+  /**
+   * Przewija symulacje: do ~budzetu czasu zegara scianowego wykonuje kroki wirtualnego
+   * czasu (timery + kroki animacji), az bitwa sie skonczy. Ten sam kod walki co zwykla gra.
+   */
+  private _runFastForward(): void {
+    const FF_STEP_MS = 16;                  // < MOVE_STEP_MS/ACT_GAP_MS: nie gubi kolejnosci akcji
+    // Koniec bitwy wyznacza silnik (_checkEnd) tak jak w walce AUTO. Sufit FF_MAX_ROUNDS
+    // (w turach) dotyczy tylko bitew, ktore silnik nie konczy (stan ustalony w oblezeniu).
+    const wall0 = performance.now();
+    while (!this.finished && performance.now() - wall0 < 40) {
+      if (this.roundNo >= FF_MAX_ROUNDS) { this._ffRoundCapResult(); return; }
+      if (this._ffPendingAuto && !this.busy) { this._ffPendingAuto = false; this._ffEnterAuto(); }
+      this.vNow += FF_STEP_MS;
+      this._ffVirtualMs += FF_STEP_MS;
+      // Kolejnosc jak w klatce AUTO (_startLoop): najpierw zegary i pociski/zaniki, potem
+      // kroki animacji z poprzedniej klatki (rAF). Kroki dopisane teraz trafiaja do nastepnego obrotu.
+      this._drainTimers();
+      this._tickProjectiles(this.vNow);
+      this._tickFades(this.vNow);
+      const q = this._ffQueue;
+      this._ffQueue = [];
+      for (const cb of q) cb();
+    }
+  }
+
+  /**
+   * Sufit przewijania (FF_MAX_ROUNDS): rozstrzygniecie tym samym kryterium co PAT silnika
+   * (morale armii: przy remisie wygrywa obronca), z pelnym zakonczeniem bitwy i ekranem wyniku.
+   */
+  private _ffRoundCapResult(): void {
+    const ratioA = this._armyMoraleRatio('atk');
+    const ratioD = this._armyMoraleRatio('def');
+    this.finished = true;
+    this._ffActive = false;
+    this._ffQueue = [];
+    const winner: 'atakujacy' | 'obronca' = ratioA <= ratioD ? 'obronca' : 'atakujacy';
+    this.log.push('=== PAT (przewijanie): ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- rozstrzygniecie po morale armii ===');
+    this._endWinner = winner;
+    this._endSurvivors = this._battleUnitsForMapExport(winner === 'atakujacy' ? this.atk : this.def);
+    this._showEndScreen(winner);
+  }
 
   /** Advance the virtual clock from the wall clock, scaled by speedMul. Called once per frame. */
   private _advanceVClock(wall: number): void {
@@ -9746,6 +9851,9 @@ export class BattleScene {
   }
 
   private _spawnDamageLabel(ru: RuntimeBattleUnit, dmg: number): void {
+    // Przewijanie (skip): etykiet nie tworzymy -- w FF nie ma klatek, ktore by je usuwaly
+    // (_tickFloatLabels nie jest wolane), wiec DOM rosnalby o jeden div na kazdy cios.
+    if (this._ffActive) return;
     const el = document.createElement('div');
     el.textContent = '-' + dmg;
     Object.assign(el.style, {
@@ -10336,6 +10444,8 @@ export class BattleScene {
     this._endSurvivors = [];
     this.log = [];
     this.vTimers.length = 0;
+    this._ffActive = false;
+    this._ffQueue = [];
     this.engaged.clear();
     this._stallTurns = 0;
     this._stallSig = '';
@@ -10456,6 +10566,8 @@ export class BattleScene {
   }
 
   private _showEndScreen(winner: 'atakujacy' | 'obronca'): void {
+    this._ffActive = false;
+    this._ffQueue = [];
     if (this._endScreenShown) return;
     this._endScreenShown = true;
     this._hideEndDetails();
