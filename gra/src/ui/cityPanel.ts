@@ -1018,6 +1018,16 @@ const DEFAULT_PODZIAL_PRACY: PodzialPracySplit = { procentBudynki: 70 };
 const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
 
 /**
+ * Wyświetlana etykieta grupy budynków (klucz `grupa` z danych bez zmian).
+ * Jedna funkcja dla wszystkich miejsc pokazujących grupę graczowi.
+ */
+const BUILDING_GROUP_DISPLAY_LABEL: Readonly<Record<string, string>> = {
+  'Handel i pieniądz': 'Podatek i pieniądz',
+};
+const buildingGroupDisplayLabel = (grupa: string): string =>
+  BUILDING_GROUP_DISPLAY_LABEL[grupa] ?? grupa;
+
+/**
  * Tymczasowy placeholder UI — docelowo korupcja z silnika (dystans od stolicy, liczba miast, cap).
  * TODO(produkt): pełny model korupcji — od czego zależy, czy gracz może redukować (budynek, tech, porządek).
  */
@@ -5015,7 +5025,7 @@ function buildWealthDetailCard(
   gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; dalej floor(W × ${p.zadowolenieMax} / cap epoki) — max +${p.zadowolenieMax} w każdej epoce (cap ${cap})`);
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
-    `Wejście: strumień z ${daninaLblGen} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
+    `Wejście: strumień z ${daninaLblGen} = floor(podatek netto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
     'Koszt utrzymania = rownowaga(W) × pieniądz brutto miasta tej tury.',
     `Pula += wpływ z ${daninaLblGen} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
     'Dopóki pula ≥ próg awansu i W < cap: W+1, pula −= próg, pula ×= zachowanie po awansie.',
@@ -5025,7 +5035,7 @@ function buildWealthDetailCard(
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
     `${daninaLbl} brutto z pól i budynków → lokalny podatek netto (po korupcji; ×Mennica, gdy aktywna).`,
     'Dochód tras z premią Targowiska trafia osobno do skarbca i nie wchodzi do lokalnego podatku ani puli zamożności.',
-    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
+    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × podatek netto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
   ]);
@@ -7951,7 +7961,7 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
   for (const { grupa, ids } of groups) {
     if (ids.length === 0) continue;
     // Etykieta wyświetlana (klucz `grupa` z danych bez zmian — patrz BUILDING_GROUP_ORDER).
-    appendDetailSection(card, grupa === 'Handel i pieniądz' ? 'Podatek i pieniądz' : grupa);
+    appendDetailSection(card, buildingGroupDisplayLabel(grupa));
     const list = el('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:0.1em;margin-bottom:0.28em;';
     for (const id of ids) appendOwnedBuildingRow(list, id, data, city);
@@ -9574,7 +9584,8 @@ function renderBuildingsOwned(
       const details = el('details', `bld-group${isEmpty ? ' bld-group-empty' : ''}`);
       details.open = !isEmpty;
       const summary = el('summary', 'bld-group-h');
-      summary.textContent = isEmpty ? `${grupa} —` : `${grupa} (${ids.length})`;
+      const grupaLabel = buildingGroupDisplayLabel(grupa);
+      summary.textContent = isEmpty ? `${grupaLabel} —` : `${grupaLabel} (${ids.length})`;
       details.appendChild(summary);
       if (isEmpty) {
         if (!compact) {

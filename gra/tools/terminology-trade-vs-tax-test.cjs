@@ -181,13 +181,34 @@ const cityPanelC = read('src/ui/cityPanel.ts');
 check('[C] cityPanel: brak „Podział Handlu”/„podziale handlu”/„suwak handlu”/„Udział handlu”', !/Podział Handlu|podziale handlu|suwak handlu|Udział handlu|% handlu netto/.test(cityPanelC));
 check('[C] cityPanel: brak „z handlu (szac.)”/„skarb_z_handlu”/„nauka += … % handlu”', !/z handlu \(szac\.\)|skarb_z_handlu|% handlu\b/.test(cityPanelC));
 check('[C] cityPanel: formuły wyświetlane jako „podatek brutto/netto” (brak „handelBrutto =”/„handelNetto =”)', !/handelBrutto =|handelNetto =|strataKorupcji =/.test(cityPanelC) && /podatek brutto = Σ/.test(cityPanelC) && /podatek netto = podatek brutto/.test(cityPanelC));
+// Wzmocnienie: żaden literał tekstowy (poza komentarzami) nie zawiera identyfikatora handelNetto/handelBrutto.
+{
+  const hits = cityPanelC.split('\n')
+    .filter((l) => !/^\s*(\/\/|\*|\/\*\*)/.test(l))
+    .filter((l) => /(['"`])[^'"`\n]*handel(Netto|Brutto)[^'"`\n]*\1/.test(l));
+  check('[C] cityPanel: brak identyfikatora handelNetto/handelBrutto w tekście dla gracza (literały)', hits.length === 0, hits.map((l) => l.trim()));
+}
 check('[C] cityPanel: premia tras pozostaje „Handlu” (klasa B)', /Premia za trasy handlowe/.test(cityPanelC) && /do podatku brutto \(\$\{aktywneTrasyCount\}/.test(cityPanelC));
-check('[C] cityPanel: grupa „Handel i pieniądz” wyświetlana jako „Podatek i pieniądz” (klucz danych bez zmian)', /grupa === 'Handel i pieniądz' \? 'Podatek i pieniądz' : grupa/.test(cityPanelC));
+// Grupa „Handel i pieniądz” ma jedną funkcję etykiety, używaną w OBU miejscach wyświetlania grupy
+// (karta szczegółów i nagłówek listy zbudowanych budynków). Asercja na oba wywołania.
+check('[C] cityPanel: mapa etykiet grupy — „Handel i pieniądz” → „Podatek i pieniądz”', /'Handel i pieniądz':\s*'Podatek i pieniądz'/.test(cityPanelC));
+check('[C] cityPanel: etykieta grupy — wspólna funkcja użyta w karcie szczegółów (appendDetailSection)', /appendDetailSection\(card, buildingGroupDisplayLabel\(grupa\)\)/.test(cityPanelC));
+check('[C] cityPanel: etykieta grupy — wspólna funkcja użyta w nagłówku listy (summary.textContent)',
+  /const grupaLabel = buildingGroupDisplayLabel\(grupa\);\s*summary\.textContent = isEmpty \? `\$\{grupaLabel\} —` : `\$\{grupaLabel\} \(\$\{ids\.length\}\)`/.test(cityPanelC));
+check('[C] cityPanel: surowy `${grupa}` nie trafia do nagłówka grupy (brak obejścia helpera)', !/summary\.textContent = isEmpty \? `\$\{grupa\}/.test(cityPanelC) && !/appendDetailSection\(card, grupa\)/.test(cityPanelC));
+check('[C] cityPanel: tekst „Handel i pieniądz” tylko w mapie etykiet (klucz danych)', cityPanelC.split('Handel i pieniądz').length - 1 === 1);
 
 // ---------------------------------------------------------------- [D] R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1: podpis trybu wymiany surowców
 const basket = read('src/ui/diplomacyTradeBasket.ts');
 check('[D] koszyk: podpis „Jednorazowo — nie pojawi się w Aktywnych traktatach”', basket.includes('Jednorazowo — nie pojawi się w Aktywnych traktatach'));
 check('[D] koszyk: podpis „Co turę — widoczna w Aktywnych traktatach”', basket.includes('Co turę — widoczna w Aktywnych traktatach'));
+// Wzmocnienie: podpis zależy od trybu w JEDNYM miejscu renderu (resourceTradeModeHtml), a ta funkcja
+// jest wywoływana z renderBasket z bieżącym resourceTradeMode (chip → refresh → renderBasket).
+// UWAGA: to asercja źródłowa, NIE render w przeglądarce — efekt w UI pozostaje NIE_ZMIERZONY tu.
+check('[D] koszyk: podpis w resourceTradeModeHtml z gałęzią po trybie (mode === \'once\' ? … : …)',
+  /cdb-res-mode-hint/.test(basket) && /mode === 'once'\s*\?\s*'Jednorazowo — nie pojawi się w Aktywnych traktatach'\s*:\s*'Co turę — widoczna w Aktywnych traktatach'/.test(basket));
+check('[D] koszyk: renderBasket przekazuje bieżący resourceTradeMode do resourceTradeModeHtml',
+  /html \+= resourceTradeModeHtml\(resourceTradeMode, showMode\);/.test(basket));
 
 // ---------------------------------------------------------------- [P2] poradniki 45 i 07 zgodne z silnikiem (Targowisko)
 const p45 = read('../docs/PORADNIK-GRACZA/45-katalog-budynkow.md');
