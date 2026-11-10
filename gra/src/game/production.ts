@@ -1033,6 +1033,10 @@ export function availableProduction(
   // --- units -------------------------------------------------------------
   const built = new Set(builtList);
   for (const u of data.units) {
+    // R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1: these four units are
+    // built directly into an active besieging army; no city or empire recruit
+    // catalogue (including AI callers of purchasableUnits) may offer them.
+    if ((u.Typ ?? '').toString().trim() === 'Siege') continue;
     // R-EPOKA-KASKADA-JEDNA-Q1 (Maciej 2026-08-12, ECHO commit 1d9691b0): rekrutacja
     // pokazuje jednostki BIEZACEJ epoki ORAZ dokladnie JEDNEJ epoki nizszej -- NIE pelna
     // kaskade w dol jak wczesniej (bledne zrozumienie zasady projektu, podwazone tutaj;
@@ -1181,6 +1185,9 @@ export function availableReplacementsFor(
    *  dla bramki wody Naval (R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE) — poza tym nie rozstrzyga
    *  po Typ (to robi wołający, np. `utyp !== currentTyp` w pętli A) niżej). */
   function passesAvailabilityGates(u: UnitDef): boolean {
+    // Replacement is also a way to acquire a unit type; siege engines use their
+    // own active-siege purchase path and cannot be created through replacement.
+    if ((u.Typ ?? '').toString().trim() === 'Siege') return false;
     if (epochNumber(u.Epoka) > epoch) return false;
     const nacja = (u.Nacja ?? '').toString().trim();
     if (!unitAllowedForCivNation(nacja, civNation)) return false;
