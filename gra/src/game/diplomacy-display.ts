@@ -636,11 +636,16 @@ export interface DiploPlayerSummaryInput {
   recruitsUnitsMax?: number;
 }
 
-/** Wiersz „Rekruci: bieżąca / maks." w pełnych jednostkach werbu (bez zmiany audiencji). */
+/** Tooltip wiersza „Rekruci” na karcie listy: przeliczenie puli Manpower na pełne jednostki (wzór jak rekrutEkw). */
+export const RECRUITS_UNITS_TOOLTIP_PL =
+  'Rekruci w jednostkach = pula werbu (Manpower) ÷ koszt jednostki bieżącej epoki (ten sam wzór co rekrutEkw), '
+  + 'zaokrąglone w dół do pełnych jednostek. Audiencja pokazuje surową pulę Manpower.';
+
+/** Wiersz „Rekruci: bieżąca / maks. jedn.” w pełnych jednostkach werbu (bez zmiany audiencji). */
 export function formatRecruitsUnitsPart(current: number, max: number): string {
   const cur = Math.max(0, Math.floor(current));
   const mx = Math.max(0, Math.floor(max));
-  return `Rekruci: ${formatFullNumber(cur)} / ${formatFullNumber(mx)}`;
+  return `Rekruci: ${formatFullNumber(cur)} / ${formatFullNumber(mx)} jedn.`;
 }
 
 /** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
@@ -655,7 +660,7 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
     detailParts.push(`Ranking mocy: ${input.powerRank.rank}. z ${input.powerRank.total}`);
   }
   if (input.population !== undefined) {
-    detailParts.push(`Ludność: ${Math.floor(input.population)}`);
+    detailParts.push(`Obywatele: ${Math.floor(input.population)}`);
   }
   if (input.armyCount !== undefined) {
     detailParts.push(`Armia: ${input.armyCount}`);
@@ -704,7 +709,7 @@ export function formatDiploCivListLines(input: DiploCivListEntryInput): {
 
   const theirParts: string[] = [];
   if (input.theirPopulation !== undefined) {
-    theirParts.push(`Ludność: ${Math.floor(input.theirPopulation)}`);
+    theirParts.push(`Obywatele: ${Math.floor(input.theirPopulation)}`);
   }
   if (input.theirArmyCount !== undefined) {
     theirParts.push(`Armia: ${input.theirArmyCount}`);

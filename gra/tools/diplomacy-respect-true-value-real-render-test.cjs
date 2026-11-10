@@ -255,7 +255,7 @@ async function main() {
     const aR = barValue(a.cardText, 'Respekt');
     console.log('  [A] badge=' + a.badge + ' note=' + a.noteText + ' Z=' + aZ + ' R=' + aR + ' relacja=' + JSON.stringify(a.relacja));
     check('A: etykieta nastawienia „Wrogi” w wojnie', a.badge === 'Wrogi', a.badge);
-    check('A: dopisek limitu obecny, tekst z WAR_RELATION_SCORE_CAP', a.noteText === '(limit wojenny ' + capPoints + ')', a.noteText);
+    check('A: dopisek limitu obecny, tekst z WAR_RELATION_SCORE_CAP', a.noteText === '(etykieta Wrogi: limit wojenny ' + capPoints + ')', a.noteText);
     check('A: dopisek ma tooltip wyjaśniający sumę Zaufania i Respektu',
       typeof a.noteTitle === 'string' && a.noteTitle.indexOf('suma Zaufania i Respektu') !== -1, a.noteTitle);
     check('A: pasek Zaufania pokazuje prawdziwe 74', aZ === 74, aZ);

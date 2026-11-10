@@ -31,6 +31,7 @@ export {
   formatDiploCivListLines,
   formatDiploPlayerSummaryLines,
   formatRecruitsUnitsPart,
+  RECRUITS_UNITS_TOOLTIP_PL,
 } from './game/diplomacy-display';
 `);
 
@@ -160,19 +161,22 @@ ok(legacyGoldSplit && legacyGoldSplit.weOffer.length === 0, 'legacy goldOnce: in
 
 // R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1 (dodatek 2): wiersz „Rekruci" w uproszczonej karcie listy.
 const nb = (t) => t.replace(/\u00a0/g, ' ');
-ok(nb(mod.formatRecruitsUnitsPart(1234, 5678)) === 'Rekruci: 1 234 / 5 678', 'recruits part: format bieżąca / maks.');
-ok(nb(mod.formatRecruitsUnitsPart(-3, 0)) === 'Rekruci: 0 / 0', 'recruits part: clamp <0');
+ok(nb(mod.formatRecruitsUnitsPart(1234, 5678)) === 'Rekruci: 1 234 / 5 678 jedn.', 'recruits part: format bieżąca / maks. jedn.');
+ok(nb(mod.formatRecruitsUnitsPart(-3, 0)) === 'Rekruci: 0 / 0 jedn.', 'recruits part: clamp <0');
 const civLines = mod.formatDiploCivListLines({
   theirPopulation: 98, theirArmyCount: 4, theirRecruitsUnits: 12, theirRecruitsUnitsMax: 40,
 });
 ok(civLines.detailLine.includes('Armia: 4') && nb(civLines.detailLine).includes('Rekruci: 12 / 40'),
-  'civ list: wiersz Rekruci obok Ludność/Armia');
+  'civ list: wiersz Rekruci obok Obywatele/Armia');
 ok(!mod.formatDiploCivListLines({ theirPopulation: 98 }).detailLine.includes('Rekruci'),
   'civ list: brak danych rekrutów -> brak wiersza');
 const plLines = mod.formatDiploPlayerSummaryLines({
   militaryPower: 10, population: 50, armyCount: 2, recruitsUnits: 7, recruitsUnitsMax: 9,
 });
-ok(nb(plLines.detailLine).includes('Rekruci: 7 / 9'), 'player summary: wiersz Rekruci');
+ok(nb(plLines.detailLine).includes('Rekruci: 7 / 9 jedn.'), 'player summary: wiersz Rekruci');
+ok(!plLines.detailLine.includes('Ludność') && plLines.detailLine.includes('Obywatele: 50'), 'player summary: Obywatele zamiast Ludność');
+ok(civLines.detailLine.includes('Obywatele: 98') && !civLines.detailLine.includes('Ludność'), 'civ list: Obywatele zamiast Ludność');
+ok(mod.RECRUITS_UNITS_TOOLTIP_PL.includes('rekrutEkw'), 'tooltip Rekruci: przeliczenie jak rekrutEkw');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 
