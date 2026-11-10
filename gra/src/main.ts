@@ -1113,6 +1113,7 @@ import {
 // od drainu tej tury -- patrz komentarz przy cityHasSpichlerzBuilding w building-resource-gate.ts.
 import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
+import { applyFarmAssignHints } from './game/farm-assign-hint';
 import {
   deferredHintsToSidePanelEvents,
   dismissEotOrEraWarLogEntry,
@@ -8083,6 +8084,7 @@ async function boot(): Promise<void> {
             metaLine: gar > 0 ? `Garnizon: ${gar}` : undefined,
             garrison: gar,
             isCapital: capitalCityIdForOwner(c.ownerId) === c.id,
+            manualTryb: c.okolicaTryb === 'reczny',
           };
         });
     }
@@ -18336,6 +18338,12 @@ async function boot(): Promise<void> {
       return withOwnerScopeMemo(collectTurnEventsUncached);
     }
     function collectTurnEventsUncached(): SidePanelEvent[] {
+      // R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: usuń podpowiedzi, których warunek
+      // przestał być spełniony (np. po przydziale obywatela w trakcie tury). Tylko prune.
+      applyFarmAssignHints(warEventLog, {
+        cities, map, humanOwnerId: HUMAN_OWNER_PRIMARY, turn,
+        yieldOf: (hq, hr) => yieldOfMapHex(map, hq, hr, empireEpochForOwner(HUMAN_OWNER_PRIMARY)),
+      }, { createNew: false });
       const deferLogs = shouldDeferEotEvents(endTurnInProgress);
       const events: SidePanelEvent[] = deferLogs
         ? []
@@ -42401,6 +42409,12 @@ async function boot(): Promise<void> {
           if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
           pendingAutoRationForNextTurn = null;
         }
+        // R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: podpowiedź „Przydziel obywatela?”
+        // tylko dla gracza w trybie ręcznym; nowe pola od poprzedniej tury, jeden wpis na miasto.
+        if (applyFarmAssignHints(warEventLog, {
+          cities, map, humanOwnerId: HUMAN_OWNER_PRIMARY, turn,
+          yieldOf: (hq, hr) => yieldOfMapHex(map, hq, hr, empireEpochForOwner(HUMAN_OWNER_PRIMARY)),
+        }, { createNew: true })) trimWarEventLog();
         if (deferredEotHints.length > 0) {
           const hintEvents = deferredHintsToSidePanelEvents(deferredEotHints, turn);
           for (let hi = hintEvents.length - 1; hi >= 0; hi--) {
