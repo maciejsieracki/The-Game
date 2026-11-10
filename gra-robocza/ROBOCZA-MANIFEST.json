@@ -102,12 +102,17 @@
   "md5": "2ee58aa298dda83cf3d7fcda7a29382f",
   "sizeBytes": 14397731,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",
+  "source": "gra/src main 79a6c778e",
   "immediatePreviousRelease": {
-    "bundleMd5": "8408a731941ca23cbe0d03366da91a99"
+    "publicationCommit": "d0ccc260edb35c952e6cd9eb5477cff02a4e2b3f",
+    "bundleMd5": "f28f212f051a3576ecebf5cd8d78a607",
+    "bundleSha256": "7a6b10137348338daac7c49bbf935e66923125d1801b3cfa5aaa394325ac255b",
+    "bundleBytes": 14396689,
+    "wave": 606
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 8408a731941ca23cbe0d03366da91a99, 70253091 bajtów."
+    "method": "Restore gra-robocza artifacts from d0ccc260e; revert source commits40db31f20/39f8e2ce0/79a6c778e if gameplay source rollback required.",
+    "previousPublicationCommit": "d0ccc260edb35c952e6cd9eb5477cff02a4e2b3f"
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
