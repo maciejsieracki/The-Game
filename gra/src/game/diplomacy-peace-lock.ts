@@ -115,25 +115,41 @@ export function isTruceBreach(until: number | null | undefined, currentTurn: num
 // (G) kontroferta może zmienić długość rozejmu (5/10/15) — obsługa w UI/main.
 // ---------------------------------------------------------------------------
 
-/** (E) Próg zmęczenia wojną (0..1), od którego AI proponuje pokój stały zamiast rozejmu. */
-export const TRUCE_AI_FATIGUE_PEACE_MIN = 0.5;
+/**
+ * (E) Próg ułamka zmęczenia wojną (0..1 = turnsAtWar / T, `warWearinessFraction`), od którego
+ * AI proponuje pokój stały zamiast rozejmu. 1 = PEŁNE zmęczenie (t >= T, T ≤ 20 tur wg
+ * zmeczenieT). Próg 1 zachowuje dotychczasowe N4 (wojna < ~20 tur → rozejm, dalej → pokój) jako
+ * sygnał, a nie zmienia go na „od połowy wojny". Wartość ZAŁOŻENIE orkiestratora (do ABC).
+ */
+export const TRUCE_AI_FATIGUE_PEACE_MIN = 1;
 
-/** (E) Próg Zaufania, od którego AI proponuje pokój stały zamiast rozejmu. */
+/**
+ * (E) Próg `willingnessPeace` (0..1, diplomacy.ts: zmęczenie + presja militarna + dobra wola),
+ * od którego AI proponuje pokój stały. Wysoki próg: sama presja militarna słabszego AI nie
+ * powinna wyłączać rozejmu. ZAŁOŻENIE orkiestratora (do potwierdzenia — pytanie ABC).
+ */
+export const TRUCE_AI_WILLINGNESS_PEACE_MIN = 0.7;
+
+/** (E) Próg Zaufania, od którego AI proponuje pokój stały zamiast rozejmu. ZAŁOŻENIE (do ABC). */
 export const TRUCE_AI_TRUST_PEACE_MIN = 60;
 
 /**
- * (E) Tryb propozycji pokoju AI. Słabsze AI (w trudnym położeniu) przy NISKIM zmęczeniu
- * wojną i NISKIM Zaufaniu proponuje ROZEJM; przy dużym zmęczeniu LUB wysokim Zaufaniu —
- * POKÓJ STAŁY. Gdy żaden sygnał nie rozstrzyga, zostaje `fallbackKind` (dotychczasowy
- * wybór po liczbie tur wojny, np. aiPeaceProposalKind).
+ * (E) Tryb propozycji pokoju AI. Kolejność sygnałów pokoju stałego: duże zmęczenie wojną
+ * (ułamek >= progu), wysoka gotowość do pokoju (willingnessPeace >= progu), wysokie Zaufanie.
+ * Gdy żaden nie zachodzi: słabsze AI (`weaker`, rw <= próg słabości) proponuje ROZEJM;
+ * w pozostałych przypadkach — `fallbackKind` (dotychczasowy wybór po turach wojny).
  */
 export function aiTruceOrPeaceMode(input: {
-  fatigueShare: number;
+  /** Ułamek zmęczenia wojną 0..1 = `warWearinessFraction(turnsAtWar, T)`. */
+  fatigueFraction: number;
+  /** `stance.willingnessPeace` 0..1 (diplomacy.ts). */
+  willingnessPeace: number;
   zaufanie: number;
   weaker: boolean;
   fallbackKind: 'pokoj' | 'rozejm';
 }): 'pokoj' | 'rozejm' {
-  if (input.fatigueShare >= TRUCE_AI_FATIGUE_PEACE_MIN) return 'pokoj';
+  if (input.fatigueFraction >= TRUCE_AI_FATIGUE_PEACE_MIN) return 'pokoj';
+  if (input.willingnessPeace >= TRUCE_AI_WILLINGNESS_PEACE_MIN) return 'pokoj';
   if (input.zaufanie >= TRUCE_AI_TRUST_PEACE_MIN) return 'pokoj';
   if (input.weaker) return 'rozejm';
   return input.fallbackKind;
@@ -142,7 +158,7 @@ export function aiTruceOrPeaceMode(input: {
 /** (B) Próg Zaufania, od którego AI (adresat propozycji pokoju po rozejmie) zgadza się na pokój. */
 export const TRUCE_END_AI_ACCEPT_TRUST_MIN = 40;
 
-/** (B) Czy AI-adresat przyjmuje pokój stały po wygaśnięciu rozejmu. */
+/** (B) Czy AI-adresat przyjmuje pokój stały po wygaśnięciu rozejmu. ZAŁOŻENIE (do ABC). */
 export function truceEndAiAccepts(zaufanie: number): boolean {
   return Number.isFinite(zaufanie) && zaufanie >= TRUCE_END_AI_ACCEPT_TRUST_MIN;
 }
@@ -165,4 +181,96 @@ export function truceEndOfferTarget(
 /** (B) Propozycja pokoju po rozejmie nierozstrzygnięta do kolejnej tury = timeout = wojna. */
 export function truceEndOfferExpired(offerTurn: number, currentTurn: number): boolean {
   return Number.isFinite(offerTurn) && currentTurn > offerTurn;
+}
+
+/**
+ * Okno, w którym wypowiedzenie wojny jest złamaniem rozejmu (karane jak pakt NAP):
+ * aktywny rozejm LUB oferta pokoju po jego wygaśnięciu (zawieszenie broni trwa do odpowiedzi).
+ */
+export function isTruceWindowBreach(
+  meta: Pick<DiploPairMeta, 'truceUntilTurn' | 'truceEndOffer'> | undefined,
+  currentTurn: number,
+): boolean {
+  if (meta == null) return false;
+  return isTruceBreach(meta.truceUntilTurn, currentTurn) || meta.truceEndOffer != null;
+}
+
+/**
+ * (C) Zdarzenie Zaufania przy finalizacji pokoju: rozejm (dodatnia, dozwolona długość) → null
+ * (bez zdarzenia 'pokoj', czyli 0 Zaufania); pokój stały (brak/0/nieprawidłowa długość) → 'pokoj' (+5).
+ */
+export function peaceFinalizeTrustEvent(truceTurns: number | null | undefined): 'pokoj' | null {
+  return normalizeTruceDuration(truceTurns) != null ? null : 'pokoj';
+}
+
+// ---------------------------------------------------------------------------
+// (B) Cykl życia propozycji pokoju po rozejmie — czysta logika z portami (wstrzykiwane
+// odczyty/zapisy stanu). main.ts podaje porty na żywy stan; testy podają atrapy, więc
+// ścieżki wygaśnięcia, timeoutu, zgody i odmowy wykonują TEN SAM kod.
+// ---------------------------------------------------------------------------
+
+export interface TruceEndPorts {
+  getMeta(a: number, b: number): DiploPairMeta;
+  setMeta(a: number, b: number, meta: DiploPairMeta): void;
+  getStatus(a: number, b: number): string;
+  getZaufanie(a: number, b: number): number;
+  isHuman(ownerId: number): boolean;
+  /** Wojna wypowiedziana po rozejmie (status 'pokoj' → wojna, bez kary Wiarygodności). */
+  declareWarAfterTruce(a: number, b: number): void;
+  /** Wpis oferty w skrzynce gracza (bez deduplikacji); zwraca id wpisu. */
+  enqueueOffer(ownerId: number, reason: string): string;
+  removeOffer(inboxId: string): void;
+  /** Zgoda = pokój stały (finalizePeaceTreatyBetween bez truceTurns). */
+  finalizePeace(proposerId: number, responderId: number): void;
+}
+
+/** Usuwa ofertę pokoju po rozejmie (meta + własny wpis w skrzynce). */
+export function clearTruceEndOfferCore(ports: TruceEndPorts, a: number, b: number): void {
+  const meta = ports.getMeta(a, b);
+  const offer = meta.truceEndOffer;
+  if (offer == null) return;
+  if (offer.inboxId) ports.removeOffer(offer.inboxId);
+  ports.setMeta(a, b, { ...ports.getMeta(a, b), truceEndOffer: undefined });
+}
+
+/** Odmowa lub timeout pokoju po rozejmie = wojna (bez kary). */
+export function truceEndToWarCore(ports: TruceEndPorts, a: number, b: number): void {
+  if (ports.getStatus(a, b) === 'pokoj') ports.declareWarAfterTruce(a, b);
+  clearTruceEndOfferCore(ports, a, b);
+}
+
+/**
+ * Jeden tick dla pary (raz na turę). Wygasły rozejm: adresat = strona niebędąca inicjatorem;
+ * gracz → oferta w skrzynce (`truceEndOffer`, timeout w kolejnej turze); AI → od razu wg
+ * Zaufania (zgoda = pokój stały, brak zgody = wojna). Bez inicjatora → wojna (stare zapisy).
+ */
+export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, turn: number): void {
+  const meta = ports.getMeta(a, b);
+  if (meta.truceEndOffer != null) {
+    if (truceEndOfferExpired(meta.truceEndOffer.turn, turn)) truceEndToWarCore(ports, a, b);
+    return;
+  }
+  if (meta.truceUntilTurn == null) return;
+  if (truceExpiryAction(meta.truceUntilTurn, turn) !== 'revert_to_war') return;
+  const initiator = meta.truceInitiatorId;
+  const target = truceEndOfferTarget(initiator, a, b);
+  ports.setMeta(a, b, { ...meta, truceUntilTurn: undefined });
+  if (ports.getStatus(a, b) !== 'pokoj') return;
+  if (initiator == null || target == null) {
+    truceEndToWarCore(ports, a, b);
+    return;
+  }
+  if (ports.isHuman(target)) {
+    const inboxId = ports.enqueueOffer(initiator, 'Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)');
+    ports.setMeta(a, b, {
+      ...ports.getMeta(a, b),
+      truceEndOffer: { turn, fromOwnerId: initiator, toOwnerId: target, inboxId },
+    });
+    return;
+  }
+  if (truceEndAiAccepts(ports.getZaufanie(a, b))) {
+    ports.finalizePeace(initiator, target);
+  } else {
+    truceEndToWarCore(ports, a, b);
+  }
 }

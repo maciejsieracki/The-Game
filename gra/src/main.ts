@@ -1561,13 +1561,14 @@ import {
   startPeaceTreatyLock,
   filterAllianceObligationsRespectingPeaceLock,
   truceUntilTurn as truceUntilTurnFor,
-  truceExpiryAction,
-  isTruceBreach,
   normalizeTruceDuration,
   TRUCE_DEFAULT_TURNS,
-  truceEndAiAccepts,
-  truceEndOfferTarget,
-  truceEndOfferExpired,
+  isTruceWindowBreach,
+  peaceFinalizeTrustEvent,
+  truceEndTickPair,
+  truceEndToWarCore,
+  clearTruceEndOfferCore,
+  type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
 import {
   computeIncomingPlayerAcceptNetPw,
@@ -11669,7 +11670,9 @@ async function boot(): Promise<void> {
         });
       }
       const cur = getDiploRelation(proposerId, responderId);
-      if (truceTurns != null) {
+      // (C) peaceFinalizeTrustEvent: rozejm (poprawna długość 5/10/15) → null (0 Zaufania); pokój stały → 'pokoj'.
+      const isTruce = peaceFinalizeTrustEvent(truceTurns) === null;
+      if (isTruce) {
         // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C): rozejm NIE daje Zaufania (0) — tylko zmiana statusu
         // na 'pokoj' (rozejm = status 'pokoj' + truceUntilTurn; pokój stały nadal +5).
         setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
@@ -11680,11 +11683,11 @@ async function boot(): Promise<void> {
           applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
         );
       }
-      if (truceTurns != null) {
+      if (isTruce) {
         // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
         // okna N3 — wypowiedzenie w oknie rozejmu jest złamaniem (kara + flaga, patrz
         // chargeWarDeclarationCredibility), a wygaśnięcie wraca do wojny bez kary (tickTruceExpiries).
-        const until = truceUntilTurnFor(turn, truceTurns);
+        const until = truceUntilTurnFor(turn, truceTurns ?? 0);
         const metaT = getDiploPairMeta(proposerId, responderId);
         setDiploPairMeta(proposerId, responderId, {
           ...metaT,
@@ -11814,67 +11817,67 @@ async function boot(): Promise<void> {
      * Zawsze czyści `truceUntilTurn`. Wołane raz na turę, przed rozliczeniem płatności.
      * Przywrócenie stanu wojny NIE jest nowym wypowiedzeniem (brak rejestracji / flagi).
      */
+    /**
+     * R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): porty logiki cyklu rozejmu (diplomacy-peace-lock.ts:
+     * truceEndTickPair / truceEndToWarCore / clearTruceEndOfferCore) na żywy stan silnika.
+     */
+    function truceEndPorts(): TruceEndPorts {
+      return {
+        getMeta: (a, b) => getDiploPairMeta(a, b),
+        setMeta: (a, b, m) => setDiploPairMeta(a, b, m),
+        getStatus: (a, b) => getDiploRelation(a, b).status,
+        getZaufanie: (a, b) => getDiploRelation(a, b).zaufanie,
+        isHuman: id => isHuman(id),
+        declareWarAfterTruce: (a, b) => {
+          const cur = getDiploRelation(a, b);
+          setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
+        },
+        enqueueOffer: (ownerId, reason) => enqueueTruceEndOffer(ownerId, reason),
+        removeOffer: inboxId => {
+          const k = pendingDiplomacyInbox.findIndex(p => p.id === inboxId);
+          if (k >= 0) pendingDiplomacyInbox.splice(k, 1);
+        },
+        finalizePeace: (proposerId, responderId) => finalizePeaceTreatyBetween(proposerId, responderId),
+      };
+    }
+
+    /**
+     * R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): wpis oferty pokoju po rozejmie w skrzynce gracza. BEZ deduplikacji
+     * (enqueueDiplomacyPending pomijał nową ofertę tego samego AI, gdy wpis już był — gracz nie dostawał
+     * decyzji). Wpis usuwany po id (removeOffer), nie po ownerId.
+     */
+    function enqueueTruceEndOffer(ownerId: number, reason: string): string {
+      const id = 'diplo-truce-end-' + ownerId + '-' + turn + '-' + pendingDiplomacyInbox.length;
+      pendingDiplomacyInbox.push({
+        id,
+        ownerId,
+        civName: ownerDiploLabel(ownerId),
+        cmdType: 'zaproponuj_pokoj',
+        reason,
+      });
+      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle('zaproponuj_pokoj'), 4500);
+      refreshD1bHud();
+      return id;
+    }
+
     function tickTruceExpiries(): void {
       const ids = allWiarygodnoscOwnerIds();
+      const ports = truceEndPorts();
       for (let i = 0; i < ids.length; i++) {
         for (let j = i + 1; j < ids.length; j++) {
-          const a = ids[i]!;
-          const b = ids[j]!;
-          const meta = diplomacyPairMeta.get(diploPairKey(a, b));
-          // R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): oferta pokoju po rozejmie czeka na odpowiedź.
-          // Timeout (kolejna tura bez zgody) = wojna, bez kary.
-          if (meta?.truceEndOffer != null) {
-            if (truceEndOfferExpired(meta.truceEndOffer.turn, turn)) truceEndToWar(a, b);
-            continue;
-          }
-          if (meta?.truceUntilTurn == null) continue;
-          if (truceExpiryAction(meta.truceUntilTurn, turn) !== 'revert_to_war') continue;
-          const cur = getDiploRelation(a, b);
-          const initiator = meta.truceInitiatorId;
-          const target = truceEndOfferTarget(initiator, a, b);
-          setDiploPairMeta(a, b, { ...meta, truceUntilTurn: undefined });
-          if (cur.status !== 'pokoj') continue;
-          if (initiator == null || target == null) {
-            // Stare zapisy bez inicjatora: zachowanie sprzed R-WEB-DIPLO-TRUCE-IMPL-Q1 (wojna).
-            truceEndToWar(a, b);
-          } else if (isHuman(target)) {
-            // Gracz dostaje propozycję pokoju w skrzynce (zgoda = pokój, odmowa/timeout = wojna).
-            setDiploPairMeta(a, b, {
-              ...getDiploPairMeta(a, b),
-              truceEndOffer: { turn, fromOwnerId: initiator, toOwnerId: target },
-            });
-            enqueueDiplomacyPending(initiator, 'zaproponuj_pokoj', 'Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)');
-          } else if (truceEndAiAccepts(cur.zaufanie)) {
-            // AI-adresat decyduje od razu wg gotowości (Zaufanie) — zgoda = pokój stały.
-            finalizePeaceTreatyBetween(initiator, target);
-          } else {
-            truceEndToWar(a, b);
-          }
+          truceEndTickPair(ports, ids[i]!, ids[j]!, turn);
         }
       }
     }
 
-    /** R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): usuwa ofertę pokoju po rozejmie (meta + wpis w skrzynce). */
+    /** R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): usuwa ofertę pokoju po rozejmie (meta + własny wpis w skrzynce). */
     function clearTruceEndOffer(a: number, b: number): void {
-      const meta = getDiploPairMeta(a, b);
-      const offer = meta.truceEndOffer;
-      if (offer == null) return;
-      for (let k = pendingDiplomacyInbox.length - 1; k >= 0; k--) {
-        const p = pendingDiplomacyInbox[k]!;
-        if (p.ownerId === offer.fromOwnerId && p.cmdType === 'zaproponuj_pokoj') {
-          pendingDiplomacyInbox.splice(k, 1);
-        }
-      }
-      setDiploPairMeta(a, b, { ...meta, truceEndOffer: undefined });
+      clearTruceEndOfferCore(truceEndPorts(), a, b);
     }
 
     /** R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): odmowa lub timeout pokoju po rozejmie = wojna (bez kary). */
     function truceEndToWar(a: number, b: number): void {
-      const cur = getDiploRelation(a, b);
-      if (cur.status === 'pokoj') {
-        setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
-      }
-      clearTruceEndOffer(a, b);
+      truceEndToWarCore(truceEndPorts(), a, b);
     }
 
     /** Wszyscy znani ownerzy (gracz + AI na mapie) — do pętli P4 co turę. Barbarzyńcy wykluczeni (§1 — nie mają Wiarygodności). */
@@ -11922,7 +11925,8 @@ async function boot(): Promise<void> {
 
       // R-WEB-TRUCE-Q1 r3 (N1): wypowiedzenie wojny w oknie aktywnego rozejmu = złamanie,
       // karane jak złamanie paktu NAP (ta sama wartość N2). Zrywa rozejm (truceUntilTurn → undefined).
-      const truceBreach = isTruceBreach(getDiploPairMeta(declarerId, targetId).truceUntilTurn, turn);
+      // (B/N1) Okno rozejmu = aktywny rozejm LUB oferta pokoju po jego wygaśnięciu (isTruceWindowBreach).
+      const truceBreach = isTruceWindowBreach(getDiploPairMeta(declarerId, targetId), turn);
       if (!skipN2) {
         const hasAlliance = activeDeals.some(
           d => dealInvolvesOwners(d, declarerId, targetId) && isAllianceDealKind(d.rodzaj),
