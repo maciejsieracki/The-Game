@@ -208,7 +208,9 @@ eq(U.readBuildingResourceUpkeepRatio({}, 'normal'), 1, 'ratio: brak wpisu -> 1')
   let bad = 0;
   for (const x of arr) {
     const raw = Number.isFinite(x.utrzymanie) ? Math.floor(x.utrzymanie) : 0;
-    const res = U.buildingResourceUpkeep(x, 1);
+    // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: stale `utrzymanie_surowce` (ceramika, 4 budynki) poza regula koszt_surowce.
+    const fixedK = Object.keys(x.utrzymanie_surowce || {});
+    const res = Object.fromEntries(Object.entries(U.buildingResourceUpkeep(x, 1)).filter(([k]) => !fixedK.includes(k)));
     const types = Object.keys(x.koszt_surowce || {}).filter(k => x.koszt_surowce[k] > 0);
     const want = raw > 0 ? types.length : 0;
     if (Object.keys(res).length !== want || Object.values(res).some(v => v !== raw)) bad++;

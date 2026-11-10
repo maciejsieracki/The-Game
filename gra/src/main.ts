@@ -1134,7 +1134,7 @@ import {
   villageEventHex,
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -22445,8 +22445,19 @@ async function boot(): Promise<void> {
           return unitStockCost(def);
         },
         foodReserve: getEmpireFoodReserve(ownerId),
+        upkeepDemand: buildingResourceUpkeepDemandForOwner(ownerId),
       });
       return needs.deficitKeys;
+    }
+
+    /** R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: surowcowe utrzymanie budynków właściciela (suma po miastach). */
+    function buildingResourceUpkeepDemandForOwner(ownerId: number): Record<string, number> {
+      const total: Record<string, number> = {};
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        addResourceCosts(total, buildingResourceUpkeepForCityId(c.id, ownerId));
+      }
+      return total;
     }
 
     /** Cache na jedną turę AI ownera — pickResourceTradeRelOffer wołany O(N²) w dyplomacji. */

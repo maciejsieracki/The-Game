@@ -714,17 +714,34 @@ function buildingRawGoldUpkeepAtLevel(
  * empty / missing koszt_surowce => no resource upkeep.
  */
 export function buildingResourceUpkeep(
-  building: { koszt_surowce?: BuildingStockCost | null; utrzymanie?: number; przyrostUtrzymania?: number } | null | undefined,
+  building: {
+    koszt_surowce?: BuildingStockCost | null;
+    utrzymanie?: number;
+    przyrostUtrzymania?: number;
+    utrzymanie_surowce?: BuildingStockCost | null;
+  } | null | undefined,
   level = 1,
   ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
 ): Record<string, number> {
-  const raw = building?.koszt_surowce;
-  if (!building || !raw || typeof raw !== 'object') return {};
-  const amount = Math.floor(buildingRawGoldUpkeepAtLevel(building, level) * ratio);
-  if (!(amount > 0)) return {};
+  if (!building) return {};
   const out: Record<string, number> = {};
+  // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: jawne pole `utrzymanie_surowce` (np. {ceramika: 2})
+  // = stała ilość surowca na turę per budynek (nie per typ, nie na poziom). Dotyczy wyłącznie
+  // budynków, które mają to pole w buildings.json (Spichlerz II, Akwedukt, Łaźnia, Port).
+  const fixed = building.utrzymanie_surowce;
+  if (fixed && typeof fixed === 'object') {
+    for (const [k, v] of Object.entries(fixed)) {
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      const units = Math.floor(v * ratio);
+      if (units > 0) out[k] = units;
+    }
+  }
+  const raw = building.koszt_surowce;
+  if (!raw || typeof raw !== 'object') return out;
+  const amount = Math.floor(buildingRawGoldUpkeepAtLevel(building, level) * ratio);
+  if (!(amount > 0)) return out;
   for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = amount;
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = (out[k] ?? 0) + amount;
   }
   return out;
 }

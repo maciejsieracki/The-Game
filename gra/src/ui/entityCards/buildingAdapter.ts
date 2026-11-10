@@ -238,6 +238,8 @@ const UPKEEP_NOUN_FORMS: Record<string, [string, string, string]> = {
   'drewno': ['drewno', 'drewna', 'drewien'],
   'kamień': ['kamień', 'kamienie', 'kamieni'],
   'cegła': ['cegła', 'cegły', 'cegieł'],
+  // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: ceramika jako surowiec utrzymania (Spichlerz II, Akwedukt, Łaźnia, Port).
+  'ceramika': ['ceramika', 'ceramiki', 'ceramiki'],
 };
 
 function plUpkeepForm(n: number, forms: [string, string, string]): string {

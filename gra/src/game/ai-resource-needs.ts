@@ -101,6 +101,14 @@ export function detectOwnerResourceNeeds(input: {
   /** Zapas żywności państwa (spichlerz) — opcjonalnie dla miast-państw. */
   foodReserve?: number;
   foodUrgentThreshold?: number;
+  /**
+   * R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: dzienne zapotrzebowanie właściciela na surowce
+   * UTRZYMANIA budynków (suma `buildingResourceUpkeep` po miastach). Klucz z zapotrzebowaniem
+   * większym niż zapas w puli państwa = deficyt (np. ceramika dla Spichlerza II/Akweduktu/
+   * Łaźni/Portu), żeby AI/auto-budowa dostawiła producenta (Garncarnia) — utrzymanie NIE jest
+   * kosztem budowy, więc bez tego pola deficyt utrzymania byłby niewidoczny dla planera.
+   */
+  upkeepDemand?: Readonly<Record<string, number>>;
 }): OwnerResourceNeedState {
   const pakiet = Math.max(1, input.pakietWielkosc);
   const stockDeficits = detectPricedResourceDeficits(
@@ -125,7 +133,19 @@ export function detectOwnerResourceNeeds(input: {
     })
     : [];
 
-  const deficitKeys = mergeDeficitKeys(mergeDeficitKeys(stockDeficits, buildDeficits), unitDeficits);
+  const upkeepDeficits: string[] = [];
+  if (input.upkeepDemand) {
+    for (const [key, demand] of Object.entries(input.upkeepDemand)) {
+      if (!(demand > 0)) continue;
+      const stock = input.goods.find(g => g.key === key)?.ilosc ?? 0;
+      if (stock < demand) upkeepDeficits.push(key);
+    }
+  }
+
+  const deficitKeys = mergeDeficitKeys(
+    mergeDeficitKeys(mergeDeficitKeys(stockDeficits, buildDeficits), unitDeficits),
+    upkeepDeficits,
+  );
   const needsResource: Record<string, boolean> = {};
   for (const k of deficitKeys) needsResource[k] = true;
 

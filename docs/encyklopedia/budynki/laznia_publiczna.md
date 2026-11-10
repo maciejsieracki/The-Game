@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Łaźnia publiczna** — budynek (Zdrowie), epoka Żelazo. Koszt od **50** pracy, utrzymanie **2** ¤/t. Technologia **Medycyna**.
+**Łaźnia publiczna** — budynek (Zdrowie), epoka Żelazo. Koszt od **50** pracy, utrzymanie **2** ¤/t. Technologia **Medycyna**. Utrzymanie surowcowe: **2 ceramiki/t**.
 
 ---
 

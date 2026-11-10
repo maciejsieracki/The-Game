@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Port handlowy** — budynek (Podatek), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Żegluga**.
+**Port handlowy** — budynek (Podatek), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Żegluga**. Utrzymanie surowcowe: **2 ceramiki/t**.
 
 ---
 
