@@ -1,3 +1,9 @@
+## ROBOCZA f34dc756 -- 2026-11-06 -- FALA 591: RESPECT-DISPLAY: panel dyplomacji pokazuje prawdziwy Respekt (limit wojenny tylko w etykiecie Wrogi) (testowa)
+
+- RESPDISP 11c70f4ab
+- Weryfikacja: diplomacy-display 35/0, real-render Chromium 17/0 + mutanty, sidecar PASS
+- Limity: dopisek limit wojenny 29 przy Relacji do doprecyzowania; REPIN Rust UI
+
 ## ROBOCZA 13638b14 -- 2026-11-06 -- FALA 590: FISHING-BOATS: łodzie rybackie +6 żywności/+6 Pracy/+6 podatku (testowa)
 
 - FISHBOAT 0d471edf9
