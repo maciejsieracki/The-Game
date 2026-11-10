@@ -9628,3 +9628,7 @@ Max4aktywne tematy, role osobno,sekwencyjnie w temacie. Właściciel polecił st
 
 ## R-WEB-POLISH-UI-ROUTES-AUDIT-Q3 — 2026-11-10
 STATUS: ZAREJESTROWANE. KolejnypokryciaaktywnychtrasUI/Civpedia poQ2/ETA/wdrożeniach; parentPARTIAL, niepowielaćgotowychzmian. OperatorREADONLY→Evalkwalifikacji→wąskaimplementacja. Wypełnia4slotpozwolnieniuprzezgranicę617.
+
+
+## R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Palisada50%, kamienny100%poMurarstwie, ceglany200%poBudownictwie. Ceglastymodelprzejściowoten samkamiennyzredmaterial. Aktualizacja kartbadań/budynków/Civpedia obowiązkowa. Futuregeometria: R-WEB-BRICK-WALL-DEDICATED-MODEL-FUTURE-Q1 przed1.

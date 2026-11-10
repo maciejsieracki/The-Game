@@ -51,3 +51,6 @@ Produkcja brązu25/50 i Brązownictwo480 są aktywnymiPRIORYTETAMI, nieczekająn
 
 ## Kolejne3wolneslotypoFALI616
 R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1, R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1, R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1 startująrównoleglewosobnychworktrees. Granica domykanawczwartymtemacie. Originmainreadback/readcodeprzednaprawą, niepowtarzaćgotowychFAL.
+
+## Nowypriorytetwłaściciela:3tierymurów
+R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 zastępujeaktywnyslotQ3(pełnyread-onlyreportgotowy, czeka naEvaluatorpóźniej). Czteryaktywne: mury, AItradecorrection, callarms, SKIPbreach. Futurebrickmodelprzed1nieuruchamiaćteraz.
