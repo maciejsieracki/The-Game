@@ -47,6 +47,7 @@ import { terrainUnlockLabelsForTech } from '../../game/improvement-tech';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
 import { naukaCostSuffix } from '../naukaLabel';
+import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
 import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects';
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
@@ -120,11 +121,11 @@ function list(raw: string | null | undefined): string[] {
 function buildingEffectText(building: BuildingRow): string {
   const effects: string[] = [];
   for (const [key, value] of Object.entries(building.przyrost ?? {})) {
-    if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+    if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
   }
   if (effects.length === 0) {
     for (const [key, value] of Object.entries(building.baza ?? {})) {
-      if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+      if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
     }
   }
   return effects.join(', ');
@@ -192,7 +193,7 @@ function wonderTrailing(w: WonderRowLite, techName: string): string {
   const parts: string[] = [];
   if (w.dostep === 'R') parts.push('Wyścig wszystkich państw, maks. 1 na świecie');
   else {
-    const civs = (w.cywilizacje ?? []).map((id) => CIV_NAME_BY_ID[id] ?? id);
+    const civs = (w.cywilizacje ?? []).map((id) => CIV_NAME_BY_ID[id] ?? nazwaCywilizacji(id));
     parts.push(`Cud narodowy: ${civs.join(', ')} · maks. 1 na świecie`);
   }
   const other = (w.techUnlock ?? []).filter((t) => t !== techName);
@@ -253,7 +254,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const buildingsRows: EntityCardRow[] = buildings.map((b) => {
     const linkTo = resolveBuildingRow(b.id) != null ? ({ kind: 'building', id: b.id } as const) : undefined;
     return {
-      label: b.nazwa ?? b.id,
+      label: b.nazwa ?? humanizeId(b.id),
       // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): tekst "Szczegóły →" ZNIKA, a
       // przyciskiem staje się SAMA NAZWA budynku (`label`) — dokładnie tak, jak od początku
       // wyglądała pigułka Wymagań (`button.entity-card-pill-text`), którą właściciel wskazał
@@ -307,7 +308,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
 
   // --- Cuda (Q6, założenie Operatora: TAK, z oznaczeniem narodowy/wyścig, maks. 1 na świecie) ---
   const wondersRows: EntityCardRow[] = wonders.map((w) => ({
-    label: w.nazwa ?? w.id, value: '', trailing: wonderTrailing(w, techName),
+    label: w.nazwa ?? humanizeId(w.id), value: '', trailing: wonderTrailing(w, techName),
     linkTo: resolveWonderRow(w.id) != null ? ({ kind: 'wonder', id: w.id } as const) : undefined,
     linkAnchor: 'label',
   }));
@@ -369,7 +370,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     const effect = buildingEffectText(b);
     if (effect) {
       econRows.push({
-        label: b.nazwa ?? b.id, value: effect,
+        label: b.nazwa ?? humanizeId(b.id), value: effect,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: pudełko przycisku MUSI trafić na nazwę
@@ -380,7 +381,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     }
     if (b.utrzymanie != null) {
       econRows.push({
-        label: `${b.nazwa ?? b.id} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
+        label: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: jw. — `value` to kwota utrzymania.
@@ -477,7 +478,7 @@ function legacyActionRows(
       badge: { kind: 'ok', label: 'Możesz teraz' },
     });
   }
-  const buildingNames = buildings.map((b) => b.nazwa ?? b.id);
+  const buildingNames = buildings.map((b) => b.nazwa ?? humanizeId(b.id));
   if (buildingNames.length > 0) {
     actionRows.push({
       label: 'Najpierw spełnij', value: `Zbuduj ${buildingNames.join(' lub ')}, jeśli spełniasz ich wymagania.`,

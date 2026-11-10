@@ -51,6 +51,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Imports
 
+import { humanizeId, nazwaCywilizacji } from './game/text-names';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -329,6 +330,7 @@ import {
   type WonderYieldBonus,
   type WonderTradeRouteMedium,
 } from './game/wonders-data';
+import { wonderEffectsText } from './game/wonders-effects-text';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import {
   snapshotWonderTerritoryOwners, planWonderTransfers, applyWonderTransfers,
@@ -4888,7 +4890,7 @@ async function boot(): Promise<void> {
         const capable = inputs.filter(i => i.canRecruit).length;
         return {
           id,
-          label: labels.get(id) ?? id,
+          label: labels.get(id) ?? humanizeId(id),
           koszt,
           capableCities: capable,
           totalCities: mine.length,
@@ -5373,36 +5375,14 @@ async function boot(): Promise<void> {
       return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    const WONDER_YIELD_LABELS: Record<string, string> = {
-      pieniadz: 'złota', zywnosc: 'żywności', nauka: 'nauki', kultura: 'kultury',
-      zadowolenie: 'zadowolenia', praca: 'produkcji', obrona: 'obrony', drewno: 'drewna',
-    };
-
     function civWonderDisplayName(civType: string | undefined | null): string {
       if (!civType) return civType ?? '?';
-      return getWondersData().panstwa[civType]?.nazwa ?? civType;
+      return getWondersData().panstwa[civType]?.nazwa ?? nazwaCywilizacji(civType);
     }
 
-    function formatWonderYieldBonus(b?: Record<string, number | undefined>): string {
-      if (!b) return '';
-      return Object.entries(b)
-        .filter((entry): entry is [string, number] => typeof entry[1] === 'number' && entry[1] !== 0)
-        .map(([k, v]) => `+${v} ${WONDER_YIELD_LABELS[k] ?? k}`)
-        .join(', ');
-    }
-
+    /** R-WEB-UI-RAW-IDS-IN-PLAYER-TEXT-Q1: tekst efektów z resolverem nazw (wonders-effects-text.ts). */
     function wonderEffectsLabel(w: WonderDef): string {
-      const parts: string[] = [];
-      const miasto = formatWonderYieldBonus(w.bonusy?.miasto as Record<string, number | undefined> | undefined);
-      if (miasto) parts.push(`Miasto ${miasto} (× każde miasto)`);
-      const hex = formatWonderYieldBonus(w.bonusy?.hex as Record<string, number | undefined> | undefined);
-      if (hex) parts.push(`Hex cudu ${hex}`);
-      for (const t of w.bonusy?.teren ?? []) {
-        const y = formatWonderYieldBonus(t as unknown as Record<string, number | undefined>);
-        if (y) parts.push(`${t.typTerenu} ${y}`);
-      }
-      for (const s of w.bonusy?.specjalne ?? []) parts.push(s.opis);
-      return parts.length > 0 ? parts.join(' · ') : '(brak opisanych bonusów)';
+      return wonderEffectsText(w);
     }
 
     function focusCameraOnWonder(wonderId: string): void {

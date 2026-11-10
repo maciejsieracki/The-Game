@@ -43,6 +43,7 @@
  *    to poprawne czytanie, czy jednak dodać widoczny, wygaszony przycisk?
  */
 
+import { nazwaWyswietlana } from '../game/text-names';
 import techData from '../../data/tech.json';
 import buildingsData from '../../data/buildings.json';
 import unitsData from '../../data/units.json';
@@ -148,11 +149,11 @@ function pluralPl(n: number, one: string, few: string, many: string): string {
 function buildingEffectText(building: BuildingRow): string {
   const effects: string[] = [];
   for (const [key, value] of Object.entries(building.przyrost ?? {})) {
-    if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+    if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
   }
   if (effects.length === 0) {
     for (const [key, value] of Object.entries(building.baza ?? {})) {
-      if (value) effects.push(`${key} ${value > 0 ? '+' : ''}${value}`);
+      if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
     }
   }
   return effects.join(', ');

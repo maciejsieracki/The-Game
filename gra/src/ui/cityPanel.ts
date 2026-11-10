@@ -287,6 +287,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
+import { humanizeId, nazwaWyswietlana } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
 
 // ---------------------------------------------------------------------------
@@ -6978,7 +6979,7 @@ function buildingRequirementChips(
   const cityPrereq = CITY_BUILDING_PREREQ[def.id];
   if (cityPrereq) {
     const ids = typeof cityPrereq === 'string' ? [cityPrereq] : [...cityPrereq];
-    const names = ids.map(id => findBuildingDef(data, id)?.nazwa ?? id);
+    const names = ids.map(id => findBuildingDef(data, id)?.nazwa ?? humanizeId(id));
     const met = cityBuildingPrereqMet(
       cityPrereq, built, buildings, isBuildingSupersededByUpgrade,
     );
@@ -7127,7 +7128,7 @@ function appendBuildingRequirementsBlock(
 function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {
   const id = upgradeFromId?.trim();
   if (!id) return null;
-  return findBuildingDef(data, id)?.nazwa ?? id;
+  return findBuildingDef(data, id)?.nazwa ?? humanizeId(id);
 }
 
 /** Karta infografiki budynku (Design Poziom B · 2026-07-05). */
@@ -10052,7 +10053,7 @@ function buildOkolicaDetailCard(
     const gImp = appendDetailGrid(card);
     const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);
     for (const [key, count] of sortedImprovements) {
-      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? key, count);
+      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? nazwaWyswietlana(key), count);
     }
   }
 
@@ -11607,7 +11608,7 @@ function appendBudowaListaBar(
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const buildingName = (id: string): string => {
     const def = data?.buildings.find(b => b.id === id);
-    return def?.nazwa ?? id;
+    return def?.nazwa ?? humanizeId(id);
   };
 
   // Jawne wyjście z edytora Listy (Maciej 2026-08-04) — profil typów / Ręczny też działają.
