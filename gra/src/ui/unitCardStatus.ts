@@ -88,6 +88,8 @@ export interface UnitCardStatusInput extends UnitSufferingStatusFields {
   sentry?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
+  /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: powód wstrzymania zaplanowanej trasy (wskaźnik „trasa wstrzymana”). */
+  marchPausedReason?: string;
   esc: (raw: string) => string;
 }
 
@@ -294,6 +296,9 @@ export function buildUnitExtraStatusLinesHtml(input: UnitCardStatusInput): strin
   }
   if (input.ufortyfikowanyWPolu) {
     lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu (+50% Obrony)</div>`);
+  }
+  if (input.marchPausedReason) {
+    lines.push(`<div class="uc-extra-status uc-march-paused">Status: \u23f8 trasa wstrzymana \u2014 ${esc(input.marchPausedReason)}</div>`);
   }
   if (input.oblegaCityName) {
     lines.push(`<div class="uc-extra-status">Status: oblega ${esc(input.oblegaCityName)}</div>`);

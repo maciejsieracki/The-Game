@@ -78,6 +78,8 @@ export interface ArmyStackHudState extends UnitSufferingStatusFields {
   sentry?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
+  /** Powód wstrzymania zaplanowanej trasy (R-WEB-MARCH-RESUME-NEXT-TURN-Q1). */
+  marchPausedReason?: string;
   buildingBonusLabel?: string;
   actions: UnitPanelAction[];
 }
@@ -340,6 +342,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       sentry: st.sentry,
       ufortyfikowanyWPolu: st.ufortyfikowanyWPolu,
       oblegaCityName: st.oblegaCityName,
+      marchPausedReason: st.marchPausedReason,
       // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
       ...pickUnitSufferingFields(st),
       esc,

@@ -511,3 +511,36 @@ export function plannedMarchesToSave(
 export function isNotifiableMarchStop(reason: MarchStopReason | undefined): boolean {
   return reason === 'obstacle' || reason === 'no_path' || reason === 'blocked_city';
 }
+
+/**
+ * R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: etykieta powodu wstrzymania trasy (wskaźnik „trasa wstrzymana”).
+ * EN: player-facing reason label for the "route paused" indicator.
+ */
+export function marchPausedLabel(reason: MarchStopReason | undefined, detail?: string): string | undefined {
+  if (!isNotifiableMarchStop(reason)) return undefined;
+  if (detail) return detail;
+  if (reason === 'obstacle') return 'zablokowany heks na trasie';
+  if (reason === 'blocked_city') return 'obce miasto na trasie';
+  return 'brak trasy do celu';
+}
+
+/**
+ * Deduplikacja powiadomień: true = należy pokazać JEDNO powiadomienie (nowy epizod przerwania
+ * lub zmiana powodu); zapamiętuje powód. Powtórzone przerwanie z tego samego powodu = false.
+ * EN: returns true only for a new interruption episode (or changed reason) and records it.
+ */
+export function registerMarchStop(
+  notified: Map<string, MarchStopReason>,
+  unitId: string,
+  reason: MarchStopReason | undefined,
+): boolean {
+  if (!reason || !isNotifiableMarchStop(reason)) return false;
+  if (notified.get(unitId) === reason) return false;
+  notified.set(unitId, reason);
+  return true;
+}
+
+/** Postęp marszu (ruch / dojście / jawne anulowanie) kończy epizod przerwania — wznowienie. */
+export function clearMarchStop(notified: Map<string, MarchStopReason>, unitId: string): void {
+  notified.delete(unitId);
+}

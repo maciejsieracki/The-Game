@@ -1208,6 +1208,9 @@ import {
   plannedMarchesToSave,
   truncatePathToBudget,
   isNotifiableMarchStop,
+  marchPausedLabel,
+  registerMarchStop,
+  clearMarchStop,
   type MarchFogContext,
   type MarchStopReason,
   type PlannedMarchDest,
@@ -25018,6 +25021,8 @@ async function boot(): Promise<void> {
         displayName,
         ownerEmblemHtml: unitOwnerMedallionHtml(0),
         ...status,
+        // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: wskaźnik „trasa wstrzymana” (tylko gdy plan istnieje).
+        marchPausedReason: plannedMarches.has(active.id) ? marchStopDetail.get(active.id) : undefined,
       };
       if (isAwaitingFirstPlayerCity()) {
         return {
@@ -30050,6 +30055,8 @@ async function boot(): Promise<void> {
     /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: ostatni powiadomiony powód zatrzymania trasy jednostki
      * (jedno powiadomienie na epizod przerwania, nie co turę). / one notice per interruption episode. */
     const marchStopNotified = new Map<string, MarchStopReason>();
+    /** Powód wstrzymania trasy do wskaźnika w panelu jednostki. / reason shown by the "route paused" badge. */
+    const marchStopDetail = new Map<string, string>();
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
      * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
@@ -30096,16 +30103,19 @@ async function boot(): Promise<void> {
         plannedMarches.delete(unitId);
         marchAttackTargets.delete(unitId);
         marchStopNotified.delete(unitId);
+        marchStopDetail.delete(unitId);
       } else if (force) {
         plannedMarches.clear();
         marchAttackTargets.clear();
         marchStopNotified.clear();
+        marchStopDetail.clear();
       } else {
         for (const id of [...plannedMarches.keys()]) {
           if (plannedMarches.get(id)?.attackUnitId) continue;
           plannedMarches.delete(id);
           marchAttackTargets.delete(id);
           marchStopNotified.delete(id);
+          marchStopDetail.delete(id);
         }
       }
       if (selectedId === null || unitId === selectedId || unitId === undefined) {
@@ -30471,9 +30481,8 @@ async function boot(): Promise<void> {
      * EN: a justified interruption adds ONE "Important" event card with the reason; the plan stays.
      */
     function noteMarchStop(unitId: string, stopReason: MarchStopReason | undefined, stopDetail?: string): void {
-      if (!isNotifiableMarchStop(stopReason) || !stopReason) return;
-      if (marchStopNotified.get(unitId) === stopReason) return;
-      marchStopNotified.set(unitId, stopReason);
+      if (!stopReason || !registerMarchStop(marchStopNotified, unitId, stopReason)) return;
+      marchStopDetail.set(unitId, marchPausedLabel(stopReason, stopDetail) ?? stopReason);
       const evId = `march-stop-${unitId}-${turn}`;
       if (warEventLog.some(e => e.id === evId)) return;
       warEventLog.unshift({
@@ -30494,9 +30503,11 @@ async function boot(): Promise<void> {
       stopReason?: string,
       stopDetail?: string,
     ): void {
+      // Segment faktycznie ruszył jednostkę -> poprzedni epizod przerwania się skończył (wznowienie).
+      clearMarchStop(marchStopNotified, unitId);
+      marchStopDetail.delete(unitId);
       if (arrived) {
         plannedMarches.delete(unitId);
-        marchStopNotified.delete(unitId);
         // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Dotarło do celu” usunięte (szum).
         return;
       }
@@ -30506,7 +30517,6 @@ async function boot(): Promise<void> {
         noteMarchStop(unitId, stopReason as MarchStopReason, stopDetail);
         return;
       }
-      marchStopNotified.delete(unitId);
       if (selectedId === unitId) refreshPlannedMarchPreview(unitId);
     }
 
@@ -43943,6 +43953,7 @@ async function boot(): Promise<void> {
       units.length = 0;
       plannedMarches.clear();
       marchStopNotified.clear();
+      marchStopDetail.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
       // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
       // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
@@ -45147,6 +45158,7 @@ async function boot(): Promise<void> {
       syncAllRuntimeUnitHpState();
       plannedMarches.clear();
       marchStopNotified.clear();
+      marchStopDetail.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
       // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
       // / EN: clear together with plannedMarches — the loop below only rebuilds both for units
