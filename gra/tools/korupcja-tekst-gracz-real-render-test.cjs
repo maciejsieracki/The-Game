@@ -157,10 +157,10 @@ async function main() {
   // BAJT W BAJT poza DOKŁADNIE literalnym ciągiem "placeholder" w tych 2 liniach, który
   // ECHO orkiestratora nakazało usunąć (reszta wzoru, zmiennych, kolejności — bez zmian).
   check('(0) appendDetailFormula strataKorupcji: wzór/zmienne NIETKNIĘTE, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
-    citySrc.includes('strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)')
+    citySrc.includes('strata korupcji = podatek brutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)')
     && !/strataKorupcji = handelBrutto × \$\{HANDEL_KORUPCJA_PCT_PLACEHOLDER\}% \(placeholder/i.test(citySrc), null);
   check('(0) appendDetailAlgo krok "Odejmij korupcję": struktura/kolejność NIETKNIĘTE, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
-    citySrc.includes('Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.')
+    citySrc.includes('Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → podatek netto.')
     && !/Odejmij korupcję \(placeholder/i.test(citySrc), null);
 
   fs.writeFileSync(ENTRY, [
@@ -319,9 +319,9 @@ async function main() {
       // --- (1c) reszta karty (appendDetailFormula/appendDetailAlgo, WZORY silnika) zachowana
       // BAJT W BAJT poza DOKŁADNIE literalnym ciągiem "placeholder" usuniętym przez ECHO
       // runda 2 w tych 2 liniach — struktura wzoru, zmienne i kolejność kroków bez zmian.
-      check('(4) wzór "handelBrutto = Σ" nietknięty (poza allowlistą)', /handelBrutto = Σ/.test(text), null);
-      check('(4) wzór "strataKorupcji = handelBrutto ×" nietknięty, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
-        /strataKorupcji = handelBrutto ×.*\(dziś: stały %\)/.test(text), text.slice(0, 4000));
+      check('(4) wzór "podatek brutto = Σ" (wyświetlana nazwa, R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1)', /podatek brutto = Σ/.test(text) && !/handelBrutto = Σ/.test(text), null);
+      check('(4) wzór "strata korupcji = podatek brutto ×" (wyświetlana nazwa), ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
+        /strata korupcji = podatek brutto ×.*\(dziś: stały %\)/.test(text), text.slice(0, 4000));
       check('(4) algorytm "Odejmij korupcję" nietknięty, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
         /Odejmij korupcję \(dziś: stały \d+% brutto; docelowo: dystans, miasta, cap\)/.test(text), text.slice(0, 4000));
       check('(4) algorytm "Zbierz ... ze wszystkich obrabianych pól" nietknięty', /Zbierz .*obrabianych pól/.test(text), null);

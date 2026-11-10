@@ -3,7 +3,7 @@
 > **Poradnik gracza (Pełny)** · Część VII §45 · dane: `gra/data/buildings.json`
 > Pełne karty Wiki: `docs/encyklopedia/budynki/` · spis: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`
 
-> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Podatek/t**, nie mnożnik handlu. **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
+> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Podatek/t** (stały przyrost) **oraz** premia do dochodu z tras handlowych (nie mnoży lokalnego podatku). **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
 
 Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. **Maks. poziomów** zależy od budynku (np. Targowisko **3**, Mury **2**, kuźnie wojskowe często **1**) — patrz karta w Civpedii, nie zakładaj „zawsze 10". Część budynków dodatkowo kosztuje **surowce z magazynu** przy wejściu do kolejki (Część VIII §53.2).
 
@@ -104,7 +104,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 **Targowisko (Rynek)** (Podatek) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
 
-Daje **Podatek na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnika %** handlu ani Daniny.
+Daje **Podatek na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). Osobna premia Targowiska: **+50%** (poziom normalny; +62% łatwy / +38% trudny) **wyłącznie do dochodu z tras handlowych** — nie mnoży lokalnego podatku miejskiego ani Daniny.
 
 
 ### Przykład liczbowy

@@ -1438,6 +1438,11 @@ function resourceTradeModeHtml(mode: 'once' | 'per_turn', visible: boolean): str
       + buildChipBtn('cdb-chip-mode', 'once', 'deal', mode === 'once', onceIc, 'Jednorazowo')
       + buildChipBtn('cdb-chip-mode', 'per_turn', 'deal', mode === 'per_turn', perTurnIc, 'Co turę')
       + '</div>'
+      + '<p class="cdb-sub cdb-res-mode-hint">'
+      + (mode === 'once'
+        ? 'Jednorazowo — nie pojawi się w Aktywnych traktatach'
+        : 'Co turę — widoczna w Aktywnych traktatach')
+      + '</p>'
       + '<input type="hidden" class="cdb-res-mode" value="' + mode + '" />'
     + '</div>'
   );
