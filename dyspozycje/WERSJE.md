@@ -6979,3 +6979,13 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent evaluator followup and Final Control PASS; Focused27/27 including actual serialization roundtrip; thirteen regressions and typecheck PASS; Prior HTTPChromium blockade57/57; no UI change in legacy queue correction; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: Task-specific live purchase campaign not measured after final legacy-only fix; prior UI browser gate documented separately; Two city-siege storm-wiring assertions fail identically on original base; unrelated pre-existing test debt; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source 0d50dcf04be6dd760ef872d7cd9ffe5bfc9e2bd1; manifestMD5 3dee4cf71e318dbbe84a98b8e856e803; SHA256 f6c7dd14990bcb453980c6c7576838289de4bde10d50f475baa2978e101bdff6; push/readback pending.
+
+
+## ROBOCZA 297e1070 — 2026-11-10T21:17:00.846232+01:00 — FALA 615: Complete approved Stone research cost set with Bronzeworking480
+
+- Brązownictwo base cost180→480PN; complete approved set now Garncarstwo40, Gospodarka wodna180, Koło180, Brązownictwo480
+- Tempo multipliers1/2/4 unchanged; Bronzeworking480/960/1920 for quick/standard/long; all prerequisites levels unlocks and other costs unchanged
+- Bronzeworking encyclopedia short and long sources and regenerated bundle aligned; only one entry updated
+- Weryfikacja: Independent Evaluator and Final Control PASS; 48/48 actual research cost/tempo and four-cost-set assertions; typecheck and scope proof PASS; Regenerated encyclopedia bundle byte-matches generator output; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: No full campaign timing simulation; data change verified through actual research helpers and scope comparison; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source aa2127c82f76339a716cd1f647988ec13df49778; manifestMD5 297e1070d67e3341c9dab3ed12aebc3e; SHA256 1b4ec913c5fbd4afed9430fc8c42cb59d2353f327c5d81e4aaf967d2f736555c; push/readback pending.
