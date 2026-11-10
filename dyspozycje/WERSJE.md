@@ -1,3 +1,9 @@
+## ROBOCZA 0ef655f0 -- 2026-11-06 -- FALA 597: HAAMONGA: usunięte martwe bonusy cudu Kamień Ha'amonga (lowie_rybackie, laka) (testowa)
+
+- HAAMONGA d0f08d184
+- Weryfikacja: wonder-haamonga-no-dead-bonuses 16/0, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO render karty; encyklopedia ×3 plony niezgodna (osobny temat); REPIN Rust dane cudu
+
 ## ROBOCZA bbd9f3d8 -- 2026-11-06 -- FALA 596: ROAD-BUILD: gracz buduje drogi tak samo jak AI (przez heksy z farmą, do heksu miasta; powód odrzucenia po polsku) (testowa)
 
 - ROADPAR 7a10424ee
