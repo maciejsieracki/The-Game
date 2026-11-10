@@ -261,10 +261,6 @@
       "utrzymanie": 1,
       "bonusy": {
         "miasto": { "kultura": 3, "zywnosc": 3 },
-        "teren": [
-          { "typTerenu": "lowie_rybackie", "kultura": 2, "zywnosc": 2 },
-          { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_plytkie_morze" }
-        ],
         "specjalne": [
           { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }
