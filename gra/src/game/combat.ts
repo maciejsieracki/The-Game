@@ -479,7 +479,7 @@ export function rangedShotAccuracy(meleeAttack: number, missileAttack: number): 
 
 /**
  * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: koncowe obrazenia pocisku auto-walki.
- * Mnoznik klasy strzelca (ranged-damage-mult.ts) i kontra mnozone PRZED
+ * Mnoznik klasy strzelca (unit-power.ts rangedDamageMultFor) i kontra mnozone PRZED
  * zaokragleniem do int; podloga 1.
  */
 export function rangedShotDamage(

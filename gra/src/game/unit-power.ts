@@ -184,7 +184,15 @@ export function armyFieldPower(
   coeff?: UnitPowerCoeffs,
 ): number {
   if (isSiegeUnit(u)) return 0;
-  if (typeof u.fieldPower === 'number' && Number.isFinite(u.fieldPower)) {
+  // Cache eksportu units.json (fieldPower) jest liczony BEZ mnoznika obrazen pocisku
+  // (R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1). Dla klas z mnoznikiem (Procarz, piesi Lucznik)
+  // cache jest nieaktualny -> liczymy na zywo z surowych statystyk, zeby AI i auto-walka
+  // widzialy nowe obrazenia. Dla pozostalych jednostek cache == fieldPower() (zweryfikowane).
+  if (
+    typeof u.fieldPower === 'number' &&
+    Number.isFinite(u.fieldPower) &&
+    rangedDamageMultFor(u) === 1
+  ) {
     return u.fieldPower;
   }
   return fieldPower(u, coeff).total;

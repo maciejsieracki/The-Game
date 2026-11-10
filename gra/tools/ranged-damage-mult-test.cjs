@@ -105,5 +105,16 @@ check('moc Procarza rosnie o missile*(3-1)/2', Math.round((basePow.attack - noMu
 const kRow = row('Konnica łucznicza asyryjska');
 check('moc konnicy łuczniczej bez zmian', power.fieldPower({ ...kRow }).total, power.fieldPower({ ...kRow, Typ: 'Standard', Jednostka: 'X' }).total);
 
+// 6. Moc AI/auto-walki = armyFieldPower() na SUROWYM wierszu units.json (z cache fieldPower).
+// Cache eksportu liczony bez mnoznika -> armyFieldPower musi go ignorowac dla Procarza/Lucznika.
+const armyRaw = (name) => power.armyFieldPower({ ...row(name) });
+check('armyFieldPower Procarz (cache 12) = fieldPower z mnoznikiem 16', armyRaw('Procarz'), 16);
+check('armyFieldPower Procarz (Huaracoc) (cache 12) = 16', armyRaw('Procarz (Huaracoc)'), 16);
+check('armyFieldPower Łucznik (cache 17.5) = 19', armyRaw('Łucznik'), 19);
+check('armyFieldPower Łucznik egipski (cache 15) = 18', armyRaw('Łucznik egipski'), 18);
+check('armyFieldPower Oszczepnik (cache 12) bez zmian', armyRaw('Oszczepnik'), row('Oszczepnik').fieldPower);
+check('armyFieldPower Konnica łucznicza (cache) bez zmian', armyRaw('Konnica łucznicza asyryjska'), row('Konnica łucznicza asyryjska').fieldPower);
+check('armyFieldPower Procarz == fieldPower().total', armyRaw('Procarz'), power.fieldPower({ ...row('Procarz') }).total);
+
 console.log(failed === 0 ? '\nRANGED-DAMAGE-MULT: WSZYSTKIE PASS' : `\nRANGED-DAMAGE-MULT: ${failed} FAIL`);
 process.exit(failed === 0 ? 0 : 1);
