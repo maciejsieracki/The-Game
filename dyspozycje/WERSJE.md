@@ -1,3 +1,9 @@
+## ROBOCZA cb3b87a7 -- 2026-11-06 -- FALA 603: RANGED-DAMAGE-MULT: Procarz x3, Lucznik pieszy x2 obrazen pocisku; celnosc max(wrecz, dystans); AI widzi nowa moc (testowa)
+
+- RANGEDMULT a259012fa
+- Weryfikacja: ranged-damage-mult 24+7 PASS, unit-power 6/0, combat-test 6/6, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO balans auto-bitew i Chromium; karty/tooltipy bez mnoznika (#205); REPIN Rust combat
+
 ## ROBOCZA d92047f7 -- 2026-11-06 -- FALA 602: TERMINOLOGY-C: klasa C terminologii na podatek (karta miasta, grupa Podatek i pieniądz, podpis wymiany Jednorazowo/Co turę, poradniki Targowisko) (testowa)
 
 - TERMC ed1a815ca
