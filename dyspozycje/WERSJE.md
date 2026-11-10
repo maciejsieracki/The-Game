@@ -1,3 +1,21 @@
+## ROBOCZA 9bb97442 -- 2026-11-06 -- FALA 592: CITREC: karta listy dyplomacji pokazuje Rekruci (pełne jednostki, bieżąca/maks.) (testowa)
+
+- CITREC 01238e0cb (+allowlista main.ts, diplomacyPanel.ts)
+- Weryfikacja: diplomacy-display 40/0, recruits-level 22/22, lista-podglad 53/0, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO render w grze; dopisek jedn. i Obywatele w kolejnym temacie; REPIN Rust UI
+
+## ROBOCZA f34dc756 -- 2026-11-06 -- FALA 591: RESPECT-DISPLAY: panel dyplomacji pokazuje prawdziwy Respekt (limit wojenny tylko w etykiecie Wrogi) (testowa)
+
+- RESPDISP 11c70f4ab
+- Weryfikacja: diplomacy-display 35/0, real-render Chromium 17/0 + mutanty, sidecar PASS
+- Limity: dopisek limit wojenny 29 przy Relacji do doprecyzowania; REPIN Rust UI
+
+## ROBOCZA 13638b14 -- 2026-11-06 -- FALA 590: FISHING-BOATS: łodzie rybackie +6 żywności/+6 Pracy/+6 podatku (testowa)
+
+- FISHBOAT 0d471edf9
+- Weryfikacja: tsc, logic 213, ai 296, fishing-boats-666 22/0, sidecar PASS
+- Limity: NIE_ZMIERZONO plon miasta z N ławicami; ai-major-economy, pr141-f04 czerwone przed zmianą; DECYZJA Ha'amonga
+
 ## ROBOCZA b6cb2788 -- 2026-11-06 -- FALA 589: BATTLE-SKIP: pomiń do wyniku = ten sam wynik co AUTO; AI ulepsza jednostki wg zasad gracza (testowa)
 
 - BATSKIP b5aed5dfe + AIREPL af2e1cefb

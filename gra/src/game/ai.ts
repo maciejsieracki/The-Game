@@ -2816,7 +2816,7 @@ const AI_IMPROVEMENT_PRACA_SURPLUS = 30;
  * tam, w komentarzu przy jego deklaracji, i POMIJA `warzelnia_soli`, mimo że produkuje
  * `zywnosc: 1`):
  *   farma:3, irygacja:5, bydlo:2, owce:1, lama:1, oboz_lowiecki:1, tarasy:3,
- *   lodzie_rybackie:2, warzelnia_soli:1.
+ *   lodzie_rybackie:6, warzelnia_soli:1.
  * Wszystkie pozostałe klucze `AI_IMPROVEMENT_PRIORITY` (tartak, kamieniolom, glinianka,
  * kopalnia_miedzi/cyny/zelaza, stadnina, posterunek, droga, droga_brukowana, fort) mają
  * `bonus.zywnosc` zerowy/nieobecny -- kategoria „surowce/infrastruktura", BEZ ograniczenia

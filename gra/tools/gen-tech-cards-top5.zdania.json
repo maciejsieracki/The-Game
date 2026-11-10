@@ -113,10 +113,13 @@
   "Żegluga": {
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Armia lądowa przepłynie morze lub rzekę bez budowy floty transportowej." },
-      { "z": "Top2", "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i podatek." },
+      { "z": "Top2", "tytul": "Łodzie rybackie: +6 żywności, +6 Pracy, +6 podatku", "powodTytulu": "R-WEB-FISHING-BOATS-YIELD-6-6-6-Q1: decyzja właściciela 2026-11-09, plon łodzi rybackich 6/6/6 (terrain-improvements.json)", "zdanie": "Ulepszenie ławicy — morze daje żywność, Pracę i podatek." },
       { "z": "Top3", "zdanie": "Cud wyścigowy: może go wznieść każde państwo, ale stanie tylko raz na świecie." },
       { "z": "Top4", "zdanie": "Miasto nad wodą prowadzi dodatkową trasę handlową." },
       { "z": "Top5", "zdanie": "Pierwszy okręt wojenny; rekrutujesz go w mieście nad wodą z Koszarami." }
+    ],
+    "cmzZamiany": [
+      { "z": "(+2 żywności, +3 Pracy)", "na": "(+6 żywności, +6 Pracy)", "powod": "R-WEB-FISHING-BOATS-YIELD-6-6-6-Q1: decyzja właściciela 2026-11-09, łodzie rybackie 6/6/6." }
     ]
   },
   "Pismo": {

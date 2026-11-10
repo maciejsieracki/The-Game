@@ -10,6 +10,7 @@ import { clampRelationForWar, computeRespekt } from './diplomacy';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
+import { formatFullNumber } from '../ui/formatCompactNumber';
 import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import {
@@ -326,15 +327,23 @@ export function nastawienieLabelFromScore(
   return 'Przyjazny';
 }
 
-/** Zaufanie/Respekt do wyświetlenia — w wojnie z podłogą score (spójne z clampRelationForWar). */
+/**
+ * Zaufanie/Respekt do wyświetlenia — PRAWDZIWA wartość efektywna (ABC „B”, R-WEB-DIPLO-RESPECT-DISPLAY-TRUE-VALUE-Q1).
+ * Limit wojenny (clampRelationForWar, 29) NIE obcina wartości w panelu: dotyczy wyłącznie etykiety „Wrogi”
+ * i dopisku (zob. `warRelationCapApplies`). Mechanika (silnik) pozostaje bez zmian.
+ */
 export function effectiveNastawienieScores(
   zaufanie: number,
   respekt: number,
-  atWar: boolean,
 ): { zaufanie: number; respekt: number } {
-  if (!atWar) return { zaufanie, respekt };
+  return { zaufanie, respekt };
+}
+
+/** True, gdy w wojnie surowy score relacji przekracza limit wojenny — wtedy UI dopisuje „limit wojenny 29”. */
+export function warRelationCapApplies(zaufanie: number, respekt: number, atWar: boolean): boolean {
+  if (!atWar) return false;
   const c = clampRelationForWar({ zaufanie, respekt, status: 'wojna' });
-  return { zaufanie: c.zaufanie, respekt: c.respekt };
+  return c.zaufanie !== zaufanie || c.respekt !== respekt;
 }
 
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
@@ -621,6 +630,17 @@ export interface DiploPlayerSummaryInput {
   wiarygodnosc?: number;
   population?: number;
   armyCount?: number;
+  /** Rekruci w pełnych jednostkach werbu — bieżąca pula (floor, jak rekrutUnitEquivalents). */
+  recruitsUnits?: number;
+  /** Rekruci w pełnych jednostkach werbu — maksimum puli. */
+  recruitsUnitsMax?: number;
+}
+
+/** Wiersz „Rekruci: bieżąca / maks." w pełnych jednostkach werbu (bez zmiany audiencji). */
+export function formatRecruitsUnitsPart(current: number, max: number): string {
+  const cur = Math.max(0, Math.floor(current));
+  const mx = Math.max(0, Math.floor(max));
+  return `Rekruci: ${formatFullNumber(cur)} / ${formatFullNumber(mx)}`;
 }
 
 /** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
@@ -639,6 +659,9 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
   }
   if (input.armyCount !== undefined) {
     detailParts.push(`Armia: ${input.armyCount}`);
+  }
+  if (input.recruitsUnits !== undefined && input.recruitsUnitsMax !== undefined) {
+    detailParts.push(formatRecruitsUnitsPart(input.recruitsUnits, input.recruitsUnitsMax));
   }
   const metaParts: string[] = [];
   if (input.wiarygodnosc !== undefined) {
@@ -659,6 +682,9 @@ export interface DiploCivListEntryInput {
   /** Ich strona — jak oni nas widzą (demografia + ich respekt wobec gracza). */
   theirPopulation?: number;
   theirArmyCount?: number;
+  /** Rekruci rozmówcy w pełnych jednostkach werbu: bieżąca pula / maksimum. */
+  theirRecruitsUnits?: number;
+  theirRecruitsUnitsMax?: number;
   theirRespektTowardPlayer?: number;
   /** Nasza strona — jak my ich widzimy. */
   ourRespektTowardThem?: number;
@@ -682,6 +708,9 @@ export function formatDiploCivListLines(input: DiploCivListEntryInput): {
   }
   if (input.theirArmyCount !== undefined) {
     theirParts.push(`Armia: ${input.theirArmyCount}`);
+  }
+  if (input.theirRecruitsUnits !== undefined && input.theirRecruitsUnitsMax !== undefined) {
+    theirParts.push(formatRecruitsUnitsPart(input.theirRecruitsUnits, input.theirRecruitsUnitsMax));
   }
   if (input.theirRespektTowardPlayer !== undefined) {
     theirParts.push(`Ich respekt: ${Math.round(input.theirRespektTowardPlayer)}`);

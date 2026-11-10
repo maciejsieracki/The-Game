@@ -61,6 +61,9 @@ export interface DiploRelation {
   population?: number;
   /** Liczba jednostek wojskowych na mapie. */
   armyCount?: number;
+  /** Rekruci w pełnych jednostkach werbu (bieżąca / maks.) — uproszczona karta listy (R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1). */
+  recruitsUnits?: number;
+  recruitsUnitsMax?: number;
   /** Etykieta okręgu kulturowego (np. „Grecka"). */
   cultureLabel?: string;
   /** Etykieta epoki (np. „Kamień"). */
