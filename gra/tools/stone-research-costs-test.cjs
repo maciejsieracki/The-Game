@@ -3,6 +3,7 @@
 /** Regression gate for R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1. */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 const root = path.resolve(__dirname, '..');
@@ -34,7 +35,7 @@ try {
       buildings: 'Jednostki: Rydwan (woły)', improvements: 'Droga',
     },
     'Brązownictwo': {
-      cost: 180, level: 3,
+      cost: 480, level: 3,
       prereq: 'Garncarstwo + Murarstwo + Obróbka drewna',
       buildings: 'Odlewnia brązu; Kuźnia brązu; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz',
       improvements: null,
@@ -61,6 +62,24 @@ try {
       check(applyTempoKoszt(techCost(row), tempo) === expected.cost * multiplier,
         `${name} ${tempo} cost = ${expected.cost * multiplier}`);
     }
+  }
+  // Pin the complete technology dataset after normalizing the four owner-approved
+  // costs. This catches changes to any other technology field or row as well.
+  for (const [name, expected] of Object.entries(expectations)) {
+    byName.get(name)['Koszt nauki'] = expected.cost;
+  }
+  const techDataDigest = crypto.createHash('sha256')
+    .update(JSON.stringify(rows))
+    .digest('hex');
+  check(techDataDigest === '3b7ab35bb94196dca015c34068c25c787aa9cc9c21e998835ee0d5ece05ee754',
+    'complete technology dataset unchanged apart from the four approved costs');
+
+  const wikiEntries = JSON.parse(fs.readFileSync(path.join(root, 'src/data/wikiBundle.json'), 'utf8')).encyklopedia;
+  const bronzeWiki = wikiEntries.find((entry) => entry.id === 'technologie/brazownictwo');
+  check(!!bronzeWiki, 'Brązownictwo encyclopedia entry exists in wiki bundle');
+  if (bronzeWiki) {
+    check(bronzeWiki.wikiS.includes('koszt **480** PN'), 'Brązownictwo Wiki-S shows 480 PN');
+    check(bronzeWiki.wikiM.includes('**Koszt nauki:** 480 PN'), 'Brązownictwo Wiki-M shows 480 PN');
   }
   console.log(`stone-research-costs-test: ${pass} pass, ${fail} fail`);
   process.exitCode = fail > 0 ? 1 : 0;
