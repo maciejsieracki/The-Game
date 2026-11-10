@@ -148,6 +148,8 @@ export interface ImprovementBuildCallbacks {
   createBuildRequest(key: ImprovementKey, q: number, r: number): ImprovementBuildRequest | null;
   /** Raycaster mapy — gdy activeKey ustawiony w createImprovementBuildApi. */
   handleHexClick?(q: number, r: number): ImprovementBuildRequest | null;
+  /** Czytelny powód, czemu droga nie może stać na heksie (tylko opis UI; null = dozwolona). */
+  roadBlockReason?(q: number, r: number): string | null;
 }
 
 export interface ImprovementBuildModeOptions {
@@ -950,13 +952,50 @@ function hexZloze(hex: HexWithZloze | undefined): string | undefined {
   return hex?.zloze;
 }
 
+/**
+ * R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: heks dotyka drogi (sieć z `roadKeys` albo z mapy)
+ * albo miasta. Jedna definicja dla gracza, AI i automatyzacji (ten sam stan wejściowy).
+ */
+function roadAdjacencyOk(state: ImprovementBuildState, q: number, r: number): boolean {
+  const { map, cityNodes } = state;
+  const roadKeys = state.roadKeys ?? new Set<string>();
+  for (const nb of hexNeighbors(q, r)) {
+    const nbKey = `${nb.q},${nb.r}`;
+    if (roadKeys.has(nbKey)) return true;
+    const nbHex = map.hexes[nbKey];
+    if (nbHex && hexHasRoad(nbHex)) return true;
+    for (const node of cityNodes) {
+      if (nb.q === node.q && nb.r === node.r) return true;
+    }
+  }
+  for (const node of cityNodes) {
+    if (axialDistance(q, r, node.q, node.r) === 1) return true;
+  }
+  return false;
+}
+
+/**
+ * R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: powód, dlaczego droga NIE może stać na heksie
+ * (null = dozwolona). Opis tej samej reguły co `qualifies('droga')` — nie zmienia wyniku.
+ */
+export function roadBuildBlockReason(state: ImprovementBuildState, q: number, r: number): string | null {
+  const hexKey = `${q},${r}`;
+  const hex = state.map.hexes[hexKey] as HexWithZloze | undefined;
+  if (!hex) return 'Poza mapą.';
+  if (!TERENY_LADU.has(hex.terenBazowy)) return 'Droga stoi tylko na lądzie (nie na wodzie ani morzu).';
+  if (!isHexInPlayerTerritoryForState(state, q, r)) return 'Droga może powstać tylko na twoim terytorium.';
+  const existing = getHexLayers(hexKey, hex, buildPlacedImprovementsMap(state.map, state.placedImprovements));
+  if (existing.some(isRoadImprovementKey) || hex.ulepszenie === Ulepszenie.Droga
+    || hex.ulepszenie === Ulepszenie.DrogaBrukowana) return 'Tu już jest droga.';
+  if (!roadAdjacencyOk(state, q, r)) return 'Droga musi łączyć się z miastem lub już istniejącą drogą.';
+  return null;
+}
+
 function createQualifier(state: ImprovementBuildState) {
   const { map, cityNodes, playerCivArchetype } = state;
   const playerEra = state.playerEra ?? 1;
   const playerOwnerIdNum = state.playerOwnerIdNum ?? 0;
   const territoryNodes = state.territoryNodes ?? [];
-  const placedKeys = state.placedKeys ?? new Set<string>();
-  const roadKeys = state.roadKeys ?? new Set<string>();
   const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
@@ -977,19 +1016,7 @@ function createQualifier(state: ImprovementBuildState) {
   }
 
   function isRoadQualified(q: number, r: number): boolean {
-    for (const nb of hexNeighbors(q, r)) {
-      const nbKey = `${nb.q},${nb.r}`;
-      if (roadKeys.has(nbKey)) return true;
-      const nbHex = map.hexes[nbKey];
-      if (nbHex && hexHasRoad(nbHex)) return true;
-      for (const node of cityNodes) {
-        if (nb.q === node.q && nb.r === node.r) return true;
-      }
-    }
-    for (const node of cityNodes) {
-      if (axialDistance(q, r, node.q, node.r) === 1) return true;
-    }
-    return false;
+    return roadAdjacencyOk(state, q, r);
   }
 
   // Jedna wspólna definicja „przy rzece” (R-WEB-IRRIGATION-RIVER-DEFINITION-UNIFY-Q1) — `isHexNearRiver`.
@@ -1023,7 +1050,13 @@ function createQualifier(state: ImprovementBuildState) {
     // WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5): różne sektory współistnieją;
     // kolizja w tym samym sektorze / solo-hodowla → computeImprovementBuildImpact + confirm w UI.
     if (key !== 'droga' && existing.includes(key)) return false;
-    if (key === 'droga' && placedKeys.has(hexKey)) return false;
+    // R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: droga blokowana TYLKO gdy heks już ma drogę.
+    // Dawniej `placedKeys.has(hexKey)` odrzucał KAŻDY heks z ulepszeniem (farma, trzoda…), a AI
+    // (bez `placedKeys` w stanie) takie heksy kwalifikował — rozjazd gracz/AI. Stan drogi liczony
+    // z tych samych danych (`existing`) dla gracza i AI; farma+droga to dozwolona warstwa (docs).
+    if (key === 'droga' && existing.some(isRoadImprovementKey)) return false;
+    if (key === 'droga' && (hex.ulepszenie === Ulepszenie.Droga
+      || hex.ulepszenie === Ulepszenie.DrogaBrukowana)) return false;
 
     let terrainOk = false;
     switch (key) {
@@ -1663,6 +1696,7 @@ export function createImprovementBuildApi(
     getQualifyingHexes,
     createBuildRequest,
   };
+  api.roadBlockReason = (q: number, r: number) => roadBuildBlockReason(state, q, r);
   if (mode.activeKey) {
     api.handleHexClick = handleHexClick;
   }
