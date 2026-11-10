@@ -2710,7 +2710,7 @@ export function decideAiWonderBuild(
 export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = IMPROVEMENT_FOR_DEFICIT;
 
 /** P-AI-011: budynki miejskie pod brakujący surowiec. */
-const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
+export const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
   drewno: ['stolarnia'],
   glina: ['garncarnia', 'cegielnia'],
   kamien: ['kamieniarski'],

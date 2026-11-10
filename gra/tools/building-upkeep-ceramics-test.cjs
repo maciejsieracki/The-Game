@@ -14,7 +14,10 @@
  *   B. wyliczenie per budynek: ceramika = 2 (ratio 1), 1 (ratio 0.5), 0 (ratio 0); Stela/Spichlerz I bez
  *   C. suma 4 budynkow = 8/ture; drewno/kamien/cegla dalej z koszt_surowce (bez zmian)
  *   D. deficyt: upkeepDemand ceramika > zapas => klucz w deficitKeys; zapas >= popyt => brak
- *   E. (poza zakresem: symulacja tur i brak ujemnego zapasu -- NIE_ZMIERZONO w tym tescie)
+ *   E. brak ujemnego zapasu przy poborze (deduct clamp)
+ *   F. lancuch deficytu: AI_BUILDING_FOR_DEFICIT ceramika -> garncarnia
+ *   G. agregat 4 miast = 8/t
+ *   H. symulacja 200 tur (MODEL: realne funkcje, produkcja i budowa AI zalozone; NIE pelna gra)
  *
  * Uruchomienie: node tools/building-upkeep-ceramics-test.cjs (z gra/, po npm install)
  */
@@ -35,6 +38,8 @@ export {
   buildingResourceUpkeep, totalBuildingResourceUpkeep, readBuildingResourceUpkeepRatio,
 } from '../src/game/economy-upkeep';
 export { detectOwnerResourceNeeds } from '../src/game/ai-resource-needs';
+export { deductBuildingStockCostAcrossCities } from '../src/game/building-stock-cost';
+export { AI_BUILDING_FOR_DEFICIT } from '../src/game/ai';
 export { loadGameData };
 `, 'utf8');
 try {
@@ -110,7 +115,84 @@ const needsNone = M.detectOwnerResourceNeeds({
 });
 assert(!needsNone.deficitKeys.includes('ceramika'), 'bez upkeepDemand => brak deficytu (zero regresji)');
 
-// E (brak ujemnego zapasu przy poborze, pelna symulacja tur) NIE jest pokryte tym testem: NIE_ZMIERZONO.
+// ---------- E. brak ujemnego zapasu przy poborze ----------
+console.log('E. brak ujemnego zapasu');
+const mkCity = (id, ownerId, ceram) => ({ id, ownerId, surowce: { ceramika: ceram } });
+{
+  // zapas 3+2 < popyt 8: obie miasta schodza do 0, nic nie jest ujemne
+  const cs = [mkCity('a', 0, 3), mkCity('b', 0, 2)];
+  M.deductBuildingStockCostAcrossCities(cs, 0, { ceramika: 8 });
+  eq([cs[0].surowce.ceramika, cs[1].surowce.ceramika], [0, 0], 'zapas 3+2 < 8: obie miasta = 0');
+  assert(cs.every(c => c.surowce.ceramika >= 0), 'zadne miasto nie schodzi ponizej 0');
+}
+{
+  // zapas 5+3 >= 6: najpierw najwieksze miasto (a), reszta z b
+  const cs = [mkCity('a', 0, 5), mkCity('b', 0, 3)];
+  M.deductBuildingStockCostAcrossCities(cs, 0, { ceramika: 6 });
+  eq([cs[0].surowce.ceramika, cs[1].surowce.ceramika], [0, 2], 'zapas 5+3 - pobor 6: [0,2]');
+}
+{
+  // brak zapasu: nic nie zmienia sie i nic nie jest ujemne; obca wlasnosc nietknieta
+  const cs = [mkCity('a', 0, 0), mkCity('x', 1, 4)];
+  M.deductBuildingStockCostAcrossCities(cs, 0, { ceramika: 8 });
+  eq([cs[0].surowce.ceramika, cs[1].surowce.ceramika], [0, 4], 'zapas 0: bez zmian, obcy owner nietkniety');
+}
+
+// ---------- F. lancuch deficyt -> Garncarnia ----------
+console.log('F. lancuch deficyt -> garncarnia');
+eq(M.AI_BUILDING_FOR_DEFICIT.ceramika, ['garncarnia'], 'AI_BUILDING_FOR_DEFICIT: ceramika -> garncarnia');
+{
+  const n = M.detectOwnerResourceNeeds({ goods: [{ key: 'ceramika', ilosc: 0 }], pricedKeys: [], pakietWielkosc: 10, upkeepDemand: { ceramika: 8 } });
+  assert(n.deficitKeys.includes('ceramika') && (M.AI_BUILDING_FOR_DEFICIT[n.deficitKeys[0]] || []).includes('garncarnia') , 'deficyt ceramiki wskazuje garncarnie');
+}
+// Pelne wywolanie boostu (boostCandidatesForResourceDeficits) nie jest eksportowane: NIE_ZMIERZONO w tescie jednostkowym.
+
+// ---------- G. agregat na poziomie miast (dane) ----------
+console.log('G. agregat miast');
+{
+  const cities = CERAM_IDS.map((id, i) => ({ id: 'c' + i, ownerId: 0, buildings: [byId(id)] }));
+  const sum = {};
+  for (const c of cities) {
+    const r = M.totalBuildingResourceUpkeep(c.buildings.map(b => ({ record: b, level: 1 })), 1);
+    sum.ceramika = (sum.ceramika || 0) + (r.ceramika || 0);
+  }
+  eq(sum.ceramika, 8, 'agregat 4 miast z 1 budynkiem kazde = 8/ture');
+}
+
+// ---------- H. symulacja N tur (model: prawdziwe funkcje podatku/deficytu, produkcja i AI-budowa z reguly) ----------
+console.log('H. symulacja tur (MODEL, nie pelna gra)');
+const TURNS = 200;
+const DEMAND = 8;
+const PRODUCTION_PER_TURN = 50; // converters.ts garncarnia throughputFallback 50 (zakladane: wejscia glina+drewno dostepne)
+const econRaw = ECON;
+const RATIO = M.readBuildingResourceUpkeepRatio(econRaw, 'normal');
+eq(RATIO, 1, 'wspolczynnik utrzymania surowcowego (normal) = 1');
+const upkeepCeram = M.totalBuildingResourceUpkeep(CERAM_IDS.map(id => ({ record: byId(id), level: 1 })), RATIO).ceramika;
+eq(upkeepCeram, DEMAND, 'popyt ceramiki w symulacji = 8');
+function simulate(name, { startStock, producerTurn }) {
+  let stock = startStock, deficitTurns = 0, minBal = Infinity, maxBal = -Infinity, producerBuiltAt = null;
+  for (let t = 0; t < TURNS; t++) {
+    if (producerTurn !== null && t >= producerTurn && producerBuiltAt === null) producerBuiltAt = t;
+    const cities = [{ id: 'c', ownerId: 0, surowce: { ceramika: stock } }];
+    const needs = M.detectOwnerResourceNeeds({ goods: [{ key: 'ceramika', ilosc: stock }], pricedKeys: [], pakietWielkosc: 10, upkeepDemand: { ceramika: DEMAND } });
+    if (needs.deficitKeys.includes('ceramika')) deficitTurns++;
+    if (producerBuiltAt !== null && t >= producerBuiltAt) cities[0].surowce.ceramika += PRODUCTION_PER_TURN;
+    M.deductBuildingStockCostAcrossCities(cities, 0, { ceramika: DEMAND });
+    stock = cities[0].surowce.ceramika;
+    assert(stock >= 0, `${name}: zapas nieujemny w turze ${t}`);
+    minBal = Math.min(minBal, stock); maxBal = Math.max(maxBal, stock);
+  }
+  const pct = Math.round(1000 * deficitTurns / TURNS) / 10;
+  console.log(`  ${name}: tury=${TURNS}, deficyt w ${deficitTurns} turach (${pct}%), saldo min=${minBal} max=${maxBal} koniec=${stock}, garncarnia od tury=${producerBuiltAt}`);
+  return { deficitTurns, stock };
+}
+const s1 = simulate('S1 garncarnia od t0, zapas 0', { startStock: 0, producerTurn: 0 });
+assert(s1.deficitTurns <= 1, 'S1: po pierwszej turze produkcja pokrywa popyt (deficyt <= 1 tura)');
+const s2 = simulate('S2 garncarnia od t10, zapas 0', { startStock: 0, producerTurn: 10 });
+assert(s2.deficitTurns <= 11, 'S2: deficyt nie dluzszy niz 11 tur (czas do pierwszej produkcji)');
+const s3 = simulate('S3 brak garncarni (worst case), zapas 8', { startStock: 8, producerTurn: null });
+assert(s3.deficitTurns >= TURNS - 1, 'S3: bez producenta deficyt trwa (zaleznosc od AI-budowy, NIE_ZMIERZONO w grze)');
+
 
 console.log(`\n${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (_) {}

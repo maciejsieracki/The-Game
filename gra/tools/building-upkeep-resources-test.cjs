@@ -91,7 +91,9 @@ try {
     const raw = rawL1(b);
     // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: stale `utrzymanie_surowce` (ceramika) jest poza regula koszt_surowce.
     const fixedK = Object.keys(b.utrzymanie_surowce || {});
-    const r = Object.fromEntries(Object.entries(M.buildingResourceUpkeep(b, 1)).filter(([k]) => !fixedK.includes(k)));
+    const full = M.buildingResourceUpkeep(b, 1);
+    if (fixedK.some(k => full[k] !== Math.floor(b.utrzymanie_surowce[k] * 1))) bad++; // pole utrzymania: stala ilosc (ratio 1)
+    const r = Object.fromEntries(Object.entries(full).filter(([k]) => !fixedK.includes(k)));
     const types = Object.keys(b.koszt_surowce || {}).filter(k => b.koszt_surowce[k] > 0);
     if (raw <= 0 || types.length === 0) { if (Object.keys(r).length !== 0) bad++; continue; }
     if (Object.keys(r).length !== types.length || Object.values(r).some(v => v !== raw)) bad++;
