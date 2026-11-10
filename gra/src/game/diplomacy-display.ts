@@ -426,7 +426,7 @@ const RESOURCE_KEY_LABEL: Readonly<Record<string, string>> = {
   drewno: 'Drewno',
   kamien: 'Kamień',
   glina: 'Glina',
-  ruda: 'Ruda',
+  ruda: 'Ruda miedzi',
   sol: 'Sól',
   zelazo: 'Żelazo',
   braz: 'Brąz',
