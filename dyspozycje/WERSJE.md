@@ -1,3 +1,9 @@
+## ROBOCZA d92047f7 -- 2026-11-06 -- FALA 602: TERMINOLOGY-C: klasa C terminologii na podatek (karta miasta, grupa Podatek i pieniądz, podpis wymiany Jednorazowo/Co turę, poradniki Targowisko) (testowa)
+
+- TERMC ed1a815ca
+- Weryfikacja: terminology-trade-vs-tax 794/1 (czerwony [G] też na bazie), tsc/logic wg operatora, sidecar PASS
+- Limity: NIE_ZMIERZONO Chromium podpisu wymiany; panel imperium/style JSON/wiki w #204; REPIN Rust UI
+
 ## ROBOCZA c97272f9 -- 2026-11-06 -- FALA 601: RAW-IDS (jeden resolver nazw, efekty cudów bez snake_case) + PROMOTAB (tabela awansów piechoty Zastąp) (testowa)
 
 - RAWIDS c810d5511 + PROMOTAB d6341c5e1
