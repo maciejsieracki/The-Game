@@ -37,6 +37,23 @@ export function queueSiegeMachine(
   return true;
 }
 
+/**
+ * Cancels pre-paid-system workshop work from old saves. Pending queue entries
+ * had no associated payment, technology check, or current-turn quota, so they
+ * must never complete through the legacy siege tick. Completed machines stay
+ * available and are deliberately left untouched.
+ */
+export function cancelUnpaidLegacySiegeMachineQueue(
+  city: { siegeMachines?: SiegeMachinesState },
+): number {
+  const m = city.siegeMachines;
+  if (!m) return 0;
+  const cancelled = m.queue.length;
+  m.queue.length = 0;
+  m.buildProgress = 0;
+  return cancelled;
+}
+
 /** C3-Q8=C: tempo ∝ liczba oblegających (1 + floor(n/10) postępu/turę). */
 export function advanceSiegeMachineBuild(
   city: { siegeMachines?: SiegeMachinesState },

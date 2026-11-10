@@ -6,16 +6,20 @@
 import type { City } from '../game/cities';
 import type { MapSiegeContext } from '../game/mapSiegeDetect';
 import { getCityFood } from '../game/turn-economy';
-import type { SiegeMachineKind, SiegeMachinesState } from '../game/siegeMachines';
+import type { SiegeMachinesState } from '../game/siegeMachines';
+import type { SiegeEngineBuildOption } from '../game/siege-engine-build';
+import { siegeEngineBuildReasonPl } from '../game/siege-engine-build';
 import { brandIconSvg } from './icons/brandAssets';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { stockResourceLabel } from '../game/building-stock-cost';
 
 export interface SiegeMapPanelActions {
   /** Zatwierdź oblężenie — wojsko zostaje, panel się zamyka. */
   onBesiege: (cityId: string) => void;
   onStorm: (ctx: MapSiegeContext) => void;
   onRetreat: (cityId: string) => void;
-  onQueueMachine?: (cityId: string, kind: SiegeMachineKind) => void;
+  getSiegeEngineOptions?: (cityId: string) => readonly SiegeEngineBuildOption[];
+  onBuildSiegeEngine?: (cityId: string, unitId: string) => void;
   /**
    * R-HOTSEAT-ETAP6B-UI-Q1: „czy ten ownerId to Ty (aktywny fotel człowieka)" —
    * wstrzykiwane z main.ts (`isMe(ownerId)`, Etap 6a), wzorzec identyczny do
@@ -283,12 +287,14 @@ function render(): void {
         ? '<div class="civ-smp-warn">' + modalIcon('chip-warning', 20) + 'Kapitulacja za 1 turę — magazyn wyczerpany!</div>'
         : '') +
       '<div class="civ-smp-mach">' +
-        '<div class="civ-smp-mach-h">Machiny oblężnicze</div>' +
+        '<div class="civ-smp-mach-h">Machiny warsztatowe z zapisu</div>' +
         '<div class="civ-smp-mach-meta">Kolejka: ' + esc(qLabel) + ' · Gotowe: ' + esc(rLabel) +
         (prog > 0 ? ' · postęp ' + Math.round(prog * 10) / 10 : '') + '</div>' +
-        (playerCanStorm && actions.onQueueMachine
-          ? '<div class="civ-smp-mach-row" data-mach-row></div>'
-          : '') +
+      '</div>' +
+      '<div class="civ-smp-mach" data-siege-engine-build>' +
+        '<div class="civ-smp-mach-h">Zbuduj machinę w oblężeniu</div>' +
+        '<div class="civ-smp-mach-meta" data-siege-engine-quota></div>' +
+        '<div class="civ-smp-mach-row" data-siege-engine-row></div>' +
       '</div>' +
       '<div class="civ-smp-prompt">Potwierdź działanie</div>' +
       '<div class="civ-smp-actions">' +
@@ -312,18 +318,34 @@ function render(): void {
     '</div>' +
     '<div class="civ-smp-foot">Ruch zablokowany do decyzji · Enter = Oblegaj · 1/2/3 skróty</div>';
 
-  const machRow = box.querySelector('[data-mach-row]');
-  if (machRow && actions.onQueueMachine) {
-    const mkQ = (label: string, kind: SiegeMachineKind) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'civ-smp-mach-btn';
-      b.textContent = '+ ' + label;
-      b.addEventListener('click', () => actions!.onQueueMachine!(city.id, kind));
-      return b;
-    };
-    machRow.appendChild(mkQ('Taran', 'taran'));
-    machRow.appendChild(mkQ('Wieża', 'wieza'));
+  const engineRow = box.querySelector<HTMLElement>('[data-siege-engine-row]');
+  const engineQuota = box.querySelector<HTMLElement>('[data-siege-engine-quota]');
+  const engineOptions = actions.getSiegeEngineOptions?.(city.id) ?? [];
+  if (engineQuota && engineOptions.length) {
+    const first = engineOptions[0]!;
+    engineQuota.textContent = `Armia bez machin: ${first.qualifyingArmyCount} · pula na tę turę: ${first.builtThisTurn}/${first.quota}`;
+  }
+  if (engineRow && engineOptions.length) {
+    for (const option of engineOptions) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'civ-smp-mach-btn';
+      const resources = Object.entries(option.costStock)
+        .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
+        .join(' + ');
+      const reason = siegeEngineBuildReasonPl(option.reason);
+      button.textContent = `${option.unit.Jednostka} · ${option.costMoney} ¤${resources ? ` + ${resources}` : ''}`;
+      button.disabled = !option.allowed || !actions.onBuildSiegeEngine;
+      button.title = reason ?? `Koszt: ${option.costMoney} ¤${resources ? ` + ${resources}` : ''}`;
+      button.addEventListener('click', () => actions!.onBuildSiegeEngine?.(city.id, option.unit.Jednostka));
+      engineRow.appendChild(button);
+      if (reason) {
+        const note = document.createElement('span');
+        note.className = 'civ-smp-mach-meta';
+        note.textContent = `${option.unit.Jednostka}: ${reason}`;
+        engineRow.appendChild(note);
+      }
+    }
   }
 
   box.querySelector('[data-act="besiege"]')?.addEventListener('click', () => actions!.onBesiege(city.id));

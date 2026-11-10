@@ -17,6 +17,7 @@ import {
   WYZYWIENIE_MAX,
 } from './population-growth-v85';
 import type { SiegeMachinesState } from './siegeMachines';
+import type { SiegeEngineTurnState } from './siege-engine-build';
 import miastoParams from '../../data/miasto-params.json';
 export interface CityPodzialHandlu {
   procentNauka:    number;
@@ -880,6 +881,8 @@ export interface City {
   militiaRegenAtTurn?: number;
   /** OBL-S5: kolejka machin oblężniczych (Taran / Wieża). */
   siegeMachines?: SiegeMachinesState;
+  /** R-WEB-SIEGE-ENGINES...: legacy saves omit this; reset by global turn on the next build. */
+  siegeEngineBuildsThisTurn?: SiegeEngineTurnState;
   /**
    * Per-miasto override suwaka Daniny/Podatku (Skarb/Nauka/Zamożność).
    * false/undefined = dziedziczy ownerDefaultPodzialHandlu imperium.

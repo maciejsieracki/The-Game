@@ -541,15 +541,20 @@ import {
 } from './game/siegeAi';
 import { planLastStandSortie, type LastStandAttackCmd } from './game/siege-last-stand';
 import {
-  advanceSiegeMachineBuild,
+  cancelUnpaidLegacySiegeMachineQueue,
   clearSiegeMachines,
   consumeReadyMachines,
   ensureSiegeMachines,
   peekReadyMachines,
-  queueSiegeMachine,
   SIEGE_MACHINE_TYPE_ID,
   type SiegeMachineKind,
 } from './game/siegeMachines';
+import {
+  isSiegeEngineDef,
+  siegeEngineBuildOption,
+  siegeEngineBuildReasonPl,
+  type SiegeEngineBuildOption,
+} from './game/siege-engine-build';
 import { showCityAttackChoice, hideCityAttackChoice } from './ui/cityAttackChoice';
 import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cityUnitPick';
 import { showCityForeignPick, hideCityForeignPick, isCityForeignPickOpen } from './ui/cityForeignPick';
@@ -4624,6 +4629,12 @@ async function boot(): Promise<void> {
       // widoczny / EN: defense-in-depth — reject a Naval-type purchase for a city without water
       // access even if it somehow reaches this function outside the normal UI-filtered path.
       const unitDefForGate = data.units.find(u => u.Jednostka === itemId);
+      // Siege engines have a separate, paid build path tied to an active siege.
+      // Keep this guard even though the shared city catalogue filters them out.
+      if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Siege') {
+        if (isMe(ownerId)) showHintMessage('Machiny oblężnicze buduje się w panelu aktywnego oblężenia.', 3200);
+        return false;
+      }
       // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: limit 1 Super-jednostki egzekwowany tu (nie tylko
       // ukryciem przycisku): żywe + kolejki WSZYSTKICH miast + ilość w tej partii. Gracz i AI.
       {
@@ -7975,6 +7986,7 @@ async function boot(): Promise<void> {
         gateReason: (u, newTypeId) => {
           const newDef = lookupUnitDef(newTypeId);
           if (!newDef) return 'nieznana jednostka';
+          if (isSiegeEngineDef(newDef)) return 'Machiny oblężnicze można budować wyłącznie podczas oblężenia.';
           // R-WEB-SUPER-UNIT-LIMIT-ONE-NOT-ENFORCED-Q1: zamiana nie może dać drugiej sztuki Super-jednostki
           // (żywa albo opłacona w kolejce któregokolwiek miasta) -- egzekucja po stronie wykonania.
           const superMsg = superUnitLimitViolation(newDef, newTypeId, reservedUnitTypeNamesForOwner(ownerId), 1);
@@ -17693,15 +17705,15 @@ async function boot(): Promise<void> {
         }
         showHintMessage('Odwrót — oblężenie zakończone.', 3000);
       },
-      onQueueMachine: (cityId: string, kind: SiegeMachineKind) => {
-        const city = cities.find(c => c.id === cityId);
-        if (!city?.oblegane) return;
-        if (queueSiegeMachine(city, kind)) {
-          showHintMessage('Kolejka machin: +' + (kind === 'taran' ? 'Taran' : 'Wieża'), 2500);
-          syncSiegePanelMeta(city);
-        } else {
-          showHintMessage('Kolejka machin pełna (max 4)', 2500);
-        }
+      getSiegeEngineOptions: (cityId: string) => {
+        const city = cities.find(item => item.id === cityId);
+        const ownerId = city?.oblegajacyOwnerId ?? (city ? siegeBesiegerByCity.get(city.id) : undefined);
+        return city && ownerId !== undefined && isMe(ownerId) ? siegeEngineOptions(city) : [];
+      },
+      onBuildSiegeEngine: (cityId: string, unitId: string) => {
+        const city = cities.find(item => item.id === cityId);
+        const ownerId = city?.oblegajacyOwnerId ?? (city ? siegeBesiegerByCity.get(city.id) : undefined);
+        if (ownerId !== undefined && isMe(ownerId)) buildSiegeEngine(cityId, unitId, ownerId);
       },
     };
 
@@ -17792,11 +17804,8 @@ async function boot(): Promise<void> {
           continue;
         }
 
-        if (decision.stance === 'siege_build' && !city.siegeMachines?.queue.length) {
-          queueSiegeMachine(city, 'taran');
-        }
-
         startMapSiege(auto);
+        if (decision.stance === 'siege_build') buildAiSiegeEngine(city);
         siegeAiStateByKey.set(aiKey, {
           siegeTurn: 1,
           machinesReady: city.siegeMachines?.ready.length ?? 0,
@@ -17874,6 +17883,10 @@ async function boot(): Promise<void> {
           machinesReady: city.siegeMachines?.ready.length ?? 0,
         },
       );
+      if (decision.stance === 'siege_build') {
+        buildAiSiegeEngine(city);
+        return;
+      }
       if (decision.stance !== 'assault') return;
 
       const ctx = classifyCityAttack(anchor, city, units);
@@ -17912,6 +17925,105 @@ async function boot(): Promise<void> {
       return units.filter(
         u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
       ).length;
+    }
+
+    function siegeEngineArmy(city: City): RuntimeUnit[] {
+      const ownerId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+      if (ownerId === undefined) return [];
+      const marked = units.filter(unit => unit.ownerId === ownerId && unit.oblegaCityId === city.id);
+      if (marked.length) return marked;
+      const anchor = units.find(unit => unit.ownerId === ownerId
+        && hexDistance(unit.q, unit.r, city.q, city.r) === 1
+        && (!city.siegeArmyGroupId || stackGroupIdOfAnchor(unit) === city.siegeArmyGroupId));
+      if (!anchor) return [];
+      const groupId = stackGroupIdOfAnchor(anchor);
+      return units.filter(unit => unit.ownerId === ownerId
+        && hexDistance(unit.q, unit.r, city.q, city.r) === 1
+        && (!groupId || stackGroupIdOfAnchor(unit) === groupId));
+    }
+
+    function siegeEngineOptions(city: City): SiegeEngineBuildOption[] {
+      const ownerId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id) ?? -1;
+      const army = siegeEngineArmy(city);
+      const unlocked = new Set(unlockedTechsForOwner(ownerId));
+      const stock = citySurowceSumForOwner(ownerId);
+      const context = {
+        activeSiege: city.oblegane === true,
+        atWar: ownerId >= 0 && siegeAllowedBetween(ownerId, city.ownerId, areEnemyOwners),
+        ownerId,
+        turn,
+        army,
+        turnState: city.siegeEngineBuildsThisTurn,
+        unlockedTechs: unlocked,
+        treasury: ownerTreasury(ownerId),
+        stock,
+      };
+      return data.units.filter(isSiegeEngineDef).map(unit => {
+        const item = unitProductionItem(
+          unit.Jednostka, data, civBonusyForOwnerId(ownerId),
+          player.kosztJednostekPace ?? 'niski', ownerId,
+          effectiveGameDifficultyForOwner(ownerId),
+        );
+        return siegeEngineBuildOption(unit, context, item?.koszt ?? Number.POSITIVE_INFINITY);
+      });
+    }
+
+    function buildSiegeEngine(cityId: string, unitId: string, ownerId?: number): boolean {
+      const city = cities.find(item => item.id === cityId);
+      if (!city || city.oblegane !== true) return false;
+      const besiegerOwnerId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+      if (besiegerOwnerId === undefined || (ownerId !== undefined && ownerId !== besiegerOwnerId)) return false;
+      const army = siegeEngineArmy(city);
+      const option = siegeEngineOptions(city).find(row => row.unit.Jednostka === unitId);
+      if (!option?.allowed || !isSiegeEngineDef(option.unit)) {
+        if (isMe(besiegerOwnerId)) showHintMessage(siegeEngineBuildReasonPl(option?.reason) ?? 'Nie można zbudować tej machiny.', 3200);
+        return false;
+      }
+      const anchor = army.find(unit => unit.ownerId === besiegerOwnerId);
+      if (!anchor) return false;
+      const stockCost = option.costStock;
+      setOwnerTreasury(besiegerOwnerId, ownerTreasury(besiegerOwnerId) - option.costMoney);
+      if (Object.keys(stockCost).length) deductBuildingStockCostAcrossCities(cities, besiegerOwnerId, stockCost);
+      city.siegeEngineBuildsThisTurn = {
+        turn,
+        count: option.builtThisTurn + 1,
+      };
+      const def = option.unit;
+      const role = String(def['Rola (linia)'] ?? '');
+      const movement = applyRuchSwiataPace(normFieldVal(def['Ruch'], 1), player.ruchSwiataPace ?? 'krotki');
+      const newUnit: RuntimeUnit = {
+        id: 'siege-engine-' + turn + '-' + city.id + '-' + Math.random().toString(36).slice(2),
+        ownerId: besiegerOwnerId,
+        typeId: unitId,
+        category: categoryOf(unitId, role, def['Super-jednostka'] === 'TAK', def.Typ),
+        q: anchor.q,
+        r: anchor.r,
+        ...(anchor.stackGroupId ? { stackGroupId: anchor.stackGroupId } : {}),
+        ruch: movement,
+        ruchLeft: 0,
+        oblegaCityId: city.id,
+        stockPaid: stockCost,
+      } as RuntimeUnit;
+      units.push(newUnit);
+      markCityStateDirty();
+      syncUnitsRender();
+      if (isMe(besiegerOwnerId)) {
+        showHintMessage(`Zbudowano ${unitId}: ${option.costMoney} ¤${Object.entries(stockCost).map(([key, amount]) => ` · ${amount} ${stockResourceLabel(key)}`).join('')}`, 3200);
+        updateHud();
+        refreshD1bHud();
+      }
+      if (getActiveSiegeCityId() === cityId) {
+        syncSiegePanelMeta(city);
+        updateSiegeMapPanelTurn(siegeTurnByCity.get(cityId) ?? 1, city);
+      }
+      return true;
+    }
+
+    function buildAiSiegeEngine(city: City): boolean {
+      const ownerId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+      if (ownerId === undefined || isHuman(ownerId) || !city.oblegane) return false;
+      const option = siegeEngineOptions(city).find(row => row.allowed);
+      return option ? buildSiegeEngine(city.id, option.unit.Jednostka, ownerId) : false;
     }
 
     function runtimeUnitToSiegeUnit(u: RuntimeUnit): SiegeUnit {
@@ -17958,16 +18070,10 @@ async function boot(): Promise<void> {
 
     function tickSiegeMachinesForCity(city: City): void {
       if (!city.oblegane) return;
-      const n = countBesiegersAdjacent(city);
-      const built = advanceSiegeMachineBuild(city, n);
-      if (built > 0) {
-        const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
-        if (bId !== undefined) {
-          const st = siegeAiStateByKey.get(siegeAiKey(bId, city.id)) ?? { ...EMPTY_SIEGE_AI_STATE };
-          st.machinesReady = city.siegeMachines?.ready.length ?? 0;
-          siegeAiStateByKey.set(siegeAiKey(bId, city.id), st);
-        }
-      }
+      // Legacy workshop queue entries have no payment/tech/quota receipt.
+      // Cancel them before any siege/AI path can turn them into free machines.
+      // The already-ready array is intentionally retained for old saves.
+      cancelUnpaidLegacySiegeMachineQueue(city);
     }
 
     function appendReadyMachinesToRoster(
