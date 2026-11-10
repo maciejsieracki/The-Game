@@ -38,3 +38,5 @@ PILNE: R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — właściciel40/40/40odwejściawk
 2. R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — Brąz−3/Żelazo−4 za granicę.
 3. R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1 — pokój/rozejm dopieroelapsed10, zmęczeniedalej.
 Konnica jawniepauzowanadla priorytetów. Machiny jużzaimplementowane, kończątesty; rekrutacja/ETA poFCintegracja, wydanie wprzygotowaniu.
+
+PILNE4: R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — Garncarstwo40PNprzywrócone zamiast5, inneodblokowaniabez zmian. Granicaczekatylkona decyzjęmixedepochasymetrii; operatornieaktywnypodczasczekania.

@@ -1,0 +1,5 @@
+# R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1
+STATUS: REGISTERED1/11 PRIORITY URGENT
+OWNER: 2026-11-10 przywrócić poprzedni koszt Garncarstwa, tylko tę zmianę. Git e3382ff2f/FALA594 pokazuje Koszt nauki40→5, poprzedni40PN; docwiki20→5to byłstarybłędnyopis, niepoprzedniaktywnykoszt.
+GOAL: kosztbadaniaGarncarstwa40PN zamiast5. Wymagania4podstaw, poziom, odblokowania i innebadaniabez zmian. Uważać na tempo_gry/tier1 override, nie wystarczyJSONjeśli kodwylicza5poPoziom1. Renderery/encyklopedia/źródła generowane zgodne40, własne sensowne regresje z zachowaniemprereq4. ZmianadotyczytechnologiiGarncarstwo, nie budynkuGarncarnia i nie recepturceramiki.
+MODEL: CodexLuna high roleosobnoOperator/Evaluator/FC,max4tematy. ALLOWLIST: przededycjąkonkretneminimalnejson/researchhelper/źródłodoc/wiki/testy/run, niezmieniaćglobalnejcenytier1. Operatorcommitowncandidate,nopushdeploymerge. Testactualresearchcost/notjustfield plus prereq/upstreamtiers, typecheck. Docbundle generować narzędziem, bezręcznychkonfliktów. Cel11mainRobocza push/readback.

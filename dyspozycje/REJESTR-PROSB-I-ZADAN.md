@@ -9587,3 +9587,7 @@ Dispatchautobot/runs/R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1/00-dispatch.md
 ## R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1 — PILNE2026-11-10
 STATUS: ZAREJESTROWANE. GOAL: Każda wojna (epoki lub zwykła): żadnapropozycjarozjemu/pokoju przez pierwszych10pełnychtur odstartupary. Od elapsed10 wolno; elapsed0..9blok. Zmęczeniewojną/inneprocesynadalbiegną, nieresetowaćich. Sprawdzićwszystkieautomatyczne i ręczneścieżkiskładaniaofert/AI-AI/AIgracz/graczAI i serwerguardnieUIonly. Nie zmieniaćakceptacjibalansupóźniej. Wznowieniewojny pokoniecrozejmu iponownawojna musząkorzystaćz istniejącejsemantykistartudoprecyzowaćdowodem, niezresetowaćhistoriiwbrewmechanice. Save/load i aktualnependingofertyprzedzmianąsprawdzić. Jedenparametrminimalnych10dlaspójności, nie tylko warweariness8→10 bezresztyścieżek.
 Dispatchautobot/runs/R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1/00-dispatch.md
+
+
+## R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. WłaścicielkazałprzywrócićkosztGarncarstwa. Potwierdzonagitobniżka40→5PN/FALA594; cel40PNbezpozostałychzmian. Runautobot/runs/R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1.
