@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Garncarstwo** — epoka **Kamień** (poziom 1), koszt **20** PN (tempo Szybka). Odblokowuje budynki: Spichlerz, Garncarnia, Cegielnia; ulepszenia terenu: Glinianka, Warzelnia soli; surowce: cegła, glina, sol.
+**Garncarstwo** — epoka **Kamień** (poziom 1), koszt **5** PN (tempo Szybka). Odblokowuje budynki: Spichlerz, Garncarnia, Cegielnia; ulepszenia terenu: Glinianka, Warzelnia soli; surowce: cegła, glina, sol.
 
 ---
 
@@ -23,9 +23,9 @@
 
 ### Wymagania
 - **Epoka:** Kamień (poziom 1)
-- **Wymaga (prereq):** brak (technologia startowa)
+- **Wymaga (prereq):** Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt
 - **Dostęp do surowca:** Dostęp do glina
-- **Koszt nauki:** 20 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 5 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Spichlerz, Garncarnia, Cegielnia
