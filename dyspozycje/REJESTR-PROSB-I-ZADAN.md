@@ -9632,3 +9632,7 @@ STATUS: ZAREJESTROWANE. KolejnypokryciaaktywnychtrasUI/Civpedia poQ2/ETA/wdroże
 
 ## R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — PILNE2026-11-10
 STATUS: ZAREJESTROWANE. Palisada50%, kamienny100%poMurarstwie, ceglany200%poBudownictwie. Ceglastymodelprzejściowoten samkamiennyzredmaterial. Aktualizacja kartbadań/budynków/Civpedia obowiązkowa. Futuregeometria: R-WEB-BRICK-WALL-DEDICATED-MODEL-FUTURE-Q1 przed1.
+
+
+### Korekta R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — najnowszeECHO2026-11-10
+Właścicielpoprawiłbonusy: PALISADA100%, KAMIEŃ150%, CEGŁA200%. Zastępujewcześniejsze50/100/200. Karty/Civpedia/tech/modeljakwdispatchu, testytężnajnowszewartości. Operatorpowiadomiony.
