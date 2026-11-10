@@ -9577,3 +9577,13 @@ STATUS: ZAREJESTROWANE. GOAL: konnica/rydwany: dodać Zprzodu, domyślnie Zboku;
 
 ## R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — PILNE2026-11-10
 STATUS: ZAREJESTROWANE. Właścicielpotwierdził40tur odwejściawKAŻDĄepokę; braknakładaniawojenepoki, normalwarsbez zmian. Prioritetprzedkonnicą, ta jawniepauzowana w4/11. Dispatchautobot/runs/R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1.
+
+
+## R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: Kara za wspólną granicę: Kamień zachowuje obecnąwartość, Brąz−3/turę, Żelazo−4/turę. Dotyczy istniejącegoczynnika, nie nowej kary. Sprawdzić obecneskalowanie owner/epoka i oba kierunki relacji, pokazywanąwartość UI zgodną z rzeczywistym tickiem. Nie wymyślać agregacji różnych epok jeśliprodukcjajużma wzorzec; jeśli brak i rzeczywistadecyzjabilansowa zgłoś. Daneparametrynieliterały; zachować warunekwspólnejgranicy i liczby miast, zwykłeczynnikibez zmian.
+Dispatchautobot/runs/R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1/00-dispatch.md
+
+
+## R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: Każda wojna (epoki lub zwykła): żadnapropozycjarozjemu/pokoju przez pierwszych10pełnychtur odstartupary. Od elapsed10 wolno; elapsed0..9blok. Zmęczeniewojną/inneprocesynadalbiegną, nieresetowaćich. Sprawdzićwszystkieautomatyczne i ręczneścieżkiskładaniaofert/AI-AI/AIgracz/graczAI i serwerguardnieUIonly. Nie zmieniaćakceptacjibalansupóźniej. Wznowieniewojny pokoniecrozejmu iponownawojna musząkorzystaćz istniejącejsemantykistartudoprecyzowaćdowodem, niezresetowaćhistoriiwbrewmechanice. Save/load i aktualnependingofertyprzedzmianąsprawdzić. Jedenparametrminimalnych10dlaspójności, nie tylko warweariness8→10 bezresztyścieżek.
+Dispatchautobot/runs/R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1/00-dispatch.md

@@ -32,3 +32,9 @@ Zamkniętego testu przejmowania cudów nie wliczać do otwartych:11/11 receipt90
 Nowe zgłoszenie: R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1 — Z przodu/Z boku/Z tyłu; domyślnie skrzydła; sprawdzić rzeczywiste działanie. Operator start po read-only diagnozieAI, która czeka na decyzje N/ratio. Rekrutacja i scienceETA ukończyły Operatora, kierowane do Evaluatorów.
 
 PILNE: R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — właściciel40/40/40odwejściawkażdąepokę, tylkowoji. Koniecpoprzedniejwarera zwalnianastępną; ordinarywarsnieblokują. Konnica jawniepauzowana dla limitu4tematów.
+
+## Priorytety właściciela — najnowsze sterowanie
+1. R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — Operatoraktywny.
+2. R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — Brąz−3/Żelazo−4 za granicę.
+3. R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1 — pokój/rozejm dopieroelapsed10, zmęczeniedalej.
+Konnica jawniepauzowanadla priorytetów. Machiny jużzaimplementowane, kończątesty; rekrutacja/ETA poFCintegracja, wydanie wprzygotowaniu.
