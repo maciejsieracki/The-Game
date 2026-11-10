@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Koło** — epoka **Kamień** (poziom 3), koszt **44** PN (tempo Szybka), wymaga: Oswojenie zwierząt. Odblokowuje jednostki: Rydwan (woły); ulepszenia terenu: Droga; surowce: krowa/byk.
+**Koło** — epoka **Kamień** (poziom 3), koszt **180** PN (tempo Szybka), wymaga: Oswojenie zwierząt. Odblokowuje jednostki: Rydwan (woły); ulepszenia terenu: Droga; surowce: krowa/byk.
 
 ---
 

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Garncarstwo** — epoka **Kamień** (poziom 1), koszt **5** PN (tempo Szybka). Odblokowuje budynki: Spichlerz, Garncarnia, Cegielnia; ulepszenia terenu: Glinianka, Warzelnia soli; surowce: cegła, glina, sol.
+**Garncarstwo** — epoka **Kamień** (poziom 1), koszt **40** PN (tempo Szybka). Odblokowuje budynki: Spichlerz, Garncarnia, Cegielnia; ulepszenia terenu: Glinianka, Warzelnia soli; surowce: cegła, glina, sol.
 
 ---
 
