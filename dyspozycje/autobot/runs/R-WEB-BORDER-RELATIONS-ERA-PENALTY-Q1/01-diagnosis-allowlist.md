@@ -21,3 +21,11 @@ Nie ma uzasadnionej potrzeby zmiany innych czynników dyplomatycznych ani save s
 ## Decyzja i zakres implementacji
 
 Zastosować max(epochA, epochB), zgodnie z `00-owner-answer.md`. Kod będzie zmieniony dopiero po zapisaniu tego echa. Ten wybór nie wymaga zmiany save schema, ponieważ epoki ownerów są już zapisane i odtwarzane przez istniejący system.
+
+## Append — runtime defense hook, przed edycją kodu (2026-11-10)
+
+- `gra/src/main.ts` — dodać wyłącznie nazwany `window.__borderEraPenaltyRuntimeTestDebug` w istniejącym obszarze hooków Playwright: fixture setup/restore dla dwóch ownerów, odczyt epok i warunku granicy, wywołanie istniejącego `buildDiplomacyTickCtxForPair`, istniejącego preview delta, istniejącego `getRelationBreakdown`, pojedynczego `tickDiplomacy`, oraz REALNE `persistSaveToSlot`/`loadGameFromSlot`. Hook nie zawiera resolvera stawki ani drugiej implementacji warunku.
+- `gra/tools/diplomacy-border-era-penalty-live-test.cjs` — browser/HTTP integration gate: uruchamia fixture w prawdziwej sesji gry, ustawia epoki przez owner era state setup, porównuje preview/UI row/tick, roundtrip slotu przez IndexedDB w nowej sesji lub reload, następnie sprawdza zmienioną epokę, parę odwrotną i guard braku granicy.
+- `dyspozycje/autobot/runs/R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1/31-operator-runtime.md` — wyniki oraz jawne ograniczenia fixture.
+
+Powód: 20-evaluator wykazał konkretną lukę, bo główny pair context, UI preview i restore owner-era były potwierdzone tylko regexami. Test ma wywołać te istniejące funkcje w zamknięciu `main.ts`, bez mockowania resolvera, wzorem istniejących live-test hooks. Zachować `20-evaluator.md` jako BLOCK i nie zmieniać balansu poza tym tematem.
