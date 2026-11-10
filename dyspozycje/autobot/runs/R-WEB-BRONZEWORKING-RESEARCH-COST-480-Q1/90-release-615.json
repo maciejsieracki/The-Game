@@ -1,0 +1,15 @@
+{
+  "stage": 11,
+  "wave": 615,
+  "publication": "b8a64d5d97b985a069d5d80230f2ce7d0fa25f4b",
+  "md5": "297e1070d67e3341c9dab3ed12aebc3e",
+  "verification": "EvalFC48/48; cleanbuild;HTTPaudioPASS;3audioMD5unchanged;freshGit3artifactbyteequal",
+  "costSet": {
+    "Garncarstwo": 40,
+    "Gospodarka wodna": 180,
+    "Koło": 180,
+    "Brązownictwo": 480
+  },
+  "tempo": "1/2/4",
+  "limits": "no fullcampaign timing run; originalfilegateINFRA"
+}
