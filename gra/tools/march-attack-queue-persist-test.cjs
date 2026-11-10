@@ -117,6 +117,8 @@ function zbudujHarness(marchTxt, selTxt) {
   const fabryka = new Function(`
     let plannedMarches = new Map();
     let marchAttackTargets = new Map();
+    let marchStopNotified = new Map(); // R-WEB-MARCH-RESUME-NEXT-TURN-Q1: stan powiadomien o przerwaniu
+    let marchStopDetail = new Map(); // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: powod wskaznika
     let selectedId = null;
     const calls = [];
     const unitRenderer = { clearPathRoute: () => calls.push('clearPathRoute') };
@@ -352,6 +354,8 @@ function zbudujHarness(marchTxt, selTxt) {
       // tryLaunchMarchAttack) normalnie czyta/mutuje -- ustawiane per-test-case.
       let plannedMarches = new Map();
       let marchAttackTargets = new Map();
+      let marchStopNotified = new Map(); // R-WEB-MARCH-RESUME-NEXT-TURN-Q1
+      let marchStopDetail = new Map();
       let selectedId = null;
       const unitRenderer = { clearPathRoute: () => {} };
       function currentVisible() { return currentVisibleSet; }

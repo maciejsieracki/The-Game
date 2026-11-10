@@ -1207,7 +1207,12 @@ import {
   plannedMarchesFromSave,
   plannedMarchesToSave,
   truncatePathToBudget,
+  isNotifiableMarchStop,
+  marchPausedLabel,
+  registerMarchStop,
+  clearMarchStop,
   type MarchFogContext,
+  type MarchStopReason,
   type PlannedMarchDest,
 } from './game/planned-march';
 import { TypCywilizacji, type Player } from './types/player';
@@ -25029,6 +25034,8 @@ async function boot(): Promise<void> {
         displayName,
         ownerEmblemHtml: unitOwnerMedallionHtml(0),
         ...status,
+        // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: wskaźnik „trasa wstrzymana” (tylko gdy plan istnieje).
+        marchPausedReason: plannedMarches.has(active.id) ? marchStopDetail.get(active.id) : undefined,
       };
       if (isAwaitingFirstPlayerCity()) {
         return {
@@ -30058,6 +30065,11 @@ async function boot(): Promise<void> {
 
     /** A3: zaplanowane marsze — cel bez natychmiastowego ruchu. */
     const plannedMarches = new Map<string, PlannedMarchDest>();
+    /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: ostatni powiadomiony powód zatrzymania trasy jednostki
+     * (jedno powiadomienie na epizod przerwania, nie co turę). / one notice per interruption episode. */
+    const marchStopNotified = new Map<string, MarchStopReason>();
+    /** Powód wstrzymania trasy do wskaźnika w panelu jednostki. / reason shown by the "route paused" badge. */
+    const marchStopDetail = new Map<string, string>();
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
      * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
@@ -30103,14 +30115,20 @@ async function boot(): Promise<void> {
         if (!force && plannedMarches.get(unitId)?.attackUnitId) return;
         plannedMarches.delete(unitId);
         marchAttackTargets.delete(unitId);
+        marchStopNotified.delete(unitId);
+        marchStopDetail.delete(unitId);
       } else if (force) {
         plannedMarches.clear();
         marchAttackTargets.clear();
+        marchStopNotified.clear();
+        marchStopDetail.clear();
       } else {
         for (const id of [...plannedMarches.keys()]) {
           if (plannedMarches.get(id)?.attackUnitId) continue;
           plannedMarches.delete(id);
           marchAttackTargets.delete(id);
+          marchStopNotified.delete(id);
+          marchStopDetail.delete(id);
         }
       }
       if (selectedId === null || unitId === selectedId || unitId === undefined) {
@@ -30328,6 +30346,10 @@ async function boot(): Promise<void> {
 
       markPlayerMovedUnit(u.id);
       plannedMarches.set(u.id, marchDest);
+      // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 (zarzut NOTATKA 1): nowy plan = nowy epizod; stary powód
+      // wskaźnika i dedup nie mogą przetrwać przeplanowania. / new plan starts a new stop episode.
+      marchStopNotified.delete(u.id);
+      marchStopDetail.delete(u.id);
       syncMarchAttackTarget(u.id, marchDest);
       hoverKey = null;
       refreshPlannedMarchPreview(u.id);
@@ -30469,12 +30491,38 @@ async function boot(): Promise<void> {
       reachable = new Set<string>();
     }
 
+    /**
+     * R-WEB-MARCH-RESUME-NEXT-TURN-Q1: zasadne przerwanie trasy -> JEDNO wpis w „Ważne” (karta
+     * wydarzeń, kind 'enemy') z powodem; plan zostaje i wznawia się sam na końcu kolejnej tury.
+     * Ponowne przerwanie z tego samego powodu nie dubluje wpisu (dopóki trasa nie ruszy).
+     * EN: a justified interruption adds ONE "Important" event card with the reason; the plan stays.
+     */
+    function noteMarchStop(unitId: string, stopReason: MarchStopReason | undefined, stopDetail?: string): void {
+      if (!stopReason || !registerMarchStop(marchStopNotified, unitId, stopReason)) return;
+      marchStopDetail.set(unitId, marchPausedLabel(stopReason, stopDetail) ?? stopReason);
+      const evId = `march-stop-${unitId}-${turn}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+      warEventLog.unshift({
+        id: evId,
+        icon: '⏸',
+        title: 'Trasa wstrzymana',
+        subtitle: stopDetail ?? stopReason,
+        kind: 'enemy',
+        turnCreated: turn,
+      });
+      trimWarEventLog();
+      refreshD1bHud();
+    }
+
     function finishMarchSegmentHints(
       unitId: string,
       arrived: boolean,
       stopReason?: string,
       stopDetail?: string,
     ): void {
+      // Segment faktycznie ruszył jednostkę -> poprzedni epizod przerwania się skończył (wznowienie).
+      clearMarchStop(marchStopNotified, unitId);
+      marchStopDetail.delete(unitId);
       if (arrived) {
         plannedMarches.delete(unitId);
         // R-WEB-UI-NOTIFICATIONS-3-TABS-PRUNE-Q1: „Dotarło do celu” usunięte (szum).
@@ -30483,6 +30531,7 @@ async function boot(): Promise<void> {
       if (stopReason) {
         const prefix = stopReason === 'fog' ? 'Marsz wstrzymany: ' : 'Marsz przerwany: ';
         showHintMessage(prefix + (stopDetail ?? stopReason), 3500);
+        noteMarchStop(unitId, stopReason as MarchStopReason, stopDetail);
         return;
       }
       if (selectedId === unitId) refreshPlannedMarchPreview(unitId);
@@ -30525,6 +30574,7 @@ async function boot(): Promise<void> {
 
       if (!result.ok || result.movePath.length === 0) {
         showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
+        noteMarchStop(unitId, result.stopReason, result.stopDetail);
         return false;
       }
       // R-WEB-ARMY-STACK-LIMIT-Q1: stos na celu urosl od czasu planowania -- przytnij trase / przerwij marsz.
@@ -30610,7 +30660,12 @@ async function boot(): Promise<void> {
         moveCostFnForUnit(u),
       );
 
-      if (!result.ok || result.movePath.length === 0) return false;
+      if (!result.ok || result.movePath.length === 0) {
+        // R-WEB-MARCH-RESUME-NEXT-TURN-Q1: przeszkoda od pierwszego kroku (koniec tury) nie
+        // zostawia już ciszy -- ten sam jedno-wpisowy komunikat co przy częściowym marszu.
+        noteMarchStop(unitId, result.stopReason, result.stopDetail);
+        return false;
+      }
       // R-WEB-ARMY-STACK-LIMIT-Q1: stos na celu urosl od czasu planowania -- przytnij trase / przerwij marsz.
       const roomPathInstant = trimPathToStackRoom(units, stack, result.movePath, armyStackLimit());
       if (roomPathInstant.length === 0) {
@@ -43914,6 +43969,8 @@ async function boot(): Promise<void> {
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
+      marchStopNotified.clear();
+      marchStopDetail.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
       // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
       // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
@@ -45117,6 +45174,8 @@ async function boot(): Promise<void> {
       // before any panel, battle or starvation consumer sees the loaded state.
       syncAllRuntimeUnitHpState();
       plannedMarches.clear();
+      marchStopNotified.clear();
+      marchStopDetail.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
       // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
       // / EN: clear together with plannedMarches — the loop below only rebuilds both for units
