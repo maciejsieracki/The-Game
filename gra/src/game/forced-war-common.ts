@@ -224,7 +224,7 @@ export interface ForcedWarPairingOpts {
    * warless, z kandydatów partnera gracza i nie może zostać stroną dołączanej pary.
    * Brak pola = brak licznika (zachowanie bazowe).
    */
-  isEraWarExhausted?: (ownerId: number) => boolean;
+  isEraWarExhausted?: (ownerId: number, era?: ForcedWarEraTag) => boolean;
   hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number;
   /** Krok 2 ECHO: CAŁKOWITA liczba aktywnych wojen wymuszonych (wszystkie epoki) tego ownera PRZED przydziałem tej tury. */
   totalActiveForcedWarsByOwner: (ownerId: number) => number;
@@ -310,11 +310,21 @@ export function assignForcedWarPairings(
     opts.isPairBlocked(a, b)
     || (opts.pairRelationScore !== undefined && isForcedWarRelationBlocked(opts.pairRelationScore(a, b)));
   // R-WEB-ERA-WAR-COUNTER-Q1: podmiot z zużytym licznikiem wojen epoki nie wchodzi do puli.
-  const exhausted = (ownerId: number): boolean => opts.isEraWarExhausted?.(ownerId) === true;
+  const exhausted = (ownerId: number, era?: ForcedWarEraTag): boolean => opts.isEraWarExhausted?.(ownerId, era) === true;
 
   // Krok 1-2: pula "warless", posortowana deterministycznie po ownerId.
-  let warlessAll = triggeredSubjects
-    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0 && !exhausted(s.ownerId))
+  // A saved pending trigger can outlive an era advance. Keep only its oldest pending
+  // era this turn so it drains before a newer trigger and cannot assign two wars at once.
+  const eraRank: Record<ForcedWarEraTag, number> = { stone: 1, bronze: 2, iron: 3 };
+  const oldestByOwner = new Map<number, ForcedWarPairingSubject>();
+  for (const subject of triggeredSubjects) {
+    const previous = oldestByOwner.get(subject.ownerId);
+    if (!previous || (subject.era != null && previous.era != null && eraRank[subject.era] < eraRank[previous.era])) {
+      oldestByOwner.set(subject.ownerId, subject);
+    }
+  }
+  let warlessAll = [...oldestByOwner.values()]
+    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0 && !exhausted(s.ownerId, s.era))
     .slice()
     .sort((a, b) => a.ownerId - b.ownerId);
 
@@ -336,7 +346,7 @@ export function assignForcedWarPairings(
       for (const cand of pool) {
         if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
         if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
-        if (exhausted(cand.ownerId)) continue;
+        if (exhausted(cand.ownerId, cand.era)) continue;
         if (pairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
         if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
         const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
@@ -500,7 +510,7 @@ export function assignForcedWarPairings(
       if (attackerBlocked || targetBlocked) continue;
       // R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
       // strona z zużytym licznikiem nie dostaje drugiej wojny w tej epoce (także jako cel).
-      if (exhausted(pair.attackerId) || exhausted(pair.targetId)) continue;
+      if (exhausted(pair.attackerId, pair.era) || exhausted(pair.targetId, pair.era)) continue;
       // Obie strony niezablokowane -- deterministyczny wybór (niższy ownerId), zgodny z
       // konwencją tie-breaku reszty modułu.
       const chosenSide = Math.min(pair.attackerId, pair.targetId);

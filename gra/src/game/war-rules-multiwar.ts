@@ -17,8 +17,8 @@ import warRulesParamsRaw from '../../data/war-rules-params.json';
 
 export interface WarRulesParams {
   delayInterCivWarsUntilTurn: number;
-  /** R-WEB-ERA-DELAY-Q1: próg startu wojny epoki Brązu/Żelaza liczony od tury wejścia TEGO ownera w epokę (tury). */
-  eraForcedWarStartTurnsFromEra: { bronze: number; iron: number };
+  /** R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1: próg od wejścia TEGO ownera w Stone/Bronze/Iron. */
+  eraForcedWarStartTurnsFromEra: { stone: number; bronze: number; iron: number };
   /** R-WEB-ERA-DELAY-Q1: epoki wojen wymuszonych, dla których bramka R1 (tura 40) NIE obowiązuje. */
   eraForcedWarIgnoreR1: ForcedEraTag[];
   maxConcurrentWarsStone: number | null;
@@ -271,6 +271,21 @@ export function forcedEraTagForEpoch(epoch: number): ForcedEraTag | null {
  */
 export function eraWarCounterEpoch(tagEpoch: number | undefined, ownerEpoch: number): number {
   return tagEpoch === undefined ? ownerEpoch : Math.min(ownerEpoch, tagEpoch);
+}
+
+/**
+ * Legacy saves may lack per-owner era-entry timestamps. Since their historical
+ * entry turn cannot be recovered, start the required wait at load time. Existing
+ * timestamps are preserved, and only owners already in Bronze/Iron are backfilled.
+ */
+export function backfillMissingEraEntryTurns(
+  entryTurns: Map<number, number>,
+  ownerEpochs: ReadonlyMap<number, number>,
+  currentTurn: number,
+): void {
+  for (const [ownerId, epoch] of ownerEpochs) {
+    if (epoch >= 2 && epoch <= 3 && !entryTurns.has(ownerId)) entryTurns.set(ownerId, currentTurn);
+  }
 }
 
 export interface PlayerEraWarPoolInput {
