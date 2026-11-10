@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0ef655f0a77f11ed7d128ca0353b4a35",
-  "bundleSha256": "3a8a2d8460c3224514e457fa6dfa79950c0d58911fe06696ad066d806cdfbf62",
-  "bundleBytes": 14385325,
+  "bundleMd5": "2e5ccfab24f8bcb084478e2d51e29d47",
+  "bundleSha256": "591f4b5bb23c71d6fda15f71aa84e1d3933b0eec8a5d8eebb98b2d8c9424c5b2",
+  "bundleBytes": 14386117,
   "sourceSnapshot": {
-    "source": "web-wip/HAAMONGA",
+    "source": "web-wip/UPKCERAMIMPL",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 597: HAAMONGA d0f08d184"
+    "FALA 598: UPKCERAMIMPL 07ca052b3"
   ],
   "verification": [
-    "wonder-haamonga-no-dead-bonuses 16/0, tsc 0, sidecar PASS"
+    "building-upkeep-ceramics 649/0, upkeep 91/0, building-upkeep-resources 48/0, ai-resource-needs 6/0, sidecar PASS"
   ],
   "limits": [
-    "NIE_ZMIERZONO render karty; encyklopedia ×3 plony niezgodna (osobny temat); REPIN Rust dane cudu"
+    "model 200 tur, NIE_ZMIERZONO tempo Garncarni AI w grze; pobór ×ratio; REPIN Rust upkeep/AI"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-10T07:28:37",
+  "hubGeneratedAt": "2026-11-10T07:40:36",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
-      "sizeBytes": 14385325
+      "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
+      "sizeBytes": 14386117
     }
   ],
-  "md5": "0ef655f0a77f11ed7d128ca0353b4a35",
+  "md5": "2e5ccfab24f8bcb084478e2d51e29d47",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

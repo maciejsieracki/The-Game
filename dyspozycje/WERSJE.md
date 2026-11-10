@@ -1,3 +1,9 @@
+## ROBOCZA 2e5ccfab -- 2026-11-06 -- FALA 598: UPKEEP-CERAMICS: ceramika jako koszt utrzymania 4 budynków (Spichlerz II, Akwedukt, Łaźnia, Port; 2/t każdy) (testowa)
+
+- UPKCERAMIMPL 07ca052b3
+- Weryfikacja: building-upkeep-ceramics 649/0, upkeep 91/0, building-upkeep-resources 48/0, ai-resource-needs 6/0, sidecar PASS
+- Limity: model 200 tur, NIE_ZMIERZONO tempo Garncarni AI w grze; pobór ×ratio; REPIN Rust upkeep/AI
+
 ## ROBOCZA 0ef655f0 -- 2026-11-06 -- FALA 597: HAAMONGA: usunięte martwe bonusy cudu Kamień Ha'amonga (lowie_rybackie, laka) (testowa)
 
 - HAAMONGA d0f08d184
