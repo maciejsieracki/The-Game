@@ -862,6 +862,8 @@ export interface City {
   garnizon?: number;
   /** C3: kto oblega (ownerId atakującego) — zapis w save przez cities[]. */
   oblegajacyOwnerId?: number;
+  /** R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: stackGroupId stosu gracza, który faktycznie oblega (brak = stary zapis / AI). */
+  siegeArmyGroupId?: string;
   /** C3-Q3=B: zapasy=0 — kapitulacja następnej turze oblężenia / końca tury gracza. */
   siegeCapitulationPending?: boolean;
   /**
