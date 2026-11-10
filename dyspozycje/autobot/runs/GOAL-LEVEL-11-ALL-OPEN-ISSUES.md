@@ -1,3 +1,5 @@
+> HISTORYCZNY SNAPSHOT (2026-10-30): nie używać jako bieżącego raportu. Stan po przekazaniu2026-11-10 iFALACH607-609: [STAN-ZADAN-CODEX-20261110](../STAN-ZADAN-CODEX-20261110.md). Nie otwierać dawnychpozycji ponownie bez nowegodowodu.
+
 # Cel AutoBot: doprowadzić każdy otwarty błąd do etapu 11
 
 **Cel:** Każdy zarejestrowany, nadal otwarty błąd ma dojść do etapu 11: niezależny cykl

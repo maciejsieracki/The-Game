@@ -32694,3 +32694,6 @@ Właściciel zatwierdził pozycje 1–5 (Emporion per trasa +1 slot; zmęczenie 
 4. Cud przechodzi na zdobywcę (wariant B); cuda nie mają stanu budowy → R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1.
 5. Asymetrie AI/gracz: naprawić wszystkie → R-WEB-AI-PLAYER-PARITY-FIXES-Q1.
 6. Panele boczne przesuwają się pod lewy baner → R-WEB-HUD-PANELS-BELOW-BANNER-Q1.
+
+## P-TECH-SZTUKA-WOJENNA-TOP3-20261110 — ODPOWIEDZIANE
+Wcześniej wysłane pytanie asynchroniczne o sprzeczność opisu24jednostki vsNIE_USTALONO. Odpowiedź właściciela2026-11-10: „Opis «Odblokowuje jednostki epoki Żelaza», bez liczby (zalecane)”. Wdrożyć w R-WEB-TECH-CARDS-TOP5-TEST-DEBT-Q1; nie zmieniać kosztów/prereq/odblokowań.

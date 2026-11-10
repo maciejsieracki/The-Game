@@ -9562,3 +9562,6 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 
 ## Odczyt Codex po wznowieniu limitowanych ról — 2026-11-10
 Wznowione roleLunaHigh: army_split_graphical_hex_operator; polish_language_audit_operator r3; d_fog_measure_scripts_operator; food_grace_tests_operator. Max4aktywnetematy. Wcześniejsze komunikaty o limicie pozostają historią; nowa diagnoza/testy nie są z góryPASS. Techcards czeka na wolnyslot. Stan etapów: STAN-ZADAN-CODEX-20261110.md.
+
+## 2026-11-10T14:57:41.808240+01:00 — planpoFALI609 / decyzjawłaściciela
+SztukawojennaTop3: „Odblokowuje jednostki epoki Żelaza”, bezliczby — kwalifikacjaTECH-CARDS. Graficzny splitFALA60911/11, unittextbatch11/11,parentPolishauditPARTIAL. Następne4przewidziane: TECH-CARDS, POLISH-UI-ROUTES-AUDIT-Q2, WONDER-TRANSFER-TEST-DEBT, BATTLE-SIEGE-NEARBY-UNITS-JOIN. Dispatchzapisanyprzeduruchomieniami; brakstarychFAŁ589-606wotwartejpracy.
