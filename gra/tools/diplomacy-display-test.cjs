@@ -177,6 +177,11 @@ ok(nb(plLines.detailLine).includes('Rekruci: 7 / 9 jedn.'), 'player summary: wie
 ok(!plLines.detailLine.includes('Ludność') && plLines.detailLine.includes('Obywatele: 50'), 'player summary: Obywatele zamiast Ludność');
 ok(civLines.detailLine.includes('Obywatele: 98') && !civLines.detailLine.includes('Ludność'), 'civ list: Obywatele zamiast Ludność');
 ok(mod.RECRUITS_UNITS_TOOLTIP_PL.includes('rekrutEkw'), 'tooltip Rekruci: przeliczenie jak rekrutEkw');
+// Ustawienie atrybutu title w diploListHud.ts (obie ścieżki: playerSummary + wpis obcej cywilizacji).
+// Guard źródłowy (nie DOM): liczy przypisania tooltipu; oczekiwane dokładnie 2.
+const HUD_SRC = fs.readFileSync(path.resolve(SRC, 'ui', 'diploListHud.ts'), 'utf8');
+const hudTitleAssigns = HUD_SRC.split('stats.title = RECRUITS_UNITS_TOOLTIP_PL').length - 1;
+ok(hudTitleAssigns === 2, 'diploListHud: tooltip Rekruci ustawiany w obu ścieżkach (playerSummary + obca cywilizacja), liczba=' + hudTitleAssigns);
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 
