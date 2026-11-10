@@ -103,6 +103,7 @@ import {
   loadThroughput,
   DEFAULT_CONVERTER_RECIPES,
   converterBuildingIdForRecipe,
+  converterThroughputEraParamKey,
   converterThroughputsForEra,
   computeGarncarniaSurplusBonus,
   type RawConverterParamsJson,
@@ -1495,9 +1496,13 @@ function simulateResourcePipelineForPreview(
     eraForOwner(ownerId),
   );
   const throughputsForOwner = (ownerId: number): Record<string, number> => {
+    const era = eraForOwner(ownerId);
     return converterThroughputsForEra(
-      recipe => loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback),
-      eraForOwner(ownerId),
+      (recipe, ownerEra) => {
+        const eraParamKey = converterThroughputEraParamKey(recipe, ownerEra);
+        return loadThroughput(raw, eraParamKey ?? recipe.throughputParamKey, difficulty, recipe.throughputFallback);
+      },
+      era,
     );
   };
 
@@ -2440,13 +2445,19 @@ export function advanceCityEconomy(
   // używany dla buildingLevelForEpoch/upkeep (main.ts: empireEpochForOwner), zero
   // nowej gałęzi po ownerId; owner 0 bez resolvera spada na `playerEra` (parametr
   // funkcji), inny owner bez resolvera na erę 1 -- identycznie jak previewOwnerUpkeep
-  // wyżej. Odlewnie NIE są w CONVERTER_ERA_SCALING_RECIPE_IDS -- zostają płaskie.
+  // wyżej. Brąz używa wierszy explicit per era z econ-params; żelazo/stal zachowują
+  // mnożnik foundry m(e) bez zmian.
   const converterThroughputsForOwner = (ownerId: number): Record<string, number> => {
     const era = resolveOwnerEra
       ? resolveOwnerEra(ownerId)
       : legacyEraForOwner(ownerId, playerEra);
     return converterThroughputsForEra(
-      recipe => converterThroughputs[recipe.id] ?? recipe.throughputFallback,
+      (recipe, ownerEra) => {
+        const eraParamKey = converterThroughputEraParamKey(recipe, ownerEra);
+        return eraParamKey
+          ? loadThroughput(rawForConverters, eraParamKey, difficulty, converterThroughputs[recipe.id] ?? recipe.throughputFallback)
+          : converterThroughputs[recipe.id] ?? recipe.throughputFallback;
+      },
       era,
     );
   };
