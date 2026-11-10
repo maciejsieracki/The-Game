@@ -9398,17 +9398,35 @@ export class BattleScene {
   }
 
   /**
-   * Sufit przewijania (FF_MAX_ROUNDS): rozstrzygniecie tym samym kryterium co PAT silnika
-   * (morale armii: przy remisie wygrywa obronca), z pelnym zakonczeniem bitwy i ekranem wyniku.
+   * Jedyne kryterium rozstrzygniecia po osiagnieciu sufitu FF_MAX_ROUNDS -- wspolne dla
+   * przewijania (skip) i walki AUTO (_checkEnd), zeby oba wyniki byly identyczne.
+   * Oblezenie bez wylomu: atakujacy nie moga wygrac (szturm odparty, zasada z _checkEnd),
+   * inaczej przewijanie dawalo zwyciestwo atakujacemu po samym morale (exploit: slabsza
+   * armia bierze dobrze bronione miasto). Poza oblezeniem: morale armii, remis -> obronca.
    */
-  private _ffRoundCapResult(): void {
+  private _capRoundWinner(): { winner: 'atakujacy' | 'obronca'; reason: string } {
+    if (this.siegeWallCol >= 0 && !this.wallEverBreached) {
+      return { winner: 'obronca', reason: 'SZTURM ODPARTY: brak wylomu w murze/palisadzie' };
+    }
     const ratioA = this._armyMoraleRatio('atk');
     const ratioD = this._armyMoraleRatio('def');
+    return {
+      winner: ratioA <= ratioD ? 'obronca' : 'atakujacy',
+      reason: 'rozstrzygniecie po morale armii',
+    };
+  }
+
+  /**
+   * Sufit przewijania (FF_MAX_ROUNDS): rozstrzygniecie tym samym kryterium co PAT silnika
+   * (_capRoundWinner), z pelnym zakonczeniem bitwy i ekranem wyniku.
+   */
+  private _ffRoundCapResult(): void {
     this.finished = true;
     this._ffActive = false;
     this._ffQueue = [];
-    const winner: 'atakujacy' | 'obronca' = ratioA <= ratioD ? 'obronca' : 'atakujacy';
-    this.log.push('=== PAT (przewijanie): ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- rozstrzygniecie po morale armii ===');
+    const cap = this._capRoundWinner();
+    const winner = cap.winner;
+    this.log.push('=== PAT (przewijanie): ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
     this._endWinner = winner;
     this._endSurvivors = this._battleUnitsForMapExport(winner === 'atakujacy' ? this.atk : this.def);
     this._showEndScreen(winner);
@@ -10105,6 +10123,13 @@ export class BattleScene {
     if (brokenD && aliveD) {
       this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- armia w rozsypce! ===');
       aliveD = false;
+    }
+    // Sufit tur (FF_MAX_ROUNDS) w AUTO: ten sam werdykt co przewijanie (_capRoundWinner),
+    // dzieki czemu "Pomin do wyniku" i dojscie AUTO do sufitu daja identyczny wynik.
+    if (aliveA && aliveD && this.roundNo >= FF_MAX_ROUNDS) {
+      const cap = this._capRoundWinner();
+      this.log.push('=== PAT: ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+      if (cap.winner === 'obronca') aliveA = false; else aliveD = false;
     }
 
     if (aliveA && aliveD) return false;
