@@ -18,7 +18,7 @@ const BUNDLE = path.join(__dirname, '.march-resume-bundle.cjs');
 
 fs.writeFileSync(
   ENTRY,
-  `export { executeMarchStep } from '../src/game/planned-march';\n`,
+  `export { executeMarchStep, isNotifiableMarchStop } from '../src/game/planned-march';\n`,
   'utf8',
 );
 esbuild.buildSync({
@@ -29,7 +29,7 @@ esbuild.buildSync({
   outfile: BUNDLE,
   logLevel: 'silent',
 });
-const { executeMarchStep } = require(BUNDLE);
+const { executeMarchStep, isNotifiableMarchStop } = require(BUNDLE);
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* sprzatanie best-effort */ }
 
 let pass = 0;
@@ -86,8 +86,41 @@ function simulate({ map, ruch, dest, occupied, maxTurns = 8, startQ = 0, startR 
   const r = simulate({ map: flatMap(0, 12), ruch: 2, dest: { destQ: 8, destR: 0 }, occupied: new Set(['4,0']) });
   const last = r.turns[r.turns.length - 1];
   // Obcego omija trasa (dojscie objazdem) albo marsz zatrzymuje sie z powodem; nie moze stanac bez wyjasnienia.
-  ok(last && (last.arrived === true || typeof last.stop === 'string'),
-    'T3 przeszkoda: dojscie lub jawne zatrzymanie: ' + JSON.stringify(r.turns));
+  const notifiable = typeof last.stop === 'string' && isNotifiableMarchStop(last.stop);
+  ok(last && (last.arrived === true || notifiable),
+    'T3 przeszkoda: dojscie lub zasadne zatrzymanie (obstacle/no_path/blocked_city): ' + JSON.stringify(r.turns));
+}
+
+// T4: klasyfikacja przerwan -- powiadamiane sa tylko zasadne przeszkody; rutynowe pauzy nie.
+{
+  ok(isNotifiableMarchStop('obstacle') === true, 'T4 obstacle powiadamiane');
+  ok(isNotifiableMarchStop('no_path') === true, 'T4 no_path powiadamiane');
+  ok(isNotifiableMarchStop('blocked_city') === true, 'T4 blocked_city powiadamiane');
+  ok(isNotifiableMarchStop('no_movement') === false, 'T4 no_movement (koniec MP) NIE powiadamiane');
+  ok(isNotifiableMarchStop('fog') === false, 'T4 fog NIE powiadamiane (zwykla pauza)');
+  ok(isNotifiableMarchStop(undefined) === false, 'T4 brak powodu NIE powiadamiane');
+}
+
+// T5: przeszkoda znika po kilku turach -> plan przetrwal, marsz dochodzi bez klikania.
+{
+  const map = flatMap(0, 12);
+  const u = { id: 'u1', ownerId: 0, q: 0, r: 0, ruch: 2, ruchLeft: 2, typeId: 'zwiadowca', category: 'zwiadowca' };
+  const dest = { destQ: 8, destR: 0 };
+  const blocked = new Set(['1,0', '2,0', '3,0', '4,0', '5,0', '6,0', '7,0', '1,-1', '2,-1', '3,-1', '4,-1', '5,-1', '6,-1', '7,-1']);
+  let arrived = false;
+  let turnsRun = 0;
+  for (let t = 1; t <= 10 && !arrived; t++) {
+    turnsRun = t;
+    const occ = t <= 2 ? blocked : new Set();
+    const step = executeMarchStep(u, dest, map, occ, u.ruchLeft, () => true, 2);
+    if (step.ok && step.movePath.length > 0) {
+      const last = step.movePath[step.movePath.length - 1];
+      u.q = last.q; u.r = last.r; u.ruchLeft -= step.cost;
+      if (step.arrived) arrived = true;
+    }
+    u.ruchLeft = 2;
+  }
+  ok(arrived, 'T5 po zdjeciu przeszkody marsz dochodzi bez klikania (tury=' + turnsRun + ')');
 }
 
 // Bramki zrodla: EOT nie kasuje planu, a zatrzymanie nie czysci wpisu (poza przycieciem stosu).
@@ -110,6 +143,11 @@ function simulate({ map, ruch, dest, occupied, maxTurns = 8, startQ = 0, startR 
   ok(deletes === 1, 'G2 applyMarchSegmentInstant kasuje plan tylko przy przycieciu stosu (got ' + deletes + ')');
   const run = fnBody('function runPlannedMarchesAtPlayerEndTurn(');
   ok(/movedByPlayerThisTurn\.has\(id\)/.test(run), 'G3 koniec tury pomija jednostki ruszone recznie');
+  const noteBody = fnBody('function noteMarchStop(');
+  ok(noteBody.length > 0 && /isNotifiableMarchStop\(/.test(noteBody), 'G4 noteMarchStop filtruje przez isNotifiableMarchStop');
+  ok(/noteMarchStop\(unitId, result\.stopReason/.test(seg), 'G5 pusty krok koniec tury zglasza przerwanie (nie cicho)');
+  const clr = fnBody('function clearPlannedMarch(');
+  ok(/marchStopNotified\.delete\(unitId\)/.test(clr) && /marchStopNotified\.clear\(\)/.test(clr), 'G6 clearPlannedMarch czysci stan powiadomien');
 }
 
 console.log('march-resume-next-turn-test: ' + pass + ' pass, ' + fail + ' fail');
