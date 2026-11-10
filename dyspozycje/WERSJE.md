@@ -1,3 +1,9 @@
+## ROBOCZA f6af6d3c -- 2026-11-06 -- FALA 604: DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte (liczby obrażeń, ekran wyniku, szczegóły bitwy) (testowa)
+
+- DMGCOLORS 511acb63d
+- Weryfikacja: battle-damage-colors 27/0, kolory gracz-przeciwnik 26, etykieta tozsamosc 38, end-details-hp 5/5, sidecar PASS
+- Limity: NIE_ZMIERZONO wizualnie Chromium; pasek HP after i log starc poza zakresem; REPIN Rust UI
+
 ## ROBOCZA cb3b87a7 -- 2026-11-06 -- FALA 603: RANGED-DAMAGE-MULT: Procarz x3, Lucznik pieszy x2 obrazen pocisku; celnosc max(wrecz, dystans); AI widzi nowa moc (testowa)
 
 - RANGEDMULT a259012fa
