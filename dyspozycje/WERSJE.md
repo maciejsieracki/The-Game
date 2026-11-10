@@ -6999,3 +6999,13 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent Evaluator and Final Control PASS for both topics; Bronze behavior159/159, real owner economy117/117, city panel83/83, HUD20/20; typecheckPASS; Cavalry model163, starting wings536 maxdistance3, close flank994 and formation regressionPASS; independent Chromium menu/default/front placement and killed mutationPASS; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: No full campaign foundry simulation; direct player/AI production tick parity fixture is tier1, higher tiers covered by shared recipe routing/display fixtures; Cavalry browser proof is production component/placement fixture, not full campaign battle replay; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source a248ba2f119c57c7f5b7dad800d05d85331aa28b; manifestMD5 bca9ecf94f70e61cda27ab5dbb2851c3; SHA256 2f42efbadd67142255824bf45ed68f855b42c30468b2b76bbf4962e575812038; push/readback pending.
+
+
+## ROBOCZA 2b12c817 — 2026-11-10T21:56:53.254002+01:00 — FALA 617: Shared border diplomacy penalty by higher owner era
+
+- Existing shared-land-border factor keeps its activation condition: both owners have more than2 cities and share land border
+- Trust cost per turn uses higher era in pair: Stone−2, Bronze−3, Iron−4; runtime tick, preview and factor breakdown use one resolver
+- Runtime test hook is absent in normal game and available only with civTest=1
+- Weryfikacja: Independent Evaluator followups and Final Control PASS-WITH-NOTES; prior BLOCK objections closed and preserved; 39/39 logic checks plus typecheck and diff checks PASS; Independent production Chromium/IndexedDB roundtrip: mixed Bronze/Iron−4 before/afterload, Bronze/Bronze−3 bothorders, no row withoutborder; flagfalse/true exposure verified; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: Runtime uses deterministic registered-AI/city fixture, not organic multi-turn campaign; Runtime checks preview/factor values; no screenshot or DOM-text assertion of final diplomacy panel; Final gating-only change reviewed after operator two-state browser run; no extra full rerun by FC; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source 7d5bd499e5cf74b3b35476573a23969bd707b3b6; manifestMD5 2b12c8176ee0b412fcd0b9a5ca392cdf; SHA256 8810f98f2d71f399a05b9c787a69f72db9e4a19ef86989783cae48382664dfcd; push/readback pending.
