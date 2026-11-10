@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication68a3019dff898f8790d6a152a7a811531f6bb56a; freshGitartifactreadbackPASS",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "bca9ecf94f70e61cda27ab5dbb2851c3",
   "bundleSha256": "2f42efbadd67142255824bf45ed68f855b42c30468b2b76bbf4962e575812038",
