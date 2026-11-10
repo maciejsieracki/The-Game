@@ -45,3 +45,6 @@ Priorytet ostatni: R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1 — Wodna180, Koło180
 
 ## Najnowszy goal właściciela: zakończ tematy powyżej2/11
 Obowiązująca grupa do domknięcia: wojnyepoki, granica, pokój10tur, kosztybadań, machiny, konnica. Po każdych zakończonych gate uruchomić następny w tej grupie do11; bez nowych tematów1–2do jejzamknięcia. AktualnydetailedstanwSTAN-ZADAN-CODEX-20261110.md.
+
+## Korekta kolejności po jawnym przypomnieniu właściciela
+Produkcja brązu25/50 i Brązownictwo480 są aktywnymiPRIORYTETAMI, nieczekająnazamknięciewszystkich>2. Razemzgranicąikonnicątworzą4aktywnetematy. Audytpriorytetów: PRIORYTETY-WLASCICIELA-20261110.md. Machiny11/11FALA614.
