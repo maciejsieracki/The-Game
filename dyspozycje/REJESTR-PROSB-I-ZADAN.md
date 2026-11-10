@@ -9555,3 +9555,7 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - R-WEB-PR141-F04-YIELDS-TEST-DEBT-Q1: Evaluator aktywny po korekcie fixture testu; bez zmian produktu.
 - Dokładnie4 aktywne tematy w chwili odczytu. Pełne ID obu testów ekonomii zostały zarejestrowane w00-dispatch.md, z jawną retrospektywną notą dla wcześniejszego dispatchu narzędziowego.
 - Zakończone i wypchnięte: FALA607(2ee58aa2, trzy poprawki), FALA608(6c95bf48, Haamonga), komentarz Garncarstwa, battle-loot12/12, weterani79/79, terminologia796/796, audyt widoczności Rekrutuj wszystkie. Receipty90 w odpowiadających runach. Nie otwierać ponownie jako niezaimplementowanych bez nowego dowodu.
+
+## 2026-11-10T14:02:57.956073+01:00 — nowe zgłoszenie wyboru docelowego heksu
+- R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1: etap1/11, zarejestrowane; współrzędne zastąpić graficznym wyborem sześciu pól wokół jednostki, zachowując reguły rozdzielenia. Dispatch: runs/R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1/00-dispatch.md.
+- Ostatnie próby Operatorów Luna dla Polish r3, D-FOG-F, food-grace i tech-cards zakończyły się limitem użycia. Status WSTRZYMANY/INFRA, nie aktywna praca. Brak zgody na ciche zastąpienie innym modelem; modele pozostają LunaHigh.
