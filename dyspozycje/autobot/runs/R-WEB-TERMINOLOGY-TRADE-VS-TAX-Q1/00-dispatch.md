@@ -25,3 +25,13 @@ Ta sama klasa błędów widoczna w TOP 5 ulepszeń terenu:
 3. „Warunek Wymiany — klucza do tras handlowych” → „klucz” (mianownik); zdanie „Oswojenie zwierząt jest jednym z trzech warunków Wymiany, bez której nie wyznaczysz żadnej trasy handlowej” → „bez których” (liczba mnoga, bo „warunków”).
 4. „Lama (Inkowie)… Ulepszenie tylko dla Inków” — sprawdź spójność nazwy ludu w całej karcie (Inkowie/Inków/Inkom) i pozostałe odmiany.
 Te trzy wzorce (Trzoda, Owce, Warunek Wymiany) powtarzają się dla WSZYSTKICH 22 ulepszeń terenu i wszystkich kart odkryć/budynków z wymianą — przeszukaj całość (gra/data/terrain-improvements*.json, karty ulepszeń w gra/src/ui/entityCards/*, source tekstów TOP 5), nie tylko wymienione przykłady. Test strażnik ma obejmować te frazy.
+
+## RUNDA 2 — odsprzężenie bramki generatora od testu terminologii
+
+STATUS: DISPATCHED
+DOMAIN: GAME
+MODEL OPERATORA: GPT-6 Luna High
+BAZA: origin/main d0ccc260edb35c952e6cd9eb5477cff02a4e2b3f
+GOAL: usunąć z `terminology-trade-vs-tax-test.cjs` wyłącznie zależność od pełnej bramki `gen-tech-cards-top5.cjs --check`, która nie może przejść z powodu istniejącej pozycji `Sztuka wojenna: Top3 = NIE_USTALONO`. Zachować wszystkie asercje terminologiczne; sprawdzić bezpośrednio normalizator CSV dla `+N handlu` i odmiany „klucz”; pełną walidację kart odkryć pozostawić w `tech-cards-top5-test.cjs`, gdzie już jest osobna asercja generatora.
+ZAKRES: `gra/tools/terminology-trade-vs-tax-test.cjs` oraz raporty tej rundy w tym katalogu. Bez danych produktowych, Top3, generatorów, innych testów, rejestru, kolejki, commitów, deployu i przeglądarki.
+KRYTERIA: focused terminology test exit 0; liczba asercji terminologicznych nie maleje; nowo testowane zachowanie normalizatora jest jawne; `gen-tech-cards-top5 --check` nadal failuje w osobnym tech-card suite z tym samym, jawnie odnotowanym długiem (nie jest pomijany ani naprawiany w tym zakresie); `git diff --check` czysty.

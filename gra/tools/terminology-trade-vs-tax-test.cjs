@@ -20,7 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { FORBIDDEN_A, FORBIDDEN_LANG } = require('./terminology-trade-vs-tax.cjs');
+const { FORBIDDEN_A, FORBIDDEN_LANG, normalizeCsvText } = require('./terminology-trade-vs-tax.cjs');
 
 const GRA = path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(GRA, p), 'utf8');
@@ -216,8 +216,15 @@ const p07 = read('../docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md');
 check('[P2] poradnik 45: Targowisko = premia do dochodu z tras, nie mnoży podatku', /premia do dochodu z tras handlowych/.test(p45) && !/nie mnożnik handlu/.test(p45) && !/Bez \*\*mnożnika %\*\* handlu/.test(p45));
 check('[P2] poradnik 07: Targowisko — +50% tylko do tras', /\+50%\*\* \(poziom normalny\) \*\*do dochodu z tras handlowych\*\*/.test(p07) && !/nie mnożnik handlu/.test(p07));
 
-// ---------------------------------------------------------------- [G] generatory zgodne z danymi
-for (const gen of ['gen-tech-cards-top5.cjs', 'gen-building-cards-top5.cjs']) {
+// ---------------------------------------------------------------- [G] normalizacja tekstów źródłowych i generator budynków
+// Integralność wszystkich pól kart odkryć (w tym Top3) jest bramkowana przez
+// tech-cards-top5-test.cjs. Ten test sprawdza tu wyłącznie zachowanie normalizatora
+// terminologii; nie powinien powielać globalnej walidacji kart odkryć, która obejmuje
+// niezwiązane pozycje Top3.
+check('[G] normalizacja CSV: „+N handlu” → „+N podatku”', normalizeCsvText('+3 handlu na polu') === '+3 podatku na polu');
+check('[G] normalizacja CSV: „Warunek Wymiany — klucza” → „Warunek Wymiany — klucz”',
+  normalizeCsvText('Warunek Wymiany — klucza do tras handlowych') === 'Warunek Wymiany — klucz do tras handlowych');
+for (const gen of ['gen-building-cards-top5.cjs']) {
   const r = spawnSync(process.execPath, [path.join(__dirname, gen), '--check'], { cwd: GRA, encoding: 'utf8' });
   check(`[G] ${gen} --check zgodny z plikiem danych`, r.status === 0, (r.stdout + r.stderr).trim().split('\n').pop());
 }
