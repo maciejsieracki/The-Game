@@ -1,3 +1,9 @@
+## ROBOCZA 6e945110 -- 2026-11-06 -- FALA 600: SKIP-SIEGE: oblężenie bez wyłomu kończy się po 150 turach remisem (Pomiń = AUTO) (testowa)
+
+- SKIPSIEGE c8e3e4664
+- Weryfikacja: battle-skip-siege-parity 13/0, Chromium SKIP==AUTO bez wyłomu + mutant wykryty, tsc 0, regresje siege/battle zielone, sidecar PASS
+- Limity: 150 tur = założenie; sufit też w bitwie ręcznej; dług SKIP-TICK-LOOP-UNIFY; NIE_ZMIERZONO ekran Remis; REPIN Rust combat-params
+
 ## ROBOCZA 89eb2e56 -- 2026-11-06 -- FALA 599: MARCH-RESUME: trasa marszu wznawia się; zatrzymanie = 1 powiadomienie (Ważne) + wskaźnik trasa wstrzymana (testowa)
 
 - MARCHRES 89c18617d

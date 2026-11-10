@@ -25,6 +25,8 @@ export interface EndScreenSideStats {
 
 export interface EndScreen1EParams {
   playerWon: boolean;
+  /** Remis (np. odparty szturm bez wylomu): neutralny naglowek zamiast Zwyciestwo/Porazka. */
+  draw?: boolean;
   /** Strona gracza — do poprawnego „Twoje straty" vs „Straty wroga". Domyślnie atk. */
   playerSide?: 'atk' | 'def';
   winnerLabel: string;
@@ -119,10 +121,11 @@ export function showEndScreen1E(
   });
 
   const won = p.playerWon;
-  const winWord = won ? 'Zwycięstwo' : 'Porażka';
-  const accent = won ? BATTLE_GOLD : BATTLE_ENEMY_TEXT;
-  const border = won ? 'rgba(232,216,138,0.5)' : 'rgba(200,64,64,0.5)';
-  const glow = won ? 'rgba(232,216,138,0.12)' : 'rgba(200,64,64,0.12)';
+  const draw = p.draw === true;
+  const winWord = draw ? 'Remis' : won ? 'Zwycięstwo' : 'Porażka';
+  const accent = draw ? '#c8b898' : won ? BATTLE_GOLD : BATTLE_ENEMY_TEXT;
+  const border = draw ? 'rgba(200,184,152,0.5)' : won ? 'rgba(232,216,138,0.5)' : 'rgba(200,64,64,0.5)';
+  const glow = draw ? 'rgba(200,184,152,0.12)' : won ? 'rgba(232,216,138,0.12)' : 'rgba(200,64,64,0.12)';
   const bg = won
     ? 'linear-gradient(180deg,rgba(22,28,38,0.96),rgba(8,10,16,0.97))'
     : 'linear-gradient(180deg,rgba(30,18,18,0.96),rgba(12,7,7,0.97))';
