@@ -29,6 +29,7 @@ import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { humanizeId } from '../../game/text-names';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -129,7 +130,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
       charRows.push({ label: 'Podatek', value: `${podatekSuma > 0 ? '+' : ''}${podatekSuma}`, emphasize: true });
       continue;
     }
-    charRows.push({ label: BONUS_LABEL[k] ?? k, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
+    charRows.push({ label: BONUS_LABEL[k] ?? humanizeId(k), value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
   }
   if (hasValue(improvement.bonus_obrona_proc)) {
     charRows.push({ label: 'Obrona', value: `+${text(improvement.bonus_obrona_proc)}%` });

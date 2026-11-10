@@ -13,7 +13,7 @@
  * osobnym dispatchem (17., ostatnim tematem serii R-KARTY-HISTORIA-Q1).
  */
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
-import { nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
+import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
 import type { WonderRow, WonderTerrainBonus, WonderSpecialBonus } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 
@@ -58,7 +58,7 @@ const DOSTEP_LABEL: Record<string, string> = {
 };
 
 export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
-  const nazwa = text(wonder.nazwa) || wonder.id;
+  const nazwa = text(wonder.nazwa) || humanizeId(wonder.id);
 
   // --- Dostępność ---------------------------------------------------------------------------
   const cywilizacje = Array.isArray(wonder.cywilizacje) ? wonder.cywilizacje : [];
@@ -106,7 +106,7 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
   const miasto = bonusy.miasto ?? {};
   for (const [k, v] of Object.entries(miasto)) {
     if (typeof v === 'number' && v !== 0) {
-      bonusRows.push({ label: `Miasto — ${BONUS_LABEL[k] ?? k}`, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
+      bonusRows.push({ label: `Miasto — ${BONUS_LABEL[k] ?? humanizeId(k)}`, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
     }
   }
   const teren = Array.isArray(bonusy.teren) ? bonusy.teren : [];
@@ -115,7 +115,7 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
     const parts: string[] = [];
     for (const [k, v] of Object.entries(t)) {
       if (k === 'typTerenu' || k === 'warunek') continue;
-      if (typeof v === 'number' && v !== 0) parts.push(`${v > 0 ? '+' : ''}${v} ${BONUS_LABEL[k] ?? k}`);
+      if (typeof v === 'number' && v !== 0) parts.push(`${v > 0 ? '+' : ''}${v} ${BONUS_LABEL[k] ?? humanizeId(k)}`);
     }
     if (parts.length > 0) {
       bonusRows.push({

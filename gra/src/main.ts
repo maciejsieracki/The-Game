@@ -51,6 +51,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Imports
 
+import { humanizeId, nazwaCywilizacji } from './game/text-names';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -4884,7 +4885,7 @@ async function boot(): Promise<void> {
         const capable = inputs.filter(i => i.canRecruit).length;
         return {
           id,
-          label: labels.get(id) ?? id,
+          label: labels.get(id) ?? humanizeId(id),
           koszt,
           capableCities: capable,
           totalCities: mine.length,
@@ -5371,7 +5372,7 @@ async function boot(): Promise<void> {
 
     function civWonderDisplayName(civType: string | undefined | null): string {
       if (!civType) return civType ?? '?';
-      return getWondersData().panstwa[civType]?.nazwa ?? civType;
+      return getWondersData().panstwa[civType]?.nazwa ?? nazwaCywilizacji(civType);
     }
 
     /** R-WEB-UI-RAW-IDS-IN-PLAYER-TEXT-Q1: tekst efektów z resolverem nazw (wonders-effects-text.ts). */
