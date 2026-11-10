@@ -9595,3 +9595,7 @@ STATUS: ZAREJESTROWANE. WłaścicielkazałprzywrócićkosztGarncarstwa. Potwierd
 
 ## R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1 — PILNE2026-11-10
 STATUS: ZAREJESTROWANE. Produkcjabrązu max25wepoceBrązu/50wepoceŻelaza, inputsbez zmian, niezmieniaćsamegożelaza. Runautobot/runs/R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1.
+
+
+## R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Gospodarka wodna i Koło bazowo180PN. Brązownictwo480PN wymaga doprecyzowania błędu dyktowania (pytanie wysłane); Garncarstwo40PN zatwierdzone, wspólna partia danych z istniejącymID. Inne parametry bez zmian.

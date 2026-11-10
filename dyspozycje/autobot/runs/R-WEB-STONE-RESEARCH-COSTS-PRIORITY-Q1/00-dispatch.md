@@ -1,0 +1,6 @@
+# R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1
+STATUS: REGISTERED — 1/11
+MODEL: Codex gpt-6-luna high, osobne Operator/Evaluator/FinalControl.
+GOAL: najnowsze priorytety właściciela: Gospodarka wodna72→180PN, Koło88→180PN kosztu bazowego. Brązownictwo180→480PN oczekuje doprecyzowania niejasnego dyktowania; nie zmieniać przed odpowiedzią. Garncarstwo5→40PN wcześniej jawnie zaakceptowane (powiązane R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1, wspólny operator dla uniknięcia konfliktów danych/doc). Wszystkie pozostałe koszty, prereq, poziomy i odblokowania bez zmian. Mnożniki tempa1/2/4 zachowane. Docelowo wydłużyć Kamień tylko przez te koszty.
+ALLOWLIST: początkowo rozpoznanie; przed edycją konkretny minimalny zestaw tech.json/źródła encyklopedii/generatorów/testów/run. Nie zmieniać mechaniki kosztów globalnych. Dane wygenerowane aktualizować narzędziem, nie maskować regresji. Weryfikować rzeczywisty techCost+tempo i niezmienione inne technologie/prereq, typecheck, sensowne odpowiednie testy.
+FLOW: Operator→Evaluator→warunkowa Obrona→FC→main→Robocza→push/readback→cleanup11. Operator commit własnego kandydata bez merge/push/deploy. Max4 aktywne tematy. Powiązane Garncarstwo zamknąć tym samym dowodem bez podwójnego liczenia.

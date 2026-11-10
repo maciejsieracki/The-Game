@@ -40,3 +40,5 @@ PILNE: R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — właściciel40/40/40odwejściawk
 Konnica jawniepauzowanadla priorytetów. Machiny jużzaimplementowane, kończątesty; rekrutacja/ETA poFCintegracja, wydanie wprzygotowaniu.
 
 PILNE4: R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — Garncarstwo40PNprzywrócone zamiast5, inneodblokowaniabez zmian. Granicaczekatylkona decyzjęmixedepochasymetrii; operatornieaktywnypodczasczekania.
+
+Priorytet ostatni: R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1 — Wodna180, Koło180, Garncarstwo40, Brązownictwo480 oczekuje odpowiedzi. Dopiero po całej pilnej partii wrócić do pozostałej kolejki.
