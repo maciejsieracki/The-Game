@@ -25,7 +25,7 @@
 - **Epoka:** Kamień (poziom 1)
 - **Wymaga (prereq):** Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt
 - **Dostęp do surowca:** Dostęp do glina
-- **Koszt nauki:** 5 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 40 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Spichlerz, Garncarnia, Cegielnia

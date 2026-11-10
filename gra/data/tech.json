@@ -101,7 +101,7 @@
       "Wymaga (prereq)": "Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt",
       "Odblokowuje surowiec.": "cegła, glina, sol",
       "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
-      "Koszt nauki": 5,
+      "Koszt nauki": 40,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli",
       "Historia": "Wypalanie gliny na trwałe naczynia pojawiło się niezależnie w wielu regionach świata w okresie neolitu, gdy osiadłe społeczności rolnicze potrzebowały sposobu na przechowywanie ziarna, wody i oliwy. Najstarsze znane naczynia gliniane datuje się na ponad 20 tysięcy lat wstecz, choć masowa produkcja garncarska rozwinęła się dopiero wraz z uprawą roślin i potrzebą magazynowania nadwyżek żywności. Wynalazek koła garncarskiego, które pojawiło się znacznie później, pozwolił rzemieślnikom formować naczynia symetryczne i w większej liczbie, co uczyniło garncarstwo jednym z pierwszych wyspecjalizowanych zawodów w historii. Skorupy ceramiczne są dziś jednym z najcenniejszych źródeł wiedzy archeologów, bo glina — w przeciwieństwie do drewna czy tkanin — przetrwała tysiąclecia niemal nienaruszona, pozwalając datować i odtwarzać życie dawnych kultur."
@@ -143,7 +143,7 @@
       "Wymaga (prereq)": "Rolnictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Studnia",
-      "Koszt nauki": 72,
+      "Koszt nauki": 180,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Irygacja",
       "Historia": "Kontrolowanie wody za pomocą kanałów, tam i systemów irygacyjnych rozwinęło się niezależnie w wielkich dolinach rzecznych starożytnego świata — nad Nilem, Tygrysem i Eufratem oraz Żółtą Rzeką w Chinach — gdzie regularne, ale nieprzewidywalne wylewy rzek trzeba było okiełznać, by zapewnić stabilne plony. Sztuczne nawadnianie pól pozwoliło uprawiać znacznie większe obszary niż naturalna wilgotność gleby, co dawało nadwyżki żywności zdolne wyżywić rosnące miasta i finansować budowę pierwszych państw. Zarządzanie wspólnymi systemami irygacyjnymi wymagało koordynacji pracy wielu wsi naraz, co niektórzy historycy uważają za jeden z impulsów do powstania scentralizowanej administracji i biurokracji w starożytnych imperiach. Ciekawostka: część starożytnych kanałów irygacyjnych w Mezopotamii i Persji, jak podziemne kanaty, działała jeszcze w czasach współczesnych, ponad dwa tysiące lat po ich budowie."
@@ -157,7 +157,7 @@
       "Wymaga (prereq)": "Oswojenie zwierząt",
       "Odblokowuje surowiec.": "krowa/byk",
       "Odblokowuje budynek": "Jednostki: Rydwan (woły)",
-      "Koszt nauki": 88,
+      "Koszt nauki": 180,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Droga",
       "Historia": "Koło, choć dziś wydaje się oczywistością, zostało wynalezione stosunkowo późno w dziejach ludzkości — najstarsze ślady kół używanych do transportu pochodzą z Europy Środkowej i Mezopotamii sprzed około 5-6 tysięcy lat, znacznie później niż rolnictwo czy garncarstwo. Pierwotnie koła stosowano w garncarstwie do formowania naczyń, a dopiero potem przystosowano je do wozów i rydwanów, co zrewolucjonizowało transport lądowy, pozwalając przewozić ciężkie ładunki znacznie szybciej niż na grzbietach zwierząt jucznych. Rydwany bojowe, ciągnięte przez konie, stały się na tysiąclecia jednym z najgroźniejszych narzędzi wojny starożytnego świata, od Egiptu po Chiny. Ciekawostka: niektóre zaawansowane cywilizacje przedkolumbijskie w Ameryce, choć znały zasadę koła i stosowały ją w zabawkach dla dzieci, nigdy nie wykorzystały jej do transportu — prawdopodobnie z powodu braku dużych zwierząt jucznych, które mogłyby ciągnąć wozy."

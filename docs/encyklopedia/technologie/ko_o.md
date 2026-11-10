@@ -25,7 +25,7 @@
 - **Epoka:** Kamień (poziom 3)
 - **Wymaga (prereq):** Oswojenie zwierząt
 - **Dostęp do surowca:** Dostęp do drewna
-- **Koszt nauki:** 44 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 180 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** brak

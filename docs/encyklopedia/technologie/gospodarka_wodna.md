@@ -24,7 +24,7 @@
 ### Wymagania
 - **Epoka:** Kamień (poziom 2)
 - **Wymaga (prereq):** Rolnictwo
-- **Koszt nauki:** 36 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 180 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Studnia
