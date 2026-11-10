@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Brązownictwo** — epoka **Kamień** (poziom 3), koszt **180** PN (tempo Szybka), wymaga: Garncarstwo + Murarstwo + Obróbka drewna. Odblokowuje budynki: Odlewnia brązu, Kuźnia brązu; jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz.
+**Brązownictwo** — epoka **Kamień** (poziom 3), koszt **480** PN (tempo Szybka), wymaga: Garncarstwo + Murarstwo + Obróbka drewna. Odblokowuje budynki: Odlewnia brązu, Kuźnia brązu; jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz.
 
 ---
 
@@ -25,7 +25,7 @@
 - **Epoka:** Kamień (poziom 3)
 - **Wymaga (prereq):** Garncarstwo + Murarstwo + Obróbka drewna
 - **Dostęp do surowca:** Dostęp do brązu
-- **Koszt nauki:** 180 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 480 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Odlewnia brązu, Kuźnia brązu
