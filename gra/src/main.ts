@@ -485,7 +485,10 @@ import {
   siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
 } from './game/diplomacy-siege-war-gate';
 import { combatAnchorFor } from './game/stack-leader';
-import { stackGroupIdOf as stackGroupIdOfAnchor, besiegingUnitsOnHex, inheritSiegeOnJoin } from './game/armyMerge';
+import {
+  stackGroupIdOf as stackGroupIdOfAnchor, besiegingUnitsOnHex, inheritSiegeOnJoin,
+  besiegeArmyGroups, besiegeLockTargets,
+} from './game/armyMerge';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -14480,6 +14483,14 @@ async function boot(): Promise<void> {
         // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
         // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
         assignSharedStackGroupId(onHex);
+        // Scalenie zmienia stackGroupId armii oblegającej -- odśwież zapasowy hint grupy na mieście
+        // oblężonym (commitBesiege czyta grupy z jednostek oblegających, więc to tylko fallback).
+        const besiegedCity = besiegersHere[0]?.oblegaCityId !== undefined
+          ? cities.find(c => c.id === besiegersHere[0]!.oblegaCityId)
+          : undefined;
+        if (besiegedCity?.siegeArmyGroupId !== undefined) {
+          besiegedCity.siegeArmyGroupId = stackGroupIdOfAnchor(rep);
+        }
         syncStackRuchLeft(onHex);
         showHintMessage(
           autoFollow
@@ -17503,16 +17514,17 @@ async function boot(): Promise<void> {
       // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: blokada (oblegaCityId + ruchLeft=0)
       // dotyczy WYŁĄCZNIE stosu, który faktycznie oblega (armia gracza z startMapSiege). Sąsiedni
       // stos tego samego właściciela przy murze NIE oblega i zostaje wolny. AI: bez zmian (wszyscy przy murze).
-      const armyGroup = bId === 0 ? city.siegeArmyGroupId : undefined;
-      let marked = 0;
-      for (const u of units) {
-        if (u.ownerId !== bId) continue;
-        if (hexDistance(u.q, u.r, city.q, city.r) !== 1) continue;
-        if (armyGroup !== undefined && stackGroupIdOfAnchor(u) !== armyGroup) continue;
+      // Dla gracza-człowieka (każdy ownerId z isHuman, nie tylko 0) grupy liczone z jednostek już
+      // oblegających (odporne na scalenie/podział), z fallbackiem city.siegeArmyGroupId.
+      const armyGroups = isHuman(bId)
+        ? besiegeArmyGroups(units, cityId, bId, city.siegeArmyGroupId, stackGroupIdOfAnchor)
+        : undefined;
+      const lockTargets = besiegeLockTargets(units, city, bId, armyGroups, stackGroupIdOfAnchor);
+      for (const u of lockTargets) {
         u.oblegaCityId = cityId;
         u.ruchLeft = 0;
-        marked++;
       }
+      const marked = lockTargets.length;
       if (marked === 0) {
         showHintMessage(city.name + ': brak wojsk przy murze — oblężenie zniesione.', 4000);
         endMapSiege(cityId);
@@ -17591,7 +17603,7 @@ async function boot(): Promise<void> {
       siegeBesiegerByCity.set(city.id, ctx.oblegajacyOwnerId);
       // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: zapamiętaj stos faktycznie oblegający.
       // Zapis na City (nie w mapie domknięcia): tylko stos faktycznie oblegający dostaje blokadę.
-      city.siegeArmyGroupId = ctx.oblegajacyOwnerId === 0 ? stackGroupIdOfAnchor(ctx.atakujacy) : undefined;
+      city.siegeArmyGroupId = isHuman(ctx.oblegajacyOwnerId) ? stackGroupIdOfAnchor(ctx.atakujacy) : undefined;
       refreshSiegeMarkers();
       syncSiegePanelMeta(city);
       if (ctx.oblegajacyOwnerId === 0) {

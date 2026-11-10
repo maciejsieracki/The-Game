@@ -3,7 +3,7 @@
  */
 
 import type { RuntimeUnit } from '../units/setup';
-import { keyOf } from '../units/setup';
+import { keyOf, hexDistance } from '../units/setup';
 import { pickStackLeader } from './stack-leader';
 import type { UnitPowerInput } from './unit-power';
 import { sumRosterFieldM } from './auto-battle-power';
@@ -166,6 +166,44 @@ export function inheritSiegeOnJoin(
     taken += 1;
   }
   return taken;
+}
+
+/**
+ * Grupy stosów FAKTYCZNIE oblegających miasto `cityId` (właściciel `ownerId`).
+ * Źródło prawdy: jednostki już oznaczone `oblegaCityId` -- ich BIEŻĄCE stackGroupId (odporne na
+ * scalenie i podział stosu, które zmieniają id grupy). Brak takich jednostek (pierwsze oblężenie)
+ * -> `hint` z startMapSiege. Zwraca undefined, gdy brak jakiejkolwiek informacji (bez zawężenia).
+ */
+export function besiegeArmyGroups(
+  units: ReadonlyArray<RuntimeUnit>,
+  cityId: string,
+  ownerId: number,
+  hint: string | undefined,
+  groupOf: (u: RuntimeUnit) => string = stackGroupIdOf,
+): Set<string> | undefined {
+  const fromUnits = units
+    .filter(u => u.ownerId === ownerId && u.oblegaCityId === cityId)
+    .map(groupOf);
+  if (fromUnits.length > 0) return new Set(fromUnits);
+  return hint !== undefined ? new Set([hint]) : undefined;
+}
+
+/**
+ * Cele blokady oblężenia (commitBesiege): jednostki właściciela na heksach sąsiadujących z miastem.
+ * `groups` podane (oblężenie gracza) -> tylko stosy z tych grup; `undefined` (AI) -> wszyscy sąsiedzi (dawne).
+ */
+export function besiegeLockTargets(
+  units: ReadonlyArray<RuntimeUnit>,
+  city: { readonly q: number; readonly r: number },
+  ownerId: number,
+  groups: ReadonlySet<string> | undefined,
+  groupOf: (u: RuntimeUnit) => string = stackGroupIdOf,
+): RuntimeUnit[] {
+  return units.filter(u =>
+    u.ownerId === ownerId
+    && hexDistance(u.q, u.r, city.q, city.r) === 1
+    && (groups === undefined || groups.has(groupOf(u))),
+  );
 }
 
 /** Sąsiednie heksy z widocznym stosem armii właściciela. */
