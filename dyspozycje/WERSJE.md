@@ -6969,3 +6969,13 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent Evaluator and Final Control including followup PASS; Era delays55/0, alleras10/0, integrated peace lifecycle31/0, typecheckPASS; Research actualcost/tempo44/0; pottery prereq45/0; scopeproof only3cost fields; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: No full campaign loader roundtrip measured; migration helper runtime and source wiring reviewed; Irrecoverable legacy entry date conservatively initialized at load, so such saves wait40 additional turns; Brązownictwo480 request remains unconfirmed; its cost stays180; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source c02f78362d69efb069b62f69c47e1f9ec24f298e; manifestMD5 c2945abc797b52ff0677def86e5efbb9; SHA256 4f491ef3794f2afea5cb9b2ed134212fc2657c562995e27d27b807a0564c0ac0; push/readback pending.
+
+
+## ROBOCZA 3dee4cf7 — 2026-11-10T21:02:40.078241+01:00 — FALA 614: Paid siege-only engine construction
+
+- Siege machines excluded from city/empire recruitment, direct purchases and replacements; only active siege construction with technology and owner money/resources guards
+- Per-turn quota floor(non-machine army size/10), parameter10 with no fixed ceiling; same rules for AI
+- Old unpaid queue canceled instead of producing free machines; ready machines and runtime units retained; per-turn build counter persists
+- Weryfikacja: Independent evaluator followup and Final Control PASS; Focused27/27 including actual serialization roundtrip; thirteen regressions and typecheck PASS; Prior HTTPChromium blockade57/57; no UI change in legacy queue correction; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: Task-specific live purchase campaign not measured after final legacy-only fix; prior UI browser gate documented separately; Two city-siege storm-wiring assertions fail identically on original base; unrelated pre-existing test debt; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source 0d50dcf04be6dd760ef872d7cd9ffe5bfc9e2bd1; manifestMD5 3dee4cf71e318dbbe84a98b8e856e803; SHA256 f6c7dd14990bcb453980c6c7576838289de4bde10d50f475baa2978e101bdff6; push/readback pending.
