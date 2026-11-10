@@ -4,7 +4,7 @@
  *
  * Prawdziwy Chromium + prawdziwe moduły (esbuild): panel zbiorczy (ui/empireRecruitPanel.ts) z realnym
  * planerem (game/empire-recruit-plan.ts) na fixture 3 miast gracza i skarbcu.
- * Sprawdza: domyślnie 0 (przyciski nieaktywne), dwa przyciski „Rekrutuj wszystkie” (góra/dół),
+ * Sprawdza: domyślnie 0 (przycisk nieaktywny), jeden górny przycisk „Rekrutuj wszystkie”,
  * rekrutacja tylko pozycji > 0 przez tę samą ścieżkę onOrder, liczniki → 0 po sukcesie, brak złota
  * (typ odrzucony, licznik zostaje, komunikat PL bez surowego id), częściowy sukces (licznik = reszta).
  * Usage (z gra/): PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node tools/empire-recruit-all-test.cjs
@@ -101,8 +101,9 @@ async function main() {
 
     // ---- domyślnie 0 ----
     check('domyślnie licznik 0 dla każdego typu', await qty('Wojownik') === 0 && await qty('Taran') === 0 && await qty('Procarz') === 0);
-    check('„Rekrutuj wszystkie” jest na górze i na dole (2 przyciski)', await allBtns.count() === 2);
-    check('przy sumie 0 oba „Rekrutuj wszystkie” są nieaktywne', await allBtns.evaluateAll(els => els.every(b => b.disabled)));
+    check('jest jeden górny przycisk „Rekrutuj wszystkie”', await allBtns.count() === 1
+      && await allBtns.first().evaluate(button => button.closest('.erp-stick') !== null));
+    check('przy sumie 0 górne „Rekrutuj wszystkie” jest nieaktywne', await allBtns.first().isDisabled());
     check('pojedyncze „Rekrutuj” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="go"]').isDisabled());
     check('„−” nieaktywne przy liczniku 0', await row('Wojownik').locator('[data-erp="dec"]').isDisabled());
     check('pole liczby ma min=0 (zgodne z domyślnym 0)', await row('Wojownik').locator('[data-erp="qty"]').getAttribute('min') === '0');
@@ -145,7 +146,7 @@ async function main() {
     await row('Taran').locator('[data-erp="inc"]').click();
     await setQty('Procarz', 3);
     await setQty('Wieza_oblezn', 0);
-    check('„Rekrutuj wszystkie” aktywne przy sumie > 0 (góra i dół)', await allBtns.evaluateAll(els => els.every(b => !b.disabled)));
+    check('górne „Rekrutuj wszystkie” aktywne przy sumie > 0', await allBtns.first().isEnabled());
     await allBtns.first().click();
     let st = await state();
     check('zamówione tylko pozycje > 0 (Wojownik 2, Taran 1, Procarz 3)',
@@ -163,7 +164,7 @@ async function main() {
     await page.evaluate(() => { window.__st.gold = 25; });
     await setQty('Wojownik', 2);   // 20 złota — mieści się
     await setQty('Taran', 1);      // 40 — nie stać
-    await allBtns.last().click();   // dolny przycisk
+    await allBtns.first().click();  // górny przycisk
     st = await state();
     check('Wojownik przyjęty mimo odrzucenia Tarana (4 łącznie)', total(st, 'Wojownik') === 4, st.cities);
     check('Taran odrzucony: w kolejce nadal 1 (nic nie dodano)', total(st, 'Taran') === 1, st.cities);

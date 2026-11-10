@@ -8295,6 +8295,86 @@ export function recruitPanelPurchasableUnits(city: City, data: GameData) {
  */
 const recruitQuantityDrafts = new Map<string, number>();
 const recruitDraftKey = (cityId: string, itemId: string): string => `${cityId}|${itemId}`;
+const armyRecruitDrafts = new Map<string, number>();
+const ARMY_RECRUIT_DRAFTS_STORAGE_KEY = 'civ-army-recruit-drafts-v1';
+try {
+  const saved = localStorage.getItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY);
+  if (saved) {
+    const parsed: unknown = JSON.parse(saved);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          armyRecruitDrafts.set(key, Math.min(999, Math.floor(value)));
+        }
+      }
+    }
+  }
+} catch { /* storage can be unavailable in private/restricted contexts */ }
+function saveArmyRecruitDrafts(): void {
+  try { localStorage.setItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY, JSON.stringify(Object.fromEntries(armyRecruitDrafts))); }
+  catch { /* best effort; the in-memory drafts still work for this session */ }
+}
+function setArmyRecruitDraft(cityId: string, itemId: string, quantity: number): void {
+  const key = recruitDraftKey(cityId, itemId);
+  const safe = Math.min(999, Math.max(0, Math.floor(Number.isFinite(quantity) ? quantity : 0)));
+  if (safe > 0) armyRecruitDrafts.set(key, safe);
+  else armyRecruitDrafts.delete(key);
+  saveArmyRecruitDrafts();
+  const sum = getArmyRecruitDraftTotal();
+  document.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]').forEach(button => { button.disabled = sum <= 0; });
+}
+export function getArmyRecruitDraftTotal(): number {
+  return Array.from(armyRecruitDrafts.values()).reduce((sum, quantity) => sum + quantity, 0);
+}
+/** New/load game boundary: do not carry one save's unpublished Army drafts into another. */
+export function resetArmyRecruitDraftsSession(): void {
+  armyRecruitDrafts.clear();
+  try { localStorage.removeItem(ARMY_RECRUIT_DRAFTS_STORAGE_KEY); } catch { /* best effort */ }
+  document.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]').forEach(button => { button.disabled = true; });
+}
+
+/** Apply only selected Army city/type drafts through the existing guarded purchase path. */
+export function submitArmyRecruitmentDrafts(cityIds: string[]): { accepted: number; requested: number; message: string } {
+  const data = gameData();
+  if (!data) return { accepted: 0, requested: 0, message: 'Brak danych gry.' };
+  const entries = cityIds.flatMap(cityId => {
+    const city = cfg.getCities?.().find(item => item.id === cityId);
+    if (!city || !isMeCity(city.ownerId)) return [];
+    return recruitPanelPurchasableUnits(city, data).flatMap(item => {
+      const quantity = armyRecruitDrafts.get(recruitDraftKey(cityId, item.id)) ?? 0;
+      return quantity > 0 ? [{ city, item, quantity }] : [];
+    });
+  });
+  let requested = 0;
+  let accepted = 0;
+  const notAccepted: string[] = [];
+  for (const entry of entries) {
+    requested += entry.quantity;
+    let remaining = entry.quantity;
+    // Existing city purchase callbacks accept/reject an exact batch. Try the largest batch
+    // downward so a budget-limited order can accept its affordable prefix without redirecting it.
+    while (remaining > 0) {
+      let batch = remaining;
+      while (batch > 0 && !recruitUnit(entry.city, entry.item, batch, false)) batch--;
+      if (batch === 0) break;
+      accepted += batch;
+      remaining -= batch;
+    }
+    setArmyRecruitDraft(entry.city.id, entry.item.id, remaining);
+    if (remaining > 0) notAccepted.push(`${entry.city.name}: ${entry.item.nazwa} — nie przyjęto ${remaining}.`);
+  }
+  // Rebuild each mounted Army city list through the same renderer so its local quantity controls
+  // reflect the accepted/remainder draft while retaining the persistent city/type values.
+  for (const cityId of new Set(entries.map(entry => entry.city.id))) {
+    const target = Array.from(document.querySelectorAll<HTMLElement>('[data-mass-recruitment-cards]'))
+      .find(node => node.dataset.massRecruitmentCards === cityId);
+    if (target) mountCityRecruitmentCardsForArmy(cityId, target);
+  }
+  if (accepted > 0) rerender();
+  const message = `Rekrutacja: przyjęto ${accepted} z ${requested} jednostek.`
+    + (notAccepted.length ? ` Pozostało: ${notAccepted.join(' ')}` : '');
+  return { accepted, requested, message };
+}
 /** Test: odczyt zapamiętanego licznika (1 = domyślny). */
 export function getRecruitQuantityDraft(cityId: string, itemId: string): number {
   return recruitQuantityDrafts.get(recruitDraftKey(cityId, itemId)) ?? 1;
@@ -8307,7 +8387,7 @@ export function appendUnitRecruitCompactRow(
   item: ProductionItem,
   data: GameData,
   skarb: number | undefined,
-  opts?: { unitLabel?: string; disabledReason?: string; onRecruit?: (quantity: number) => boolean | void },
+  opts?: { unitLabel?: string; disabledReason?: string; onRecruit?: (quantity: number) => boolean | void; armyBatch?: boolean },
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
@@ -8348,12 +8428,22 @@ export function appendUnitRecruitCompactRow(
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpowerCompact(mpMissing)}`
       : undefined,
-    initialQuantity: recruitQuantityDrafts.get(recruitDraftKey(city.id, item.id)),
-    onQuantityChange: (q) => { recruitQuantityDrafts.set(recruitDraftKey(city.id, item.id), q); },
+    initialQuantity: opts?.armyBatch
+      ? (armyRecruitDrafts.get(recruitDraftKey(city.id, item.id)) ?? 0)
+      : recruitQuantityDrafts.get(recruitDraftKey(city.id, item.id)),
+    minQuantity: opts?.armyBatch ? 0 : 1,
+    onQuantityChange: (q) => {
+      if (opts?.armyBatch) setArmyRecruitDraft(city.id, item.id, q);
+      else recruitQuantityDrafts.set(recruitDraftKey(city.id, item.id), q);
+    },
     onRecruit: (quantity) => opts?.onRecruit
       ? opts.onRecruit(quantity)
       : recruitUnit(city, item, quantity),
   });
+  if (opts?.armyBatch) {
+    row.dataset.armyRecruitCity = city.id;
+    row.dataset.armyRecruitUnit = item.id;
+  }
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
   scroll.appendChild(row);
 }
@@ -8418,7 +8508,7 @@ export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLEleme
   if (!document.getElementById(STYLE_ID)) ensureStyles();
   host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
   // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1: bez wewnętrznego suwaka listy (pełna wysokość).
-  renderPurchasableUnits(host, city, data, { w4: true, noInnerScroll: true });
+  renderPurchasableUnits(host, city, data, { w4: true, noInnerScroll: true, armyBatch: true });
   // R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: ta sama „Kolejka rekrutacji:” co w panelu miasta
   // (uchwyt, ikona, koszt, ETA, ↑ ↓ ✕, przeciąganie) -- ten sam appendRecruitmentQueue.
   appendRecruitmentQueueForArmy(host, city);
@@ -8435,7 +8525,7 @@ function appendRecruitmentQueueForArmy(host: HTMLElement, city: City): void {
   if (holder.childElementCount > 0) host.appendChild(holder);
 }
 
-function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
+function recruitUnit(city: City, item: ProductionItem, quantity = 1, refresh = true): boolean {
   if (isCityUnderSiege([city], city)) return false; // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1
   const requestedQuantity = Number.isFinite(quantity)
     ? Math.max(1, Math.floor(quantity))
@@ -8459,7 +8549,7 @@ function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
     const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity);
     if (accepted === false) return false;
   }
-  rerender();
+  if (refresh) rerender();
   return true;
 }
 
@@ -9221,7 +9311,7 @@ function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean; noInnerScroll?: boolean },
+  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean; noInnerScroll?: boolean; armyBatch?: boolean },
 ): void {
   mount.innerHTML = '';
   const w4 = opts?.w4 === true;
@@ -9315,7 +9405,7 @@ function renderPurchasableUnits(
           : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
     );
   for (const it of units) {
-    appendUnitRecruitCompactRow(scroll, city, it, data, skarb);
+    appendUnitRecruitCompactRow(scroll, city, it, data, skarb, { armyBatch: opts?.armyBatch });
   }
   mount.appendChild(scroll);
 }

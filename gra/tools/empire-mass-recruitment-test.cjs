@@ -9,6 +9,7 @@
  * Usage (from gra/): node tools/empire-mass-recruitment-test.cjs
  */
 const fs = require('fs');
+const http = require('http');
 const os = require('os');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
@@ -87,9 +88,9 @@ import {
   mountMassRecruitmentControls,
   configureEmpireMassRecruitment,
 } from ${JSON.stringify(PANEL)};
-import { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy } from ${JSON.stringify(CITY_PANEL)};
+import { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession } from ${JSON.stringify(CITY_PANEL)};
 (window).__massRecruitment = { renderMassRecruitmentSection, mountMassRecruitmentControls, configureEmpireMassRecruitment };
-(window).__cityPanel = { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy };
+(window).__cityPanel = { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession };
 `, 'utf8');
 }
 
@@ -169,8 +170,18 @@ async function browserGate() {
     logLevel: 'silent',
   });
 
+  const server = http.createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    response.end('<!doctype html><html><head></head><body></body></html>');
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
   const browser = await launch();
   const page = await browser.newPage({ viewport: { width: 520, height: 900 } });
+  await page.goto(`http://127.0.0.1:${address.port}/`);
   await page.setContent(`<!doctype html><html><head></head><body>
     <div id="host" style="width:404px;position:relative;transform:none;pointer-events:auto;display:block;">
       <div id="body" class="civ-emp-body"></div>
@@ -270,7 +281,105 @@ async function browserGate() {
   check('many-city panel has no horizontal overflow', manyCity.bodyScrollWidth <= manyCity.bodyClientWidth + 1, manyCity);
   check('real Chromium gives the mounted card a visible layout', manyCity.visibleCard);
 
+  // Two-city batch contract: per-city/type zero drafts, refresh-safe state, exact callback routing,
+  // partial acceptance under a shared budget, and the lower Army button.
+  const mountArmyFixture = () => page.evaluate(() => {
+    if (!document.getElementById('body')) {
+      document.body.innerHTML = '<div id="host" style="width:404px;position:relative;transform:none;pointer-events:auto;display:block;">'
+        + '<div id="body" class="civ-emp-body"></div></div>';
+    }
+    window.__armyState = { gold: 1000, purchases: [] };
+    const rows = [
+      { cityId: 'athens', name: 'Ateny', massRecruitment: { options: [], queueCount: 0, waterAccess: true } },
+      { cityId: 'sparta', name: 'Sparta', massRecruitment: { options: [], queueCount: 0, waterAccess: true } },
+    ];
+    const cities = rows.map((r, i) => ({ id: r.cityId, ownerId: 0, name: r.name, q: i, r: 0, population: 10,
+      manpower: 100000, surowce: { drewno: 100, kamien: 100 } }));
+    const data = { units: [
+      { Jednostka: 'Wojownik', Typ: 'Swordsman', 'Rola (linia)': 'Wręcz', 'Surowiec': 'Drewno', 'Surowiec (ilość)': 1 },
+      { Jednostka: 'Łucznik', Typ: 'Archer', 'Rola (linia)': 'Dystans', 'Surowiec': 'Kamień', 'Surowiec (ilość)': 1 },
+    ], buildings: [], civs: [], tech: [] };
+    window.__cityPanel.configureCityPanel({
+      data, getCities: () => cities, getEpoch: () => 1,
+      getEmpireRekruciTotal: () => 100000,
+      getTreasury: () => window.__armyState.gold,
+      onPurchaseUnit: (cityId, unitId, cost, quantity) => {
+        window.__armyState.purchases.push([cityId, unitId, cost, quantity]);
+        window.__armyState.gold -= cost * quantity;
+        return true;
+      },
+    });
+    window.__ordinaryRecruitDraft = window.__cityPanel.getRecruitQuantityDraft('athens', 'Wojownik');
+    const body = document.getElementById('body');
+    body.style.zoom = '150%';
+    body.innerHTML = window.__massRecruitment.renderMassRecruitmentSection(rows, {
+      ownerId: 0, treasury: 1000, manpower: 100000, stock: { Drewno: 100, Kamień: 100 }, queuedCount: 0, completedCount: 0,
+    });
+    const host = document.getElementById('host');
+    window.__massRecruitment.mountMassRecruitmentControls(host, { cityPobor: rows, massRecruitment: {} },
+      (cityId, target) => window.__cityPanel.mountCityRecruitmentCardsForArmy(cityId, target));
+  });
+  await mountArmyFixture();
+  const armyRows = page.locator('#body [data-mass-recruitment-city]');
+  const armyCard = (city, unit) => page.locator(`#body [data-mass-recruitment-city="${city}"] [data-army-recruit-unit="${unit}"]`);
+  const armyDraft = async (city, unit) => Number(await armyCard(city, unit).locator('.unit-recruit-quantity-input').inputValue());
+  const armyButtons = page.locator('#body [data-army-recruit-all]');
+  eq(await armyRows.count(), 2, 'batch fixture has exactly two cities');
+  check('Army per-city/per-type quantity drafts start at zero',
+    await armyDraft('athens', 'Wojownik') === 0 && await armyDraft('sparta', 'Łucznik') === 0);
+  check('both Army global buttons are present and disabled at zero', await armyButtons.count() === 2
+    && await armyButtons.evaluateAll(buttons => buttons.every(button => button.disabled)));
+  await armyCard('athens', 'Wojownik').locator('.unit-recruit-quantity-input').fill('2');
+  await armyCard('sparta', 'Łucznik').locator('.unit-recruit-quantity-input').fill('1');
+  check('city/type drafts do not overwrite each other', await armyDraft('athens', 'Wojownik') === 2
+    && await armyDraft('sparta', 'Łucznik') === 1 && await armyDraft('athens', 'Łucznik') === 0);
+  check('Army drafts are persisted outside the current renderer instance',
+    await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('civ-army-recruit-drafts-v1') || '{}')).length === 2));
+  eq(await page.evaluate(() => window.__ordinaryRecruitDraft), 1, 'ordinary City-panel recruitment still defaults to one');
+  await page.reload();
+  await page.addScriptTag({ path: BUNDLE });
+  await mountArmyFixture();
+  check('hard page refresh restores the two saved city/type quantities',
+    await armyDraft('athens', 'Wojownik') === 2 && await armyDraft('sparta', 'Łucznik') === 1);
+  await page.evaluate(() => {
+    const rows = Array.from(document.querySelectorAll('[data-mass-recruitment-city]'));
+    rows.forEach(city => window.__cityPanel.mountCityRecruitmentCardsForArmy(city.dataset.massRecruitmentCity,
+      city.querySelector('[data-mass-recruitment-cards]')));
+  });
+  check('re-mount preserves draft quantities', await armyDraft('athens', 'Wojownik') === 2 && await armyDraft('sparta', 'Łucznik') === 1);
+  await armyButtons.last().scrollIntoViewIfNeeded();
+  check('bottom Army button is visible and enabled after selections', await armyButtons.last().isVisible()
+    && await armyButtons.last().isEnabled());
+  await armyButtons.last().click();
+  let armyState = await page.evaluate(() => JSON.parse(JSON.stringify(window.__armyState)));
+  check('batch submits exact city, type, cost and quantity through existing callback',
+    JSON.stringify(armyState.purchases) === JSON.stringify([['athens', 'Wojownik', 10, 2], ['sparta', 'Łucznik', 8, 1]]), armyState.purchases);
+  check('fully accepted Army drafts clear and global buttons disable', await armyDraft('athens', 'Wojownik') === 0
+    && await armyDraft('sparta', 'Łucznik') === 0 && await armyButtons.evaluateAll(buttons => buttons.every(button => button.disabled)));
+
+  await page.evaluate(() => { window.__armyState.gold = 25; window.__armyState.purchases.length = 0; });
+  await armyCard('athens', 'Wojownik').locator('.unit-recruit-quantity-input').fill('3');
+  await armyButtons.first().click();
+  armyState = await page.evaluate(() => JSON.parse(JSON.stringify(window.__armyState)));
+  check('budget partial accepts two of three in the selected city/type',
+    JSON.stringify(armyState.purchases) === JSON.stringify([['athens', 'Wojownik', 10, 2]]) && armyState.gold === 5, armyState);
+  check('partial acceptance leaves exactly one draft and a clear message', await armyDraft('athens', 'Wojownik') === 1
+    && /przyjęto 2 z 3/.test(await page.locator('[data-army-recruit-message]').innerText())
+    && /nie przyjęto 1/.test(await page.locator('[data-army-recruit-message]').innerText()));
+  await page.evaluate(() => { window.__armyState.gold = 100; window.__armyState.purchases.length = 0; });
+  await armyCard('sparta', 'Łucznik').locator('.unit-recruit-quantity-input').fill('1');
+  await page.setViewportSize({ width: 520, height: 1800 });
+  await armyCard('sparta', 'Łucznik').locator('.unit-recruit-submit').scrollIntoViewIfNeeded();
+  await armyCard('sparta', 'Łucznik').locator('.unit-recruit-submit').evaluate(button => button.click());
+  armyState = await page.evaluate(() => JSON.parse(JSON.stringify(window.__armyState)));
+  check('per-card Army purchase still uses the selected city/type and quantity',
+    JSON.stringify(armyState.purchases) === JSON.stringify([['sparta', 'Łucznik', 8, 1]]), armyState.purchases);
+  await page.evaluate(() => window.__cityPanel.resetArmyRecruitDraftsSession());
+  check('new/load-game reset clears persisted Army drafts',
+    await page.evaluate(() => localStorage.getItem('civ-army-recruit-drafts-v1') === null));
+
   await browser.close();
+  await new Promise(resolve => server.close(resolve));
 }
 
 (async () => {
