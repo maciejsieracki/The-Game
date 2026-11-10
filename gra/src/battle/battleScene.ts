@@ -2049,8 +2049,8 @@ interface RuntimeBattleUnit {
   perTokenGeos: THREE.BufferGeometry[];
 }
 
-/** Ustawienie konnicy w formacji deploy: skrzydla lub linia z tylu. */
-type CavalryDeployMode = 'flanks' | 'rear';
+/** Ustawienie konnicy w formacji deploy: przod, skrzydla lub linia z tylu. */
+type CavalryDeployMode = 'front' | 'flanks' | 'rear';
 
 /** Liczba linii glebokosci (1–3) dla piechoty lub lucznikow w deploy. */
 type DeployLineCount = 1 | 2 | 3;
@@ -2062,7 +2062,7 @@ interface GroupMeta {
   rallyRow?: number;
   /** Brak = uzyj aktywnego przycisku F1/F2/F3 z paska deploy. */
   formation?: 'F1' | 'F2' | 'F3';
-  /** Konnica: boki (domyslnie) lub za liniami piechoty/lucznikow. */
+  /** Konnica: przod / boki (domyslnie) / za liniami piechoty i lucznikow. */
   cavalryMode?: CavalryDeployMode;
   /** C-FLANK: kierunek natarcia domyslny dla grupy (brak = 'front'). */
   attackDirection?: AttackDirection;
@@ -2353,6 +2353,8 @@ export class BattleScene {
    * odtwarzany po _replayBattle() razem z _deployGroupSnapshot.
    */
   private _deployAttackDirSnapshot: Map<string, AttackDirection> | null = null;
+  /** Tryb konnicy per jednostka z końca deployu; replay odtwarza ręczny wybór grupy. */
+  private _deployCavalryModeSnapshot: Map<string, CavalryDeployMode> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -12666,6 +12668,7 @@ export class BattleScene {
     this._deployFmtRow = center;
 
     const cavDefs: Array<{ mode: CavalryDeployMode; label: string; subtitle: string; icon: string; msg: string }> = [
+      { mode: 'front', label: 'Z przodu', subtitle: 'Konnica w pierwszej linii', icon: FMT_SVG.dirFront, msg: 'Konnica z przodu' },
       { mode: 'flanks', label: 'Z boku', subtitle: 'Oskrzydlenie flanki', icon: FMT_SVG.cavFlanks, msg: 'Konnica na skrzyd\u0142ach' },
       { mode: 'rear', label: 'Z ty\u0142u', subtitle: 'Uderzenie na ty\u0142y', icon: FMT_SVG.cavRear, msg: 'Konnica za liniami' },
     ];
@@ -12944,7 +12947,7 @@ export class BattleScene {
   }
 
   private _deployCavalryShortLabel(mode: CavalryDeployMode): string {
-    return mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
+    return mode === 'front' ? 'Konnica z przodu' : mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
   }
 
   /** C-FLANK: etykieta chipu kierunku natarcia (front/bok/tyl). */
@@ -13782,6 +13785,9 @@ export class BattleScene {
       if (this._deployAttackDirSnapshot) {
         this._restoreDeployAttackDirSnapshot(this._deployAttackDirSnapshot);
       }
+      if (this._deployCavalryModeSnapshot) {
+        this._restoreDeployCavalryModeSnapshot(this._deployCavalryModeSnapshot);
+      }
     } else {
       this._autoGroupDeployByKind();
     }
@@ -13875,6 +13881,17 @@ export class BattleScene {
     }
     this._rebuildDeployRosterGrid();
     this._refreshDeploySelectionVisuals();
+  }
+
+  /** Odtwarza tryb konnicy z ostatniego deployu; brak wpisu w starym snapshotcie = domyślne skrzydła. */
+  private _restoreDeployCavalryModeSnapshot(snapshot: Map<string, CavalryDeployMode>): void {
+    for (const ru of this._playerRoster()) {
+      if (!ru.groupId) continue;
+      const mode = snapshot.get(ru.bu.id);
+      if (mode === 'front' || mode === 'flanks' || mode === 'rear') {
+        this._ensureGroupMeta(ru.groupId).cavalryMode = mode;
+      }
+    }
   }
 
   /** Odtwarza kierunek natarcia (C-FLANK) po powtórce bitwy w fazie deploy. */
@@ -16269,6 +16286,7 @@ export class BattleScene {
     cavalryMode: CavalryDeployMode,
   ): {
     main: Array<{ role: string; units: RuntimeBattleUnit[] }>;
+    mountedFront: RuntimeBattleUnit[];
     mountedFlank: RuntimeBattleUnit[];
     mountedRear: RuntimeBattleUnit[];
     flankAtRole: string;
@@ -16315,6 +16333,7 @@ export class BattleScene {
 
     return {
       main,
+      mountedFront: cavalryMode === 'front' ? mounted : [],
       mountedFlank: cavalryMode === 'flanks' ? mounted : [],
       mountedRear: cavalryMode === 'rear' ? mounted : [],
       flankAtRole,
@@ -16416,9 +16435,10 @@ export class BattleScene {
       });
     };
 
-    let dc = 0;
+    if (plan.mountedFront.length > 0) addBandLine(plan.mountedFront, 0);
+    let dc = plan.mountedFront.length > 0 ? 1 : 0;
     let flankDc = 0;
-    let maxHalfWidth = 0;
+    let maxHalfWidth = Math.ceil(plan.mountedFront.length / 2);
 
     for (const band of plan.main) {
       if (band.role === plan.flankAtRole) flankDc = dc;
@@ -16434,9 +16454,15 @@ export class BattleScene {
     }
 
     const wingBase = maxHalfWidth + 1;
+    const flankWingRows = 3;
     plan.mountedFlank.forEach((u, i) => {
       const side = i % 2 === 0 ? 1 : -1;
-      slots.push([u, flankDc, side * (wingBase + Math.floor(i / 2))]);
+      const wingIndex = Math.floor(i / 2);
+      slots.push([
+        u,
+        flankDc + Math.floor(wingIndex / flankWingRows),
+        side * (wingBase + wingIndex % flankWingRows),
+      ]);
     });
     addBandLine(plan.mountedRear, dc);
 
@@ -16550,14 +16576,27 @@ export class BattleScene {
       : Math.min(anchorCol, dragCol);
     const centerRow = Math.round((anchorRow + dragRow) / 2);
 
-    let dcCursor = 0;
+    const frontRanks = plan.mountedFront.length > 0
+      ? this._splitUnitsIntoRanks(plan.mountedFront, Math.ceil(plan.mountedFront.length / lateralSpan))
+      : [];
+    let dcCursor = frontRanks.length;
     let flankDc = 0;
     let maxHalfWidth = 0;
+
+    for (let r = 0; r < frontRanks.length; r++) {
+      const rankCol = frontCol + this._colOffForFormation(side, r);
+      frontRanks[r]!.forEach((u, i) => {
+        const row = this._deployLateralRow(i, frontRanks[r]!.length, centerRow, lateralSpan);
+        out.set(u.bu.id, this._clampDeployCell(rankCol, row));
+      });
+      maxHalfWidth = Math.max(maxHalfWidth, Math.ceil(frontRanks[r]!.length / 2));
+    }
 
     for (const band of plan.main) {
       if (band.role === plan.flankAtRole) flankDc = dcCursor;
       const rankSlices = this._splitUnitsIntoRanks(
-        band.units, this._deployLinesForRole(band.role),
+        band.units,
+        Math.max(this._deployLinesForRole(band.role), Math.ceil(band.units.length / lateralSpan)),
       );
       for (let r = 0; r < rankSlices.length; r++) {
         const rankUnits = rankSlices[r]!;
@@ -16573,17 +16612,20 @@ export class BattleScene {
       dcCursor += rankSlices.length;
     }
 
-    const wingBase = maxHalfWidth + 1;
-    const flankColOff = this._colOffForFormation(side, flankDc);
-    const flankCol = frontCol + flankColOff;
+    const wingBase = Math.max(maxHalfWidth, Math.floor(lateralSpan / 2)) + 1;
+    const flankWingRows = 3;
     plan.mountedFlank.forEach((u, i) => {
       const sideSign = i % 2 === 0 ? 1 : -1;
-      const row = centerRow + sideSign * (wingBase + Math.floor(i / 2));
-      out.set(u.bu.id, this._clampDeployCell(flankCol, row));
+      const wingIndex = Math.floor(i / 2);
+      const row = centerRow + sideSign * (wingBase + wingIndex % flankWingRows);
+      const rankCol = frontCol + this._colOffForFormation(side, flankDc + Math.floor(wingIndex / flankWingRows));
+      out.set(u.bu.id, this._clampDeployCell(rankCol, row));
     });
 
     if (plan.mountedRear.length > 0) {
-      const rearSlices = this._splitUnitsIntoRanks(plan.mountedRear, 1);
+      const rearSlices = this._splitUnitsIntoRanks(
+        plan.mountedRear, Math.ceil(plan.mountedRear.length / lateralSpan),
+      );
       for (let r = 0; r < rearSlices.length; r++) {
         const rankUnits = rearSlices[r]!;
         const rankDc = dcCursor + r;
@@ -16896,7 +16938,7 @@ export class BattleScene {
     }
     this._refreshDeploySelectionVisuals();
     this._updateRosterBar();
-    this._showOrderFeedback(mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
+    this._showOrderFeedback(mode === 'front' ? 'Konnica: przód' : mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
   }
 
   /**
@@ -17238,6 +17280,7 @@ export class BattleScene {
     // _replayBattle -> _initDeployUI mógł go odtworzyć zamiast auto-grupować.
     this._deployGroupSnapshot = new Map();
     this._deployAttackDirSnapshot = new Map();
+    this._deployCavalryModeSnapshot = new Map();
     for (const ru of [...this.atk, ...this.def]) {
       const frontCol = this.siegeWallCol >= 0
         ? (ru.side === 'atk' ? 2 : this.siegeWallCol)
@@ -17247,6 +17290,9 @@ export class BattleScene {
     for (const ru of this._playerRoster()) {
       if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
       this._deployAttackDirSnapshot.set(ru.bu.id, ru.attackDirection);
+      const mode = ru.groupId ? this._groupMeta.get(ru.groupId)?.cavalryMode : undefined;
+      this._deployCavalryModeSnapshot.set(ru.bu.id,
+        mode === 'front' || mode === 'flanks' || mode === 'rear' ? mode : this._deployCavalryMode);
     }
     this.deployPhase = false;
     this._clearAllSelection();
