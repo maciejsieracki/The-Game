@@ -1,3 +1,9 @@
+## ROBOCZA f28f212f -- 2026-11-06 -- FALA 606: SIEGE-NEARBY: sąsiedni stos nieoblegający nie jest blokowany; dołączanie do armii oblegającej poza miastem (testowa)
+
+- SIEGELOCK 218d7d5cf (siegeArmyGroupId w cities.ts)
+- Weryfikacja: testy siege-nearby-lock-join, army-merge-colocated, siege-blockade-no-recruit-reinforce 57 OK; audio-sidecar PASS
+- Limity: NIE_ZMIERZONO live Chromium
+
 ## ROBOCZA c7da556e -- 2026-11-06 -- FALA 605: TRUCE-IMPL: rozejm 5/10/15 wspólny dla AI i gracza; pokój po rozejmie wg siły; propozycja pokoju po wygaśnięciu (testowa)
 
 - TRUCEIMPL e7bf8acc8
