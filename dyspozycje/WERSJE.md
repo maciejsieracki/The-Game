@@ -6958,3 +6958,14 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent Evaluator and Final Control PASS; 24/24 proposal gate;41/41 AI-AI plus16mutants;96/96 fatigue;31/31 lifecycle;typecheckPASS; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: No task-specific live browser interaction measured; logic evidence uses actual modules plus main wiring review; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source cb5721d6d59ac2eabd242b47a058b18c91310f1f; manifestMD5 dd096ffdd6a5801dd647e96a4b90719b; SHA256 0737fc8b822fe81dd82c94b40a7547aa5c0d9e6d96ae42229f658b215e39c6fb; push/readback pending.
+
+
+## ROBOCZA c2945abc — 2026-11-10T20:57:23.981959+01:00 — FALA 613: Forty turns per era without overlap and Stone research costs
+
+- Era wars Stone/Bronze/Iron open after40 owner-era turns; active era war blocks newer era declarations for both parties; ordinary wars do not block; older pending Bronze stays ahead of Iron
+- Legacy missing entry metadata conservatively starts missing clocks at load turn; known timestamps and pending flags preserved
+- Research base costs: Garncarstwo40PN, Gospodarka wodna180PN, Koło180PN; tempo1/2/4, prerequisites and other costs unchanged; Brązownictwo remains180 awaiting clarification
+- Corrected both wikiS/wikiM for three technology entries via Markdown sources and regenerated bundle
+- Weryfikacja: Independent Evaluator and Final Control including followup PASS; Era delays55/0, alleras10/0, integrated peace lifecycle31/0, typecheckPASS; Research actualcost/tempo44/0; pottery prereq45/0; scopeproof only3cost fields; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: No full campaign loader roundtrip measured; migration helper runtime and source wiring reviewed; Irrecoverable legacy entry date conservatively initialized at load, so such saves wait40 additional turns; Brązownictwo480 request remains unconfirmed; its cost stays180; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source c02f78362d69efb069b62f69c47e1f9ec24f298e; manifestMD5 c2945abc797b52ff0677def86e5efbb9; SHA256 4f491ef3794f2afea5cb9b2ed134212fc2657c562995e27d27b807a0564c0ac0; push/readback pending.
