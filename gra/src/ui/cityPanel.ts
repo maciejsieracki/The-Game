@@ -3620,8 +3620,8 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   const actions = el('div', 'dc-note');
   actions.style.fontStyle = 'normal';
   actions.innerHTML = cpInlineIcons(
-    `<b>Podnieś Szczęście:</b> przesuń suwak handlu na <b>${HANDEL_ZAMOZNOSC_LABEL}</b> ` +
-    `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z handlu zamiast skarbca/nauki). ` +
+    `<b>Podnieś Szczęście:</b> przesuń suwak podatku na <b>${HANDEL_ZAMOZNOSC_LABEL}</b> ` +
+    `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z podatku zamiast skarbca/nauki). ` +
     'Długoterminowo: Teatr, Łaźnia, wyższe W.<br><br>' +
     `<b>Podnieś Prawo:</b> stacjonuj wojsko w mieście (obecnie ${gCount} jedn. w garnizonie) ` +
     'lub rozwijaj administrację lokalną (Dom Starszyzny → Dwór Zarządcy → Pretorium; ' +
@@ -4862,7 +4862,7 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
 function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Podział Handlu</span>'));
+  mount.appendChild(el('div', 'ptitle', '<span>Podział podatku</span>'));
   appendPodzialHandlu(mount, city, view, data);
 }
 
@@ -4984,7 +4984,7 @@ function buildWealthDetailCard(
     ? 'Maks. poziom w tej epoce'
     : (etaW != null
       ? `W${ws.poziom + 1} za ok. ${etaW} ${tury(etaW)} przy ~${zamIn} 💰/turę do puli (udział „Zamożność” w ${daninaLblGen})`
-      : 'Brak wpływu do puli — zwiększ udział „Zamożność” w podziale handlu'));
+      : 'Brak wpływu do puli — zwiększ udział „Zamożność” w podziale podatku'));
 
   appendDetailSection(card, 'Wzory');
   appendDetailFormula(card, `×Skarb = max(1, 1 + (W−1) × ${p.mnoznikNaPoziom})`);
@@ -6035,13 +6035,13 @@ function buildTopBarNaukaDetailCard(
   appendDetailSection(card, 'Skąd bierze się nauka');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Pola i budynki', maBiblioteka ? 'Biblioteka + pola z nauką' : 'Głównie pola z nauką + budynki');
-  gridDetailRow(g1, 'Udział handlu', `${split.procentNauka}% handlu netto → nauka`);
-  if (est.nauka) gridDetailRow(g1, '→ z handlu (szac.)', `~+${est.nauka}`);
+  gridDetailRow(g1, 'Udział podatku', `${split.procentNauka}% podatku netto → nauka`);
+  if (est.nauka) gridDetailRow(g1, '→ z podatku (szac.)', `~+${est.nauka}`);
 
-  appendDetailFormula(card, 'nauka += plony + budynki + % handlu');
+  appendDetailFormula(card, 'nauka += plony + budynki + % podatku');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Panel badań (mapa) — wydajesz bank na tech.',
-    'Podział handlu → więcej % na Naukę = szybsze tech, mniej złota.',
+    'Podział podatku → więcej % na Naukę = szybsze tech, mniej złota.',
     'Buduj Bibliotekę, przypisuj 👤 na pola z nauką.',
   ]);
   return card;
@@ -7950,7 +7950,8 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
   const groups = groupBuiltBuildingIds(built, data.buildings);
   for (const { grupa, ids } of groups) {
     if (ids.length === 0) continue;
-    appendDetailSection(card, grupa);
+    // Etykieta wyświetlana (klucz `grupa` z danych bez zmian — patrz BUILDING_GROUP_ORDER).
+    appendDetailSection(card, grupa === 'Handel i pieniądz' ? 'Podatek i pieniądz' : grupa);
     const list = el('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:0.1em;margin-bottom:0.28em;';
     for (const id of ids) appendOwnedBuildingRow(list, id, data, city);
@@ -11312,30 +11313,30 @@ function buildHandelDetailCard(
     gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblGen} netto)`);
   }
 
-  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
+  appendDetailFormula(card, `podatek brutto = Σ ${daninaLblGen} pól`
     + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
   if (maTargowisko) appendDetailFormula(card, 'Targowisko: premia procentowa zwiększa dochód ze szlaków; te wpływy trafiają do skarbca osobno, poza podatkiem miejskim.');
-  appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
-  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
+  appendDetailFormula(card, `strata korupcji = podatek brutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
+  appendDetailFormula(card, 'podatek netto = podatek brutto − strata korupcji' + (
     mennicaAktywna
       ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
       : mennicaSpiZBrakuZlota
         ? ' × ×1 (Mennica śpi — brak Złota w magazynie)'
         : ' × ×1 (brak Waluty lub Mennicy)'
   ));
-  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
-  appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
-  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
+  appendDetailFormula(card, 'nauka = floor(podatek netto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, 'skarb z podatku = floor(podatek netto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(podatek netto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
 
   appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa dochód ze szlaków; przychód ten trafia w całości do skarbca poza podatkiem miejskim.' : 'Bez Targowiska — szlaki nie otrzymują premii Targowiska.',
     aktywneTrasyCount > 0
-      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
-      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
-    `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
+      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do podatku brutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do podatku brutto.',
+    `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → podatek netto.`,
     `Jeśli bramka Mennica + Waluta + dostęp do Złota jest aktywna, po korupcji mnożnik ${mennicaMnoznikTxt} zwiększa lokalny podatek miejski przed podziałem suwakami; szlaki handlowe są rozliczane osobno i nie podlegają temu mnożnikowi.`,
-    `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
+    `Podziel podatek netto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
       ? `Mennica + Waluta mnożą lokalny podatek ${daninaLbl} ${mennicaMnoznikTxt} przed podziałem suwakami; wpływy ze szlaków pozostają osobne.`
       : mennicaSpiZBrakuZlota

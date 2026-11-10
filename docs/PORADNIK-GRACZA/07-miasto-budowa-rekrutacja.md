@@ -193,7 +193,7 @@ Dwa osobne mechanizmy działają razem:
 Budynki dają **stały przyrost** na turę (żywność, nauka, pieniądz…) albo **efekty wojskowe po wizycie** w mieście:
 - **Kuźnie** (ścieżka A): **+15% Pancerza** na jednostkę, która **odwiedziła** miasto z kuźnią
 - **Koszary / Akademia wojskowa / Warsztat** (ścieżka B): **+20% / +20% / +10%** parametrów miękkich (max **+50%** łącznie)
-- **Targowisko:** **pieniądz na turę** (+5/+8/+11 ¤), nie mnożnik handlu
+- **Targowisko:** **podatek na turę** (+5/+8/+11 ¤) oraz premia **+50%** (poziom normalny) **do dochodu z tras handlowych** — nie mnoży lokalnego podatku
 - **Mury / Cytadela / Baszta:** **% Obrony** broniącym się (+200% / +100% / +100% — stackują się do +400%)
 
 Kumulują się z suwakami z Części VI.

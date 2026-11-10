@@ -168,12 +168,32 @@ check('[P] Owce — zdanie: „żywność, Praca i podatek z pól trudnych do up
 check('[P] Irygacja', title('Gospodarka wodna', /^Irygacja/) === 'Irygacja: +5 żywności, +2 Pracy, +2 podatku przy rzece', title('Gospodarka wodna', /^Irygacja/));
 check('[P] Droga', title('Koło', /^Droga: \+/) === 'Droga: +2 podatku na polu', title('Koło', /^Droga: \+/));
 check('[P] Kopalnia miedzi', title('Brązownictwo', /^Kopalnia miedzi/) === 'Kopalnia miedzi: +20 rudy na turę, +5 podatku', title('Brązownictwo', /^Kopalnia miedzi/));
-check('[P] Łodzie rybackie', title('Żegluga', /^Łodzie/) === 'Łodzie rybackie: +2 żywności, +3 Pracy, +3 podatku', title('Żegluga', /^Łodzie/));
+check('[P] Łodzie rybackie', title('Żegluga', /^Łodzie/) === 'Łodzie rybackie: +6 żywności, +6 Pracy, +6 podatku', title('Żegluga', /^Łodzie/));
 check('[P] Mennica (karta odkrycia)', title('Waluta', /^Mennica: ×/) === 'Mennica: ×1,50 podatku w każdym mieście', title('Waluta', /^Mennica: ×/));
 check('[P] Kopalnia złota', title('Waluta', /^Kopalnia złota/) === 'Kopalnia złota: +10 podatku i +1 złota na turę', title('Waluta', /^Kopalnia złota/));
 check('[P] Droga brukowana', title('Drogi brukowane', /^Droga brukowana: \+/) === 'Droga brukowana: +3 podatku na polu (Droga: +2)', title('Drogi brukowane', /^Droga brukowana: \+/));
 check('[P] Mennica (karta budynku): „Mnoży podatek wszystkich miast …”', /^Mnoży podatek wszystkich miast przed podziałem/.test(bldCards.mennica.top5[0].zdanie), bldCards.mennica.top5[0]);
 check('[P] Handel (tech): Mennica „mnoży podatek wszystkich miast”', techCards['Handel'].top5.some((i) => i.zdanie === 'Prowadzi do Mennicy, która mnoży podatek wszystkich miast.'));
+
+// ---------------------------------------------------------------- [C] R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1: klasa C
+// Panel podziału = PODATEK (suwaki, formuły, tooltipy); identyfikatory w kodzie bez zmian.
+const cityPanelC = read('src/ui/cityPanel.ts');
+check('[C] cityPanel: brak „Podział Handlu”/„podziale handlu”/„suwak handlu”/„Udział handlu”', !/Podział Handlu|podziale handlu|suwak handlu|Udział handlu|% handlu netto/.test(cityPanelC));
+check('[C] cityPanel: brak „z handlu (szac.)”/„skarb_z_handlu”/„nauka += … % handlu”', !/z handlu \(szac\.\)|skarb_z_handlu|% handlu\b/.test(cityPanelC));
+check('[C] cityPanel: formuły wyświetlane jako „podatek brutto/netto” (brak „handelBrutto =”/„handelNetto =”)', !/handelBrutto =|handelNetto =|strataKorupcji =/.test(cityPanelC) && /podatek brutto = Σ/.test(cityPanelC) && /podatek netto = podatek brutto/.test(cityPanelC));
+check('[C] cityPanel: premia tras pozostaje „Handlu” (klasa B)', /Premia za trasy handlowe/.test(cityPanelC) && /do podatku brutto \(\$\{aktywneTrasyCount\}/.test(cityPanelC));
+check('[C] cityPanel: grupa „Handel i pieniądz” wyświetlana jako „Podatek i pieniądz” (klucz danych bez zmian)', /grupa === 'Handel i pieniądz' \? 'Podatek i pieniądz' : grupa/.test(cityPanelC));
+
+// ---------------------------------------------------------------- [D] R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1: podpis trybu wymiany surowców
+const basket = read('src/ui/diplomacyTradeBasket.ts');
+check('[D] koszyk: podpis „Jednorazowo — nie pojawi się w Aktywnych traktatach”', basket.includes('Jednorazowo — nie pojawi się w Aktywnych traktatach'));
+check('[D] koszyk: podpis „Co turę — widoczna w Aktywnych traktatach”', basket.includes('Co turę — widoczna w Aktywnych traktatach'));
+
+// ---------------------------------------------------------------- [P2] poradniki 45 i 07 zgodne z silnikiem (Targowisko)
+const p45 = read('../docs/PORADNIK-GRACZA/45-katalog-budynkow.md');
+const p07 = read('../docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md');
+check('[P2] poradnik 45: Targowisko = premia do dochodu z tras, nie mnoży podatku', /premia do dochodu z tras handlowych/.test(p45) && !/nie mnożnik handlu/.test(p45) && !/Bez \*\*mnożnika %\*\* handlu/.test(p45));
+check('[P2] poradnik 07: Targowisko — +50% tylko do tras', /\+50%\*\* \(poziom normalny\) \*\*do dochodu z tras handlowych\*\*/.test(p07) && !/nie mnożnik handlu/.test(p07));
 
 // ---------------------------------------------------------------- [G] generatory zgodne z danymi
 for (const gen of ['gen-tech-cards-top5.cjs', 'gen-building-cards-top5.cjs']) {
