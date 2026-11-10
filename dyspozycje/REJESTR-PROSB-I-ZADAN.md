@@ -9569,3 +9569,7 @@ SztukawojennaTop3: „Odblokowuje jednostki epoki Żelaza”, bezliczby — kwal
 
 ## R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1 — 2026-11-10
 STATUS: ZAREJESTROWANE. GOAL: ilości0 i dwa globalne przyciski Rekrutuj wszystko w Armia/rekrutacja per miasto. Właściciel potwierdził screenshot Ateny/Sparta. Oddzielny panel HUD pozostaje. Dispatch: `autobot/runs/R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1/00-dispatch.md`.
+
+
+## R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1 — 2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: konnica/rydwany: dodać Zprzodu, domyślnie Zboku; sprawdzić niedziałające faktyczne rozstawienie. Screenshot/czatwłaściciela. Run:autobot/runs/R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1.

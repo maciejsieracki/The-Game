@@ -1,0 +1,7 @@
+# R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1
+STATUS: REGISTERED1/11
+DOMAIN: GAME/UI
+GOAL: Zgłoszenie screenshot Konnica (dyktowane zakonnicy): w ustawieniach konnicy/rydwanów brakuje „Z przodu”. Dodać opcję „Z przodu” oprócz „Z boku” i „Z tyłu”. Domyślna „Z boku”. Właściciel zgłasza też że domyślne skrzydła nie działają: sprawdzić pełną ścieżkę wyboru→planformacji→rozstawienie→ruch/atak. Zachować zasadę skrzydeł blisko głównejarmii, nie przy krawędziach. Sprawdzić zwykłąkonnicę, rydwany wręcz/pociskowe, wodza typu konnego, obie strony i mieszaną dużą armię. Nie zgadywać nowych parametrów balansu. Nie przerabiać całej walki poza powiązaną przyczyną.
+MODEL: Codex gpt-6-luna high Operator/Evaluator/FC osobno sekwencyjnie,4tematymax.
+ALLOWLIST: początkowo diagnoza; przededycją dopisać konkretne pliki UI/typów planu formacji/placement i testów do tego run. Sprawdzić zapis/odczyt, stare wartości i fallback, brak nadpisywania ręcznego wyboru przez domyślną. Docelowe rozstawienie zgodne z rzeczywistym kierunkiem armii nie ekranowymleft/right; nie dopisać samej etykiety bez działania.
+TESTY: actualformationmodel+mixedlargearmy front/side/rear/default/legacy/load i zmiana wyboru, liveChromiumUI+mutation wg procesu, typecheck. Jedna ciężka przeglądarka, slotu zażądać przeduruchomieniem. /usr/bin/chromium dostępny, file:// blokowane, użyć HTTP. Operatorcommitwłasnykandydat, bezpush/deploy/merge. Po niezależnychkontrolach main→Robocza→push/readback→cleanup11.
