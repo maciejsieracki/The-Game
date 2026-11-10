@@ -1180,7 +1180,7 @@ import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pe
 import {
   aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
-  computeTickZaufanieDelta,
+  computeTickZaufanieDelta, sharedBorderPenaltyForEpochs,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   isOwnerAtWarInRelations,
@@ -22493,6 +22493,9 @@ async function boot(): Promise<void> {
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
+        karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
+          empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
+        ),
         wiarygodnoscSelf: atWar || !playerInPair
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
@@ -22518,6 +22521,7 @@ async function boot(): Promise<void> {
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
       const sameTypCiv = bothCivsKnown && civA === civB;
+      const pairTickCtx = buildDiplomacyTickCtxForPair(a, b);
       const playerMpOtherId = isHuman(a) ? b : (isHuman(b) ? a : -1);
       const isPlayerSameCivCityState =
         playerMpOtherId >= 0 && typCityCopyOwners.has(playerMpOtherId) && sameTypCiv;
@@ -22530,13 +22534,12 @@ async function boot(): Promise<void> {
         }),
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
-        karaWspolnaGranica:
-          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
-          && ownersShareLandBorderLive(a, b),
+        karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
+        karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
         miastoPanstwoSameCiv: isPlayerSameCivCityState,
         roznicaKulturowa: bothCivsKnown && sameCulture === false,
-        wiarygodnoscSelf: buildDiplomacyTickCtxForPair(a, b).wiarygodnoscSelf,
+        wiarygodnoscSelf: pairTickCtx.wiarygodnoscSelf,
         atWar,
       };
       return buildRelationBreakdown(log, continuous, dip);
@@ -28571,6 +28574,163 @@ async function boot(): Promise<void> {
       closeAudience: (): void => { hideDiplomacyAudience(); },
       /** SETUP testu: mapa playtest kończy grę zwycięstwem w pierwszym EOT; hak wyłącza tylko ten warunek. */
       suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
+    };
+
+    // R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1 — WYŁĄCZNIE live-test hook.
+    // Setup dodaje kopie istniejących rekordów City do aktywnego świata i wybiera
+    // koordynaty wyłącznie wtedy, gdy REALNE ownersShareLandBorderLive potwierdzi
+    // wspólną granicę. Wszystkie odczyty/preview/breakdown/tick poniżej wołają
+    // istniejące funkcje produkcyjne; hak nie zna stawek ani nie przelicza reguł.
+    if (
+      new URLSearchParams(location.search).get('civTest') === '1'
+    ) (window as any).__borderEraPenaltyRuntimeTestDebug = {
+      ownerIds: (): number[] => allPowerOwnerIds().filter(id => id > 0 && !isBarbarian(id)
+        && !isCityStateOwner(id) && !isHuman(id) && aiOwnerCivMap.has(id)),
+      setupFixture: (ownerA: number, ownerB: number): Record<string, unknown> => {
+        if (ownerA === ownerB || isHuman(ownerA) || isHuman(ownerB)
+          || !aiOwnerCivMap.has(ownerA) || !aiOwnerCivMap.has(ownerB)) {
+          throw new Error('fixture wymaga dwóch różnych ownerów zarejestrowanych w rosterze AI');
+        }
+        const initialSharedLandBorder = ownersShareLandBorderLive(ownerA, ownerB);
+        const template = cities[0];
+        if (!template) throw new Error('fixture wymaga co najmniej jednego realnego rekordu miasta');
+        const occupied = new Set(cities.map(c => `${c.q},${c.r}`));
+        const landTiles = Object.values(map.hexes).filter(h => !isWaterTerrain(h.terenBazowy));
+        let selected: Array<{ q: number; r: number }> | null = null;
+        let nextId = 0;
+        for (const center of landTiles) {
+          const coords = [center.coords, ...hexNeighborCoords(center.coords.q, center.coords.r)]
+            .filter(p => map.hexes[`${p.q},${p.r}`] && !isWaterTerrain(map.hexes[`${p.q},${p.r}`]!.terenBazowy)
+              && !occupied.has(`${p.q},${p.r}`));
+          if (coords.length < 6) continue;
+          const trial = coords.slice(0, 6);
+          const added = trial.map((p, i) => ({
+            ...template,
+            id: `border-era-fixture-${ownerA}-${ownerB}-${nextId++}`,
+            ownerId: i < 3 ? ownerA : ownerB,
+            q: p.q,
+            r: p.r,
+            population: Math.max(3, template.population),
+          }));
+          cities.push(...added);
+          const shares = ownersShareLandBorderLive(ownerA, ownerB);
+          cities.splice(cities.length - added.length, added.length);
+          if (shares) { selected = trial; break; }
+        }
+        if (!selected) throw new Error('fixture nie znalazł sześciu lądowych pól z granicą ownerów');
+        selected.forEach((p, i) => cities.push({
+          ...template,
+          id: `border-era-fixture-${ownerA}-${ownerB}-${i}`,
+          ownerId: i < 3 ? ownerA : ownerB,
+          q: p.q,
+          r: p.r,
+          population: Math.max(3, template.population),
+        }));
+        return { ownerA, ownerB, initialSharedLandBorder, fixtureCityCountA: cities.filter(c => c.ownerId === ownerA).length,
+          fixtureCityCountB: cities.filter(c => c.ownerId === ownerB).length,
+          sharedLandBorder: ownersShareLandBorderLive(ownerA, ownerB) };
+      },
+      moveFixtureAwayForTest: (ownerA: number, ownerB: number): boolean => {
+        const aCities = cities.filter(c => c.ownerId === ownerA);
+        const bCities = cities.filter(c => c.ownerId === ownerB);
+        if (aCities.length <= 2 || bCities.length <= 2) return false;
+        const occupied = new Set(cities.filter(c => c.ownerId !== ownerB).map(c => `${c.q},${c.r}`));
+        const land = Object.values(map.hexes).filter(h => !isWaterTerrain(h.terenBazowy)
+          && !occupied.has(`${h.coords.q},${h.coords.r}`)
+          && aCities.every(a => hexDistance(h.coords.q, h.coords.r, a.q, a.r) > 1))
+          .sort((x, y) => {
+            const minX = Math.min(...aCities.map(a => hexDistance(x.coords.q, x.coords.r, a.q, a.r)));
+            const minY = Math.min(...aCities.map(a => hexDistance(y.coords.q, y.coords.r, a.q, a.r)));
+            return minY - minX;
+          });
+        if (land.length < bCities.length) return false;
+        bCities.forEach((city, index) => { city.q = land[index]!.coords.q; city.r = land[index]!.coords.r; });
+        return !ownersShareLandBorderLive(ownerA, ownerB);
+      },
+      setOwnerEraForTest: (ownerId: number, era: number): void => {
+        if (isHuman(ownerId)) throw new Error('epoka testowa oczekuje ownera AI');
+        const bounded = Math.max(1, Math.min(10, Math.trunc(era)));
+        // Keep the runtime fixture internally consistent with loadGameFromSlot's
+        // production syncOwnerEraFromResearch pass. A forced era map alone would
+        // be recomputed away on load. Seed the actual AI research/wonder state
+        // needed to justify the requested era; no era formula is duplicated here.
+        const startEra = ownerStartEraByOwner.get(ownerId) ?? gameStartEra();
+        // Replace the relevant research/wonder state instead of layering on the
+        // current AI progress, so each target era has a reproducible save state.
+        const researched = new Set<string>();
+        const civType = civTypeForOwner(ownerId);
+        for (const tech of data.tech) {
+          const era = epochNumber(tech.Epoka);
+          if (era != null && era >= startEra && era < bounded) researched.add(tech.Technologia);
+        }
+        if (!isCityStateOwner(ownerId)) {
+          const fixtureWonderIds = new Set<string>();
+          for (let eraIndex = startEra; eraIndex <= 10; eraIndex++) {
+            for (const wonderId of eraOwnWonderIds(civType, eraIndex)) fixtureWonderIds.add(wonderId);
+          }
+          completedWorldWonders = completedWorldWonders.filter(id => !fixtureWonderIds.has(id));
+          for (let eraIndex = startEra; eraIndex < bounded; eraIndex++) {
+            for (const wonderId of eraOwnWonderIds(civType, eraIndex)) {
+              if (!completedWorldWonders.includes(wonderId)) completedWorldWonders.push(wonderId);
+            }
+          }
+        }
+        aiResearchDone.set(ownerId, researched);
+        ownerEraByOwner.set(ownerId, bounded);
+      },
+      ownerEra: (ownerId: number): number => empireEpochForOwner(ownerId),
+      syncOwnerEraForTest: (ownerId: number): number => {
+        syncOwnerEraFromResearch(ownerId);
+        return empireEpochForOwner(ownerId);
+      },
+      ownerEraStartForTest: (ownerId: number): number => ownerStartEraByOwner.get(ownerId) ?? gameStartEra(),
+      ownerEraFixtureStateForTest: (ownerId: number): Record<string, unknown> => {
+        const civType = civTypeForOwner(ownerId);
+        const researched = aiResearchDone.get(ownerId) ?? new Set<string>();
+        return {
+          civType,
+          startEra: ownerStartEraByOwner.get(ownerId) ?? gameStartEra(),
+          researchCount: researched.size,
+          researched: [...researched],
+          era2Wonders: eraOwnWonderIds(civType, 2),
+          completedWonders: completedWorldWonders.slice(),
+        };
+      },
+      pairEvidence: (a: number, b: number): Record<string, unknown> => {
+        const ctx = buildDiplomacyTickCtxForPair(a, b);
+        const relation = getDiploRelation(a, b);
+        const previewDelta = computeTickZaufanieDelta(ctx, relation.status === 'wojna');
+        const breakdown = getRelationBreakdown(a, b);
+        const borderRow = [...breakdown.pozytywne, ...breakdown.negatywne]
+          .find(row => row.label === 'Kara za wspólną granicę');
+        return { ownerA: a, ownerB: b, eraA: empireEpochForOwner(a), eraB: empireEpochForOwner(b),
+          sharedLandBorder: ctx.karaWspolnaGranica, rate: ctx.karaWspolnaGranicaDelta,
+          previewDelta, breakdownValue: borderRow?.value ?? null, trust: relation.zaufanie };
+      },
+      applyProductionTick: (a: number, b: number): Record<string, unknown> => {
+        const before = getDiploRelation(a, b);
+        const after = tickDiplomacy(before as any, buildDiplomacyTickCtxForPair(a, b)) as any;
+        setDiploRelation(a, b, after);
+        return { beforeTrust: before.zaufanie, afterTrust: after.zaufanie, delta: after.zaufanie - before.zaufanie };
+      },
+      quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'border-era-runtime-test')).ok,
+      readSavedFixtureState: async (slot: string, ownerIds: number[]): Promise<Record<string, unknown>> => {
+        const saved = await loadFromLocal(slot);
+        if (!saved) return { found: false };
+        return {
+          found: true,
+          roster: (saved.meta?.aiOwnerCivMap as Array<[number, string]> | undefined)
+            ?.filter(([id]) => ownerIds.includes(id)) ?? [],
+          eras: (saved.meta?.ownerEraByOwner as Array<[number, number]> | undefined)
+            ?.filter(([id]) => ownerIds.includes(id)) ?? [],
+          startEras: (saved.meta?.ownerStartEraByOwner as Array<[number, number]> | undefined)
+            ?.filter(([id]) => ownerIds.includes(id)) ?? [],
+          research: (saved.aiResearchDone as Array<[number, string[]]> | undefined)
+            ?.filter(([id]) => ownerIds.includes(id)) ?? [],
+          completedWorldWonders: (saved.meta?.completedWorldWonders as string[] | undefined) ?? [],
+        };
+      },
+      loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
     };
 
     // R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (część B): hak WYŁĄCZNIE do
@@ -40663,6 +40823,9 @@ async function boot(): Promise<void> {
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
                     cities.filter(c => c.ownerId === ME()).length > 2 &&
                     ownersShareLandBorderLive(ownerId, ME()),
+                  karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
+                    empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
+                  ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);

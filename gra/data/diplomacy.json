@@ -26,6 +26,8 @@
     "wspolnaReligia_zaufanie_perTura": 0.5,
     "odmiennaReligia_zaufanie_perTura": -0.5,
     "ekspansjaGranica_zaufanie_perTura": -2,
+    "ekspansjaGranicaBraz_zaufanie_perTura": -3,
+    "ekspansjaGranicaZelazo_zaufanie_perTura": -4,
     "urazyHistoryczne_zaufanie_perTura": -2,
     "progSojuszZaufanie": 90,
     "progWymianaTechZaufanie": 70,
