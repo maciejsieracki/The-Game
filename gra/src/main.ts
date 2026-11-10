@@ -541,7 +541,7 @@ import {
 } from './game/siegeAi';
 import { planLastStandSortie, type LastStandAttackCmd } from './game/siege-last-stand';
 import {
-  advanceSiegeMachineBuild,
+  cancelUnpaidLegacySiegeMachineQueue,
   clearSiegeMachines,
   consumeReadyMachines,
   ensureSiegeMachines,
@@ -18050,16 +18050,10 @@ async function boot(): Promise<void> {
 
     function tickSiegeMachinesForCity(city: City): void {
       if (!city.oblegane) return;
-      const n = countBesiegersAdjacent(city);
-      const built = advanceSiegeMachineBuild(city, n);
-      if (built > 0) {
-        const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
-        if (bId !== undefined) {
-          const st = siegeAiStateByKey.get(siegeAiKey(bId, city.id)) ?? { ...EMPTY_SIEGE_AI_STATE };
-          st.machinesReady = city.siegeMachines?.ready.length ?? 0;
-          siegeAiStateByKey.set(siegeAiKey(bId, city.id), st);
-        }
-      }
+      // Legacy workshop queue entries have no payment/tech/quota receipt.
+      // Cancel them before any siege/AI path can turn them into free machines.
+      // The already-ready array is intentionally retained for old saves.
+      cancelUnpaidLegacySiegeMachineQueue(city);
     }
 
     function appendReadyMachinesToRoster(

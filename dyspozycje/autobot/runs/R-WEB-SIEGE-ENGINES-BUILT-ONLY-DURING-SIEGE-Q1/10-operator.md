@@ -1,5 +1,9 @@
 # Operator report — siege engines built only during siege
 
+## Evaluator correction allowlist (before correction)
+
+This same-ID correction is limited to `gra/src/game/siegeMachines.ts` (cancel unpaid legacy pending entries while retaining `ready`), `gra/src/main.ts` (wire the active-siege turn tick to cancellation rather than free progress), `gra/tools/siege-engines-built-during-siege-test.cjs` (actual save-module round trips and pending/ready/runtime assertions), and this run's operator/defense evidence. The correction does not change balances, quota, costs, or the new paid-build API.
+
 ## Dispatch and confirmed rules read
 
 Read `00-dispatch.md`, including confirmed additions 1–2 and the 2026-11-10 correction. The four `Typ: Siege` units are built in a live siege against an enemy at war, with each researched type available directly. Pay money and the unit card's resource from the besieger owner's treasury and stockpile at build time. The per-turn pool is `floor(nonSiegeArmyUnits / 10)` with the configured data parameter `unitsPerSiegeEngine = 10`, minus engines built during this turn. There is no fixed maximum; armies below ten qualify for zero. AI uses the same availability, gates, and costs. Existing save units remain intact.
