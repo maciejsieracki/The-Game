@@ -1,3 +1,9 @@
+## ROBOCZA c49dad83 -- 2026-11-06 -- FALA 593: DIPLABELS: Rekruci z dopiskiem jedn., Obywatele zamiast Ludność, doprecyzowany dopisek limitu wojennego (testowa)
+
+- DIPLABELS 73be8d788
+- Weryfikacja: diplomacy-display 44/0, real-render Chromium 17/0, recruits-level 22/22, tsc 0, sidecar PASS
+- Limity: tooltip Rekruci bez liczb (wzór); render karty listy NIE_ZMIERZONO; REPIN Rust UI
+
 ## ROBOCZA 9bb97442 -- 2026-11-06 -- FALA 592: CITREC: karta listy dyplomacji pokazuje Rekruci (pełne jednostki, bieżąca/maks.) (testowa)
 
 - CITREC 01238e0cb (+allowlista main.ts, diplomacyPanel.ts)
