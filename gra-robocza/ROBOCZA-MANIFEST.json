@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication36e52cc82; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "efca99d547572228b8367878e777a391",
   "bundleSha256": "a5eb6a879cd44e78129d163d5d2146781fece3a94d0c2479cd8f77ec5e69f976",

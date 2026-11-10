@@ -1,0 +1,15 @@
+{
+  "stage": 11,
+  "wave": 610,
+  "publication": "36e52cc82",
+  "source": "b314bbe1ace4f1902615846081a5354a197f3e5b",
+  "md5": "efca99d547572228b8367878e777a391",
+  "readback": "fresh git fetch origin/main bundle+manifest+START byte equality PASS; no HTTP Raw claim",
+  "audio": "HTTP runtime PASS present/absent; 3packs MD5 unchanged; originalfilegateINFRA",
+  "limits": [
+    "Offline file:// audio acceptance INFRA blocked, not claimedPASS",
+    "Siege specific live campaign/browser remains NIE_ZMIERZONO",
+    "UI count coverage JSDOM, wholeUI audit PARTIAL"
+  ],
+  "parentAudit": "N/A"
+}
