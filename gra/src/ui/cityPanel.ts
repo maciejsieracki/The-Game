@@ -10403,6 +10403,14 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     headEl.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;gap:0.35em;';
     const left = el('span', '');
     left.textContent = 'Zarządzanie polami';
+    if (tryb === 'reczny') {
+      // R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: wyraźny znacznik trybu ręcznego.
+      const manualBadge = el('span', 'okolica-manual-badge');
+      manualBadge.textContent = 'Tryb ręczny';
+      manualBadge.title = 'Obywatele nie są przydzielani automatycznie. Przydzielaj ręcznie: klik heksu = +👤, PPM = −👤.';
+      manualBadge.style.cssText = 'margin-left:0.45em;font-size:0.72em;font-weight:bold;padding:0 0.35em;border:1px solid currentColor;border-radius:4px;';
+      left.appendChild(manualBadge);
+    }
     headEl.appendChild(left);
     const infoLink = el('button', 'okolica-info-link gold');
     infoLink.type = 'button';

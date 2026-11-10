@@ -72,7 +72,9 @@ const cost = b => b.koszt_surowce || {};
 ok(!('cegla' in cost(byId.get('cegielnia'))), 'Cegielnia nie kosztuje cegly');
 const garn = techByName.get('Garncarstwo');
 ok(garn.Poziom === 1, `Garncarstwo ma Poziom 1 (ma: ${garn.Poziom})`);
-ok(prereqs(garn).length === 0, 'Garncarstwo bez prereq');
+// R-WEB-TECH-POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw Kamienia (Obróbka drewna, Rolnictwo, Łowiectwo, Oswojenie zwierząt).
+ok(prereqs(garn).length === 4 && ['Obróbka drewna', 'Rolnictwo', 'Łowiectwo', 'Oswojenie zwierząt'].every((x) => prereqs(garn).includes(x)),
+  `Garncarstwo wymaga 4 podstaw (ma: ${prereqs(garn).join(', ')})`);
 ok(!hasCycle(), 'drzewko technologii bez cyklu prereq');
 
 // 2-3. Cegla nie wczesniej niz Cegielnia

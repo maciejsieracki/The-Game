@@ -2,7 +2,7 @@
  * diploListHud.ts — lista cywilizacji do dyplomacji (toolbar tb-diplomacy).
  */
 
-import { formatDiploCivListLines } from '../game/diplomacy-display';
+import { formatDiploCivListLines, RECRUITS_UNITS_TOOLTIP_PL } from '../game/diplomacy-display';
 import { tierLabel } from './diplomacyPanel';
 import {
   civLeaderMedallionHtmlById,
@@ -294,6 +294,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         const stats = document.createElement('div');
         stats.className = 'dl-meta';
         stats.textContent = playerSummary.detailLine;
+        if (playerSummary.detailLine.includes('Rekruci: ')) stats.title = RECRUITS_UNITS_TOOLTIP_PL;
         body.appendChild(stats);
       }
       if (playerSummary.metaLine) {
@@ -356,6 +357,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
           const stats = document.createElement('div');
           stats.className = 'dl-meta';
           stats.textContent = e.detailLine;
+          if (e.detailLine.includes('Rekruci: ')) stats.title = RECRUITS_UNITS_TOOLTIP_PL;
           body.appendChild(stats);
         }
         if (e.perspectiveLine) {

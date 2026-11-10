@@ -23,20 +23,6 @@
       "Historia": "Umiejętność systematycznego ścinania, ciosania i łączenia drewna należy do najstarszych ludzkich technik i wynaleziono ją niezależnie na wielu kontynentach już w epoce kamienia, gdy proste narzędzia z krzemienia i kości pozwoliły obrabiać pnie na opał, broń i szkielety szałasów. Z czasem powstały topory, dłuta i piły, a drewno stało się materiałem budowlanym numer jeden — z niego stawiano domy, mosty, wozy i pierwsze statki. Drewno miało też przewagę nad kamieniem: było lekkie, elastyczne i stosunkowo łatwe w obróbce nawet prostymi narzędziami, dzięki czemu społeczności mogły szybko rozbudowywać swoje osady. Ciekawostka: niektóre techniki łączenia drewna na tzw. jaskółczy ogon, bez użycia gwoździ, przetrwały w ciesielstwie niemal niezmienione od tysięcy lat."
     },
     {
-      "Technologia": "Garncarstwo",
-      "Epoka": "Kamień",
-      "Poziom": 1,
-      "Dostęp do surowca.": "Dostęp do glina",
-      "wymagany budynek": null,
-      "Wymaga (prereq)": "—",
-      "Odblokowuje surowiec.": "cegła, glina, sol",
-      "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
-      "Koszt nauki": 40,
-      "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli",
-      "Historia": "Wypalanie gliny na trwałe naczynia pojawiło się niezależnie w wielu regionach świata w okresie neolitu, gdy osiadłe społeczności rolnicze potrzebowały sposobu na przechowywanie ziarna, wody i oliwy. Najstarsze znane naczynia gliniane datuje się na ponad 20 tysięcy lat wstecz, choć masowa produkcja garncarska rozwinęła się dopiero wraz z uprawą roślin i potrzebą magazynowania nadwyżek żywności. Wynalazek koła garncarskiego, które pojawiło się znacznie później, pozwolił rzemieślnikom formować naczynia symetryczne i w większej liczbie, co uczyniło garncarstwo jednym z pierwszych wyspecjalizowanych zawodów w historii. Skorupy ceramiczne są dziś jednym z najcenniejszych źródeł wiedzy archeologów, bo glina — w przeciwieństwie do drewna czy tkanin — przetrwała tysiąclecia niemal nienaruszona, pozwalając datować i odtwarzać życie dawnych kultur."
-    },
-    {
       "Technologia": "Murarstwo",
       "Epoka": "Kamień",
       "Poziom": 2,
@@ -105,6 +91,20 @@
       "Uwagi": "tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
       "Odblokowuje ulepszenie terenu": "Trzoda, Owce, Lama",
       "Historia": "Udomowienie dzikich zwierząt — psów jako pierwszych towarzyszy łowców, potem owiec, kóz, bydła i świń — zachodziło niezależnie w wielu regionach świata na przestrzeni tysięcy lat, począwszy od schyłku epoki lodowcowej. Zwierzęta hodowlane dostarczały ludziom stałego źródła mięsa, mleka, wełny i skór bez konieczności polowania, a niektóre gatunki, jak woły czy konie, zaprzęgano do pracy przy uprawie roli i transporcie, co znacznie zwiększyło wydajność gospodarki. Bliski kontakt z udomowionymi zwierzętami miał też mroczniejszą stronę — to właśnie od nich ludzie przejęli wiele chorób odzwierzęcych, takich jak odra czy grypa, które później dziesiątkowały populacje niemające wcześniej z nimi kontaktu. Ciekawostka: genetyczne badania psów sugerują, że mogły zostać udomowione nawet kilkanaście tysięcy lat wcześniej niż jakiekolwiek inne zwierzę, prawdopodobnie zanim ludzie w ogóle zaczęli uprawiać ziemię."
+    },
+    {
+      "Technologia": "Garncarstwo",
+      "Epoka": "Kamień",
+      "Poziom": 1,
+      "Dostęp do surowca.": "Dostęp do glina",
+      "wymagany budynek": null,
+      "Wymaga (prereq)": "Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt",
+      "Odblokowuje surowiec.": "cegła, glina, sol",
+      "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
+      "Koszt nauki": 5,
+      "Uwagi": null,
+      "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli",
+      "Historia": "Wypalanie gliny na trwałe naczynia pojawiło się niezależnie w wielu regionach świata w okresie neolitu, gdy osiadłe społeczności rolnicze potrzebowały sposobu na przechowywanie ziarna, wody i oliwy. Najstarsze znane naczynia gliniane datuje się na ponad 20 tysięcy lat wstecz, choć masowa produkcja garncarska rozwinęła się dopiero wraz z uprawą roślin i potrzebą magazynowania nadwyżek żywności. Wynalazek koła garncarskiego, które pojawiło się znacznie później, pozwolił rzemieślnikom formować naczynia symetryczne i w większej liczbie, co uczyniło garncarstwo jednym z pierwszych wyspecjalizowanych zawodów w historii. Skorupy ceramiczne są dziś jednym z najcenniejszych źródeł wiedzy archeologów, bo glina — w przeciwieństwie do drewna czy tkanin — przetrwała tysiąclecia niemal nienaruszona, pozwalając datować i odtwarzać życie dawnych kultur."
     },
     {
       "Technologia": "Mistycyzm",

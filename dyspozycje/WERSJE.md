@@ -1,3 +1,21 @@
+## ROBOCZA e3cc8643 -- 2026-11-06 -- FALA 595: GOODS-LABEL (Ruda miedzi, ×0) + FARMHINT (podpowiedź Przydziel obywatela w trybie ręcznym) (testowa)
+
+- GOODSLBL 4f8d9728b + FARMHINT 305a65da7
+- Weryfikacja: diplomacy-goods-kat 18/0, farm-assign-hint 36/0, tsc 0, logic 213, sidecar PASS
+- Limity: NIE_ZMIERZONO Chromium; ×0 także dla Sól/Koń; przycisk w podpowiedzi do ABC; REPIN Rust UI
+
+## ROBOCZA 8a92848c -- 2026-11-06 -- FALA 594: POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw, koszt 5 PN jak Tier 1 (testowa)
+
+- POTTERY5 e3382ff2f (3a881d48c+722fd3e1c)
+- Weryfikacja: tech-pottery-fifth 45/0, tech-tree 20/0, tech-tempo, logic 213/213, tsc 0, sidecar PASS
+- Limity: 4 starsze testy czerwone też na bazie; komentarz research.ts:21; encyklopedia innych technologii; REPIN Rust tech.json
+
+## ROBOCZA c49dad83 -- 2026-11-06 -- FALA 593: DIPLABELS: Rekruci z dopiskiem jedn., Obywatele zamiast Ludność, doprecyzowany dopisek limitu wojennego (testowa)
+
+- DIPLABELS 73be8d788
+- Weryfikacja: diplomacy-display 44/0, real-render Chromium 17/0, recruits-level 22/22, tsc 0, sidecar PASS
+- Limity: tooltip Rekruci bez liczb (wzór); render karty listy NIE_ZMIERZONO; REPIN Rust UI
+
 ## ROBOCZA 9bb97442 -- 2026-11-06 -- FALA 592: CITREC: karta listy dyplomacji pokazuje Rekruci (pełne jednostki, bieżąca/maks.) (testowa)
 
 - CITREC 01238e0cb (+allowlista main.ts, diplomacyPanel.ts)

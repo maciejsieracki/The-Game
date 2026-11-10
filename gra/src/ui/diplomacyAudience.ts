@@ -1276,7 +1276,7 @@ function warCapNoteHtml(st: DiplomacyAudienceState): string {
   return ' <span class="da-war-cap-note" title="' + esc(
     'Limit wojenny: w wojnie suma Zaufania i Respektu nie może przekroczyć ' + WAR_RELATION_SCORE_CAP
     + ' (nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”). Wartości powyżej są prawdziwe.',
-  ) + '">(limit wojenny ' + WAR_RELATION_SCORE_CAP + ')</span>';
+  ) + '">(etykieta Wrogi: limit wojenny ' + WAR_RELATION_SCORE_CAP + ')</span>';
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
