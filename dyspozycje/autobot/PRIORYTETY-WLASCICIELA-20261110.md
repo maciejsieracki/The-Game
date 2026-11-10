@@ -9,8 +9,8 @@ Najnowsze sterowanie: produkcja brązu jest KLUCZOWYM priorytetem mimo poprzedni
 |Garncarstwo|kosztbazowy40PN|11/11FALA613|
 |Gospodarka wodna|kosztbazowy180PN|11/11FALA613|
 |Koło|kosztbazowy180PN|11/11FALA613|
-|Brązownictwo|kosztbazowy480PN (ownerpotwierdziłpo pytaniu)|Operatoraktywny, noweID R-WEB-BRONZEWORKING-RESEARCH-COST-480-Q1; NIEoczekujedecyzji|
-|ProdukcjaBRĄZU|25/tBrąz,50/tŻelazo perfoundry; inputsratiozachować, żelazo/stalbez zmian|OperatoraktywnyR-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1; nieodkładaćzaetap1|
+|Brązownictwo|kosztbazowy480PN (ownerpotwierdziłpo pytaniu)|11/11 FALA615 publicationb8a64d5d9; potwierdzony push/freshGitreadback; NIEoczekujedecyzji|
+|ProdukcjaBRĄZU|25/tBrąz,50/tŻelazo perfoundry; inputsratiozachować, żelazo/stalbez zmian|6/11 EvaluatorPASS159/117/83/20, FinalControlaktywny; nieodkładaćzaetap1|
 |Granica|Kamień−2/Brąz−3/Żelazo−4 wedługWYŻSZEJepokiwparze|5/11runtime/save-loadfixturewpracy|
 
 ## Pozostałe kontynuowane>2

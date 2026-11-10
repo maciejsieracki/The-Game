@@ -1,3 +1,5 @@
+> HISTORYCZNY SNAPSHOT. Bieżące statusy: [STAN-ZADAN-CODEX-20261110.md](STAN-ZADAN-CODEX-20261110.md), priorytety: [PRIORYTETY-WLASCICIELA-20261110.md](PRIORYTETY-WLASCICIELA-20261110.md), kolejka: [KOLEJKA-AKTYWNA-CODEX-20261110.md](KOLEJKA-AKTYWNA-CODEX-20261110.md). Poniższe aktywne sloty opisują wyłącznie dawny odczyt.
+
 # Codex four-topic queue — frozen local snapshot
 
 ## Snapshot and release evidence
