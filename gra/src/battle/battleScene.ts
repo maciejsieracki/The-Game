@@ -244,6 +244,7 @@ import {
   applySettingsPopupHeader1E,
   createSettingsToggleRow1E,
   createSettingsActionRow1E,
+  battleLossTextColor,
 } from './battleHudTheme';
 import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
@@ -9907,7 +9908,8 @@ export class BattleScene {
     Object.assign(el.style, {
       position:      'absolute',
       pointerEvents: 'none',
-      color:         '#ff4444',
+      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      color:         battleLossTextColor(this._isPlayerSide(ru.side)),
       fontFamily:    'sans-serif',
       fontSize:      '15px',
       fontWeight:    'bold',

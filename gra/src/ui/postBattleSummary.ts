@@ -11,6 +11,7 @@ import {
   BATTLE_PLAYER_TEXT,
   BATTLE_ENEMY,
   BATTLE_ENEMY_TEXT,
+  battleLossTextColor,
   BATTLE_TEXT,
   BATTLE_TEXT_DIM,
   BATTLE_FONT,
@@ -205,9 +206,14 @@ function buildUnitRow(
     flexDirection: 'column',
     gap: '6px',
     padding: '9px 11px',
-    border: '1px solid ' + (u.dead ? 'rgba(200,64,64,.55)' : isPlayer ? 'rgba(90,155,212,.4)' : 'rgba(200,64,64,.4)'),
+    // R-WEB-BATTLE-DAMAGE-COLORS: zniszczona jednostka gracza = czerwona, przeciwnika = żółta.
+    border: '1px solid ' + (u.dead
+      ? (isPlayer ? 'rgba(229,72,77,.55)' : 'rgba(255,213,74,.55)')
+      : isPlayer ? 'rgba(90,155,212,.4)' : 'rgba(200,64,64,.4)'),
     borderRadius: '8px',
-    background: u.dead ? 'rgba(40,12,12,.55)' : isPlayer ? 'rgba(18,30,44,.5)' : 'rgba(30,14,14,.5)',
+    background: u.dead
+      ? (isPlayer ? 'rgba(40,12,12,.55)' : 'rgba(40,34,10,.55)')
+      : isPlayer ? 'rgba(18,30,44,.5)' : 'rgba(30,14,14,.5)',
   });
 
   const top = el('div');
@@ -297,7 +303,7 @@ function buildUnitRow(
   const loss = el('span');
   css(loss, {
     fontWeight: '700',
-    color: u.dead || u.lossPct >= 50 ? '#ff7070' : u.lossPct === 0 ? '#7ad0a0' : BATTLE_TEXT_DIM,
+    color: u.dead || u.lossPct >= 50 ? battleLossTextColor(isPlayer) : u.lossPct === 0 ? '#7ad0a0' : BATTLE_TEXT_DIM,
   });
   loss.textContent = u.dead ? '\u2212100%' : '\u2212' + u.lossPct + '%';
   stats.appendChild(loss);
