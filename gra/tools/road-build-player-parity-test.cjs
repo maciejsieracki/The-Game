@@ -113,6 +113,15 @@ console.log('R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1 — test parzystości dr�
 ok(apiPlayer.canBuild('droga', ...FARM_ADJ) === true,
   '(F) gracz może postawić drogę na farmie sąsiadującej z miastem (połączenie z miastem przez ulepszenie)');
 
+// (F-city) heks miasta jako cel trasy: gracz i AI kwalifikują go tak samo (przed i po zmianie)
+ok(apiPlayer.canBuild('droga', 0, 0) === true && apiAI.canBuild('droga', 0, 0) === true,
+  '(F-city) heks miasta (0,0) jako cel drogi: gracz == AI == dozwolony');
+
+// (AI-D) zmiana zachowania AI (świadoma, zob. raport R2): heks z już postawioną drogą NIE kwalifikuje się
+// także dla AI (dawniej AI go kwalifikował, bo nie dostawał placedKeys/roadKeys). Gracz zachowywał się tak samo.
+ok(apiAI.canBuild('droga', ...ROAD_HEX) === false,
+  '(AI-D) AI nie kwalifikuje drogi na heksie, który już ma drogę (zmiana względem dcca72b78: tam true)');
+
 // (R) trasa dalej przez farmy: po postawieniu drogi na pierwszej farmie, druga farma przy niej — zaakceptowana
 {
   const placed2 = new Map(placedImprovements);
