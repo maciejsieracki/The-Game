@@ -19,8 +19,8 @@ Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego p
 |Test plonówPR141|11/11|135checks,push5f7a75943|
 |Teksty jednostek/audytPolish|5/11r2|runda3wznowiona po błędzie limitu; OperatorLunaHigh aktywny; cały audytczęściowy|
 |D-FOG-F:3skryptymeasure|2/11|Operatorwznowiony, diagnozawtoku; blokadaprzeglądarkidozwolnienia|
-|Test głodu/karencji wojska|2/11|Operatorwznowiony, diagnozawtoku|
-|Test kart technologiiTop5|1/11|dispatchjest; próbaOperatorazablokowanalimitem|
+|Test głodu/karencji wojska|11/11|40/40+FC,push39e24b65c|
+|Test kart technologiiTop5|3/11|DECISION_REQUIRED: źródłaTop3Sztukiwojennejsprzeczne,pytanieownerwysłane|
 |Graficzny wybór heksu rozdzielenia|2/11|OperatorLunaHigh aktywny; nowezgłoszeniewrealizacji|
 |Pobliskie wojska do bitwyoblężniczej|1/11|KOLEJKA, nieSIEGELOCK606|
 |Pomiń/AUTO przywyłomie #202|1/11|KOLEJKA|
@@ -28,7 +28,7 @@ Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego p
 |AI szuka głównejarmiiwroga|1/11|KOLEJKA|
 |Wezwanie sojusznika dowojny|1/11|KOLEJKA|
 |Samodzielne ofertyhandloweAI|1/11|KOLEJKA/decyzje|
-|Test civpedia-karty-nazwa-przyciskiem|braketapu|długdozarejestrowania/reprodukcji|
+|Test civpedia-karty-nazwa-przyciskiem|1/11|zarejestrowany; Operatorstartnastępny|
 |Test wonder-transfer-on-conquest|braketapu|długdozarejestrowania/reprodukcji|
 |Pozostały audytwizualnyUI|braketapu|dozakwalifikowaniaodrębnychscenariuszy|
 |Model falangi|WSTRZYMANY|odłożonydecyzjąwłaściciela|
