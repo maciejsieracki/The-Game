@@ -1,3 +1,9 @@
+## ROBOCZA 8a92848c -- 2026-11-06 -- FALA 594: POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw, koszt 5 PN jak Tier 1 (testowa)
+
+- POTTERY5 e3382ff2f (3a881d48c+722fd3e1c)
+- Weryfikacja: tech-pottery-fifth 45/0, tech-tree 20/0, tech-tempo, logic 213/213, tsc 0, sidecar PASS
+- Limity: 4 starsze testy czerwone też na bazie; komentarz research.ts:21; encyklopedia innych technologii; REPIN Rust tech.json
+
 ## ROBOCZA c49dad83 -- 2026-11-06 -- FALA 593: DIPLABELS: Rekruci z dopiskiem jedn., Obywatele zamiast Ludność, doprecyzowany dopisek limitu wojennego (testowa)
 
 - DIPLABELS 73be8d788
