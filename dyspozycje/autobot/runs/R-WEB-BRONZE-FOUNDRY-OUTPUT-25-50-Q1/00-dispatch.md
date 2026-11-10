@@ -1,0 +1,4 @@
+# R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1
+STATUS: REGISTERED1/11 PRIORITY URGENT
+OWNER: 2026-11-10 omawiana produkcjaBRĄZU z odlewni za wysoka75/100; nowy próg25 wBrązie/50wŻelazie. Rootjawniepotwierdził dotyczybrązuniesamegożelaza, brak sprzeciwu. Przepis zużycia ruda1+drewno1+cyna0.1 na1brązu bez zmian. Każdybudynekprodukującybrąz (odlewnia_brazu, odlewnia_zelaza__braz, wielkaodlewnia__braz) ma stosowaćprodukcjęwgepokiOWNERA. Żelazo/stal bez zmian. SprawdzićparametryiwyliczeniapodglądUI/tickgraczAI. Nie zmieniaćglobalnejbazythroughputwszystkichodlewni naraznaruszającżelazo. Minimalneprzededycjąallowlistdata/converters/UIjeślikonieczne/testy/run. Rzeczywistetesty25/50zasobówwystarcza, brakwejścia/cyny/magazyn, równoległebraz+zelazo i AIparity, typecheck.
+MODEL: CodexLuna high roleosobno,sekwencyjnie,max4tematy. Commitkandydatnopushdeploymerge. Cel11Robocza/push/readback.

@@ -9591,3 +9591,7 @@ Dispatchautobot/runs/R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1/00-dispatch.md
 
 ## R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — PILNE2026-11-10
 STATUS: ZAREJESTROWANE. WłaścicielkazałprzywrócićkosztGarncarstwa. Potwierdzonagitobniżka40→5PN/FALA594; cel40PNbezpozostałychzmian. Runautobot/runs/R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1.
+
+
+## R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Produkcjabrązu max25wepoceBrązu/50wepoceŻelaza, inputsbez zmian, niezmieniaćsamegożelaza. Runautobot/runs/R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1.
