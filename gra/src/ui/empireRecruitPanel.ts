@@ -4,8 +4,8 @@
  * Jedno zamówienie dla całego państwa: przy każdym typie jednostki niezależny licznik (−/+/pole,
  * domyślnie 0) i własny przycisk „Rekrutuj”. Licznik NIE zeruje się po pojedynczym „Rekrutuj”
  * i nie dotyka innych typów.
- * R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1: przyciski „Rekrutuj wszystkie” (góra i dół panelu)
- * zamawiają każdy typ z licznikiem > 0 przez TĘ SAMĄ ścieżkę `onOrder`. Typy przyjęte (w całości)
+ * R-WEB-UI-EMPIRE-RECRUIT-PANEL-RECRUIT-ALL-Q1: górny przycisk „Rekrutuj wszystkie”
+ * zamawia każdy typ z licznikiem > 0 przez TĘ SAMĄ ścieżkę `onOrder`. Typy przyjęte (w całości)
  * wracają do 0; typy odrzucone lub przyjęte częściowo zachowują pozostałą liczbę do ponowienia.
  * Rozkład po miastach robi `game/empire-recruit-plan.ts` (wiring w main.ts); ten moduł to tylko UI.
  * Liczniki to stan UI sesji (poza zapisem gry) — zamówienia są zwykłymi wpisami kolejek miast.
@@ -122,7 +122,6 @@ function render(root: HTMLElement, force = true): void {
     + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
     + `i zeruje przyjęte pozycje.</div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
-    + `<div class="erp-all">${allBtn}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
   if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
   lastHtml = html;

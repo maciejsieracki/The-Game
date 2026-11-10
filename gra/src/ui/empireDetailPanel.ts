@@ -53,6 +53,7 @@ import {
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts } from './cityPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -79,6 +80,7 @@ export interface EmpireMassRecruitmentUiConfig {
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
 let massRecruitmentUi: EmpireMassRecruitmentUiConfig = {};
+let lastArmyRecruitMessage = '';
 
 /** DYSPOZYCJA-85-SUWAK: globalny domyślny podział podatku w panelu imperium. */
 export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void {
@@ -87,6 +89,10 @@ export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void
 
 export function configureEmpireMassRecruitment(cfg: EmpireMassRecruitmentUiConfig): void {
   massRecruitmentUi = { ...massRecruitmentUi, ...cfg };
+}
+
+export function resetEmpireMassRecruitmentMessage(): void {
+  lastArmyRecruitMessage = '';
 }
 
 function renderDefaultHandelSplitSection(): string {
@@ -451,6 +457,12 @@ function ensureStyles(): void {
 .civ-emp-mass-counter .k{font-size:9px;letter-spacing:.55px;color:#7d8798;}
 .civ-emp-mass-counter .v{font-size:14px;font-weight:800;color:#e8ebf0;margin-top:2px;}
 .civ-emp-mass-pool{font-size:10.5px;color:#9aa4b2;margin:8px 0 2px;line-height:1.45;}
+.civ-emp-mass-batch{margin:8px 0;padding:0 2px;}
+.civ-emp-mass-batch button{width:100%;border:1px solid rgba(217,164,65,.65);border-radius:5px;background:#1a2230;color:#e8d88a;
+  font:inherit;font-weight:700;padding:6px 8px;cursor:pointer;}
+.civ-emp-mass-batch button:hover:not(:disabled){background:#263246;}
+.civ-emp-mass-batch button:disabled{opacity:.45;cursor:not-allowed;}
+.civ-emp-mass-batch-message{min-height:1.2em;padding:0 2px;font-size:11px;color:#e8d88a;}
 .civ-emp-mass-city{padding:9px 0 8px;border-top:1px solid #242c3a;}
 .civ-emp-mass-city:first-of-type{margin-top:7px;}
 .civ-emp-mass-city-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
@@ -2836,11 +2848,14 @@ export function renderMassRecruitmentSection(
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
     + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`
+    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
     + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
     + `<div data-general-recruitment-card></div></div>`;
 
   if (rows.length === 0) {
-    return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div></div>';
+    return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div>'
+      + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all disabled>Rekrutuj wszystko</button></div>`
+      + `<div class="civ-emp-mass-batch-message" data-army-recruit-message role="status">${esc(lastArmyRecruitMessage)}</div></div>`;
   }
 
   for (const row of rows) {
@@ -2849,7 +2864,9 @@ export function renderMassRecruitmentSection(
       + `<span class="civ-emp-mass-queue">kolejka: <b>${row.massRecruitment.queueCount}</b></span></div>`;
     h += `<div data-mass-recruitment-cards="${escAttr(row.cityId)}"></div></div>`;
   }
-  return h + `<div class="civ-emp-foot">Każde miasto ma tę samą listę kart rekrutacji co jego panel. Kolejka i koszty są przypisane do wskazanego miasta.</div></div>`;
+  return h + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
+    + `<div class="civ-emp-mass-batch-message" data-army-recruit-message role="status">${esc(lastArmyRecruitMessage)}</div>`
+    + `<div class="civ-emp-foot">Każde miasto ma tę samą listę kart rekrutacji co jego panel. Kolejka i koszty są przypisane do wskazanego miasta.</div></div>`;
 }
 
 function mountMassRecruitmentCitiesInto(
@@ -2876,11 +2893,28 @@ export function mountMassRecruitmentControls(
   mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
   mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
 ): void {
+  const batchBtns = Array.from(host.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]'));
+  const syncBatchButtons = (): void => {
+    const disabled = getArmyRecruitDraftTotal() <= 0;
+    batchBtns.forEach(button => { button.disabled = disabled; });
+  };
+  batchBtns.forEach(button => button.addEventListener('click', () => {
+    const cityIds = Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-city]'))
+      .map(city => city.dataset.massRecruitmentCity)
+      .filter((id): id is string => !!id);
+    const result = submitArmyRecruitmentDrafts(cityIds);
+    lastArmyRecruitMessage = result.message;
+    document.querySelectorAll<HTMLElement>('[data-army-recruit-message]').forEach(message => {
+      message.textContent = lastArmyRecruitMessage;
+    });
+    syncBatchButtons();
+  }));
   const rallyToggle = host.querySelector<HTMLInputElement>('input[data-recruit-follow-general]');
   if (rallyToggle) rallyToggle.addEventListener('change', () => {
     massRecruitmentUi.onRecruitFollowGeneralDefaultChange?.(rallyToggle.checked);
   });
   mountMassRecruitmentCitiesInto(host, mountCityRecruitment, mountGeneralRecruitment);
+  syncBatchButtons();
 }
 
 function signedTxt(n: number): string {

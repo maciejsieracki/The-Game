@@ -153,6 +153,8 @@ export interface UnitRecruitCardOpts {
    * panelu po „Rekrutuj”, który odtwarza wszystkie wiersze). Domyślnie 1.
    */
   initialQuantity?: number;
+  /** Minimum selectable quantity; 0 is used only by the Empire → Army batch draft. */
+  minQuantity?: number;
   /** Wywoływane przy każdej zmianie licznika przez gracza (+/−/pole) — do zapamiętania per miasto+typ. */
   onQuantityChange?: (quantity: number) => void;
   /** Zatwierdza draft liczby; `false` oznacza odrzucenie przez backend. */
@@ -233,6 +235,7 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const canBuy = opts.canPurchase && (skarb === undefined || skarb >= item.koszt);
   const manpowerRequired = manpowerRequiredInput ?? mpCost ?? 0;
   const maxQuantity = normalizeMaxQuantity(opts.maxQuantity);
+  const minQuantity = opts.minQuantity === 0 ? 0 : 1;
 
   const row = el('div', 'bld-compact-row unit-recruit-compact-row');
   row.dataset.recruitQuantity = '1';
@@ -333,15 +336,15 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
 
   // Licznik jest niezależny per typ i NIE resetuje się po „Rekrutuj” (prośba właściciela 2026-11-05).
   let quantity = Number.isFinite(opts.initialQuantity)
-    ? Math.min(maxQuantity, Math.max(1, Math.round(opts.initialQuantity as number)))
-    : 1;
+    ? Math.min(maxQuantity, Math.max(minQuantity, Math.round(opts.initialQuantity as number)))
+    : Math.max(minQuantity, 1);
   quantityInput.value = String(quantity);
   const syncQuantityControls = (): void => {
     row.dataset.recruitQuantity = String(quantity);
-    minus.disabled = !canBuy || quantity <= 1;
+    minus.disabled = !canBuy || quantity <= minQuantity;
     quantityInput.disabled = !canBuy;
     plus.disabled = !canBuy || quantity >= maxQuantity;
-    btn.disabled = !canBuy;
+    btn.disabled = !canBuy || quantity <= 0;
     const blockedReasons = [disabledReason, manpowerMissingLabel, stockMissingLabel].filter(
       (reason): reason is string => !!reason,
     );
@@ -353,8 +356,8 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   };
   const setQuantity = (next: number): void => {
     quantity = Number.isFinite(next)
-      ? Math.min(maxQuantity, Math.max(1, Math.round(next)))
-      : 1;
+      ? Math.min(maxQuantity, Math.max(minQuantity, Math.round(next)))
+      : Math.max(minQuantity, 1);
     quantityInput.value = String(quantity);
     opts.onQuantityChange?.(quantity);
     syncQuantityControls();

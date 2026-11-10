@@ -727,7 +727,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession } from './ui/cityPanel';
 import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
@@ -807,6 +807,7 @@ import {
   configureEmpireHandelSplit,
   configureEmpireMassRecruitment,
   configureEmpireGlobalDefaults,
+  resetEmpireMassRecruitmentMessage,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import { aggregateHappinessSources } from './ui/empireDetailTypes';
@@ -9637,6 +9638,8 @@ async function boot(): Promise<void> {
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
+      resetArmyRecruitDraftsSession();
+      resetEmpireMassRecruitmentMessage();
       resetEndTurnBlockers('prepareSessionForLoad');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
@@ -44013,6 +44016,8 @@ async function boot(): Promise<void> {
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
+      resetArmyRecruitDraftsSession();
+      resetEmpireMassRecruitmentMessage();
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
