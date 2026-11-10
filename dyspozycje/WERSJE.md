@@ -1,3 +1,9 @@
+## ROBOCZA 89eb2e56 -- 2026-11-06 -- FALA 599: MARCH-RESUME: trasa marszu wznawia się; zatrzymanie = 1 powiadomienie (Ważne) + wskaźnik trasa wstrzymana (testowa)
+
+- MARCHRES 89c18617d
+- Weryfikacja: march-resume-next-turn 45/0, planned-march 18/0, march-attack-queue-persist 57/0, tsc 0, logic 213, sidecar PASS
+- Limity: NIE_ZMIERZONO Chromium; C7 czerwony na bazie; opcja B powiadomień do potwierdzenia; REPIN Rust
+
 ## ROBOCZA 2e5ccfab -- 2026-11-06 -- FALA 598: UPKEEP-CERAMICS: ceramika jako koszt utrzymania 4 budynków (Spichlerz II, Akwedukt, Łaźnia, Port; 2/t każdy) (testowa)
 
 - UPKCERAMIMPL 07ca052b3
