@@ -13,6 +13,7 @@
  * osobnym dispatchem (17., ostatnim tematem serii R-KARTY-HISTORIA-Q1).
  */
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
+import { nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
 import type { WonderRow, WonderTerrainBonus, WonderSpecialBonus } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 
@@ -63,10 +64,10 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
   const cywilizacje = Array.isArray(wonder.cywilizacje) ? wonder.cywilizacje : [];
   const wymagaTerenu = Array.isArray(wonder.wymagaTerenu) ? wonder.wymagaTerenu : [];
   const availabilityRows: EntityCardRow[] = [
-    { label: 'Cywilizacje', value: cywilizacje.length > 0 ? cywilizacje.join(', ') : '' },
+    { label: 'Cywilizacje', value: cywilizacje.length > 0 ? cywilizacje.map((c) => nazwaCywilizacji(text(c))).join(', ') : '' },
     { label: 'Dostęp', value: wonder.dostep ? (DOSTEP_LABEL[wonder.dostep] ?? text(wonder.dostep)) : '' },
     { label: 'Epoka wejścia', value: hasValue(wonder.epokaWejscia) ? text(wonder.epokaWejscia) : '' },
-    { label: 'Wymagany teren', value: wymagaTerenu.length > 0 ? wymagaTerenu.join(', ') : '' },
+    { label: 'Wymagany teren', value: wymagaTerenu.length > 0 ? wymagaTerenu.map((t) => nazwaWyswietlana(text(t))).join(', ') : '' },
   ].filter((r) => hasValue(r.value));
   const availabilitySection: EntityCardSection = {
     key: 'availability', title: 'Dostępność', rows: availabilityRows,
@@ -118,8 +119,8 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
     }
     if (parts.length > 0) {
       bonusRows.push({
-        label: `Teren${typTerenu ? ` (${typTerenu})` : ''}`,
-        value: parts.join(', ') + (hasValue(t.warunek) ? ` — ${text(t.warunek)}` : ''),
+        label: `Teren${typTerenu ? ` (${nazwaWyswietlana(typTerenu)})` : ''}`,
+        value: parts.join(', ') + (hasValue(t.warunek) ? ` — ${nazwaWyswietlana(text(t.warunek))}` : ''),
       });
     }
   }
