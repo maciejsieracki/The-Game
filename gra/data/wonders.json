@@ -6,7 +6,7 @@
     "cuda_wyscigowe": ["wyrocznia", "hamonga", "brama_narodow"],
     "cuda_wyscigowe_epoka": {
       "1": { "id": "wyrocznia", "nazwa": "Wyrocznia", "epoka": "Kamień", "profil": "kultura, mistycyzm" },
-      "2": { "id": "hamonga", "nazwa": "Kamień Ha'amonga", "epoka": "Brąz", "profil": "kultura, morze, rybołówstwo" },
+      "2": { "id": "hamonga", "nazwa": "Kamień Ha'amonga", "epoka": "Brąz", "profil": "kultura, morze" },
       "3": { "id": "brama_narodow", "nazwa": "Brama wszystkich narodów", "epoka": "Żelazo", "profil": "wojna, handel imperium" }
     },
     "cuda_wyscigowe_uwaga": "Dokładnie 1 cud R na epokę Antyku; wszyscy 15 graczy widzą i mogą walczyć; max 1 egzemplarz na świat.",

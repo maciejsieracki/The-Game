@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co daje
-Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
+Każde miasto właściciela otrzymuje **+3 kultury i +3 żywności na turę**. Imperium dostaje też **+15% dochodu z morskich tras handlowych**.
 
 ### Budowa
 - Heks w **twoim terytorium**, wymagana technologia epoki.

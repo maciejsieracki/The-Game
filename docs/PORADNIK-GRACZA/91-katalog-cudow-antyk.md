@@ -252,7 +252,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Kamień Ha'amonga
 
-**Kamień Ha'amonga** — wyścig epoki **Brąz**. Tech: **Żegluga**. +15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta; +3 Wpływu (cywilizacja)
+**Kamień Ha'amonga** — wyścig epoki **Brąz**. Tech: **Żegluga**. +15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta
 
 
 ### Przykład liczbowy
