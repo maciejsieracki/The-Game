@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication 2da63d941; Git remote readback confirmed",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "2ee58aa298dda83cf3d7fcda7a29382f",
   "bundleSha256": "b22e68d00187d7815c9e314e979e21ea1b7fa0888e3b87612a3329210e27e49c",
@@ -1309,5 +1309,6 @@
       "md5": "9e88be9fa542eaf2f2a2ecb5c2424fa2",
       "sizeBytes": 11556324
     }
-  ]
+  ],
+  "wave": 607
 }
