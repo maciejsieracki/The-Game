@@ -1114,6 +1114,9 @@ import {
 import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import {
+  buildFarmAssignHintSidePanelEvent, farmAssignHintEventId, farmAssignHintFor,
+} from './game/farm-assign-hint';
+import {
   deferredHintsToSidePanelEvents,
   dismissEotOrEraWarLogEntry,
   shouldDeferEotEvents,
@@ -8083,6 +8086,7 @@ async function boot(): Promise<void> {
             metaLine: gar > 0 ? `Garnizon: ${gar}` : undefined,
             garrison: gar,
             isCapital: capitalCityIdForOwner(c.ownerId) === c.id,
+            manualTryb: c.okolicaTryb === 'reczny',
           };
         });
     }
@@ -42400,6 +42404,16 @@ async function boot(): Promise<void> {
           );
           if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
           pendingAutoRationForNextTurn = null;
+        }
+        // R-WEB-UI-FARM-ASSIGN-CITIZEN-HINT-MANUAL-MODE-Q1: podpowiedź „Przydziel obywatela?”
+        // tylko dla gracza w trybie ręcznym; jeden wpis na miasto na turę (id z turą).
+        for (const hc of cities) {
+          if (hc.ownerId !== HUMAN_OWNER_PRIMARY) continue;
+          const farmHint = farmAssignHintFor(hc, map, (hq, hr) => yieldOfMapHex(map, hq, hr, empireEpochForOwner(hc.ownerId)));
+          if (!farmHint) continue;
+          const farmEvId = farmAssignHintEventId(hc.id, turn);
+          if (warEventLog.some(e => e.id === farmEvId)) continue;
+          warEventLog.unshift(stampEventTurn(buildFarmAssignHintSidePanelEvent(farmHint, hc.name, turn), turn));
         }
         if (deferredEotHints.length > 0) {
           const hintEvents = deferredHintsToSidePanelEvents(deferredEotHints, turn);
