@@ -1175,7 +1175,7 @@ import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pe
 import {
   aiDiplomacyStance, relationTierDisplay, loadDiplomacyParams, getEffectiveDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
-  computeTickZaufanieDelta,
+  computeTickZaufanieDelta, sharedBorderPenaltyForEpochs,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   isOwnerAtWarInRelations,
@@ -22357,6 +22357,9 @@ async function boot(): Promise<void> {
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
+        karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
+          empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
+        ),
         wiarygodnoscSelf: atWar || !playerInPair
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
@@ -22382,6 +22385,7 @@ async function boot(): Promise<void> {
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
       const sameTypCiv = bothCivsKnown && civA === civB;
+      const pairTickCtx = buildDiplomacyTickCtxForPair(a, b);
       const playerMpOtherId = isHuman(a) ? b : (isHuman(b) ? a : -1);
       const isPlayerSameCivCityState =
         playerMpOtherId >= 0 && typCityCopyOwners.has(playerMpOtherId) && sameTypCiv;
@@ -22394,13 +22398,12 @@ async function boot(): Promise<void> {
         }),
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
-        karaWspolnaGranica:
-          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
-          && ownersShareLandBorderLive(a, b),
+        karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
+        karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
         miastoPanstwoSameCiv: isPlayerSameCivCityState,
         roznicaKulturowa: bothCivsKnown && sameCulture === false,
-        wiarygodnoscSelf: buildDiplomacyTickCtxForPair(a, b).wiarygodnoscSelf,
+        wiarygodnoscSelf: pairTickCtx.wiarygodnoscSelf,
         atWar,
       };
       return buildRelationBreakdown(log, continuous, dip);
@@ -40506,6 +40509,9 @@ async function boot(): Promise<void> {
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
                     cities.filter(c => c.ownerId === ME()).length > 2 &&
                     ownersShareLandBorderLive(ownerId, ME()),
+                  karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
+                    empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
+                  ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);

@@ -158,8 +158,12 @@ export const DIPLOMACY_PARAMS = {
   wspolnaReligia_zaufanie_perTura:  0.5,
   /** "Odmienna religia" (-0.5/ture, max -10) */
   odmiennaReligia_zaufanie_perTura: -0.5,
-  /** "Kara za wspólną granicę" (-2/ture) */
+  /** "Kara za wspólną granicę" dla epoki Kamienia (-2/turę). */
   ekspansjaGranica_zaufanie_perTura: -2,
+  /** Kara za wspólną granicę dla epoki Brązu (-3/turę). */
+  ekspansjaGranicaBraz_zaufanie_perTura: -3,
+  /** Kara za wspólną granicę dla epoki Żelaza (-4/turę). */
+  ekspansjaGranicaZelazo_zaufanie_perTura: -4,
   /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
   urazyHistoryczne_zaufanie_perTura: -2,
 
@@ -588,6 +592,18 @@ export function getEffectiveDiplomacyParams(
   difficulty: GameDifficulty = 'normal',
 ): DiplomacyParams {
   return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
+}
+
+/** Wartość istniejącej kary granicznej według wyższej epoki właścicieli pary. */
+export function sharedBorderPenaltyForEpochs(
+  epochA: number,
+  epochB: number,
+  params: DiplomacyParams = getEffectiveDiplomacyParams(),
+): number {
+  const pairEpoch = Math.max(epochA, epochB);
+  if (pairEpoch >= 3) return params.ekspansjaGranicaZelazo_zaufanie_perTura;
+  if (pairEpoch >= 2) return params.ekspansjaGranicaBraz_zaufanie_perTura;
+  return params.ekspansjaGranica_zaufanie_perTura;
 }
 
 /** Testy / hot-reload — opcjonalnie reset cache. */
@@ -1724,6 +1740,8 @@ export interface TickCtx {
    * `ekspansjaPrzyGranicy` — czysty licznik miast, zero związku z faktyczną granicą.
    */
   karaWspolnaGranica?: boolean;
+  /** Resolved shared-border penalty for the pair's higher owner epoch. */
+  karaWspolnaGranicaDelta?: number;
   /**
    * REL-WIARYG-DRIFT-Q1 — globalna Wiarygodność strony (nie per para), źródło
    * pasywnego dryfu Zaufania `zaufanieDryfOdWiarygodnosci(W)` (niezależnego od umów).
@@ -1778,7 +1796,9 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
-  if (ctx.karaWspolnaGranica) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  if (ctx.karaWspolnaGranica) {
+    dZ += ctx.karaWspolnaGranicaDelta ?? p.ekspansjaGranica_zaufanie_perTura;
+  }
 
   dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
 
