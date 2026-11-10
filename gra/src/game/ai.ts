@@ -72,8 +72,9 @@ import {
 import { hexKeysWithinRadius } from './okolica';
 import {
   resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, militaryAdvantageClass,
-  peaceBlockedByMilitaryAdvantage, type WarPeaceProfile,
+  peaceBlockedByMilitaryAdvantage, type WarPeaceProfile, warWearinessFraction,
 } from './diplomacy-war-peace-profile';
+import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
   AI_IMPROVEMENT_PRIORITY,
   IMPROVEMENT_FOR_DEFICIT,
@@ -6927,11 +6928,24 @@ export function decideAIDiplomacy(
       peaceSignals.wantsPeace = true;
     }
     if (!aiAdvantageBlocksPeace && rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+      // R-WEB-DIPLO-TRUCE-IMPL-Q1 (E): tryb wg pozycji i zmęczenia wojną (zaufanie z relacji);
+      // bez sygnałów rozstrzygających — dotychczasowy wybór po turach wojny (aiPeaceProposalKind).
+      // Sygnały: zmęczenie (ułamek t/T), willingnessPeace ze stance (gotowość do pokoju) i Zaufanie.
+      // `weaker` = tylko słabość względna (rw); sygnały z peaceSignals (utrata miasta, pat, zmęczenie)
+      // nie czynią AI „słabszą" — wtedy zostaje fallback (aiPeaceProposalKind po turach wojny).
+      const weakerByPower = rw <= progPokojSlabosc;
+      const peaceKindAi = aiTruceOrPeaceMode({
+        fatigueFraction: warWearinessFraction(turnsAtWarRel, warProfile.zmeczenieT),
+        willingnessPeace: stance.willingnessPeace,
+        zaufanie: rel.relation?.zaufanie ?? 0,
+        weaker: weakerByPower,
+        fallbackKind: aiPeaceProposalKind(turnsAtWarRel),
+      });
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
-        rodzaj:   aiPeaceProposalKind(turnsAtWarRel),
-        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; tury wojny=${turnsAtWarRel}): proponujemy ${aiPeaceProposalKind(turnsAtWarRel) === 'rozejm' ? 'rozejm' : 'pokoj'}`,
+        rodzaj:   peaceKindAi,
+        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; gotowosc pokoju=${stance.willingnessPeace.toFixed(2)}; tury wojny=${turnsAtWarRel}): proponujemy ${peaceKindAi === 'rozejm' ? 'rozejm' : 'pokoj'}`,
       });
       continue;
     }
