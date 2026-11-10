@@ -1,0 +1,4712 @@
+{
+ "pin": "edb8fb56",
+ "lines": 11986,
+ "units": 378,
+ "cut": [
+  "renderCityIconRightRail",
+  "rerender",
+  "switchCity"
+ ],
+ "scc_after_cut": [
+  [
+   "el",
+   "CP_INLINE_EMOJI_BRAND",
+   "cpInlineIcons",
+   "appendDetailSection",
+   "gridDetailRow",
+   "appendDetailAlgo"
+  ],
+  [
+   "CityPanelConfig",
+   "cfg",
+   "configureCityPanel",
+   "gameData",
+   "readPodzialHandlu",
+   "readOwnerDefaultPodzialHandlu",
+   "isCapital",
+   "territoryNodesForPanel",
+   "computeView",
+   "ownerHasMennica",
+   "cityFoodSplit",
+   "CityGrowthLive",
+   "cityGrowthLive",
+   "buildingHappinessSum",
+   "resolveOrderState",
+   "computeOrderStateLocal",
+   "buildHandelDetailCard",
+   "activeTradeRouteCountForCity"
+  ],
+  [
+   "renderEkonomiaStrip",
+   "appendPodzialHandlu",
+   "appendCitySkarbiecBalance"
+  ],
+  [
+   "buildPracaDetailCard",
+   "renderPodzialPracy"
+  ],
+  [
+   "ENTITY_CARD_BUILDING_STYLE_ID",
+   "ensureEntityCardBuildingStyles",
+   "buildBuildingDetailCardViaEntityCard",
+   "buildBuildingDetailCard"
+  ]
+ ],
+ "blocks": {
+  "1": [
+   "BUDOWA_FOCUS_BRAND",
+   "BUDOWA_FOCUS_SHORT",
+   "BUDOWA_FOCUS_TITLE",
+   "BUILDING_REQ_SECTION_LABELS",
+   "BUILDING_UPKEEP_ZERO_LABEL",
+   "BUILD_QUEUE_VISIBLE",
+   "BreakdownLine",
+   "BuildingReqChip",
+   "BuildingReqChipKind",
+   "CITY_PANEL_ICON_GLYPH_EM",
+   "CITY_PANEL_ICON_RAIL_VERT_EM",
+   "CITY_TABS",
+   "CITY_TAB_BRAND_ICONS",
+   "CP_EMOJI_DETECT",
+   "CP_INLINE_EMOJI_BRAND",
+   "CS_RES_STRIP_CORE",
+   "CS_RES_STRIP_ICON_PX",
+   "CS_RES_STRIP_ORDER",
+   "CityDrawerTab",
+   "CityMoneySnap",
+   "CityView",
+   "CityWithSliders",
+   "DEFAULT_PODZIAL_HANDLU",
+   "DEFAULT_PODZIAL_PRACY",
+   "EPOCH_LABEL",
+   "EmpireHudSnap",
+   "GarrisonUnit",
+   "HANDEL_KORUPCJA_PCT_PLACEHOLDER",
+   "HANDEL_ZAMOZNOSC_LABEL",
+   "HandelChipEstimates",
+   "LIST_ROW_HEIGHT_COMPACT",
+   "LIST_ROW_HEIGHT_EM",
+   "LIST_SCROLL_VISIBLE",
+   "LIST_SCROLL_VISIBLE_CATALOG",
+   "LOAF_SVG",
+   "OKOLICA_FOCUS_BRAND",
+   "OKOLICA_FOCUS_SHORT",
+   "PH",
+   "PULA_LBL",
+   "PULA_LBL_PELNA",
+   "PULA_TIP",
+   "PodzialHandluSplit",
+   "PodzialPracySplit",
+   "QUEUE_ROW_EM",
+   "RECRUIT_QUEUE_VISIBLE",
+   "SCALES",
+   "STYLE_ID",
+   "TabIndicatorChip",
+   "YIELD_BRAND",
+   "activeDrawerTab",
+   "appendDetailAlgo",
+   "appendDetailSection",
+   "applyBuildButtonVisualState",
+   "attachTopBarStat",
+   "buildGrowthProgressUi",
+   "buildingBonusChipsHtml",
+   "buildingIconHtml",
+   "buildingOwnedBonusCompactHtml",
+   "buildingReqChipSpan",
+   "buildingRequirementChipsHtml",
+   "buildingUpkeepDisplay",
+   "cachedData",
+   "cityPanelBrandIcon",
+   "cityPanelChipIcon",
+   "cityPanelChipIconWrap",
+   "cityTabIconHtml",
+   "clampedGrowthBreakdown",
+   "copyCityProduction",
+   "cpInlineIcons",
+   "customBuildingIconClass",
+   "daninaLabelForCity",
+   "effectiveGrowthPctForUi",
+   "el",
+   "epochLabelNum",
+   "estimateHandelChips",
+   "findBuildingDef",
+   "findUnitDef",
+   "fmtDecPl",
+   "fmtResDelta",
+   "formatBuildEtaLabel",
+   "formatBuildingUpkeepGridValue",
+   "formatBuildingUpkeepRowHtml",
+   "formatBuildingUpkeepTotalHtml",
+   "formatBuildingYieldChipText",
+   "formatBuildingYieldDetailValue",
+   "formatBuildingYieldScaleRow",
+   "formatConverterAmount",
+   "formatConverterProductionRowHtml",
+   "formatResourceUpkeepText",
+   "gridDetailRow",
+   "growthBreakdownRow",
+   "isDevOnlyPlayerText",
+   "isEmptyDataVal",
+   "isMapResourceLabel",
+   "loafIconHtml",
+   "localProd",
+   "moveQueueItem",
+   "moveRecruitQueueItem",
+   "normalizeResourceAccess",
+   "okolicaProfileIconHtml",
+   "orderBandEffectShort",
+   "parentBuildingName",
+   "pctSubheadHtml",
+   "plonyChipRowHtml",
+   "pluralTur",
+   "productionItemIconHtml",
+   "psiRowLabel",
+   "queueItemCumulativeEta",
+   "queueItemOwnEta",
+   "renderImperiumZywnosc",
+   "reorderQueueItem",
+   "reorderRecruitQueueItem",
+   "resGlobalLocal",
+   "resInteractiveAttrs",
+   "resLocalOnly",
+   "resPracaSplitBar",
+   "resolveCityFedForUi",
+   "resourceBrandIconHtml",
+   "resourceBrandKey",
+   "resourceIcon",
+   "scalePx",
+   "setNoteHtml",
+   "setOkolicaProfileButtonContent",
+   "setOkolicaProfileButtonIconOnly",
+   "setShowEraBuildingPreview",
+   "shortIndLabel",
+   "showEraBuildingPreview",
+   "signed",
+   "statChip",
+   "statChipBrand",
+   "stripInlineDevAnnotations",
+   "sumOwnedBuildingsResourceUpkeep",
+   "szLinesDoWyswietlenia",
+   "szPktDisplay",
+   "tury",
+   "unitIconHtml",
+   "unitMedallionHtml",
+   "wyzwienieSummaryLabel",
+   "yieldBrandIconHtml"
+  ],
+  "2": [
+   "appendBreakdownLines",
+   "appendBuildingInlineIcon",
+   "appendBuildingRequirementChipSections",
+   "appendCitizenUpkeepBlock",
+   "appendDisabledBuildActionButtons",
+   "appendIndywidualneToggle",
+   "appendPctBreakdownBlock",
+   "appendProductionPicon",
+   "appendSignedBreakdownSections",
+   "appendSurowceGrid",
+   "appendTabIndicators",
+   "appendW4PctMetricBlock",
+   "appendW4SignedBreakdownSections",
+   "bindTechHintLinkDelegation",
+   "createScrollList",
+   "ensureStyles",
+   "fillIconElement",
+   "makeBuildingThumb",
+   "makeMiniThumb",
+   "productionQueueIconSpan",
+   "renderBilans",
+   "techHintLinkDelegationBound",
+   "techIconHintSpan"
+  ],
+  "3": [
+   "CityGrowthLive",
+   "CityPanelConfig",
+   "activeTradeRouteCountForCity",
+   "appendCompositionBlock",
+   "appendDetailFormula",
+   "appendDetailGrid",
+   "appendDetailGridIn",
+   "appendWealthCompactStrip",
+   "beginBuildingDetailTile",
+   "bindRecruitQueueDragReorder",
+   "buildGrowthProgressTooltipCard",
+   "buildHandelDetailCard",
+   "buildSurowceDetailCard",
+   "buildTopBarRekruciDetailCard",
+   "buildWealthCompactTooltipCard",
+   "buildZdrowieDetailCard",
+   "buildingHappinessSum",
+   "cfg",
+   "cityFoodSplit",
+   "cityGrowthLive",
+   "computeOrderStateLocal",
+   "computeView",
+   "configureCityPanel",
+   "gameData",
+   "getProd",
+   "isCapital",
+   "isMeCity",
+   "ownerHasMennica",
+   "playerFacingNote",
+   "readOwnerDefaultPodzialHandlu",
+   "readPodzialHandlu",
+   "resolveOrderState",
+   "setProd",
+   "techPrereqChain",
+   "territoryNodesForPanel",
+   "unitExtraField"
+  ],
+  "4": [
+   "__cityPanelOrderStateLocalForTest",
+   "addItem",
+   "appendBuildActionButtons",
+   "appendCityResourceStockStrip",
+   "appendRecruitMilitaryResourceStrip",
+   "bindBuildQueueDragReorder",
+   "buildKulturaDetailCard",
+   "buildPorzadekDetailCard",
+   "buildRacjeWzrostDetailCard",
+   "buildTopBarKulturaDetailCard",
+   "buildTopBarLudnoscDetailCard",
+   "buildTopBarNaukaDetailCard",
+   "buildTopBarReligiaDetailCard",
+   "buildTopBarZywnoscDetailCard",
+   "buildWealthDetailCard",
+   "buildingOwnedLevel",
+   "buildingStockCostChipsHtml",
+   "buildingStockCostForItem",
+   "buildingUiDisplayLevel",
+   "cancelQueueItem",
+   "cityPracaSplit",
+   "formatResourceUpkeepSummary",
+   "ownerHasSpichlerz",
+   "ownerSurowcePoolFor",
+   "readPodzialPracy",
+   "religiaSzPunkty",
+   "renderSurowce",
+   "resolveCityHealth",
+   "resolveEmpireSnap",
+   "stockCostForQueueItem",
+   "sumOwnedBuildingsUpkeep",
+   "unitStockCostForItem"
+  ],
+  "5": [
+   "ENTITY_CARD_BUILDING_STYLE_ID",
+   "TEREN_COL",
+   "TEREN_LETTER",
+   "_legacyBuildBuildingDetailCard",
+   "_legacyBuildUnitDetailCard",
+   "appendBuildingRequirementsBlock",
+   "appendCitySkarbiecBalance",
+   "appendGarrisonUnitChip",
+   "appendPodzialHandlu",
+   "appendTechDetailBlock",
+   "buildBuildingBuildTabDetailCard",
+   "buildBuildingDetailCard",
+   "buildBuildingDetailCardViaEntityCard",
+   "buildBuildingInfocard",
+   "buildRecruitTabDetailCard",
+   "buildTopBarZlotoDetailCard",
+   "buildUpgradeBonusDetailCard",
+   "buildingCanBuildNow",
+   "buildingConverterProductionDisplay",
+   "buildingLocationRequirementMet",
+   "buildingRequirementChips",
+   "collectEraPreviewEntries",
+   "empireRekruciAffordable",
+   "empireRekruciTotal",
+   "ensureEntityCardBuildingStyles",
+   "formatBuildingCatalogLockHint",
+   "formatBuildingPreviewHint",
+   "hexDist",
+   "improvementRangeRow",
+   "improvementsInCityRange",
+   "maxAffordableRecruitQuantity",
+   "missingTechSteps",
+   "okStat",
+   "okolicaPreviewRadius",
+   "productionCtxForCity",
+   "rangeName",
+   "recruitManpowerCost",
+   "recruitUnit",
+   "renderEkonomiaStrip",
+   "renderPodzialHandlu",
+   "renderSplitPane",
+   "ringsTiles",
+   "sortProductionItemsByBuildability",
+   "unitResourceUpkeepChipsHtml",
+   "unitStockCostChipsHtml"
+  ],
+  "6": [
+   "IMPROVEMENT_KEY_TO_NAME",
+   "activeCity",
+   "activeMap",
+   "activeOnClose",
+   "appendBuildQueueSection",
+   "appendBuildableItemRow",
+   "appendCatalogBuildingRow",
+   "appendOkolicaYieldLabel",
+   "appendOwnedBuildingRow",
+   "appendPodzialPracyInfo",
+   "appendRecruitmentQueue",
+   "appendUnitRecruitCompactRow",
+   "attachUnitRowThumb",
+   "buildGarnizonDetailCard",
+   "buildOkolicaDetailCard",
+   "buildOwnedBuildingsDetailCard",
+   "buildUnitDetailCard",
+   "buildUnitDetailCardViaEntityCard",
+   "cityPanelTitle",
+   "clearGarrisonPanel",
+   "drawerTabButtons",
+   "fireOkolicaTileToggle",
+   "formatTileYieldShort",
+   "headerOrderBadge",
+   "navigateCityPanel",
+   "okolicaHexPoints",
+   "okolicaTileHasWorkerAt",
+   "ownerCities",
+   "ownerCitiesForNav",
+   "pinGarrisonPanel",
+   "pinnedGarrisonCityId",
+   "renderBuildList",
+   "renderTopBarGarrison",
+   "renderWorkedPreview",
+   "rootEl",
+   "setGarrisonLabelPinned",
+   "tileYieldLabel"
+  ],
+  "7": [
+   "CityPanelUxMounts",
+   "W3_STAT_RES_KEY",
+   "appendBudowaListaBar",
+   "appendBudowaToolbarProfiles",
+   "appendOkolicaToolbarProfiles",
+   "appendPanel",
+   "appendSectionTitleWithDetails",
+   "buildCityOnlyW3FlankChips",
+   "buildCityResourceStatItems",
+   "capitalBadgeOrButtonHtml",
+   "renderBuildSplitPanel",
+   "renderCityHeaderCompact",
+   "renderKultura",
+   "renderOkolica",
+   "renderProd",
+   "renderSpoleczenstwo",
+   "renderTopStatsBar",
+   "renderZdrowie",
+   "resolveActiveCity",
+   "resolveDetailSideHint",
+   "skeleton",
+   "uxSectionRefresh",
+   "w3CityChip"
+  ],
+  "8": [
+   "CADUCEUS_SVG",
+   "CITY_PANEL_ICONS_LEFT",
+   "CITY_PANEL_ICONS_RIGHT",
+   "CityPanelCityParamTab",
+   "CityPanelIconTab",
+   "CityPanelProductionTab",
+   "activeCityPanelTab",
+   "buildPracaDetailCard",
+   "buildTopBarPracaDetailCard",
+   "cityRailIconHtml",
+   "clearCityPanelUxMode",
+   "closeCityPanelIfOpen",
+   "closeCityView",
+   "getOpenCityPanelCityId",
+   "hideCityPanel",
+   "isCityPanelOpen",
+   "isProductionPanelTab",
+   "paintCityPanelSections",
+   "refreshCityPanelIfOpen",
+   "renderBuildingsOwned",
+   "renderBuildingsOwnedRightPanel",
+   "renderCityExitFooter",
+   "renderCityIconLeftRail",
+   "renderCityIconRail",
+   "renderCivMapChrome",
+   "renderCivResourceTopBar",
+   "renderHandelSlidersPanel",
+   "renderLeftPanelTab",
+   "renderMagazyn",
+   "renderOkolicaPanel",
+   "renderOwnedBuildingsBar",
+   "renderPodzialPracy",
+   "renderPurchasableUnits",
+   "renderReligia",
+   "renderRightPanelTab",
+   "renderWealth",
+   "showCityPanel",
+   "wireTopBarStatDetails",
+   "withW4TabCard"
+  ],
+  "9": []
+ },
+ "block_info": {
+  "1": {
+   "loc": 1360,
+   "units": 139,
+   "sections": {
+    "G": 32,
+    "Q": 20,
+    "C": 18,
+    "P": 13,
+    "E": 11,
+    "R": 8,
+    "B": 7,
+    "F": 7,
+    "J": 6,
+    "L": 6,
+    "D": 4,
+    "A2": 3,
+    "I": 3,
+    "O": 1
+   },
+   "first_line": 285,
+   "last_line": 7390,
+   "top_units": [
+    "buildingBonusChipsHtml",
+    "isDevOnlyPlayerText",
+    "stripInlineDevAnnotations",
+    "CityView",
+    "buildingOwnedBonusCompactHtml",
+    "buildGrowthProgressUi"
+   ]
+  },
+  "2": {
+   "loc": 1499,
+   "units": 23,
+   "sections": {
+    "L": 8,
+    "P": 8,
+    "R": 3,
+    "H": 1,
+    "J": 1,
+    "N": 1,
+    "Q": 1
+   },
+   "first_line": 1948,
+   "last_line": 7294,
+   "top_units": [
+    "ensureStyles",
+    "appendW4SignedBreakdownSections",
+    "appendW4PctMetricBlock",
+    "appendSignedBreakdownSections",
+    "appendBreakdownLines",
+    "appendIndywidualneToggle"
+   ]
+  },
+  "3": {
+   "loc": 1466,
+   "units": 36,
+   "sections": {
+    "B": 7,
+    "R": 7,
+    "D": 4,
+    "E": 4,
+    "I": 3,
+    "J": 3,
+    "AA": 2,
+    "C": 2,
+    "L": 2,
+    "A2": 1,
+    "O": 1
+   },
+   "first_line": 314,
+   "last_line": 11055,
+   "top_units": [
+    "CityPanelConfig",
+    "computeView",
+    "buildHandelDetailCard",
+    "computeOrderStateLocal",
+    "bindRecruitQueueDragReorder",
+    "appendWealthCompactStrip"
+   ]
+  },
+  "4": {
+   "loc": 1388,
+   "units": 32,
+   "sections": {
+    "P": 9,
+    "O": 6,
+    "Q": 5,
+    "I": 4,
+    "B": 1,
+    "C": 1,
+    "D": 1,
+    "E": 1,
+    "F": 1,
+    "J": 1,
+    "K": 1,
+    "M": 1
+   },
+   "first_line": 794,
+   "last_line": 6756,
+   "top_units": [
+    "buildKulturaDetailCard",
+    "buildPorzadekDetailCard",
+    "buildWealthDetailCard",
+    "buildRacjeWzrostDetailCard",
+    "buildTopBarLudnoscDetailCard",
+    "buildTopBarZywnoscDetailCard"
+   ]
+  },
+  "5": {
+   "loc": 1500,
+   "units": 45,
+   "sections": {
+    "W": 9,
+    "Q": 7,
+    "S": 7,
+    "T": 7,
+    "U": 7,
+    "M": 4,
+    "V": 2,
+    "O": 1,
+    "R": 1
+   },
+   "first_line": 4638,
+   "last_line": 9616,
+   "top_units": [
+    "_legacyBuildBuildingDetailCard",
+    "buildBuildingInfocard",
+    "buildBuildingBuildTabDetailCard",
+    "buildingRequirementChips",
+    "appendPodzialHandlu",
+    "buildTopBarZlotoDetailCard"
+   ]
+  },
+  "6": {
+   "loc": 1439,
+   "units": 37,
+   "sections": {
+    "X": 14,
+    "W": 9,
+    "S": 5,
+    "T": 3,
+    "U": 3,
+    "V": 2,
+    "M": 1
+   },
+   "first_line": 5028,
+   "last_line": 10246,
+   "top_units": [
+    "renderWorkedPreview",
+    "appendOwnedBuildingRow",
+    "appendBuildQueueSection",
+    "renderBuildList",
+    "buildOkolicaDetailCard",
+    "appendRecruitmentQueue"
+   ]
+  },
+  "7": {
+   "loc": 1493,
+   "units": 23,
+   "sections": {
+    "AC": 4,
+    "X": 4,
+    "Y": 4,
+    "AB": 3,
+    "Z": 2,
+    "I": 1,
+    "J": 1,
+    "K": 1,
+    "U": 1,
+    "V": 1,
+    "W": 1
+   },
+   "first_line": 3295,
+   "last_line": 11539,
+   "top_units": [
+    "appendBudowaListaBar",
+    "buildCityOnlyW3FlankChips",
+    "renderOkolica",
+    "renderSpoleczenstwo",
+    "renderKultura",
+    "appendBudowaToolbarProfiles"
+   ]
+  },
+  "8": {
+   "loc": 1430,
+   "units": 39,
+   "sections": {
+    "AD": 15,
+    "AE": 5,
+    "Z": 4,
+    "M": 3,
+    "O": 2,
+    "U": 2,
+    "V": 2,
+    "X": 2,
+    "AA": 1,
+    "AB": 1,
+    "K": 1,
+    "N": 1
+   },
+   "first_line": 4112,
+   "last_line": 11986,
+   "top_units": [
+    "renderMagazyn",
+    "renderReligia",
+    "paintCityPanelSections",
+    "renderPurchasableUnits",
+    "buildPracaDetailCard",
+    "renderPodzialPracy"
+   ]
+  },
+  "9": {
+   "loc": 127,
+   "units": 3,
+   "sections": {
+    "AD": 1,
+    "X": 1,
+    "Z": 1
+   },
+   "first_line": 10209,
+   "last_line": 11947,
+   "top_units": [
+    "rerender",
+    "renderCityIconRightRail",
+    "switchCity"
+   ]
+  }
+ },
+ "chunk_edges": {
+  "1": {},
+  "2": {
+   "1": [
+    "ensureStyles",
+    "BUILD_QUEUE_VISIBLE"
+   ]
+  },
+  "3": {
+   "1": [
+    "CityPanelConfig",
+    "CityMoneySnap"
+   ],
+   "2": [
+    "playerFacingNote",
+    "bindTechHintLinkDelegation"
+   ]
+  },
+  "4": {
+   "1": [
+    "bindBuildQueueDragReorder",
+    "reorderQueueItem"
+   ],
+   "2": [
+    "renderSurowce",
+    "appendSurowceGrid"
+   ],
+   "3": [
+    "bindBuildQueueDragReorder",
+    "getProd"
+   ]
+  },
+  "5": {
+   "1": [
+    "renderEkonomiaStrip",
+    "CityView"
+   ],
+   "2": [
+    "appendPodzialHandlu",
+    "appendIndywidualneToggle"
+   ],
+   "3": [
+    "appendPodzialHandlu",
+    "cfg"
+   ],
+   "4": [
+    "appendCitySkarbiecBalance",
+    "formatResourceUpkeepSummary"
+   ]
+  },
+  "6": {
+   "1": [
+    "appendPodzialPracyInfo",
+    "CityView"
+   ],
+   "2": [
+    "attachUnitRowThumb",
+    "fillIconElement"
+   ],
+   "3": [
+    "appendPodzialPracyInfo",
+    "cfg"
+   ],
+   "4": [
+    "appendPodzialPracyInfo",
+    "cityPracaSplit"
+   ],
+   "5": [
+    "buildOwnedBuildingsDetailCard",
+    "_legacyBuildUnitDetailCard"
+   ]
+  },
+  "7": {
+   "1": [
+    "renderSpoleczenstwo",
+    "PH"
+   ],
+   "2": [
+    "renderSpoleczenstwo",
+    "appendCitizenUpkeepBlock"
+   ],
+   "3": [
+    "renderSpoleczenstwo",
+    "cfg"
+   ],
+   "4": [
+    "renderSpoleczenstwo",
+    "buildPorzadekDetailCard"
+   ],
+   "5": [
+    "renderProd",
+    "buildBuildingBuildTabDetailCard"
+   ],
+   "6": [
+    "renderKultura",
+    "activeMap"
+   ]
+  },
+  "8": {
+   "1": [
+    "renderReligia",
+    "BreakdownLine"
+   ],
+   "2": [
+    "renderReligia",
+    "appendTabIndicators"
+   ],
+   "3": [
+    "renderReligia",
+    "appendCompositionBlock"
+   ],
+   "4": [
+    "renderReligia",
+    "buildTopBarReligiaDetailCard"
+   ],
+   "5": [
+    "wireTopBarStatDetails",
+    "buildTopBarZlotoDetailCard"
+   ],
+   "6": [
+    "renderReligia",
+    "activeMap"
+   ],
+   "7": [
+    "renderReligia",
+    "appendSectionTitleWithDetails"
+   ]
+  },
+  "9": {
+   "1": [
+    "renderCityIconRightRail",
+    "daninaLabelForCity"
+   ],
+   "3": [
+    "switchCity",
+    "cfg"
+   ],
+   "5": [
+    "rerender",
+    "renderEkonomiaStrip"
+   ],
+   "6": [
+    "switchCity",
+    "activeCity"
+   ],
+   "7": [
+    "rerender",
+    "renderKultura"
+   ],
+   "8": [
+    "renderCityIconRightRail",
+    "CITY_PANEL_ICONS_RIGHT"
+   ]
+  }
+ },
+ "exports": {
+  "1": {
+   "CityMoneySnap": [
+    3
+   ],
+   "EmpireHudSnap": [
+    3,
+    4,
+    5,
+    8
+   ],
+   "GarrisonUnit": [
+    3,
+    5,
+    6
+   ],
+   "PodzialHandluSplit": [
+    3,
+    5
+   ],
+   "PodzialPracySplit": [
+    3,
+    4
+   ],
+   "normalizeResourceAccess": [
+    3,
+    4
+   ],
+   "tury": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "cachedData": [
+    3
+   ],
+   "localProd": [
+    3
+   ],
+   "reorderRecruitQueueItem": [
+    3
+   ],
+   "reorderQueueItem": [
+    4
+   ],
+   "CityWithSliders": [
+    4
+   ],
+   "DEFAULT_PODZIAL_PRACY": [
+    4
+   ],
+   "CityView": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "resolveCityFedForUi": [
+    3,
+    4,
+    7,
+    8
+   ],
+   "clampedGrowthBreakdown": [
+    3,
+    4,
+    7,
+    8
+   ],
+   "el": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "fmtDecPl": [
+    3,
+    4,
+    7
+   ],
+   "gridDetailRow": [
+    3,
+    4,
+    5,
+    6,
+    8
+   ],
+   "BUILD_QUEUE_VISIBLE": [
+    2,
+    6
+   ],
+   "CITY_PANEL_ICON_GLYPH_EM": [
+    2
+   ],
+   "CITY_PANEL_ICON_RAIL_VERT_EM": [
+    2,
+    8
+   ],
+   "LIST_ROW_HEIGHT_COMPACT": [
+    2,
+    6,
+    8
+   ],
+   "LIST_ROW_HEIGHT_EM": [
+    2
+   ],
+   "LIST_SCROLL_VISIBLE": [
+    2
+   ],
+   "QUEUE_ROW_EM": [
+    2,
+    6
+   ],
+   "RECRUIT_QUEUE_VISIBLE": [
+    2,
+    6
+   ],
+   "STYLE_ID": [
+    2
+   ],
+   "szPktDisplay": [
+    4
+   ],
+   "PH": [
+    7,
+    8
+   ],
+   "TabIndicatorChip": [
+    2,
+    7,
+    8
+   ],
+   "cityPanelChipIcon": [
+    7,
+    8
+   ],
+   "cityPanelChipIconWrap": [
+    3,
+    5,
+    6,
+    7,
+    8
+   ],
+   "orderBandEffectShort": [
+    7
+   ],
+   "pctSubheadHtml": [
+    2,
+    7,
+    8
+   ],
+   "szLinesDoWyswietlenia": [
+    4,
+    7
+   ],
+   "HANDEL_ZAMOZNOSC_LABEL": [
+    3,
+    4,
+    5
+   ],
+   "appendDetailAlgo": [
+    3,
+    4,
+    5,
+    6,
+    8
+   ],
+   "appendDetailSection": [
+    3,
+    4,
+    5,
+    6,
+    8
+   ],
+   "cpInlineIcons": [
+    3,
+    4,
+    6,
+    7,
+    8
+   ],
+   "daninaLabelForCity": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "signed": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "resourceBrandIconHtml": [
+    2,
+    3
+   ],
+   "BreakdownLine": [
+    2,
+    7,
+    8
+   ],
+   "shortIndLabel": [
+    8
+   ],
+   "statChip": [
+    2
+   ],
+   "plonyChipRowHtml": [
+    2,
+    5
+   ],
+   "HANDEL_KORUPCJA_PCT_PLACEHOLDER": [
+    3,
+    5
+   ],
+   "estimateHandelChips": [
+    3,
+    4,
+    5,
+    7,
+    8
+   ],
+   "statChipBrand": [
+    5,
+    6
+   ],
+   "PULA_LBL_PELNA": [
+    6,
+    8
+   ],
+   "setNoteHtml": [
+    3,
+    4,
+    6,
+    8
+   ],
+   "PULA_LBL": [
+    6,
+    8
+   ],
+   "PULA_TIP": [
+    6,
+    8
+   ],
+   "psiRowLabel": [
+    6
+   ],
+   "buildGrowthProgressUi": [
+    8
+   ],
+   "effectiveGrowthPctForUi": [
+    4,
+    7,
+    8
+   ],
+   "growthBreakdownRow": [
+    8
+   ],
+   "loafIconHtml": [
+    4,
+    7,
+    8
+   ],
+   "wyzwienieSummaryLabel": [
+    4,
+    8
+   ],
+   "pluralTur": [
+    4,
+    7
+   ],
+   "attachTopBarStat": [
+    8
+   ],
+   "CS_RES_STRIP_CORE": [
+    4
+   ],
+   "CS_RES_STRIP_ICON_PX": [
+    4
+   ],
+   "CS_RES_STRIP_ORDER": [
+    4
+   ],
+   "findUnitDef": [
+    4,
+    5,
+    6
+   ],
+   "applyBuildButtonVisualState": [
+    2,
+    4
+   ],
+   "buildingIconHtml": [
+    2,
+    5,
+    6
+   ],
+   "productionItemIconHtml": [
+    2
+   ],
+   "BuildingReqChip": [
+    2,
+    4,
+    5
+   ],
+   "buildingRequirementChipsHtml": [
+    2,
+    4
+   ],
+   "buildingUpkeepDisplay": [
+    4,
+    5,
+    6
+   ],
+   "findBuildingDef": [
+    5,
+    6,
+    7
+   ],
+   "isEmptyDataVal": [
+    3,
+    5
+   ],
+   "parentBuildingName": [
+    5
+   ],
+   "BUILDING_REQ_SECTION_LABELS": [
+    2,
+    5
+   ],
+   "BuildingReqChipKind": [
+    2
+   ],
+   "BUILDING_UPKEEP_ZERO_LABEL": [
+    5,
+    8
+   ],
+   "buildingBonusChipsHtml": [
+    5
+   ],
+   "epochLabelNum": [
+    5
+   ],
+   "formatBuildingUpkeepRowHtml": [
+    5,
+    6
+   ],
+   "isDevOnlyPlayerText": [
+    3
+   ],
+   "stripInlineDevAnnotations": [
+    3
+   ],
+   "YIELD_BRAND": [
+    5
+   ],
+   "formatBuildingUpkeepGridValue": [
+    5
+   ],
+   "formatBuildingYieldDetailValue": [
+    5
+   ],
+   "formatBuildingYieldScaleRow": [
+    5
+   ],
+   "yieldBrandIconHtml": [
+    5
+   ],
+   "formatBuildingUpkeepTotalHtml": [
+    6,
+    8
+   ],
+   "sumOwnedBuildingsResourceUpkeep": [
+    6,
+    8
+   ],
+   "unitIconHtml": [
+    6
+   ],
+   "moveRecruitQueueItem": [
+    6
+   ],
+   "moveQueueItem": [
+    6
+   ],
+   "queueItemCumulativeEta": [
+    6
+   ],
+   "queueItemOwnEta": [
+    6
+   ],
+   "formatBuildEtaLabel": [
+    7
+   ],
+   "setShowEraBuildingPreview": [
+    6
+   ],
+   "showEraBuildingPreview": [
+    6
+   ],
+   "LIST_SCROLL_VISIBLE_CATALOG": [
+    8
+   ],
+   "buildingOwnedBonusCompactHtml": [
+    6
+   ],
+   "formatConverterProductionRowHtml": [
+    6
+   ],
+   "formatResourceUpkeepText": [
+    8
+   ],
+   "CITY_TABS": [
+    6
+   ],
+   "activeDrawerTab": [
+    6,
+    7
+   ],
+   "cityTabIconHtml": [
+    6
+   ],
+   "CityDrawerTab": [
+    7
+   ],
+   "SCALES": [
+    7
+   ],
+   "cityPanelBrandIcon": [
+    7,
+    8
+   ],
+   "scalePx": [
+    7,
+    8
+   ],
+   "resGlobalLocal": [
+    7
+   ],
+   "resLocalOnly": [
+    7
+   ],
+   "resPracaSplitBar": [
+    7
+   ],
+   "OKOLICA_FOCUS_BRAND": [
+    7
+   ],
+   "OKOLICA_FOCUS_SHORT": [
+    7
+   ],
+   "setOkolicaProfileButtonContent": [
+    7
+   ],
+   "BUDOWA_FOCUS_BRAND": [
+    7
+   ],
+   "BUDOWA_FOCUS_TITLE": [
+    7
+   ],
+   "setOkolicaProfileButtonIconOnly": [
+    7
+   ]
+  },
+  "2": {
+   "appendCitizenUpkeepBlock": [
+    7
+   ],
+   "appendTabIndicators": [
+    7,
+    8
+   ],
+   "appendW4PctMetricBlock": [
+    7
+   ],
+   "appendW4SignedBreakdownSections": [
+    7,
+    8
+   ],
+   "appendSurowceGrid": [
+    4
+   ],
+   "appendIndywidualneToggle": [
+    5,
+    8
+   ],
+   "techIconHintSpan": [
+    5
+   ],
+   "appendBuildingRequirementChipSections": [
+    5
+   ],
+   "fillIconElement": [
+    5,
+    6
+   ],
+   "bindTechHintLinkDelegation": [
+    3
+   ],
+   "ensureStyles": [
+    5,
+    8
+   ],
+   "makeBuildingThumb": [
+    5
+   ],
+   "createScrollList": [
+    6,
+    8
+   ],
+   "productionQueueIconSpan": [
+    6
+   ],
+   "appendProductionPicon": [
+    7
+   ],
+   "appendDisabledBuildActionButtons": [
+    6
+   ],
+   "appendBuildingInlineIcon": [
+    6
+   ]
+  },
+  "3": {
+   "getProd": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "setProd": [
+    4,
+    6,
+    7
+   ],
+   "cfg": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "computeView": [
+    4,
+    8
+   ],
+   "gameData": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "computeOrderStateLocal": [
+    4,
+    7
+   ],
+   "territoryNodesForPanel": [
+    4
+   ],
+   "resolveOrderState": [
+    7,
+    8
+   ],
+   "appendDetailFormula": [
+    4,
+    5,
+    6,
+    8
+   ],
+   "appendDetailGrid": [
+    4,
+    5,
+    6,
+    8
+   ],
+   "readPodzialHandlu": [
+    4,
+    5,
+    7,
+    8
+   ],
+   "buildZdrowieDetailCard": [
+    7
+   ],
+   "buildSurowceDetailCard": [
+    4
+   ],
+   "CityPanelConfig": [
+    4
+   ],
+   "appendCompositionBlock": [
+    4,
+    7,
+    8
+   ],
+   "isMeCity": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "appendWealthCompactStrip": [
+    8
+   ],
+   "buildGrowthProgressTooltipCard": [
+    8
+   ],
+   "cityFoodSplit": [
+    4,
+    7,
+    8
+   ],
+   "cityGrowthLive": [
+    8
+   ],
+   "buildTopBarRekruciDetailCard": [
+    8
+   ],
+   "isCapital": [
+    5
+   ],
+   "appendDetailGridIn": [
+    5
+   ],
+   "playerFacingNote": [
+    5
+   ],
+   "techPrereqChain": [
+    5
+   ],
+   "beginBuildingDetailTile": [
+    5,
+    6
+   ],
+   "unitExtraField": [
+    5
+   ],
+   "bindRecruitQueueDragReorder": [
+    6
+   ],
+   "buildHandelDetailCard": [
+    8
+   ]
+  },
+  "4": {
+   "buildPorzadekDetailCard": [
+    7,
+    8
+   ],
+   "resolveCityHealth": [
+    7
+   ],
+   "buildKulturaDetailCard": [
+    7
+   ],
+   "buildTopBarKulturaDetailCard": [
+    7,
+    8
+   ],
+   "resolveEmpireSnap": [
+    6,
+    7,
+    8
+   ],
+   "buildTopBarReligiaDetailCard": [
+    8
+   ],
+   "religiaSzPunkty": [
+    8
+   ],
+   "formatResourceUpkeepSummary": [
+    5
+   ],
+   "buildWealthDetailCard": [
+    8
+   ],
+   "cityPracaSplit": [
+    6,
+    7,
+    8
+   ],
+   "readPodzialPracy": [
+    8
+   ],
+   "buildRacjeWzrostDetailCard": [
+    8
+   ],
+   "buildTopBarLudnoscDetailCard": [
+    8
+   ],
+   "buildTopBarNaukaDetailCard": [
+    8
+   ],
+   "buildTopBarZywnoscDetailCard": [
+    8
+   ],
+   "ownerSurowcePoolFor": [
+    5,
+    6
+   ],
+   "appendBuildActionButtons": [
+    5,
+    6
+   ],
+   "buildingStockCostChipsHtml": [
+    5
+   ],
+   "buildingUiDisplayLevel": [
+    5
+   ],
+   "sumOwnedBuildingsUpkeep": [
+    6,
+    8
+   ],
+   "bindBuildQueueDragReorder": [
+    6
+   ],
+   "cancelQueueItem": [
+    6,
+    7
+   ],
+   "appendCityResourceStockStrip": [
+    6
+   ],
+   "appendRecruitMilitaryResourceStrip": [
+    8
+   ],
+   "buildingOwnedLevel": [
+    6
+   ],
+   "renderSurowce": [
+    7
+   ]
+  },
+  "5": {
+   "buildTopBarZlotoDetailCard": [
+    8
+   ],
+   "_legacyBuildUnitDetailCard": [
+    6
+   ],
+   "appendTechDetailBlock": [
+    6
+   ],
+   "buildBuildingDetailCardViaEntityCard": [
+    6
+   ],
+   "ensureEntityCardBuildingStyles": [
+    6
+   ],
+   "_legacyBuildBuildingDetailCard": [
+    6
+   ],
+   "buildBuildingBuildTabDetailCard": [
+    6,
+    7
+   ],
+   "buildingCanBuildNow": [
+    6
+   ],
+   "productionCtxForCity": [
+    6,
+    7,
+    8
+   ],
+   "empireRekruciAffordable": [
+    6
+   ],
+   "empireRekruciTotal": [
+    6
+   ],
+   "maxAffordableRecruitQuantity": [
+    6
+   ],
+   "recruitManpowerCost": [
+    6
+   ],
+   "recruitUnit": [
+    6
+   ],
+   "unitResourceUpkeepChipsHtml": [
+    6
+   ],
+   "unitStockCostChipsHtml": [
+    6
+   ],
+   "collectEraPreviewEntries": [
+    6
+   ],
+   "formatBuildingCatalogLockHint": [
+    6
+   ],
+   "formatBuildingPreviewHint": [
+    6
+   ],
+   "sortProductionItemsByBuildability": [
+    6
+   ],
+   "buildRecruitTabDetailCard": [
+    8
+   ],
+   "buildBuildingDetailCard": [
+    6
+   ],
+   "buildUpgradeBonusDetailCard": [
+    6
+   ],
+   "buildingConverterProductionDisplay": [
+    6
+   ],
+   "appendGarrisonUnitChip": [
+    6
+   ],
+   "improvementRangeRow": [
+    6
+   ],
+   "improvementsInCityRange": [
+    6
+   ],
+   "rangeName": [
+    6,
+    7
+   ],
+   "ringsTiles": [
+    6,
+    7
+   ],
+   "TEREN_COL": [
+    6
+   ],
+   "TEREN_LETTER": [
+    6
+   ],
+   "hexDist": [
+    6
+   ],
+   "okolicaPreviewRadius": [
+    6
+   ],
+   "okStat": [
+    7
+   ],
+   "appendPodzialHandlu": [
+    8
+   ]
+  },
+  "6": {
+   "activeMap": [
+    7,
+    8
+   ],
+   "appendPodzialPracyInfo": [
+    8
+   ],
+   "appendBuildQueueSection": [
+    7
+   ],
+   "appendRecruitmentQueue": [
+    7
+   ],
+   "appendUnitRecruitCompactRow": [
+    8
+   ],
+   "appendOwnedBuildingRow": [
+    8
+   ],
+   "buildOwnedBuildingsDetailCard": [
+    8
+   ],
+   "renderBuildList": [
+    7
+   ],
+   "buildOkolicaDetailCard": [
+    7
+   ],
+   "renderWorkedPreview": [
+    7
+   ],
+   "cityPanelTitle": [
+    7,
+    8
+   ],
+   "drawerTabButtons": [
+    7
+   ],
+   "headerOrderBadge": [
+    7
+   ],
+   "ownerCities": [
+    7,
+    8
+   ],
+   "activeCity": [
+    7,
+    8
+   ],
+   "clearGarrisonPanel": [
+    8
+   ],
+   "activeOnClose": [
+    8
+   ],
+   "renderTopBarGarrison": [
+    8
+   ],
+   "pinnedGarrisonCityId": [
+    8
+   ],
+   "rootEl": [
+    8
+   ]
+  },
+  "7": {
+   "appendSectionTitleWithDetails": [
+    8
+   ],
+   "resolveActiveCity": [
+    8
+   ],
+   "uxSectionRefresh": [
+    8
+   ],
+   "w3CityChip": [
+    8
+   ],
+   "buildCityOnlyW3FlankChips": [
+    8
+   ],
+   "capitalBadgeOrButtonHtml": [
+    8
+   ],
+   "renderOkolica": [
+    8
+   ],
+   "renderBuildSplitPanel": [
+    8
+   ],
+   "renderKultura": [
+    8
+   ],
+   "renderSpoleczenstwo": [
+    8
+   ],
+   "renderZdrowie": [
+    8
+   ],
+   "CityPanelUxMounts": [
+    8
+   ],
+   "appendPanel": [
+    8
+   ],
+   "renderProd": [
+    8
+   ]
+  }
+ },
+ "imports": {
+  "2": [
+   [
+    "BUILDING_REQ_SECTION_LABELS",
+    1
+   ],
+   [
+    "BUILD_QUEUE_VISIBLE",
+    1
+   ],
+   [
+    "BreakdownLine",
+    1
+   ],
+   [
+    "BuildingReqChip",
+    1
+   ],
+   [
+    "BuildingReqChipKind",
+    1
+   ],
+   [
+    "CITY_PANEL_ICON_GLYPH_EM",
+    1
+   ],
+   [
+    "CITY_PANEL_ICON_RAIL_VERT_EM",
+    1
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "LIST_ROW_HEIGHT_COMPACT",
+    1
+   ],
+   [
+    "LIST_ROW_HEIGHT_EM",
+    1
+   ],
+   [
+    "LIST_SCROLL_VISIBLE",
+    1
+   ],
+   [
+    "QUEUE_ROW_EM",
+    1
+   ],
+   [
+    "RECRUIT_QUEUE_VISIBLE",
+    1
+   ],
+   [
+    "STYLE_ID",
+    1
+   ],
+   [
+    "TabIndicatorChip",
+    1
+   ],
+   [
+    "applyBuildButtonVisualState",
+    1
+   ],
+   [
+    "buildingIconHtml",
+    1
+   ],
+   [
+    "buildingRequirementChipsHtml",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "pctSubheadHtml",
+    1
+   ],
+   [
+    "plonyChipRowHtml",
+    1
+   ],
+   [
+    "productionItemIconHtml",
+    1
+   ],
+   [
+    "resourceBrandIconHtml",
+    1
+   ],
+   [
+    "statChip",
+    1
+   ]
+  ],
+  "3": [
+   [
+    "CityMoneySnap",
+    1
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "EmpireHudSnap",
+    1
+   ],
+   [
+    "GarrisonUnit",
+    1
+   ],
+   [
+    "HANDEL_KORUPCJA_PCT_PLACEHOLDER",
+    1
+   ],
+   [
+    "HANDEL_ZAMOZNOSC_LABEL",
+    1
+   ],
+   [
+    "PodzialHandluSplit",
+    1
+   ],
+   [
+    "PodzialPracySplit",
+    1
+   ],
+   [
+    "appendDetailAlgo",
+    1
+   ],
+   [
+    "appendDetailSection",
+    1
+   ],
+   [
+    "bindTechHintLinkDelegation",
+    2
+   ],
+   [
+    "cachedData",
+    1
+   ],
+   [
+    "cityPanelChipIconWrap",
+    1
+   ],
+   [
+    "clampedGrowthBreakdown",
+    1
+   ],
+   [
+    "cpInlineIcons",
+    1
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "estimateHandelChips",
+    1
+   ],
+   [
+    "fmtDecPl",
+    1
+   ],
+   [
+    "gridDetailRow",
+    1
+   ],
+   [
+    "isDevOnlyPlayerText",
+    1
+   ],
+   [
+    "isEmptyDataVal",
+    1
+   ],
+   [
+    "localProd",
+    1
+   ],
+   [
+    "normalizeResourceAccess",
+    1
+   ],
+   [
+    "reorderRecruitQueueItem",
+    1
+   ],
+   [
+    "resolveCityFedForUi",
+    1
+   ],
+   [
+    "resourceBrandIconHtml",
+    1
+   ],
+   [
+    "setNoteHtml",
+    1
+   ],
+   [
+    "stripInlineDevAnnotations",
+    1
+   ],
+   [
+    "tury",
+    1
+   ]
+  ],
+  "4": [
+   [
+    "BuildingReqChip",
+    1
+   ],
+   [
+    "CS_RES_STRIP_CORE",
+    1
+   ],
+   [
+    "CS_RES_STRIP_ICON_PX",
+    1
+   ],
+   [
+    "CS_RES_STRIP_ORDER",
+    1
+   ],
+   [
+    "CityPanelConfig",
+    3
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "CityWithSliders",
+    1
+   ],
+   [
+    "DEFAULT_PODZIAL_PRACY",
+    1
+   ],
+   [
+    "EmpireHudSnap",
+    1
+   ],
+   [
+    "HANDEL_ZAMOZNOSC_LABEL",
+    1
+   ],
+   [
+    "PodzialPracySplit",
+    1
+   ],
+   [
+    "appendCompositionBlock",
+    3
+   ],
+   [
+    "appendDetailAlgo",
+    1
+   ],
+   [
+    "appendDetailFormula",
+    3
+   ],
+   [
+    "appendDetailGrid",
+    3
+   ],
+   [
+    "appendDetailSection",
+    1
+   ],
+   [
+    "appendSurowceGrid",
+    2
+   ],
+   [
+    "applyBuildButtonVisualState",
+    1
+   ],
+   [
+    "buildSurowceDetailCard",
+    3
+   ],
+   [
+    "buildingRequirementChipsHtml",
+    1
+   ],
+   [
+    "buildingUpkeepDisplay",
+    1
+   ],
+   [
+    "cfg",
+    3
+   ],
+   [
+    "cityFoodSplit",
+    3
+   ],
+   [
+    "clampedGrowthBreakdown",
+    1
+   ],
+   [
+    "computeOrderStateLocal",
+    3
+   ],
+   [
+    "computeView",
+    3
+   ],
+   [
+    "cpInlineIcons",
+    1
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "effectiveGrowthPctForUi",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "estimateHandelChips",
+    1
+   ],
+   [
+    "findUnitDef",
+    1
+   ],
+   [
+    "fmtDecPl",
+    1
+   ],
+   [
+    "gameData",
+    3
+   ],
+   [
+    "getProd",
+    3
+   ],
+   [
+    "gridDetailRow",
+    1
+   ],
+   [
+    "loafIconHtml",
+    1
+   ],
+   [
+    "normalizeResourceAccess",
+    1
+   ],
+   [
+    "pluralTur",
+    1
+   ],
+   [
+    "readPodzialHandlu",
+    3
+   ],
+   [
+    "reorderQueueItem",
+    1
+   ],
+   [
+    "resolveCityFedForUi",
+    1
+   ],
+   [
+    "setNoteHtml",
+    1
+   ],
+   [
+    "setProd",
+    3
+   ],
+   [
+    "signed",
+    1
+   ],
+   [
+    "szLinesDoWyswietlenia",
+    1
+   ],
+   [
+    "szPktDisplay",
+    1
+   ],
+   [
+    "territoryNodesForPanel",
+    3
+   ],
+   [
+    "tury",
+    1
+   ],
+   [
+    "wyzwienieSummaryLabel",
+    1
+   ]
+  ],
+  "5": [
+   [
+    "BUILDING_REQ_SECTION_LABELS",
+    1
+   ],
+   [
+    "BUILDING_UPKEEP_ZERO_LABEL",
+    1
+   ],
+   [
+    "BuildingReqChip",
+    1
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "EmpireHudSnap",
+    1
+   ],
+   [
+    "GarrisonUnit",
+    1
+   ],
+   [
+    "HANDEL_KORUPCJA_PCT_PLACEHOLDER",
+    1
+   ],
+   [
+    "HANDEL_ZAMOZNOSC_LABEL",
+    1
+   ],
+   [
+    "PodzialHandluSplit",
+    1
+   ],
+   [
+    "YIELD_BRAND",
+    1
+   ],
+   [
+    "appendBuildActionButtons",
+    4
+   ],
+   [
+    "appendBuildingRequirementChipSections",
+    2
+   ],
+   [
+    "appendDetailAlgo",
+    1
+   ],
+   [
+    "appendDetailFormula",
+    3
+   ],
+   [
+    "appendDetailGrid",
+    3
+   ],
+   [
+    "appendDetailGridIn",
+    3
+   ],
+   [
+    "appendDetailSection",
+    1
+   ],
+   [
+    "appendIndywidualneToggle",
+    2
+   ],
+   [
+    "beginBuildingDetailTile",
+    3
+   ],
+   [
+    "buildingBonusChipsHtml",
+    1
+   ],
+   [
+    "buildingIconHtml",
+    1
+   ],
+   [
+    "buildingStockCostChipsHtml",
+    4
+   ],
+   [
+    "buildingUiDisplayLevel",
+    4
+   ],
+   [
+    "buildingUpkeepDisplay",
+    1
+   ],
+   [
+    "cfg",
+    3
+   ],
+   [
+    "cityPanelChipIconWrap",
+    1
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "ensureStyles",
+    2
+   ],
+   [
+    "epochLabelNum",
+    1
+   ],
+   [
+    "estimateHandelChips",
+    1
+   ],
+   [
+    "fillIconElement",
+    2
+   ],
+   [
+    "findBuildingDef",
+    1
+   ],
+   [
+    "findUnitDef",
+    1
+   ],
+   [
+    "formatBuildingUpkeepGridValue",
+    1
+   ],
+   [
+    "formatBuildingUpkeepRowHtml",
+    1
+   ],
+   [
+    "formatBuildingYieldDetailValue",
+    1
+   ],
+   [
+    "formatBuildingYieldScaleRow",
+    1
+   ],
+   [
+    "formatResourceUpkeepSummary",
+    4
+   ],
+   [
+    "gameData",
+    3
+   ],
+   [
+    "getProd",
+    3
+   ],
+   [
+    "gridDetailRow",
+    1
+   ],
+   [
+    "isCapital",
+    3
+   ],
+   [
+    "isEmptyDataVal",
+    1
+   ],
+   [
+    "isMeCity",
+    3
+   ],
+   [
+    "makeBuildingThumb",
+    2
+   ],
+   [
+    "ownerSurowcePoolFor",
+    4
+   ],
+   [
+    "parentBuildingName",
+    1
+   ],
+   [
+    "playerFacingNote",
+    3
+   ],
+   [
+    "plonyChipRowHtml",
+    1
+   ],
+   [
+    "readPodzialHandlu",
+    3
+   ],
+   [
+    "signed",
+    1
+   ],
+   [
+    "statChipBrand",
+    1
+   ],
+   [
+    "techIconHintSpan",
+    2
+   ],
+   [
+    "techPrereqChain",
+    3
+   ],
+   [
+    "tury",
+    1
+   ],
+   [
+    "unitExtraField",
+    3
+   ],
+   [
+    "yieldBrandIconHtml",
+    1
+   ]
+  ],
+  "6": [
+   [
+    "BUILD_QUEUE_VISIBLE",
+    1
+   ],
+   [
+    "CITY_TABS",
+    1
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "GarrisonUnit",
+    1
+   ],
+   [
+    "LIST_ROW_HEIGHT_COMPACT",
+    1
+   ],
+   [
+    "PULA_LBL",
+    1
+   ],
+   [
+    "PULA_LBL_PELNA",
+    1
+   ],
+   [
+    "PULA_TIP",
+    1
+   ],
+   [
+    "QUEUE_ROW_EM",
+    1
+   ],
+   [
+    "RECRUIT_QUEUE_VISIBLE",
+    1
+   ],
+   [
+    "TEREN_COL",
+    5
+   ],
+   [
+    "TEREN_LETTER",
+    5
+   ],
+   [
+    "_legacyBuildBuildingDetailCard",
+    5
+   ],
+   [
+    "_legacyBuildUnitDetailCard",
+    5
+   ],
+   [
+    "activeDrawerTab",
+    1
+   ],
+   [
+    "appendBuildActionButtons",
+    4
+   ],
+   [
+    "appendBuildingInlineIcon",
+    2
+   ],
+   [
+    "appendCityResourceStockStrip",
+    4
+   ],
+   [
+    "appendDetailAlgo",
+    1
+   ],
+   [
+    "appendDetailFormula",
+    3
+   ],
+   [
+    "appendDetailGrid",
+    3
+   ],
+   [
+    "appendDetailSection",
+    1
+   ],
+   [
+    "appendDisabledBuildActionButtons",
+    2
+   ],
+   [
+    "appendGarrisonUnitChip",
+    5
+   ],
+   [
+    "appendTechDetailBlock",
+    5
+   ],
+   [
+    "beginBuildingDetailTile",
+    3
+   ],
+   [
+    "bindBuildQueueDragReorder",
+    4
+   ],
+   [
+    "bindRecruitQueueDragReorder",
+    3
+   ],
+   [
+    "buildBuildingBuildTabDetailCard",
+    5
+   ],
+   [
+    "buildBuildingDetailCard",
+    5
+   ],
+   [
+    "buildBuildingDetailCardViaEntityCard",
+    5
+   ],
+   [
+    "buildUpgradeBonusDetailCard",
+    5
+   ],
+   [
+    "buildingCanBuildNow",
+    5
+   ],
+   [
+    "buildingConverterProductionDisplay",
+    5
+   ],
+   [
+    "buildingIconHtml",
+    1
+   ],
+   [
+    "buildingOwnedBonusCompactHtml",
+    1
+   ],
+   [
+    "buildingOwnedLevel",
+    4
+   ],
+   [
+    "buildingUpkeepDisplay",
+    1
+   ],
+   [
+    "cancelQueueItem",
+    4
+   ],
+   [
+    "cfg",
+    3
+   ],
+   [
+    "cityPanelChipIconWrap",
+    1
+   ],
+   [
+    "cityPracaSplit",
+    4
+   ],
+   [
+    "cityTabIconHtml",
+    1
+   ],
+   [
+    "collectEraPreviewEntries",
+    5
+   ],
+   [
+    "cpInlineIcons",
+    1
+   ],
+   [
+    "createScrollList",
+    2
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "empireRekruciAffordable",
+    5
+   ],
+   [
+    "empireRekruciTotal",
+    5
+   ],
+   [
+    "ensureEntityCardBuildingStyles",
+    5
+   ],
+   [
+    "fillIconElement",
+    2
+   ],
+   [
+    "findBuildingDef",
+    1
+   ],
+   [
+    "findUnitDef",
+    1
+   ],
+   [
+    "formatBuildingCatalogLockHint",
+    5
+   ],
+   [
+    "formatBuildingPreviewHint",
+    5
+   ],
+   [
+    "formatBuildingUpkeepRowHtml",
+    1
+   ],
+   [
+    "formatBuildingUpkeepTotalHtml",
+    1
+   ],
+   [
+    "formatConverterProductionRowHtml",
+    1
+   ],
+   [
+    "gameData",
+    3
+   ],
+   [
+    "getProd",
+    3
+   ],
+   [
+    "gridDetailRow",
+    1
+   ],
+   [
+    "hexDist",
+    5
+   ],
+   [
+    "improvementRangeRow",
+    5
+   ],
+   [
+    "improvementsInCityRange",
+    5
+   ],
+   [
+    "isMeCity",
+    3
+   ],
+   [
+    "maxAffordableRecruitQuantity",
+    5
+   ],
+   [
+    "moveQueueItem",
+    1
+   ],
+   [
+    "moveRecruitQueueItem",
+    1
+   ],
+   [
+    "okolicaPreviewRadius",
+    5
+   ],
+   [
+    "ownerSurowcePoolFor",
+    4
+   ],
+   [
+    "productionCtxForCity",
+    5
+   ],
+   [
+    "productionQueueIconSpan",
+    2
+   ],
+   [
+    "psiRowLabel",
+    1
+   ],
+   [
+    "queueItemCumulativeEta",
+    1
+   ],
+   [
+    "queueItemOwnEta",
+    1
+   ],
+   [
+    "rangeName",
+    5
+   ],
+   [
+    "recruitManpowerCost",
+    5
+   ],
+   [
+    "recruitUnit",
+    5
+   ],
+   [
+    "resolveEmpireSnap",
+    4
+   ],
+   [
+    "ringsTiles",
+    5
+   ],
+   [
+    "setNoteHtml",
+    1
+   ],
+   [
+    "setProd",
+    3
+   ],
+   [
+    "setShowEraBuildingPreview",
+    1
+   ],
+   [
+    "showEraBuildingPreview",
+    1
+   ],
+   [
+    "signed",
+    1
+   ],
+   [
+    "sortProductionItemsByBuildability",
+    5
+   ],
+   [
+    "statChipBrand",
+    1
+   ],
+   [
+    "sumOwnedBuildingsResourceUpkeep",
+    1
+   ],
+   [
+    "sumOwnedBuildingsUpkeep",
+    4
+   ],
+   [
+    "tury",
+    1
+   ],
+   [
+    "unitIconHtml",
+    1
+   ],
+   [
+    "unitResourceUpkeepChipsHtml",
+    5
+   ],
+   [
+    "unitStockCostChipsHtml",
+    5
+   ]
+  ],
+  "7": [
+   [
+    "BUDOWA_FOCUS_BRAND",
+    1
+   ],
+   [
+    "BUDOWA_FOCUS_TITLE",
+    1
+   ],
+   [
+    "BreakdownLine",
+    1
+   ],
+   [
+    "CityDrawerTab",
+    1
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "OKOLICA_FOCUS_BRAND",
+    1
+   ],
+   [
+    "OKOLICA_FOCUS_SHORT",
+    1
+   ],
+   [
+    "PH",
+    1
+   ],
+   [
+    "SCALES",
+    1
+   ],
+   [
+    "TabIndicatorChip",
+    1
+   ],
+   [
+    "activeCity",
+    6
+   ],
+   [
+    "activeDrawerTab",
+    1
+   ],
+   [
+    "activeMap",
+    6
+   ],
+   [
+    "appendBuildQueueSection",
+    6
+   ],
+   [
+    "appendCitizenUpkeepBlock",
+    2
+   ],
+   [
+    "appendCompositionBlock",
+    3
+   ],
+   [
+    "appendProductionPicon",
+    2
+   ],
+   [
+    "appendRecruitmentQueue",
+    6
+   ],
+   [
+    "appendTabIndicators",
+    2
+   ],
+   [
+    "appendW4PctMetricBlock",
+    2
+   ],
+   [
+    "appendW4SignedBreakdownSections",
+    2
+   ],
+   [
+    "buildBuildingBuildTabDetailCard",
+    5
+   ],
+   [
+    "buildKulturaDetailCard",
+    4
+   ],
+   [
+    "buildOkolicaDetailCard",
+    6
+   ],
+   [
+    "buildPorzadekDetailCard",
+    4
+   ],
+   [
+    "buildTopBarKulturaDetailCard",
+    4
+   ],
+   [
+    "buildZdrowieDetailCard",
+    3
+   ],
+   [
+    "cancelQueueItem",
+    4
+   ],
+   [
+    "cfg",
+    3
+   ],
+   [
+    "cityFoodSplit",
+    3
+   ],
+   [
+    "cityPanelBrandIcon",
+    1
+   ],
+   [
+    "cityPanelChipIcon",
+    1
+   ],
+   [
+    "cityPanelChipIconWrap",
+    1
+   ],
+   [
+    "cityPanelTitle",
+    6
+   ],
+   [
+    "cityPracaSplit",
+    4
+   ],
+   [
+    "clampedGrowthBreakdown",
+    1
+   ],
+   [
+    "computeOrderStateLocal",
+    3
+   ],
+   [
+    "cpInlineIcons",
+    1
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "drawerTabButtons",
+    6
+   ],
+   [
+    "effectiveGrowthPctForUi",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "estimateHandelChips",
+    1
+   ],
+   [
+    "findBuildingDef",
+    1
+   ],
+   [
+    "fmtDecPl",
+    1
+   ],
+   [
+    "formatBuildEtaLabel",
+    1
+   ],
+   [
+    "gameData",
+    3
+   ],
+   [
+    "getProd",
+    3
+   ],
+   [
+    "headerOrderBadge",
+    6
+   ],
+   [
+    "isMeCity",
+    3
+   ],
+   [
+    "loafIconHtml",
+    1
+   ],
+   [
+    "okStat",
+    5
+   ],
+   [
+    "orderBandEffectShort",
+    1
+   ],
+   [
+    "ownerCities",
+    6
+   ],
+   [
+    "pctSubheadHtml",
+    1
+   ],
+   [
+    "pluralTur",
+    1
+   ],
+   [
+    "productionCtxForCity",
+    5
+   ],
+   [
+    "rangeName",
+    5
+   ],
+   [
+    "readPodzialHandlu",
+    3
+   ],
+   [
+    "renderBuildList",
+    6
+   ],
+   [
+    "renderSurowce",
+    4
+   ],
+   [
+    "renderWorkedPreview",
+    6
+   ],
+   [
+    "resGlobalLocal",
+    1
+   ],
+   [
+    "resLocalOnly",
+    1
+   ],
+   [
+    "resPracaSplitBar",
+    1
+   ],
+   [
+    "resolveCityFedForUi",
+    1
+   ],
+   [
+    "resolveCityHealth",
+    4
+   ],
+   [
+    "resolveEmpireSnap",
+    4
+   ],
+   [
+    "resolveOrderState",
+    3
+   ],
+   [
+    "ringsTiles",
+    5
+   ],
+   [
+    "scalePx",
+    1
+   ],
+   [
+    "setOkolicaProfileButtonContent",
+    1
+   ],
+   [
+    "setOkolicaProfileButtonIconOnly",
+    1
+   ],
+   [
+    "setProd",
+    3
+   ],
+   [
+    "signed",
+    1
+   ],
+   [
+    "szLinesDoWyswietlenia",
+    1
+   ],
+   [
+    "tury",
+    1
+   ]
+  ],
+  "8": [
+   [
+    "BUILDING_UPKEEP_ZERO_LABEL",
+    1
+   ],
+   [
+    "BreakdownLine",
+    1
+   ],
+   [
+    "CITY_PANEL_ICON_RAIL_VERT_EM",
+    1
+   ],
+   [
+    "CityPanelUxMounts",
+    7
+   ],
+   [
+    "CityView",
+    1
+   ],
+   [
+    "EmpireHudSnap",
+    1
+   ],
+   [
+    "LIST_ROW_HEIGHT_COMPACT",
+    1
+   ],
+   [
+    "LIST_SCROLL_VISIBLE_CATALOG",
+    1
+   ],
+   [
+    "PH",
+    1
+   ],
+   [
+    "PULA_LBL",
+    1
+   ],
+   [
+    "PULA_LBL_PELNA",
+    1
+   ],
+   [
+    "PULA_TIP",
+    1
+   ],
+   [
+    "TabIndicatorChip",
+    1
+   ],
+   [
+    "activeCity",
+    6
+   ],
+   [
+    "activeMap",
+    6
+   ],
+   [
+    "activeOnClose",
+    6
+   ],
+   [
+    "appendCompositionBlock",
+    3
+   ],
+   [
+    "appendDetailAlgo",
+    1
+   ],
+   [
+    "appendDetailFormula",
+    3
+   ],
+   [
+    "appendDetailGrid",
+    3
+   ],
+   [
+    "appendDetailSection",
+    1
+   ],
+   [
+    "appendIndywidualneToggle",
+    2
+   ],
+   [
+    "appendOwnedBuildingRow",
+    6
+   ],
+   [
+    "appendPanel",
+    7
+   ],
+   [
+    "appendPodzialHandlu",
+    5
+   ],
+   [
+    "appendPodzialPracyInfo",
+    6
+   ],
+   [
+    "appendRecruitMilitaryResourceStrip",
+    4
+   ],
+   [
+    "appendSectionTitleWithDetails",
+    7
+   ],
+   [
+    "appendTabIndicators",
+    2
+   ],
+   [
+    "appendUnitRecruitCompactRow",
+    6
+   ],
+   [
+    "appendW4SignedBreakdownSections",
+    2
+   ],
+   [
+    "appendWealthCompactStrip",
+    3
+   ],
+   [
+    "attachTopBarStat",
+    1
+   ],
+   [
+    "buildCityOnlyW3FlankChips",
+    7
+   ],
+   [
+    "buildGrowthProgressTooltipCard",
+    3
+   ],
+   [
+    "buildGrowthProgressUi",
+    1
+   ],
+   [
+    "buildHandelDetailCard",
+    3
+   ],
+   [
+    "buildOwnedBuildingsDetailCard",
+    6
+   ],
+   [
+    "buildPorzadekDetailCard",
+    4
+   ],
+   [
+    "buildRacjeWzrostDetailCard",
+    4
+   ],
+   [
+    "buildRecruitTabDetailCard",
+    5
+   ],
+   [
+    "buildTopBarKulturaDetailCard",
+    4
+   ],
+   [
+    "buildTopBarLudnoscDetailCard",
+    4
+   ],
+   [
+    "buildTopBarNaukaDetailCard",
+    4
+   ],
+   [
+    "buildTopBarRekruciDetailCard",
+    3
+   ],
+   [
+    "buildTopBarReligiaDetailCard",
+    4
+   ],
+   [
+    "buildTopBarZlotoDetailCard",
+    5
+   ],
+   [
+    "buildTopBarZywnoscDetailCard",
+    4
+   ],
+   [
+    "buildWealthDetailCard",
+    4
+   ],
+   [
+    "capitalBadgeOrButtonHtml",
+    7
+   ],
+   [
+    "cfg",
+    3
+   ],
+   [
+    "cityFoodSplit",
+    3
+   ],
+   [
+    "cityGrowthLive",
+    3
+   ],
+   [
+    "cityPanelBrandIcon",
+    1
+   ],
+   [
+    "cityPanelChipIcon",
+    1
+   ],
+   [
+    "cityPanelChipIconWrap",
+    1
+   ],
+   [
+    "cityPanelTitle",
+    6
+   ],
+   [
+    "cityPracaSplit",
+    4
+   ],
+   [
+    "clampedGrowthBreakdown",
+    1
+   ],
+   [
+    "clearGarrisonPanel",
+    6
+   ],
+   [
+    "computeView",
+    3
+   ],
+   [
+    "cpInlineIcons",
+    1
+   ],
+   [
+    "createScrollList",
+    2
+   ],
+   [
+    "daninaLabelForCity",
+    1
+   ],
+   [
+    "effectiveGrowthPctForUi",
+    1
+   ],
+   [
+    "el",
+    1
+   ],
+   [
+    "ensureStyles",
+    2
+   ],
+   [
+    "estimateHandelChips",
+    1
+   ],
+   [
+    "formatBuildingUpkeepTotalHtml",
+    1
+   ],
+   [
+    "formatResourceUpkeepText",
+    1
+   ],
+   [
+    "gameData",
+    3
+   ],
+   [
+    "getProd",
+    3
+   ],
+   [
+    "gridDetailRow",
+    1
+   ],
+   [
+    "growthBreakdownRow",
+    1
+   ],
+   [
+    "isMeCity",
+    3
+   ],
+   [
+    "loafIconHtml",
+    1
+   ],
+   [
+    "ownerCities",
+    6
+   ],
+   [
+    "pctSubheadHtml",
+    1
+   ],
+   [
+    "pinnedGarrisonCityId",
+    6
+   ],
+   [
+    "productionCtxForCity",
+    5
+   ],
+   [
+    "readPodzialHandlu",
+    3
+   ],
+   [
+    "readPodzialPracy",
+    4
+   ],
+   [
+    "religiaSzPunkty",
+    4
+   ],
+   [
+    "renderBuildSplitPanel",
+    7
+   ],
+   [
+    "renderKultura",
+    7
+   ],
+   [
+    "renderOkolica",
+    7
+   ],
+   [
+    "renderProd",
+    7
+   ],
+   [
+    "renderSpoleczenstwo",
+    7
+   ],
+   [
+    "renderTopBarGarrison",
+    6
+   ],
+   [
+    "renderZdrowie",
+    7
+   ],
+   [
+    "resolveActiveCity",
+    7
+   ],
+   [
+    "resolveCityFedForUi",
+    1
+   ],
+   [
+    "resolveEmpireSnap",
+    4
+   ],
+   [
+    "resolveOrderState",
+    3
+   ],
+   [
+    "rootEl",
+    6
+   ],
+   [
+    "scalePx",
+    1
+   ],
+   [
+    "setNoteHtml",
+    1
+   ],
+   [
+    "shortIndLabel",
+    1
+   ],
+   [
+    "signed",
+    1
+   ],
+   [
+    "sumOwnedBuildingsResourceUpkeep",
+    1
+   ],
+   [
+    "sumOwnedBuildingsUpkeep",
+    4
+   ],
+   [
+    "tury",
+    1
+   ],
+   [
+    "uxSectionRefresh",
+    7
+   ],
+   [
+    "w3CityChip",
+    7
+   ],
+   [
+    "wyzwienieSummaryLabel",
+    1
+   ]
+  ]
+ },
+ "unit_block": {
+  "PodzialHandluSplit": 1,
+  "PodzialPracySplit": 1,
+  "GarrisonUnit": 1,
+  "cachedData": 1,
+  "localProd": 1,
+  "moveQueueItem": 1,
+  "copyCityProduction": 1,
+  "moveRecruitQueueItem": 1,
+  "reorderRecruitQueueItem": 1,
+  "reorderQueueItem": 1,
+  "CP_EMOJI_DETECT": 1,
+  "signed": 1,
+  "tury": 1,
+  "formatBuildEtaLabel": 1,
+  "queueItemCumulativeEta": 1,
+  "queueItemOwnEta": 1,
+  "SCALES": 1,
+  "scalePx": 1,
+  "showEraBuildingPreview": 1,
+  "DEFAULT_PODZIAL_HANDLU": 1,
+  "setShowEraBuildingPreview": 1,
+  "DEFAULT_PODZIAL_PRACY": 1,
+  "HANDEL_ZAMOZNOSC_LABEL": 1,
+  "HANDEL_KORUPCJA_PCT_PLACEHOLDER": 1,
+  "HandelChipEstimates": 1,
+  "CityWithSliders": 1,
+  "CityView": 1,
+  "estimateHandelChips": 1,
+  "EmpireHudSnap": 1,
+  "CityMoneySnap": 1,
+  "daninaLabelForCity": 1,
+  "PULA_LBL": 1,
+  "PULA_LBL_PELNA": 1,
+  "PULA_TIP": 1,
+  "clampedGrowthBreakdown": 1,
+  "wyzwienieSummaryLabel": 1,
+  "growthBreakdownRow": 1,
+  "fmtDecPl": 1,
+  "pluralTur": 1,
+  "resolveCityFedForUi": 1,
+  "effectiveGrowthPctForUi": 1,
+  "buildGrowthProgressUi": 1,
+  "fmtResDelta": 1,
+  "resInteractiveAttrs": 1,
+  "LOAF_SVG": 1,
+  "loafIconHtml": 1,
+  "resGlobalLocal": 1,
+  "resLocalOnly": 1,
+  "STYLE_ID": 1,
+  "CITY_PANEL_ICON_GLYPH_EM": 1,
+  "CITY_PANEL_ICON_RAIL_VERT_EM": 1,
+  "LIST_SCROLL_VISIBLE": 1,
+  "LIST_ROW_HEIGHT_COMPACT": 1,
+  "RECRUIT_QUEUE_VISIBLE": 1,
+  "BUILD_QUEUE_VISIBLE": 1,
+  "QUEUE_ROW_EM": 1,
+  "LIST_SCROLL_VISIBLE_CATALOG": 1,
+  "LIST_ROW_HEIGHT_EM": 1,
+  "CityDrawerTab": 1,
+  "CITY_TABS": 1,
+  "CITY_TAB_BRAND_ICONS": 1,
+  "activeDrawerTab": 1,
+  "cityPanelBrandIcon": 1,
+  "cityPanelChipIcon": 1,
+  "resPracaSplitBar": 1,
+  "cityPanelChipIconWrap": 1,
+  "statChipBrand": 1,
+  "plonyChipRowHtml": 1,
+  "psiRowLabel": 1,
+  "cityTabIconHtml": 1,
+  "OKOLICA_FOCUS_BRAND": 1,
+  "OKOLICA_FOCUS_SHORT": 1,
+  "BUDOWA_FOCUS_BRAND": 1,
+  "BUDOWA_FOCUS_SHORT": 1,
+  "BUDOWA_FOCUS_TITLE": 1,
+  "okolicaProfileIconHtml": 1,
+  "setOkolicaProfileButtonContent": 1,
+  "setOkolicaProfileButtonIconOnly": 1,
+  "PH": 1,
+  "szPktDisplay": 1,
+  "szLinesDoWyswietlenia": 1,
+  "normalizeResourceAccess": 1,
+  "isMapResourceLabel": 1,
+  "resourceBrandKey": 1,
+  "resourceBrandIconHtml": 1,
+  "resourceIcon": 1,
+  "renderImperiumZywnosc": 1,
+  "statChip": 1,
+  "pctSubheadHtml": 1,
+  "TabIndicatorChip": 1,
+  "shortIndLabel": 1,
+  "orderBandEffectShort": 1,
+  "BreakdownLine": 1,
+  "attachTopBarStat": 1,
+  "CS_RES_STRIP_ORDER": 1,
+  "CS_RES_STRIP_CORE": 1,
+  "CS_RES_STRIP_ICON_PX": 1,
+  "applyBuildButtonVisualState": 1,
+  "findBuildingDef": 1,
+  "findUnitDef": 1,
+  "customBuildingIconClass": 1,
+  "buildingIconHtml": 1,
+  "unitIconHtml": 1,
+  "unitMedallionHtml": 1,
+  "productionItemIconHtml": 1,
+  "YIELD_BRAND": 1,
+  "yieldBrandIconHtml": 1,
+  "formatBuildingYieldDetailValue": 1,
+  "formatBuildingYieldChipText": 1,
+  "formatBuildingYieldScaleRow": 1,
+  "buildingBonusChipsHtml": 1,
+  "buildingOwnedBonusCompactHtml": 1,
+  "BUILDING_UPKEEP_ZERO_LABEL": 1,
+  "formatResourceUpkeepText": 1,
+  "buildingUpkeepDisplay": 1,
+  "sumOwnedBuildingsResourceUpkeep": 1,
+  "formatBuildingUpkeepGridValue": 1,
+  "formatBuildingUpkeepRowHtml": 1,
+  "formatBuildingUpkeepTotalHtml": 1,
+  "formatConverterAmount": 1,
+  "formatConverterProductionRowHtml": 1,
+  "BuildingReqChipKind": 1,
+  "BuildingReqChip": 1,
+  "buildingReqChipSpan": 1,
+  "buildingRequirementChipsHtml": 1,
+  "BUILDING_REQ_SECTION_LABELS": 1,
+  "parentBuildingName": 1,
+  "EPOCH_LABEL": 1,
+  "epochLabelNum": 1,
+  "isDevOnlyPlayerText": 1,
+  "stripInlineDevAnnotations": 1,
+  "isEmptyDataVal": 1,
+  "el": 1,
+  "CP_INLINE_EMOJI_BRAND": 1,
+  "cpInlineIcons": 1,
+  "appendDetailSection": 1,
+  "gridDetailRow": 1,
+  "appendDetailAlgo": 1,
+  "setNoteHtml": 1,
+  "ensureStyles": 2,
+  "appendSurowceGrid": 2,
+  "appendTabIndicators": 2,
+  "appendBreakdownLines": 2,
+  "appendPctBreakdownBlock": 2,
+  "appendSignedBreakdownSections": 2,
+  "appendW4SignedBreakdownSections": 2,
+  "appendW4PctMetricBlock": 2,
+  "appendCitizenUpkeepBlock": 2,
+  "appendIndywidualneToggle": 2,
+  "renderBilans": 2,
+  "appendDisabledBuildActionButtons": 2,
+  "fillIconElement": 2,
+  "makeMiniThumb": 2,
+  "makeBuildingThumb": 2,
+  "appendBuildingInlineIcon": 2,
+  "appendProductionPicon": 2,
+  "productionQueueIconSpan": 2,
+  "createScrollList": 2,
+  "appendBuildingRequirementChipSections": 2,
+  "techIconHintSpan": 2,
+  "techHintLinkDelegationBound": 2,
+  "bindTechHintLinkDelegation": 2,
+  "playerFacingNote": 3,
+  "unitExtraField": 3,
+  "techPrereqChain": 3,
+  "beginBuildingDetailTile": 3,
+  "appendDetailGridIn": 3,
+  "appendDetailGrid": 3,
+  "buildGrowthProgressTooltipCard": 3,
+  "buildZdrowieDetailCard": 3,
+  "buildSurowceDetailCard": 3,
+  "appendCompositionBlock": 3,
+  "buildWealthCompactTooltipCard": 3,
+  "appendWealthCompactStrip": 3,
+  "buildTopBarRekruciDetailCard": 3,
+  "appendDetailFormula": 3,
+  "CityPanelConfig": 3,
+  "cfg": 3,
+  "configureCityPanel": 3,
+  "gameData": 3,
+  "readPodzialHandlu": 3,
+  "readOwnerDefaultPodzialHandlu": 3,
+  "isCapital": 3,
+  "territoryNodesForPanel": 3,
+  "computeView": 3,
+  "ownerHasMennica": 3,
+  "cityFoodSplit": 3,
+  "CityGrowthLive": 3,
+  "cityGrowthLive": 3,
+  "buildingHappinessSum": 3,
+  "resolveOrderState": 3,
+  "computeOrderStateLocal": 3,
+  "buildHandelDetailCard": 3,
+  "activeTradeRouteCountForCity": 3,
+  "isMeCity": 3,
+  "getProd": 3,
+  "setProd": 3,
+  "bindRecruitQueueDragReorder": 3,
+  "bindBuildQueueDragReorder": 4,
+  "readPodzialPracy": 4,
+  "ownerHasSpichlerz": 4,
+  "cityPracaSplit": 4,
+  "resolveEmpireSnap": 4,
+  "religiaSzPunkty": 4,
+  "__cityPanelOrderStateLocalForTest": 4,
+  "resolveCityHealth": 4,
+  "buildPorzadekDetailCard": 4,
+  "renderSurowce": 4,
+  "buildKulturaDetailCard": 4,
+  "buildWealthDetailCard": 4,
+  "buildRacjeWzrostDetailCard": 4,
+  "buildTopBarZywnoscDetailCard": 4,
+  "buildTopBarLudnoscDetailCard": 4,
+  "buildTopBarNaukaDetailCard": 4,
+  "buildTopBarKulturaDetailCard": 4,
+  "buildTopBarReligiaDetailCard": 4,
+  "buildingStockCostForItem": 4,
+  "unitStockCostForItem": 4,
+  "stockCostForQueueItem": 4,
+  "cancelQueueItem": 4,
+  "ownerSurowcePoolFor": 4,
+  "appendCityResourceStockStrip": 4,
+  "appendRecruitMilitaryResourceStrip": 4,
+  "addItem": 4,
+  "appendBuildActionButtons": 4,
+  "buildingOwnedLevel": 4,
+  "buildingUiDisplayLevel": 4,
+  "sumOwnedBuildingsUpkeep": 4,
+  "buildingStockCostChipsHtml": 4,
+  "formatResourceUpkeepSummary": 4,
+  "renderEkonomiaStrip": 5,
+  "appendPodzialHandlu": 5,
+  "appendCitySkarbiecBalance": 5,
+  "renderPodzialHandlu": 5,
+  "buildTopBarZlotoDetailCard": 5,
+  "buildingConverterProductionDisplay": 5,
+  "buildingLocationRequirementMet": 5,
+  "recruitManpowerCost": 5,
+  "empireRekruciTotal": 5,
+  "empireRekruciAffordable": 5,
+  "maxAffordableRecruitQuantity": 5,
+  "unitStockCostChipsHtml": 5,
+  "unitResourceUpkeepChipsHtml": 5,
+  "recruitUnit": 5,
+  "missingTechSteps": 5,
+  "buildingRequirementChips": 5,
+  "buildingCanBuildNow": 5,
+  "sortProductionItemsByBuildability": 5,
+  "appendBuildingRequirementsBlock": 5,
+  "formatBuildingCatalogLockHint": 5,
+  "formatBuildingPreviewHint": 5,
+  "productionCtxForCity": 5,
+  "buildBuildingInfocard": 5,
+  "collectEraPreviewEntries": 5,
+  "buildRecruitTabDetailCard": 5,
+  "buildUpgradeBonusDetailCard": 5,
+  "renderSplitPane": 5,
+  "appendGarrisonUnitChip": 5,
+  "TEREN_COL": 5,
+  "TEREN_LETTER": 5,
+  "hexDist": 5,
+  "okolicaPreviewRadius": 5,
+  "rangeName": 5,
+  "ringsTiles": 5,
+  "okStat": 5,
+  "improvementsInCityRange": 5,
+  "improvementRangeRow": 5,
+  "appendTechDetailBlock": 5,
+  "_legacyBuildBuildingDetailCard": 5,
+  "ENTITY_CARD_BUILDING_STYLE_ID": 5,
+  "ensureEntityCardBuildingStyles": 5,
+  "buildBuildingDetailCardViaEntityCard": 5,
+  "buildBuildingDetailCard": 5,
+  "buildBuildingBuildTabDetailCard": 5,
+  "_legacyBuildUnitDetailCard": 5,
+  "buildUnitDetailCardViaEntityCard": 6,
+  "buildUnitDetailCard": 6,
+  "attachUnitRowThumb": 6,
+  "appendBuildableItemRow": 6,
+  "appendUnitRecruitCompactRow": 6,
+  "appendRecruitmentQueue": 6,
+  "appendBuildQueueSection": 6,
+  "appendCatalogBuildingRow": 6,
+  "renderBuildList": 6,
+  "appendOwnedBuildingRow": 6,
+  "buildOwnedBuildingsDetailCard": 6,
+  "okolicaHexPoints": 6,
+  "okolicaTileHasWorkerAt": 6,
+  "fireOkolicaTileToggle": 6,
+  "formatTileYieldShort": 6,
+  "tileYieldLabel": 6,
+  "appendOkolicaYieldLabel": 6,
+  "IMPROVEMENT_KEY_TO_NAME": 6,
+  "buildOkolicaDetailCard": 6,
+  "renderWorkedPreview": 6,
+  "rootEl": 6,
+  "activeCity": 6,
+  "activeMap": 6,
+  "appendPodzialPracyInfo": 6,
+  "activeOnClose": 6,
+  "pinnedGarrisonCityId": 6,
+  "setGarrisonLabelPinned": 6,
+  "pinGarrisonPanel": 6,
+  "clearGarrisonPanel": 6,
+  "buildGarnizonDetailCard": 6,
+  "renderTopBarGarrison": 6,
+  "ownerCities": 6,
+  "ownerCitiesForNav": 6,
+  "cityPanelTitle": 6,
+  "navigateCityPanel": 6,
+  "headerOrderBadge": 6,
+  "drawerTabButtons": 6,
+  "skeleton": 7,
+  "resolveActiveCity": 7,
+  "CityPanelUxMounts": 7,
+  "uxSectionRefresh": 7,
+  "W3_STAT_RES_KEY": 7,
+  "w3CityChip": 7,
+  "buildCityOnlyW3FlankChips": 7,
+  "buildCityResourceStatItems": 7,
+  "capitalBadgeOrButtonHtml": 7,
+  "renderCityHeaderCompact": 7,
+  "appendOkolicaToolbarProfiles": 7,
+  "renderOkolica": 7,
+  "appendBudowaToolbarProfiles": 7,
+  "appendBudowaListaBar": 7,
+  "renderProd": 7,
+  "renderTopStatsBar": 7,
+  "appendPanel": 7,
+  "renderBuildSplitPanel": 7,
+  "resolveDetailSideHint": 7,
+  "appendSectionTitleWithDetails": 7,
+  "renderSpoleczenstwo": 7,
+  "renderZdrowie": 7,
+  "renderKultura": 7,
+  "renderReligia": 8,
+  "renderWealth": 8,
+  "buildPracaDetailCard": 8,
+  "renderPodzialPracy": 8,
+  "renderMagazyn": 8,
+  "buildTopBarPracaDetailCard": 8,
+  "wireTopBarStatDetails": 8,
+  "renderPurchasableUnits": 8,
+  "renderCivResourceTopBar": 8,
+  "renderHandelSlidersPanel": 8,
+  "CityPanelIconTab": 8,
+  "CityPanelProductionTab": 8,
+  "CityPanelCityParamTab": 8,
+  "CITY_PANEL_ICONS_LEFT": 8,
+  "CITY_PANEL_ICONS_RIGHT": 8,
+  "isProductionPanelTab": 8,
+  "CADUCEUS_SVG": 8,
+  "cityRailIconHtml": 8,
+  "activeCityPanelTab": 8,
+  "clearCityPanelUxMode": 8,
+  "closeCityView": 8,
+  "renderCityExitFooter": 8,
+  "renderCivMapChrome": 8,
+  "renderOkolicaPanel": 8,
+  "renderCityIconRail": 8,
+  "renderCityIconLeftRail": 8,
+  "withW4TabCard": 8,
+  "renderBuildingsOwned": 8,
+  "renderBuildingsOwnedRightPanel": 8,
+  "renderOwnedBuildingsBar": 8,
+  "renderLeftPanelTab": 8,
+  "renderRightPanelTab": 8,
+  "paintCityPanelSections": 8,
+  "showCityPanel": 8,
+  "hideCityPanel": 8,
+  "isCityPanelOpen": 8,
+  "refreshCityPanelIfOpen": 8,
+  "closeCityPanelIfOpen": 8,
+  "getOpenCityPanelCityId": 8,
+  "<HEADER>": 0,
+  "switchCity": 9,
+  "renderCityIconRightRail": 9,
+  "rerender": 9
+ },
+ "unit_loc": {
+  "<HEADER>": 284,
+  "PodzialHandluSplit": 7,
+  "PodzialPracySplit": 5,
+  "GarrisonUnit": 17,
+  "CityPanelConfig": 295,
+  "cfg": 3,
+  "configureCityPanel": 5,
+  "isMeCity": 8,
+  "cachedData": 1,
+  "gameData": 7,
+  "localProd": 1,
+  "getProd": 4,
+  "setProd": 7,
+  "moveQueueItem": 22,
+  "copyCityProduction": 10,
+  "moveRecruitQueueItem": 19,
+  "reorderRecruitQueueItem": 19,
+  "reorderQueueItem": 17,
+  "bindRecruitQueueDragReorder": 62,
+  "bindBuildQueueDragReorder": 66,
+  "CP_EMOJI_DETECT": 3,
+  "el": 8,
+  "signed": 1,
+  "tury": 7,
+  "formatBuildEtaLabel": 10,
+  "queueItemCumulativeEta": 24,
+  "queueItemOwnEta": 5,
+  "SCALES": 1,
+  "scalePx": 3,
+  "showEraBuildingPreview": 5,
+  "setShowEraBuildingPreview": 13,
+  "DEFAULT_PODZIAL_HANDLU": 7,
+  "DEFAULT_PODZIAL_PRACY": 3,
+  "HANDEL_ZAMOZNOSC_LABEL": 6,
+  "HANDEL_KORUPCJA_PCT_PLACEHOLDER": 2,
+  "HandelChipEstimates": 10,
+  "estimateHandelChips": 26,
+  "CityWithSliders": 7,
+  "readPodzialHandlu": 7,
+  "readOwnerDefaultPodzialHandlu": 14,
+  "readPodzialPracy": 17,
+  "CityView": 36,
+  "EmpireHudSnap": 33,
+  "CityMoneySnap": 18,
+  "isCapital": 6,
+  "territoryNodesForPanel": 5,
+  "computeView": 167,
+  "ownerHasSpichlerz": 18,
+  "ownerHasMennica": 13,
+  "daninaLabelForCity": 13,
+  "PULA_LBL": 1,
+  "PULA_LBL_PELNA": 1,
+  "PULA_TIP": 11,
+  "cityPracaSplit": 41,
+  "cityFoodSplit": 32,
+  "clampedGrowthBreakdown": 10,
+  "wyzwienieSummaryLabel": 7,
+  "growthBreakdownRow": 6,
+  "fmtDecPl": 4,
+  "pluralTur": 9,
+  "resolveCityFedForUi": 11,
+  "effectiveGrowthPctForUi": 5,
+  "CityGrowthLive": 41,
+  "cityGrowthLive": 36,
+  "buildGrowthProgressUi": 35,
+  "buildGrowthProgressTooltipCard": 39,
+  "resolveEmpireSnap": 41,
+  "fmtResDelta": 7,
+  "resInteractiveAttrs": 9,
+  "LOAF_SVG": 5,
+  "loafIconHtml": 5,
+  "resGlobalLocal": 19,
+  "resPracaSplitBar": 21,
+  "resLocalOnly": 11,
+  "STYLE_ID": 3,
+  "CITY_PANEL_ICON_GLYPH_EM": 2,
+  "CITY_PANEL_ICON_RAIL_VERT_EM": 2,
+  "LIST_SCROLL_VISIBLE": 2,
+  "LIST_ROW_HEIGHT_COMPACT": 2,
+  "RECRUIT_QUEUE_VISIBLE": 2,
+  "BUILD_QUEUE_VISIBLE": 2,
+  "QUEUE_ROW_EM": 2,
+  "LIST_SCROLL_VISIBLE_CATALOG": 1,
+  "LIST_ROW_HEIGHT_EM": 2,
+  "CityDrawerTab": 2,
+  "CITY_TABS": 7,
+  "CITY_TAB_BRAND_ICONS": 7,
+  "activeDrawerTab": 2,
+  "cityPanelBrandIcon": 7,
+  "cityPanelChipIcon": 4,
+  "cityPanelChipIconWrap": 6,
+  "CP_INLINE_EMOJI_BRAND": 30,
+  "cpInlineIcons": 11,
+  "setNoteHtml": 5,
+  "statChipBrand": 7,
+  "plonyChipRowHtml": 16,
+  "psiRowLabel": 5,
+  "cityTabIconHtml": 5,
+  "OKOLICA_FOCUS_BRAND": 7,
+  "OKOLICA_FOCUS_SHORT": 7,
+  "BUDOWA_FOCUS_BRAND": 9,
+  "BUDOWA_FOCUS_SHORT": 9,
+  "BUDOWA_FOCUS_TITLE": 9,
+  "okolicaProfileIconHtml": 4,
+  "setOkolicaProfileButtonContent": 8,
+  "setOkolicaProfileButtonIconOnly": 6,
+  "ensureStyles": 1067,
+  "PH": 19,
+  "szPktDisplay": 5,
+  "szLinesDoWyswietlenia": 11,
+  "religiaSzPunkty": 11,
+  "buildingHappinessSum": 23,
+  "resolveOrderState": 30,
+  "computeOrderStateLocal": 160,
+  "__cityPanelOrderStateLocalForTest": 7,
+  "resolveCityHealth": 14,
+  "renderSpoleczenstwo": 132,
+  "buildPorzadekDetailCard": 124,
+  "renderZdrowie": 31,
+  "buildZdrowieDetailCard": 36,
+  "normalizeResourceAccess": 27,
+  "appendSurowceGrid": 18,
+  "renderSurowce": 55,
+  "buildSurowceDetailCard": 42,
+  "isMapResourceLabel": 15,
+  "resourceBrandKey": 13,
+  "resourceBrandIconHtml": 16,
+  "resourceIcon": 4,
+  "renderImperiumZywnosc": 6,
+  "appendCompositionBlock": 22,
+  "buildKulturaDetailCard": 156,
+  "renderKultura": 120,
+  "renderReligia": 110,
+  "statChip": 8,
+  "pctSubheadHtml": 4,
+  "TabIndicatorChip": 2,
+  "appendTabIndicators": 11,
+  "appendWealthCompactStrip": 60,
+  "buildWealthCompactTooltipCard": 45,
+  "shortIndLabel": 5,
+  "orderBandEffectShort": 19,
+  "BreakdownLine": 2,
+  "appendBreakdownLines": 33,
+  "appendPctBreakdownBlock": 28,
+  "appendSignedBreakdownSections": 39,
+  "appendW4SignedBreakdownSections": 60,
+  "appendCitizenUpkeepBlock": 22,
+  "appendW4PctMetricBlock": 48,
+  "appendIndywidualneToggle": 30,
+  "renderEkonomiaStrip": 16,
+  "appendPodzialHandlu": 81,
+  "appendCitySkarbiecBalance": 34,
+  "renderPodzialHandlu": 6,
+  "renderWealth": 49,
+  "buildWealthDetailCard": 122,
+  "buildPracaDetailCard": 82,
+  "appendPodzialPracyInfo": 84,
+  "renderPodzialPracy": 82,
+  "renderBilans": 9,
+  "renderMagazyn": 271,
+  "buildRacjeWzrostDetailCard": 108,
+  "buildTopBarZywnoscDetailCard": 70,
+  "buildTopBarRekruciDetailCard": 32,
+  "buildTopBarLudnoscDetailCard": 86,
+  "buildTopBarPracaDetailCard": 54,
+  "buildTopBarZlotoDetailCard": 80,
+  "buildTopBarNaukaDetailCard": 45,
+  "buildTopBarKulturaDetailCard": 43,
+  "buildTopBarReligiaDetailCard": 49,
+  "attachTopBarStat": 10,
+  "wireTopBarStatDetails": 42,
+  "buildingStockCostForItem": 12,
+  "unitStockCostForItem": 7,
+  "stockCostForQueueItem": 13,
+  "cancelQueueItem": 19,
+  "ownerSurowcePoolFor": 11,
+  "CS_RES_STRIP_ORDER": 6,
+  "CS_RES_STRIP_CORE": 3,
+  "CS_RES_STRIP_ICON_PX": 9,
+  "appendCityResourceStockStrip": 33,
+  "appendRecruitMilitaryResourceStrip": 59,
+  "addItem": 23,
+  "applyBuildButtonVisualState": 8,
+  "appendBuildActionButtons": 52,
+  "appendDisabledBuildActionButtons": 20,
+  "findBuildingDef": 4,
+  "findUnitDef": 4,
+  "customBuildingIconClass": 4,
+  "buildingIconHtml": 4,
+  "unitIconHtml": 7,
+  "unitMedallionHtml": 8,
+  "productionItemIconHtml": 11,
+  "fillIconElement": 5,
+  "makeMiniThumb": 6,
+  "makeBuildingThumb": 4,
+  "appendBuildingInlineIcon": 6,
+  "appendProductionPicon": 6,
+  "productionQueueIconSpan": 6,
+  "createScrollList": 18,
+  "YIELD_BRAND": 10,
+  "yieldBrandIconHtml": 7,
+  "buildingUiDisplayLevel": 6,
+  "formatBuildingYieldDetailValue": 12,
+  "formatBuildingYieldChipText": 9,
+  "formatBuildingYieldScaleRow": 11,
+  "buildingBonusChipsHtml": 40,
+  "buildingOwnedLevel": 12,
+  "sumOwnedBuildingsUpkeep": 11,
+  "buildingOwnedBonusCompactHtml": 36,
+  "buildingStockCostChipsHtml": 20,
+  "BUILDING_UPKEEP_ZERO_LABEL": 2,
+  "formatResourceUpkeepText": 13,
+  "buildingUpkeepDisplay": 10,
+  "sumOwnedBuildingsResourceUpkeep": 13,
+  "formatBuildingUpkeepGridValue": 13,
+  "formatBuildingUpkeepRowHtml": 18,
+  "formatBuildingUpkeepTotalHtml": 16,
+  "formatResourceUpkeepSummary": 37,
+  "buildingConverterProductionDisplay": 19,
+  "formatConverterAmount": 13,
+  "formatConverterProductionRowHtml": 23,
+  "BuildingReqChipKind": 2,
+  "BuildingReqChip": 7,
+  "buildingLocationRequirementMet": 10,
+  "buildingRequirementChips": 101,
+  "buildingCanBuildNow": 16,
+  "sortProductionItemsByBuildability": 17,
+  "buildingReqChipSpan": 5,
+  "buildingRequirementChipsHtml": 4,
+  "BUILDING_REQ_SECTION_LABELS": 6,
+  "appendBuildingRequirementChipSections": 14,
+  "appendBuildingRequirementsBlock": 12,
+  "parentBuildingName": 7,
+  "buildBuildingInfocard": 123,
+  "EPOCH_LABEL": 2,
+  "epochLabelNum": 5,
+  "isEmptyDataVal": 11,
+  "isDevOnlyPlayerText": 38,
+  "stripInlineDevAnnotations": 38,
+  "playerFacingNote": 16,
+  "techIconHintSpan": 15,
+  "techHintLinkDelegationBound": 7,
+  "bindTechHintLinkDelegation": 27,
+  "unitExtraField": 25,
+  "techPrereqChain": 22,
+  "appendDetailSection": 7,
+  "beginBuildingDetailTile": 11,
+  "appendDetailGridIn": 6,
+  "appendDetailGrid": 6,
+  "gridDetailRow": 10,
+  "appendDetailAlgo": 9,
+  "appendDetailFormula": 6,
+  "appendTechDetailBlock": 68,
+  "ENTITY_CARD_BUILDING_STYLE_ID": 11,
+  "ensureEntityCardBuildingStyles": 61,
+  "buildBuildingDetailCardViaEntityCard": 24,
+  "buildBuildingDetailCard": 12,
+  "_legacyBuildBuildingDetailCard": 131,
+  "buildBuildingBuildTabDetailCard": 102,
+  "buildOwnedBuildingsDetailCard": 55,
+  "buildUnitDetailCardViaEntityCard": 24,
+  "buildUnitDetailCard": 12,
+  "_legacyBuildUnitDetailCard": 79,
+  "attachUnitRowThumb": 21,
+  "appendBuildableItemRow": 53,
+  "recruitManpowerCost": 7,
+  "empireRekruciTotal": 7,
+  "empireRekruciAffordable": 14,
+  "maxAffordableRecruitQuantity": 34,
+  "unitStockCostChipsHtml": 15,
+  "unitResourceUpkeepChipsHtml": 10,
+  "appendUnitRecruitCompactRow": 46,
+  "recruitUnit": 27,
+  "appendRecruitmentQueue": 90,
+  "appendBuildQueueSection": 129,
+  "renderProd": 108,
+  "missingTechSteps": 5,
+  "formatBuildingCatalogLockHint": 37,
+  "formatBuildingPreviewHint": 32,
+  "productionCtxForCity": 34,
+  "collectEraPreviewEntries": 37,
+  "appendCatalogBuildingRow": 52,
+  "renderBuildList": 127,
+  "buildRecruitTabDetailCard": 30,
+  "renderPurchasableUnits": 88,
+  "buildUpgradeBonusDetailCard": 54,
+  "appendOwnedBuildingRow": 151,
+  "renderBuildingsOwned": 73,
+  "renderSplitPane": 16,
+  "renderOwnedBuildingsBar": 33,
+  "renderBuildSplitPanel": 35,
+  "renderBuildingsOwnedRightPanel": 18,
+  "appendGarrisonUnitChip": 33,
+  "renderTopBarGarrison": 36,
+  "buildGarnizonDetailCard": 67,
+  "TEREN_COL": 6,
+  "TEREN_LETTER": 6,
+  "hexDist": 6,
+  "okolicaPreviewRadius": 28,
+  "rangeName": 6,
+  "ringsTiles": 5,
+  "okStat": 10,
+  "IMPROVEMENT_KEY_TO_NAME": 17,
+  "improvementsInCityRange": 25,
+  "improvementRangeRow": 13,
+  "buildOkolicaDetailCard": 112,
+  "okolicaHexPoints": 9,
+  "okolicaTileHasWorkerAt": 14,
+  "fireOkolicaTileToggle": 5,
+  "formatTileYieldShort": 15,
+  "tileYieldLabel": 13,
+  "appendOkolicaYieldLabel": 36,
+  "renderWorkedPreview": 197,
+  "renderOkolica": 140,
+  "rootEl": 1,
+  "activeCity": 1,
+  "activeMap": 1,
+  "activeOnClose": 2,
+  "pinnedGarrisonCityId": 2,
+  "setGarrisonLabelPinned": 5,
+  "pinGarrisonPanel": 5,
+  "clearGarrisonPanel": 9,
+  "ownerCities": 8,
+  "ownerCitiesForNav": 13,
+  "cityPanelTitle": 4,
+  "switchCity": 15,
+  "navigateCityPanel": 4,
+  "headerOrderBadge": 11,
+  "drawerTabButtons": 8,
+  "skeleton": 82,
+  "resolveActiveCity": 8,
+  "refreshCityPanelIfOpen": 12,
+  "CityPanelUxMounts": 16,
+  "uxSectionRefresh": 2,
+  "clearCityPanelUxMode": 17,
+  "W3_STAT_RES_KEY": 9,
+  "w3CityChip": 39,
+  "buildCityOnlyW3FlankChips": 149,
+  "buildCityResourceStatItems": 113,
+  "closeCityView": 6,
+  "renderCityExitFooter": 19,
+  "capitalBadgeOrButtonHtml": 17,
+  "renderCivResourceTopBar": 47,
+  "renderCityIconLeftRail": 10,
+  "renderCityIconRightRail": 19,
+  "renderCityHeaderCompact": 33,
+  "buildHandelDetailCard": 162,
+  "renderHandelSlidersPanel": 38,
+  "activeTradeRouteCountForCity": 11,
+  "renderCivMapChrome": 25,
+  "appendOkolicaToolbarProfiles": 42,
+  "appendBudowaToolbarProfiles": 115,
+  "appendBudowaListaBar": 237,
+  "renderTopStatsBar": 30,
+  "appendPanel": 7,
+  "resolveDetailSideHint": 6,
+  "appendSectionTitleWithDetails": 22,
+  "CityPanelIconTab": 11,
+  "CityPanelProductionTab": 1,
+  "CityPanelCityParamTab": 2,
+  "CITY_PANEL_ICONS_LEFT": 5,
+  "CITY_PANEL_ICONS_RIGHT": 14,
+  "isProductionPanelTab": 4,
+  "CADUCEUS_SVG": 10,
+  "cityRailIconHtml": 6,
+  "activeCityPanelTab": 2,
+  "renderOkolicaPanel": 10,
+  "renderCityIconRail": 46,
+  "withW4TabCard": 17,
+  "renderLeftPanelTab": 30,
+  "renderRightPanelTab": 58,
+  "paintCityPanelSections": 99,
+  "rerender": 93,
+  "showCityPanel": 16,
+  "hideCityPanel": 7,
+  "closeCityPanelIfOpen": 8,
+  "isCityPanelOpen": 5,
+  "getOpenCityPanelCityId": 3
+ },
+ "unit_sec": {
+  "<HEADER>": "A1",
+  "PodzialHandluSplit": "A2",
+  "PodzialPracySplit": "A2",
+  "GarrisonUnit": "A2",
+  "CityPanelConfig": "A2",
+  "cfg": "B",
+  "configureCityPanel": "B",
+  "isMeCity": "B",
+  "cachedData": "B",
+  "gameData": "B",
+  "localProd": "B",
+  "getProd": "B",
+  "setProd": "B",
+  "moveQueueItem": "B",
+  "copyCityProduction": "B",
+  "moveRecruitQueueItem": "B",
+  "reorderRecruitQueueItem": "B",
+  "reorderQueueItem": "B",
+  "bindRecruitQueueDragReorder": "B",
+  "bindBuildQueueDragReorder": "B",
+  "CP_EMOJI_DETECT": "C",
+  "el": "C",
+  "signed": "C",
+  "tury": "C",
+  "formatBuildEtaLabel": "C",
+  "queueItemCumulativeEta": "C",
+  "queueItemOwnEta": "C",
+  "SCALES": "C",
+  "scalePx": "C",
+  "showEraBuildingPreview": "C",
+  "setShowEraBuildingPreview": "C",
+  "DEFAULT_PODZIAL_HANDLU": "C",
+  "DEFAULT_PODZIAL_PRACY": "C",
+  "HANDEL_ZAMOZNOSC_LABEL": "C",
+  "HANDEL_KORUPCJA_PCT_PLACEHOLDER": "C",
+  "HandelChipEstimates": "C",
+  "estimateHandelChips": "C",
+  "CityWithSliders": "C",
+  "readPodzialHandlu": "C",
+  "readOwnerDefaultPodzialHandlu": "C",
+  "readPodzialPracy": "C",
+  "CityView": "D",
+  "EmpireHudSnap": "D",
+  "CityMoneySnap": "D",
+  "isCapital": "D",
+  "territoryNodesForPanel": "D",
+  "computeView": "D",
+  "ownerHasSpichlerz": "D",
+  "ownerHasMennica": "D",
+  "daninaLabelForCity": "D",
+  "PULA_LBL": "E",
+  "PULA_LBL_PELNA": "E",
+  "PULA_TIP": "E",
+  "cityPracaSplit": "E",
+  "cityFoodSplit": "E",
+  "clampedGrowthBreakdown": "E",
+  "wyzwienieSummaryLabel": "E",
+  "growthBreakdownRow": "E",
+  "fmtDecPl": "E",
+  "pluralTur": "E",
+  "resolveCityFedForUi": "E",
+  "effectiveGrowthPctForUi": "E",
+  "CityGrowthLive": "E",
+  "cityGrowthLive": "E",
+  "buildGrowthProgressUi": "E",
+  "buildGrowthProgressTooltipCard": "E",
+  "resolveEmpireSnap": "F",
+  "fmtResDelta": "F",
+  "resInteractiveAttrs": "F",
+  "LOAF_SVG": "F",
+  "loafIconHtml": "F",
+  "resGlobalLocal": "F",
+  "resPracaSplitBar": "F",
+  "resLocalOnly": "F",
+  "STYLE_ID": "G",
+  "CITY_PANEL_ICON_GLYPH_EM": "G",
+  "CITY_PANEL_ICON_RAIL_VERT_EM": "G",
+  "LIST_SCROLL_VISIBLE": "G",
+  "LIST_ROW_HEIGHT_COMPACT": "G",
+  "RECRUIT_QUEUE_VISIBLE": "G",
+  "BUILD_QUEUE_VISIBLE": "G",
+  "QUEUE_ROW_EM": "G",
+  "LIST_SCROLL_VISIBLE_CATALOG": "G",
+  "LIST_ROW_HEIGHT_EM": "G",
+  "CityDrawerTab": "G",
+  "CITY_TABS": "G",
+  "CITY_TAB_BRAND_ICONS": "G",
+  "activeDrawerTab": "G",
+  "cityPanelBrandIcon": "G",
+  "cityPanelChipIcon": "G",
+  "cityPanelChipIconWrap": "G",
+  "CP_INLINE_EMOJI_BRAND": "G",
+  "cpInlineIcons": "G",
+  "setNoteHtml": "G",
+  "statChipBrand": "G",
+  "plonyChipRowHtml": "G",
+  "psiRowLabel": "G",
+  "cityTabIconHtml": "G",
+  "OKOLICA_FOCUS_BRAND": "G",
+  "OKOLICA_FOCUS_SHORT": "G",
+  "BUDOWA_FOCUS_BRAND": "G",
+  "BUDOWA_FOCUS_SHORT": "G",
+  "BUDOWA_FOCUS_TITLE": "G",
+  "okolicaProfileIconHtml": "G",
+  "setOkolicaProfileButtonContent": "G",
+  "setOkolicaProfileButtonIconOnly": "G",
+  "ensureStyles": "H",
+  "PH": "I",
+  "szPktDisplay": "I",
+  "szLinesDoWyswietlenia": "I",
+  "religiaSzPunkty": "I",
+  "buildingHappinessSum": "I",
+  "resolveOrderState": "I",
+  "computeOrderStateLocal": "I",
+  "__cityPanelOrderStateLocalForTest": "I",
+  "resolveCityHealth": "I",
+  "renderSpoleczenstwo": "I",
+  "buildPorzadekDetailCard": "I",
+  "renderZdrowie": "J",
+  "buildZdrowieDetailCard": "J",
+  "normalizeResourceAccess": "J",
+  "appendSurowceGrid": "J",
+  "renderSurowce": "J",
+  "buildSurowceDetailCard": "J",
+  "isMapResourceLabel": "J",
+  "resourceBrandKey": "J",
+  "resourceBrandIconHtml": "J",
+  "resourceIcon": "J",
+  "renderImperiumZywnosc": "J",
+  "appendCompositionBlock": "J",
+  "buildKulturaDetailCard": "K",
+  "renderKultura": "K",
+  "renderReligia": "K",
+  "statChip": "L",
+  "pctSubheadHtml": "L",
+  "TabIndicatorChip": "L",
+  "appendTabIndicators": "L",
+  "appendWealthCompactStrip": "L",
+  "buildWealthCompactTooltipCard": "L",
+  "shortIndLabel": "L",
+  "orderBandEffectShort": "L",
+  "BreakdownLine": "L",
+  "appendBreakdownLines": "L",
+  "appendPctBreakdownBlock": "L",
+  "appendSignedBreakdownSections": "L",
+  "appendW4SignedBreakdownSections": "L",
+  "appendCitizenUpkeepBlock": "L",
+  "appendW4PctMetricBlock": "L",
+  "appendIndywidualneToggle": "L",
+  "renderEkonomiaStrip": "M",
+  "appendPodzialHandlu": "M",
+  "appendCitySkarbiecBalance": "M",
+  "renderPodzialHandlu": "M",
+  "renderWealth": "M",
+  "buildWealthDetailCard": "M",
+  "buildPracaDetailCard": "M",
+  "appendPodzialPracyInfo": "M",
+  "renderPodzialPracy": "M",
+  "renderBilans": "N",
+  "renderMagazyn": "N",
+  "buildRacjeWzrostDetailCard": "O",
+  "buildTopBarZywnoscDetailCard": "O",
+  "buildTopBarRekruciDetailCard": "O",
+  "buildTopBarLudnoscDetailCard": "O",
+  "buildTopBarPracaDetailCard": "O",
+  "buildTopBarZlotoDetailCard": "O",
+  "buildTopBarNaukaDetailCard": "O",
+  "buildTopBarKulturaDetailCard": "O",
+  "buildTopBarReligiaDetailCard": "O",
+  "attachTopBarStat": "O",
+  "wireTopBarStatDetails": "O",
+  "buildingStockCostForItem": "P",
+  "unitStockCostForItem": "P",
+  "stockCostForQueueItem": "P",
+  "cancelQueueItem": "P",
+  "ownerSurowcePoolFor": "P",
+  "CS_RES_STRIP_ORDER": "P",
+  "CS_RES_STRIP_CORE": "P",
+  "CS_RES_STRIP_ICON_PX": "P",
+  "appendCityResourceStockStrip": "P",
+  "appendRecruitMilitaryResourceStrip": "P",
+  "addItem": "P",
+  "applyBuildButtonVisualState": "P",
+  "appendBuildActionButtons": "P",
+  "appendDisabledBuildActionButtons": "P",
+  "findBuildingDef": "P",
+  "findUnitDef": "P",
+  "customBuildingIconClass": "P",
+  "buildingIconHtml": "P",
+  "unitIconHtml": "P",
+  "unitMedallionHtml": "P",
+  "productionItemIconHtml": "P",
+  "fillIconElement": "P",
+  "makeMiniThumb": "P",
+  "makeBuildingThumb": "P",
+  "appendBuildingInlineIcon": "P",
+  "appendProductionPicon": "P",
+  "productionQueueIconSpan": "P",
+  "createScrollList": "P",
+  "YIELD_BRAND": "P",
+  "yieldBrandIconHtml": "P",
+  "buildingUiDisplayLevel": "Q",
+  "formatBuildingYieldDetailValue": "Q",
+  "formatBuildingYieldChipText": "Q",
+  "formatBuildingYieldScaleRow": "Q",
+  "buildingBonusChipsHtml": "Q",
+  "buildingOwnedLevel": "Q",
+  "sumOwnedBuildingsUpkeep": "Q",
+  "buildingOwnedBonusCompactHtml": "Q",
+  "buildingStockCostChipsHtml": "Q",
+  "BUILDING_UPKEEP_ZERO_LABEL": "Q",
+  "formatResourceUpkeepText": "Q",
+  "buildingUpkeepDisplay": "Q",
+  "sumOwnedBuildingsResourceUpkeep": "Q",
+  "formatBuildingUpkeepGridValue": "Q",
+  "formatBuildingUpkeepRowHtml": "Q",
+  "formatBuildingUpkeepTotalHtml": "Q",
+  "formatResourceUpkeepSummary": "Q",
+  "buildingConverterProductionDisplay": "Q",
+  "formatConverterAmount": "Q",
+  "formatConverterProductionRowHtml": "Q",
+  "BuildingReqChipKind": "Q",
+  "BuildingReqChip": "Q",
+  "buildingLocationRequirementMet": "Q",
+  "buildingRequirementChips": "Q",
+  "buildingCanBuildNow": "Q",
+  "sortProductionItemsByBuildability": "Q",
+  "buildingReqChipSpan": "Q",
+  "buildingRequirementChipsHtml": "Q",
+  "BUILDING_REQ_SECTION_LABELS": "Q",
+  "appendBuildingRequirementChipSections": "Q",
+  "appendBuildingRequirementsBlock": "Q",
+  "parentBuildingName": "Q",
+  "buildBuildingInfocard": "Q",
+  "EPOCH_LABEL": "R",
+  "epochLabelNum": "R",
+  "isEmptyDataVal": "R",
+  "isDevOnlyPlayerText": "R",
+  "stripInlineDevAnnotations": "R",
+  "playerFacingNote": "R",
+  "techIconHintSpan": "R",
+  "techHintLinkDelegationBound": "R",
+  "bindTechHintLinkDelegation": "R",
+  "unitExtraField": "R",
+  "techPrereqChain": "R",
+  "appendDetailSection": "R",
+  "beginBuildingDetailTile": "R",
+  "appendDetailGridIn": "R",
+  "appendDetailGrid": "R",
+  "gridDetailRow": "R",
+  "appendDetailAlgo": "R",
+  "appendDetailFormula": "R",
+  "appendTechDetailBlock": "R",
+  "ENTITY_CARD_BUILDING_STYLE_ID": "S",
+  "ensureEntityCardBuildingStyles": "S",
+  "buildBuildingDetailCardViaEntityCard": "S",
+  "buildBuildingDetailCard": "S",
+  "_legacyBuildBuildingDetailCard": "S",
+  "buildBuildingBuildTabDetailCard": "S",
+  "buildOwnedBuildingsDetailCard": "S",
+  "buildUnitDetailCardViaEntityCard": "S",
+  "buildUnitDetailCard": "S",
+  "_legacyBuildUnitDetailCard": "S",
+  "attachUnitRowThumb": "S",
+  "appendBuildableItemRow": "S",
+  "recruitManpowerCost": "T",
+  "empireRekruciTotal": "T",
+  "empireRekruciAffordable": "T",
+  "maxAffordableRecruitQuantity": "T",
+  "unitStockCostChipsHtml": "T",
+  "unitResourceUpkeepChipsHtml": "T",
+  "appendUnitRecruitCompactRow": "T",
+  "recruitUnit": "T",
+  "appendRecruitmentQueue": "T",
+  "appendBuildQueueSection": "T",
+  "renderProd": "U",
+  "missingTechSteps": "U",
+  "formatBuildingCatalogLockHint": "U",
+  "formatBuildingPreviewHint": "U",
+  "productionCtxForCity": "U",
+  "collectEraPreviewEntries": "U",
+  "appendCatalogBuildingRow": "U",
+  "renderBuildList": "U",
+  "buildRecruitTabDetailCard": "U",
+  "renderPurchasableUnits": "U",
+  "buildUpgradeBonusDetailCard": "U",
+  "appendOwnedBuildingRow": "U",
+  "renderBuildingsOwned": "U",
+  "renderSplitPane": "V",
+  "renderOwnedBuildingsBar": "V",
+  "renderBuildSplitPanel": "V",
+  "renderBuildingsOwnedRightPanel": "V",
+  "appendGarrisonUnitChip": "V",
+  "renderTopBarGarrison": "V",
+  "buildGarnizonDetailCard": "V",
+  "TEREN_COL": "W",
+  "TEREN_LETTER": "W",
+  "hexDist": "W",
+  "okolicaPreviewRadius": "W",
+  "rangeName": "W",
+  "ringsTiles": "W",
+  "okStat": "W",
+  "IMPROVEMENT_KEY_TO_NAME": "W",
+  "improvementsInCityRange": "W",
+  "improvementRangeRow": "W",
+  "buildOkolicaDetailCard": "W",
+  "okolicaHexPoints": "W",
+  "okolicaTileHasWorkerAt": "W",
+  "fireOkolicaTileToggle": "W",
+  "formatTileYieldShort": "W",
+  "tileYieldLabel": "W",
+  "appendOkolicaYieldLabel": "W",
+  "renderWorkedPreview": "W",
+  "renderOkolica": "W",
+  "rootEl": "X",
+  "activeCity": "X",
+  "activeMap": "X",
+  "activeOnClose": "X",
+  "pinnedGarrisonCityId": "X",
+  "setGarrisonLabelPinned": "X",
+  "pinGarrisonPanel": "X",
+  "clearGarrisonPanel": "X",
+  "ownerCities": "X",
+  "ownerCitiesForNav": "X",
+  "cityPanelTitle": "X",
+  "switchCity": "X",
+  "navigateCityPanel": "X",
+  "headerOrderBadge": "X",
+  "drawerTabButtons": "X",
+  "skeleton": "X",
+  "resolveActiveCity": "X",
+  "refreshCityPanelIfOpen": "X",
+  "CityPanelUxMounts": "X",
+  "uxSectionRefresh": "X",
+  "clearCityPanelUxMode": "X",
+  "W3_STAT_RES_KEY": "Y",
+  "w3CityChip": "Y",
+  "buildCityOnlyW3FlankChips": "Y",
+  "buildCityResourceStatItems": "Y",
+  "closeCityView": "Z",
+  "renderCityExitFooter": "Z",
+  "capitalBadgeOrButtonHtml": "Z",
+  "renderCivResourceTopBar": "Z",
+  "renderCityIconLeftRail": "Z",
+  "renderCityIconRightRail": "Z",
+  "renderCityHeaderCompact": "Z",
+  "buildHandelDetailCard": "AA",
+  "renderHandelSlidersPanel": "AA",
+  "activeTradeRouteCountForCity": "AA",
+  "renderCivMapChrome": "AB",
+  "appendOkolicaToolbarProfiles": "AB",
+  "appendBudowaToolbarProfiles": "AB",
+  "appendBudowaListaBar": "AB",
+  "renderTopStatsBar": "AC",
+  "appendPanel": "AC",
+  "resolveDetailSideHint": "AC",
+  "appendSectionTitleWithDetails": "AC",
+  "CityPanelIconTab": "AD",
+  "CityPanelProductionTab": "AD",
+  "CityPanelCityParamTab": "AD",
+  "CITY_PANEL_ICONS_LEFT": "AD",
+  "CITY_PANEL_ICONS_RIGHT": "AD",
+  "isProductionPanelTab": "AD",
+  "CADUCEUS_SVG": "AD",
+  "cityRailIconHtml": "AD",
+  "activeCityPanelTab": "AD",
+  "renderOkolicaPanel": "AD",
+  "renderCityIconRail": "AD",
+  "withW4TabCard": "AD",
+  "renderLeftPanelTab": "AD",
+  "renderRightPanelTab": "AD",
+  "paintCityPanelSections": "AD",
+  "rerender": "AD",
+  "showCityPanel": "AE",
+  "hideCityPanel": "AE",
+  "closeCityPanelIfOpen": "AE",
+  "isCityPanelOpen": "AE",
+  "getOpenCityPanelCityId": "AE"
+ }
+}

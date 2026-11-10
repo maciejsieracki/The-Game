@@ -1,0 +1,68 @@
+# Literaly liczbowe i napisowe w modulach P6.7B (building_costs.rs::p6_7b, derived.rs); komentarze pominiete
+# Klasyfikacja: STRUKTURALNY = elementy neutralne/semantyka JS (0.0, 1.0, indeksy, nazwy pol JSON jako identyfikatory,
+# komunikaty expect, formaty szablonow), nie dane ani mnozniki balansu.
+# Dane: data/derived/building-cost-params.json; dane Unicode: data/derived/nfd-strip-table.json.
+## src/domain/building_costs.rs od linii 307
+331: nums=['1'] strs=[] | for i in 1..items.len() {
+333: nums=['0', '1'] strs=[] | while j > 0 && cmp(&items[j - 1], &items[j]) == Ordering::Greater {
+334: nums=['1'] strs=[] | items.swap(j - 1, j);
+335: nums=['1'] strs=[] | j -= 1;
+344: nums=['0.0'] strs=[] | } else if diff < 0.0 {
+346: nums=['0.0'] strs=[] | } else if diff > 0.0 {
+355: nums=['0.0'] strs=[] | v.is_finite() && v > 0.0
+380: nums=['0'] strs=[] | if t_index != 0 {
+397: nums=['0'] strs=[] | let mut i = 0;
+401: nums=['1'] strs=[] | i += 1;
+406: nums=['1'] strs=[] | i += 1;
+446: nums=['1.0'] strs=[] | 1.0,
+502: nums=['0.0'] strs=[] | if !cost.is_finite() || cost < 0.0 {
+503: nums=['0.0'] strs=[] | return 0.0;
+505: nums=['0.0'] strs=[] | if cost == 0.0 {
+506: nums=['0.0'] strs=[] | return 0.0;
+508: nums=['1.0'] strs=[] | js_max(1.0, js_math_round(cost * epoch_cost_multiplier(epoch)))
+530: nums=['1.0'] strs=[] | out.insert(key.clone(), js_max(1.0, js_math_round(v * fala2)));
+548: nums=['1.0'] strs=[] | if era_multiplier == 1.0 {
+553: nums=['1.0'] strs=[] | .map(|(key, amount)| (key, js_max(1.0, js_math_round(amount * era_multiplier))))
+567: nums=['0.0'] strs=[] | .unwrap_or(0.0);
+569: nums=['0.0'] strs=[] | if brak > 0.0 {
+585: nums=['0.0'] strs=[] | .unwrap_or(0.0);
+600: nums=['0.0'] strs=[] | let have = next.get(key).copied().unwrap_or(0.0);
+601: nums=['0.0'] strs=[] | next.insert(key.clone(), js_max(0.0, have - need));
+689: nums=['0.0'] strs=[] | .unwrap_or(0.0)
+707: nums=['0.0'] strs=[] | let current = pool.get(key).copied().unwrap_or(0.0);
+717: nums=['0.0'] strs=[] | let mut total = 0.0;
+749: nums=['0.0'] strs=[] | if need.is_nan() || need <= 0.0 {
+752: nums=['0'] strs=[] | let mut holders: Vec<usize> = (0..cities.len())
+753: nums=['0.0'] strs=[] | .filter(|&i| cities[i].owner_id() == owner_id && city_stock(&cities[i], key) > 0.0)
+760: nums=['0.0'] strs=[] | if need <= 0.0 {
+783: nums=['0.0'] strs=[] | if !amount.is_finite() || amount <= 0.0 {
+784: nums=['0.0'] strs=[] | return 0.0;
+786: nums=['0'] strs=[] | let mut owner_cities: Vec<usize> = (0..cities.len())
+790: nums=['0.0'] strs=[] | return 0.0;
+796: nums=['0.0'] strs=[] | to_add = js_max(0.0, js_min(to_add, cap - current));
+798: nums=['0.0'] strs=[] | if to_add <= 0.0 {
+799: nums=['0.0'] strs=[] | return 0.0;
+806: nums=['0'] strs=[] | let target = owner_cities[0];
+810: nums=['0.0'] strs=[] | let current = surowce.get(key).copied().unwrap_or(0.0);
+872: nums=[] strs=[''] | if js_trim(unit.typ.as_deref().unwrap_or("")) != params.typ_jezdny {
+875: nums=[] strs=[''] | js_trim(unit.jednostka.as_deref().unwrap_or("")) != params.wyjatek_kon_jednostka
+885: nums=[] strs=[''] | let raw_name = js_trim(unit.surowiec.as_deref().unwrap_or(""));
+895: nums=['0.0'] strs=[] | let current = out.get(&params.kon_klucz).copied().unwrap_or(0.0);
+917: nums=['0.0'] strs=[] | .unwrap_or(0.0)
+1043: nums=['0.0', '0.0'] strs=[] | if stock.get(ascii_key).copied().unwrap_or(0.0) > 0.0 {
+1078: nums=[] strs=[''] | let key = js_trim(building.wymagany_surowiec.as_deref().unwrap_or("")).to_lowercase();
+1191: nums=['1.0'] strs=[] | epoka_wejscia: Some(1.0),
+1370: nums=['0.0'] strs=[] | 0.0
+1382: nums=['0.0'] strs=[] | 0.0
+1394: nums=['1.0'] strs=[] | 1.0
+1407: nums=['0.0'] strs=[] | 0.0
+1446: nums=['1.0'] strs=[] | let mut m = 1.0;
+1475: nums=[] strs=['{}{}'] | "{}{}",
+1551: nums=['1.0'] strs=[] | epoka_wejscia: Some(1.0),
+## src/data/derived.rs od linii 3825
+3830: nums=[] strs=['../../data/derived/building-cost-params.json'] | include_str!("../../data/derived/building-cost-params.json");
+3833: nums=[] strs=['{zloto_label}'] | pub const BUILDING_COST_ZLOTO_TOKEN: &str = "{zloto_label}";
+4009: nums=[] strs=['building-cost-params.json must parse'] | let mut file = parse_building_cost_params().expect("building-cost-params.json must parse");
+4026: nums=[] strs=['../../data/derived/nfd-strip-table.json'] | pub const NFD_STRIP_TABLE_JSON: &str = include_str!("../../data/derived/nfd-strip-table.json");
+4076: nums=[] strs=['nfd-strip-table.json must parse'] | let file = parse_nfd_strip_table().expect("nfd-strip-table.json must parse");
+# linii z literalami: 61

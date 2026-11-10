@@ -1,0 +1,597 @@
+
+--- A: straz marszu (jednostkowo) ---
+  [OK] A1 centrum miasta trzeciej = jej teren (got 2, want 2)
+  [OK] A2 wlasny teren rozpoznany (got 1, want 1)
+  [OK] A3 teren wolny poza promieniem (got -1, want -1)
+  [OK] A4 cudzy teren bez zgody = zablokowany
+  [OK] A5 wlasny teren nie jest blokowany
+  [OK] A6 teren wolny nie jest blokowany
+  [OK] A7 koszt wejscia na zakazany heks = Infinity (got null, want null)
+  [OK] A8 koszt na wlasnym terenie bez zmian (got 1, want 1)
+  [OK] A9 wyjatek wyjscia: wlasciciel startowego terenu dopuszczony (got 1, want 1)
+  [OK] A10 umowa przemarszu (isPassageAllowed) odblokowuje teren
+  [OK] A11 prog "znacznie gorsza" okreznej: > 1,5x + 3
+  [OK] A12 neutralnosc bez umowy: przemarsz nieautoryzowany (to samo kryterium co kara)
+  [OK] A13 wojna z gospodarzem terenu: dozwolone
+  [OK] A14 (informacyjnie) kontrakt umowy badany w sekcji B3 przez isPassageAllowed
+
+--- B: scenariusze (PRAWDZIWY decideAITurn + executeAiCityMove + computePath; dwie sciezki: marsz wojny all-in i zwykly firstStep) ---
+  [INFO] (wojna-all-in) promien terytorium trzeciej (pop 5) = 5; PRZED (bez strazy): jednostko-tury na terenie trzeciej = 16
+  [OK] B0 (wojna-all-in) stan zastany (PRZED/bez strazy): wojska przechodza przez teren trzeciej cywilizacji
+  [OK] B1 (wojna-all-in) trzecia lezy miedzy AI a wrogiem, brak umowy: ZERO jednostko-tur na jej terenie (trasa okrezna) (got 0, want 0)
+  [OK] B1b (wojna-all-in) okrezna dociera za teren trzeciej (maxQ=36, captured=false) -- marsz nie utknal
+  [OK] B1c (wojna-all-in) straz prowadzi trasy okrezne (routed=16, detours=2)
+  [OK] B2 (wojna-all-in) z umowa przemarszu AI przechodzi przez teren trzeciej (jednostko-tury=16)
+  [OK] B2b (wojna-all-in) z umowa: brak odroczen (got 0, want 0)
+  [OK] B2c (wojna-all-in) z umowa: brak prosby o przemarsz (got 0, want 0)
+  [OK] B3 (wojna-all-in) odmowa -> trasa okrezna: teren trzeciej nadal zablokowany (0 wejsc) (got 0, want 0)
+  [OK] B3b (wojna-all-in) po odmowie AI objezdza i dociera dalej (maxQ=36)
+  [OK] B4 (wojna-all-in) odmowa i BRAK trasy okreznej (korytarz zamkniety terenem trzeciej): ZERO wejsc (got 0, want 0)
+  [OK] B4b (wojna-all-in) marsz odroczony przed granica (maxQ=5 < 20), cel nieosiagniety
+  [OK] B4c (wojna-all-in) AI SKLADA prosbe o przemarsz do wlasciciela terenu (wywolania=40)
+  [OK] B4d (wojna-all-in) odroczenia zliczone (deferred=157)
+  [OK] B4e (wojna-all-in) kontrola: bez strazy AI w korytarzu WCHODZI w teren trzeciej (scenariusz reprezentatywny)
+  [OK] B7 (wojna-all-in) brak trasy ladowej + Zegluga: trasa morska, ZERO jednostko-tur na terenie trzeciej (got 0, want 0)
+  [OK] B7b (wojna-all-in) trasa morska dociera za teren trzeciej (maxQ=36, captured=false)
+  [OK] B7c (wojna-all-in) jednostki faktycznie sie zaokretowaly (jednostko-tury na wodzie=32, seaRoutes=2)
+  [OK] B7d (wojna-all-in) bez Zeglugi (brak seaCostFn): nadal odroczenie, 0 wejsc (maxQ=5)
+  [INFO] (firstStep) promien terytorium trzeciej (pop 5) = 5; PRZED (bez strazy): jednostko-tury na terenie trzeciej = 16
+  [OK] B0 (firstStep) stan zastany (PRZED/bez strazy): wojska przechodza przez teren trzeciej cywilizacji
+  [OK] B1 (firstStep) trzecia lezy miedzy AI a wrogiem, brak umowy: ZERO jednostko-tur na jej terenie (trasa okrezna) (got 0, want 0)
+  [OK] B1b (firstStep) okrezna dociera za teren trzeciej (maxQ=37, captured=false) -- marsz nie utknal
+  [OK] B1c (firstStep) straz prowadzi trasy okrezne (routed=16, detours=0)
+  [OK] B2 (firstStep) z umowa przemarszu AI przechodzi przez teren trzeciej (jednostko-tury=16)
+  [OK] B2b (firstStep) z umowa: brak odroczen (got 0, want 0)
+  [OK] B2c (firstStep) z umowa: brak prosby o przemarsz (got 0, want 0)
+  [OK] B3 (firstStep) odmowa -> trasa okrezna: teren trzeciej nadal zablokowany (0 wejsc) (got 0, want 0)
+  [OK] B3b (firstStep) po odmowie AI objezdza i dociera dalej (maxQ=37)
+  [OK] B4 (firstStep) odmowa i BRAK trasy okreznej (korytarz zamkniety terenem trzeciej): ZERO wejsc (got 0, want 0)
+  [OK] B4b (firstStep) marsz odroczony przed granica (maxQ=5 < 20), cel nieosiagniety
+  [OK] B4c (firstStep) AI SKLADA prosbe o przemarsz do wlasciciela terenu (wywolania=1)
+  [OK] B4d (firstStep) odroczenia zliczone (deferred=1)
+  [OK] B4e (firstStep) kontrola: bez strazy AI w korytarzu WCHODZI w teren trzeciej (scenariusz reprezentatywny)
+  [OK] B7 (firstStep) brak trasy ladowej + Zegluga: trasa morska, ZERO jednostko-tur na terenie trzeciej (got 0, want 0)
+  [OK] B7b (firstStep) trasa morska dociera za teren trzeciej (maxQ=37, captured=false)
+  [OK] B7c (firstStep) jednostki faktycznie sie zaokretowaly (jednostko-tury na wodzie=220, seaRoutes=5)
+  [OK] B7d (firstStep) bez Zeglugi (brak seaCostFn): nadal odroczenie, 0 wejsc (maxQ=5)
+  [OK] B8 (wojna-all-in) rozstaw symetryczny: ZERO jednostko-tur na terenie trzeciej (got 0, want 0)
+  [OK] B8b (wojna-all-in) rozstaw symetryczny: armia dociera za teren trzeciej / zdobywa cel (maxQ=36, captured=false, tury=70) -- brak oscylacji w miejscu
+  [OK] B8c (wojna-all-in) rozstaw symetryczny: liczba zmian kierunku sredniego q <= 6 (=0) -- brak oscylacji
+  [OK] B8 (firstStep) rozstaw symetryczny: ZERO jednostko-tur na terenie trzeciej (got 0, want 0)
+  [OK] B8b (firstStep) rozstaw symetryczny: armia dociera za teren trzeciej / zdobywa cel (maxQ=36, captured=false, tury=70) -- brak oscylacji w miejscu
+  [OK] B8c (firstStep) rozstaw symetryczny: liczba zmian kierunku sredniego q <= 6 (=0) -- brak oscylacji
+  [OK] B5 (wojna-all-in) jednostka stoi na zakazanym terenie
+  [OK] B5d (wojna-all-in) wyjatek wyjscia z cudzego terenu jest ZALOGOWANY (console.log "[AI-marsz] wyjatek wyjscia")
+  [OK] B5b (wojna-all-in) jednostka na zakazanym terenie dostaje rozkaz ruchu (nie utyka)
+  [OK] B5c (wojna-all-in) wyjatek wyjscia zliczony (2)
+  [OK] B5 (firstStep) jednostka stoi na zakazanym terenie
+  [OK] B5d (firstStep) wyjatek wyjscia z cudzego terenu jest ZALOGOWANY (console.log "[AI-marsz] wyjatek wyjscia")
+  [OK] B5b (firstStep) jednostka na zakazanym terenie dostaje rozkaz ruchu (nie utyka)
+  [OK] B5c (firstStep) wyjatek wyjscia zliczony (1)
+  [OK] B6 osadnik jest cywilem (firstStep pomija straz dla cywili: !isCivilianUnit)
+
+--- C: mutacje PRAWDZIWEGO zrodla czerwienia asercje ---
+  [OK] C1 firstStep: pomija straz (zwykly computePath): wejscia na teren trzeciej wracaja (16) -> B1 (firstStep) czerwone
+  [OK] C2 wrapCost: zakazany heks bez kosztu Infinity: wejscia wracaja (16) -> B1 (firstStep) czerwone
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka a0 (20,10) -> (38,10)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka a0 (23,10) -> (38,10)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+  [OK] C3 planer wojny: teren trzecich nie trafia do blocked: wejscia wracaja (16) -> B1 (wojna-all-in) czerwone
+  [OK] C4 isBlockedHex: umowa przemarszu ignorowana: z umowa AI nie przechodzi (0) -> B2 (firstStep) czerwone (got 0, want 0)
+  [OK] C5 blockedHexKeys: umowa przemarszu ignorowana: z umowa AI nie przechodzi (0) -> B2 (wojna-all-in) czerwone (got 0, want 0)
+  [OK] C6 guardedMarchPath: brak prosby o przemarsz (no-route): prosba znika (0) -> B4c (firstStep) czerwone (got 0, want 0)
+  [FAIL] C7 requestWarMarchPassage: brak prosby o przemarsz (no-route): prosba znika (0) -> B4c (wojna-all-in) czerwone (got 1, want 0)
+  [OK] C8 guardedMarchPath: brak trasy morskiej (od razu odroczenie): marsz morski znika (seaRoutes=0) -> B7 (firstStep) czerwone
+  [OK] C10 planer wojny: brak przeplanowania z woda: marsz morski znika (maxQ=5) -> B7 (wojna-all-in) czerwone
+  [OK] C9 isMarchPassageCooldownActive: wpis z przyszlosci wycisza prosby: wpis z przyszlosci wycisza prosby -> F2 czerwone
+
+--- F: cooldown prosby o przemarsz (zachowanie: czysta funkcja uzywana przez main.ts) ---
+  [OK] F1 brak wpisu: prosba dozwolona (got false, want false)
+  [OK] F1b ta sama tura: wyciszona (got true, want true)
+  [OK] F1c 7 tur po prosbie: wyciszona (bez spamu) (got true, want true)
+  [OK] F1d 8 tur po prosbie: ponowienie wg cooldownu (got false, want false)
+  [OK] F2 wpis z PRZYSZLOSCI (nowa gra / wczytany wczesniejszy zapis): NIE wycisza prosb (zarzut R1 #1) (got false, want false)
+  [OK] F2b wpis z przyszlosci o 1 ture: nie wycisza (got false, want false)
+
+--- E: statyczne zabezpieczenia main.ts (okablowanie) ---
+  [OK] E1 main.ts: straz tylko gdy AI jest w wojnie z cywilizacja (atWarWithCivFor)
+  [OK] E2 main.ts: autoryzacja przemarszu = TO SAMO hasAuthorizedBorderCrossing co kara (isMilitary: true)
+  [OK] E3 main.ts: cooldown prosby o przemarsz (8 tur, bez spamu)
+  [OK] E4 main.ts: egzekutor ruchu AI uzywa tej samej blokady co planer
+  [OK] E5 main.ts: prosba AI<->AI idzie istniejacym evaluateProposal (granice + borderMilitary)
+  [OK] E7 main.ts: aiMarchPassageRequestTurn czyszczony przy nowej grze i przy wczytaniu (clear x2 >= 2)
+  [OK] E8 main.ts: aiMarchPassageRequestTurn zapisywany w save (meta) jak siostrzane cooldowny
+  [OK] E9 main.ts: aiMarchPassageRequestTurn odczytywany z save przy wczytaniu
+  [OK] E10 main.ts: straz dostaje koszt morski (Zegluga) -- trasa morska
+  [OK] E6 diplomacy-proposals.ts: prosba o przemarsz -> istniejaca akcja granice (reuse, bez nowego mechanizmu)
+
+--- D: symulacja 3 cywilizacji PRZED vs PO (6 ziaren x 80 tur; wojna 1-3, cywilizacja 2 = trzecia, umow przemarszu brak = odmowa) ---
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (25,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (27,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,14) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+  [SIM] ziarno 1: jednostko-tury na terenie trzeciej PRZED=1112 PO=0; pary-tury (kara Zaufania) PRZED=139 PO=0; wizyty N7 PRZED=2 PO=0; objazdy=32 odroczenia=0 wyjatki=0
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (25,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (27,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (31,11) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (33,9) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (40,9)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (42,9)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (43,10)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (34,12) -> (45,10)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u2 (34,13) -> (45,10)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+  [SIM] ziarno 2: jednostko-tury na terenie trzeciej PRZED=112 PO=0; pary-tury (kara Zaufania) PRZED=14 PO=0; wizyty N7 PRZED=2 PO=0; objazdy=18 odroczenia=0 wyjatki=0
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (25,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (27,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (30,16) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,15) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (34,9) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (31,9) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+  [SIM] ziarno 3: jednostko-tury na terenie trzeciej PRZED=126 PO=0; pary-tury (kara Zaufania) PRZED=27 PO=0; wizyty N7 PRZED=3 PO=0; objazdy=25 odroczenia=0 wyjatki=0
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (25,16) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (27,16) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,16) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,16) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,16) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (34,11) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (31,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (28,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (26,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+  [SIM] ziarno 4: jednostko-tury na terenie trzeciej PRZED=112 PO=0; pary-tury (kara Zaufania) PRZED=27 PO=0; wizyty N7 PRZED=3 PO=0; objazdy=35 odroczenia=0 wyjatki=0
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (25,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (27,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (31,12) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (31,16) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (32,12) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (29,16) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (34,11) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (28,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (34,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (26,15) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (24,16) -> (6,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u4 (25,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u4 (25,14) -> (21,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u2 (26,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u4 (28,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u5 (25,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (24,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u2 (28,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u4 (31,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u5 (27,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (26,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (25,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u2 (30,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u5 (29,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (28,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u5 (32,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (29,15) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u5 (32,16) -> (52,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (29,15) -> (52,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (31,16) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (31,16) -> (52,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (27,14) -> (50,15)
+  [SIM] ziarno 5: jednostko-tury na terenie trzeciej PRZED=350 PO=0; pary-tury (kara Zaufania) PRZED=69 PO=0; wizyty N7 PRZED=3 PO=0; objazdy=35 odroczenia=0 wyjatki=0
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (26,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (28,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (34,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (29,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u0 (33,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 1, jednostka o1u0 (30,12) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 1, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,12) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (34,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (34,13) -> (48,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (33,13) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (32,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (30,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu: wlasciciel 3, jednostka o3u7 (27,12) -> (10,8)
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+[AI-marsz] wyjatek wyjscia z cudzego terenu (planer wojny): wlasciciel 3, tereny 2
+  [SIM] ziarno 6: jednostko-tury na terenie trzeciej PRZED=137 PO=0; pary-tury (kara Zaufania) PRZED=31 PO=0; wizyty N7 PRZED=3 PO=0; objazdy=32 odroczenia=0 wyjatki=0
+  [AGG] PRZED: jednostko-tury na terenie trzeciej=1949, pary-tury z kara Zaufania=307 (suma -1535 pkt Zaufania), wizyty N7 (spadek Wiarygodnosci)=16, ruchy=1784, przejecia miast=2, prosby (wywolania/po cooldownie 8 tur)=0/0, czas decyzji=25434 ms (27.23 ms/wywolanie)
+  [AGG] PO: jednostko-tury na terenie trzeciej=0, pary-tury z kara Zaufania=0 (suma -0 pkt Zaufania), wizyty N7 (spadek Wiarygodnosci)=0, ruchy=1660, przejecia miast=2, prosby (wywolania/po cooldownie 8 tur)=0/0, czas decyzji=11978 ms (12.48 ms/wywolanie)
+  [DIAG] stan PO: objazdy=177, odroczenia=0, cel na zakazanym terenie=0, wyjatki wyjscia=0
+  [OK] D0 stan zastany: PRZED AI wchodzi na teren trzeciej (1949 jednostko-tur)
+  [OK] D1 PO: mniej jednostko-tur na terenie trzeciej (0 < 1949)
+  [OK] D2 PO: mniej kar Zaufania (0 < 1535 pkt)
+  [OK] D3 PO: wizyty N7 (spadek Wiarygodnosci) nie wieksze (0 <= 16)
+  [CZAS] pomiar parowany na identycznych stanach (trajektoria PRZED): bez strazy=25434 ms, ze straza=17839 ms, stosunek=0.70x; trajektoria PO: ze straza=11978 ms, bez strazy=17798 ms, stosunek=0.67x
+  [CZAS] lacznie obie trajektorie (ze straza / bez strazy) = 0.69x
+  [OK] D4a trajektoria PRZED: czas decyzji ze straza <= x1,5 bez strazy (0.70x)
+  [OK] D4b trajektoria PO: czas decyzji ze straza <= x1,5 bez strazy (0.67x)
+  [OK] D4c laczny koszt (obie trajektorie) <= x1,3 (0.69x)
+  [OK] D5 prosby po cooldownie nie przekraczaja wywolan
+
+ai-march-avoid-foreign-territory: 98 passed, 1 failed
+
+EXIT=1
+TIME=100.7

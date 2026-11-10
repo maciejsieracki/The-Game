@@ -1,0 +1,19 @@
+== pre
+  endTurnMs         T10-20 śr=8305.4 med=8550  T70-80 śr=12033.1 med=12004.4  iloraz(śr)=1.45
+  cityOpenSyncMs    T10-20 śr=127.7 med=111.6  T70-80 śr=428.0 med=435.6  iloraz(śr)=3.35
+  cityOpenFrameMs   T10-20 śr=580.4 med=537  T70-80 śr=961.0 med=968  iloraz(śr)=1.66
+  jsHeapMB          T10-20 śr=110.8 med=112.8  T70-80 śr=129.5 med=127  iloraz(śr)=1.17
+  domNodes          T10-20 śr=8650.1 med=8817  T70-80 śr=5060.5 med=4444  iloraz(śr)=0.59
+  jsEventListeners  T10-20 śr=660.5 med=634  T70-80 śr=627.7 med=573  iloraz(śr)=0.95
+  textures          T10-20 śr=14.6 med=15  T70-80 śr=23.0 med=23  iloraz(śr)=1.57
+  saveBytes         T10-20 śr=334855.0 med=335515  T70-80 śr=425938.3 med=419787  iloraz(śr)=1.27
+== fix
+  endTurnMs         T10-20 śr=6614.0 med=6791.6  T70-80 śr=8321.4 med=8521.2  iloraz(śr)=1.26
+  cityOpenSyncMs    T10-20 śr=92.6 med=89.5  T70-80 śr=170.3 med=167.9  iloraz(śr)=1.84
+  cityOpenFrameMs   T10-20 śr=498.2 med=465.7  T70-80 śr=673.8 med=707.3  iloraz(śr)=1.35
+  jsHeapMB          T10-20 śr=108.5 med=105.4  T70-80 śr=121.6 med=120  iloraz(śr)=1.12
+  domNodes          T10-20 śr=11841.5 med=6922  T70-80 śr=6702.9 med=6041  iloraz(śr)=0.57
+  jsEventListeners  T10-20 śr=1035.0 med=627  T70-80 śr=706.9 med=695  iloraz(śr)=0.68
+  textures          T10-20 śr=14.6 med=15  T70-80 śr=23.0 med=23  iloraz(śr)=1.57
+  saveBytes         T10-20 śr=334855.0 med=335515  T70-80 śr=425938.3 med=419787  iloraz(śr)=1.27
+== skróty stanu pre vs fix: zgodne=81 różne=0

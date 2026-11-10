@@ -1,0 +1,4514 @@
+[
+ {
+  "turn": 1,
+  "mem": null,
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 11,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 12,
+    "key": "Sprite:CANVAS:226x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 13,
+    "key": "Sprite:CANVAS:397x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 14,
+    "key": "Sprite:CANVAS:407x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 15,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 16,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 32,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 2,
+  "mem": "[memdebug] koniec tury=2 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=309.4",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 32,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 71,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 91,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 92,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 93,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 3,
+  "mem": "[memdebug] koniec tury=3 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=300.5",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 32,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 101,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 117,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 118,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 119,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 4,
+  "mem": "[memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=302.6",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 32,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 130,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 155,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 156,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 157,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 5,
+  "mem": "[memdebug] koniec tury=5 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=303.1",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 32,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 168,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 196,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 197,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 198,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 6,
+  "mem": "[memdebug] koniec tury=6 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=316.8",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 209,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 234,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 235,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 236,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 7,
+  "mem": "[memdebug] koniec tury=7 · geometries=274 · textures=21 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=321.0",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 74,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 244,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 245,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 250,
+    "key": "Sprite:CANVAS:254x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 251,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 252,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 253,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 254,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 8,
+  "mem": "[memdebug] koniec tury=8 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=322.4",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 60,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 72,
+    "key": "Sprite:CANVAS:408x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 75,
+    "key": "Sprite:CANVAS:415x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 244,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 245,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 270,
+    "key": "Sprite:CANVAS:226x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 271,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 277,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 278,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 279,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 280,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 281,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 9,
+  "mem": "[memdebug] koniec tury=9 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=314.4",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 244,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 245,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 271,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 298,
+    "key": "Sprite:CANVAS:226x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 299,
+    "key": "Sprite:CANVAS:397x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 300,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 331,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 332,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 333,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 334,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 335,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ },
+ {
+  "turn": 10,
+  "mem": "[memdebug] koniec tury=10 · geometries=294 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=318.8",
+  "census": [
+   {
+    "texId": 5,
+    "key": "Mesh:CANVAS:512x168",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 6,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 7,
+    "key": "Mesh:CANVAS:256x213",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 8,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 9,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 10,
+    "key": "Mesh:CANVAS:128x128",
+    "obj": "",
+    "parent": "unitStatPlate",
+    "grand": "Group"
+   },
+   {
+    "texId": 17,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 18,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 19,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 20,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 21,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 22,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 23,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 24,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 25,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 26,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 27,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 28,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 29,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 30,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 31,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 33,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 34,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 35,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 36,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 37,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 38,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 39,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 40,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 41,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 42,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 43,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 44,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 45,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 46,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 47,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 48,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 49,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 50,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 51,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 52,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 53,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 54,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 55,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 56,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 57,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 58,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 59,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 61,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 62,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 63,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 64,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 65,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "worker-field-overlay",
+    "grand": "Scene"
+   },
+   {
+    "texId": 73,
+    "key": "Sprite:CANVAS:403x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 244,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 245,
+    "key": "Mesh:CANVAS:72x126",
+    "obj": "",
+    "parent": "unitStatPlatePower",
+    "grand": "unitStatPlate"
+   },
+   {
+    "texId": 271,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 352,
+    "key": "Sprite:CANVAS:226x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 353,
+    "key": "Sprite:CANVAS:397x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 354,
+    "key": "Sprite:CANVAS:402x48",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 365,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 366,
+    "key": "Sprite:CANVAS:64x64",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 367,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 368,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   },
+   {
+    "texId": 369,
+    "key": "Sprite:CANVAS:128x128",
+    "obj": "",
+    "parent": "Group",
+    "grand": "Scene"
+   }
+  ]
+ }
+]

@@ -1,0 +1,8 @@
+$ (cwd = src-tauri/frontend-v2) rm -rf node_modules dist
+EXIT=0
+$ ls -d node_modules dist  # oczekiwane: brak
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access 'dist': No such file or directory
+$ rm -rf <scratch>/pin <scratch>/pin.tar  # katalog pinu poza repo
+EXIT=0
+EXIT=0

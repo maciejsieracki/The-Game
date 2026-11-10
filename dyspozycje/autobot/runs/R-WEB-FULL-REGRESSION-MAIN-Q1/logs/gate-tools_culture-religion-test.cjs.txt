@@ -1,0 +1,7 @@
+  FAIL: B9: missing mnoznikHandelPieniadz -> multiplier = 1 (fallback) (got 2.3, want ~1)
+  FAIL: B9: civBaseMultiplier = null when field absent (got 2.3, want null)
+
+culture-religion-test: 63 passed, 2 failed
+
+EXIT=1
+TIME=0.5

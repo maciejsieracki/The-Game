@@ -1,0 +1,6 @@
+$ node tools/dom-harness/run-newgame.mjs --pin-dir <PIN> --json r2-logi/17-dom-harness-newgame.json
+newGameFlow.ts                 przypadki= 1194 różnice=0 asercje_v2=12/12 DOM_puste=0/1194 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: `syncSettLayoutHeight` (`offsetHeight` = 0 w jsdom, brak układu) — dopasowanie wysokości panelu AI do siatki ustawień
+   NIE_ZMIERZONO: wygląd CSS (tło hero, rozmycie, animacje `cng-pulse`/`cng-spin`) w realnej przeglądarce; podpowiedzi `title` (hover `hudTitleTooltip`)
+dom-harness-newgame: pin=edb8fb56 modułów=1 przypadków=1194 różnic=0 jsdomErrors=0 consoleErrors=0
+EXIT=0

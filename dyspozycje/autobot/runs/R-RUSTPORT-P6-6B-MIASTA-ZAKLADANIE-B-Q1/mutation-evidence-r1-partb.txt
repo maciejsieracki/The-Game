@@ -1,0 +1,71 @@
+WYKRYTY   : list: nazwa - zapas -> 1 testow czerwonych: default_nazwa_matches_web
+PRZEZYL   : list: nazwa - granica petli
+WYKRYTY   : list: loader - szablon bez budynkow -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+PRZEZYL   : list: loader - pusta biblioteka nie jest tablica
+WYKRYTY   : list: loader - pusty slot legacy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+PRZEZYL   : list: loader - dowolny klucz legacy
+WYKRYTY   : list: loader - legacy tablica -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - nazwa legacy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: dedupe - puste id -> 1 testow czerwonych: dedupe_matches_web
+WYKRYTY   : list: dedupe - kolejnosc -> 1 testow czerwonych: dedupe_matches_web
+WYKRYTY   : emp: podzial equal bez clampa -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - override -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - bez normalizacji -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - fallback parametrow -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: local - rowne globalnemu -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: local - globalny z domyslnej -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: migracja podzialu - kasowanie pola -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - pominiecie z flaga -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - bezwarunkowa normalizacja -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - zapisane domyslne bez normalizacji -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - uzupelnienie wlascicieli -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: okolica resolve - override -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica resolve - kolejnosc fallbackow -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica broadcast - pin -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - zachowanie wartosci -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - nadpisanie przy braku roznicy -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - pierwsze miasto -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: budowa equal - tryb -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa resolve - override -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa broadcast - pin -> 2 testow czerwonych: budowa_profil_functions_match_web, upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: budowa broadcast - tryb -> 2 testow czerwonych: budowa_profil_functions_match_web, upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: budowa migracja - brak pola -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa migracja - zachowanie pary -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa forOwner - ujemny sentinel -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa forOwner - predykat barbarzyncow -> 1 testow czerwonych: budowa_profil_functions_match_web
+KOMPILACJA: emp: upgrade - pomija gracza (mutant nie kompiluje sie)
+WYKRYTY   : emp: upgrade - ujemni wlasciciele -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - barbarzyncy -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - realne ustawienia -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - broadcast -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - tryb AI -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - kolejnosc wlascicieli -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: racji resolve - override -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: racji broadcast - pin -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: racji auto - pin -> 1 testow czerwonych: poziom_racji_functions_match_web
+KOMPILACJA: emp: racji migracja - roznica (mutant nie kompiluje sie)
+WYKRYTY   : emp: OwnerMap - ponowne set zmienia miejsce -> 5 testow czerwonych: podzial_pracy_migration_matches_web, okolica_focus_functions_match_web, budowa_profil_functions_match_web
+WYKRYTY   : ens: handel - normalizacja override -> 2 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: handel - domyslny dla override -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web
+WYKRYTY   : ens: podzial pracy - clamp -> 2 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: wealth -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: okolica tryb -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa auto -> priorytet -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa auto - lista typow -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - domyslny tryb -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - tylko zrownowazone -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - przejscie na zrownowazone -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - sanitize z zrownowazonym -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - zrownowazone: fokus -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+PRZEZYL   : ens: budowa - zrownowazone: pusta lista
+WYKRYTY   : ens: budowa - priorytet: pusta lista -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+KOMPILACJA: ens: budowa lista (mutant nie kompiluje sie)
+WYKRYTY   : ens: ulepszenia - override tylko true -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_save_defaults_is_idempotent_on_web_outputs
+WYKRYTY   : ens: ulepszenia - onlyWorked -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: ulepszenia - wyrab -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: ulepszenia - procent legacy -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: magazyn - zawsze liczba -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: magazyn - bity -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_save_defaults_is_idempotent_on_web_outputs
+WYKRYTY   : ens: ration po magazynie -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: surowce -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+EXIT=143

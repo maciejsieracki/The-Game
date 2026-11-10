@@ -1,0 +1,43 @@
+[minimapa-ikona-robotnik-kolor-live-test] budowa bundla PO (bieżący worktree)…
+[minimapa-ikona-robotnik-kolor-live-test] budowa bundla PRZED (3aa1b3a2)…
+
+=== PO (bieżący worktree, ten dispatch) ===
+[minimapa-ikona-robotnik-kolor-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+  OK  [worker] przycisk obecny w .civ-hud-util-dock
+  OK  [worker] niesie inline <svg> (nie emoji)
+  OK  [worker] svg stroke="currentColor"
+  OK  [worker] svg fill="none"
+  OK  [worker] viewBox="0 0 24 24"
+  OK  [worker] ZERO surowego emoji w treści przycisku
+  OK  [worker] getComputedStyle(button).color = rgb(232, 216, 138)
+  OK  [worker] getComputedStyle(svg).color = rgb(232, 216, 138)
+  OK  [worker] ma >=1 kształt rysowany
+  OK  [worker] KAŻDY kształt: rozwiązany stroke = rgb(232, 216, 138) (currentColor zadziałał)
+  OK  [worker] KAŻDY kształt: fill=none (linia, nie wypełnienie)
+  OK  [worker] ikona 20x20 CSS px
+  OK  [worker] przycisk 42x42 (jak reszta rzędu)
+  OK  [deposit] przycisk obecny w .civ-hud-util-dock
+  OK  [deposit] niesie inline <svg> (nie emoji)
+  OK  [deposit] svg stroke="currentColor"
+  OK  [deposit] svg fill="none"
+  OK  [deposit] viewBox="0 0 24 24"
+  OK  [deposit] ZERO surowego emoji w treści przycisku
+  OK  [deposit] getComputedStyle(button).color = rgb(232, 216, 138)
+  OK  [deposit] getComputedStyle(svg).color = rgb(232, 216, 138)
+  OK  [deposit] ma >=1 kształt rysowany
+  OK  [deposit] KAŻDY kształt: rozwiązany stroke = rgb(232, 216, 138) (currentColor zadziałał)
+  OK  [deposit] KAŻDY kształt: fill=none (linia, nie wypełnienie)
+  OK  [deposit] ikona 20x20 CSS px
+  OK  [deposit] przycisk 42x42 (jak reszta rzędu)
+  OK  rząd: wszystkie przyciski na wspólnej osi pionowej (spread <= 1 px)
+  OK  rząd: worker + deposit + kontrolki zoom w tym samym docku
+  OK  zrzut rzędu: piksele złota obecne
+  info  PO przycisk worker: piksele={"gold":209,"obceChlodne":0,"total":1764} bg=rgba(232, 216, 138, 0.12) bgImage=none
+  info  PO przycisk deposit: piksele={"gold":1184,"obceChlodne":0,"total":1764} bg=rgba(232, 216, 138, 0.12) bgImage=none
+  OK  [worker] klik przełącza klasę .on
+  OK  [worker] klik przełącza aria-pressed
+  OK  [worker] klik realnie zmienia obraz mapy 3D ponad szum tła
+  OK  [worker] stan AKTYWNY: rozwiązany stroke nadal = rgb(232, 216, 138)
+
+EXIT=124
+TIME=300.1

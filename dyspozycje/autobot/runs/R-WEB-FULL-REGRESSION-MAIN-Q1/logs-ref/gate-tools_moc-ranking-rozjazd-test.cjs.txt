@@ -1,0 +1,46 @@
+Bundling veteran.ts, unit-power.ts with esbuild...
+
+  .../run/civ-moc-ranking-rozjazd-s5yaDS/veteran-bundle-moc-rozjazd.cjs  9.3kb
+
+⚡ Done in 10ms
+
+  ...n/civ-moc-ranking-rozjazd-s5yaDS/unit-power-bundle-moc-rozjazd.cjs  9.6kb
+
+⚡ Done in 12ms
+Bundle OK.
+
+========================================================================
+R-MOC-RANKING-ROZJAZD-Q1=B -- panel Mocy EFEKTYWNA, progi AI NOMINALNE
+========================================================================
+
+1. Ta sama armia (Konnica ★★★), dwa warianty sumArmyMForOwner
+  FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla rekruta (unitDefFor, bez skalowania) -- 98
+  PASS: sumArmyMForOwner (NOMINALNA) IDENTYCZNA dla rekruta i weterana ★★★ (49 == 49) -- unitDefFor() nie zna battlesSurvived, to jest ZRODLO rozjazdu z tabliczka
+  PASS: sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla weterana ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)
+  PASS: sumArmyMForOwnerEffective ROSNIE z weteranstwem (49 -> 58.0), w odroznieniu od NOMINALNEJ
+
+2. Przeliczony przyklad: panel Mocy PRZED/PO, militaryRatioFromArmyM niezmieniony
+  FAIL: Panel Mocy PRZED (nominalna, ta decyzja jeszcze nie wdrozona): skladnik "armia" = 49 pkt
+  FAIL: Panel Mocy PO (R-MOC-RANKING-ROZJAZD-Q1=B): skladnik "armia" = 58.0 pkt (+18,37%)
+  FAIL: militaryRatioFromArmyM (AI, sumArmyMForOwner) NIEZMIENIONY: nadal czyta 49, nie 58.0
+
+3. main.ts: wpiecie efektywnej WYLACZNIE do panelu Mocy, AI nietkniete
+  PASS: sumArmyMForOwnerEffective() istnieje i uzywa veteranScaledDefFor(u) (R-MOC-TABLICZKA-VS-CIVPOWER-Q1, BEZ fortyfikacji/terenu/muru/trudnosci AI -- korekta zakresu wzgledem R-MOC-RANKING-ROZJAZD-Q1=B)
+  PASS: sumArmyMForOwner() (NOMINALNA) nietknieta -- nadal armyFieldPower(unitDefFor(u))
+  PASS: buildPowerRankingByOwner: pole "power" czyta objectivePowerForOwnerEffective(oid)
+  PASS: buildPowerOverlayData: "obj" czyta buildObjectivePowerForOwnerEffective(0), nie cache nominalny
+  PASS: buildPowerOverlayData: diagMajorAi liczy mocForOwner: objectivePowerForOwnerEffective
+  PASS: buildPowerOverlayData: absoluteRank liczy buildAbsolutePowerRankEffective()
+  FAIL: buildEmpireDetailSnap: obj liczy buildObjectivePowerForOwnerEffective(0) (NIE nominalna) -- spojnosc wewnatrz jednego ekranu z powOverlay.ranking
+  PASS: (b) AI callsite #1 bajtowo nietkniety (sumArmyMForOwner NOMINALNA, nie Effective)
+  PASS: (b) AI callsite #2 bajtowo nietkniety (sumArmyMForOwner NOMINALNA, nie Effective)
+  FAIL: (b) AI callsite #3 bajtowo nietkniety (sumArmyMForOwner NOMINALNA, nie Effective) -- wzorzec nie znaleziony -- ktos zmienil/przesunal ten call-site
+  PASS: (b) AI callsite #4 bajtowo nietkniety (sumArmyMForOwner NOMINALNA, nie Effective)
+  PASS: refreshObjectivePowerCache nadal woła buildObjectivePowerForOwner (NOMINALNA) dla cache AI
+
+========================================================================
+WYNIK: 13 PASS, 6 FAIL
+========================================================================
+
+EXIT=1
+TIME=0.3

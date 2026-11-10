@@ -32668,3 +32668,29 @@ Historyczne zdanie „Istniejący F-04 hold pozostaje bez zmian” w powyższym 
 > musisz mi wyjasnic kontekst i lepiej opisac problem
 
 **Skutek:** odpowiedź prosi o dodatkowe wyjaśnienie i nie wybiera polaryzacji. `prod_rush_koszt_proc` pozostaje pending; nie uznaje się ceny 74 ani 49 za zatwierdzoną. Potrzebne jest wyjaśnienie obecnej ścieżki, znaczenia dodatniej wartości w formule/klasyfikacji, przykładu bazowej wyceny 61 i skutków obu wariantów dla gracza/AI przed ponownym pytaniem. Szczegółowy zapis: [`docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md).
+## P-DECYZJE-ORKIESTRATORA-2026-11-06 · ABC do właściciela · STATUS: **OTWARTE** — wdrożone prowizorycznie na ROBOCZEJ, właściciel zatwierdza albo zmienia
+Orkiestrator podjął poniższe wybory bez pytania (naruszenie dyscypliny ABC wskazane przez właściciela 2026-11-06); wdrożenie jest prowizoryczne i odwracalne jednym parametrem:
+1. **Emporion — bonus 5% handlu** (FALA 516): A (wdrożone) = per TRASA, Emporion tylko +1 slot tras; B = osobny niezależny +5% za sam budynek (pierwotnie zapisane „kumulujące się”). Tematy: R-WEB-BUILDING-EMPORION-Q1.
+2. **Górny baner — puste boki żetonu** (FALA 519): A (wdrożone) = baner na całą szerokość, grupa liczba+przyrosty wyśrodkowana (puste boki 55–93 px przy 1920 px); B = `max-width` banera (ciaśniejsze żetony, baner nie wypełnia ekranu).
+3. **Zmęczenie wojną — parametry** (FALA 520): `karencjaPoPokojuTur` 20/**40**/60; `karencjaChronionegoTur` 60/**100**/150; `pelneTur` **200**/150/120; `ochronaMaxMiast` 2/**3**/4. Skutek uboczny: 100-turowa karencja chronionego blokuje też jego wypowiedzenie wojny zwycięzcy.
+4. **Pakt o nieagresji — luki**: (a) automatyczny NAP państw-miast UPR bez bramki Zaufania; (b) ręczna akceptacja propozycji AI przez gracza bez progów (C-DYP-Q1=A); (c) inicjatywa AI liczy własny próg bez narzutu granicy (R-WEB-DIPLO-NAP-AI-BORDER-Q1 do rozpisania).
+5. **Cegielnia** (FALA 512): ×2 wyjścia i mnożnik wyjścia 1/1,5/2/2,5/3 → era 2 ≈ 2,7× dotychczasowej produkcji (150 zamiast 55 cegieł); krzywa liniowa 1/1,5/2 daje epoka 3 vs 2 = 1,33× (zlecenie mówiło 1,5×).
+6. **Rozmywanie koni**: temat zamknięty jako duplikat (pixelRatioMax 2.0 już wdrożony); brak potwierdzenia u właściciela — prośba o zgłoszenie, jeśli rozmycie wraca (ekran, zoom).
+7. **Wydajność T86**: zmierzono tylko skalę miast; patrz R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (runda 5/5).
+
+## P-PAMIEC-WSPOLNE-MATERIALY-2026-11-06 · ABC do właściciela · STATUS: **ODPOWIEDŹ WŁAŚCICIELA 2026-11-06: „rozszerz, jeżeli możesz” → R-WEB-MEMORY-SHARED-MATERIALS-UNIT-MERGE-Q1 (najpierw wariant z zachowaniem pikseli, potem dopuszczalne ≤100 px)**
+Z R-WEB-MEMORY-STATIC-FOOTPRINT-Q1 (FALA 526): współdzielenie materiałów modeli daje ok. −10 MB pamięci w t.100, ale zmienia 51 z 1,6 mln pikseli (three.js sortuje rysowanie po id materiału; współpłaszczyznowe ściany rozstrzygają się inaczej). A) odrzucone (wdrożone): obraz identyczny piksel w piksel, −75 MB; B) wdrożyć wspólne materiały: dodatkowe −10 MB, 51 pikseli różnicy w nakładających się ścianach. Rekomendacja orkiestratora: A.
+
+## P-PAMIEC-SCALENIE-CZESCI-JEDNOSTEK-2026-11-06 · STATUS: **ODPOWIEDZIANE 2026-11-07 (właściciel: wdrożyć) → R-WEB-MEMORY-UNIT-STATIC-MERGE-Q1** · WDROŻONE: FALA 532
+Scalenie statycznych części jednostek (prototyp, niewdrożony): sterta ok. −39 MB, draw calls 11 106 → 2 720 (475 żetonów), ale do 52/101/5 px z 1,6 mln różnicy (stanie/marsz/atak) i zmiana chowania drobnych części przy oddaleniu (SmallPartLod). Pytanie: wdrożyć (A: tak, tolerancja ≤ ~100 px) czy zostawić obraz identyczny piksel w piksel (B: nie)? Rekomendacja orkiestratora: A (zysk pamięci i klatek duży, różnica niewidoczna).
+
+## P-DECYZJE-ORKIESTRATORA-2026-11-06 — ODPOWIEDŹ WŁAŚCICIELA 2026-11-07 · STATUS: **ZAMKNIĘTE (zatwierdzone: wszystkie pozycje, bez zmian w grze)**
+Właściciel zatwierdził pozycje 1–5 (Emporion per trasa +1 slot; zmęczenie wojną karencja 40/100, pełne 200, ochrona 3 miasta; Cegielnia ×2 i mnożnik 1/1,5/2/2,5/3; stan banera z FALA 519 zastąpiony układem A w FALA 534). Pozycje 6–7: bez zmian.
+
+## ABC 2026-11-07 (sesja orkiestratora) · STATUS: **ZAMKNIĘTE — odpowiedzi właściciela zapisane**
+1. Rezerwa spoza limitu przy zdobyciu miasta: pytanie niezasadne — armia nie może przekroczyć limitu bitwy (500), wszystkie jednostki walczą → R-WEB-ARMY-STACK-LIMIT-Q1.
+2. Inkowie: oba utwory = negocjacje, bez powitania. Muzyka wdrażana teraz → R-WEB-DIPLO-CIV-MUSIC-Q1.
+3. Limit armii AI = wariant C (rezerwa utrzymania w zakupie) → R-WEB-AI-PURCHASE-MAINTENANCE-RESERVE-Q1.
+4. Cud przechodzi na zdobywcę (wariant B); cuda nie mają stanu budowy → R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1.
+5. Asymetrie AI/gracz: naprawić wszystkie → R-WEB-AI-PLAYER-PARITY-FIXES-Q1.
+6. Panele boczne przesuwają się pod lewy baner → R-WEB-HUD-PANELS-BELOW-BANNER-Q1.

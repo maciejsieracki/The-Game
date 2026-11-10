@@ -1,0 +1,28 @@
+$ node tools/dom-harness/mutate-cityux.mjs --pin-dir <PIN>
+C1 ramka: wysokość paska górnego: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: metrics@320
+C2 ramka: dolny margines docków (CSS): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+C3 ramka: szerokość lewego panelu (metryka 24vw): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: metrics@320
+C4 ramka: szerokość prawego panelu (metryka 26vw): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: metrics@320
+C5 ramka: wyrażenie CSS prawego panelu: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+C6 trafienie: prawy panel (>= → >): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 center brzegi dock=brak
+C7 trafienie: dół paska górnego (< → <=): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 wszystkie dock=brak
+C8 trafienie: wartość zastępcza TOP_H (< → <=): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 brak elementów dock=brak
+C9 trafienie: lewy panel bez docka: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 brak elementów dock=lewy
+C10 trafienie: szyna lewa od górnej krawędzi (>= → >): EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 center brzegi dock=brak
+C11 trafienie: brak testu stosu dolnego: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: isPointOver@1280 bottom-stack dock=brak
+C12 klawisze: ← w złą stronę: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz ArrowLeft/- @document
+C13 klawisze: `select` nie blokuje skrótów: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz ArrowLeft/- @#stub-sel
+C14 klawisze: → bez stopImmediatePropagation: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz ArrowRight/- @document
+C15 klawisze: kod Period: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz y/Period @document
+C16 Escape: ramka nie na stosie nakładek: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz Escape/- @document
+C17 CSS: z-index ramki: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+C18 legacy: stary arkusz nie usuwany: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: legacy+show
+C19 markup: kolejność kontenerów: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+C20 refresh: bez onClose: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show+refresh
+C21 hide: maski legacy zostają: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show+hide+legacy+hide
+C22 show: przyciemnienie nie tworzone: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+B1 most: nawigacja odwrócona: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: klawisz ArrowLeft/- @document
+B2 most: sprzątanie panelu pominięte: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+B3 most: malowanie bez onClose: EXIT=1 WYKRYTA dom-harness-cityux: STOP_ON_DIFF pierwsza różnica: cityUxFrame.ts: show
+mutate-cityux: mutacji=25 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

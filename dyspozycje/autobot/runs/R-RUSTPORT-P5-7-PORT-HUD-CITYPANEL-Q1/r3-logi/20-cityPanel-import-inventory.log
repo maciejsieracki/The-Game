@@ -1,0 +1,292 @@
+## ../../data/terrain-improvements.json  [..]  (import @ :226)
+  wart. terrainImprovementsData: wierszy_użycia=1 pierwsze=[9564]
+## ../data/loader  [data]  (import @ :81)
+  wart. loadGameData: wierszy_użycia=1 pierwsze=[629]
+  wart. getTechDef: wierszy_użycia=6 pierwsze=[7307, 7314, 7328, 7403, 8564, 8594]
+  wart. getUnitDef: wierszy_użycia=2 pierwsze=[8912, 8931]
+  typ   GameData: wierszy_użycia=81 pierwsze=[315, 625, 626, 1001, 1008, 1022, 1137, 1361]
+  typ   BuildingDef: wierszy_użycia=29 pierwsze=[6368, 6376, 6380, 6421, 6425, 6461, 6478, 6505]
+  typ   UnitDef: wierszy_użycia=10 pierwsze=[6372, 6384, 6391, 7295, 7861, 7885, 7897, 7978]
+## ../game/building-resource-gate  [game]  (import @ :114-120, :158-164)
+  wart. CITY_BUILDING_PREREQ: wierszy_użycia=1 pierwsze=[6866]
+  wart. cityBuildingPrereqMet: wierszy_użycia=1 pierwsze=[6870]
+  wart. WATER_ACCESS_BUILDING_IDS: wierszy_użycia=1 pierwsze=[6879]
+  wart. buildingRequiredActiveLabels: wierszy_użycia=1 pierwsze=[6910]
+  wart. empireResourceLabelSatisfied: wierszy_użycia=1 pierwsze=[6913]
+  wart. cityHasSpichlerzBuilding: wierszy_użycia=1 pierwsze=[1144]
+  wart. filterRuntimeActiveBuiltIds: wierszy_użycia=1 pierwsze=[9080]
+  wart. paySpichlerzDrainForCity: wierszy_użycia=1 pierwsze=[1243]
+  wart. resolveOwnedBuildingInactiveStatus: wierszy_użycia=2 pierwsze=[9065, 9086]
+  wart. resolveSpichlerzCityBonusState: wierszy_użycia=1 pierwsze=[1244]
+## ../game/building-stock-cost  [game]  (import @ :122-131)
+  wart. buildingStockCost: wierszy_użycia=4 pierwsze=[6096, 6616, 6895, 7667]
+  wart. unitStockCost: wierszy_użycia=9 pierwsze=[6103, 6108, 6197, 6204, 6219, 8106, 8113, 8152]
+  wart. canAffordBuildingStock: wierszy_użycia=1 pierwsze=[6275]
+  wart. missingStockFor: wierszy_użycia=3 pierwsze=[6309, 8153, 8200]
+  wart. stockResourceLabel: wierszy_użycia=16 pierwsze=[4541, 6181, 6244, 6336, 6626, 6627, 6645, 6646]
+  wart. ownerResourceStockAll: wierszy_użycia=2 pierwsze=[3168, 6146]
+  wart. deductBuildingStockCostAcrossCities: wierszy_użycia=1 pierwsze=[6277]
+  wart. refundBuildingStockCostAcrossCities: wierszy_użycia=1 pierwsze=[6131]
+## ../game/building-upgrades  [game]  (import @ :132-140)
+  wart. upgradeChainSteps: wierszy_użycia=2 pierwsze=[8986, 9058]
+  wart. upgradeCompositionLines: wierszy_użycia=1 pierwsze=[8991]
+  wart. buildingStructuralDefenseBonusLine: wierszy_użycia=1 pierwsze=[7633]
+  wart. buildingStructuralDefenseBonusPercent: wierszy_użycia=1 pierwsze=[6547]
+  wart. cityHasBibliotekaLine: wierszy_użycia=2 pierwsze=[5916, 10863]
+  wart. cityPalacTier: wierszy_użycia=1 pierwsze=[3211]
+  wart. groupBuiltBuildingIds: wierszy_użycia=2 pierwsze=[7826, 9232]
+## ../game/cities  [game]  (import @ :52, :54, :55-61, :62-76)
+  typ   City: wierszy_użycia=130 pierwsze=[317, 533, 732, 794, 994, 1001, 1008, 1022]
+  typ   OkolicaFocus: wierszy_użycia=8 pierwsze=[424, 435, 1889, 1896, 9624, 9669, 11084, 11087]
+  typ   OkolicaTryb: wierszy_użycia=6 pierwsze=[425, 9518, 9625, 9742, 9825, 11085]
+  typ   BudowaFocus: wierszy_użycia=7 pierwsze=[451, 455, 1903, 1912, 1921, 11126, 11158]
+  typ   BudowaTryb: wierszy_użycia=4 pierwsze=[450, 455, 11127, 11159]
+  typ   BudowaListaBiblioteka: wierszy_użycia=2 pierwsze=[453, 11242]
+  wart. dedupeBudowaLista: wierszy_użycia=1 pierwsze=[11377]
+  wart. defaultBudowaListaNazwa: wierszy_użycia=1 pierwsze=[11401]
+  wart. sanitizeBudowaPriorytetTypow: wierszy_użycia=4 pierwsze=[11181, 11197, 11216, 11267]
+  wart. BUDOWA_TYP_FOCUS: wierszy_użycia=1 pierwsze=[11130]
+  wart. DEFAULT_BUDOWA_PRIORYTET_TYPOW: wierszy_użycia=1 pierwsze=[11270]
+  wart. HANDEL_PCT_STEP: wierszy_użycia=4 pierwsze=[4694, 5130, 5161, 10992]
+  wart. normalizePodzialHandlu: wierszy_użycia=3 pierwsze=[1003, 1010, 1013]
+  wart. snapHandelPct: wierszy_użycia=0 pierwsze=[]
+  wart. adjustHandelSplit: wierszy_użycia=2 pierwsze=[4699, 10990]
+  wart. MAX_PROCENT_NAUKA: wierszy_użycia=1 pierwsze=[4708]
+  wart. clampPodzialPracyBudynkiPercent: wierszy_użycia=6 pierwsze=[1024, 1027, 1030, 1032, 1368, 5166]
+  wart. procentPuliImperiumZBudynkow: wierszy_użycia=3 pierwsze=[1375, 4962, 5124]
+  wart. MIN_PODZIAL_PRACY_BUDYNKI_PERCENT: wierszy_użycia=2 pierwsze=[5129, 5159]
+  wart. MAX_PODZIAL_PRACY_BUDYNKI_PERCENT: wierszy_użycia=1 pierwsze=[5160]
+  wart. MAX_PROCENT_PULI_IMPERIUM: wierszy_użycia=1 pierwsze=[5130]
+  wart. PODZIAL_PRACY_PULA_LBL: wierszy_użycia=1 pierwsze=[1348]
+  wart. PODZIAL_PRACY_PULA_LBL_PELNA: wierszy_użycia=1 pierwsze=[1349]
+  wart. PODZIAL_PRACY_PULA_TIP: wierszy_użycia=1 pierwsze=[1350]
+## ../game/citizen-resource-upkeep  [game]  (import @ :241-245)
+  wart. computeCitizenResourceDrain: wierszy_użycia=2 pierwsze=[1255, 3168]
+  wart. citizenUpkeepDisplayLines: wierszy_użycia=6 pierwsze=[4373, 4393, 4398, 4527, 4535, 4540]
+  typ   CitizenUpkeepCoverage: wierszy_użycia=2 pierwsze=[1071, 4538]
+## ../game/converters  [game]  (import @ :269-272)
+  wart. converterProductionDisplayForBuilding: wierszy_użycia=3 pierwsze=[6731, 6745, 6765]
+  typ   RawConverterParamsJson: wierszy_użycia=1 pierwsze=[6764]
+## ../game/culture-religion  [game]  (import @ :252)
+  wart. loadReligionParams: wierszy_użycia=2 pierwsze=[3845, 6006]
+  wart. FALLBACK_RELIGION_PARAMS: wierszy_użycia=2 pierwsze=[3846, 6007]
+## ../game/danina-nazwa  [game]  (import @ :165)
+  wart. daninaLabel: wierszy_użycia=1 pierwsze=[1336]
+  wart. daninaLabelGenitive: wierszy_użycia=8 pierwsze=[4663, 4802, 4836, 5836, 10806, 10888, 11010, 11563]
+  wart. daninaLabelAccusative: wierszy_użycia=1 pierwsze=[10889]
+  typ   DaninaLabel: wierszy_użycia=1 pierwsze=[1335]
+## ../game/display-names  [game]  (import @ :53)
+  wart. formatCityMapLabel: wierszy_użycia=1 pierwsze=[10206]
+## ../game/economy  [game]  (import @ :210, :259-268)
+  wart. tileYield: wierszy_użycia=2 pierwsze=[9774, 9793]
+  wart. cityYieldPerTurn: wierszy_użycia=6 pierwsze=[1177, 1187, 1202, 1217, 1218, 10969]
+  wart. cityPopulationCap: wierszy_użycia=2 pierwsze=[1278, 1281]
+  wart. sumBuildingHappinessFromBuiltIds: wierszy_użycia=1 pierwsze=[3064]
+  wart. cityBuildingEntriesFromBuiltIds: wierszy_użycia=1 pierwsze=[1216]
+  wart. mnoznikHandelPieniadzForCivByDifficulty: wierszy_użycia=2 pierwsze=[1190, 10879]
+  wart. civEconomyYieldMultipliers: wierszy_użycia=1 pierwsze=[1193]
+  typ   CityYieldContext: wierszy_użycia=3 pierwsze=[332, 1194, 1212]
+  typ   BuildingRecord: wierszy_użycia=3 pierwsze=[1216, 6573, 6655]
+## ../game/economy-upkeep  [game]  (import @ :212-219)
+  wart. buildingUpkeep: wierszy_użycia=2 pierwsze=[6573, 6655]
+  wart. buildingResourceUpkeep: wierszy_użycia=2 pierwsze=[6656, 6668]
+  wart. addResourceCosts: wierszy_użycia=1 pierwsze=[6668]
+  wart. unitResourceUpkeep: wierszy_użycia=5 pierwsze=[6198, 6204, 6220, 7953, 8128]
+  wart. canAffordUnitRecruitStock: wierszy_użycia=1 pierwsze=[8195]
+  wart. isUnitRecruitStockChipMissing: wierszy_użycia=2 pierwsze=[8110, 8119]
+## ../game/empire-food  [game]  (import @ :141, :274)
+  wart. getEmpireFoodMaxCap: wierszy_użycia=0 pierwsze=[]
+  typ   EmpireFoodState: wierszy_użycia=2 pierwsze=[388, 5477]
+  typ   EmpireFoodTick: wierszy_użycia=3 pierwsze=[401, 1473, 5478]
+## ../game/empire-handel-split  [game]  (import @ :77)
+  wart. resolveCityPodzialHandlu: wierszy_użycia=1 pierwsze=[1005]
+## ../game/empire-hud-totals  [game]  (import @ :78)
+  wart. civWideSixStatsFromEmpireSnap: wierszy_użycia=2 pierwsze=[10427, 10456]
+  wart. buildChipDeltaStockHtml: wierszy_użycia=1 pierwsze=[10417]
+## ../game/manpower  [game]  (import @ :166, :167)
+  typ   CityManpowerSnapshot: wierszy_użycia=2 pierwsze=[398, 5654]
+  wart. civManpowerMaxMult: wierszy_użycia=2 pierwsze=[8052, 8864]
+  wart. cityLudnoscAbsolutna: wierszy_użycia=7 pierwsze=[1607, 5236, 5237, 5502, 5505, 5694, 10814]
+  wart. formatManpower: wierszy_użycia=20 pierwsze=[1620, 1626, 5243, 5244, 5504, 5505, 5668, 5669]
+  wart. unitManpowerCost: wierszy_użycia=1 pierwsze=[8865]
+  wart. unitManpowerCostForType: wierszy_użycia=1 pierwsze=[8053]
+## ../game/order  [game]  (import @ :229)
+  wart. loadOrderParams: wierszy_użycia=3 pierwsze=[3118, 3389, 3392]
+  typ   OrderYieldMults: wierszy_użycia=1 pierwsze=[396]
+## ../game/population-growth-v85  [game]  (import @ :142-157)
+  wart. buildRationParams: wierszy_użycia=5 pierwsze=[1240, 1444, 5214, 5481, 5593]
+  wart. computeCityRationCost: wierszy_użycia=3 pierwsze=[1245, 1387, 1395]
+  wart. computeGrowthPercentV85: wierszy_użycia=2 pierwsze=[1263, 1502]
+  wart. getCityRationLevel: wierszy_użycia=1 pierwsze=[1241]
+  wart. growthGainPerTurnSlots: wierszy_użycia=5 pierwsze=[1573, 1609, 5537, 5726, 10831]
+  wart. turnsUntilNextCitizen: wierszy_użycia=4 pierwsze=[1586, 5538, 5727, 10832]
+  wart. rationFoodCostPerPop: wierszy_użycia=1 pierwsze=[1445]
+  wart. rationGrowthPercent: wierszy_użycia=6 pierwsze=[1419, 1428, 1439, 1446, 1507, 5348]
+  wart. formatWyzwienieLabel: wierszy_użycia=12 pierwsze=[5260, 5268, 5335, 5352, 5362, 5436, 5510, 5513]
+  wart. WYZYWIENIE_MIN: wierszy_użycia=1 pierwsze=[5356]
+  wart. WYZYWIENIE_MAX: wierszy_użycia=8 pierwsze=[5220, 5361, 5435, 5482, 5590, 5710, 10446, 10822]
+  wart. WYZYWIENIE_STEP: wierszy_użycia=5 pierwsze=[5343, 5356, 5359, 5366, 5369]
+  typ   GrowthPercentBreakdown: wierszy_użycia=2 pierwsze=[1049, 1434]
+  typ   PoziomRacji: wierszy_użycia=3 pierwsze=[403, 1047, 1444]
+## ../game/post-capture-law  [game]  (import @ :246-250)
+  wart. applyPostCaptureLawOverride: wierszy_użycia=1 pierwsze=[3225]
+  wart. isPostCaptureLawActive: wierszy_użycia=2 pierwsze=[3224, 3229]
+  wart. postCaptureLawBannerLabel: wierszy_użycia=1 pierwsze=[3331]
+## ../game/production  [game]  (import @ :84-113)
+  wart. buildableProduction: wierszy_użycia=3 pierwsze=[6946, 8772, 11356]
+  wart. eraBuildingCatalog: wierszy_użycia=2 pierwsze=[8657, 8672]
+  wart. EPOCH_NUMBER_TO_NAME: wierszy_użycia=2 pierwsze=[6237, 8810]
+  typ   BuildingCatalogEntry: wierszy_użycia=3 pierwsze=[8543, 8656, 8684]
+  wart. purchasableUnits: wierszy_użycia=4 pierwsze=[6198, 6204, 8911, 8930]
+  wart. frontItem: wierszy_użycia=3 pierwsze=[896, 5040, 8432]
+  wart. rushCost: wierszy_użycia=1 pierwsze=[8507]
+  wart. enqueue: wierszy_użycia=5 pierwsze=[6090, 6102, 6111, 6259, 6284]
+  wart. dequeue: wierszy_użycia=2 pierwsze=[6120, 6133]
+  wart. promoteToFront: wierszy_użycia=4 pierwsze=[8383, 8389, 8400, 8408]
+  wart. setPaused: wierszy_użycia=1 pierwsze=[8522]
+  wart. buildingProductionItem: wierszy_użycia=1 pierwsze=[8792]
+  wart. buildingLevelForEpoch: wierszy_użycia=3 pierwsze=[3067, 6559, 8790]
+  wart. buildingEffectAtLevel: wierszy_użycia=5 pierwsze=[6483, 6485, 6497, 6509, 6590]
+  wart. buildingWorkCost: wierszy_użycia=1 pierwsze=[7646]
+  wart. itemCost: wierszy_użycia=1 pierwsze=[7645]
+  wart. splitPraca: wierszy_użycia=4 pierwsze=[1218, 1358, 1369, 4999]
+  wart. cityPracaInteger: wierszy_użycia=1 pierwsze=[1228]
+  wart. buildingGoldPurchaseCost: wierszy_użycia=1 pierwsze=[6305]
+  wart. buildingTypeQueued: wierszy_użycia=2 pierwsze=[6268, 8789]
+  wart. dequeueRecruitment: wierszy_użycia=1 pierwsze=[8284]
+  wart. unitNacjaForCivKey: wierszy_użycia=1 pierwsze=[8624]
+  wart. etaTurns: wierszy_użycia=10 pierwsze=[899, 914, 5063, 7113, 7784, 7795, 8259, 8261]
+  typ   CityProduction: wierszy_użycia=12 pierwsze=[330, 331, 633, 634, 638, 645, 667, 677]
+  typ   ProductionItem: wierszy_użycia=34 pierwsze=[353, 549, 656, 657, 684, 685, 904, 907]
+  typ   CivBonusLite: wierszy_użycia=2 pierwsze=[551, 8653]
+  typ   AvailabilityContext: wierszy_użycia=8 pierwsze=[6835, 6936, 6952, 6999, 7026, 7716, 8611, 8688]
+  wart. isBuildingSupersededByUpgrade: wierszy_użycia=2 pierwsze=[6862, 6871]
+## ../game/research  [game]  (import @ :83)
+  wart. parsePrerequisites: wierszy_użycia=3 pierwsze=[7309, 7316, 7331]
+## ../game/resource-access  [game]  (import @ :121)
+  wart. CITY_PANEL_RANGE_DEPOSIT_LABELS: wierszy_użycia=2 pierwsze=[3629, 3635]
+## ../game/society-breakdown  [game]  (import @ :230-240)
+  wart. evaluateOrderFromBreakdown: wierszy_użycia=2 pierwsze=[3083, 3186]
+  wart. porPctBand: wierszy_użycia=3 pierwsze=[3306, 3431, 4357]
+  wart. POR_BAND_LABELS: wierszy_użycia=2 pierwsze=[3307, 3432]
+  wart. orderContributionPct: wierszy_użycia=1 pierwsze=[3233]
+  wart. loadSocietyScaleParams: wierszy_użycia=3 pierwsze=[3053, 3931, 6028]
+  wart. kultReligScaleForEra: wierszy_użycia=3 pierwsze=[3055, 3929, 6026]
+  wart. proporcjonalneSzczescie: wierszy_użycia=2 pierwsze=[3026, 3054]
+  wart. ownShareFromSignal: wierszy_użycia=1 pierwsze=[3056]
+  typ   SocietyLine: wierszy_użycia=1 pierwsze=[3039]
+## ../game/society-inputs  [game]  (import @ :251, :253)
+  wart. stolicaEasyBonusActive: wierszy_użycia=1 pierwsze=[3139]
+  wart. resolveOwnCultureShare: wierszy_użycia=1 pierwsze=[3121]
+## ../game/terrain-improvements  [game]  (import @ :224)
+  wart. improvementKeysForHex: wierszy_użycia=6 pierwsze=[9560, 9576, 9593, 9767, 9773, 9792]
+## ../game/trade-routes  [game]  (import @ :220-223)
+  typ   TradeRoute: wierszy_użycia=1 pierwsze=[579]
+  wart. computeTradeRouteBuildingBonusByCity: wierszy_użycia=1 pierwsze=[10898]
+## ../game/turn-economy  [game]  (import @ :200-207)
+  wart. buildEconParams: wierszy_użycia=4 pierwsze=[1012, 1029, 1139, 10851]
+  wart. cityWorkedTilesForEconomy: wierszy_użycia=4 pierwsze=[511, 1148, 3287, 9878]
+  wart. toEconomyCity: wierszy_użycia=1 pierwsze=[1159]
+  wart. computeCityHealthBreakdown: wierszy_użycia=2 pierwsze=[1149, 3288]
+  typ   CityHealthLine: wierszy_użycia=3 pierwsze=[559, 3281, 3584]
+  typ   Difficulty: wierszy_użycia=1 pierwsze=[316]
+## ../game/unit-building-bonuses  [game]  (import @ :211)
+  wart. mnoznikRoleForBuildingId: wierszy_użycia=4 pierwsze=[6539, 6596, 7623, 9015]
+  wart. cumulativeMnoznikForBuildingId: wierszy_użycia=4 pierwsze=[6541, 6598, 7625, 9017]
+## ../game/unit-power  [game]  (import @ :82)
+  wart. sortByUnitPowerDescending: wierszy_użycia=2 pierwsze=[8910, 8929]
+  typ   UnitPowerInput: wierszy_użycia=2 pierwsze=[8912, 8931]
+## ../game/wealth  [game]  (import @ :189-199)
+  wart. freshWealthState: wierszy_użycia=4 pierwsze=[1248, 3127, 4777, 5834]
+  wart. loadWealthParams: wierszy_użycia=2 pierwsze=[3129, 4780]
+  wart. wealthCap: wierszy_użycia=2 pierwsze=[4794, 4831]
+  wart. wealthMnoznik: wierszy_użycia=3 pierwsze=[1114, 4797, 4833]
+  wart. wealthProg: wierszy_użycia=2 pierwsze=[4795, 4832]
+  wart. wealthRownowaga: wierszy_użycia=1 pierwsze=[4837]
+  wart. wealthZadowolenie: wierszy_użycia=3 pierwsze=[3133, 4798, 4834]
+  typ   RawWealthParamsJson: wierszy_użycia=2 pierwsze=[3129, 4780]
+  typ   WealthParams: wierszy_użycia=1 pierwsze=[4828]
+## ../map/territory-work  [map]  (import @ :208)
+  wart. buildTerritoryNodesFromCities: wierszy_użycia=1 pierwsze=[1134]
+## ../render/hexutil  [render]  (import @ :209)
+  wart. axialToWorld: wierszy_użycia=2 pierwsze=[10196, 10197]
+  wart. HEX_R: wierszy_użycia=2 pierwsze=[10196, 10197]
+## ../types/hex  [types]  (import @ :80, :225)
+  wart. TerenBazowy: wierszy_użycia=13 pierwsze=[9495, 9496, 9497, 9498, 9499, 9501, 9502, 9503]
+  wart. Nakladka: wierszy_użycia=3 pierwsze=[9776, 9795, 9863]
+  typ   Hex: wierszy_użycia=3 pierwsze=[9772, 9787, 9835]
+## ../types/map  [types]  (import @ :79)
+  typ   GameMap: wierszy_użycia=21 pierwsze=[1137, 1527, 1637, 3281, 3551, 5688, 5774, 6055]
+## ./brandTokenVars  [ui]  (import @ :182)
+  wart. ensureBrandRootTokens: wierszy_użycia=1 pierwsze=[1949]
+  wart. CIV_BRAND_SCOPE_VARS: wierszy_użycia=1 pierwsze=[1953]
+## ./cityUxFrame  [ui]  (import @ :45-50)
+  wart. showCityUxFrame: wierszy_użycia=1 pierwsze=[11960]
+  wart. hideCityUxFrame: wierszy_użycia=1 pierwsze=[11965]
+  wart. refreshCityUxFrame: wierszy_użycia=1 pierwsze=[11958]
+  wart. isCityUxFrameOpen: wierszy_użycia=2 pierwsze=[10022, 11980]
+## ./entityCards/buildingAdapter  [ui]  (import @ :177)
+  wart. buildingAdapter: wierszy_użycia=3 pierwsze=[7530, 7536, 7547]
+  typ   BuildingCardCityState: wierszy_użycia=1 pierwsze=[7540]
+## ./entityCards/registry  [ui]  (import @ :228)
+  wart. resolveTechnologyRow: wierszy_użycia=1 pierwsze=[7451]
+  wart. technologyIdFromName: wierszy_użycia=1 pierwsze=[7450]
+## ./entityCards/renderer  [ui]  (import @ :175, :227)
+  wart. renderEntityCard: wierszy_użycia=6 pierwsze=[7443, 7471, 7530, 7548, 7842, 7874]
+  wart. ENTITY_CARD_CSS: wierszy_użycia=4 pierwsze=[2645, 7467, 7480, 7514]
+  wart. openEntityCard: wierszy_użycia=4 pierwsze=[7444, 7460, 9603, 9613]
+## ./entityCards/types  [ui]  (import @ :176)
+  typ   EntityCardData: wierszy_użycia=1 pierwsze=[7866]
+## ./entityCards/unitAdapter  [ui]  (import @ :178)
+  wart. unitAdapter: wierszy_użycia=3 pierwsze=[7840, 7857, 7863]
+## ./formatPl  [ui]  (import @ :278)
+  wart. formatLiczbaPl: wierszy_użycia=2 pierwsze=[276, 5288]
+  wart. signedPl: wierszy_użycia=1 pierwsze=[871]
+## ./hoverDetailDock  [ui]  (import @ :34-42)
+  wart. attachHoverDetail: wierszy_użycia=9 pierwsze=[4298, 5465, 7989, 8033, 8179, 8248, 8720, 9164]
+  wart. attachInteractiveDetail: wierszy_użycia=8 pierwsze=[3679, 6048, 8340, 8478, 9123, 9418, 10072, 11533]
+  wart. setHoverDetailDocks: wierszy_użycia=2 pierwsze=[11772, 11860]
+  wart. disposeHoverDetailDock: wierszy_użycia=1 pierwsze=[10373]
+  wart. showHoverDetailNow: wierszy_użycia=2 pierwsze=[9168, 9289]
+  wart. showPinnedDetail: wierszy_użycia=1 pierwsze=[9425]
+  wart. clearPinnedDetail: wierszy_użycia=1 pierwsze=[10177]
+## ./hud  [ui]  (import @ :51)
+  wart. setMapHudChromeSuppressed: wierszy_użycia=2 pierwsze=[11954, 11966]
+## ./icons/brandAssets  [ui]  (import @ :179)
+  wart. brandIconSvg: wierszy_użycia=3 pierwsze=[1794, 3796, 11588]
+  wart. buildingIconSvg: wierszy_użycia=2 pierwsze=[6381, 6402]
+  wart. unitIconSvg: wierszy_użycia=3 pierwsze=[6388, 6395, 6403]
+  wart. mapResourceIconSvg: wierszy_użycia=5 pierwsze=[3758, 3792, 6185, 6203, 6248]
+  typ   BrandIconSize: wierszy_użycia=7 pierwsze=[1793, 1800, 1804, 1930, 1942, 6471, 6583]
+## ./icons/scienceOwlIcon  [ui]  (import @ :44)
+  wart. scienceOwlIconHtml: wierszy_użycia=3 pierwsze=[6473, 10642, 10651]
+## ./naukaLabel  [ui]  (import @ :43)
+  wart. naukaCostSuffix: wierszy_użycia=3 pierwsze=[7410, 8569, 8599]
+## ./orderPanel  [ui]  (import @ :254-258)
+  wart. buildOrderSectionHtml: wierszy_użycia=0 pierwsze=[]
+  wart. orderTierUi: wierszy_użycia=1 pierwsze=[3416]
+  typ   OrderState: wierszy_użycia=7 pierwsze=[555, 1257, 1261, 3084, 3114, 3277, 3427]
+## ./resourceColors  [ui]  (import @ :183-188)
+  wart. resourceColorClassCss: wierszy_użycia=2 pierwsze=[1965, 1966]
+  wart. resourceTextClass: wierszy_użycia=21 pierwsze=[1869, 1872, 1873, 1874, 1875, 4107, 4674, 4676]
+  wart. resourceScopeClass: wierszy_użycia=1 pierwsze=[10411]
+  typ   ResourceColorKey: wierszy_użycia=1 pierwsze=[10384]
+## ./techDiscoveryNotice  [ui]  (import @ :181)
+  wart. showTechDiscoveryNotice: wierszy_użycia=2 pierwsze=[7240, 7272]
+## ./techIcons  [ui]  (import @ :180)
+  wart. techIconSvg: wierszy_użycia=1 pierwsze=[7252]
+## ./uiParams  [ui]  (import @ :273)
+  wart. UI_PARAMS: wierszy_użycia=4 pierwsze=[918, 919, 9520, 9831]
+## ./unitInfographic  [ui]  (import @ :169-173)
+  wart. unitInfographicMedallionHtml: wierszy_użycia=2 pierwsze=[6393, 7901]
+  wart. unitInfographicSvg: wierszy_użycia=1 pierwsze=[6386]
+  wart. UNIT_INFOGRAPHIC_CSS: wierszy_użycia=1 pierwsze=[2730]
+## ./unitMiniPreview  [ui]  (import @ :168)
+  wart. defaultOwnerColor: wierszy_użycia=3 pierwsze=[7865, 7871, 7987]
+  wart. mountUnitMiniPreview: wierszy_użycia=3 pierwsze=[7865, 7871, 7988]
+## ./unitRecruitCard  [ui]  (import @ :174)
+  wart. buildUnitRecruitCard: wierszy_użycia=1 pierwsze=[8155]
+  wart. UNIT_RECRUIT_CARD_CSS: wierszy_użycia=1 pierwsze=[2731]
+# podsumowanie wg katalogu (symbole / w tym wartości): ..=1/1, data=6/3, game=170/141, map=1/1, render=2/2, types=4/2, ui=49/44
+# modułów_źródłowych=56 symboli=233 wartości=194 typów=39 LOC=11986
+EXIT=0

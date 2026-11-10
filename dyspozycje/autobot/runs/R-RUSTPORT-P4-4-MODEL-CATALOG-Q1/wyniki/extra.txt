@@ -1,0 +1,10 @@
+GETGEO units.ts: tokeny 206 = definicje 88 + wywołania 118
+GETGEO kon-nowy-model.ts: tokeny 40 = definicje 20 + wywołania 20
+UNITS_BUILD_FUNCS 42 WRAPPERS(<=6 linii kodu) 21 FULL 21
+  FULL: buildBaseAvatar:794, buildUnitModel:1086, buildNamedUnit:1492, buildHierosLochos:1811, buildMedjay:1928, buildSumerianChariot:2197, buildEgyptianChariot:2421, buildChineseCavalry:2504, buildCrossbowman:2595, buildCeltWarrior:2724, buildGaesatae:2825, buildSoldurii:2947, buildGermanWarrior:3037, buildBerserker:3098, buildCatapult:3348, buildCategoryModel:3700, buildSuperUnit:4807, buildSumerianRoyalGuard:4859, buildHuBenWei:5004, buildUThulwana:5156, buildInkaRoyalGuard:5343
+WONDERS cuda 19 cases 19 missing [] extra [] parkowane 5 panstwa 15
+IMPROVEMENTS json 22 BUILDERS 24 json-bez-BUILDERS [] BUILDERS-bez-json ['pole_irygowane', 'pastwisko']
+IMPROVEMENTS improvements.ts case 24
+BUILDINGS 42 ids cytowane w render/** {'palisada': 2, 'mury': 1, 'fort': 2}
+TARASY tarasyWariantDlaHeksa -> 0 | 3 => warianty 2
+RAF render/**: edb8fb56:gra/src/render/scene.ts:1477:  return new Promise<void>((r) => requestAnimationFrame(() => r()));

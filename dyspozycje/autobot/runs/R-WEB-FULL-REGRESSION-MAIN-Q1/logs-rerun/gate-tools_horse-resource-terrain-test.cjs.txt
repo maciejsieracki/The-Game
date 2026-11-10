@@ -1,0 +1,11 @@
+
+--- (A) placeDeposits na syntetycznej siatce [kod bieżący] ---
+  [OK] A1: 0 koni na lesie (siatka 50% lasu)
+  [OK] A2: liczba koni zachowana (=== liczba bez lasu) i wszystkie na Równinie
+  [OK] A3: kontrola — test faktycznie generuje konie
+  [OK] A4: mutacja „zezwól na las" łamie sekcję (A) (test nie jest tautologią)
+
+--- (B) prawdziwy generator, Standardowy ---
+
+EXIT=124
+TIME=200.2

@@ -1,0 +1,9 @@
+capital-sep-pangea-test (twardy assert ≥N, zero tolerancji)
+
+[Standard Pangea 168×120] seed=4242 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=380 landSea=10790 relief=14621 coast=6650 riversMain=85502 riversFill=3483 forest=171 deposits=537 starts=3526 total=125663
+PASS N=25 obcy≥27 caps=8
+[Standard Pangea 168×120] seed=7777 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=200.1

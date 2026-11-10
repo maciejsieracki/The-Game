@@ -1,0 +1,68 @@
+
+-- (A) buildingAdapter: treść realnego budynku "stolarnia" --
+PASS: buildEntityCardData("building","stolarnia"): nie-null (resolver znalazł budynek)
+PASS: kind === "building"
+PASS: id === "stolarnia"
+PASS: title === "Stolarnia"
+PASS: civpediaLink === {folder:"budynki", slug:"stolarnia"} (plan §5, mapowanie 1:1)
+PASS: sekcja "characteristics" obecna
+PASS: Kategoria === "Produkcja"
+PASS: Epoka wejścia === "Kamień" (epokaWejscia=1)
+PASS: Typ === "Unikalny w mieście" (wielokrotny nieustawiony)
+PASS: BRAK wiersza "Poziom w tym mieście" w Charakterystyce (przeniesiony do headerChips)
+PASS: headerChips === ["Epoka Kamień", "Poziom L2/3"] (hasCity=true, displayLevel=2, maksPoziom=3)
+PASS: sekcja "yield" obecna
+PASS: wiersz "Praca" obecny (baza=5, przyrost=3, oba niezerowe)
+PASS: Praca @ L2 === "+8 pkt/turę (poziom 2: baza 5 + przyrost 3 × 1)"
+PASS: wiersz "Praca — skala poziomów" obecny (maksPoziom=3>1, przyrost!=0)
+PASS: skala poziomów L1..L3: "L1: +5 · L2: +8 · L3: +11"
+PASS: brak innych plonów (pieniądz/żywność/etc. wszystkie 0) — tylko 2 wiersze Pracy
+PASS: sekcja "cost-build" obecna
+PASS: sekcja "cost-upkeep" obecna
+PASS: wiersz "Praca (jednorazowo)" obecny i kończy się na "pkt Pracy"
+PASS: wiersz "Przyrost za poziom" (koszt budowy) === "+10 pkt Pracy / poziom" (przyrostKosztu=10, niezależne od pace/difficulty)
+PASS: wiersz "Co turę" (utrzymanie) obecny
+PASS: BRAK wiersza "Przyrost za poziom" w utrzymaniu (przyrostUtrzymania=0 w danych)
+PASS: wiersz "Surowce (jednorazowo)" zawiera "50" (drewno=25 ×2 FALA2) i "— z magazynu państwa"
+PASS: sekcja "levels" obecna (maksPoziom=3>1)
+PASS: Maks. poziom === "3"
+PASS: Nazwy przycięte do maksPoziom=3: "Warsztat drewna → Stolarnia → Manufaktura drewna"
+PASS: sekcja "requirements" obecna
+PASS: Wymagana technologia === "Obróbka drewna" (building.techUnlock)
+PASS: Dodatkowe warunki === tekst z buildings.json (building.wymagania)
+PASS: bez ctx.city: headerChips === ["Epoka Kamień", "Poziom L1/3"] (fallback L1)
+PASS: renderEntityCard(data): zwraca element klasy entity-card entity-card-building
+PASS: renderEntityCard(data): tytuł "Stolarnia" w DOM
+
+-- (B) openEntityCard mode:'hover': lazy + attachHoverDetail --
+PASS: mode:"hover" bez opts.container (anchor) rzuca błąd jasno opisujący wymóg
+PASS: openEntityCard(hover) zwraca funkcję dismiss()
+PASS: WYDAJNOŚĆ: zaraz po openEntityCard(hover) — ŻADNA karta jeszcze nie zbudowana w DOM (lazy)
+PASS: tuż po mouseenter (przed upływem 220ms) — karta WCIĄŻ nie zbudowana (delay respektowany)
+PASS: po ~260ms od mouseenter (> 220ms delay) — karta ZBUDOWANA i w DOM (attachHoverDetail zadziałał)
+PASS: karta hover ma tytuł "Stolarnia"
+
+-- (C) cityPanel.ts wiring — text-anchor (bundlowanie zbyt kosztowne, precedens P-owned-building-detail-side-test) --
+PASS: cityPanel.ts importuje buildingAdapter z ./entityCards/buildingAdapter
+PASS: cityPanel.ts importuje renderEntityCard/ENTITY_CARD_CSS z ./entityCards/renderer
+PASS: function buildBuildingDetailCardViaEntityCard( istnieje
+PASS: koniec buildBuildingDetailCardViaEntityCard znaleziony
+PASS: buildBuildingDetailCardViaEntityCard woła buildingAdapter(def, { city: cityState })
+PASS: buildBuildingDetailCardViaEntityCard woła renderEntityCard(built)
+PASS: buildBuildingDetailCardViaEntityCard dopełnia sekcję Technologie (appendTechDetailBlock, NIE migrowana w T5)
+FAIL: buildBuildingDetailCardViaEntityCard dopełnia sekcję Uwagi (playerFacingNote)
+PASS: publiczna funkcja buildBuildingDetailCard( próbuje ścieżkę entityCards w try/catch
+PASS: ...i ma fallback do _legacyBuildBuildingDetailCard w catch
+PASS: _legacyBuildBuildingDetailCard( istnieje (stara implementacja zachowana)
+PASS: stara implementacja nadal buduje klasę "detail-card bld-detail-card" (parytet DOM fallbacku)
+PASS: buildBuildingBuildTabDetailCard nadal woła buildBuildingDetailCard(def, data, city) (bez zmian, T5 nie dotyka tej funkcji)
+
+-- Mutacja: usunięcie fallbacku z buildBuildingDetailCard --
+PASS: mutacja faktycznie zmieniła źródło (kotwica zamiany istnieje)
+PASS: mutacja (fallback usunięty) łapana czerwono przez sekcję (C) tego samego testu
+PASS: plik cityPanel.ts przywrócony do stanu oryginalnego po mutacji
+
+[building-detail-card-entitycard-migration-test] 54 pass, 1 fail
+
+EXIT=1
+TIME=5.0

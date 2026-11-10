@@ -1,0 +1,704 @@
+zakres	plik	nr_hunka	nowa_linia_od	nowa_liczba	stara_linia_od	stara_liczba	dodane	usuniete	typ	klasa	temat	podglad
+edb8fb56..4bbef081d	gra/data/ai-params.json	1	285	1	285	1	1	1	zmiana	DANE	N4, T4	"opis": "NIEAKTYWNY (R-WEB-PEACE-RULES-Q1 R10): nieczytany w kodzie; zastapiony progiem wo
+edb8fb56..4bbef081d	gra/data/ai-params.json	2	290	1	290	1	1	1	zmiana	DANE	N4, T4	"opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): brak limitu propozycji AI na ture w gra
+edb8fb56..4bbef081d	gra/data/ai-params.json	3	295	1	295	1	1	1	zmiana	DANE	N4, T4	"opis": "Próg zdrowia armii AI (Σ hp / Σ hpMax jednostek bojowych) poniżej którego AI szuk
+edb8fb56..4bbef081d	gra/data/army-consolidation-params.json	4	1	17	0	0	17	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/data/citizen-resource-upkeep.json	5	2	1	2	1	1	1	zmiana	DANE	T2	"_opis": "R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (Maciej 2026-10-31, decyzja „co do wymagań suro
+edb8fb56..4bbef081d	gra/data/citizen-resource-upkeep.json	6	10	3	10	3	3	3	zmiana	DANE	T2	{ "epoka": 1, "nazwa": "Kamień", "stawkaNaObywatela": 1, "surowce": ["drewno", "glina"] },
+edb8fb56..4bbef081d	gra/data/civs.json	7	6	0	7	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Obrona piechoty; silna od frontu, odpiera szarżę",
+edb8fb56..4bbef081d	gra/data/civs.json	8	8	0	11	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.3,
+edb8fb56..4bbef081d	gra/data/civs.json	9	10	12	13	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	10	28	0	21	35	0	35	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	11	151	0	179	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "silny atak + pancerz; szybsza budowa dróg/budynków; +Morale (dyscyplina
+edb8fb56..4bbef081d	gra/data/civs.json	12	153	0	183	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.0,
+edb8fb56..4bbef081d	gra/data/civs.json	13	155	12	185	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	14	173	0	193	40	0	40	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	15	296	0	356	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "lepsi łucznicy (+Atak/zasięg) i lepsza konnica (+Uderzenie)",
+edb8fb56..4bbef081d	gra/data/civs.json	16	298	0	360	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.4,
+edb8fb56..4bbef081d	gra/data/civs.json	17	300	12	362	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	18	318	0	370	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	19	441	0	520	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Nauka/Kultura (kalendarz); bonus w lesie/dżungli",
+edb8fb56..4bbef081d	gra/data/civs.json	20	443	0	524	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.9,
+edb8fb56..4bbef081d	gra/data/civs.json	21	445	12	526	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	22	463	0	534	29	0	29	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	23	586	0	686	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Ruch i +Morale piechoty; tania, silna w grupie",
+edb8fb56..4bbef081d	gra/data/civs.json	24	588	0	690	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.8,
+edb8fb56..4bbef081d	gra/data/civs.json	25	590	12	692	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	26	608	0	700	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	27	731	0	850	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Atak dystansowy łuczników; rydwany szybsze, z atakiem dystansowym i du
+edb8fb56..4bbef081d	gra/data/civs.json	28	733	0	854	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.1,
+edb8fb56..4bbef081d	gra/data/civs.json	29	735	12	856	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	30	753	0	864	29	0	29	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	31	876	0	1016	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Obrona i Health ciężkiej piechoty; silni łucznicy pieszni; ciężkie, mo
+edb8fb56..4bbef081d	gra/data/civs.json	32	878	0	1020	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.2,
+edb8fb56..4bbef081d	gra/data/civs.json	33	880	12	1022	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	34	898	0	1030	29	0	29	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	35	1021	0	1182	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Atak/Morale piechoty przy szarży (brawura); długie miecze — premia do
+edb8fb56..4bbef081d	gra/data/civs.json	36	1023	0	1186	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.9,
+edb8fb56..4bbef081d	gra/data/civs.json	37	1025	12	1188	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	38	1043	0	1196	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	39	1166	0	1346	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na star
+edb8fb56..4bbef081d	gra/data/civs.json	40	1168	0	1350	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.7,
+edb8fb56..4bbef081d	gra/data/civs.json	41	1170	12	1352	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	42	1188	0	1360	25	0	25	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	43	1311	0	1508	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Handel miejski; +obrona piechoty w terytorium",
+edb8fb56..4bbef081d	gra/data/civs.json	44	1313	0	1512	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.4,
+edb8fb56..4bbef081d	gra/data/civs.json	45	1315	12	1514	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	46	1333	0	1522	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	47	1456	0	1672	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Rydwany; +obrona fortec",
+edb8fb56..4bbef081d	gra/data/civs.json	48	1458	0	1676	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.0,
+edb8fb56..4bbef081d	gra/data/civs.json	49	1460	12	1678	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	50	1478	0	1686	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	51	1601	0	1836	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Piechota w lesie; +regen poboru",
+edb8fb56..4bbef081d	gra/data/civs.json	52	1603	0	1840	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.8,
+edb8fb56..4bbef081d	gra/data/civs.json	53	1605	12	1842	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	54	1623	0	1850	26	0	26	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	55	1746	0	1999	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Nauka; +handel rzeczny",
+edb8fb56..4bbef081d	gra/data/civs.json	56	1748	0	2003	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.3,
+edb8fb56..4bbef081d	gra/data/civs.json	57	1750	12	2005	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	58	1768	0	2013	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	59	1891	0	2163	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Łucznicy; +oblężenie",
+edb8fb56..4bbef081d	gra/data/civs.json	60	1893	0	2167	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 1.7,
+edb8fb56..4bbef081d	gra/data/civs.json	61	1895	12	2169	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	62	1913	0	2177	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/civs.json	63	2036	0	2327	2	0	2	usuniecie	DANE	-(poza DELTA-5 s.3)	"Bonus startowy": "+Handel morski; porty",
+edb8fb56..4bbef081d	gra/data/civs.json	64	2038	0	2331	1	0	1	usuniecie	DANE	-(poza DELTA-5 s.3)	"mnoznikHandelPieniadz": 2.6,
+edb8fb56..4bbef081d	gra/data/civs.json	65	2040	12	2333	1	12	1	zmiana	DANE	-(poza DELTA-5 s.3)	"wodzowiePula": [
+edb8fb56..4bbef081d	gra/data/civs.json	66	2058	0	2341	27	0	27	usuniecie	DANE	-(poza DELTA-5 s.3)	"bonusy": [
+edb8fb56..4bbef081d	gra/data/diplomacy-acceptance-points.json	67	5	1	4	0	1	0	dodanie	DANE	-(poza DELTA-5 s.3)	"rozejm": { "punkty": 200, "jednostka": "umowa", "uwaga": "R-WEB-TRUCE-Q1 ZAŁOŻENIE: rozej
+edb8fb56..4bbef081d	gra/data/diplomacy-aggressor-params.json	68	1	16	0	0	16	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/data/diplomacy-tick-params.json	69	1	22	0	0	22	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/data/diplomacy-war-peace-params.json	70	1	97	0	0	97	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/data/econ-params.json	71	276	1	276	1	1	1	zmiana	DANE	T2, N4	"opis": "Premia Targowiska wyłącznie do dochodu z tras handlowych (+62% easy / +50% normal
+edb8fb56..4bbef081d	gra/data/econ-params.json	72	311	1	311	1	1	1	zmiana	DANE	T2, N4	"opis": "Parametr legacy, nieużywany przez bieżący kod. Obecny mnożnik Mennicy to globalne
+edb8fb56..4bbef081d	gra/data/econ-params.json	73	332	1	332	1	1	1	zmiana	DANE	T2, N4	"opis": "Parametr legacy, nieużywany przez bieżący kod. Waluta sama nie mnoży dochodu. Obe
+edb8fb56..4bbef081d	gra/data/econ-params.json	74	334	6	334	6	6	6	zmiana	DANE	T2, N4	"targowisko_praca_na_podatek_kurs": {
+edb8fb56..4bbef081d	gra/data/econ-params.json	75	388	1	388	1	1	1	zmiana	DANE	T2, N4	"opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa
+edb8fb56..4bbef081d	gra/data/econ-params.json	76	395	1	395	1	1	1	zmiana	DANE	T2, N4	"opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy
+edb8fb56..4bbef081d	gra/data/econ-params.json	77	402	1	402	1	1	1	zmiana	DANE	T2, N4	"opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co tur
+edb8fb56..4bbef081d	gra/data/econ-params.json	78	579	1	579	1	1	1	zmiana	DANE	T2, N4	"easy": 1.62,
+edb8fb56..4bbef081d	gra/data/econ-params.json	79	581	1	581	1	1	1	zmiana	DANE	T2, N4	"hard": 1.38,
+edb8fb56..4bbef081d	gra/data/econ-params.json	80	583	1	583	1	1	1	zmiana	DANE	T2, N4	"opis": "Mennica mnoży wyłącznie podatek miejski przed jego podziałem suwakami: easy ×1,62
+edb8fb56..4bbef081d	gra/data/tech.json	81	360	1	360	1	1	1	zmiana	DANE	T2	"Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 5, +100% obrona przy obozowaniu — zob
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	82	8	1	8	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostep
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	83	54	3	54	3	3	3	zmiana	DANE	-(poza DELTA-5 s.3)	"surowiecOdblokowany_uwaga": "R-WEB-AUTOIMPROVE-STAGES-Q1 (Q1 właściciela 2026-10-31): trz
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	84	60	1	60	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek`
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	85	72	3	72	3	3	3	zmiana	DANE	-(poza DELTA-5 s.3)	"surowiecOdblokowany_uwaga": "solo na wzgórzu; bez farmy/bydła; NIE wymaga złoża owiec (Q1
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	86	78	1	78	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek`
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	87	91	1	91	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; NIE wym
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	88	93	1	93	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; bez złoża i be
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	89	145	2	145	2	2	2	zmiana	DANE	-(poza DELTA-5 s.3)	"surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produk
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	90	203	2	203	2	2	2	zmiana	DANE	-(poza DELTA-5 s.3)	"surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	91	277	3	277	3	3	3	zmiana	DANE	-(poza DELTA-5 s.3)	"zasieg_pol": 5,
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	92	281	1	281	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"warunek": "+100% Obrony jednostkom obozującym na polu fortu (bez plonów); tworzy teren za
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	93	285	1	285	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 5
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	94	401	2	401	2	2	2	zmiana	DANE	-(poza DELTA-5 s.3)	"zasieg_pol": 3,
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	95	404	1	404	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"warunek": "NIE miasto, BEZ plonów; tworzy teren zabezpieczony pod Twoją cywilizację w pro
+edb8fb56..4bbef081d	gra/data/terrain-improvements.json	96	409	1	409	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"uwagi": "Brąz (epoka 2); zasieg_terytorium=3 (od 2026-10-31, było 5); +50% Obrona w trybi
+edb8fb56..4bbef081d	gra/data/ui-params.json	97	163	26	162	0	26	0	dodanie	DANE	N7	{
+edb8fb56..4bbef081d	gra/data/units.json	98	523	1	523	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"Epoka": "Kamień",
+edb8fb56..4bbef081d	gra/data/units.json	99	528	1	528	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"Surowiec": "Drewno",
+edb8fb56..4bbef081d	gra/data/units.json	100	566	1	566	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"Dostępna w epokach": "Kamień",
+edb8fb56..4bbef081d	gra/data/units.json	101	576	1	576	1	1	1	zmiana	DANE	-(poza DELTA-5 s.3)	"Utrzymanie surowiec": "Drewno",
+edb8fb56..4bbef081d	gra/data/war-allin-params.json	102	1	17	0	0	17	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/data/war-rules-params.json	103	1	11	0	0	11	0	dodanie	DANE	T4	{
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	104	8	1	7	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { keyOf } from '../units/setup';
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	105	15	1	13	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	allowFriendlyStack?: boolean;
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	106	54	2	51	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Stan wojny sprawdzany ponownie przy wykonaniu rozkazu, nie tylko przy jego planowaniu.
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	107	64	7	59	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	108	96	1	84	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	&& (opts.canEngageOwner?.(destinationCity.ownerId) ?? true)
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	109	114	2	101	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	// Occupancy is resolved by the caller. A destination can contain both a
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	110	117	6	103	1	6	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	let path: readonly AiCityMovePathHex[] = opts.computePath(
+edb8fb56..4bbef081d	gra/src/game/ai-city-capture-executor.ts	111	126	11	106	0	11	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (opts.truncatePath !== undefined) {
+edb8fb56..4bbef081d	gra/src/game/ai-era-unit-promotion.ts	112	1	63	0	0	63	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Runtime mutation shared by the AI era-upgrade path and focused integration tests. */
+edb8fb56..4bbef081d	gra/src/game/ai-general-war-campaign.ts	113	1	164	0	0	164	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	import { hexNeighborCoords, keyOf, terrainMoveCost } from '../units/setup';
+edb8fb56..4bbef081d	gra/src/game/ai-move-range.ts	114	1	112	0	0	112	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	115	20	14	19	0	14	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './war
+edb8fb56..4bbef081d	gra/src/game/ai.ts	116	35	1	20	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { farthestStepWithinBudget } from './ai-move-range';
+edb8fb56..4bbef081d	gra/src/game/ai.ts	117	41	1	26	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA
+edb8fb56..4bbef081d	gra/src/game/ai.ts	118	69	1	53	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile }
+edb8fb56..4bbef081d	gra/src/game/ai.ts	119	72	3	55	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	IMPROVEMENT_FOR_DEFICIT,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	120	85	1	66	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { isBuildingSupersededByUpgrade, newestAvailableSameTypeUnit } from './production';
+edb8fb56..4bbef081d	gra/src/game/ai.ts	121	90	1	71	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	122	92	1	72	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengt
+edb8fb56..4bbef081d	gra/src/game/ai.ts	123	112	2	91	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Concentration movement may finish on an occupied friendly field stack. */
+edb8fb56..4bbef081d	gra/src/game/ai.ts	124	186	5	164	31	5	31	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	125	196	3	200	16	3	16	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const IGNORED_LEGACY_ARCHETYPE_MODS: LegacyArchetypeMods = {
+edb8fb56..4bbef081d	gra/src/game/ai.ts	126	410	6	426	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	127	476	25	486	0	25	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	128	633	2	619	5	2	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** Deprecated legacy compatibility input; intentionally ignored. */
+edb8fb56..4bbef081d	gra/src/game/ai.ts	129	671	0	661	1	0	1	usuniecie	PERF	-(poza DELTA-5 s.3)	*   - nauka archetype delta shifts the total score by +/-20 per point
+edb8fb56..4bbef081d	gra/src/game/ai.ts	130	695	0	686	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const mods          = opts.mods ?? { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
+edb8fb56..4bbef081d	gra/src/game/ai.ts	131	768	0	760	4	0	4	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	// --- §5.2 / §8 archetype nauka delta ------------------------------------
+edb8fb56..4bbef081d	gra/src/game/ai.ts	132	783	1	778	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* @param opts        Optional tuning (city count, threat flag, built buildings)
+edb8fb56..4bbef081d	gra/src/game/ai.ts	133	888	7	882	0	7	0	dodanie	PERF	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	134	901	1	888	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	allowFriendlyDestination = false,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	135	904	3	890	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (allowFriendlyDestination && units.some(u =>
+edb8fb56..4bbef081d	gra/src/game/ai.ts	136	909	1	893	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? nu
+edb8fb56..4bbef081d	gra/src/game/ai.ts	137	1287	0	1272	2	0	2	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
+edb8fb56..4bbef081d	gra/src/game/ai.ts	138	1342	0	1329	5	0	5	usuniecie	PERF	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	139	1356	0	1348	25	0	25	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	export function computeMajorArchetypeMilitaryFraction(
+edb8fb56..4bbef081d	gra/src/game/ai.ts	140	1650	1	1666	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_legacyMods: LegacyArchetypeMods,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	141	1669	3	1685	3	3	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Civilization-specific production category priorities come from the approved
+edb8fb56..4bbef081d	gra/src/game/ai.ts	142	1680	0	1697	1	0	1	usuniecie	PERF	-(poza DELTA-5 s.3)	// Archetype delta: +/- 20 per unit of mod
+edb8fb56..4bbef081d	gra/src/game/ai.ts	143	1688	4	1705	4	4	4	zmiana	UI	-(poza DELTA-5 s.3)	const economyScore  = 100 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0)
+edb8fb56..4bbef081d	gra/src/game/ai.ts	144	2004	0	2022	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
+edb8fb56..4bbef081d	gra/src/game/ai.ts	145	2128	24	2145	0	24	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-EPOCH-RECRUIT: when an existing military candidate has a newer eligible
+edb8fb56..4bbef081d	gra/src/game/ai.ts	146	2419	1	2413	8	1	8	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]
+edb8fb56..4bbef081d	gra/src/game/ai.ts	147	2530	1	2531	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* kopalnia_miedzi/cyny/zelaza, stadnina, posterunek, droga, droga_brukowana, fort) mają
+edb8fb56..4bbef081d	gra/src/game/ai.ts	148	2601	1	2602	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	// dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i
+edb8fb56..4bbef081d	gra/src/game/ai.ts	149	2604	1	2605	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	: Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (
+edb8fb56..4bbef081d	gra/src/game/ai.ts	150	2632	0	2634	3	0	3	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const resourcePriority = fullPriority.filter(
+edb8fb56..4bbef081d	gra/src/game/ai.ts	151	2644	2	2648	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// K3 = K2: tylko niedobory, na ktore istnieje ulepszenie terenu (zloto/stal nie otwieraja
+edb8fb56..4bbef081d	gra/src/game/ai.ts	152	2655	4	2658	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (właściciel 2026-10-31): AI BEZ limitu jednej s
+edb8fb56..4bbef081d	gra/src/game/ai.ts	153	2662	4	2661	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTO-FORT-CLAIM-Q1 (K3 = K2): fort na cennym terenie dopiero przy WYCZERPANYM lim
+edb8fb56..4bbef081d	gra/src/game/ai.ts	154	2684	4	2679	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Keep the same empire-wide sequence as Food automation for the player.
+edb8fb56..4bbef081d	gra/src/game/ai.ts	155	2689	7	2681	46	7	46	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulep
+edb8fb56..4bbef081d	gra/src/game/ai.ts	156	2769	1	2800	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	// dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i
+edb8fb56..4bbef081d	gra/src/game/ai.ts	157	2772	1	2803	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	: Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (
+edb8fb56..4bbef081d	gra/src/game/ai.ts	158	3007	1	3037	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	groupSize = 1,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	159	3020	9	3050	5	9	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-ARMY-CONSOLIDATION-Q1: groupSize > 1 (flaga ON) = kworum kilku obrońców na jedno
+edb8fb56..4bbef081d	gra/src/game/ai.ts	160	3120	1	3146	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* @param opts          Optional: civilization profile, cityBuildings already built
+edb8fb56..4bbef081d	gra/src/game/ai.ts	161	3131	2	3157	6	2	6	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Difficulty remains a generic AI setting. Civilization production priorities
+edb8fb56..4bbef081d	gra/src/game/ai.ts	162	3140	1	3170	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return decideDefensiveCopyTurn(playerId, units, cities, map, data, opts, difficultyParams)
+edb8fb56..4bbef081d	gra/src/game/ai.ts	163	3200	1	3230	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, diffic
+edb8fb56..4bbef081d	gra/src/game/ai.ts	164	3238	5	3267	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Active leader campaign owns this turn's military orders.
+edb8fb56..4bbef081d	gra/src/game/ai.ts	165	3342	6	3367	1	6	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const homeDefenderAssignments = assignHomeDefenders(
+edb8fb56..4bbef081d	gra/src/game/ai.ts	166	3384	6	3404	1	6	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-ARMY-CONSOLIDATION-Q1: w POKOJU (flaga ON) jedyny mechanizm zbiorki to zbiorka w
+edb8fb56..4bbef081d	gra/src/game/ai.ts	167	3420	1	3434	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	true,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	168	3423	2	3437	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	169	3440	1	3453	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (canConcentrateArmy(opts) && !consolidationPeace && !(forcedWarAttack && (forcedWarActi
+edb8fb56..4bbef081d	gra/src/game/ai.ts	170	3511	1	3524	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const step = firstStep(unit, map, order.towardQ, order.towardR, units, true);
+edb8fb56..4bbef081d	gra/src/game/ai.ts	171	3513	2	3526	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	172	3521	66	3532	0	66	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED, OFF = baza): w POKOJU
+edb8fb56..4bbef081d	gra/src/game/ai.ts	173	3904	7	3849	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): w wojnie cala
+edb8fb56..4bbef081d	gra/src/game/ai.ts	174	3915	155	3853	0	155	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	175	4262	84	4045	0	84	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	function appendAiGeneralCampaignOrders(
+edb8fb56..4bbef081d	gra/src/game/ai.ts	176	4351	0	4052	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	mods: ArchetypeMods,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	177	4368	1	4069	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, diffic
+edb8fb56..4bbef081d	gra/src/game/ai.ts	178	4405	4	4105	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (appendAiGeneralCampaignOrders(playerId, myUnits, units, cities, map, data, opts, comma
+edb8fb56..4bbef081d	gra/src/game/ai.ts	179	5079	2	4775	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { deltaRelacjiSojusz } from './diplomacy';
+edb8fb56..4bbef081d	gra/src/game/ai.ts	180	5135	12	4829	0	12	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	181	5186	2	4868	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner ma aktywną flagę agresora (main.ts: czyAgresorAkt
+edb8fb56..4bbef081d	gra/src/game/ai.ts	182	5267	29	4947	0	29	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	183	5337	7	4988	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	184	5394	62	5038	0	62	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-PEACE-CITY-CESSION-Q1 r3: bazowy próg słabości AI do oddania miasta (rw). */
+edb8fb56..4bbef081d	gra/src/game/ai.ts	185	5458	11	5041	1	11	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/ai.ts	186	5480	2	5052	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty widoczne dla gracza (niedobór / nad
+edb8fb56..4bbef081d	gra/src/game/ai.ts	187	5817	7	5387	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju właściciela decyzji (brak danych = wartośc
+edb8fb56..4bbef081d	gra/src/game/ai.ts	188	5825	3	5388	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const knownCivTypes = new Set<string>(Object.values(TypCywilizacji));
+edb8fb56..4bbef081d	gra/src/game/ai.ts	189	5838	2	5398	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 R1: realny czas wojny z pary (dawniej stała 5 = martwa heurystyka)
+edb8fb56..4bbef081d	gra/src/game/ai.ts	190	5844	1	5403	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	turnsAtWar:   turnsAtWarRel,
+edb8fb56..4bbef081d	gra/src/game/ai.ts	191	5846	2	5404	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner (druga strona stance) z aktywną flagą agresora.
+edb8fb56..4bbef081d	gra/src/game/ai.ts	192	5850	4	5407	3	4	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Missing/unknown owner type must not borrow a civilization's matrix row.
+edb8fb56..4bbef081d	gra/src/game/ai.ts	193	5859	2	5415	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 R6: próg wojny per cywilizacja z macierzy (zastępuje globalne 30).
+edb8fb56..4bbef081d	gra/src/game/ai.ts	194	5874	62	5428	0	62	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
+edb8fb56..4bbef081d	gra/src/game/ai.ts	195	5951	22	5444	2	22	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ---
+edb8fb56..4bbef081d	gra/src/game/ai.ts	196	5976	2	5449	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	rodzaj:   aiPeaceProposalKind(turnsAtWarRel),
+edb8fb56..4bbef081d	gra/src/game/ai.ts	197	6089	1	5561	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	&& score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAkt
+edb8fb56..4bbef081d	gra/src/game/ai.ts	198	6146	1	5617	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner z aktywną flagą agresora — wyższy próg Relacji na
+edb8fb56..4bbef081d	gra/src/game/ai.ts	199	6148	2	5619	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore
+edb8fb56..4bbef081d	gra/src/game/army-consolidation.ts	200	1	177	0	0	177	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/army-leadership.ts	201	1	63	0	0	63	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Owner-level commander title and battle morale/rout rules. */
+edb8fb56..4bbef081d	gra/src/game/armyMerge.ts	202	923	2	922	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Czy skład zawiera wodza/generała; osobny znak na żetonie reprezentanta. */
+edb8fb56..4bbef081d	gra/src/game/armyMerge.ts	203	952	1	949	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	hasCommander: stack.some(unit => unit.isGeneral === true),
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	204	9	1	9	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { Nakladka, TerenBazowy } from '../types/hex';
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	205	12	1	12	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { axialDistance, cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	206	17	1	16	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	isFarmBaseTerrain,
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	207	59	3	58	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Strategic transition: build bronze inputs first (copper + tin), then iron.
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	208	75	18	72	1	18	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'lodzie_rybackie', 'irygacja',
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	209	130	1	110	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	new Set<ImprovementKey>(ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE);
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	210	171	10	151	12	10	12	zmiana	PERF	-(poza DELTA-5 s.3)	* Dzielnik „1 na 10 obywateli" (dawne ECHO właściciela 2026-08-27: „jeden tartak i obóz; a
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	211	403	45	384	0	45	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Food mode: gate all selected cities through empire-wide preparation/farm/livestock/lat
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	212	480	279	416	0	279	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const FOOD_LIVESTOCK_STAGE_KEYS: readonly ImprovementKey[] = [
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	213	760	233	417	0	233	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const stagedCities = opts.cities.filter(city => isFoodStageCity(opts, city));
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	214	1016	7	440	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	riverForestClearingOnly = false,
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	215	1031	4	448	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R4: ulepszenia BRAKUJĄCYCH surowców (tylko z nich niedobór może coś „otworzyć” w K2/K3)
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	216	1147	28	560	0	28	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-1 (właściciel 2026-10-31): „DOSTĘP DO WODY” dla tartak
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	217	1177	2	563	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R5: wycinka w toku / zaplanowana wcześniej w tym wywołaniu liczy się jak już zaplanowan
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	218	1186	7	570	0	7	0	dodanie	PERF	-(poza DELTA-5 s.3)	// Food phase 0 is an owner-ordered river preparation step; it is limited to
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	219	1194	14	572	1	14	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R3, ABC-A=C: K1 (profil „Żywność”) nigdy nie stawia tartaku ani obozu — także przy `pri
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	220	1209	9	574	1	9	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R4 KOREKTA F (właściciel 2026-10-31): heks centrum miasta jest ZWYKŁYM heksem dla autom
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	221	1229	0	587	2	0	2	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const demandActive = demandDriven && focus === 'zrownowazone';
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	222	1307	3	665	0	3	0	dodanie	PERF	-(poza DELTA-5 s.3)	// R4 KOREKTA F (właściciel 2026-10-31): zniesiony filtr R3 „centrum miasta wyłączone” — h
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	223	1338	4	694	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const orderedHexes = [...candidateHexes]
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	224	1358	1	711	2	1	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	&& !ZERO_YIELD_IMPROVEMENTS.has(k),
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	225	1360	1	714	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const defensePriority = demandActive
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	226	1473	32	826	0	32	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (runda 2, zarzut 1 i 3 Obrony): KROK 0 NA HEKSIE RZEKA+LA
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	227	1513	8	835	1	8	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5, D3 właściciela 2026-10-31): „rzeka zagospodarowana”
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	228	1524	2	839	3	2	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (map.hexes[hk]?.nakladka === Nakladka.Las && riverKrok0Ok(q, r)) return true;
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	229	1528	8	844	1	8	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const placedHere = workingPlaced.get(hk) ?? [];
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	230	1538	4	847	2	4	2	zmiana	PERF	-(poza DELTA-5 s.3)	// MINIMUM LEŚNE MIASTA — [NIEAKTUALNE w K2/K3 (`demandActive`): właściciel 2026-10-31 „Te
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	231	1556	5	862	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R3, ABC-B=B (K2/K3): tartak powstaje WYŁĄCZNIE przy niedoborze drewna. Bez niego minimu
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	232	1562	1	864	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	.filter(k => !demandActive && tartakDozwolony && hexPhasePriority.includes(k))
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	233	1581	53	883	1	53	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// ABC-3=B (właściciel 2026-10-31): w etapie E5 (`offRiverClearing`) wycinka poza rzeką NI
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	234	1643	2	893	1	2	1	zmiana	PERF	-(poza DELTA-5 s.3)	// KROK 0 heksa: wyrąb, gdy heks ma rzekę I las (bez lesneMin i progu lasu — patrz wyżej),
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	235	1646	14	895	9	14	9	zmiana	LOGIKA	-(poza DELTA-5 s.3)	riverKrok0Ok(q, r)
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	236	1688	7	932	3	7	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, budżet sztywno): koszt ponad dostę
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	237	1707	8	946	0	8	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (Objaw A, zmierzone: gra/tools/wyrab-rzeka-krok0-test.cjs
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	238	1718	2	949	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Wspólne bramki rodzaju ulepszenia na heksie (te same w SONDZIE nadwyżki, ZASADA 3).
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	239	1743	4	973	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	240	1764	1	990	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (!wyrabMaSens(q, r)) continue;
+edb8fb56..4bbef081d	gra/src/game/auto-improvements.ts	241	1805	1	1030	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (keyBlockedOnHex(key, hexKey)) continue;
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	242	39	2	38	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { farthestStepWithinBudget } from './ai-move-range';
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	243	745	4	743	1	4	1	zmiana	PERF	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	244	759	1	754	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, occupied) ?? path[0] ??
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	245	1759	1	1753	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	warAllIn?: WarAllInContext,
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	246	1807	39	1801	1	39	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): barbarzyncy w
+edb8fb56..4bbef081d	gra/src/game/barbarians.ts	247	1880	2	1835	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (allInUnitIds.has(unit.id)) continue; // komendy wydane wyzej (kolejnosc planu)
+edb8fb56..4bbef081d	gra/src/game/battle-mode.ts	248	1	14	0	0	14	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Save metadata version that marks battleAlwaysManual as an active runtime policy. */
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	249	38	5	37	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	import {
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	250	330	44	325	8	44	8	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** Klucze JSON (gra/data/econ-params.json → budynki) czytane przez loadSpichlerzDrainPara
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	251	415	2	374	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	dryRun: boolean,
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	252	424	1	381	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, params);
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	253	426	1	383	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (ownerResourceStock(cities, ownerId, 'ceramika') >= ceramikaAmount) {
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	254	429	1	386	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	ceramika: ceramikaAmount,
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	255	435	1	392	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (hasII && ownerResourceStock(cities, ownerId, 'sol') >= params.solII) {
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	256	438	1	395	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	sol: params.solII,
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	257	614	2	570	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Parametry drain Spichlerza z econ-params (wg trudności) — WYMAGANE (R-WEB-SPICHLERZ-HU
+edb8fb56..4bbef081d	gra/src/game/building-resource-gate.ts	258	627	1	581	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	opts.drainParams,
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	259	24	3	24	3	3	3	zmiana	PERF	-(poza DELTA-5 s.3)	*     0,2 2026-08-12, PRZYWRÓCONA 1,0 2026-08-13, patrz niżej): stawka BIEŻĄCA per epoka *
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	260	41	1	41	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* nie luka; STAWKA 2026-08-13 = 1,0 (od 2026-10-31 zależna od epoki, patrz `citizenUpkeepR
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	261	81	1	81	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* REAL drain (current rate: per era via `citizenUpkeepRateForEra` — Kamień 1.0 / Brąz 2.0
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	262	83	1	83	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* `citizenUpkeepRateForEra(era)` (Kamień 1.0 / Brąz 2.0 / Żelazo 3.0), `required = Math.fl
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	263	107	6	106	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	264	136	1	130	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* FALLBACK (realna stawka per epoka: `citizenUpkeepRateForEra`). Stawka zużycia: sztuk sur
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	265	156	3	149	0	3	0	dodanie	PERF	-(poza DELTA-5 s.3)	// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (Maciej 2026-10-31): powyższa stała to już TYLKO FALLB
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	266	161	4	152	3	4	3	zmiana	PERF	-(poza DELTA-5 s.3)	* Wiersz tabeli dla danej epoki — ta sama reguła wyboru co lista surowców: `era` < 1 / NaN
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	267	166	1	156	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	function citizenUpkeepRowForEra(era: number): CitizenUpkeepEraRow | undefined {
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	268	168	1	158	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (!first) return undefined;
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	269	171	1	161	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (exact) return exact;
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	270	173	24	163	1	24	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return below ?? first;
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	271	202	6	168	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	272	234	1	194	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	population?: number,
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	273	240	10	199	0	10	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: gdy podano populację (opcjonalny 3. argument), bramka
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	274	252	3	202	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const haveOk = typeof have === 'number' && Number.isFinite(have) && have > 0 ? have : 0;
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	275	264	4	212	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return {
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	276	285	1	230	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* **`citizenUpkeepRateForEra(era)` (per epoka: Kamień 1,0 / Brąz 2,0 / Żelazo 3,0 sztuki s
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	277	290	1	235	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* Math.floor(population × citizenUpkeepRateForEra(era))` — zaokrąglone W DÓŁ do sztuk
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	278	309	1	253	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const ratePerCitizen = citizenUpkeepRateForEra(era);
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	279	321	2	265	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Stawka ZALEŻY OD EPOKI (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1) — ta sama dla podglądu i dren
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	280	337	3	280	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return {
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	281	348	1	289	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* (`Math.floor(cityPopulation × stawka_epoki)`, stawka = `coverage.ratePerCitizen`), NIE s
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	282	401	1	342	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	coverage: Pick<CitizenUpkeepCoverage, 'available' | 'missing' | 'ratePerCitizen'>,
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	283	405	2	345	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Stawka epoki niesiona przez werdykt silnika (`coverage.ratePerCitizen`); brak → fallbac
+edb8fb56..4bbef081d	gra/src/game/citizen-resource-upkeep.ts	284	409	1	348	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const qty = Math.floor(pop * rate);
+edb8fb56..4bbef081d	gra/src/game/city-hex-clear.ts	285	41	19	40	0	19	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/city-hex-clear.ts	286	65	1	45	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	clearForestFromHex(hex);
+edb8fb56..4bbef081d	gra/src/game/city-hex-clear.ts	287	74	1	54	3	1	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (hex.nakladka !== Nakladka.Brak && !isKeptDeposit(hex.nakladka)) {
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	288	4	0	5	1	0	1	usuniecie	PERF	-(poza DELTA-5 s.3)	import civAiRaw from '../../data/civ-ai.json';
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	289	37	1	38	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	/** Agresja 0..1 from the matrix; unmatched keys have no civilization-specific value. */
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	290	39	1	40	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_data: GameData,
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	291	50	1	51	3	1	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return undefined;
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	292	54	1	57	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_data: GameData,
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	293	67	1	70	2	1	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return undefined;
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	294	81	3	85	2	3	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// A legacy-only row may still be displayed through separate descriptive
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	295	112	10	114	0	10	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Reuses the legacy normalized difficulty delta with a 0..1 archetype base. */
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	296	161	2	154	1	2	1	zmiana	PERF	-(poza DELTA-5 s.3)	* Major AI aggression uses the matrix archetype baseline plus its approved
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	297	166	2	158	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_fallback: number,
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	298	171	1	163	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (!civName) return 0.5;
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	299	177	4	169	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const base = civMatrixParamAtDifficulty(typ, 'dip_agresja_archetyp', 'normal');
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	300	182	1	171	8	1	8	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return 0.5;
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	301	186	1	182	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* Skłonność do handlu 0..1 from the matrix; unmatched keys use a neutral baseline.
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	302	190	1	186	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_fallback: number,
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	303	198	1	194	5	1	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return 0.5;
+edb8fb56..4bbef081d	gra/src/game/civ-ai-data.ts	304	215	1	215	3	1	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return 0;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	305	7	1	7	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	306	21	1	20	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	matrixCivKey?: string;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	307	73	1	72	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (rola === 'morska' || rola === 'galera' || counter === 'naval') return 'morska';
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	308	98	14	96	0	14	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Adapter for PreBattle's `categoryOf()` output, including its naval `galera` class. */
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	309	136	0	122	19	0	19	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	function opisMentionsForest(opis: string): boolean {
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	310	142	1	145	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (!isKnownMatrixCombatEntry(b)) return false;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	311	147	0	151	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const opis = b.opis ?? '';
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	312	158	0	163	13	0	13	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	if (opisForestOrCharge(opis)) {
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	313	164	1	181	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	function applyMatrixCombatBonus(
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	314	166	0	184	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	side: 'attacker' | 'defender',
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	315	168	0	187	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const opis = stripDiacritics(b.opis ?? '');
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	316	177	0	197	42	0	42	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	if (b.matrixParamId) return;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	317	189	2	250	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const result: CivStatMultipliers = { ...ONE };
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	318	194	1	255	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	applyMatrixCombatBonus(result, b);
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	319	196	31	257	1	31	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return result;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	320	255	29	285	0	29	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const MATRIX_ADAPTER_EXCLUDED_IDS = new Set(['walka_atak_lukownicy']);
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	321	286	3	288	4	3	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const normalizedKey = civKey.toLowerCase();
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	322	290	1	293	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (MATRIX_ADAPTER_EXCLUDED_IDS.has(id)) continue;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	323	292	3	295	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (wartosc !== 0 || (hasMatrixRow && MATRIX_ZERO_MARKER_IDS.has(id))) {
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	324	297	3	297	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Owner decision 1B: Egypt's chariot field replaces its overlapping
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	325	306	1	304	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (wartosc !== 0) out.push({ typ: 'bonus_walka', cel, wartosc, opis: `Matrix:${id}`, real
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	326	309	1	307	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (recruitment !== 0) out.push({ typ: 'koszt_redukcja', cel: civKey === 'zulusi' ? 'Impi'
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	327	322	4	320	3	4	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const matrixParamId = b.matrixParamId;
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	328	335	7	331	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Decision 4B excludes Egyptian battle movement from strategic embarkation only. */
+edb8fb56..4bbef081d	gra/src/game/civ-bonuses.ts	329	387	1	377	3	1	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return isKnownMatrixCombatEntry(b) && b.wartosc !== 0;
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	330	129	36	128	0	36	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	'walka_atak_piechota': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-P
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	331	201	36	164	0	36	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	'walka_ruch_bitwa_proc',
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	332	256	2	184	21	2	21	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Prior DIP holds are resolved by bounded activation records; no other ID is promoted.
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	333	259	0	207	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	'walka_koszt_rekrutacji_proc',
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	334	260	0	209	2	0	2	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	'prod_koszt_budynku_proc',
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	335	266	3	216	15	3	15	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// All previously blocked movement/G11 fields now have bounded accepted consumer
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	336	393	1	354	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	civilizationId?: string,
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	337	409	3	369	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (parameterId === 'walka_ruch_bitwa_proc' && civilizationId === 'egipt') {
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	338	517	5	475	1	5	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const egyptGeneralMovementExcluded = input.parameterId === 'walka_ruch_bitwa_proc'
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	339	526	1	480	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	: statusReason(effectiveStatus, input.parameterId, polarity, input.civilizationId);
+edb8fb56..4bbef081d	gra/src/game/civ-matrix-semantic.ts	340	547	4	501	2	4	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	statusReasonPl: blocked ? blockedReason : statusReason(effectiveStatus, input.parameterId,
+edb8fb56..4bbef081d	gra/src/game/cluster-start.ts	341	19	1	19	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { startRelationForMajorPair, startRelationForPair } from './diplomacy-layers';
+edb8fb56..4bbef081d	gra/src/game/cluster-start.ts	342	21	1	20	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { HUMAN_OWNER_PRIMARY } from './human-owners';
+edb8fb56..4bbef081d	gra/src/game/cluster-start.ts	343	59	6	57	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Relacje initialne wszystkich par major-major; city-state są wykluczone. */
+edb8fb56..4bbef081d	gra/src/game/cluster-start.ts	344	380	26	372	0	26	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Q2: relacja początkowa jest per para wszystkich aktywnych major ownerów,
+edb8fb56..4bbef081d	gra/src/game/cluster-start.ts	345	420	1	386	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	majorPairStartRelations,
+edb8fb56..4bbef081d	gra/src/game/combat.ts	346	920	2	920	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const effectiveMax = applyMultiplier(canonicalAtkMax!, atkCivHealth);
+edb8fb56..4bbef081d	gra/src/game/combat.ts	347	933	2	932	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const effectiveMax = applyMultiplier(canonicalDefMax!, defCivHealth);
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	348	7	2	7	1	2	1	zmiana	PERF	-(poza DELTA-5 s.3)	* (SiegeCity / SiegeUnit). It imports only the civilization matrix for the
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	349	47	2	45	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	350	120	2	116	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ikonaId?: string;
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	351	123	0	119	2	0	2	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/** Trade -> Money multiplier for this civ (e.g. 2.3 for Greeks). */
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	352	339	7	335	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Scale the current incoming city-culture yield by a `mul_proc` modifier. */
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	353	502	13	491	0	13	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply `religia_spread_proc` to base city slots only; additive building slots stay sepa
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	354	1246	2	1223	3	2	3	zmiana	PERF	-(poza DELTA-5 s.3)	* The matrix `meta_mnoznik_waluta` value for the owner civ, regardless of the
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	355	1263	1	1241	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* Compute the per-city matrix trade/money multiplier gated by religion dominance.
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	356	1265	2	1243	2	2	2	zmiana	PERF	-(poza DELTA-5 s.3)	* Mechanics:
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	357	1274	2	1252	7	2	7	zmiana	PERF	-(poza DELTA-5 s.3)	* Pure, deterministic, no side effects. civs.json supplies identity/religion
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	358	1303	1	1286	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	// Read the owner matrix value; known raw zero remains authoritative.
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	359	1306	8	1289	3	8	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const candidateIds = [civRow.ikonaId, civRow.typCywilizacji, civRow.Cywilizacja]
+edb8fb56..4bbef081d	gra/src/game/culture-religion.ts	360	1321	1	1299	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	// Owner civ's religion is identity data and remains the gate's source.
+edb8fb56..4bbef081d	gra/src/game/diplomacy-ai-offer-balance.ts	361	95	23	94	0	23	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-ai-offer-balance.ts	362	291	1	268	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const undershoot = zeroPwUndershootScope ? 0 : aiOfferPwUndershootAllowance(difficulty);
+edb8fb56..4bbef081d	gra/src/game/diplomacy-layers.ts	363	11	2	10	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { nastawienieBazoweZaufanieDelta } from './civ-ai-data';
+edb8fb56..4bbef081d	gra/src/game/diplomacy-layers.ts	364	59	30	56	0	30	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Initial trust for a pair of major civilizations (DIP activation Q2). */
+edb8fb56..4bbef081d	gra/src/game/diplomacy-peace-lock.ts	365	10	1	10	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	/** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
+edb8fb56..4bbef081d	gra/src/game/diplomacy-peace-lock.ts	366	58	50	57	0	50	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// ---------------------------------------------------------------------------
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	367	35	2	34	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-PEACE-CITY-CESSION-Q1 r2: akcja propozycji (bramka pozycji 'miasto'). */
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	368	41	1	38	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	actionId: opts?.actionId,
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	369	90	6	86	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	370	121	6	111	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-PEACE-CITY-CESSION-Q1 r2: wycena miasta (PW, `diplomacyPnMiasto`) — tylko typ 'm
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	371	233	1	217	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	actionId?: string;
+edb8fb56..4bbef081d	gra/src/game/diplomacy-pn-engine.ts	372	239	1	223	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const sumBase = buildProposalPnSumOpts({ ...opts, actionId: payload.actionId ?? opts?.acti
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	373	28	2	27	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	374	63	1	60	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { normalizeTruceDuration, TRUCE_DEFAULT_TURNS } from './diplomacy-peace-lock';
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	375	93	3	90	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	| 'pokoj'
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	376	152	2	146	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Jawny czas cyklicznej wymiany: brak = historyczny fallback do `turns`, null = beztermi
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	377	189	11	181	0	11	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	378	379	4	361	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	function stanceForEval(
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	379	392	4	371	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 R1: realny czas wojny (dawna stała 5 usunięta).
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	380	451	20	426	0	20	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Cyclic quantity-exchange duration is distinct from treaty duration (1–30). */
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	381	733	2	689	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-TRUCE-Q1 (runda 2): rozejm dzieli bramkę PW pokoju (ta sama formuła i komunikat).
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	382	1059	3	1013	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	383	1065	3	1017	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSO
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	384	1072	4	1022	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (actionId === 'rozejm' && !stanWojny) {
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	385	1116	4	1063	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const napThreshold = Math.max(
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	386	1165	2	1109	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	387	1246	7	1189	1	7	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	case 'pokoj':
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	388	1262	24	1199	1	24	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const basePnCfg = treatyBasePnFromConfig(actionId, payload);
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	389	1513	1	1427	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const turns = exchangeValuationTurns(payload);
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	390	1525	1	1439	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	resolveExchangeExpiry(ctx.turn, payload),
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	391	1533	3	1447	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	reason: payload.exchangeDurationTurns === null
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	392	1892	3	1804	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return cmd.rodzaj === 'rozejm'
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	393	1899	4	1808	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	case 'oferuj_miasto_za_pokoj':
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	394	1907	1	1812	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const reasonSuffix = cmd.reasonHandlu ? ` Uzasadnienie: ${cmd.reasonHandlu}` : '';
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	395	1910	1	1815	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	+ ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	396	1913	1	1818	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	+ ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	397	1954	10	1858	0	10	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-TRUCE-Q1 r4 (N4): rozejm proponowany przez AI idzie tą samą ścieżką co pokój
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	398	1970	20	1864	0	20	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	case 'oferuj_miasto_za_pokoj':
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	399	2099	1	1974	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	'pokoj', 'rozejm', 'trybut_oferta', 'ultimatum',
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	400	2159	2	2033	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	case 'rozejm':
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	401	2240	1	2113	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const turns = exchangeValuationTurns(payload);
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	402	2252	1	2125	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	resolveExchangeExpiry(turn, payload),
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	403	2258	7	2131	1	7	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return {
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	404	2395	2	2261	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty handlowej AI (niedobór/nadwyżka). *
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	405	2612	1	2476	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	// R-WEB-TRUCE-Q1 r3 (N3): rozejm ma ten sam słodzik kontrprzeciwny co pokój (ta sama bram
+edb8fb56..4bbef081d	gra/src/game/diplomacy-proposals.ts	406	2614	1	2478	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj', 'rozejm',
+edb8fb56..4bbef081d	gra/src/game/diplomacy-resource-trade-pick.ts	407	81	6	80	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-resource-trade-pick.ts	408	106	1	99	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (input.acceptKey && !input.acceptKey(key)) continue;
+edb8fb56..4bbef081d	gra/src/game/diplomacy-resource-trade-pick.ts	409	134	1	127	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	pricedKeys, pakietWielkosc, maxPakietyPerTura, pricePerPakiet, acceptKey,
+edb8fb56..4bbef081d	gra/src/game/diplomacy-resource-trade-pick.ts	410	139	2	132	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const sorted = [...sellerOptions].sort((a, b) => b.maxQty - a.maxQty)
+edb8fb56..4bbef081d	gra/src/game/diplomacy-sensible-deals.config.json	411	1	6	0	0	6	0	dodanie	DANE	-(poza DELTA-5 s.3)	{
+edb8fb56..4bbef081d	gra/src/game/diplomacy-sensible-deals.ts	412	1	170	0	0	170	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-tick-war-brake.ts	413	1	239	0	0	239	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — czyste funkcje hamulca wojny (P6), bonusu Zaufania
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	414	26	2	26	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	| 'zywnosc'
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	415	448	6	446	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	416	479	15	472	1	15	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	items: Array<{
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	417	527	13	505	0	13	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	case 'miasto': {
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	418	546	1	511	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	|| item.typ === 'miasto'
+edb8fb56..4bbef081d	gra/src/game/diplomacy-value-catalog.ts	419	767	231	731	0	231	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// ---------------------------------------------------------------------------
+edb8fb56..4bbef081d	gra/src/game/diplomacy-war-gates.ts	420	10	2	10	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-TRUCE-Q1 r3 (N2): rozejm ma te same bramki walutowe w wojnie co pokój.
+edb8fb56..4bbef081d	gra/src/game/diplomacy-war-gates.ts	421	13	1	11	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	/** Waluta w wojnie dozwolona dla pokoju i rozejmu (wspólna bramka, R-WEB-TRUCE-Q1 r3 N2).
+edb8fb56..4bbef081d	gra/src/game/diplomacy-war-peace-profile.ts	422	1	364	0	0	364	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 (runda 1) — czyste reguły wojny i pokoju per cywilizacja.
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	423	24	2	23	0	2	0	dodanie	PERF	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: parametry flagi agresora (sekcja na końcu pliku).
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	424	35	1	32	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	425	1108	5	1104	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	426	1300	6	1292	1	6	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	427	1337	2	1323	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	428	1340	1	1325	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	429	1368	3	1352	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: gorsza chęć sojuszu wobec agresora (mnożnik z JSON; 1 bez
+edb8fb56..4bbef081d	gra/src/game/diplomacy.ts	430	1785	172	1766	0	172	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-AGGRESSOR-FLAG-Q1 — flaga agresora i casus belli.
+edb8fb56..4bbef081d	gra/src/game/dirtyRenderSync.ts	431	1	31	0	0	31	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/economy.ts	432	45	1	45	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { applyCivMatrixParam, civMatrixParam, loadCivMatrix } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/economy.ts	433	149	4	149	8	4	8	zmiana	PERF	-(poza DELTA-5 s.3)	* Tax-only Mint multiplier on handelNetto before the tax slider split.
+edb8fb56..4bbef081d	gra/src/game/economy.ts	434	162	0	167	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy ma
+edb8fb56..4bbef081d	gra/src/game/economy.ts	435	237	0	243	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
+edb8fb56..4bbef081d	gra/src/game/economy.ts	436	326	1	332	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	pieniadzZPracy: number;  // deprecated compatibility field; always 0 (Work is converted ma
+edb8fb56..4bbef081d	gra/src/game/economy.ts	437	332	2	338	2	2	2	zmiana	PERF	-(poza DELTA-5 s.3)	* UI/debug (panel miasta "ile Pieniadza z budynkow"). Ta wartosc NIE trafia
+edb8fb56..4bbef081d	gra/src/game/economy.ts	438	335	1	341	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	* korupcja/Waluta+Mennica i dopiero POTEM jest
+edb8fb56..4bbef081d	gra/src/game/economy.ts	439	644	3	650	4	3	4	zmiana	PERF	-(poza DELTA-5 s.3)	* mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Mint
+edb8fb56..4bbef081d	gra/src/game/economy.ts	440	650	4	657	8	4	8	zmiana	PERF	-(poza DELTA-5 s.3)	* Waluta (currency tech) discovered by this player. Mint modifies only local
+edb8fb56..4bbef081d	gra/src/game/economy.ts	441	656	0	668	8	0	8	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/economy.ts	442	674	2	693	14	2	14	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** Owner-selected Work converted to ordinary tax, already expressed at the configured rat
+edb8fb56..4bbef081d	gra/src/game/economy.ts	443	703	1	734	4	1	4	zmiana	PERF	-(poza DELTA-5 s.3)	/** Compatibility API: matrix value, or the supplied generic system fallback. */
+edb8fb56..4bbef081d	gra/src/game/economy.ts	444	706	2	740	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+edb8fb56..4bbef081d	gra/src/game/economy.ts	445	709	2	743	38	2	38	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const matrixValue = civMatrixMnoznikHandelPieniadzRaw(civKey);
+edb8fb56..4bbef081d	gra/src/game/economy.ts	446	714	2	784	4	2	4	zmiana	PERF	-(poza DELTA-5 s.3)	* Canonical matrix source for a known civilization. Raw zero is a matrix value
+edb8fb56..4bbef081d	gra/src/game/economy.ts	447	727	1	799	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return Number.isFinite(value) ? value : undefined;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	448	745	3	817	8	3	8	zmiana	PERF	-(poza DELTA-5 s.3)	* Matrix multiplier with the established difficulty delta. The civs.json
+edb8fb56..4bbef081d	gra/src/game/economy.ts	449	749	3	826	4	3	4	zmiana	PERF	-(poza DELTA-5 s.3)	* `fallbackScaled` already includes generic difficulty behavior and is not
+edb8fb56..4bbef081d	gra/src/game/economy.ts	450	755	1	833	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+edb8fb56..4bbef081d	gra/src/game/economy.ts	451	759	1	837	2	1	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const raw = civMatrixMnoznikHandelPieniadzRaw(civKey);
+edb8fb56..4bbef081d	gra/src/game/economy.ts	452	781	1	860	3	1	3	zmiana	PERF	-(poza DELTA-5 s.3)	/** Legacy civs.json yield bonuses are no longer numerical consumer inputs. */
+edb8fb56..4bbef081d	gra/src/game/economy.ts	453	783	1	864	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_bonusy: readonly CivEconomyBonus[] | undefined,
+edb8fb56..4bbef081d	gra/src/game/economy.ts	454	785	1	866	13	1	13	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return { handel: 1, nauka: 1 };
+edb8fb56..4bbef081d	gra/src/game/economy.ts	455	794	2	887	9	2	9	zmiana	PERF	-(poza DELTA-5 s.3)	*   3'. Sum building BASE outputs; Work stays in the empire pool unless manually converted
+edb8fb56..4bbef081d	gra/src/game/economy.ts	456	797	2	897	3	2	3	zmiana	PERF	-(poza DELTA-5 s.3)	*      do skarbca, tylko do puli, do podziału"). pieniadzBudynkow is part of the
+edb8fb56..4bbef081d	gra/src/game/economy.ts	457	800	1	901	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	*      pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
+edb8fb56..4bbef081d	gra/src/game/economy.ts	458	803	1	904	2	1	2	zmiana	PERF	-(poza DELTA-5 s.3)	*   7. Apply Mennica multiplier to caly Handel (w tym pieniadzBudynkow); Biblioteka bonus
+edb8fb56..4bbef081d	gra/src/game/economy.ts	459	862	3	964	4	3	4	zmiana	PERF	-(poza DELTA-5 s.3)	// --- Step 3: Sum building BASE outputs. Musi powstac TERAZ (a nie po handlu),
+edb8fb56..4bbef081d	gra/src/game/economy.ts	460	871	1	973	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	let pieniadzPortu    = 0;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	461	875	3	977	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const buildingMoney = buildingValue(record, level, 'pieniadz');
+edb8fb56..4bbef081d	gra/src/game/economy.ts	462	884	8	983	0	8	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// Port income is a separately named source: its own building cash and connected
+edb8fb56..4bbef081d	gra/src/game/economy.ts	463	898	10	990	11	10	11	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// F-04 approved owner work coefficient (mul_proc). A source zero is neutral;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	464	908	0	1002	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	465	910	10	1004	18	10	18	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const pieniadzZPracy = 0;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	466	931	13	1033	11	13	11	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// F-04: replace the same-effect legacy multiplier above and apply the approved
+edb8fb56..4bbef081d	gra/src/game/economy.ts	467	945	1	1045	6	1	6	zmiana	PERF	-(poza DELTA-5 s.3)	// Mint affects the local tax pool only. Separately settled route cash bypasses it.
+edb8fb56..4bbef081d	gra/src/game/economy.ts	468	947	1	1052	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const walutaMnoznikBase = params.mennicaMnoznikPoWalucie;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	469	963	4	1068	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const luksusZHandluRaw = Math.floor(handelNetto * pctLuksus);
+edb8fb56..4bbef081d	gra/src/game/economy.ts	470	977	12	1079	12	12	12	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const naukaLokalna = city.civKey
+edb8fb56..4bbef081d	gra/src/game/economy.ts	471	1003	4	1105	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const zywnoscBruttoRaw = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+edb8fb56..4bbef081d	gra/src/game/economy.ts	472	1017	3	1116	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	kultura:        Math.floor(city.civKey
+edb8fb56..4bbef081d	gra/src/game/embarkation.ts	473	22	1	22	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { civEmbarkationMovementMultiplier } from './civ-bonuses';
+edb8fb56..4bbef081d	gra/src/game/embarkation.ts	474	60	1	60	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const mult = civEmbarkationMovementMultiplier(civBonusy, unitShape);
+edb8fb56..4bbef081d	gra/src/game/forced-war-bronze.ts	475	5	0	6	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	shouldEndForcedWarByCityCount,
+edb8fb56..4bbef081d	gra/src/game/forced-war-bronze.ts	476	92	5	93	1	5	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usu
+edb8fb56..4bbef081d	gra/src/game/forced-war-bronze.ts	477	171	0	169	18	0	18	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-bronze.ts	478	183	0	199	16	0	16	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	479	12	5	11	0	5	0	dodanie	PERF	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	480	20	3	15	12	3	12	zmiana	PERF	-(poza DELTA-5 s.3)	* Tura rozpoczęcia tej konkretnej pary — podstawa wspólnego 20-turowego limitu
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	481	147	33	150	0	33	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	export interface ForcedEraPeaceLock {
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	482	201	11	171	0	11	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	483	213	6	172	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	484	221	7	174	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	485	231	17	177	0	17	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	486	268	2	197	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): partner pary gracza (wypowiada PIERWSZY w pętli
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	487	307	7	234	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-R8R9-Q1 R8: jedyny predykat blokady pary w tej funkcji = NAP/peaceLoc
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	488	316	2	237	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	let warlessAll = triggeredSubjects
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	489	320	33	240	0	33	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z3/Z4, K1): gracz pierwszy. Najbliższy AI (wg
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	490	354	3	242	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const remaining = warless
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	491	359	7	244	0	7	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (playerFirst && playerFirstPartnerId !== null && playerFirstPartner !== null) {
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	492	401	1	280	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && pairBlocked(a, b)));
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	493	468	1	347	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const blocked = new Set(remaining.filter(id => pairBlocked(seekerId, id)));
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	494	498	2	377	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const attackerBlocked = pairBlocked(leftoverId, pair.attackerId);
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	495	501	3	379	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
+edb8fb56..4bbef081d	gra/src/game/forced-war-common.ts	496	520	1	396	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return { assignments, unresolvedOwnerIds, playerFirstPartnerId };
+edb8fb56..4bbef081d	gra/src/game/forced-war-iron.ts	497	5	0	6	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	shouldEndForcedWarByCityCount,
+edb8fb56..4bbef081d	gra/src/game/forced-war-iron.ts	498	37	4	38	2	4	2	zmiana	PERF	-(poza DELTA-5 s.3)	* POZOSTAŁE PARAMETRY SĄ IDENTYCZNE Z BRĄZEM I KAMIENIEM (2 miasta = koniec wojny,
+edb8fb56..4bbef081d	gra/src/game/forced-war-iron.ts	499	88	5	86	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Maksymalny czas wojny wymuszonej Żelaza; po 20 turach silnik zawiera automatyczny pokó
+edb8fb56..4bbef081d	gra/src/game/forced-war-iron.ts	500	214	0	209	17	0	17	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/forced-war-stone.ts	501	5	0	6	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	shouldEndForcedWarByCityCount,
+edb8fb56..4bbef081d	gra/src/game/forced-war-stone.ts	502	28	4	29	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usu
+edb8fb56..4bbef081d	gra/src/game/forced-war-stone.ts	503	74	0	73	31	0	31	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	export function shouldEndStoneForcedWarByCityCount(
+edb8fb56..4bbef081d	gra/src/game/fort-territory.ts	504	8	10	7	0	10	0	dodanie	PERF	-(poza DELTA-5 s.3)	* ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+edb8fb56..4bbef081d	gra/src/game/fort-territory.ts	505	36	1	26	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type Territo
+edb8fb56..4bbef081d	gra/src/game/fort-territory.ts	506	58	31	47	0	31	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/fort-territory.ts	507	103	40	61	0	40	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/fort-territory.ts	508	296	54	214	0	54	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Minimalny opis jednostki do rozstrzygania zdobycia fortu przez wejscie wojska. */
+edb8fb56..4bbef081d	gra/src/game/fsa-autosave.ts	509	254	1	254	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	let preloadedIdbHandlePromise: Promise<FsaDirectoryHandleLike | null> = idbGetHandle();
+edb8fb56..4bbef081d	gra/src/game/fsa-autosave.ts	510	449	49	448	0	49	0	dodanie	UI	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/fsa-autosave.ts	511	566	5	516	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Test-only (R-WEB-LOAD-GAME-REGRESSION-Q1 r4): zapamiętany uchwyt z IDB po przeładowani
+edb8fb56..4bbef081d	gra/src/game/generalQuickFollow.ts	512	1	161	0	0	161	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	import { generalFollowDestination, nearestLivingGeneral, type GeneralFollowCandidate } fro
+edb8fb56..4bbef081d	gra/src/game/generals.ts	513	1	103	0	0	103	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** General recruitment cap: one at the start, then one additional General per era. */
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	514	29	1	28	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	import { civMatrixParam } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	515	289	1	287	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	resolveOwnerMatrix?: (ownerId: number) => ManpowerMatrixOverrides | undefined,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	516	309	4	307	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const legacyMults = civManpowerMults(resolveOwnerBonusy(ownerId));
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	517	313	0	309	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	if (empireMp <= 0) continue;
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	518	337	2	333	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	519	342	6	337	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (unitCost === 0) {
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	520	402	13	392	4	13	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export interface ManpowerMatrixOverrides {
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	521	416	1	397	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_bonusy?: readonly CivBonusPoborLite[],
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	522	418	1	399	10	1	10	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return 1;
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	523	421	1	411	4	1	4	zmiana	PERF	-(poza DELTA-5 s.3)	/** Legacy civ-bonus compatibility helper; matrix-only source makes it neutral. */
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	524	423	1	416	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_bonusy?: readonly CivBonusPoborLite[],
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	525	425	1	418	10	1	10	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return 1;
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	526	428	1	430	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	/** Legacy civ-bonus compatibility API; all fields are neutral. */
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	527	430	27	432	2	27	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	_bonusy?: readonly CivBonusPoborLite[],
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	528	458	3	435	2	3	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	regenMult: matrixMultiplier(read('mp_regen_proc')),
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	529	465	1	441	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return Math.floor(base * Math.max(0, Number.isFinite(maxMult) ? maxMult : 1));
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	530	548	1	523	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	531	551	1	526	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return unitManpowerCost(epoka, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	532	615	1	589	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	533	621	1	595	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const kosztJednostki = scaledManpower(row.manpowerNaJednostke, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	534	643	1	616	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	535	645	1	618	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const cost = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	536	733	1	705	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	537	735	1	707	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	538	749	1	720	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	539	752	1	723	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	540	804	1	774	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	541	806	1	776	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	542	845	1	814	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	543	847	1	816	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const mpRefund = unitManpowerCostForType(typeId, epoka, maxMult, costMult);
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	544	882	1	850	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult = maxMult,
+edb8fb56..4bbef081d	gra/src/game/manpower.ts	545	884	1	852	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const cost = amount ?? unitManpowerCost(epoka, costMult);
+edb8fb56..4bbef081d	gra/src/game/order.ts	546	4	1	4	2	1	2	zmiana	PERF	-(poza DELTA-5 s.3)	* matrix adapter for the existing effects; runtime wiring remains in the turn loop.
+edb8fb56..4bbef081d	gra/src/game/order.ts	547	82	1	82	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	-
+edb8fb56..4bbef081d	gra/src/game/order.ts	548	161	21	160	0	21	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply the selected F04 per-civ modifiers to existing Order effects exactly once. */
+edb8fb56..4bbef081d	gra/src/game/planned-march.ts	549	19	2	18	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Moving friendly General whose live position is the destination. */
+edb8fb56..4bbef081d	gra/src/game/planned-march.ts	550	452	4	450	1	4	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// A General-follow order stores the leader's last coordinates as a fallback.
+edb8fb56..4bbef081d	gra/src/game/planned-march.ts	551	460	3	454	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	if (typeof dest.generalTargetId === 'string' && dest.generalTargetId.length > 0) {
+edb8fb56..4bbef081d	gra/src/game/planned-march.ts	552	481	6	473	3	6	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	plannedMarches[unitId] = {
+edb8fb56..4bbef081d	gra/src/game/playerState.ts	553	42	1	42	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import type { TechDef, BuildingDef } from '../data/loader';
+edb8fb56..4bbef081d	gra/src/game/playerState.ts	554	133	0	134	5	0	5	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/playerState.ts	555	154	0	160	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	civBonusy: [],       // puste do czasu startu gry
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	556	20	1	20	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { refreshManpowerAfterPopChange, civManpowerMults, civManpowerMatrixMults } from '.
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	557	46	6	45	0	6	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Citizen food upkeep scales by the owning civilization's era: Stone 1×, Bronze 2×, Iron
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	558	216	1	209	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra = 1,
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	559	218	2	211	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const base = Math.max(0, population) * rationFoodCostPerPop(level, params)
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	560	287	9	278	0	9	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply the existing Order growth-speed multiplier to the computed percent (not food/fee
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	561	445	4	427	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Resolved manpower max multiplier; matrix-aware and fixture-overridable. */
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	562	494	1	473	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	civBonusyByOwner, manpowerMaxMultByOwnerId, orderGrowthMultByCity, citizenGrowthPctByCityI
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	563	524	1	503	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const baseBreakdown = computeGrowthPercentV85({
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	564	537	8	515	0	8	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const rawOrderGrowthMult = orderGrowthMultByCity?.get(city.id) ?? 1;
+edb8fb56..4bbef081d	gra/src/game/population-growth-v85.ts	565	587	4	558	2	4	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const legacyMpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
+edb8fb56..4bbef081d	gra/src/game/production.ts	566	65	1	65	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/production.ts	567	129	2	128	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Purchased unit is a General, while retaining the selected combat unit's type/stats. */
+edb8fb56..4bbef081d	gra/src/game/production.ts	568	207	20	204	0	20	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Deterministically pick the highest-era currently eligible unit in the same Typ line.
+edb8fb56..4bbef081d	gra/src/game/production.ts	569	420	1	397	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	u.Jednostka,
+edb8fb56..4bbef081d	gra/src/game/production.ts	570	448	2	424	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Canonical civilization identity for matrix-only roster and cost resolution. */
+edb8fb56..4bbef081d	gra/src/game/production.ts	571	488	16	462	0	16	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/production.ts	572	562	2	521	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_budynku_proc') ?? 0;
+edb8fb56..4bbef081d	gra/src/game/production.ts	573	583	1	540	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	unitTypeName?: string,
+edb8fb56..4bbef081d	gra/src/game/production.ts	574	587	2	544	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_jednostki_proc');
+edb8fb56..4bbef081d	gra/src/game/production.ts	575	608	18	564	1	18	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** F-04 cost markers for a resolved owner civ; explicit zero values carry replacement pre
+edb8fb56..4bbef081d	gra/src/game/production.ts	576	628	1	566	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	unitTypeName?: string,
+edb8fb56..4bbef081d	gra/src/game/production.ts	577	630	2	568	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	let discount = 0;
+edb8fb56..4bbef081d	gra/src/game/production.ts	578	633	5	571	4	5	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (b.matrixParamId !== 'walka_koszt_rekrutacji_proc') continue;
+edb8fb56..4bbef081d	gra/src/game/production.ts	579	640	17	577	1	17	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return discount;
+edb8fb56..4bbef081d	gra/src/game/production.ts	580	671	22	591	0	22	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const UNIT_STOCK_GATE_LABEL: Readonly<Record<string, string>> = {
+edb8fb56..4bbef081d	gra/src/game/production.ts	581	735	27	633	0	27	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Resolve roster nation from the canonical civ key when present; older callers
+edb8fb56..4bbef081d	gra/src/game/production.ts	582	936	1	808	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const civNation = availabilityCivNation(ctx);
+edb8fb56..4bbef081d	gra/src/game/production.ts	583	983	3	855	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca etykietowego nie ukrywa budynku w wid
+edb8fb56..4bbef081d	gra/src/game/production.ts	584	1027	1	897	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (!unitAllowedForCivNation(nacja, civNation)) continue;
+edb8fb56..4bbef081d	gra/src/game/production.ts	585	1031	5	901	10	5	10	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// National replacements derive from canonical owner nation and the unit
+edb8fb56..4bbef081d	gra/src/game/production.ts	586	1044	2	919	2	2	2	zmiana	PERF	-(poza DELTA-5 s.3)	// Koszary gate: każda jednostka od epoki Brązu wzwyż wymaga wybudowanych
+edb8fb56..4bbef081d	gra/src/game/production.ts	587	1049	1	924	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
+edb8fb56..4bbef081d	gra/src/game/production.ts	588	1063	15	938	11	15	11	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-RECRUIT-LIST-REGRESSION-Q1: w widoku panelu (showStockGatedUnits) brak zapasu
+edb8fb56..4bbef081d	gra/src/game/production.ts	589	1089	1	959	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	u.Jednostka,
+edb8fb56..4bbef081d	gra/src/game/production.ts	590	1150	1	1020	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const civNation = availabilityCivNation(ctx);
+edb8fb56..4bbef081d	gra/src/game/production.ts	591	1160	1	1030	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (!unitAllowedForCivNation(nacja, civNation)) return false;
+edb8fb56..4bbef081d	gra/src/game/production.ts	592	1164	1	1034	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	// Koszary gate: wszystkie jednostki od epoki Brązu wzwyż wymagają Koszar.
+edb8fb56..4bbef081d	gra/src/game/production.ts	593	1166	1	1036	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
+edb8fb56..4bbef081d	gra/src/game/production.ts	594	1176	8	1046	4	8	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: w widoku Zastąp (showStockGatedUnits) brak zapasu
+edb8fb56..4bbef081d	gra/src/game/production.ts	595	1197	1	1062	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	u.Jednostka,
+edb8fb56..4bbef081d	gra/src/game/production.ts	596	1215	1	1080	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	if (!isBlankReplacement(zamiast) && !isCivSpecialReplacement(u, civNation)) continue;
+edb8fb56..4bbef081d	gra/src/game/production.ts	597	1273	16	1137	0	16	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply the approved fractional owner speed modifier to an active building Work budget.
+edb8fb56..4bbef081d	gra/src/game/production.ts	598	1902	1	1750	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	buildingSpeedBonus = 0,
+edb8fb56..4bbef081d	gra/src/game/production.ts	599	1911	1	1759	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const basePraca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
+edb8fb56..4bbef081d	gra/src/game/production.ts	600	1923	1	1771	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	overflowToPool: basePraca > 0 ? basePraca : undefined,
+edb8fb56..4bbef081d	gra/src/game/production.ts	601	1926	3	1773	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const praca = front.kind === 'budynek'
+edb8fb56..4bbef081d	gra/src/game/production.ts	602	1985	2	1830	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1, costMult
+edb8fb56..4bbef081d	gra/src/game/production.ts	603	2056	2	1900	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	maxMult = 1,
+edb8fb56..4bbef081d	gra/src/game/production.ts	604	2060	1	1903	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	let mp = cityManpowerCurrent(city, epoka, maxMult);
+edb8fb56..4bbef081d	gra/src/game/production.ts	605	2075	1	1918	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	maxMult,
+edb8fb56..4bbef081d	gra/src/game/production.ts	606	2077	1	1919	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	costMult,
+edb8fb56..4bbef081d	gra/src/game/production.ts	607	2137	1	1979	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export function rushCost(prod: CityProduction, modifier = 0): number {
+edb8fb56..4bbef081d	gra/src/game/production.ts	608	2140	3	1982	1	3	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const rawModifier = Number.isFinite(modifier) ? modifier : 0;
+edb8fb56..4bbef081d	gra/src/game/production.ts	609	2302	1	2141	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	def.Jednostka,
+edb8fb56..4bbef081d	gra/src/game/relief-preserving-improvements.ts	610	8	3	8	4	3	4	zmiana	PERF	-(poza DELTA-5 s.3)	* Jawne wyjątki BEZ wspólnego prefiksu: hodowla solo (bydło/owce/lama — stoją na kopcu),
+edb8fb56..4bbef081d	gra/src/game/relief-preserving-improvements.ts	611	23	2	24	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** Jawne klucze BEZ prefiksu "kopalnia" — hodowle solo, kamieniołom i tartak. */
+edb8fb56..4bbef081d	gra/src/game/retained-side-panel-events.ts	612	1	26	0	0	26	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	export interface EventDetailsDeleter {
+edb8fb56..4bbef081d	gra/src/game/save-presence.ts	613	1	118	0	0	118	0	dodanie	UI	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/save.ts	614	421	9	421	1	9	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	plannedMarches?: Record<string, {
+edb8fb56..4bbef081d	gra/src/game/save.ts	615	730	2	721	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	recruitFollowGeneralDefault: typeof obj2.recruitFollowGeneralDefault === 'boolean'
+edb8fb56..4bbef081d	gra/src/game/society-breakdown.ts	616	1076	33	1075	0	33	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply the owner matrix to the fully computed happiness result, then recompute Order on
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	617	70	3	70	5	3	5	zmiana	PERF	-(poza DELTA-5 s.3)	* Era multiplier used for terrain-improvement upkeep. Construction Work costs
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	618	90	10	91	0	10	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Construction Work rates: Stone 0.5×, Bronze 1×, Iron 2×, then double. */
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	619	107	1	99	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	/** Koszt postawienia ulepszenia: FALA2-scaled Stone base × construction era rate. */
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	620	114	1	106	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return stoneBase * terrainImprovementConstructionEraMultiplier(era);
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	621	204	3	195	0	3	0	dodanie	PERF	-(poza DELTA-5 s.3)	// Tartak i Kamieniolom: baza 50/ture (epoka 1), skalowana x1,5 za epoke (50/75/113).
+edb8fb56..4bbef081d	gra/src/game/terrain-improvements.ts	622	209	1	197	0	1	0	dodanie	PERF	-(poza DELTA-5 s.3)	// tartak/kamieniolom restored to 50 on 2026-10-31 (see above);
+edb8fb56..4bbef081d	gra/src/game/trade-routes.ts	623	1618	3	1618	3	3	3	zmiana	PERF	-(poza DELTA-5 s.3)	* osobno dla każdej strony. `targowiskoBonusForCity` then applies the city's
+edb8fb56..4bbef081d	gra/src/game/trade-routes.ts	624	1622	7	1622	1	7	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export interface TradeRouteIncomeByCityBreakdown {
+edb8fb56..4bbef081d	gra/src/game/trade-routes.ts	625	1632	4	1626	2	4	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	targowiskoBonusForCity: (cityId: string) => number = () => 0,
+edb8fb56..4bbef081d	gra/src/game/trade-routes.ts	626	1639	18	1631	6	18	6	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const fromWonder = wonderTradeBonusForOwner(route.ownerId, route.medium);
+edb8fb56..4bbef081d	gra/src/game/trade-routes.ts	627	1658	10	1638	1	10	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	return { totalByCity, maritimeByCity };
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	628	55	0	56	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	mnoznikHandelPieniadzForCivByDifficulty,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	629	74	2	75	1	2	1	zmiana	PERF	-(poza DELTA-5 s.3)	import { applyCivMatrixParam, civMatrixParam } from './civ-matrix';
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	630	127	2	127	2	2	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	loadSpichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	631	131	1	130	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	type SpichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	632	141	2	139	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	wealthParamsWithCapModifier,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	633	144	1	140	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	type WealthParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	634	161	1	157	5	1	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	import type { ReligionState } from './culture-religion';
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	635	176	1	176	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	export function applyOrderYieldMults(
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	636	186	16	185	0	16	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Resolve all approved owner-specific Wealth parameters through the shared owner map. */
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	637	228	4	212	42	4	42	zmiana	LOGIKA	-(poza DELTA-5 s.3)	/** Route proceeds settle separately from tax; maritime income keeps its city coefficient.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	638	250	0	273	25	0	25	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	639	310	0	358	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	640	1052	2	1099	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Owner civilization era used for era-scaled citizen food upkeep. */
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	641	1072	1	1118	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	pieniadzZPracy: number;          // deprecated compatibility field; always 0
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	642	1074	3	1120	7	3	7	zmiana	PERF	-(poza DELTA-5 s.3)	* Handel E3: route proceeds credited separately from tax, corruption, sliders,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	643	1156	1	1206	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	/** Handel E3: route cash component of `pieniadz` (breakdown UI). */
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	644	1356	1	1405	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	drainParams: SpichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	645	1358	1	1407	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun, drainParams);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	646	1367	1	1415	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	drainParams: SpichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	647	1374	3	1422	2	3	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, drainParams);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	648	1406	1	1452	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const spichlerzDrainParams = loadSpichlerzDrainParams(raw, difficulty);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	649	1547	5	1593	4	5	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, spichlerzDrainParams);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	650	1567	2	1612	1	2	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	stockAlreadyDrained: boolean,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	651	1583	1	1627	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	: simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity, drainParams);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	652	1602	1	1645	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra = 1,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	653	1610	1	1652	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	654	1644	1	1685	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	tick.ownerEra ?? 1,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	655	1708	4	1749	2	4	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	656	1797	1	1836	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDra
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	657	1864	4	1902	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	658	1978	0	2014	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const cityReligion = cityReligionByCityId.get(city.id);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	659	1986	0	2023	10	0	10	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	660	2013	2	2059	6	2	6	zmiana	PERF	-(poza DELTA-5 s.3)	// Mint multiplies tax using the fixed difficulty rate when both gates are open.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	661	2019	0	2070	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	walutaMnoznikOverride,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	662	2023	1	2074	3	1	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	additionalTax: additionalTaxByCity.get(city.id) ?? 0,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	663	2040	1	2093	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationPara
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	664	2045	2	2097	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	665	2054	1	2105	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	cityWealthParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	666	2057	1	2108	2	1	2	zmiana	PERF	-(poza DELTA-5 s.3)	// Wealth applies to tax cash only; route proceeds settle separately.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	667	2059	5	2111	2	5	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const pieniadzZTras = routeCashForCity(
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	668	2090	1	2138	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	669	2092	1	2140	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	pieniadz: pieniadzPoWealth + pieniadzZTras,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	670	2145	1	2192	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	671	2147	2	2194	4	2	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Route proceeds are added after local tax modifiers and Wealth.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	672	2287	4	2335	0	4	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	673	2477	5	2521	0	5	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	// R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źró
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	674	2495	1	2534	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	spichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	675	2499	1	2538	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	cities, builtByCity, true, spichlerzDrainParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	676	2550	0	2590	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const cityReligion = cityReligionByCityId.get(city.id);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	677	2558	0	2599	10	0	10	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	678	2585	2	2635	6	2	6	zmiana	PERF	-(poza DELTA-5 s.3)	// Mint multiplies tax using the fixed difficulty rate when both gates are open.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	679	2591	0	2646	1	0	1	usuniecie	LOGIKA	-(poza DELTA-5 s.3)	walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	680	2595	2	2650	4	2	4	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Owner-directed Work-to-tax amount for this city, distinct from route income.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	681	2613	1	2670	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationPara
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	682	2621	2	2677	0	2	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	683	2630	1	2685	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	cityWealthParams,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	684	2639	1	2694	5	1	5	zmiana	PERF	-(poza DELTA-5 s.3)	// Wealth modifies the local tax stream only; route cash is settled separately.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	685	2641	5	2700	6	5	6	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const pieniadzZTras = routeCashForCity(
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	686	2658	2	2718	5	2	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// doPuli is credited to the empire pool below. Work-to-tax conversion is a
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	687	2684	1	2746	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	688	2686	2	2748	3	2	3	zmiana	LOGIKA	-(poza DELTA-5 s.3)	// Route proceeds are added after local tax modifiers and Wealth.
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	689	2756	1	2819	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const mpMults = civManpowerMatrixMults(ownerCivKey, undefined, civManpowerMults(ownerBonus
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	690	2770	1	2833	2	1	2	zmiana	LOGIKA	-(poza DELTA-5 s.3)	incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	691	2775	1	2838	0	1	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	ownerEra,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	692	2777	1	2840	1	1	1	zmiana	LOGIKA	-(poza DELTA-5 s.3)	pieniadz:          pieniadzPoWealth + pieniadzZTras,
+edb8fb56..4bbef081d	gra/src/game/turn-economy.ts	693	2900	9	2962	0	9	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	(oid: number) => {
+edb8fb56..4bbef081d	gra/src/game/victory.ts	694	14	5	14	1	5	1	zmiana	PERF	-(poza DELTA-5 s.3)	*   3. 'przegrana' — brak miast gracza po tym, jak kiedykolwiek miał miasto.
+edb8fb56..4bbef081d	gra/src/game/victory.ts	695	95	3	90	0	3	0	dodanie	PERF	-(poza DELTA-5 s.3)	/** @deprecated Bez wpływu na przegraną (R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1):
+edb8fb56..4bbef081d	gra/src/game/victory.ts	696	102	3	94	0	3	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Wejście dla samej reguły przegranej (patrz `checkDefeat`). */
+edb8fb56..4bbef081d	gra/src/game/victory.ts	697	208	14	197	0	14	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/victory.ts	698	225	1	201	1	1	1	zmiana	PERF	-(poza DELTA-5 s.3)	*   2. Przegrana (brak miast gracza, bez względu na osadników)
+edb8fb56..4bbef081d	gra/src/game/victory.ts	699	247	2	223	5	2	5	zmiana	LOGIKA	-(poza DELTA-5 s.3)	const defeat = checkDefeat(input);
+edb8fb56..4bbef081d	gra/src/game/war-rules-multiwar.ts	700	1	393	0	0	393	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/warAllInCapital.ts	701	1	859	0	0	859	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/**
+edb8fb56..4bbef081d	gra/src/game/wealth.ts	702	58	20	57	0	20	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** Apply a civilization's approved `mul_proc` modifier to the existing Wealth cap coeffic
+edb8fb56..4bbef081d	gra/src/game/work-tax.ts	703	1	77	0	0	77	0	dodanie	LOGIKA	-(poza DELTA-5 s.3)	/** One-shot conversion of remaining empire Work into tax. No turn automation lives here.

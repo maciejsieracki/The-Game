@@ -1,0 +1,145 @@
+--- edb8fb56:gra/src/ui/saveLoadDialog.ts
++++ src-tauri/frontend-v2/src/ui/saveLoadDialog.ts
+@@ -3,18 +3,21 @@
+  * Warstwa UI: lista sejwów, nazwa zapisu, usuwanie. Logika stanu w main.ts + save.ts.
+  */
+ 
+-import {
+-  listSaves, loadFromLocal, deleteLocal,
+-  getLastPlayedSlotId,
+-  uniqueSlotIdFromLabel, slotSlugFromLabel,
+-  FSA_SLOT_PREFIX,
+-  loadSaveSlotMeta, extractSaveContextFields,
+-  isIdbAvailable,
+-  type SaveGame, type SaveSlotMeta,
+-} from '../game/save';
+-import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
++import type { SaveSlotMetaDto as SaveSlotMeta } from '../viewmodel/types';
++import { saveSlotsService } from '../controller/saveSlots';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 
++// P5.2: odczyt/usuwanie zapisów i nadawanie identyfikatorów slotów wykonuje powłoka (Rust/Tauri,
++// P5-0 §6.15 + §7, komendy P2-5 §2.10) przez `SaveSlotsService` — zamiast `game/save.ts`
++// i `game/fsa-autosave.ts`. Adaptery zachowują nazwy wywołań web w ciele modułu.
++const saves = () => saveSlotsService();
++async function getLastPlayedSlotId(): Promise<string | null> {
++  return (await saves().list()).lastPlayed;
++}
++async function deleteLocal(slotId: string): Promise<void> {
++  await saves().delete(slotId);
++}
++
+ export interface SaveSlotSummary {
+   slotId: string;
+   label: string;
+@@ -48,9 +51,10 @@
+   return `${f.mapSize} · ${world} · ${f.civId} · ${f.unitsCount} j. / ${f.citiesCount} miast${seedPart}${origin}`;
+ }
+ 
+-/** Jedna linia kontekstu: rozmiar · typ · cywilizacja · jednostki/miasta · seed. */
+-export function saveContextLine(g: SaveGame): string {
+-  return formatSaveContext(extractSaveContextFields(g));
++/** Jedna linia kontekstu: rozmiar · typ · cywilizacja · jednostki/miasta · seed.
++ * P5.2: argument = pola kontekstu z `SaveSlotMetaDto` (web: pełny `SaveGame` + `extractSaveContextFields`). */
++export function saveContextLine(g: Omit<SaveSlotMeta, 'slotId' | 'label' | 'tura' | 'savedAt'>): string {
++  return formatSaveContext(g);
+ }
+ 
+ const STYLE_ID = 'civ-save-load-css';
+@@ -123,11 +127,6 @@
+   closeDialog();
+ }
+ 
+-/** @deprecated użyj slotSlugFromLabel / uniqueSlotIdFromLabel z save.ts */
+-export function slotIdFromLabel(label: string): string {
+-  return slotSlugFromLabel(label);
+-}
+-
+ function formatSavedAt(iso: string): string {
+   if (!iso) return '—';
+   try {
+@@ -194,27 +193,14 @@
+  * getLastPlayedSlotId są teraz Promise-based (IndexedDB).
+  */
+ export async function summarizeSaveSlots(): Promise<SaveSlotSummary[]> {
+-  const lastPlayed = await getLastPlayedSlotId();
++  // P5.2: metadane wszystkich slotów (także starych zapisów bez klucza meta) z jednego `list()`.
++  const dto = await saves().list();
++  const lastPlayed = dto.lastPlayed;
+   const out: SaveSlotSummary[] = [];
+-  for (const slotId of await listSaves()) {
++  for (const meta of dto.slots) {
++    const slotId = meta.slotId;
+     if (slotId.startsWith('_')) continue;
+-    const meta = await loadSaveSlotMeta(slotId);
+-    if (meta) {
+-      out.push(summaryFromMeta(slotId, meta, lastPlayed));
+-      continue;
+-    }
+-    // Fallback: stary zapis bez osobnego klucza meta -- pełne parsowanie (wolniejsze, ale kompatybilne wstecz).
+-    const g = await loadFromLocal(slotId);
+-    if (!g) continue;
+-    const gmeta = g.meta as Record<string, unknown> | undefined;
+-    out.push({
+-      slotId,
+-      label: typeof gmeta?.label === 'string' && gmeta.label.trim() ? gmeta.label.trim() : slotId,
+-      tura: g.tura,
+-      savedAt: typeof gmeta?.savedAt === 'string' ? gmeta.savedAt : '',
+-      context: saveContextLine(g),
+-      isLastPlayed: slotId === lastPlayed,
+-    });
++    out.push(summaryFromMeta(slotId, meta, lastPlayed));
+   }
+   out.sort(compareSaveSlotsDesc);
+   return out;
+@@ -233,21 +219,19 @@
+  * jak przed tą zmianą.
+  */
+ export async function summarizeFsaSaveSlots(): Promise<SaveSlotSummary[]> {
+-  const lastPlayed = await getLastPlayedSlotId();
+-  const files = await listFsaAutosaveFiles();
++  // P5.2: zapisy z dysku = `SaveSlotsDto.autosaves` (slotId z prefiksem i etykieta bazowa nadane przez powłokę).
++  const dto = await saves().list();
++  const lastPlayed = dto.lastPlayed;
+   const out: SaveSlotSummary[] = [];
+-  for (const { fileName } of files) {
+-    const g = await loadFsaAutosaveFile(fileName);
+-    if (!g) continue;
+-    const meta = g.meta as Record<string, unknown> | undefined;
+-    const slotId = FSA_SLOT_PREFIX + fileName;
+-    const baseLabel = typeof meta?.label === 'string' && meta.label.trim() ? meta.label.trim() : fileName;
++  for (const meta of dto.autosaves) {
++    const slotId = meta.slotId;
++    const baseLabel = meta.label;
+     out.push({
+       slotId,
+       label: `${baseLabel} (dysk)`,
+-      tura: g.tura,
+-      savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
+-      context: saveContextLine(g),
++      tura: meta.tura,
++      savedAt: meta.savedAt,
++      context: saveContextLine(meta),
+       isLastPlayed: slotId === lastPlayed,
+     });
+   }
+@@ -347,7 +331,7 @@
+       if (!ok) return;
+       slotId = existing.slotId;
+     } else {
+-      slotId = uniqueSlotIdFromLabel(label);
++      slotId = await saves().allocateSlotId(label);
+     }
+     // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT + MIGRACJA IDB: onSave()
+     // zapisuje teraz do IndexedDB (persistSaveToSlot -> saveToLocal ->
+@@ -465,7 +449,9 @@
+    */
+   const renderListOnce = async (): Promise<void> => {
+     list.innerHTML = '';
+-    const [idbOk, freshLocal] = await Promise.all([isIdbAvailable(), summarizeSaveSlots()]);
++    const [dto, freshLocal] = await Promise.all([saves().list(), summarizeSaveSlots()]);
++    const idbOk = dto.storageAvailable;
++    const FSA_SLOT_PREFIX = dto.diskSlotPrefix;
+     idbWarn.style.display = idbOk ? 'none' : 'block';
+     slots = mergeSaveSlotLists(freshLocal, fsaSlotsCache);
+     if (slots.length === 0) {

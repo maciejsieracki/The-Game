@@ -1,0 +1,15 @@
+MUTANT S-M09-load-none-zero file=src/domain/building_costs.rs
+OLD:
+            let Some(raw) = raw else {
+                return SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+            };
+NEW:
+            let Some(raw) = raw else {
+                return 0.0;
+            };
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+VERDICT=KILLED
+EXIT=101

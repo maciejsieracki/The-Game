@@ -1,0 +1,12 @@
+$ diff -u <pin>/gra/src/ui/<m> src/ui/<m>   (+/- = linie dodane/usunięte bez nagłówków; LOC = liczba linii)
+entityCards/registry.ts            LOC 194 -> 192  +9/-11
+techDiscoveryNotice.ts             LOC 946 -> 945  +9/-10
+entityCards/unitAdapter.ts         LOC 291 -> 290  +9/-10
+sciencePicker.ts                   LOC 1666 -> 1648  +24/-42
+entityCards/buildingAdapter.ts     LOC 340 -> 352  +45/-33
+scienceHubHud.ts                   LOC 792 -> 794  +6/-4
+entityCards/improvementAdapter.ts  LOC 249 -> 250  +3/-2
+entityCards/technologyAdapter.ts   LOC 386 -> 384  +6/-8
+entityCards/renderer.ts            LOC 1212 -> 1212  +0/-0
+entityCards/wonderAdapter.ts       LOC 156 -> 156  +0/-0
+EXIT=0

@@ -1,0 +1,40 @@
+WYKRYTY   : pct: adjust - cap Nauki k0 -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - cap Nauki k1 -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: priorytety - sanitize bez filtra -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: priorytety - pusta lista -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: isAuto - lista -> 1 testow czerwonych: budowa_priority_helpers_match_web
+WYKRYTY   : pct: isAuto - domyslny tryb -> 1 testow czerwonych: budowa_priority_helpers_match_web
+WYKRYTY   : pct: isTyp - zrownowazone -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: procent rozwoj - bez zaokraglenia -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : pct: max pula -> 2 testow czerwonych: constants_match_running_web, podzial_pracy_z_procentu_puli_matches_web
+WYKRYTY   : tab: domyslny podzial pracy 70 -> 60 -> 10 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, found_city_at_matches_web
+WYKRYTY   : tab: min budynki 50 -> 40 -> 7 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, podzial_pracy_functions_match_web
+WYKRYTY   : tab: cap Nauki 60 -> 50 -> 6 testow czerwonych: ensure_city_save_defaults_is_idempotent_on_web_outputs, ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web
+WYKRYTY   : tab: krok handlu 10 -> 5 -> 6 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, adjust_handel_split_matches_web
+WYKRYTY   : tab: domyslny handel 20/60/20 -> 30/50/20 -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, constants_match_running_web
+WYKRYTY   : tab: procent AI 100 -> 90 -> 2 testow czerwonych: constants_match_running_web, ulepszenia_policy_and_caps_match_web
+WYKRYTY   : tab: migracja 2 -> 50 -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, snap_and_migrate_match_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : tab: focus okolicy -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, okolica_focus_functions_match_web, constants_match_running_web
+WYKRYTY   : tab: poziom racji 4 -> 3 -> 5 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : tab: wealth pula -> 5 testow czerwonych: ensure_city_save_defaults_matches_web, found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: dystans MP 3 -> 4 -> 5 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, can_found_city_matches_web
+KOMPILACJA: tab: limit miast 10 -> 12 (mutant nie kompiluje sie)
+PRZEZYL   : tab: krok epoki 5 -> 4
+WYKRYTY   : tab: immunitet wealth 5 -> 4 -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : tab: nazwa miasta Ur -> 2 testow czerwonych: found_city_from_village_matches_web, city_name_and_predicates_match_web
+WYKRYTY   : tab: prefiks generyczny -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : tab: powod morze -> 2 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: priorytet typow -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, constants_match_running_web, budowa_priority_helpers_match_web
+WYKRYTY   : tab: tryb nowego miasta -> 2 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: tryb AI -> 2 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web, budowa_profil_functions_match_web
+WYKRYTY   : tab: etykieta puli -> 1 testow czerwonych: constants_match_running_web
+KOMPILACJA: tab: id prefiks (mutant nie kompiluje sie)
+WYKRYTY   : tab: prefiks listy -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: id - licznik od 0 -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: nazwa - uwzglednia wielkosc liter -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: nazwa - bez trim -> 1 testow czerwonych: default_nazwa_matches_web
+mutantow=35 przezylo/niekompilujace=3
+   tab: limit miast 10 -> 12 [nie kompiluje]
+   tab: krok epoki 5 -> 4
+   tab: id prefiks [nie kompiluje]
+EXIT=1

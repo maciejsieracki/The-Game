@@ -1,0 +1,7 @@
+$ (cwd=src-tauri/frontend-v2) node -v; npm -v
+v22.22.0
+10.9.4
+$ npm ci --no-audit --no-fund
+
+added 13 packages in 751ms
+EXIT=0

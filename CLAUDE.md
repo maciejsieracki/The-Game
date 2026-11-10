@@ -61,6 +61,11 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
 4. **Deploy wyłącznie na ROBOCZĄ** (nigdy KANON/FINALNA), po Final Control: merge FC do main, build poza repo,
    `finalize.sh`, push, odczyt GitHub Raw + MD5, wpis w `dyspozycje/REJESTR-PROSB-I-ZADAN.md` i `WERSJE.md`.
    Log buildu `/tmp/vbuild.log` sprawdzaj pod kątem BIEŻĄCEGO merge'a (stary log daje fałszywe BUILD_DONE).
+5a. **Po KAŻDYM wykonanym kroku: `git push` i sprzątanie** (właściciel, 2026-11-08, wiążące): po zakończeniu tematu/integracji/deployu
+   najpierw `refs/keep/<ID>-fc` + gałąź `*-wip/*`, `git push` dokumentacji, usunięcie worktree (`git worktree remove --force`),
+   `node_modules`/`target`/`/tmp` tematu, sprawdzenie `df -h /` — DOPIERO POTEM start kolejnego tematu. Do 4 tematów naraz.
+   Dla web wolne ≥ 4 GB przed startem (FC/Evaluator tworzą świeże worktree ~0,6–1 GB; przy 0 GB workflow pada).
+   Integrując kod: sprawdź `git merge-base --is-ancestor <kod operatora> <SHA do integracji>` i `git diff --stat` (incydent 2026-11-08: merge FC z rodzicem `main` zamiast kodu operatora).
 5. **Dysk jest wąskim gardłem**: sprzątaj worktree zakończonych tematów (po zapisaniu `refs/keep/<ID>-fc` i
    push gałęzi `*-wip/*`), nie startuj nowego tematu z kodem Rust przy < 8 GB wolnego, web przy < 4 GB.
 6. **Dispatch zapisany i wypchnięty PRZED uruchomieniem Workflow**; kolejne rundy jako dopisek w

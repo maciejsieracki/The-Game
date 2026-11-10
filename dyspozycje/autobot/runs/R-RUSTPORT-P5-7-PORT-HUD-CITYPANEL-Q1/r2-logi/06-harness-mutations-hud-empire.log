@@ -1,0 +1,35 @@
+E1 imperium: baza dochodu szlaków z DTO → suma z premią: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E2 imperium: suma zużycia z DTO bez obywateli: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E3 imperium: zużycie obywateli imperium z DTO +1: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-obywatele:open
+E4 imperium: zużycie obywateli miasta = liczba obywateli: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-obywatele:open
+E5 imperium: wzrost efektywny z DTO → nominalny: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/spichlerz:open
+E6 imperium: wiersz SUMA tabeli Miasta zniekształcony: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E7 imperium: nazwy surowców magazynu bez katalogu: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E8 imperium: dopełniacz daniny bez katalogu: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E9 imperium: redystrybucja suwaka handlu bez zapytania: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:pole#0=null
+E10 imperium: normalizacja podziału handlu bez zapytania: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/fotel2/all:open
+E11 imperium: % puli Pracy bez zapytania: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-praca:open
+E12 imperium: podział Pracy z % puli bez zapytania: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-praca:klik#4
+E13 imperium: krok suwaka handlu z katalogu ignorowany: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E14 imperium: limit Nauki z katalogu ignorowany: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E15 imperium: maks. % puli imperium z katalogu ignorowany: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-praca:open
+E16 imperium: krok Wyżywienia z katalogu ignorowany: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/spichlerz:open
+E17 imperium: stawka utrzymania obywatela (stopka) z katalogu ignorowana: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-obywatele:open
+E18 imperium: etykieta puli Pracy z katalogu ignorowana: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-praca:open
+E19 kopia F: formatManpower — sufiks tysięcy: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E20 kopia F: formatObywateleLabel — forma mnoga: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E21 kopia F: formatWyzwienieLabel — przecinek dziesiętny: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/spichlerz:open
+E22 imperium GRANICZNY: koszty skarbca bez wojska: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-skarbiec:open
+E24 imperium: liczba Magazynów z DTO +1: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/all:open
+E25 imperium: liczba Magazynów stała (ignoruje DTO): EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: glod/pelny/all:open
+E23 kopia: imperium — nagłówek tabeli wpływów: EXIT=1 WYKRYTA [empireDetailPanel.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailPanel.ts: pelny/pelny/econ-miasto:open
+T1 kopia: uchwała Solanka — nazwa: EXIT=1 WYKRYTA [empireDetailTypes.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: empireDetailTypes.ts: buildUchwalaSolSpichlerzII(true,undefined)
+H1 hud: most ukrycia rosteru niezarejestrowany: EXIT=1 WYKRYTA [hud.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: hud.ts: armyStackSuppressed(ukryj,most)
+H2 kopia: hud — etykieta tury: EXIT=1 WYKRYTA [hud.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: hud.ts: hud#4(pelny):open
+S1 raport: etykiety faz z katalogu — zły klucz: EXIT=1 WYKRYTA [sceneTimingReport.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: sceneTimingReport.ts: show#3(rzeki=true):open
+S4 raport: brak klucza fazy → wartość zastępcza „X”: EXIT=1 WYKRYTA [sceneTimingReport.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: sceneTimingReport.ts: katalog-niepełny(relief):open
+S5 raport: brak klucza fazy → pusty napis: EXIT=1 WYKRYTA [sceneTimingReport.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: sceneTimingReport.ts: katalog-niepełny(relief):open
+S2 raport: przełącznik rzek z powłoki ignorowany: EXIT=1 WYKRYTA [sceneTimingReport.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: sceneTimingReport.ts: show#3(rzeki=false):open
+S3 kopia: raport — nagłówek: EXIT=1 WYKRYTA [sceneTimingReport.ts] dom-harness-hud-empire: STOP_ON_DIFF pierwsza różnica: sceneTimingReport.ts: show#3(rzeki=true):open
+mutate-hud-empire: mutacji=33 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

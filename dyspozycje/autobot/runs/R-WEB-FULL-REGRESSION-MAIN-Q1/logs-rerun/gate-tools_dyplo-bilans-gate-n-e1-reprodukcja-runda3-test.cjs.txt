@@ -1,0 +1,52 @@
+PASS: (0a) mutacja R2 faktycznie przywróciła formułę rundy 2 (bezwarunkowe wywołanie z relTotal wojennie ograniczonym dla obu ról) ORAZ blokadę accepted:false sprzed rundy 4 (gap>0 w gałęzi proposerIsPlayer) — kontrola nietautologiczna aktywna (2 podmiany: formuła + blok blokady)
+PASS: (0a2) mutacja R2 faktycznie przywróciła (w diplomacyAcceptanceBalance.ts) generyczną blokadę pwBalance<0 -> blockReason sprzed rundy 4 (bez wyjątku dla uiActionId '10') — kontrola nietautologiczna aktywna
+PASS: (0b) mutacja SWAP faktycznie zamieniła (givePn,receivePn) w gałęzi AI-proponenta na (receivePn,givePn), relTotal bez zmian — kontrola nietautologiczna dla TESTU 4 (PROOF) aktywna
+
+--- TEST 1 (pusty koszyk, AI proponuje pokój, zła/neutralna/bardzo dobra relacja w wojnie) ---
+  [zla] PRZED (runda 2): pwBalance=-450 canAccept=false  |  PO (runda 3): pwBalance=-450 canAccept=true
+PASS: (1-PRZED-zla) DOWÓD REGRESJI: kod rundy 2 blokuje pusty-koszyk pokój od AI przy relacji zla (pwBalance<0, canAccept=false) — zawsze, niezależnie od jakości relacji
+  [neutralna] PRZED (runda 2): pwBalance=-355 canAccept=false  |  PO (runda 3): pwBalance=0 canAccept=true
+PASS: (1-PRZED-neutralna) DOWÓD REGRESJI: kod rundy 2 blokuje pusty-koszyk pokój od AI przy relacji neutralna (pwBalance<0, canAccept=false) — zawsze, niezależnie od jakości relacji
+  [bardzoDobra] PRZED (runda 2): pwBalance=-355 canAccept=false  |  PO (runda 3): pwBalance=450 canAccept=true
+PASS: (1-PRZED-bardzoDobra) DOWÓD REGRESJI: kod rundy 2 blokuje pusty-koszyk pokój od AI przy relacji bardzoDobra (pwBalance<0, canAccept=false) — zawsze, niezależnie od jakości relacji
+PASS: (1-PO-zla) RUNDA 4: pwBalance NIETKNIĘTY, nadal ujemny (-450, bit-identyczna liczba z rundą 3 — clamp wojenny <=29 nie miał wpływu na relTotal=10 już poniżej sufitu), ale canAccept=TRUE — decyzja właściciela rundy 4 usuwa blokadę PW dla 'pokoj' nawet przy złej relacji (rundy 2/3 tu jeszcze blokowały, patrz (1-PRZED-zla) wyżej — to jest kryterium końca #4 dispatchu rundy 4, celowo ODWRÓCONE względem rundy 3)
+PASS: (1-PO-neutralna) neutralna relacja podczas wojny -> pwBalance>=0 (0), canAccept=true (nie tylko przy nieosiągalnym relTotal=150 — kryterium końca #2 rundy 3; od rundy 4 canAccept=true tu i tak, niezależnie od znaku pwBalance — patrz (1-PO-zla))
+PASS: (1-PO-bardzoDobra) bardzo dobra relacja podczas wojny -> pwBalance>=0 (450, wyraźnie dodatni), canAccept=true (od rundy 4 canAccept=true tu i tak, niezależnie od znaku pwBalance — patrz (1-PO-zla))
+
+--- TEST 2 (AI daje 300 PW za darmo podczas wojny) ---
+  [zla] PRZED (runda 2): pwBalance=-150 canAccept=false  |  PO (runda 3): pwBalance=-150 canAccept=true
+  [neutralna] PRZED (runda 2): pwBalance=-55 canAccept=false  |  PO (runda 3): pwBalance=300 canAccept=true
+  [bardzoDobra] PRZED (runda 2): pwBalance=-55 canAccept=false  |  PO (runda 3): pwBalance=750 canAccept=true
+PASS: (2-PRZED-zla) DOWÓD REGRESJI: kod rundy 2 — dar 300 PW przy złej relacji nadal ujemny bilans (-150, dokładnie dowód Evaluatora)
+PASS: (2-PRZED-neutralna) DOWÓD REGRESJI: kod rundy 2 — dar 300 PW przy neutralnej relacji nadal ujemny bilans (-55, dokładnie dowód Evaluatora)
+PASS: (2-PO-zla) RUNDA 4: dar 300 PW przy złej relacji -> pwBalance NIETKNIĘTY, nadal ujemny (-150, bit-identyczny z (2-PRZED-zla)), ale canAccept=TRUE — kryterium końca #4 dispatchu rundy 4 zastosowane również gdy koszyk zawiera realny dar, nie tylko przy pustym koszyku
+PASS: (2-PO-neutralna) dar 300 PW przy neutralnej relacji -> pwBalance dodatni (300), canAccept=true
+PASS: (2-PO-bardzoDobra) NAPRAWIONE: dar 300 PW przy bardzo dobrej relacji -> pwBalance dodatni (750), canAccept=true
+
+--- TEST 3 (gałąź gracz-proponent: pwBalance nietknięty, canAccept nigdy nie blokuje od rundy 4) ---
+  [pusty koszyk, zła relacja] PRZED (sprzed rundy 4): accepted=false pwBalance=-450  |  PO (runda 4): accepted=false pwBalance=-450
+PASS: (3a-pusty koszyk, zła relacja) pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła gałęzi proposerIsPlayer nie zmieniła się)
+FAIL: (3b-pusty koszyk, zła relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI) — {"accepted":false,"pwBalance":-450,"reason":"Brakuje 450 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+  [pusty koszyk, neutralna relacja] PRZED (sprzed rundy 4): accepted=false pwBalance=-355  |  PO (runda 4): accepted=false pwBalance=-355
+PASS: (3a-pusty koszyk, neutralna relacja) pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła gałęzi proposerIsPlayer nie zmieniła się)
+FAIL: (3b-pusty koszyk, neutralna relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI) — {"accepted":false,"pwBalance":-355,"reason":"Brakuje 355 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+  [pusty koszyk, bardzo dobra relacja] PRZED (sprzed rundy 4): accepted=false pwBalance=-355  |  PO (runda 4): accepted=false pwBalance=-355
+PASS: (3a-pusty koszyk, bardzo dobra relacja) pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła gałęzi proposerIsPlayer nie zmieniła się)
+FAIL: (3b-pusty koszyk, bardzo dobra relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI) — {"accepted":false,"pwBalance":-355,"reason":"Brakuje 355 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+  [koszyk 400 PW (goldOnce), zła relacja] PRZED (sprzed rundy 4): accepted=false pwBalance=-50  |  PO (runda 4): accepted=false pwBalance=-50
+PASS: (3a-koszyk 400 PW (goldOnce), zła relacja) pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła gałęzi proposerIsPlayer nie zmieniła się)
+FAIL: (3b-koszyk 400 PW (goldOnce), zła relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI) — {"accepted":false,"pwBalance":-50,"reason":"Brakuje 50 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+  [koszyk 400 PW (goldOnce), bardzo dobra relacja] PRZED (sprzed rundy 4): accepted=true pwBalance=45  |  PO (runda 4): accepted=true pwBalance=45
+PASS: (3a-koszyk 400 PW (goldOnce), bardzo dobra relacja) pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła gałęzi proposerIsPlayer nie zmieniła się)
+PASS: (3b-koszyk 400 PW (goldOnce), bardzo dobra relacja) RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI)
+FAIL: (3c) kontrola nietautologiczna: przynajmniej jeden z powyższych scenariuszy NAPRAWDĘ miał accepted:false PRZED rundą 4 (mutR2 z przywróconą blokadą) — dowodzi, że (3b) testuje realną zmianę zachowania, nie przechodzi niezależnie od kodu — {"anyAcceptedDiffered":false}
+
+--- TEST 4 (PROOF: sama zamiana argumentów NIE wystarcza) ---
+PASS: (4a) PROOF pusty koszyk: sama zamiana argumentów (bez zmiany relTotal) daje pwBalance BIT-IDENTYCZNY z rundą 2 dla neutralnej relacji (-355, nadal ujemny, canAccept nadal false) — zamiana SAMA W SOBIE nie naprawia kryterium końca #2
+  dar 300 PW, neutralna: runda2=-55 swap-doslowny=-655
+PASS: (4b) PROOF dar 300 PW: sama zamiana argumentów pogarsza wynik względem rundy 2 (-655 < -55) zamiast go naprawiać — dar od AI trafia do argumentu odejmowanego zamiast dodawanego, odwrócona polaryzacja — POTWIERDZA, że dosłowna zamiana z dispatchu jest niewystarczająca/błędna, uzasadniając odejście od niej w naprawie tej rundy
+
+=== PODSUMOWANIE: 22 PASS / 5 FAIL ===
+
+EXIT=1
+TIME=0.9

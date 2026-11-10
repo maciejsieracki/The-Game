@@ -1,0 +1,24 @@
+[defeat-last-city-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-defeat-last-city-live-22661
+
+-- S1: jedno miasto + osadnik, barbarzyńcy zdobywają miasto --
+  OK  S1 gracz ma dokładnie 1 miasto na starcie
+  OK  S1 osadnik gracza dodany
+  OK  S1 gracz ma osadnika przed utratą miasta
+  OK  S1 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S1 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":true,"gameOver":true}
+  OK  S1 ekran przegranej po realnym endTurn
+  OK  S1 gameOver=true
+  OK  S1 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S2: jedno miasto, bez osadnika, barbarzyńcy zdobywają miasto --
+  OK  S2 gracz ma dokładnie 1 miasto na starcie
+  OK  S2 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S2 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":true,"gameOver":true}
+  OK  S2 ekran przegranej po realnym endTurn
+  OK  S2 gameOver=true
+  OK  S2 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S4: realna bitwa barbarzyńców (Auto) na jedynym mieście, bez endTurn --
+
+EXIT=124
+TIME=360.1

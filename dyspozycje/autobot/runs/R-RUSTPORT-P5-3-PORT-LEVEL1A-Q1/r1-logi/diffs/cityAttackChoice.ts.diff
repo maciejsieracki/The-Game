@@ -1,0 +1,11 @@
+--- pin:gra/src/ui/cityAttackChoice.ts
++++ v2:src-tauri/frontend-v2/src/ui/cityAttackChoice.ts
+@@ -12,7 +12,7 @@
+  * MapSiegeContext nie niesie tych pol (nie wymyslamy nowych mechanik silnika).
+  */
+ 
+-import type { MapSiegeContext } from '../game/mapSiegeDetect';
++import type { MapSiegeContextDto as MapSiegeContext } from '../viewmodel/types';
+ import { brandIconSvg } from './icons/brandAssets';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 

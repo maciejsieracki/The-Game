@@ -1,0 +1,60 @@
+--- pin/gra/src/ui/buildModeHud.ts
++++ v2/src/ui/buildModeHud.ts
+@@ -4,7 +4,8 @@
+  * LANE: src/ui/* — bez main.ts.
+  */
+ 
+-import type { ImprovementKey } from '../render/improvements';
++// P5.5: typ `ImprovementKey` (`render/improvements`, pin `:7`) → lokalny alias `string` (klucz `terrain-improvements.json`, jak P5.4 `techDiscoveryNotice.ts`).
++type ImprovementKey = string;
+ import {
+   EVENTS_PANEL_ABOVE_TURN_GAP_PX,
+   HUD_EDGE_PX,
+@@ -14,15 +15,21 @@
+ import { improvementIconSvg } from './icons/brandAssets';
+ import { techIconSvg } from './techIcons';
+ import { openEntityCard } from './entityCards/renderer';
+-import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
++// P5.5: typy polityki ulepszeń (`game/cities`, pin `:17`) → DTO (`EmpireDetailDto.improvementPolicy`, P5-0 §6.5).
++import type {
++  UlepszeniaFocusDto as UlepszeniaFocus,
++  UlepszeniaTrybDto as UlepszeniaTryb,
++  UlepszeniaPracaPercentDto as UlepszeniaPracaPercent,
++  UlepszeniaEmpirePolicyDto as UlepszeniaEmpirePolicy,
++} from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
+ // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
+ // (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
+ // nie renderuje warstwy (a). `MAX_PROCENT_PULI_IMPERIUM` zostaje wylacznie jako liczba w tooltipie
+ // warstwy (c), zeby jawnie powiedziec, ze warstwa (c) tego capu NIE dziedziczy.
+-import {
+-  MAX_PROCENT_PULI_IMPERIUM,
+-  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+-} from '../game/cities';
++// P5.5: stałe zakresu (`game/cities`, pin `:22-25`) → `StaticCatalogDto.constants` (P5-0 §6.1).
++const MAX_PROCENT_PULI_IMPERIUM = staticCatalog().constants.maxProcentPuliImperium;
++const MAX_ULEPSZENIA_PRACA_AUTO_PERCENT = staticCatalog().constants.maxUlepszeniaPracaAutoPercent;
+ 
+ export interface BuildTypeInfo {
+   key: ImprovementKey;
+@@ -35,6 +42,11 @@
+   techLabel?: string | null;
+   /** Pełny tekst wymagań gdy zablokowane (hover). */
+   lockHint?: string | null;
++  /**
++   * P5.5 (reguła wpisana bez importu, pin `:689` `t.kosztPraca > pracaPool`): czy pula Pracy imperium
++   * pokrywa koszt ulepszenia — liczy Rust (jak `affordable` w `unitRecruitCard.ts`, P5.3).
++   */
++  affordable: boolean;
+ }
+ 
+ /** Cud świata — wybór z panelu budowy, placement na heksie mapy. */
+@@ -686,7 +698,7 @@
+       // klik blokowany), żeby gracz widział brak dostępności PRZED klikiem w hex, nie po nim.
+       // / EN: not enough Work: same visual pattern as tech-lock (grayed out + hover tooltip +
+       // blocked click), so the player sees unavailability BEFORE clicking a hex, not after.
+-      const insufficientPraca = !techLocked && t.kosztPraca > pracaPool;
++      const insufficientPraca = !techLocked && !t.affordable;
+       const locked = techLocked || insufficientPraca;
+       return { t, techLocked, insufficientPraca, locked };
+     }).sort((x, y) => Number(x.locked) - Number(y.locked));

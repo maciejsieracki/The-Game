@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const base = '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad';
+const p = base + '/web-src/gra/src/game/war-rules-multiwar.ts';
+const dataPath = base + '/web-src/gra/data/war-rules-params.json';
+let s = fs.readFileSync(p, 'utf8');
+const from = "import warRulesParamsRaw from '../../data/war-rules-params.json';";
+if (!s.includes(from)) throw new Error('import line not found');
+s = s.replace(from, "const warRulesParamsRaw = JSON.parse(fs.readFileSync('" + dataPath + "', 'utf8'));");
+s = "import fs from 'node:fs';\n" + s;
+fs.writeFileSync(p, s);
+console.log('patched');

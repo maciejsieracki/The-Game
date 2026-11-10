@@ -1,0 +1,3 @@
+(node:21650) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ZAPISANO ./dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/dowody/diplomacy-web-values.json: basket_side=12, treaty=36

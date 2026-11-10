@@ -1,0 +1,11 @@
+--- matrix shape and complete 93-column snapshots ---
+--- difficulty policy ---
+--- AI adapter uses matrix values and all eight fields ---
+FAIL: Roman gameplay aggression resolver uses ai_agresywnosc, not dip_agresja_archetyp (got 0.75, want 0.8)
+FAIL: duplicate Roman aggression fields are distinguishable (0.75 vs 0.8)
+--- production-priority decision consumes military/economy fields ---
+--- diplomacy stance receives matrix difficulty ---
+PASS 327; FAIL 2
+
+EXIT=1
+TIME=2.3

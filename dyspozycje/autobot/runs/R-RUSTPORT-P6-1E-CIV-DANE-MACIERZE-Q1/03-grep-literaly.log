@@ -1,0 +1,52 @@
+civ_matrix.rs:60:        if !x.is_finite() || x == 0.0 {
+civ_matrix.rs:64:        let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+civ_matrix.rs:66:        if rounded == 0.0 && x < 0.0 {
+civ_matrix.rs:67:            -0.0
+civ_matrix.rs:78:        if x == 0.0 {
+civ_matrix.rs:82:            return if x < 0.0 { "-Infinity" } else { "Infinity" }.to_owned();
+civ_matrix.rs:84:        let sign = if x < 0.0 { "-" } else { "" };
+civ_matrix.rs:92:        let body = if (k..=21).contains(&n) {
+civ_matrix.rs:94:        } else if (1..=21).contains(&n) {
+civ_matrix.rs:119:            fraction_digits <= 40,
+civ_matrix.rs:120:            "js_to_fixed: rozwiniecie ma 60 cyfr, liczba cyfr ulamkowych musi byc <= 40"
+civ_matrix.rs:122:        let negative = x < 0.0;
+civ_matrix.rs:125:        let exact = format!("{:.60}", x.abs());
+civ_matrix.rs:169:            '\u{0009}'
+civ_matrix.rs:170:                | '\u{000A}'
+civ_matrix.rs:171:                | '\u{000B}'
+civ_matrix.rs:172:                | '\u{000C}'
+civ_matrix.rs:173:                | '\u{000D}'
+civ_matrix.rs:174:                | '\u{0020}'
+civ_matrix.rs:175:                | '\u{00A0}'
+civ_matrix.rs:176:                | '\u{1680}'
+civ_matrix.rs:177:                | '\u{2000}'
+civ_matrix.rs:178:                ..='\u{200A}'
+civ_matrix.rs:179:                    | '\u{2028}'
+civ_matrix.rs:180:                    | '\u{2029}'
+civ_matrix.rs:181:                    | '\u{202F}'
+civ_matrix.rs:182:                    | '\u{205F}'
+civ_matrix.rs:183:                    | '\u{3000}'
+civ_matrix.rs:326:        None => default.unwrap_or(0.0),
+civ_matrix.rs:332:            .unwrap_or(0.0),
+civ_matrix.rs:401:        Some(CivMatrixFormula::MulProc) | None => base * (1.0 + value),
+civ_matrix.rs:407:    let mut sum = 0.0;
+civ_matrix.rs:421:    base * (1.0 + civ_matrix_proc_sum(matrix, civ_key, param_ids))
+civ_matrix.rs:797:            None => 0.0,
+civ_matrix.rs:1152:            (sorted[middle - 1] + sorted[middle]) / 2.0
+civ_matrix.rs:1160:        if rounded == 0.0 {
+civ_matrix.rs:1161:            0.0
+civ_matrix.rs:1262:                signed_intensity: 0.0,
+civ_matrix.rs:1263:                corrected_delta: Some(0.0),
+civ_matrix.rs:1264:                max_distance: Some(0.0),
+civ_matrix.rs:1277:                signed_intensity: 1.0,
+civ_matrix.rs:1282:        if max_distance == 0.0 {
+civ_matrix.rs:1283:            let positive = corrected_delta >= 0.0;
+civ_matrix.rs:1290:                signed_intensity: if positive { 1.0 } else { -1.0 },
+civ_matrix.rs:1301:            label: if normalized >= 0.0 {
+civ_matrix.rs:1349:                signed_intensity: 0.0,
+civ_matrix.rs:1576:            return if value == 1.0 {
+civ_matrix.rs:1600:        if intensity == 0.0 {
+civ_matrix.rs:1602:        } else if intensity > 0.0 {
+civ_names.rs:325:        seed.rem_euclid(1_i64 << 32) as u32
+civ_names.rs:368:            let j = (rng.next_f64() * (i as f64 + 1.0)).floor() as usize;
+EXIT=0

@@ -1,0 +1,7 @@
+FAIL [baza]: newGameFlow.ts: slot player_epoch_war zastąpiony udziałem lądu w głównej siatce
+FAIL [mutacja nieaplikowana]: udział lądu w głównej siatce usunięty
+FAIL [mutacja nieaplikowana]: slot lądu ponownie zajęty przez przełącznik wojny epoki
+war-epoch-player-first-main-guard-test: 31 pass / 3 fail
+
+EXIT=1
+TIME=0.1

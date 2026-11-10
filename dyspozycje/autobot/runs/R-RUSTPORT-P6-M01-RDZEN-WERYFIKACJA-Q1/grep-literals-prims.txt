@@ -1,0 +1,140 @@
+src/domain/mapgen/prims.rs:3://! `gen-helpers.ts`:33-232 i :237-251, `earth-land-mask.ts` (funkcje z zakresu M01 oraz
+src/domain/mapgen/prims.rs:11://! Pomocnicze funkcje maski Ziemi, ktore plan P6-25 przypisuje tez do M03 (`earthPlayableInner*`,
+src/domain/mapgen/prims.rs:22:/// Web: dlugosc tablicy permutacji (`Uint8Array(256)`); maska indeksu to `& 255`.
+src/domain/mapgen/prims.rs:23:pub const PERM_TABLE_LEN: usize = 256;
+src/domain/mapgen/prims.rs:24:const PERM_MASK: i32 = 255;
+src/domain/mapgen/prims.rs:25:/// Dzielnik zakresu `[0, 2^32)` w `mulberry32`.
+src/domain/mapgen/prims.rs:26:pub const UNIT_SCALE: f64 = 4_294_967_296.0;
+src/domain/mapgen/prims.rs:27:/// Stala kroku `mulberry32` (web: `s += 0x6d2b79f5`).
+src/domain/mapgen/prims.rs:28:const MULBERRY_INCREMENT: u32 = 0x6d2b_79f4;
+src/domain/mapgen/prims.rs:30:/// Web `HEX_DIRECTIONS` (gen-helpers.ts:125): szesc kierunkow aksjalnych (pointy-top).
+src/domain/mapgen/prims.rs:34:// 1. PRNG — mulberry32 (gen-helpers.ts:57)
+src/domain/mapgen/prims.rs:37:/// Jeden krok `mulberry32`: zwraca `(nowy_stan, wyjscie_u32)`. Wyjscie dzielone przez 2^32 daje
+src/domain/mapgen/prims.rs:41:    let mut t = (s ^ (s >> 15)).wrapping_mul(1 | s);
+src/domain/mapgen/prims.rs:42:    t ^= t.wrapping_add((t ^ (t >> 7)).wrapping_mul(61 | t));
+src/domain/mapgen/prims.rs:43:    (s, t ^ (t >> 14))
+src/domain/mapgen/prims.rs:46:/// Wartosc `[0, 1)` z wyjscia kroku `mulberry32` (web: `(x >>> 0) / 4294967296`).
+src/domain/mapgen/prims.rs:52:// 2. Value noise 2D — permutacja + interpolacja cosinusowa + fBm (gen-helpers.ts:72-122)
+src/domain/mapgen/prims.rs:55:/// Web `buildPermTable(rand)`: tablica 0..255 mieszana Fisherem-Yatesem od `i = 255` w dol.
+src/domain/mapgen/prims.rs:70:    let f = (1.0 - js_cos(t * std::f64::consts::PI)) * 0.5;
+src/domain/mapgen/prims.rs:71:    a * (1.0 - f) + b * f
+src/domain/mapgen/prims.rs:76:// V8 o 1 ulp na ~2% argumentow (zmierzone w P6.M01: 91/4500 wartosci `cosLerp`), co zmienia
+src/domain/mapgen/prims.rs:78:// e_rem_pio2.c) dla |x| <= 2^19 * pi/2; wieksze argumenty (poza zakresem uzycia generatora:
+src/domain/mapgen/prims.rs:86:const KC1: f64 = bits(0x3FA5_5555_5555_554C);
+src/domain/mapgen/prims.rs:87:const KC2: f64 = bits(0xBF56_C16C_16C1_5177);
+src/domain/mapgen/prims.rs:88:const KC3: f64 = bits(0x3EFA_01A0_19CB_1590);
+src/domain/mapgen/prims.rs:89:const KC4: f64 = bits(0xBE92_7E4F_809C_52AD);
+src/domain/mapgen/prims.rs:90:const KC5: f64 = bits(0x3E21_EE9E_BDB4_B1C4);
+src/domain/mapgen/prims.rs:91:const KC6: f64 = bits(0xBDA8_FAE9_BE88_38D4);
+src/domain/mapgen/prims.rs:92:const KS1: f64 = bits(0xBFC5_5555_5555_5549);
+src/domain/mapgen/prims.rs:93:const KS2: f64 = bits(0x3F81_1111_1110_F8A6);
+src/domain/mapgen/prims.rs:94:const KS3: f64 = bits(0xBF2A_01A0_19C1_61D5);
+src/domain/mapgen/prims.rs:95:const KS4: f64 = bits(0x3EC7_1DE3_57B1_FE7D);
+src/domain/mapgen/prims.rs:96:const KS5: f64 = bits(0xBE5A_E5E6_8A2B_9CEB);
+src/domain/mapgen/prims.rs:97:const KS6: f64 = bits(0x3DE5_D93A_5ACF_D57C);
+src/domain/mapgen/prims.rs:98:const INV_PIO2: f64 = bits(0x3FE4_5F30_6DC9_C883);
+src/domain/mapgen/prims.rs:99:const PIO2_1: f64 = bits(0x3FF9_21FB_5440_0000);
+src/domain/mapgen/prims.rs:100:const PIO2_1T: f64 = bits(0x3DD0_B461_1A62_6331);
+src/domain/mapgen/prims.rs:101:const PIO2_2: f64 = bits(0x3DD0_B461_1A60_0000);
+src/domain/mapgen/prims.rs:102:const PIO2_2T: f64 = bits(0x3BA3_198A_2E03_7073);
+src/domain/mapgen/prims.rs:103:const PIO2_3: f64 = bits(0x3BA3_198A_2E00_0000);
+src/domain/mapgen/prims.rs:104:const PIO2_3T: f64 = bits(0x397B_839A_2520_49C1);
+src/domain/mapgen/prims.rs:105:const NPIO2_HW: [u32; 32] = [
+src/domain/mapgen/prims.rs:106:    0x3FF9_21FB,
+src/domain/mapgen/prims.rs:107:    0x4009_21FB,
+src/domain/mapgen/prims.rs:108:    0x4012_D97C,
+src/domain/mapgen/prims.rs:109:    0x4019_21FB,
+src/domain/mapgen/prims.rs:110:    0x401F_6A7A,
+src/domain/mapgen/prims.rs:111:    0x4022_D97C,
+src/domain/mapgen/prims.rs:112:    0x4025_FDBB,
+src/domain/mapgen/prims.rs:113:    0x4029_21FB,
+src/domain/mapgen/prims.rs:114:    0x402C_463A,
+src/domain/mapgen/prims.rs:115:    0x402F_6A7A,
+src/domain/mapgen/prims.rs:116:    0x4031_475C,
+src/domain/mapgen/prims.rs:117:    0x4032_D97C,
+src/domain/mapgen/prims.rs:118:    0x4034_6B9C,
+src/domain/mapgen/prims.rs:119:    0x4035_FDBB,
+src/domain/mapgen/prims.rs:120:    0x4037_8FDB,
+src/domain/mapgen/prims.rs:121:    0x4039_21FB,
+src/domain/mapgen/prims.rs:122:    0x403A_B41B,
+src/domain/mapgen/prims.rs:123:    0x403C_463A,
+src/domain/mapgen/prims.rs:124:    0x403D_D85A,
+src/domain/mapgen/prims.rs:125:    0x403F_6A7A,
+src/domain/mapgen/prims.rs:126:    0x4040_7E4C,
+src/domain/mapgen/prims.rs:127:    0x4041_47AC,
+src/domain/mapgen/prims.rs:128:    0x4042_106C,
+src/domain/mapgen/prims.rs:129:    0x4042_D97C,
+src/domain/mapgen/prims.rs:130:    0x4043_A28C,
+src/domain/mapgen/prims.rs:131:    0x4044_6B9C,
+src/domain/mapgen/prims.rs:132:    0x4045_34AC,
+src/domain/mapgen/prims.rs:133:    0x4045_FDBB,
+src/domain/mapgen/prims.rs:134:    0x4046_C6CB,
+src/domain/mapgen/prims.rs:135:    0x4047_8FDB,
+src/domain/mapgen/prims.rs:136:    0x4048_58EB,
+src/domain/mapgen/prims.rs:137:    0x4049_21FB,
+src/domain/mapgen/prims.rs:141:    (x.to_bits() >> 32) as u32
+src/domain/mapgen/prims.rs:145:    let ix = high_word(x) & 0x7fff_ffff;
+src/domain/mapgen/prims.rs:146:    if ix < 0x3e40_0000 && x as i32 == 0 {
+src/domain/mapgen/prims.rs:147:        return 1.0;
+src/domain/mapgen/prims.rs:151:    if ix < 0x3FD3_3333 {
+src/domain/mapgen/prims.rs:152:        1.0 - (0.5 * z - (z * r - x * y))
+src/domain/mapgen/prims.rs:154:        let qx = if ix > 0x3fe9_0000 {
+src/domain/mapgen/prims.rs:155:            0.28125
+src/domain/mapgen/prims.rs:157:            f64::from_bits(u64::from(ix - 0x0020_0000) << 32)
+src/domain/mapgen/prims.rs:159:        let iz = 0.5 * z - qx;
+src/domain/mapgen/prims.rs:160:        let a = 1.0 - qx;
+src/domain/mapgen/prims.rs:166:    let ix = high_word(x) & 0x7fff_ffff;
+src/domain/mapgen/prims.rs:167:    if ix < 0x3e40_0000 && x as i32 == 0 {
+src/domain/mapgen/prims.rs:173:    x - ((z * (0.5 * y - v * r) - y) - v * KS1)
+src/domain/mapgen/prims.rs:176:/// `__ieee754_rem_pio2` (zakres do ~2^19 * pi/2): zwraca `(n, y0, y1)`.
+src/domain/mapgen/prims.rs:179:    let ix = hx & 0x7fff_ffff;
+src/domain/mapgen/prims.rs:180:    let negative = hx >> 31 != 0;
+src/domain/mapgen/prims.rs:181:    if ix <= 0x3fe9_21fb {
+src/domain/mapgen/prims.rs:182:        return (0, x, 0.0);
+src/domain/mapgen/prims.rs:184:    if ix < 0x4002_d97c {
+src/domain/mapgen/prims.rs:187:            if ix != 0x3ff9_21fb {
+src/domain/mapgen/prims.rs:197:            if ix != 0x3ff9_21fb {
+src/domain/mapgen/prims.rs:208:        let n = (t * INV_PIO2 + 0.5) as i32;
+src/domain/mapgen/prims.rs:213:        if n < 32 && ix != NPIO2_HW[(n - 1) as usize] {
+src/domain/mapgen/prims.rs:216:            let j = (ix >> 20) as i32;
+src/domain/mapgen/prims.rs:218:            let mut i = j - ((high_word(y0) >> 20) & 0x7ff) as i32;
+src/domain/mapgen/prims.rs:219:            if i > 16 {
+src/domain/mapgen/prims.rs:225:                i = j - ((high_word(y0) >> 20) & 0x7ff) as i32;
+src/domain/mapgen/prims.rs:226:                if i > 49 {
+src/domain/mapgen/prims.rs:244:/// `Math.cos` jak w V8 (fdlibm). Dla |x| > 2^19 * pi/2 (poza uzyciem generatora) i NaN/inf
+src/domain/mapgen/prims.rs:247:    let ix = high_word(x) & 0x7fff_ffff;
+src/domain/mapgen/prims.rs:248:    if ix <= 0x3fe9_21fb {
+src/domain/mapgen/prims.rs:249:        return kernel_cos(x, 0.0);
+src/domain/mapgen/prims.rs:251:    if ix >= 0x7ff0_0000 {
+src/domain/mapgen/prims.rs:254:    if ix > 0x4139_21fb {
+src/domain/mapgen/prims.rs:299:    let mut value = 0.0;
+src/domain/mapgen/prims.rs:300:    let mut amplitude = 0.5;
+src/domain/mapgen/prims.rs:301:    let mut frequency = 1.0;
+src/domain/mapgen/prims.rs:302:    let mut max_value = 0.0;
+src/domain/mapgen/prims.rs:306:        amplitude *= 0.5;
+src/domain/mapgen/prims.rs:307:        frequency *= 2.0;
+src/domain/mapgen/prims.rs:313:// 3. Geometria heksow (gen-helpers.ts:135-160)
+src/domain/mapgen/prims.rs:335:// 4. Klimat (gen-helpers.ts:168-246)
+src/domain/mapgen/prims.rs:343:/// Web `isWaterTerrainLocal` (gen-helpers.ts:~152): woda to `Morze` i `PlytkieMorze`.
+src/domain/mapgen/prims.rs:364:    if !(0.0..=1.0).contains(&rel_r) {
+src/domain/mapgen/prims.rs:365:        return if (r as f64) < f64::from(height) / 2.0 {
+src/domain/mapgen/prims.rs:372:    let center = 0.5;
+src/domain/mapgen/prims.rs:387:    } else if rel_r < 1.0 - climate.polarny_proc {
+src/domain/mapgen/prims.rs:529:/// Web `sampleEarthTemplateLand(nq, nr)`: probka dwuliniowa progowana (zwraca 0.0 albo 1.0).
+src/domain/mapgen/prims.rs:531:    if nq.is_nan() || nr.is_nan() || !(0.0..=1.0).contains(&nq) || !(0.0..=1.0).contains(&nr) {
+src/domain/mapgen/prims.rs:532:        return 0.0;
+src/domain/mapgen/prims.rs:539:    let x1 = (x0 + 1.0).min((mask.width - 1) as f64);
+src/domain/mapgen/prims.rs:540:    let y1 = (y0 + 1.0).min((mask.height - 1) as f64);
+src/domain/mapgen/prims.rs:544:    let v = (1.0 - tx) * (1.0 - ty) * bit(x0, y0)
+src/domain/mapgen/prims.rs:545:        + tx * (1.0 - ty) * bit(x1, y0)
+src/domain/mapgen/prims.rs:546:        + (1.0 - tx) * ty * bit(x0, y1)
+src/domain/mapgen/prims.rs:549:        1.0
+src/domain/mapgen/prims.rs:551:        0.0
+src/domain/mapgen/prims.rs:602:/// Web `earthTemplateLandAt(q, r, width, height)`: 1.0 dla ladu, 0.0 dla morza.
+src/domain/mapgen/prims.rs:605:        return 0.0;
+src/domain/mapgen/prims.rs:610:    let cell_h = (max_y - min_y) / f64::from(earth_land_map_rows(height)).max(1.0);
+src/domain/mapgen/prims.rs:619:            let sample_q = nq - cell_w * 0.5 + ((f64::from(sx) + 0.5) / f64::from(steps)) * cell_w;
+src/domain/mapgen/prims.rs:620:            let sample_r = nr - cell_h * 0.5 + ((f64::from(sy) + 0.5) / f64::from(steps)) * cell_h;
+src/domain/mapgen/prims.rs:621:            if sample_earth_template_land(sample_q, sample_r) != 0.0 {
+src/domain/mapgen/prims.rs:627:        1.0
+src/domain/mapgen/prims.rs:629:        0.0

@@ -1,0 +1,22 @@
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1
+GOAL: Trzecia partia portowania paneli UI do `src-tauri/frontend-v2/` wg `PORTING-QUEUE.md` (po P5.2 poziom 0 i P5.3 poziom 1A): CYKL C4 — moduły wzajemnie zależne, portowane RAZEM: `entityCards/registry.ts`, `entityCards/renderer.ts`, `entityCards/unitAdapter.ts`, `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/technologyAdapter.ts`, `entityCards/wonderAdapter.ts`, `sciencePicker.ts` (1666 LOC), `scienceHubHud.ts`, `techDiscoveryNotice.ts` (946 LOC) oraz pozostałe moduły grupy C4 z kolejki (sprawdź kolumnę „Cykl” = C4) i ich zależności przechodnie, które po tym porcie staną się dostępne (sprawdź kolejkę). Reguły identyczne jak w P5.2/P5.3 (markup/CSS/teksty bajtowo poza zastąpionymi importami; typy DTO z `src/viewmodel/types.ts`; kontroler MOCK; reguły gry liczone w module → pole DTO + wpis do rejestru rozszerzeń z numerem sekcji P5-0; harness DOM porównujący z pinem tam gdzie możliwy, resztę NIE_ZMIERZONO z powodem; mutacje harnessu wykrywane). Karty encji (`entityCards`) to dane z Civpedii/Wiki — dane statyczne tylko jako ten sam plik/atrapa `StaticCatalogDto`, bez kopiowania `gra/data`. Reguły wpisane bez importu (`scienceHubSnapshotLogic.ts:56-134`, `entityCards/slug.ts:30-49`, `techIcons.ts:14-47`) — przeglądaj ręcznie, wynik w tabeli. NIE portuj: `newGameFlow.ts` (osobny temat), `perfTestPanel.ts`/`sceneTimingReport.ts` (D-UI-7), `cityPanel.ts`, `hud.ts`, `main`-zależne moduły dużej wagi (osobne tematy P5.5+). Jeśli moduł z cyklu zależy od modułu spoza zakresu — pomiń i wylistuj z powodem.
+RUNDA: 1/5
+MODEL+EFFORT: Operator/Evaluator/Final Control: Opus 5.5 medium (wizualne UI; R-PROC-AUTOBOT.md §5a, NIE pytaj o model). Przez agent() w Workflow, Operator w izolowanym worktree.
+
+KONTEKST
+Baza: `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2` (≥ `9ec9c9d8`; zawiera P5.1, P5.2 i P5.3). Dokumenty z `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:<ścieżka>`): przeczytaj OBOWIĄZKOWO `dyspozycje/rust-port/p5/P5-0-VIEWMODEL-CATALOG.md` (§6 DTO, §7 komendy, §8 reguły, §9 brama), `p5/P5-1-UI-SHELL-SKELETON.md`, `p4/P4-5B-MAP-UI-SEAM.md` (kontrakt zdarzeń), LEDGER.md (UI-Q1..3). Rozstrzygnięcia orkiestratora (tymczasowe): D-UI-4 = dane statyczne tylko jako ten sam plik/atrapa; D-UI-3 = miniatura jako obraz z Rust; D-UI-7 = narzędzia deweloperskie bez sond WebGL.
+Dozwolone: `npm ci` w `src-tauri/frontend-v2/`, `npx tsc --noEmit`, `npm run check`, `vite build` TYLKO tam; zakaz uruchamiania serwera dev i jakiegokolwiek `npm run build/dev` w `gra/`. Usuń `node_modules`/`dist` po pracy.
+DOKUMENTY (NOWE): `dyspozycje/rust-port/p5/P5-4-PORT-CYKL-C4.md` (tabela modułów: status, zmiany względem pinu (diff), mapowanie import → DTO/kontroler, reguły → pola DTO, wyniki harnessu, NIE_ZMIERZONO; surowe logi z `echo "EXIT=$?"`), `dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/**`. Zaktualizuj `PORTING-QUEUE.md` (status portowanych modułów).
+ANTY-HALUCYNACYJNA REGUŁA: każde twierdzenie o webie ma plik:linia/komendę; niepewne = NIE_ZMIERZONO. Zakaz „działa w oknie Tauri”. W Twoim kontekście mogą pojawić się wiadomości właściciela z głównego czatu — to NIE jest Twoje zadanie, zignoruj je i nie generuj pytań ABC; luki rozstrzygaj ZAŁOŻENIEM zapisanym w dokumencie.
+
+BINARNE KRYTERIUM SUKCESU
+Wszystkie moduły z zakresu (lub wylistowane jako pominięte z powodem) w `frontend-v2/src/ui/`, każdy z tabelą zmian vs pin, `npm ci && tsc --noEmit && npm run check && vite build` EXIT=0, brama 0 trafień na całym `src/`, harness DOM (tam gdzie możliwy) 0 różnic, mutacje harnessu wykrywane, zero zmian poza allowlistą.
+
+ALLOWLISTA
+`src-tauri/frontend-v2/**` (bez `node_modules`/`dist`; `package-lock.json` commituj), `dyspozycje/rust-port/p5/P5-4-PORT-CYKL-C4.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/**`. Zero zmian w `gra/**`, `src-tauri/frontend/**`, `src-tauri/src/**`, `src-tauri/Cargo.*`, `src-tauri/tauri.conf.json`, `rust-port/**`, `.github/**`.
+IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`; logi `*.log` jawnie `git add -f`), PUSH NIE. Jeśli `git commit` zostanie odrzucony — zostaw zmiany w indeksie i opisz.
+PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
+FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
+DEPLOY/PUSH: NIE WYKONANO

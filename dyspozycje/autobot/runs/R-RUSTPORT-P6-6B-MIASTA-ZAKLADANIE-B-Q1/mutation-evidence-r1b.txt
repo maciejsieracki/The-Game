@@ -1,0 +1,11 @@
+WYKRYTY   : list: nazwa - granica petli -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: loader - pusta biblioteka nie jest tablica -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - legacy wymaga wszystkich kluczy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : found: limit miast > -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - brak miast przejetych -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - era minimalna -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - baza zapasowa -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - krok epoki -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - bez ownerEra -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit predykat -> 2 testow czerwonych: can_found_city_matches_web, city_name_and_predicates_match_web
+mutantow=10 przezylo/niekompilujace=0

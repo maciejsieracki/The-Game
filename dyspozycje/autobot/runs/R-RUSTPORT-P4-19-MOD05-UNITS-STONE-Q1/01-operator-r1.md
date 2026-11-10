@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1
+GOAL: Paczka MOD-05 (P4-4): 10 modeli jednostek epoki Kamienia w Rust 1:1 z webem (`kamien-bazowe/inka/lucznicy/zulu-taran-opus5`), stuby `NotYetPorted` MOD-05 w `unit_core` zastąpione prawdziwymi builderami, typ drzewa = `unit_core::model::UnitModel`, zgodność bitowa z uruchomionym webem (`edb8fb56`).
+ZMIANY/COMMIT: baza `origin/rust-port/parity-v2` @ `bf59164b`; commit w worktree (SHA w odpowiedzi Operatora / `git log`). Nowe: `rust-port/renderer/src/models/units_kamien/{mod,geo,kit,bazowe,inka,lucznicy,zulu_taran}.rs`, `tests/units_kamien_web_parity.rs`, `tests/fixtures/units_kamien/{units_kamien.json,gen.ts,build.mjs,README.md}`, `dyspozycje/rust-port/p4/P4-19-MOD05-UNITS-STONE.md`, ten katalog (`mutate.py`, `gates.sh`, `logi/`). Zmienione: `src/models.rs` (+1 linia), `src/models/unit_core/{model.rs (hak Prim::Kamien, 5 linii), registry.rs (build_base/pending), category.rs (5 gałęzi stubów)}`, `tests/unit_core_web_parity.rs` + `tests/unit_core_model_rule.rs` (wyłącznie liczniki stubów — ODCHYLENIE Z4).
+TESTY: fmt EXIT=0; clippy EXIT=0; clippy --features gpu EXIT=0; `cargo test --locked --all-targets` EXIT=0 (18 celów, 0 failed); parytet MOD-05: 40 przypadków / 153 056 wartości / 0 rozbieżności; P4.13: 67/68 porównanych (było 61), 133 311 wartości, 0 rozbieżności; sygnatury 10 rekordów Kamień PL+EN = web; `js_asin` 5 027 próbek V8 / 0; mutacje 18/18 (EXIT=0). Logi: `logi/`.
+BLOKADY: brak. Uwagi: (1) ODCHYLENIE Z4 — 2 pliki `tests/unit_core_*.rs` poza wzorcem allowlisty, zmienione wyłącznie w asercjach liczących stuby (wymuszone przez cel); (2) Z2 — 5-liniowy hak `Prim::Kamien` w `unit_core/model.rs` (jedyny sposób użycia drzewa `UnitModel` dla geometrii spoza `Prim` bez nowego typu drzewa); (3) rekomendacja: przenieść `js_asin` do `jsmath` w osobnym temacie; (4) wygląd 1:1 NIE_ZMIERZONO (GPU, RR-T5) — lista do oceny wzrokiem w dokumencie §9.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (Opus 5.5 medium) → Final Control → integracja orkiestratora (konflikt jednej linii w `src/models.rs` z równoległymi P4.17/P4.20).
+DEPLOY/PUSH: NIE WYKONANO

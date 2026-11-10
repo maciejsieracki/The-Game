@@ -1,0 +1,191 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 3618,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "unitCardStatus.ts",
+      "cases": 2271,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "diplomacyDealDisplay.ts",
+      "cases": 552,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "orderPanel.ts",
+      "cases": 73,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 3,
+      "v2Assertions": [
+        {
+          "check": "placeholder w DOM (szacunek, Napięcie)",
+          "ok": true
+        },
+        {
+          "check": "live w DOM (Bunt)",
+          "ok": true
+        },
+        {
+          "check": "hide → display:none",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "unitRecruitCard.ts",
+      "cases": 79,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 78
+    },
+    {
+      "module": "cityAttackChoice.ts",
+      "cases": 16,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 16,
+      "domEmpty": 12,
+      "v2Assertions": [
+        {
+          "check": "stan otwarty v2 niepusty (panel .civ-cac*) w 16/16 przypadków",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "postBattleSummary.ts",
+      "cases": 24,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 24,
+      "domEmpty": 16,
+      "v2Assertions": [
+        {
+          "check": "hak okna = v2 (show === V.showPostBattleSummary)",
+          "ok": true
+        },
+        {
+          "check": "klucze haka = pin bez `build`",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "siegeMapPanel.ts",
+      "cases": 114,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 114,
+      "v2Assertions": [
+        {
+          "check": "panel obecny w DOM v2 we wszystkich przypadkach pokazu (112/112)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "diploUiSkin.ts",
+      "cases": 352,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 1,
+      "domEmpty": 1
+    },
+    {
+      "module": "icons/iconRegistry.ts",
+      "cases": 48,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "mapUnitHudSkin.ts",
+      "cases": 10,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 1,
+      "domEmpty": 1
+    },
+    {
+      "module": "armyMergePanel.ts",
+      "cases": 12,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 12,
+      "domEmpty": 8
+    },
+    {
+      "module": "icons/wikiBookIcon.ts",
+      "cases": 5,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "powerOverlayHud.ts",
+      "cases": 19,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 4
+    },
+    {
+      "module": "armyListHud.ts",
+      "cases": 23,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 23,
+      "v2Assertions": [
+        {
+          "check": "plakietki stanu w DOM = 15 (16 kombinacji flag − 1 bez flag)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "bottomBarHud.ts",
+      "cases": 8,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 8
+    },
+    {
+      "module": "cityListHud.ts",
+      "cases": 7,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 7
+    },
+    {
+      "module": "empireOverlayHud.ts",
+      "cases": 5,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 5
+    }
+  ]
+}

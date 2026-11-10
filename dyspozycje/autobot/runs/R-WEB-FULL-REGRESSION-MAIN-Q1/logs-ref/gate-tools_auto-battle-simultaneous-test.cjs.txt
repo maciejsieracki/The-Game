@@ -1,0 +1,16 @@
+  [OK] BattleScene loads through the project bundler
+  [OK] AUTO opens one attacker phase at the start of a non-siege turn
+  [OK] AUTO attacker phase freezes all attackers in stable order
+  [OK] AUTO does not fall through to the interleaved _activateNext path
+  [OK] AUTO phase starts after the normal turn reset without pre-acting units
+auto-battle-simultaneous-test: harness error: TypeError: Cannot read properties of undefined (reading 'delete')
+    at <REF-TMP>/ref/gra/src/battle/battleScene.ts:73402:56
+    at _BattleScene._activateUnit (<REF-TMP>/ref/gra/tools/auto-battle-simultaneous-test.cjs:138:7)
+    at _BattleScene._activateNext (<REF-TMP>/ref/gra/src/battle/battleScene.ts:73401:10)
+    at _BattleScene._beginTurn (<REF-TMP>/ref/gra/src/battle/battleScene.ts:73121:10)
+    at runSceneSeamChecks (<REF-TMP>/ref/gra/tools/auto-battle-simultaneous-test.cjs:171:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (<REF-TMP>/ref/gra/tools/auto-battle-simultaneous-test.cjs:368:3)
+
+EXIT=1
+TIME=1.8

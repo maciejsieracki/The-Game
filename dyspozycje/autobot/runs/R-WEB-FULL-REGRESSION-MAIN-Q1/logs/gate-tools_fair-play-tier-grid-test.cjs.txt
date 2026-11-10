@@ -1,0 +1,17 @@
+PASS: low: rzeki 15
+PASS: low: wzgórza 21
+PASS: low: las 15
+PASS: medium: rzeki 10
+PASS: medium: wzgórza 15
+PASS: medium: las 10
+PASS: high: rzeki 5
+PASS: high: wzgórza 12
+PASS: high: las 5
+
+fair-play-tier-grid-test: 9 pass, 3 fail
+FAIL: low: góry 35
+FAIL: medium: góry 25
+FAIL: high: góry 20
+
+EXIT=1
+TIME=0.6

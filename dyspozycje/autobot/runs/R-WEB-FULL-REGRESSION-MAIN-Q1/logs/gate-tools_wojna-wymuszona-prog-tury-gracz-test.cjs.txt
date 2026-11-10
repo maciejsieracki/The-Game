@@ -1,0 +1,15 @@
+R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 — prog tury gracza (Krok C)
+FAIL: Krok C zawiera blok warunkowy dołączenia gracza do triggeredSubjects
+FAIL: warunek zawiera próg turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+FAIL: warunek zachowuje istniejące kryterium totalActiveForcedWarsByOwner(0) === 0
+PASS: literał 25 NIE jest zreimplementowany ręcznie w Kroku C (używana jest nazwana stała)
+PASS: stała progu wyeksportowana i równa 25 (ta sama wartość co AI)
+PASS: symulacja tur 1-30: ZERO przedwczesnych dołączeń gracza przed progiem
+PASS: symulacja: pierwsze dołączenie gracza dokładnie w turze 25 (przy zero aktywnych wojen gracza)
+PASS: symulacja: gracz z aktywną wojną wymuszoną NIE dołącza ponownie nawet po progu
+PASS: symulacja: tury 1..24 z aktywną wojną -- też brak dołączenia
+
+PASSED: 6, FAILED: 3
+
+EXIT=1
+TIME=0.7

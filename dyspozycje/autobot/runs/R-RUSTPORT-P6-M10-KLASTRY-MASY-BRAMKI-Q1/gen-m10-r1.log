@@ -1,0 +1,12 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=33 landSea=250 relief=306 coast=23 riversMain=804 riversFill=1555 forest=5 deposits=27 starts=121 total=3124
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=8 landSea=274 relief=135 coast=22 riversMain=203 riversFill=1356 forest=3 deposits=11 starts=82 total=2094
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=35 landSea=229 relief=187 coast=82 riversMain=107 riversFill=123 forest=3 deposits=15 starts=86 total=867
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=33 relief=49 coast=5 riversMain=55 riversFill=149 forest=1 deposits=12 starts=28 total=334
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=11 landSea=133 relief=77 coast=13 riversMain=387 riversFill=897 forest=7 deposits=17 starts=66 total=1610
+OK {"insertedExports":53,"maps":18,"counts":{"consts":15,"rosterKluczeForStartEpoch":252,"reorderRosterByPreference":200,"mapSizeLabel":126,"aktywneTypyFromSize":5,"thresholds":701,"massQualifies":779,"allocate":1710,"qualifyingIndices":171,"isSpawnHabitable":10,"groupMasses":58,"massCache":58,"regionDominance":216,"localLand":720,"localGate":720,"devSpace":900,"massSizeAt":900,"playerMassGate":900,"playerMassGateAll":3,"hooks":1221,"sortSpawn":160,"sortSpread":100,"pickTied":120,"playerCands":144,"pickPlayer":144,"pickBestLocal":200,"voronoi":80,"centroid":80,"pickCenterInMass":160,"pickCenterGate":160,"pickCenterSpread":320,"pickCenterPool":160,"balance":90,"enforce":90,"place":113,"reveal":4,"scoreStart":1440,"bestStart":18,"scoreStartAll":2,"v8sort":850}}
+EXIT=0

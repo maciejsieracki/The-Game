@@ -1,0 +1,19 @@
+WYKRYTY   : is_road: bez bruku -> 4 testow czerwonych: is_road_key_matches_web, has_road_matches_web, collect_road_keys_matches_web_order, road_table_shape_and_key_names
+WYKRYTY   : is_road: bez drogi zwyklej -> 4 testow czerwonych: is_road_key_matches_web, has_road_matches_web, collect_road_keys_matches_web_order, road_table_shape_and_key_names
+WYKRYTY   : has_road: all zamiast any -> 2 testow czerwonych: has_road_matches_web, collect_road_keys_matches_web_order
+PRZEZYL   : modifier: Infinity nie zwracane wprost
+WYKRYTY   : modifier: bez podlogi bruku -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+WYKRYTY   : modifier: podloga zwyklej drogi -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+WYKRYTY   : modifier: droga przed brukiem -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+WYKRYTY   : modifier: bez sprawdzenia pola ulepszenie -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+KOMPILACJA: modifier: mnoznik drogi z bruku (mutant nie kompiluje sie)
+WYKRYTY   : js_max: f64::max (NaN gubiony) -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+WYKRYTY   : index: wiodace zero dozwolone -> 1 testow czerwonych: collect_road_keys_matches_web_order
+WYKRYTY   : index: granica 2^32-1 -> 1 testow czerwonych: collect_road_keys_matches_web_order
+WYKRYTY   : collect: bez porzadku indeksow -> 1 testow czerwonych: collect_road_keys_matches_web_order
+WYKRYTY   : collect: indeksy odwrocone -> 1 testow czerwonych: collect_road_keys_matches_web_order
+WYKRYTY   : collect: pierwszy zamiast ostatniego duplikatu -> 1 testow czerwonych: collect_road_keys_matches_web_order
+mutantow=15 przezylo/niekompilujace=2
+   modifier: Infinity nie zwracane wprost
+   modifier: mnoznik drogi z bruku [nie kompiluje]
+EXIT=1

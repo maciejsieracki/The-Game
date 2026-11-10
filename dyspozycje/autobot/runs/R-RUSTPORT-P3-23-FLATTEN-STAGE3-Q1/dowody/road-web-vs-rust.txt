@@ -1,0 +1,35 @@
+A) stale webu (regex) vs tabela
+  ROAD_MOVE_SPEED_MULT: web=3 tabela=3 OK
+  ROAD_BRUK_MOVE_SPEED_MULT: web=5 tabela=5 OK
+  ROAD_BRUK_MIN_MOVE_COST: web=0.2 tabela=0.2 OK
+  ROAD_MIN_MOVE_COST: web=0.3333333333333333 tabela=0.3333333333333333 OK
+A2) stale z uruchomionego kodu weba vs regex
+  ROAD_MOVE_SPEED_MULT: kod=3 regex=3 OK
+  ROAD_BRUK_MOVE_SPEED_MULT: kod=5 regex=5 OK
+  ROAD_MIN_MOVE_COST: kod=0.3333333333333333 regex=0.3333333333333333 OK
+  ROAD_BRUK_MIN_MOVE_COST: kod=0.2 regex=0.2 OK
+B) wektory kodu weba vs oczekiwane z tabeli
+  brak koszt=0.5: web=0.5 oczekiwane=0.5 OK
+  brak koszt=1: web=1 oczekiwane=1 OK
+  brak koszt=2: web=2 oczekiwane=2 OK
+  brak koszt=3: web=3 oczekiwane=3 OK
+  droga koszt=0.5: web=0.16666666666666666 oczekiwane=0.16666666666666666 OK
+  droga koszt=1: web=0.3333333333333333 oczekiwane=0.3333333333333333 OK
+  droga koszt=2: web=0.6666666666666666 oczekiwane=0.6666666666666666 OK
+  droga koszt=3: web=1 oczekiwane=1.0 OK
+  droga_brukowana koszt=0.5: web=0.2 oczekiwane=0.2 OK
+  droga_brukowana koszt=1: web=0.2 oczekiwane=0.2 OK
+  droga_brukowana koszt=2: web=0.4 oczekiwane=0.4 OK
+  droga_brukowana koszt=3: web=0.6 oczekiwane=0.6 OK
+C) model calkowitoliczbowy Rust (raw=koszt*15, /dzielnik) vs wektory webu, koszty calkowite >= 1
+  brak koszt=1: rust=1.0 web=1 OK
+  brak koszt=2: rust=2.0 web=2 OK
+  brak koszt=3: rust=3.0 web=3 OK
+  droga koszt=1: rust=0.3333333333333333 web=0.3333333333333333 OK
+  droga koszt=2: rust=0.6666666666666666 web=0.6666666666666666 OK
+  droga koszt=3: rust=1.0 web=1 OK
+  droga_brukowana koszt=1: rust=0.2 web=0.2 OK
+  droga_brukowana koszt=2: rust=0.4 web=0.4 OK
+  droga_brukowana koszt=3: rust=0.6 web=0.6 OK
+ROZBIEZNOSCI: 0
+EXIT=0

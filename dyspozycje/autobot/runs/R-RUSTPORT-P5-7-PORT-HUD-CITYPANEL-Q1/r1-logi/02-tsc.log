@@ -1,0 +1,2 @@
+$ (cwd src-tauri/frontend-v2) npx tsc --noEmit
+EXIT=0

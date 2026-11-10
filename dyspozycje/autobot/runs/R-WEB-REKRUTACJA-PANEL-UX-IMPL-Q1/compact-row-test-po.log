@@ -1,0 +1,54 @@
+[mode] clean (working tree)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/po-rekrutacja-340px.png 165 KB
+
+[340] {"panelWidth":340,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":1,"truncatedNames":["Hieros Lochos (Święty Zastęp)"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"]}
+PASS: (340) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (340) lista ma >= 13 wierszy
+PASS: (340) K1: wysokość każdego wiersza <= 36 px
+PASS: (340) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (340) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (340) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+PASS: (340) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem
+PASS: (340) K2: >= 12 z 13 pierwszych wierszy widocznych w całości pod blokiem Produkcji
+PASS: (340) K3: ucięte nazwy <= 2 z 13
+PASS: (340) zero pageerror/console.error
+PASS: (340) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”
+PASS: (340) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (340) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (340) zero pageerror/console.error (brak rekrutów)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/po-rekrutacja-307px.png 162 KB
+
+[307] {"panelWidth":307,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":3,"truncatedNames":["Wieża oblężnicza","Hieros Lochos (Święty Zastęp)","Wojownik mykeński"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"]}
+PASS: (307) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (307) lista ma >= 13 wierszy
+PASS: (307) K1: wysokość każdego wiersza <= 36 px
+PASS: (307) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (307) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (307) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+PASS: (307) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem
+PASS: (307) zero pageerror/console.error
+PASS: (307) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”
+PASS: (307) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (307) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (307) zero pageerror/console.error (brak rekrutów)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/po-rekrutacja-280px.png 156 KB
+
+[280] {"panelWidth":280,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":5,"truncatedNames":["Wieża oblężnicza","Taran okuty","Rydwan (woły)","Hieros Lochos (Święty Zastęp)","Wojownik mykeński"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"]}
+PASS: (280) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (280) lista ma >= 13 wierszy
+PASS: (280) K1: wysokość każdego wiersza <= 36 px
+PASS: (280) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (280) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (280) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+PASS: (280) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem
+PASS: (280) zero pageerror/console.error
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/po-rekrutacja-280px-brak-rekrutow.png 165 KB
+PASS: (280) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”
+PASS: (280) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (280) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (280) zero pageerror/console.error (brak rekrutów)
+
+[summary] {"280":{"panelWidth":280,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":5,"truncatedNames":["Wieża oblężnicza","Taran okuty","Rydwan (woły)","Hieros Lochos (Święty Zastęp)","Wojownik mykeński"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"]},"307":{"panelWidth":307,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":3,"truncatedNames":["Wieża oblężnicza","Hieros Lochos (Święty Zastęp)","Wojownik mykeński"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"]},"340":{"panelWidth":340,"rowCount":13,"maxRowHeight":34.3,"first13Visible":13,"first13Truncated":1,"truncatedNames":["Hieros Lochos (Święty Zastęp)"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"]}}
+
+SUMMARY: 38 pass, 0 fail
+[shots] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty

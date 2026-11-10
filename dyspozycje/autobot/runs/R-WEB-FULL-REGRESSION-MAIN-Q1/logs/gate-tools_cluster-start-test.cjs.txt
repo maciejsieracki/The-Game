@@ -1,0 +1,314 @@
+cluster-start-test (D-START)
+
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=39 landSea=623 relief=813 coast=179 riversMain=9468 riversFill=10430 forest=15 deposits=87 starts=1082 total=22741
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: stolica gracza = Ateny
+PASS: 4 rywali deferred do założenia miasta gracza
+PASS: co najmniej obce miasta AI na starcie
+PASS: rywale tego samego typu jeszcze nie na mapie
+PASS: foreignTypeOwners wypełnione
+PASS: co najmniej 1 obcy klaster z miastami na mapie
+PASS: typCityCopyOwners = państwa bez stolic klastrów
+PASS: każdy obcy typ z miastami ma stolicę klastra (ekspansyjna AI)
+PASS: pre-planowane hexy państw gracza (1..N w pierścieniu 5 hex)
+PASS: kandydaci wokół faktycznej stolicy (hub-chain, partial OK)
+PASS: rywal min 5 hex od stolicy (5)
+PASS: rywal min 5 hex od stolicy (5)
+PASS: rywal min 5 hex od stolicy (10)
+PASS: rywal min 5 hex od stolicy (10)
+PASS: kandydaci runtime: poprawny łańcuch hubów
+PASS: runtimeCandidates: MP w półpłaszczyźnie inland (26,29)
+PASS: runtimeCandidates: MP w półpłaszczyźnie inland (31,24)
+PASS: runtimeCandidates: MP w półpłaszczyźnie inland (21,29)
+PASS: runtimeCandidates: MP w półpłaszczyźnie inland (26,24)
+PASS: deferred same-type po founding (partial OK)
+PASS: deferred owner 1 spoza startu
+PASS: deferred owner 2 spoza startu
+PASS: deferred owner 3 spoza startu
+PASS: deferred owner 4 spoza startu
+PASS: obce klastry z miastami na mapie
+PASS: obcy typ chinczycy: ≥2 miasta (5)
+PASS: obcy typ chinczycy: ownerIds = positions
+PASS: owner 1 → typ chinczycy
+PASS: owner 2 → typ chinczycy
+PASS: owner 3 → typ chinczycy
+PASS: owner 4 → typ chinczycy
+PASS: owner 5 → typ chinczycy
+PASS: obcy typ zulusi: ≥2 miasta (5)
+PASS: obcy typ zulusi: ownerIds = positions
+PASS: owner 6 → typ zulusi
+PASS: owner 7 → typ zulusi
+PASS: owner 8 → typ zulusi
+PASS: owner 9 → typ zulusi
+PASS: owner 10 → typ zulusi
+PASS: obcy typ rzymianie: ≥2 miasta (5)
+PASS: obcy typ rzymianie: ownerIds = positions
+PASS: owner 11 → typ rzymianie
+PASS: owner 12 → typ rzymianie
+PASS: owner 13 → typ rzymianie
+PASS: owner 14 → typ rzymianie
+PASS: owner 15 → typ rzymianie
+PASS: obcy typ inkowie: ≥2 miasta (5)
+PASS: obcy typ inkowie: ownerIds = positions
+PASS: owner 16 → typ inkowie
+PASS: owner 17 → typ inkowie
+PASS: owner 18 → typ inkowie
+PASS: owner 19 → typ inkowie
+PASS: owner 20 → typ inkowie
+PASS: wspólna kolejka chinczycy: capital + klastry = common[0..4]
+PASS: wspólna kolejka zulusi: capital + klastry = common[0..4]
+PASS: wspólna kolejka rzymianie: capital + klastry = common[0..4]
+PASS: wspólna kolejka inkowie: capital + klastry = common[0..4]
+PASS: Chińczycy: ≥2 chińskie miasta AI
+PASS: chińska stolica = wspólna lista[0]
+PASS: etykieta dyplomacji obcego typu = wspólna lista[0]
+PASS: Inkowie: etykieta = nazwa miasta
+PASS: Inkowie: nie powtarza nazwy nacji
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: buildClusterSpawnPlan: foreignTypeClusters
+PASS: wszystkie sloty obcych = suma klastrów
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: deterministyczny seed
+PASS: miasta-panstwa >= 5 hex (5)
+PASS: miasta-panstwa >= 5 hex (10)
+PASS: miasta-panstwa >= 5 hex (5)
+PASS: rywal min 5 hex od stolicy (5)
+PASS: miasta-panstwa >= 5 hex (5)
+PASS: miasta-panstwa >= 5 hex (10)
+PASS: rywal min 5 hex od stolicy (5)
+PASS: miasta-panstwa >= 5 hex (15)
+PASS: rywal min 5 hex od stolicy (5)
+PASS: rywal min 5 hex od stolicy (10)
+PASS: pre-plan MP: poprawny łańcuch hubów
+PASS: pre-plan pendingStateSlots: MP w półpłaszczyźnie inland (23,29)
+PASS: pre-plan pendingStateSlots: MP w półpłaszczyźnie inland (28,24)
+PASS: pre-plan pendingStateSlots: MP w półpłaszczyźnie inland (33,24)
+PASS: pre-plan pendingStateSlots: MP w półpłaszczyźnie inland (18,29)
+PASS: obcy typ >= 12 hex od stolicy gracza (35)
+PASS: obcy typ >= 12 hex od stolicy gracza (40)
+PASS: obcy typ >= 12 hex od stolicy gracza (40)
+PASS: obcy typ >= 12 hex od stolicy gracza (30)
+PASS: obcy typ >= 12 hex od stolicy gracza (31)
+PASS: obcy typ >= 12 hex od stolicy gracza (19)
+PASS: obcy typ >= 12 hex od stolicy gracza (24)
+PASS: obcy typ >= 12 hex od stolicy gracza (19)
+PASS: obcy typ >= 12 hex od stolicy gracza (14)
+PASS: obcy typ >= 12 hex od stolicy gracza (23)
+PASS: obcy typ >= 12 hex od stolicy gracza (13)
+PASS: obcy typ >= 12 hex od stolicy gracza (13)
+PASS: obcy typ >= 12 hex od stolicy gracza (17)
+PASS: obcy typ >= 12 hex od stolicy gracza (18)
+PASS: obcy typ >= 12 hex od stolicy gracza (20)
+PASS: obcy typ >= 12 hex od stolicy gracza (17)
+PASS: obcy typ >= 12 hex od stolicy gracza (22)
+PASS: obcy typ >= 12 hex od stolicy gracza (22)
+PASS: obcy typ >= 12 hex od stolicy gracza (17)
+PASS: obcy typ >= 12 hex od stolicy gracza (16)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy chinczycy w zasięgu klastra od centrum (3)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy klaster chinczycy mp >= 5 hex (10)
+PASS: obcy klaster chinczycy mp >= 5 hex (10)
+PASS: obcy chinczycy w zasięgu klastra od centrum (4)
+PASS: obcy klaster chinczycy mp >= 5 hex (10)
+PASS: obcy klaster chinczycy mp >= 5 hex (9)
+PASS: obcy chinczycy w zasięgu klastra od centrum (3)
+PASS: obcy klaster chinczycy mp >= 5 hex (5)
+PASS: obcy chinczycy w zasięgu klastra od centrum (8)
+PASS: obcy chinczycy w zasięgu klastra od centrum (7)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy zulusi w zasięgu klastra od centrum (2)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy klaster zulusi mp >= 5 hex (10)
+PASS: obcy klaster zulusi mp >= 5 hex (6)
+PASS: obcy zulusi w zasięgu klastra od centrum (5)
+PASS: obcy klaster zulusi mp >= 5 hex (5)
+PASS: obcy klaster zulusi mp >= 5 hex (10)
+PASS: obcy zulusi w zasięgu klastra od centrum (7)
+PASS: obcy klaster zulusi mp >= 5 hex (10)
+PASS: obcy zulusi w zasięgu klastra od centrum (7)
+PASS: obcy zulusi w zasięgu klastra od centrum (3)
+PASS: obcy klaster rzymianie mp >= 5 hex (5)
+PASS: obcy klaster rzymianie mp >= 5 hex (5)
+PASS: obcy klaster rzymianie mp >= 5 hex (9)
+PASS: obcy klaster rzymianie mp >= 5 hex (7)
+PASS: obcy rzymianie w zasięgu klastra od centrum (3)
+PASS: obcy klaster rzymianie mp >= 5 hex (10)
+PASS: obcy klaster rzymianie mp >= 5 hex (5)
+PASS: obcy klaster rzymianie mp >= 5 hex (8)
+PASS: obcy rzymianie w zasięgu klastra od centrum (8)
+PASS: obcy klaster rzymianie mp >= 5 hex (10)
+PASS: obcy klaster rzymianie mp >= 5 hex (5)
+PASS: obcy rzymianie w zasięgu klastra od centrum (2)
+PASS: obcy klaster rzymianie mp >= 5 hex (7)
+PASS: obcy rzymianie w zasięgu klastra od centrum (10)
+PASS: obcy rzymianie w zasięgu klastra od centrum (5)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy inkowie w zasięgu klastra od centrum (5)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy klaster inkowie mp >= 5 hex (10)
+PASS: obcy klaster inkowie mp >= 5 hex (6)
+PASS: obcy inkowie w zasięgu klastra od centrum (1)
+PASS: obcy klaster inkowie mp >= 5 hex (5)
+PASS: obcy klaster inkowie mp >= 5 hex (10)
+PASS: obcy inkowie w zasięgu klastra od centrum (6)
+PASS: obcy klaster inkowie mp >= 5 hex (10)
+PASS: obcy inkowie w zasięgu klastra od centrum (10)
+PASS: obcy inkowie w zasięgu klastra od centrum (5)
+PASS: placement minDystansMiastaPanstwa=5
+PASS: placement maxDystansMiastaPanstwa=5
+PASS: placement minDystansObcyOdGracza=12
+PASS: MIN_DIST_FOREIGN_IN_CLUSTER=5
+PASS: CLUSTER_CITY_STATE_MIN_HEX=5
+PASS: CLUSTER_CITY_STATE_MAX_HEX=5
+PASS: clusterCityStateRadius=5
+PASS: klaster chinczycy: min 3 MP (got 4, miast=5)
+PASS: klaster chinczycy: poprawny łańcuch hubów
+PASS: klaster zulusi: min 3 MP (got 4, miast=5)
+PASS: klaster zulusi: poprawny łańcuch hubów
+PASS: klaster rzymianie: min 3 MP (got 4, miast=5)
+PASS: klaster rzymianie: poprawny łańcuch hubów
+PASS: klaster inkowie: min 3 MP (got 4, miast=5)
+PASS: klaster inkowie: poprawny łańcuch hubów
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (12)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (7)
+PASS: runtimeCandidate min 5 hex od stolicy (5)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (7)
+PASS: runtimeCandidates pairwise >= 5 hex (15)
+PASS: runtimeCandidates pairwise >= 5 hex (12)
+PASS: runtimeCandidate min 5 hex od stolicy (5)
+PASS: runtimeCandidates pairwise >= 5 hex (15)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (20)
+PASS: runtimeCandidates pairwise >= 5 hex (17)
+PASS: runtimeCandidate min 5 hex od stolicy (5)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (17)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidate min 5 hex od stolicy (10)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidates pairwise >= 5 hex (12)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidates pairwise >= 5 hex (10)
+PASS: runtimeCandidate min 5 hex od stolicy (10)
+PASS: runtimeCandidates pairwise >= 5 hex (7)
+PASS: runtimeCandidates pairwise >= 5 hex (15)
+PASS: runtimeCandidates pairwise >= 5 hex (15)
+PASS: runtimeCandidate min 5 hex od stolicy (10)
+PASS: runtimeCandidates pairwise >= 5 hex (22)
+PASS: runtimeCandidates pairwise >= 5 hex (19)
+PASS: runtimeCandidate min 5 hex od stolicy (10)
+PASS: runtimeCandidates pairwise >= 5 hex (5)
+PASS: runtimeCandidate min 5 hex od stolicy (15)
+PASS: runtimeCandidate min 5 hex od stolicy (12)
+PASS: runtimeCandidates: poprawny łańcuch hubów (9 slotów)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (23,29)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (28,24)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (33,24)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (18,29)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (23,24)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (28,19)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (35,19)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (13,32)
+PASS: runtimeCandidates 9: MP w półpłaszczyźnie inland (16,34)
+PASS: hub-chain 50×50: 6 slotów MP (got 6)
+PASS: 6. MP dokładnie 5 hex od któregoś huba klastra (od stolicy=10)
+PASS: hub-chain 6/6: BFS valid
+PASS: hubSix: MP w półpłaszczyźnie inland (23,29)
+PASS: hubSix: MP w półpłaszczyźnie inland (28,24)
+PASS: hubSix: MP w półpłaszczyźnie inland (33,24)
+PASS: hubSix: MP w półpłaszczyźnie inland (18,29)
+PASS: hubSix: MP w półpłaszczyźnie inland (23,24)
+PASS: hubSix: MP w półpłaszczyźnie inland (28,19)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (20)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (20)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (15)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (10)
+PASS: packRivalCitiesAroundCore pairwise >= 5 hex (5)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (23,29)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (28,24)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (33,24)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (18,29)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (18,34)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (23,24)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (28,19)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (33,19)
+PASS: packRivalCitiesAroundCore: MP w półpłaszczyźnie inland (38,19)
+NOTE: stolica nie na obwodzie po seaDist (cap=3 avgState=5.5) — OK
+PASS: zarezerwowany slot wzrostu w klastrze
+SKIP: Super Huge 15 typów (ustaw CIV_CLUSTER_HUGE=1 żeby włączyć)
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: środki klastrów rozłożone na mapie (max dist 37, klastrów 5)
+PASS: 50×50 × 5 typów: klastry po bramce lokalnego lądu (got 5/5)
+PASS: ISLAND_FALLBACK_MASS_FRAC=0.25
+PASS: LOCAL_LAND_DOMINANCE_FRAC=0.70
+PASS: LOCAL_LAND_DOMINANCE_RADIUS=3
+PASS: syntetyczna mapa: 2 masy lądu (got 2)
+[clusters] capital-sep: 13 niewykonalne dla 4 civ na 61x61, obnizono do 5
+PASS: MAP-SPAWN-Q1 C: brak środka na małej wyspie gdy kontynent obsługuje typy (got 0)
+PASS: 7-hex wyspa: lokalny ląd < 70% w R=3 (0.19, land=7/37)
+PASS: kontynent: lokalny ląd ≥ 70% w R=3 (1.00)
+[clusters] capital-sep: 13 niewykonalne dla 4 civ na 61x61, obnizono do 5
+PASS: 7-hex wyspa + kontynent: 0 miast startowych na wyspie (got 0)
+[clusters] capital-sep: 13 niewykonalne dla 4 civ na 61x61, obnizono do 5
+PASS: 16-hex wyspa: playerStartHex na dużej masie (got 24,15)
+PASS: 16-hex wyspa: playerStartHex przechodzi bramkę masy gracza
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=300.2

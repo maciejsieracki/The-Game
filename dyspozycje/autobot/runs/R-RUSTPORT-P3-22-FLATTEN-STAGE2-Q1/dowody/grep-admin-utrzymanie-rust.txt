@@ -1,0 +1,47 @@
+rust-port/engine/data/derived/README.md:10:  `utrzymanie_surowcowe_na_ture` (dane gotowe, NIEUŻYWANE w silniku, zob. P3-19 §9),
+rust-port/engine/data/derived/building-stock-costs.json:16:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:29:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:43:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:59:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:75:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:91:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:106:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:120:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:136:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:151:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:165:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:180:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:194:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:209:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:223:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:239:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:254:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:268:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:284:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:299:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:313:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:329:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:345:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:360:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:371:      "utrzymanie_surowcowe_na_ture": {},
+rust-port/engine/data/derived/building-stock-costs.json:381:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:397:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:413:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:429:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:445:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:461:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:477:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:493:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:509:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:525:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:540:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:554:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:570:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:586:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:601:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:615:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/data/derived/building-stock-costs.json:631:      "utrzymanie_surowcowe_na_ture": {
+rust-port/engine/src/data/derived.rs:79:    pub utrzymanie_surowcowe_na_ture: StockMap,
+rust-port/engine/tests/derived_values.rs:268:            keys(&row.utrzymanie_surowcowe_na_ture),
+rust-port/engine/tests/derived_values.rs:293:    assert!(palac.utrzymanie_surowcowe_na_ture.is_empty());
+EXIT=0

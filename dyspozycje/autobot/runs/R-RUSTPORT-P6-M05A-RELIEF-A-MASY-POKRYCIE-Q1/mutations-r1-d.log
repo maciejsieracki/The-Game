@@ -1,0 +1,57 @@
+SHA256 poczatkowe: src/domain/mapgen/relief.rs=4c23993d004feed6202ceecf5f653fb360916f4975af75dc548bad595a4d75d3 data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO CZYSTE przed przebiegiem (git status --porcelain --untracked-files=no puste)
+   apply-sort-ascending: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   apply-sort-ascending [celowany] (82 s): 1 testow FAILED: apply_relief_to_land_keys_matches_web
+   rank-ignores-candidate-filter: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   rank-ignores-candidate-filter [celowany] (89 s): 2 testow FAILED: apply_relief_by_noise_rank_default_arguments_match_web, apply_relief_by_noise_rank_matches_web
+   pick-spread-dist-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   pick-spread-dist-ge-to-gt [celowany] (95 s): 1 testow FAILED: pick_spread_relief_keys_matches_web
+   force-no-rand-call: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   force-no-rand-call [celowany] (100 s): 1 testow FAILED: pick_relief_force_hex_matches_web
+   force-protect-highland-le-to-lt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   force-protect-highland-le-to-lt [celowany] (119 s): 1 testow FAILED: force_relief_type_in_cell_matches_web
+   deposit-protection-off: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   deposit-protection-off [celowany] (110 s): 1 testow FAILED: cap_overflow_in_cell_matches_web
+   cap-spread-skips-highland: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   cap-spread-skips-highland [celowany] (97 s): 1 testow FAILED: cap_iron_cell_relief_spread_matches_web
+   ensure-skip-cap-ignored: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   ensure-skip-cap-ignored [celowany] (125 s): 1 testow FAILED: ensure_mass_grid_coverage_matches_web
+   centroid-count-doubled: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   centroid-count-doubled [celowany] (90 s): 1 testow FAILED: centroid_center_square_and_distance_match_web
+   partition-islands-to-pangea: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   partition-islands-to-pangea [celowany] (109 s): 1 testow FAILED: land_partition_keys_for_distribution_matches_web
+   cells-r-floor-to-trunc: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   cells-r-floor-to-trunc [celowany] (120 s): 1 testow FAILED: land_hexes_by_coverage_cell_matches_web
+   bonus-cap-highland-ceil-to-floor: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   bonus-cap-highland-ceil-to-floor [celowany] (123 s): 1 testow FAILED: caps_match_web
+   overflow-resolve-highland-nan-only: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   overflow-resolve-highland-nan-only [celowany] (104 s): 1 testow FAILED: overflow_cap_frac_with_damaged_json_matches_web
+   min-land-max-to-min: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   min-land-max-to-min [celowany] (87 s): 1 testow FAILED: min_land_hexes_match_web
+   tier-value-low-reads-medium: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   tier-value-low-reads-medium [celowany] (98 s): 1 testow FAILED: consts_and_tier_tables_match_web
+   copper-package-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   copper-package-ge-to-gt [celowany] (131 s): 1 testow FAILED: cell_counters_and_packages_match_web
+   coverage-min-land-lt-to-le: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   coverage-min-land-lt-to-le [celowany] (109 s): 1 testow FAILED: grid_coverage_ratios_match_web
+INFRA     apply-iron-skips-hills: brak miejsca / proces ubity -> powtorzenie 1/8 po 60 s
+   apply-iron-skips-hills: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   apply-iron-skips-hills [celowany] (269 s): 1 testow FAILED: apply_relief_to_land_keys_matches_web
+   rank-ignores-world-type: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   rank-ignores-world-type [celowany] (109 s): 1 testow FAILED: apply_relief_by_noise_rank_matches_web
+   pick-spread-second-pass-off: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   pick-spread-second-pass-off [celowany] (117 s): 1 testow FAILED: pick_spread_relief_keys_matches_web
+   force-rank-ascending: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   force-rank-ascending [celowany] (136 s): 1 testow FAILED: pick_relief_force_hex_matches_web
+   force-protect-mountain-le-to-lt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   force-protect-mountain-le-to-lt [celowany] (88 s): 1 testow FAILED: force_relief_type_in_cell_matches_web
+   cap-protected-not-skipped: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   cap-protected-not-skipped [celowany] (87 s): 1 testow FAILED: cap_overflow_in_cell_matches_web
+   cap-spread-min-land-lt-to-le: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  cap-spread-min-land-lt-to-le (251 s): wszystkie testy zielone
+   ensure-eligible-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   ensure-eligible-ge-to-gt [celowany] (107 s): 1 testow FAILED: ensure_mass_grid_coverage_matches_web
+   center-span-le-to-lt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   center-span-le-to-lt [celowany] (75 s): 1 testow FAILED: centroid_center_square_and_distance_match_web
+   partition-keeps-empty-zones: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo BRUDNE:M dyspozycje/autobot/runs/R-RUSTPORT-P6-M05A-RELIEF-A-MASY-POKRYCIE-Q1/gen-m05a-vectors.mjs
+BLAD KRYTYCZNY: po mutacji partition-keeps-empty-zones drzewo nie jest czyste / plik rozni sie od oryginalu

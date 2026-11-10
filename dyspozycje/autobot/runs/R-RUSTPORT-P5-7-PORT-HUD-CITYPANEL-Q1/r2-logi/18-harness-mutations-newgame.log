@@ -1,0 +1,52 @@
+# Przebieg (obrona r2): 4 grupy równolegle na kopiach drzewa src-tauri/frontend-v2 (tar bez dist; newGameFlow.ts sprawdzony cmp przed i po), + przebieg bazowy bez mutacji pod tym samym obciążeniem.
+# Powód: przebieg sekwencyjny (jeden proces) przerwany limitem czasu narzędzia po N7 (poprzednia próba) i ponownie po N3 — maszyna obciążona (load avg ~16 na 4 rdzeniach); plik przywrócony z kopii i porównany cmp.
+$ (kopia t1) node tools/dom-harness/mutate-newgame.mjs --pin-dir <PIN> --only N1,N2,N3,N4,N5,N6,N7,N8
+N1 stała: domyślna cywilizacja gracza z katalogu ignorowana: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#6
+N2 stała: domyślna epoka startu z katalogu ignorowana: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s1:klik#6
+N3 stała: domyślna jakość mapy z katalogu ignorowana: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: ui-params-niepełne-A/s4:klik#0
+N4 stała: limit typów cywilizacji z katalogu ignorowany: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: sekwencja:pusty-roster→start
+N5 stała: opcje udziału lądu z katalogu odwrócone: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4-adv:klik#58
+N6 zapytanie: menu miast-państw dla innej mapy: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#6
+N7 zapytanie: menu typów cywilizacji bez epoki: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#6
+N8 zapytanie: domyślne miasta-państwa stałe: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: ui-params-niepełne-B/s4:klik#0
+mutate-newgame: mutacji=8 niewykrytych=0 (plik przywrócony bajtowo)
+EXIT=0
+$ (kopia t2) node tools/dom-harness/mutate-newgame.mjs --pin-dir <PIN> --only N9,N10,N11,N12,N13,N14,N15,N16
+N9 zapytanie: domyślne typy cywilizacji stałe: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: ui-params-niepełne-B/s4:klik#0
+N10 zapytanie: limit typów epoki zawyżony: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: sekwencja:późny-roster→start
+N11 zapytanie: klamra miast-państw pominięta: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N12 zapytanie: typ świata stały: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N13 zapytanie: domyślny udział lądu stały: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N14 zapytanie: gęstość świata — zamiana pól: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4-adv:klik#46
+N15 zapytanie: podgląd startu bez liczby miast-państw: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#10
+N16 zapytanie: profil macierzy innej cywilizacji: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+mutate-newgame: mutacji=8 niewykrytych=0 (plik przywrócony bajtowo)
+EXIT=0
+$ (kopia t3) node tools/dom-harness/mutate-newgame.mjs --pin-dir <PIN> --only N17,N18,N19,N20,N21,N22,N23,N24,N25
+N17 zapytanie: dostępność cywilizacji w epoce zawsze: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s1:klik#6
+N18 DTO: wiersze podsumowania startu odwrócone: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N19 DTO: etykieta parametru macierzy = identyfikator: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+N20 DTO: wartość macierzy = mediana: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+N21 DTO: mediana macierzy = wartość: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+N22 DTO: siła macierzy bez znaku: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+N23 DTO: widoczność domyślna komórki odwrócona: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s2:klik#10
+N24 DTO: filtr „Nieaktywne” bez pola widoczności: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s3:pole#1=inactive
+N25 DTO: licznik widocznych nieaktywnych: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s3:pole#0=REAL_GAMEPLAY
+mutate-newgame: mutacji=9 niewykrytych=0 (plik przywrócony bajtowo)
+EXIT=0
+$ (kopia t4) node tools/dom-harness/mutate-newgame.mjs --pin-dir <PIN> --only N26,N27,N28,N29,N30,N31,N32,N33
+N26 dane: brak danych → pusty katalog: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: bez-danych/brak/s1:klik#5
+N27 dane: predykat cywilizacji bez nazwy pominięty: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: zredukowane/brak/s2:open
+N28 kopia: etykieta jakości „Wysoka”: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4-adv:klik#38
+N29 kopia: normalizacja etykiety jakości bez zmiany wielkości liter: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4-adv:klik#37
+N30 kopia: pakiet jakości — szczegóły = render niski: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N31 kopia: domyślny tier jakości: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s4:klik#0
+N32 kopia: kreator — nagłówek intro: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s1:open
+N33 kopia: kreator — klasa przycisku zaawansowanych: EXIT=1 WYKRYTA dom-harness-newgame: STOP_ON_DIFF pierwsza różnica: newGameFlow.ts: dane/brak/s3:klik#16
+mutate-newgame: mutacji=8 niewykrytych=0 (plik przywrócony bajtowo)
+EXIT=0
+$ (kopia t5, bazowy, bez mutacji, równolegle) node tools/dom-harness/run-newgame.mjs --pin-dir <PIN>
+dom-harness-newgame: pin=edb8fb56 modułów=1 przypadków=1194 różnic=0 jsdomErrors=0 consoleErrors=0
+EXIT=0
+SUMA: mutacji=33 niewykrytych=0 (4 grupy EXIT=0; kopie t1..t5 = newGameFlow.ts identyczny z worktree po przebiegu)
+EXIT=0

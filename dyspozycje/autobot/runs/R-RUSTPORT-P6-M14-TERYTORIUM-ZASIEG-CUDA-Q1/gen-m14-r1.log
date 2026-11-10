@@ -1,0 +1,2 @@
+{"territory":{"radius":160,"axial":200,"range_for_pop":31,"sight":414,"owner_at":460,"in_territory":400,"player_hex":400,"constants":1,"border":18},"work":{"build":60,"owned_by":400,"filter":120,"center_keys":40,"reczne_legal":1680,"reconcile_owner":120,"reconcile_all":100},"range":{"by_owner":40,"culture":60,"religion":144,"dominant":195,"border":18},"wonder":{"city":80,"pick":80,"owner":80}}
+EXIT=0

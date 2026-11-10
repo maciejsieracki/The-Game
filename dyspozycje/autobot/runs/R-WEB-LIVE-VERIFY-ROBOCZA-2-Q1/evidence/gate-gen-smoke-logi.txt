@@ -1,0 +1,65 @@
+[gen2] gen2-pangea7777 start capMin=33 land=55.99% polarHexes=154 polarAI=0
+[gen2] gen2-kontynenty7777 start capMin=20 land=30% polarHexes=0 polarAI=0
+[gen2] gen2-pangea1001 start capMin=32 land=56.2% polarHexes=169 polarAI=0
+[gen2] gen2-pangea1001 END turn=31 aiCities=58 polarAI=1
+[gen2] blad gen2-wyspy1001 waitAwaitingCity timeout
+[gen2] gen2-pangea4242 start capMin=22 land=56.14% polarHexes=138 polarAI=0
+[gen2] gen2-pangea4242 END turn=31 aiCities=60 polarAI=0
+CHAIN-A-EXIT=0
+[gen2] gen2-kontynenty4242 start capMin=18 land=30% polarHexes=0 polarAI=0
+[gen2] gen2-kontynenty31337 start capMin=26 land=30% polarHexes=0 polarAI=0
+CHAIN-B1-EXIT=0
+[smoke] start capMin=20 caps=7 aiCities=48 land=30%
+[smoke] tura 2 ok=true ms=110028 aiCities=48 bledy=0
+[smoke] tura 3 ok=true ms=103493 aiCities=48 bledy=0
+[smoke] tura 4 ok=true ms=86468 aiCities=48 bledy=0
+[smoke] tura 5 ok=true ms=79610 aiCities=48 bledy=0
+[smoke] tura 6 ok=true ms=78757 aiCities=48 bledy=0
+[smoke] tura 7 ok=true ms=86330 aiCities=48 bledy=0
+[smoke] tura 8 ok=true ms=83742 aiCities=48 bledy=0
+[smoke] tura 9 ok=true ms=79292 aiCities=48 bledy=0
+[smoke] tura 10 ok=true ms=79284 aiCities=48 bledy=0
+[smoke] tura 11 ok=true ms=80293 aiCities=48 bledy=0
+[smoke] tura 12 ok=true ms=84942 aiCities=48 bledy=0
+[smoke] tura 13 ok=true ms=85845 aiCities=48 bledy=0
+[smoke] tura 14 ok=true ms=78230 aiCities=48 bledy=0
+[smoke] tura 15 ok=true ms=85958 aiCities=48 bledy=0
+[smoke] tura 16 ok=true ms=78129 aiCities=48 bledy=0
+[smoke] tura 17 ok=true ms=83210 aiCities=48 bledy=0
+[smoke] tura 18 ok=true ms=103197 aiCities=48 bledy=0
+[smoke] tura 19 ok=true ms=64833 aiCities=48 bledy=0
+[smoke] tura 20 ok=true ms=62245 aiCities=48 bledy=0
+[smoke] zapis->wczytanie {"atTurnsDone":20,"before":{"turn":21,"cities":49,"units":123},"after":{"turn":21,"cities":49,"units":123,"awaiting":false},"err":null,"same":true}
+[smoke] tura 21 ok=true ms=58572 aiCities=48 bledy=0
+[smoke] tura 22 ok=true ms=46925 aiCities=48 bledy=0
+[smoke] tura 23 ok=true ms=32084 aiCities=49 bledy=0
+[smoke] tura 24 ok=true ms=33741 aiCities=52 bledy=0
+[smoke] tura 25 ok=true ms=34467 aiCities=53 bledy=0
+[smoke] tura 26 ok=true ms=29399 aiCities=54 bledy=0
+[smoke] tura 27 ok=true ms=31016 aiCities=55 bledy=0
+[smoke] tura 28 ok=true ms=32848 aiCities=55 bledy=0
+[smoke] tura 29 ok=true ms=33069 aiCities=55 bledy=0
+[smoke] tura 30 ok=true ms=31986 aiCities=56 bledy=0
+[smoke] tura 31 ok=true ms=31194 aiCities=57 bledy=0
+[smoke] tura 32 ok=true ms=29003 aiCities=59 bledy=0
+[smoke] tura 33 ok=true ms=28866 aiCities=61 bledy=0
+[smoke] tura 34 ok=true ms=28937 aiCities=61 bledy=0
+[smoke] tura 35 ok=true ms=28390 aiCities=62 bledy=0
+[smoke] tura 36 ok=true ms=29452 aiCities=67 bledy=0
+[smoke] tura 37 ok=true ms=29658 aiCities=67 bledy=0
+[smoke] tura 38 ok=true ms=29285 aiCities=67 bledy=0
+[smoke] tura 39 ok=true ms=31402 aiCities=69 bledy=0
+[smoke] tura 40 ok=true ms=36533 aiCities=71 bledy=0
+[smoke] tura 41 ok=true ms=29765 aiCities=71 bledy=0
+CHAIN-B2-EXIT=0
+[gen2] gen2-kontynenty2024 start capMin=19 land=30% polarHexes=0 polarAI=0
+[gen2] gen2-kontynenty2024 END turn=31 aiCities=60 polarAI=0
+[gen2] gen2-wyspy3333 start capMin=21 land=50% polarHexes=375 polarAI=0
+[gen2] gen2-wyspy3333 END turn=31 aiCities=63 polarAI=0
+CHAIN-B3-EXIT=0
+[gen2] gen2-wyspy1001 start capMin=18 land=50% polarHexes=567 polarAI=0
+[gen2] gen2-wyspy1001 END turn=31 aiCities=57 polarAI=0
+CHAIN-C-EXIT=0
+[gen2] gen2-pangea1001 start capMin=32 land=56.2% polarHexes=169 polarAI=0
+[gen2] gen2-pangea1001 END turn=31 aiCities=57 polarAI=1
+EXIT=0

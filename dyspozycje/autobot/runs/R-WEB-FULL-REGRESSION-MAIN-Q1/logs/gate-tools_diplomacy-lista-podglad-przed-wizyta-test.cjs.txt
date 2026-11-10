@@ -1,0 +1,83 @@
+diplomacy-lista-podglad-przed-wizyta-test
+
+-- Część 1: B1 barbarzyńcy --
+  OK: 1a) owner 2: wojna z 1 wykryta
+  OK: 1b) owner 2: barbarzyńca (-1) NIE pojawia się w wojnach (B1)
+  OK: 1c) owner 2: dokładnie jeden partner wojny (bez barbarzyńcy)
+  OK: 1d) zapytanie o wojny SAMEGO barbarzyńcy zwraca pustą listę
+  OK: 1e) owner 2: sojusz z 5 wykryty
+  OK: 1f) owner 2: sojusz z barbarzyńcą (-1) wykluczony
+
+-- Część 2: B2 mgła wojny --
+  OK: 2a) partner spotkany (5) widoczny
+  OK: 2b) partner NIESPOTKANY (6) ukryty — wyciek mgły wojny naprawiony
+  OK: 2c) partner wyeliminowany (7) ukryty
+  OK: 2d) dokładnie jeden widoczny partner wojny
+  OK: 2e) bez isVisiblePartner: brak filtrowania (parametr opcjonalny)
+  OK: 2f) gracz (0) widoczny gdy wywołujący tak zdecyduje
+  OK: 2g) inny AI (8) ukryty przy tej samej regule
+  OK: 2h) handel: mgła wojny respektowana
+
+-- Klasyfikacja rodzaju traktatu --
+  OK: 3a) sojusze: pełny + legacy wojskowy (znormalizowany)
+  OK: 3b) sojusze: handel/NAP nie wliczone
+  OK: 3c) handel: tylko umowa_szlakow
+
+-- compareDiploListEntries (czysta funkcja) --
+  OK: 4a) cywilizacja przed miastem-państwem mimo odwrotnej kolejności alfabetycznej
+  OK: 4b) w obrębie grupy: alfabetycznie (pl)
+
+-- Część 2b: BB2 kontrakt diploListEntryFromRelation.isCityState --
+  OK: 2b-1) BB2: isCityState:true przepływa przez diploListEntryFromRelation
+  OK: 2b-2) BB2: isCityState:false przepływa przez diploListEntryFromRelation
+
+-- Część 3: B3/BB2 sortowanie chronione w render() + w diploListEntryFromRelation (jsdom) --
+  OK: 5-pre) wszystkie 4 wejścia zbudowane przez diploListEntryFromRelation (kontrola sanity)
+  OK: 5a) DOM renderuje wiersze W POSORTOWANEJ kolejności (cywilizacje nad miastami-państwami, alfabetycznie w grupie), wejścia z diploListEntryFromRelation: ["Babilon","Sparta","Alfa (miasto-państwo)","Zeta (miasto-państwo)"]
+
+-- Część 4: wpięcie w main.ts (tekst) --
+  OK: 6a) źródło: buildDiploPairSummaryData znaleziona
+  OK: 6b) wywołuje warPartnerIdsForOwner
+  OK: 6c) wywołuje dealPartnerIdsForOwner
+  OK: 6d) definiuje/przekazuje isVisiblePartner (B2 — bramka mgły wojny nie wypadła z wpięcia)
+  FAIL: 6e) predykat widoczności = id===0 || (isActiveDiploOwner(id) && kontakt) — dokładnie specyfikacja Evaluatora
+  OK: 6j) N1: alliances wołane z rodzajem 'sojusz'
+  OK: 6k) N1: deals wołane z rodzajem 'handel'
+  OK: 6f) źródło: openDiplomacyAudience znaleziona
+  OK: 6g) N2: openDiplomacyAudience sprawdza isDiploPairSummaryOpen()
+  OK: 6h) N2: openDiplomacyAudience woła hideDiploPairSummary()
+  OK: 6i) N2: strażnik pop-upu STOI NA POCZĄTKU funkcji (przed istniejącym strażnikiem listy) — pokrywa wszystkie 5 miejsc wywołania naraz
+
+-- Część 5: BB1 wpięcie showDiploPairSummary w onSelectEntry (main.ts) --
+  OK: 7a) źródło: onSelectEntry(createDiploListHud) znalezione
+  OK: 7b) DIRECT-NEG: onSelectEntry NIE woła showDiploPairSummary(...) — pośredni dymek wyłączony (mutacja „przywróć dymek” → czerwień)
+  OK: 7c) DIRECT-NEG: onSelectEntry woła openDiplomacyAudience(ownerId) bezpośrednio (kliknięcie → negocjacje)
+  OK: 7d) DIRECT-NEG: brak pośredniego callbacka onOpenAudience w onSelectEntry
+
+-- Część 5b: DIRECT-NEG źródło kontaktów listy = źródło audiencji --
+  OK: 5b-1) źródło: buildPlayerDiploRelations znalezione
+  OK: 5b-2) buildPlayerDiploRelations iteruje getDiplomaticContacts() (karty tylko dla kontaktów, mgła wojny)
+  OK: 5b-3) getState audiencji zwraca null wyłącznie dla nie-kontaktu (ten sam zbiór) — kliknięcie karty zawsze ma stan
+
+-- Część 6: BB3 showDiploPairSummary nie otwiera pustego pop-upu (diplomacyPanel.ts) --
+  OK: 8a) źródło: showDiploPairSummary znalezione (diplomacyPanel.ts)
+  OK: 8b) wywołuje renderPairSummary()
+  OK: 8c) BB3: zawiera strażnik if (!pairSummaryOpen) return;
+  OK: 8d) kontrola sanity: classList.add(open) i pushOverlay( nadal obecne
+  OK: 8e) BB3: strażnik stoi DOKŁADNIE między renderPairSummary() a classList.add(open)/pushOverlay( — getData()===null nie otwiera pustego pop-upu
+
+-- Część 7: N4 ensureDiplomacyUiClosed zamyka też pop-up pary (main.ts) --
+  OK: 9a) źródło: ensureDiplomacyUiClosed znaleziona
+  OK: 9b) N4: ensureDiplomacyUiClosed zamyka pop-up pary (isDiploPairSummaryOpen()/hideDiploPairSummary())
+
+-- Część 8: DIRECT-NEG wiersze relacji na karcie listy (jsdom) --
+  OK: 8a) diploListEntryFromRelation buduje 3 wiersze relacji (Wojny/Sojusze/Handel) z nazw partnerów
+  OK: 8b) bez nazw partnerów brak wierszy relacji (undefined), karta bez zmian
+  OK: 8c) karta Egiptu: wiersze „Wojny: … +1”, „Sojusze: brak”, „Handel: …” — ["Wojny: Ty, Chiny, Rzym +1","Sojusze: brak","Handel: Inkowie"]
+  OK: 8d) pełna lista wojen w tooltipie (title) — "Wojny: Ty, Chiny, Rzym, Persja"
+  OK: 8e) karta bez danych relacji nie renderuje pustych wierszy
+
+diplomacy-lista-podglad-przed-wizyta-test: 52 pass, 1 fail
+
+EXIT=1
+TIME=2.9

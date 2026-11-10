@@ -1,0 +1,9 @@
+SCRATCH /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/mut
+R2-13 KILLED EXIT=101 results= [('14', '0'), ('6', '1')] FAILED= ['id_format_and_parse_split_on_last_colon']
+R2-14 SURVIVED EXIT=0 results= [('14', '0'), ('7', '0'), ('9', '0'), ('12', '0')] FAILED= []
+R2-15 KILLED EXIT=101 results= [('14', '0'), ('6', '1')] FAILED= ['save_load_preserves_order_and_dedups']
+R3-01 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('6', '3')] FAILED= ['vectors_unit_cost_defaults_match_web_for_all_variants', 'vectors_item_cost_match_web', 'vectors_unit_production_items_match_web']
+R3-02 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('6', '3')] FAILED= ['vectors_unit_cost_defaults_match_web_for_all_variants', 'vectors_unit_production_items_match_web', 'vectors_item_cost_match_web']
+R3-03 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('8', '1')] FAILED= ['vectors_unit_cost_defaults_match_web_for_all_variants']
+R3-04 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('8', '1')] FAILED= ['vectors_unit_cost_defaults_match_web_for_all_variants']
+DONE

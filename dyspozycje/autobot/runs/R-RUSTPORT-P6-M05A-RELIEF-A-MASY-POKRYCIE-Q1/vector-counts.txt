@@ -1,0 +1,28 @@
+consts 1
+overflowVariants 33
+caps 2421
+minLand 325
+landCells 80
+pickSpread 400
+masses 56
+center 353
+nullSquareDist 1
+partition 672
+forestEligible 8
+riverLand 8
+cellCounts 842
+canHostEdge 2526
+ratios 306
+pickForce 890
+forceType 2105
+capCell 2105
+depositProtected 3
+capSpread 219
+ensureMass 876
+applyKeys 336
+applyRank 672
+applyRankDefault 36
+pickForceWater 80
+RAZEM 15354 map 56
+{"applyKeys.both.changed": 66, "applyKeys.both.same": 48, "applyKeys.copper.changed": 76, "applyKeys.copper.same": 48, "applyKeys.iron.changed": 58, "applyKeys.iron.same": 40, "applyKeys.spec.allLand": 107, "applyKeys.spec.explicit": 123, "applyKeys.spec.mass": 106, "applyRank.kontynenty.changed": 128, "applyRank.kontynenty.same": 40, "applyRank.pangea.changed": 155, "applyRank.pangea.same": 13, "applyRank.wyspy.changed": 128, "applyRank.wyspy.same": 40, "applyRank.ziemia.changed": 155, "applyRank.ziemia.same": 13, "canHostEdge.no": 1088, "canHostEdge.yes": 1438, "capCell.hi-spread.changed": 119, "capCell.hi-spread.same": 302, "capCell.hi.changed": 104, "capCell.hi.same": 317, "capCell.mtn-spread.changed": 151, "capCell.mtn-spread.same": 270, "capCell.mtn.changed": 130, "capCell.mtn.same": 291, "capCell.relief.changed": 188, "capCell.relief.same": 233, "capSpread.cases": 219, "capSpread.changed": 123, "cellCounts.cases": 842, "cellCounts.copperNo": 451, "cellCounts.copperYes": 391, "cellCounts.hostNo": 269, "cellCounts.hostYes": 573, "cellCounts.ironNo": 439, "cellCounts.ironYes": 403, "center.null": 300, "center.some": 759, "centerDist.points": 10626, "centroid.null": 100, "centroid.some": 253, "ensureMass.copper.cap.fixed": 132, "ensureMass.copper.cap.none": 87, "ensureMass.copper.skip.fixed": 132, "ensureMass.copper.skip.none": 87, "ensureMass.iron.cap.fixed": 134, "ensureMass.iron.cap.none": 85, "ensureMass.iron.skip.fixed": 134, "ensureMass.iron.skip.none": 85, "forceType.both.changed": 280, "forceType.both.same": 141, "forceType.copper.changed": 186, "forceType.copper.same": 235, "forceType.iron.changed": 201, "forceType.iron.same": 220, "forceType.type-highland.changed": 225, "forceType.type-highland.same": 196, "forceType.type-mountain.changed": 240, "forceType.type-mountain.same": 181, "masses.total": 176, "partition.kontynenty.cont": 112, "partition.kontynenty.nocont": 56, "partition.pangea.cont": 112, "partition.pangea.nocont": 56, "partition.voronoiPath": 190, "partition.wyspy.cont": 112, "partition.wyspy.nocont": 56, "partition.ziemia.cont": 112, "partition.ziemia.nocont": 56, "pickForce.null": 82, "pickForce.some": 808, "pickForceWater.some": 80, "pickSpread.empty": 113, "pickSpread.nonempty": 287, "ratios.assertNo": 205, "ratios.assertYes": 101, "ratios.copperFull": 147, "ratios.copperPartial": 159, "ratios.ironFull": 151, "ratios.ironPartial": 155}
+{'center_dist_points': 10626, 'ratios_values': 3060, 'caps_values': 9684, 'hexes_total_pool': 65448}

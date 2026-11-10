@@ -1,0 +1,9 @@
+pliki web = 25; wiersze §3 = 25
+eksporty (niezalezny regex) = 606; wiersze §4 = 606
+tematy backlogu: 26 unikalnych: 26
+tematy uzyte w §4 ale nieobecne w §6: []
+tematy z zakresami: 26 ; LOC i rozlacznosc zakresow sprawdzone
+symbole poza zakresem swojego tematu: 0
+deklaracje domkniecia rywali poza zakresem M09: []
+WYNIK: OK
+EXIT=0

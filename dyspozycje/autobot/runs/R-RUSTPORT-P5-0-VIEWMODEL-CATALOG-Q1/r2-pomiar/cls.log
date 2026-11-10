@@ -1,0 +1,164 @@
+TOTAL {'T': 128, 'K': 46, 'F': 56, 'R': 182, 'S': 43, 'M': 11, 'X': 26, 'IO': 6} 498
+## ui/armyStackHud.ts {'T': 1}
+   T UnitCardCombatDisplay
+## ui/buildModeHud.ts {'T': 5, 'K': 2}
+   K MAX_PROCENT_PULI_IMPERIUM, MAX_ULEPSZENIA_PRACA_AUTO_PERCENT
+   T ImprovementKey, UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy
+## ui/cityAttackChoice.ts {'T': 1}
+   T MapSiegeContext
+## ui/cityPanel.ts {'T': 32, 'F': 15, 'R': 97, 'K': 19, 'S': 8, 'M': 7, 'X': 2}
+   R dedupeBudowaLista, defaultBudowaListaNazwa, sanitizeBudowaPriorytetTypow, normalizePodzialHandlu, snapHandelPct°, adjustHandelSplit, clampPodzialPracyBudynkiPercent, procentPuliImperiumZBudynkow, resolveCityPodzialHandlu, civWideSixStatsFromEmpireSnap, sortByUnitPowerDescending, parsePrerequisites, buildableProduction, eraBuildingCatalog, purchasableUnits, frontItem, rushCost, buildingProductionItem, buildingLevelForEpoch, buildingEffectAtLevel, buildingWorkCost, itemCost, splitPraca, cityPracaInteger, buildingGoldPurchaseCost, buildingTypeQueued, unitNacjaForCivKey, etaTurns, isBuildingSupersededByUpgrade, cityBuildingPrereqMet, empireResourceLabelSatisfied, buildingStockCost, unitStockCost, canAffordBuildingStock, missingStockFor, ownerResourceStockAll, upgradeChainSteps, buildingStructuralDefenseBonusPercent, cityPalacTier, groupBuiltBuildingIds, getEmpireFoodMaxCap°, buildRationParams, computeCityRationCost, computeGrowthPercentV85, getCityRationLevel, growthGainPerTurnSlots, turnsUntilNextCitizen, rationFoodCostPerPop, rationGrowthPercent, cityHasSpichlerzBuilding, filterRuntimeActiveBuiltIds, paySpichlerzDrainForCity, resolveOwnedBuildingInactiveStatus, resolveSpichlerzCityBonusState, civManpowerMaxMult, cityLudnoscAbsolutna, unitManpowerCost, unitManpowerCostForType, freshWealthState, wealthCap, wealthMnoznik, wealthProg, wealthRownowaga, wealthZadowolenie, buildEconParams, cityWorkedTilesForEconomy, toEconomyCity, computeCityHealthBreakdown, buildTerritoryNodesFromCities, tileYield, mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId, buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep, canAffordUnitRecruitStock, isUnitRecruitStockChipMissing, computeTradeRouteBuildingBonusByCity, improvementKeysForHex, evaluateOrderFromBreakdown, porPctBand, orderContributionPct, kultReligScaleForEra, proporcjonalneSzczescie, ownShareFromSignal, computeCitizenResourceDrain, applyPostCaptureLawOverride, isPostCaptureLawActive, stolicaEasyBonusActive, resolveOwnCultureShare, cityYieldPerTurn, cityPopulationCap, sumBuildingHappinessFromBuiltIds, cityBuildingEntriesFromBuiltIds, mnoznikHandelPieniadzForCivByDifficulty, civEconomyYieldMultipliers
+   M enqueue, dequeue, promoteToFront, setPaused, dequeueRecruitment, deductBuildingStockCostAcrossCities, refundBuildingStockCostAcrossCities
+   F formatCityMapLabel, buildChipDeltaStockHtml, buildingRequiredActiveLabels, stockResourceLabel, upgradeCompositionLines, buildingStructuralDefenseBonusLine, cityHasBibliotekaLine, formatWyzwienieLabel, daninaLabel, daninaLabelGenitive, daninaLabelAccusative, formatManpower, citizenUpkeepDisplayLines, postCaptureLawBannerLabel, converterProductionDisplayForBuilding
+   K BUDOWA_TYP_FOCUS, DEFAULT_BUDOWA_PRIORYTET_TYPOW, HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, MIN_PODZIAL_PRACY_BUDYNKI_PERCENT, MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, MAX_PROCENT_PULI_IMPERIUM, PODZIAL_PRACY_PULA_LBL, PODZIAL_PRACY_PULA_LBL_PELNA, PODZIAL_PRACY_PULA_TIP, EPOCH_NUMBER_TO_NAME, CITY_BUILDING_PREREQ, WATER_ACCESS_BUILDING_IDS, CITY_PANEL_RANGE_DEPOSIT_LABELS, WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, POR_BAND_LABELS, FALLBACK_RELIGION_PARAMS
+   S loadGameData, getTechDef, getUnitDef, loadWealthParams, terrainImprovementsData, loadOrderParams, loadSocietyScaleParams, loadReligionParams
+   X axialToWorld, HEX_R
+   T City, OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaBiblioteka, GameData, BuildingDef, UnitDef, UnitPowerInput, BuildingCatalogEntry, CityProduction, ProductionItem, CivBonusLite, AvailabilityContext, GrowthPercentBreakdown, PoziomRacji, DaninaLabel, CityManpowerSnapshot, RawWealthParamsJson, WealthParams, CityHealthLine, Difficulty, TradeRoute, OrderYieldMults, SocietyLine, CitizenUpkeepCoverage, CityYieldContext, BuildingRecord, RawConverterParamsJson, EmpireFoodState, EmpireFoodTick
+## ui/cityUxFrame.ts {'T': 1}
+   T City
+## ui/civBrandDisplay.ts {'S': 1}
+   S civsRaw
+## ui/diploListHud.ts {'F': 1}
+   F formatDiploCivListLines
+## ui/diplomacyAcceptanceBalance.ts {'T': 1, 'R': 7, 'F': 1}
+   R bilateralTreatyDisplayPw, sideDisplayOfferPw, pnDealAcceptedByAi, relationPnModPct, relationSignedFromTotal, treatyPwForRole, diplomacyFairGivePn
+   F formatRelationModLabel
+   T AcceptanceSideBalance
+## ui/diplomacyAudience.ts {'T': 6, 'R': 6, 'F': 9, 'K': 2}
+   R effectiveNastawienieScores, bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw, proposalHasResourceAccess, uiActionAllowsMultipleOwnOnTable
+   F nastawienieHintPl, nastawienieLabelFromScore, wiarygodnoscBadgeHtml, wiarygodnoscTooltipPl, wiarygodnoscTooltipDefPl, wiarygodnoscLabelPl, wiarygodnoscTooltipRozbiciePl, audienceActionBarLockNote, audienceActionStatusNote
+   K TRAKTAT_HANDLOWY_LABEL, RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON
+   T CivBonusLite, FormalDiplomaticKind, WiarygodnoscRozbicie, WiarygodnoscBreakdown, TradeGoodsCategories, ProposalPayload
+## ui/diplomacyDealDisplay.ts {'T': 3, 'F': 2}
+   F resourceDisplayLabel, splitNegotiationDealPlayerSides
+   T BasketItem, ProposalPayload, BasketItemFormatCtx
+## ui/diplomacyNegotiationModal.ts {'T': 3, 'K': 1}
+   K TRAKTAT_HANDLOWY_LABEL
+   T BasketItem, TempoGry, GameDifficulty
+## ui/diplomacyPanel.ts {'F': 1}
+   F formatEntityDisplayName
+## ui/diplomacyTradeBasket.ts {'R': 24, 'T': 7, 'K': 2, 'S': 2, 'F': 2}
+   R isCurrencyProposalForbiddenDuringWar, computeQuickDealBasket, proposalPnTurnsMultiplier, validateTradeBasketSides, balanceGiveItemsToFairMin, proposalHasResourceAccess, stripWithdrawnResourceAccessItems, diplomacySumPn, diplomacyFairGivePn, diplomacyTradeTrustFromDeal, diplomacyGiftTrustFromPn, diplomacyDobraWolaFromSurplus, diplomacyProgDarRelacja, diplomacyPnRelacjaParams, diplomacyZywnoscNaPn, diplomacyResourceAccessCatalog, diplomacyHandelZaufaniePerTura, diplomacyHandelSurowceCatalog, diplomacyHandelSurowiecKrok, diplomacyNormalizeSurowiecIlosc, bilateralTreatyDisplayPw, computePlayerAcceptanceSides, sideDisplayOfferPw, validateTradeBasketSides
+   F formatBasketListBrief, resourceDisplayLabel
+   K HANDEL_ZLOZE_CENA_BAZA, BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS
+   S unitsJson, techJson
+   T BasketItem, TempoGry, GameDifficulty°, WartoscPozycjaTyp, BasketItemFormatCtx, ProposalPayload, ProposalActionId
+## ui/empireDetailPanel.ts {'F': 5, 'K': 10, 'R': 6, 'T': 3}
+   R resourceUsageTotal, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct°, procentPuliImperiumZBudynkow, podzialPracyZProcentuPuli
+   F formatObywateleLabel, formatManpower, stockResourceLabel, daninaLabelGenitive, formatWyzwienieLabel
+   K CITIZEN_UPKEEP_RATE_PER_CITIZEN, HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, PODZIAL_PRACY_PULA_LBL, PODZIAL_PRACY_PULA_LBL_PELNA, PODZIAL_PRACY_PULA_TIP, WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP
+   T CityPodzialHandlu, CityPodzialPracy, PoziomRacji
+## ui/empireDetailTypes.ts {'T': 1}
+   T ResourceUsageBreakdown
+## ui/entityCards/buildingAdapter.ts {'T': 4, 'S': 1, 'R': 8, 'F': 2}
+   R buildingEffectAtLevel, buildingWorkCost, itemCost, buildingUpkeep, buildingResourceUpkeep, buildingStockCost, mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId
+   F stockResourceLabel, buildingStructuralDefenseBonusLine
+   S buildingsData
+   T BuildingDef, BuildingCostPace, GameDifficulty, BuildingRecord
+## ui/entityCards/improvementAdapter.ts {'S': 1}
+   S terrainImprovementsData
+## ui/entityCards/registry.ts {'T': 2, 'S': 5}
+   S buildingsData, unitsData, terrainImprovementsData, techData, wondersData
+   T UnitDef, BuildingDef
+## ui/entityCards/technologyAdapter.ts {'S': 4}
+   S buildingsData, unitsData, terrainImprovementsData, techData
+## ui/entityCards/unitAdapter.ts {'T': 2, 'S': 2}
+   S countersData, categoryOf
+   T CounterDef, UnitDef
+## ui/hexContextTooltip.ts {'R': 12, 'T': 7, 'K': 1, 'F': 5, 'X': 4}
+   R tileYield, improvementKeysForHex, improvementBonusForKey, normalizeImprovementKey°, isImprovementAllowedForCiv, territoryResourceYieldForImprovement, galleryTerrainEligible, hexHasClayDeposit, isFarmBaseTerrain, isImprovementBlockedOnForest, isLamaDepositVisibleForCiv, fieldPower
+   F improvementDisplayName, hexDepositDisplayLabel, hexHiddenDepositHint, labelsForImprovementUnlock, formatEntityDisplayName
+   K IMPROVEMENT_KEYS
+   X VITALS_HP_DARK_CSS, VITALS_HP_FULL_CSS, VITALS_MOVE_DARK_CSS, VITALS_MOVE_FULL_CSS
+   T TileYield, ImprovementBonus, TerritoryResourceKey, ImprovementKey, DaninaLabel, UnitCardCombatDisplay, VeteranProgress
+## ui/icons/brandAssets.ts {'T': 2, 'S': 1}
+   S categoryOf
+   T BuildingDef, UnitDef
+## ui/improvementBuildConfirm.ts {'T': 1, 'F': 2}
+   F formatImprovementBuildImpactList, improvementDisplayName
+   T ImprovementBuildImpact
+## ui/leaderPortraits.ts {'S': 1, 'T': 1}
+   S civsRaw
+   T CivsData
+## ui/mapLoadingOverlay.ts {'X': 1}
+   X MAP_GEN_PHASE_TOTAL
+## ui/minimapHud.ts {'X': 1}
+   X FOG_EXPLORED_BRIGHTNESS
+## ui/newGameFlow.ts {'S': 1, 'T': 11, 'R': 15, 'K': 5, 'F': 5}
+   R isCivAvailableAtGameEpoch°, bundledMapQualityFromLabel, civTypesMenuForMapLabel, defaultCivTypesFromMapLabel, maxCivTypesForStartEpoch, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, miastaPanstwaMenuForMapLabel, qualityTierFromLabel, typSwiataFromMenuLabel, worldGenerationPresetFromLabels, defaultLandFractionPercentForTyp, buildStartPreview, buildCivMatrixSemanticProfile, statusAllowsDefaultVisibility
+   F qualityTierToLabel, startPreviewSummaryRows, civMatrixFormattedValue, civMatrixIntensityLabel, civMatrixParameterLabelPl
+   K DEFAULT_PLAYER_CIV_ID, DEFAULT_START_EPOCH_ID, DEFAULT_RENDER_QUALITY, MAX_TYPY_CYWILIZACJI_MENU, LAND_FRACTION_PERCENT_OPTS
+   S loadGameData
+   T GameData, CivEntryEpochRow, LandFractionPercent, QualityTier, WorldGenerationPreset, StartPreview, BuildingCostPace, KosztJednostekPace, WzrostLudnosciPace, RuchSwiataPace, CivMatrixSemanticCell
+## ui/orderPanel.ts {'T': 2}
+   T SocietyLine, CitizenUpkeepCoverage
+## ui/perfReport.ts {'T': 2, 'X': 3}
+   X MAP_GEN_PHASE_LABELS, getRiverGenEnabled, getRiverGenPhase
+   T MapGenPhaseTimings, SceneBuildTimings
+## ui/perfTestPanel.ts {'M': 1}
+   M generujSwiatAsync
+## ui/postBattleSummary.ts {'T': 3, 'R': 1, 'X': 11}
+   R buildPostBattleSummary
+   X PB_SVG, BATTLE_GOLD, BATTLE_PLAYER, BATTLE_PLAYER_TEXT, BATTLE_ENEMY, BATTLE_ENEMY_TEXT, BATTLE_TEXT, BATTLE_TEXT_DIM, BATTLE_FONT, BATTLE_FONT_TITLE, applyBtnStartBattle
+   T PostBattleSummaryData, BattleSummaryUnitCard, BattleSummarySide
+## ui/power-labels.ts {'S': 2}
+   S powerParams°, loadPowerOpcje
+## ui/preBattle.ts {'T': 1, 'F': 1, 'X': 1}
+   F bonusChipTexts
+   X PB_SVG
+   T CivBonusLite
+## ui/saveLoadDialog.ts {'IO': 6, 'M': 3, 'F': 2, 'K': 1, 'T': 2}
+   M loadFromLocal, deleteLocal, loadFsaAutosaveFile
+   IO listSaves, getLastPlayedSlotId, loadSaveSlotMeta, extractSaveContextFields, isIdbAvailable, listFsaAutosaveFiles
+   F uniqueSlotIdFromLabel, slotSlugFromLabel
+   K FSA_SLOT_PREFIX
+   T SaveGame, SaveSlotMeta
+## ui/sceneTimingReport.ts {'T': 2, 'X': 2}
+   X MAP_GEN_PHASE_LABELS, getRiverGenEnabled
+   T MapGenPhaseTimings°, SceneBuildTimings
+## ui/scienceHubHud.ts {'T': 2, 'K': 1}
+   K RESEARCH_QUEUE_MAX
+   T BuildingDef, EraGateInfo
+## ui/sciencePicker.ts {'S': 2, 'F': 1, 'T': 2, 'R': 1}
+   R scaledResearchCost
+   F terrainUnlockLabelsForTech
+   S techData, buildingsData
+   T TempoGry, GameDifficulty
+## ui/siegeMapPanel.ts {'T': 4, 'R': 1}
+   R getCityFood
+   T City, MapSiegeContext, SiegeMachineKind, SiegeMachinesState
+## ui/techDiscoveryNotice.ts {'S': 4, 'T': 1}
+   S techData, buildingsData, unitsData, terrainImprovementsData
+   T ImprovementKey
+## ui/techTreeView.ts {'S': 1, 'F': 1, 'K': 1, 'T': 2, 'R': 1}
+   R scaledResearchCost
+   F terrainUnlockLabelsForTech
+   K TEMPO_GRY
+   S techData
+   T TempoGry, GameDifficulty
+## ui/techUnlockParse.ts {'S': 1}
+   S unitsData
+## ui/uiParams.ts {'S': 1}
+   S raw
+## ui/unitCardStatus.ts {'R': 3, 'T': 3}
+   R armorPathBadgeLevel, softPathBadgeLevel, veteranStarCount
+   T PathBadgeLevel, VeteranProgress, UnitCardCombatDisplay
+## ui/unitInfoCard.ts {'T': 2, 'S': 1}
+   S categoryOf
+   T GameData, UnitDef
+## ui/unitInfographic.ts {'T': 1, 'S': 1}
+   S categoryOf
+   T UnitDef
+## ui/unitMiniPreview.ts {'X': 1, 'S': 1, 'T': 1}
+   S categoryOf
+   X buildUnitModel
+   T UnitDef
+## ui/unitRecruitCard.ts {'T': 3, 'F': 1, 'S': 1}
+   F formatManpower
+   S categoryOf
+   T GameData, UnitDef, ProductionItem
+## ui/victoryScreen.ts {'T': 1, 'K': 1}
+   K PROG_DOMINACJI_POWER
+   T VictoryResult
+## ui/wikiHubHud.ts {'S': 1}
+   S wikiBundle

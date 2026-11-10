@@ -1,0 +1,79 @@
+--- pin:gra/src/ui/unitRecruitCard.ts
++++ v2:src-tauri/frontend-v2/src/ui/unitRecruitCard.ts
+@@ -3,10 +3,12 @@
+  * Wzorzec: bld-compact-row w cityPanel — pełne staty w hover / SZCZEGÓŁY.
+  */
+ 
+-import type { GameData, UnitDef } from '../data/loader';
+-import type { ProductionItem } from '../game/production';
+-import { formatManpower } from '../game/manpower';
+-import { categoryOf } from '../units/setup';
++import type {
++  ProductionItemDto as ProductionItem,
++  StaticCatalogDto as GameData,
++  UnitDefDto as UnitDef,
++} from '../viewmodel/types';
++import { unitCategoryFromCatalog } from '../controller/staticCatalog';
+ import { unitIconSvg } from './icons/brandAssets';
+ import {
+   unitInfographicLabel,
+@@ -45,8 +47,23 @@
+ }
+ 
+ function unitCategory(u: UnitDef): string {
+-  const isSuper = u['Super-jednostka'] === 'TAK';
+-  return categoryOf(u.Jednostka ?? '', u['Rola (linia)'] ?? '', isSuper, u['Typ']);
++  return unitCategoryFromCatalog(u.Jednostka ?? '', true);
++}
++
++/**
++ * P5.3 (ZAŁOŻENIE P5.3-Z6): formater liczby rekrutów — kopia 1:1 czystej funkcji formatującej web
++ * `formatManpower` → `formatPopulationAbs` (pin `game/manpower.ts:858-872`; klasa F, bez reguły gry).
++ */
++function formatManpower(n: number): string {
++  if (n >= 1_000_000) {
++    const m = n / 1_000_000;
++    return (m >= 10 ? Math.round(m) : Math.round(m * 10) / 10) + ' mln';
++  }
++  if (n >= 1_000) {
++    const t = n / 1_000;
++    return (t >= 100 ? Math.round(t) : Math.round(t * 10) / 10) + ' tys.';
++  }
++  return String(n);
+ }
+ 
+ /**
+@@ -74,9 +91,15 @@
+ export interface UnitRecruitCardOpts {
+   udef: UnitDef;
+   item: ProductionItem;
++  /** P5.3: typ = `StaticCatalogDto` (pin: `GameData`); pole nieczytane przez moduł (jak w pinie). */
+   data: GameData;
+   skarb: number | undefined;
+   canPurchase: boolean;
++  /**
++   * P5.3 (`RecruitOptionDto.affordable`, P5-0 §6.3): czy skarbiec pokrywa koszt — liczy Rust
++   * (pin `:157`: `skarb === undefined || skarb >= item.koszt`).
++   */
++  affordable: boolean;
+   treasuryIconHtml: string;
+   /** Koszt Manpower (0 = Zwiadowca). */
+   mpCost?: number;
+@@ -154,7 +177,7 @@
+     onRecruit,
+   } = opts;
+   const cat = unitCategory(udef);
+-  const canBuy = opts.canPurchase && (skarb === undefined || skarb >= item.koszt);
++  const canBuy = opts.canPurchase && opts.affordable;
+   const manpowerRequired = manpowerRequiredInput ?? mpCost ?? 0;
+   const maxQuantity = normalizeMaxQuantity(opts.maxQuantity);
+ 
+@@ -169,7 +192,7 @@
+ 
+   const text = el('div', 'unit-compact-text');
+   const name = el('span', 'bld-compact-name');
+-  name.textContent = item.nazwa;
++  name.textContent = item.label;
+   text.appendChild(name);
+   const meta = el('span', 'unit-compact-meta');
+   meta.textContent = unitCompactMeta(udef, cat);

@@ -1,0 +1,28 @@
+M01 mulberry: stala kroku -> WYKRYTA (testy czerwone: )
+M02 perm: Fisher-Yates bez i=1 -> WYKRYTA (testy czerwone: )
+M03 cosLerp: std cos zamiast fdlibm -> WYKRYTA (testy czerwone: )
+M04 noise: saturujace rzutowanie zamiast ToInt32 -> WYKRYTA (testy czerwone: )
+M05 fbm: czestotliwosc x2.1 -> WYKRYTA (testy czerwone: )
+M06 hexDistance: bez skladowej s -> WYKRYTA (testy czerwone: )
+M07 klimat: dzielenie calkowite height/2 (stary stan) -> WYKRYTA (testy czerwone: )
+M08 klimat: granica polarna <= -> WYKRYTA (testy czerwone: )
+M09 bufor: floor zamiast round -> WYKRYTA (testy czerwone: )
+M10 polarne wiersze: min zamiast max w limicie -> WYKRYTA (testy czerwone: )
+M11 probka: v > prog -> NIEWYKRYTA
+M12 bitAt: zly clamp y -> NIEWYKRYTA
+M13 hexToNorm: > zamiast >= dla bufora S -> WYKRYTA (testy czerwone: )
+M14 templateLandAt: prog > -> WYKRYTA (testy czerwone: )
+M15 las: plus zamiast minus delta (znak) -> WYKRYTA (testy czerwone: )
+M16 pustynia: None nie przypisuje -> WYKRYTA (testy czerwone: )
+M17 kierunki: zamiana pierwszych dwoch -> WYKRYTA (testy czerwone: )
+M18 cosLerp: mnoznik 0.51 -> WYKRYTA (testy czerwone: )
+M19 JSON: delta lasu -0.05 -> WYKRYTA (testy czerwone: )
+M20 JSON: podprobkowanie_domyslne 5 -> WYKRYTA (testy czerwone: )
+M21 JSON: pustynia_pol_wiersze 4.0 -> WYKRYTA (testy czerwone: )
+M22 JSON: maska - zamiana sasiednich przebiegow -> WYKRYTA (testy czerwone: )
+M23 JSON: bbox min_x -> WYKRYTA (testy czerwone: )
+M24 JSON(ksztalt): progi w zlej kolejnosci -> WYKRYTA (testy czerwone: )
+('M25 map_generator: HexCoord::distance bez prims', 'BLAD: wzorzec wystepuje 0x')
+
+WYKRYTE: 22/25
+EXIT=1

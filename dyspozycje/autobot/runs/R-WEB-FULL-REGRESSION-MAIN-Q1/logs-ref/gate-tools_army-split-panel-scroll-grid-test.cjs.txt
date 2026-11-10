@@ -1,0 +1,23 @@
+PASS: PO: klik na dole listy nie zmienia scrollTop
+PASS: PO: odznaczenie tez nie resetuje scrollTop
+PASS: PO: klik zaznaczyl jednostke
+PASS: PO: siatka 3 kolumny na 1280
+PASS: PO: 5 widocznych rzedow (15 kafli) i dalej przewijanie
+PASS: PO: 2 kolumny na 500 i 360 px
+PASS: PO: 1 kolumna na 340 px
+PASS: PO: brak poziomego przewijania na 360 px
+PASS: PO: strzalki ±1/±kolumny/Home/End
+PASS: PO: spacja zaznacza fokusowana jednostke
+PASS: PO: roving tabindex (1 punkt tab w siatce)
+FAIL: PRZED: scrollTop wraca do 0 po kliku (RED-PRE) — {"before":520,"after":520}
+FAIL: PRZED: brak siatki 3x5 (RED-PRE) — {"cols":3,"fullVisible":15,"rows":5,"distinctLefts":3,"scrollable":true}
+PASS: logika podzialu identyczna PRZED i PO
+PASS: logika: domyslnie zaznaczona ostatnia jednostka
+PASS: logika: 0 zaznaczonych i wszystkie zaznaczone -> brak onSplit
+PASS: logika: 3 jednostki + cel (3,4) -> onSplit
+PASS: logika: Anuluj wola onCancel
+
+16 PASS / 2 FAIL
+
+EXIT=1
+TIME=15.0

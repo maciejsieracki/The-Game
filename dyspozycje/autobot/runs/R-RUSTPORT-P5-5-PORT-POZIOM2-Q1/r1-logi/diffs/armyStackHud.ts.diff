@@ -1,0 +1,28 @@
+--- pin/gra/src/ui/armyStackHud.ts
++++ v2/src/ui/armyStackHud.ts
+@@ -13,7 +13,7 @@
+   type UnitCardStatusInput,
+   type UnitSufferingStatusFields,
+ } from './unitCardStatus';
+-import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
++import type { UnitCardBadgesDto, UnitCardCombatDisplayDto as UnitCardCombatDisplay } from '../viewmodel/types';
+ import {
+   ensureMapUnitBrandScope,
+   mapUnitBrandIconHtml,
+@@ -56,6 +56,8 @@
+   ufortyfikowanyWPolu?: boolean;
+   oblegaCityName?: string;
+   buildingBonusLabel?: string;
++  /** P5.5: poziomy odznak ścieżek + gwiazdki weterana aktywnej jednostki z Rust (`UnitCardDto.badges`, P5-0 §6.8). */
++  badges: UnitCardBadgesDto;
+   actions: UnitPanelAction[];
+ }
+ 
+@@ -296,6 +298,7 @@
+       sentry: st.sentry,
+       ufortyfikowanyWPolu: st.ufortyfikowanyWPolu,
+       oblegaCityName: st.oblegaCityName,
++      badges: st.badges,
+       // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+       ...pickUnitSufferingFields(st),
+       esc,

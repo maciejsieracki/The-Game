@@ -1,0 +1,14 @@
+# Dowod zrodel weba (pin edb8fb56) - wyciag: git archive edb8fb56 gra/src gra/data (do katalogu poza repo)
+# git blob SHA-1 (git rev-parse edb8fb56:<plik>):
+9d86be02a59da9ec9b2f47e37ec5765ababeb20f gra/src/map/gen-helpers.ts
+0c236fdc012152ce4ccd3db1fb95c7f2bd618b77 gra/src/map/earth-land-mask.ts
+ca6f13e1bf53c6c2d1aa83e7795b73dda1034d50 gra/src/map/earth-land-mask.generated.ts
+a85ed27c848a52e4609ee52d86dd20e9df9d9880 gra/src/map/generator.ts
+# SHA-256 wyciagnietych plikow + liczba linii:
+ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de  12561 linii  gra/src/map/gen-helpers.ts
+29182ceda4730314b5197145e2c41d67688d6ea9bacb38ace38365875641a231  170 linii  gra/src/map/earth-land-mask.ts
+1efcc885893986d0e51a6a2f62d9eee3f718d8364102730e8dca0b62fc74d1a1  417 linii  gra/src/map/earth-land-mask.generated.ts
+048398a8c6c5aa6e7508a1ec26c931758df7a7763f1a81622a26787e92d6959c  848 linii  gra/src/map/generator.ts
+# Zrodlo fdlibm V8: https://raw.githubusercontent.com/v8/v8/12.4.254/src/base/ieee754.cc
+da01a54955911cfc550117988de91516c6f1aac343af28142dce619b433a67fc  3033 linii  src/base/ieee754.cc (v8 12.4.254)
+# Srodowisko wektorow: Node v22.22.0, V8 12.4.254.21-node.33, x86_64

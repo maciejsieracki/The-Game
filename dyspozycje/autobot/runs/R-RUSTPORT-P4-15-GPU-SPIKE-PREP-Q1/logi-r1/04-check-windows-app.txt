@@ -1,0 +1,696 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo check --locked --target x86_64-pc-windows-msvc
+# 2026-10-22T11:56:27Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling libc v0.2.189
+    Checking windows-link v0.2.1
+   Compiling thiserror v2.0.20
+   Compiling syn v2.0.119
+   Compiling syn v3.0.6
+   Compiling siphasher v1.0.3
+   Compiling phf_shared v0.13.1
+   Compiling fastrand v2.5.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_properties_data v2.3.0
+   Compiling phf_generator v0.13.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling parking_lot_core v0.9.12
+   Compiling zmij v1.0.23
+   Compiling smallvec v1.16.0
+   Compiling autocfg v1.5.1
+   Compiling memchr v2.8.3
+   Compiling serde v1.0.229
+    Checking windows-link v0.1.3
+   Compiling typeid v1.0.3
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling phf_codegen v0.13.1
+   Compiling strsim v0.11.1
+   Compiling litemap v0.8.3
+   Compiling synstructure v0.13.2
+   Compiling writeable v0.6.4
+   Compiling thiserror v1.0.69
+   Compiling ident_case v1.0.1
+   Compiling erased-serde v0.4.10
+   Compiling darling_core v0.24.1
+    Checking windows-strings v0.4.2
+    Checking windows-result v0.3.4
+   Compiling utf8_iter v1.0.4
+    Checking foldhash v0.2.0
+    Checking equivalent v1.0.2
+   Compiling anyhow v1.0.104
+   Compiling new_debug_unreachable v1.0.6
+   Compiling version_check v0.9.5
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.20
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling windows-implement v0.60.2
+   Compiling windows-interface v0.59.3
+   Compiling zerovec v0.11.8
+   Compiling phf_macros v0.13.1
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_locale_core v2.3.0
+   Compiling zerotrie v0.2.5
+   Compiling icu_collections v2.3.0
+   Compiling icu_provider v2.3.1
+    Checking windows-core v0.61.2
+   Compiling darling_macro v0.24.1
+   Compiling thiserror-impl v1.0.69
+   Compiling phf v0.13.1
+   Compiling darling v0.24.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling winnow v1.0.4
+   Compiling getrandom v0.4.3
+   Compiling serde_json v1.0.151
+   Compiling precomputed-hash v0.1.1
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling parking_lot v0.12.5
+   Compiling web_atoms v0.2.6
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling serde_with_macros v3.23.0
+    Checking hashbrown v0.17.1
+    Checking windows-threading v0.1.0
+   Compiling serde_spanned v1.1.1
+   Compiling ctor-proc-macro v0.0.7
+   Compiling cfg_aliases v0.2.2
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling idna_adapter v1.2.2
+    Checking windows-future v0.2.1
+    Checking indexmap v2.14.2
+   Compiling string_cache v0.9.0
+    Checking windows-numerics v0.2.0
+    Checking windows-collections v0.2.0
+   Compiling semver v1.0.28
+    Checking bitflags v2.13.2
+    Checking cfg-if v1.0.4
+   Compiling dtoa v1.0.11
+   Compiling percent-encoding v2.3.2
+    Checking log v0.4.34
+    Checking raw-window-handle v0.6.2
+   Compiling form_urlencoded v1.2.2
+   Compiling dtoa-short v0.3.5
+    Checking windows v0.61.3
+   Compiling uuid v1.26.1
+   Compiling idna v1.1.0
+   Compiling cssparser-macros v0.6.1
+   Compiling derive_more-impl v2.1.1
+   Compiling tendril v0.5.1
+   Compiling selectors v0.36.1
+   Compiling aho-corasick v1.1.5
+   Compiling indexmap v1.9.3
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling unic-char-range v0.9.0
+   Compiling byteorder v1.5.0
+   Compiling regex-syntax v0.8.11
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling camino v1.2.5
+   Compiling unic-common v0.9.0
+   Compiling unic-ucd-version v0.9.0
+   Compiling alloc-stdlib v0.2.4
+   Compiling unic-char-property v0.9.0
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling derive_more v2.1.1
+   Compiling regex-automata v0.4.18
+   Compiling markup5ever v0.38.0
+   Compiling cssparser v0.36.0
+   Compiling url v2.5.8
+   Compiling serde_derive_internals v0.29.1
+   Compiling servo_arc v0.4.3
+    Checking windows-sys v0.61.2
+   Compiling rustc-hash v2.1.3
+   Compiling fnv v1.0.7
+   Compiling hashbrown v0.12.3
+   Compiling deranged v0.5.8
+   Compiling libm v0.2.16
+   Compiling powerfmt v0.2.0
+    Checking once_cell v1.21.4
+   Compiling bit-vec v0.8.0
+   Compiling schemars v0.8.22
+   Compiling time v0.3.55
+   Compiling bit-set v0.8.0
+   Compiling cfb v0.7.3
+   Compiling schemars_derive v0.8.22
+   Compiling regex v1.13.1
+   Compiling html5ever v0.38.0
+   Compiling unic-ucd-ident v0.9.0
+   Compiling brotli-decompressor v5.0.3
+   Compiling jsonptr v0.6.3
+   Compiling cargo-platform v0.1.9
+   Compiling quick-xml v0.42.0
+   Compiling num-traits v0.2.19
+   Compiling khronos_api v3.1.0
+   Compiling dunce v1.0.5
+   Compiling base64 v0.23.1
+   Compiling dyn-clone v1.0.20
+   Compiling bytes v1.12.1
+    Checking itoa v1.0.18
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling http v1.5.0
+   Compiling plist v1.10.1
+   Compiling dom_query v0.27.0
+   Compiling brotli v8.0.4
+   Compiling cargo_metadata v0.19.2
+   Compiling json-patch v3.0.1
+   Compiling urlpattern v0.3.0
+   Compiling serde-untagged v0.1.9
+   Compiling infer v0.19.0
+   Compiling serde_with v3.23.0
+   Compiling ctor v0.8.0
+   Compiling generic-array v0.14.7
+    Checking windows-result v0.4.1
+    Checking windows-strings v0.5.1
+   Compiling simd-adler32 v0.3.10
+   Compiling zerocopy v0.8.63
+   Compiling glob v0.3.4
+   Compiling find-msvc-tools v0.1.12
+    Checking scopeguard v1.2.0
+   Compiling shlex v2.0.1
+    Checking lock_api v0.4.14
+   Compiling cc v1.4.5
+    Checking windows-core v0.62.2
+   Compiling tauri-utils v2.9.3
+   Compiling rustc_version v0.4.1
+   Compiling zerocopy-derive v0.8.63
+   Compiling time-macros v0.2.32
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling typenum v1.20.1
+   Compiling crc32fast v1.5.1
+   Compiling adler2 v2.0.1
+   Compiling xml-rs v0.8.29
+   Compiling winnow v0.7.15
+   Compiling option-ext v0.2.0
+    Checking rustc-hash v1.1.0
+    Checking naga-types v30.0.1
+   Compiling dirs-sys v0.5.0
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling gl_generator v0.14.0
+   Compiling embed-resource v3.0.11
+   Compiling naga v30.0.1
+   Compiling webview2-com-sys v0.38.2
+   Compiling bytemuck_derive v1.12.1
+    Checking libloading v0.8.9
+   Compiling crossbeam-utils v0.8.23
+    Checking bit-vec v0.9.1
+   Compiling ash v0.38.0+1.3.281
+   Compiling heck v0.5.0
+    Checking unicode-width v0.2.2
+    Checking codespan-reporting v0.13.1
+    Checking half v2.7.1
+    Checking bytemuck v1.25.2
+    Checking bit-set v0.10.0
+   Compiling tauri-winres v0.3.6
+   Compiling cargo_toml v0.22.3
+   Compiling glutin_wgl_sys v0.6.1
+   Compiling dirs v6.0.0
+   Compiling miniz_oxide v0.9.1
+    Checking winapi-util v0.1.11
+    Checking spirv v0.4.0+sdk-1.4.341.0
+    Checking dpi v0.1.2
+   Compiling cookie v0.18.2
+    Checking windows-threading v0.2.1
+   Compiling khronos-egl v6.0.0
+    Checking arrayvec v0.7.8
+    Checking allocator-api2 v0.2.21
+   Compiling windows_x86_64_msvc v0.52.6
+    Checking static_assertions v1.1.0
+    Checking unicode-ident v1.0.26
+    Checking hashbrown v0.16.1
+    Checking wgpu-types v30.0.1
+    Checking windows-future v0.3.2
+   Compiling flate2 v1.1.10
+   Compiling tauri-build v2.6.3
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling miniz_oxide v0.8.9
+    Checking windows-numerics v0.3.1
+    Checking windows-collections v0.3.2
+   Compiling fdeflate v0.3.7
+   Compiling wgpu-hal v30.0.1
+   Compiling webview2-com-macros v0.8.1
+    Checking windows-version v0.1.7
+    Checking pin-project-lite v0.2.17
+   Compiling bitflags v1.3.2
+    Checking unicode-segmentation v1.13.3
+    Checking presser v0.3.1
+   Compiling png v0.17.16
+    Checking wgpu-naga-bridge v30.0.1
+    Checking webview2-com v0.38.2
+    Checking windows v0.62.2
+   Compiling digest v0.10.7
+    Checking crossbeam-channel v0.5.17
+    Checking ordered-float v5.4.0
+    Checking glow v0.17.0
+    Checking tracing-core v0.1.36
+   Compiling tauri-runtime v2.11.3
+    Checking range-alloc v0.1.5
+   Compiling cpufeatures v0.2.17
+   Compiling wry v0.55.1
+    Checking renderdoc-sys v1.1.0
+    Checking profiling v1.0.18
+    Checking tracing v0.1.44
+   Compiling sha2 v0.10.9
+    Checking windows-targets v0.52.6
+   Compiling ico v0.5.0
+    Checking gpu-allocator v0.28.0
+   Compiling tauri v2.11.5
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+   Compiling getrandom v0.3.4
+   Compiling base64 v0.22.1
+   Compiling tauri-runtime-wry v2.11.4
+   Compiling tauri-codegen v2.6.3
+   Compiling document-features v0.2.12
+    Checking windows-sys v0.59.0
+    Checking softbuffer v0.4.8
+    Checking tao v0.35.3
+    Checking keyboard-types v0.7.0
+   Compiling wgpu v30.0.1
+   Compiling serialize-to-javascript-impl v0.1.2
+    Checking muda v0.19.3
+    Checking serialize-to-javascript v0.1.2
+   Compiling tauri-macros v2.6.3
+    Checking window-vibrancy v0.6.0
+    Checking tokio v1.53.1
+   Compiling spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed)
+   Compiling serde_repr v0.1.21
+    Checking mime v0.3.17
+    Checking pollster v0.4.0
+error[E0308]: mismatched types
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:83:71
+     |
+  83 |             device: gpu_allocator::d3d12::ID3D12DeviceVersion::Device(raw.clone()),
+     |                     ------------------------------------------------- ^^^^^^^^^^^ expected `ID3D12Device`, found `Direct3D12::ID3D12Device`
+     |                     |
+     |                     arguments to this enum variant are incorrect
+     |
+note: there are multiple different versions of crate `windows` in the dependency graph
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/imp/mod.rs:62:9
+     |
+  62 |         pub struct $name(::windows_core::IUnknown);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected type
+     |
+    ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/mod.rs:64:9
+     |
+  64 |         pub struct $name(::windows_core::IUnknown);
+     |         ------------------------------------------- this is the found type
+     |
+    ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.61.3/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9314:1
+     |
+9314 | windows_core::imp::define_interface!(ID3D12Device, ID3D12Device_Vtbl, 0x189819f1_1db6_4b57_be54_1821339b85f7);
+     | ------------------------------------------------------------------------------------------------------------- in this macro invocation
+     = help: you can use `cargo tree` to explore your dependency tree
+note: tuple variant defined here
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpu-allocator-0.28.0/src/d3d12/mod.rs:142:5
+     |
+ 142 |     Device(ID3D12Device),
+     |     ^^^^^^
+     = note: this error originates in the macro `windows_core::imp::define_interface` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `ResourceCategory: From<&D3D12_RESOURCE_DESC>` is not satisfied
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:299:32
+    |
+299 |             resource_category: gpu_allocator::d3d12::ResourceCategory::from(&raw_desc),
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+    |
+help: the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+      but trait `From<&windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC>` is implemented for it
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpu-allocator-0.28.0/src/d3d12/mod.rs:79:1
+    |
+ 79 | impl From<&D3D12_RESOURCE_DESC> for ResourceCategory {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for that trait implementation, expected `windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC`, found `D3D12_RESOURCE_DESC`
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:306:17
+     |
+ 305 |             self.raw.CreatePlacedResource(
+     |                      -------------------- required by a bound introduced by this call
+ 306 |                 allocation.heap(),
+     |                 ^^^^^^^^^^^^^^^^^ the trait `Interface` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+     |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+     |
+    ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ----------------------------------------- this is the found trait
+     = help: you can use `cargo tree` to explore your dependency tree
+     = help: the following other types implement trait `Interface`:
+               Direct3D12::ID3D12DescriptorHeap
+               Direct3D12::ID3D12Device
+               Direct3D12::ID3D12Device2
+               Direct3D12::ID3D12PipelineState
+               Direct3D12::ID3D12RootSignature
+               ICloneViewHelper
+               ICounterItem
+               ICounterItem2
+             and 244 others
+     = note: there are multiple different versions of crate `windows` in the dependency graph
+     = help: you can use `cargo tree` to explore your dependency tree
+     = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+     |
+9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate: ...
+     |                   -------------------- required by a bound in this associated function
+9455 |     where
+9456 |         P0: windows_core::Param<ID3D12Heap>,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+     = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:306:17
+      |
+  305 |             self.raw.CreatePlacedResource(
+      |                      -------------------- required by a bound introduced by this call
+  306 |                 allocation.heap(),
+      |                 ^^^^^^^^^^^^^^^^^ the trait `windows_core::imp::CanInto<ID3D12Heap>` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+      |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ---------------------------
+      | |
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `windows_core::imp::CanInto<ID3D12Heap>` is implemented for `ID3D12Heap1`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/mod.rs:22:9
+      |
+   22 |         impl ::windows_core::imp::CanInto<$parent> for $child {}
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:13607:1
+      |
+13607 | windows_core::imp::interface_hierarchy!(ID3D12Heap1, windows_core::IUnknown, ID3D12Object, ID3D12DeviceChild, ID3D12Pageable, ID3D12Heap);
+      | ----------------------------------------------------------------------------------------------------------------------------------------- in this macro invocation
+      = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+      |
+ 9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate:...
+      |                   -------------------- required by a bound in this associated function
+ 9455 |     where
+ 9456 |         P0: windows_core::Param<ID3D12Heap>,
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+      = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+      = note: consider using `--verbose` to print the full type name to the console
+      = note: this error originates in the macro `$crate::imp::interface_hierarchy` which comes from the expansion of the macro `windows_core::imp::interface_hierarchy` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `ResourceCategory: From<&D3D12_RESOURCE_DESC>` is not satisfied
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:338:32
+    |
+338 |             resource_category: gpu_allocator::d3d12::ResourceCategory::from(&raw_desc),
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+    |
+help: the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+      but trait `From<&windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC>` is implemented for it
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpu-allocator-0.28.0/src/d3d12/mod.rs:79:1
+    |
+ 79 | impl From<&D3D12_RESOURCE_DESC> for ResourceCategory {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for that trait implementation, expected `windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC`, found `D3D12_RESOURCE_DESC`
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:345:17
+     |
+ 344 |             self.raw.CreatePlacedResource(
+     |                      -------------------- required by a bound introduced by this call
+ 345 |                 allocation.heap(),
+     |                 ^^^^^^^^^^^^^^^^^ the trait `Interface` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+     |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+     |
+    ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ----------------------------------------- this is the found trait
+     = help: you can use `cargo tree` to explore your dependency tree
+     = help: the following other types implement trait `Interface`:
+               Direct3D12::ID3D12DescriptorHeap
+               Direct3D12::ID3D12Device
+               Direct3D12::ID3D12Device2
+               Direct3D12::ID3D12PipelineState
+               Direct3D12::ID3D12RootSignature
+               ICloneViewHelper
+               ICounterItem
+               ICounterItem2
+             and 244 others
+     = note: there are multiple different versions of crate `windows` in the dependency graph
+     = help: you can use `cargo tree` to explore your dependency tree
+     = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+     |
+9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate: ...
+     |                   -------------------- required by a bound in this associated function
+9455 |     where
+9456 |         P0: windows_core::Param<ID3D12Heap>,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+     = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:345:17
+      |
+  344 |             self.raw.CreatePlacedResource(
+      |                      -------------------- required by a bound introduced by this call
+  345 |                 allocation.heap(),
+      |                 ^^^^^^^^^^^^^^^^^ the trait `windows_core::imp::CanInto<ID3D12Heap>` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+      |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ---------------------------
+      | |
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `windows_core::imp::CanInto<ID3D12Heap>` is implemented for `ID3D12Heap1`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/mod.rs:22:9
+      |
+   22 |         impl ::windows_core::imp::CanInto<$parent> for $child {}
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:13607:1
+      |
+13607 | windows_core::imp::interface_hierarchy!(ID3D12Heap1, windows_core::IUnknown, ID3D12Object, ID3D12DeviceChild, ID3D12Pageable, ID3D12Heap);
+      | ----------------------------------------------------------------------------------------------------------------------------------------- in this macro invocation
+      = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+      |
+ 9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate:...
+      |                   -------------------- required by a bound in this associated function
+ 9455 |     where
+ 9456 |         P0: windows_core::Param<ID3D12Heap>,
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+      = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+      = note: consider using `--verbose` to print the full type name to the console
+      = note: this error originates in the macro `$crate::imp::interface_hierarchy` which comes from the expansion of the macro `windows_core::imp::interface_hierarchy` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `ResourceCategory: From<&D3D12_RESOURCE_DESC>` is not satisfied
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:377:32
+    |
+377 |             resource_category: gpu_allocator::d3d12::ResourceCategory::from(&raw_desc),
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+    |
+help: the trait `From<&D3D12_RESOURCE_DESC>` is not implemented for `ResourceCategory`
+      but trait `From<&windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC>` is implemented for it
+   --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpu-allocator-0.28.0/src/d3d12/mod.rs:79:1
+    |
+ 79 | impl From<&D3D12_RESOURCE_DESC> for ResourceCategory {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for that trait implementation, expected `windows::Win32::Graphics::Direct3D12::D3D12_RESOURCE_DESC`, found `D3D12_RESOURCE_DESC`
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:384:17
+     |
+ 383 |             self.raw.CreatePlacedResource(
+     |                      -------------------- required by a bound introduced by this call
+ 384 |                 allocation.heap(),
+     |                 ^^^^^^^^^^^^^^^^^ the trait `Interface` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+     |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+     |
+    ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/interface.rs:14:1
+     |
+  14 | pub unsafe trait Interface: Sized + Clone {
+     | ----------------------------------------- this is the found trait
+     = help: you can use `cargo tree` to explore your dependency tree
+     = help: the following other types implement trait `Interface`:
+               Direct3D12::ID3D12DescriptorHeap
+               Direct3D12::ID3D12Device
+               Direct3D12::ID3D12Device2
+               Direct3D12::ID3D12PipelineState
+               Direct3D12::ID3D12RootSignature
+               ICloneViewHelper
+               ICounterItem
+               ICounterItem2
+             and 244 others
+     = note: there are multiple different versions of crate `windows` in the dependency graph
+     = help: you can use `cargo tree` to explore your dependency tree
+     = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+    --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+     |
+9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate: ...
+     |                   -------------------- required by a bound in this associated function
+9455 |     where
+9456 |         P0: windows_core::Param<ID3D12Heap>,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+     = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `&ID3D12Heap: Param<ID3D12Heap, InterfaceType>` is not satisfied
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-hal-30.0.1/src/dx12/suballocation.rs:384:17
+      |
+  383 |             self.raw.CreatePlacedResource(
+      |                      -------------------- required by a bound introduced by this call
+  384 |                 allocation.heap(),
+      |                 ^^^^^^^^^^^^^^^^^ the trait `windows_core::imp::CanInto<ID3D12Heap>` is not implemented for `windows::Win32::Graphics::Direct3D12::ID3D12Heap`
+      |
+note: there are multiple different versions of crate `windows_core` in the dependency graph
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.61.2/src/imp/can_into.rs:1:1
+      |
+    1 | pub trait CanInto<T>: Sized {
+      | ---------------------------
+      | |
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      | this is the found trait
+      = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `windows_core::imp::CanInto<ID3D12Heap>` is implemented for `ID3D12Heap1`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-core-0.62.2/src/imp/mod.rs:22:9
+      |
+   22 |         impl ::windows_core::imp::CanInto<$parent> for $child {}
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |
+     ::: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:13607:1
+      |
+13607 | windows_core::imp::interface_hierarchy!(ID3D12Heap1, windows_core::IUnknown, ID3D12Object, ID3D12DeviceChild, ID3D12Pageable, ID3D12Heap);
+      | ----------------------------------------------------------------------------------------------------------------------------------------- in this macro invocation
+      = note: required for `&windows::Win32::Graphics::Direct3D12::ID3D12Heap` to implement `Param<ID3D12Heap, windows_core::InterfaceType>`
+note: required by a bound in `Direct3D12::ID3D12Device::CreatePlacedResource`
+     --> /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2/src/Windows/Win32/Graphics/Direct3D12/mod.rs:9456:13
+      |
+ 9454 |     pub unsafe fn CreatePlacedResource<P0, T>(&self, pheap: P0, heapoffset: u64, pdesc: *const D3D12_RESOURCE_DESC, initialstate:...
+      |                   -------------------- required by a bound in this associated function
+ 9455 |     where
+ 9456 |         P0: windows_core::Param<ID3D12Heap>,
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ID3D12Device::CreatePlacedResource`
+      = note: the full name for the type has been written to '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/deps/wgpu_hal-c5e7580186690fca.long-type-16768999155530860515.txt'
+      = note: consider using `--verbose` to print the full type name to the console
+      = note: this error originates in the macro `$crate::imp::interface_hierarchy` which comes from the expansion of the macro `windows_core::imp::interface_hierarchy` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `wgpu-hal` (lib) due to 10 previous errors
+warning: build failed, waiting for other jobs to finish...
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+error: failed to run custom build command for `spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed)`
+
+Caused by:
+  process didn't exit successfully: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/debug/build/spike-gpu-embed-80238c9a5b31b061/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rerun-if-changed=/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed/tauri.conf.json
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=spike_gpu_embed
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=com_civ_thegame
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+  cargo:PERMISSION_FILES_PATH=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/x86_64-pc-windows-msvc/debug/build/spike-gpu-embed-4393a4257de8dab7/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=capabilities
+  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
+  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=x86_64-pc-windows-msvc
+  package.metadata does not exist
+  cargo:rerun-if-env-changed=VCINSTALLDIR
+  VCINSTALLDIR = None
+  cargo:rerun-if-env-changed=CC_x86_64-pc-windows-msvc
+  CC_x86_64-pc-windows-msvc = None
+  cargo:rerun-if-env-changed=CC_x86_64_pc_windows_msvc
+  CC_x86_64_pc_windows_msvc = None
+  cargo:rerun-if-env-changed=TARGET_CC
+  TARGET_CC = None
+  cargo:rerun-if-env-changed=CC
+  CC = None
+  cargo:rerun-if-env-changed=CROSS_COMPILE
+  CROSS_COMPILE = None
+  cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+  cargo:warning=GNU compiler is not supported for this target
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=CFLAGS
+  CFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CFLAGS
+  TARGET_CFLAGS = None
+  cargo:rerun-if-env-changed=CFLAGS_x86_64_pc_windows_msvc
+  CFLAGS_x86_64_pc_windows_msvc = None
+  cargo:rerun-if-env-changed=CFLAGS_x86_64-pc-windows-msvc
+  CFLAGS_x86_64-pc-windows-msvc = None
+  cargo:rerun-if-env-changed=CFLAGS
+  CFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CFLAGS
+  TARGET_CFLAGS = None
+  cargo:rerun-if-env-changed=CFLAGS_x86_64_pc_windows_msvc
+  CFLAGS_x86_64_pc_windows_msvc = None
+  cargo:rerun-if-env-changed=CFLAGS_x86_64-pc-windows-msvc
+  CFLAGS_x86_64-pc-windows-msvc = None
+  cargo:warning=GNU compiler is not supported for this target
+
+  --- stderr
+
+  thread 'main' (24774) panicked at /root/.cargo/registry/src/index.crates.io-1949cf8EXIT=101

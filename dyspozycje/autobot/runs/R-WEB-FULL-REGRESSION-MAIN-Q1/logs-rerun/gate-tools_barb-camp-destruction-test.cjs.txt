@@ -1,0 +1,12 @@
+  FAIL: static 4c: checkBarbCampDestructionAlongPath is called on the player move-completion path
+  FAIL: static 4-list: [applyMarchSegmentInstant -- ruch gracza krok-po-kroku (marsz)] -- wywołanie "checkBarbCampDestructionAlongPath(result.movePath)" obecne w main.ts blisko markera "function applyMarchSegmentInstant("
+
+-- Sekcja 9 / weryfikacja mutacyjna: usunięcie KAŻDEGO z 12 wpięć osobno --
+-- Sekcja 9 / degradacja checkBarbCampDestructionAlongPath do hexes.slice(-1) --
+-- Sekcja 9 / cofnięcie naprawy #2 (stary chaseRadius, homeCamp===undefined -> raidReady=false) --
+-- Sekcja 9 / punkt 5 -- odwrócenie fallbacku "raid-ready freeze" (civCities = filtered) --
+
+barb-camp-destruction-test: 83 passed, 2 failed
+
+EXIT=1
+TIME=23.2

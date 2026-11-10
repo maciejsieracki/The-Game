@@ -1,0 +1,8 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=531 landSea=6072 relief=7906 coast=301 riversMain=56640 riversFill=109264 forest=123 deposits=236 starts=2302 total=183376
+FAIL: ziemia: 0 heksów lądu poza szablonem (found 1668)
+FAIL: ziemia: Antarktyda w szablonie nad buforem południowym (found 0 heksów przy r=85)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=300.1

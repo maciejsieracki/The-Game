@@ -1,0 +1,6 @@
+miasta-panstwa-wylaczone-test (P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1)
+
+FAIL: brak PRE-tree (origin/main) w scratchpadzie — uruchom najpierw git archive.
+
+EXIT=1
+TIME=0.1

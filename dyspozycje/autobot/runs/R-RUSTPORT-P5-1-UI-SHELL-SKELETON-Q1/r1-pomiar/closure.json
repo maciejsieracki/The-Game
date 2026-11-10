@@ -1,0 +1,1873 @@
+{
+ "direct": {
+  "src/ui/armyStackHud.ts": [
+   [
+    16,
+    "../game/unit-card-stats"
+   ]
+  ],
+  "src/ui/buildModeHud.ts": [
+   [
+    7,
+    "../render/improvements"
+   ],
+   [
+    17,
+    "../game/cities"
+   ],
+   [
+    22,
+    "../game/cities"
+   ]
+  ],
+  "src/ui/cityAttackChoice.ts": [
+   [
+    15,
+    "../game/mapSiegeDetect"
+   ]
+  ],
+  "src/ui/cityPanel.ts": [
+   [
+    52,
+    "../game/cities"
+   ],
+   [
+    53,
+    "../game/display-names"
+   ],
+   [
+    54,
+    "../game/cities"
+   ],
+   [
+    55,
+    "../game/cities"
+   ],
+   [
+    62,
+    "../game/cities"
+   ],
+   [
+    77,
+    "../game/empire-handel-split"
+   ],
+   [
+    78,
+    "../game/empire-hud-totals"
+   ],
+   [
+    79,
+    "../types/map"
+   ],
+   [
+    80,
+    "../types/hex"
+   ],
+   [
+    81,
+    "../data/loader"
+   ],
+   [
+    82,
+    "../game/unit-power"
+   ],
+   [
+    83,
+    "../game/research"
+   ],
+   [
+    84,
+    "../game/production"
+   ],
+   [
+    114,
+    "../game/building-resource-gate"
+   ],
+   [
+    121,
+    "../game/resource-access"
+   ],
+   [
+    122,
+    "../game/building-stock-cost"
+   ],
+   [
+    132,
+    "../game/building-upgrades"
+   ],
+   [
+    141,
+    "../game/empire-food"
+   ],
+   [
+    142,
+    "../game/population-growth-v85"
+   ],
+   [
+    158,
+    "../game/building-resource-gate"
+   ],
+   [
+    165,
+    "../game/danina-nazwa"
+   ],
+   [
+    166,
+    "../game/manpower"
+   ],
+   [
+    167,
+    "../game/manpower"
+   ],
+   [
+    189,
+    "../game/wealth"
+   ],
+   [
+    200,
+    "../game/turn-economy"
+   ],
+   [
+    208,
+    "../map/territory-work"
+   ],
+   [
+    209,
+    "../render/hexutil"
+   ],
+   [
+    210,
+    "../game/economy"
+   ],
+   [
+    211,
+    "../game/unit-building-bonuses"
+   ],
+   [
+    212,
+    "../game/economy-upkeep"
+   ],
+   [
+    220,
+    "../game/trade-routes"
+   ],
+   [
+    224,
+    "../game/terrain-improvements"
+   ],
+   [
+    225,
+    "../types/hex"
+   ],
+   [
+    226,
+    "../../data/terrain-improvements.json"
+   ],
+   [
+    229,
+    "../game/order"
+   ],
+   [
+    230,
+    "../game/society-breakdown"
+   ],
+   [
+    241,
+    "../game/citizen-resource-upkeep"
+   ],
+   [
+    246,
+    "../game/post-capture-law"
+   ],
+   [
+    251,
+    "../game/society-inputs"
+   ],
+   [
+    252,
+    "../game/culture-religion"
+   ],
+   [
+    253,
+    "../game/society-inputs"
+   ],
+   [
+    259,
+    "../game/economy"
+   ],
+   [
+    269,
+    "../game/converters"
+   ],
+   [
+    274,
+    "../game/empire-food"
+   ],
+   [
+    571,
+    "../game/building-cost-tempo"
+   ],
+   [
+    573,
+    "../game/unit-cost-tempo"
+   ],
+   [
+    575,
+    "../game/population-growth-tempo"
+   ],
+   [
+    577,
+    "../game/difficulty-cost"
+   ]
+  ],
+  "src/ui/cityUxFrame.ts": [
+   [
+    4,
+    "../game/cities"
+   ],
+   [
+    5,
+    "../types/map"
+   ]
+  ],
+  "src/ui/civBrandDisplay.ts": [
+   [
+    6,
+    "../../data/civs.json"
+   ]
+  ],
+  "src/ui/diploListHud.ts": [
+   [
+    5,
+    "../game/diplomacy-display"
+   ]
+  ],
+  "src/ui/diplomacyAcceptanceBalance.ts": [
+   [
+    5,
+    "../game/diplomacy-acceptance-points"
+   ],
+   [
+    6,
+    "../game/diplomacy-acceptance-points"
+   ],
+   [
+    7,
+    "../game/diplomacy-pn-engine"
+   ],
+   [
+    14,
+    "../game/diplomacy-value-catalog"
+   ]
+  ],
+  "src/ui/diplomacyAudience.ts": [
+   [
+    5,
+    "../game/production"
+   ],
+   [
+    6,
+    "../audio/muzyka-antyczna"
+   ],
+   [
+    7,
+    "../game/diplomacy-display"
+   ],
+   [
+    17,
+    "../game/diplomacy-credibility"
+   ],
+   [
+    41,
+    "../game/diplomacy-goods"
+   ],
+   [
+    43,
+    "../game/diplomacy-acceptance-points"
+   ],
+   [
+    49,
+    "../game/diplomacy-proposals"
+   ],
+   [
+    53,
+    "../game/diplomacy-proposals"
+   ],
+   [
+    54,
+    "../game/diplomacy-audience-actions"
+   ],
+   [
+    282,
+    "../game/diplomacy-acceptance-points"
+   ],
+   [
+    283,
+    "../game/diplomacy-acceptance-points"
+   ]
+  ],
+  "src/ui/diplomacyDealDisplay.ts": [
+   [
+    5,
+    "../game/diplomacy-pn-engine"
+   ],
+   [
+    6,
+    "../game/diplomacy-proposals"
+   ],
+   [
+    7,
+    "../game/diplomacy-display"
+   ]
+  ],
+  "src/ui/diplomacyNegotiationModal.ts": [
+   [
+    6,
+    "../game/diplomacy-pn-engine"
+   ],
+   [
+    7,
+    "../game/tech-tempo"
+   ],
+   [
+    8,
+    "../game/difficulty-cost"
+   ],
+   [
+    10,
+    "../game/diplomacy-display"
+   ]
+  ],
+  "src/ui/diplomacyPanel.ts": [
+   [
+    10,
+    "../game/display-names"
+   ]
+  ],
+  "src/ui/diplomacyTradeBasket.ts": [
+   [
+    7,
+    "../game/diplomacy-war-gates"
+   ],
+   [
+    8,
+    "../game/diplomacy-pn-engine"
+   ],
+   [
+    9,
+    "../game/diplomacy-trade-validation"
+   ],
+   [
+    10,
+    "../game/diplomacy-ai-offer-balance"
+   ],
+   [
+    11,
+    "../game/diplomacy-proposals"
+   ],
+   [
+    15,
+    "../game/tech-tempo"
+   ],
+   [
+    16,
+    "../game/difficulty-cost"
+   ],
+   [
+    17,
+    "../game/diplomacy-value-catalog"
+   ],
+   [
+    33,
+    "../game/diplomacy-deposit-trade"
+   ],
+   [
+    34,
+    "../game/diplomacy-barbarian-cooperation"
+   ],
+   [
+    35,
+    "../../data/units.json"
+   ],
+   [
+    36,
+    "../../data/tech.json"
+   ],
+   [
+    43,
+    "../game/diplomacy-display"
+   ],
+   [
+    44,
+    "../game/diplomacy-display"
+   ],
+   [
+    46,
+    "../game/diplomacy-acceptance-points"
+   ],
+   [
+    52,
+    "../game/diplomacy-proposals"
+   ],
+   [
+    2833,
+    "../game/diplomacy-trade-validation"
+   ]
+  ],
+  "src/ui/empireDetailPanel.ts": [
+   [
+    13,
+    "../game/manpower"
+   ],
+   [
+    14,
+    "../game/building-stock-cost"
+   ],
+   [
+    15,
+    "../game/citizen-resource-upkeep"
+   ],
+   [
+    16,
+    "../game/resource-usage-breakdown"
+   ],
+   [
+    32,
+    "../game/danina-nazwa"
+   ],
+   [
+    33,
+    "../game/cities"
+   ],
+   [
+    34,
+    "../game/cities"
+   ],
+   [
+    35,
+    "../game/cities"
+   ],
+   [
+    43,
+    "../game/population-growth-v85"
+   ]
+  ],
+  "src/ui/empireDetailTypes.ts": [
+   [
+    5,
+    "../game/resource-usage-breakdown"
+   ]
+  ],
+  "src/ui/entityCards/buildingAdapter.ts": [
+   [
+    35,
+    "../../data/loader"
+   ],
+   [
+    36,
+    "../../../data/buildings.json"
+   ],
+   [
+    38,
+    "../../game/production"
+   ],
+   [
+    43,
+    "../../game/building-cost-tempo"
+   ],
+   [
+    44,
+    "../../game/difficulty-cost"
+   ],
+   [
+    45,
+    "../../game/economy-upkeep"
+   ],
+   [
+    46,
+    "../../game/economy"
+   ],
+   [
+    47,
+    "../../game/building-stock-cost"
+   ],
+   [
+    48,
+    "../../game/unit-building-bonuses"
+   ],
+   [
+    49,
+    "../../game/building-upgrades"
+   ]
+  ],
+  "src/ui/entityCards/improvementAdapter.ts": [
+   [
+    26,
+    "../../../data/terrain-improvements.json"
+   ]
+  ],
+  "src/ui/entityCards/registry.ts": [
+   [
+    20,
+    "../../data/loader"
+   ],
+   [
+    21,
+    "../../../data/buildings.json"
+   ],
+   [
+    22,
+    "../../../data/units.json"
+   ],
+   [
+    23,
+    "../../../data/terrain-improvements.json"
+   ],
+   [
+    24,
+    "../../../data/tech.json"
+   ],
+   [
+    25,
+    "../../../data/wonders.json"
+   ]
+  ],
+  "src/ui/entityCards/technologyAdapter.ts": [
+   [
+    33,
+    "../../../data/buildings.json"
+   ],
+   [
+    34,
+    "../../../data/units.json"
+   ],
+   [
+    35,
+    "../../../data/terrain-improvements.json"
+   ],
+   [
+    36,
+    "../../../data/tech.json"
+   ]
+  ],
+  "src/ui/entityCards/unitAdapter.ts": [
+   [
+    39,
+    "../../data/loader"
+   ],
+   [
+    40,
+    "../../../data/counters.json"
+   ],
+   [
+    41,
+    "../../units/setup"
+   ]
+  ],
+  "src/ui/hexContextTooltip.ts": [
+   [
+    4,
+    "../types/hex"
+   ],
+   [
+    5,
+    "../types/hex"
+   ],
+   [
+    6,
+    "../types/map"
+   ],
+   [
+    7,
+    "../game/economy"
+   ],
+   [
+    8,
+    "../game/terrain-improvements"
+   ],
+   [
+    19,
+    "../map/improvement-build"
+   ],
+   [
+    25,
+    "../render/improvements"
+   ],
+   [
+    31,
+    "../render/unitVitalsPalette"
+   ],
+   [
+    37,
+    "../game/resource-access"
+   ],
+   [
+    42,
+    "../game/livestock-unlock"
+   ],
+   [
+    43,
+    "../game/display-names"
+   ],
+   [
+    44,
+    "../game/danina-nazwa"
+   ],
+   [
+    45,
+    "../game/unit-card-stats"
+   ],
+   [
+    46,
+    "../game/unit-power"
+   ],
+   [
+    47,
+    "../game/veteran"
+   ]
+  ],
+  "src/ui/icons/brandAssets.ts": [
+   [
+    8,
+    "../../data/loader"
+   ],
+   [
+    9,
+    "../../units/setup"
+   ]
+  ],
+  "src/ui/improvementBuildConfirm.ts": [
+   [
+    5,
+    "../map/improvement-build"
+   ],
+   [
+    6,
+    "../map/improvement-build"
+   ],
+   [
+    7,
+    "../game/terrain-improvements"
+   ]
+  ],
+  "src/ui/leaderPortraits.ts": [
+   [
+    17,
+    "../../data/civs.json"
+   ],
+   [
+    18,
+    "../data/loader"
+   ]
+  ],
+  "src/ui/mapLoadingOverlay.ts": [
+   [
+    5,
+    "../map/mapGenProgress"
+   ]
+  ],
+  "src/ui/minimapHud.ts": [
+   [
+    10,
+    "../game/visibility"
+   ]
+  ],
+  "src/ui/newGameFlow.ts": [
+   [
+    20,
+    "../data/loader"
+   ],
+   [
+    21,
+    "../game/civ-entry-epoch"
+   ],
+   [
+    27,
+    "../map/newGameMapDefaults"
+   ],
+   [
+    49,
+    "../game/start-preview"
+   ],
+   [
+    56,
+    "../game/building-cost-tempo"
+   ],
+   [
+    57,
+    "../game/unit-cost-tempo"
+   ],
+   [
+    58,
+    "../game/population-growth-tempo"
+   ],
+   [
+    59,
+    "../game/ruch-swiata-tempo"
+   ],
+   [
+    63,
+    "../game/civ-matrix-semantic"
+   ]
+  ],
+  "src/ui/orderPanel.ts": [
+   [
+    11,
+    "../game/society-breakdown"
+   ],
+   [
+    12,
+    "../game/citizen-resource-upkeep"
+   ]
+  ],
+  "src/ui/perfReport.ts": [
+   [
+    4,
+    "../buildInfo"
+   ],
+   [
+    5,
+    "../map/mapGenProgress"
+   ],
+   [
+    6,
+    "../map/mapGenProgress"
+   ],
+   [
+    7,
+    "../map/riverGenSwitch"
+   ],
+   [
+    8,
+    "../render/scene"
+   ]
+  ],
+  "src/ui/perfTestPanel.ts": [
+   [
+    17,
+    "three"
+   ],
+   [
+    21,
+    "../map/mapGenAsync"
+   ],
+   [
+    22,
+    "../perf/hardwareProfile"
+   ]
+  ],
+  "src/ui/postBattleSummary.ts": [
+   [
+    5,
+    "../game/battle-summary"
+   ],
+   [
+    6,
+    "../game/battle-summary"
+   ],
+   [
+    7,
+    "../battle/battleHudTheme"
+   ]
+  ],
+  "src/ui/power-labels.ts": [
+   [
+    14,
+    "../../data/power-params.json"
+   ],
+   [
+    15,
+    "../game/power-options"
+   ]
+  ],
+  "src/ui/preBattle.ts": [
+   [
+    13,
+    "../game/production"
+   ],
+   [
+    14,
+    "../game/defenseBreakdown"
+   ],
+   [
+    16,
+    "../battle/battleHudTheme"
+   ],
+   [
+    18,
+    "../audio/muzyka-antyczna"
+   ]
+  ],
+  "src/ui/saveLoadDialog.ts": [
+   [
+    6,
+    "../game/save"
+   ],
+   [
+    15,
+    "../game/fsa-autosave"
+   ]
+  ],
+  "src/ui/sceneTimingReport.ts": [
+   [
+    5,
+    "../map/mapGenProgress"
+   ],
+   [
+    6,
+    "../map/mapGenProgress"
+   ],
+   [
+    7,
+    "../map/riverGenSwitch"
+   ],
+   [
+    8,
+    "../render/scene"
+   ]
+  ],
+  "src/ui/scienceHubHud.ts": [
+   [
+    10,
+    "../data/loader"
+   ],
+   [
+    15,
+    "../game/playerState"
+   ],
+   [
+    16,
+    "../game/era-gate-ui"
+   ]
+  ],
+  "src/ui/sciencePicker.ts": [
+   [
+    13,
+    "../../data/tech.json"
+   ],
+   [
+    14,
+    "../../data/tech.json"
+   ],
+   [
+    15,
+    "../../data/buildings.json"
+   ],
+   [
+    17,
+    "../game/improvement-tech"
+   ],
+   [
+    18,
+    "../game/tech-tempo"
+   ],
+   [
+    19,
+    "../game/difficulty-cost"
+   ]
+  ],
+  "src/ui/siegeMapPanel.ts": [
+   [
+    6,
+    "../game/cities"
+   ],
+   [
+    7,
+    "../game/mapSiegeDetect"
+   ],
+   [
+    8,
+    "../game/turn-economy"
+   ],
+   [
+    9,
+    "../game/siegeMachines"
+   ]
+  ],
+  "src/ui/techDiscoveryNotice.ts": [
+   [
+    46,
+    "../../data/tech.json"
+   ],
+   [
+    47,
+    "../../data/buildings.json"
+   ],
+   [
+    48,
+    "../../data/units.json"
+   ],
+   [
+    49,
+    "../../data/terrain-improvements.json"
+   ],
+   [
+    53,
+    "../render/improvements"
+   ]
+  ],
+  "src/ui/techTreeView.ts": [
+   [
+    18,
+    "../../data/tech.json"
+   ],
+   [
+    21,
+    "../game/improvement-tech"
+   ],
+   [
+    22,
+    "../game/tech-tempo"
+   ],
+   [
+    23,
+    "../game/difficulty-cost"
+   ]
+  ],
+  "src/ui/techUnlockParse.ts": [
+   [
+    20,
+    "../../data/units.json"
+   ]
+  ],
+  "src/ui/uiParams.ts": [
+   [
+    15,
+    "../../data/ui-params.json"
+   ]
+  ],
+  "src/ui/unitCardStatus.ts": [
+   [
+    5,
+    "../game/unit-building-bonuses"
+   ],
+   [
+    10,
+    "../game/veteran"
+   ],
+   [
+    11,
+    "../game/unit-card-stats"
+   ]
+  ],
+  "src/ui/unitInfoCard.ts": [
+   [
+    27,
+    "../data/loader"
+   ],
+   [
+    31,
+    "../units/setup"
+   ]
+  ],
+  "src/ui/unitInfographic.ts": [
+   [
+    5,
+    "../data/loader"
+   ],
+   [
+    6,
+    "../units/setup"
+   ]
+  ],
+  "src/ui/unitMiniPreview.ts": [
+   [
+    4,
+    "three"
+   ],
+   [
+    5,
+    "../render/units"
+   ],
+   [
+    6,
+    "../units/setup"
+   ],
+   [
+    7,
+    "../data/loader"
+   ]
+  ],
+  "src/ui/unitRecruitCard.ts": [
+   [
+    6,
+    "../data/loader"
+   ],
+   [
+    7,
+    "../game/production"
+   ],
+   [
+    8,
+    "../game/manpower"
+   ],
+   [
+    9,
+    "../units/setup"
+   ]
+  ],
+  "src/ui/victoryScreen.ts": [
+   [
+    8,
+    "../game/victory"
+   ],
+   [
+    9,
+    "../game/victory"
+   ]
+  ],
+  "src/ui/wikiHubHud.ts": [
+   [
+    5,
+    "../data/wikiBundle.json"
+   ]
+  ]
+ },
+ "trans": {
+  "src/ui/armyListHud.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armyMergePanel.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armyMergePickPanel.ts": [
+   "src/ui/armyMergePanel.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armySplitPanel.ts": [
+   "src/ui/armyMergePanel.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/bottomBarHud.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityCaptureNotice.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityForeignPick.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityListHud.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityUnitPick.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/contextPanelHud.ts": [
+   "src/ui/unitCardStatus.ts"
+  ],
+  "src/ui/diploUiSkin.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/leaderPortraits.ts"
+  ],
+  "src/ui/diplomacyPendingHud.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/diplomacyProposalBanner.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/empireOverlayHud.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/entityCards/renderer.ts": [
+   "src/ui/entityCards/buildingAdapter.ts",
+   "src/ui/entityCards/improvementAdapter.ts",
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/technologyAdapter.ts",
+   "src/ui/entityCards/unitAdapter.ts",
+   "src/ui/entityCards/wonderAdapter.ts",
+   "src/ui/unitMiniPreview.ts"
+  ],
+  "src/ui/entityCards/wonderAdapter.ts": [
+   "src/ui/entityCards/registry.ts"
+  ],
+  "src/ui/gamePauseMenu.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/hotSeatHandoff.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/hud.ts": [
+   "src/ui/armyListHud.ts",
+   "src/ui/armyStackHud.ts",
+   "src/ui/bottomBarHud.ts",
+   "src/ui/buildModeHud.ts",
+   "src/ui/cityListHud.ts",
+   "src/ui/contextPanelHud.ts",
+   "src/ui/diploListHud.ts",
+   "src/ui/diplomacyAudience.ts",
+   "src/ui/empireDetailPanel.ts",
+   "src/ui/empireOverlayHud.ts",
+   "src/ui/hudChip6c.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/iconRegistry.ts",
+   "src/ui/icons/wikiBookIcon.ts",
+   "src/ui/leaderBannersHud.ts",
+   "src/ui/leaderPortraits.ts",
+   "src/ui/mapToolbarHud.ts",
+   "src/ui/minimapHud.ts",
+   "src/ui/power-labels.ts",
+   "src/ui/powerOverlayHud.ts",
+   "src/ui/scienceHubHud.ts",
+   "src/ui/sidePanelHud.ts",
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/hudChip6c.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/iconRegistry.ts"
+  ],
+  "src/ui/icons/iconRegistry.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/icons/wikiBookIcon.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/interHumanDiplomacyHud.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/leaderBannersHud.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/mainMenu.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/uiParams.ts"
+  ],
+  "src/ui/mapToolbarHud.ts": [
+   "src/ui/icons/iconRegistry.ts"
+  ],
+  "src/ui/mapUnitHudSkin.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/powerOverlayHud.ts": [
+   "src/ui/power-labels.ts"
+  ],
+  "src/ui/sidePanelEventFilter.ts": [
+   "src/ui/sidePanelHud.ts"
+  ],
+  "src/ui/sidePanelHud.ts": [
+   "src/ui/hexContextTooltip.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/sidePanelEventFilter.ts"
+  ],
+  "src/ui/unitActionBarHtml.ts": [
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/unitForeignPick.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/unitPanelHud.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/mapUnitHudSkin.ts",
+   "src/ui/unitCardStatus.ts"
+  ],
+  "src/ui/unitReplacePicker.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/mapUnitHudSkin.ts"
+  ]
+ },
+ "clean": [
+  "src/ui/aiCivPicker.ts",
+  "src/ui/armyStackPrompt.ts",
+  "src/ui/brandTokenVars.ts",
+  "src/ui/buildStampToggle.ts",
+  "src/ui/buildingHoverTooltip.ts",
+  "src/ui/civElimNotice.ts",
+  "src/ui/empireBalance.ts",
+  "src/ui/empireMiastaTable.ts",
+  "src/ui/empirePanelSectionMap.ts",
+  "src/ui/entityCards/civpediaOpenGate.ts",
+  "src/ui/entityCards/slug.ts",
+  "src/ui/entityCards/types.ts",
+  "src/ui/escapeOverlayStack.ts",
+  "src/ui/formatPl.ts",
+  "src/ui/hoverDetailDock.ts",
+  "src/ui/hudLayout.ts",
+  "src/ui/hudPanelDismiss.ts",
+  "src/ui/hudTitleTooltip.ts",
+  "src/ui/icons/scienceOwlIcon.ts",
+  "src/ui/icons/scienceProgressRing.ts",
+  "src/ui/mapUnitCursor.ts",
+  "src/ui/markdownLite.ts",
+  "src/ui/minimapLayout.ts",
+  "src/ui/naukaLabel.ts",
+  "src/ui/resourceColors.ts",
+  "src/ui/scienceHubSnapshotLogic.ts",
+  "src/ui/sideListHud.css.ts",
+  "src/ui/sidePanelLayout.ts",
+  "src/ui/techIcons.ts",
+  "src/ui/treasuryBalanceFormat.ts",
+  "src/ui/triumphCityStateNotice.ts",
+  "src/ui/turnTransitionOverlay.ts",
+  "src/ui/unitCtxDockDiploGate.ts",
+  "src/ui/wonderCompletedNotice.ts"
+ ],
+ "uideps": {
+  "src/ui/aiCivPicker.ts": [],
+  "src/ui/armyListHud.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/hudPanelDismiss.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/sideListHud.css.ts"
+  ],
+  "src/ui/armyMergePanel.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armyMergePickPanel.ts": [
+   "src/ui/armyMergePanel.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armySplitPanel.ts": [
+   "src/ui/armyMergePanel.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/armyStackHud.ts": [
+   "src/ui/formatPl.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/mapUnitHudSkin.ts",
+   "src/ui/unitCardStatus.ts",
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/armyStackPrompt.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/bottomBarHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/brandTokenVars.ts": [
+   "src/ui/resourceColors.ts"
+  ],
+  "src/ui/buildModeHud.ts": [
+   "src/ui/entityCards/renderer.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/techIcons.ts"
+  ],
+  "src/ui/buildStampToggle.ts": [],
+  "src/ui/buildingHoverTooltip.ts": [
+   "src/ui/hoverDetailDock.ts"
+  ],
+  "src/ui/cityAttackChoice.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityCaptureNotice.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityForeignPick.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityListHud.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/hudPanelDismiss.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/sideListHud.css.ts"
+  ],
+  "src/ui/cityPanel.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/cityUxFrame.ts",
+   "src/ui/entityCards/buildingAdapter.ts",
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/renderer.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/entityCards/unitAdapter.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/hoverDetailDock.ts",
+   "src/ui/hud.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/scienceOwlIcon.ts",
+   "src/ui/naukaLabel.ts",
+   "src/ui/orderPanel.ts",
+   "src/ui/resourceColors.ts",
+   "src/ui/techDiscoveryNotice.ts",
+   "src/ui/techIcons.ts",
+   "src/ui/uiParams.ts",
+   "src/ui/unitInfographic.ts",
+   "src/ui/unitMiniPreview.ts",
+   "src/ui/unitRecruitCard.ts"
+  ],
+  "src/ui/cityUnitPick.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/cityUxFrame.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/cityPanel.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hoverDetailDock.ts",
+   "src/ui/hudLayout.ts"
+  ],
+  "src/ui/civBrandDisplay.ts": [],
+  "src/ui/civElimNotice.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/contextPanelHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/unitCardStatus.ts"
+  ],
+  "src/ui/diploListHud.ts": [
+   "src/ui/diploUiSkin.ts",
+   "src/ui/diplomacyPanel.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hudPanelDismiss.ts",
+   "src/ui/sidePanelLayout.ts",
+   "src/ui/unitCtxDockDiploGate.ts"
+  ],
+  "src/ui/diploUiSkin.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/leaderPortraits.ts"
+  ],
+  "src/ui/diplomacyAcceptanceBalance.ts": [
+   "src/ui/formatPl.ts"
+  ],
+  "src/ui/diplomacyAudience.ts": [
+   "src/ui/civBrandDisplay.ts",
+   "src/ui/diploUiSkin.ts",
+   "src/ui/diplomacyAcceptanceBalance.ts",
+   "src/ui/diplomacyDealDisplay.ts",
+   "src/ui/diplomacyNegotiationModal.ts",
+   "src/ui/diplomacyProposalBanner.ts",
+   "src/ui/diplomacyTradeBasket.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/leaderPortraits.ts",
+   "src/ui/unitCtxDockDiploGate.ts"
+  ],
+  "src/ui/diplomacyDealDisplay.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/diplomacyNegotiationModal.ts": [
+   "src/ui/diploUiSkin.ts",
+   "src/ui/diplomacyAudience.ts"
+  ],
+  "src/ui/diplomacyPanel.ts": [
+   "src/ui/diploUiSkin.ts",
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/diplomacyPendingHud.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/diplomacyProposalBanner.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/diplomacyTradeBasket.ts": [
+   "src/ui/diploUiSkin.ts",
+   "src/ui/diplomacyAcceptanceBalance.ts",
+   "src/ui/diplomacyAudience.ts",
+   "src/ui/diplomacyDealDisplay.ts",
+   "src/ui/diplomacyNegotiationModal.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/empireBalance.ts": [
+   "src/ui/formatPl.ts"
+  ],
+  "src/ui/empireDetailPanel.ts": [
+   "src/ui/civBrandDisplay.ts",
+   "src/ui/empireDetailTypes.ts",
+   "src/ui/empireMiastaTable.ts",
+   "src/ui/empirePanelSectionMap.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/power-labels.ts",
+   "src/ui/powerOverlayHud.ts",
+   "src/ui/treasuryBalanceFormat.ts"
+  ],
+  "src/ui/empireDetailTypes.ts": [
+   "src/ui/hud.ts"
+  ],
+  "src/ui/empireMiastaTable.ts": [],
+  "src/ui/empireOverlayHud.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/empirePanelSectionMap.ts": [],
+  "src/ui/entityCards/buildingAdapter.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/entityCards/civpediaOpenGate.ts": [],
+  "src/ui/entityCards/improvementAdapter.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/entityCards/registry.ts": [
+   "src/ui/entityCards/slug.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/sciencePicker.ts"
+  ],
+  "src/ui/entityCards/renderer.ts": [
+   "src/ui/entityCards/buildingAdapter.ts",
+   "src/ui/entityCards/civpediaOpenGate.ts",
+   "src/ui/entityCards/improvementAdapter.ts",
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/technologyAdapter.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/entityCards/unitAdapter.ts",
+   "src/ui/entityCards/wonderAdapter.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hoverDetailDock.ts",
+   "src/ui/unitMiniPreview.ts"
+  ],
+  "src/ui/entityCards/slug.ts": [],
+  "src/ui/entityCards/technologyAdapter.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/naukaLabel.ts",
+   "src/ui/techIcons.ts"
+  ],
+  "src/ui/entityCards/types.ts": [],
+  "src/ui/entityCards/unitAdapter.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/unitInfographic.ts"
+  ],
+  "src/ui/entityCards/wonderAdapter.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/types.ts"
+  ],
+  "src/ui/escapeOverlayStack.ts": [],
+  "src/ui/formatPl.ts": [],
+  "src/ui/gamePauseMenu.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/hexContextTooltip.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/unitActionBarHtml.ts",
+   "src/ui/unitCardStatus.ts",
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/hotSeatHandoff.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/hoverDetailDock.ts": [],
+  "src/ui/hud.ts": [
+   "src/ui/armyListHud.ts",
+   "src/ui/armyStackHud.ts",
+   "src/ui/bottomBarHud.ts",
+   "src/ui/brandTokenVars.ts",
+   "src/ui/buildModeHud.ts",
+   "src/ui/buildStampToggle.ts",
+   "src/ui/cityListHud.ts",
+   "src/ui/contextPanelHud.ts",
+   "src/ui/diploListHud.ts",
+   "src/ui/diplomacyAudience.ts",
+   "src/ui/empireDetailPanel.ts",
+   "src/ui/empireOverlayHud.ts",
+   "src/ui/formatPl.ts",
+   "src/ui/hudChip6c.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/hudTitleTooltip.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/iconRegistry.ts",
+   "src/ui/icons/wikiBookIcon.ts",
+   "src/ui/leaderBannersHud.ts",
+   "src/ui/leaderPortraits.ts",
+   "src/ui/mapToolbarHud.ts",
+   "src/ui/minimapHud.ts",
+   "src/ui/minimapLayout.ts",
+   "src/ui/naukaLabel.ts",
+   "src/ui/power-labels.ts",
+   "src/ui/powerOverlayHud.ts",
+   "src/ui/resourceColors.ts",
+   "src/ui/scienceHubHud.ts",
+   "src/ui/sidePanelHud.ts",
+   "src/ui/unitCtxDockDiploGate.ts",
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/hudChip6c.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/iconRegistry.ts",
+   "src/ui/icons/scienceOwlIcon.ts",
+   "src/ui/icons/scienceProgressRing.ts"
+  ],
+  "src/ui/hudLayout.ts": [],
+  "src/ui/hudPanelDismiss.ts": [],
+  "src/ui/hudTitleTooltip.ts": [],
+  "src/ui/icons/brandAssets.ts": [],
+  "src/ui/icons/iconRegistry.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/scienceOwlIcon.ts"
+  ],
+  "src/ui/icons/scienceOwlIcon.ts": [],
+  "src/ui/icons/scienceProgressRing.ts": [],
+  "src/ui/icons/wikiBookIcon.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/improvementBuildConfirm.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/interHumanDiplomacyHud.ts": [
+   "src/ui/diploUiSkin.ts"
+  ],
+  "src/ui/leaderBannersHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/leaderPortraits.ts": [],
+  "src/ui/mainMenu.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/uiParams.ts"
+  ],
+  "src/ui/mapLoadingOverlay.ts": [
+   "src/ui/brandTokenVars.ts"
+  ],
+  "src/ui/mapToolbarHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/icons/iconRegistry.ts",
+   "src/ui/icons/scienceOwlIcon.ts",
+   "src/ui/icons/scienceProgressRing.ts"
+  ],
+  "src/ui/mapUnitCursor.ts": [],
+  "src/ui/mapUnitHudSkin.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/markdownLite.ts": [],
+  "src/ui/minimapHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/minimapLayout.ts"
+  ],
+  "src/ui/minimapLayout.ts": [
+   "src/ui/hudLayout.ts",
+   "src/ui/sidePanelLayout.ts"
+  ],
+  "src/ui/naukaLabel.ts": [],
+  "src/ui/newGameFlow.ts": [
+   "src/ui/aiCivPicker.ts",
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hudTitleTooltip.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/uiParams.ts"
+  ],
+  "src/ui/orderPanel.ts": [
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/perfReport.ts": [],
+  "src/ui/perfTestPanel.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/uiParams.ts"
+  ],
+  "src/ui/postBattleSummary.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/leaderPortraits.ts"
+  ],
+  "src/ui/power-labels.ts": [],
+  "src/ui/powerOverlayHud.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/power-labels.ts"
+  ],
+  "src/ui/preBattle.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hud.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/leaderPortraits.ts"
+  ],
+  "src/ui/resourceColors.ts": [],
+  "src/ui/saveLoadDialog.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/sceneTimingReport.ts": [
+   "src/ui/perfReport.ts"
+  ],
+  "src/ui/scienceHubHud.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hudPanelDismiss.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/scienceOwlIcon.ts",
+   "src/ui/sciencePicker.ts",
+   "src/ui/sidePanelLayout.ts",
+   "src/ui/techDiscoveryNotice.ts",
+   "src/ui/techIcons.ts"
+  ],
+  "src/ui/scienceHubSnapshotLogic.ts": [],
+  "src/ui/sciencePicker.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/scienceOwlIcon.ts",
+   "src/ui/scienceHubHud.ts",
+   "src/ui/scienceHubSnapshotLogic.ts",
+   "src/ui/sidePanelLayout.ts",
+   "src/ui/techDiscoveryNotice.ts",
+   "src/ui/techIcons.ts",
+   "src/ui/techUnlockParse.ts"
+  ],
+  "src/ui/sideListHud.css.ts": [
+   "src/ui/sidePanelLayout.ts"
+  ],
+  "src/ui/sidePanelEventFilter.ts": [
+   "src/ui/sidePanelHud.ts"
+  ],
+  "src/ui/sidePanelHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/hexContextTooltip.ts",
+   "src/ui/hudLayout.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/minimapLayout.ts",
+   "src/ui/sidePanelEventFilter.ts",
+   "src/ui/sidePanelLayout.ts",
+   "src/ui/unitCtxDockDiploGate.ts"
+  ],
+  "src/ui/sidePanelLayout.ts": [
+   "src/ui/hudLayout.ts"
+  ],
+  "src/ui/siegeMapPanel.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/techDiscoveryNotice.ts": [
+   "src/ui/entityCards/registry.ts",
+   "src/ui/entityCards/renderer.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/techIcons.ts"
+  ],
+  "src/ui/techIcons.ts": [],
+  "src/ui/techTreeView.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/icons/scienceProgressRing.ts",
+   "src/ui/sciencePicker.ts",
+   "src/ui/techDiscoveryNotice.ts",
+   "src/ui/techIcons.ts",
+   "src/ui/techUnlockParse.ts"
+  ],
+  "src/ui/techUnlockParse.ts": [],
+  "src/ui/treasuryBalanceFormat.ts": [
+   "src/ui/formatPl.ts"
+  ],
+  "src/ui/triumphCityStateNotice.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ],
+  "src/ui/turnTransitionOverlay.ts": [
+   "src/ui/brandTokenVars.ts"
+  ],
+  "src/ui/uiParams.ts": [],
+  "src/ui/unitActionBarHtml.ts": [
+   "src/ui/unitPanelHud.ts"
+  ],
+  "src/ui/unitCardStatus.ts": [
+   "src/ui/formatPl.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/unitCtxDockDiploGate.ts": [],
+  "src/ui/unitForeignPick.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts"
+  ],
+  "src/ui/unitInfoCard.ts": [
+   "src/ui/entityCards/renderer.ts",
+   "src/ui/entityCards/types.ts",
+   "src/ui/entityCards/unitAdapter.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/unitInfographic.ts",
+   "src/ui/unitMiniPreview.ts"
+  ],
+  "src/ui/unitInfographic.ts": [],
+  "src/ui/unitMiniPreview.ts": [],
+  "src/ui/unitPanelHud.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/mapUnitHudSkin.ts",
+   "src/ui/unitCardStatus.ts"
+  ],
+  "src/ui/unitRecruitCard.ts": [
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/unitInfographic.ts"
+  ],
+  "src/ui/unitReplacePicker.ts": [
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/icons/brandAssets.ts",
+   "src/ui/mapUnitHudSkin.ts"
+  ],
+  "src/ui/victoryScreen.ts": [
+   "src/ui/brandTokenVars.ts"
+  ],
+  "src/ui/wikiHubHud.ts": [
+   "src/ui/brandTokenVars.ts",
+   "src/ui/entityCards/civpediaOpenGate.ts",
+   "src/ui/entityCards/slug.ts",
+   "src/ui/escapeOverlayStack.ts",
+   "src/ui/hudPanelDismiss.ts",
+   "src/ui/icons/wikiBookIcon.ts",
+   "src/ui/markdownLite.ts",
+   "src/ui/sidePanelLayout.ts"
+  ],
+  "src/ui/wonderCompletedNotice.ts": [
+   "src/ui/escapeOverlayStack.ts"
+  ]
+ },
+ "assets": {
+  "src/ui/aiCivPicker.ts": [],
+  "src/ui/armyListHud.ts": [],
+  "src/ui/armyMergePanel.ts": [],
+  "src/ui/armyMergePickPanel.ts": [],
+  "src/ui/armySplitPanel.ts": [],
+  "src/ui/armyStackHud.ts": [],
+  "src/ui/armyStackPrompt.ts": [],
+  "src/ui/bottomBarHud.ts": [],
+  "src/ui/brandTokenVars.ts": [
+   "src/ui/icons/brand/tokens.css"
+  ],
+  "src/ui/buildModeHud.ts": [],
+  "src/ui/buildStampToggle.ts": [],
+  "src/ui/buildingHoverTooltip.ts": [],
+  "src/ui/cityAttackChoice.ts": [],
+  "src/ui/cityCaptureNotice.ts": [],
+  "src/ui/cityForeignPick.ts": [],
+  "src/ui/cityListHud.ts": [],
+  "src/ui/cityPanel.ts": [],
+  "src/ui/cityUnitPick.ts": [],
+  "src/ui/cityUxFrame.ts": [],
+  "src/ui/civBrandDisplay.ts": [],
+  "src/ui/civElimNotice.ts": [],
+  "src/ui/contextPanelHud.ts": [],
+  "src/ui/diploListHud.ts": [],
+  "src/ui/diploUiSkin.ts": [
+   "src/ui/icons/brand/civ-icon-map.json"
+  ],
+  "src/ui/diplomacyAcceptanceBalance.ts": [],
+  "src/ui/diplomacyAudience.ts": [],
+  "src/ui/diplomacyDealDisplay.ts": [],
+  "src/ui/diplomacyNegotiationModal.ts": [],
+  "src/ui/diplomacyPanel.ts": [],
+  "src/ui/diplomacyPendingHud.ts": [],
+  "src/ui/diplomacyProposalBanner.ts": [],
+  "src/ui/diplomacyTradeBasket.ts": [],
+  "src/ui/empireBalance.ts": [],
+  "src/ui/empireDetailPanel.ts": [],
+  "src/ui/empireDetailTypes.ts": [],
+  "src/ui/empireMiastaTable.ts": [],
+  "src/ui/empireOverlayHud.ts": [],
+  "src/ui/empirePanelSectionMap.ts": [],
+  "src/ui/entityCards/buildingAdapter.ts": [],
+  "src/ui/entityCards/civpediaOpenGate.ts": [],
+  "src/ui/entityCards/improvementAdapter.ts": [],
+  "src/ui/entityCards/registry.ts": [],
+  "src/ui/entityCards/renderer.ts": [],
+  "src/ui/entityCards/slug.ts": [],
+  "src/ui/entityCards/technologyAdapter.ts": [],
+  "src/ui/entityCards/types.ts": [],
+  "src/ui/entityCards/unitAdapter.ts": [],
+  "src/ui/entityCards/wonderAdapter.ts": [],
+  "src/ui/escapeOverlayStack.ts": [],
+  "src/ui/formatPl.ts": [],
+  "src/ui/gamePauseMenu.ts": [],
+  "src/ui/hexContextTooltip.ts": [],
+  "src/ui/hotSeatHandoff.ts": [],
+  "src/ui/hoverDetailDock.ts": [],
+  "src/ui/hud.ts": [],
+  "src/ui/hudChip6c.ts": [],
+  "src/ui/hudLayout.ts": [],
+  "src/ui/hudPanelDismiss.ts": [],
+  "src/ui/hudTitleTooltip.ts": [],
+  "src/ui/icons/brandAssets.ts": [
+   "src/ui/icons/brand/building-icon-map.json",
+   "src/ui/icons/brand/civ-icon-map.json",
+   "src/ui/icons/brand/epoch-icon-map.json",
+   "src/ui/icons/brand/icons-manifest.json",
+   "src/ui/icons/brand/improvement-icon-map.json",
+   "src/ui/icons/brand/menu-background.css",
+   "src/ui/icons/brand/menu-components.css",
+   "src/ui/icons/brand/menu-emblem.svg",
+   "src/ui/icons/brand/motion.css",
+   "src/ui/icons/brand/resources-map-icon-map.json",
+   "src/ui/icons/brand/setting-icon-map.json",
+   "src/ui/icons/brand/unit-icon-map.json"
+  ],
+  "src/ui/icons/iconRegistry.ts": [],
+  "src/ui/icons/scienceOwlIcon.ts": [
+   "src/ui/icons/brand/tier1/res-science-24.svg"
+  ],
+  "src/ui/icons/scienceProgressRing.ts": [],
+  "src/ui/icons/wikiBookIcon.ts": [],
+  "src/ui/improvementBuildConfirm.ts": [],
+  "src/ui/interHumanDiplomacyHud.ts": [],
+  "src/ui/leaderBannersHud.ts": [],
+  "src/ui/leaderPortraits.ts": [],
+  "src/ui/mainMenu.ts": [
+   "src/ui/assets/hero/hero-menu.png"
+  ],
+  "src/ui/mapLoadingOverlay.ts": [],
+  "src/ui/mapToolbarHud.ts": [],
+  "src/ui/mapUnitCursor.ts": [],
+  "src/ui/mapUnitHudSkin.ts": [],
+  "src/ui/markdownLite.ts": [],
+  "src/ui/minimapHud.ts": [],
+  "src/ui/minimapLayout.ts": [],
+  "src/ui/naukaLabel.ts": [],
+  "src/ui/newGameFlow.ts": [
+   "src/ui/assets/hero/hero-intro.png"
+  ],
+  "src/ui/orderPanel.ts": [],
+  "src/ui/perfReport.ts": [],
+  "src/ui/perfTestPanel.ts": [],
+  "src/ui/postBattleSummary.ts": [],
+  "src/ui/power-labels.ts": [],
+  "src/ui/powerOverlayHud.ts": [],
+  "src/ui/preBattle.ts": [],
+  "src/ui/resourceColors.ts": [],
+  "src/ui/saveLoadDialog.ts": [],
+  "src/ui/sceneTimingReport.ts": [],
+  "src/ui/scienceHubHud.ts": [],
+  "src/ui/scienceHubSnapshotLogic.ts": [],
+  "src/ui/sciencePicker.ts": [],
+  "src/ui/sideListHud.css.ts": [],
+  "src/ui/sidePanelEventFilter.ts": [],
+  "src/ui/sidePanelHud.ts": [],
+  "src/ui/sidePanelLayout.ts": [],
+  "src/ui/siegeMapPanel.ts": [],
+  "src/ui/techDiscoveryNotice.ts": [],
+  "src/ui/techIcons.ts": [],
+  "src/ui/techTreeView.ts": [],
+  "src/ui/techUnlockParse.ts": [],
+  "src/ui/treasuryBalanceFormat.ts": [],
+  "src/ui/triumphCityStateNotice.ts": [],
+  "src/ui/turnTransitionOverlay.ts": [],
+  "src/ui/uiParams.ts": [],
+  "src/ui/unitActionBarHtml.ts": [],
+  "src/ui/unitCardStatus.ts": [],
+  "src/ui/unitCtxDockDiploGate.ts": [],
+  "src/ui/unitForeignPick.ts": [],
+  "src/ui/unitInfoCard.ts": [],
+  "src/ui/unitInfographic.ts": [],
+  "src/ui/unitMiniPreview.ts": [],
+  "src/ui/unitPanelHud.ts": [],
+  "src/ui/unitRecruitCard.ts": [],
+  "src/ui/unitReplacePicker.ts": [],
+  "src/ui/victoryScreen.ts": [],
+  "src/ui/wikiHubHud.ts": [],
+  "src/ui/wonderCompletedNotice.ts": []
+ },
+ "pkgs": {
+  "src/ui/perfTestPanel.ts": [
+   "three"
+  ],
+  "src/ui/unitMiniPreview.ts": [
+   "three"
+  ]
+ },
+ "missing": {}
+}

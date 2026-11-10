@@ -1,0 +1,48 @@
+$ awk (NR 225-240, 825-1407) deklaracje najwyzszego poziomu w gen-helpers.ts (pin edb8fb56, 12561 linii)
+228: export function latitudinalOceanBufferRows(height: number, isEarth: boolean): number {
+233: export function isInLatitudinalOceanBuffer(r: number, height: number, isEarth: boolean): boolean {
+238: function climateForestThreshold(band: ClimateBand | undefined, baseForTh: number): number {
+826: export interface TerrainResult {
+832: export interface TerrainClassifyThresholds {
+843: export interface TerrainScratch {
+861: function reliefElevGates(mtnTh: number): { mountain: number; highland: number; landMaskHi: number; landMaskMtn: number } {
+881: const TERRAIN_GLOBAL_MIX_AMP = 0.12;
+882: const TERRAIN_CELL_JITTER_AMP = 0.65;
+889: export function terenCoverageCellSize(): number {
+899: function hashInt3(a: number, b: number, c: number): number {
+911: export function terrainCellBias(q: number, r: number, seed: number, cellSize = terenCoverageCellSize()): number {
+917: function terrainRownLakaJitter(forNoise: number, desNoise: number, cellBias: number): number {
+923: export function classifyTerrain(
+973: export function classifyTerrainFlat(
+1012: export function reapplyForestOverlay(
+1103: const REAPPLY_RELIEF_BUDGET_FRAC: Record<ReliefDensityTier, number> = {
+1109: export function reapplyLandTerrain(
+1163: export type ReliefDensityTier = 'low' | 'medium' | 'high';
+1165: const FALLBACK_RELIEF_FRAC: Record<ReliefDensityTier, { mountain: number; highland: number }> = {
+1172: export function reliefLandFractions(tier: ReliefDensityTier): { mountain: number; highland: number } {
+1177: export const MAP_BORDER_OCEAN_HEXES = 2;
+1180: export const MAP_MARGIN_LAND_ZONE_HEXES = 10;
+1183: export function mapBorderWidth(_width: number, _height: number): number {
+1191: export function marginLandCapForBorderDistance(d: number): number | null {
+1198: function marginScatterScore(q: number, r: number, landScores: Map<string, number>): number {
+1204: function countLandNeighborsInSet(hexes: Record<string, Hex>, q: number, r: number): number {
+1213: function keysAtBorderDistance(
+1233: export function applyMarginalLandZoneCaps(
+1287: export function isInMapMarginZone(q: number, r: number, width: number, height: number): boolean {
+1294: export function landMaskBorderFade(q: number, r: number, width: number, height: number): number {
+1303: export function mapCenterRadialBias(q: number, r: number, width: number, height: number): number {
+1313: export function mapEdgeRectFade(q: number, r: number, width: number, height: number): number {
+1326: function mapCenterDistanceNorm(q: number, r: number, width: number, height: number): number {
+1334: export function hexBorderDistance(q: number, r: number, width: number, height: number): number {
+1338: export function isInMapBorder(q: number, r: number, width: number, height: number, buffer?: number): boolean {
+1344: function isReliefCandidateHex(
+1357: export function countMapBorderHexes(width: number, height: number, buffer?: number): number {
+1369: export function findLandInMapBorder(
+1388: export function enforceMapBorderOcean(
+EXIT=0
+
+$ wc -l (pin)
+ 12561 /tmp/claude-0/webYrvU/gra/src/map/gen-helpers.ts
+   170 /tmp/claude-0/webYrvU/gra/src/map/earth-land-mask.ts
+   140 /tmp/claude-0/webYrvU/gra/src/types/hex.ts
+ 12871 total

@@ -1,0 +1,63 @@
+gra/src/battle/battleScene.ts	99	      2 flashSpeedHud(      12 showBattleRosterFeedback(       2 showBattleStatsOverlay(      25 showDeployFeedback(       1 showDeployFmtFeedback(       2 showEndDetails(       3 showEndScreen(       3 showHoverTooltip(      31 showOrderFeedback(       1 showPostBattleSummary(       1 showResultBanner( 
+gra/src/battle/manualBattle.ts	2	      2 showBanner( 
+gra/src/battle/mapFieldBattle.ts	3	      3 showHint(       1 showPreBattle( 
+gra/src/game/diplomacy-border-march.ts	0	      1 Notice( 
+gra/src/game/eot-event-defer.ts	11	      1 showHintMessage( 
+gra/src/game/era-change-notify.ts	1	      1 ToastHtml( 
+gra/src/game/fsa-autosave.ts	0	      7 showDirectoryPicker( 
+gra/src/main.ts	510	      1 Notice(       2 NoticeOpen(       2 Toast(       1 ToastHtml(       1 showAllianceObligationModal(       2 showArmyListHud(       3 showArmyMergePanel(       1 showArmyMergePickPanel(       1 showArmySplitPanel(       4 showBuildTerritoryBlockedHint(       1 showCaptureReportNotice(       2 showCityAttackChoice(       2 showCityCaptureNotice(       1 showCityForeignPick(       1 showCityListHud(       2 showCityPanel(       1 showCityUnitPick(       1 showCivElimNotice(       4 showDiploListHud(       2 showDiploPairSummary(       1 showDiplomacyAudience(       1 showDiplomacyPendingModal(       3 showDiplomacyProposalBanner(       2 showEmpireDetailPanel(       4 showErr(       1 showError(       2 showForeignCityHexContext(       2 showGhostCity(       2 showGhostImprovement(       3 showHexContextPanel(     300 showHintMessage(       1 showHotSeatHandoff(       1 showHud(       1 showImprovementBuildConfirmModal(       1 showInterHumanDiplomacyHud(       2 showLoadGameDialog(       9 showMainMenu(       5 showMapLoadingOverlay(       2 showNewGameFlow(       1 showPerfTestPanel(       2 showPostBattleSummary(       3 showPreBattle(       1 showSaveGameDialog(       1 showSceneTimingReport(       2 showScienceHubHud(       1 showSciencePickerDocked(       4 showSiegeMapPanel(       8 showTechDiscoveryNotice(      10 showTechTreeView(       1 showTriumphCityStateNotice(       1 showUnitForeignPick(       1 showUnitInfoCardDialog(       1 showUnitReplacePicker(       2 showVeteranBadgeTip(       1 showVictoryScreen(       2 showWarConsentModal(       2 showWikiHubHud(       3 showWonderCompletedNotice(       1 toast( 
+gra/src/ui/armyListHud.ts	1	      1 showArmyListHud( 
+gra/src/ui/armyMergePanel.ts	0	      1 showArmyMergePanel( 
+gra/src/ui/armyMergePickPanel.ts	0	      1 showArmyMergePickPanel( 
+gra/src/ui/armySplitPanel.ts	0	      1 showArmySplitPanel( 
+gra/src/ui/armyStackPrompt.ts	0	      2 showArmyStackPrompt( 
+gra/src/ui/buildModeHud.ts	4	      4 flashBanner(       1 showCardFor(       5 showLockTip( 
+gra/src/ui/cityAttackChoice.ts	0	      1 showCityAttackChoice( 
+gra/src/ui/cityCaptureNotice.ts	2	      1 Notice(       1 NoticeOpen(       1 showCaptureReportNotice(       1 showCityCaptureNotice( 
+gra/src/ui/cityForeignPick.ts	0	      1 showCityForeignPick( 
+gra/src/ui/cityListHud.ts	2	      1 showCityListHud( 
+gra/src/ui/cityPanel.ts	8	      1 showCityPanel(       1 showCityUxFrame(       2 showHoverDetailNow(       1 showPinnedDetail(       2 showTechDiscoveryNotice( 
+gra/src/ui/cityUnitPick.ts	0	      1 showCityUnitPick( 
+gra/src/ui/cityUxFrame.ts	0	      1 showCityUxFrame( 
+gra/src/ui/civElimNotice.ts	1	      1 Notice(       1 showCivElimNotice( 
+gra/src/ui/diploListHud.ts	2	      1 showDiploListHud( 
+gra/src/ui/diplomacyAudience.ts	19	      1 showAllianceObligationModal(       2 showBreakTreatyConfirmModal(       1 showDiplomacyAudience(       2 showNegotiationModal(       3 showTradeBasketModal(       1 showWarConfirmModal(       1 showWarConsentModal( 
+gra/src/ui/diplomacyNegotiationModal.ts	1	      2 showInvalid(       1 showNegotiationModal( 
+gra/src/ui/diplomacyPanel.ts	0	      1 showDiploPairSummary(       1 showDiplomacyPanel( 
+gra/src/ui/diplomacyPendingHud.ts	1	      1 showDiplomacyPendingModal( 
+gra/src/ui/diplomacyProposalBanner.ts	3	      1 showDiplomacyProposalBanner( 
+gra/src/ui/diplomacyTradeBasket.ts	2	      2 showTradeBasketModal( 
+gra/src/ui/empireBalance.ts	0	      1 showBalancePanel( 
+gra/src/ui/empireDetailPanel.ts	0	      4 showEmpireDetailPanel( 
+gra/src/ui/empireOverlayHud.ts	0	      1 showCultureOverlay(       1 showReligionOverlay( 
+gra/src/ui/gamePauseMenu.ts	0	      2 showGamePauseMenu( 
+gra/src/ui/hotSeatHandoff.ts	0	      1 showHotSeatHandoff(       1 showPreBattle( 
+gra/src/ui/hoverDetailDock.ts	0	      5 showContent(       2 showFloat(       2 showHoverDetailNow(       2 showInDock(       2 showPinnedDetail( 
+gra/src/ui/hud.ts	4	      2 showCultureOverlay(       2 showFullscreenHint(       1 showHud(       2 showPowerOverlay(       2 showReligionOverlay( 
+gra/src/ui/hudTitleTooltip.ts	0	      2 showFor( 
+gra/src/ui/improvementBuildConfirm.ts	1	      1 showImprovementBuildConfirmModal( 
+gra/src/ui/interHumanDiplomacyHud.ts	0	      2 showInterHumanDiplomacyHud( 
+gra/src/ui/mainMenu.ts	2	      2 showFarewellScreen(       1 showMainMenu(       2 showToast( 
+gra/src/ui/mapLoadingOverlay.ts	0	      1 showError(       1 showMapLoadingOverlay( 
+gra/src/ui/minimapHud.ts	0	      2 showPlaceholder( 
+gra/src/ui/newGameFlow.ts	1	      1 showAdvancedModal(       1 showNewGameFlow( 
+gra/src/ui/orderPanel.ts	0	      1 showOrderPanel( 
+gra/src/ui/perfReport.ts	2	      2 showPerfReportModal( 
+gra/src/ui/perfTestPanel.ts	0	      1 showPerfTestPanel( 
+gra/src/ui/postBattleSummary.ts	0	      1 showPostBattleSummary( 
+gra/src/ui/powerOverlayHud.ts	0	      1 showPowerOverlay( 
+gra/src/ui/preBattle.ts	2	      4 Toast(       2 showMapScrim(       2 showPreBattle(       2 showPreBattleSaveToast( 
+gra/src/ui/saveLoadDialog.ts	3	      2 showLoadGameDialog(       1 showSaveGameDialog( 
+gra/src/ui/sceneTimingReport.ts	0	      1 showSceneTimingReport( 
+gra/src/ui/scienceHubHud.ts	4	      1 showScienceHubHud(       3 showTechDiscoveryNotice( 
+gra/src/ui/sciencePicker.ts	1	      1 showSciencePicker(       1 showSciencePickerDocked(       3 showSciencePickerInternal( 
+gra/src/ui/siegeMapPanel.ts	0	      1 showSiegeMapPanel( 
+gra/src/ui/techDiscoveryNotice.ts	10	      5 Notice(       1 NoticeOpen(       1 showTechDiscoveryNotice(       2 showTechDiscoveryNoticeViaEntityCard( 
+gra/src/ui/techTreeView.ts	2	      2 showCardFor(       1 showTechDiscoveryNotice(       2 showTechTreeView( 
+gra/src/ui/triumphCityStateNotice.ts	2	      1 Notice(       2 NoticeMarkup(       1 showTriumphCityStateNotice( 
+gra/src/ui/unitForeignPick.ts	0	      1 showUnitForeignPick( 
+gra/src/ui/unitInfoCard.ts	1	      1 showUnitInfoCardDialog( 
+gra/src/ui/unitReplacePicker.ts	0	      1 showUnitReplacePicker( 
+gra/src/ui/victoryScreen.ts	2	      1 showVictoryScreen( 
+gra/src/ui/wikiHubHud.ts	0	      1 showWikiHubHud( 
+gra/src/ui/wonderCompletedNotice.ts	1	      1 Notice(       1 showWonderCompletedNotice( 

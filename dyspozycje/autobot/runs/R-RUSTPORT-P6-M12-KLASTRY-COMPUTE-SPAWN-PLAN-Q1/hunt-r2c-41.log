@@ -1,0 +1,7 @@
+mapa 10/60, wywolan 30, znalezione: {}
+mapa 20/60, wywolan 60, znalezione: {}
+mapa 30/60, wywolan 90, znalezione: {}
+mapa 40/60, wywolan 120, znalezione: {}
+mapa 50/60, wywolan 150, znalezione: {}
+mapa 60/60, wywolan 180, znalezione: {}
+koniec {"calls":180,"tried":{"player-growth-reserve-0-initial":384},"foundCounts":{},"reached":{"forced":339,"fixedNull":339,"spawn:prefNull":47,"spawn:retryNull":47,"spawn:prefOk":18,"fill":153,"tc":127,"tcFail":149,"tcLast":27,"klaszFill":7,"reassign":7,"top1":176,"alt":11,"altNull":54,"top2":156,"skipNoHex":29,"rfXor":17,"resolveMass":3,"spawn:spawnSkipLand":2}}

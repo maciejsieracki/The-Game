@@ -1,0 +1,170 @@
+== gra/src/battle/battleMinimap.ts (110 lines)
+      3 ctx.fillStyle=       2 ctx.strokeStyle=       2 ctx.strokeRect(       2 ctx.lineWidth=       2 ctx.fillRect(       1 ctx.fill(       1 ctx.clearRect(       1 ctx.beginPath(       1 ctx.arc(
+== gra/src/battle/battleScene.ts (19493 lines)
+      2 ctx.fillStyle=       1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.strokeStyle=       1 ctx.strokeRect(       1 ctx.lineWidth=       1 ctx.font=       1 ctx.fillText(       1 ctx.fillRect(
+== gra/src/render/cities.ts (946 lines)
+      1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.font=       1 ctx.fillText(
+== gra/src/render/cityMapStatChip.ts (1133 lines)
+     15 ctx.lineTo(      14 ctx.fillStyle=      10 ctx.beginPath(       8 ctx.strokeStyle=       8 ctx.stroke(       8 ctx.lineWidth=       8 ctx.fill(       7 ctx.font=       6 ctx.textBaseline=       6 ctx.textAlign=       6 ctx.fillText(       5 ctx.quadraticCurveTo(       5 ctx.moveTo(       5 ctx.arc(       4 ctx.measureText(       3 measure.measureText(       3 ctx.drawImage(       3 ctx.closePath(       2 measure.font=       2 ctx.createLinearGradient(       1 ctx.setTransform(       1 ctx.save(       1 ctx.restore(       1 ctx.clip(       1 ctx.clearRect(
+== gra/src/render/cityOkolicaOverlay.ts (347 lines)
+      6 ctx.font=       4 ctx.fillStyle=       3 ctx.shadowColor=       3 ctx.shadowBlur=       3 ctx.fillText(       3 ctx.beginPath(       3 ctx.arc(       2 ctx.textBaseline=       2 ctx.textAlign=       2 ctx.strokeStyle=       2 ctx.stroke(       2 ctx.measureText(       2 ctx.lineWidth=       1 ctx.shadowOffsetY=       1 ctx.fill(       1 ctx.clearRect(
+== gra/src/render/siegeMarker.ts (262 lines)
+      1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.font=       1 ctx.fillText(       1 ctx.clearRect(
+== gra/src/render/unitOwnerEmblem.ts (516 lines)
+      4 ctx.beginPath(       4 ctx.arc(       2 ctx.strokeStyle=       2 ctx.stroke(       2 ctx.lineWidth=       2 ctx.fillStyle=       2 ctx.drawImage(       1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.save(       1 ctx.restore(       1 ctx.isCityState       1 ctx.isBarbarian       1 ctx.font=       1 ctx.fillText(       1 ctx.fill(       1 ctx.era       1 ctx.clip(       1 ctx.clearRect(       1 ctx.civId
+== gra/src/render/unitStatPlate.ts (936 lines)
+      4 ctx.fillStyle=       4 ctx.arcTo(       3 ctx.strokeStyle=       3 ctx.lineWidth=       3 ctx.fill(       3 ctx.clearRect(       2 ctx.stroke(       1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.strokeText(       1 ctx.moveTo(       1 ctx.lineJoin=       1 ctx.font=       1 ctx.fillText(       1 ctx.closePath(       1 ctx.beginPath(
+== gra/src/render/unitUpgradeBadges.ts (459 lines)
+      4 ctx.arcTo(       1 ctx.strokeStyle=       1 ctx.stroke(       1 ctx.moveTo(       1 ctx.lineWidth=       1 ctx.fillStyle=       1 ctx.fill(       1 ctx.drawImage(       1 ctx.closePath(       1 ctx.clearRect(       1 ctx.beginPath(
+== gra/src/render/units.ts (6779 lines)
+      8 ctx.fillStyle=       5 ctx.beginPath(       4 ctx.fill(       4 ctx.arc(       3 ctx.textBaseline=       3 ctx.textAlign=       3 ctx.strokeStyle=       3 ctx.stroke(       3 ctx.lineWidth=       3 ctx.font=       3 ctx.fillText(       2 ctx.clearRect(       1 ctx.translate(       1 ctx.save(       1 ctx.roundRect(       1 ctx.rotate(       1 ctx.restore(       1 ctx.fillRect(
+== gra/src/render/workerFieldOverlay.ts (211 lines)
+      3 ctx.beginPath(       3 ctx.arc(       2 ctx.strokeStyle=       2 ctx.stroke(       2 ctx.lineWidth=       2 ctx.fillStyle=       1 ctx.textBaseline=       1 ctx.textAlign=       1 ctx.font=       1 ctx.fillText(       1 ctx.fill(       1 ctx.clearRect(
+== EXTRA
+gra/src/render/units.ts:6026:      mat.needsUpdate = true;
+gra/src/render/unitOwnerEmblem.ts:53: * jest przerysowywana i tekstura dostaje `needsUpdate = true`. Ponieważ tekstura
+gra/src/render/unitOwnerEmblem.ts:326: * asynchronicznie do tej samej kanwy i podnosi `needsUpdate`.
+gra/src/render/unitOwnerEmblem.ts:350:  texture.minFilter = THREE.LinearFilter;
+gra/src/render/unitOwnerEmblem.ts:351:  texture.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/unitOwnerEmblem.ts:371:      texture.needsUpdate = true;
+gra/src/render/unitOwnerEmblem.ts:381:      texture.needsUpdate = true;
+gra/src/render/unitOwnerEmblem.ts:398:      texture.needsUpdate = true;
+gra/src/render/unitOwnerEmblem.ts:410:      texture.needsUpdate = true;
+gra/src/render/cityMapStatChip.ts:150:  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+gra/src/render/cityMapStatChip.ts:480:  grad.addColorStop(0, '#fff6d2');
+gra/src/render/cityMapStatChip.ts:481:  grad.addColorStop(0.55, '#f2df9a');
+gra/src/render/cityMapStatChip.ts:482:  grad.addColorStop(1, '#d8c069');
+gra/src/render/cityMapStatChip.ts:781:/** Rysuje pigułkę na istniejącej kanwie (async sygnet/portret — ta sama kanwa + needsUpdate). */
+gra/src/render/cityMapStatChip.ts:857:  grad.addColorStop(0, 'rgba(16, 22, 34, 0.96)');
+gra/src/render/cityMapStatChip.ts:858:  grad.addColorStop(1, 'rgba(8, 10, 16, 0.94)');
+gra/src/render/cityMapStatChip.ts:1077:    tex.minFilter = THREE.LinearFilter;
+gra/src/render/cityMapStatChip.ts:1078:    tex.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/cityMapStatChip.ts:1082:      tex!.needsUpdate = true;
+gra/src/render/rangeOverlay.ts:79:  mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:304:    /** Po pętli: needsUpdate + trim count instancji. */
+gra/src/render/scene.ts:1626:    renderer.setPixelRatio(Math.min(window.devicePixelRatio, preset.pixelRatioMax));
+gra/src/render/scene.ts:1646:  // mapy — Three.js rysuje ją tylko gdy needsUpdate=true i konsumuje flagę po renderze. Flagę
+gra/src/render/scene.ts:1651:    renderer.shadowMap.needsUpdate = true;
+gra/src/render/scene.ts:2700:    m.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2702:    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:2705:  forestMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2707:  forestTrunkMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2709:  snowMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2711:  shrubMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2713:  peakMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2715:  hillBumpMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2723:    goraInst[v]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2726:    wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2731:    lasInst[v]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2735:    djunglaInst[v]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2740:    dekorLakaInst[w]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2742:    dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2773:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2776:      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:2844:  beachMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2846:  duneMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2848:  oasisPoolMesh.instanceMatrix.needsUpdate  = true;
+gra/src/render/scene.ts:2850:  oasisTrunkMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:2852:  oasisFrondMesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3157:    if (touched) mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3211:        entry.mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3245:    if (zoomFlags.shadows) renderer.shadowMap.needsUpdate = true;
+gra/src/render/scene.ts:3274:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3300:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3301:      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:3322:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3323:      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:3342:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3617:      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:3618:      mesh.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3621:      m.instanceMatrix.needsUpdate = true;
+gra/src/render/scene.ts:3622:      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+gra/src/render/scene.ts:3655:    if (touchedMeshes.size > 0) renderer.shadowMap.needsUpdate = true;
+gra/src/render/unitUpgradeBadges.ts:325:  texture.minFilter = THREE.LinearMipmapLinearFilter;
+gra/src/render/unitUpgradeBadges.ts:326:  texture.generateMipmaps = true;
+gra/src/render/unitUpgradeBadges.ts:327:  texture.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/unitUpgradeBadges.ts:339:    texture.needsUpdate = true;
+gra/src/render/workerFieldOverlay.ts:105:  tex.minFilter = THREE.LinearFilter;
+gra/src/render/workerFieldOverlay.ts:106:  tex.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/cityOkolicaOverlay.ts:211:  tex.minFilter = THREE.LinearFilter;
+gra/src/render/cityOkolicaOverlay.ts:212:  tex.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/zoomLod.ts:118:  const cap = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+gra/src/render/unitStatPlate.ts:441:  texture.minFilter = THREE.LinearMipmapLinearFilter;
+gra/src/render/unitStatPlate.ts:442:  texture.generateMipmaps = true;
+gra/src/render/unitStatPlate.ts:443:  texture.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/unitStatPlate.ts:536:/** Kanwa ramki i cyfry (potęgi dwójki nie wymagamy — minFilter = LinearFilter). */
+gra/src/render/unitStatPlate.ts:574:  powerFrameTex.minFilter = THREE.LinearFilter;
+gra/src/render/unitStatPlate.ts:575:  powerFrameTex.colorSpace = THREE.SRGBColorSpace;
+gra/src/render/unitStatPlate.ts:619:  tex.minFilter = THREE.LinearMipmapLinearFilter;
+gra/src/render/unitStatPlate.ts:620:  tex.generateMipmaps = true;
+gra/src/render/unitStatPlate.ts:621:  tex.colorSpace = THREE.SRGBColorSpace;
+gra/src/battle/battleScene.ts:2731:      letterSpacing: '0.04em',
+gra/src/battle/battleScene.ts:2781:      letterSpacing: '0.04em',
+gra/src/battle/battleScene.ts:2795:      textShadow: '0 1px 3px #000', letterSpacing: '0.05em',
+gra/src/battle/battleScene.ts:2895:      letterSpacing: '0.04em',
+gra/src/battle/battleScene.ts:2933:      border: '1px solid ' + HUD_GOLD_DIM, letterSpacing: '0.06em',
+gra/src/battle/battleScene.ts:3084:      letterSpacing: '0.04em', lineHeight: '1', textShadow: '0 0 14px rgba(232,216,138,0.35)',
+gra/src/battle/battleScene.ts:3092:      fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase',
+gra/src/battle/battleScene.ts:3124:      fontSize: '10px', color: '#c8b898', marginTop: '6px', letterSpacing: '0.02em',
+gra/src/battle/battleScene.ts:3242:        letterSpacing: '0.12em',
+gra/src/battle/battleScene.ts:3305:    this.renderer.setPixelRatio(window.devicePixelRatio);
+gra/src/battle/battleScene.ts:4107:    bodies.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4108:    gableRoofs.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4109:    flatRoofs.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4110:    if (bodies.instanceColor) bodies.instanceColor.needsUpdate = true;
+gra/src/battle/battleScene.ts:4111:    if (gableRoofs.instanceColor) gableRoofs.instanceColor.needsUpdate = true;
+gra/src/battle/battleScene.ts:4112:    if (flatRoofs.instanceColor) flatRoofs.instanceColor.needsUpdate = true;
+gra/src/battle/battleScene.ts:4590:      crowns.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4591:      trunks.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4592:      if (crowns.instanceColor) crowns.instanceColor.needsUpdate = true;
+gra/src/battle/battleScene.ts:4633:      bumps.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4634:      shrubs.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4665:      water.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4698:      rocks.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4787:        grass.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4788:        if (grass.instanceColor) grass.instanceColor.needsUpdate = true;
+gra/src/battle/battleScene.ts:4847:        pebbles.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:4848:        bushes.instanceMatrix.needsUpdate = true;
+gra/src/battle/battleScene.ts:8610:        lm.needsUpdate = true;
+gra/src/battle/battleScene.ts:9859:      letterSpacing: '0.08em',
+gra/src/battle/battleScene.ts:10884:      font: '700 9px ' + BATTLE_FONT, letterSpacing: '0.1em', textTransform: 'uppercase',
+gra/src/battle/battleScene.ts:10897:      font: '700 9px ' + BATTLE_FONT, letterSpacing: '0.1em', textTransform: 'uppercase',
+gra/src/battle/battleScene.ts:12084:        fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.05em',
+gra/src/battle/battleScene.ts:12165:      letterSpacing: '0.08em', textTransform: 'uppercase', color: BATTLE_GOLD,
+gra/src/battle/battleScene.ts:12243:      letterSpacing: '0.06em',
+gra/src/battle/battleScene.ts:12356:      fontFamily: BATTLE_FONT_TITLE, fontSize: '18px', letterSpacing: '0.08em', color: BATTLE_GOLD,
+gra/src/battle/battleScene.ts:12549:        marginBottom: '4px', letterSpacing: '0.06em',
+gra/src/battle/battleScene.ts:13792:      fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase',
+gra/src/battle/battleScene.ts:14292:        letterSpacing: '0', textTransform: 'none',
+gra/src/battle/battleScene.ts:14301:        fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase',
+gra/src/battle/battleScene.ts:14698:        letterSpacing: '.02em',
+gra/src/battle/battleScene.ts:17813:      fontSize: '11px', color: BATTLE_GOLD, letterSpacing: '0.06em', whiteSpace: 'nowrap',
+gra/src/battle/battleScene.ts:17878:        marginBottom: '2px', fontSize: '10px', letterSpacing: '0.08em',
+gra/src/battle/battleScene.ts:17898:      Object.assign(countEl.style, { fontSize: '9px', color: BATTLE_TEXT_DIM, letterSpacing: '0.04em', display: 'none' });
+gra/src/battle/battleScene.ts:18024:      marginBottom: '0', fontSize: '12px', letterSpacing: '0.12em',
+gra/src/battle/battleScene.ts:18044:    Object.assign(countEl.style, { fontSize: '9px', color: BATTLE_TEXT_DIM, letterSpacing: '0.04em', display: 'none' });
+gra/src/battle/battleScene.ts:18222:      letterSpacing: isDead ? '0.06em' : isRouted ? '0.08em' : '0',
+gra/src/battle/battleScene.ts:18471:        hpLbl.style.letterSpacing = isDead ? '0.06em' : isRouted ? '0.08em' : '0';
+gra/src/battle/battleScene.ts:18663:    tex.needsUpdate = true;
+gra/src/battle/battleScene.ts:19486:    letterSpacing: '0.03em',
+gra/src/battle/endScreen1E.ts:189:    letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer',
+gra/src/battle/endScreen1E.ts:207:      font: `600 11px ${BATTLE_FONT}`, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+gra/src/battle/manualBattle.ts:255:    letterSpacing: '0.03em',
+gra/src/battle/manualBattle.ts:568:    this.renderer.setPixelRatio(window.devicePixelRatio);
+gra/src/battle/battleHudTheme.ts:69:    letterSpacing: '0.1em',
+gra/src/battle/battleHudTheme.ts:142:    letterSpacing: '0.06em',
+gra/src/battle/battleHudTheme.ts:206:    letterSpacing: '0.04em',
+gra/src/battle/battleHudTheme.ts:415:    letterSpacing: '0.14em',
+gra/src/battle/battleHudTheme.ts:454:    letterSpacing: '0.12em',
+gra/src/battle/battleHudTheme.ts:473:    letterSpacing: '0.1em',
+gra/src/battle/battleHudTheme.ts:538:    letterSpacing: '0.06em',
+gra/src/battle/battleHudTheme.ts:639:    letterSpacing: '0.06em',
+gra/src/battle/battleHudTheme.ts:728:    letterSpacing: '0.06em',
+gra/src/battle/battleHudTheme.ts:752:    letterSpacing: '0.1em',
+gra/src/battle/battleHudTheme.ts:769:    letterSpacing: '0.2em',
+gra/src/battle/battleHudTheme.ts:791:    letterSpacing: '0.12em',
+gra/src/battle/battleHudTheme.ts:1491:    letterSpacing: '0.1em', textTransform: 'uppercase', color: '#c8b898',
+gra/src/battle/battleHudTheme.ts:1507:    fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase',
+gra/src/battle/battleHudTheme.ts:1521:    fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase',
+gra/src/battle/battleHudTheme.ts:1668:    letterSpacing: '0.12em',
+gra/src/battle/endDetails1E.ts:312:    letterSpacing: '0.1em',

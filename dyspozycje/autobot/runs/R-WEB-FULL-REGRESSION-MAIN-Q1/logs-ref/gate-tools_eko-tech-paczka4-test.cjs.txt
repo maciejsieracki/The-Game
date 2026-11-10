@@ -1,0 +1,15 @@
+  PASS: ABC-16 kręgi = budynek Mistycyzm
+  PASS: ABC-18 stadnina + Jeździectwo
+  FAIL: ABC-17 świątynia upgradeFrom kręgi
+  FAIL: unlock po bydlo na zlozu
+  PASS: brak unlock bez pastwiska
+  PASS: brak konia bez stadniny
+  PASS: kon po stadninie
+  PASS: stadnina depositAllows kon
+  PASS: stadnina qualifies on horse deposit
+  PASS: stadnina NIE na równinie bez konia
+
+eko-tech-paczka4: 8 pass, 2 fail
+
+EXIT=1
+TIME=0.6

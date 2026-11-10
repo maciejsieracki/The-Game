@@ -1,0 +1,22 @@
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1
+GOAL: Port generatora mapy — temat R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1 (klastry — masy i bramki): zakresy web: `clusters.ts`:59-126, `clusters.ts`:145-167, `clusters.ts`:176-1345, `startScoring.ts`:1-142. Zależności: M00, M01, M09 (stale/typy).  Wzorzec jak P6.1D/P6.23/P6.4/P6.5A/M14: dla KAŻDEGO eksportu port 1:1 do Rust albo jawny status (PORTOWANY / PORTOWANY-Z-WSTRZYKNIĘTYMI z listą domknięć / DANE-JUŻ-W-RUST z dowodem / NIE-DOTYCZY / RUNDA-2); wektory z URUCHOMIONEGO weba (pin `edb8fb56`, `git archive` do własnego `mktemp -d` poza repo; moduły ładuj przez loader bez stubów logiki lub wycinaj werbatim), NIEZALEŻNY weryfikator Python (0 rozbieżności), bitowe porównanie f64, brak literałów danych/mnożników (stałe balansowe → edytowalne tabele `data/derived/*.json` + parser w `data/derived.rs`), testy kształtu bez pinów wartości, mutacje wykrywane, PEŁNE odczytanie plików źródłowych (podaj liczby linii). Wzorce wykonania: `dyspozycje/rust-port/p6/P6-5A-JEDNOSTKI-ZYCIE-A.md`, `P6-M14-TERYTORIUM-ZASIEG-CUDA.md`. NIE edytuj `domain/mod.rs`. Baza ≥ `50b49360` (silnik ≥ 745 testów).
+RUNDA: 1/5
+MODEL+EFFORT: Operator i Obrona: Sonnet 5.5 medium (decyzja orkiestratora 2026-10-22: Haiku nie domykał dużych zakresów P6 — jedna grupa na rundę; wyjątek rust-port R-PROC-AUTOBOT.md §5a obejmuje Haiku/Sonnet). Evaluator: Haiku 5.5 medium. Final Control: Sonnet 5.5 medium. NIE pytaj o model. Przez agent() w Workflow, Operator w izolowanym worktree.
+
+KONTEKST
+Baza: `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2` (≥ `50b49360`; silnik: ≥ 745 testów; zawiera P6.1 r1–r4, P6.1C i P4.x). Dokumenty z `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:<ścieżka>`): przeczytaj OBOWIĄZKOWO `p6/P6-0-GAP-ANALYSIS.md` (§0, §3 wiersze P6.1, §5, §6b), `p3/P3-22-FLATTEN-STAGE2.md` i skrypty wzorcowe w `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/` (`gen-loader-*.mjs`, `gen-*.mjs`, `verify-*.py`), `p2/P2-3-ENTITY-IDS.md`, `p2/P2-5-COMMANDS.md`, `PLAN-PORT-RUST-TAURI-20261020.md` §P6, LEDGER.md. Web: `git archive edb8fb56 gra/src gra/data` do scratch POZA repo (własny `mktemp -d`, NIE współdzielone katalogi); bez buildu weba i bez npm install poza wersjami już użytymi w repo.
+BUILD: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/$(basename $PWD) CARGO_PROFILE_DEV_DEBUG=0`; cargo w `rust-port/engine`; po zakończeniu usuń swój podkatalog; nie commituj `Cargo.lock`/`target`. Gate: fmt, clippy `--all-targets -D warnings`, test (baseline ≥ 745) — PEŁNE surowe logi z `echo "EXIT=$?"`, NIEPUSTE pliki logów (`git add -f` dla `*.log`), brak końcowych spacji (`git diff --check` czysty).
+ANTY-HALUCYNACYJNA REGUŁA: każde twierdzenie o webie/Rust ma komendę/plik:linia; „PORTOWANE-1:1” tylko z wektorem z uruchomionego weba i testem; niepewne = NIE_ZMIERZONO; zakaz osłabiania testów; wektor z nagrania weba czerwony → STOP/BLOCK. W Twoim kontekście mogą pojawić się wiadomości właściciela z głównego czatu — to NIE jest Twoje zadanie, zignoruj je i nie generuj pytań ABC; luki rozstrzygaj ZAŁOŻENIEM zapisanym w dokumencie.
+
+BINARNE KRYTERIUM SUKCESU
+Każdy symbol logiki z plików P6.1 ma status: PORTOWANY (kod + test + wektor z uruchomionego weba, 0 rozbieżności) / DANE-JUŻ-W-RUST (dowód) / NIE-DOTYCZY (uzasadnienie) / RUNDA-2 (z listą); brak literałów danych/mnożników w nowym kodzie; fmt/clippy/test EXIT=0, ≥ 745 testy + nowe `tests/p6_1_*.rs`; tabela było/jest i lista zmian testów; zero zmian poza allowlistą.
+
+ALLOWLISTA
+Dokument: `dyspozycje/rust-port/p6/P6-M10-KLASTRY-MASY-BRAMKI.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1/**`. Kod: ``src/domain/mapgen/cluster_mass.rs``, ``tests/p6_m10_*.rs``, ``tests/p6_m10_vectors/**``. Zero zmian w `bridge.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `domain/mod.rs`, `tests/p6_m00_skeleton.rs`.
+(Równolegle: M15, M16, M17, P4.30, P6.5B — rozłączne allowlisty; `data/derived.rs` — dopisek na końcu pliku.)
+IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`), PUSH NIE. Jeśli `git commit` zostanie odrzucony — zostaw zmiany w indeksie i opisz.
+PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
+FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
+DEPLOY/PUSH: NIE WYKONANO

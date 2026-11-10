@@ -1,0 +1,6 @@
+pre-turn72 isProductionAllowed=2497.8 placedImprovementsForOwner=1012.5 refreshTerritoryBorderOverlay=257.0 currentVisible=246.2 empireTerritoryResourceRatesForOwner=407.2 runAiPhase=3094.6
+fix-turn72 isProductionAllowed=12.7 placedImprovementsForOwner=75.9 refreshTerritoryBorderOverlay=15.6 currentVisible=12.3 empireTerritoryResourceRatesForOwner=182.3 runAiPhase=456.4
+pre-city73 isProductionAllowed=0.0 placedImprovementsForOwner=58.6 refreshTerritoryBorderOverlay=256.1 currentVisible=242.7 empireTerritoryResourceRatesForOwner=165.1 runAiPhase=0.0
+fix-city73 isProductionAllowed=0.0 placedImprovementsForOwner=11.9 refreshTerritoryBorderOverlay=11.4 currentVisible=0.6 empireTerritoryResourceRatesForOwner=68.1 runAiPhase=0.0
+pre-turn12 isProductionAllowed=124.6 placedImprovementsForOwner=4.9 refreshTerritoryBorderOverlay=39.9 currentVisible=32.8 empireTerritoryResourceRatesForOwner=162.0 runAiPhase=314.7
+fix-turn12 isProductionAllowed=8.3 placedImprovementsForOwner=0.6 refreshTerritoryBorderOverlay=7.9 currentVisible=1.4 empireTerritoryResourceRatesForOwner=115.7 runAiPhase=164.8

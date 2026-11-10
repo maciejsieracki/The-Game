@@ -1,0 +1,6 @@
+[zaleznosc] dep-verify-m10-vectors.py: sprawdzen 16400, rozbieznosci 0, exit 0
+[zaleznosc] dep-verify-m09-vectors.py: sprawdzen 20560, rozbieznosci 0, exit 0
+pokrycie (informacyjnie): {"naprawy_zmienione": {"body_changed": 105, "hard_changed": 107, "quarter_changed": 30, "repackAll_changed": 71, "repackOne_changed": 76}, "pickCapital_region_zmieniony": 32, "pickSpawn": {"none": 94, "some": 516}}
+sprawdzen M11: 17034, rozbieznosci M11: 0
+RAZEM (M11 + zaleznosci M10/M09): 53994 sprawdzen, rozbieznosci: 0
+EXIT=0

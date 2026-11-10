@@ -1,0 +1,9 @@
+ROZBIEZNOSC: latBuffer r=6 h=4 e=0
+ROZBIEZNOSC: hashInt3 180,214,2807205797
+ROZBIEZNOSC: classify ['0.3343140913173557', '0.47349013248458505', '0.1294140717945993', '0.6045843951869756', '0.5499999990000001', {'desert': '0.4', 'highland': '0.7', 'mountain': '0.8'}, 'plains_south', None, 1]: laka != rownina
+ROZBIEZNOSC: reapplyForest #3: heks #5 [5, 0, 1, 0, 0, 0, 1] != [5, 0, 1, 1, 0, 0, 1]
+ROZBIEZNOSC: marginZone #4 adjusted 19 != 20
+ROZBIEZNOSC: landMaskBorderFade ['49', '4', '74', '6']
+wartosci tabeli sprawdzone wzgledem TS: 51/51
+checks=157153 rozbieznosci=6
+EXIT=1

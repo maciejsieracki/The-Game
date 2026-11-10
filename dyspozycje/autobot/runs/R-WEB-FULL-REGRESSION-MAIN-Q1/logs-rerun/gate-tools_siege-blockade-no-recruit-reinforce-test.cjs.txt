@@ -1,0 +1,67 @@
+A. silnik (realne moduly, esbuild)
+  [OK] A0 RED: bez blokady (zachowanie sprzed tematu) scenariusz sie WYWRACA
+  [OK] GREEN A1 wlasna armia -> heks obleganego miasta: BRAK trasy
+  [OK] GREEN A2 marsz za miasto omija heks miasta (trasa istnieje, bez (2,0))
+  [OK] GREEN A3 computeReachable nie zawiera heksu obleganego miasta
+  [OK] GREEN A3b sasiad miasta (min-move) nie ma miasta w zasiegu
+  [OK] GREEN A4 sojuszniczy oddzial (nie wrog) tez zablokowany
+  [OK] GREEN A5 wrog wlasciciela (oblegajacy) wchodzi do miasta (zdobycie/przelamanie)
+  [OK] GREEN A6 jednostka W miescie moze wyjsc
+  [OK] GREEN A7 heks oblegajacego (3,0) pozostaje osiagalny (przelamanie z zewnatrz)
+  [OK] GREEN A8 po zdjeciu oblezenia wejscie dozwolone
+  [OK] GREEN A9 miasto NIEoblegane nie blokuje
+  [OK] GREEN S1 isCityUnderSiege(id)
+  [OK] GREEN S2 isCityUnderSiege(hex)
+  [OK] GREEN S3 isCityUnderSiege(obiekt) + nieznane id
+  [OK] GREEN S4 besiegedCityHexKeys
+B. mutacje
+  [OK] M1 computePath bez bramki wejscia -> zabita
+  [OK] M2 computeReachable (petla) bez bramki -> zabita
+  [OK] M3 min-move bez bramki -> zabita
+  [OK] M4 blokada tez dla wroga wlasciciela -> zabita
+  [OK] M5 predykat ignoruje flage oblegane (id) -> zabita
+  [OK] M6 blokada zdjeta tylko dla wlasciciela (sojusznik wchodzi) -> zabita
+  [OK] M7 blokada rozlana na sasiednie heksy (atak na oblegajacych/wyjscie zablokowane) -> zabita
+C. strukturalna
+  [OK] C1 purchaseRecruitmentUnit (gracz+AI+general) ma bramke oblezenia
+  [OK] C2 purchaseRecruitmentUnits (paczka) ma bramke oblezenia
+  [OK] C3 ukonczona jednostka z kolejki Pracy wraca na front w obleganym miescie
+  [OK] C4 kolejka rekrutacji (oplacona) stoi w obleganym miescie
+  [FAIL] C5 blokada wejscia zarejestrowana (gracz/AI/barbarzyncy przez computePath/computeReachable)
+  [OK] C6 panel miasta/Armia: przycisk nieaktywny z powodem PL
+  [OK] C7 recruitUnit (panel) odrzuca w obleganym miescie
+  [OK] C8 setup.ts: 3 bramki (computePath, computeReachable petla, min-move)
+  [OK] C9 tekst powodu PL
+E. r2: odwrot, AI/barbarzyncy, hot-seat, zapis/odczyt, spawn
+  [OK] E1 RED: bez wykluczenia obrońca uciekł DO obleganego miasta (posilek)
+  [OK] E2 GREEN: z wykluczeniem odwrot NIE konczy sie w obleganym miescie
+  [OK] E3 retreatHexPassable wyklucza heks obleganego miasta
+  [OK] E4 oba punkty odwrotu (przed bitwa i po bitwie) uzywaja retreatHexPassable
+  [OK] E5 mutacja (bez wykluczenia w retreatHexPassable) -> zabita
+  [OK] E6 AI: wlasna armia AI nie wchodzi do wlasnego obleganego miasta (brak posilkow)
+  [OK] E7 hot-seat: gracz/AI trzeci (nie-wrog wlasciciela) tez zablokowany -- niezaleznie od aktywnego fotela
+  [OK] E8 gracz oblegajacy (wrog wlasciciela) moze szturmowac miasto AI
+  [OK] E9 barbarzynska armia nie wchodzi do wlasnego obleganego obozu/miasta
+  [OK] E10 barbarzynca (wrog) moze atakowac cudze miasto
+  [OK] E11 zapis/odczyt: flaga oblegane przezywa round-trip JSON, blokada dziala na przeladowanych miastach
+  [OK] E12 save.ts wczytuje miasta wholesale (bez wycinania pol oblezenia)
+  [OK] E13 game/ai.ts porusza armie przez computePath/computeReachable (hak blokady obejmuje)
+  [OK] E13 game/barbarians.ts porusza armie przez computePath/computeReachable (hak blokady obejmuje)
+  [OK] E13 game/warAllInCapital.ts porusza armie przez computePath/computeReachable (hak blokady obejmuje)
+  [OK] E14 spawnTransferredUnit nie ma wywolan w main.ts/ai.ts (martwa sciezka: dar jednostki odrzucany `case jednostka: break`)
+  [OK] E15 spawnDifficultyBonusUnit wolany tylko z grantow startowych (zalozenie nowego miasta/stolicy) -- miasto nie moze byc wtedy oblegane
+D. zywa (Chromium)
+  [OK] D1 jest wlasne miasto gracza
+  [OK] D2 zakup rekrutacji w OBLEGANYM miescie odrzucony (kolejka bez zmian)
+  [OK] D3 po zdjeciu oblezenia zakup dziala (kolejka +1)
+  [OK] D4 jednostka gracza obok miasta ma trasę (1 krok) do wlasnego NIEoblegango miasta
+  [OK] D5 trasa do OBLEGANEGO miasta odrzucona (computePath)
+  [OK] D6 miasto obleganie poza zasiegiem/merge-targets gracza (reachableWithMergeTargets)
+  [OK] D7 hak wroga dziala (NIE_ZMIERZONO relacji wojny -- zalezy od dyplomacji partii)
+  [OK] D8 po przelamaniu oblezenia wejscie znow dozwolone
+  [OK] D9 zero pageerror
+
+wynik: 56 OK, 1 FAIL
+
+EXIT=1
+TIME=191.3

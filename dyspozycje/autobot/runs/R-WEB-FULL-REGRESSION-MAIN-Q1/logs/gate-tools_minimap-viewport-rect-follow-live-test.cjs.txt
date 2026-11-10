@@ -1,0 +1,4 @@
+Brak CIV_MM_BUNDLE (katalog z index.html po vite build).
+
+EXIT=2
+TIME=0.3

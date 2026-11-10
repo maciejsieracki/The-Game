@@ -1,0 +1,20 @@
+--- edb8fb56:gra/src/ui/techUnlockParse.ts
++++ src-tauri/frontend-v2/src/ui/techUnlockParse.ts
+@@ -17,7 +17,7 @@
+  * by konsumenci mogli go odrzucić przy budowie listy budynków. NIE używaj go
+  * do wyświetlania listy jednostek graczowi — do tego służy `unitsUnlockedByTech()`.
+  */
+-import unitsData from '../../data/units.json';
++import { staticCatalog } from '../controller/staticCatalog';
+ 
+ export function splitList(raw: string | null | undefined, sep: RegExp): string[] {
+   return (raw ?? '').split(sep).map(s => s.trim()).filter(s => s !== '' && s !== '—' && s !== '-');
+@@ -46,7 +46,7 @@
+  * nagłówek modułu). `techName` to nazwa kanoniczna z `tech.json`'s pola
+  * „Technologia" (NIE slug). */
+ export function unitsUnlockedByTech(techName: string): string[] {
+-  return (unitsData as UnitRow[])
++  return (staticCatalog().units as UnitRow[])
+     .filter(u => u.Tech === techName)
+     .map(u => u.Jednostka);
+ }

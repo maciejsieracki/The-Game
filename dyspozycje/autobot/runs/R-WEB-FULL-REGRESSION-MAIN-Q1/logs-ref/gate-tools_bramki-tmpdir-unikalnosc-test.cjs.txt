@@ -1,0 +1,187 @@
+  OK   skan objął jakiekolwiek pliki .cjs w tools/
+  OK   skan objął pliki używające tmpdir
+
+=== STALE (nieunikalne) sciezki pod os.tmpdir() ===
+  [R3] R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:60  `civ-hotseat-fotel2-cywilizacja-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-fotel2-cywilizacja-${RUN_ID}`);
+  [R1] ai-army-replacement-sim.cjs:60  'ars-mapcache'
+         const MAPCACHE = process.env.ARS_MAPCACHE || path.join(os.tmpdir(), 'ars-mapcache');
+  [R5] ai-general-war-campaign-live-test.cjs:9  /tmp/civ-ai-general-war-campaign-live
+         const DIST = '/tmp/civ-ai-general-war-campaign-live';
+  [R3] battle-attack-move-pointer-test.cjs:23  `battle-attack-move-pointer-${id}`
+         const out = path.join(os.tmpdir(), `battle-attack-move-pointer-${id}`);
+  [R3] battle-attack-move-pointer-test.cjs:24  `battle-attack-move-pointer-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-attack-move-pointer-evidence-${id}`);
+  [R3] battle-doctrine-live-r3-test.cjs:23  `battle-doctrine-r3-${id}`
+         const out = path.join(os.tmpdir(), `battle-doctrine-r3-${id}`);
+  [R3] battle-doctrine-live-r3-test.cjs:24  `battle-doctrine-r3-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-doctrine-r3-evidence-${id}`);
+  [R3] battle-doctrine-live-r4-test.cjs:23  `battle-doctrine-r4-${id}`
+         const out = path.join(os.tmpdir(), `battle-doctrine-r4-${id}`);
+  [R3] battle-doctrine-live-r4-test.cjs:24  `battle-doctrine-r4-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-doctrine-r4-evidence-${id}`);
+  [R3] battle-large-return-live-test.cjs:23  `battle-large-return-${id}`
+         const out = path.join(os.tmpdir(), `battle-large-return-${id}`);
+  [R3] battle-large-return-live-test.cjs:24  `battle-large-return-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-large-return-evidence-${id}`);
+  [R3] battle-manual-control-multicycle-live-test.cjs:22  `battle-manual-control-multicycle-${id}`
+         const out = path.join(os.tmpdir(), `battle-manual-control-multicycle-${id}`);
+  [R3] battle-manual-full-roster-pointer-live-test.cjs:22  `battle-manual-full-roster-pointer-live-${id}`
+         const out = path.join(os.tmpdir(), `battle-manual-full-roster-pointer-live-${id}`);
+  [R3] battle-manual-full-roster-pointer-live-test.cjs:23  `battle-manual-full-roster-pointer-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-manual-full-roster-pointer-evidence-${id}`);
+  [R3] battle-manual-melee-live-test.cjs:23  `battle-manual-melee-${id}`
+         const out = path.join(os.tmpdir(), `battle-manual-melee-${id}`);
+  [R3] battle-manual-orders-live-open-tile-deterministic-test.cjs:23  `battle-manual-orders-live-open-tile-deterministic-${id}`
+         const out = path.join(os.tmpdir(), `battle-manual-orders-live-open-tile-deterministic-${id}`);
+  [R3] battle-manual-orders-live-open-tile-deterministic-test.cjs:24  `battle-manual-orders-live-open-tile-deterministic-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-manual-orders-live-open-tile-deterministic-evidence-${id}`);
+  [R3] battle-manual-queued-order-lifecycle-live-test.cjs:22  `battle-manual-queued-order-lifecycle-${id}`
+         const out = path.join(os.tmpdir(), `battle-manual-queued-order-lifecycle-${id}`);
+  [R3] battle-manual-queued-order-lifecycle-live-test.cjs:23  `battle-manual-queued-order-lifecycle-evidence-${id}`
+         const evidenceDir = path.join(os.tmpdir(), `battle-manual-queued-order-lifecycle-evidence-${id}`);
+  [R3] bitwa-obroncy-mur-kolumny-test.cjs:82  ent
+         try { fs.rmSync(path.join(os.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+  [R3] city-siege-wall-rules-test.cjs:29  `city-siege-wall-${RUN}`
+         const OUT = path.join(os.tmpdir(), `city-siege-wall-${RUN}`);
+  [R3] city-state-start-units-live-test.cjs:56  `civ-city-state-start-units-live-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-city-state-start-units-live-${RUN_ID}`);
+  [R3] city-wall-towers-test.cjs:27  `city-wall-towers-${RUN}`
+         const OUT = path.join(os.tmpdir(), `city-wall-towers-${RUN}`);
+  [R5] cluster-plan-name-test.cjs:8  /tmp/cluster-plan-name-entry-q1.ts
+         const entry = '/tmp/cluster-plan-name-entry-q1.ts';
+  [R5] cluster-plan-name-test.cjs:9  /tmp/cluster-plan-name-bundle-q1.cjs
+         const bundle = '/tmp/cluster-plan-name-bundle-q1.cjs';
+  [R1] cluster-start-recovery2-test.cjs:14  'cluster-start-recovery2-entry.ts'
+         const ENTRY = path.join(os.tmpdir(), 'cluster-start-recovery2-entry.ts');
+  [R1] cluster-start-recovery2-test.cjs:15  'cluster-start-recovery2-bundle.cjs'
+         const BUNDLE = path.join(os.tmpdir(), 'cluster-start-recovery2-bundle.cjs');
+  [R1] diplo-truce-saveload-live-test.cjs:39  'civ-truce-saveload'
+         const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-truce-saveload');
+  [R1] diplomacy-sensible-deals-live-test.cjs:29  'deals-sensible-live-dist'
+         const OUT_DIR = process.env.DEALS_LIVE_OUT || path.join(os.tmpdir(), 'deals-sensible-live-dist');
+  [R3] garrison-panel-pinning-real-render-test.cjs:27  `civ-garrison-panel-${TMP_RUN_ID}`
+         const TMP = path.join(os.tmpdir(), `civ-garrison-panel-${TMP_RUN_ID}`);
+  [R3] garrison-panel-pinning-real-render-test.cjs:30  `civ-shots-garrison-panel-${TMP_RUN_ID}`
+         const SHOTS_DIR = path.join(os.tmpdir(), `civ-shots-garrison-panel-${TMP_RUN_ID}`);
+  [R5] generals-purchase-runtime-test.cjs:9  /tmp/civ-general-purchase-runtime
+         const DIST = '/tmp/civ-general-purchase-runtime';
+  [R3] hotseat-drugi-fotel-tura-test.cjs:44  `civ-hotseat-drugi-fotel-tura-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-drugi-fotel-tura-${RUN_ID}`);
+  [R3] hotseat-dyplo-kontakt-per-fotel-test.cjs:61  `civ-hotseat-dyplo-kontakt-per-fotel-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-dyplo-kontakt-per-fotel-${RUN_ID}`);
+  [R3] hotseat-etap4-noop-test.cjs:86  `civ-hotseat-etap4-noop-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap4-noop-${RUN_ID}`);
+  [R3] hotseat-etap5-no-leak-test.cjs:46  `civ-hotseat-etap5-noleak-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap5-noleak-${RUN_ID}`);
+  [R3] hotseat-etap6a-input-noop-test.cjs:70  `civ-hotseat-etap6a-input-OLD-${RUN_ID}`
+         const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-${RUN_ID}`);
+  [R3] hotseat-etap6a-input-noop-test.cjs:71  `civ-hotseat-etap6a-input-OLD-dist-${RUN_ID}`
+         const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-dist-${RUN_ID}`);
+  [R3] hotseat-etap6a-input-noop-test.cjs:72  `civ-hotseat-etap6a-input-NEW-dist-${RUN_ID}`
+         const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-NEW-dist-${RUN_ID}`);
+  [R3] hotseat-etap6a-input-noop-test.cjs:104  `civ-hotseat-etap6a-input-MUT-${RUN_ID}`
+         const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6a-input-noop-test.cjs:105  `civ-hotseat-etap6a-input-MUT-dist-${RUN_ID}`
+         const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6b-ui-noop-test.cjs:66  `civ-hotseat-etap6b-ui-OLD-${RUN_ID}`
+         const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-${RUN_ID}`);
+  [R3] hotseat-etap6b-ui-noop-test.cjs:67  `civ-hotseat-etap6b-ui-OLD-dist-${RUN_ID}`
+         const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-dist-${RUN_ID}`);
+  [R3] hotseat-etap6b-ui-noop-test.cjs:68  `civ-hotseat-etap6b-ui-NEW-dist-${RUN_ID}`
+         const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-NEW-dist-${RUN_ID}`);
+  [R3] hotseat-etap6b-ui-noop-test.cjs:69  `civ-hotseat-etap6b-ui-MUT-${RUN_ID}`
+         const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6b-ui-noop-test.cjs:70  `civ-hotseat-etap6b-ui-MUT-dist-${RUN_ID}`
+         const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6c-lastpraca-per-fotel-test.cjs:74  `civ-hotseat-lastpraca-per-fotel-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-per-fotel-${RUN_ID}`);
+  [R3] hotseat-etap6c-lastpraca-per-fotel-test.cjs:76  `civ-hotseat-lastpraca-mutant-src-${RUN_ID}`
+         const MUTANT_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-mutant-src-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-b-live-test.cjs:51  `civ-6d-b-POST-dist-${RUN_ID}`
+         const POST_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-POST-dist-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-b-live-test.cjs:52  `civ-6d-b-MUT-${RUN_ID}`
+         const MUT_GRA_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-b-live-test.cjs:53  `civ-6d-b-MUT-dist-${RUN_ID}`
+         const MUT_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-c-live-saveload-test.cjs:57  `civ-podetap-c-NEW-dist-${RUN_ID}`
+         const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-NEW-dist-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-c-live-saveload-test.cjs:58  `civ-podetap-c-MUT-${RUN_ID}`
+         const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-c-live-saveload-test.cjs:59  `civ-podetap-c-MUT-dist-${RUN_ID}`
+         const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-e-live-test.cjs:51  `civ-6d-e-POST-dist-${RUN_ID}`
+         const POST_OUT_DIR = path.join(os.tmpdir(), `civ-6d-e-POST-dist-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-e-live-test.cjs:52  `civ-6d-e-MUT-${RUN_ID}`
+         const MUT_GRA_DIR = path.join(os.tmpdir(), `civ-6d-e-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6d-podetap-e-live-test.cjs:53  `civ-6d-e-MUT-dist-${RUN_ID}`
+         const MUT_OUT_DIR = path.join(os.tmpdir(), `civ-6d-e-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6e-render-noop-test.cjs:96  `civ-hotseat-etap6e-render-OLD-${RUN_ID}`
+         const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-${RUN_ID}`);
+  [R3] hotseat-etap6e-render-noop-test.cjs:97  `civ-hotseat-etap6e-render-OLD-dist-${RUN_ID}`
+         const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-dist-${RUN_ID}`);
+  [R3] hotseat-etap6e-render-noop-test.cjs:98  `civ-hotseat-etap6e-render-NEW-dist-${RUN_ID}`
+         const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-NEW-dist-${RUN_ID}`);
+  [R3] hotseat-etap6e-render-noop-test.cjs:99  `civ-hotseat-etap6e-render-MUT-${RUN_ID}`
+         const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-${RUN_ID}`);
+  [R3] hotseat-etap6e-render-noop-test.cjs:100  `civ-hotseat-etap6e-render-MUT-dist-${RUN_ID}`
+         const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-dist-${RUN_ID}`);
+  [R3] hotseat-etap6f-part2-ui-test.cjs:43  `civ-hotseat-etap6f-part2-ui-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6f-part2-ui-${RUN_ID}`);
+  [R3] hotseat-etap8-dyplomacja-dane-test.cjs:49  `civ-hotseat-etap8-dyplomacja-dane-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap8-dyplomacja-dane-${RUN_ID}`);
+  [R3] hotseat-etap8-dyplomacja-ui-test.cjs:41  `civ-hotseat-etap8-dyplomacja-ui-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap8-dyplomacja-ui-${RUN_ID}`);
+  [R3] hotseat-ustawienia-kopiowane-test.cjs:23  `civ-hotseat-settings-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-settings-${RUN_ID}`);
+  [R3] hunting-camp-hill-no-flatten-test.cjs:32  `hunting-camp-shots-${RUN_ID}`
+         const SHOTS = argOf('--shots') || path.join(os.tmpdir(), `hunting-camp-shots-${RUN_ID}`);
+  [R5] load-game-regression-e2e.cjs:188  /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/s2-load.png
+         await page.screenshot({ path: process.env.E2E_SHOT || '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/s2-load.png' });
+  [R3] palisade-battle-wall-rules-test.cjs:30  `pal-battle-wall-${RUN}`
+         const OUT = path.join(os.tmpdir(), `pal-battle-wall-${RUN}`);
+  [R3] perf-large-empire-stress-live-test.cjs:20  `large-empire-stress-${id}`
+         const out = path.join(os.tmpdir(), `large-empire-stress-${id}`);
+  [R3] perf-large-empire-stress-live-test.cjs:70  `large-empire-page-eval-timeout-${id}-${Date.now()}.png`
+         const screenshotPath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.png`);
+  [R3] perf-large-empire-stress-live-test.cjs:88  `large-empire-page-eval-timeout-${id}-${Date.now()}.json`
+         const evidencePath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.json`);
+  [R3] perf-large-empire-stress-live-test.cjs:191  `large-empire-startup-probe-${id}.json`
+         const evidencePath = path.join(os.tmpdir(), `large-empire-startup-probe-${id}.json`);
+  [R3] perf-large-empire-stress-live-test.cjs:193  `large-empire-startup-${id}-${label}-${Date.now()}.png`
+         const file = path.join(os.tmpdir(), `large-empire-startup-${id}-${label}-${Date.now()}.png`);
+  [R3] perf-large-empire-stress-live-test.cjs:867  `large-empire-direct-siege-${id}.json`
+         const resultPath=path.join(os.tmpdir(),`large-empire-direct-siege-${id}.json`); fs.writeFileSync(resultPath,JSON.stringify(directResult,null,2));
+  [R3] perf-large-empire-stress-live-test.cjs:927  `large-empire-stress-timeout-${id}.png`
+         const shot=path.join(os.tmpdir(),`large-empire-stress-timeout-${id}.png`);
+  [R3] perf-large-empire-stress-live-test.cjs:1062  `large-empire-ab-summary-${id}.json`
+         const summaryPath = path.join(os.tmpdir(), `large-empire-ab-summary-${id}.json`);
+  [R3] perf-large-empire-stress-live-test.cjs:1080  `large-empire-stress-summary-${id}.json`
+         const summaryPath = path.join(os.tmpdir(), `large-empire-stress-summary-${id}.json`);
+  [R3] recruitment-panel-height-real-render-test.cjs:17  `civ-recruitment-panel-height-${TMP_RUN_ID}`
+         const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}`);
+  [R3] recruitment-panel-height-real-render-test.cjs:40  `civ-shots-recruitment-panel-height-${TMP_RUN_ID}`
+         : path.join(os.tmpdir(), `civ-shots-recruitment-panel-height-${TMP_RUN_ID}`);
+  [R3] scout-start-units-live-test.cjs:22  `civ-scout-start-units-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-scout-start-units-${RUN_ID}`);
+  [R3] siege-tower-breach-everywhere-test.cjs:41  `civ-stb-${RUN}`
+         const TMP_ROOT = path.join(os.tmpdir(), `civ-stb-${RUN}`);
+  [R1] start-map-seed-removal-test.cjs:11  'r-start-map-seed-remove-q1'
+         const OUT = path.join(os.tmpdir(), 'r-start-map-seed-remove-q1');
+  [R1] start-map-seed-removal-test.cjs:78  'r-start-map-seed-generator-q1.cjs'
+         const bundle = path.join(os.tmpdir(), 'r-start-map-seed-generator-q1.cjs');
+  [R3] starting-army-first-city-live-test.cjs:20  `civ-starting-army-first-city-${RUN_ID}`
+         const OUT_DIR = path.join(os.tmpdir(), `civ-starting-army-first-city-${RUN_ID}`);
+  [R3] wall-defenders-bonus-range-test.cjs:40  `civ-wdbr-${RUN}`
+         const TMP_ROOT = path.join(os.tmpdir(), `civ-wdbr-${RUN}`);
+  [R1] war-era-counter-live-test.cjs:295  'war-era-counter-hint.png'
+         const shotPath = process.env.WAR_ERA_SHOT || path.join(require('os').tmpdir(), 'war-era-counter-hint.png');
+  [R3] war-rules-multiwar-live-test.cjs:31  `war-rules-live-${RUN_ID}`
+         const TMP_ROOT = path.join(os.tmpdir(), `war-rules-live-${RUN_ID}`);
+  [R3] web-turn-slowdown-test.cjs:54  `civ-turn-slowdown-test-${RUN_ID}`
+
+[bramki-tmpdir-unikalnosc-test] przeskanowano 254 plikow z tmpdir (z 1313 .cjs)
+[bramki-tmpdir-unikalnosc-test] PASS=2 FAIL=1
+
+EXIT=1
+TIME=0.5

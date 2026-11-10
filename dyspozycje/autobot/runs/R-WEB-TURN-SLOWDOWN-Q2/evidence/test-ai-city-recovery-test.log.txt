@@ -1,0 +1,21 @@
+
+--- SEKCJA A: PRZED (ai.ts z c4e59969, rodzic commitu P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1) ---
+  OK: sanity: po stracie zostaja 3 miasta
+  PRZED: tury do pierwszego foundCityAt po stracie = null (okno testu: 40 tur)
+  OK: PRZED: brak founding w oknie 40 tur po stracie (clusterConsolidationPhase blokuje bez uwzgledniania straty, ekspansywnosc=0 < EKSPANSJA_KLASTR_BYPASS)
+
+--- SEKCJA B: PO (biezacy ai.ts, z mechanizmem odbudowy) ---
+  OK: sanity: po stracie zostaja 3 miasta
+  PO: tury do pierwszego foundCityAt po stracie = 0
+  OK: PO: AI zaklada nowe miasto w oknie testu po stracie (mechanizm odbudowy dziala)
+  OK: PO: pierwsza proba odbudowy w ciagu <=5 tur od straty (zmierzono: 0)
+
+--- SEKCJA C: brak regresji -- cywilizacja BEZ straty miast wciaz blokowana przez klaster ---
+  OK: brak regresji: cywilizacja STABILNA (bez straty) nadal blokowana przez clusterConsolidationPhase (ekspansywnosc=0)
+
+--- SEKCJA D: brak regresji -- stara historia (poprzednia gra, ten sam playerId) nie zaraza nowej gry ---
+  OK: brak regresji: stary peak (6) z poprzedniej gry (tury 1-40) NIE przecieka do nowej gry (tury 1-20, ten sam playerId) -- cywilizacja stabilna na 3 miastach nadal blokowana
+
+=== ai-city-recovery-test: 7 passed, 0 failed ===
+
+EXIT=0

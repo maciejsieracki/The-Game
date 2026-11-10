@@ -1,0 +1,277 @@
+{
+  "typ": "pangea",
+  "seedWanted": 4242,
+  "okType": true,
+  "uiLand": "60% lądu / 40% morze",
+  "uiSize": "Standardowy",
+  "seedSeen": 4242,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=4242 typ=pangea rywale=6 typy=7",
+  "genMs": 54513,
+  "turnsPlanned": 30,
+  "ok": true,
+  "turnLog": [
+    {
+      "before": 1,
+      "after": 2,
+      "ms": 61170,
+      "ok": true
+    },
+    {
+      "before": 2,
+      "after": 3,
+      "ms": 57127,
+      "ok": true
+    },
+    {
+      "before": 3,
+      "after": 4,
+      "ms": 56027,
+      "ok": true
+    },
+    {
+      "before": 4,
+      "after": 5,
+      "ms": 57319,
+      "ok": true
+    },
+    {
+      "before": 5,
+      "after": 6,
+      "ms": 63524,
+      "ok": true
+    },
+    {
+      "before": 6,
+      "after": 7,
+      "ms": 52671,
+      "ok": true
+    },
+    {
+      "before": 7,
+      "after": 8,
+      "ms": 52377,
+      "ok": true
+    },
+    {
+      "before": 8,
+      "after": 9,
+      "ms": 51220,
+      "ok": true
+    },
+    {
+      "before": 9,
+      "after": 10,
+      "ms": 58772,
+      "ok": true
+    },
+    {
+      "before": 10,
+      "after": 11,
+      "ms": 55826,
+      "ok": true
+    },
+    {
+      "before": 11,
+      "after": 12,
+      "ms": 51765,
+      "ok": true
+    },
+    {
+      "before": 12,
+      "after": 13,
+      "ms": 58425,
+      "ok": true
+    },
+    {
+      "before": 13,
+      "after": 14,
+      "ms": 56177,
+      "ok": true
+    },
+    {
+      "before": 14,
+      "after": 15,
+      "ms": 54331,
+      "ok": true
+    },
+    {
+      "before": 15,
+      "after": 16,
+      "ms": 57375,
+      "ok": true
+    },
+    {
+      "before": 16,
+      "after": 17,
+      "ms": 59333,
+      "ok": true
+    },
+    {
+      "before": 17,
+      "after": 18,
+      "ms": 62612,
+      "ok": true
+    },
+    {
+      "before": 18,
+      "after": 19,
+      "ms": 64568,
+      "ok": true
+    },
+    {
+      "before": 19,
+      "after": 20,
+      "ms": 66876,
+      "ok": true
+    },
+    {
+      "before": 20,
+      "after": 21,
+      "ms": 63779,
+      "ok": true
+    },
+    {
+      "before": 21,
+      "after": 22,
+      "ms": 45394,
+      "ok": true
+    },
+    {
+      "before": 22,
+      "after": 23,
+      "ms": 34775,
+      "ok": true
+    },
+    {
+      "before": 23,
+      "after": 24,
+      "ms": 30260,
+      "ok": true
+    },
+    {
+      "before": 24,
+      "after": 25,
+      "ms": 31558,
+      "ok": true
+    },
+    {
+      "before": 25,
+      "after": 26,
+      "ms": 30735,
+      "ok": true
+    },
+    {
+      "before": 26,
+      "after": 27,
+      "ms": 32258,
+      "ok": true
+    },
+    {
+      "before": 27,
+      "after": 28,
+      "ms": 29927,
+      "ok": true
+    },
+    {
+      "before": 28,
+      "after": 29,
+      "ms": 28746,
+      "ok": true
+    },
+    {
+      "before": 29,
+      "after": 30,
+      "ms": 25768,
+      "ok": true
+    },
+    {
+      "before": 30,
+      "after": 31,
+      "ms": 23327,
+      "ok": true
+    }
+  ],
+  "start": {
+    "turn": 1,
+    "hexes": 20160,
+    "landHexes": 11317,
+    "waterHexes": 8843,
+    "landPct": 56.14,
+    "landNoCoastPct": 56.14,
+    "terrainCounts": {
+      "morze": 6775,
+      "plytkie_morze": 2068,
+      "polarny": 138,
+      "laka": 6365,
+      "gory": 790,
+      "wzgorza": 1346,
+      "rownina": 2382,
+      "pustynia": 296
+    },
+    "polarHexes": 138,
+    "citiesTotal": 49,
+    "aiCitiesTotal": 48,
+    "capsCount": 7,
+    "capMin": 22,
+    "capPair": [
+      "egipt#15",
+      "zulusi#36"
+    ],
+    "caps": [
+      "gracz@38,66",
+      "grecy#1@117,95",
+      "inkowie#8@115,31",
+      "egipt#15@60,23",
+      "sumer#22@69,96",
+      "chinczycy#29@130,55",
+      "zulusi#36@80,25"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "48/48"
+  },
+  "menuCivId": "rzymianie",
+  "end": {
+    "turn": 31,
+    "hexes": 20160,
+    "landHexes": 11317,
+    "waterHexes": 8843,
+    "landPct": 56.14,
+    "landNoCoastPct": 56.14,
+    "terrainCounts": {
+      "morze": 6775,
+      "plytkie_morze": 2068,
+      "polarny": 138,
+      "laka": 6365,
+      "gory": 790,
+      "wzgorza": 1346,
+      "rownina": 2382,
+      "pustynia": 296
+    },
+    "polarHexes": 138,
+    "citiesTotal": 61,
+    "aiCitiesTotal": 60,
+    "capsCount": 7,
+    "capMin": 22,
+    "capPair": [
+      "egipt#15",
+      "zulusi#36"
+    ],
+    "caps": [
+      "gracz@38,66",
+      "grecy#1@117,95",
+      "inkowie#8@115,31",
+      "egipt#15@60,23",
+      "sumer#22@69,96",
+      "chinczycy#29@130,55",
+      "zulusi#36@80,25"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "60/60"
+  },
+  "pageErrors": [],
+  "totalMs": 1605226
+}

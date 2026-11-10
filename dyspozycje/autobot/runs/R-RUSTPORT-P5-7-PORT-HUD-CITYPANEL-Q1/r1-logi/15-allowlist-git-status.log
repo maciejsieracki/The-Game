@@ -1,0 +1,39 @@
+$ git status --porcelain --untracked-files=all --ignored=matching (po rm -rf node_modules dist)
+ M src-tauri/frontend-v2/PORTING-QUEUE.md
+ M src-tauri/frontend-v2/package.json
+ M src-tauri/frontend-v2/src/controller/index.ts
+ M src-tauri/frontend-v2/src/controller/mockCatalog.ts
+ M src-tauri/frontend-v2/src/main.ts
+ M src-tauri/frontend-v2/src/viewmodel/types.ts
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/01-operator-r1.md
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/05-dom-harness-hud-empire.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/diffs/empireDetailPanel.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/diffs/empireDetailTypes.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/diffs/hud.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/diffs/sceneTimingReport.diff
+?? dyspozycje/rust-port/p5/P5-7-PORT-HUD-CITYPANEL.md
+?? src-tauri/frontend-v2/src/controller/empireQueries.ts
+?? src-tauri/frontend-v2/src/ui/empireDetailPanel.ts
+?? src-tauri/frontend-v2/src/ui/empireDetailTypes.ts
+?? src-tauri/frontend-v2/src/ui/hud.ts
+?? src-tauri/frontend-v2/src/ui/portHudEmpire.ts
+?? src-tauri/frontend-v2/src/ui/sceneTimingReport.ts
+?? src-tauri/frontend-v2/tools/dom-harness/mutate-hud-empire.mjs
+?? src-tauri/frontend-v2/tools/dom-harness/run-hud-empire.mjs
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/01-npm-ci.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/02-tsc.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/03-check.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/04-vite-build.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/05-dom-harness-hud-empire.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/06-harness-mutations-hud-empire.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/07-dom-harness-p52-regresja.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/08-dom-harness-p53-regresja.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/09-dom-harness-p54-regresja.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/10-dom-harness-p55-regresja.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/11-gate-calibration-pin-hud-empire.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/12-dom-harness-p56-regresja.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/12b-gate-v2-hud-empire.log
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r1-logi/13-diff-stat.log
+$ filtr: wpisy spoza allowlisty = 0; node_modules/dist = 0
+$ git diff --check
+EXIT=0

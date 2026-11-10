@@ -1,0 +1,33 @@
+# klauzula 2 r2: gra/data@2a45e340 vs gra/data@edb8fb56 (content hash)
+# kolumny: plik | gra/data@2a45e340 | gra/data@edb8fb56 | wynik | rust-port/engine/data@2a45e340
+ai-params.json | 9965e8c3 | 9965e8c3 | MATCH | copy=9965e8c3 copy_vs_pin=MATCH
+auto-battle-params.json | 38d3eca0 | 38d3eca0 | MATCH | copy=38d3eca0 copy_vs_pin=MATCH
+buildings.json | a4bc388f | a4bc388f | MATCH | copy=a4bc388f copy_vs_pin=MATCH
+citizen-resource-upkeep.json | c54964d8 | c54964d8 | MATCH | copy=c54964d8 copy_vs_pin=MATCH
+city-names-pools.json | 7ce011d1 | 7ce011d1 | MATCH | copy=7ce011d1 copy_vs_pin=MATCH
+civ-ai.json | 2e9cff80 | 2e9cff80 | MATCH | copy=2e9cff80 copy_vs_pin=MATCH
+civ-matrix.json | 22053933 | fc94205d | MISMATCH | copy=fc94205d copy_vs_pin=MATCH
+civ-params.json | 0ac5838b | 0ac5838b | MATCH | copy=0ac5838b copy_vs_pin=MATCH
+civs.json | 2a9c25da | 86fd1394 | MISMATCH | copy=86fd1394 copy_vs_pin=MATCH
+combat-params.json | ceeddbcd | ceeddbcd | MATCH | copy=ceeddbcd copy_vs_pin=MATCH
+counters.json | be87c219 | be87c219 | MATCH | copy=be87c219 copy_vs_pin=MATCH
+diplomacy-acceptance-points.json | 19a43485 | 19a43485 | MATCH | copy=19a43485 copy_vs_pin=MATCH
+diplomacy.json | 056c0ef9 | 056c0ef9 | MATCH | copy=056c0ef9 copy_vs_pin=MATCH
+e-start-params.json | 2186f87f | 2186f87f | MATCH | copy=2186f87f copy_vs_pin=MATCH
+econ-params.json | edc05299 | edc05299 | MATCH | copy=edc05299 copy_vs_pin=MATCH
+epoka-ludnosc-manpower.json | 2911354e | 2911354e | MATCH | copy=2911354e copy_vs_pin=MATCH
+map-gen-params.json | 125e23f8 | 125e23f8 | MATCH | copy=125e23f8 copy_vs_pin=MATCH
+miasto-params.json | f6fe8e01 | f6fe8e01 | MATCH | copy=f6fe8e01 copy_vs_pin=MATCH
+power-params.json | b8aab3ec | b8aab3ec | MATCH | copy=b8aab3ec copy_vs_pin=MATCH
+resources.json | 7f2f9cd7 | 7f2f9cd7 | MATCH | copy=7f2f9cd7 copy_vs_pin=MATCH
+society-params.json | d51e7377 | d51e7377 | MATCH | copy=d51e7377 copy_vs_pin=MATCH
+tech.json | 5d97927f | 5d97927f | MATCH | copy=5d97927f copy_vs_pin=MATCH
+terrain-combat.json | b00b5f63 | b00b5f63 | MATCH | copy=b00b5f63 copy_vs_pin=MATCH
+terrain-improvements.json | cd54b28b | cd54b28b | MATCH | copy=cd54b28b copy_vs_pin=MATCH
+terrain-movement.json | 021d28d9 | 021d28d9 | MATCH | copy=021d28d9 copy_vs_pin=MATCH
+terrain-yields.json | f366fc21 | f366fc21 | MATCH | copy=f366fc21 copy_vs_pin=MATCH
+ui-params.json | f2b17280 | f2b17280 | MATCH | copy=f2b17280 copy_vs_pin=MATCH
+units.json | e5b72f6e | 7bf7dd06 | MISMATCH | copy=7bf7dd06 copy_vs_pin=MATCH
+wonders.json | fe302346 | fe302346 | MATCH | copy=fe302346 copy_vs_pin=MATCH
+# json w gra/data@2a45e340: 29 ; MATCH=26 MISMATCH=3
+# json w gra/data@edb8fb56: 29

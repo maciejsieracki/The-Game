@@ -1,0 +1,9 @@
+c4a09a0367c9eb20cd28ba1c4202aa876b482dd9a48870025098724d6d24e97d  /home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-3/.m04-helpers/vectors-r1-from-git.json
+kategorie identyczne: 19 ['consts', 'latBuffer', 'hashInt3', 'cellBias', 'jitter', 'elevGates', 'classify', 'classifyFlat', 'reapplyLand', 'reapplyForest', 'forestEligible', 'erosionSort', 'marginZone', 'setHex', 'marginCap', 'fades', 'inBorderBuf', 'borderGrid', 'scatter']
+kategorie rozne: []
+nowe kategorie w r2: ['parseHexKey', 'reapplyForestTie']
+sha256 identyczne
+gen_helpers_lines identyczne
+private_exports identyczne
+enums identyczne
+EXIT=0

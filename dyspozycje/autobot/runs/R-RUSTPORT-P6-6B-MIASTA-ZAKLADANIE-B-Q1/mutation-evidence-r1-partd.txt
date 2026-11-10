@@ -1,0 +1,42 @@
+WYKRYTY   : ens: postep -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+PRZEZYL   : found: limit miast >
+PRZEZYL   : found: limit - brak miast przejetych
+WYKRYTY   : found: limit - era minimalna -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - baza zapasowa -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - krok epoki -> 1 testow czerwonych: can_found_city_matches_web
+KOMPILACJA: found: limit - warunek opts (mutant nie kompiluje sie)
+WYKRYTY   : found: dystans <= -> 4 testow czerwonych: found_city_from_village_matches_web, can_found_city_matches_web, found_city_at_matches_web
+WYKRYTY   : found: dystans - MP zakladane -> 2 testow czerwonych: found_city_at_matches_web, can_found_city_matches_web
+WYKRYTY   : found: dystans - MP istniejace -> 4 testow czerwonych: found_city_at_matches_web, can_found_city_matches_web, found_city_from_village_matches_web
+WYKRYTY   : found: slot klastra -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: hex distance - os s -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: terytorium -> 3 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: gory -> 4 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, can_found_city_matches_web
+WYKRYTY   : found: woda -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: klucz niecalkowity -> 4 testow czerwonych: found_city_from_village_matches_web, can_found_city_matches_web, found_city_at_matches_web
+WYKRYTY   : found: nowe miasto - id -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - populacja -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - override podzialu handlu -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+KOMPILACJA: found: nowe miasto - poziom racji (mutant nie kompiluje sie)
+WYKRYTY   : found: nowe miasto - zalozone przez wlasciciela -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+KOMPILACJA: found: nowe miasto - procent rozwoj (mutant nie kompiluje sie)
+WYKRYTY   : found: nowe miasto - auto wyzywienie tylko w foundCityAt -> 2 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: nowe miasto - MP flaga -> 2 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : found: foundCity - pelne pola -> 1 testow czerwonych: found_city_matches_web
+WYKRYTY   : found: foundCityAt - flagi -> 1 testow czerwonych: found_city_at_matches_web
+WYKRYTY   : found: nazwa - poza pula -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : found: nazwa - niecalkowity -> 1 testow czerwonych: city_name_and_predicates_match_web
+WYKRYTY   : found: nazwa - generyczna -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : found: wioska - nazwa z liczby miast -> 1 testow czerwonych: found_city_from_village_matches_web
+WYKRYTY   : found: wioska - wlasciciel 0 -> 1 testow czerwonych: found_city_from_village_matches_web
+KOMPILACJA: found: wioska - terytorium (mutant nie kompiluje sie)
+WYKRYTY   : found: limit predykat -> 1 testow czerwonych: city_name_and_predicates_match_web
+WYKRYTY   : found: proweniencja -> 1 testow czerwonych: city_name_and_predicates_match_web
+mutantow=34 przezylo/niekompilujace=6
+   found: limit miast >
+   found: limit - brak miast przejetych
+   found: limit - warunek opts [nie kompiluje]
+   found: nowe miasto - poziom racji [nie kompiluje]
+   found: nowe miasto - procent rozwoj [nie kompiluje]
+   found: wioska - terytorium [nie kompiluje]
+EXIT=1

@@ -1,0 +1,575 @@
+{
+  "seed": 1001,
+  "turnsPlanned": 40,
+  "saveAt": 20,
+  "ok": true,
+  "turnLog": [
+    {
+      "before": 1,
+      "after": 2,
+      "ms": 110028,
+      "ok": true,
+      "turn": 2,
+      "ai": 48,
+      "mine": 1,
+      "units": 61,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 2,
+      "after": 3,
+      "ms": 103493,
+      "ok": true,
+      "turn": 3,
+      "ai": 48,
+      "mine": 1,
+      "units": 62,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 3,
+      "after": 4,
+      "ms": 86468,
+      "ok": true,
+      "turn": 4,
+      "ai": 48,
+      "mine": 1,
+      "units": 69,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 4,
+      "after": 5,
+      "ms": 79610,
+      "ok": true,
+      "turn": 5,
+      "ai": 48,
+      "mine": 1,
+      "units": 78,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 5,
+      "after": 6,
+      "ms": 78757,
+      "ok": true,
+      "turn": 6,
+      "ai": 48,
+      "mine": 1,
+      "units": 80,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 6,
+      "after": 7,
+      "ms": 86330,
+      "ok": true,
+      "turn": 7,
+      "ai": 48,
+      "mine": 1,
+      "units": 82,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 7,
+      "after": 8,
+      "ms": 83742,
+      "ok": true,
+      "turn": 8,
+      "ai": 48,
+      "mine": 1,
+      "units": 84,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 8,
+      "after": 9,
+      "ms": 79292,
+      "ok": true,
+      "turn": 9,
+      "ai": 48,
+      "mine": 1,
+      "units": 85,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 9,
+      "after": 10,
+      "ms": 79284,
+      "ok": true,
+      "turn": 10,
+      "ai": 48,
+      "mine": 1,
+      "units": 88,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 10,
+      "after": 11,
+      "ms": 80293,
+      "ok": true,
+      "turn": 11,
+      "ai": 48,
+      "mine": 1,
+      "units": 88,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 11,
+      "after": 12,
+      "ms": 84942,
+      "ok": true,
+      "turn": 12,
+      "ai": 48,
+      "mine": 1,
+      "units": 90,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 12,
+      "after": 13,
+      "ms": 85845,
+      "ok": true,
+      "turn": 13,
+      "ai": 48,
+      "mine": 1,
+      "units": 95,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 13,
+      "after": 14,
+      "ms": 78230,
+      "ok": true,
+      "turn": 14,
+      "ai": 48,
+      "mine": 1,
+      "units": 101,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 14,
+      "after": 15,
+      "ms": 85958,
+      "ok": true,
+      "turn": 15,
+      "ai": 48,
+      "mine": 1,
+      "units": 104,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 15,
+      "after": 16,
+      "ms": 78129,
+      "ok": true,
+      "turn": 16,
+      "ai": 48,
+      "mine": 1,
+      "units": 110,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 16,
+      "after": 17,
+      "ms": 83210,
+      "ok": true,
+      "turn": 17,
+      "ai": 48,
+      "mine": 1,
+      "units": 114,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 17,
+      "after": 18,
+      "ms": 103197,
+      "ok": true,
+      "turn": 18,
+      "ai": 48,
+      "mine": 1,
+      "units": 116,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 18,
+      "after": 19,
+      "ms": 64833,
+      "ok": true,
+      "turn": 19,
+      "ai": 48,
+      "mine": 1,
+      "units": 120,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 19,
+      "after": 20,
+      "ms": 62245,
+      "ok": true,
+      "turn": 20,
+      "ai": 48,
+      "mine": 1,
+      "units": 120,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 20,
+      "after": 21,
+      "ms": 58572,
+      "ok": true,
+      "turn": 21,
+      "ai": 48,
+      "mine": 1,
+      "units": 123,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 21,
+      "after": 22,
+      "ms": 46925,
+      "ok": true,
+      "turn": 22,
+      "ai": 48,
+      "mine": 1,
+      "units": 85,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 22,
+      "after": 23,
+      "ms": 32084,
+      "ok": true,
+      "turn": 23,
+      "ai": 49,
+      "mine": 1,
+      "units": 87,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 23,
+      "after": 24,
+      "ms": 33741,
+      "ok": true,
+      "turn": 24,
+      "ai": 52,
+      "mine": 1,
+      "units": 90,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 24,
+      "after": 25,
+      "ms": 34467,
+      "ok": true,
+      "turn": 25,
+      "ai": 53,
+      "mine": 1,
+      "units": 93,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 25,
+      "after": 26,
+      "ms": 29399,
+      "ok": true,
+      "turn": 26,
+      "ai": 54,
+      "mine": 1,
+      "units": 104,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 26,
+      "after": 27,
+      "ms": 31016,
+      "ok": true,
+      "turn": 27,
+      "ai": 55,
+      "mine": 1,
+      "units": 114,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 27,
+      "after": 28,
+      "ms": 32848,
+      "ok": true,
+      "turn": 28,
+      "ai": 55,
+      "mine": 1,
+      "units": 119,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 28,
+      "after": 29,
+      "ms": 33069,
+      "ok": true,
+      "turn": 29,
+      "ai": 55,
+      "mine": 1,
+      "units": 124,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 29,
+      "after": 30,
+      "ms": 31986,
+      "ok": true,
+      "turn": 30,
+      "ai": 56,
+      "mine": 1,
+      "units": 131,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 30,
+      "after": 31,
+      "ms": 31194,
+      "ok": true,
+      "turn": 31,
+      "ai": 57,
+      "mine": 1,
+      "units": 139,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 31,
+      "after": 32,
+      "ms": 29003,
+      "ok": true,
+      "turn": 32,
+      "ai": 59,
+      "mine": 1,
+      "units": 160,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 32,
+      "after": 33,
+      "ms": 28866,
+      "ok": true,
+      "turn": 33,
+      "ai": 61,
+      "mine": 1,
+      "units": 172,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 33,
+      "after": 34,
+      "ms": 28937,
+      "ok": true,
+      "turn": 34,
+      "ai": 61,
+      "mine": 1,
+      "units": 182,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 34,
+      "after": 35,
+      "ms": 28390,
+      "ok": true,
+      "turn": 35,
+      "ai": 62,
+      "mine": 1,
+      "units": 187,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 35,
+      "after": 36,
+      "ms": 29452,
+      "ok": true,
+      "turn": 36,
+      "ai": 67,
+      "mine": 1,
+      "units": 189,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 36,
+      "after": 37,
+      "ms": 29658,
+      "ok": true,
+      "turn": 37,
+      "ai": 67,
+      "mine": 1,
+      "units": 193,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 37,
+      "after": 38,
+      "ms": 29285,
+      "ok": true,
+      "turn": 38,
+      "ai": 67,
+      "mine": 1,
+      "units": 195,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 38,
+      "after": 39,
+      "ms": 31402,
+      "ok": true,
+      "turn": 39,
+      "ai": 69,
+      "mine": 1,
+      "units": 200,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 39,
+      "after": 40,
+      "ms": 36533,
+      "ok": true,
+      "turn": 40,
+      "ai": 71,
+      "mine": 1,
+      "units": 204,
+      "errorsSoFar": 0
+    },
+    {
+      "before": 40,
+      "after": 41,
+      "ms": 29765,
+      "ok": true,
+      "turn": 41,
+      "ai": 71,
+      "mine": 1,
+      "units": 206,
+      "errorsSoFar": 0
+    }
+  ],
+  "layersLog": [
+    {
+      "turnTo": 15,
+      "added": [
+        "farma@91,55"
+      ]
+    },
+    {
+      "turnTo": 19,
+      "added": [
+        "kopalnia_cyny@89,56"
+      ]
+    }
+  ],
+  "okType": true,
+  "uiSize": "Standardowy",
+  "uiLand": "30% lądu / 70% morze",
+  "seedSeen": 1001,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=1001 typ=kontynenty rywale=6 typy=7",
+  "genMs": 449898,
+  "menuCivId": "rzymianie",
+  "start": {
+    "turn": 1,
+    "hexes": 20160,
+    "landHexes": 6048,
+    "waterHexes": 14112,
+    "landPct": 30,
+    "landNoCoastPct": 30,
+    "terrainCounts": {
+      "morze": 5383,
+      "plytkie_morze": 8729,
+      "wzgorza": 802,
+      "laka": 2982,
+      "gory": 472,
+      "rownina": 1585,
+      "pustynia": 207
+    },
+    "polarHexes": 0,
+    "citiesTotal": 49,
+    "aiCitiesTotal": 48,
+    "capsCount": 7,
+    "capMin": 20,
+    "capPair": [
+      "gracz",
+      "egipt#1"
+    ],
+    "caps": [
+      "gracz@91,55",
+      "egipt#1@71,61",
+      "sumer#8@37,88",
+      "grecy#15@134,29",
+      "chinczycy#22@130,90",
+      "zulusi#29@38,30",
+      "inkowie#36@131,60"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "48/48"
+  },
+  "capital": {
+    "q": 91,
+    "r": 55
+  },
+  "saveLoad": {
+    "atTurnsDone": 20,
+    "before": {
+      "turn": 21,
+      "cities": 49,
+      "units": 123
+    },
+    "after": {
+      "turn": 21,
+      "cities": 49,
+      "units": 123,
+      "awaiting": false
+    },
+    "err": null,
+    "same": true
+  },
+  "at30": {
+    "turn": 31,
+    "hexes": 20160,
+    "landHexes": 6048,
+    "waterHexes": 14112,
+    "landPct": 30,
+    "landNoCoastPct": 30,
+    "terrainCounts": {
+      "morze": 5383,
+      "plytkie_morze": 8729,
+      "wzgorza": 802,
+      "laka": 2982,
+      "gory": 472,
+      "rownina": 1585,
+      "pustynia": 207
+    },
+    "polarHexes": 0,
+    "citiesTotal": 58,
+    "aiCitiesTotal": 57,
+    "capsCount": 7,
+    "capMin": 20,
+    "capPair": [
+      "gracz",
+      "egipt#1"
+    ],
+    "caps": [
+      "gracz@91,55",
+      "egipt#1@71,61",
+      "sumer#8@37,88",
+      "grecy#15@134,29",
+      "chinczycy#22@130,90",
+      "zulusi#29@38,30",
+      "inkowie#36@131,60"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "57/57"
+  },
+  "end": {
+    "turn": 41,
+    "ai": 71,
+    "mine": 1
+  },
+  "turnMsMedian": 58572,
+  "pageErrors": [],
+  "pageErrorsN": 0
+}

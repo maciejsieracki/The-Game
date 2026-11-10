@@ -1,0 +1,36 @@
+$ node tools/check-no-logic-imports.mjs <scratch>/pin/gra/src/ui/<15 modułów poziomu 0>   (kalibracja: te same pliki na pinie MUSZĄ mieć trafienia)
+<pin>/gra/src/ui/civBrandDisplay.ts:6: [CORE:data] import civsRaw from '../../data/civs.json';
+<pin>/gra/src/ui/diplomacyAcceptanceBalance.ts:5: [CORE:game] import type { AcceptanceSideBalance } from '../game/diplomacy-acceptance-points';
+<pin>/gra/src/ui/diplomacyAcceptanceBalance.ts:6: [CORE:game] import { bilateralTreatyDisplayPw, sideDisplayOfferPw } from '../game/diplomacy-acceptance-points';
+<pin>/gra/src/ui/diplomacyAcceptanceBalance.ts:13: [CORE:game] } from '../game/diplomacy-pn-engine';
+<pin>/gra/src/ui/diplomacyAcceptanceBalance.ts:14: [CORE:game] import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
+<pin>/gra/src/ui/icons/brandAssets.ts:8: [CORE:data] import type { BuildingDef, UnitDef } from '../../data/loader';
+<pin>/gra/src/ui/icons/brandAssets.ts:9: [CORE:units] import { categoryOf } from '../../units/setup';
+<pin>/gra/src/ui/improvementBuildConfirm.ts:5: [CORE:map] import type { ImprovementBuildImpact } from '../map/improvement-build';
+<pin>/gra/src/ui/improvementBuildConfirm.ts:6: [CORE:map] import { formatImprovementBuildImpactList } from '../map/improvement-build';
+<pin>/gra/src/ui/improvementBuildConfirm.ts:7: [CORE:game] import { improvementDisplayName } from '../game/terrain-improvements';
+<pin>/gra/src/ui/leaderPortraits.ts:17: [CORE:data] import civsRaw from '../../data/civs.json';
+<pin>/gra/src/ui/leaderPortraits.ts:18: [CORE:data] import type { CivsData } from '../data/loader';
+<pin>/gra/src/ui/mapLoadingOverlay.ts:5: [CORE:map] import { MAP_GEN_PHASE_TOTAL } from '../map/mapGenProgress';
+<pin>/gra/src/ui/minimapHud.ts:10: [CORE:game] import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
+<pin>/gra/src/ui/perfReport.ts:4: [EXT:buildInfo] import { CIV_BUILD_STAMP } from '../buildInfo';
+<pin>/gra/src/ui/perfReport.ts:5: [CORE:map] import type { MapGenPhaseTimings } from '../map/mapGenProgress';
+<pin>/gra/src/ui/perfReport.ts:6: [CORE:map] import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
+<pin>/gra/src/ui/perfReport.ts:7: [CORE:map] import { getRiverGenEnabled, getRiverGenPhase } from '../map/riverGenSwitch';
+<pin>/gra/src/ui/perfReport.ts:8: [CORE:render] import type { SceneBuildTimings } from '../render/scene';
+<pin>/gra/src/ui/power-labels.ts:14: [CORE:data] import powerParams from '../../data/power-params.json';
+<pin>/gra/src/ui/power-labels.ts:15: [CORE:game] import { loadPowerOpcje } from '../game/power-options';
+<pin>/gra/src/ui/saveLoadDialog.ts:14: [CORE:game] } from '../game/save';
+<pin>/gra/src/ui/saveLoadDialog.ts:15: [CORE:game] import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
+<pin>/gra/src/ui/techUnlockParse.ts:20: [CORE:data] import unitsData from '../../data/units.json';
+<pin>/gra/src/ui/uiParams.ts:15: [CORE:data] import raw from '../../data/ui-params.json';
+<pin>/gra/src/ui/unitInfographic.ts:5: [CORE:data] import type { UnitDef } from '../data/loader';
+<pin>/gra/src/ui/unitInfographic.ts:6: [CORE:units] import { categoryOf } from '../units/setup';
+<pin>/gra/src/ui/unitMiniPreview.ts:4: [CORE:three] import * as THREE from 'three';
+<pin>/gra/src/ui/unitMiniPreview.ts:5: [CORE:render] import { buildUnitModel } from '../render/units';
+<pin>/gra/src/ui/unitMiniPreview.ts:6: [CORE:units] import { categoryOf } from '../units/setup';
+<pin>/gra/src/ui/unitMiniPreview.ts:7: [CORE:data] import type { UnitDef } from '../data/loader';
+<pin>/gra/src/ui/victoryScreen.ts:8: [CORE:game] import type { VictoryResult } from '../game/victory';
+<pin>/gra/src/ui/victoryScreen.ts:9: [CORE:game] import { PROG_DOMINACJI_POWER } from '../game/victory';
+check-no-logic-imports: cele=<pin>/gra/src/ui/icons/brandAssets.ts,<pin>/gra/src/ui/leaderPortraits.ts,<pin>/gra/src/ui/uiParams.ts,<pin>/gra/src/ui/unitInfographic.ts,<pin>/gra/src/ui/power-labels.ts,<pin>/gra/src/ui/unitMiniPreview.ts,<pin>/gra/src/ui/civBrandDisplay.ts,<pin>/gra/src/ui/diplomacyAcceptanceBalance.ts,<pin>/gra/src/ui/techUnlockParse.ts,<pin>/gra/src/ui/minimapHud.ts,<pin>/gra/src/ui/perfReport.ts,<pin>/gra/src/ui/improvementBuildConfirm.ts,<pin>/gra/src/ui/mapLoadingOverlay.ts,<pin>/gra/src/ui/saveLoadDialog.ts,<pin>/gra/src/ui/victoryScreen.ts plików=15 plików_z_trafieniami=15 trafień=33 {"CORE:data":9,"CORE:game":11,"CORE:units":3,"CORE:map":6,"EXT:buildInfo":1,"CORE:render":2,"CORE:three":1}
+EXIT=1

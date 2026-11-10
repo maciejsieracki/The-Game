@@ -1,0 +1,16 @@
+MUTANT E-M21-drain-rate-none file=src/domain/resource_production.rs
+OLD:
+            required: required.to_vec(),
+            rate_per_citizen: Some(rate),
+            available,
+NEW:
+            required: required.to_vec(),
+            rate_per_citizen: None,
+            available,
+
+FAILED TESTS:
+test edge_n_minus_1_n_plus_1_real_table_bronze ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.91s
+VERDICT=KILLED
+EXIT=101

@@ -1,0 +1,80 @@
+WYKRYTA   hash-shift13: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   hash-shift16: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   hash-const-a: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   hash-imul-const: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   cell-bias-offset: 2 testow FAILED: reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   cell-bias-floor-to-trunc: 1 testow FAILED: terrain_cell_bias_matches_web
+WYKRYTA   jitter-center: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+WYKRYTA   jitter-uses-global-only: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+WYKRYTA   gates-low-le-to-lt: 2 testow FAILED: classify_terrain_matches_web, relief_elev_gates_match_web
+WYKRYTA   gates-high-ge-to-gt: 3 testow FAILED: classify_terrain_matches_web, reapply_land_terrain_matches_web, relief_elev_gates_match_web
+WYKRYTA   classify-sea-lt-to-le: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-landmask-lt-to-le: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-highland-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-mountain-elev-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-highland-elev-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-desert-lo-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   classify-no-climate-gate: 2 testow FAILED: classify_terrain_matches_web, reapply_land_terrain_matches_web
+WYKRYTA   classify-plains-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+WYKRYTA   flat-low-elev-to-sea: 1 testow FAILED: classify_terrain_flat_matches_web
+WYKRYTA   flat-desert-threshold-ignored: 1 testow FAILED: classify_terrain_flat_matches_web
+WYKRYTA   forest-cap-ceil-to-floor: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-no-zone-mul: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-sort-ascending: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-keep-old-forest: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-pangea-min: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-mid-index: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-height-zero-truthy: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-min-land-lt-to-le: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   forest-ignores-desert-band: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   land-sea-to-grass-removed: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   land-budget-floor-to-ceil: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   land-sort-ascending: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   land-count-not-counted: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   land-height-zero-truthy: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   land-flat-restore-skipped: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   fractions-highland-tier: 1 testow FAILED: consts_match_web
+WYKRYTA   cap-le-to-lt: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, margin_cap_matches_web
+WYKRYTA   cap-d-minus-1: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, fades_and_distances_match_web, margin_cap_matches_web
+WYKRYTA   radial-sign: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   radial-min-removed: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   edge-fade-margin-clamp: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   border-dist-height: 5 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, erosion_hook_matches_web, fades_and_distances_match_web
+WYKRYTA   in-border-lt-to-le: 3 testow FAILED: border_grid_tools_match_web, fades_and_distances_match_web, is_in_map_border_with_buffer_matches_web
+WYKRYTA   find-land-skips-shallow: 1 testow FAILED: border_grid_tools_match_web
+WYKRYTA   enforce-skips-shallow: 1 testow FAILED: border_grid_tools_match_web
+WYKRYTA   count-border-le: 1 testow FAILED: border_grid_tools_match_web
+WYKRYTA   margin-tie-direction: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+WYKRYTA   margin-neighbors-ge-to-gt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+WYKRYTA   margin-target-floor: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+WYKRYTA   margin-erosion-le-to-lt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+WYKRYTA   margin-fill-ge-to-gt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+BLAD-KOMPILACJI scatter-mask: error: failed to write to `/home/user/cargo-target-shared/wf_5dbe3591-4a2-1/debug/deps/rmetayzpPuT/full.rmeta`: No space left on device (os error 28) | error: could not compile `civ-engine` (lib) due to 1 previous error
+WYKRYTA   lat-buffer-ge-to-gt: 1 testow FAILED: lat_buffer_matches_web
+WYKRYTA   morze-keeps-river: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+WYKRYTA   morze-keeps-edges: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+WYKRYTA   morze-keeps-deposit: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+WYKRYTA   laka-keeps-deposit: 1 testow FAILED: set_hex_to_morze_and_laka_match_web
+WYKRYTA   laka-clears-river: 1 testow FAILED: set_hex_to_morze_and_laka_match_web
+WYKRYTA   js-round-half: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, reapply_forest_overlay_matches_web
+WYKRYTA   js-max-nan: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   js-min-nan: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   table-prog-pustyni: 3 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web
+WYKRYTA   table-rownina-prog: 3 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web
+WYKRYTA   table-amp-komorkowa: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+WYKRYTA   table-amp-globalna: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+WYKRYTA   table-rozmiar-komorki: 3 testow FAILED: consts_match_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+WYKRYTA   table-budzet-medium: 1 testow FAILED: reapply_land_terrain_matches_web
+WYKRYTA   table-mnoznik-umiarkowana: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   table-bonus-wnetrza: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   table-twardy-ocean: 6 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_consts_match_web, border_grid_tools_match_web, consts_match_web
+WYKRYTA   table-waga-rozproszenia: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, margin_scatter_score_matches_web
+WYKRYTA   table-fade-limit: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   table-min-bias: 1 testow FAILED: fades_and_distances_match_web
+WYKRYTA   table-niski-mountain: 1 testow FAILED: relief_elev_gates_match_web
+WYKRYTA   table-max-sasiadow: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+WYKRYTA   table-min-sufitu: 1 testow FAILED: reapply_forest_overlay_matches_web
+WYKRYTA   table-udzial-gor-high: 1 testow FAILED: consts_match_web
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['fade-cap-le-to-lt', 'forest-inland-gt-to-ge', 'land-restore-keeps-overlay']
+PODSUMOWANIE: wykryte 76/77, przezyly: ['scatter-mask (blad kompilacji)'], pliki przywrocone: True
+EXIT=1

@@ -1,0 +1,17 @@
+MUTANT S-M18-pay-sol-no-hasii file=src/domain/building_costs.rs
+OLD:
+        if has_ii
+            && owner_resource_stock(cities, owner_id, &params.klucz_sol) >= drain_params.sol_ii
+        {
+            if !dry_run {
+NEW:
+        if owner_resource_stock(cities, owner_id, &params.klucz_sol) >= drain_params.sol_ii
+        {
+            if !dry_run {
+
+FAILED TESTS:
+test edges_n_minus_1_n_n_plus_1 ... FAILED
+test pay_and_inactive_status_match_running_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+VERDICT=KILLED
+EXIT=101

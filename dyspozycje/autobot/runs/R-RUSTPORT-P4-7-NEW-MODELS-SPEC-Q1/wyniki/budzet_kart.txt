@@ -1,0 +1,42 @@
+## MIASTA BRAZ — karta: mesh/tri na poziom (budzet mesh/tri) + mur kamienny
+B-ME	L1=7/86  L2=13/166  L3=17/214  L4=23/290  L5=28/362  L6=34/446  L7=46/590  L8=53/682  L9=56/718  L10=60/766	mur=22/264 (<= 368)
+B-EG	L1=8/106  L2=14/186  L3=19/258  L4=25/338  L5=30/398  L6=35/458  L7=54/710  L8=61/802  L9=64/838  L10=69/910	mur=21/260 (<= 368)
+B-IN	L1=8/110  L2=12/170  L3=16/218  L4=22/278  L5=26/334  L6=31/406  L7=43/550  L8=48/610  L9=51/646  L10=55/702	mur=26/312 (<= 368)
+B-AL	L1=8/98  L2=15/186  L3=20/254  L4=28/350  L5=33/410  L6=41/510  L7=63/774  L8=69/854  L9=73/902  L10=78/962	mur=24/288 (<= 368)
+B-EP	L1=7/110  L2=12/170  L3=20/266  L4=28/338  L5=34/410  L6=40/482  L7=61/746  L8=70/854  L9=74/902  L10=80/974	mur=26/308 (<= 368)
+B-AZ	L1=10/142  L2=16/222  L3=20/286  L4=33/458  L5=37/518  L6=44/610  L7=55/758  L8=60/834  L9=63/874  L10=67/934	mur=26/316 (<= 368)
+B-AN	L1=10/130  L2=16/206  L3=20/266  L4=32/422  L5=38/498  L6=43/570  L7=60/798  L8=67/886  L9=70/926  L10=74/986	mur=20/244 (<= 368)
+B-AF	L1=15/194  L2=21/278  L3=26/346  L4=35/478  L5=41/562  L6=46/642  L7=60/858  L8=66/954  L9=69/1002  L10=74/1070	mur=27/324 (<= 368)
+## ZELAZO — nakladki na nowych zestawach, L4..L10
+Z-ME	L4=23/286  L5=29/370  L6=35/454  L7=51/646  L8=58/738  L9=61/774  L10=66/834	mur=26/312
+Z-EG	L4=32/470  L5=38/542  L6=43/602  L7=62/830  L8=69/922  L9=72/958  L10=78/1042	mur=23/284
+Z-IN	L4=26/326  L5=31/394  L6=36/466  L7=51/646  L8=56/706  L9=59/742  L10=64/810	mur=26/312
+Z-AL	L4=31/410  L5=37/482  L6=45/582  L7=61/774  L8=67/854  L9=71/902  L10=77/974	mur=19/300
+Z-EP	L4=32/378  L5=39/462  L6=45/534  L7=62/734  L8=71/842  L9=75/890  L10=82/974	mur=26/308
+Z-SL	L4=27/318  L5=32/378  L6=38/450  L7=58/686  L8=67/794  L9=71/842  L10=76/902	mur=26/308
+Z-AZ	L4=34/474  L5=38/534  L6=45/626  L7=59/814  L8=64/890  L9=67/930  L10=71/990	mur=28/340
+Z-AN	L4=34/446  L5=41/534  L6=46/606  L7=66/870  L8=73/958  L9=76/998  L10=81/1070	mur=20/244
+Z-AF	L4=37/502  L5=43/586  L6=48/666  L7=60/870  L8=66/966  L9=69/1014  L10=74/1082	mur=27/324
+## Z-GR / Z-RZ — delta centrum+domow wzgledem zmierzonej Grecji/Rzymu; limit = max(budzet, pomiar bazy)
+Z-GR L4: 36/494 (limit 48/596)
+Z-GR L5: 45/622 (limit 55/694)
+Z-GR L6: 54/730 (limit 66/834)
+Z-GR L7: 61/810 (limit 71/886)
+Z-GR L8: 69/914 (limit 77/969)
+Z-GR L9: 72/950 (limit 80/1017)
+Z-GR L10: 75/986 (limit 86/1087)
+Z-RZ L4: 44/538 (limit 49/622)
+Z-RZ L5: 49/598 (limit 55/694)
+Z-RZ L6: 56/694 (limit 66/834)
+Z-RZ L7: 66/814 (limit 71/886)
+Z-RZ L8: 71/874 (limit 77/969)
+Z-RZ L9: 73/898 (limit 80/1017)
+Z-RZ L10: 80/994 (limit 86/1087)
+## CUDA PARKOWANE — karty (budzet <= 25 mesh, <= 320 tri, maxR_wewn_wierzch <= 0,50)
+cud nalanda	mesh=13	tri=156	maxR_wewn_wierzch=0.293 (limit 0.50)
+cud angkor_wat	mesh=18	tri=276	maxR_wewn_wierzch=0.375 (limit 0.50)
+cud wielki_dzwon	mesh=10	tri=172	maxR_wewn_wierzch=0.212 (limit 0.50)
+cud mauzoleum_teodoryka	mesh=9	tri=192	maxR_wewn_wierzch=0.282 (limit 0.50)
+cud kopiec_grobowy (Monks Mound)	mesh=5	tri=68	maxR_wewn_wierzch=0.412 (limit 0.50)
+cud kopiec_grobowy (kurhan)	mesh=13	tri=202	maxR_wewn_wierzch=0.420 (limit 0.50)
+WYNIK: OK — wszystkie karty w budzecie

@@ -1,0 +1,43 @@
+id,nazwa,utrzymanie_pieniadz,przyrost_utrzymania,koszt_surowce,ceramika_w_koszcie_dzis,kandydat_wariant_B_ceramika_base,uwagi
+stolarnia,Stolarnia,1,0,drewno:25,nie,,
+kamieniarski,Warsztat kamieniarski,1,0,drewno:30,nie,,
+kuznia,Kuźnia brązu,2,1,drewno:30 kamien:30,nie,,
+odlewnia_brazu,Odlewnia brązu,2,1,drewno:30 kamien:40,nie,,
+odlewnia_zelaza,Odlewnia żelaza,3,1,drewno:40 cegla:50,nie,,
+wielka_odlewnia,Wielka odlewnia,4,2,drewno:60 cegla:70,nie,,
+targowisko,Targowisko (Rynek),1,1,drewno:30,nie,1,wczesny budynek - ryzyko zakleszczenia
+port,Port handlowy,2,1,drewno:60 kamien:30,nie,2,
+port_wielki,Port wielki,3,1,drewno:60 kamien:50,nie,,
+spichlerz,Spichlerz,1,0,drewno:40,nie,1,"zuzywa 25 Ceramiki/t magazynu (stala SPICHLERZ_DRAIN_CERAMIKA_PER_TURN, raz na imperium) - ryzyko podwojnego obciazenia"
+spichlerz_ii,Spichlerz II,2,0,drewno:40 kamien:50,nie,2,j.w. + zuzywa Sol; ryzyko podwojnego obciazenia
+garncarnia,Garncarnia,1,0,drewno:30,nie,,producent ceramiki - wykluczony (zjadalby wlasny produkt)
+cegielnia,Cegielnia,1,0,drewno:30 kamien:30,nie,,
+kamienne_kregi,Kamienne kręgi,1,0,kamien:40,nie,,
+swiatynia,Świątynia,1,1,drewno:30 kamien:40,nie,,
+biblioteka,Biblioteka,1,1,drewno:30 kamien:30,nie,,
+studnia,Studnia,1,0,drewno:25,nie,1,wczesny budynek (przed Garncarstwem) - ryzyko zakleszczenia
+akwedukt,Akwedukt,2,1,drewno:30 kamien:60,nie,2,
+mennica,Mennica,2,1,drewno:30 kamien:40,nie,,
+palisada,Palisada drewniana,1,0,drewno:60,nie,,
+mury,Mury,2,1,drewno:40 kamien:80,nie,,
+koszary,Koszary,2,1,drewno:40 kamien:40,nie,,
+magazyn,Magazyn,1,0,drewno:50 kamien:30,nie,1,
+stela,Stela / Pomnik,0,0,kamien:30,nie,,
+palac,Pałac,2,1,,nie,,brak koszt_surowce w JSON
+palac_ii,Pałac II,3,1,drewno:50 kamien:50,nie,,
+palac_iii,Pałac III,5,2,drewno:50 cegla:70,nie,,
+kuznia_zelaza,Kuźnia żelaza,3,1,drewno:40 cegla:50,nie,,
+wielka_kuznia,Wielka Kuźnia,4,2,drewno:60 cegla:80,nie,,
+fort,Cytadela,3,1,drewno:50 kamien:100,nie,,
+baszta,Baszta,3,1,drewno:50 kamien:100,nie,,
+warsztat_oblezniczy,Warsztat oblężniczy,3,1,drewno:50 kamien:50,nie,,
+akademia,Akademia,3,1,drewno:40 cegla:70,nie,,
+teatr,Teatr,2,1,drewno:40 cegla:50,nie,,
+sad,Sąd,2,1,drewno:30 cegla:50,nie,,
+dom_starszyzny,Dom Starszyzny,1,1,drewno:30,nie,,
+dwor_zarzadcy,Dwór Zarządcy,2,1,drewno:30 kamien:30,nie,,
+pretorium,Pretorium,3,1,drewno:40 cegla:50,nie,,
+trybunal,Trybunał,1,1,drewno:30 kamien:40,nie,,
+garnizon,Garnizon,2,1,drewno:30,nie,,
+laznia_publiczna,Łaźnia publiczna,2,1,drewno:40 cegla:60,nie,2,epoka Zelaza (cegla w koszcie)
+akademia_wojskowa,Akademia wojskowa,4,2,drewno:50 cegla:70,nie,,

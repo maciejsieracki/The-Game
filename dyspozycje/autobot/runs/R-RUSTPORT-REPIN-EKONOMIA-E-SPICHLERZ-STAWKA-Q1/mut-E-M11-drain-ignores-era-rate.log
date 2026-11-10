@@ -1,0 +1,21 @@
+MUTANT E-M11-drain-ignores-era-rate file=src/domain/resource_production.rs
+OLD:
+    let rate = citizen_upkeep_rate_for_era(table, era);
+    let need = (pop * rate).floor();
+    let mut available = Vec::new();
+    let mut missing = Vec::new();
+    let mut deductions
+NEW:
+    let rate = CITIZEN_UPKEEP_RATE_PER_CITIZEN;
+    let need = (pop * rate).floor();
+    let mut available = Vec::new();
+    let mut missing = Vec::new();
+    let mut deductions
+
+FAILED TESTS:
+test edge_n_minus_1_n_plus_1_real_table_bronze ... FAILED
+test nonfinite_and_negative_row_rates_fall_back ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+VERDICT=KILLED
+EXIT=101

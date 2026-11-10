@@ -1,0 +1,9 @@
+FAIL: znaleziono onEventDismiss
+FAIL: znaleziono gałąź border-march- w onEventDismiss
+FAIL: onEventDismiss('border-march-...') czyta z borderMarchEventLog
+FAIL: onEventDismiss('border-march-...') usuwa z borderMarchEventLog
+
+border-march-wygasanie-test: 22 pass, 4 fail
+
+EXIT=1
+TIME=0.1

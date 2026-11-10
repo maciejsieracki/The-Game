@@ -1,0 +1,136 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 1649,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "entityCards/registry.ts",
+      "cases": 312,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "techDiscoveryNotice.ts",
+      "cases": 69,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "`_legacyShowTechDiscoveryNotice` (pin :880-935) — fallback wołany tylko gdy ścieżka entityCards rzuci wyjątek; na danych pinu nieosiągalny (każda technologia ma wiersz). Kod skopiowany bez zmian poza odczytem katalogu w `buildBody` (diff)"
+      ],
+      "domCases": 68,
+      "v2Assertions": [
+        {
+          "check": "show: ścieżka entityCards (.tdn-entity-card-v2), nie legacy (56/56)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "entityCards/unitAdapter.ts",
+      "cases": 76,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "sciencePicker.ts",
+      "cases": 258,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "przewijanie (`scrollIntoView`, pin :1467,1483) — jsdom bez układu; no-op po obu stronach",
+        "pozycja dymka (`moveTooltip`, `offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik",
+        "gałąź `catch` renderu (pin :1434-1443) — nieosiągalna na danych harnessu"
+      ],
+      "domCases": 36,
+      "v2Assertions": [
+        {
+          "check": "show: drzewko SVG z węzłami, bez gałęzi błędu (18/18)",
+          "ok": true
+        },
+        {
+          "check": "v2 nie importuje buildHubTechEntries (lista huba = ResearchViewDto.hubEntries)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "entityCards/buildingAdapter.ts",
+      "cases": 215,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "v2Assertions": [
+        {
+          "check": "dostawca BuildingCardRulesDto wołany (karta budynku czyta reguły z DTO)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "scienceHubHud.ts",
+      "cases": 67,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "przeciąganie planu (`dragstart`/`drop`, `DataTransfer`) — jsdom nie implementuje DnD; kod skopiowany bez zmian (diff)",
+        "zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane"
+      ],
+      "domCases": 17,
+      "v2Assertions": [
+        {
+          "check": "hub: panel z wierszami (.sh-item / .sh-empty) w stanie otwartym (17/17)",
+          "ok": true
+        },
+        {
+          "check": "PLAN_MAX z katalogu = RESEARCH_QUEUE_MAX pinu (4 sloty planu)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "entityCards/improvementAdapter.ts",
+      "cases": 24,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "entityCards/technologyAdapter.ts",
+      "cases": 33,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "entityCards/renderer.ts",
+      "cases": 575,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "miniatura jednostki w medalionie (`unit3d` → `mountUnitMiniPreview`, kolejka rAF): pin renderuje WebGL (three), v2 obraz z Rust/placeholder (D-UI-3, P5.2) — zrzut DOM robiony PRZED rAF (stan „…” identyczny), stan po rAF nieporównywalny",
+        "klawisz Escape (stos `escapeOverlayStack.ts`, moduł P5.1) — nie wysyłany (wspólny `document` obu stron)"
+      ],
+      "domCases": 205,
+      "v2Assertions": [
+        {
+          "check": "render: karta .entity-card z tytułem w DOM v2 (191/191)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "entityCards/wonderAdapter.ts",
+      "cases": 20,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    }
+  ]
+}

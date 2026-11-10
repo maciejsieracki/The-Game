@@ -1,0 +1,66 @@
+use civ_engine::domain::hex::HexCoord as HexA;
+use civ_engine::domain::map_generator::{climate_band_at, ClimateBand, HexCoord as HexB, Mulberry32 as MapMulberry};
+use civ_engine::domain::rng::Mulberry32 as RngMulberry;
+
+fn band_name(b: ClimateBand) -> &'static str {
+    match b {
+        ClimateBand::PolarNorth => "polar_north",
+        ClimateBand::TemperateNorth => "temperate_north",
+        ClimateBand::PlainsNorth => "plains_north",
+        ClimateBand::Desert => "desert",
+        ClimateBand::PlainsSouth => "plains_south",
+        ClimateBand::TemperateSouth => "temperate_south",
+        ClimateBand::PolarSouth => "polar_south",
+    }
+}
+
+fn main() {
+    let path = std::env::args().nth(1).unwrap();
+    let v: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    for (key, earth) in [("climate", false), ("climateEarth", true)] {
+        let (mut total, mut equal) = (0u32, 0u32);
+        let mut first_diff = String::new();
+        for entry in v[key].as_array().unwrap() {
+            let h = entry[0].as_u64().unwrap() as u32;
+            for (r, web) in entry[1].as_array().unwrap().iter().enumerate() {
+                total += 1;
+                let got = band_name(climate_band_at(r as u32, h, earth));
+                if got == web.as_str().unwrap() {
+                    equal += 1;
+                } else if first_diff.is_empty() {
+                    first_diff = format!("h={h} r={r} web={} rust={got}", web.as_str().unwrap());
+                }
+            }
+        }
+        println!("{key}: heights 6..=130, rows compared={total} equal={equal} first_diff=[{first_diff}]");
+    }
+    let (mut total, mut eq_map, mut eq_rng) = (0u32, 0u32, 0u32);
+    for entry in v["mulberry"].as_array().unwrap() {
+        let seed = entry[0].as_u64().unwrap() as u32;
+        let mut a = MapMulberry::new(seed);
+        let mut b = RngMulberry::new(seed);
+        for web in entry[1].as_array().unwrap() {
+            let want = web.as_f64().unwrap() as u32;
+            total += 1;
+            if a.next_u32() == want {
+                eq_map += 1;
+            }
+            if b.next_f64() * 4294967296.0 == want as f64 {
+                eq_rng += 1;
+            }
+        }
+    }
+    println!("mulberry32: seeds 0..300 x 64 values, compared={total} equal(map_generator::Mulberry32::next_u32)={eq_map} equal(rng::Mulberry32::next_f64)={eq_rng}");
+    let (mut total, mut equal) = (0u32, 0u32);
+    for e in v["dist"].as_array().unwrap() {
+        let a: Vec<i32> = e.as_array().unwrap()[..4].iter().map(|x| x.as_i64().unwrap() as i32).collect();
+        let want = e[4].as_u64().unwrap() as u32;
+        total += 1;
+        let d1 = HexA::new(a[0], a[1]).distance(HexA::new(a[2], a[3]));
+        let d2 = HexB::new(a[0], a[1]).distance(HexB::new(a[2], a[3]));
+        if d1 == want && d2 == want {
+            equal += 1;
+        }
+    }
+    println!("hexDistanceAxial: pairs compared={total} equal(hex.rs && map_generator.rs)={equal}");
+}

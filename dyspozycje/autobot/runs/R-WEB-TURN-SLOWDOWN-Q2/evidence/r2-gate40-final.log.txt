@@ -1,0 +1,153 @@
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 visible
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 explored
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P2 memo
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P3 nodes
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P4 worked-owner
+[turn-slowdown-test] vite build (fix) ...
+[turn-slowdown-test] vite build (pre) ...
+  OK  S: bramka nie zmieniła śledzonego main.ts
+[turn-slowdown-test] gra 40 tur (fix) ...
+02:58:40 worldgen ms 138245
+02:59:08 T2 endTurn=11766.4 city=979.4/182.1 heap=97.6 dom=5235 lst=506 tex=14 geo=305 save=322842 u=14 c=10 aiMaxC=1 hash=5746fa14
+02:59:31 T3 endTurn=12177.3 city=812.3/127.3 heap=93.3 dom=4606 lst=642 tex=14 geo=305 save=323994 u=14 c=10 aiMaxC=1 hash=96313420
+02:59:51 T4 endTurn=12095.7 city=875.5/206.1 heap=98.7 dom=8136 lst=660 tex=14 geo=305 save=324732 u=14 c=10 aiMaxC=1 hash=e63b39e4
+03:00:09 T5 endTurn=9711.4 city=861.1/136.0 heap=97.7 dom=4838 lst=677 tex=14 geo=304 save=326213 u=16 c=10 aiMaxC=1 hash=c5b5181a
+03:00:27 T6 endTurn=10822.0 city=799.1/104.9 heap=100.0 dom=6187 lst=580 tex=14 geo=304 save=327170 u=16 c=10 aiMaxC=1 hash=ed0a2461
+03:00:49 T7 endTurn=13627.6 city=648.0/88.0 heap=99.8 dom=4794 lst=525 tex=14 geo=304 save=327977 u=16 c=10 aiMaxC=1 hash=9336a576
+03:01:10 T8 endTurn=12054.3 city=1043.1/207.2 heap=101.4 dom=6187 lst=582 tex=14 geo=304 save=328778 u=16 c=10 aiMaxC=1 hash=a54184e7
+03:01:29 T9 endTurn=12112.5 city=1090.2/219.6 heap=105.7 dom=6009 lst=528 tex=14 geo=305 save=329876 u=16 c=10 aiMaxC=1 hash=83885c9a
+03:01:48 T10 endTurn=10869.1 city=819.1/100.1 heap=91.4 dom=5974 lst=521 tex=14 geo=305 save=330911 u=17 c=10 aiMaxC=1 hash=9cdd2cf9
+03:02:09 T11 endTurn=12788.7 city=833.9/208.7 heap=110.6 dom=6299 lst=530 tex=14 geo=306 save=331803 u=18 c=10 aiMaxC=1 hash=83e919cb
+03:02:28 T12 endTurn=11180.1 city=862.5/142.4 heap=93.8 dom=6092 lst=556 tex=15 geo=322 save=332197 u=18 c=10 aiMaxC=1 hash=1c44e526
+03:02:49 T13 endTurn=13075.0 city=1163.6/111.7 heap=118.7 dom=4883 lst=542 tex=15 geo=323 save=333240 u=18 c=10 aiMaxC=1 hash=8f011509
+03:03:09 T14 endTurn=12918.0 city=701.9/95.1 heap=119.1 dom=6239 lst=758 tex=15 geo=331 save=334841 u=21 c=10 aiMaxC=1 hash=eeba3ef3
+03:03:29 T15 endTurn=12204.8 city=735.6/92.8 heap=94.1 dom=3747 lst=499 tex=15 geo=332 save=335515 u=22 c=10 aiMaxC=1 hash=aa709b8b
+03:03:48 T16 endTurn=11246.7 city=871.5/154.4 heap=91.3 dom=8891 lst=934 tex=15 geo=333 save=335824 u=22 c=10 aiMaxC=1 hash=09a1671d
+03:04:09 T17 endTurn=13642.2 city=869.1/215.2 heap=92.0 dom=7066 lst=747 tex=15 geo=353 save=336364 u=22 c=10 aiMaxC=1 hash=dff7d6f6
+03:04:30 T18 endTurn=12212.2 city=984.2/265.2 heap=98.5 dom=5396 lst=677 tex=15 geo=371 save=337142 u=22 c=10 aiMaxC=1 hash=7b3e85bf
+03:04:50 T19 endTurn=12251.8 city=1115.9/357.8 heap=103.4 dom=5406 lst=680 tex=14 geo=372 save=337398 u=22 c=10 aiMaxC=1 hash=d1e23b55
+03:05:10 T20 endTurn=12733.0 city=761.5/134.8 heap=103.5 dom=6944 lst=786 tex=14 geo=390 save=338170 u=22 c=10 aiMaxC=1 hash=8c33904b
+03:05:32 T21 endTurn=12642.5 city=758.7/106.9 heap=91.7 dom=5494 lst=681 tex=14 geo=399 save=338799 u=22 c=10 aiMaxC=1 hash=6b08e0c2
+03:05:49 T22 endTurn=9305.6 city=764.3/98.9 heap=103.4 dom=8656 lst=791 tex=14 geo=401 save=329333 u=19 c=10 aiMaxC=3 hash=75692270
+03:06:07 T23 endTurn=11133.4 city=830.9/105.6 heap=114.6 dom=7570 lst=801 tex=14 geo=409 save=326828 u=19 c=10 aiMaxC=3 hash=87aa56b7
+03:06:25 T24 endTurn=10382.2 city=793.7/154.2 heap=123.9 dom=5594 lst=680 tex=14 geo=423 save=328082 u=18 c=11 aiMaxC=4 hash=7a3564db
+03:06:43 T25 endTurn=10228.4 city=767.7/95.8 heap=122.6 dom=5402 lst=680 tex=14 geo=423 save=328290 u=18 c=11 aiMaxC=4 hash=26122162
+03:07:01 T26 endTurn=9908.3 city=972.2/308.1 heap=91.4 dom=6943 lst=785 tex=14 geo=423 save=329050 u=19 c=11 aiMaxC=4 hash=1fb06324
+03:07:19 T27 endTurn=10024.4 city=1160.9/367.4 heap=121.8 dom=6715 lst=720 tex=14 geo=424 save=330576 u=19 c=12 aiMaxC=5 hash=7558f6a7
+03:07:37 T28 endTurn=10017.2 city=1367.7/284.4 heap=122.4 dom=5435 lst=680 tex=14 geo=440 save=331906 u=20 c=13 aiMaxC=5 hash=7f42750d
+03:07:54 T29 endTurn=9027.8 city=1149.4/329.2 heap=122.9 dom=5664 lst=682 tex=14 geo=440 save=332468 u=20 c=13 aiMaxC=5 hash=df9888c1
+03:08:11 T30 endTurn=9605.4 city=724.9/101.5 heap=119.5 dom=7419 lst=837 tex=14 geo=443 save=334346 u=19 c=14 aiMaxC=6 hash=9a24b9b6
+03:08:31 T31 endTurn=12063.3 city=772.7/127.7 heap=116.6 dom=5539 lst=704 tex=14 geo=444 save=334832 u=20 c=14 aiMaxC=6 hash=95df995b
+03:08:49 T32 endTurn=10318.1 city=823.3/128.2 heap=123.2 dom=5533 lst=707 tex=14 geo=457 save=336856 u=21 c=15 aiMaxC=6 hash=d3a446a3
+03:09:05 T33 endTurn=10239.6 city=776.9/95.2 heap=123.5 dom=5534 lst=707 tex=14 geo=458 save=338073 u=21 c=15 aiMaxC=6 hash=cd406af5
+03:09:23 T34 endTurn=10610.1 city=918.3/139.3 heap=110.6 dom=7142 lst=821 tex=14 geo=467 save=339265 u=23 c=15 aiMaxC=6 hash=36f9988e
+03:09:42 T35 endTurn=10649.5 city=852.9/111.7 heap=94.2 dom=5584 lst=709 tex=14 geo=467 save=339890 u=25 c=15 aiMaxC=6 hash=9e13b44c
+03:10:00 T36 endTurn=10063.9 city=828.2/133.5 heap=100.4 dom=11371 lst=1301 tex=14 geo=468 save=340883 u=26 c=16 aiMaxC=7 hash=da35611c
+03:10:18 T37 endTurn=10222.4 city=917.9/147.7 heap=98.2 dom=8452 lst=1011 tex=14 geo=468 save=341303 u=26 c=16 aiMaxC=7 hash=3b90b1d7
+03:10:36 T38 endTurn=10667.3 city=785.5/107.0 heap=97.8 dom=7139 lst=823 tex=14 geo=469 save=342613 u=26 c=16 aiMaxC=7 hash=f3782833
+03:10:55 T39 endTurn=10818.3 city=959.6/369.8 heap=96.3 dom=5565 lst=707 tex=14 geo=474 save=343478 u=26 c=16 aiMaxC=7 hash=4ebb3c3a
+03:11:21 T40 endTurn=10113.7 city=1006.4/185.6 heap=111.2 dom=7192 lst=822 tex=14 geo=479 save=344435 u=27 c=17 aiMaxC=7 js=825.2/636.7 hash=2bf2abe9
+03:11:23 territoryRatesMs(20 wywołań, 5 serii)=236.5,87.0,56.3,47.1,51.8
+03:11:23 DONE errors=16 finalHash=2bf2abe9
+[turn-slowdown-test] gra 40 tur (pre) ...
+03:14:46 worldgen ms 190827
+03:15:15 T2 endTurn=14066.2 city=846.2/136.8 heap=90.1 dom=5244 lst=508 tex=14 geo=305 save=322842 u=14 c=10 aiMaxC=1 hash=5746fa14
+03:15:36 T3 endTurn=12950.7 city=771.6/128.1 heap=93.7 dom=5846 lst=518 tex=14 geo=305 save=323994 u=14 c=10 aiMaxC=1 hash=96313420
+03:15:57 T4 endTurn=13834.1 city=830.9/140.7 heap=98.4 dom=5204 lst=498 tex=14 geo=305 save=324732 u=14 c=10 aiMaxC=1 hash=e63b39e4
+03:16:20 T5 endTurn=14231.7 city=907.6/328.9 heap=91.7 dom=10300 lst=838 tex=14 geo=304 save=326213 u=16 c=10 aiMaxC=1 hash=c5b5181a
+03:16:39 T6 endTurn=11346.7 city=829.6/207.5 heap=96.3 dom=4246 lst=513 tex=14 geo=304 save=327170 u=16 c=10 aiMaxC=1 hash=ed0a2461
+03:17:00 T7 endTurn=13037.8 city=1023.4/230.3 heap=97.1 dom=4794 lst=526 tex=14 geo=304 save=327977 u=16 c=10 aiMaxC=1 hash=9336a576
+03:17:22 T8 endTurn=13860.5 city=841.5/239.5 heap=94.9 dom=6187 lst=583 tex=14 geo=304 save=328778 u=16 c=10 aiMaxC=1 hash=a54184e7
+03:17:43 T9 endTurn=12812.5 city=783.3/139.7 heap=97.1 dom=5671 lst=515 tex=14 geo=305 save=329876 u=16 c=10 aiMaxC=1 hash=83885c9a
+03:18:04 T10 endTurn=12704.0 city=1157.3/363.5 heap=95.5 dom=5423 lst=481 tex=14 geo=305 save=330911 u=17 c=10 aiMaxC=1 hash=9cdd2cf9
+03:18:24 T11 endTurn=12827.6 city=868.2/185.6 heap=103.0 dom=8743 lst=748 tex=14 geo=306 save=331803 u=18 c=10 aiMaxC=1 hash=83e919cb
+03:18:46 T12 endTurn=13074.4 city=1013.9/279.2 heap=100.0 dom=3657 lst=471 tex=15 geo=322 save=332197 u=18 c=10 aiMaxC=1 hash=1c44e526
+03:19:10 T13 endTurn=14653.5 city=2011.1/275.0 heap=93.4 dom=4318 lst=522 tex=15 geo=323 save=333240 u=18 c=10 aiMaxC=1 hash=8f011509
+03:19:33 T14 endTurn=13344.7 city=2484.7/1792.2 heap=102.0 dom=9535 lst=899 tex=15 geo=331 save=334841 u=21 c=10 aiMaxC=1 hash=eeba3ef3
+03:19:53 T15 endTurn=12789.2 city=750.3/145.1 heap=96.2 dom=4501 lst=568 tex=15 geo=332 save=335515 u=22 c=10 aiMaxC=1 hash=aa709b8b
+03:20:14 T16 endTurn=11727.5 city=984.8/297.8 heap=94.8 dom=8634 lst=508 tex=15 geo=333 save=335824 u=22 c=10 aiMaxC=1 hash=09a1671d
+03:20:37 T17 endTurn=15095.3 city=892.4/142.4 heap=95.5 dom=5278 lst=649 tex=15 geo=353 save=336364 u=22 c=10 aiMaxC=1 hash=dff7d6f6
+03:20:56 T18 endTurn=11803.0 city=910.1/281.8 heap=105.2 dom=5396 lst=679 tex=15 geo=371 save=337142 u=22 c=10 aiMaxC=1 hash=7b3e85bf
+03:21:17 T19 endTurn=13319.1 city=1139.5/242.2 heap=92.0 dom=5406 lst=680 tex=14 geo=372 save=337398 u=22 c=10 aiMaxC=1 hash=d1e23b55
+03:21:40 T20 endTurn=13488.3 city=1094.7/395.7 heap=96.2 dom=5388 lst=681 tex=14 geo=390 save=338170 u=22 c=10 aiMaxC=1 hash=8c33904b
+03:22:01 T21 endTurn=12932.5 city=979.6/147.4 heap=105.0 dom=6943 lst=788 tex=14 geo=399 save=338799 u=22 c=10 aiMaxC=1 hash=6b08e0c2
+03:22:20 T22 endTurn=11078.7 city=853.7/278.3 heap=118.1 dom=5406 lst=680 tex=14 geo=401 save=329333 u=19 c=10 aiMaxC=3 hash=75692270
+03:22:41 T23 endTurn=12572.9 city=1140.6/330.3 heap=107.4 dom=5403 lst=681 tex=14 geo=409 save=326828 u=19 c=10 aiMaxC=3 hash=87aa56b7
+03:23:00 T24 endTurn=11197.7 city=834.8/187.6 heap=122.2 dom=5403 lst=681 tex=14 geo=423 save=328082 u=18 c=11 aiMaxC=4 hash=7a3564db
+03:23:19 T25 endTurn=11132.5 city=830.7/196.0 heap=98.9 dom=6943 lst=785 tex=14 geo=423 save=328290 u=18 c=11 aiMaxC=4 hash=26122162
+03:23:38 T26 endTurn=11080.7 city=905.8/228.9 heap=123.8 dom=6544 lst=756 tex=14 geo=423 save=329050 u=19 c=11 aiMaxC=4 hash=1fb06324
+03:23:57 T27 endTurn=10682.7 city=896.7/206.8 heap=123.2 dom=5402 lst=680 tex=14 geo=424 save=330576 u=19 c=12 aiMaxC=5 hash=7558f6a7
+03:24:17 T28 endTurn=11713.5 city=1113.7/488.6 heap=109.1 dom=6964 lst=788 tex=14 geo=440 save=331906 u=20 c=13 aiMaxC=5 hash=7f42750d
+03:24:36 T29 endTurn=10879.4 city=1005.1/278.3 heap=116.2 dom=7270 lst=793 tex=14 geo=440 save=332468 u=20 c=13 aiMaxC=5 hash=df9888c1
+03:24:55 T30 endTurn=10620.6 city=786.4/212.8 heap=98.9 dom=5504 lst=681 tex=14 geo=443 save=334346 u=19 c=14 aiMaxC=6 hash=9a24b9b6
+03:25:13 T31 endTurn=10655.0 city=813.8/150.9 heap=102.0 dom=5522 lst=705 tex=14 geo=444 save=334832 u=20 c=14 aiMaxC=6 hash=95df995b
+03:25:31 T32 endTurn=9973.6 city=899.6/299.3 heap=95.8 dom=10784 lst=1238 tex=14 geo=457 save=336856 u=21 c=15 aiMaxC=6 hash=d3a446a3
+03:25:50 T33 endTurn=11642.0 city=900.6/185.0 heap=110.7 dom=5534 lst=708 tex=14 geo=458 save=338073 u=21 c=15 aiMaxC=6 hash=cd406af5
+03:26:10 T34 endTurn=10590.7 city=1424.7/188.9 heap=104.8 dom=7074 lst=815 tex=14 geo=467 save=339265 u=23 c=15 aiMaxC=6 hash=36f9988e
+03:26:30 T35 endTurn=11944.1 city=933.2/162.9 heap=101.2 dom=6771 lst=787 tex=14 geo=467 save=339890 u=25 c=15 aiMaxC=6 hash=9e13b44c
+03:26:49 T36 endTurn=9883.7 city=1244.1/601.2 heap=95.5 dom=9562 lst=561 tex=14 geo=468 save=340883 u=26 c=16 aiMaxC=7 hash=da35611c
+03:27:07 T37 endTurn=10920.2 city=972.8/288.8 heap=109.4 dom=9386 lst=1097 tex=14 geo=468 save=341303 u=26 c=16 aiMaxC=7 hash=3b90b1d7
+03:27:29 T38 endTurn=13258.6 city=834.6/177.0 heap=98.5 dom=12576 lst=707 tex=14 geo=469 save=342613 u=26 c=16 aiMaxC=7 hash=f3782833
+03:27:45 T39 endTurn=9745.1 city=798.4/234.8 heap=97.1 dom=7141 lst=822 tex=14 geo=474 save=343478 u=26 c=16 aiMaxC=7 hash=4ebb3c3a
+03:28:08 T40 endTurn=9901.5 city=846.8/206.9 heap=93.0 dom=5083 lst=289 tex=14 geo=479 save=344435 u=27 c=17 aiMaxC=7 js=1305.6/478.4 hash=2bf2abe9
+03:28:10 territoryRatesMs(20 wywołań, 5 serii)=151.9,231.9,191.8,148.8,111.3
+03:28:10 DONE errors=16 finalHash=2bf2abe9
+  OK  D1: identyczny skrót stanu FIX vs PRE w każdej z 39 tur
+  tury z graczem AI o >= 2 miastach (przed T40): 18 (pierwsza: 22)
+  OK  M: co najmniej jeden gracz AI miał >= 2 miasta przez >= 3 tury (P2 per miasto ćwiczone)
+[turn-slowdown-test] gra 40 tur (fix2) ...
+03:30:28 worldgen ms 128293
+03:30:51 T2 endTurn=9907.0 city=670.7/113.0 heap=119.7 dom=8175 lst=615 tex=14 geo=305 save=322842 u=14 c=10 aiMaxC=1 hash=5746fa14
+03:31:09 T3 endTurn=10414.3 city=765.7/117.0 heap=116.5 dom=12278 lst=873 tex=14 geo=305 save=323994 u=14 c=10 aiMaxC=1 hash=96313420
+03:31:27 T4 endTurn=10716.2 city=1023.0/121.6 heap=133.4 dom=16383 lst=1136 tex=14 geo=305 save=324732 u=14 c=10 aiMaxC=1 hash=e63b39e4
+03:31:44 T5 endTurn=9718.1 city=834.5/192.3 heap=104.0 dom=13909 lst=526 tex=14 geo=304 save=326213 u=16 c=10 aiMaxC=1 hash=c5b5181a
+03:32:01 T6 endTurn=10071.7 city=774.7/123.2 heap=100.9 dom=4794 lst=525 tex=14 geo=304 save=327170 u=16 c=10 aiMaxC=1 hash=ed0a2461
+03:32:17 T7 endTurn=9413.2 city=677.3/86.6 heap=94.8 dom=4790 lst=474 tex=14 geo=304 save=327977 u=16 c=10 aiMaxC=1 hash=9336a576
+03:32:35 T8 endTurn=10769.8 city=753.1/118.9 heap=97.8 dom=3920 lst=490 tex=14 geo=304 save=328778 u=16 c=10 aiMaxC=1 hash=a54184e7
+03:32:51 T9 endTurn=10124.5 city=669.8/83.9 heap=102.0 dom=8165 lst=750 tex=14 geo=305 save=329876 u=16 c=10 aiMaxC=1 hash=83885c9a
+03:33:07 T10 endTurn=10105.9 city=639.5/135.8 heap=103.1 dom=4664 lst=482 tex=14 geo=305 save=330911 u=17 c=10 aiMaxC=1 hash=9cdd2cf9
+03:33:25 T11 endTurn=10108.0 city=705.7/98.4 heap=103.3 dom=4664 lst=482 tex=14 geo=306 save=331803 u=18 c=10 aiMaxC=1 hash=83e919cb
+03:33:42 T12 endTurn=10380.6 city=594.1/91.4 heap=95.4 dom=3670 lst=477 tex=15 geo=322 save=332197 u=18 c=10 aiMaxC=1 hash=1c44e526
+03:33:58 T13 endTurn=10581.8 city=559.7/92.0 heap=103.8 dom=8136 lst=805 tex=15 geo=323 save=333240 u=18 c=10 aiMaxC=1 hash=8f011509
+03:34:15 T14 endTurn=10275.0 city=741.3/126.6 heap=103.5 dom=7040 lst=569 tex=15 geo=331 save=334841 u=21 c=10 aiMaxC=1 hash=eeba3ef3
+03:34:33 T15 endTurn=10367.2 city=629.6/91.3 heap=119.5 dom=5081 lst=595 tex=15 geo=332 save=335515 u=22 c=10 aiMaxC=1 hash=aa709b8b
+03:34:51 T16 endTurn=10934.7 city=801.5/235.2 heap=111.4 dom=6934 lst=710 tex=15 geo=333 save=335824 u=22 c=10 aiMaxC=1 hash=09a1671d
+03:35:09 T17 endTurn=12144.4 city=927.1/200.9 heap=96.4 dom=5278 lst=651 tex=15 geo=353 save=336364 u=22 c=10 aiMaxC=1 hash=dff7d6f6
+03:35:25 T18 endTurn=9316.1 city=622.9/93.1 heap=120.2 dom=5396 lst=677 tex=15 geo=371 save=337142 u=22 c=10 aiMaxC=1 hash=7b3e85bf
+03:35:42 T19 endTurn=9869.1 city=751.9/142.6 heap=113.8 dom=6943 lst=785 tex=14 geo=372 save=337398 u=22 c=10 aiMaxC=1 hash=d1e23b55
+03:36:00 T20 endTurn=12005.6 city=692.5/140.7 heap=100.8 dom=6944 lst=787 tex=14 geo=390 save=338170 u=22 c=10 aiMaxC=1 hash=8c33904b
+03:36:15 T21 endTurn=9881.5 city=796.4/217.4 heap=119.8 dom=5406 lst=680 tex=14 geo=399 save=338799 u=22 c=10 aiMaxC=1 hash=6b08e0c2
+03:36:31 T22 endTurn=9571.7 city=769.8/154.8 heap=117.2 dom=12166 lst=1163 tex=14 geo=401 save=329333 u=19 c=10 aiMaxC=3 hash=75692270
+03:36:48 T23 endTurn=9349.0 city=782.3/94.4 heap=115.8 dom=7342 lst=735 tex=14 geo=409 save=326828 u=19 c=10 aiMaxC=3 hash=87aa56b7
+03:37:05 T24 endTurn=10284.6 city=737.7/114.6 heap=93.5 dom=4269 lst=554 tex=14 geo=423 save=328082 u=18 c=11 aiMaxC=4 hash=7a3564db
+03:37:22 T25 endTurn=9899.8 city=783.6/130.1 heap=95.4 dom=3877 lst=525 tex=14 geo=423 save=328290 u=18 c=11 aiMaxC=4 hash=26122162
+03:37:36 T26 endTurn=8421.1 city=802.8/193.3 heap=92.6 dom=8770 lst=961 tex=14 geo=423 save=329050 u=19 c=11 aiMaxC=4 hash=1fb06324
+03:37:52 T27 endTurn=9419.2 city=800.0/170.4 heap=97.9 dom=6715 lst=718 tex=14 geo=424 save=330576 u=19 c=12 aiMaxC=5 hash=7558f6a7
+03:38:08 T28 endTurn=9383.3 city=683.3/102.3 heap=101.0 dom=6900 lst=751 tex=14 geo=440 save=331906 u=20 c=13 aiMaxC=5 hash=7f42750d
+03:38:22 T29 endTurn=8381.0 city=630.2/138.9 heap=115.2 dom=12120 lst=1193 tex=14 geo=440 save=332468 u=20 c=13 aiMaxC=5 hash=df9888c1
+03:38:39 T30 endTurn=10167.9 city=722.8/163.0 heap=115.9 dom=17341 lst=1638 tex=14 geo=443 save=334346 u=19 c=14 aiMaxC=6 hash=9a24b9b6
+03:38:56 T31 endTurn=9685.4 city=677.1/150.0 heap=117.8 dom=22649 lst=2105 tex=14 geo=444 save=334832 u=20 c=14 aiMaxC=6 hash=95df995b
+03:39:13 T32 endTurn=9431.4 city=816.8/106.1 heap=95.9 dom=13634 lst=683 tex=14 geo=457 save=336856 u=21 c=15 aiMaxC=6 hash=d3a446a3
+03:39:30 T33 endTurn=9336.0 city=813.7/96.1 heap=95.8 dom=5427 lst=535 tex=14 geo=458 save=338073 u=21 c=15 aiMaxC=6 hash=cd406af5
+03:39:47 T34 endTurn=9505.6 city=803.2/141.3 heap=95.4 dom=5566 lst=709 tex=14 geo=467 save=339265 u=23 c=15 aiMaxC=6 hash=36f9988e
+03:40:03 T35 endTurn=8833.6 city=718.4/118.0 heap=107.7 dom=6386 lst=703 tex=14 geo=467 save=339890 u=25 c=15 aiMaxC=6 hash=9e13b44c
+03:40:19 T36 endTurn=9610.8 city=841.8/192.0 heap=95.3 dom=5495 lst=682 tex=14 geo=468 save=340883 u=26 c=16 aiMaxC=7 hash=da35611c
+03:40:35 T37 endTurn=9820.7 city=826.1/289.5 heap=92.4 dom=4372 lst=566 tex=14 geo=468 save=341303 u=26 c=16 aiMaxC=7 hash=3b90b1d7
+03:40:49 T38 endTurn=8684.6 city=747.6/207.0 heap=96.7 dom=4922 lst=625 tex=14 geo=469 save=342613 u=26 c=16 aiMaxC=7 hash=f3782833
+03:41:05 T39 endTurn=9031.1 city=795.7/131.9 heap=105.0 dom=5494 lst=682 tex=14 geo=474 save=343478 u=26 c=16 aiMaxC=7 hash=4ebb3c3a
+03:41:26 T40 endTurn=9716.9 city=697.6/139.2 heap=103.7 dom=5635 lst=708 tex=14 geo=479 save=344435 u=27 c=17 aiMaxC=7 js=808.9/451.1 hash=2bf2abe9
+03:41:27 territoryRatesMs(20 wywołań, 5 serii)=120.6,104.0,76.0,44.3,45.0
+03:41:27 DONE errors=16 finalHash=2bf2abe9
+  OK  D2: drugi przebieg FIX daje te same skróty (harness deterministyczny)
+  koszt isProductionAllowed (tura 39): FIX=6.7 ms PRE=403.5 ms
+  OK  K1: bramka produkcji AI w FIX kosztuje < 50% PRE
+  koszt placedImprovementsForOwner: FIX=4.5 ms PRE=100.1 ms
+  OK  K2: placedImprovementsForOwner w FIX tańsze niż w PRE
+  koszt currentVisible przy otwarciu/zamknięciu panelu miasta: FIX=2.3 ms PRE=98.6 ms
+  OK  K3: widoczność przy odświeżeniu granic (panel miasta) w FIX < 50% PRE
+  [informacyjnie] profil: część P4 (obrabiane pola + mapa sporów pod empireTerritoryResourceRatesForOwner, tura + panel): FIX=58.2 ms PRE=130.9 ms (całe empireTerritoryResourceRatesForOwner: FIX=159.4 PRE=236.2)
+  koszt 20× empireTerritoryResourceRatesForOwner (min z 5 serii, po T40): FIX=47.1 ms PRE=111.3 ms (serie FIX=[236.5,87,56.299999999813735,47.09999999962747,51.799999999813735] PRE=[151.90000000037253,231.90000000037253,191.79999999981374,148.79999999981374,111.29999999981374])
+  OK  K4: P4 — przychody terytorium gracza w FIX < 85% PRE (pomiar bezpośredni)
+
+web-turn-slowdown-test: 13 OK, 0 FAIL
+EXIT=0

@@ -1,0 +1,7 @@
+# cwd: /home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-3/rust-port/spike-gpu-embed
+# env: CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike
+# rustc: rustc 1.97.0 (2d8144b78 2026-07-07) / cargo 1.97.0 (c980f4866 2026-06-30)
+$ cargo clippy --locked --all-targets --no-default-features --features gpu -- -D warnings
+   Compiling spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-3/rust-port/spike-gpu-embed)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.46s
+EXIT=0

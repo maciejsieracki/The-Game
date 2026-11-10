@@ -1,0 +1,32 @@
+WYKRYTA   alloc-floor-to-ceil: 1 testow FAILED: allocate_typy_to_masses_matches_web
+WYKRYTA   cap-div-to-plus: 2 testow FAILED: allocate_typy_to_masses_matches_web, thresholds_and_caps_match_web
+WYKRYTA   local-land-disk-r2: 11 testow FAILED: balance_and_enforce_match_web, development_space_and_mass_gates_match_web, local_land_fraction_and_gate_match_web, pick_best_local_land_spawn_matches_web
+WYKRYTA   dev-space-disk-r2: 6 testow FAILED: development_space_and_mass_gates_match_web, pick_best_local_land_spawn_matches_web, pick_center_in_mass_with_land_gate_matches_web, pick_player_cluster_center_matches_web
+WYKRYTA   habitable-shallow-sea: 15 testow FAILED: balance_and_enforce_match_web, development_space_and_mass_gates_match_web, find_best_player_start_hex_matches_web, local_land_fraction_and_gate_match_web
+WYKRYTA   group-masses-ascending: 7 testow FAILED: group_habitable_masses_and_cache_match_web, pick_center_in_mass_matches_web, pick_center_in_mass_spread_matches_web, pick_center_in_mass_with_land_gate_matches_web
+WYKRYTA   group-masses-no-sort: 7 testow FAILED: group_habitable_masses_and_cache_match_web, pick_center_in_mass_matches_web, pick_center_in_mass_spread_matches_web, pick_center_in_mass_with_land_gate_matches_web
+WYKRYTA   group-masses-bfs-not-dfs: 6 testow FAILED: group_habitable_masses_and_cache_match_web, pick_center_in_mass_matches_web, pick_center_in_mass_spread_matches_web, pick_center_in_mass_with_land_gate_matches_web
+WYKRYTA   timsort-min-gallop: 5 testow FAILED: balance_and_enforce_match_web, js_array_sort_matches_v8_including_comparator_call_counts, pick_center_in_mass_spread_matches_web, pick_center_on_land_pool_spread_matches_web
+WYKRYTA   timsort-min-run: 5 testow FAILED: balance_and_enforce_match_web, js_array_sort_matches_v8_including_comparator_call_counts, pick_center_in_mass_spread_matches_web, pick_center_on_land_pool_spread_matches_web
+WYKRYTA   timsort-binsert-le: 8 testow FAILED: group_habitable_masses_and_cache_match_web, js_array_sort_is_stable_for_equal_keys, js_array_sort_matches_v8_including_comparator_call_counts, pick_center_in_mass_matches_web
+WYKRYTA   timsort-invariant-ge: 1 testow FAILED: js_array_sort_matches_v8_including_comparator_call_counts
+WYKRYTA   roster-empty-id-allowed: 1 testow FAILED: reorder_roster_by_preference_matches_web
+WYKRYTA   roster-no-dedupe: 1 testow FAILED: reorder_roster_by_preference_matches_web
+WYKRYTA   dominance-gt-to-ge: 1 testow FAILED: region_mass_dominance_matches_web
+WYKRYTA   dominance-ratio-denominator: 1 testow FAILED: region_mass_dominance_matches_web
+WYKRYTA   tied-drop-sea-condition: 3 testow FAILED: pick_player_cluster_center_matches_web, pick_tied_spawn_land_candidate_matches_web, place_cluster_centers_across_landmasses_matches_web
+WYKRYTA   best-local-tie-drop-sea: 1 testow FAILED: pick_best_local_land_spawn_matches_web
+WYKRYTA   spread-min-exist-tolerance: 4 testow FAILED: balance_and_enforce_match_web, pick_center_in_mass_spread_matches_web, pick_center_on_land_pool_spread_matches_web, place_cluster_centers_across_landmasses_matches_web
+WYKRYTA   balance-gt-to-ge: 2 testow FAILED: balance_and_enforce_match_web, place_cluster_centers_across_landmasses_matches_web
+WYKRYTA   place-balance-iters-floor: 1 testow FAILED: place_cluster_centers_across_landmasses_matches_web
+WYKRYTA   voronoi-tie-to-last: 1 testow FAILED: voronoi_and_centroid_match_web
+WYKRYTA   score-near-boundary: 3 testow FAILED: find_best_player_start_hex_matches_web, score_city_start_hex_matches_web, score_city_start_hex_over_whole_maps_matches_web
+WYKRYTA   best-start-tie-le: 1 testow FAILED: find_best_player_start_hex_matches_web
+WYKRYTA   table-tolerance-dev-0: 5 testow FAILED: pick_best_local_land_spawn_matches_web, pick_center_in_mass_with_land_gate_matches_web, pick_player_cluster_center_matches_web, pick_tied_spawn_land_candidate_matches_web
+WYKRYTA   table-guard-phase2-0: 2 testow FAILED: place_cluster_centers_across_landmasses_matches_web, values_have_sane_shape
+WYKRYTA   table-local-frac-0.8: 13 testow FAILED: balance_and_enforce_match_web, constants_match_web, development_space_and_mass_gates_match_web, find_best_player_start_hex_matches_web
+WYKRYTA   table-start-pustynia-plus: 3 testow FAILED: find_best_player_start_hex_matches_web, score_city_start_hex_matches_web, score_city_start_hex_over_whole_maps_matches_web
+WYKRYTA   table-reveal-normal-9: 1 testow FAILED: reveal_radius_matches_web
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['enforce-drop-moving-to-empty', 'player-gate-ge-to-gt', 'table-sentinel-10']
+PODSUMOWANIE: wykryte 29/29, przezyly: [], pliki przywrocone: True
+EXIT=0

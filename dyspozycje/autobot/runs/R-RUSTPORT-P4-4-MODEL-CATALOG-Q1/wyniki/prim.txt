@@ -1,0 +1,31 @@
+| Prymityw | wzorzec `-E` | `render/**` linie (pliki) | 8 plików poza `render/` linie (pliki) |
+| BoxGeometry | `new (THREE\.)?BoxGeometry\(` | 1450 (57) | 45 (4) |
+| CylinderGeometry | `new (THREE\.)?CylinderGeometry\(` | 379 (53) | 17 (4) |
+| ConeGeometry | `new (THREE\.)?ConeGeometry\(` | 107 (47) | 10 (2) |
+| SphereGeometry | `new (THREE\.)?SphereGeometry\(` | 21 (12) | 3 (1) |
+| TorusGeometry | `new (THREE\.)?TorusGeometry\(` | 16 (8) | 1 (1) |
+| PlaneGeometry | `new (THREE\.)?PlaneGeometry\(` | 3 (2) | 14 (3) |
+| CircleGeometry | `new (THREE\.)?CircleGeometry\(` | 11 (4) | 3 (1) |
+| RingGeometry | `new (THREE\.)?RingGeometry\(` | 6 (4) | 3 (1) |
+| ExtrudeGeometry | `new (THREE\.)?ExtrudeGeometry\(` | 3 (3) | 0 (0) |
+| LatheGeometry | `new (THREE\.)?LatheGeometry\(` | 0 (0) | 0 (0) |
+| ShapeGeometry | `new (THREE\.)?ShapeGeometry\(` | 2 (1) | 0 (0) |
+| TubeGeometry | `new (THREE\.)?TubeGeometry\(` | 1 (1) | 0 (0) |
+| OctahedronGeometry | `new (THREE\.)?OctahedronGeometry\(` | 2 (1) | 0 (0) |
+| DodecahedronGeometry | `new (THREE\.)?DodecahedronGeometry\(` | 7 (2) | 0 (0) |
+| IcosahedronGeometry | `new (THREE\.)?IcosahedronGeometry\(` | 16 (8) | 3 (1) |
+| BufferGeometry | `new (THREE\.)?BufferGeometry\(` | 48 (30) | 3 (1) |
+| InstancedMesh | `new (THREE\.)?InstancedMesh\(` | 20 (2) | 13 (2) |
+| CanvasTexture | `new (THREE\.)?CanvasTexture\(` | 14 (9) | 2 (2) |
+| Sprite | `new (THREE\.)?Sprite\(` | 10 (7) | 2 (2) |
+| SpriteMaterial | `new (THREE\.)?SpriteMaterial\(` | 10 (7) | 2 (2) |
+| Line | `new (THREE\.)?Line\(` | 1 (1) | 2 (1) |
+| LineSegments | `new (THREE\.)?LineSegments\(` | 1 (1) | 0 (0) |
+| MeshStandardMaterial | `new (THREE\.)?MeshStandardMaterial\(` | 37 (35) | 9 (2) |
+| MeshLambertMaterial | `new (THREE\.)?MeshLambertMaterial\(` | 54 (30) | 19 (4) |
+| MeshBasicMaterial | `new (THREE\.)?MeshBasicMaterial\(` | 12 (3) | 27 (2) |
+| ShaderMaterial | `new (THREE\.)?ShaderMaterial\(` | 0 (0) | 0 (0) |
+| Mesh | `new (THREE\.)?Mesh\(` | 2394 (68) | 89 (4) |
+| mergeGeometries | `mergeGeometries\(` | 2 (2) | 0 (0) |
+| import three/examples | `from .three/examples` | 2 (2) | 0 (0) |
+| requestAnimationFrame | `requestAnimationFrame` | 1 (1) | 40 (5) |

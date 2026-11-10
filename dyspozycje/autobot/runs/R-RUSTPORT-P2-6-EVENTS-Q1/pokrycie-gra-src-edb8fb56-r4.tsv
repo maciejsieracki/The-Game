@@ -1,0 +1,458 @@
+sciezka	trafienia_cs_r3	trafienia_ci_rozszerzone	status_r4	dyspozycja_r4
+gra/src/audio/ambiencePrefs.ts	0	0	BEZ-SYGNALU-0	
+gra/src/audio/filePlayer.ts	0	0	BEZ-SYGNALU-0	
+gra/src/audio/musicPrefs.ts	0	0	BEZ-SYGNALU-0	
+gra/src/audio/muzyka-antyczna.ts	5	6	ROZSTRZYGNIETY	WYKLUCZONY: renderEvent (:1348,:1382,:1538,:1979) to synteza nut audio, nie komunikat
+gra/src/audio/sfxPrefs.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/autoBatchPhase.ts	0	7	ROZSTRZYGNIETY-R4	WYKLUCZONY: typy i planer intencji batcha (AutoBatchIntent); trafienia to nazwy typow, bez komunikatu
+gra/src/battle/battle-terrain.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/battleHudTheme.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: styl etykiety trybu applyModeHint1E (:761), bez zdarzenia
+gra/src/battle/battleMinimap.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/battleScene.ts	5	119	ROZSTRZYGNIETY	E-31 (dane wejściowe, prezentacja bitwy): clashLogEntries.unshift :8720 (log walki w scenie), buildBattleEventLog :9831 -> payload E-31; bez osobnego eventu | R4: _showResultBanner (:9845) = baner wyniku bitwy (prezentacja E-31); _updateBattlePhaseBanner = etykieta fazy (UI, stan sceny); _deployHint = podpowiedz rozstawiania (UI)
+gra/src/battle/battleSceneOpen.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/battleTerrainTooltip.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/endDetails1E.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/endScreen1E.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: 2 trafienia to komentarz i ikona (:5, :67); wynik bitwy = dane E-31, bez komunikatu w pliku
+gra/src/battle/manualBattle.ts	0	15	ROZSTRZYGNIETY-R4	E-31 (prezentacja wyniku bitwy recznej): _showBanner (:1404) wolany z :1395 po phase=done; wyzwalacz = akcja gracza (klasa W), wynik = dane E-31 (initiator Player); this.hint (:561-1277) = podpowiedz tury, UI
+gra/src/battle/mapFieldBattle.ts	0	4	ROZSTRZYGNIETY-R4	W: komunikaty bledu ataku gracza (:411, :417, :471), reakcja na akcje gracza (zob. zal. B)
+gra/src/battle/siegeHud1E.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/siegeWall.ts	0	0	BEZ-SYGNALU-0	
+gra/src/battle/testBattle.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: harness testowy
+gra/src/buildInfo.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala etykiety buildu
+gra/src/data/e-start-params-loader.ts	0	0	BEZ-SYGNALU-0	
+gra/src/data/loader.ts	0	0	BEZ-SYGNALU-0	
+gra/src/data/map-gen-params-loader.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-city-capture-executor.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-cs-absorption.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-difficulty-bonus.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz
+gra/src/game/ai-expansion.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-fog.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-major-absorb.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-moc-diag.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-production-priorities.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-resource-needs.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai-threat-mode.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ai.ts	6	16	ROZSTRZYGNIETY	WYKLUCZONY: 6/6 trafien to deferredUnitIds (planer koncentracji, :3389,:3423,:3520,:3529,:3556,:4223); zero komunikatow. Widocznosc decyzji AI: D-EV-7
+gra/src/game/alliance-war-obligation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/army-concentration.ts	6	8	ROZSTRZYGNIETY	WYKLUCZONY: 6/6 trafien to deferredUnitIds jako dane wyjsciowe planera (:21,:214,:255,:312,:328,:331)
+gra/src/game/army-cycle.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/army-starvation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/armyMerge.ts	1	1	ROZSTRZYGNIETY	E-57: odroczony prompt scalania (:655, flush main.ts:6268,:12149,:12221,:12229)
+gra/src/game/auto-battle-params.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/auto-battle-power.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/auto-improvements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/auto-manage.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/barbarians.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/battle-loot.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/battle-summary.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/border-march-scan.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/braz-access.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/building-cost-tempo.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/building-resource-gate.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/building-stock-cost.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/building-upgrades.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: chain.unshift :46 buduje lancuch danych ulepszen, bez komunikatu
+gra/src/game/capital-capture.ts	0	0	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/game/cities.ts	1	8	ROZSTRZYGNIETY	WYKLUCZONY: komentarz o odroczonym spawnie (:1171) | R4: budowaListaUkonczonaHintShown (:973) = flaga jednorazowosci dla E-24 (lista ukonczona)
+gra/src/game/citizen-resource-upkeep.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-defense.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-founding.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-hex-clear.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-hex-movement.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-names-pool.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/city-state-difficulty.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-ai-allocation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-ai-data.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-bonuses.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-entry-epoch.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-matrix-semantic.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-matrix.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-names.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-roster.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/civ-visual.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/cluster-start.ts	3	3	ROZSTRZYGNIETY	WYKLUCZONY: rezerwacja ownerId dla deferred rivals (:63,:76,:337), bez komunikatu
+gra/src/game/combat.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/conquest-stability.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/converters.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/culture-religion.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/cyna-access.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/danina-nazwa.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/defenseBreakdown.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diag-log.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/difficulty-cost.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-acceptance-points.ts	2	4	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:239,:480) - wypowiedzenie wojny to akcja gracza (showWarConsentModal)
+gra/src/game/diplomacy-ai-balance.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-ai-offer-balance.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-audience-actions.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-barbarian-cooperation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-basket-transfer.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-border-march.ts	3	3	POKRYTY	
+gra/src/game/diplomacy-credibility.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-currency-trade.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-deposit-trade.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-display.ts	0	3	ROZSTRZYGNIETY-R4	WYKLUCZONY: tekst podpowiedzi nastawienia (nastawienieHintPl :341, tooltip); prezentacja stanu relacji (E-43), bez zdarzenia
+gra/src/game/diplomacy-economy.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: komentarz/placeholder (:215) o pendingDiplomacyInbox; bez wywolania UI
+gra/src/game/diplomacy-factors.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-goods.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-layers.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-locks.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-pair-summary.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-peace-lock.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-penalty-preview.ts	0	2	ROZSTRZYGNIETY-R4	W: podglad kar do modali potwierdzenia (:137), wolany przez akcje gracza; PURE, bez mutacji
+gra/src/game/diplomacy-pn-engine.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-proposals.ts	3	5	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:563,:570,:588) o formularzu gracza; prezentacja kontrofert -> E-05/E-06 bez wlasnego eventu
+gra/src/game/diplomacy-rejection-cooldown.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-resource-trade-pick.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-tech-trade.ts	2	2	POKRYTY	
+gra/src/game/diplomacy-trade-validation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-treaties.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-unit-transfer.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-value-catalog.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy-war-gates.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/diplomacy.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/display-names.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/economy-upkeep.ts	0	6	ROZSTRZYGNIETY-R4	W: UNIT_RECRUIT_STOCK_ONLY_HINT (:823) i pickUnitRecruitHint (:887) = odmowa zakupu gracza (zob. 9.4 purchaseRecruitmentUnit); AI nie dostaje komunikatu
+gra/src/game/economy.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/effective-difficulty-for-owner.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/embarkation.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/empire-city-defaults.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/empire-diplo-resource-flow.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/empire-food.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/empire-handel-split.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/empire-hud-totals.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/eot-event-defer.ts	18	39	POKRYTY	
+gra/src/game/era-change-notify.ts	2	4	POKRYTY	
+gra/src/game/era-gate-ui.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/first-player-city.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/forced-war-bronze.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/forced-war-common.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/forced-war-iron.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/forced-war-stone.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/forced-war-waves.ts	2	2	ROZSTRZYGNIETY	E-13: modul logiki fal (deferredUnitIds :37,:192 to dane fal); UI wylacznie przez E-01
+gra/src/game/fort-territory.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz (:84)
+gra/src/game/fsa-autosave.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/gold-deficit.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/growth-happiness.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/human-owners.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/idb-storage.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/improvement-tech.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: getImprovementLockHint (:57), tekst blokady w UI, bez zdarzenia
+gra/src/game/inca-llama-seed.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/livestock-unlock.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/load-map-source.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/manpower.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/map-rebels.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/mapSiegeDetect.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/mennica-zloto-grace.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/okolica.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/order.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/owner-epoch.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/owner-utils.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/pending-improvements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/planned-march.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/playerState.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/playtestMapaSwiata.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala playtestu (dev)
+gra/src/game/playtestMiastoEkonomia.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala playtestu (dev)
+gra/src/game/playtestOdskok3v3.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: stale playtestu (dev)
+gra/src/game/playtestWalkaMapy.ts	1	5	ROZSTRZYGNIETY	WYKLUCZONY: out.unshift :127 w danych playtestu (dev)
+gra/src/game/population-growth-tempo.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/population-growth-v85.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/post-battle-map.ts	8	10	ROZSTRZYGNIETY	E-31 (dane wejsciowe podsumowania): battleEventLog :47,:77-88
+gra/src/game/post-capture-law.ts	0	3	ROZSTRZYGNIETY-R4	WYKLUCZONY: postCaptureLawBannerLabel (:115, :139), etykieta stanu UI, nie zdarzenie (zob. E-21)
+gra/src/game/power-objective.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/power-options.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/power-ranking.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/power.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/production.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/r-stawki-strojenie.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/rally-point.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/relief-preserving-improvements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/research.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/resource-access.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: hexHiddenDepositHint (:108), tooltip hover, nie zdarzenie
+gra/src/game/resource-usage-breakdown.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/ruch-swiata-tempo.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/save-label.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/save.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/scout-auto-explore.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/side-panel-event-link.ts	1	4	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:31) wskazujacy E-08 (elim-cs-*)
+gra/src/game/side-panel-event-priority.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/siege.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/siegeAi.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz (:155)
+gra/src/game/siegeDefenders.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/siegeMachines.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/society-breakdown.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/society-inputs.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/spich-auto-ration-notify.ts	0	0	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/game/start-preview.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/tech-tempo.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/tech-tree.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: chain.unshift :106 - dane drzewka, bez komunikatu
+gra/src/game/terrain-improvements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/trade-routes.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/triumph-city-state.ts	0	1	ROZSTRZYGNIETY-R4	E-21: stala TRIUMPH_CS_HINT_MS (:11), czas wyswietlenia karty E-21; nie osobny event
+gra/src/game/turn-economy.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/unit-building-bonuses.ts	0	1	ROZSTRZYGNIETY-R4	E-59: formatter komunikatu formatBuildingBonusGainHint (:421)
+gra/src/game/unit-card-stats.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/unit-cost-tempo.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/unit-power.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/unit-replace-context.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/veteran.ts	1	2	ROZSTRZYGNIETY	E-33: funkcja toastu i dziennika przy pierwszym wrogu (:247; toast :10969 w main.ts)
+gra/src/game/victory.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/villageRewards.ts	0	0	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/game/visibility.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wealth.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wiarygodnosc-types.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wonder-availability.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wonder-civ-tech.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wonder-map-build.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/wonders-data.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/zelazo-access.ts	0	0	BEZ-SYGNALU-0	
+gra/src/game/zloto-access.ts	0	0	BEZ-SYGNALU-0	
+gra/src/input/picker.ts	0	0	BEZ-SYGNALU-0	
+gra/src/main.ts	666	995	POKRYTY-zrodlo	
+gra/src/map/cluster-spawn.ts	2	2	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:67,:374) o rezerwacji ownerId
+gra/src/map/clusters.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/deposit-era.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/earth-land-mask.generated.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/earth-land-mask.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/gen-helpers.ts	1	5	ROZSTRZYGNIETY	WYKLUCZONY: out.unshift :5376 w generacji mapy, bez komunikatu
+gra/src/map/genWorker.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/generator.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/improvement-build.ts	0	8	ROZSTRZYGNIETY-R4	WYKLUCZONY: lockHint pozycji menu budowy (:1497-1499), UI, bez zdarzenia
+gra/src/map/map-attack-city.ts	0	8	ROZSTRZYGNIETY-R4	W: typy hint_* (:24-27, :100-134) = walidacja ataku na miasto na akcje gracza
+gra/src/map/mapGenAsync.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/mapGenProgress.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/mapSnapshot.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/minimap.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/newGameMapDefaults.ts	0	4	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedzi suwakow nowej gry (UI)
+gra/src/map/range-hexes.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/riverGenSwitch.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/road-movement.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/road-network.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/startScoring.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/territory-border.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/territory-work.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/territory.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/villages.ts	0	0	BEZ-SYGNALU-0	
+gra/src/map/wonder-placement.ts	0	0	BEZ-SYGNALU-0	
+gra/src/oblezenie/main.ts	0	0	BEZ-SYGNALU-0	
+gra/src/perf/hardwareProfile.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-konnica-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-lucznik-nubijski-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-miecznik-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-procarz-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-rydwan-kapadokijski-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-rydwan-konny-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/braz-rydwan-woly-opus5.ts	0	7	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera jednostki (render), bez komunikatu
+gra/src/render/braz-taran-opus5.ts	0	10	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera jednostki (render), bez komunikatu
+gra/src/render/braz-wlocznik-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/bronzeCity.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/bronzeCityRoblox.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/camera.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/cities.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: odroczone odslonięcie sprite'a (komentarz :429, deferredPlayerUnitRevealIds); cityRenderer.sync wolany w EOT - tylko render, bez komunikatu
+gra/src/render/cityMapOutline.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/cityMapStatChip.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/cityOkolicaOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/countSceneOverlayCandidates.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/dekor-laki-rowniny.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/djungla-modele.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/droga-6-ramion.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/fogDim.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/galera-model.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/hastati-falangita.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/hastati-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/hexShape.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/hexutil.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/improvements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p1-rdzen.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p2-inka.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p3-dystans.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p4-melee.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p57-wlocznie-machiny.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p6-super.ts	0	6	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (s6Banner), render
+gra/src/render/jednostki-p8a-bliskiwschod.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-p8b-rozni.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-z1-mezopotamia.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/jednostki-z2-srodziemne.ts	0	4	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (z2Banner), render
+gra/src/render/jednostki-z3-plemiona.ts	0	8	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (trSuperBanner), render
+gra/src/render/kamien-bazowe-opus5.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: render (1 trafienie, baner geometryczny)
+gra/src/render/kamien-inka-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/kamien-lucznicy-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/kamien-zulu-taran-opus5.ts	0	12	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (getKTBanner), render
+gra/src/render/kon-nowy-model.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/kopalnia-cyny-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/kopalnia-zlota-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/lasy-modele.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/mapRenderStyle.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/mergeDecor.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/miasto-braz.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/miasto-kamien.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/minecraftScene.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/oaza-pustynia.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/pastwisko-modele.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/perfDebugOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/rangeOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/resources.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/riverLod.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/robloxCity.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/robloxImprovements.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/robloxScene.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/scene.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/settlementModel.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/siegeCampModels.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/siegeCampSync.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/siegeMarker.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/stoneCity.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/stoneCityRoblox.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/styleResources.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/swinia-trzoda.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/tarasy-model.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/teren-gory-wzgorza.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/tradeRoutesOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/ulepszenia-modele-p2.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/ulepszenia-modele-p3a.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/ulepszenia-modele-p3b.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/unitOwnerEmblem.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/unitStatPlate.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/unitUpgradeBadges.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/unitVeteranBadges.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/unitVitalsPalette.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/units.ts	6	36	ROZSTRZYGNIETY	WYKLUCZONY: deferredDim / deferredPlayerUnitRevealIds (:445,:5996-6035) - render, bez komunikatu
+gra/src/render/wioska-oboz.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/wonderModels.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria flagi wlasciciela (ownerBanner), render
+gra/src/render/wonderRenderer.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/workerFieldOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/zelazo-jezdziec-oszczepami-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/zelazo-konnica-asyryjska-opus5.ts	0	0	BEZ-SYGNALU-0	
+gra/src/render/zoomLod.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/army.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/city.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/diplomacy.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/game-state.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/hex.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/index.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/map.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/player.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/resources.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/tech.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/turn.ts	0	0	BEZ-SYGNALU-0	
+gra/src/types/unit.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/aiCivPicker.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/armyListHud.ts	0	4	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz panelu listy armii (:290-292), UI
+gra/src/ui/armyMergePanel.ts	0	2	ROZSTRZYGNIETY-R4	W: podpowiedz/komunikat panelu scalania (klik gracza)
+gra/src/ui/armyMergePickPanel.ts	0	2	ROZSTRZYGNIETY-R4	W: podpowiedz panelu wyboru scalania (klik gracza)
+gra/src/ui/armySplitPanel.ts	0	2	ROZSTRZYGNIETY-R4	W: podpowiedz panelu podzialu (klik gracza)
+gra/src/ui/armyStackHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/armyStackPrompt.ts	0	11	ROZSTRZYGNIETY-R4	W: modal wyboru stosu (klik gracza), ikony i klasy
+gra/src/ui/bottomBarHud.ts	0	19	ROZSTRZYGNIETY-R4	WYKLUCZONY: et-hint blokujacych zadan (:223-226), stan UI wyprowadzany ze stanu (D-EV-4), bez zdarzenia
+gra/src/ui/brandTokenVars.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/buildModeHud.ts	0	61	ROZSTRZYGNIETY-R4	W: flashBanner (:750, :793; def. :938) = komunikat blokady na klik gracza w trybie budowy; lockHint tooltipy UI
+gra/src/ui/buildStampToggle.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/buildingHoverTooltip.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/cityAttackChoice.ts	0	6	ROZSTRZYGNIETY-R4	W: modal wyboru ataku na miasto (klik gracza); modalIcon = ikony
+gra/src/ui/cityCaptureNotice.ts	10	26	POKRYTY	
+gra/src/ui/cityForeignPick.ts	0	4	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/cityListHud.ts	0	4	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz listy miast (:237-239), UI
+gra/src/ui/cityPanel.ts	5	139	POKRYTY	
+gra/src/ui/cityUnitPick.ts	0	6	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/cityUxFrame.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/civBrandDisplay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/civElimNotice.ts	9	17	POKRYTY	
+gra/src/ui/contextPanelHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/diploListHud.ts	0	5	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz filtra listy dyplomacji (:381-383), UI
+gra/src/ui/diploUiSkin.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/diplomacyAcceptanceBalance.ts	0	15	ROZSTRZYGNIETY-R4	E-05/E-06 (prezentacja bilansu w oknie negocjacji gracza), bez wlasnego eventu; podpowiedzi balanceHint (:440, :478)
+gra/src/ui/diplomacyAudience.ts	36	154	ROZSTRZYGNIETY	Rozbicie 36 trafien: showAllianceObligationModal :1122 (wywolanie main.ts:20109, logika wojny sojuszniczej) -> E-02 (M); requestAutoCounterNegotiation :366 i kontrpropozycja w oknie -> E-06 (prezentacja); showWarConsentModal :1065 (main.ts:10709,:21279 - akcje gracza) i showWarConfirmModal :1156 / showBreakTreatyConfirmModal :1188 (potwierdzenia gracza) -> WYKLUCZONE (P2.5); updateDiplomacyAudience :2426 -> mechanizm E-43 | R4: formalBannerHtml (:1216, baner statusu formalnego) = prezentacja stanu (E-43); modalOverlay potwierdzen (:1069-1212) = klik gracza (W); multiHint/editHint = UI
+gra/src/ui/diplomacyDealDisplay.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip modHint (:128-131), prezentacja oferty
+gra/src/ui/diplomacyNegotiationModal.ts	15	16	ROZSTRZYGNIETY	WYKLUCZONY: formularz negocjacji gracza (showNegotiationModal :436, closeModal :255); prezentacja -> E-05/E-06 bez wlasnego eventu
+gra/src/ui/diplomacyPanel.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/diplomacyPendingHud.ts	6	7	POKRYTY	
+gra/src/ui/diplomacyProposalBanner.ts	0	15	POKRYTY	E-60 (runda 4, zarzut 1)
+gra/src/ui/diplomacyTradeBasket.ts	51	74	ROZSTRZYGNIETY	WYKLUCZONY jako formularz koszyka gracza (showTradeBasketModal :2356, wywolanie z diplomacyAudience :514; openQuickDealBasket :2794); prezentacja kontrofert -> E-06; brak wlasnego eventu
+gra/src/ui/empireBalance.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/empireDetailPanel.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: 1 trafienie UI (panel imperium)
+gra/src/ui/empireDetailTypes.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/empireMiastaTable.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/empireOverlayHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/empirePanelSectionMap.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/entityCards/buildingAdapter.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/entityCards/civpediaOpenGate.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:26)
+gra/src/ui/entityCards/improvementAdapter.ts	1	1	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:13)
+gra/src/ui/entityCards/registry.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/entityCards/renderer.ts	14	14	ROZSTRZYGNIETY	WYKLUCZONY: renderer kart; komentarze o techDiscoveryNotice; tresc odkrycia = prezentacja E-26
+gra/src/ui/entityCards/slug.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/entityCards/technologyAdapter.ts	8	8	ROZSTRZYGNIETY	WYKLUCZONY: adapter tresci odkrycia technologii (prezentacja E-26), komentarze
+gra/src/ui/entityCards/types.ts	9	9	ROZSTRZYGNIETY	WYKLUCZONY: typy i komentarze
+gra/src/ui/entityCards/unitAdapter.ts	2	2	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:32-33)
+gra/src/ui/entityCards/wonderAdapter.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/escapeOverlayStack.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/formatPl.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/gamePauseMenu.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: atrybut aria-modal (:134), menu pauzy
+gra/src/ui/hexContextTooltip.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip hexa (hexHiddenDepositHint :344), UI hover
+gra/src/ui/hotSeatHandoff.ts	0	5	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/ui/hoverDetailDock.ts	0	16	ROZSTRZYGNIETY-R4	WYKLUCZONY: mechanizm podpowiedzi kart (sideHint), UI
+gra/src/ui/hud.ts	0	40	ROZSTRZYGNIETY-R4	WYKLUCZONY: showFullscreenHint (:404) = zdarzenie przegladarki fullscreenchange, nie logika gry; leaderBanners (:1708-1848) = UI; CSS civ-hud-banner
+gra/src/ui/hudChip6c.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/hudLayout.ts	0	2	ROZSTRZYGNIETY-R4	WYKLUCZONY: stale ukladu (HUD_MAP_BANNER_BOTTOM_PX :41)
+gra/src/ui/hudPanelDismiss.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: UI (1 trafienie)
+gra/src/ui/hudTitleTooltip.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip UI (1 trafienie)
+gra/src/ui/icons/brandAssets.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/icons/iconRegistry.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/icons/scienceOwlIcon.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/icons/scienceProgressRing.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/icons/wikiBookIcon.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/improvementBuildConfirm.ts	2	7	ROZSTRZYGNIETY	WYKLUCZONY: modal potwierdzenia akcji gracza (:39-40)
+gra/src/ui/interHumanDiplomacyHud.ts	1	4	POKRYTY	
+gra/src/ui/leaderBannersHud.ts	0	19	ROZSTRZYGNIETY-R4	WYKLUCZONY: baner lidera = trwaly wskaznik UI wyprowadzony z stanu (zob. E-43), bez zdarzenia
+gra/src/ui/leaderPortraits.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/mainMenu.ts	2	19	ROZSTRZYGNIETY	WYKLUCZONY: soonBtn toast WKROTCE (:262-268) - klik w menu | R4: showToast (:228-235) = komunikat WKROTCE po kliknieciu w menu (W)
+gra/src/ui/mapLoadingOverlay.ts	0	7	ROZSTRZYGNIETY-R4	WYKLUCZONY: overlay ladowania mapy (startup), UI
+gra/src/ui/mapToolbarHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/mapUnitCursor.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/mapUnitHudSkin.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/markdownLite.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/minimapHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/minimapLayout.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/naukaLabel.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/newGameFlow.ts	7	45	ROZSTRZYGNIETY	WYKLUCZONY: modal zaawansowany menu (klik gracza) | R4: pola hint: w opcjach nowej gry (:1633-1758) = teksty UI, W
+gra/src/ui/orderPanel.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/perfReport.ts	7	28	ROZSTRZYGNIETY	WYKLUCZONY: raport wydajnosci (dev/menu) | R4: modal raportu wydajnosci (dev), UI
+gra/src/ui/perfTestPanel.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: narzedzie dev (aria-modal)
+gra/src/ui/postBattleSummary.ts	0	0	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/ui/power-labels.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/powerOverlayHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/preBattle.ts	41	71	ROZSTRZYGNIETY	E-31 (initiator Ai, B): kolejka deferredAutoRequests :193,:238-247 dla automatycznych bitew AI/barbarzyncow (main.ts:28261 auto:true), flush :398-400 po zakonczeniu bitwy; reszta WYKLUCZONA (toast zapisu :174-175,:271 - akcja gracza) | R4: showPreBattleSaveToast (:292) = toast zapisu, reakcja na akcje gracza (W)
+gra/src/ui/resourceColors.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/saveLoadDialog.ts	0	13	ROZSTRZYGNIETY-R4	WYKLUCZONY: dialog zapisu/wczytania (akcja gracza); hint = opis istniejacych sejwow
+gra/src/ui/sceneTimingReport.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/scienceHubHud.ts	6	19	POKRYTY	
+gra/src/ui/scienceHubSnapshotLogic.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/sciencePicker.ts	6	10	ROZSTRZYGNIETY	WYKLUCZONY: komentarze/import; wybor gracza w drzewku (E-26 prezentacja)
+gra/src/ui/sideListHud.css.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: CSS
+gra/src/ui/sidePanelEventFilter.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/sidePanelHud.ts	4	6	POKRYTY	
+gra/src/ui/sidePanelLayout.ts	0	1	ROZSTRZYGNIETY-R4	WYKLUCZONY: uklad panelu (1 trafienie), UI
+gra/src/ui/siegeMapPanel.ts	0	16	ROZSTRZYGNIETY-R4	E-30: wiersz ostrzezenia kapitulacji (:273) renderowany ze stanu oblezenia; modalIcon = ikony; klik gracza = W
+gra/src/ui/techDiscoveryNotice.ts	16	24	POKRYTY	
+gra/src/ui/techIcons.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/techTreeView.ts	2	7	ROZSTRZYGNIETY	WYKLUCZONY: wybor gracza (:924 showTechDiscoveryNotice po kliku) - prezentacja E-26 | R4: civ-ttv-hint (:1067) = podpowiedz sterowania, UI
+gra/src/ui/techUnlockParse.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/treasuryBalanceFormat.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/triumphCityStateNotice.ts	8	17	POKRYTY	
+gra/src/ui/turnTransitionOverlay.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/uiParams.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitActionBarHtml.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitCardStatus.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitCtxDockDiploGate.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitForeignPick.ts	0	4	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/unitInfoCard.ts	5	5	ROZSTRZYGNIETY	WYKLUCZONY: starsza implementacja karty (komentarze :7-9,:115,:161,:408)
+gra/src/ui/unitInfographic.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitMiniPreview.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitPanelHud.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitRecruitCard.ts	0	0	BEZ-SYGNALU-0	
+gra/src/ui/unitReplacePicker.ts	1	3	ROZSTRZYGNIETY	WYKLUCZONY: modal wyboru zamiennika (klik gracza, komentarz :114)
+gra/src/ui/victoryScreen.ts	0	3	POKRYTY	wymieniony w katalogu (runda 4, zarzut 2)
+gra/src/ui/wikiHubHud.ts	0	3	ROZSTRZYGNIETY-R4	WYKLUCZONY: encyklopedia, UI (aria-modal)
+gra/src/ui/wonderCompletedNotice.ts	4	9	POKRYTY	
+gra/src/units/battleRoster.ts	6	6	ROZSTRZYGNIETY	E-31 (dane wejsciowe): buildBattleEventLog :31, unshift :79,:85 - sklad rosterow bitwy
+gra/src/units/setup.ts	0	0	BEZ-SYGNALU-0	
+gra/src/util/norm-pl-label.ts	0	0	BEZ-SYGNALU-0	
+gra/src/vite-env.d.ts	0	0	BEZ-SYGNALU-0	
+gra/src/wonderpreview/main.ts	0	0	BEZ-SYGNALU-0	

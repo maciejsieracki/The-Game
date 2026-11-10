@@ -1,0 +1,17 @@
+[peace-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-peace-live-13653
+[peace-live] A: odmowa pokoju przez silniejszą AI
+      wysłanie z ekranu negocjacji: {"entryFound":true,"tableLen":1} komunikat DOM: {"shown":true,"text":"Nie można wysłać — AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny"}
+      powers {"player":2847,"ai":40000} war {"turnsAtWar":5,"lostCities":0} eval {"accepted":false,"reason":"AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny","rw":0.9335542745116344}
+  OK  A1 AI silniejsza: rw ≥ 0.55
+  OK  A1 pokój odrzucony
+  OK  A1 powód „AI czuje się silniejsze"
+  OK  A1 brak utraconego miasta
+  OK  A1 DOM: wpis pokoju wysłany realnym handlerem negocjacji
+  OK  A1 DOM: #civ-hint-toast widoczny z odmową „Nie można wysłać — … czuje się silniejsze"
+      po 10 turach eval {"accepted":false,"reason":"Brakuje 798 PW do uczciwej oferty pokoju @ Relacji (baza 887 PW) — dopłać, by wysłać","rw":0.9335542745116344} war {"turnsAtWar":10,"lostCities":0}
+  OK  A2 po 10 turach odmowa „silniejsze" nieobowiązuje
+  OK  A2 DOM: po 10 turach komunikat „czuje się silniejsze" NIE pojawia się na ekranie
+      stan po przywróceniu 5 tur wojny: AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny
+
+EXIT=124
+TIME=360.5

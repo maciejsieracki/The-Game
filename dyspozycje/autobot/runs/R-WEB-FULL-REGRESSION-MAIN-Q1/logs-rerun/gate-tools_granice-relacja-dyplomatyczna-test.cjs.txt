@@ -1,0 +1,64 @@
+granice-relacja-dyplomatyczna-test (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1)
+
+1. relationBorderColor — mapowanie statusu na kolor obwódki
+  OK status 'wojna' → czerwony #ff5252
+  OK status 'sojusz' → niebieski #4fc3f7
+  OK status 'pokoj' → złoty #ffd700
+  OK status 'neutralni' → złoty #ffd700
+  OK wojna / sojusz / neutralny to trzy RÓŻNE kolory
+  OK status nierozpoznany → fallback złoty (obwódka nigdy nie znika)
+  OK wojna: dominanta czerwona i jasna (R>200)
+  OK sojusz: dominanta niebieska i jasna (B>200)
+  OK neutralny: jaskrawe złoto (R>240, G>190, B<60)
+  OK neutralne złoto jaśniejsze/czystsze niż złoto UI #d9a441
+  OK ownerId 0 → obie obwódki tym samym kolorem #8b1a1a
+  OK kolor własnej cywilizacji (Rzymianie) nie koliduje z żadnym kolorem relacji
+
+2. buildTerritoryBorderGroup — struktura grupy obwódek
+  OK bez relationColorFn → 1 mesh na właściciela (kompatybilność wsteczna)
+  OK bez relationColorFn → tylko territory-border-0
+  OK z relationColorFn → 2 meshe na właściciela (zamiast 1)
+  OK mesh zewnętrzny nazwany territory-border-0
+  OK mesh wewnętrzny nazwany territory-relation-0
+  OK pas tożsamości NIE wychodzi poza obwód (min głębokość -0.00000)
+  OK pas tożsamości dotyka linii granicy od wewnątrz (głębokość 0)
+  OK pas relacji wchodzi do środka terytorium
+  OK pas relacji zaczyna się dokładnie tam, gdzie kończy się pas tożsamości (0.45000)
+  OK pas tożsamości gruby na TERRITORY_BORDER_BAND_WIDTH (0.4500)
+  OK pas relacji gruby na TERRITORY_RELATION_BAND_WIDTH (0.2250)
+  OK pas relacji dokładnie o połowę węższy (tożsamość 0.4500 / relacja 0.2250)
+  OK stała TERRITORY_RELATION_BAND_WIDTH = połowa TERRITORY_BORDER_BAND_WIDTH (0.225)
+  OK pas wewnętrzny uniesiony ponad zewnętrzny (bez z-fightingu na wspólnej krawędzi)
+  OK różnica wysokości = TERRITORY_RELATION_Y_BUMP - TERRITORY_BORDER_Y_BUMP (0.0040)
+  OK ownerId 0: oba pasy w kolorze cywilizacji #8b1a1a
+  OK status 'wojna': 2 meshe dla właściciela 3
+  OK status 'wojna': zewnętrzna obwódka NADAL w kolorze cywilizacji #1e5aa8
+  OK wróg → wewnętrzna obwódka czerwona (#ff5252)
+  OK status 'sojusz': 2 meshe dla właściciela 3
+  OK status 'sojusz': zewnętrzna obwódka NADAL w kolorze cywilizacji #1e5aa8
+  OK sojusznik → wewnętrzna obwódka niebieska (#4fc3f7)
+  OK status 'pokoj': 2 meshe dla właściciela 3
+  OK status 'pokoj': zewnętrzna obwódka NADAL w kolorze cywilizacji #1e5aa8
+  OK pokój → wewnętrzna obwódka złota (#ffd700)
+  OK status 'neutralni': 2 meshe dla właściciela 3
+  OK status 'neutralni': zewnętrzna obwódka NADAL w kolorze cywilizacji #1e5aa8
+  OK neutralny → wewnętrzna obwódka złota (#ffd700)
+  OK 3 właścicieli → 6 meshy (2 na właściciela)
+  OK wielu właścicieli: własna obwódka wewnętrzna w kolorze cywilizacji
+  OK wielu właścicieli: wróg czerwony
+  OK wielu właścicieli: sojusznik niebieski
+
+3. Wpięcie w main.ts (asercje na źródle)
+FAIL: main.ts: relationColorFn(0) zwraca civColorFn(0) — własna obwódka w kolorze cywilizacji
+FAIL: main.ts: relationColorFn czyta getDiploRelation(0, ownerId).status
+  OK main.ts: relationColorFn wpięte w wywołanie buildTerritoryBorderGroup
+  OK main.ts: funkcja setDiploRelation istnieje
+  OK main.ts: setDiploRelation odświeża obwódkę (zmiana relacji przemalowuje granicę od razu)
+  OK main.ts: setDiploRelation zapamiętuje poprzedni status PRZED zapisem
+  OK main.ts: odświeżenie tylko przy realnej zmianie STATUSU (nie co turę przy zaufaniu/respekcie)
+FAIL: main.ts: odświeżenie tylko dla par z graczem (AI↔AI nie zmienia koloru żadnej obwódki)
+
+49 passed, 3 failed
+
+EXIT=1
+TIME=0.4

@@ -1,0 +1,6 @@
+WYKRYTY   : is_subsequent: != zamiast == -> 4 testow czerwonych: costs_follow_injected_params, first_city_is_free_for_any_params, evaluate_found_city_affordance_matches_web
+WYKRYTY   : hex: zloza odwrocone -> 1 testow czerwonych: clearing_follows_the_editable_table_but_forest_and_mountain_rules_are_fixed
+WYKRYTY   : hex: nie-gora kasuje zloza -> 3 testow czerwonych: clear_hex_for_city_center_matches_web, apply_city_founding_to_hex_matches_web, clearing_follows_the_editable_table_but_forest_and_mountain_rules_are_fixed
+WYKRYTY   : hex: las zostaje -> 1 testow czerwonych: clearing_follows_the_editable_table_but_forest_and_mountain_rules_are_fixed
+mutantow=4 przezylo/niekompilujace=0
+EXIT=0

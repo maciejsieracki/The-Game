@@ -1,0 +1,10 @@
+$ difflib.unified_diff(pin, v2) per moduł — liczba linii +/−, LOC pin → v2 (skrypt diffs.py, scratch)
+diplomacyAudience.ts LOC 2443 → 2516 +135/−62 (diffs/diplomacyAudience.ts.diff)
+diplomacyNegotiationModal.ts LOC 562 → 561 +12/−13 (diffs/diplomacyNegotiationModal.ts.diff)
+diplomacyTradeBasket.ts LOC 2851 → 2838 +137/−150 (diffs/diplomacyTradeBasket.ts.diff)
+hexContextTooltip.ts LOC 992 → 759 +97/−330 (diffs/hexContextTooltip.ts.diff)
+sidePanelHud.ts (pin gra/src/ui/sidePanelHud.ts) LOC 969 → 969 IDENTYCZNY bajtowo (git blob sha1 63c5cf3f3f8928a71d3ca78dfddc79f8ebeb284b)
+sidePanelEventFilter.ts (pin gra/src/ui/sidePanelEventFilter.ts) LOC 25 → 25 IDENTYCZNY bajtowo (git blob sha1 3321dc1c57021cdc00f91bb44ef9e5e422cc43a4)
+preBattle.ts LOC 918 → 904 +20/−34 (diffs/preBattle.ts.diff)
+unitVitalsPalette.ts (pin gra/src/render/unitVitalsPalette.ts) LOC 89 → 89 IDENTYCZNY bajtowo (git blob sha1 7c47922c8aa35a0e543f9ca0df40ef57280fa6f9)
+EXIT=0

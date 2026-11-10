@@ -1,0 +1,19 @@
+
+--- A. kolejka Pracy vs jednostka (production.ts) ---
+
+--- B. major AI (3 miasta, 40 tur, skarbiec zasilany) ---
+    {"proposedUnit":3,"proposedBuilding":24,"unitsIntoPracaQueue":0,"purchasedForTreasury":3,"purchaseRefused":0,"goldSpent":15,"buildingsCompleted":24,"army":3,"unitsLeftInPracaQueue":0}
+
+--- B'. miasto-panstwo (defensiveCopy, 40 tur) — ten sam zakaz ---
+    {"proposedUnit":3,"proposedBuilding":7,"unitsIntoPracaQueue":0,"purchasedForTreasury":3,"purchaseRefused":0,"goldSpent":15,"buildingsCompleted":6,"army":3,"unitsLeftInPracaQueue":0}
+
+--- C. bariery w kodzie (kotwice zrodlowe) ---
+
+--- D. dowod behawioralny guardu z main.ts (kod wycinany i wykonywany) ---
+    PO guardzie (owner 7): {"unitGone":true,"frontIsBuilding":true,"refundedToOwner":true,"recruitmentUntouched":true,"noUnitPaidByPraca":true,"buildingStillBuilt":true,"warned":true}
+  FAIL: D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl
+
+ai-jednostki-tylko-zakup-test: 43 passed, 1 failed
+
+EXIT=1
+TIME=8.2

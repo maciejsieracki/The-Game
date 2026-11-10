@@ -1,0 +1,16 @@
+# R-RUSTPORT-P4-33 r2: generator (gen.ts/gen.mjs with the draw-trace hooks) run twice into separate scratch dirs (out1, out2)
+## r1 MANIFEST sha256 (approved r1): de47236aa421894e9f99e3ff87ecd35314afc37dafe66f677753d3fcc0543832
+## before the change the r1 generator was re-run (out0): MANIFEST identical to r1 (diff empty)
+## out1 MANIFEST sha256: 868b068e83b21d2ca0c002f526f157e235edbdb0717173de250eeb87a90a084b
+## out2 MANIFEST sha256: 868b068e83b21d2ca0c002f526f157e235edbdb0717173de250eeb87a90a084b
+cmp out1 out2 EXIT=0
+cmp out2 committed EXIT=0
+## MANIFEST lines changed vs r1 (< r2, > r1); ref/*.rgba and input/* unchanged:
+< 367d67a34cb2096738bad77ac615aa305017529553449d59cc7cd3b12991bdfb  gen.ts
+< e367fa12c2b5fc8ed5a1f1c88dcb9d23c1c9b5a46566a1de346c5c7709968ebe  gen.mjs
+< 3c1f9ccab82d017daf8f177233e1c97090a311f914a52ecfb31996851a9fcf77  city.json
+> 2f42d43773c7c1150b026779c7ceb9c53a5f820b4832f84e116ce9c431998d06  gen.ts
+> de746e976653f22c926eca7db6ae71ced19125f9d9d7bf803fedf8a762d04a5e  gen.mjs
+> aa6a2ceca03e5b74abb70912c8a02df66b33ee92d2bc8f36ee60350664ef1eb2  city.json
+## traces: snapshot ids / events / fillText events
+78 1058 252

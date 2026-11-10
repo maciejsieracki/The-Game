@@ -1,0 +1,14 @@
+## tree = git archive d4d15f5e; CARGO_TARGET_DIR=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/tgt3
+$ cargo test --locked --test atlas_keys lod_purge_matches_web   (baseline)
+test lod_purge_matches_web ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.07s
+EXIT=0
+1
+$ (mutated) grep contains:
+142:            .filter(|k| !k.contains(&keep))
+$ cargo test --locked --test atlas_keys lod_purge_matches_web   (mutant contains)
+test lod_purge_matches_web ... FAILED
+thread 'lod_purge_matches_web' (12288) panicked at tests/atlas_keys.rs:288:9:
+assertion `left == right` failed: freed for lod 1
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.10s
+EXIT=101

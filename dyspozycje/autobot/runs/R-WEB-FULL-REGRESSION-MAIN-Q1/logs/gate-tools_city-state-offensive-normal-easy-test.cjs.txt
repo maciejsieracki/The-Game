@@ -1,0 +1,61 @@
+========================================================================
+city-state-offensive-normal-easy-test -- GOAL 1 (kryteria 1,2) + GOAL 2 (kryteria 3,4,5, runda 2)
+========================================================================
+
+A. Ekstrakcja + wykonanie wyrażenia cityStateOffensiveSupport (przed/po)
+  wyrażenie PRZED: "typCityCopyOwners.has(ownerId)\n                && isOwnerPlayerSameCivType(ownerId)"
+  wyrażenie PO:    "typCityCopyOwners.has(ownerId)\n                && isOwnerPlayerSameCivType(ownerId)"
+  PASS: wyrażenie PO NIE zawiera już warunku trudności (GOAL 1: usunięty)
+  PASS: wyrażenie PO nadal zawiera isOwnerPlayerSameCivType(ownerId) (zero zmian w tym warunku)
+  PASS: wyrażenie PO nadal zawiera typCityCopyOwners.has(ownerId) (zero zmian w tym warunku)
+
+  -- kryterium 1: PM typu gracza, normal/easy -- PRZED=false, PO=true --
+  PASS: [normal] PO: cityStateOffensiveSupport === true (GOAL 1 -- żywy dowód zmiany)
+  PASS: [easy] PO: cityStateOffensiveSupport === true (GOAL 1 -- żywy dowód zmiany)
+
+  -- regresja zerowa: PM typu gracza, hard -- PRZED=true, PO=true (bez zmian) --
+  PASS: [hard] PRZED === true
+  PASS: [hard] PO === true (zero regresji na hard)
+
+  -- kryterium 2: PM INNEGO typu cywilizacji -- false niezależnie od trudności, PRZED i PO --
+  PASS: [easy] PRZED (inny typ civ): false
+  PASS: [easy] PO (inny typ civ): false (regresja zerowa dla isOwnerPlayerSameCivType)
+  PASS: [normal] PRZED (inny typ civ): false
+  PASS: [normal] PO (inny typ civ): false (regresja zerowa dla isOwnerPlayerSameCivType)
+  PASS: [hard] PRZED (inny typ civ): false
+  PASS: [hard] PO (inny typ civ): false (regresja zerowa dla isOwnerPlayerSameCivType)
+
+  -- sanity: owner spoza typCityCopyOwners (nie PM) -- zawsze false, PO --
+  PASS: owner spoza typCityCopyOwners: cityStateOffensiveSupport === false
+
+B. Samokontrola zakresu: git diff main.ts dotyka wyłącznie wyrażenia cityStateOffensiveSupport
+  FAIL: wyrażenie faktycznie się zmieniło między PRZED a PO (test nietautologiczny)
+  FAIL: wyrażenie PRZED zawierało warunek trudności "hard" (dowód, że to faktycznie STARY kod) -- "typCityCopyOwners.has(ownerId)\n                && isOwnerPlayerSameCivType(ownerId)"
+  FAIL: [normal] PRZED: cityStateOffensiveSupport === false (legacy defend-only) -- {"diff":"normal","before":true}
+  FAIL: [easy] PRZED: cityStateOffensiveSupport === false (legacy defend-only) -- {"diff":"easy","before":true}
+  FAIL: wszystkie hunki main.ts leżą w paśmie linii 29090-29110 (dokładnie blok opts.cityStateOffensiveSupport z dispatchu, main.ts:29096-29100) -- []
+  FAIL: JEDYNE zmienione linie KODU (nie komentarza) w main.ts to usunięcie warunku trudności `&& _menuCityStateDifficultyVsPlayer === 'hard'` i przeniesienie przecinka na linię isOwnerPlayerSameCivType(ownerId) -- zero innych linii kodu dotkniętych -- []
+
+C. ai.ts: canConcentrateArmy (gate) + regresja major AI + żywy dowód luki kryterium 3
+
+  -- C1: canConcentrateArmy jako funkcja czysta --
+  PASS: canConcentrateArmy: major AI (defensiveCopy=false/undefined) -> true (== isMajorAiOwner, zero regresji)
+  PASS: canConcentrateArmy: PM defend-only (defensiveCopy=true, cityStateOffensiveSupport=false) -> false (kryterium 4)
+  PASS: canConcentrateArmy: PM defend-only (defensiveCopy=true, cityStateOffensiveSupport brak) -> false (kryterium 4, fallback)
+  PASS: canConcentrateArmy: PM z aktywnym wsparciem ofensywnym (defensiveCopy=true, cityStateOffensiveSupport=true) -> true (warunek bramkujący GOAL 2 rozszerzony poprawnie)
+
+  -- C2: decideAITurn, major AI (defensiveCopy=false) -- zero regresji vs. army-concentration-test.cjs --
+  FAIL: major AI: rozproszony roster nadal wchodzi w koncentrację (ai-b, ai-c poruszają się, ai-a nie) -- zero regresji GOAL 2 -- {"moveIds":["ai-a","ai-b","ai-c"]}
+
+  -- C3 (runda 2): ŻYWY DOWÓD kryterium 3 -- decideAITurn, PM (defensiveCopy=true) z cityStateOffensiveSupport=true i TYM SAMYM rozproszonym rosterem, który u major AI (C2) wywołuje ruch koncentracji -- podłączone w decideDefensiveCopyTurn (ai.ts ok. 3151+, nowy blok przed pętlą per-jednostka), więc ruch w stronę rally point TERAZ jest emitowany, mimo że decideAITurn deleguje do decideDefensiveCopyTurn PRZED dotarciem do bloku ai.ts:2662-2726 (ten blok pozostaje nieosiągalny dla PM -- podłączenie jest w innym miejscu, nie tam).
+  PASS: PM z cityStateOffensiveSupport=true: TA SAMA sytuacja co C2 -- ruch koncentracji JEST emitowany (cs-b, cs-c poruszają się w stronę anchora cs-a, cs-a stoi) -- kryterium 3 z dispatchu SPEŁNIONE w tej rundzie
+
+  -- C4 (runda 2): regresja PM defend-only (cityStateOffensiveSupport=false) -- ZERO ruchu koncentracji, TA SAMA sytuacja co C3 poza flagą (kryterium 4: PM bez wsparcia ofensywnego nadal nie wchodzi w te dwie gałęzie).
+  PASS: PM defend-only (cityStateOffensiveSupport=false): ŻADEN ruch koncentracji nie jest emitowany -- zero regresji istniejącego zachowania defensywnego
+
+========================================================================
+WYNIK: 20 PASS, 7 FAIL
+========================================================================
+
+EXIT=1
+TIME=2.3

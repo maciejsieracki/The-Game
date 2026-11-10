@@ -1,0 +1,21 @@
+diplomacy-package-ai-counter-actionable-test
+<anonymous_script>:3
+return (n => isMe(n.awaitingOwnerId) || n.awaitingOwnerId === ownerId);
+                                     ^
+
+ReferenceError: isMe is not defined
+    at eval (eval at makePredicate (<WT>/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:78:19), <anonymous>:3:38)
+    at <WT>/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:42
+    at Array.filter (<anonymous>)
+    at Object.<anonymous> (<WT>/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:30)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.1

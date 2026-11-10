@@ -1,0 +1,7 @@
+FAIL: [A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got 5. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().
+FAIL: [A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano 3 z 5. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().
+
+diplomacy-audience-close-flush-test: 49 pass, 2 fail
+
+EXIT=1
+TIME=2.5

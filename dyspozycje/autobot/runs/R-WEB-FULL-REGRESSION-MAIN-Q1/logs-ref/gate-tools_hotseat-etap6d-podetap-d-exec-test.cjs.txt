@@ -1,0 +1,68 @@
+hotseat-etap6d-podetap-d-exec-test (R-HOTSEAT-ETAP6D-PODETAP-D-Q1, runda 2)
+
+  FAIL: Blok A: substring po liniach 31620-31675 === wycięcie kotwica+brace-matching (zero rozjazdu)
+  FAIL: Blok B: substring po liniach 32232-32330 === wycięcie kotwica+brace-matching (zero rozjazdu)
+  FAIL: Blok A: dokładnie 13 wystąpień ME() (potwierdzone rundą 2 Evaluatora/Obrony), otrzymano 15
+  FAIL: Blok B: dokładnie 21 wystąpień ME() (korekta liczby z rundy 1: 20->21), otrzymano 29
+BLOK A — DOW klastra PM na gracza — realne wykonanie
+
+[Dyplomacja] Blad wojny klaster PM→gracz AI101: ReferenceError: interCivWarBlockedForAi is not defined
+    at eval (eval at compileAnchoredBlock (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:101:19), <anonymous>:33:7)
+    at run (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:103:23)
+    at runBlockA (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:196:3)
+    at Object.<anonymous> (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:207:3)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+  OK: PRAWDZIWY ME()=7: filtr diplomaticallyDiscoveredOwners poprawnie ograniczył klaster do csA=101 (csB=102 nieodkryty pominięty), otrzymano [{"ownerId":101,"atWarWithPlayer":false,"hasTradeOrResourceTreatyWithPlayer":false,"peaceLockedWithPlayer":false,"hasNapWithPlayer":false}]
+  OK: PRAWDZIWY ME(): getDiploRelation(csOwnerId, ME()=7) -- WSZYSTKIE 1 wywołania z drugim argumentem = 7, otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): dealInvolvesOwners(d, ME()=7, csOwnerId) -- pierwszy arg = 7, otrzymano []
+  OK: PRAWDZIWY ME(): hasActiveResourceTradeDealForPair(ME()=7, csOwnerId), otrzymano [[7,101]]
+  OK: PRAWDZIWY ME(): isPeaceLockedBetween(csOwnerId, ME()=7), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): hasTreaty(..., csOwnerId, ME()=7, ...), otrzymano [[101,7]]
+  FAIL: PRAWDZIWY ME(): chargeWarDeclarationCredibility(csOwnerId, ME()=7), otrzymano []
+  FAIL: PRAWDZIWY ME(): breakTreatiesOnWar(csOwnerId, ME()=7, false), otrzymano []
+  FAIL: PRAWDZIWY ME(): applyAllianceObligationsOnWar(csOwnerId, ME()=7), otrzymano []
+  FAIL: PRAWDZIWY ME(): applyDiploEventTracked(csOwnerId, ME()=7, ...), otrzymano []
+  FAIL: PRAWDZIWY ME(): setDiploRelation(csOwnerId, ME()=7, newRel), otrzymano []
+  FAIL: PRAWDZIWY ME(): pruneTributeNegotiationsBetween(csOwnerId, ME()=7), otrzymano []
+  FAIL: PRAWDZIWY ME(): recordWarDeclarationEvent(csOwnerId, ME()=7), otrzymano []
+[Dyplomacja] Blad wojny klaster PM→gracz AI101: ReferenceError: interCivWarBlockedForAi is not defined
+    at eval (eval at compileAnchoredBlock (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:101:19), <anonymous>:33:7)
+    at run (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:103:23)
+    at runBlockA (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:196:3)
+    at Object.<anonymous> (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:247:3)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: getDiploRelation drugi arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano [[101,0]]
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: setDiploRelation drugi arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano []
+
+BLOK B — per-AI-owner tick dyplomacji — realne wykonanie
+
+<anonymous_script>:13
+    turnsAtWar: diploWarStateFor(ownerId, ME()).turnsAtWar
+                                               ^
+
+ReferenceError: diploWarStateFor is not defined
+    at eval (eval at compileAnchoredBlock (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:101:19), <anonymous>:13:48)
+    at run (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:103:23)
+    at runBlockB (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:309:3)
+    at Object.<anonymous> (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs:319:22)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.3

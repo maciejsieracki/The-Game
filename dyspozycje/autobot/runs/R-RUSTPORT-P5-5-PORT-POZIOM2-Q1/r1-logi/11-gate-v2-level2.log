@@ -1,0 +1,3 @@
+$ (cwd = src-tauri/frontend-v2/src/ui) node ../../tools/check-no-logic-imports.mjs <26 modułów P5.5> portLevel2.ts
+check-no-logic-imports: cele=leaderBannersHud.ts,cityCaptureNotice.ts,cityForeignPick.ts,cityUnitPick.ts,gamePauseMenu.ts,hotSeatHandoff.ts,mainMenu.ts,unitForeignPick.ts,buildModeHud.ts,diplomacyPanel.ts,techTreeView.ts,unitInfoCard.ts,wikiHubHud.ts,unitPanelHud.ts,contextPanelHud.ts,diplomacyProposalBanner.ts,hudChip6c.ts,mapToolbarHud.ts,armyMergePickPanel.ts,armySplitPanel.ts,diplomacyPendingHud.ts,interHumanDiplomacyHud.ts,unitReplacePicker.ts,armyStackHud.ts,diploListHud.ts,unitActionBarHtml.ts,portLevel2.ts plików=27 plików_z_trafieniami=0 trafień=0
+EXIT=0

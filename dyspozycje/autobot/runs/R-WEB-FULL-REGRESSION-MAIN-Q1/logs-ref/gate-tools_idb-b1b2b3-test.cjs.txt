@@ -1,0 +1,32 @@
+--- B1: strażnik re-entrancy w renderList() (saveLoadDialog.ts) ---
+  OK: (setup) po pierwszym renderze dokladnie 3 wiersze dla 3 zapisow (got 3)
+  OK: B1. NAPRAWA: po DWÓCH nakładających się kliknięciach wciąż dokładnie 3 wiersze, NIE 6 (dowód Evaluatora: bez strażnika 3 zapisy -> 6 wierszy) (got 3)
+  OK: B1. dokładnie JEDEN wiersz ma klasę "sel" po dwóch kliknięciach (got 1)
+  OK: B1. zaznaczony wiersz to OSTATNIO kliknięty (kolejkowanie widzi najnowszy stan, nie "pierwszy wygrywa") (got slotB, chcemy slotB)
+  OK: (sprzątanie) dialog zamknięty po hideSaveLoadDialog()
+
+--- B2: openDb() NIE cache'uje trwale porażki -- retry po przejściowej awarii ---
+  OK: (setup) pierwsza próba otwarcia IDB PADA (symulacja przejściowej awarii) -> idbIsAvailable()===false
+  OK: (setup) idbSetItem WSPÓŁBIEŻNE z tą samą feralną próbą otwarcia -- też RZUCA (kontrakt idb-storage.ts)
+  OK: (setup) indexedDB.open() wywołane dokładnie raz jak dotąd (got 1)
+  OK: B2. NAPRAWA: DRUGA próba (ta sama instancja modułu, PO przejściowej awarii) -> idbIsAvailable()===true -- porażka NIE została zapamiętana na stałe
+  OK: B2. NAPRAWA: indexedDB.open() wywołane PONOWNIE (retry), nie zwrócono starej odrzuconej obietnicy (got opens=2)
+  OK: B2. NAPRAWA: idbSetItem PO retry działa normalnie (baza faktycznie otwarta)
+  OK: zapisana po retry wartość jest odczytywalna (idbGetItem)
+  OK: (kontrola) SUKCES nadal cache'owany -- KOLEJNE wywołanie NIE odpala trzeciego open() (got opens=2)
+
+--- B3: baner ostrzegawczy w UI, gdy gra czyta z legacy localStorage (IDB niedostępne) ---
+  OK: (setup) IndexedDB całkowicie niedostępne w tym scenariuszu -> isIdbAvailable()===false
+  FAIL: (setup) mimo braku IDB, stary zapis z legacy localStorage nadal widoczny na liście (got 0)
+  OK: baner .civ-sl-idbwarn istnieje w DOM dialogu "Wczytaj grę"
+  OK: B3. NAPRAWA: baner WIDOCZNY (display=block), gdy gra czyta z legacy localStorage (IDB niedostępne) -- jawne ostrzeżenie zamiast cichego dryfu (got display=block)
+  OK: baner ma niepustą, czytelną treść ostrzeżenia
+
+--- B3 (kontrola): baner UKRYTY, gdy IndexedDB działa normalnie ---
+  OK: (kontrola) baner istnieje w DOM również gdy IDB działa (element zawsze obecny, tylko ukryty)
+  OK: (kontrola) baner UKRYTY (display=none), gdy IndexedDB działa normalnie -- brak fałszywego alarmu (got display=none)
+
+=== idb-b1b2b3-test: 19 pass, 1 fail ===
+
+EXIT=1
+TIME=2.2

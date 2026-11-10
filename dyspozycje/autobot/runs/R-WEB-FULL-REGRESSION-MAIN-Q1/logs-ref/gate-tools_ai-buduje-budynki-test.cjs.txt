@@ -1,0 +1,19 @@
+  OK  sanity: empire-city-defaults.ts zawiera ciało naprawy nowej gry (mutacja wykonalna)
+  OK  sanity: empire-city-defaults.ts zawiera ciało migracji wczytania (mutacja wykonalna)
+  OK  sanity: migracja wczytania ma gałąź barbarzyńską (MUT-B może zdjąć OBA nośniki gwarancji)
+  OK  sanity: migracja wczytania ma linię pomijającą ownera 0 (MUT-C wykonalny, A10 nietautologiczna)
+  OK  sanity: main.ts woła upgradeBudowaProfilAutoDefaultsOnLoad na OBU ścieżkach wczytania
+  OK  H0: katalogi buildu leżą POZA drzewem repo (§9 pkt 1 / C-001)
+[ai-buduje-budynki-test] vite build (fix) -> <REF-TMP>/w4/tmp/run/civ-ai-buduje-budynki-19977-0nztfp/dist-fix ...
+[ai-buduje-budynki-test] build (fix) OK.
+[ai-buduje-budynki-test] vite build (mut-a) -> <REF-TMP>/w4/tmp/run/civ-ai-buduje-budynki-19977-0nztfp/dist-mut-a ...
+[ai-buduje-budynki-test] build (mut-a) OK.
+[ai-buduje-budynki-test] vite build (mut-b) -> <REF-TMP>/w4/tmp/run/civ-ai-buduje-budynki-19977-0nztfp/dist-mut-b ...
+[ai-buduje-budynki-test] build (mut-b) OK.
+[ai-buduje-budynki-test] vite build (mut-c) -> <REF-TMP>/w4/tmp/run/civ-ai-buduje-budynki-19977-0nztfp/dist-mut-c ...
+[ai-buduje-budynki-test] build (mut-c) OK.
+  OK  H0b: bramka nie zmieniła ŻADNEGO śledzonego pliku źródłowego
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+EXIT=124
+TIME=300.1

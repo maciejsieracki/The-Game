@@ -1,0 +1,7 @@
+$ python3 mkdiff.py (difflib.unified_diff pin edb8fb56:gra/src/ui/<m> vs src-tauri/frontend-v2/src/ui/<m>)
+sceneTimingReport.ts: LOC pin=212 v2=225 +17/-4
+empireDetailPanel.ts: LOC pin=4433 v2=4449 +72/-56
+empireDetailTypes.ts: LOC pin=732 v2=736 +40/-36
+hud.ts: LOC pin=1861 v2=1864 +3/-0
+newGameFlow.ts: LOC pin=2373 v2=2414 +105/-64
+EXIT=0

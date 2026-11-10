@@ -1,0 +1,86 @@
+# Literaly liczbowe w module ruch_jednostek (pathfinding.rs); komentarze pominiete
+27:        let ok = |x: f64| x.is_finite() && x.fract() == 0.0 && x.abs() <= f64::from(i32::MAX);
+179:                ruch: 0.0,
+180:                ruch_left: 0.0,
+375:            .map(|offset| (offset[0], offset[1]))
+390:        let mut i = heap.len() - 1;
+391:        while i > 0 {
+392:            let parent = (i - 1) >> 1;
+405:        let top = heap[0];
+408:            heap[0] = last;
+409:            let mut i = 0;
+411:                let l = 2 * i + 1;
+412:                let r = 2 * i + 2;
+442:        dist.insert(start, 0.0);
+443:        let mut heap: Vec<Entry> = vec![(0.0, unit.q, unit.r)];
+521:        dist.insert(start, 0.0);
+523:        let mut heap: Vec<Entry> = vec![(0.0, unit.q, unit.r)];
+608:        let mut total = 0.0;
+612:                total += if c == f64::INFINITY { 0.0 } else { c };
+638:                dr += 1.0;
+640:            dq += 1.0;
+855:        value.is_finite() && value.fract() == 0.0
+934:            return 0.0;
+937:            ("0x", 16),
+938:            ("0X", 16),
+939:            ("0o", 8),
+940:            ("0O", 8),
+941:            ("0b", 2),
+942:            ("0B", 2),
+948:                return digits.chars().fold(0.0, |acc, c| {
+953:        let (sign, body) = match s.as_bytes()[0] {
+954:            b'+' => (1.0, &s[1..]),
+955:            b'-' => (-1.0, &s[1..]),
+956:            _ => (1.0, s),
+962:        let mut i = 0;
+963:        let mut int_digits = 0;
+965:            i += 1;
+966:            int_digits += 1;
+968:        let mut frac_digits = 0;
+970:            i += 1;
+972:                i += 1;
+973:                frac_digits += 1;
+976:        if int_digits + frac_digits == 0 {
+980:            i += 1;
+982:                i += 1;
+986:                i += 1;
+1143:        if budget <= 0.0 || path.is_empty() {
+1156:            let first = path[0];
+1167:    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem
+1182:            segment_cost: 0.0,
+1200:        let mut turn_acc = 0.0;
+1201:        let mut turn_num: u32 = 1;
+1203:            let before = if i > 0 {
+1206:                0.0
+1210:                if i > 0 {
+1211:                    let prev = path[i - 1];
+1224:                turn_num += 1;
+1230:        let last = path[path.len() - 1];
+1245:            0.0
+1299:        if movement_budget <= 0.0 {
+1316:        let seg_end = truncated[truncated.len() - 1];
+1318:            if seg_end_idx < path.len() - 1 {
+1319:                let next = path[seg_end_idx + 1];
+1354:            cost: 0.0,
+1362:    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem
+1389:        if movement_budget <= 0.0 {
+1396:        let last = move_path[move_path.len() - 1];
+1606:        let mut count = 0;
+1609:                count += 1;
+1624:        let mut score = 0;
+1648:        if !cost.is_finite() || cost <= 0.0 {
+1654:            unit.ruch_left = 0.0;
+1726:            if path.len() != 1 {
+1730:            if gain > 0 {
+1732:            } else if gain == 0 {
+1737:            zero.into_iter().map(|key| (key, 0.0)).collect()
+1761:        if index >= 0.0 && index < candidates.len() as f64 {
+1795:            return (false, 0);
+1797:        if unit.ruch_left <= 0.0
+1804:            return (false, 0);
+1812:        let mut steps: u32 = 0;
+1814:        while unit.ruch_left > 0.0 {
+1831:            let step = path[0];
+1849:            steps += 1;
+1862:    #[allow(clippy::too_many_arguments)] // sygnatura 1:1 z webem
+1873:        let mut total_steps = 0;

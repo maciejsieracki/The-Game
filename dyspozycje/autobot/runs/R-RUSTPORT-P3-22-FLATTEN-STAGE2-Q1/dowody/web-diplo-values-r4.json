@@ -1,0 +1,284 @@
+{
+  "zrodlo": "uruchomiony kod TS weba (gen-diplomacy-web.mjs)",
+  "basket_give": {
+    "easy": 1.5,
+    "normal": 1,
+    "hard": 0.5
+  },
+  "basket_receive": {
+    "easy": 0.5,
+    "normal": 1,
+    "hard": 1.5
+  },
+  "basket_side_fn": [
+    {
+      "side": "give",
+      "proposer": 0,
+      "difficulty": "easy",
+      "mnoznik": 1.5
+    },
+    {
+      "side": "give",
+      "proposer": 0,
+      "difficulty": "normal",
+      "mnoznik": 1
+    },
+    {
+      "side": "give",
+      "proposer": 0,
+      "difficulty": "hard",
+      "mnoznik": 0.5
+    },
+    {
+      "side": "give",
+      "proposer": 1,
+      "difficulty": "easy",
+      "mnoznik": 0.5
+    },
+    {
+      "side": "give",
+      "proposer": 1,
+      "difficulty": "normal",
+      "mnoznik": 1
+    },
+    {
+      "side": "give",
+      "proposer": 1,
+      "difficulty": "hard",
+      "mnoznik": 1.5
+    },
+    {
+      "side": "receive",
+      "proposer": 0,
+      "difficulty": "easy",
+      "mnoznik": 0.5
+    },
+    {
+      "side": "receive",
+      "proposer": 0,
+      "difficulty": "normal",
+      "mnoznik": 1
+    },
+    {
+      "side": "receive",
+      "proposer": 0,
+      "difficulty": "hard",
+      "mnoznik": 1.5
+    },
+    {
+      "side": "receive",
+      "proposer": 1,
+      "difficulty": "easy",
+      "mnoznik": 1.5
+    },
+    {
+      "side": "receive",
+      "proposer": 1,
+      "difficulty": "normal",
+      "mnoznik": 1
+    },
+    {
+      "side": "receive",
+      "proposer": 1,
+      "difficulty": "hard",
+      "mnoznik": 0.5
+    }
+  ],
+  "building_pn": {
+    "id": "targowisko",
+    "poziom2": 28,
+    "poziom1": 25
+  },
+  "generosity": {
+    "easy": 1,
+    "normal": 0.5,
+    "hard": 0.3
+  },
+  "sister": {
+    "low": 0.6,
+    "normal": 0.3,
+    "strong": 0.15
+  },
+  "treaty_probe": [
+    {
+      "action": "nap",
+      "turns": null,
+      "mnoznik": 1
+    },
+    {
+      "action": "nap",
+      "turns": 0,
+      "mnoznik": 8
+    },
+    {
+      "action": "nap",
+      "turns": -3,
+      "mnoznik": 8
+    },
+    {
+      "action": "nap",
+      "turns": 5,
+      "mnoznik": 1
+    },
+    {
+      "action": "nap",
+      "turns": 10,
+      "mnoznik": 1
+    },
+    {
+      "action": "nap",
+      "turns": 12,
+      "mnoznik": 1.3195079107728942
+    },
+    {
+      "action": "nap",
+      "turns": 15,
+      "mnoznik": 2
+    },
+    {
+      "action": "nap",
+      "turns": 20,
+      "mnoznik": 4
+    },
+    {
+      "action": "nap",
+      "turns": 25,
+      "mnoznik": 4
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": null,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 0,
+      "mnoznik": 8
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": -3,
+      "mnoznik": 8
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 5,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 10,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 12,
+      "mnoznik": 1.3195079107728942
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 15,
+      "mnoznik": 2
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 20,
+      "mnoznik": 4
+    },
+    {
+      "action": "trybut_zadanie",
+      "turns": 25,
+      "mnoznik": 4
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": null,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 0,
+      "mnoznik": 8
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": -3,
+      "mnoznik": 8
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 5,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 10,
+      "mnoznik": 1
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 12,
+      "mnoznik": 1.3195079107728942
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 15,
+      "mnoznik": 2
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 20,
+      "mnoznik": 4
+    },
+    {
+      "action": "trybut_oferta",
+      "turns": 25,
+      "mnoznik": 4
+    },
+    {
+      "action": "pokoj",
+      "turns": null,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 0,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": -3,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 5,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 10,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 12,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 15,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 20,
+      "mnoznik": 1
+    },
+    {
+      "action": "pokoj",
+      "turns": 25,
+      "mnoznik": 1
+    }
+  ]
+}

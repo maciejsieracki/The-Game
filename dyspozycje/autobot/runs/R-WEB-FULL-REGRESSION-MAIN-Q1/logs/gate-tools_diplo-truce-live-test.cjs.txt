@@ -1,0 +1,11 @@
+[truce-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-truce-live-5620
+U1 UI: modal pokoj/rozejm
+  OK  U1a domyślnie rodzaj = pokoj
+  OK  U1b w trybie pokoju brak chipów rozejmu
+ FAIL wyjątek: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for locator('.cdb-chip-peacekind[data-kind="rozejm"]') |     - locator resolved to <button type="button" data-kind="rozejm" class="cdb-chip cdb-chip-peacekind">Rozejm</button>
+  OK  C zero pageerror/console.error
+
+3 pass / 1 fail
+
+EXIT=1
+TIME=217.0

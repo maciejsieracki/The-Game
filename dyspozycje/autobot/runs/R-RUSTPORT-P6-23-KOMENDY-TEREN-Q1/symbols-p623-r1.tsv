@@ -1,0 +1,76 @@
+plik_web	symbol	rodzaj	status	rust	test_i_wektor
+order.ts:87	Difficulty	typ	DANE-JUZ-W-RUST	domain/types.rs:497 Difficulty (+ key(); easy/normal/hard jak web)	p6_23_order.rs load_order_params_matches_web (3 poziomy)
+order.ts:90	OrderTier	typ	PORTOWANY	domain/types.rs:535 porzadek::OrderTier	order_tier_matches_web (217 przyp.)
+order.ts:97	OrderInputs	typ	PORTOWANY	domain/types.rs:543 porzadek::OrderInputs	compute_order_matches_web
+order.ts:105	OrderParams	typ	PORTOWANY	domain/types.rs:550 porzadek::OrderParams	load_order_params_matches_web (44 przyp.), fallback_params_equal_web_constant
+order.ts:144	OrderEffects	typ	PORTOWANY	domain/types.rs:568 porzadek::OrderEffects	order_effects_matches_web (38 przyp.)
+order.ts:162	OrderYieldMults	typ	PORTOWANY	domain/types.rs:580 porzadek::OrderYieldMults	order_effects_to_yield_mults_matches_web (36 przyp.)
+order.ts:174	FALLBACK_ORDER_PARAMS	stala	PORTOWANY	porzadek::fallback_order_params() z data/derived/porzadek-params.json	fallback_params_equal_web_constant
+order.ts:223	SocietyParamsLike	typ	PORTOWANY	Option<&serde_json::Value> w load_order_params; porzadek::society_params() = data/society-params.json	engine_society_params_match_web_subset_used_by_vectors
+order.ts:259	loadOrderParams	funkcja	PORTOWANY	porzadek::load_order_params	load_order_params_matches_web (44 przyp.: 14 spolecznosci x 3 poziomy + 2)
+order.ts:317	computeOrder	funkcja	PORTOWANY	porzadek::compute_order (js_round = Math.round)	compute_order_matches_web (3544 przyp.)
+order.ts:344	orderTier	funkcja	PORTOWANY	porzadek::order_tier	order_tier_matches_web (217)
+order.ts:372	orderEffects	funkcja	PORTOWANY	porzadek::order_effects	order_effects_matches_web (38)
+order.ts:416	OrderResult	typ	PORTOWANY	domain/types.rs:589 porzadek::OrderResult	evaluate_order_matches_web
+order.ts:429	evaluateOrder	funkcja	PORTOWANY	porzadek::evaluate_order	evaluate_order_matches_web (385)
+order.ts:443	orderEffectsToYieldMults	funkcja	PORTOWANY	porzadek::order_effects_to_yield_mults	order_effects_to_yield_mults_matches_web (36)
+order.ts:464	RevoltMigrationCity	typ	PORTOWANY	domain/types.rs:597 porzadek::RevoltMigrationCity	pick_revolt_migration_target_matches_web
+order.ts:474	pickRevoltMigrationTarget	funkcja	PORTOWANY	porzadek::pick_revolt_migration_target	pick_revolt_migration_target_matches_web (400)
+order.ts:515	HappinessBreakdown	typ	PORTOWANY	domain/types.rs:605 porzadek::HappinessBreakdown	happiness_breakdown_matches_web
+order.ts:548	happinessBreakdown	funkcja	PORTOWANY	porzadek::happiness_breakdown (skala z porzadek-params.json: szczescie_skala_max)	happiness_breakdown_matches_web (357)
+terrain-improvements.ts:11	ImprovementBonusKey	typ	PORTOWANY	improvements.rs CatalogBonus (7 pol Option<f64>)	improvement_bonus_for_key (normalize_and_lookup_functions_match_web)
+terrain-improvements.ts:14	ImprovementBonus	typ	PORTOWANY	improvements.rs CatalogBonus	j.w. (32 przyp.)
+terrain-improvements.ts:40	migrateLegacyKopalniaKey	funkcja	PORTOWANY	improvements.rs migrate_legacy_kopalnia_key (mapowania w ulepszenia-reguly.json:migracja_kopalni)	migration_functions_match_web (255)
+terrain-improvements.ts:53	migrateImprovementLayers	funkcja	PORTOWANY	improvements.rs migrate_improvement_layers	migration_functions_match_web (80)
+terrain-improvements.ts:66	IMPROVEMENT_KEYS	stala	PORTOWANY	improvements.rs improvement_keys() (kolejnosc pliku, OrderedObject)	constants_match_web, catalog_key_order_equals_json_file_order_including_meta_rows
+terrain-improvements.ts:76	TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS	stala	PORTOWANY	data/derived/ulepszenia-reguly.json:skala_pracy.mnozniki_epoki	constants_match_web
+terrain-improvements.ts:82	terrainImprovementEraMultiplier	funkcja	PORTOWANY	improvements.rs terrain_improvement_era_multiplier	era_and_cost_scaling_match_web (20 przyp.; epoki do 1100 -> inf)
+terrain-improvements.ts:93	terrainImprovementEraForKey	funkcja	PORTOWANY	improvements.rs terrain_improvement_era_for_key	normalize_and_lookup_functions_match_web (34)
+terrain-improvements.ts:100	scaleTerrainImprovementWorkCost	funkcja	PORTOWANY	improvements.rs scale_terrain_improvement_work_cost (+ scale_improvement_work_cost jako zaleznosc)	era_and_cost_scaling_match_web (399)
+terrain-improvements.ts:109	normalizeImprovementKey	funkcja	PORTOWANY-Z-WYJATKIEM	improvements.rs normalize_improvement_key; wyjatek: klucze prototypu JS (constructor, toString, ...) web przepuszcza, Rust zwraca None	normalize_and_lookup_functions_match_web (34), prototype_keys_are_a_documented_divergence_from_web
+terrain-improvements.ts:117	improvementBonusForKey	funkcja	PORTOWANY	improvements.rs improvement_bonus_for_key	normalize_and_lookup_functions_match_web (32)
+terrain-improvements.ts:127	applyImprovementBonus	funkcja	PORTOWANY	improvements.rs apply_improvement_bonus (pieniadz -> handel)	applying_bonuses_matches_web (102)
+terrain-improvements.ts:152	ORE_YIELD_PER_MINE	stala	PORTOWANY	data/derived/ulepszenia-reguly.json:ruda.na_kopalnie	constants_match_web
+terrain-improvements.ts:157	oreYieldFromImprovements	funkcja	PORTOWANY	improvements.rs ore_yield_from_improvements	territory_and_ore_yields_match_web (60)
+terrain-improvements.ts:175	applyImprovementBonuses	funkcja	PORTOWANY	improvements.rs apply_improvement_bonuses	applying_bonuses_matches_web (80)
+terrain-improvements.ts:203	TerritoryResourceKey	typ	PORTOWANY	String z tabeli ulepszenia-reguly.json:terytorium.ulepszenia[].surowiec	rules_tables_have_consistent_shape
+terrain-improvements.ts:207	TerritoryResourceYield	typ	PORTOWANY	improvements.rs TerritoryResourceYield	territory_and_ore_yields_match_web
+terrain-improvements.ts:225	resourceProductionAmountForEra	funkcja	PORTOWANY	improvements.rs resource_production_amount_for_era	era_and_cost_scaling_match_web (1320)
+terrain-improvements.ts:242	TERRITORY_YIELD_DEFAULT_AMOUNT	stala	PORTOWANY	data/derived/ulepszenia-reguly.json:terytorium.domyslna_ilosc	constants_match_web
+terrain-improvements.ts:256	territoryResourceYieldForImprovement	funkcja	PORTOWANY	improvements.rs territory_resource_yield_for_improvement	territory_and_ore_yields_match_web (1360)
+terrain-improvements.ts:293	foodLayerFromAnimalDeposit	funkcja	PORTOWANY	improvements.rs food_layer_from_animal_deposit	hex_layer_functions_match_web (9)
+terrain-improvements.ts:302	improvementKeysForHex	funkcja	PORTOWANY-Z-WYJATKIEM	improvements.rs improvement_keys_for_hex; wyjatek j.w. (prototyp JS)	hex_layer_functions_match_web (260)
+terrain-improvements.ts:320	ROAD_IMPROVEMENT_KEYS	stala	PORTOWANY	improvements.rs road_improvement_keys() z tabeli drogi.ulepszenia	constants_match_web
+terrain-improvements.ts:326	hexHasCoveringTerrainImprovement	funkcja	PORTOWANY	improvements.rs hex_has_covering_terrain_improvement	hex_layer_functions_match_web (260)
+terrain-improvements.ts:333	improvementHidesDepositOnHex	funkcja	PORTOWANY	improvements.rs improvement_hides_deposit_on_hex (tabela ukrywanie_zloza)	hex_layer_functions_match_web (1989)
+terrain-improvements.ts:370	hexSuppressesDepositOverlay	funkcja	PORTOWANY	improvements.rs hex_suppresses_deposit_overlay	hex_layer_functions_match_web (520)
+terrain-improvements.ts:385	improvementDisplayName	funkcja	PORTOWANY	improvements.rs improvement_display_name	normalize_and_lookup_functions_match_web (32)
+terrain-improvements.ts:396	LIVESTOCK_IMPROVEMENT_KEYS	stala	PORTOWANY	improvements.rs livestock_improvement_keys()	constants_match_web
+terrain-improvements.ts:402	isLivestockImprovementKey	funkcja	PORTOWANY	improvements.rs is_livestock_improvement_key	normalize_and_lookup_functions_match_web (32)
+terrain-improvements.ts:421	improvementAllowedCivs	funkcja	PORTOWANY	improvements.rs improvement_allowed_civs	normalize_and_lookup_functions_match_web (32)
+terrain-improvements.ts:426	isImprovementAllowedForCiv	funkcja	PORTOWANY	improvements.rs is_improvement_allowed_for_civ	normalize_and_lookup_functions_match_web (288)
+terrain-improvements.ts:445	FARMA_POTENTIAL_FOOD_BONUS	stala	PORTOWANY	improvements.rs farma_potential_food_bonus() (z terrain-improvements.json, fallback z tabeli)	constants_match_web
+terrain-improvements.ts:448	FOREST_FOOD_POTENTIAL_PENALTY	stala	PORTOWANY	improvements.rs forest_food_potential_penalty() z tabeli zywnosc.kara_las	constants_match_web
+terrain-improvements.ts:459	foodPotentialForHex	funkcja	PORTOWANY	improvements.rs food_potential_for_hex	hex_layer_functions_match_web (960)
+terrain-improvements.ts:482	RESOURCE_UPKEEP_IMPROVEMENT_KEYS	stala	PORTOWANY	improvements.rs resource_upkeep_improvement_keys()	constants_match_web
+city-hex-movement.ts:9	CityHexRef	typ	PORTOWANY	pathfinding.rs:578 CityHexRef	city_at_hex_and_occupancy_match_web
+city-hex-movement.ts:11	cityAtHex	funkcja	PORTOWANY	pathfinding.rs:586 city_at_hex	city_at_hex_and_occupancy_match_web (120)
+city-hex-movement.ts:23	canUnitOccupyCityHex	funkcja	PORTOWANY	pathfinding.rs:592 can_unit_occupy_city_hex	city_at_hex_and_occupancy_match_web (120)
+city-hex-movement.ts:48	canAiEnterEmptyEnemyCity	funkcja	PORTOWANY	pathfinding.rs:598 can_ai_enter_empty_enemy_city (lista budynkow z teren-ruch-reguly.json)	ai_entry_into_empty_enemy_city_matches_web (876)
+city-hex-movement.ts:66	foreignCityHexKeys	funkcja	PORTOWANY	pathfinding.rs:630 foreign_city_hex_keys	foreign_city_blocks_match_web (120)
+city-hex-movement.ts:77	addForeignCityBlocks	funkcja	PORTOWANY	pathfinding.rs:639 add_foreign_city_blocks (+ add_foreign_city_block_coords dla find_path/reachable)	foreign_city_blocks_match_web (120), foreign_city_blocks_feed_pathfinding_and_roads_use_p3_23_divisors
+fort-territory.ts:30	FortImprovementType	typ	PORTOWANY	terrain.rs:184 FortImprovementType	fort_node_conversion_and_reservation_match_web
+fort-territory.ts:33	FortNode	typ	PORTOWANY	terrain.rs:212 FortNode	takeover_on_city_founded_matches_web
+fort-territory.ts:51	fortNodeAsCityNode	funkcja	PORTOWANY	terrain.rs:297 fort_node_as_city_node	fort_node_conversion_and_reservation_match_web (6)
+fort-territory.ts:68	isHexReservedByRivalFort	funkcja	PORTOWANY	terrain.rs:315 is_hex_reserved_by_rival_fort	fort_node_conversion_and_reservation_match_web (300)
+fort-territory.ts:86	foundingNodesForOwner	funkcja	PORTOWANY	terrain.rs founding_nodes_for_owner	fort_node_conversion_and_reservation_match_web (150)
+fort-territory.ts:98	NewCityFoundingInfo	typ	PORTOWANY	terrain.rs:222 NewCityFoundingInfo	takeover_on_city_founded_matches_web
+fort-territory.ts:106	FortTakeoverEvent	typ	PORTOWANY	terrain.rs:231 FortTakeoverEvent	takeover_on_city_founded_matches_web
+fort-territory.ts:144	applyFortTakeoverOnCityFounded	funkcja	PORTOWANY	terrain.rs:349 apply_fort_takeover_on_city_founded (mutuje Vec<FortNode>, zdarzenia w kolejnosci od konca)	takeover_on_city_founded_matches_web (400)
+fort-territory.ts:185	findEvacuationHexOutsideCity	funkcja	PORTOWANY	terrain.rs find_evacuation_hex_outside_city (max_ring z teren-ruch-reguly.json)	evacuation_hex_matches_web (160)
+r-stawki-strojenie.ts:50	scaleImprovementWorkCost	ZALEZNOSC (poza 4 plikami; wlasciciel P6.7)	ZALEZNOSC-PORTOWANA	improvements.rs scale_improvement_work_cost	era_and_cost_scaling_match_web
+territory.ts:47	axialDistance	ZALEZNOSC (wlasciciel: modul terytorium)	ZALEZNOSC-PORTOWANA	terrain.rs:240 axial_distance	territory_dependencies_match_web (150)
+territory.ts:23	CityNode	ZALEZNOSC	ZALEZNOSC-PORTOWANA	terrain.rs:157 CityNode	territory_dependencies_match_web
+territory.ts:74	cityTerritoryRadius	ZALEZNOSC	ZALEZNOSC-PORTOWANA	terrain.rs:272 city_territory_radius (promienie fortu/posterunku z terrain-improvements.json)	territory_dependencies_match_web (80)
+okolica.ts:47	cityRangeForPopulation	ZALEZNOSC	ZALEZNOSC-PORTOWANA	terrain.rs:250 city_range_for_population (miasto-params.json)	territory_dependencies_match_web (20)
+okolica.ts:66	hexKeysWithinRadius	ZALEZNOSC (prywatna w terrain.rs; osobna publiczna wersja w start_position.rs z P6.1C)	ZALEZNOSC-PORTOWANA	terrain.rs hexes_within_radius (predykat istnienia heksu)	evacuation_hex_matches_web

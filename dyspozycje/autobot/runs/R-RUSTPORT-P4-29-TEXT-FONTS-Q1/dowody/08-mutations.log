@@ -1,0 +1,25 @@
+M01 | src/raster/text/mod.rs | no word-by-word shaping (kerning across spaces) | KILLED | measure_text_widths_match_chromium, truncation_decisions_match_the_web, |
+M02 | src/raster/text/mod.rs | em-box ascent not rounded to 1/64 px | KILLED | baselines_match_chromium, raster::text::tests::round_64_is_26_6
+M03 | src/raster/text/mod.rs | middle baseline = em ascent - size/3 | KILLED | baselines_match_chromium
+M04 | src/raster/text/mod.rs | hanging baseline kept in f64 (Chromium: float) | KILLED | baselines_match_chromium
+M05 | src/raster/text/mod.rs | textAlign center shifts by the full width | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+M06 | src/raster/text/mod.rs | glyph origin y not snapped to whole pixels | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+M07 | src/raster/text/mod.rs | glyph origin x snapped to 1/2 px instead of 1/4 px | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+M08 | src/raster/text/mod.rs | advance scale = PxScale height (ascent-descent) instead of em | KILLED | measure_text_widths_match_chromium, raster::text::tests::px_scale_is_not_the_css_em, truncation_decisions_match_the_web
+M09 | src/raster/text/mod.rs | shaping without the kern feature (no GPOS kerning) | KILLED | measure_text_widths_match_chromium, truncation_decisions_match_the_web
+M10 | src/raster/text/mod.rs | per-glyph fallback disabled (always the primary face) | KILLED | raster::text::tests::per_glyph_fallback_switches_face, symbols_fall_back_to_dejavu
+M11 | src/raster/text/mod.rs | tab not replaced by a space | KILLED | raster::text::tests::whitespace_is_replaced_by_space
+M12 | src/raster/text/mod.rs | truncateName measures without the ellipsis | KILLED | truncation_decisions_match_the_web
+M13 | src/raster/text/fonts.rs | weight 500 selects Bold | KILLED | raster::text::fonts::tests::web_stacks_map_like_a_browser_without_windows_fonts
+M14 | src/raster/text/fonts.rs | sans-serif mapped to DejaVu Sans | KILLED | measure_text_widths_match_chromium
+M15 | src/raster/text/font.rs | bold = 600 | KILLED | font_shorthand_parsing_matches_chromium, raster::text::font::tests::prefix_keywords_and_line_height, raster::text::font::tests::web_font_strings_parse
+M16 | src/raster/text/font.rs | em relative to 16px | KILLED | font_shorthand_parsing_matches_chromium, raster::text::font::tests::prefix_keywords_and_line_height
+M17 | src/raster/canvas.rs | fillText painted with the stroke style | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+M18 | src/raster/text/mod.rs | ideographic baseline sign flipped | KILLED | baselines_match_chromium
+M19 | src/raster/text/mod.rs | glyph outline y not flipped (font y-up kept) | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+M20 | src/raster/text/mod.rs | origin snapping also under rotation | KILLED | scenes_match_golden_hashes
+M21 | src/raster/text/mod.rs | invalid font resets to the default instead of keeping the value | KILLED | invalid_font_keeps_previous_value
+M22 | src/raster/text/mod.rs | bottom baseline = -em ascent | KILLED | baselines_match_chromium
+M23 | src/raster/canvas.rs | text state not part of save/restore (restore keeps current text state) | KILLED | scenes_match_chromium, scenes_match_golden_hashes
+RESULT 23/23 killed
+EXIT=0

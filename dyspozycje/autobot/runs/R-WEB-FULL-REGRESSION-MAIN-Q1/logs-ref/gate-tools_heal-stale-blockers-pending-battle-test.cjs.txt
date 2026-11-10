@@ -1,0 +1,9 @@
+FAIL: [A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && !hasPendingAutoPreBattle() -- N1 (runda 2) + F1 (runda 3) naprawione formułą pinowaną bajt-w-bajt; F2 (runda 3, pendingBattleStuck) PRZENIESIONE poza tę funkcję w rundzie 4 (G1/G2)
+FAIL: [A4a] gałąź 2 (endTurnInProgress bez overlayu) formuła niezmieniona -- bez hasPendingAutoPreBattle
+FAIL: [A4b] gałąź 3 (osierocony overlay bez endTurnInProgress) formuła niezmieniona -- bez hasPendingAutoPreBattle
+FAIL: [A4c] gałąź 4 (stuckMs>8000 force-clear) formuła niezmieniona -- bez hasPendingAutoPreBattle
+
+heal-stale-blockers-pending-battle-test: 19 pass, 4 fail
+
+EXIT=1
+TIME=1.4

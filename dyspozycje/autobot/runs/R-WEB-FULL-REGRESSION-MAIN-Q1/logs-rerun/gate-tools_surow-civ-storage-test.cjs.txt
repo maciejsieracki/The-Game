@@ -1,0 +1,29 @@
+
+-- A. ownerResourceCapacityPerType: 50000 × (1 + 0,2/Magazyn) (addytywnie) --
+
+-- B. reconcileOwnerResourceCaps: klamrowanie sumy, deterministyczna kolejnosc --
+
+-- D. OWNERID-AGNOSTIC: gracz (ownerId=0) i AI (ownerId=2) traktowani identycznie --
+
+-- C. Pula ownera: getter + pobor rozproszony + kredyt (dyplomacja/handel) --
+
+-- E. advanceCityEconomy: cap panstwa + reconcile per owner (gracz I AI) --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=7 terrain=30 landSea=370 relief=188 coast=37 riversMain=2855 riversFill=2731 forest=27 deposits=35 starts=268 total=6548
+
+-- F. Wielokrotny wyrąb lasu (drewno) blisko capu -- NIE przekracza cap --
+
+-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do creditOwnerResourceStock --
+FAIL: main.ts: znaleziono koniec pętli wyrębu lasu (przed refreshPlayerCityEcon)
+FAIL: main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit...) w pętli wyrębu
+FAIL: main.ts:~21045 wywołanie w pętli wyrębu PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- bez niego Drewno rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO)
+FAIL: main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId)) w pętli wyrębu
+
+-- H. main.ts (strażnik tekstowy): łup z bitwy przekazuje cap do creditOwnerResourceStock --
+
+-- I. main.ts (strażnik tekstowy): przepływ handlowy przekazuje cap do creditOwnerResourceStock --
+
+surow-civ-storage-test: 64 passed, 4 failed
+
+EXIT=1
+TIME=7.2

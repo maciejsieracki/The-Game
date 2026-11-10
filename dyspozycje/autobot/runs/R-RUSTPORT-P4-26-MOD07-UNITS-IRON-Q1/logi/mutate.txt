@@ -1,0 +1,34 @@
+$ python3 /home/user/The-Game/.claude/worktrees/wf_91ec5ced-915-3/dyspozycje/autobot/runs/R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1/mutate.py; echo "EXIT=$?"
+M01 RingGeometry: full circle -> half (thetaLength PI): DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M02 oval rim: outer ring not scaled by k: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M03 javelin head profile 0.78 -> 0.79: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M04 rim arc bottom: last segment n/2+1 -> n/2+2: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M05 falangita dory tilt 0.20 -> 0.21: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M06 hastati opus5 pilum: sin(-TH_Z) -> sin(TH_Z): DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M07 p6 Hieros Lochos club: sin -> cos: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M08 z1 beard row step 0.026 -> 0.027: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M09 z1 tag prefix het- -> hett-: DETECTED by every_web_case_is_reproduced_bit_for_bit
+M10 z2 khopesh roll -1.15 -> -1.16: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M11 z2 Triari knee cos(0.30) -> cos(0.31): DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M12 z3 Galijski braccae thigh band 0.74 -> 0.75: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M13 z3 Berserker axe head x offset 0.030 -> 0.031: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M14 sjAlong/acAlong: D not normalised: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M15 sjAlong/acAlong: Euler not re-synced after setFromUnitVectors: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M16 strap: scale w <-> t swapped: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M17 arm IK: reach clamp 0.999 -> 0.998: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M18 konnica lancowa: rim rotateX(+PI/2) -> -PI/2: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M19 konnica lucznicza: bottom bow tip mirrored: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M20 konnica lucznicza: atan2 arguments swapped: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M21 catapult arm angle 24 -> 25 deg: DETECTED by every_web_case_is_reproduced_bit_for_bit, the_records_cover_every_mod07_builder_and_counts_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M22 Gaesatae armlet torus tubular 12 -> 13: DETECTED by every_web_case_is_reproduced_bit_for_bit, the_records_cover_every_mod07_builder_and_counts_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M23 Soldurii dome thetaLength PI*0.5 -> PI*0.6: DETECTED by every_web_case_is_reproduced_bit_for_bit, the_records_cover_every_mod07_builder_and_counts_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M24 registry: MOD-07 stays NotYetPorted: DETECTED by every_web_case_is_reproduced_bit_for_bit, no_unit_builder_is_a_stub_any_more, routing_no_longer_returns_not_yet_ported_for_the_stone_package, the_records_cover_every_mod07_builder_and_counts_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M25 category: `falanga` stays a stub: DETECTED by every_web_case_is_reproduced_bit_for_bit, no_unit_builder_is_a_stub_any_more, routing_no_longer_returns_not_yet_ported_for_the_stone_package
+M26 Prim::Zelazo hook builds a unit box: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, the_records_cover_every_mod07_builder_and_counts_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
+M27 routing: buildHastati arm removed: DETECTED by every_web_case_is_reproduced_bit_for_bit, no_unit_builder_is_a_stub_any_more, the_records_cover_every_mod07_builder_and_counts_match_the_web
+M28 oval rim ring: js_cos -> platform f64::cos: DETECTED by no_platform_transcendentals_anywhere_in_src
+M29 up_dir: js_sin -> platform f64::sin: DETECTED by no_platform_transcendentals_anywhere_in_src
+M30 konnica lucznicza: js_atan2 -> platform f64::atan2: DETECTED by no_platform_transcendentals_anywhere_in_src
+M31 catapult span: js_hypot_n -> platform f64::hypot: DETECTED by no_platform_transcendentals_anywhere_in_src
+detected 31/31, build errors 0
+EXIT=0

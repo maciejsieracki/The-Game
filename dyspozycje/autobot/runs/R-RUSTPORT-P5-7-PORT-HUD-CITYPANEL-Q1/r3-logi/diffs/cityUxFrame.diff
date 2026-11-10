@@ -1,0 +1,52 @@
+--- pin:gra/src/ui/cityUxFrame.ts
++++ v2:src-tauri/frontend-v2/src/ui/cityUxFrame.ts
+@@ -1,14 +1,14 @@
+ /**
+  * cityUxFrame.ts — ramka panelu miasta (Civ V): lewo=produkcja, prawo=okolica, mapa centralna.
+  */
+-import type { City } from '../game/cities';
+-import type { GameMap } from '../types/map';
++import type { CityRefDto } from '../viewmodel/types';
++// P5.7 r3: pin importuje te nazwy z `./cityPanel` (cykl C1) — w v2 przez most (ZAŁOŻENIE P5.7-Z7).
+ import {
+   paintCityPanelSections,
+   clearCityPanelUxMode,
+   navigateCityPanel,
+   type CityPanelUxMounts,
+-} from './cityPanel';
++} from './cityPanelUxBridge';
+ import { getActiveDetailDockWidths, HOVER_DETAIL_DOCK_W } from './hoverDetailDock';
+ import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+ import {
+@@ -217,8 +217,7 @@
+ }
+ 
+ export function showCityUxFrame(
+-  city: City,
+-  map: GameMap,
++  city: CityRefDto,
+   paint: () => void,
+   onClose: () => void,
+ ): void {
+@@ -267,18 +266,17 @@
+     hideCityUxFrame();
+     onClose();
+   };
+-  paintCityPanelSections(mounts, city, map, paint, frameOnClose);
++  paintCityPanelSections(mounts, city, paint, frameOnClose);
+   pushOverlay('city-panel', () => { frameOnClose?.(); });
+   bindCityUxNavKeys();
+ }
+ 
+ export function refreshCityUxFrame(
+-  city: City,
+-  map: GameMap,
++  city: CityRefDto,
+   paint: () => void,
+ ): void {
+   if (!mounts) return;
+-  paintCityPanelSections(mounts, city, map, paint, frameOnClose ?? undefined);
++  paintCityPanelSections(mounts, city, paint, frameOnClose ?? undefined);
+ }
+ 
+ export function hideCityUxFrame(): void {

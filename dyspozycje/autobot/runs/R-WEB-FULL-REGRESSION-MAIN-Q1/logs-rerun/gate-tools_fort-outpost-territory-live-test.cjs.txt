@@ -1,0 +1,4 @@
+podaj --out <katalog scratch poza repo>
+
+EXIT=2
+TIME=0.3

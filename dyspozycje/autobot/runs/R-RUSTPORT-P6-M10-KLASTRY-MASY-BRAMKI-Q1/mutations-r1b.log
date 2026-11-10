@@ -1,0 +1,5 @@
+WYKRYTA   timsort-invariant-ge: 1 testow FAILED: js_array_sort_matches_v8_including_comparator_call_counts
+WYKRYTA   score-near-boundary: 3 testow FAILED: find_best_player_start_hex_matches_web, score_city_start_hex_matches_web, score_city_start_hex_over_whole_maps_matches_web
+WYKRYTA   best-start-tie-le: 1 testow FAILED: find_best_player_start_hex_matches_web
+PODSUMOWANIE: wykryte 3/3, przezyly: [], pliki przywrocone: True
+EXIT=0

@@ -1,0 +1,18 @@
+
+-- A. frontItem()/etaTurns() -- ten sam algorytm co buildEmpireDetailSnap() (main.ts) --
+
+-- B. main.ts buildEmpireDetailSnap() + empireDetailTypes.ts -- wiring --
+FAIL: B5: pętla iteruje po `pc` -- miastach GRACZA (ownerId===0), nie po wszystkich miastach
+FAIL: B6: blok woła frontItem() -- TA SAMA funkcja co sekcja A, zero zduplikowanej logiki frontu
+FAIL: B7: filtr pomija miasta bez frontu ORAZ z budynkiem na froncie -- dokładnie warunek testowany w A5/A6
+FAIL: B7b (N1): blok czyta prod.wstrzymana === true -- naprawa rdzenia werdyktu Evaluatora (mini-tabela dawniej to pole ignorowała)
+FAIL: B8: ETA = null gdy wstrzymana, inaczej etaTurns() woła się BEZPOŚREDNIO (bez zbędnego pracaBudynki>0 ? na zewnątrz -- ten guard żyje już wewnątrz etaTurns())
+FAIL: B9: unitName czyta front.nazwa (nazwa jednostki na czele kolejki, nie coś innego)
+FAIL: B9b (N1): pole wstrzymana w pushowanym wierszu czyta flagę wyliczoną z prod.wstrzymana, nie jest zakodowane na sztywno
+
+-- C. renderArmiaProdukcjaMini() (esbuild+jsdom) --
+
+empire-armia-produkcja-test: 44 passed, 7 failed
+
+EXIT=1
+TIME=1.8

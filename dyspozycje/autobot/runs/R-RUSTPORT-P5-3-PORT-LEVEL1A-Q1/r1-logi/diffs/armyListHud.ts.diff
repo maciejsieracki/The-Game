@@ -1,0 +1,47 @@
+--- pin:gra/src/ui/armyListHud.ts
++++ v2:src-tauri/frontend-v2/src/ui/armyListHud.ts
+@@ -15,11 +15,22 @@
+   ensureSideListHudStyles,
+   sideListBadgeHtml,
+   sideListEmptyStateHtml,
+-  armyStatusBadge,
+   pctClamped,
+   hpValueColor,
+   type SideListBadgeVariant,
+ } from './sideListHud.css';
++import type { ArmyUnitStatusDto } from '../viewmodel/types';
++
++/**
++ * P5.3 (ZAŁOŻENIE P5.3-Z5): plakietka stanu z pola `status` (wybór stanu = Rust, `ArmyUnitStatusDto`).
++ * Słownik tekstu/koloru = 1:1 gałęzie web `armyStatusBadge` (`sideListHud.css.ts:120-123`).
++ */
++const ARMY_STATUS_BADGE: Readonly<Record<ArmyUnitStatusDto, { text: string; variant: SideListBadgeVariant }>> = {
++  garrison: { text: 'w garnizonie', variant: 'gold' },
++  fieldFortified: { text: 'ufortyfikowana w polu', variant: 'gold' },
++  sentry: { text: 'uśpiona', variant: 'neutral' },
++  autoExplore: { text: 'auto-eksploracja', variant: 'blue' },
++};
+ 
+ export interface ArmyListEntry {
+   /** Id reprezentatywnej jednostki (do zaznaczenia). */
+@@ -50,6 +61,11 @@
+   sentry?: boolean;
+   /** Zwiadowca w auto-eksploracji (ruch wykonywany automatycznie na koniec tury). */
+   autoExplore?: boolean;
++  /**
++   * P5.3 (ROZSZ. Z3-5): stan pokazywany plakietką — wybrany w Rust spośród flag wyżej
++   * (web `armyStatusBadge`, `sideListHud.css.ts:115-126`); `null` = bez plakietki stanu.
++   */
++  status: ArmyUnitStatusDto | null;
+ }
+ 
+ export interface ArmyListHudConfig {
+@@ -187,7 +203,7 @@
+         body.className = 'sl-body';
+ 
+         const badges: Array<{ text: string; variant: SideListBadgeVariant }> = [];
+-        const statusBadge = armyStatusBadge(a);
++        const statusBadge = a.status ? ARMY_STATUS_BADGE[a.status] : null;
+         if (statusBadge) badges.push(statusBadge);
+         if (selected) badges.push({ text: 'ZAZNACZONA', variant: 'green' });
+ 

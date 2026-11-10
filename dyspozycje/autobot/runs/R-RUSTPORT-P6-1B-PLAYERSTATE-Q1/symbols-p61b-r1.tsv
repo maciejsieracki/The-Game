@@ -1,0 +1,31 @@
+plik_web	symbol	rodzaj	status	dowod_lub_powod
+playerState	EmpireResearchGate	interface	RUNDA-2	struktura bramki imperium (empireBuiltIds, buildings, empireImprovementKeys) + researchGatesMet naleza do research.ts (P6.17, P6-0 wiersz 144). P6.1B portuje SZEW: trait player::ResearchGate (predykat gates_met) uzywany przez wszystkich 5 wolajacych; wektory z wynikami web researchGatesMet per tech (gateMaps g0/g1/g2)
+playerState	PIENIADZ_MNOZNIK	const	PORTOWANY	PlayerRules::pieniadz_mnoznik z data/derived/player-state-params.json (tabela, nie literal); wektor constants.PIENIADZ_MNOZNIK; testy parity_constants_and_defaults_match_web, table_constants_are_read_from_data_not_literals; verify-p61b run_params
+playerState	RESEARCH_QUEUE_MAX	const	PORTOWANY	PlayerRules::research_queue_max z player-state-params.json; wektor constants.RESEARCH_QUEUE_MAX; testy jak wyzej + scenariusz queue-chain
+playerState	PlayerState	interface	PORTOWANY	player::PlayerState (16 pol, serde rename = nazwy weba); test parity_constants_and_defaults_match_web porownuje zestaw kluczy z Object.keys(createPlayerState())
+playerState	createPlayerState	function	PORTOWANY	PlayerRules::create_player_state (wartosci poczatkowe z player-state-params.json); wektor defaults
+playerState	techCost	function	PORTOWANY	player::tech_cost (Technologia.koszt_nauki); galaz null/NaN->0 NIE-DOTYCZY (typ i64); wektor pure.rowsSynA/rowsSynMoney.techCost
+playerState	parsePrereqs	function	PORTOWANY	PlayerRules::parse_prereqs (js_trim, sentinele z tabeli); wektor prereqs (29 wejsc) + rows
+playerState	prereqsMet	function	PORTOWANY	PlayerRules::prereqs_met; wektor prereqs.met (29 x 9 zbiorow) + pure.doneSets.prereqsMet
+playerState	epochNumber	function	PORTOWANY	PlayerRules::epoch_number (mapa epok i diakrytykow z tabeli); wektor epochNumbers (26 wejsc, w tym constructor/__proto__/NFD)
+playerState	epochGateMet	function	PORTOWANY	PlayerRules::epoch_gate_met; wektor pure.doneSets.epochGate (9 zbiorow x 18 techow)
+playerState	epochTierGateMet	function	PORTOWANY	PlayerRules::epoch_tier_gate_met; wektor pure.doneSets.tierGate; galaz Poziom nie-liczba NIE-DOTYCZY (i64)
+playerState	availableTechs	function	PORTOWANY	PlayerRules::available_techs (z bramka i bez); wektor pure.doneSets.perGate.available (4 bramki x 9 zbiorow)
+playerState	cheapestAvailable	function	PORTOWANY	PlayerRules::cheapest_available (remis: porzadek UTF-16 jak JS <); wektory perGate.cheapest + pure.tie
+playerState	eraAdvanceTarget	function	PORTOWANY	player::era_advance_target (awans_do_epoki); wektor rows.eraAdvanceTarget
+playerState	isEraAdvanceTech	function	PORTOWANY	player::is_era_advance_tech; wektor rows.isEraAdvanceTech
+playerState	isMoneyTech	function	PORTOWANY	PlayerRules::is_money_tech (nazwa i igla z tabeli); wektor rows.isMoneyTech (19 wierszy synMoney)
+playerState	ResearchCompletion	interface	PORTOWANY	player::ResearchCompletion; porownywane pole po polu w scenariuszach step
+playerState	ResearchStepResult	interface	PORTOWANY	player::ResearchStepResult
+playerState	researchStep	function	PORTOWANY	PlayerRules::research_step; 422 wywolan step w 34 scenariuszach (tempo x trudnosc, kolejka, era/pieniadz, bramki, duplikaty, fuzz); koszt z research-costs.json (DANE-JUZ-W-RUST)
+playerState	ResearchStateInfo	interface	PORTOWANY	player::ResearchStateInfo
+playerState	setPlayerResearchTarget	function	PORTOWANY	PlayerRules::set_player_research_target; 181 wywolan (16 true, 165 false) w scenariuszach
+playerState	getResearchState	function	PORTOWANY	PlayerRules::get_research_state; 230 wywolan (w tym target '' i npt<=0)
+playerState	researchPlanLength	function	PORTOWANY	player::research_plan_length
+playerState	enqueueResearchTarget	function	PORTOWANY	PlayerRules::enqueue_research_target; 174 wywolan (118 true, 56 false)
+playerState	dequeueResearchTarget	function	PORTOWANY	player::dequeue_research_target; 57 wywolan (4 true, 53 false)
+playerState	clearResearchQueue	function	PORTOWANY	player::clear_research_queue
+playerState	getResearchPlanSnapshot	function	PORTOWANY	player::get_research_plan_snapshot
+zaleznosc	scaledResearchCost	function	DANE-JUZ-W-RUST	difficulty-cost.ts:86 (gracz, ownerId 0) = data/derived/research-costs.json (P3-19); PlayerRules::scaled_research_cost = lookup; dowod: wektor costs (288 = 32 tech x 3 tempa x 3 trudnosci z uruchomionego weba) + verify-p61b run_costs_and_tables (tabela 32 wiersze x 15 wartosci = 480 komorek kosztu, 577 sprawdzen grupy table, wszystkie 15 kolumn, formula z zrodla)
+zaleznosc	researchGatesMet	function	RUNDA-2	research.ts:234 (P6.17); w P6.1B tylko predykat (trait ResearchGate)
+zaleznosc	humanSeats / playerStateByHuman	main.ts	PORTOWANY	player::PlayerStateByHuman (main.ts:9040, 11321: niezalezny PlayerState per fotel, tworzony przy pierwszym uzyciu); test hot_seat_two_human_owners_have_independent_player_states + scenariusz hotseat-three-seats

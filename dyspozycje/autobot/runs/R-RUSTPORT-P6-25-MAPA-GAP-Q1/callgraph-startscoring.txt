@@ -1,0 +1,32 @@
+== startScoring: 27 deklaracji, 255 LOC niepustych
+-- clusters.ts: 19 deklaracji, 159 LOC
+  clusters.ts:212-212	MIN_MASS_HEXES_FOR_CENTER	1
+  clusters.ts:226-226	DEVELOPMENT_SPACE_RADIUS	1
+  clusters.ts:240-240	LOCAL_LAND_DOMINANCE_FRAC	1
+  clusters.ts:244-244	LOCAL_LAND_DOMINANCE_RADIUS	1
+  clusters.ts:246-246	PLAYER_START_MIN_MASS_HEXES	1
+  clusters.ts:248-248	PLAYER_START_MASS_MIN_ABSOLUTE	1
+  clusters.ts:276-286	buildMassHexIndex	11
+  clusters.ts:293-297	MassLandCache	5
+  clusters.ts:306-314	massLandCacheFromMasses	9
+  clusters.ts:316-316	MassesOrCache	1
+  clusters.ts:318-322	resolveMassLandCache	5
+  clusters.ts:324-331	massContainingHex	8
+  clusters.ts:363-366	isSpawnHabitableTerrain	4
+  clusters.ts:373-393	localLandFraction	21
+  clusters.ts:395-403	passesLocalLandGate	9
+  clusters.ts:409-433	developmentSpaceScore	25
+  clusters.ts:552-560	massSizeAtHex	9
+  clusters.ts:566-582	passesPlayerStartMassGate	17
+  clusters.ts:811-839	groupHabitableMasses	29
+-- gen-helpers.ts: 1 deklaracji, 4 LOC
+  gen-helpers.ts:125-128	HEX_DIRECTIONS	4
+-- startScoring.ts: 7 deklaracji, 92 LOC
+  startScoring.ts:25-27	NEIGHBORS	3
+  startScoring.ts:29-31	hexAt	3
+  startScoring.ts:33-35	hasRiver	3
+  startScoring.ts:37-39	isArable	3
+  startScoring.ts:41-45	canFoundOnTerrain	5
+  startScoring.ts:51-95	scoreCityStartHex	39
+  startScoring.ts:102-142	findBestPlayerStartHex	36
+UNRESOLVED	(brak)

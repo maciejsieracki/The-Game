@@ -1,0 +1,17 @@
+$ diff -u <pin>/gra/src/ui/<m> src/ui/<m>  (+ dodane / - usunięte linie, bez nagłówków)
+icons/brandAssets.ts pin_sha256=cc03b0cc0ec8f5d4 v2_sha256=4f1877fb0618c042 loc_pin=267 loc_v2=267 plus=3 minus=3 diff_exit=1
+leaderPortraits.ts pin_sha256=f75597737bdc9347 v2_sha256=9e3d04e01089691f loc_pin=225 loc_v2=229 plus=5 minus=2 diff_exit=1
+uiParams.ts pin_sha256=43515197d4f0cbe2 v2_sha256=cddcb4edadff9f13 loc_pin=98 loc_v2=102 plus=4 minus=1 diff_exit=1
+unitInfographic.ts pin_sha256=84478125c08905bb v2_sha256=53aaad0352906f8f loc_pin=171 loc_v2=170 plus=3 minus=4 diff_exit=1
+power-labels.ts pin_sha256=5d1693a12c95da1b v2_sha256=b53a06af88e88bfd loc_pin=36 loc_v2=36 plus=4 minus=4 diff_exit=1
+unitMiniPreview.ts pin_sha256=7054895ee9e22831 v2_sha256=ee6029a5a5d7fad2 loc_pin=155 loc_v2=80 plus=31 minus=93 diff_exit=1
+civBrandDisplay.ts pin_sha256=9f48a850040c5743 v2_sha256=69eafca4dd9f67f1 loc_pin=68 loc_v2=68 plus=2 minus=2 diff_exit=1
+diplomacyAcceptanceBalance.ts pin_sha256=577947a531829af9 v2_sha256=4f2b1331ad1d7b98 loc_pin=911 loc_v2=589 plus=67 minus=377 diff_exit=1
+techUnlockParse.ts pin_sha256=cd4ed39e236c1292 v2_sha256=c054167de4d5a776 loc_pin=52 loc_v2=52 plus=2 minus=2 diff_exit=1
+minimapHud.ts pin_sha256=bb320dc8b974d9ee v2_sha256=2d353238e1452d2f loc_pin=448 loc_v2=448 plus=2 minus=2 diff_exit=1
+perfReport.ts pin_sha256=a964de494f312d0a v2_sha256=6cfdd727072fc70e loc_pin=315 loc_v2=323 plus=14 minus=7 diff_exit=1
+improvementBuildConfirm.ts pin_sha256=0e097aa435501122 v2_sha256=4ed978dbf6534e9d loc_pin=93 loc_v2=92 plus=6 minus=7 diff_exit=1
+mapLoadingOverlay.ts pin_sha256=bad0d987ed795b45 v2_sha256=a911f765c580cfc6 loc_pin=260 loc_v2=258 plus=2 minus=3 diff_exit=1
+saveLoadDialog.ts pin_sha256=699da2f77afe4d86 v2_sha256=c51794da8ab1f85e loc_pin=623 loc_v2=609 plus=35 minus=49 diff_exit=1
+victoryScreen.ts pin_sha256=cdaffae6df233df6 v2_sha256=7476a2c78f5d569b loc_pin=346 loc_v2=346 plus=3 minus=3 diff_exit=1
+EXIT=0

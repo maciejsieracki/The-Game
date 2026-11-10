@@ -1,0 +1,63 @@
+01 M01 hypot=libm: WYKRYTA: full_seed_pipeline_reproduces_the_web_land_masks, hypot_matches_web_bit_for_bit, land_masks_match_web_for_every_type_size_and_seed, pangea_blob_score_matches_web_on_fixed_centers
+02 M02 pow=libm: WYKRYTA: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed, pangea_blob_score_matches_web_on_fixed_centers, pow_follows_ecmascript_special_cases
+03 M03 atan2=libm: WYKRYTA [p6_m03_jsmath]: atan2_matches_web_bit_for_bit
+04 M04 sin=libm: WYKRYTA [p6_m03_jsmath]: sin_matches_web_bit_for_bit
+05 M05 pow mianownik fdlibm klasyczny: WYKRYTA [p6_m03_jsmath]: pow_matches_web_bit_for_bit
+06 M06 atan2 bez m&=1: WYKRYTA [p6_m03_jsmath]: atan2_matches_web_bit_for_bit
+07 M07 shape: zamiana pol offsetow: WYKRYTA [p6_m03_centers]: default_shape_params_match_web_and_consume_six_draws
+08 M08 land_mask_at bez dodatku 0.5: WYKRYTA [p6_m03_centers]: elliptical_mask_matches_web_inside_and_outside_the_map
+09 M09 centra: n>=1 -> n>1: WYKRYTA [p6_m03_centers]: build_continent_centers_matches_web_including_rng_consumption
+10 M10 centra: anchor odwrocony: WYKRYTA [p6_m03_centers]: build_continent_centers_matches_web_including_rng_consumption
+11 M11 centra: proby <=: WYKRYTA [p6_m03_centers]: build_continent_centers_matches_web_including_rng_consumption
+12 M12 piecio: zamiana jitter nq/nr: WYKRYTA [p6_m03_centers]: five_zone_centers_match_web_including_rng_consumption
+13 M13 nearest: < -> <=: WYKRYTA [p6_m03_centers]: voronoi_zone_index_and_second_distance_match_web_with_ties
+14 M14 second_nearest: get(1)->get(0): WYKRYTA [p6_m03_centers]: voronoi_zone_index_and_second_distance_match_web_with_ties
+15 M15 kontynenty: ciesnina <=: NIEWYKRYTA
+16 M16 kontynenty: bez odjemnika: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+17 M17 angle_noise: bez strefy: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed, pangea_blob_score_matches_web_on_fixed_centers
+18 M18 isotropic: bez wysokosci w max_dim: WYKRYTA [p6_m03_centers]: isotropic_helpers_match_web
+19 M19 norm_to_isotropic: bez HALF: WYKRYTA [p6_m03_centers]: isotropic_helpers_match_web
+20 M20 pangea_t: bez gornego clampa: WYKRYTA [p6_m03_centers]: pangea_land_t_matches_web_including_clamps_and_non_finite, pangea_layout_params_match_web_for_every_field
+21 M21 layout: n_blobs <=: NIEWYKRYTA
+22 M22 layout: ring_pull wysoki<->niski: WYKRYTA [p6_m03_centers]: pangea_blob_centers_match_web_including_rng_consumption, pangea_layout_params_match_web_for_every_field
+23 M23 layout: size_boost max: WYKRYTA [p6_m03_centers]: pangea_blob_centers_match_web_including_rng_consumption, pangea_layout_params_match_web_for_every_field
+24 M24 pangea centra: zamiana mnoznik/rozrzut: WYKRYTA [p6_m03_centers]: pangea_blob_centers_match_web_including_rng_consumption
+25 M25 blob_score: bez strefy w szumie grubym: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed, pangea_blob_score_matches_web_on_fixed_centers
+26 M26 pangea: merged zamiana wsp: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+27 M27 pangea: dolina +: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+28 M28 wyspy centra: zamiana kolejnosci petli: WYKRYTA [p6_m03_centers]: island_centers_match_web_including_rng_consumption
+29 M29 island_cell: round: WYKRYTA [p6_m03_centers]: assign_island_grid_indices_keeps_web_map_insertion_order, island_grid_cell_index_matches_web_including_out_of_range_cells
+30 M30 assign: zamiana petli: WYKRYTA [p6_m03_centers]: assign_island_grid_indices_keeps_web_map_insertion_order
+31 M31 wyspy: dist_to_edge bez dolu: BLAD WZORCA (trafien: 0)
+32 M32 wyspy: zone col*grid+row: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+33 M33 ziemia: template < 0: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+34 M34 ziemia: szum -: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+35 M35 brzeg: d < strefa: WYKRYTA [p6_m03_masks]: border_dependencies_match_web
+36 M36 brzeg: fade bez min: NIEWYKRYTA
+37 M37 edge_rect: bez dolnego progu: NIEWYKRYTA
+38 M38 hex_border_distance: bez h: WYKRYTA [p6_m03_masks]: border_dependencies_match_web, full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+39 M39 js_max: znak zera: WYKRYTA [p6_m03_jsmath]: max_min_follow_javascript_nan_and_signed_zero_rules
+40 M40 kontynenty: pow wykladnik (radial) 1.55->tabela: BLAD WZORCA (trafien: 2)
+41 M41 five_zone: pickR przed jitterami: WYKRYTA [p6_m03_centers]: five_zone_centers_match_web_including_rng_consumption
+42 J01 json skala_szumu: WYKRYTA [p6_m03_centers]: default_shape_params_match_web_and_consume_six_draws
+43 J02 json ciesnina: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+44 J03 json prog.baza: WYKRYTA [p6_m03_centers]: pangea_layout_params_match_web_for_every_field
+45 J04 json pas_morski: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+46 J05 json poziom_ladu: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+47 J06 json krok_limitu: WYKRYTA [p6_m03_masks]: border_dependencies_match_web, full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+48 J07 json pangea jitter: WYKRYTA [p6_m03_centers]: pangea_blob_centers_match_web_including_rng_consumption
+49 J08 json centrum Ziemi: WYKRYTA [p6_m03_centers]: named_constants_match_web_exports
+50 J09 json proby: WYKRYTA [p6_m03_centers]: build_continent_centers_matches_web_including_rng_consumption
+51 J10 json wyspy rozmiar max: WYKRYTA [p6_m03_centers]: island_centers_match_web_including_rng_consumption
+52 J11 json liczba_duze: WYKRYTA [p6_m03_centers]: continent_center_count_matches_web_for_all_world_types
+53 J12 json wysoki_prog: WYKRYTA [p6_m03_centers]: pangea_blob_centers_match_web_including_rng_consumption, pangea_layout_params_match_web_for_every_field
+54 J13 json eliptyczna promien: WYKRYTA [p6_m03_centers]: elliptical_mask_matches_web_inside_and_outside_the_map
+55 J14 json zakres_przesuniec: WYKRYTA [p6_m03_centers]: default_shape_params_match_web_and_consume_six_draws
+56 J15 json oktawy szum_drobny kontynenty: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+57 E01 core polarny_ocean_limit_proc: WYKRYTA [p6_m03_earth]: heights_polar_rows_and_land_rows_match_web_for_every_height
+58 E02 core podprobkowanie 220->221: WYKRYTA [p6_m03_earth]: subsample_grid_and_land_fraction_threshold_match_web_for_all_tier_edges
+59 E03 core prog_ulamka 160->161: WYKRYTA [p6_m03_earth]: subsample_grid_and_land_fraction_threshold_match_web_for_all_tier_edges
+60 E04 core prog_ulamka_domyslny: WYKRYTA [p6_m03_earth]: subsample_grid_and_land_fraction_threshold_match_web_for_all_tier_edges
+61 E05 core granica_grywalna: WYKRYTA [p6_m03_earth]: constants_match_web, heights_polar_rows_and_land_rows_match_web_for_every_height, subsample_grid_and_land_fraction_threshold_match_web_for_all_tier_edges
+62 E06 core polarny_ocean_wiersze_ref: WYKRYTA [p6_m03_earth]: constants_match_web, heights_polar_rows_and_land_rows_match_web_for_every_height
+63 E07 core prog_szablonu_ladu: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed

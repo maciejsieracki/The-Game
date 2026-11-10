@@ -1,0 +1,6 @@
+=== Pangea interior rzeki (FALA 199, Standard) ===
+
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=150.2

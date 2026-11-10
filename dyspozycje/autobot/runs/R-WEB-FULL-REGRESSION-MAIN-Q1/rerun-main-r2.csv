@@ -1,0 +1,2 @@
+name,group,exit,status,time_s,pass,fail,lastfail
+tools/roster-space-next-active-unit-test.cjs,rerun-main-r2-isolated,0,GREEN,149,43,0,"[OK] D10 Spacja doskakuje na stos OBLEGANY | [OK] D11 przy oblezeniu nadal pomijane | [OK] D6 zero pageerror | wynik: 43 OK, 0 FAIL"

@@ -1,0 +1,12 @@
+$ node tools/check-no-logic-imports.mjs <PIN>/gra/src/ui/newGameFlow.ts
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:20: [CORE:data] import { loadGameData, type GameData } from '../data/loader';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:24: [CORE:game] } from '../game/civ-entry-epoch';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:48: [CORE:map] } from '../map/newGameMapDefaults';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:49: [CORE:game] import { buildStartPreview, startPreviewSummaryRows, type StartPreview } from '../game/start-preview';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:56: [CORE:game] import type { BuildingCostPace } from '../game/building-cost-tempo';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:57: [CORE:game] import type { KosztJednostekPace } from '../game/unit-cost-tempo';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:58: [CORE:game] import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:59: [CORE:game] import type { RuchSwiataPace } from '../game/ruch-swiata-tempo';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts:70: [CORE:game] } from '../game/civ-matrix-semantic';
+check-no-logic-imports: cele=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/newGameFlow.ts plików=1 plików_z_trafieniami=1 trafień=9 {"CORE:data":1,"CORE:game":7,"CORE:map":1}
+EXIT=1

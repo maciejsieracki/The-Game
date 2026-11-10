@@ -1,0 +1,47 @@
+$ node tools/dom-harness/run-level2.mjs --pin-dir <PIN> (powtórzenie: jedyny proces tego tematu; maszyna współdzielona, load avg w logu)
+uptime:  15:46:31 up 14:14,  0 user,  load average: 3.36, 6.46, 10.03
+techTreeView: technologii z etykietami ulepszeń z kodu=15/32, różnych od pola tech.json=3 (Brązownictwo, Jeździectwo, Hutnictwo żelaza)
+leaderBannersHud.ts            przypadki=    2 różnice=0 DOM_puste=1/2
+cityCaptureNotice.ts           przypadki=   36 różnice=0 DOM_puste=26/36
+cityForeignPick.ts             przypadki=   27 różnice=0 DOM_puste=16/27
+cityUnitPick.ts                przypadki=   36 różnice=0 DOM_puste=24/36
+gamePauseMenu.ts               przypadki=   57 różnice=0 DOM_puste=13/57
+hotSeatHandoff.ts              przypadki=   15 różnice=0 DOM_puste=0/15
+mainMenu.ts                    przypadki=   66 różnice=0 asercje_v2=1/1 DOM_puste=0/59
+unitForeignPick.ts             przypadki=   27 różnice=0 DOM_puste=16/27
+buildModeHud.ts                przypadki=  138 różnice=0 asercje_v2=1/1 DOM_puste=0/138 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: zamknięcie kliknięciem poza panelem (`pointerdown` na `document`, pin :396-410) — wspólny `document` obu stron, nie wysyłane
+   NIE_ZMIERZONO: pozycja dymka blokady (`offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik
+diplomacyPanel.ts              przypadki=   35 różnice=0 DOM_puste=0/22
+techTreeView.ts                przypadki=  210 różnice=0 asercje_v2=3/3 DOM_puste=0/210 NIE_ZMIERZONO=7
+   NIE_ZMIERZONO: klik(bez-haków): kliknięto 25 z 71 elementów (limit przypadków)
+   NIE_ZMIERZONO: klik(start): kliknięto 25 z 111 elementów (limit przypadków)
+   NIE_ZMIERZONO: klik(cel): kliknięto 90 z 111 elementów (limit przypadków)
+   NIE_ZMIERZONO: klik(brąz): kliknięto 25 z 71 elementów (limit przypadków)
+   NIE_ZMIERZONO: klik(wszystko): kliknięto 25 z 111 elementów (limit przypadków)
+   NIE_ZMIERZONO: zoom kółkiem i przeciąganie (`wheel`/`pointer*`, pin :877-920) — jsdom bez układu; przyciski zoomu porównane
+   NIE_ZMIERZONO: pozycja karty węzła (`showCardFor`, `offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik
+unitInfoCard.ts                przypadki=  159 różnice=0 asercje_v2=2/2 DOM_puste=1/157 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: miniatura jednostki (`mountUnitMiniPreview`, kolejka rAF): pin renderuje WebGL (three), v2 obraz z Rust/placeholder (D-UI-3) — zrzut przed rAF
+wikiHubHud.ts                  przypadki=  390 różnice=0 DOM_puste=1/44 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane
+unitPanelHud.ts                przypadki=   27 różnice=0 DOM_puste=0/27
+contextPanelHud.ts             przypadki=    3 różnice=0 DOM_puste=0/3
+diplomacyProposalBanner.ts     przypadki=    4 różnice=0 DOM_puste=1/4 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: auto-ukrycie po 4500 ms (`setTimeout`) — nie czekano; `hide` porównany jawnie
+hudChip6c.ts                   przypadki=   46 różnice=0
+mapToolbarHud.ts               przypadki=   27 różnice=0 DOM_puste=0/26
+armyMergePickPanel.ts          przypadki=   20 różnice=0 DOM_puste=9/20
+armySplitPanel.ts              przypadki=   23 różnice=0 DOM_puste=10/23
+diplomacyPendingHud.ts         przypadki=   21 różnice=0 DOM_puste=9/21
+interHumanDiplomacyHud.ts      przypadki=   67 różnice=0 DOM_puste=3/67
+unitReplacePicker.ts           przypadki=   24 różnice=0 DOM_puste=11/24
+armyStackHud.ts                przypadki=  237 różnice=0 DOM_puste=0/237
+diploListHud.ts                przypadki=   80 różnice=0 DOM_puste=1/49 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane
+   NIE_ZMIERZONO: singleton `showDiploListHud`/`toggleDiploListHud`/`refreshDiploListHudIfOpen` — `api` modułu ustawiany wyłącznie wewnętrznie (brak publicznego settera); `createDiploListHud` porównany wprost
+unitActionBarHtml.ts           przypadki=    7 różnice=0
+dom-harness-level2: pin=edb8fb56 modułów=26 przypadków=1784 różnic=0 jsdomErrors=354 consoleErrors=150
+jsdomErrors (unikalne): Could not parse CSS stylesheet @mainMenu.ts/pin | Could not parse CSS stylesheet @mainMenu.ts/v2
+consoleErrors (unikalne): [unitInfoCard] błąd ścieżki entityCards, fallback do starej implementacji: Error: wymuszony wyjątek ścieżki entityCards
+EXIT=0

@@ -1,0 +1,73 @@
+$ cargo test --no-default-features --no-fail-fast
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.26
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling memchr v2.8.3
+   Compiling spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_66f475c2-396-1/rust-port/spike-gpu-embed)
+   Compiling itoa v1.0.18
+   Compiling syn v3.0.6
+   Compiling serde_derive v1.0.229
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.36s
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/tgt-spike/debug/deps/spike_gpu_embed-95d9d134eb721a52)
+
+running 39 tests
+test clock::tests::rejects_invalid_samples ... ok
+test log::tests::clock_is_monotonic ... ok
+test clock::tests::negative_offset_is_fine ... ok
+test log::tests::format_is_stable ... ok
+[     0.177 ms] test line (stderr only)
+test log::tests::line_without_file_does_not_panic ... ok
+test clock::tests::picks_min_rtt_sample ... ok
+test memory::tests::descendants_found_recursively_and_cycle_safe ... ok
+test memory::tests::children_summarized ... ok
+test memory::tests::proc_stat_parsed_with_awkward_comm ... ok
+test memory::tests::old_sample_json_without_webview_still_parses ... ok
+test memory::tests::ps_and_powershell_parsed ... ok
+test memory::tests::vmrss_parsed ... ok
+test memory::tests::reads_own_memory_on_linux ... ok
+test protocol::tests::native_event_roundtrip ... ok
+test protocol::tests::r2w_result_from_js_json ... ok
+test protocol::tests::ui_rects_flattened ... ok
+test regions::tests::bad_scale_or_nan_rects ... ok
+test regions::tests::clipped_to_window_and_empty_dropped ... ok
+test regions::tests::fractional_scale_rounds_outward ... ok
+test regions::tests::over_ui_half_open ... ok
+test regions::tests::physical_point_normalisation ... ok
+test regions::tests::scale_1_is_identity_for_integers ... ok
+test report::tests::focus_rule ... ok
+test report::tests::fullscreen_rule ... ok
+test report::tests::input_split_rule ... ok
+test report::tests::ipc_rule ... ok
+test clock::tests::one_way_latencies ... ok
+test report::tests::memory_rule ... ok
+test protocol::tests::timed_input_from_js_json ... ok
+test report::tests::memory_webview_line ... ok
+test report::tests::render_rule ... ok
+test memory::tests::reads_child_memory_on_linux ... ok
+test report::tests::set_and_summary ... ok
+test stats::tests::nearest_rank_on_1_to_100 ... ok
+test stats::tests::nearest_rank_small_sets ... ok
+test report::tests::new_report_is_all_nie_zmierzono ... ok
+test stats::tests::stats_1000_samples_like_the_spike ... ok
+test stats::tests::stats_reject_non_finite_and_empty ... ok
+test stats::tests::stats_unsorted_input_and_mean ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/tgt-spike/debug/deps/spike_gpu_embed-a1a46c35cb57cd4d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests spike_gpu_embed
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

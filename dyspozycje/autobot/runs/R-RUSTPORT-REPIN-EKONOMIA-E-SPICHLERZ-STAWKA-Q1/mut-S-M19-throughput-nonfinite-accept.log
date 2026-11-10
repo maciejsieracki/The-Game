@@ -1,0 +1,13 @@
+MUTANT S-M19-throughput-nonfinite-accept file=src/domain/building_costs.rs
+OLD:
+            .and_then(serde_json::Value::as_f64)
+            .filter(|v| v.is_finite())
+            .unwrap_or(fallback)
+NEW:
+            .and_then(serde_json::Value::as_f64)
+            .unwrap_or(fallback)
+
+FAILED TESTS:
+
+VERDICT=SURVIVED
+EXIT=0

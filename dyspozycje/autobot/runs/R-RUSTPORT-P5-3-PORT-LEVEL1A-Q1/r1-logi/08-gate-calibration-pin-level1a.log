@@ -1,0 +1,23 @@
+$ (cwd = <pin>/gra/src/ui) node tools/check-no-logic-imports.mjs <17 modułów>
+cityAttackChoice.ts:15: [CORE:game] import type { MapSiegeContext } from '../game/mapSiegeDetect';
+diplomacyDealDisplay.ts:5: [CORE:game] import type { BasketItem } from '../game/diplomacy-pn-engine';
+diplomacyDealDisplay.ts:6: [CORE:game] import type { ProposalPayload } from '../game/diplomacy-proposals';
+diplomacyDealDisplay.ts:11: [CORE:game] } from '../game/diplomacy-display';
+orderPanel.ts:11: [CORE:game] import type { SocietyLine } from '../game/society-breakdown';
+orderPanel.ts:12: [CORE:game] import type { CitizenUpkeepCoverage } from '../game/citizen-resource-upkeep';
+postBattleSummary.ts:5: [CORE:game] import type { PostBattleSummaryData, BattleSummaryUnitCard, BattleSummarySide } from '../game/battle-summary';
+postBattleSummary.ts:6: [CORE:game] import { buildPostBattleSummary } from '../game/battle-summary';
+postBattleSummary.ts:19: [CORE:battle] } from '../battle/battleHudTheme';
+siegeMapPanel.ts:6: [CORE:game] import type { City } from '../game/cities';
+siegeMapPanel.ts:7: [CORE:game] import type { MapSiegeContext } from '../game/mapSiegeDetect';
+siegeMapPanel.ts:8: [CORE:game] import { getCityFood } from '../game/turn-economy';
+siegeMapPanel.ts:9: [CORE:game] import type { SiegeMachineKind, SiegeMachinesState } from '../game/siegeMachines';
+unitCardStatus.ts:9: [CORE:game] } from '../game/unit-building-bonuses';
+unitCardStatus.ts:10: [CORE:game] import { veteranStarCount, type VeteranProgress } from '../game/veteran';
+unitCardStatus.ts:11: [CORE:game] import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+unitRecruitCard.ts:6: [CORE:data] import type { GameData, UnitDef } from '../data/loader';
+unitRecruitCard.ts:7: [CORE:game] import type { ProductionItem } from '../game/production';
+unitRecruitCard.ts:8: [CORE:game] import { formatManpower } from '../game/manpower';
+unitRecruitCard.ts:9: [CORE:units] import { categoryOf } from '../units/setup';
+check-no-logic-imports: cele=unitCardStatus.ts,diplomacyDealDisplay.ts,orderPanel.ts,unitRecruitCard.ts,cityAttackChoice.ts,postBattleSummary.ts,siegeMapPanel.ts,diploUiSkin.ts,icons/iconRegistry.ts,mapUnitHudSkin.ts,armyMergePanel.ts,icons/wikiBookIcon.ts,powerOverlayHud.ts,armyListHud.ts,bottomBarHud.ts,cityListHud.ts,empireOverlayHud.ts plików=17 plików_z_trafieniami=7 trafień=20 {"CORE:game":17,"CORE:battle":1,"CORE:data":1,"CORE:units":1}
+EXIT=1

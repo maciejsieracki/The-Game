@@ -1,0 +1,62 @@
+# Literaly liczbowe w relief.rs (kod, bez komentarzy // i ///); klasyfikacja: strukturalny / JS-liczba
+58	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if a == 0.0 && b == 0.0 {
+58	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if a == 0.0 && b == 0.0 {
+73	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if a == 0.0 && b == 0.0 {
+73	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if a == 0.0 && b == 0.0 {
+85	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if !x.is_finite() || x == 0.0 {
+89	0.5	stala JS: Math.round zaokragla polowe w gore (ECMA-262 21.3.2.28)	let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+89	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+90	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if rounded == 0.0 && x < 0.0 {
+90	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if rounded == 0.0 && x < 0.0 {
+91	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	-0.0
+103	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	} else if x == 0.0 {
+106	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if x > 0.0 { "Infinity" } else { "-Infinity" }.to_string()
+107	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	} else if x.fract() == 0.0 && x.abs() < 1e21 {
+107	1e21	stala JS: Number->String przechodzi na zapis wykladniczy od 1e21 (klucze komorek)	} else if x.fract() == 0.0 && x.abs() < 1e21 {
+141	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	scratch.get(key).map_or(0.0, |s| s.mtn_noise)
+172	2.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	(dq.abs() + dr.abs() + (dq + dr).abs()) / 2.0
+205	1	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	cells.len() - 1
+259	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut sum_q = 0.0_f64;
+260	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut sum_r = 0.0_f64;
+261	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut count = 0.0_f64;
+272	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	count += 1.0;
+274	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if count == 0.0 {
+349	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let span_q = q_max - q_min + 1.0;
+350	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let span_r = r_max - r_min + 1.0;
+362	2.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let half = (size / 2.0).floor();
+408	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	return 0.0;
+411	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	return 0.0;
+414	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	return 0.0;
+448	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if (typ == WorldType::Continents || typ == WorldType::Islands) && n_continents > 0.0 {
+458	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let raw = continent_of.get(key).copied().unwrap_or(0.0);
+459	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let ci = js_min(n_continents - 1.0, js_max(0.0, raw));
+459	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let ci = js_min(n_continents - 1.0, js_max(0.0, raw));
+485	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	js_max(0.0, (land_count * frac).ceil())
+491	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	js_max(0.0, (land_count * frac).ceil())
+505	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let m = mountain.filter(|v| *v > 0.0).unwrap_or(fb_m);
+506	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let h = highland.filter(|v| *v > 0.0).unwrap_or(fb_h);
+620	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if n_mtn <= 0.0 {
+665	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if n_hi <= 0.0 {
+685	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if count <= 0.0 || candidates.is_empty() {
+840	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	count_mountains_in_cell(cell_land, hexes) > 0.0
+845	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	count_highlands_in_cell(cell_land, hexes) > 0.0
+918	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut need = 0.0_f64;
+919	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut hit = 0.0_f64;
+924	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	need += 1.0;
+926	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	hit += 1.0;
+929	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if need > 0.0 {
+932	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	1.0
+980	2.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	(iron + copper) / 2.0
+1116	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut guard = 0.0_f64;
+1122	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	guard += 1.0;
+1314	0_usize	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut i = 0_usize;
+1318	1	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	i += 1;
+1327	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	total -= 1.0;
+1442	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut fixed = 0.0_f64;
+1461	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut pass = 0.0_f64;
+1463	0.0_f64	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	let mut inner = 0.0_f64;
+1485	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	inner += 1.0;
+1489	0.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	if inner == 0.0 {
+1492	1.0	strukturalny (0/1/2: licznik, indeks, polowa, brak/jeden)	pass += 1.0;
+
+# RAZEM literalow: 59; NIEZNANYCH (potencjalne dane balansowe): 0

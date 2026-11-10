@@ -1,0 +1,54 @@
+DOWOD MUTACJI (po kazdej mutacji stan PRZYWROCONY z kopii; stan koncowy = zielony, patrz gate-test-r1.log)
+
+[Rust] Mutacja 1: data/derived/mapgen-nowa-gra.json rzeki.min_dlugosc_tier.medium 25 -> 26
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test per_label_functions_match_web ... FAILED
+test river_map_params_match_web_bitwise ... FAILED
+test tier_functions_match_web ... FAILED
+test resolve_world_gen_numbers_matches_web ... FAILED
+test result: FAILED. 7 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+[Rust] Mutacja 2: params.rs forest_noise_threshold_from_tier: .max(prog_dolny) -> .min(...)
+test tier_functions_match_web ... FAILED
+test resolve_world_gen_numbers_matches_web ... FAILED
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+[Rust] Mutacja 3: params.rs rozmiar_from_menu_label: kolejnosc regul odwrocona (.rev())
+test size_from_menu_label_and_label_to_dims_match_web ... FAILED
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+[Rust] Mutacja 4: params.rs is_deposit_visible: regula 'wegiel nigdy widoczny' wylaczona
+test ensure_meta_and_hidden_count_match_web ... FAILED
+test deposit_visibility_matches_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+[Rust] Mutacja 5: mapgen-nowa-gra.json rzeki_przelacznik.faza_domyslna main+medium -> all
+test river_switch_without_environment_matches_web ... FAILED
+test river_switch_matches_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+[Rust] Mutacja 6: params.rs resolve_river_map_params: tributaryCell js_round -> floor
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+  (Mutacja 6 jest ROWNOWAZNA: max(minimum=3, round(2.5)=3 albo floor=2) = 3 dla komorek 10/5/5 - nie jest dowodem; zastapiona mutacja 7)
+
+[Rust] Mutacja 7: params.rs resolve_river_map_params: minInlandFromSea 'minDim >= 40' -> 'minDim > 40'
+test river_map_params_match_web_bitwise ... FAILED
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+[Rust] Mutacja 8: params.rs max_rivers_for_map_and_density: js_round -> floor
+test per_label_functions_match_web ... FAILED
+test resolve_world_gen_numbers_matches_web ... FAILED
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+[Python] verify-m02-vectors.py na skazonej KOPII wektorow (tamper-vectors.py: minLen+1, defaultRywale+1, clampMiasta+1, multiplier+1ulp, flip enabled, minEraFor+1) -> 6 ROZBIEZNOSCI:
+ROZBIEZNOSC defaultRywale 'Standardowy': py=6 json=7
+ROZBIEZNOSC clampMiasta 'Infinity' True: py=0 json=1
+ROZBIEZNOSC multiplier low: py='3fe3333333333333' json='3ff0000000000001'
+ROZBIEZNOSC riverInts low 20x14: py={'minDim': 14, 'mainCell': 10, 'tributaryCell': 5, 'mainGridStride': 1, 'minLen': 4, 'maxLen': 10, 'gridTraceMinLen': 3, 'feederMinLen': 3, 'hardMeanderLen': 3, 'mouthTailLen': 3, 'minInlandFromSea': 1, 'reliefSearchMin': 2, 'reliefSearchMax': 6, 'reliefSourceBonus': 0, 'feederPasses': 4, 'topUpPasses': 6, 'expandSourceRadius': 1, 'minInlandCell': 4} json={'minDim': 14, 'mainCell': 10, 'tributaryCell': 5, 'mainGridStride': 1, 'minLen': 5, 'maxLen': 10, 'gridTraceMinLen': 3, 'feederMinLen': 3, 'hardMeanderLen': 3, 'mouthTailLen': 3, 'minInlandFromSea': 1, 'reliefSearchMin': 2, 'reliefSearchMax': 6, 'reliefSourceBonus': 0, 'feederPasses': 4, 'topUpPasses': 6, 'expandSourceRadius': 1, 'minInlandCell': 4}
+ROZBIEZNOSC minEraFor {'zloze': ' ', 'zlozeMinEra': 0}: py=0 json=1
+ROZBIEZNOSC enabled None None None '': py=True json=False
+RAZEM: 20070 sprawdzen, rozbieznosci: 6
+EXIT=1
+
+[Powtarzalnosc] Regeneracja wektorow (gen-m02-vectors.mjs) do osobnego katalogu ma dawac pliki bajt-w-bajt identyczne z zacommitowanymi (patrz gen-m02-regen-cmp.log).

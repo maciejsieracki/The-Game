@@ -1,0 +1,4 @@
+STATUS: ZAMKNIĘTE ADMINISTRACYJNIE (zakres zmniejszony) po 3 rundach bez implementacji; kod: BRAK; dokumenty r1–r3 zachowane (inwentarz importów 52 symboli, pomiary, `refs/keep/k01-c47e0cc6`).
+PRZYCZYNA: Operator (Haiku) wykonał pomiary i inwentarz, ale nie zaimplementował nic — zakres K01 (139 jednostek, 1 360 LOC, 52 symbole z game/data/map/render do zmapowania na DTO) zbyt duży na jedną pętlę; luki traktował jako blokady zamiast ZAŁOŻEŃ.
+DECYZJA ORKIESTRATORA: K01 dzielony mechanicznie na dwa nowe ID z własnymi 5 rundami: K01A = jednostki K01 BEZ DOM (typy, stałe, czyste formatery, mapowania DTO), K01B = pozostałe jednostki K01 (DOM, ikony, prymitywy kart; po K01A). Wymóg: IMPLEMENTACJA PIERWSZA, commit kodu przed pomiarami; luki DTO = ZAŁOŻENIE w dokumencie, nie BLOCK.
+Etap ścieżki 1–11: 5 (testy operatora) bez kodu → wracamy do etapu 1 dla K01A/K01B.

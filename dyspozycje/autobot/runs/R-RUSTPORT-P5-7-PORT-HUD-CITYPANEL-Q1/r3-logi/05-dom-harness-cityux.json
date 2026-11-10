@@ -1,0 +1,40 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 164,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "cityUxFrame.ts",
+      "cases": 164,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "układ i wygląd CSS w realnej przeglądarce (jsdom bez układu: `getBoundingClientRect` ustawiony jawnie, `min(24vw,…)`, przejścia `transition`) — CSS porównany bajtowo jako tekst `<style>`",
+        "treść panelu miasta (`paintCityPanelSections`) — atrapa po obu stronach; port `cityPanel.ts` = P5.7 r4"
+      ],
+      "v2Assertions": [
+        {
+          "check": "most: `paintCityPanelSections` z `cityUxFrame.ts` trafia do zarejestrowanej implementacji",
+          "ok": true
+        },
+        {
+          "check": "v2 nie przekazuje `map` (Z7)",
+          "ok": true
+        },
+        {
+          "check": "most: `clearCityPanelUxMode` przy zamknięciu",
+          "ok": true
+        },
+        {
+          "check": "most bez rejestracji = brak efektu (ramka działa, zero wywołań panelu)",
+          "ok": true
+        },
+        {
+          "check": "pin przekazuje `map` do `paintCityPanelSections` (kontrola atrapy)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    }
+  ]
+}

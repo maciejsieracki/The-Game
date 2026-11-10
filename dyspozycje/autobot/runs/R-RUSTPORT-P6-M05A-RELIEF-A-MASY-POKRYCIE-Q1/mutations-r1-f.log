@@ -1,0 +1,12 @@
+SHA256 poczatkowe: src/domain/mapgen/relief.rs=81b64994923ceb3f77340d765bb39e50e1655f792d83d034a99ac4a75a1d355d data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO CZYSTE przed przebiegiem (git status --porcelain --untracked-files=no puste)
+   relief-ratio-copper-size-unrounded: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   relief-ratio-copper-size-unrounded [celowany] (51 s): 1 testow FAILED: grid_coverage_ratios_match_web
+   force-water-allowed: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   force-water-allowed [celowany] (43 s): 1 testow FAILED: pick_relief_force_hex_filters_water_cells_like_web
+SHA256 koncowe:    src/domain/mapgen/relief.rs=81b64994923ceb3f77340d765bb39e50e1655f792d83d034a99ac4a75a1d355d data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO na koncu: CZYSTE
+WYKRYTE PRZEZ INNY TEST NIZ CELOWANY: []
+POWTORZENIA Z POWODU INFRA: []
+TIMEOUTY: []
+PODSUMOWANIE [MUTACJE (oczekiwane: wszystkie wykryte)]: wykryte 2/2, przezyly: [], pliki przywrocone bajt w bajt: True

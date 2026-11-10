@@ -1,0 +1,14 @@
+Przebiegi: part1 (mutanty 0-63), part2 (64-126), part3 (powtorka [8], [52], [73] po dodaniu przypadkow do wektorow: wszystkie trzy WYKRYTE; w part1/part2 wpisy [8], [52] sa nadpisane wynikiem part3, a [73] (mutant sie nie kompilowal) zastapiony nowym mutantem o tym samym numerze).
+Mutanty bez wykrycia (kazdy ROWNOWAZNY z uzasadnieniem, zaden nie jest prawdziwym przezyciem):
+R1 [5] cost: epoka - bez floor: progi epok w tabeli sa calkowite, a `ordinal >= prog` dla calkowitego progu daje ten sam wynik z floor i bez (`floor(x) >= p <=> x >= p`).
+R2 [9] cost: epoka - cyfry nie-ASCII: bajty >= 0x80 w "cyfrach" daja napis, ktorego `parse::<f64>` nie przyjmie (NaN -> mnoznik domyslny), a webowa sciezka slow tez daje mnoznik domyslny (zadne slowo epoki nie zawiera znakow nie-ASCII).
+R3 [29] pool: zwrot - tylko dodatnie (`> 0.0` zamiast `is_positive_finite`): niekonczone kwoty odrzuca i tak `credit_owner_resource_stock` (`!amount.is_finite()` -> 0).
+R4 [30] pool: przypisanie - tylko dodatnie: jak R3.
+R5 [31] pool: pobor - NaN/0 koszt (pominiecie warunku `need <= 0.0`): przy `need <= 0` petla posiadaczy przerywa sie przy pierwszym obrocie bez zmiany stanu.
+R6 [37] pool: NaN roznicy nie jest remisem: remis z NaN (para Infinity - Infinity) vs rozstrzyganie po id zamienia kolejnosc tylko miast o zapasie nieskonczonym; odjecie lub dodanie do nieskonczonosci nie zmienia stanu, wiec wynik koncowy jest ten sam.
+R7 [39] pool: kredyt - kwota <= 0: kwota 0 lub ujemna daje `to_add <= 0`, a kolejny warunek (`to_add <= 0.0 -> return 0`) zwraca to samo.
+R8 [41] pool: kredyt - cap bez dolnej granicy 0: ujemny wynik `min(..)` i tak jest odrzucany przez `to_add <= 0.0 -> return 0`.
+R9 [63] gate: Zloto - filtr dodatnich (`is_finite` zamiast `> 0` i skonczone): porownanie `>= drain` (drain > 0) odrzuca zera i liczby ujemne tak samo.
+R10 [75] gate: filtr - kolejnosc aktywnych (pusta lista aktywnych budynkow dla bramki): zloza z tabeli wymagaja etykiet Glina/Sol/Drewno/Kamien/Ruda/Zloto, a konwertery (Cegla, Ceramika) spelniaja tylko etykiety Cegla i Ceramika, ktorych `filterRuntimeActiveBuiltIds` nie przekazuje (`wymaganySurowiec` jest tam puste).
+R11 [88] sp: stan - II wymaga II: `sol_active` juz zawiera `has_ii`, wiec `ceramika_active && sol_active` implikuje `has_ii`.
+R12 [104] tab: slowo epoki (usuniecie "stone"): mnoznik grupy (1) jest rowny domyslnemu, a slowo nieznane daje domyslny.

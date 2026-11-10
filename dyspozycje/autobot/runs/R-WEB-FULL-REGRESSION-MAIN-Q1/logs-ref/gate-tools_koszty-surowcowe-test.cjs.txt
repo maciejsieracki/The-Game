@@ -1,0 +1,8 @@
+  FAIL: palac (epoka Kamienia): koszt_surowce = wylacznie drewno (ma: undefined)
+  FAIL: Stela/Pomnik: kamien 6 (wyjatek)
+  FAIL: Kamienne kregi: kamien 8 (wyjatek)
+
+koszty-surowcowe-test: 126 pass, 3 fail
+
+EXIT=1
+TIME=0.6

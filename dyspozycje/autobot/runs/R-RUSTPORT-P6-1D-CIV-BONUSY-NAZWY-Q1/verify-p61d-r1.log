@@ -1,0 +1,4 @@
+INFO tabela diakrytykow: Python unicodedata 14.0.0; kluczy tylko po jednej stronie: 0
+INFO hash BMP rozny (Python Unicode 14.0.0); sprawdzam rozbieznosci po znaku
+RAZEM: 790309 sprawdzen, rozbieznosci: 0
+EXIT=0

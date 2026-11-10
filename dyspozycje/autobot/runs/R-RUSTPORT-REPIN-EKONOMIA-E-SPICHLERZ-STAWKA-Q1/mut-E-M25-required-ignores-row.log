@@ -1,0 +1,20 @@
+MUTANT E-M25-required-ignores-row file=src/domain/resource_production.rs
+OLD:
+    citizen_upkeep_row_for_era(table, era)
+        .map(|row| row.surowce.as_slice())
+        .unwrap_or(&[])
+NEW:
+    table
+        .epoki
+        .first()
+        .map(|row| row.surowce.as_slice())
+        .unwrap_or(&[])
+
+FAILED TESTS:
+test edge_n_minus_1_n_plus_1_real_table_bronze ... FAILED
+test nonfinite_and_negative_row_rates_fall_back ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test rate_and_required_grid_match_web ... FAILED
+test result: FAILED. 3 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.04s
+VERDICT=KILLED
+EXIT=101

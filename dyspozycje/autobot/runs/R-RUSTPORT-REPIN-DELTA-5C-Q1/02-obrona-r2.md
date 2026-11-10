@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: PROCESS
+TEMAT: R-RUSTPORT-REPIN-DELTA-5C-Q1
+GOAL: Pomiar dryfu logiki weba dla pinów edb8fb56 i 91dc998a: tabela hunków plik:linia z klasą, lista wektorów do regeneracji z powodem, sumy zgodne z numstat. Bez zmian kodu.
+ZMIANY/COMMIT: Commit r2 na gałęzi claude/repin-delta-5c-q1 (baza 4cfc0bad1, SHA w odpowiedzi orkiestratorowi). Allowlista: dyspozycje/rust-port/p6/REPIN-DELTA-5C.md (przepisany), dyspozycje/rust-port/LEDGER.md (nowy w gałęzi = blob z ek4ra0 cdc911af + wpis r2), dyspozycje/autobot/runs/R-RUSTPORT-REPIN-DELTA-5C-Q1/** (TSV, tools, raport). Zero zmian w gra/, rust-port/ (kod), src-tauri/, WERSJE.md.
+TESTY: git diff --shortstat: edb8fb56..4bbef081d = 78 plików, +7572/-1725, 703 hunki; 91dc998a..4bbef081d = 37 plików, +3370/-371, 280 hunków. Per plik suma hunków = numstat: 0 rozbieżności (oba zakresy). Piny w rust-port (c86c686bb): 648 plików, 916 wystąpień (git grep). Ancestry zmierzona (merge-base --is-ancestor): 91dc998a, edb8fb56 < dc8a3adc < 4bbef081d < origin/main. Build/npm/cargo nie uruchamiano (zakaz).
+ODPOWIEDZI NA ZARZUTY: 1 LEDGER PRZYJĘTY (blob ek4ra0 cdc911af; baza 4cfc0bad1 go nie ma). 2 REPIN-DELTA-5.md PRZYJĘTY (ek4ra0, 626 linii; r1 błędnie). 3 tabela plik:linia PRZYJĘTY (REPIN-DELTA-5C.md §2-§3 + TSV 703/280). 4 klasy z treści PRZYJĘTY częściowo (reguły DANE/PERF/UI/LOGIKA; semantyka NIE_ZMIERZONO). 5 648 plików/916 wystąpień PRZYJĘTY. 6 ścieżki 5A PRZYJĘTY (derived/ai-params.json nie istnieje; war-rules-params.json nieobecny w Rust). 7 citizen-resource-upkeep PRZYJĘTY (9 plików Rust cytuje). 8 zmyślone tematy PRZYJĘTY (usunięte; słownik DELTA-5 §3). 9 ancestry/rozdział pinów PRZYJĘTY częściowo (ancestry zmierzona; rozdział per commit NIE_ZMIERZONO).
+BLOKADY: (1) Ocena semantyczna hunków (czy zmieniają wynik wektora) NIE_ZMIERZONO. (2) Treść wektorów JSON nie czytana; kandydaci do regeneracji (139) = dopasowanie po nazwie pliku źródła web. (3) Przypisanie do tematów kolejki: 18/703 hunków zakresu A i 12/280 zakresu B (słownik DELTA-5 §3); reszta NIE_ZMIERZONO (wymaga allowlist §0c PLAN). (4) Moduły Rust: nie czytano ciał funkcji. (5) Pin 23dd158e9 poza zakresem.
+RUNDY: 2/5
+NASTĘPNY KROK: Evaluator (Sonnet 5.5) weryfikuje tabele TSV vs diff, sumy numstat i listę kandydatów (§5) oraz odpowiedzi 1–9 w REPIN-DELTA-5C.md §10.
+DEPLOY/PUSH: NIE WYKONANO

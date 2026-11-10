@@ -1,0 +1,36 @@
+$ grep -n pub enum WindowEvent tauri-runtime-2.11.3/src/window.rs
+30:pub enum WindowEvent {
+EXIT=0
+
+$ grep -n -E ^  (Resized|Moved|CloseRequested|Destroyed|Focused|ScaleFactorChanged|DragDrop|ThemeChanged) tauri-runtime-2.11.3/src/window.rs
+32:  Resized(dpi::PhysicalSize<u32>),
+34:  Moved(dpi::PhysicalPosition<i32>),
+36:  CloseRequested {
+41:  Destroyed,
+45:  Focused(bool),
+53:  ScaleFactorChanged {
+60:  DragDrop(DragDropEvent),
+64:  ThemeChanged(Theme),
+91:  DragDrop(DragDropEvent),
+EXIT=0
+
+$ grep -rn -E CursorMoved|MouseInput|MouseWheel|CursorEntered|CursorLeft tauri-runtime-wry-2.11.4/src
+EXIT=1
+
+$ grep -n -E pub fn (is_fullscreen|set_fullscreen|set_cursor_icon|set_ignore_cursor_events|cursor_position|scale_factor|inner_size|on_window_event) tauri-2.11.5/src/window/mod.rs
+101:  pub fn scale_factor(&self) -> f64 {
+820:  pub fn inner_size(mut self, width: f64, height: f64) -> Self {
+841:  pub fn inner_size_constraints(
+1179:  pub fn on_window_event<F: Fn(&WindowEvent) + Send + 'static>(&self, f: F) {
+1473:  pub fn scale_factor(&self) -> crate::Result<f64> {
+1490:  pub fn inner_size(&self) -> crate::Result<PhysicalSize<u32>> {
+1502:  pub fn is_fullscreen(&self) -> crate::Result<bool> {
+1748:  pub fn cursor_position(&self) -> crate::Result<PhysicalPosition<f64>> {
+2119:  pub fn set_fullscreen(&self, fullscreen: bool) -> crate::Result<()> {
+2207:  pub fn set_cursor_icon(&self, icon: CursorIcon) -> crate::Result<()> {
+2225:  pub fn set_ignore_cursor_events(&self, ignore: bool) -> crate::Result<()> {
+EXIT=0
+
+$ grep -rn -E CustomCursor|pub enum CursorIcon tao-0.35.3/src/window.rs
+1445:pub enum CursorIcon {
+EXIT=0

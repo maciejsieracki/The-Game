@@ -1,0 +1,95 @@
+# 08 — odtwarzalność spike'ów (runda 2, obrona Operatora; zarzuty E-2 i E-5)
+# Kod spike'ów (main.rs, Cargo.toml, Cargo.lock, out.png) USUNIĘTO z repo w r2 (zarzut E-2).
+# Ten plik zawiera wyłącznie dane (hashe, wersje, sumy kontrolne), bez kodu.
+# Spike'i były budowane tylko w scratchpadzie sesji, poza repo i poza gra/** / rust-port/**.
+
+## Toolchain
+rustc 1.87.0 (cargo +1.87.0); kontrolnie rustc 1.97.0; target x86_64-unknown-linux-gnu
+
+## Konfiguracja resolvera: .cargo/config.toml, identyczna w obu spike'ach
+## (sha256 aabd2af12e26033cb8de9b63841b54574718406e4479b47e41bc0d92fc6f14e0). Treść:
+    [resolver]
+    incompatible-rust-versions = "fallback"
+
+## Deklaracje zależności z usuniętych Cargo.toml (edition 2021, rust-version 1.87, publish false)
+    spike-text: ab_glyph =0.2.32 ; tiny-skia =0.12.0 (cechy domyślne)
+    spike-svg : resvg =0.48.1 (default-features = false)
+
+## sha256 usuniętych plików
+## Bloby są nadal w historii Git:
+##   git show 212f9e38:dyspozycje/autobot/runs/R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1/dowody/<ścieżka>
+6d45dbced8145186931112213225f3f7ed0d8e227f4254fc794f5cbfed3d9e2e  spike-text/src/main.rs
+4e0b20bb1186d955b231c1d6e62b13f61bfbef5b8843b2c681cdaf7a92de94f6  spike-text/Cargo.toml
+ae35d60e5a2252c904bf3bff8acdfa1f9f81d762e1a7d6ab6e77b643c5c45380  spike-text/Cargo.lock
+b8fa517820b5d1e29ff52f4c4fc69cf6e874cb6a9824455c3f850eabb9968a51  spike-text/out.png (= PNG sha256 w 06-spike-text-run.txt)
+80e58298b46cd00fc785ec21ad6b08eaa2c23d05279a3cdea4dee70f926064b5  spike-svg/src/main.rs
+1bb585d5e79bc1c6d369e4fc095f1bf5611c6a97355bc9f41281b03baa7d0902  spike-svg/Cargo.toml
+820fadeab9fb19cb83e1ab6ab0cade57275f830322d7dc8c201e7b7cc58b271e  spike-svg/Cargo.lock (w r1 nie trafił do repo; zarzut E-5)
+
+## Ponowny przebieg spike-svg w r2 (obrona)
+## Kopia ze scratchpadu z powyższym config i lockiem: cargo +1.87.0 run --release --locked --offline
+    svg rendered 92x92, non-transparent px = 1056
+
+## Zamrożone pakiety: nazwa wersja checksum (z Cargo.lock)
+# spike-text/Cargo.lock: 23 pakiety
+ab_glyph 0.2.32 01c0457472c38ea5bd1c3b5ada5e368271cb550be7a4ca4a0b4634e9913f6cc2
+ab_glyph_rasterizer 0.1.10 366ffbaa4442f4684d91e2cd7c5ea7c4ed8add41959a31447066e279e432b618
+adler2 2.0.1 320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa
+arrayref 0.3.9 76a2e8124351fda1ef8aaaa3bbd7ebbcb486bbcd4225aca0aa0d84bb2db8fecb
+arrayvec 0.7.8 d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56
+bitflags 2.13.2 3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06
+bytemuck 1.25.2 95832e849adfb21180ccb6826a99da14e5d266ae5c2e668e1602cf234f153797
+cfg-if 1.0.5 4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600
+crc32fast 1.5.3 0ba106e844045ddc02c20768ac4b0b7cb45f2cc2ecbd833ac9f5dacb183c2055
+fdeflate 0.3.7 1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c
+flate2 1.1.10 6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb
+log 0.4.34 f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6
+miniz_oxide 0.8.9 1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316
+miniz_oxide 0.9.1 b63fbc4a50860e98e7b2aa7804ded1db5cbc3aff9193adaff57a6931bf7c4b4c
+owned_ttf_parser 0.25.1 36820e9051aca1014ddc75770aab4d68bc1e9e632f0f5627c4086bc216fb583b
+png 0.18.1 60769b8b31b2a9f263dae2776c37b1b28ae246943cf719eb6946a1db05128a61
+simd-adler32 0.3.10 3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea
+strict-num 0.1.1 6637bab7722d379c8b41ba849228d680cc12d0a45ba1fa2b48f2a30577a06731
+text-raster-spike 0.0.0 (lokalny)
+tiny-skia 0.12.0 47ffee5eaaf5527f630fb0e356b90ebdec84d5d18d937c5e440350f88c5a91ea
+tiny-skia-path 0.12.0 edca365c3faccca67d06593c5980fa6c57687de727a03131735bb85f01fdeeb9
+ttf-parser 0.25.1 d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31
+zlib-rs 0.6.8 b268e58e7c693d7c271f93ffc4ba3b380412554231c85bf61ca7af91042a4112
+# spike-svg/Cargo.lock: 37 pakietów
+adler2 2.0.1 320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa
+arrayref 0.3.9 76a2e8124351fda1ef8aaaa3bbd7ebbcb486bbcd4225aca0aa0d84bb2db8fecb
+arrayvec 0.7.8 d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56
+autocfg 1.5.1 f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53
+bitflags 2.13.2 3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06
+bytemuck 1.25.2 95832e849adfb21180ccb6826a99da14e5d266ae5c2e668e1602cf234f153797
+cfg-if 1.0.5 4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600
+crc32fast 1.5.3 0ba106e844045ddc02c20768ac4b0b7cb45f2cc2ecbd833ac9f5dacb183c2055
+data-url 0.3.2 be1e0bca6c3637f992fc1cc7cbc52a78c1ef6db076dbf1059c4323d6a2048376
+euclid 0.22.14 f1a05365e3b1c6d1650318537c7460c6923f1abdd272ad6842baa2b509957a06
+fdeflate 0.3.7 1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c
+flate2 1.1.10 6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb
+float-cmp 0.9.0 98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4
+imagesize 0.15.0 65b27460c2c92b037f3f94c538ed9a3342f3fdf923606781629ccb35f82d042a
+kurbo 0.13.1 4b60dfc32f652b926df6192e55525b16d186c69d47876c3ead4da5cc9f8450e2
+log 0.4.34 f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6
+memchr 2.8.3 cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98
+miniz_oxide 0.8.9 1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316
+miniz_oxide 0.9.1 b63fbc4a50860e98e7b2aa7804ded1db5cbc3aff9193adaff57a6931bf7c4b4c
+num-traits 0.2.19 071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841
+pico-args 0.5.0 5be167a7af36ee22fe3115051bc51f6e6c7054c9348e28deb4f49bd6f705a315
+png 0.18.1 60769b8b31b2a9f263dae2776c37b1b28ae246943cf719eb6946a1db05128a61
+polycool 0.4.0 50596ddc09eb5ad5f75cacd40209568e66df71baf86e1499a0e99c4cff12a5a6
+resvg 0.48.1 67e3803f97b999e80cbf7c6ecdd07a8102204d92e1633cf48783720c521196bd
+rgb 0.8.53 47b34b781b31e5d73e9fbc8689c70551fd1ade9a19e3e28cfec8580a79290cc4
+roxmltree 0.21.1 f1964b10c76125c36f8afe190065a4bf9a87bf324842c05701330bba9f1cacbb
+simd-adler32 0.3.10 3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea
+simplecss 0.2.2 7a9c6883ca9c3c7c90e888de77b7a5c849c779d25d74a1269b0218b14e8b136c
+siphasher 1.0.4 33f4fe9184a62d842c9ef383018f3306d8ba224fd9d836f56d7288308847c256
+smallvec 1.16.3 5b3dc8af474f516a851ff4bd12db780f948b9250ad37211e4eec0bccea54e01b
+strict-num 0.1.1 6637bab7722d379c8b41ba849228d680cc12d0a45ba1fa2b48f2a30577a06731
+svg-spike 0.0.0 (lokalny)
+svgtypes 0.16.1 695b5790b3131dafa99b3bbfd25a216edb3d216dad9ca208d4657bfb8f2abc3d
+tiny-skia 0.12.0 47ffee5eaaf5527f630fb0e356b90ebdec84d5d18d937c5e440350f88c5a91ea
+tiny-skia-path 0.12.0 edca365c3faccca67d06593c5980fa6c57687de727a03131735bb85f01fdeeb9
+usvg 0.48.1 977d0a4abdef933f424a99fe09f95576e089b90aebc6f016a3bc813762493e91
+zlib-rs 0.6.8 b268e58e7c693d7c271f93ffc4ba3b380412554231c85bf61ca7af91042a4112

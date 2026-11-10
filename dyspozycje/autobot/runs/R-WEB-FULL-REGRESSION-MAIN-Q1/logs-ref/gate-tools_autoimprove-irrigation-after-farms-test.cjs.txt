@@ -1,0 +1,35 @@
+(A) mapy Z rzekami: irygacja i trzoda budowane na polach obywateli po farmach (Zywnosc, Zrownowazone, AI)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=17 landSea=425 relief=514 coast=146 riversMain=2462 riversFill=2190 forest=10 deposits=63 starts=396 total=6227
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=18 landSea=496 relief=279 coast=107 riversMain=1357 riversFill=2866 forest=7 deposits=31 starts=433 total=5593
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=16 landSea=239 relief=610 coast=95 riversMain=931 riversFill=2502 forest=3 deposits=19 starts=215 total=4632
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=48 landSea=344 relief=479 coast=143 riversMain=552 riversFill=604 forest=19 deposits=49 starts=228 total=2466
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=14 landSea=234 relief=259 coast=179 riversMain=342 riversFill=434 forest=4 deposits=7 starts=91 total=1564
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=33 landSea=264 relief=147 coast=170 riversMain=75 riversFill=75 forest=4 deposits=21 starts=51 total=843
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=58 landSea=129 relief=179 coast=16 riversMain=551 riversFill=1600 forest=111 deposits=50 starts=109 total=2805
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=36 terrain=6 landSea=65 relief=435 coast=13 riversMain=350 riversFill=1484 forest=3 deposits=152 starts=109 total=2654
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=8 landSea=103 relief=171 coast=22 riversMain=525 riversFill=990 forest=4 deposits=8 starts=56 total=1888
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=28 landSea=138 relief=157 coast=45 riversMain=767 riversFill=199 forest=13 deposits=13 starts=91 total=1450
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=154 relief=250 coast=92 riversMain=75 riversFill=410 forest=4 deposits=20 starts=96 total=1108
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=23 landSea=148 relief=108 coast=76 riversMain=64 riversFill=65 forest=3 deposits=10 starts=50 total=547
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=92 relief=129 coast=28 riversMain=288 riversFill=728 forest=5 deposits=13 starts=78 total=1364
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=12 landSea=272 relief=72 coast=26 riversMain=336 riversFill=1705 forest=7 deposits=11 starts=74 total=2516
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=9 landSea=79 relief=94 coast=19 riversMain=445 riversFill=816 forest=3 deposits=9 starts=71 total=1544
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=200.1

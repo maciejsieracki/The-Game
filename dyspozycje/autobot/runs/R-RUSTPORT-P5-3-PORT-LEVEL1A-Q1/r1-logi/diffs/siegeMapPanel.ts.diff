@@ -1,0 +1,99 @@
+--- pin:gra/src/ui/siegeMapPanel.ts
++++ v2:src-tauri/frontend-v2/src/ui/siegeMapPanel.ts
+@@ -3,10 +3,12 @@
+  * Etap 2 po „Oblężaj" · styl spójny z cityAttackChoice (złoto / slate).
+  */
+ 
+-import type { City } from '../game/cities';
+-import type { MapSiegeContext } from '../game/mapSiegeDetect';
+-import { getCityFood } from '../game/turn-economy';
+-import type { SiegeMachineKind, SiegeMachinesState } from '../game/siegeMachines';
++import type {
++  MapSiegeContextDto as MapSiegeContext,
++  SiegeMachineKindDto as SiegeMachineKind,
++  SiegeMachinesStateDto as SiegeMachinesState,
++  SiegePanelDto,
++} from '../viewmodel/types';
+ import { brandIconSvg } from './icons/brandAssets';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 
+@@ -26,6 +28,8 @@
+ 
+ let root: HTMLDivElement | null = null;
+ let activeCtx: MapSiegeContext | null = null;
++/** P5.3: wartości oblężenia liczone w Rust (`SiegePanelDto`, P5-0 §6.12); `activeCtx` = `activePanel.ctx`. */
++let activePanel: SiegePanelDto | null = null;
+ let actions: SiegeMapPanelActions | null = null;
+ let siegeTurn = 0;
+ let besiegerUnitCount = 0;
+@@ -200,7 +204,7 @@
+     } else if (e.key === '1') {
+       e.preventDefault();
+       actions.onBesiege(cityId);
+-    } else if (e.key === '2' && activeCtx.oblegajacyOwnerId === 0) {
++    } else if (e.key === '2' && activePanel?.playerCanStorm === true) {
+       e.preventDefault();
+       actions.onStorm(activeCtx);
+     } else if (e.key === '3') {
+@@ -212,16 +216,10 @@
+ }
+ 
+ function render(): void {
+-  if (!root || !activeCtx || !actions) return;
+-  const { city, atakujacy, oblegajacyOwnerId } = activeCtx;
+-  const food = getCityFood(city);
+-  const garnizon = city.garnizon ?? 0;
+-  const zuzycie = city.population + garnizon;
+-  const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;
+-  const milicjaEst = garnizon <= 0 ? 0
+-    : Math.max(1, Math.floor((city.population ?? 0) * 0.2));
+-  const playerCanStorm = oblegajacyOwnerId === 0;
+-  const sm: SiegeMachinesState | undefined = city.siegeMachines;
++  if (!root || !activeCtx || !activePanel || !actions) return;
++  const { city, atakujacy } = activeCtx;
++  const { food, garnizon, zuzycie, atrycjaNext, milicjaEst, playerCanStorm } = activePanel;
++  const sm: SiegeMachinesState | undefined = activePanel.machines;
+   const qLabel = sm?.queue?.length
+     ? sm.queue.map(k => (k === 'taran' ? 'Taran' : 'Wieża')).join(', ')
+     : '—';
+@@ -332,14 +330,15 @@
+   if (isSiegeMapPanelOpen()) render();
+ }
+ 
+-export function showSiegeMapPanel(ctx: MapSiegeContext, panelActions: SiegeMapPanelActions, turnNum = 1): void {
++export function showSiegeMapPanel(panel: SiegePanelDto, panelActions: SiegeMapPanelActions, turnNum = 1): void {
+   ensureStyles();
+   if (!root) {
+     root = document.createElement('div');
+     root.id = 'civ-siege-map-panel';
+     document.body.appendChild(root);
+   }
+-  activeCtx = ctx;
++  activePanel = panel;
++  activeCtx = panel.ctx;
+   actions = panelActions;
+   siegeTurn = turnNum;
+   root.style.display = 'flex';
+@@ -347,9 +346,12 @@
+   pushOverlay('siege-map', handleSiegeMapEscape);
+ }
+ 
+-export function updateSiegeMapPanelTurn(turnNum: number, city?: City): void {
++export function updateSiegeMapPanelTurn(turnNum: number, panel?: SiegePanelDto): void {
+   siegeTurn = turnNum;
+-  if (city && activeCtx) activeCtx = { ...activeCtx, city };
++  if (panel && activeCtx) {
++    activePanel = panel;
++    activeCtx = panel.ctx;
++  }
+   if (isSiegeMapPanelOpen()) render();
+ }
+ 
+@@ -358,6 +360,7 @@
+   detachKeyboard();
+   if (root) root.style.display = 'none';
+   activeCtx = null;
++  activePanel = null;
+   actions = null;
+   besiegerUnitCount = 0;
+ }

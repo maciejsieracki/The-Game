@@ -1,0 +1,17 @@
+# Test negatywny weryfikatora: tabele/wektory celowo zepsute w KOPII (scratch); weryfikator musi zglosic ROZBIEZNOSCI > 0
+--- 0) kopia bez zmian (kontrola): exit=0
+PRZYPADKOW: 81336
+ROZBIEZNOSCI: 0
+--- 1) proc_max_na_ture 2->3 i max_pp 45->46 w kopii tabel: exit=1
+ROZBIEZNOSC tabela_vs_TS.DEFAULT_REGEN.pct: python=2.0 web=3
+ROZBIEZNOSC tabela_vs_TS.ARMOR_MAX: python=45.0 web=46
+ROZBIEZNOSC tabela_vs_TS.ids==konstanty: python=[['kuznia', 'kuznia_zelaza', 'wielka_kuznia'], ['koszary', 'akademia_wojskowa', 'warsztat_oblezniczy'], 45, 50, 32] web=[['kuznia', 'kuznia_zelaza', 'wielka_kuznia'], ['koszary', 'akademia_wojskowa', 'warsztat_oblezniczy'], 46, 50, 32]
+PRZYPADKOW: 81336
+ROZBIEZNOSCI: 3
+--- 2) dodatkowo cityManpowerMax[5].out -> 12345 w kopii wektora: exit=1
+ROZBIEZNOSC cityManpowerMax: python=4000.0 web=12345
+ROZBIEZNOSC tabela_vs_TS.DEFAULT_REGEN.pct: python=2.0 web=3
+ROZBIEZNOSC tabela_vs_TS.ARMOR_MAX: python=45.0 web=46
+ROZBIEZNOSC tabela_vs_TS.ids==konstanty: python=[['kuznia', 'kuznia_zelaza', 'wielka_kuznia'], ['koszary', 'akademia_wojskowa', 'warsztat_oblezniczy'], 45, 50, 32] web=[['kuznia', 'kuznia_zelaza', 'wielka_kuznia'], ['koszary', 'akademia_wojskowa', 'warsztat_oblezniczy'], 46, 50, 32]
+PRZYPADKOW: 81336
+ROZBIEZNOSCI: 4

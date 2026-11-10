@@ -1,0 +1,8 @@
+SCRATCH /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/mut
+R2-07 KILLED EXIT=101 results= [('13', '1')] FAILED= ['display_name_for_upgrade_and_plain']
+R2-08 KILLED EXIT=101 results= [('13', '1')] FAILED= ['chain_duplicate_ids_last_entry_wins_like_js_map']
+R2-09 KILLED EXIT=101 results= [('14', '0'), ('5', '2')] FAILED= ['re_add_overwrites_value_but_keeps_position', 'save_load_preserves_order_and_dedups']
+R2-10 KILLED EXIT=101 results= [('14', '0'), ('6', '1')] FAILED= ['undo_key_set_drops_removed_id_and_keeps_rest_in_order']
+R2-11 KILLED EXIT=101 results= [('14', '0'), ('6', '1')] FAILED= ['commit_turn_clears_everything']
+R2-12 KILLED EXIT=101 results= [('14', '0'), ('6', '1')] FAILED= ['parse_rejects_missing_colon_and_leading_colon']
+DONE

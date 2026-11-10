@@ -1,0 +1,141 @@
+772: 1   | q.min(r).min(w - 1 - q).min(h - 1 - r) as f64
+772: 1   | q.min(r).min(w - 1 - q).min(h - 1 - r) as f64
+779: 0.0   | return Some(0.0);
+782: 1.0   | return Some(p.krok_limitu * (d - 1.0));
+791: 1.0   | None => 1.0,
+792: 0.0   | Some(cap) if cap <= 0.0 => 0.0,
+792: 0.0   | Some(cap) if cap <= 0.0 => 0.0,
+793: 1.0   | Some(cap) => js_min(1.0, cap / mapgen_masks().brzeg.dzielnik_zaniku),
+801: 1.0   | let w1 = js_max(1.0, f64::from(width) - 1.0);
+801: 1.0   | let w1 = js_max(1.0, f64::from(width) - 1.0);
+802: 1.0   | let h1 = js_max(1.0, f64::from(height) - 1.0);
+802: 1.0   | let h1 = js_max(1.0, f64::from(height) - 1.0);
+809: 1.0   | js_min(nq, 1.0 - nq) / js_max(margin_q, p.min_margines),
+810: 1.0   | js_min(nr, 1.0 - nr) / js_max(margin_r, p.min_margines),
+812: 1.0   | 1.0,
+855: 1.0   | let cx = (f64::from(width) - 1.0) / 2.0;
+855: 2.0   | let cx = (f64::from(width) - 1.0) / 2.0;
+856: 1.0   | let cy = (f64::from(height) - 1.0) / 2.0;
+856: 2.0   | let cy = (f64::from(height) - 1.0) / 2.0;
+860: 0.0   | js_max(0.0, 1.0 - js_pow(dist / p.promien, p.wykladnik))
+860: 1.0   | js_max(0.0, 1.0 - js_pow(dist / p.promien, p.wykladnik))
+907: 1.0   | js_max(border_margin, js_min(1.0 - border_margin, v))
+925: 1.0   | border / js_max(1.0, w - 1.0),
+925: 1.0   | border / js_max(1.0, w - 1.0),
+926: 1.0   | border / js_max(1.0, h - 1.0),
+926: 1.0   | border / js_max(1.0, h - 1.0),
+939: 0.0   | if min_dist > 0.0 {
+958: 1   | if o.anchor_center != Some(false) && n >= 1 {
+971: 0   | for i in 0..ring_slots.max(0) {
+971: 0   | for i in 0..ring_slots.max(0) {
+973: 0   | let mut attempt = 0;
+975: 2.0   | let angle = (2.0 * std::f64::consts::PI * i as f64) / js_max(1.0, ring_slots as f64)
+975: 1.0   | let angle = (2.0 * std::f64::consts::PI * i as f64) / js_max(1.0, ring_slots as f64)
+983: 1   | attempt += 1;
+986: 1.0   | let nq = border_margin + rand() * (1.0 - 2.0 * border_margin);
+986: 2.0   | let nq = border_margin + rand() * (1.0 - 2.0 * border_margin);
+987: 1.0   | let nr = border_margin + rand() * (1.0 - 2.0 * border_margin);
+987: 2.0   | let nr = border_margin + rand() * (1.0 - 2.0 * border_margin);
+1007: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1007: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1008: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1008: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1012: 5   | let anchors: [(f64, f64); 5] = [
+1015: 1.0   | (1.0 - inset, inset),
+1016: 1.0   | (1.0 - inset, 1.0 - inset),
+1016: 1.0   | (1.0 - inset, 1.0 - inset),
+1017: 1.0   | (inset, 1.0 - inset),
+1031: 0   | let mut best_i = 0;
+1051: 1   | dists.get(1).copied().unwrap_or(f64::INFINITY)
+1084: 1.0   | let nq = q as f64 / (f64::from(width) - 1.0);
+1085: 1.0   | let nr = r as f64 / (f64::from(height) - 1.0);
+1089: 0.0   | if border_fade <= 0.0 || edge_rect <= 0.0 {
+1089: 0.0   | if border_fade <= 0.0 || edge_rect <= 0.0 {
+1090: 0.0   | return 0.0;
+1099: 0.0   | return 0.0;
+1102: 0.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1102: 1.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1108: 1.0   | 1.0,
+1110: 0.0   | 0.0,
+1118: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1118: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1118: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1120: 1.0   | (q as f64 - (f64::from(width) - 1.0) / 2.0) / max_dim,
+1120: 2.0   | (q as f64 - (f64::from(width) - 1.0) / 2.0) / max_dim,
+1121: 1.0   | (r as f64 - (f64::from(height) - 1.0) / 2.0) / max_dim,
+1121: 2.0   | (r as f64 - (f64::from(height) - 1.0) / 2.0) / max_dim,
+1127: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1127: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1127: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1129: 1.0   | (nq - HALF) * (f64::from(width) - 1.0) / max_dim,
+1130: 1.0   | (nr - HALF) * (f64::from(height) - 1.0) / max_dim,
+1154: 0.0   | js_max(0.0, js_min(1.0, (land_fraction - p.t_dolny) / p.t_zakres))
+1154: 1.0   | js_max(0.0, js_min(1.0, (land_fraction - p.t_dolny) / p.t_zakres))
+1166: 0.0   | let size_boost = js_min(p.boost_max, js_max(0.0, (map_scale - 1.0) * p.boost_wsp));
+1166: 1.0   | let size_boost = js_min(p.boost_max, js_max(0.0, (map_scale - 1.0) * p.boost_wsp));
+1167: 0.0   | let high_land = js_max(0.0, (t - p.wysoki_prog) / p.wysoki_zakres);
+1168: 0.0   | let low_land = js_max(0.0, 1.0 - t / p.niski_zakres);
+1168: 1.0   | let low_land = js_max(0.0, 1.0 - t / p.niski_zakres);
+1228: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1228: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1229: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1229: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1232: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1232: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1232: 1.0   | let max_dim = max3(1.0, f64::from(width) - 1.0, f64::from(height) - 1.0);
+1242: 1   | let ring_slots = i64::from(n_blobs) - 1;
+1243: 0   | for i in 0..ring_slots.max(0) {
+1243: 0   | for i in 0..ring_slots.max(0) {
+1244: 2.0   | let angle = (2.0 * std::f64::consts::PI * i as f64) / ring_slots as f64
+1251: 1.0   | HALF + ix * max_dim / (f64::from(width) - 1.0) + (rand() - HALF) * p.jitter,
+1255: 1.0   | HALF + iy * max_dim / (f64::from(height) - 1.0) + (rand() - HALF) * p.jitter,
+1282: 0.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1282: 1.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1322: 0.0   | if border_fade <= 0.0 {
+1323: 0.0   | return 0.0;
+1331: 0.0   | blob_sum += js_max(0.0, s);
+1334: 1.0   | 1.0,
+1341: 0.0   | 0.0,
+1342: 1.0   | 1.0 - js_pow(cluster_dist / layout.cluster_radius, p.wykladnik_klastra),
+1357: 1.0   | 1.0,
+1359: 0.0   | 0.0,
+1380: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1380: 1.0   | border / js_max(1.0, f64::from(width) - 1.0),
+1381: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1381: 1.0   | border / js_max(1.0, f64::from(height) - 1.0),
+1385: 1.0   | let cell_frac = 1.0 / f64::from(grid);
+1394: 0   | for row in 0..grid {
+1395: 0   | for col in 0..grid {
+1412: 1.0   | let scaled = (coord as f64 * f64::from(grid)) / js_max(1.0, f64::from(size));
+1413: 1.0   | js_min(f64::from(grid) - 1.0, scaled.floor()) as i64
+1428: 0   | for r in 0..i64::from(height) {
+1429: 0   | for q in 0..i64::from(width) {
+1449: 1.0   | let nq = q as f64 / js_max(1.0, f64::from(width) - 1.0);
+1449: 1.0   | let nq = q as f64 / js_max(1.0, f64::from(width) - 1.0);
+1450: 1.0   | let nr = r as f64 / js_max(1.0, f64::from(height) - 1.0);
+1450: 1.0   | let nr = r as f64 / js_max(1.0, f64::from(height) - 1.0);
+1454: 0.0   | if border_fade <= 0.0 || edge_rect <= 0.0 {
+1454: 0.0   | if border_fade <= 0.0 || edge_rect <= 0.0 {
+1455: 0.0   | return 0.0;
+1463: 1.0   | let cell_w = 1.0 / f64::from(grid);
+1465: 1   | let cell_right = (col + 1) as f64 * cell_w;
+1467: 1   | let cell_bottom = (row + 1) as f64 * cell_w;
+1472: 1.0   | let cell_lane_fade = js_min(1.0, js_max(0.0, dist_to_edge / p.pas_morski));
+1472: 0.0   | let cell_lane_fade = js_min(1.0, js_max(0.0, dist_to_edge / p.pas_morski));
+1473: 0.0   | if cell_lane_fade <= 0.0 {
+1474: 0.0   | return 0.0;
+1478: 0.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1478: 1.0   | let radial = js_max(0.0, 1.0 - js_pow(dist_c / c.radius, p.wykladnik_radialny));
+1484: 1.0   | 1.0,
+1486: 0.0   | 0.0,
+1520: 0.0   | if template <= 0.0 {
+1521: 0.0   | return 0.0;
+1524: 1.0   | js_min(1.0, js_max(0.0, p.poziom_ladu + coast_noise - p.odjemnik))
+1524: 0.0   | js_min(1.0, js_max(0.0, p.poziom_ladu + coast_noise - p.odjemnik))
+--- PODSUMOWANIE tokenow (wartosc: liczba wystapien) ---
+0: 10 (linie 971, 971, 973, 1031, 1243, 1243, 1394, 1395, 1428, 1429)
+0.0: 32 (linie 779, 792, 792, 860, 939, 1089, 1089, 1090, 1099, 1102, 1110, 1154...)
+1: 8 (linie 772, 772, 958, 983, 1051, 1242, 1465, 1467)
+1.0: 75 (linie 782, 791, 793, 801, 801, 802, 802, 809, 810, 812, 855, 856...)
+2.0: 8 (linie 855, 856, 975, 986, 987, 1120, 1121, 1244)
+5: 1 (linie 1012)

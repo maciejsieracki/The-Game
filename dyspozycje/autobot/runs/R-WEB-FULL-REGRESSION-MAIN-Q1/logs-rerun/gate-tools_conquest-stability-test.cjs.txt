@@ -1,0 +1,6 @@
+  FAIL: unstable happiness penalty (got 0, want -2)
+
+conquest-stability-test: 28 passed, 1 failed
+
+EXIT=1
+TIME=0.4

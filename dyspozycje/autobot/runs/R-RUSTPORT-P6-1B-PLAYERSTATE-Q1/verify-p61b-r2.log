@@ -1,0 +1,19 @@
+  constants: 2
+  costs: 288
+  defaults: 2
+  dequeue: 57
+  enqueue: 174
+  epoch: 26
+  gates: 558
+  getState: 230
+  params: 18
+  plan: 64
+  prereqs: 290
+  rows: 222
+  set: 181
+  state: 13517
+  step: 844
+  table: 577
+  tie: 1
+RAZEM: 17051 sprawdzen, rozbieznosci: 0
+EXIT=0

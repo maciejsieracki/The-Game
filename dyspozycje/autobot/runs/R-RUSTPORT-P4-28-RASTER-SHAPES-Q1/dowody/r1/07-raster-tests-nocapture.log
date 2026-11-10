@@ -1,0 +1,161 @@
+$ cargo test --locked --test raster_scenes --test raster_color --test raster_unit --test raster_api_closed -- --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/raster_api_closed.rs (target/debug/deps/raster_api_closed-07336445dd2d3f37)
+
+running 3 tests
+test all_28_shape_members_of_p4_25_are_covered ... ok
+test canvas_api_is_exactly_the_web_subset ... ok
+test unused_canvas_members_are_not_implemented ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/raster_color.rs (target/debug/deps/raster_color-bb8dc11523c489eb)
+
+running 4 tests
+test acceptance_matches_chromium_except_documented_scope ... ok
+test every_web_colour_is_accepted ... ok
+test filled_pixel_matches_chromium_within_one_step ... colour pixels: 101/107 exact, rest within ±1 (premultiplied)
+ok
+test invalid_assignment_keeps_previous_value ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/raster_scenes.rs (target/debug/deps/raster_scenes-24e030dc636f5c70)
+
+running 4 tests
+test manifest_hashes_are_listed_for_every_reference ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... scene | size | max_abs | mean_abs | px>16 % | ssim | source
+src_portrait | 256x256 | 32 | 0.1237 | 0.021 | 0.99852 | synthetic stand-in for a 256x256 JPG portrait (unitOwnerEmblem.ts:274-279, cityMapStatChip.ts:556-561)
+src_icon | 48x48 | 28 | 0.4379 | 0.304 | 0.99904 | synthetic stand-in for an SVG line icon with alpha (unitUpgradeBadges.ts:295-298, cityMapStatChip.ts:567-569)
+t4_gold_deficit | 128x128 | 50 | 0.3171 | 1.031 | 0.99793 | render/units.ts:6319-6354
+t5_stack_badge_disc | 64x64 | 51 | 0.9507 | 3.223 | 0.99699 | render/units.ts:6374-6380 (text ×N: RR-T8b)
+t6_turn_label_plate | 128x48 | 33 | 0.0790 | 0.212 | 0.99986 | render/units.ts:6585-6592 (text: RR-T8b)
+t7_plate_bg | 512x168 | 37 | 0.4550 | 0.033 | 0.99146 | render/unitStatPlate.ts:403-433 + :314-326
+t8_power_frame | 256x213 | 73 | 0.0857 | 0.189 | 0.99967 | render/unitStatPlate.ts:558-573
+t10_disc_civ | 128x128 | 91 | 0.8662 | 2.673 | 0.99200 | render/unitOwnerEmblem.ts:242-254 (fallback glyph: RR-T8b)
+t10_disc_cityState | 128x128 | 91 | 0.8826 | 2.576 | 0.99188 | render/unitOwnerEmblem.ts:242-254 (fallback glyph: RR-T8b)
+t10_disc_barbarian | 128x128 | 91 | 0.5694 | 2.588 | 0.99381 | render/unitOwnerEmblem.ts:242-254 (fallback glyph: RR-T8b)
+t10_portrait | 128x128 | 123 | 0.8998 | 1.984 | 0.99221 | render/unitOwnerEmblem.ts:388-399 (drawDisc + drawPortrait :266-280 + ring re-stroke)
+t10_sigil_city_state | 128x128 | 91 | 1.0151 | 2.594 | 0.99139 | render/unitOwnerEmblem.ts:378-381 (drawDisc + drawSigil :284-288)
+t11_badge_l1 | 128x128 | 80 | 0.1869 | 0.653 | 0.99900 | render/unitUpgradeBadges.ts:285-292 + :270-278
+t11_badge_l2 | 128x128 | 80 | 0.3021 | 0.732 | 0.99866 | render/unitUpgradeBadges.ts:285-292 + :270-278
+t11_badge_l3 | 128x128 | 80 | 0.2211 | 0.751 | 0.99892 | render/unitUpgradeBadges.ts:285-292 + :270-278
+t11_badge_l3_icon | 128x128 | 80 | 0.4253 | 0.836 | 0.99807 | render/unitUpgradeBadges.ts:285-298 (drawPlate + drawIcon 92 px)
+t12_worker_player | 64x64 | 36 | 0.5123 | 0.732 | 0.99829 | render/workerFieldOverlay.ts:63-97 (owner 0 = player)
+t12_worker_other | 64x64 | 23 | 0.0942 | 0.195 | 0.99934 | render/workerFieldOverlay.ts:63-97 (owner 3, not player)
+t12_worker_player_owner4 | 64x64 | 36 | 0.3938 | 0.708 | 0.99872 | render/workerFieldOverlay.ts:63-97 (owner 4 = player 4: orange ring)
+t13_worker_badge_owner0 | 128x46 | 40 | 0.3155 | 0.611 | 0.99915 | render/cityOkolicaOverlay.ts:119-137 (cx = 40, owner 0 gold)
+t13_worker_badge | 128x46 | 40 | 0.2173 | 0.611 | 0.99929 | render/cityOkolicaOverlay.ts:119-137 (cx = 64, owner 2)
+t14_pill_plain_x1 | 224x48 | 53 | 0.7309 | 0.772 | 0.99648 | render/cityMapStatChip.ts:847-866, :915-919 (shapes; nameW = 120 fixed)
+t14_pill_capital_x2 | 728x96 | 52 | 0.6220 | 0.445 | 0.99717 | render/cityMapStatChip.ts:847-924 (capital ring :863-879, crown :466-517, shield tier 2 :427-457)
+t14_pill_hover_x3 | 915x210 | 121 | 0.5244 | 0.338 | 0.99650 | render/cityMapStatChip.ts:847-935 (hover row separator :926-934, warning icon :670-682, prod icon :658-667)
+t14_pill_portrait_x2 | 368x96 | 47 | 0.5998 | 0.660 | 0.99686 | render/cityMapStatChip.ts:546-566 (medallion portrait: clip + drawImage cover-fit)
+t14_pill_sigil_x1_5 | 246x72 | 54 | 0.7558 | 1.016 | 0.99629 | render/cityMapStatChip.ts:546-569 (medallion sigil: clip + drawImage r·1.55)
+t14_pill_full_x4 | 1824x280 | 61 | 0.5488 | 0.202 | 0.99682 | render/cityMapStatChip.ts:782-935 (all shape elements, max scale 4 = BADGE_MAX_TOTAL_SCALE :173)
+t14_shield_t1_x3 | 48x48 | 42 | 0.5132 | 1.215 | 0.99883 | render/cityMapStatChip.ts:427-457 (tier 1, scale 3)
+t14_crown_x4 | 80x64 | 36 | 0.4200 | 0.371 | 0.99870 | render/cityMapStatChip.ts:466-517 (scale 4: vertical gradient, hairline 0.8 px stroke, 0.95 px jewels)
+t14_shield_t2_x2 | 32x32 | 48 | 1.0776 | 2.051 | 0.99738 | render/cityMapStatChip.ts:427-457 (tier 2 with inner line :450-456, scale 2)
+t14_medallion_disc_x2 | 80x80 | 52 | 0.6648 | 2.297 | 0.99653 | render/cityMapStatChip.ts:519-537 (ownerColor 0x8e24aa, scale 2)
+t14_medallion_disc_x1 | 40x40 | 24 | 0.7883 | 1.875 | 0.99785 | render/cityMapStatChip.ts:519-537 (ownerColor undefined → 0xffd54a)
+t15_group_frame | 28x28 | 0 | 0.0000 | 0.000 | 1.00000 | battle/battleScene.ts:18646-18656 (digit: RR-T8b)
+h1_battle_minimap | 180x120 | 16 | 0.0516 | 0.000 | 0.99997 | battle/battleMinimap.ts:51-93 (synthetic 12x8 map; H1 stays DOM per Z-1, shapes only as coverage)
+x_shadow_worked | 96x48 | 37 | 0.2173 | 0.412 | 0.99885 | shadow params of cityOkolicaOverlay.ts:174-180 (worked: rgba(0,0,0,0.75), blur 3, offsetY 1) applied to shapes
+x_shadow_idle | 96x48 | 8 | 0.1461 | 0.000 | 0.99952 | shadow params of cityOkolicaOverlay.ts:174-180 (idle: rgba(0,0,0,0.45), blur 2, offsetY 1)
+x_clear_rotated | 64x64 | 0 | 0.0000 | 0.000 | 1.00000 | clearRect under rotate (T4 uses rotate+fillRect, :6349-6354; clearRect :6324)
+x_arcto_edges | 96x64 | 55 | 0.3477 | 0.830 | 0.99825 | arcTo semantics: radius clamp of plateRoundedRectPath (unitStatPlate.ts:318), collinear, r=0
+x_arc_partial | 64x64 | 70 | 0.3818 | 1.074 | 0.99773 | arc semantics outside the web subset (partial + anticlockwise + negative start)
+x_gradient_pad | 64x64 | 2 | 0.1536 | 0.000 | 0.99967 | linear gradient with inner stops (pad outside), diagonal; cityMapStatChip.ts:479-482 uses 3 stops
+x_hairlines | 64x32 | 2 | 0.0303 | 0.000 | 0.99998 | thin strokes 0.8 px (cityMapStatChip.ts:503) and 1 px on half-pixel
+x_round_join | 64x64 | 33 | 0.2085 | 1.318 | 0.99816 | lineJoin 'round' (unitStatPlate.ts:612) on a polyline
+x_miter_join | 64x64 | 81 | 0.4526 | 1.587 | 0.99568 | default miter join, miter limit 10 (sharp angle falls back to bevel)
+x_image_downscale | 64x64 | 10 | 0.1232 | 0.000 | 0.99994 | drawImage 256→29 px (medallion portrait downscale, cityMapStatChip.ts:556-561)
+x_path_keeps_old_ctm | 64x64 | 15 | 0.2136 | 0.000 | 0.99972 | path points use the CTM at call time; setTransform before fill does not move them
+x_clip_nested_restore | 64x64 | 66 | 0.2284 | 0.830 | 0.99832 | clip ∩ clip, then restore (save/restore of the clip region)
+ok
+test scenes_match_golden_hashes ... src_portrait	d5156167a45efa71
+src_icon	3e0ed0e083366b9f
+t4_gold_deficit	b9cf56740c95b405
+t5_stack_badge_disc	994d360bf17336b8
+t6_turn_label_plate	c1c112242f817825
+t7_plate_bg	4108f229edeb9dda
+t8_power_frame	d9b90c083b0307a5
+t10_disc_civ	7e53c135ca8f7aee
+t10_disc_cityState	d8c32cd20b914842
+t10_disc_barbarian	0c61dfb7cac04243
+t10_portrait	6f9d935a98cec591
+t10_sigil_city_state	d7f89d7be3f4651e
+t11_badge_l1	1f10b5f53f8f5f65
+t11_badge_l2	27ae8091def08bb0
+t11_badge_l3	9bca68a74de6e726
+t11_badge_l3_icon	2c741896a309b9e1
+t12_worker_player	d462230ff59a93fc
+t12_worker_other	194b233aaf1b4352
+t12_worker_player_owner4	fffa756b3a454fa1
+t13_worker_badge_owner0	40ae29388f275db6
+t13_worker_badge	8424b432b88b87a7
+t14_pill_plain_x1	731024e4e62401a9
+t14_pill_capital_x2	c8cdb911e3e8ec7e
+t14_pill_hover_x3	aff2477a64eb6066
+t14_pill_portrait_x2	fcd0fd99e427b86a
+t14_pill_sigil_x1_5	18e484ada0c0b7c1
+t14_pill_full_x4	5d88012151c127ce
+t14_shield_t1_x3	9174c2648354aa31
+t14_crown_x4	bc19a78022bce491
+t14_shield_t2_x2	614408347bb0b7fa
+t14_medallion_disc_x2	54970094669b2500
+t14_medallion_disc_x1	6df126881db72cc4
+t15_group_frame	99eef025af9f1915
+h1_battle_minimap	ff84dd8b706c0028
+x_shadow_worked	2b4d77af8a0d5791
+x_shadow_idle	a56f3043d155b3e5
+x_clear_rotated	82e91eae59a79840
+x_arcto_edges	8447e48f9b4bf979
+x_arc_partial	506a46133a5ae690
+x_gradient_pad	be0b8f2a17f821a7
+x_hairlines	aa279fc710de9f0d
+x_round_join	2b75b70987a79677
+x_miter_join	0ceb6e0fd330c912
+x_image_downscale	40e699f0a8f0e5fc
+x_path_keeps_old_ctm	3276234b2316be31
+x_clip_nested_restore	dcd15a266e1fc24d
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.34s
+
+     Running tests/raster_unit.rs (target/debug/deps/raster_unit-eed7a5e153cbb8d7)
+
+running 29 tests
+test antialiased_vertical_edge_has_known_coverage ... ok
+test arc_to_corner_matches_quarter_circle ... ok
+test begin_path_clears_the_path ... ok
+test circle_area_matches_pi_r_squared ... ok
+test clear_rect_respects_clip ... ok
+test clip_limits_drawing_and_restore_removes_it ... ok
+test color_stop_errors ... ok
+test default_fill_style_is_opaque_black ... ok
+test degenerate_gradients_paint_nothing ... ok
+test draw_image_copies_and_scales ... ok
+test empty_clip_path_clips_everything ... ok
+test gradient_follows_the_ctm_at_paint_time ... ok
+test integer_fill_rect_is_exact ... ok
+test line_joins_differ_only_at_the_outer_corner ... ok
+test line_width_is_ignored_when_not_positive ... ok
+test miter_limit_ten_bevels_sharp_angles ... ok
+test negative_radii_are_errors ... ok
+test non_finite_arguments_are_ignored ... ok
+test path_survives_fill_and_overlapping_fills_accumulate ... ok
+test quadratic_curve_without_subpath_starts_at_control_point ... ok
+test round_rect_radius_is_clamped_to_half_side ... ok
+test save_restore_restores_style_and_transform ... ok
+test shadow_blur_spreads_and_conserves_mass ... ok
+test shadow_is_drawn_below_and_offset ... ok
+test straight_output_unpremultiplies ... ok
+test stroke_rect_one_pixel_on_half_pixels ... ok
+test translate_rotate_and_set_transform ... ok
+test vertical_gradient_hits_control_points ... ok
+test zero_size_canvas_is_an_error ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+EXIT=0

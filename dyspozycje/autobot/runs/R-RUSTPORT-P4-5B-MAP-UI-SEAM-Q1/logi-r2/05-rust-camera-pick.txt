@@ -1,0 +1,9 @@
+origin/rust-port/parity-v2:rust-port/renderer/src/camera.rs:95:pub trait InputGate {
+origin/rust-port/parity-v2:rust-port/renderer/src/camera.rs:304:    pub fn mouse_move(&mut self, client_x: f64, client_y: f64) {
+origin/rust-port/parity-v2:rust-port/renderer/src/camera.rs:340:    pub fn mouse_leave(&mut self) {
+origin/rust-port/parity-v2:rust-port/renderer/src/pick/mod.rs:165:pub fn pixel_to_hex(
+origin/rust-port/parity-v2:rust-port/renderer/src/pick/mod.rs:183:    pub id: String,
+origin/rust-port/parity-v2:rust-port/renderer/src/pick/mod.rs:212:pub enum MapPick {
+origin/rust-port/parity-v2:rust-port/renderer/src/pick/mod.rs:216:        index: usize,
+origin/rust-port/parity-v2:rust-port/renderer/src/pick/mod.rs:238:pub fn pick_map_target(
+EXIT=0

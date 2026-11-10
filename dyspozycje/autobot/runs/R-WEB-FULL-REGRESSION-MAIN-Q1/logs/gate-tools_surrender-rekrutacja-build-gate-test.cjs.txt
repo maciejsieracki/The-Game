@@ -1,0 +1,10 @@
+
+-- kontrakt resolveSiegeSurrender --
+FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego
+
+-- repro: legacy kolejka przy kapitulacji głodowej --
+
+surrender-rekrutacja-build-gate-test: 10 passed, 1 failed
+
+EXIT=1
+TIME=0.7

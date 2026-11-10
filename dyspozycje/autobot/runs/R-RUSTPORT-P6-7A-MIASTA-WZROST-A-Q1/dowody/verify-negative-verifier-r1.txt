@@ -1,0 +1,5 @@
+growth.json: exit=1 ROZBIEZNOSCI: 1
+empire.json: exit=1 ROZBIEZNOSCI: 1
+post_central.json: exit=1 ROZBIEZNOSCI: 1
+WSZYSTKIE ZEPSUTE WEKTORY WYKRYTE
+EXIT=0

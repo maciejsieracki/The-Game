@@ -1,0 +1,19 @@
+plik_web	mutatory_klasa_b	klasa	LOC	punkt_P6	linie_pin_edb8fb56
+gra/src/game/army-concentration.ts	1	SYSTEM	303	P6.11	160
+gra/src/game/armyMerge.ts	13	SYSTEM	954	P6.5	56,65,82,102,123,165,176,193,219,350,379,494,738
+gra/src/game/auto-manage.ts	3	SYSTEM	406	P6.12	222,325,395
+gra/src/game/cities.ts	4	SYSTEM	1293	P6.6	640,1269,1374,1386
+gra/src/game/diplomacy-tech-trade.ts	1	SYSTEM	225	P6.15	168
+gra/src/game/diplomacy.ts	1	SYSTEM	1617	P6.14	863
+gra/src/game/embarkation.ts	3	SYSTEM	124	P6.4	36,55,77
+gra/src/game/playerState.ts	1	SYSTEM	617	P6.1	613
+gra/src/game/production.ts	3	SYSTEM	2233	P6.8	637,1167,1849
+gra/src/game/rally-point.ts	1	SYSTEM	77	P6.4	47
+gra/src/game/research.ts	1	SYSTEM	574	P6.17	462
+gra/src/game/siegeMachines.ts	1	SYSTEM	73	P6.13	29
+gra/src/game/trade-routes.ts	2	SYSTEM	1945	P6.15	827,1630
+gra/src/main.ts	89	UI/MAIN	-	P7-wiring (poza tabela P6-0 gra/src/game)	4080,4103,4178,4526,7066,7109,7767,7786,8298,9291,9410,9900,10105,10115,10244,12121,12127,12184,12280,12283,12313,12428,12510,13540,14271,14851,14894,14896,14911,14945,14994,15037,17230,17280,17314,17377,17391,17397,17401,17411
+gra/src/map/map-attack-city.ts	1	UI/MAIN	-	P7-wiring (poza tabela P6-0 gra/src/game)	72
+gra/src/ui/cityPanel.ts	15	UI/MAIN	-	P7-wiring (poza tabela P6-0 gra/src/game)	638,639,787,849,4699,6133,6284,6305,8269,8276,8284,8400,8408,8409,8415
+gra/src/ui/empireDetailPanel.ts	2	UI/MAIN	-	P7-wiring (poza tabela P6-0 gra/src/game)	129,1217
+RAZEM	142

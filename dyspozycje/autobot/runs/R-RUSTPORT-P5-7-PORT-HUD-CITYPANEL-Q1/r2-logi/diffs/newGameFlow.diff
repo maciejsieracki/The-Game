@@ -1,0 +1,239 @@
+--- pin/newGameFlow.ts
++++ v2/newGameFlow.ts
+@@ -18,34 +18,25 @@
+  */
+ 
+-import { loadGameData, type GameData } from '../data/loader';
+-import {
+-  isCivAvailableAtGameEpoch,
+-  type CivEntryEpochRow,
+-} from '../game/civ-entry-epoch';
++// P5.7 r2: dane gry → `StaticCatalogDto` (`civs`, `cityNamesPools`), reguły menu/podglądu/macierzy/dostępności epoki →
++// zapytania `controller/newGameQueries.ts` (ZAŁOŻENIE P5.7-Z4), stałe → `StaticCatalogDto.constants`, jakość mapy →
++// kopia 1:1 (ustawienie renderera, P5-0 Z9), typy → DTO. Martwy import `isCivAvailableAtGameEpoch` usunięty.
++import type {
++  BuildingCostPaceDto as BuildingCostPace,
++  CivDefDto as CivEntryEpochRow,
++  CivMatrixCellDto as CivMatrixSemanticCell,
++  CivsCatalogDto,
++  KosztJednostekPaceDto as KosztJednostekPace,
++  QualityTierDto as QualityTier,
++  RuchSwiataPaceDto as RuchSwiataPace,
++  StartPreviewDto as StartPreview,
++  StartPreviewInputDto,
++  TypSwiataDto,
++  WorldGenerationPresetDto as WorldGenerationPreset,
++  WzrostLudnosciPaceDto as WzrostLudnosciPace,
++} from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
++import { newGameQueries } from '../controller/newGameQueries';
+ import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+ import { UI_PARAMS } from './uiParams';
+-import {
+-  DEFAULT_PLAYER_CIV_ID,
+-  DEFAULT_START_EPOCH_ID,
+-  DEFAULT_RENDER_QUALITY,
+-  bundledMapQualityFromLabel,
+-  civTypesMenuForMapLabel,
+-  defaultCivTypesFromMapLabel,
+-  maxCivTypesForStartEpoch,
+-  MAX_TYPY_CYWILIZACJI_MENU,
+-  defaultMiastaPanstwaFromMapLabel,
+-  clampMiastaPanstwaCount,
+-  miastaPanstwaMenuForMapLabel,
+-  qualityTierFromLabel,
+-  qualityTierToLabel,
+-  typSwiataFromMenuLabel,
+-  worldGenerationPresetFromLabels,
+-  LAND_FRACTION_PERCENT_OPTS,
+-  defaultLandFractionPercentForTyp,
+-  type LandFractionPercent,
+-  type QualityTier,
+-  type WorldGenerationPreset,
+-} from '../map/newGameMapDefaults';
+-import { buildStartPreview, startPreviewSummaryRows, type StartPreview } from '../game/start-preview';
+ import {
+   aiCivSelectionCap,
+@@ -54,19 +45,79 @@
+   isAiCivCardDisabled,
+ } from './aiCivPicker';
+-import type { BuildingCostPace } from '../game/building-cost-tempo';
+-import type { KosztJednostekPace } from '../game/unit-cost-tempo';
+-import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
+-import type { RuchSwiataPace } from '../game/ruch-swiata-tempo';
+ import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
+ import heroIntroUrl from './assets/hero/hero-intro.png?url';
+ import { installHudTitleTooltips } from './hudTitleTooltip';
+-import {
+-  buildCivMatrixSemanticProfile,
+-  civMatrixFormattedValue,
+-  civMatrixIntensityLabel,
+-  civMatrixParameterLabelPl,
+-  statusAllowsDefaultVisibility,
+-  type CivMatrixSemanticCell,
+-} from '../game/civ-matrix-semantic';
++
++/** Pin `map/newGameMapDefaults.ts:131,134,141,460,540` — stałe z katalogu (odczyt przy ewaluacji modułu, P5.2-Z1). */
++const DEFAULT_PLAYER_CIV_ID = staticCatalog().constants.newGameDefaultPlayerCivId;
++const DEFAULT_START_EPOCH_ID = staticCatalog().constants.newGameDefaultStartEpochId;
++const DEFAULT_RENDER_QUALITY: QualityTier = staticCatalog().constants.newGameDefaultRenderQuality;
++const MAX_TYPY_CYWILIZACJI_MENU = staticCatalog().constants.maxTypyCywilizacjiMenu;
++const LAND_FRACTION_PERCENT_OPTS = staticCatalog().constants.landFractionPercentOpts;
++type LandFractionPercent = number;
++/** Pin: `GameData` (`data/loader.ts`) — kreator czyta wyłącznie `civs` i `cityNamesPools` (= pola `StaticCatalogDto`). */
++type GameData = { civs: CivsCatalogDto; cityNamesPools?: unknown };
++function loadGameData(): GameData {
++  return staticCatalog();
++}
++// Reguły → zapytania silnika (sygnatury pinu; wiersze rostera = dane katalogu, jak na pinie).
++const miastaPanstwaMenuForMapLabel = (mapLabel: string) => newGameQueries().miastaPanstwaMenuForMapLabel(mapLabel);
++const civTypesMenuForMapLabel = (mapLabel: string, epochId: string, roster: readonly CivEntryEpochRow[]) =>
++  newGameQueries().civTypesMenuForMapLabel(mapLabel, epochId, roster);
++const defaultMiastaPanstwaFromMapLabel = (mapLabel: string) => newGameQueries().defaultMiastaPanstwaFromMapLabel(mapLabel);
++const defaultCivTypesFromMapLabel = (mapLabel: string, epochId: string, roster: readonly CivEntryEpochRow[]) =>
++  newGameQueries().defaultCivTypesFromMapLabel(mapLabel, epochId, roster);
++const maxCivTypesForStartEpoch = (epochId: string, roster: readonly CivEntryEpochRow[]) =>
++  newGameQueries().maxCivTypesForStartEpoch(epochId, roster);
++const clampMiastaPanstwaCount = (raw: number) => newGameQueries().clampMiastaPanstwaCount(raw);
++const typSwiataFromMenuLabel = (label: string) => newGameQueries().typSwiataFromMenuLabel(label);
++const defaultLandFractionPercentForTyp = (typ: TypSwiataDto) => newGameQueries().defaultLandFractionPercentForTyp(typ);
++const worldGenerationPresetFromLabels = (labels: { resources: string; rivers: string; desert: string; forest: string; relief?: string }) =>
++  newGameQueries().worldGenerationPresetFromLabels(labels);
++const buildStartPreview = (input: StartPreviewInputDto) => newGameQueries().buildStartPreview(input);
++const buildCivMatrixSemanticProfile = (civKey: string) => newGameQueries().civMatrixProfile(civKey);
++
++// Kopia 1:1 pinu `map/newGameMapDefaults.ts:144-185` (jakość mapy = ustawienie renderera, nie reguła gry — P5-0 Z9).
++function normQualityLabel(label: string): string {
++  return label.toLowerCase()
++    .replace(/ł/g, 'l')
++    .replace(/[ó]/g, 'o')
++    .replace(/[ąà]/g, 'a')
++    .replace(/[ę]/g, 'e')
++    .replace(/[^a-z0-9]/g, '');
++}
++
++/** Etykieta PL z kreatora / menu → klucz silnika. */
++function qualityTierFromLabel(label: string): QualityTier {
++  const n = normQualityLabel(label);
++  if (n === 'niska' || n === 'low') return 'low';
++  if (n === 'wysoka' || n === 'high') return 'high';
++  return 'medium';
++}
++
++function qualityTierToLabel(tier: QualityTier): string {
++  if (tier === 'low') return 'Niska';
++  if (tier === 'high') return 'Wysoka';
++  return 'Średnia';
++}
++
++/** Pełny pakiet GPU + dekoracje z jednego suwaka „Jakość mapy” (E1-Q-BUNDLE, Maciej 2026-06-29). */
++interface BundledMapQualityPreset {
++  renderQuality: QualityTier;
++  mapDetailQuality: QualityTier;
++}
++
++/**
++ * Jeden wybór gracza → oba tiery silnika (1:1).
++ * UI nie eksponuje renderQuality osobno; SILNIK woła to przy starcie gry.
++ */
++function bundledMapQualityPreset(tier: QualityTier): BundledMapQualityPreset {
++  return { renderQuality: tier, mapDetailQuality: tier };
++}
++
++/** Etykieta PL z kreatora → pakiet presetów. */
++function bundledMapQualityFromLabel(label: string): BundledMapQualityPreset {
++  return bundledMapQualityPreset(qualityTierFromLabel(label));
++}
+ 
+ // ---------------------------------------------------------------------------
+@@ -508,16 +559,6 @@
+ 
+ const DEFAULT_CIV_START_EPOCHS = ['kamien', 'braz', 'zelazo'] as const;
+-const START_EPOCH_ORDER = ['kamien', 'braz', 'zelazo'] as const;
+-
+-function startEpochIndex(epochId: string): number {
+-  const i = START_EPOCH_ORDER.indexOf(epochId as (typeof START_EPOCH_ORDER)[number]);
+-  return i >= 0 ? i : START_EPOCH_ORDER.length;
+-}
+-
+-/** Najwcześniejsza epoka startu z civs.json (min z epokiStartowe). */
+-function civMinStartEpochIndex(c: CivOption): number {
+-  if (c.epokiStartowe.length === 0) return 0;
+-  return Math.min(...c.epokiStartowe.map(startEpochIndex));
+-}
++// P5.7 r2: `START_EPOCH_ORDER`, `startEpochIndex`, `civMinStartEpochIndex` (pin `:510-521`, kolejność epok startu i
++// najwcześniejsza epoka cywilizacji) → zapytanie `civAvailableAtEpoch` (reguła dostępności, P5-0 §6.10).
+ 
+ function parseEpokiStartowe(raw: Record<string, unknown>): string[] {
+@@ -541,5 +582,5 @@
+   const list = data.civs && data.civs.cywilizacje ? data.civs.cywilizacje : [];
+   return list
+-    .filter(c => !!c.Cywilizacja)
++    .filter((c): c is CivEntryEpochRow & { Cywilizacja: string } => !!c.Cywilizacja) // P5.7 r2: predykat typu (CivDefDto: pole opcjonalne)
+     .map(c => {
+       const raw = c as unknown as Record<string, unknown>;
+@@ -579,5 +620,5 @@
+ /** Cywilizacja dostępna, gdy wybrana epoka gry >= jej najwcześniejszej epoki startu. */
+ function civAvailableAtEpoch(c: CivOption, selectedEpochId: string): boolean {
+-  return civMinStartEpochIndex(c) <= startEpochIndex(selectedEpochId);
++  return newGameQueries().civAvailableAtEpoch(c.epokiStartowe, selectedEpochId);
+ }
+ 
+@@ -1185,5 +1226,5 @@
+   if (filter === 'active') return cell.consumerStatus === 'REAL_GAMEPLAY';
+   if (filter === 'display') return cell.consumerStatus === 'UI_ONLY';
+-  if (filter === 'inactive') return !statusAllowsDefaultVisibility(cell.consumerStatus);
++  if (filter === 'inactive') return !cell.visibleByDefault;
+   return true;
+ }
+@@ -1192,5 +1233,5 @@
+   return [
+     cell.parameterId,
+-    civMatrixParameterLabelPl(cell.parameterId),
++    cell.paramLabel,
+     cell.domain,
+     cell.consumerStatus,
+@@ -1210,9 +1251,9 @@
+   row.setAttribute(
+     'aria-label',
+-    `${civMatrixParameterLabelPl(cell.parameterId)}: ${cell.label}, ${cell.statusLabelPl}, siła ${civMatrixIntensityLabel(cell.signedIntensity)}`,
++    `${cell.paramLabel}: ${cell.label}, ${cell.statusLabelPl}, siła ${cell.intensityLabel}`,
+   );
+ 
+   const head = el('div', 'civ-matrix-cell-head');
+-  head.appendChild(el('div', 'civ-matrix-cell-name', civMatrixParameterLabelPl(cell.parameterId)));
++  head.appendChild(el('div', 'civ-matrix-cell-name', cell.paramLabel));
+   const badge = el('span', 'civ-matrix-cell-badge', cell.label);
+   badge.dataset.label = cell.label;
+@@ -1222,7 +1263,7 @@
+ 
+   const meta = el('div', 'civ-matrix-cell-meta');
+-  meta.appendChild(el('span', '', `Wartość: ${civMatrixFormattedValue(cell.rawValue, cell.unit)}`));
+-  meta.appendChild(el('span', '', `Mediana Normal: ${civMatrixFormattedValue(cell.baselineValue, cell.unit)}`));
+-  meta.appendChild(el('span', '', `Siła: ${civMatrixIntensityLabel(cell.signedIntensity)} / 10`));
++  meta.appendChild(el('span', '', `Wartość: ${cell.formatted}`));
++  meta.appendChild(el('span', '', `Mediana Normal: ${cell.baselineFormatted}`));
++  meta.appendChild(el('span', '', `Siła: ${cell.intensityLabel} / 10`));
+   meta.appendChild(el('span', '', polarityLabelPl(cell.polarity)));
+   row.appendChild(meta);
+@@ -1315,5 +1356,5 @@
+     cell,
+     element: appendCivMatrixCell(
+-      statusAllowsDefaultVisibility(cell.consumerStatus) ? activeList : inactiveList,
++      cell.visibleByDefault ? activeList : inactiveList,
+       cell,
+     ),
+@@ -1341,5 +1382,5 @@
+       if (show) {
+         visible++;
+-        if (!statusAllowsDefaultVisibility(entry.cell.consumerStatus)) visibleInactive++;
++        if (!entry.cell.visibleByDefault) visibleInactive++;
+       }
+     }
+@@ -2167,5 +2208,5 @@
+   }
+   if (p.startPreview) {
+-    for (const [k, v] of startPreviewSummaryRows(p.startPreview)) {
++    for (const [k, v] of p.startPreview.summaryRows) {
+       rows.splice(1, 0, [k, v]);
+     }

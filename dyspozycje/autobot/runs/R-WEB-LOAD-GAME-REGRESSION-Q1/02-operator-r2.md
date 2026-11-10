@@ -1,0 +1,29 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-LOAD-GAME-REGRESSION-Q1
+GOAL: Przycisk „Wczytaj grę" w menu pauzy i głównym nie może być wyszarzony z „Brak zapisu", gdy zapisy istnieją (także zapisy tylko na dysku przez FSA, także po przeładowaniu strony).
+ZMIANY/COMMIT: kod `51ddaea5` (lokalny, bez push, na `1d7ddb3b`); ten raport w commicie następnym. Pliki: `gra/src/game/fsa-autosave.ts` (NOWY eksport `hasRememberedFsaDirectory`, istniejące funkcje nietknięte; uzasadnienie: moduł save/load będący przyczyną, klauzula gra/src/game/**), `gra/src/game/save-presence.ts` (anySavePresent + createSavePresenceCache; uzasadnienie jak wyżej), `gra/src/main.ts` (wiring cache; openLoadGameDialog; onLoad bez zmian w tej rundzie; markPresent w persistSaveToSlot, autozapisie dysk i localStorage; refresh w triggerFsaAutosaveBootstrap), `gra/tools/load-game-regression-test.cjs`, ten raport. Brak zmian w `gra-robocza/**`, `WERSJE.md`, `rust-port/**`, `src-tauri/**`, `package-lock.json`. `npm ci --ignore-scripts` w worktree wykonane (node_modules lokalnie).
+
+ODPOWIEDZI NA ZARZUTY:
+1. (Przyczyna nieudowodniona) PRZYJMUJĘ, dowód z kodu i testów modułu; E2E NIE_ZMIERZONO. Autozapis: main.ts ~31792-31797 (`turn % getAutosaveFrequency() === 0`, domyślnie 1, main.ts ~31313) -> doRotatingAutosave. Gdy FSA gotowe i zapis ok -> `fsaRotatingAutosaveWrite` + `return` (main.ts ~31438-31441), bez zapisu do IDB. Gdy FSA niegotowe lub błąd -> `saveToLocal` (IDB, main.ts ~31455). Listing plików: tools/fsa-autosave-test.cjs ~344-352 (2 pliki, pomija notes.txt), 55/0. Wniosek: objaw „Brak zapisu" przy aktywnym autozapisie wymaga trybu FSA w sesji (zapis tylko na dysk, IDB puste). ZAŁOŻENIE: właściciel używa FSA (spójne z objawem; bez FSA autozapis idzie do IDB i przycisk działa).
+2. (Martwy przycisk po przeładowaniu) PRZYJMUJĘ i NAPRAWIONO. Dodano `hasRememberedFsaDirectory()` (odczyt IDB, bez requestPermission) jako trzecie źródło `anySavePresent`. Po przeładowaniu przycisk jest aktywny; klik -> onLoad -> bootstrap FSA (gest użytkownika) -> listing. Test 1c i 2c (stan po przeładowaniu: uchwyt jest, zgody brak -> lista [], anySavePresent = true). Niuans: po przeładowaniu autozapis bez FSA trafia do IDB (main.ts ~31455), więc martwy stan znika najpóźniej przy pierwszym autozapisie; poprawka zamyka też menu przed pierwszą turą. KOMPROMIS (do oceny Evaluatora): zapamiętany katalog bez plików aktywuje przycisk; klik pokazuje hint „Brak zapisu" (openLoadGameDialog). Test w przeglądarce NIE_ZMIERZONO.
+3. (Test słaby) PRZYJMUJĘ, przepisano. Testy ładują PRAWDZIWE `save-presence.ts` i `fsa-autosave.ts` (esbuild); tautologia `oldHasAnySave` usunięta. Mutacje 4a-4d zmieniają tekst prawdziwego źródła i wymagają zmiany zachowania. Zarzutowa mutacja pliku main.ts (odświeżenie przycisku -> `await listSaves()`) dała FAIL 5a i 4d (`tools/load-game-regression-test.cjs`: 20 PASS / 2 FAIL); plik przywrócony `git checkout`, wynik 22/0. Wiring main.ts nadal sprawdzany regexem (zachowania nie).
+4. (Scenariusze bitwa/kolejka, ≥40 tur, brak stanu widmo) NIE_ZMIERZONO. Powód: w tej rundzie brak harnessu E2E z bitwą, kolejką i ≥40 turami. Kod: hasAnySaveSlot/openLoadGameDialog nie mają guardów bitew ani tur (main.ts ~22164-22216), więc stan przycisku nie zależy od bitwy; logika load i kolejki nietknięta. NIE zamykam tego jako zrobione. Proponuję: Evaluator/Final Control decyduje, czy to zakres DEADLOCK czy osobny temat.
+5. (Brak sygnalizacji) PRZYJMUJĘ, częściowo dodane. Błędy źródeł idą do `diagWarn('SAVE-PRESENCE', ...)` (main.ts, createSavePresenceCache; testy 1e, 1f). Sygnał braku zapisów istnieje: przycisk wyłączony z title „Brak zapisu" (gamePauseMenu.ts ~187, ~307) i hint przy kliku (openLoadGameDialog). Błąd autozapisu na dysk: istniejący komunikat degradacji (notifyFsaAutosaveDegraded, main.ts ~31446). Decyzja (d): sygnalizowane; bez nowego UI.
+6. (Wyścigi cache) PRZYJMUJĘ, naprawiono: numer generacji w createSavePresenceCache; wolniejsze, starsze przeliczenie nie nadpisuje markPresent() ani nowszego wyniku. Testy 3a-3c, mutacja 4c. Koszt skanu katalogu przy każdym otwarciu menu: NIE_ZMIERZONO (keys() na katalogu, bez odczytu zawartości plików).
+7. (Allowlista, main.ts poza logiką load) PRZYJMUJĘ z uzasadnieniem; decyzja dla orkiestratora. Zmiany w main.ts poza logiką wczytywania to jednolinijkowe `savePresence.markPresent()` (zapis ręczny, autozapis dysk, autozapis localStorage) i refresh w triggerFsaAutosaveBootstrap. Nie zmieniają kolejki bitew ani formatu zapisu. Jeśli odrzucone: usunięcie markPresent wymaga zmiany testu 5c; skutek: pierwsze otwarcie menu po zapisie może pokazać stan sprzed zapisu do następnego odświeżenia. Kolizja z DEADLOCK: merge z fcd86933 był czysty w r1; ponownie NIE_ZMIERZONO względem gałęzi DEADLOCK.
+8. (Brak weryfikacji w przeglądarce) PRZYJMUJĘ jako otwarte: NIE_ZMIERZONO w tej rundzie (wymaga FSA na http i zasiania IDB w Chromium). Build Vite przeszedł (bezpośrednio, wyjście tymczasowe, 35.94 s).
+
+TESTY:
+- `node tools/load-game-regression-test.cjs`: 22 PASS / 0 FAIL (z mutacją pliku main.ts: 20 PASS / 2 FAIL).
+- `node tools/autosave-quota-fail-test.cjs`: 20 pass / 0 fail.
+- `node tools/fsa-autosave-test.cjs`: 55 pass / 0 fail.
+- `node tools/logic-test.cjs`: LOGIC OK (213/213).
+- `npx tsc --noEmit`: exit 0.
+- `npx vite build --outDir <tmp> --emptyOutDir`: built in 35.94s.
+- NIE_ZMIERZONO: E2E w Chromium (FSA, tury, bitwa, ≥40 tur), wizualna weryfikacja menu, koszt skanu katalogu.
+
+BLOKADY: brak infrastrukturalnych. Otwarte do decyzji: pozycje 4, 7 (allowlista), 8.
+RUNDY: 2/5
+NASTĘPNY KROK: Evaluator (Sonnet 5.5 medium) przegląd kodu `51ddaea5` i tego raportu; decyzja orkiestratora w sprawie pozycji 4 i 7; Final Control po Evaluatorze. Po Final Control: w przeglądarce potwierdzić aktywny „Wczytaj grę" po przeładowaniu z zapisami FSA.
+DEPLOY/PUSH: NIE WYKONANO

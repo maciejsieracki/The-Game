@@ -1,0 +1,7 @@
+# R-WEB-DIPLO-PANEL-CIV-RECRUITS-LEVEL-Q1 — dispatch (2026-11-09)
+
+GOAL (właściciel, cytat): „W dyplomacji brakuje jednej ważnej liczby: ile jednostek może zrekrutować dana cywilizacja, czyli jaki ma poziom rekrutów.”
+ZADANIE: w panelu dyplomacji / audiencji (obok istniejących liczb: siła militarna, relacja, zaufanie, respekt itd.) pokaż liczbę rekrutów (manpower/pula rekrutów) rozpatrywanej cywilizacji — aktualna wartość i, jeśli silnik to ma, maksimum/przyrost (np. „Rekruci: 1 240 / 2 000, +35/tura”). Ustal w kodzie właściwą wielkość (grep manpower, rekruci, epoka-ludnosc-manpower.json, empire-recruit w gra/src/game, civ state) i użyj tej samej definicji co panel rekrutacji gracza. Zasada widoczności: dla cywilizacji znanych/z audiencją pokaż wartość (jeśli w grze obowiązuje mgła informacji dyplomatycznej — zgodnie z regułą dla siły militarnej; opisz przyjęte założenie w raporcie). Polskie etykiety, format liczb jak w reszcie panelu (spacje tysięcy), tooltip z krótkim wyjaśnieniem. Nie zmieniaj mechaniki rekrutacji ani AI.
+BAZA: origin/main. Operator: HAIKU 5.5 (UI). Chromium jeśli dostępny: zrzut panelu, inaczej NIE_ZMIERZONO jawnie.
+ZAKRES: panel dyplomacji/audiencji w gra/src/ui, odczyt manpower z istniejącego API, nowy test gra/tools/diplo-panel-recruits-level-test.cjs, regresje UI dyplomacji. Dług: REPIN Rust UI.
+ALLOWLISTA: pliki panelu dyplomacji/audiencji, nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev w gra/, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów.

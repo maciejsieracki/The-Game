@@ -1,0 +1,59 @@
+BASE target=active rc=0 (OK)
+M02 KILLED rc=101 label_for_hex: nakładka ZlozeRudy -> None
+M04 KILLED rc=101 improvement_unlock_active_on_hex: NO_DEPOSIT -> false
+M05 KILLED rc=101 improvement_unlock_active_on_hex: LIVESTOCK_NO_DEPOSIT -> false
+M06 KILLED rc=101 warzelnia_soli: `||` -> `&&`
+M07 KILLED rc=101 improvement_unlock_active_on_hex: DEPOSIT_LINKED -> pominięte (zawsze true)
+M08 SURVIVED rc=0 labels_for_kopalnia_miedzi_on_hex: `||` -> `&&`
+M09 KILLED rc=101 active_labels: LIVESTOCK_NOT_RESOURCE -> pominięte
+M10 KILLED rc=101 collect_active_access: bramka `sight > 0` -> zawsze
+M11 KILLED rc=101 collect_active_access: dystans `> sight` -> `>=`
+M12 KILLED rc=101 collect_deposit_potential: dystans `> sight` -> `>=`
+M13 KILLED rc=101 collect_deposit_potential: bramka `sight <= 0` -> pominięta
+M14 KILLED rc=101 collect_active_access: gałąź livestock `kon` -> pominięta
+M15 KILLED rc=101 collect_active_access: gałąź Brąz (has_braz_access) -> false
+M16 KILLED rc=101 collect_active_access: gałąź Złoto (owner_has_zloto_stock) -> false
+BASE target=active rc=0 (OK)
+M17 KILLED rc=101 get_city_resource_access: wykluczenie aktywnych z potencjału -> brak
+M18 KILLED rc=101 parse_surowiec: gałąź `starts_with('[')` -> pominięta
+M19 KILLED rc=101 parse_surowiec: gałąź pustego napisu -> pominięta
+M20 KILLED rc=101 parse_surowiec: lista -> zwraca pustą
+M21 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustych etykiet -> brak
+M22 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustego klucza -> brak
+M23 KILLED rc=101 pl_collation_cmp: poziom wielkości liter -> pominięty
+M24 KILLED rc=101 era_ui_name: wpis 2 (Brąz) -> None
+M26 KILLED rc=101 collect_active_access: gałąź `if let Some(placed)` -> nigdy
+M27 KILLED rc=101 warzelnia_soli: operand `zloze == sol` -> false
+M28 KILLED rc=101 improvement_unlock_active_on_hex: brak normalizacji -> true
+M29 KILLED rc=101 collect_active_access: klucz spoza mapy -> `return` zamiast `continue`
+M25 KILLED rc=101 collect_active_access: domyślna kultura `unwrap_or(0.0)` -> 1.0
+M01 KILLED rc=101 label_for_hex: guard widoczności (r4: + gałąź prototypu) -> bez prototypu
+M03 KILLED rc=101 hex_hidden_deposit_hint: guard widoczności (r4) -> bez `deposit_visible`
+M30 KILLED rc=101 label_for_hex: prototyp `constructor`/`__proto__` -> bez wyjątku (zawsze widoczny)
+BASE target=active rc=0 (OK)
+M31 KILLED rc=101 hex_hidden_deposit_hint: prototyp -> bez wyjątku
+M32 KILLED rc=101 is_js_prototype_key: `__proto__` pominięty
+M33 KILLED rc=101 compute_empire_livestock_unlocks: filtr właściciela -> wyłączony
+M34 KILLED rc=101 compute_empire_livestock_unlocks: warunek nakładki konia -> pominięty
+M35 KILLED rc=101 collect_active_access: domyślna gałąź `computeEmpireLivestockUnlocks` -> wyłączona
+M36 KILLED rc=101 compute_empire_livestock_unlocks: porównanie właściciela odwrócone
+M37 KILLED rc=101 pl_primary_key: ł -> bez ogonka (litera bazowa)
+M38 KILLED rc=101 pl_primary_key: ć -> bez ogonka (litera bazowa)
+M39 KILLED rc=101 pl_primary_key: ę -> bez ogonka (litera bazowa)
+M40 KILLED rc=101 pl_primary_key: ń -> bez ogonka (litera bazowa)
+M41 KILLED rc=101 pl_primary_key: ź -> bez ogonka (litera bazowa)
+M42 KILLED rc=101 pl_collation_cmp: remis wielkości liter -> tiebreak bajtowy (wersja r3)
+M43 KILLED rc=101 pl_collation_cmp: pominięcie ignorowanych znaków (ZWSP/miękki myślnik)
+M44 KILLED rc=101 era_ui_name: wpis 1 (Kamień) -> None
+BASE target=society rc=0 (OK)
+S01 KILLED rc=101 js_clamp: NaN przechodzi jako dolna granica (`!(x >= lo)`)
+S02 SURVIVED rc=0 js_clamp: granica górna `>=` (równoważne: zwraca hi w obu wariantach)
+S03 KILLED rc=101 leading_religion: remis -> ostatnia nazwa (`<` zamiast `<=`)
+S04 KILLED rc=101 total_adherents: filtr `> 0` -> tylko skończone
+S05 KILLED rc=101 leading_religion: filtr skończoności wyłączony (Inf jako lider)
+S06 KILLED rc=101 dominant_religion: próg `>` -> `>=`
+S07 KILLED rc=101 dominant_religion: warunek `total > 0` -> `>= 0`
+S08 SURVIVED rc=0 is_foreign: status `!= Dominant` -> `== Mixed`
+S09 KILLED rc=101 is_foreign: pusta nazwa religii nie jest odfiltrowana (web `!dom.religion`)
+S10 SURVIVED rc=0 is_foreign: brak religii właściciela `""` -> nie traktowane jak brak (równoważne)
+S11 SURVIVED rc=0 total_adherents: `> 0` -> `>= 0` (równoważne: dodanie 0 nie zmienia sumy)

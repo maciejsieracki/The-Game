@@ -1,0 +1,120 @@
+--- pin:gra/src/ui/preBattle.ts
++++ v2:src-tauri/frontend-v2/src/ui/preBattle.ts
+@@ -10,13 +10,14 @@
+  * Pure DOM (innerHTML z template stringow, jak cityAttackChoice.ts).
+  */
+ 
+-import type { CivBonusLite } from '../game/production';
+-import { bonusChipTexts } from '../game/defenseBreakdown';
++// P5.6: bonusy cywilizacji → gotowe chipy z Rust (`PreBattleSide.bonusChips`, P5-0 §6.13; web `bonusChipTexts`,
++// `game/defenseBreakdown.ts:52-64`); `PB_SVG` z kopii `ui/battleHudTheme.ts` (P5.3); muzyka przez kontroler
++// (`controller/audio.ts`); ukrycie rosteru armii przez most `armyStackHudSuppression.ts` (`hud.ts` poza paczką).
+ import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
+-import { PB_SVG } from '../battle/battleHudTheme';
++import { PB_SVG } from './battleHudTheme';
+ import { leaderPortraitUrl, leaderName } from './leaderPortraits';
+-import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
+-import { setArmyStackHudSuppressed } from './hud';
++import { startPreBattleMusic, stopPreBattleMusic } from '../controller/audio';
++import { setArmyStackHudSuppressed } from './armyStackHudSuppression';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 
+ export interface PreBattleUnit {
+@@ -74,6 +75,13 @@
+    * Ma pierwszenstwo przed isCityState (wzajemnie wykluczajace sie w praktyce).
+    */
+   isBarbarian?: boolean;
++  /**
++   * P5.6 (P5-0 §6.13 `PreBattleDto.sides[].bonus_chips`): teksty chipów bonusów cywilizacji tej strony — Rust wybiera
++   * źródło (jawne `bonusy*` albo `getCivBonusy(ownerId)`, pin `:598-606`) i filtr bonusów walki (`bonusChipTexts`
++   * + `isCombatModifierBonus`, `game/defenseBreakdown.ts:52-64`). Zastępuje `PreBattleInfo.bonusyAtakujacy/Obronca`
++   * oraz hak `getCivBonusy` (konfiguracja i opcje).
++   */
++  bonusChips: readonly string[];
+   units: PreBattleUnit[];
+ }
+ 
+@@ -111,15 +119,9 @@
+    * in launchIncomingMapFieldBattle).
+    */
+   retreatExhaustedThisTurn?: boolean;
+-  /** Opcjonalne nadpisanie — inaczej z getCivBonusy(ownerId) */
+-  bonusyAtakujacy?: readonly CivBonusLite[];
+-  bonusyObronca?: readonly CivBonusLite[];
+-}
+-
+-export interface PreBattleConfig {
+-  /** Bonusy cywilizacji per owner (civs.json bonusy[]) — wzorzec jak cityPanel. */
+-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+-  /**
++}
++
++export interface PreBattleConfig {  /**
+    * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): zwraca true gdy INNY
+    * modal końca tury (audiencja dyplomatyczna, panel scalenia armii) jest już otwarty --
+    * używane WYŁĄCZNIE dla automatycznych wywołań showPreBattle (opts.auto===true), żeby
+@@ -151,10 +153,7 @@
+ }
+ 
+ export interface PreBattleOptions {
+-  defaultAction?: 'auto' | 'manual';
+-  /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
+-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+-  /**
++  defaultAction?: 'auto' | 'manual';  /**
+    * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: true WYŁĄCZNIE dla automatycznych wywołań
+    * (atak AI/barbarzyńców w trakcie end-of-turu) -- NIGDY dla ręcznej akcji gracza (klik
+    * atak/szturm). Włącza guard przeciw innym otwartym modalom końca tury (patrz
+@@ -595,15 +594,6 @@
+   return base;
+ }
+ 
+-function resolveSideBonusy(
+-  side: PreBattleSide,
+-  explicit: readonly CivBonusLite[] | undefined,
+-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[],
+-): readonly CivBonusLite[] {
+-  if (explicit?.length) return explicit;
+-  if (side.ownerId !== undefined && getCivBonusy) return getCivBonusy(side.ownerId);
+-  return [];
+-}
+ 
+ function defaultVerdict(atkPct: number): string {
+   if (atkPct >= 65) return 'Przewaga atakującego';
+@@ -701,16 +691,13 @@
+   side: PreBattleSide,
+   role: 'atk' | 'def',
+   isYou: boolean,
+-  explicit: readonly CivBonusLite[] | undefined,
+-  getBonusy?: (ownerId: number) => readonly CivBonusLite[],
+ ): string {
+   const total = unitCount(side.units);
+   const civ = esc(side.cywilizacja ?? side.nazwa);
+   const who = esc(side.wodz ?? side.nazwa);
+   const sideCls = isYou ? 'pb-you' : 'pb-foe';
+   const posCls = isYou ? 'pb-l' : 'pb-r';
+-  const bonusy = resolveSideBonusy(side, explicit, getBonusy);
+-  const chipTexts = bonusChipTexts(bonusy);
++  const chipTexts = side.bonusChips;
+   const chipsHtml = chipTexts.length
+     ? '<div class="pb-bonuses">' +
+       chipTexts.map(t => '<span class="pb-bchip">' + PB_ICON_DOT + esc(t) + '</span>').join('') +
+@@ -876,7 +863,6 @@
+   ensureStyles();
+   const canRetreat = info.canRetreat !== false;
+   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
+-  const getBonusy = opts?.getCivBonusy ?? pbCfg.getCivBonusy;
+ 
+   const isYouAtk = isPlayerSide(info.atakujacy, 'atk', canRetreat);
+   const isYouDef = isPlayerSide(info.obronca, 'def', canRetreat);
+@@ -894,8 +880,8 @@
+   // roster wroga renderowany w pelni z dostepnych danych (tak jak dotychczas).
+ 
+   overlay.innerHTML =
+-    commanderHtml(info.atakujacy, 'atk', isYouAtk, info.bonusyAtakujacy, getBonusy) +
+-    commanderHtml(info.obronca, 'def', isYouDef, info.bonusyObronca, getBonusy) +
++    commanderHtml(info.atakujacy, 'atk', isYouAtk) +
++    commanderHtml(info.obronca, 'def', isYouDef) +
+     rosterHtml(info.atakujacy, 'atk', isYouAtk) +
+     rosterHtml(info.obronca, 'def', isYouDef);
+ 

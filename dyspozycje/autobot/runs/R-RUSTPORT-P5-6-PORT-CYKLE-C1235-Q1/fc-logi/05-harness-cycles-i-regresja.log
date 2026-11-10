@@ -1,0 +1,12 @@
+EXIT=0
+dom-harness-cycles: pin=edb8fb56 modułów=7 przypadków=6401 różnic=0 jsdomErrors=0 consoleErrors=0
+dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=0 kolizji_kategorii=0 jsdomErrors=0
+EXIT52=0
+dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=0 jsdomErrors=0
+EXIT53=0
+jsdomErrors (unikalne): Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+EXIT54=0
+consoleErrors (unikalne): [unitInfoCard] błąd ścieżki entityCards, fallback do starej implementacji: Error: wymuszony wyjątek ścieżki entityCards
+EXIT55=0
+
+[exited with code 0]

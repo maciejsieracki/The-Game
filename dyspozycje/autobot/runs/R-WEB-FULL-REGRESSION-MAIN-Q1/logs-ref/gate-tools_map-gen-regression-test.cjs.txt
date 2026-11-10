@@ -1,0 +1,8 @@
+=== Czasy generacji (seed 42, kontynenty) ===
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=21 terrain=149 landSea=3387 relief=2292 coast=450 riversMain=30439 riversFill=53766 forest=40 deposits=220 starts=1189 total=91952
+  mała (108×74): 91.96s
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=200.2

@@ -1,0 +1,21 @@
+--- a/rust-port/engine/tests/p6_m00_skeleton.rs	2026-10-22 19:06:18.281730160 +0000
++++ b/rust-port/engine/tests/p6_m00_skeleton.rs	2026-10-22 19:33:33.053827336 +0000
+@@ -63,6 +63,18 @@
+         if p.ends_with("/mod.rs") {
+             continue;
+         }
++        // Plik wypelniony przez temat-wlasciciela (zawiera kod: `use`/`pub`) przestaje byc szkieletem;
++        // pozostaje wymog naglowka z tematem wlascicielem (test ponizej).
++        let filled = src
++            .lines()
++            .any(|l| l.starts_with("use ") || l.starts_with("pub "));
++        if filled {
++            assert!(
++                src.contains("R-RUSTPORT-P6-M"),
++                "{p}: brak tematu wlasciciela"
++            );
++            continue;
++        }
+         for (i, line) in src.lines().enumerate() {
+             assert!(
+                 line.starts_with("//!"),

@@ -1,0 +1,16 @@
+AssertionError [ERR_ASSERTION]: grecy/eko_pieniadz_proc: actual city-yield consumer applies exact source value once
+
+0 !== 114
+
+    at <REF-TMP>/ref/gra/tools/pr141-f04-yields-activation-test.cjs:113:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 114,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+EXIT=1
+TIME=0.4

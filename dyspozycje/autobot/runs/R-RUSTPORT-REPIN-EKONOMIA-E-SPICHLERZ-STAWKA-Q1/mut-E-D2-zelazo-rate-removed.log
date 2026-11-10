@@ -1,0 +1,14 @@
+MUTANT E-D2-zelazo-rate-removed file=data/citizen-resource-upkeep.json
+OLD:
+"nazwa": "Żelazo", "stawkaNaObywatela": 3,
+NEW:
+"nazwa": "Żelazo",
+
+FAILED TESTS:
+test edge_n_minus_1_n_plus_1_real_table_bronze ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test rate_and_required_grid_match_web ... FAILED
+test real_file_has_era_rates_one_two_three ... FAILED
+test result: FAILED. 3 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+VERDICT=KILLED
+EXIT=101

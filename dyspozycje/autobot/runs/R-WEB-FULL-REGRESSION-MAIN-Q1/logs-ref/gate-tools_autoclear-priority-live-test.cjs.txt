@@ -1,0 +1,13 @@
+page.goto: net::ERR_FILE_NOT_FOUND at file://<REF-TMP>/ref/gra-robocza/Gra-ROBOCZA.html
+Call log:
+  - navigating to "file://<REF-TMP>/ref/gra-robocza/Gra-ROBOCZA.html", waiting until "load"
+
+    at main (<REF-TMP>/ref/gra/tools/autoclear-priority-live-test.cjs:59:14) {
+  log: [
+    '  - navigating to "file://<REF-TMP>/ref/gra-robocza/Gra-ROBOCZA.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+
+EXIT=1
+TIME=0.8

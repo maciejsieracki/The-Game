@@ -1,0 +1,99 @@
+RENDER_FILES 88 OUTSIDE_THREE 8
+| 1 | `render/braz-konnica-opus5.ts` | 934 | T | 2 | 49 | 0 | 0 | Box46 Cyl11 Cone2 Sph1 Tor1 Ico2 BufG1 MStd1 | 1 | 0 |
+| 2 | `render/braz-lucznik-nubijski-opus5.ts` | 775 | T | 2 | 48 | 0 | 0 | Box41 Cyl2 Cone1 MStd1 | 1 | 0 |
+| 3 | `render/braz-miecznik-opus5.ts` | 765 | T | 3 | 56 | 0 | 0 | Box46 Cyl6 Cone1 Sph1 BufG1 MStd1 | 1 | 0 |
+| 4 | `render/braz-procarz-opus5.ts` | 766 | T | 2 | 45 | 0 | 0 | Box32 Cyl2 Oct2 MStd1 | 1 | 0 |
+| 5 | `render/braz-rydwan-kapadokijski-opus5.ts` | 781 | T | 1 | 45 | 0 | 0 | Box29 Cyl14 Cone1 MStd1 | 1 | 0 |
+| 6 | `render/braz-rydwan-konny-opus5.ts` | 784 | T | 1 | 48 | 0 | 0 | Box29 Cyl16 Cone2 Ico2 MStd1 | 1 | 0 |
+| 7 | `render/braz-rydwan-woly-opus5.ts` | 620 | T | 1 | 43 | 0 | 0 | Box29 Cyl9 Cone2 MStd1 | 1 | 0 |
+| 8 | `render/braz-taran-opus5.ts` | 492 | T | 1 | 39 | 0 | 0 | Box21 Cyl16 MStd1 | 1 | 0 |
+| 9 | `render/braz-wlocznik-opus5.ts` | 711 | T | 2 | 43 | 0 | 0 | Box39 Cyl8 Cone1 Sph1 BufG1 MStd1 | 1 | 0 |
+| 10 | `render/bronzeCity.ts` | 464 | T | 1 | 89 | 5 | 1 | Box48 Cyl25 Cone8 Sph4 Tor1 Ring3 MLam2 | 8 | 0 |
+| 11 | `render/bronzeCityRoblox.ts` | 437 | T | 1 | 3 | 70 | 2 | Box1 Cyl1 Extr1 MLam1 | 1 | 0 |
+| 12 | `render/camera.ts` | 309 | T | 0 | 0 | 0 | 0 | — | 1 | 2 |
+| 13 | `render/cities.ts` | 946 | T | 2 | 7 | 0 | 0 | Box3 Cyl2 Cone2 CTex1 Spr1 MLam1 SprM1 | 1 | 41 |
+| 14 | `render/cityMapOutline.ts` | 85 | T | 2 | 0 | 0 | 0 | BufG1 | 1 | 0 |
+| 15 | `render/cityMapStatChip.ts` | 1133 | T | 4 | 0 | 0 | 0 | CTex1 Spr1 SprM1 | 2 | 5 |
+| 16 | `render/cityOkolicaOverlay.ts` | 347 | T | 2 | 0 | 0 | 0 | CTex1 Spr1 SprM1 | 1 | 1 |
+| 17 | `render/countSceneOverlayCandidates.ts` | 124 | – | 1 | 0 | 0 | 0 | — | 0 | 2 |
+| 18 | `render/dekor-laki-rowniny.ts` | 463 | T | 2 | 2 | 0 | 0 | BufG1 MLam1 | 1 | 1 |
+| 19 | `render/djungla-modele.ts` | 218 | T | 0 | 0 | 3 | 1 | BufG1 MLam1 | 1 | 1 |
+| 20 | `render/droga-6-ramion.ts` | 190 | T | 1 | 2 | 0 | 0 | Box1 Cyl1 MLam1 | 2 | 1 |
+| 21 | `render/fogDim.ts` | 44 | T | 0 | 0 | 0 | 0 | — | 3 | 0 |
+| 22 | `render/galera-model.ts` | 273 | T | 2 | 31 | 28 | 0 | Box1 Cone3 MStd1 | 1 | 0 |
+| 23 | `render/hastati-falangita.ts` | 694 | T | 5 | 35 | 0 | 0 | Box28 Cyl4 Cone2 Ring1 BufG2 MStd1 | 1 | 1 |
+| 24 | `render/hastati-opus5.ts` | 993 | T | 5 | 63 | 0 | 0 | Box44 Cyl13 Cone3 BufG3 MStd1 | 1 | 1 |
+| 25 | `render/hexShape.ts` | 32 | T | 0 | 0 | 0 | 0 | — | 1 | 1 |
+| 26 | `render/hexutil.ts` | 71 | – | 0 | 0 | 0 | 0 | — | 55 | 17 |
+| 27 | `render/improvements.ts` | 602 | T | 3 | 4 | 80 | 0 | Box1 Cyl1 Cone1 Sph1 MLam1 | 10 | 5 |
+| 28 | `render/jednostki-p1-rdzen.ts` | 833 | T | 9 | 62 | 0 | 0 | Box5 Cyl8 Cone7 BufG1 MStd1 | 1 | 1 |
+| 29 | `render/jednostki-p2-inka.ts` | 685 | T | 5 | 48 | 0 | 0 | Box39 Cone1 MStd1 | 1 | 0 |
+| 30 | `render/jednostki-p3-dystans.ts` | 879 | T | 6 | 57 | 0 | 0 | Box40 Cyl2 Cone2 BufG2 MStd1 | 1 | 3 |
+| 31 | `render/jednostki-p4-melee.ts` | 866 | T | 7 | 73 | 0 | 0 | Box42 Cyl9 Cone3 BufG1 MStd1 | 1 | 0 |
+| 32 | `render/jednostki-p57-wlocznie-machiny.ts` | 840 | T | 5 | 77 | 0 | 0 | Box36 Cyl3 Cone2 BufG2 MStd1 | 1 | 2 |
+| 33 | `render/jednostki-p6-super.ts` | 911 | T | 3 | 44 | 0 | 0 | Box35 Cyl5 Cone2 Ring1 BufG2 MStd1 | 1 | 0 |
+| 34 | `render/jednostki-p8a-bliskiwschod.ts` | 704 | T | 5 | 51 | 0 | 0 | Box35 Cyl6 Cone1 Tor1 BufG2 MStd1 | 1 | 0 |
+| 35 | `render/jednostki-p8b-rozni.ts` | 794 | T | 5 | 60 | 0 | 0 | Box44 Cyl4 Cone2 BufG2 MStd1 | 1 | 0 |
+| 36 | `render/jednostki-z1-mezopotamia.ts` | 1329 | T | 5 | 64 | 0 | 0 | Box1 Cyl4 Cone3 BufG2 MStd1 | 1 | 0 |
+| 37 | `render/jednostki-z2-srodziemne.ts` | 1604 | T | 6 | 85 | 0 | 0 | Box43 Cyl11 Cone2 BufG2 MStd1 | 1 | 0 |
+| 38 | `render/jednostki-z3-plemiona.ts` | 1994 | T | 6 | 89 | 0 | 0 | Box59 Cyl8 Cone4 BufG2 MStd1 | 1 | 0 |
+| 39 | `render/kamien-bazowe-opus5.ts` | 1190 | T | 9 | 118 | 0 | 0 | Box4 Cyl2 Cone1 BufG1 MStd1 | 1 | 1 |
+| 40 | `render/kamien-inka-opus5.ts` | 928 | T | 3 | 76 | 0 | 0 | Box56 Cyl10 Cone2 MStd1 | 1 | 0 |
+| 41 | `render/kamien-lucznicy-opus5.ts` | 986 | T | 3 | 64 | 0 | 0 | Box54 Cone1 MStd1 | 1 | 1 |
+| 42 | `render/kamien-zulu-taran-opus5.ts` | 1130 | T | 3 | 77 | 0 | 0 | Box46 Cyl25 Cone2 Circ1 BufG2 MStd1 | 1 | 2 |
+| 43 | `render/kon-nowy-model.ts` | 342 | T | 2 | 18 | 0 | 0 | Box12 Cyl8 Cone1 Ico2 MStd1 | 3 | 1 |
+| 44 | `render/kopalnia-cyny-opus5.ts` | 352 | T | 1 | 3 | 3 | 2 | Box1 Cyl1 MStd1 | 2 | 1 |
+| 45 | `render/kopalnia-zlota-opus5.ts` | 350 | T | 1 | 4 | 4 | 2 | Box1 Cyl1 MStd1 | 2 | 0 |
+| 46 | `render/lasy-modele.ts` | 440 | T | 1 | 1 | 6 | 1 | BufG1 MLam1 | 1 | 1 |
+| 47 | `render/mapRenderStyle.ts` | 1996 | T | 14 | 39 | 0 | 0 | Box21 Cyl23 Cone3 Ico2 MLam2 | 16 | 8 |
+| 48 | `render/mergeDecor.ts` | 175 | T | 1 | 1 | 0 | 0 | BufG1 MLam1 | 2 | 1 |
+| 49 | `render/miasto-braz.ts` | 905 | T | 5 | 9 | 0 | 0 | Box1 Cyl1 Cone1 Circ6 MLam3 | 1 | 0 |
+| 50 | `render/miasto-kamien.ts` | 667 | T | 3 | 6 | 0 | 0 | Box1 Cyl1 Cone1 Circ3 MLam2 | 2 | 1 |
+| 51 | `render/minecraftScene.ts` | 11 | – | 1 | 0 | 0 | 0 | — | 0 | 0 |
+| 52 | `render/oaza-pustynia.ts` | 578 | T | 2 | 3 | 0 | 0 | Box1 BufG2 MLam2 | 1 | 0 |
+| 53 | `render/pastwisko-modele.ts` | 261 | T | 6 | 1 | 0 | 0 | Box1 MLam1 | 3 | 1 |
+| 54 | `render/perfDebugOverlay.ts` | 76 | – | 0 | 0 | 0 | 0 | — | 1 | 0 |
+| 55 | `render/rangeOverlay.ts` | 909 | T | 8 | 3 | 0 | 0 | Cyl1 BufG4 Inst1 LSeg1 MBas4 | 2 | 4 |
+| 56 | `render/resources.ts` | 171 | T | 2 | 26 | 0 | 0 | Box20 Cyl1 Cone1 Sph1 Tor1 Dod2 MLam1 | 1 | 1 |
+| 57 | `render/riverLod.ts` | 413 | T | 5 | 1 | 0 | 0 | merge1 | 1 | 1 |
+| 58 | `render/robloxCity.ts` | 294 | T | 2 | 16 | 16 | 1 | Box7 Cyl5 Cone3 Ico1 MLam2 | 2 | 0 |
+| 59 | `render/robloxImprovements.ts` | 484 | T | 2 | 11 | 60 | 3 | Box2 Cyl3 Cone6 MLam1 | 2 | 1 |
+| 60 | `render/robloxScene.ts` | 12 | – | 1 | 0 | 0 | 0 | — | 0 | 0 |
+| 61 | `render/scene.ts` | 3760 | T | 6 | 3 | 0 | 0 | Box1 Cyl8 Cone9 Sph4 Pln1 BufG3 Inst19 MLam17 merge1 | 5 | 2 |
+| 62 | `render/settlementModel.ts` | 27 | T | 1 | 0 | 0 | 0 | — | 2 | 0 |
+| 63 | `render/siegeCampModels.ts` | 160 | T | 5 | 15 | 0 | 0 | Box6 Cyl6 Cone1 Sph2 MLam1 | 1 | 0 |
+| 64 | `render/siegeCampSync.ts` | 47 | – | 0 | 0 | 0 | 0 | — | 1 | 0 |
+| 65 | `render/siegeMarker.ts` | 262 | T | 0 | 2 | 0 | 0 | Cyl1 Ring1 CTex1 Spr1 MBas2 SprM1 | 1 | 0 |
+| 66 | `render/stoneCity.ts` | 387 | T | 5 | 35 | 0 | 0 | Box15 Cyl14 Cone5 Sph1 MLam2 | 2 | 0 |
+| 67 | `render/stoneCityRoblox.ts` | 471 | T | 5 | 3 | 40 | 2 | Box1 Cyl1 Extr1 MLam1 | 1 | 0 |
+| 68 | `render/styleResources.ts` | 499 | T | 3 | 15 | 60 | 2 | Box2 Cyl2 Cone2 Tor1 Dod5 Ico3 MLam1 | 3 | 3 |
+| 69 | `render/swinia-trzoda.ts` | 187 | T | 2 | 2 | 0 | 0 | Box1 Cone1 MLam1 | 2 | 0 |
+| 70 | `render/tarasy-model.ts` | 403 | T | 1 | 1 | 0 | 0 | BufG1 MLam1 | 1 | 0 |
+| 71 | `render/teren-gory-wzgorza.ts` | 509 | T | 2 | 3 | 10 | 1 | BufG1 MLam1 | 3 | 1 |
+| 72 | `render/tradeRoutesOverlay.ts` | 101 | T | 2 | 0 | 0 | 0 | BufG1 Line1 | 1 | 0 |
+| 73 | `render/ulepszenia-modele-p2.ts` | 345 | T | 5 | 3 | 0 | 0 | Box1 Cyl1 Cone1 MLam1 | 1 | 1 |
+| 74 | `render/ulepszenia-modele-p3a.ts` | 510 | T | 6 | 4 | 0 | 0 | Box1 Cyl1 Cone2 MLam1 | 1 | 0 |
+| 75 | `render/ulepszenia-modele-p3b.ts` | 571 | T | 12 | 3 | 0 | 0 | Box1 Cyl1 Cone1 MLam1 | 2 | 2 |
+| 76 | `render/unitOwnerEmblem.ts` | 516 | T | 0 | 0 | 0 | 0 | CTex1 Spr1 SprM1 | 5 | 3 |
+| 77 | `render/unitStatPlate.ts` | 936 | T | 5 | 6 | 0 | 0 | Pln2 CTex3 MStd1 | 2 | 2 |
+| 78 | `render/unitUpgradeBadges.ts` | 459 | T | 1 | 1 | 0 | 0 | CTex1 | 3 | 3 |
+| 79 | `render/unitVeteranBadges.ts` | 294 | T | 1 | 2 | 0 | 0 | Extr1 MStd2 | 1 | 3 |
+| 80 | `render/unitVitalsPalette.ts` | 89 | – | 0 | 0 | 0 | 0 | — | 2 | 0 |
+| 81 | `render/units.ts` | 6779 | T | 43 | 342 | 0 | 0 | Box285 Cyl45 Sph5 Tor6 Shape2 Tube1 CTex4 Spr4 MStd2 MBas6 SprM4 | 4 | 17 |
+| 82 | `render/wioska-oboz.ts` | 342 | T | 2 | 4 | 0 | 0 | Box1 Cyl1 Cone1 Circ1 MLam1 | 1 | 0 |
+| 83 | `render/wonderModels.ts` | 493 | T | 1 | 4 | 97 | 3 | Box1 Cyl2 Cone1 MLam1 | 2 | 0 |
+| 84 | `render/wonderRenderer.ts` | 143 | T | 0 | 0 | 0 | 0 | — | 1 | 0 |
+| 85 | `render/workerFieldOverlay.ts` | 211 | T | 2 | 0 | 0 | 0 | CTex1 Spr1 SprM1 | 2 | 1 |
+| 86 | `render/zelazo-jezdziec-oszczepami-opus5.ts` | 1256 | T | 2 | 52 | 0 | 0 | Box43 Cyl13 Cone3 Sph1 Tor3 Ico2 BufG1 MStd1 | 1 | 0 |
+| 87 | `render/zelazo-konnica-asyryjska-opus5.ts` | 1180 | T | 3 | 55 | 0 | 0 | Box45 Cyl12 Cone4 Sph1 Tor2 Ico2 BufG1 MStd1 | 1 | 0 |
+| 88 | `render/zoomLod.ts` | 220 | – | 0 | 0 | 0 | 0 | — | 3 | 1 |
+| 89 | `battle/battleScene.ts` | 19493 | T | 5 | 33 | 0 | 0 | Box10 Cyl4 Cone7 Sph3 Pln10 Circ3 Ring3 Ico3 BufG3 Inst12 CTex1 Spr1 Line2 MStd8 MLam12 MBas22 SprM1 | 4 | 1 |
+| 90 | `battle/manualBattle.ts` | 1433 | T | 2 | 10 | 0 | 0 | Box3 Cyl2 Tor1 Pln3 MLam4 MBas5 | 0 | 0 |
+| 91 | `battle/siegeWall.ts` | 1047 | T | 11 | 44 | 0 | 0 | Box31 Cyl10 Cone3 MStd1 | 1 | 0 |
+| 92 | `input/picker.ts` | 278 | T | 0 | 0 | 0 | 0 | — | 5 | 1 |
+| 93 | `main.ts` | 39350 | T | 56 | 0 | 0 | 0 | — | 0 | 0 |
+| 94 | `ui/perfTestPanel.ts` | 677 | T | 1 | 0 | 0 | 0 | Box1 Inst1 MLam1 | 1 | 0 |
+| 95 | `ui/unitMiniPreview.ts` | 155 | T | 0 | 0 | 0 | 0 | — | 3 | 1 |
+| 96 | `wonderpreview/main.ts` | 289 | T | 0 | 2 | 0 | 0 | Cyl1 Pln1 CTex1 Spr1 MLam2 SprM1 | 0 | 0 |
+LOC_RENDER 59319 LOC_OUTSIDE 62722
+R2_CALLS_TOTAL 482 R2_DEFS_TOTAL 21

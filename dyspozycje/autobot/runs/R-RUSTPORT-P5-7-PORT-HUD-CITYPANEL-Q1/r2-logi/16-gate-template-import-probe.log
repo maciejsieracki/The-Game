@@ -1,0 +1,2 @@
+$ grep -rnE "(import|require)\(\s*`" src index.html vite.config.ts
+EXIT=1 (1 = brak trafien)

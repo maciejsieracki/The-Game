@@ -1,0 +1,56 @@
+use civ_engine::domain::map_generator::{generate_map, Terrain, WorldType};
+
+fn main() {
+    let raw = std::fs::read_to_string("/home/user/The-Game/.claude/worktrees/wf_aa802f0f-4ff-1/rust-port/engine/tests/p6_1c_vectors/maps.json").unwrap();
+    let v: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    for (name, m) in v["maps"].as_object().unwrap() {
+        let w = m["w"].as_u64().unwrap() as u32;
+        let h = m["h"].as_u64().unwrap() as u32;
+        let seed = m["seed"].as_u64().unwrap() as u32;
+        let wt = match m["typ"].as_str().unwrap() {
+            "kontynenty" => WorldType::Continents,
+            "pangea" => WorldType::Pangea,
+            "wyspy" => WorldType::Islands,
+            _ => WorldType::Earth,
+        };
+        let g = generate_map(w, h, seed, wt).unwrap();
+        let (mut same, mut total, mut water_same, mut land_same, mut web_land, mut rs_land) = (0, 0, 0, 0, 0, 0);
+        for hx in m["hexes"].as_array().unwrap() {
+            let q = hx[0].as_u64().unwrap() as u32;
+            let r = hx[1].as_u64().unwrap() as u32;
+            let t = hx[2].as_str().unwrap();
+            let want = match t {
+                "morze" => Terrain::Sea,
+                "plytkie_morze" => Terrain::ShallowSea,
+                "laka" => Terrain::Grassland,
+                "rownina" => Terrain::Plains,
+                "pustynia" => Terrain::Desert,
+                "wzgorza" => Terrain::Hills,
+                "gory" => Terrain::Mountains,
+                "polarny" => Terrain::Polar,
+                o => panic!("{o}"),
+            };
+            let got = g.tile(q, r).unwrap().terrain;
+            total += 1;
+            if got == want {
+                same += 1;
+            }
+            if got.is_water() == want.is_water() {
+                water_same += 1;
+            }
+            if want.is_land() {
+                web_land += 1;
+                if got.is_land() {
+                    land_same += 1;
+                }
+            }
+            if got.is_land() {
+                rs_land += 1;
+            }
+        }
+        println!(
+            "{name} {w}x{h} seed={seed} {:?}: total={total} terrain_equal={same} land_water_equal={water_same} web_land={web_land} rust_land={rs_land} web_land_also_rust_land={land_same}",
+            wt
+        );
+    }
+}

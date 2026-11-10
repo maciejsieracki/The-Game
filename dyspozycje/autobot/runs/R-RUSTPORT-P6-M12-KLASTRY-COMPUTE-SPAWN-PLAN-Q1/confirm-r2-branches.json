@@ -1,0 +1,157 @@
+{
+ "repack-final-and": {
+  "cases": 3,
+  "hits": {
+   "fill": 1,
+   "tcLast": 1,
+   "klaszFill": 1,
+   "reassign": 1,
+   "forced": 1,
+   "resolveMass": 1,
+   "rfXor": 3
+  }
+ },
+ "table-topup-div-3": {
+  "cases": 3,
+  "hits": {
+   "fill": 3,
+   "tc": 3,
+   "tcFail": 3,
+   "forced": 1,
+   "fixedNull": 1,
+   "top1": 3,
+   "alt": 2,
+   "altNull": 2,
+   "top2": 2,
+   "klaszFill": 1,
+   "reassign": 1
+  }
+ },
+ "table-topup-min-9": {
+  "cases": 2,
+  "hits": {
+   "fill": 2,
+   "tc": 2,
+   "tcFail": 2,
+   "forced": 2,
+   "fixedNull": 2,
+   "top1": 2,
+   "top2": 2,
+   "klaszFill": 1,
+   "reassign": 1,
+   "resolveMass": 1
+  }
+ },
+ "topup-centers-local-land": {
+  "cases": 3,
+  "hits": {
+   "fill": 3,
+   "tc": 3,
+   "tcLast": 3,
+   "klaszFill": 3,
+   "reassign": 3,
+   "forced": 2,
+   "fixedNull": 2,
+   "skipNoHex": 1,
+   "top1": 1,
+   "top2": 1
+  }
+ },
+ "topup-player-dist-le": {
+  "cases": 3,
+  "hits": {
+   "fill": 3,
+   "tc": 3,
+   "tcFail": 3,
+   "klaszFill": 1,
+   "reassign": 1,
+   "top1": 3,
+   "altNull": 3,
+   "rfXor": 1,
+   "top2": 3
+  }
+ },
+ "topup-region-lt": {
+  "cases": 1,
+  "hits": {
+   "fill": 1,
+   "tc": 1,
+   "tcFail": 1,
+   "forced": 1,
+   "fixedNull": 1,
+   "top1": 1
+  }
+ },
+ "branch:forced": {
+  "cases": 3,
+  "hits": {
+   "fill": 3,
+   "tcLast": 3,
+   "tcFail": 3,
+   "forced": 3,
+   "resolveMass": 3,
+   "top1": 3,
+   "altNull": 1,
+   "top2": 1
+  }
+ },
+ "branch:skipNoHex": {
+  "cases": 3,
+  "hits": {
+   "forced": 3,
+   "fixedNull": 3,
+   "skipNoHex": 3,
+   "top1": 3,
+   "top2": 3
+  }
+ },
+ "branch:fixedNull": {
+  "cases": 3,
+  "hits": {
+   "fill": 3,
+   "tc": 3,
+   "tcFail": 3,
+   "forced": 3,
+   "fixedNull": 3,
+   "top1": 3,
+   "top2": 2,
+   "alt": 1
+  }
+ },
+ "plan-capital-name-swap": {
+  "cases": 3,
+  "hits": {
+   "spawn:prefOk": 3,
+   "spawn:spawnSkipLand": 1
+  }
+ },
+ "branch:spawn:prefNull": {
+  "cases": 3,
+  "hits": {
+   "spawn:prefNull": 3,
+   "spawn:retryNull": 3,
+   "spawn:spawnSkipLand": 3
+  }
+ },
+ "branch:spawn:retryNull": {
+  "cases": 3,
+  "hits": {
+   "spawn:prefNull": 3,
+   "spawn:retryNull": 3,
+   "spawn:spawnSkipLand": 3
+  }
+ },
+ "branch:spawn:prefMoved": {
+  "cases": 1,
+  "hits": {
+   "spawn:prefMoved": 1
+  }
+ },
+ "branch:spawn:spawnSkipLand": {
+  "cases": 3,
+  "hits": {
+   "spawn:prefOk": 3,
+   "spawn:spawnSkipLand": 3
+  }
+ }
+}

@@ -1,0 +1,15 @@
+MUTACJA pack_radius ceil->floor: WYKRYTA (testy FAILED: 7)
+MUTACJA [ROWNOWAZNA: ziarno hub-chain nieobserwowalne] hub_chain seed xor zmieniony: NIEWYKRYTA !!!
+MUTACJA land_pool d<=packR -> d<packR: WYKRYTA (testy FAILED: 6)
+MUTACJA nearest preferred odwrocone: WYKRYTA (testy FAILED: 5)
+MUTACJA [ROWNOWAZNA: ziarno hub-chain nieobserwowalne] retry seed 2 pominiety: NIEWYKRYTA !!!
+MUTACJA tabela: margines polplaszczyzny: WYKRYTA (testy FAILED: 8)
+MUTACJA tabela: promien min hex 5->4: WYKRYTA (testy FAILED: 4)
+MUTACJA slots: stolica gracza nie zajmuje nazwy: WYKRYTA (testy FAILED: 2)
+MUTACJA hexes_at_distance bez dedupe: WYKRYTA (testy FAILED: 2)
+MUTACJA group: odwrocony filtr rywali: WYKRYTA (testy FAILED: 2)
+MUTACJA shuffle j = floor(rand*i): WYKRYTA (testy FAILED: 2)
+MUTACJA axis prog 0.25 -> 0.0 (tabela): WYKRYTA (testy FAILED: 2)
+MUTACJA axis: seed % 6 -> seed % 5: WYKRYTA (testy FAILED: 2)
+PRZYWROCONO: src-ok json-ok
+EXIT=0

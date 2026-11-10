@@ -1,0 +1,5 @@
+city { q: 21, r: 12, pop: 9, tryb: 'auto', focus: 'zrownowazone' }
+auto worked 9
+within display r=3: 0 []
+reczny empty worked 0
+after restore auto 9

@@ -1,0 +1,4 @@
+usage: --dist <dir> [--json out] [--snapdir dir] [--no-snap]
+
+EXIT=2
+TIME=0.3

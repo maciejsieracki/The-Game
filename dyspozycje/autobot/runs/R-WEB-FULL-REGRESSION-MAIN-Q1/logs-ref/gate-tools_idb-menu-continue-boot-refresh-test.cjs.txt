@@ -1,0 +1,42 @@
+--- A. main.ts: przebudowa naprawy F1 (boot -> cache -> menu) ---
+  OK: main.ts importuje isMainMenuOpen z './ui/mainMenu'
+  OK: main.ts importuje showMainMenu z './ui/mainMenu'
+  OK: main.ts importuje refreshGamePauseMenuLoadState z './ui/gamePauseMenu'
+  OK: znaleziono kotwicę startową (navigator.storage.persist best-effort, tuż przed cache boota)
+  OK: znaleziono kotwicę końcową (if (demoUlepszeniaUrl) {) po kotwicy startowej
+  OK: region boota zawiera refreshHasAnySaveSlotCache DOKŁADNIE raz (got 1)
+  OK: F1: `void refreshHasAnySaveSlotCache().then(() => {` -- NIE fire-and-forget goły, callback po rozwiązaniu cache'a
+  OK: F1: wewnątrz .then(...) jest `if (isMainMenuOpen()) showMainMenu();` -- przebudowa TYLKO gdy gracz wciąż na menu
+  OK: F1: wewnątrz .then(...) jest wywołanie refreshGamePauseMenuLoadState() -- pkt 1b, analogiczna naprawa menu pauzy
+  OK: znaleziono function hasAnySaveSlot(): boolean {
+  FAIL: hasAnySaveSlot(): `void refreshHasAnySaveSlotCache();` gołe (bez .then) -- stale-while-revalidate na KAŻDYM odczycie
+  OK: REGRESJA-STRAŻNIK: hasAnySaveSlot() NIE ma .then(...) doczepionego do refreshHasAnySaveSlotCache() -- gdyby ktoś "naprawił" i to miejsce tym samym wzorcem co F1, każdy render menu (cfg.hasSave() w mainMenu.build()) odpaliłby kolejną przebudowę menu -> pętla
+
+--- B. ui/mainMenu.ts (zbundlowany naprawdę): stale -> rebuild -> aktywny przycisk ---
+  OK: B1. isMainMenuOpen() === true zaraz po showMainMenu()
+  OK: B2. przycisk "Kontynuuj" istnieje w DOM po pierwszej budowie
+  OK: B3. hasSave()=false -> "Kontynuuj" disabled=true (bug: to jest stan, w którym menu utyka BEZ naprawy F1)
+  OK: B4. klik (dispatchEvent) na disabled "Kontynuuj" NIC nie robi -- btn() w mainMenu.ts nie podpina handlera, gdy enabled=false (nie tylko atrybut disabled)
+  OK: B5. przycisk "Więcej" istnieje
+  OK: B6. przycisk "Wczytaj grę" istnieje w panelu "Więcej"
+  OK: B7. hasSave()=false -> "Wczytaj grę" disabled=true
+  OK: B8. klik na disabled "Wczytaj grę" NIC nie robi (handler nie podpięty)
+  OK: B9. (kontrola) menu wciąż otwarte tuż przed przebudową -- odpowiednik `if (isMainMenuOpen())` z main.ts
+  OK: B10. po przebudowie DOKŁADNIE JEDEN przycisk "Kontynuuj" w DOM -- rebuild NIE duplikuje (rootEl.innerHTML="" przed każdym build())
+  OK: B11. NAPRAWA: po przebudowie z hasSave()=true, "Kontynuuj" disabled=false
+  OK: B12. NAPRAWA: klik na aktywny "Kontynuuj" NAPRAWDĘ woła onContinue() (handler podpięty przy budowie z enabled=true)
+  OK: B13. NAPRAWA: po przebudowie "Wczytaj grę" disabled=false
+  OK: B14. NAPRAWA: klik na aktywny "Wczytaj grę" NAPRAWDĘ woła onLoad()
+  OK: B15. (sanity) DOM po przebudowie nadal ma przyciski (menu nie zniknęło)
+  OK: B16. hideMainMenu() -> isMainMenuOpen()===false -- dokładnie warunek, który w main.ts blokuje niechcianą przebudowę po zamknięciu menu
+
+--- C. game/save.ts (zbundlowany naprawdę): meta IDB porażka + stary localStorage NIE zmartwychwstaje ---
+  OK: C1. saveToLocal zwraca ok:true mimo porażki zapisu meta (główny zapis przeszedł, meta jest best-effort)
+  OK: C2. NAPRAWA F2: catch po porażce IDB czyści RÓWNIEŻ stary klucz meta w legacy localStorage (nie tylko IDB)
+  OK: C3. NAPRAWA F2: loadSaveSlotMeta() zwraca null (brak klucza w OBU backendach) -- NIE "zmartwychwstałą" STARĄ etykietę/turę z legacy localStorage
+  OK: C4. (kontrola negatywna, jawnie) meta.label NIGDY nie jest starą wartością "STARA etykieta" -- dokładnie ten symptom zgłoszony w P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE
+
+=== idb-menu-continue-boot-refresh-test: 31 pass, 1 fail ===
+
+EXIT=1
+TIME=2.5

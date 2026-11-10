@@ -1,0 +1,44 @@
+--- pin/gra/src/ui/unitInfoCard.ts
++++ v2/src/ui/unitInfoCard.ts
+@@ -24,17 +24,25 @@
+  * wszystkich 4 kinds), nie regresja wprowadzona w T4. Lokalne nadpisania CSS niżej
+  * (`ensureUnitInfoCardStyles`) tylko dopasowują canvas/fallback do rozmiaru slotu.
+  */
+-import type { GameData, UnitDef } from '../data/loader';
++// P5.5: typy `GameData`/`UnitDef` (`data/loader`, pin `:27`) → `UnitDefDto` + lokalny `GameData` (pola czytane
++// w `collectCounters`: wiersze `counters.json`, D-UI-4); `categoryOf` (`units/setup`, pin `:31`) →
++// `StaticCatalogDto.unitCategory` (`unitCategoryFromCatalog`, jak `entityCards/unitAdapter.ts` w P5.4).
++import type { UnitDefDto as UnitDef } from '../viewmodel/types';
++import { unitCategoryFromCatalog } from '../controller/staticCatalog';
+ import { unitAdapter } from './entityCards/unitAdapter';
+ import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+ import type { EntityCardData } from './entityCards/types';
+-import { categoryOf } from '../units/setup';
+ import { unitInfographicLabel, unitInfographicMedallionHtml } from './unitInfographic';
+ import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 
+ export const UNIT_3D_RENDER_HOOK = 'buildUnitModel';
+ 
++/** P5.5: podzbiór web `GameData` czytany przez kartę (wiersze `counters.json` w `collectCounters`). */
++export interface GameData {
++  counters: ReadonlyArray<Readonly<Record<string, unknown>>>;
++}
++
+ export interface UnitInfoCardOptions {
+   ownerColor?: number;
+   statusLines?: readonly string[];
+@@ -251,12 +259,7 @@
+     titleRow.appendChild(superBadge);
+   }
+   titleWrap.appendChild(titleRow);
+-  const category = categoryOf(
+-    text(unit.Jednostka),
+-    text(unit['Rola (linia)']),
+-    isSuperUnit,
+-    unit.Typ,
+-  );
++  const category = unitCategoryFromCatalog(unit.Jednostka, true);
+   const subtitle = node('div', 'unit-info-card-subtitle');
+   subtitle.textContent = [text(unit.Epoka), text(unit.Typ), unitInfographicLabel(category)]
+     .filter(Boolean).join(' · ');

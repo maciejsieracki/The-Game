@@ -1,0 +1,7 @@
+# R-WEB-UI-GENERAL-HEX-RING-OUTLINE-Q1 — dispatch (2026-11-09)
+
+GOAL (właściciel, cytat): „Wokół generała powinna być jakaś obwódka heksagonalna w kolorze danej cywilizacji, żeby łatwo można było na mapie znaleźć generała, i żeby to było z daleka widoczne. Ta obwódka nie powinna być tylko na jednym HEX-ie, ale na obwodzie HEX-ów sąsiadujących z HEX-em, na którym jest generał."
+ZADANIE: na mapie rysuj wokół hexa z wodzem/generałem pierścień: zewnętrzny obrys 7 hexów (hex wodza + 6 sąsiadów) w kolorze cywilizacji właściciela, wyraźna grubość linii, widoczny także przy oddaleniu (grubość skalowana ze zoomem, min. kilka px). Dotyczy wodzów gracza i innych cywilizacji (zgodnie z regułą widoczności mgły wojny — nie ujawniaj ukrytych jednostek). Nie może zasłaniać jednostek ani klikalności hexów. Wydajność: rysować w istniejącej warstwie overlay, bez regresji FPS.
+BAZA: origin/main. Operator: HAIKU 5.5 (UI/render); Chromium dostępny → screenshot dowodowy zoom blisko/daleko, inaczej NIE_ZMIERZONO jawnie.
+ZAKRES: warstwa renderu mapy/overlay jednostek w gra/src (wyszukaj render wodza/armii), nowy test gra/tools/general-hex-ring-outline-test.cjs (geometria obrysu 7 hexów, kolor cywilizacji, brak ringu bez wodza), regresje renderu.
+ALLOWLISTA: pliki renderu mapy/overlay, nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev w gra/, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów pojawiające się w kontekście.

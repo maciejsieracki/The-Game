@@ -1,0 +1,39 @@
+# Literaly liczbowe i napisowe w module army_merge (recruitment.rs); komentarze pominiete
+# Klasyfikacja: STRUKTURALNY = elementy neutralne/semantyka JS (0, 1, 0.5 w Math.round, format klucza "q,r"),
+# nie sa danymi ani mnoznikami balansu. Dane/teksty/progi: data/derived/{army-merge-params,unit-cost-tempo}.json.
+352: nums=['0.0'] strs=[] | if !x.is_finite() || x.fract() == 0.0 {
+356: nums=['0.5', '1.0'] strs=[] | let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+357: nums=['0.0', '0.0'] strs=[] | if rounded == 0.0 && x < 0.0 {
+358: nums=['-0.0'] strs=[] | -0.0
+371: nums=['0'] strs=[] | if n == 0 {
+372: nums=['0', '0'] strs=[] | return char::from_digit(0, radix).unwrap_or('0').to_string();
+375: nums=['0'] strs=[] | while n > 0 {
+376: nums=['0'] strs=[] | let digit = u32::try_from(n % u64::from(radix)).unwrap_or(0);
+377: nums=['0'] strs=[] | digits.push(char::from_digit(digit, radix).unwrap_or('0'));
+389: nums=[] strs=['{q},{r}'] | format!("{q},{r}")
+398: nums=['0', '1'] strs=[] | .map(|offset| (offset[0], offset[1]))
+446: nums=['0.0'] strs=[] | ruch: 0.0,
+447: nums=['0.0'] strs=[] | ruch_left: 0.0,
+480: nums=[] strs=['{}{}{},{}'] | let base = format!("{}{}{},{}", u.owner_id, stos.separator, u.q, u.r);
+482: nums=[] strs=['{base}{}'] | format!("{base}{}", stos.przyrostek_garnizon)
+506: nums=['1'] strs=[] | self.seq += 1;
+509: nums=[] strs=['{}{}{}{}{}{}'] | "{}{}{}{}{}{}",
+653: nums=['0.0'] strs=[] | u.ruch_left = 0.0;
+674: nums=['0.0'] strs=[] | u.ruch_left = 0.0;
+742: nums=[] strs=['{}{}{},{}'] | let mut key = format!("{}{}{},{}", stack_group_id_of(u), stos.separator, u.q, u.r);
+827: nums=['1'] strs=[] | if stack.len() > 1 {
+856: nums=['0'] strs=[] | 0 => None,
+857: nums=['1', '0'] strs=[] | 1 => Some(stack[0]),
+1024: nums=['0.0'] strs=[] | let safe_deducted = js_max(0.0, deducted_ruch);
+1078: nums=['0'] strs=[] | disabled: split_destination_count == 0,
+1110: nums=['0.0'] strs=[] | return 0.0;
+1126: nums=['0.0'] strs=[] | return 0.0;
+1134: nums=['0.0'] strs=[] | return 0.0;
+1144: nums=['0.0'] strs=[] | let mut hp = 0.0;
+1145: nums=['0.0'] strs=[] | let mut hp_max = 0.0;
+1149: nums=['0.0'] strs=[] | if !m.is_finite() || m <= 0.0 {
+1154: nums=['0.0'] strs=[] | Some(current) if current.is_finite() => js_max(0.0, js_min(m, current)),
+1169: nums=['0.0'] strs=[] | return 0.0;
+1280: nums=['0.0'] strs=[] | 0.0
+1284: nums=['0.0'] strs=[] | sync_stack_ruch_left(stack, Some(js_max(0.0, pooled - cost)));
+1293: nums=['1'] strs=[] | if stack.len() <= 1 {

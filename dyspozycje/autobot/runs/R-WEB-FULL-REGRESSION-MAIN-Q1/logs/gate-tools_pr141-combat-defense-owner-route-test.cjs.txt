@@ -1,0 +1,11 @@
+ReferenceError: _menuCivIdByOwner is not defined
+    at Object.civKeyForOwnerId (<REF-TMP>/tmp/run/pr141-owner-route-v5quYo/bundle.cjs:11349:23)
+    at Object.civLabelForOwner (<WT>/gra/tools/pr141-combat-defense-owner-route-test.cjs:86:38)
+    at planOpenCityFieldBattle (<REF-TMP>/tmp/run/pr141-owner-route-v5quYo/bundle.cjs:11148:12)
+    at Object.launchFieldBattleFromMap (<REF-TMP>/tmp/run/pr141-owner-route-v5quYo/bundle.cjs:11194:22)
+    at battleOptsForOwner (<WT>/gra/tools/pr141-combat-defense-owner-route-test.cjs:81:5)
+    at run (<WT>/gra/tools/pr141-combat-defense-owner-route-test.cjs:109:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+EXIT=1
+TIME=1.9

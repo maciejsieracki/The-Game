@@ -1,0 +1,10 @@
+A. gracz -- canBuild = isImprovementAllowedForCiv && qualifies (jak main.ts)
+  FAIL: isImprovementAllowedForCiv: lama NIE ma pola cywilizacje (gate osobny, isIncaCiv w livestock-unlock.ts) -- ten mechanizm jej nie dotyczy
+B. AI -- planCityImprovements (przez decideAITurn)
+  FAIL: AI Chinczycy: dokladnie 1 buildImprovement (got 2, want 1)
+  FAIL: AI Inkowie: dokladnie 1 buildImprovement (got 2, want 1)
+
+TARASY-CYWILIZACJE-TEST: 14 passed, 3 failed
+
+EXIT=1
+TIME=3.1

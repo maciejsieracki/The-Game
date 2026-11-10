@@ -1,0 +1,76 @@
+WYKRYTY   : [0] cost: tempo - brak dolnej granicy 1 -> 1 testow czerwonych: building_cost_pace_matches_running_web
+WYKRYTY   : [1] cost: tempo - nieznany klucz = 1 -> 2 testow czerwonych: building_cost_pace_matches_running_web, prototype_key_lookups_are_a_documented_divergence
+WYKRYTY   : [2] cost: tempo - mnoznik liczbowy bez znaku -> 1 testow czerwonych: building_cost_pace_matches_running_web
+WYKRYTY   : [3] cost: epoka - prog > -> 8 testow czerwonych: building_era_cost_multiplier_matches_running_web, building_stock_cost_matches_running_web, epoch_cost_multiplier_matches_running_web
+WYKRYTY   : [4] cost: epoka - brak progu = 0 -> 8 testow czerwonych: building_stock_cost_matches_running_web, building_era_cost_multiplier_matches_running_web, epoch_cost_multiplier_matches_running_web
+PRZEZYL   : [5] cost: epoka - bez floor
+WYKRYTY   : [6] cost: epoka - nieskonczona jak 3 -> 3 testow czerwonych: scale_cost_by_epoch_matches_running_web, epoch_cost_multiplier_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [7] cost: epoka - bez sciezki cyfr -> 3 testow czerwonych: epoch_cost_multiplier_matches_running_web, scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+PRZEZYL   : [8] cost: epoka - cyfry puste czesci
+PRZEZYL   : [9] cost: epoka - cyfry nie-ASCII
+WYKRYTY   : [10] cost: epoka - slowo jako przedrostek -> 3 testow czerwonych: scale_cost_by_epoch_matches_running_web, epoch_cost_multiplier_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [11] cost: skala - ujemny koszt -> 1 testow czerwonych: scale_cost_by_epoch_matches_running_web
+WYKRYTY   : [12] cost: skala - zero -> 1 testow czerwonych: scale_cost_by_epoch_matches_running_web
+WYKRYTY   : [13] cost: skala - brak dolnej granicy 1 -> 2 testow czerwonych: scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [14] cost: era budynku - domyslna epoka -> 2 testow czerwonych: building_stock_cost_matches_running_web, building_era_cost_multiplier_matches_running_web
+WYKRYTY   : [15] cost: era budynku - round zamiast floor -> 2 testow czerwonych: building_stock_cost_matches_running_web, building_era_cost_multiplier_matches_running_web
+WYKRYTY   : [16] cost: rekord FALA2 bez mnoznika -> 2 testow czerwonych: building_stock_cost_matches_running_web, building_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [17] cost: rekord FALA2 - filtr skonczonosci -> 1 testow czerwonych: building_stock_cost_matches_running_web
+WYKRYTY   : [18] cost: rekord FALA2 - brak dolnej granicy 1 -> 1 testow czerwonych: building_stock_cost_matches_running_web
+WYKRYTY   : [19] cost: koszt budynku bez mnoznika ery -> 2 testow czerwonych: building_stock_cost_matches_running_web, building_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [20] cost: brakuje - >= -> 1 testow czerwonych: missing_can_afford_and_deduct_match_running_web
+WYKRYTY   : [21] cost: brakuje - odwrocona roznica -> 1 testow czerwonych: missing_can_afford_and_deduct_match_running_web
+WYKRYTY   : [22] cost: stac - <= -> 1 testow czerwonych: missing_can_afford_and_deduct_match_running_web
+WYKRYTY   : [23] cost: pobor - bez dolnej granicy 0 -> 1 testow czerwonych: missing_can_afford_and_deduct_match_running_web
+WYKRYTY   : [24] cost: pobor - pusta baza -> 2 testow czerwonych: deduct_does_not_mutate_inputs, missing_can_afford_and_deduct_match_running_web
+WYKRYTY   : [25] cost: etykieta - brak etykiety -> 2 testow czerwonych: prototype_key_lookups_are_a_documented_divergence, stock_resource_label_matches_running_web
+WYKRYTY   : [26] pool: suma - tylko skonczone -> 1 testow czerwonych: owner_resource_stock_all_matches_running_web
+WYKRYTY   : [27] pool: suma - filtr wlasciciela -> 1 testow czerwonych: owner_resource_stock_all_matches_running_web
+WYKRYTY   : [28] pool: zapas - suma -> 4 testow czerwonych: credit_owner_resource_stock_matches_running_web, owner_resource_stock_matches_running_web, inactive_status_matches_running_web
+PRZEZYL   : [29] pool: zwrot - tylko dodatnie
+PRZEZYL   : [30] pool: przypisanie - tylko dodatnie
+PRZEZYL   : [31] pool: pobor - NaN/0 koszt
+WYKRYTY   : [32] pool: pobor - zerowi posiadacze -> 1 testow czerwonych: deduct_across_cities_matches_running_web
+WYKRYTY   : [33] pool: pobor - kierunek sortowania -> 2 testow czerwonych: deduct_across_cities_matches_running_web, pay_drain_matches_running_web
+WYKRYTY   : [34] pool: pobor - remis po id odwrocony -> 2 testow czerwonych: explicit_utf16_tie_break_matches_running_web, pay_drain_matches_running_web
+WYKRYTY   : [35] pool: kredyt - remis po id odwrocony -> 4 testow czerwonych: assign_from_pool_matches_running_web, explicit_utf16_tie_break_matches_running_web, credit_owner_resource_stock_matches_running_web
+WYKRYTY   : [36] pool: id jak bajty UTF-8 -> 2 testow czerwonych: explicit_utf16_tie_break_matches_running_web, refund_across_cities_matches_running_web
+PRZEZYL   : [37] pool: NaN roznicy nie jest remisem
+WYKRYTY   : [38] pool: pobor - cala potrzeba -> 2 testow czerwonych: deduct_across_cities_matches_running_web, pay_drain_matches_running_web
+PRZEZYL   : [39] pool: kredyt - kwota <= 0
+WYKRYTY   : [40] pool: kredyt - cap musi byc skonczony -> 1 testow czerwonych: credit_owner_resource_stock_matches_running_web
+PRZEZYL   : [41] pool: kredyt - cap bez dolnej granicy
+WYKRYTY   : [42] pool: kredyt - kierunek sortowania -> 2 testow czerwonych: credit_owner_resource_stock_matches_running_web, refund_across_cities_matches_running_web
+WYKRYTY   : [43] pool: kredyt - ostatni zamiast pierwszego -> 4 testow czerwonych: explicit_utf16_tie_break_matches_running_web, credit_owner_resource_stock_matches_running_web, assign_from_pool_matches_running_web
+WYKRYTY   : [44] pool: kredyt - zero -> 1 testow czerwonych: credit_owner_resource_stock_matches_running_web
+WYKRYTY   : [45] pool: przypisanie - bez zerowania -> 1 testow czerwonych: assign_from_pool_matches_running_web
+WYKRYTY   : [46] pool: sortowanie niestabilne -> 4 testow czerwonych: credit_owner_resource_stock_matches_running_web, assign_from_pool_matches_running_web, refund_across_cities_matches_running_web
+WYKRYTY   : [47] unit: Typ bez trim -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [48] unit: wyjatek bez trim -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [49] unit: Surowiec bez trim -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [50] unit: znacznik braku surowca -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [51] unit: ilosc skonczona -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+PRZEZYL   : [52] unit: pusty klucz
+WYKRYTY   : [53] unit: kon dodawany do surowca -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [54] unit: kon bez skali ery -> 2 testow czerwonych: unit_stock_cost_matches_running_web, unit_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [55] nfd: znaki laczace zostaja -> 5 testow czerwonych: epoch_cost_multiplier_matches_running_web, scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [56] nfd: Hangul - samogloska -> 2 testow czerwonych: nfd_strip_matches_running_web_for_random_sequences, nfd_strip_matches_running_web_for_every_code_point
+WYKRYTY   : [57] nfd: Hangul - spolgloska koncowa -> 2 testow czerwonych: nfd_strip_matches_running_web_for_random_sequences, nfd_strip_matches_running_web_for_every_code_point
+WYKRYTY   : [58] nfd: Hangul - spolgloska poczatkowa -> 2 testow czerwonych: nfd_strip_matches_running_web_for_random_sequences, nfd_strip_matches_running_web_for_every_code_point
+WYKRYTY   : [59] nfd: brak kanonicznego uporzadkowania -> 1 testow czerwonych: nfd_strip_matches_running_web_for_random_sequences
+WYKRYTY   : [60] nfd: bez malych liter -> 5 testow czerwonych: scale_cost_by_epoch_matches_running_web, epoch_cost_multiplier_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [61] nfd: trim Rust zamiast JS -> 5 testow czerwonych: epoch_cost_multiplier_matches_running_web, scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [62] gate: Mennica - strict > -> 5 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, missing_runtime_labels_match_running_web, owner_can_feed_mennica_matches_running_web
+PRZEZYL   : [63] gate: Zloto - filtr dodatnich
+mutantow=64 przezylo/niekompilujace=11
+   cost: epoka - bez floor
+   cost: epoka - cyfry puste czesci
+   cost: epoka - cyfry nie-ASCII
+   pool: zwrot - tylko dodatnie
+   pool: przypisanie - tylko dodatnie
+   pool: pobor - NaN/0 koszt
+   pool: NaN roznicy nie jest remisem
+   pool: kredyt - kwota <= 0
+   pool: kredyt - cap bez dolnej granicy
+   unit: pusty klucz
+   gate: Zloto - filtr dodatnich

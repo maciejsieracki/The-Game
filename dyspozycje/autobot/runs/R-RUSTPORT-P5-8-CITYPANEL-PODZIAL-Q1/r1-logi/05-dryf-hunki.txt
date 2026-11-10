@@ -1,0 +1,67 @@
+@@ -107,0 +108,2 @@ import {
+@@ -230,0 +233 @@ import {
+@@ -240,0 +244 @@ import {
+@@ -264 +267,0 @@ import {
+@@ -545,0 +549,10 @@ export interface CityPanelConfig {
+@@ -551,0 +565,2 @@ export interface CityPanelConfig {
+@@ -579,0 +595,2 @@ export interface CityPanelConfig {
+@@ -610,0 +628,24 @@ let cfg: CityPanelConfig = {};
+@@ -885,2 +926,3 @@ function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
+@@ -892,0 +935 @@ function queueItemCumulativeEta(
+@@ -899 +942,3 @@ function queueItemCumulativeEta(
+@@ -905 +950,3 @@ function queueItemCumulativeEta(
+@@ -908 +955,3 @@ function queueItemCumulativeEta(
+@@ -1162,0 +1212,2 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null
+@@ -1180,12 +1230,0 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null
+@@ -1206 +1244,0 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null
+@@ -1245 +1283,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null
+@@ -3186 +3230 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
+@@ -3223,0 +3268,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
+@@ -4932 +4986,2 @@ function buildWealthDetailCard(
+@@ -5006,2 +5061,2 @@ function buildPracaDetailCard(
+@@ -5063 +5118,7 @@ function appendPodzialPracyInfo(
+@@ -5678 +5739 @@ function buildTopBarRekruciDetailCard(
+@@ -7113 +7174 @@ function buildBuildingInfocard(
+@@ -7539,0 +7601 @@ function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData,
+@@ -7545 +7607,2 @@ function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData,
+@@ -7644 +7707 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
+@@ -7646 +7709 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
+@@ -7784 +7847 @@ function buildBuildingBuildTabDetailCard(
+@@ -7795 +7858,3 @@ function buildBuildingBuildTabDetailCard(
+@@ -8052,2 +8117,3 @@ function recruitManpowerCost(city: City, typeId: string): number {
+@@ -8121 +8187,3 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
+@@ -8135,0 +8204,15 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
+@@ -8142,0 +8226 @@ export function appendUnitRecruitCompactRow(
+@@ -8156,0 +8241 @@ export function appendUnitRecruitCompactRow(
+@@ -8160 +8245 @@ export function appendUnitRecruitCompactRow(
+@@ -8173,0 +8259 @@ export function appendUnitRecruitCompactRow(
+@@ -8177 +8263,3 @@ export function appendUnitRecruitCompactRow(
+@@ -8182,0 +8271,63 @@ export function appendUnitRecruitCompactRow(
+@@ -8259 +8410,2 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
+@@ -8261,2 +8413,6 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
+@@ -8354,2 +8510,6 @@ function appendBuildQueueSection(
+@@ -8435,0 +8596,3 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
+@@ -8464 +8627 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
+@@ -8507 +8670 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
+@@ -8545,0 +8709 @@ function formatBuildingCatalogLockHint(
+@@ -8553,0 +8718,2 @@ function formatBuildingCatalogLockHint(
+@@ -8734 +8900,3 @@ function appendCatalogBuildingRow(
+@@ -8770,0 +8939,3 @@ function renderBuildList(
+@@ -8772 +8943 @@ function renderBuildList(
+@@ -8777,0 +8949 @@ function renderBuildList(
+@@ -8841 +9013,6 @@ function renderBuildList(
+@@ -8848 +9025 @@ function renderBuildList(
+@@ -8849,0 +9027,5 @@ function renderBuildList(
+@@ -8852 +9034 @@ function renderBuildList(
+@@ -8864,2 +9046,3 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number
+@@ -8881,0 +9065 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number
+@@ -8909,5 +9093 @@ function renderPurchasableUnits(
+@@ -8928,5 +9108 @@ function renderPurchasableUnits(
+@@ -8964,0 +9141,16 @@ function renderPurchasableUnits(
+@@ -10875,7 +11067 @@ function buildHandelDetailCard(
+@@ -10955 +11140,0 @@ function buildHandelDetailCard(
+@@ -10956,0 +11142 @@ function buildHandelDetailCard(
+@@ -10971 +11157 @@ function buildHandelDetailCard(
+@@ -10976 +11162 @@ function buildHandelDetailCard(
+@@ -10979 +11165 @@ function buildHandelDetailCard(
+@@ -10987 +11173 @@ function buildHandelDetailCard(

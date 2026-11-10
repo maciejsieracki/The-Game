@@ -1,0 +1,20 @@
+[large-empire] source identity before build: {"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"658217866bda49cad3fa0005244cc47651535755112a91bba0a112e9b91e2e27"}
+vite v5.4.21 building for production...
+transforming...
+✓ 960 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-C7ow9HGP.js
+[plugin vite:singlefile]
+
+computing gzip size...
+../../../../../../..<REF-TMP>/w2/tmp/run/large-empire-stress-26987-9kd0ea/index.html  75,758.23 kB │ gzip: 49,499.30 kB
+✓ built in 54.11s
+[large-empire] source identity after build: {"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"658217866bda49cad3fa0005244cc47651535755112a91bba0a112e9b91e2e27"}
+[perf] build identity: {"gitHead":"ffccd8e21336b67c232104728e5abd7d22df81c5","indexHtmlBytes":75758232,"indexHtmlSha256":"00df5d203bb2b3bbfb20f015a08ad518b913b7aa4aefbce2eb08ab7600626077","sourceBeforeBuild":{"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"658217866bda49cad3fa0005244cc47651535755112a91bba0a112e9b91e2e27"},"sourceAfterBuild":{"mainTsSha256":"07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b","productionTsSha256":"1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123","buildInputTreeSha256":"4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9","harnessSha256":"658217866bda49cad3fa0005244cc47651535755112a91bba0a112e9b91e2e27"}}
+[large-empire] phase: {"at":"2026-11-07T18:52:59.784Z","phase":"page-load"}
+[large-empire] phase: {"at":"2026-11-07T18:53:06.769Z","phase":"new-game-start"}
+
+EXIT=124
+TIME=360.3
