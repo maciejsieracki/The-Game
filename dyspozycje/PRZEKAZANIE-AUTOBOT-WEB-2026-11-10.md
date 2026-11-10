@@ -38,7 +38,7 @@ Długi testowe: battle-loot-test (4 FAIL), weterani-test (1 FAIL), ai-major-econ
 ## 6. Decyzje czekające na właściciela (do paczki AskUserQuestion)
 - Podpowiedź „Przydziel obywatela?” (#201): przycisk/centrowanie kamery na polu? zakładka „Ważne” zamiast „Inne”? (wymaga pola akcji w SidePanelEvent).
 - Marsz: opcja B powiadomień (obstacle/no_path/blocked_city w „Ważne”; no_movement i mgła cicho) — potwierdzić; kasowanie planu przy limicie stosu = tylko toast (dodać powiadomienie?).
-- Terminologia klasa C — wykonywana teraz (decyzje właściciela już zapisane w rejestrze, ok. linii 9111).
+- Terminologia klasa C — WDROŻONA (FALA 602); zostaje tylko follow-up #204 (panel imperium „Handel i pieniądz”, style JSON kart, wiki „Mnożnik handlu/waluty” — to ostatnie wymaga ABC).
 - Nazwy robocze „Mała rzeka”, „Rzeka w sąsiedztwie”, „Tropiki” (RAW-IDS, brak definicji w danych).
 - „×0” przy Soli/Koniu (surowce-dostępy): kosmetyka; alternatywa „×N tylko dla ilościowych”.
 - Interpretacja 20% w rozejmie (patrz wyżej).
@@ -48,3 +48,19 @@ Długi testowe: battle-loot-test (4 FAIL), weterani-test (1 FAIL), ai-major-econ
 - **REPIN Rust**: każdy temat web zmienia dane/UI/logikę — port Rust (`rust-port/`, branch `parity-v2`) wstrzymany; REPIN dopiero po końcu kolejki web (osobna pętla, ≥4 operatorów Haiku, sparse-checkout).
 - Weryfikacja wizualna w Chromium: większość tematów UI ma NIE_ZMIERZONO (brak przeglądarki w workflow); sprawdzić po deployu na ROBOCZEJ.
 - Rejestr i taski: `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (źródło prawdy zgłoszeń), lista tasków sesji (#194 = opis pętli i kolejki).
+
+## 8. Odpowiedzi właściciela (ABC) JUŻ ZASTOSOWANE — nie pytać ponownie
+- Ceramika: tylko w UTRZYMANIU 4 budynków (Spichlerz II, Akwedukt, Łaźnia, Port; 2/t) — nie w kosztach budowy (FALA 598).
+- Ha'amonga: martwe bonusy usunięte (597). Garncarstwo: 5. po czterech podstawach, koszt 5 PN (594).
+- Dyplomacja: „Rekruci” z „jedn.”, „Obywatele”, dopisek limitu wojennego (592–593); Respekt = prawdziwa wartość (591); „Ruda miedzi” zamiast „Ruda”; stan 0 pokazywany jako „×0” (595) — kosmetykę Soli/Konia zostawiono do decyzji (sekcja 6).
+- PROMOTAB (tabela awansów) A/A/A (601). Oblężenie bez wyłomu: limit 150 tur, remis, miasto zostaje obrońcy, dotyczy też bitwy ręcznej; Pomiń = AUTO (600).
+- Rozejm: 5/10/15 tur, wyłącznie takie terminy także dla AI (AI = te same zasady co gracz); po końcu propozycja pokoju; akceptacja wg siły (proponujący ≥20% słabszy → adresat akceptuje; 0 vs 0 = odmowa); Z8 A, Z9 A (605).
+- Łucznik ×2, Procarz ×3, celność max(wręcz, dystans) (603). Straty: gracz czerwone, wróg żółte (604).
+- Falanga (model 3D): odłożona na koniec / po odnowieniu limitu (Opus 5.5).
+- Reguły pracy: Haiku domyślnie; Sonnet tylko bardzo trudne lub po 2 nieudanych rundach (uzasadnienie w dispatchu); grafika Opus 5.5; 4 tematy naraz; po każdym temacie deploy → push → sprzątanie.
+
+## 9. Środowisko po sprzątaniu (2026-11-10)
+- Dysk: 13 GB zajęte, 27 GB wolne. Usunięto: cały `/tmp` poza katalogiem sesji, osierocone `.claude/worktrees/*`, cache npm, **transkrypty subagentów i tool-results bieżącej sesji (≈6 GB)** — starych workflowów NIE da się już wznowić przez `resumeFromRunId`; wszystkie były zakończone, wyniki są w `dyspozycje/autobot/runs/<ID>/`, refs `web-wip/*` i `refs/keep/*`.
+- Zostały: `.cargo`/`.rustup` (2,3 GB, Rust wstrzymany), skrypty `*.sh` w scratchpadzie sesji (`dep3.sh`, `finalize2.sh`, `mkport.sh`…; podkatalogi scratchpadu skasowane). Nowa sesja ma inny scratchpad — skrypty odtworzyć z sekcji 2 lub skopiować, jeśli katalog nadal istnieje.
+- Heartbeat `trig_011XWDWaiy4BmwWoqPtfJFMj` (co godzinę) nadal włączony; właściciel zakazał nowych tematów do odnowienia limitu — wznowić pętlę dopiero na jego sygnał.
+- Brak tematów w toku, brak worktree, brak niewdrożonego kodu (poza #205 i poprawką testu `c6b0a58d5`).
