@@ -6930,3 +6930,6 @@ ROBOCZA `2ee58aa2`; publikacja `2da63d941`: limit zamiany jednostek AI w konfigu
 
 ## FALA608 — 2026-11-10
 ROBOCZA6c95bf48, publicationaac34b521, source531d403f6. Haamonga: encyclopedia/catalogue reflect implemented effects; no gameplay bonus changes. IndependentDefense/FC PASSWITHNOTES; productionbuild+HTTPaudio smokePASS; audio unchanged. Offlinefile:// remainsINFRA-blocked, notclaimedPASS. Push/freshGitreadbackPASS; ownrelease dirs cleaned.
+
+## FALA609 —2026-11-10
+ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. Graficzny wybór sąsiedniego heksu rozdzielenia bez współrzędnych; sześć pól/ARMIA/teren/disabledpowód/samemiasto. Eval/FC14/14+15legacy+4movement,typecheckPASS. Dodatkowo zweryfikowana partia tekstówkart75/75; cały audytUI/CivpediaPARTIAL. Build+HTTPaudio present/absentPASS,3packsunchanged. Offlinefile:// remainsINFRAblocked, notPASS. Push/freshGitreadbackPASS, ownrelease/DFOGdirs cleaned.
