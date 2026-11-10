@@ -1,0 +1,4 @@
+{"ev":"start","seed":4242,"typ":"kontynenty","size":"Maly","at":"2026-11-10T13:19:26.584Z"}
+{"ev":"negative-control-pass","state":{"enabled":false,"fogOff":false}}
+{"ev":"negative-control-pass","state":{"enabled":false,"fogOff":false}}
+{"ev":"preflight-pass","fogRevealKeyFEnabled":true,"fToggleOff":true,"fToggleRestored":false}

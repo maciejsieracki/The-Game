@@ -17,10 +17,32 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const http = require('http');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
+}
+
+function serveDist(dir) {
+  const root = path.resolve(dir);
+  const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2' };
+  const server = http.createServer((req, res) => {
+    let pathname;
+    try { pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname); } catch (_) { res.writeHead(400).end(); return; }
+    const file = path.resolve(root, '.' + pathname);
+    if (file !== root && !file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
+    fs.stat(file, (err, st) => {
+      const target = !err && st.isDirectory() ? path.join(file, 'index.html') : file;
+      fs.createReadStream(target).on('error', () => { if (!res.headersSent) res.writeHead(404); res.end(); })
+        .on('open', () => { res.setHeader('content-type', mime[path.extname(target).toLowerCase()] || 'application/octet-stream'); })
+        .pipe(res);
+    });
+  });
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve({ url: `http://127.0.0.1:${server.address().port}/`, close: () => new Promise((r) => server.close(r)) }));
+  });
 }
 
 function prepare(dir) {
@@ -54,6 +76,27 @@ function prepare(dir) {
   const marker = '(window as any).__aiBuildingsTestDebug = {';
   if (s.split(marker).length < 2) throw new Error('marker');
   s = s.replace(marker, () => hook + marker);
+  // FALA 587: this measurement presses F after starting a game, so configure
+  // the approved test option through the real doStartGame params. Expose the
+  // resulting closure state only in this disposable measurement copy so each
+  // runner can assert that the option reached doStartGame before measuring.
+  const gameHook = '(window as any).__aiBuildingsTestDebug = {';
+  const hookAt = s.indexOf(gameHook);
+  const callAt = s.indexOf('void doStartGame({', hookAt);
+  const callEnd = s.indexOf('} as NewGameParams);', callAt);
+  if (hookAt < 0 || callAt < 0 || callEnd < 0) throw new Error('doStartGame measurement hook markers');
+  const gameParams = s.slice(callAt, callEnd);
+  const alreadyConfigured = gameParams.includes('fogRevealKeyFEnabled: true,');
+  if (!alreadyConfigured) {
+    const advancedCount = gameParams.split('advanced,').length - 1;
+    if (advancedCount !== 1) throw new Error('expected one advanced param in measurement hook, found ' + advancedCount);
+    s = s.slice(0, callAt) + gameParams.replace('advanced,', 'fogRevealKeyFEnabled: true,\n          advanced,') + s.slice(callEnd);
+  }
+  const stateHook = 'startNewGame: (opts: { rivals?: string; cityStates?: number; civTypes?: number; seed?: number; mapSize?: string; typSwiata?: string }): void => {';
+  if (!s.includes('fogRevealKeyFEnabled: () => fogRevealKeyFEnabled')) {
+    if (s.split(stateHook).length !== 2) throw new Error('startNewGame state hook marker');
+    s = s.replace(stateHook, 'fogRevealKeyFEnabled: () => fogRevealKeyFEnabled,\n      isFogFullOff: () => !fogOn,\n      setFogRevealKeyFEnabledForTest: (enabled: boolean) => { fogRevealKeyFEnabled = enabled; },\n      ' + stateHook);
+  }
   // 2) liczniki faz AI
   const imp = "import { decideAITurn, chooseAIResearch, decideAIDiplomacy,";
   if (s.split(imp).length !== 2) throw new Error('import marker');
@@ -79,7 +122,8 @@ const PW = arg('pw'); const DIST = arg('dist'); const OUTD = arg('out');
 const TYP = arg('typ', 'kontynenty'); const SEED = Number(arg('seed', '4242'));
 const TURNS = Number(arg('turns', '100')); const SIZE = arg('size', 'Standardowy');
 const CPUPROF = new Set(String(arg('cpuprof', '10,40,70,95')).split(',').filter(Boolean).map(Number));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
+const PREFLIGHT_ONLY = process.argv.includes('--preflight-only');
+const FALLBACK_CHROME = '/usr/bin/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const OUT = path.join(OUTD, `seed${SEED}.jsonl`);
 const emit = (o) => fs.appendFileSync(OUT, JSON.stringify(o) + '\n');
@@ -97,6 +141,7 @@ async function main() {
     headless: true, executablePath: fs.existsSync(FALLBACK_CHROME) ? FALLBACK_CHROME : undefined,
     args: ['--no-sandbox', '--headless=new', '--js-flags=--expose-gc', '--enable-precise-memory-info', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
   });
+  let server;
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const client = await page.context().newCDPSession(page);
@@ -127,12 +172,21 @@ async function main() {
       window.clearInterval = function (id) { c.intervals.delete(id); return ci.call(window, id); };
     }, (0x9e3779b9 ^ SEED) | 0);
     if (process.argv.includes('--lkstack')) await page.addInitScript(() => { window.__lkStack = true; });
-    await page.goto('file://' + path.join(path.resolve(DIST), 'index.html') + '?civTest=1', { waitUntil: 'load', timeout: 180000 });
+    server = await serveDist(DIST);
+    await page.goto(server.url + '?civTest=1', { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(() => !!window.__cityStateStartUnitsTestDebug && !!window.__eraTestDebug
       && !!window.__aiBuildingsTestDebug && !!window.__leakDump, undefined, { timeout: 180000 });
     await page.waitForSelector('.civ-menu', { timeout: 180000 });
     emit({ ev: 'start', seed: SEED, typ: TYP, size: SIZE, at: new Date().toISOString() });
-    await page.evaluate((o) => window.__aiBuildingsTestDebug.startNewGame(o), { seed: SEED, mapSize: SIZE, typSwiata: TYP });
+    if (PREFLIGHT_ONLY) {
+      const before = await page.evaluate(() => ({ enabled: window.__aiBuildingsTestDebug.fogRevealKeyFEnabled(), fogOff: window.__aiBuildingsTestDebug.isFogFullOff() }));
+      if (before.enabled !== false || before.fogOff !== false) throw new Error('negative control baseline unexpected: ' + JSON.stringify(before));
+      await page.keyboard.press('f'); await wait(100);
+      const afterOffF = await page.evaluate(() => ({ enabled: window.__aiBuildingsTestDebug.fogRevealKeyFEnabled(), fogOff: window.__aiBuildingsTestDebug.isFogFullOff() }));
+      if (afterOffF.enabled !== false || afterOffF.fogOff !== false) throw new Error('F changed state with option OFF: ' + JSON.stringify(afterOffF));
+      emit({ ev: 'negative-control-pass', state: afterOffF });
+    }
+    await page.evaluate((o) => window.__aiBuildingsTestDebug.startNewGame(o), { seed: SEED, mapSize: SIZE, typSwiata: TYP, fogRevealKeyFEnabled: true });
     await pollUntil(page, () => {
       const dbg = window.__cityStateStartUnitsTestDebug;
       const overlay = Array.from(document.querySelectorAll('*')).some((el) => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
@@ -144,6 +198,30 @@ async function main() {
       const st = window.__cityStateStartUnitsTestDebug.dumpState();
       return { ready: st.awaitingFirstPlayerCity === false && st.cities.some((c) => c.ownerId === 0) };
     }, 60000, 'playerCity');
+    const fogOptionEnabled = await page.evaluate(() => window.__aiBuildingsTestDebug.fogRevealKeyFEnabled());
+    if (fogOptionEnabled !== true) throw new Error('fogRevealKeyFEnabled did not reach doStartGame: ' + fogOptionEnabled);
+    if (PREFLIGHT_ONLY) {
+      await page.evaluate(() => window.__aiBuildingsTestDebug.setFogRevealKeyFEnabledForTest(false));
+      await page.keyboard.press('f'); await wait(150);
+      const offGate = await page.evaluate(() => ({ enabled: window.__aiBuildingsTestDebug.fogRevealKeyFEnabled(), fogOff: window.__aiBuildingsTestDebug.isFogFullOff() }));
+      if (offGate.enabled !== false || offGate.fogOff !== false) throw new Error('negative control failed, F changed fog with option OFF: ' + JSON.stringify(offGate));
+      await page.evaluate(() => window.__aiBuildingsTestDebug.setFogRevealKeyFEnabledForTest(true));
+      emit({ ev: 'negative-control-pass', state: offGate });
+    }
+    if (PREFLIGHT_ONLY) {
+      const initialFogOff = await page.evaluate(() => window.__aiBuildingsTestDebug.isFogFullOff());
+      if (initialFogOff !== false) throw new Error('new game did not start with FoW on: ' + initialFogOff);
+      await page.keyboard.press('f'); await wait(150);
+      const onResult = await page.evaluate(() => window.__aiBuildingsTestDebug.isFogFullOff());
+      if (onResult !== true) throw new Error('F did not turn FoW off with option ON: ' + onResult);
+      await page.keyboard.press('f'); await wait(150);
+      const restored = await page.evaluate(() => window.__aiBuildingsTestDebug.isFogFullOff());
+      if (restored !== false) throw new Error('F did not restore FoW with option ON: ' + restored);
+      emit({ ev: 'preflight-pass', fogRevealKeyFEnabled: true, fToggleOff: onResult, fToggleRestored: restored });
+      fs.writeFileSync(path.join(OUTD, `seed${SEED}.DONE`), 'PREFLIGHT-OK\n');
+      console.log('PREFLIGHT-OK');
+      return;
+    }
     await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
     // mgla wojny OFF (klawisz F = toggleDevFogFull)
     await page.keyboard.press('f'); await wait(800);
@@ -202,7 +280,7 @@ async function main() {
     emit({ ev: 'done' }); fs.writeFileSync(path.join(OUTD, `seed${SEED}.DONE`), 'ok\n'); console.log('DONE');
   } catch (e) {
     emit({ ev: 'error', err: String((e && e.stack) || e).slice(0, 800) });
-    fs.writeFileSync(path.join(OUTD, `seed${SEED}.DONE`), 'ERROR\n'); console.log('ERROR', String(e).slice(0, 300));
-  } finally { await browser.close().catch(() => {}); }
+    fs.writeFileSync(path.join(OUTD, `seed${SEED}.DONE`), 'ERROR\n'); console.log('ERROR', String(e).slice(0, 300)); process.exitCode = 1;
+  } finally { await browser.close().catch(() => {}); if (server) await server.close().catch(() => {}); }
 }
-main().then(() => process.exit(0));
+main().then(() => process.exit(process.exitCode || 0));

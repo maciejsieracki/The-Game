@@ -21,10 +21,31 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+const http = require('http');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
+}
+function serveDist(dir) {
+  const root = path.resolve(dir);
+  const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2' };
+  const server = http.createServer((req, res) => {
+    let pathname;
+    try { pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname); } catch (_) { res.writeHead(400).end(); return; }
+    const file = path.resolve(root, '.' + pathname);
+    if (file !== root && !file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
+    fs.stat(file, (err, st) => {
+      const target = !err && st.isDirectory() ? path.join(file, 'index.html') : file;
+      fs.createReadStream(target).on('error', () => { if (!res.headersSent) res.writeHead(404); res.end(); })
+        .on('open', () => { res.setHeader('content-type', mime[path.extname(target).toLowerCase()] || 'application/octet-stream'); })
+        .pipe(res);
+    });
+  });
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve({ url: `http://127.0.0.1:${server.address().port}/`, close: () => new Promise((r) => server.close(r)) }));
+  });
 }
 
 function prepare(dir) {
@@ -89,7 +110,7 @@ const TURNS = Number(arg('turns', '100')); const SIZE = arg('size', 'Standardowy
 const list = (v) => new Set(String(v).split(',').filter(Boolean).map(Number));
 const PROBE = list(arg('probe', '1,30,60,100')); const SNAP = list(arg('snap', '60,100'));
 const SNAPDIR = arg('snapdir', '/tmp/civ-heap-q1');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
+const FALLBACK_CHROME = '/usr/bin/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const OUT = path.join(OUTD, `seed${SEED}.jsonl`);
 const emit = (o) => fs.appendFileSync(OUT, JSON.stringify(o) + '\n');
@@ -116,6 +137,7 @@ async function main() {
     headless: true, executablePath: fs.existsSync(FALLBACK_CHROME) ? FALLBACK_CHROME : undefined,
     args: ['--no-sandbox', '--headless=new', '--js-flags=--expose-gc', '--enable-precise-memory-info', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
   });
+  let server;
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const client = await page.context().newCDPSession(page);
@@ -129,13 +151,14 @@ async function main() {
       };
     }, (0x9e3779b9 ^ SEED) | 0);
     await client.send('HeapProfiler.enable');
-    await page.goto('file://' + path.join(path.resolve(DIST), 'index.html') + '?civTest=1', { waitUntil: 'load', timeout: 180000 });
+    server = await serveDist(DIST);
+    await page.goto(server.url + '?civTest=1', { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(() => !!window.__cityStateStartUnitsTestDebug && !!window.__eraTestDebug
       && !!window.__aiBuildingsTestDebug && !!window.__leakDump && !!window.__memProbe, undefined, { timeout: 180000 });
     await page.waitForSelector('.civ-menu', { timeout: 180000 });
     await client.send('HeapProfiler.startSampling', { samplingInterval: 65536 });
     emit({ ev: 'start', seed: SEED, typ: TYP, size: SIZE, at: new Date().toISOString() });
-    await page.evaluate((o) => window.__aiBuildingsTestDebug.startNewGame(o), { seed: SEED, mapSize: SIZE, typSwiata: TYP });
+    await page.evaluate((o) => window.__aiBuildingsTestDebug.startNewGame(o), { seed: SEED, mapSize: SIZE, typSwiata: TYP, fogRevealKeyFEnabled: true });
     await pollUntil(page, () => {
       const dbg = window.__cityStateStartUnitsTestDebug;
       const overlay = Array.from(document.querySelectorAll('*')).some((el) => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
@@ -147,6 +170,8 @@ async function main() {
       const st = window.__cityStateStartUnitsTestDebug.dumpState();
       return { ready: st.awaitingFirstPlayerCity === false && st.cities.some((c) => c.ownerId === 0) };
     }, 60000, 'playerCity');
+    const fogOptionEnabled = await page.evaluate(() => window.__aiBuildingsTestDebug.fogRevealKeyFEnabled());
+    if (fogOptionEnabled !== true) throw new Error('fogRevealKeyFEnabled did not reach doStartGame: ' + fogOptionEnabled);
     await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
     await page.keyboard.press('f'); await wait(800);
     emit({ ev: 'world-ready', at: new Date().toISOString() });
@@ -204,6 +229,6 @@ async function main() {
   } catch (e) {
     emit({ ev: 'error', err: String((e && e.stack) || e).slice(0, 800) });
     fs.writeFileSync(path.join(OUTD, `seed${SEED}.DONE`), 'ERROR\n'); console.log('ERROR', String(e).slice(0, 300));
-  } finally { await browser.close().catch(() => {}); }
+  } finally { await browser.close().catch(() => {}); if (server) await server.close().catch(() => {}); }
 }
 main().then(() => process.exit(0));
