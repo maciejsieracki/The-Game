@@ -1,0 +1,21 @@
+MUTANT S-M01-amount-swap file=src/domain/building_costs.rs
+OLD:
+        if built_ids.contains(building_ii) {
+            params.ceramika_ii
+        } else {
+            params.ceramika_i
+        }
+NEW:
+        if built_ids.contains(building_ii) {
+            params.ceramika_i
+        } else {
+            params.ceramika_ii
+        }
+
+FAILED TESTS:
+test edges_n_minus_1_n_n_plus_1 ... FAILED
+test ceramika_amount_matches_running_web ... FAILED
+test pay_and_inactive_status_match_running_web ... FAILED
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+VERDICT=KILLED
+EXIT=101

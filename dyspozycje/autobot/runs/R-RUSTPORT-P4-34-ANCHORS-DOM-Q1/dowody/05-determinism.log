@@ -1,0 +1,9 @@
+golden.tsv body (scene lines) sha256: c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e
+toolchain=1.87.0 (1.87.0) profile=debug run=1 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=1.87.0 (1.87.0) profile=debug run=2 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=1.87.0 (1.87.0) profile=--release run=1 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=1.87.0 (1.87.0) profile=--release run=2 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=stable (1.97.0) profile=debug run=1 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=stable (1.97.0) profile=debug run=2 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=stable (1.97.0) profile=--release run=1 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0
+toolchain=stable (1.97.0) profile=--release run=2 scenes=45 sha256(hashes)=c861fccee4cd75bb40f572ccb11ff61f23e56805efd6e62b0a37238dbba69e0e EXIT=0

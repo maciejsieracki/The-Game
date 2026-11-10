@@ -1,0 +1,5 @@
+$ sha256sum (stan drzewa przed bramkami)
+516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315  src/domain/mapgen/terrain_class.rs
+f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834  data/derived/mapgen-terrain-class.json
+$ cargo fmt -- --check
+EXIT=0

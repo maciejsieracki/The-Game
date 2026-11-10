@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1
+GOAL: Port generatora mapy - klasyfikacja terenu i granice (`gen-helpers.ts`:233-236, 825-1407): dla kazdego symbolu port 1:1 do Rust albo jawny status; wektory z uruchomionego weba (pin `edb8fb56`), niezalezny weryfikator Python, bitowe porownanie f64, brak literalow danych/mnoznikow, testy ksztaltu bez pinow, mutacje wykrywane.
+ZMIANY/COMMIT: allowlista + rozszerzenie wynikajace z kryterium (`data/derived/mapgen-terrain-class.json`, dopisek na koncu `src/data/derived.rs`): `src/domain/mapgen/terrain_class.rs` (1132 linie), `tests/p6_m04_{classify,reapply,border,tables}.rs`, `tests/p6_m04_vectors/{web-vectors.json,common.rs}`, `dyspozycje/rust-port/p6/P6-M04-TEREN-KLASYFIKACJA-GRANICE.md`, `dyspozycje/autobot/runs/R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1/**`. SHA: patrz commit w worktree (bez push).
+TESTY: fmt EXIT=0; clippy --all-targets -D warnings EXIT=0; cargo test --no-fail-fast: 890 passed / 0 failed, EXIT=0 (865 baza + 25 nowych; 0 zmian istniejacych testow). Wektory z weba: 44187 rekordow w 19 kategoriach, SHA-256 c4a09a03...e97d powtarzalny. Weryfikator Python: 157597 sprawdzen, 0 rozbieznosci (EXIT=0), 51/51 wartosci tabeli porownane z tekstem TS; test negatywny: 6 rozbieznosci (EXIT=1). Mutacje: 77/77 wykrytych (76 w pelnym przebiegu + 1 powtorzona po ENOSPC), 3 rownowazne wylaczone jawnie.
+BLOKADY: brak. Notatki: (1) odkrycie poza allowlista - stary `map_generator::hash_int3` (u32) rozni sie od weba dla duzych ziaren (198908/200000 dla pelnego u32; 0 dla ziaren <= 4e6) - do osobnego tematu; (2) jedyna przeszkoda infrastrukturalna to chwilowy brak miejsca na wspoldzielonym dysku (ENOSPC) w trakcie mutacji; (3) nie czytano w calosci P3-22, P2-3, P2-5, PLAN §P6, LEDGER (NIE_ZMIERZONO) ani calego `gen-helpers.ts` (tylko zakres M04 + zaleznosci).
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator (Haiku 5.5 medium) -> Final Control (Sonnet 5.5 medium) -> integracja orkiestratora.
+DEPLOY/PUSH: NIE WYKONANO

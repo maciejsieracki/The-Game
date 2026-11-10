@@ -1,0 +1,43 @@
+
+[drewno-gate-test] Running tests...
+
+1. availableProduction: brak Drewna w magazynie panstwa -> jednostka Surowiec=Drewno NIEDOSTEPNA
+  [OK] Wojownik (Surowiec=Drewno) NIE dostepny bez Drewna w magazynie
+
+2. availableProduction: brak pola empireResourceStock w ogole (domyslne {}) -> fail-closed
+  [OK] Wojownik NIE dostepny gdy ctx.empireResourceStock w ogole nie podano (fail-closed)
+
+3. availableProduction: Drewno w magazynie panstwa -> jednostka Surowiec=Drewno DOSTEPNA
+  [OK] Wojownik JEST dostepny: Drewno w magazynie panstwa
+
+4. Jednostka z zerowym wymogiem Drewna (Surowiec=null, np. Zwiadowca po naprawie) -- ZAWSZE dostepna
+  [OK] Zwiadowca dostepny BEZ Drewna w magazynie (Surowiec=null -- bramka go nie dotyczy)
+  [OK] Zwiadowca dostepny takze Z Drewnem w magazynie
+
+5. purchasableUnits respektuje ten sam gate
+  [OK] purchasableUnits: brak Drewna -> Wojownik niedostepny
+  [OK] purchasableUnits: Drewno w magazynie -> Wojownik dostepny
+  [OK] purchasableUnits: Zwiadowca dostepny nawet bez Drewna
+
+6. availableReplacementsFor ("Zastap") respektuje ten sam gate
+  [OK] Zastap: Wojownik NIE jest opcja zamiany bez Drewna w magazynie
+  [OK] Zastap: Wojownik JEST opcja zamiany z Drewnem w magazynie
+
+7. Jednostka Braz/Zelazo -- bramka Drewna jej NIE dotyczy (regresja braz/zelazo)
+  [OK] Wlocznik (Surowiec=Braz) nadal blokowany bramka Brazu mimo Drewna w magazynie -- regresja
+
+8. Realne data/units.json: Zwiadowca (po naprawie) vs Wojownik (bez naprawy)
+  [OK] Zwiadowca istnieje w units.json
+  [OK] Wojownik istnieje w units.json
+  [OK] Zwiadowca: Surowiec (ilość) = 0
+  [OK] Zwiadowca: Surowiec = null/puste (inaczej bramka Drewna by go zablokowala)
+  [OK] Zwiadowca: Utrzymanie surowiec (ilość) = 0
+  [FAIL] Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola) -- ma={"Surowiec":"Drewno","ilosc":13}
+  [OK] Realne dane: Zwiadowca dostepny BEZ Drewna w magazynie panstwa
+  [OK] Realne dane: Wojownik NIEdostepny bez Drewna w magazynie panstwa (nowa bramka)
+  [OK] Realne dane: Wojownik dostepny Z Drewnem w magazynie panstwa
+
+[drewno-gate-test] NIEUDANE: 1/20
+
+EXIT=1
+TIME=0.5

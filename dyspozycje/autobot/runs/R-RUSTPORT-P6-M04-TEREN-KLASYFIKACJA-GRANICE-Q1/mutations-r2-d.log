@@ -1,0 +1,77 @@
+SHA256 poczatkowe: src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+   radial-min-removed: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   radial-min-removed: 1 testow FAILED: fades_and_distances_match_web
+   edge-fade-margin-clamp: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   edge-fade-margin-clamp: 1 testow FAILED: fades_and_distances_match_web
+   border-dist-height: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   border-dist-height: 5 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, erosion_hook_matches_web, fades_and_distances_match_web
+   in-border-lt-to-le: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   in-border-lt-to-le: 3 testow FAILED: border_grid_tools_match_web, fades_and_distances_match_web, is_in_map_border_with_buffer_matches_web
+   find-land-skips-shallow: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   find-land-skips-shallow: 1 testow FAILED: border_grid_tools_match_web
+   enforce-skips-shallow: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   enforce-skips-shallow: 1 testow FAILED: border_grid_tools_match_web
+   count-border-le: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   count-border-le: 1 testow FAILED: border_grid_tools_match_web
+   margin-tie-direction: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   margin-tie-direction: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   margin-neighbors-ge-to-gt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   margin-neighbors-ge-to-gt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   margin-target-floor: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   margin-target-floor: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   margin-erosion-le-to-lt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   margin-erosion-le-to-lt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   margin-fill-ge-to-gt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   margin-fill-ge-to-gt: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   lat-buffer-ge-to-gt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   lat-buffer-ge-to-gt: 1 testow FAILED: lat_buffer_matches_web
+   morze-keeps-river: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   morze-keeps-river: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+   morze-keeps-edges: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   morze-keeps-edges: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+   morze-keeps-deposit: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   morze-keeps-deposit: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_grid_tools_match_web, set_hex_to_morze_and_laka_match_web
+   laka-keeps-deposit: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   laka-keeps-deposit: 1 testow FAILED: set_hex_to_morze_and_laka_match_web
+   laka-clears-river: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   laka-clears-river: 1 testow FAILED: set_hex_to_morze_and_laka_match_web
+   parse-exponent-uppercase-rejected: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-exponent-uppercase-rejected: 1 testow FAILED: parse_hex_key_edge_keys_match_web
+   js-round-half: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   js-round-half: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, reapply_forest_overlay_matches_web
+   js-max-nan: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   js-max-nan: 1 testow FAILED: fades_and_distances_match_web
+   js-min-nan: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   js-min-nan: 1 testow FAILED: fades_and_distances_match_web
+   table-prog-pustyni: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-prog-pustyni: 3 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web
+   table-rownina-prog: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-rownina-prog: 3 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web
+   table-amp-komorkowa: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-amp-komorkowa: 5 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, consts_match_web, reapply_land_terrain_matches_web
+   table-amp-globalna: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-amp-globalna: 5 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, consts_match_web, reapply_land_terrain_matches_web
+   table-rozmiar-komorki: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-rozmiar-komorki: 3 testow FAILED: consts_match_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   table-budzet-medium: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-budzet-medium: 2 testow FAILED: consts_match_web, reapply_land_terrain_matches_web
+   table-mnoznik-umiarkowana: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-mnoznik-umiarkowana: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+   table-bonus-wnetrza: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-bonus-wnetrza: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+Traceback (most recent call last):
+  File "/home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-3/dyspozycje/autobot/runs/R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1/run-mutations.py", line 268, in <module>
+    restore_and_check(mid)
+  File "/home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-3/dyspozycje/autobot/runs/R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1/run-mutations.py", line 234, in restore_and_check
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'src/domain/mapgen/terrain_class.rs'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-3/dyspozycje/autobot/runs/R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1/run-mutations.py", line 281, in <module>
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'src/domain/mapgen/terrain_class.rs'
+EXIT=1

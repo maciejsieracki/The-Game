@@ -1,0 +1,3 @@
+(node:5097) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+scenes=45 chromium=141.0.7390.37 three=0.169.0

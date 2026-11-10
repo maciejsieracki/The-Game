@@ -1,0 +1,4 @@
+WYKRYTA   assign-falsy-only-none: 1 testow FAILED: assign_types_matches_web
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['body-no-last-try', 'capital-active-sea-min', 'capital-penalty-hi-no-band', 'poisson-no-skip-picked', 'preferred-occupied-le', 'seed-mul-ki', 'spawn-bias-ignores-prior', 'spawn-sea-fallback-min']
+PODSUMOWANIE: wykryte 1/1, przezyly: [], pliki przywrocone: True
+EXIT=0

@@ -1,0 +1,3 @@
+CMD: node --experimental-transform-types --no-warnings --import ./m12-loader-register.mjs hunt-rare-branches.mjs /home/user/m12web-wf40 <wektory> hunt1.json 5   (46 map x 5 prob = 230 wywolan buildClusterSpawnPlan; wersja skryptu bez linii kontrolnej)
+koniec: trafien 0
+EXIT=0

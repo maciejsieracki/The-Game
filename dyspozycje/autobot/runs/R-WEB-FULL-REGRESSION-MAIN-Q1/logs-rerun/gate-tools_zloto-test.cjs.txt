@@ -1,0 +1,77 @@
+-- A. reguła terenowa złota --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=18 landSea=158 relief=177 coast=19 riversMain=1032 riversFill=1120 forest=7 deposits=17 starts=80 total=2631
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=140 relief=187 coast=21 riversMain=348 riversFill=997 forest=4 deposits=10 starts=163 total=1877
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=39 landSea=177 relief=132 coast=48 riversMain=326 riversFill=849 forest=9 deposits=16 starts=64 total=1660
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=6 landSea=165 relief=268 coast=21 riversMain=302 riversFill=940 forest=3 deposits=13 starts=69 total=1790
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=134 relief=125 coast=16 riversMain=141 riversFill=868 forest=5 deposits=15 starts=108 total=1418
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=86 relief=95 coast=14 riversMain=208 riversFill=1005 forest=3 deposits=8 starts=53 total=1478
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=113 relief=96 coast=16 riversMain=307 riversFill=835 forest=6 deposits=12 starts=42 total=1432
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=70 relief=78 coast=17 riversMain=212 riversFill=932 forest=3 deposits=29 starts=84 total=1433
+-- B. rzadkość złota vs miedzi --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=86 relief=150 coast=13 riversMain=189 riversFill=744 forest=3 deposits=9 starts=47 total=1246
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=96 relief=72 coast=15 riversMain=264 riversFill=1144 forest=4 deposits=8 starts=68 total=1678
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=15 landSea=104 relief=101 coast=24 riversMain=330 riversFill=850 forest=3 deposits=9 starts=71 total=1506
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=89 relief=74 coast=14 riversMain=229 riversFill=995 forest=7 deposits=8 starts=59 total=1481
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=131 relief=134 coast=13 riversMain=167 riversFill=680 forest=3 deposits=8 starts=58 total=1200
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=87 relief=80 coast=12 riversMain=176 riversFill=1229 forest=3 deposits=7 starts=66 total=1667
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=101 relief=83 coast=22 riversMain=162 riversFill=784 forest=3 deposits=6 starts=101 total=1268
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=9 landSea=93 relief=105 coast=18 riversMain=275 riversFill=1039 forest=6 deposits=7 starts=54 total=1607
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=5 landSea=81 relief=116 coast=12 riversMain=393 riversFill=1219 forest=3 deposits=10 starts=50 total=1891
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=72 relief=105 coast=19 riversMain=209 riversFill=891 forest=10 deposits=31 starts=117 total=1459
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=97 relief=105 coast=18 riversMain=198 riversFill=1077 forest=3 deposits=6 starts=130 total=1637
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=88 relief=76 coast=21 riversMain=266 riversFill=855 forest=6 deposits=9 starts=76 total=1401
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=11 landSea=76 relief=77 coast=19 riversMain=340 riversFill=926 forest=3 deposits=7 starts=51 total=1510
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=94 relief=128 coast=25 riversMain=364 riversFill=1831 forest=4 deposits=16 starts=133 total=2600
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=9 landSea=345 relief=206 coast=47 riversMain=572 riversFill=637 forest=3 deposits=7 starts=83 total=1910
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=81 relief=117 coast=13 riversMain=380 riversFill=499 forest=3 deposits=6 starts=47 total=1152
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=12 landSea=107 relief=137 coast=32 riversMain=354 riversFill=1207 forest=3 deposits=6 starts=42 total=1901
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=61 relief=72 coast=13 riversMain=117 riversFill=740 forest=4 deposits=8 starts=84 total=1104
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=66 relief=67 coast=12 riversMain=209 riversFill=706 forest=3 deposits=8 starts=60 total=1134
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=65 relief=131 coast=14 riversMain=294 riversFill=799 forest=16 deposits=14 starts=114 total=1450
+  20 ziaren (36x28, kontynenty): miedz=363, zloto=39
+-- C. dostęp imperium do złota (empireHasKopalniaZlota) --
+-- C2. kwalifikacja budowy Kopalni złota na mapie --
+-- D+E. bramka Mennicy (złoto + Targowisko) --
+  FAIL: Mennica DOSTĘPNA: Targowisko w mieście + Waluta (bez dostępu do złota — kanon magazyn)
+  FAIL: Mennica DOSTĘPNA: Targowisko + dostęp złota nie jest już wymagany, ale nie blokuje
+  FAIL: Mennica DOSTĘPNA również przez empireActiveResourceLabels (bez wymogu złota)
+-- F. złoto magazynowane w skarbcu państwa (PYTANIE-84-R9) --
+  FAIL: stadnina: 5 Koń/t do magazynu państwa (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta 2026-08-12)
+  FAIL: getCityResourceAccessForCity: "Złoto" pojawia się jako ETYKIETA dostępu (active), nie jako ilość
+-- G. parytet AI --
+  FAIL: Parytet AI: Mennica dostępna dla obu przy identycznym stanie (złoto+Targowisko+Waluta)
+  FAIL: Parytet AI: bez dostępu do złota, Mennica budowalna identycznie dla gracza i AI (kanon magazyn)
+-- H. kompatybilność starego zapisu --
+
+zloto-test: 38 pass, 7 fail
+
+EXIT=1
+TIME=45.1

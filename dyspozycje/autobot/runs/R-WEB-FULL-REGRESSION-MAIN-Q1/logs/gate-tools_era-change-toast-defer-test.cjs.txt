@@ -1,0 +1,38 @@
+era-change-toast-defer-test
+
+PASS: Blok 1: stan pendingEraChangeToastForNextTurn zadeklarowany (osobno od deferredEotHints)
+FAIL: Blok 2: notifyPlayerEraChangeIfAdvanced podczas endTurnInProgress zapamiętuje toast zamiast wołać showHintMessage (unika generycznej kolejki)
+PASS: Blok 2: trwały wpis warEventLog nietknięty — nadal bezwarunkowy, poza if/else toastu
+PASS: Blok 3: flushPendingEraChangeToast konsumuje + zeruje stan, woła showHintMessage naprawdę
+FAIL: Blok 4: flushPendingEraChangeToast() wołane PO endTurnInProgress = false w finally triggerPlayerEndTurn (kotwica: endTurnTransition(); NATYCHMIAST przed endTurnInProgress = false)
+FAIL: Blok 5: ogólny mechanizm defer (showHintMessage/shouldDeferEotEvents/deferredEotHints) dla innych komunikatów EOT nienaruszony
+FAIL: Blok 6 (N2): resetEndTurnBlockers() zeruje pendingEraChangeToastForNextTurn (ta sama klasa wycieku co F4 dla deferredAutoRequests)
+
+3 passed, 4 failed
+
+-- weryfikacja mutacyjna --
+
+MUT-PASS (złapana): M1: notifyPlayerEraChangeIfAdvanced woła showHintMessage bezwarunkowo (reintrodukcja P-EPOKA-TOAST-EOT-POLYKANY) (2/3)
+MUT-FAIL (NIE złapana): M2: usunięcie flushPendingEraChangeToast() z finally triggerPlayerEndTurn
+MUT-FAIL (NIE złapana): M3: flushPendingEraChangeToast() wołane PRZED endTurnInProgress = false (znów trafiłby w defer)
+MUT-PASS (złapana): M4: flushPendingEraChangeToast nie zeruje pendingEraChangeToastForNextTurn (ryzyko double-fire) (2/3)
+MUT-FAIL (NIE złapana): M5: showHintMessage przestaje w ogóle sprawdzać shouldDeferEotEvents (rozluźnienie defer dla WSZYSTKICH komunikatów)
+MUT-PASS (złapana): M6: usunięcie deklaracji pendingEraChangeToastForNextTurn (2/3)
+MUT-FAIL (NIE złapana): M7: flushPendingEraChangeToast() przeniesione z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (scenariusz Evaluatora)
+MUT-FAIL (NIE złapana): M8: resetEndTurnBlockers nie zeruje pendingEraChangeToastForNextTurn (regresja N2)
+
+3/8 mutacji złapanych, 5 NIEZŁAPANYCH
+
+-- sondy kruchości (muszą zostać PASS) --
+
+PROBE-OK: P1: dodatkowy komentarz przed if (endTurnInProgress) w notifyPlayerEraChangeIfAdvanced
+PROBE-OK: P2: niepowiązany kod dodany między blokami (nowa funkcja no-op)
+PROBE-OK: P3: dodatkowy whitespace wokół flushPendingEraChangeToast() w finally
+PROBE-OK: P4: dodatkowy komentarz wewnątrz resetEndTurnBlockers, obok pendingEraChangeToastForNextTurn = null (N2)
+
+4/4 sond kruchości bezpiecznych, 0 fałszywie czerwonych
+
+=== WYNIK: FAIL ===
+
+EXIT=1
+TIME=0.3

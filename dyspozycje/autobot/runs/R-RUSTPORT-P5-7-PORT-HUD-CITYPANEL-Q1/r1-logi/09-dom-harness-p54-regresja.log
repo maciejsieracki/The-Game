@@ -1,0 +1,22 @@
+$ (cwd src-tauri/frontend-v2) node tools/dom-harness/run-c4.mjs --pin-dir <PIN_DIR: archiwum edb8fb56 gra/src+gra/data>
+entityCards/registry.ts            przypadki=  312 różnice=0
+techDiscoveryNotice.ts             przypadki=   69 różnice=0 asercje_v2=1/1 DOM_puste=0/68 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: `_legacyShowTechDiscoveryNotice` (pin :880-935) — fallback wołany tylko gdy ścieżka entityCards rzuci wyjątek; na danych pinu nieosiągalny (każda technologia ma wiersz). Kod skopiowany bez zmian poza odczytem katalogu w `buildBody` (diff)
+entityCards/unitAdapter.ts         przypadki=   76 różnice=0
+sciencePicker.ts                   przypadki=  258 różnice=0 asercje_v2=2/2 DOM_puste=0/36 NIE_ZMIERZONO=3
+   NIE_ZMIERZONO: przewijanie (`scrollIntoView`, pin :1467,1483) — jsdom bez układu; no-op po obu stronach
+   NIE_ZMIERZONO: pozycja dymka (`moveTooltip`, `offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik
+   NIE_ZMIERZONO: gałąź `catch` renderu (pin :1434-1443) — nieosiągalna na danych harnessu
+entityCards/buildingAdapter.ts     przypadki=  215 różnice=0 asercje_v2=1/1
+scienceHubHud.ts                   przypadki=   67 różnice=0 asercje_v2=2/2 DOM_puste=0/17 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: przeciąganie planu (`dragstart`/`drop`, `DataTransfer`) — jsdom nie implementuje DnD; kod skopiowany bez zmian (diff)
+   NIE_ZMIERZONO: zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane
+entityCards/improvementAdapter.ts  przypadki=   24 różnice=0
+entityCards/technologyAdapter.ts   przypadki=   33 różnice=0
+entityCards/renderer.ts            przypadki=  575 różnice=0 asercje_v2=1/1 DOM_puste=0/205 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: miniatura jednostki w medalionie (`unit3d` → `mountUnitMiniPreview`, kolejka rAF): pin renderuje WebGL (three), v2 obraz z Rust/placeholder (D-UI-3, P5.2) — zrzut DOM robiony PRZED rAF (stan „…” identyczny), stan po rAF nieporównywalny
+   NIE_ZMIERZONO: klawisz Escape (stos `escapeOverlayStack.ts`, moduł P5.1) — nie wysyłany (wspólny `document` obu stron)
+entityCards/wonderAdapter.ts       przypadki=   20 różnice=0
+dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=0 jsdomErrors=75 consoleErrors=0
+jsdomErrors (unikalne): Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+EXIT=0

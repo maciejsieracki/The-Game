@@ -1,0 +1,156 @@
+--- pin:gra/src/ui/diplomacyDealDisplay.ts
++++ v2:src-tauri/frontend-v2/src/ui/diplomacyDealDisplay.ts
+@@ -2,13 +2,7 @@
+  * diplomacyDealDisplay.ts — czytelny HTML ofert handlowych (ikony surowców + rozpiska).
+  * Stół negocjacji: lewa kolumna „Oferujemy", prawa „Oferują" (perspektywa gracza).
+  */
+-import type { BasketItem } from '../game/diplomacy-pn-engine';
+-import type { ProposalPayload } from '../game/diplomacy-proposals';
+-import {
+-  resourceDisplayLabel,
+-  splitNegotiationDealPlayerSides,
+-  type BasketItemFormatCtx,
+-} from '../game/diplomacy-display';
++import type { DealBasketItemViewDto as BasketItem, NegotiationDealSidesDto } from '../viewmodel/types';
+ import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+ 
+ function esc(s: string): string {
+@@ -27,6 +21,12 @@
+   return '';
+ }
+ 
++/** P5.3: kontekst formatowania = pola `NegotiationDealSidesDto` (web `BasketItemFormatCtx`, `game/diplomacy-display.ts:439-452`). */
++export interface BasketItemFormatCtx {
++  perTurn?: boolean;
++  turns?: number | null;
++}
++
+ function goldIconHtml(size = 16): string {
+   const svg = mapResourceIconSvg('Złoto', size) || mapResourceIconSvg('zloto', size);
+   return svg ? `<span class="da-deal-res-ic">${svg}</span>` : '';
+@@ -55,7 +55,7 @@
+     case 'surowiec_ilosc': {
+       // R-DYP-PAKIET-USUN (2026-08-08): item.ilosc to sztuki wprost.
+       const szt = item.ilosc ?? 1;
+-      const label = resourceDisplayLabel(item.id);
++      const label = item.label;
+       const ic = resourceIconHtml(label, 16);
+       if (perTurn) {
+         const main = `${ic}<span class="da-deal-amt">${szt} ${esc(label)}</span><span class="da-deal-per">na turę</span>`;
+@@ -70,7 +70,7 @@
+       return `${ic}<span class="da-deal-amt">${szt} ${esc(label)}</span><span class="da-deal-once">jednorazowo</span>`;
+     }
+     case 'surowiec_boolean': {
+-      const label = resourceDisplayLabel(item.id);
++      const label = item.label;
+       return `${resourceIconHtml(label, 16)}<span class="da-deal-amt">dostęp: ${esc(label)}</span><span class="da-deal-once">(nieaktualne)</span>`;
+     }
+     case 'zloze':
+@@ -91,18 +91,16 @@
+ 
+ /**
+  * HTML bloku warunków oferty — dwie kolumny stołu (Oferujemy | Oferują).
+- * @param incoming — true gdy propozycja przychodzi od drugiej strony.
++ * @param split — P5.3: podział stron z Rust (`NegotiationDealSidesDto` dla payloadu i kierunku propozycji).
+  */
+ export function renderNegotiationDealHtml(
+-  payload: ProposalPayload,
+-  opts: { incoming?: boolean } = {},
++  split: NegotiationDealSidesDto | null,
+ ): string {
+-  const split = splitNegotiationDealPlayerSides(payload, opts.incoming === true);
+   if (!split) return '';
+ 
+   const ctx: BasketItemFormatCtx = {
+-    perTurn: payload.resourceTradeMode === 'per_turn',
+-    turns: payload.turns,
++    perTurn: split.perTurn,
++    turns: split.turns,
+   };
+ 
+   let html = '<div class="da-deal-table">';
+@@ -138,14 +136,12 @@
+  * Gdy koszyk pusty a `treatyFallbackLabel` podany (traktat dwustronny), pokazuje etykietę traktatu.
+  */
+ export function renderNegotiationTableDealSideHtml(
+-  payload: ProposalPayload,
++  split: NegotiationDealSidesDto | null,
+   focus: 'we' | 'they',
+-  incoming: boolean,
+   treatyFallbackLabel?: string,
+   treatyFallbackPw?: number,
+   treatyFallbackBasePw?: number,
+ ): string {
+-  const split = splitNegotiationDealPlayerSides(payload, incoming);
+   const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
+ 
+   const treatyAppend =
+@@ -154,7 +150,7 @@
+       : undefined;
+ 
+   if (items.length > 0) {
+-    return renderNegotiationDealSideOnlyHtml(payload, focus, incoming, treatyAppend);
++    return renderNegotiationDealSideOnlyHtml(split, focus, treatyAppend);
+   }
+ 
+   if (treatyFallbackLabel) {
+@@ -190,12 +186,10 @@
+  * dokładnie zgodne z komentarzem powyżej).
+  */
+ export function negotiationTableDealSideHasContent(
+-  payload: ProposalPayload,
++  split: NegotiationDealSidesDto | null,
+   focus: 'we' | 'they',
+-  incoming: boolean,
+   treatyFallbackLabel?: string,
+ ): boolean {
+-  const split = splitNegotiationDealPlayerSides(payload, incoming);
+   const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
+   if (items.length > 0) return true;
+   return !!treatyFallbackLabel;
+@@ -203,17 +197,15 @@
+ 
+ /** Jedna kolumna stołu (bez kontekstu drugiej strony) — do linked pending split. */
+ export function renderNegotiationDealSideOnlyHtml(
+-  payload: ProposalPayload,
++  split: NegotiationDealSidesDto | null,
+   focus: 'we' | 'they',
+-  incoming: boolean,
+   treatyAppend?: { label: string; pw?: number; basePw?: number },
+ ): string {
+-  const split = splitNegotiationDealPlayerSides(payload, incoming);
+   if (!split) return '';
+ 
+   const ctx: BasketItemFormatCtx = {
+-    perTurn: payload.resourceTradeMode === 'per_turn',
+-    turns: payload.turns,
++    perTurn: split.perTurn,
++    turns: split.turns,
+   };
+ 
+   const items = focus === 'we' ? split.weOffer : split.theyOffer;
+@@ -241,19 +233,18 @@
+  * (kolumny „My oferujemy" / „Oni oferują" stołu negocjacji).
+  */
+ export function renderNegotiationDealOneSideHtml(
+-  payload: ProposalPayload,
++  split: NegotiationDealSidesDto | null,
+   focus: 'we' | 'they',
+-  opts: { incoming?: boolean; showContext?: boolean } = {},
++  opts: { showContext?: boolean } = {},
+ ): string {
+   if (opts.showContext === false) {
+-    return renderNegotiationDealSideOnlyHtml(payload, focus, opts.incoming === true);
++    return renderNegotiationDealSideOnlyHtml(split, focus);
+   }
+-  const split = splitNegotiationDealPlayerSides(payload, opts.incoming === true);
+   if (!split) return '';
+ 
+   const ctx: BasketItemFormatCtx = {
+-    perTurn: payload.resourceTradeMode === 'per_turn',
+-    turns: payload.turns,
++    perTurn: split.perTurn,
++    turns: split.turns,
+   };
+ 
+   const primary = focus === 'we' ? split.weOffer : split.theyOffer;

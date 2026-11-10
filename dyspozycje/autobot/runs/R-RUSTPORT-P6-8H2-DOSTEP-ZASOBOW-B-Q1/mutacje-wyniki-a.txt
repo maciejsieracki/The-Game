@@ -1,0 +1,11 @@
+M01 | guard wlasciciela: !contains -> false | KILLED exit=101 failed=2 [non_human_owner_is_never_capital;result:]
+M02 | designated: == -> != | KILLED exit=101 failed=3 [stolica_bonus_honours_designated_capital;designated_some_overrides_fallback;result:]
+M03 | designated: galaz -> false | KILLED exit=101 failed=3 [designated_some_overrides_fallback;stolica_bonus_honours_designated_capital;result:]
+M04 | filtr wlasciciela: != -> == | KILLED exit=101 failed=6 [designated_none_falls_back_to_oldest_owner_city;non_human_owner_is_never_capital;tie_keeps_first_in_array_and_nan_keeps_first;stolica_bonus_honours_designated_capital;turn_bounds_n_minus_1_n_n_plus_1;result:]
+M05 | tie-break: < -> <= | KILLED exit=101 failed=2 [tie_keeps_first_in_array_and_nan_keeps_first;result:]
+M06 | usuniecie first.is_none() | KILLED exit=101 failed=2 [tie_keeps_first_in_array_and_nan_keeps_first;result:]
+M07 | wynik: is_some_and -> is_some | KILLED exit=101 failed=3 [tie_keeps_first_in_array_and_nan_keeps_first;designated_none_falls_back_to_oldest_owner_city;result:]
+M08 | bramka easy: !is_easy -> is_easy | KILLED exit=101 failed=4 [stolica_bonus_honours_designated_capital;non_easy_difficulty_disables_bonus;turn_bounds_n_minus_1_n_n_plus_1;result:]
+M09 | usuniecie !is_finite | KILLED exit=101 failed=2 [turn_bounds_n_minus_1_n_n_plus_1;result:]
+M10 | dolna granica tury: < -> <= | KILLED exit=101 failed=2 [turn_bounds_n_minus_1_n_n_plus_1;result:]
+EXIT=0

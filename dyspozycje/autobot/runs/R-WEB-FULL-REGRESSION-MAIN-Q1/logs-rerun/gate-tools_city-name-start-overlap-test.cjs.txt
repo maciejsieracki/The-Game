@@ -1,0 +1,130 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=32 landSea=1517 relief=1269 coast=220 riversMain=15867 riversFill=10280 forest=25 deposits=49 starts=798 total=30061
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+sumer/seed 11: obcych miast 43, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=283 landSea=1085 relief=495 coast=76 riversMain=16916 riversFill=13271 forest=369 deposits=207 starts=699 total=33405
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+sumer/seed 202: obcych miast 34, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=21 landSea=511 relief=433 coast=248 riversMain=2759 riversFill=8508 forest=19 deposits=82 starts=402 total=12986
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+sumer/seed 4242: obcych miast 39, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=21 landSea=299 relief=216 coast=105 riversMain=2140 riversFill=5870 forest=15 deposits=41 starts=184 total=8892
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+babilonia/seed 11: obcych miast 43, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=47 terrain=19 landSea=317 relief=277 coast=48 riversMain=2145 riversFill=7117 forest=11 deposits=24 starts=133 total=10139
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+babilonia/seed 202: obcych miast 34, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=15 landSea=469 relief=371 coast=49 riversMain=1424 riversFill=7365 forest=36 deposits=93 starts=371 total=10194
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+babilonia/seed 4242: obcych miast 39, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=12 landSea=222 relief=198 coast=35 riversMain=1714 riversFill=5498 forest=19 deposits=48 starts=216 total=7963
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+asyria/seed 11: obcych miast 43, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=10 landSea=379 relief=347 coast=83 riversMain=2814 riversFill=7810 forest=8 deposits=15 starts=120 total=11586
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+asyria/seed 202: obcych miast 34, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=17 landSea=238 relief=228 coast=37 riversMain=1862 riversFill=5287 forest=8 deposits=16 starts=201 total=7896
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+asyria/seed 4242: obcych miast 39, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=30 landSea=187 relief=280 coast=57 riversMain=2245 riversFill=6300 forest=10 deposits=63 starts=343 total=9514
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+fenicjanie/seed 11: obcych miast 43, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=22 landSea=386 relief=353 coast=114 riversMain=1942 riversFill=8334 forest=76 deposits=96 starts=392 total=11717
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+fenicjanie/seed 202: obcych miast 34, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=22 landSea=739 relief=371 coast=36 riversMain=1996 riversFill=8073 forest=25 deposits=32 starts=227 total=11521
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+[clusters] allocateTypyToMasses: 5 obcych typów bez miejsca po capach (n=11, largest=453, threshold=90)
+fenicjanie/seed 4242: obcych miast 39, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=17 landSea=511 relief=465 coast=161 riversMain=3217 riversFill=4401 forest=12 deposits=19 starts=168 total=8973
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=114, threshold=90)
+egipt/seed 11: obcych miast 43, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=21 landSea=448 relief=371 coast=41 riversMain=3211 riversFill=7560 forest=7 deposits=26 starts=162 total=11850
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] capital-sep: 12 niewykonalne dla 12 civ na 50x50, obnizono do 0
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+[clusters] allocateTypyToMasses: 9 obcych typów bez miejsca po capach (n=11, largest=108, threshold=90)
+egipt/seed 202: obcych miast 34, dup spawn=0 start=0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=200.1

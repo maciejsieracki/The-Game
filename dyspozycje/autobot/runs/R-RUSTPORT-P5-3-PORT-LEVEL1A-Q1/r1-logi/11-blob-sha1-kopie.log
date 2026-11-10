@@ -1,0 +1,14 @@
+$ git ls-tree edb8fb56 <10 ścieżek pinu>   vs   git hash-object <10 kopii w src-tauri/frontend-v2/src/ui>
+pin blob                                  v2 hash-object                            ścieżka
+e2e8c5c01383277cc57e4b08eaccb8d6c8e0bb78  e2e8c5c01383277cc57e4b08eaccb8d6c8e0bb78  gra/src/ui/diploUiSkin.ts -> src/ui/diploUiSkin.ts
+c1af98982b74664107f949884f94bdcbc6100535  c1af98982b74664107f949884f94bdcbc6100535  gra/src/ui/icons/iconRegistry.ts -> src/ui/icons/iconRegistry.ts
+9adfe2bec37d25b4deeebc94c6f9ebe39f52d762  9adfe2bec37d25b4deeebc94c6f9ebe39f52d762  gra/src/ui/mapUnitHudSkin.ts -> src/ui/mapUnitHudSkin.ts
+61cd72deb0f2d8afd9cb117bdeed83ac20627d17  61cd72deb0f2d8afd9cb117bdeed83ac20627d17  gra/src/ui/armyMergePanel.ts -> src/ui/armyMergePanel.ts
+56ef6921840456d0d5c6c7ec130c26c67491d1ef  56ef6921840456d0d5c6c7ec130c26c67491d1ef  gra/src/ui/icons/wikiBookIcon.ts -> src/ui/icons/wikiBookIcon.ts
+090ae8eed010ff484d2d5b51c3df1e8d6c53c809  090ae8eed010ff484d2d5b51c3df1e8d6c53c809  gra/src/ui/powerOverlayHud.ts -> src/ui/powerOverlayHud.ts
+5020d4c603c0fa4387c84a89ce439c359512086e  5020d4c603c0fa4387c84a89ce439c359512086e  gra/src/ui/bottomBarHud.ts -> src/ui/bottomBarHud.ts
+cbfa66db03d57edfdfdfbf81b699148ffec41b66  cbfa66db03d57edfdfdfbf81b699148ffec41b66  gra/src/ui/cityListHud.ts -> src/ui/cityListHud.ts
+cd0cd684fba157c6c728c4ab89dd61c934cc2f43  cd0cd684fba157c6c728c4ab89dd61c934cc2f43  gra/src/ui/empireOverlayHud.ts -> src/ui/empireOverlayHud.ts
+bb512d1314409818ccd8c8dc9ca0353f4a1d64f0  bb512d1314409818ccd8c8dc9ca0353f4a1d64f0  gra/src/battle/battleHudTheme.ts -> src/ui/battleHudTheme.ts
+zgodnych=10/10 niezgodnych=0
+EXIT=0

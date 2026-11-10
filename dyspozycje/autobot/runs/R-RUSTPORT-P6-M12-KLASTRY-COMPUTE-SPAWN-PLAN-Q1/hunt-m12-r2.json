@@ -1,0 +1,5852 @@
+[
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 256,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 1136,
+   "playerTyp": "egipt",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 2149,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 3042,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 4129,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 1239632,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 10320,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 7092,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 8360,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 9373,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 10151,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 15385,
+   "playerTyp": "fenicjanie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 12159,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 44506,
+   "playerTyp": "zulusi",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 14189,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 15272,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 16213,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 17477,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 22476,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 19503,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 20263,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 21278,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 22287,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 23341,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip",
+  "spec": {
+   "seed": 24333,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 7,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 1034,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 33363,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 1237606,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 4094,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 5078,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 6083,
+   "playerTyp": "harappa",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 7093,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 8105,
+   "playerTyp": "harappa",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 9124,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 10132,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 11220,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 43493,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 13246,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 14224,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 15202,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 16285,
+   "playerTyp": "inkowie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 17320,
+   "playerTyp": "egipt",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 18239,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 19289,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 120251,
+   "playerTyp": "sumer",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 1255840,
+   "playerTyp": "harappa",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 53623,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 23302,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_islands",
+  "spec": {
+   "seed": 28554,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 65535,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 1235580,
+   "playerTyp": "inkowie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 2282,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 68574,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 4057,
+   "playerTyp": "asyria",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 5066,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 6081,
+   "playerTyp": "egipt",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 11333,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 8106,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 9373,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 10207,
+   "playerTyp": "slowianie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 42480,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 43493,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 113160,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 18424,
+   "playerTyp": "grecy",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 16195,
+   "playerTyp": "sumer",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 16331,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 17234,
+   "playerTyp": "egipt",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 83769,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 19254,
+   "playerTyp": "celtowie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 20262,
+   "playerTyp": "babilonia",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 21275,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 22542,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 23555,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_strip_big",
+  "spec": {
+   "seed": 24329,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 21,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 1112,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 3026,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 3116,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 69587,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 6065,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 6155,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 7214,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 8105,
+   "playerTyp": "germanie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 9124,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 10137,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 76678,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 12198,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 13180,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 14259,
+   "playerTyp": "harappa",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 15198,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 16225,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 17234,
+   "playerTyp": "sumer",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 1252801,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 19252,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 24502,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 86808,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 22299,
+   "playerTyp": "fenicjanie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 23301,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_two_big",
+  "spec": {
+   "seed": 24435,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 4242,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 1090,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 67561,
+   "playerTyp": "babilonia",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 3056,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 4053,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 5142,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 1240645,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 7168,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 8115,
+   "playerTyp": "grecy",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 10117,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 110121,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 11160,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 1246723,
+   "playerTyp": "chinczycy",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 78704,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 14224,
+   "playerTyp": "zulusi",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 15294,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 16250,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 82756,
+   "playerTyp": "chinczycy",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 83769,
+   "playerTyp": "asyria",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 50584,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 20267,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 22273,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 23286,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 23555,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big_sh",
+  "spec": {
+   "seed": 24435,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 13,
+   "playerTyp": "babilonia",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 101004,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 1236593,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 3138,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 8294,
+   "playerTyp": "slowianie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 5082,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 6120,
+   "playerTyp": "fenicjanie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 7093,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 8203,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 9124,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 10132,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 11154,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 12161,
+   "playerTyp": "rzymianie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 13246,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 79717,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 15318,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 16213,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 117212,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 18241,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 19249,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 20262,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 86808,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 22291,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 54636,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land_big",
+  "spec": {
+   "seed": 24314,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 5,
+   "playerTyp": "fenicjanie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 1015,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 2282,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 34376,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 4094,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 5076,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 106069,
+   "playerTyp": "fenicjanie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 1241658,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 39441,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 9120,
+   "playerTyp": "grecy",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 10172,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 1245710,
+   "playerTyp": "babilonia",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 12159,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 13268,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 14193,
+   "playerTyp": "sumer",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 16195,
+   "playerTyp": "harappa",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 16211,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 21463,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 18311,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 23489,
+   "playerTyp": "harappa",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 20265,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 21350,
+   "playerTyp": "inkowie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 22385,
+   "playerTyp": "babilonia",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 54636,
+   "playerTyp": "rzymianie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "e_land",
+  "spec": {
+   "seed": 24354,
+   "playerTyp": "hetyci",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 2,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 1030,
+   "playerTyp": "egipt",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 2103,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 3295,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 4065,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 5164,
+   "playerTyp": "chinczycy",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 106069,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 7108,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 8146,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 74652,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 10135,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 11150,
+   "playerTyp": "celtowie",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 12167,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 13170,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 14305,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 15294,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 17208,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 17477,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 18276,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 1253814,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 20383,
+   "playerTyp": "inkowie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 21278,
+   "playerTyp": "asyria",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 22291,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 23316,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_c30",
+  "spec": {
+   "seed": 24314,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 5,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 5255,
+   "playerTyp": "babilonia",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 2029,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 3041,
+   "playerTyp": "harappa",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 4054,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 1239632,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 6085,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 7112,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 8106,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 9373,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 10172,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 11160,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 12158,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 1247736,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 14189,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 15196,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 16331,
+   "playerTyp": "hetyci",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 1251788,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 18311,
+   "playerTyp": "egipt",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 84782,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 20273,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 21294,
+   "playerTyp": "chinczycy",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 23286,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 23376,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_arch40",
+  "spec": {
+   "seed": 24389,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 13,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 5255,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 1236593,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 3295,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 4054,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 5321,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 6095,
+   "playerTyp": "germanie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 7098,
+   "playerTyp": "germanie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 8107,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 9118,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 10133,
+   "playerTyp": "babilonia",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 111134,
+   "playerTyp": "asyria",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 16398,
+   "playerTyp": "chinczycy",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 13186,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 14259,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 15202,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 17208,
+   "playerTyp": "sumer",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 21463,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 83769,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 84782,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 20281,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 21278,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 53623,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 23301,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_hole40",
+  "spec": {
+   "seed": 1258879,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 65535,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 1055,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 2039,
+   "playerTyp": "grecy",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 34376,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 4069,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 5067,
+   "playerTyp": "sumer",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 6120,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 7092,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 8181,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 109108,
+   "playerTyp": "egipt",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 11130,
+   "playerTyp": "hetyci",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 11266,
+   "playerTyp": "hetyci",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 12177,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 13190,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 14185,
+   "playerTyp": "babilonia",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 80730,
+   "playerTyp": "germanie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 16213,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 17242,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 18490,
+   "playerTyp": "harappa",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 84782,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 20277,
+   "playerTyp": "rzymianie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 21280,
+   "playerTyp": "egipt",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 22303,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 23300,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_small",
+  "spec": {
+   "seed": 24317,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 1,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 5255,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 2047,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 3052,
+   "playerTyp": "zulusi",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 4059,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 5188,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 6091,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 11333,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 8227,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 9130,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 10133,
+   "playerTyp": "fenicjanie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 11164,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 112147,
+   "playerTyp": "slowianie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 13172,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 14183,
+   "playerTyp": "babilonia",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 15451,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 16285,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 17344,
+   "playerTyp": "chinczycy",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 18311,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 119238,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 85795,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 22273,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 22289,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 23306,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_48x36",
+  "spec": {
+   "seed": 24333,
+   "playerTyp": "fenicjanie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 4242,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 1018,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 2068,
+   "playerTyp": "sumer",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 1237606,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 4054,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 36402,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 10320,
+   "playerTyp": "rzymianie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 11333,
+   "playerTyp": "sumer",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 8181,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 9240,
+   "playerTyp": "sumer",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 41467,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 1245710,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 12161,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 13246,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 14305,
+   "playerTyp": "asyria",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 15197,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 47545,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 17228,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 18490,
+   "playerTyp": "celtowie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 19503,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 20383,
+   "playerTyp": "babilonia",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 21284,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 53623,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 23310,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "m_60x40a",
+  "spec": {
+   "seed": 24329,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 3,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 1235580,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 102017,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 3042,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 4059,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 5188,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 6155,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 107082,
+   "playerTyp": "egipt",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 108095,
+   "playerTyp": "rzymianie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 9240,
+   "playerTyp": "fenicjanie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 110121,
+   "playerTyp": "chinczycy",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 42480,
+   "playerTyp": "asyria",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 77691,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 13211,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 18424,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 15196,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 16219,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 1251788,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 49571,
+   "playerTyp": "zulusi",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 19248,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 20262,
+   "playerTyp": "hetyci",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 21286,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 22307,
+   "playerTyp": "sumer",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 23301,
+   "playerTyp": "babilonia",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "k3small",
+  "spec": {
+   "seed": 24568,
+   "playerTyp": "babilonia",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 1234567,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 1024,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 33363,
+   "playerTyp": "zulusi",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 103030,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 69587,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 5086,
+   "playerTyp": "sumer",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 6079,
+   "playerTyp": "germanie",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 7092,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 73639,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 1243684,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 10135,
+   "playerTyp": "zulusi",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 11266,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 12169,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 13182,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 14183,
+   "playerTyp": "germanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 15318,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 16215,
+   "playerTyp": "inkowie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 21463,
+   "playerTyp": "celtowie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 18245,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 20247,
+   "playerTyp": "fenicjanie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 85795,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 21274,
+   "playerTyp": "germanie",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 87821,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 54636,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "w5",
+  "spec": {
+   "seed": 24315,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 17,
+   "playerTyp": "babilonia",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 1018,
+   "playerTyp": "asyria",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 2149,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 3138,
+   "playerTyp": "hetyci",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 4063,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 5188,
+   "playerTyp": "slowianie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 6120,
+   "playerTyp": "harappa",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 7093,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 8109,
+   "playerTyp": "harappa",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 74652,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 10147,
+   "playerTyp": "babilonia",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 11185,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 12177,
+   "playerTyp": "fenicjanie",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 13171,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 14224,
+   "playerTyp": "slowianie",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 15237,
+   "playerTyp": "grecy",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 16225,
+   "playerTyp": "babilonia",
+   "rywale": 1,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 17242,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 83769,
+   "playerTyp": "asyria",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 23489,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 20337,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 21274,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 23286,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 123290,
+   "playerTyp": "inkowie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "s_mirror",
+  "spec": {
+   "seed": 28554,
+   "playerTyp": "inkowie",
+   "rywale": 1,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 17,
+   "playerTyp": "hetyci",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 5255,
+   "playerTyp": "rzymianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 2027,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 34376,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 4094,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 36402,
+   "playerTyp": "inkowie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 6334,
+   "playerTyp": "chinczycy",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 7168,
+   "playerTyp": "hetyci",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 8117,
+   "playerTyp": "rzymianie",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 9122,
+   "playerTyp": "egipt",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 10253,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 42480,
+   "playerTyp": "babilonia",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 12161,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 113160,
+   "playerTyp": "sumer",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 14184,
+   "playerTyp": "babilonia",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 15208,
+   "playerTyp": "asyria",
+   "rywale": 2,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 16307,
+   "playerTyp": "grecy",
+   "rywale": 1,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 17263,
+   "playerTyp": "babilonia",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 18237,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 19503,
+   "playerTyp": "slowianie",
+   "rywale": 9,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 20267,
+   "playerTyp": "babilonia",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 21372,
+   "playerTyp": "inkowie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 22297,
+   "playerTyp": "chinczycy",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 23376,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_s90",
+  "spec": {
+   "seed": 24323,
+   "playerTyp": "slowianie",
+   "rywale": 0,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 1,
+   "playerTyp": "rzymianie",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 1020,
+   "playerTyp": "germanie",
+   "rywale": 9,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 2037,
+   "playerTyp": "celtowie",
+   "rywale": 4,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 3046,
+   "playerTyp": "slowianie",
+   "rywale": 2,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 4054,
+   "playerTyp": "harappa",
+   "rywale": 0,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 1239632,
+   "playerTyp": "celtowie",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 6091,
+   "playerTyp": "zulusi",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 7108,
+   "playerTyp": "asyria",
+   "rywale": 0,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 8360,
+   "playerTyp": "chinczycy",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 109108,
+   "playerTyp": "celtowie",
+   "rywale": 9,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 41467,
+   "playerTyp": "germanie",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 11148,
+   "playerTyp": "asyria",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 12255,
+   "playerTyp": "harappa",
+   "rywale": 2,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 13180,
+   "playerTyp": "harappa",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 45519,
+   "playerTyp": "fenicjanie",
+   "rywale": 9,
+   "aktywneTypy": 5
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 46532,
+   "playerTyp": "harappa",
+   "rywale": 4,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 16464,
+   "playerTyp": "grecy",
+   "rywale": 0,
+   "aktywneTypy": 10
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 17263,
+   "playerTyp": "germanie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 18241,
+   "playerTyp": "zulusi",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 19346,
+   "playerTyp": "slowianie",
+   "rywale": 4,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 20281,
+   "playerTyp": "fenicjanie",
+   "rywale": 1,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 121264,
+   "playerTyp": "germanie",
+   "rywale": 9,
+   "aktywneTypy": 8
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 87821,
+   "playerTyp": "sumer",
+   "rywale": 0,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 23376,
+   "playerTyp": "grecy",
+   "rywale": 4,
+   "aktywneTypy": 15
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ },
+ {
+  "map": "b_a150",
+  "spec": {
+   "seed": 24411,
+   "playerTyp": "fenicjanie",
+   "rywale": 2,
+   "aktywneTypy": 12
+  },
+  "kind": "spawn",
+  "hits": [
+   "sanity:player-pushed"
+  ]
+ }
+]

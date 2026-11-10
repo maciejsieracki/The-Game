@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1
+GOAL: RR-T8f — jedna ścieżka tekstu: `Canvas2dLite::fill_text`/`stroke_text`/`measure_text` same wybierają glif (D-TXT-3, fallback per glif D-TXT-2, alfa stylu mnoży glif kolorowy Z-7), poprawne `measureText().width` dla ciągów mieszanych, bez zmiany istniejących wyników; domknięcie Z-30-4.
+ZMIANY/COMMIT: baza `origin/rust-port/parity-v2` @ 33300688; commit w worktree (SHA w odpowiedzi Operatora). Allowlista: `src/raster/text/mod.rs`, `src/raster/image/emoji.rs`, `src/raster/canvas.rs` (jeden hook `stroke_color_alpha`), `tests/textmix_{chromium,unify,manifest}.rs`, `tests/fixtures/textmix/**` (~692 KB), `dyspozycje/rust-port/p4/P4-35-TEXT-EMOJI-UNIFY.md`, ten katalog. Wywołujące `units/overlay/**`, `cities/overlay/**` — bez zmian (niekonieczne). `lib.rs`, `Cargo.*`, `labels/**` — bez zmian.
+TESTY: `dowody/01-gates.log` — fmt / clippy / clippy gpu / test stable / test 1.87.0 / `git diff --check`, każdy z `EXIT=`. Wyniki: mieszane szerokości 308/308 bit w bit; linie bazowe 144/144; 18 scen vs Chromium 141 — 16 w progach, 2 jawne wyjątki (AA konturów RR-T8b, scena kontrolna bez emoji odstaje tak samo, P4-35 §5.2); 18 scen RR-T8c przez `Canvas2dLite::fill_text` = `image/golden.tsv` 18/18; wszystkie istniejące złote hashe RR-T8a/b/c, MOD-08/10 bez re-blessu; determinizm 1.87.0 vs stable (`dowody/05-determinism.log`); generator powtarzalny (`dowody/06-generator-repro.log`, DIFF_EXIT=0); mutacje 15/16 zabitych, U09 równoważna w praktyce (`dowody/08-mutations.log`, P4-35 §9).
+BLOKADY: brak. Do decyzji Evaluatora/orkiestratora: (1) wyjątki `m01`/`m15` (§5.2) jako odchylenie RR-T8b albo osobny temat AA małego jasnego tekstu; (2) migracja 4 wywołujących `emoji::fill_text` na `Canvas2dLite::fill_text` + ewentualne `#[deprecated]` (Z-35-1); (3) 3 odchylenia szerokości RR-T8c nadal niewyjaśnione (§4).
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (Opus 5.5 medium) — ocena P4-35-TEXT-EMOJI-UNIFY.md i dowodów.
+DEPLOY/PUSH: NIE WYKONANO

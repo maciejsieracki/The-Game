@@ -1,0 +1,12 @@
+MUTANT E-M08-wanted-no-max1 file=src/domain/resource_production.rs
+OLD:
+era.floor().max(1.0) as i64
+NEW:
+era.floor() as i64
+
+FAILED TESTS:
+test coverage_drain_lines_match_running_web ... FAILED
+test rate_and_required_grid_match_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+VERDICT=KILLED
+EXIT=101

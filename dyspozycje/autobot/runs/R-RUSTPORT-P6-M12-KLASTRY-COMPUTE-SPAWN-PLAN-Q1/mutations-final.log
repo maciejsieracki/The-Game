@@ -1,0 +1,67 @@
+# mutations-final.log - wynik KONCOWY P6.M12 (r1 -> r1c -> r2a -> r2b; pozniejszy log nadpisuje wczesniejszy)
+[default-seed-43] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 121s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[player-cap-xor-1] PRZEZYLA-NIE_ZMIERZONO (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (228s)
+[player-cap-xor-retry] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (210s)
+[ki-seed-mul] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r1.log) wszystkie 3 etapy zielone (604s)
+[empty-map-label-mala] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 81s: compute_clusters_default_opts_matches_web_defaults
+[n-typy-no-cap] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 81s: compute_clusters_matches_web_maps_up_to_500_hexes
+[min-dyst-order-sep] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (312s)
+[obcy-no-max] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 46s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[map-center-q] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 37s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[shuffle-removed] WYKRYTA (zrodlo: mutations-r1c.log) etap S1, 68s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[land-pool-with-mountains] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 37s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, no_land_returns_empty_structure_without_cache, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[sea-field-step] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 33s: sea_distance_field_basic_shape, compute_clusters_default_opts_matches_web_defaults, sea_distance_field_matches_web, compute_clusters_matches_web_maps_up_to_500_hexes ...
+[fill-centers-player-gate] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (315s)
+[fill-centers-sep-capital] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 30s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[player-in-epoch-true] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 34s: compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-slice-plus-one] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 37s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[topup-centers-local-land] WYKRYTA (zrodlo: mutations-r2a.log) etap S3, 130s: compute_clusters_matches_web_maps_over_5000_hexes
+[reassign-never] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 42s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-mass-gate-negated] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 34s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[player-sea-gate-negated] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 118s: compute_clusters_matches_web_maps_over_5000_hexes
+[player-placed-push-removed] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 44s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-repack-empty-negated] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 46s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-growth-reserve-0-initial] PRZEZYLA-NIE_ZMIERZONO (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (188s)
+[player-pending-from-layout] PRZEZYLA-NIE_ZMIERZONO (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (171s)
+[foreign-loop-start-2] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 34s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[foreign-anchor-min-dist] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 36s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-existing-all] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 51s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-retry-no-preferred] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 42s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-growth-no-or] PRZEZYLA-NIE_ZMIERZONO (zrodlo: mutations-r2a.log) wszystkie 3 etapy zielone (162s)
+[foreign-pending-empty] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 53s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[foreign-cap-skip-sep] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 43s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[topup-dedupe-removed] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r2b.log) wszystkie 3 etapy zielone (199s)
+[topup-player-dist-le] WYKRYTA (zrodlo: mutations-r2b.log) etap S1, 43s: compute_clusters_matches_web_maps_up_to_500_hexes
+[topup-key-idx-stuck] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 187s: compute_clusters_matches_web_maps_501_to_1100_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_1101_to_2500_hexes, compute_clusters_matches_web_maps_over_5000_hexes
+[topup-region-lt] WYKRYTA (zrodlo: mutations-r2b.log) etap S3, 143s: compute_clusters_matches_web_maps_over_5000_hexes
+[topup-placed-push-removed] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 49s: web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector, compute_clusters_matches_web_maps_up_to_500_hexes
+[repack-final-and] WYKRYTA (zrodlo: mutations-r2b.log) etap S1, 41s: compute_clusters_matches_web_maps_up_to_500_hexes
+[enforce-hard-removed] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r2b.log) wszystkie 3 etapy zielone (173s)
+[enforce-body-removed] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 172s: compute_clusters_matches_web_maps_over_5000_hexes
+[repack-all-removed] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 51s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[fillup-caps-empty] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 51s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[diag-le] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 49s: compute_clusters_matches_web_maps_up_to_500_hexes
+[diag-missing-always-ok] ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2) (zrodlo: mutations-r1c.log) wszystkie 3 etapy zielone (356s)
+[requested-typy-min] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 48s: compute_clusters_matches_web_maps_up_to_500_hexes
+[plan-fallback-hex] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 45s: spawn_plan_without_land_falls_back_to_origin_and_player_name, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-xor-no-preferred] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 48s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-local-land-removed] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 53s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-owner-start-0] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 41s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-cluster-cap-flag] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 48s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-hard-gate-le] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 45s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-capital-name-swap] WYKRYTA (zrodlo: mutations-r2b.log) etap S2, 35s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-used-names-not-updated] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 45s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-pending-hexes-empty] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 37s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-dropped-typ-not-skipped] PRZEZYLA-NIE_ZMIERZONO (zrodlo: mutations-r2b.log) wszystkie 3 etapy zielone (177s)
+[plan-player-name-used] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 36s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[to-start-plan-swap-owners] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 37s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, to_start_plan_keeps_every_field_and_drops_only_placement
+[to-start-plan-pending-count] WYKRYTA (zrodlo: mutations-r1.log) etap S2, 38s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[table-default-rivals-8] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 39s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[table-center-dist-min-5] WYKRYTA (zrodlo: mutations-r1.log) etap S1, 41s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[table-center-dist-div-10] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 182s: compute_clusters_matches_web_maps_2501_to_5000_hexes
+[table-margin-min-3] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 147s: compute_clusters_matches_web_maps_1101_to_2500_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_501_to_1100_hexes
+[table-margin-div-2] WYKRYTA (zrodlo: mutations-r1.log) etap S3, 152s: compute_clusters_matches_web_maps_over_5000_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_1101_to_2500_hexes
+[table-topup-min-9] WYKRYTA (zrodlo: mutations-r2b.log) etap S3, 102s: compute_clusters_matches_web_maps_over_5000_hexes
+[table-topup-div-3] WYKRYTA (zrodlo: mutations-r2b.log) etap S3, 107s: compute_clusters_matches_web_maps_over_5000_hexes
+
+PODSUMOWANIE: {'PRZEZYLA-NIE_ZMIERZONO': 5, 'ROWNOWAZNA/NIEOSIAGALNA (dowod w doc §7.2)': 7, 'WYKRYTA': 52} razem 64

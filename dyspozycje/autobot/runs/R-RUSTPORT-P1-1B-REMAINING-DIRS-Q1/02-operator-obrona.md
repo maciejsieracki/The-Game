@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: PROCESS
+TEMAT: R-RUSTPORT-P1-1B-REMAINING-DIRS-Q1
+GOAL: Obrona Operatora wobec zarzutów Evaluatora do rundy 1/5; katalog 9 podkatalogów gra/src + suma globalna, pin edb8fb56.
+ZMIANY/COMMIT: allowlista: dyspozycje/rust-port/p1/P1-1B-REMAINING-DIRS.md (poprawiony akapit „Opis przeznaczenia”, linia 7) oraz ten plik. Brak zmian w gra/**, brak zmian w P1-1-FILE-CATALOG.md, brak commitów.
+ZARZUT 1 (trzy pliki w gra/src/ bez wierszy): ODRZUCAM (dowód). Dispatch definiuje zakres jako „podkatalogi gra/src/*” (9 katalogów); pliki bezpośrednio w gra/src/ nie są podkatalogiem. Plik deklaruje ich wyłączenie w sekcji „Zakres” (linia 5) i ujmuje je w wierszu podsumowania i sumie globalnej (3 pliki, 39 407 linii). Są opisane w P1-1-FILE-CATALOG.md, linie 46-48 (main.ts 39350; buildInfo.ts 27; vite-env.d.ts 30). Weryfikacja: git ls-tree --name-only edb8fb56 -- gra/src/ zawiera 3 pliki poza katalogami; git show liczby zgodne.
+ZARZUT 2 (fałszywe odniesienie „oznaczone w tabeli jak wyżej”): PRZYJMUJĘ (poprawiono). Tabela nie zawiera żadnego znacznika. Pliki bez komentarza nagłówkowego to trzy, nie dwa: data/wikiBundle.json, oblezenie/index.html, wonderpreview/index.html (pliki .md mają nagłówek `#`, więc nie wchodzą w tę grupę). Operator w poprzednim raporcie napisał „dwa pliki”, co było nieprecyzyjne. Akapit opisu w P1-1B-REMAINING-DIRS.md wymienia teraz te trzy pliki, ich źródło opisu i nie odwołuje się do nieistniejącego oznaczenia.
+TESTY: (1) 9 katalogów: 138 plików (util 1, types 12, input 1, perf 1, oblezenie 2, wonderpreview 2, data 4, audio 70, assets 45); linie 222276; .ts 25. (2) Pliki bezpośrednio w gra/src: 3, linie 39407 (39350 + 27 + 30). (3) Suma globalna: 892 pliki, 517377 linii (= 751 + 138 + 3 plików; 255694 + 222276 + 39407 linii). (4) Wiersze tabel tabeli: 147 linii `| \`gra/src/`, czyli 138 plików + 9 wierszy podsumowań. (5) git diff --check dla P1-1B-REMAINING-DIRS.md: bez błędów.
+BLOKADY: brak. Zastrzeżenie: liczby linii dla .mp3/.jpg to bajty o wartości \n (miarodajny rozmiar w bajtach); rola folderu audio/utwory/braz/ niezweryfikowana w README.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator weryfikuje poprawioną linię 7 i wynik zarzutu 1 (odrzucony z dowodem); decyzja o rozstrzygnięciu zarzutu 1 po stronie Final Control, jeśli dosłowne czytanie „każdy plik ma wiersz” ma obejmować także pliki z gra/src/ bezpośrednio.
+DEPLOY/PUSH: NIE WYKONANO

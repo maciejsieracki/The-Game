@@ -1,0 +1,77 @@
+# node v22.22.0, ICU 77.1, domyslna lokalizacja procesu: en-US
+# pary na lokalizacje: 33456 (116x116 pelnych + 20000 losowych dwuznakowych)
+# pary id-ksztaltow gry na lokalizacje: 160000 (400 id)
+# lokalizacja	obsluzona_przez_ICU	roznice_ASCII_vs_en-US	roznice_id_gry_vs_en-US	przyklady_ASCII
+en-US	tak	0	0
+en-GB	tak	0	0
+en-AU	tak	0	0
+en-CA	tak	0	0
+en-IN	tak	0	0
+pl	tak	0	0
+pl-PL	tak	0	0
+de	tak	0	0
+de-AT	tak	0	0
+de-CH	tak	0	0
+fr	tak	0	0
+fr-CA	tak	0	0
+es	tak	0	0
+es-MX	tak	0	0
+it	tak	0	0
+pt	tak	0	0
+pt-BR	tak	0	0
+nl	tak	0	0
+sv	tak	0	0
+da	tak	92	0	"A" vs "a": en-US=1 da=-1 | "A" vs "a": en-US=1 da=-1 | "B" vs "b": en-US=1 da=-1
+nb	tak	11	0	"aa" vs "KB": en-US=-1 nb=1 | "kf" vs "AA": en-US=1 nb=-1 | "JO" vs "AA": en-US=1 nb=-1
+nn	tak	11	0	"aa" vs "KB": en-US=-1 nn=1 | "kf" vs "AA": en-US=1 nn=-1 | "JO" vs "AA": en-US=1 nn=-1
+fi	tak	0	0
+is	tak	0	0
+cs	tak	2	0	"HG" vs "cH": en-US=1 cs=-1 | "Ch" vs "hz": en-US=-1 cs=1
+sk	tak	2	0	"HG" vs "cH": en-US=1 sk=-1 | "Ch" vs "hz": en-US=-1 sk=1
+sl	tak	0	0
+hr	tak	1	0	"nj" vs "Nu": en-US=-1 hr=1
+sr	tak	0	0
+bs	tak	1	0	"nj" vs "Nu": en-US=-1 bs=1
+hu	tak	0	0
+ro	tak	0	0
+bg	tak	0	0
+ru	tak	0	0
+uk	tak	0	0
+be	tak	0	0
+el	tak	0	0
+tr	tak	3	0	"I" vs "i": en-US=1 tr=-1 | "i" vs "I": en-US=-1 tr=1 | "IR" vs "i,": en-US=1 tr=-1
+az	tak	644	0	"I" vs "X": en-US=-1 az=1 | "I" vs "i": en-US=1 az=-1 | "I" vs "x": en-US=-1 az=1
+lt	tak	406	0	"J" vs "Y": en-US=-1 lt=1 | "J" vs "y": en-US=-1 lt=1 | "K" vs "Y": en-US=-1 lt=1
+lv	tak	400	0	"J" vs "Y": en-US=-1 lv=1 | "J" vs "y": en-US=-1 lv=1 | "K" vs "Y": en-US=-1 lv=1
+et	tak	263	2	"T" vs "Z": en-US=-1 et=1 | "T" vs "z": en-US=-1 et=1 | "T" vs "z": en-US=-1 et=1
+ca	tak	0	0
+eu	nie	0	0
+gl	tak	0	0
+mt	tak	81	0	"A" vs "a": en-US=1 mt=-1 | "A" vs "a": en-US=1 mt=-1 | "B" vs "b": en-US=1 mt=-1
+sq	tak	2	0	"xs" vs "xh": en-US=1 sq=-1 | "nj" vs "Nu": en-US=-1 sq=1
+vi	tak	0	0
+id	tak	0	0
+ms	tak	0	0
+fil	tak	1	0	"ng" vs "nk": en-US=-1 fil=1
+ja	tak	0	0
+ko	tak	0	0
+zh	tak	0	0
+zh-TW	tak	0	0
+th	tak	3930	202	" " vs "!": en-US=-1 th=0 | " " vs "\"": en-US=-1 th=0 | " " vs "#": en-US=-1 th=0
+he	tak	0	0
+ar	tak	0	0
+fa	tak	0	0
+hi	tak	0	0
+bn	tak	0	0
+haw	tak	1621	4	"B" vs "E": en-US=-1 haw=1 | "B" vs "I": en-US=-1 haw=1 | "B" vs "O": en-US=-1 haw=1
+cy	tak	3	0	"H}" vs "ng": en-US=-1 cy=1 | "RH" vs "Ri": en-US=-1 cy=1 | "rT" vs "rh": en-US=1 cy=-1
+ga	tak	0	0
+kk	tak	0	0
+ka	tak	0	0
+hy	tak	0	0
+mk	tak	0	0
+sw	tak	0	0
+af	tak	0	0
+lb	tak	0	0
+# lokalizacji obsluzonych: 70/71; ASCII rozne od en-US: 18 [da, nb, nn, cs, sk, hr, bs, tr, az, lt, lv, et, mt, sq, fil, th, haw, cy]
+# id-ksztalty gry rozne od en-US: 3 [et(2), th(202), haw(4)]

@@ -1,0 +1,33 @@
+--- pin/gra/src/ui/diploListHud.ts
++++ v2/src/ui/diploListHud.ts
+@@ -2,7 +2,7 @@
+  * diploListHud.ts — lista cywilizacji do dyplomacji (toolbar tb-diplomacy).
+  */
+ 
+-import { formatDiploCivListLines } from '../game/diplomacy-display';
++import type { DiploCivListLinesDto } from '../viewmodel/types';
+ import { tierLabel } from './diplomacyPanel';
+ import {
+   civLeaderMedallionHtmlById,
+@@ -476,18 +476,11 @@
+   activeTreaties?: readonly string[];
+   isCityState?: boolean;
+   kolorHex?: string;
++  /** P5.5: gotowe linie karty z Rust (`DiploListDto.lines`, P5-0 §6.6 — web `formatDiploCivListLines`). */
++  lines: DiploCivListLinesDto;
+ }): DiploListEntry | null {
+   if (rel.ownerId === undefined) return null;
+-  const lines = formatDiploCivListLines({
+-    cultureLabel: rel.cultureLabel,
+-    epochLabel: rel.epochLabel,
+-    theirPopulation: rel.population,
+-    theirArmyCount: rel.armyCount,
+-    theirRespektTowardPlayer: rel.theirRespekt,
+-    ourRespektTowardThem: rel.respekt,
+-    zaufanie: rel.zaufanie,
+-    relationTierLabel: tierLabel(rel.tier),
+-  });
++  const lines = rel.lines;
+   return {
+     id: String(rel.ownerId),
+     name: rel.civ,

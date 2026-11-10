@@ -1,0 +1,33 @@
+# Wywolania Math.* w gen-helpers.ts:1408-2365 (pin edb8fb56), tylko kod (bez komentarzy //, /* */)
+# linia	funkcja	tekst
+1494	min	qMin = Math.min(qMin, q);
+1495	max	qMax = Math.max(qMax, q);
+1496	min	rMin = Math.min(rMin, r);
+1497	max	rMax = Math.max(rMax, r);
+1512	round	const cq = Math.round(centroid.q);
+1513	round	const cr = Math.round(centroid.r);
+1514	floor	const half = Math.floor(size / 2);
+1550	min	minD = Math.min(minD, hexAxialDistance(q, r, cq, cr));
+1576	min	const ci = Math.min(nContinents - 1, Math.max(0, continentOf.get(key) ?? 0));
+1576	max	const ci = Math.min(nContinents - 1, Math.max(0, continentOf.get(key) ?? 0));
+1622	max	return Math.max(0, Math.ceil(landCount * frac));
+1622	ceil	return Math.max(0, Math.ceil(landCount * frac));
+1627	max	return Math.max(0, Math.ceil(landCount * frac));
+1627	ceil	return Math.max(0, Math.ceil(landCount * frac));
+1638	max	return Math.max(minMountainsIronCell(tier), Math.ceil(landCount * frac));
+1638	ceil	return Math.max(minMountainsIronCell(tier), Math.ceil(landCount * frac));
+1643	max	return Math.max(minHighlandsCopperCell(tier), Math.ceil(landCount * frac));
+1643	ceil	return Math.max(minHighlandsCopperCell(tier), Math.ceil(landCount * frac));
+1674	round	const bonus = Math.round(candidates.length * fr.mountain);
+1675	min	const nMtn = Math.min(bonus, reliefBonusCapMountain(tier, candidates.length));
+1713	round	const bonus = Math.round(candidates.length * fr.highland);
+1714	min	const nHi = Math.min(bonus, reliefBonusCapHighland(tier, candidates.length));
+1849	max	return Math.max(8, Math.floor(cellSize * 0.32));
+1849	floor	return Math.max(8, Math.floor(cellSize * 0.32));
+2005	round	const copperSize = copperCellSize ?? Math.round(ironCellSize * 0.6);
+2056	min	score += Math.min(8, hexBorderDistance(q, r, width, height)) * 0.04;
+2206	max	: Math.max(minMtn, reliefBonusCapMountain(tier, land.length) + minMtn);
+2243	max	: Math.max(minHi, reliefBonusCapHighland(tier, land.length) + minHi);
+
+# LICZBA wywolan wg funkcji: ceil=4, floor=2, max=10, min=7, round=5
+# sin/cos/pow/atan2/hypot/sqrt/exp/log/trunc/sign/abs w zakresie: {'sin': 0, 'cos': 0, 'pow': 0, 'atan2': 0, 'hypot': 0, 'sqrt': 0, 'exp': 0, 'log': 0, 'trunc': 0, 'sign': 0, 'abs': 0}

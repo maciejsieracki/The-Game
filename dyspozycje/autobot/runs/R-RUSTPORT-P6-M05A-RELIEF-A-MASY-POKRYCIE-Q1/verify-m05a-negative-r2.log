@@ -1,0 +1,29 @@
+wartosci tabeli sprawdzone wzgledem TS: 50/50
+audyt literalow: 41 literalow poza {0,1,2}, wszystkie w liniach zrodel tabeli
+ROZBIEZNOSC: woda low
+ROZBIEZNOSC: sufit wariant bez-sekcji low
+ROZBIEZNOSC: spreadCapMountain low 1391
+ROZBIEZNOSC: minLand 124.37099218484946
+ROZBIEZNOSC: landCells komorka 0,0
+ROZBIEZNOSC: pickSpread 0.5 0
+ROZBIEZNOSC: masy mapa 2
+ROZBIEZNOSC: kwadrat bbox mapa 0
+ROZBIEZNOSC: dystans bez kwadratu
+ROZBIEZNOSC: partycje skroty mapa 4 kontynenty
+ROZBIEZNOSC: forestEligible rownina
+ROZBIEZNOSC: isRiverLandTerrain rownina
+ROZBIEZNOSC: cellCounts mapa 5 high liczniki
+ROZBIEZNOSC: canHostEdge mapa 1 minLand 97
+ROZBIEZNOSC: ratios mapa 4 high iron 12
+ROZBIEZNOSC: pickForce mapa 4 highland liczba losowan
+ROZBIEZNOSC: pickForceWater mapa 4 highland liczba losowan
+ROZBIEZNOSC: forceType mapa 0 iron low: zmiany stanu
+ROZBIEZNOSC: capCell mapa 2 mtn medium wynik
+ROZBIEZNOSC: capSpread mapa 2 high: skrot stanu
+ROZBIEZNOSC: ensureMass mapa 2 iron medium skip=1 liczba losowan
+ROZBIEZNOSC: applyKeys mapa 3 copper medium allLand: skrot stanu
+ROZBIEZNOSC: applyRank mapa 0 wyspy high: skrot stanu
+ROZBIEZNOSC: applyRankDefault mapa 1 high: skrot stanu
+ROZBIEZNOSC: isDepositProtectedFromOverflowCap
+checks=88941 rozbieznosci=25
+EXIT=1

@@ -1,0 +1,208 @@
+$ cargo test --locked --all-targets
+   Compiling civ-renderer v0.1.0 (<repo>/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.12s
+     Running unittests src/lib.rs (<repo>/rust-port/renderer/target/debug/deps/civ_renderer-e1c00315246754e6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_nturns.rs (<repo>/rust-port/renderer/target/debug/deps/assets_nturns-8f54d61b245277a0)
+
+running 6 tests
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+test new_game_frees_everything_and_restarts_identically ... ok
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/assets_registry.rs (<repo>/rust-port/renderer/target/debug/deps/assets_registry-69841652a4de3f64)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test handle_from_another_registry_is_rejected ... ok
+test live_report_lists_labels ... ok
+test owned_guards_count_references ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test reference_counting_frees_on_last_release ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test cache_lru_by_entries_and_bytes ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/camera_web_parity.rs (<repo>/rust-port/renderer/target/debug/deps/camera_web_parity-b37e1c23746006cd)
+
+running 5 tests
+test frame_at_60_fps_is_exactly_one_web_frame ... ok
+test drag_and_wheel_do_not_depend_on_dt ... ok
+test pan_scales_with_dt_and_long_frames_are_capped ... ok
+test camera_controller_matches_web_100_percent ... ok
+test fixture_covers_every_branch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/cpu_sanity.rs (<repo>/rust-port/renderer/target/debug/deps/cpu_sanity-3fd48f6fa6791f24)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/geom_three_parity.rs (<repo>/rust-port/renderer/target/debug/deps/geom_three_parity-3d1c4e34042c8932)
+
+running 17 tests
+test index_buffer_covers_non_indexed_meshes ... ok
+test merge_rejects_mixed_indexing ... ok
+test parity_curve ... ok
+test parity_cone ... ok
+test parity_circle ... ok
+test parity_box ... ok
+test parity_plane ... ok
+test parity_extrude ... ok
+test parity_polyhedron ... ok
+test parity_ring ... ok
+test parity_shape ... ok
+test parity_cylinder ... ok
+test parity_torus ... ok
+test trs_matches_manual_composition ... ok
+test parity_ops ... ok
+test parity_tube ... ok
+test parity_sphere ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/gpu_probe.rs (<repo>/rust-port/renderer/target/debug/deps/gpu_probe-ee6ac917c1be8ff5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pick_golden.rs (<repo>/rust-port/renderer/target/debug/deps/pick_golden-4daeac79d56d39a7)
+
+running 7 tests
+test client_rect_to_ndc_matches_web ... ok
+test prism_geometry_is_bitwise_three_cylinder ... ok
+test js_round_matches_math_round ... ok
+test terrain_scene_instances_are_bitwise_web ... ok
+test world_to_axial_both_variants_match_web ... ok
+test camera_matrices_and_rays_are_bitwise_three ... ok
+test golden_picks_match_web_100_percent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+
+     Running tests/terrain_web_parity.rs (<repo>/rust-port/renderer/target/debug/deps/terrain_web_parity-a99a8a09152669ee)
+
+running 5 tests
+test fog_hides_unknown_and_dims_explored ... ok
+test js_pow_special_cases_follow_v8 ... ok
+test color_math_matches_three ... ok
+test terrain_fog_matches_web ... ok
+test terrain_build_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/unit_core_json.rs (<repo>/rust-port/renderer/target/debug/deps/unit_core_json-32ffccaa4cf3d5cf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unit_core_model_rule.rs (<repo>/rust-port/renderer/target/debug/deps/unit_core_model_rule-538a4ffa59989ab0)
+
+running 7 tests
+test pending_registry_is_explicit ... ok
+test table_equals_the_legacy_pl_route_and_names_never_matter ... ok
+test rule_table_covers_exactly_the_77_unit_types ... ok
+test unknown_type_falls_back_to_category_with_a_warning ... ok
+test legacy_en_path_reproduces_exactly_the_three_web_divergences ... ok
+test norm_name_and_culture_match_the_web ... ok
+test web_signature_classes_equal_rust_model_id_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/unit_core_trig.rs (<repo>/rust-port/renderer/target/debug/deps/unit_core_trig-c84f9190ebf2fab7)
+
+running 2 tests
+test quat_from_euler_honours_every_order ... ok
+test js_trig_matches_v8_bit_for_bit_and_libm_does_not ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/unit_core_web_parity.rs (<repo>/rust-port/renderer/target/debug/deps/unit_core_web_parity-ffed60bf227df2ba)
+
+running 3 tests
+test signature_is_sensitive_to_owner_colour_and_pose ... ok
+test part_catalogues_match_the_web_singletons ... ok
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+EXIT=0

@@ -1,0 +1,105 @@
+
+--- T1a: decideAITurn basic contract ---
+
+--- T1b: wartosc (ASCII) read discriminator ---
+
+--- T1c: wartość (unicode) backward compat ---
+
+--- T1d: early phase builds and settler expansion ---
+
+--- T1e: endTurn always last ---
+
+--- T2a: loadDifficultyParams reads levels ---
+
+--- T2b: higher difficulty → stronger economy production score ---
+
+--- T2c: loadDifficultyParams empty aiParams → fallbacks ---
+
+--- T2d: default difficulty = Normal (2) ---
+
+--- T3a: Celtowie archetype readArchMods ---
+
+--- T3b: Germanie archetype readArchMods ---
+
+--- T3c: Celtowie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T3d: Germanie civType mapping (CIV_TO_ARCH roundtrip) ---
+
+--- T4a: idle fallback (a) — unit far from everything, has own city ---
+
+--- T4b: idle fallback (b) — unit with no own cities moves toward map center ---
+
+--- T4c: idle fallback does NOT override attack behavior ---
+
+--- T4d: idle fallback does NOT force move when unit already at/adjacent to own city ---
+
+--- T5a: canAfford gate — Koszary blocked, fallback to affordable ---
+
+--- T5b: canAfford gate fallback — all blocked -> picks best unfiltered ---
+
+--- T6a: clusterCenter+radius -> settler prefers hex inside cluster ---
+
+--- T6b: no clusterCenter -> present settler logic unchanged (regression) ---
+
+--- T7a: decideAIReaction - przewaga AI -> bitwa ---
+
+--- T7b: decideAIReaction - slabosc -> odwrot ---
+
+--- T7c: decideAIReaction - pokoj + przyjazn -> odwrot ---
+
+--- T7d: decideAIReaction - terytorium podnosi ratio ---
+
+--- T7e: decideAIReaction - agresja obniza prog (agresywny archetyp bije przy nizszym ratio) ---
+
+--- T7f: decideAIReaction - cenna jednostka -> ostrozniejsca (prog wyzszy) ---
+
+--- T8a: decideAIReinforcements - dorzuca kandydatow az do targetu ---
+
+--- T8b: decideAIReinforcements - nie dorzuca gdy juz duzy zapas ---
+
+--- T8c: decideAIReinforcements - pomija zbyt dalekich (dystans > 1) ---
+
+--- T8d: decideAIReinforcements - kolejnosc wg wartosci (tani najpierw) ---
+
+--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_wojne ---
+
+--- T9b: decideAIDiplomacy - bardzo silny -> zadaj_trybut (nie wojna) ---
+
+--- T9c: decideAIDiplomacy - slaby w wojnie -> zaproponuj_pokoj ---
+
+--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_za_pokoj ---
+
+--- T9e: decideAIDiplomacy - przyjazny/pokoj -> brak komendy ---
+
+--- T9f: decideAIDiplomacy - agresja ponizej progu -> brak wojny mimo przewagi ---
+
+--- T9g: decideAIDiplomacy - rownosc sil -> brak komendy ---
+
+--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy per partner ---
+
+--- T9i: decideAIDiplomacy - max 1 komenda per partner ---
+
+--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---
+
+ai-test: 109 passed, 21 failed
+  FAIL: at least one city chooses economy building (wartosc=5 read correctly); got: Wojownik, Wojownik, Wojownik
+  FAIL: economy buildings (0) chosen more than Koszary (0) — proves wartosc read correctly
+  FAIL: unicode 'wartość' also read correctly; got: Wojownik, Wojownik, Wojownik
+  FAIL: early phase: all builds are valid early-game choices; got: Zwiadowca, Zwiadowca
+  FAIL: poziom3: economy (0) > military (0) — harder difficulty boosts economy score
+  FAIL: empty params: poziom1 bonusWalka fallback = 0 (got -0.05, want 0)
+  FAIL: Celtowie wojsko=2: Koszary (0) > ekon (0) — wojskowość poprawnie wczytana
+  FAIL: Germanie wojsko=2, ekonomia=-1: Koszary (0) > ekon (0) — oba klucze poprawnie wczytane
+  FAIL: T4d: unit adjacent to own city (dist=1) does NOT get fallback move; got: build, move, endTurn
+  FAIL: T5b: even when canAfford blocks all, fallback still issues build command (no total block)
+  FAIL: T6a: settler gets move command; got: endTurn
+  FAIL: T9a: jedna komenda
+  FAIL: T9a: typ=wypowiedz_wojne (got undefined)
+  FAIL: T9a: targetId=rzym-1
+  FAIL: T9c: jedna komenda
+  FAIL: T9c: typ=zaproponuj_pokoj (got undefined)
+  FAIL: T9d: jedna komenda
+  FAIL: T9d: typ=oferuj_trybut_za_pokoj (got undefined)
+  FAIL: T9h: partner A -> oferuj_trybut_za_pokoj (got undefined)
+  FAIL: T9h: partner C -> wypowiedz_wojne (got undefined)
+  FAIL: T9j: co najmniej jedna komenda

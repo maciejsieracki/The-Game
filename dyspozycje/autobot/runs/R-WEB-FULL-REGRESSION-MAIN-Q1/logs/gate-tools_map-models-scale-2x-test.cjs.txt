@@ -1,0 +1,38 @@
+PASS: main.ts: compactDepositAtEdge + DEPOSIT_* identyczne z baza (zmiana skali nie dotyka main.ts)
+page.evaluate: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /opt/pw-browsers/chromium-1194/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --headless=new --use-gl=swiftshader --enable-unsafe-swiftshader --user-data-dir=<REF-TMP>/w2/tmp/run/playwright_chromiumdev_profile-KwOvao --remote-debugging-pipe --no-startup-window
+<launched> pid=22938
+[pid=22938][err] [22938:22952:1107/200725.957639:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=22938][err] [22938:22952:1107/200725.957703:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22952:1107/200725.957718:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=22938][err] [22938:22952:1107/200725.957733:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=22938][err] [22968:22968:1107/200725.977178:ERROR:ui/gl/init/gl_factory.cc:102] Requested GL implementation (gl=none,angle=none) not found in allowed implementations: [(gl=egl-angle,angle=default)].
+[pid=22938][err] [22938:22952:1107/200726.009310:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22938:1107/200726.018912:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=22938][err] [22938:22952:1107/200726.019646:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22952:1107/200726.019672:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22952:1107/200726.019678:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22952:1107/200726.019683:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22938:22952:1107/200726.019688:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=22938][err] [22968:22968:1107/200726.020836:ERROR:components/viz/service/main/viz_main_impl.cc:189] Exiting GPU process due to errors during initialization
+[pid=22938][err] [22938:22938:1107/200726.119281:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=22938][err] [22938:22938:1107/200726.120872:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=22938][err] [22938:22952:1107/200726.121856:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=22938][err] [22938:22952:1107/200726.122139:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=22938][err] [22938:22938:1107/200726.122309:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[pid=22938][err] [22938:22938:1107/200726.125259:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type:
+[pid=22938][err] [23012:23012:1107/200726.735442:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x37fc00101800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=22938][err] [23012:23012:1107/200727.012431:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x37fc00101800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=22938][err] [23012:23012:1107/200727.120194:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x37fc00101800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=22938][err] [23012:23012:1107/200727.207932:ERROR:gpu/command_buffer/service/gl_utils.cc:391] [.WebGL-0x37fc00101800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[pid=22938][err] [22938:22938:1107/200735.051787:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote
+[pid=22938][err] [22938:22938:1107/200735.060978:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote
+[pid=22938][err] [22938:22938:1107/200735.061993:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote
+    at <WT>/gra/tools/map-models-scale-2x-test.cjs:223:32 {
+  log: []
+}
+
+EXIT=2
+TIME=12.7

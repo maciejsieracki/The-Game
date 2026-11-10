@@ -1,0 +1,8 @@
+$ python3 -I (porownanie par name/version w Cargo.lock; HEAD 69f432ba)
+src-tauri/Cargo.lock: 433 | rust-port/spike-gpu-embed/Cargo.lock: 487 | rust-port/renderer/Cargo.lock: 126
+pakiety src-tauri nieobecne w spike (oczekiwane: tylko crate-y sciezkowe): [('civ-desktop', '0.1.0'), ('civ-engine', '0.1.0')]
+pakiety renderer nieobecne w spike (inna wersja tych samych crate-ow): [('cfg-if', '1.0.5'), ('civ-renderer', '0.1.0'), ('equivalent', '1.0.3'), ('js-sys', '0.3.106'), ('libc', '0.2.191'), ('objc2', '0.6.5'), ('smallvec', '1.16.3'), ('syn', '3.0.9'), ('thiserror', '2.0.21'), ('thiserror-impl', '2.0.21'), ('tokio', '1.54.0'), ('unicode-ident', '1.0.27'), ('wasm-bindgen', '0.2.129'), ('wasm-bindgen-futures', '0.4.79'), ('wasm-bindgen-macro', '0.2.129'), ('wasm-bindgen-macro-support', '0.2.129'), ('wasm-bindgen-shared', '0.2.129'), ('web-sys', '0.3.106')]
+wgpu w spike: [('wgpu', '30.0.1'), ('wgpu-core', '30.0.1'), ('wgpu-core-deps-apple', '30.0.1'), ('wgpu-core-deps-emscripten', '30.0.1'), ('wgpu-core-deps-windows-linux-android', '30.0.1'), ('wgpu-hal', '30.0.1'), ('wgpu-naga-bridge', '30.0.1'), ('wgpu-types', '30.0.1')]
+tauri w spike: [('raw-window-handle', '0.6.2'), ('tao', '0.35.3'), ('tauri', '2.11.5'), ('tauri-runtime-wry', '2.11.4'), ('wry', '0.55.1')]
+windows w spike: [('windows', '0.61.3'), ('windows', '0.62.2')]
+EXIT=0

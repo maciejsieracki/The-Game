@@ -1,0 +1,54 @@
+$ [R2-M1 wieloliniowe import(] (dopisano do src/ui/formatPl.ts: \\nconst\ m\ =\ import\(\\n\ \ \'../game/x\'\)\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:67: [CORE:game] '../game/x');
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:game":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M2 katalog bez segmentu (index)] (dopisano do src/ui/formatPl.ts: \\nimport\ x\ from\ \'../game\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:66: [CORE:game] import x from '../game';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:game":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M3 util] (dopisano do src/ui/formatPl.ts: \\nimport\ \{\ normPlLabel\ \}\ from\ \'../util/norm-pl-label\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:66: [EXT:util] import { normPlLabel } from '../util/norm-pl-label';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"EXT:util":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M4 buildInfo] (dopisano do src/ui/formatPl.ts: \\nimport\ \{\ CIV_BUILD_STAMP\ \}\ from\ \'../buildInfo\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:66: [EXT:buildInfo] import { CIV_BUILD_STAMP } from '../buildInfo';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"EXT:buildInfo":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M5 index.html script src] (dopisano do index.html: \<script\ type=\"module\"\ src=\"/src/game/boot.ts\"\>\</script\>\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/index.html:43: [CORE:game] <script type="module" src="/src/game/boot.ts"></script>
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:game":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M6 index.html inline module] (dopisano do index.html: \<script\ type=\"module\"\>\\n\ \ import\ \{\ a\ \}\ from\ \'/src/data/loader.ts\'\;\\n\</script\>\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/index.html:44: [CORE:data] import { a } from '/src/data/loader.ts';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:data":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M7 wieloliniowe from] (dopisano do src/main.ts: \\nimport\ \{\\n\ \ loadGameData\,\\n\}\ from\\n\ \ \'../../gra/src/data/loader\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/main.ts:62: [CORE:data] '../../gra/src/data/loader';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:data":1}
+EXIT=1 (oczekiwane 1)
+$ [R2-M8 import.meta.glob] (dopisano do src/main.ts: \\nconst\ g\ =\ import.meta.glob\(\'./units/\*\*/\*.json\'\)\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/main.ts:59: [CORE:units] const g = import.meta.glob('./units/**/*.json');
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:units":1}
+EXIT=1 (oczekiwane 1)
+$ [R1-M1 data/loader (regresja)] (dopisano do src/ui/formatPl.ts: \\nimport\ \{\ loadGameData\ \}\ from\ \'../data/loader\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:66: [CORE:data] import { loadGameData } from '../data/loader';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:data":1}
+EXIT=1 (oczekiwane 1)
+$ [R1-M2 inline import typu (regresja)] (dopisano do src/ui/formatPl.ts: \\ntype\ E\ =\ import\(\'../game/research\'\).EraGateInfo\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/ui/formatPl.ts:66: [CORE:game] type E = import('../game/research').EraGateInfo;
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:game":1}
+EXIT=1 (oczekiwane 1)
+$ [R1-M3 export from (regresja)] (dopisano do src/controller/index.ts: \\nexport\ \{\ x\ \}\ from\ \'../../game/production\'\;\\n) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+<mut>/src/controller/index.ts:53: [CORE:game] export { x } from '../../game/production';
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=1 trafień=1 {"CORE:game":1}
+EXIT=1 (oczekiwane 1)
+$ (kontrola: kopia bez mutacji) node tools/check-no-logic-imports.mjs <mut>/src <mut>/index.html
+check-no-logic-imports: cele=<mut>/src,<mut>/index.html plików=42 plików_z_trafieniami=0 trafień=0
+EXIT=0 (oczekiwane 0)
+$ (mutacja kopii bajtowej: +1 bajt na końcu src/ui/naukaLabel.ts, potem przywrócenie) node tools/verify-pin-copies.mjs
+RÓŻNY src/ui/naukaLabel.ts oczekiwano 080daba99c142687db33852504ac274c65e9dc5424892721974e2d19d04db8b1 jest b708851466583f232bb3b03b6d0ed36fcc2e851231fb1f69ebda9b1b91edcac7
+verify-pin-copies: pin=edb8fb56 plików=39 niezgodnych=1
+EXIT=1 (oczekiwane 1)
+$ (po przywróceniu) node tools/verify-pin-copies.mjs
+verify-pin-copies: pin=edb8fb56 plików=39 niezgodnych=0
+EXIT=0

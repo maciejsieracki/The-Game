@@ -1,0 +1,366 @@
+--- pin:gra/src/ui/diplomacyAudience.ts
++++ v2:src-tauri/frontend-v2/src/ui/diplomacyAudience.ts
+@@ -2,24 +2,24 @@
+  * diplomacyAudience.ts — ekran audiencji dyplomatycznej (D3-Q1…Q4).
+  * DECOUPLED: zero importów game/*; callbacki z SILNIK.
+  */
+-import type { CivBonusLite } from '../game/production';
+-import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
+-import {
+-  effectiveNastawienieScores,
+-  nastawienieHintPl,
+-  nastawienieLabelFromScore,
+-  TRAKTAT_HANDLOWY_LABEL,
+-  wiarygodnoscBadgeHtml,
+-  wiarygodnoscTooltipPl,
+-  wiarygodnoscTooltipDefPl,
+-  type FormalDiplomaticKind,
+-} from '../game/diplomacy-display';
+-import {
+-  wiarygodnoscLabelPl,
+-  wiarygodnoscTooltipRozbiciePl,
+-  type WiarygodnoscRozbicie,
+-  type WiarygodnoscBreakdown,
+-} from '../game/diplomacy-credibility';
++// P5.6 (R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1): typy → `viewmodel/types.ts`; muzyka → `controller/audio.ts`;
++// nastawienie, teksty Wiarygodności, PW traktatu na stole, panel PW stołu, wycofany dostęp, podział stron oferty →
++// pola DTO stanu audiencji z Rust (P5-0 §6.6 `DiplomacyAudienceDto`); stałe/etykiety → `StaticCatalogDto`.
++import type {
++  AcceptanceSideBalanceDto,
++  CivBonusLiteDto as CivBonusLite,
++  DiplomacyNastawienieDto,
++  FormalDiplomaticKindDto as FormalDiplomaticKind,
++  NegotiationDealSidesDto,
++  PnBalancePanelDto,
++  ProposalPayloadDto as ProposalPayload,
++  TradeGoodsCategoriesDto as TradeGoodsCategories,
++  WiarygodnoscBreakdownDto as WiarygodnoscBreakdown,
++  WiarygodnoscRozbicieDto as WiarygodnoscRozbicie,
++  WiarygodnoscViewDto,
++} from '../viewmodel/types';
++import { startDiplomacyMusic, stopDiplomacyMusic } from '../controller/audio';
++import { staticCatalog } from '../controller/staticCatalog';
+ import {
+   civLeaderMedallionHtmlById,
+   dipBrandIconHtml,
+@@ -38,24 +38,68 @@
+ import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
+ import { civCardDisplayName, leaderName } from './leaderPortraits';
+ import { civBrandLineForKey } from './civBrandDisplay';
+-import type { TradeGoodsCategories } from '../game/diplomacy-goods';
+ import { renderNegotiationTableDealSideHtml, negotiationTableDealSideHasContent } from './diplomacyDealDisplay';
+-import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
+ import {
+-  balancePanelDataFromRows,
+-  filterActionableNegotiationRows,
+   renderPnBalancePanelHtml,
+ } from './diplomacyAcceptanceBalance';
+-import {
+-  proposalHasResourceAccess,
+-  RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
+-} from '../game/diplomacy-proposals';
+-import type { ProposalPayload } from '../game/diplomacy-proposals';
+-import {
+-  audienceActionBarLockNote,
+-  audienceActionStatusNote,
+-  uiActionAllowsMultipleOwnOnTable,
+-} from '../game/diplomacy-audience-actions';
++
++/** P5.6: web `TRAKTAT_HANDLOWY_LABEL` (`game/diplomacy-display.ts:279`) → `StaticCatalogDto.labels`. */
++const TRAKTAT_HANDLOWY_LABEL = staticCatalog().labels.traktatHandlowyLabel;
++/** P5.6: web `RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON` (`game/diplomacy-proposals.ts:405-406`) → `StaticCatalogDto.labels`. */
++const RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON = staticCatalog().labels.resourceAccessTradeWithdrawnReason;
++
++/**
++ * P5.6: web `uiActionAllowsMultipleOwnOnTable` (`game/diplomacy-audience-actions.ts:132-134`) — zbiór id akcji z
++ * `StaticCatalogDto.constants.audienceMultiOwnActionIds` (K, Rust; dziś `['14']`).
++ */
++function uiActionAllowsMultipleOwnOnTable(actionId: string): boolean {
++  return staticCatalog().constants.audienceMultiOwnActionIds.includes(actionId);
++}
++
++/**
++ * P5.6: kopia 1:1 formatera web `audienceActionStatusNote` (`game/diplomacy-audience-actions.ts:97-107`) — wybór
++ * gotowego tekstu z pól akcji z Rust (`lockNote`/`tooltip`/`active`), bez reguł gry (P5-0 Z1: czyste formatowanie).
++ */
++function audienceActionStatusNote(
++  action: Pick<AudienceAction, 'locked' | 'enabled' | 'lockNote' | 'tooltip' | 'active'>,
++  onTable = false,
++): string {
++  if (onTable) return 'na stole — Przyjmij w PN';
++  if (action.active) return 'już zawarta';
++  if (action.locked || !action.enabled) {
++    return action.lockNote || action.tooltip || 'Niedostępne';
++  }
++  return '';
++}
++
++/** P5.6: kopia 1:1 formatera web `audienceActionBarLockNote` (`game/diplomacy-audience-actions.ts:110-115`). */
++function audienceActionBarLockNote(
++  action: Pick<AudienceAction, 'enabled' | 'lockNote' | 'tooltip' | 'locked'> | undefined,
++): string {
++  if (!action || action.enabled) return '';
++  return action.lockNote || action.tooltip || 'Niedostępne';
++}
++
++function escWiarygodnoscHtml(s: string): string {
++  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
++}
++
++/**
++ * P5.6: markup badge'a Wiarygodności = web `wiarygodnoscBadgeHtml` (`game/diplomacy-display.ts:244-257`) — pasmo
++ * (`wiarygodnoscLabelPl`) i treść tooltipa przychodzą z Rust (`WiarygodnoscViewDto`); UI tylko formatuje liczbę.
++ */
++function wiarygodnoscBadgeHtml(value: number, view: WiarygodnoscViewDto | undefined): string {
++  const w = Math.round(Math.max(-100, Math.min(100, value)));
++  const signed = w > 0 ? '+' + w : String(w);
++  const band = view?.band ?? '';
++  const tipBody = view?.tooltip ?? '';
++  const tone = w < 0 ? ' neg' : w > 0 ? ' pos' : '';
++  return (
++    '<span class="da-wiar-badge' + tone + '" title="' + escWiarygodnoscHtml(tipBody) + '">'
++    + 'W ' + escWiarygodnoscHtml(signed) + ' · ' + escWiarygodnoscHtml(band)
++    + '</span>'
++  );
++}
+ 
+ export interface AudienceAction {
+   id: string;
+@@ -150,6 +194,11 @@
+    * teraz). UI (kafelki) dopiero w fazie 2/3 — na razie dane płyną w stanie.
+    */
+   relationBreakdown?: { pozytywne: readonly { label: string; value: number; perTurn?: boolean }[]; negatywne: readonly { label: string; value: number; perTurn?: boolean }[] };
++  /**
++   * P5.6 (P5-0 §6.6 `DiplomacyAudienceDto.nastawienie`): nastawienie z Rust — zastępuje liczenie w UI
++   * `effectiveNastawienieScores`/`nastawienieLabelFromScore`/`nastawienieHintPl` (pin `:1243-1247,1410,2162-2163`).
++   */
++  nastawienie: DiplomacyNastawienieDto;
+ 
+   // ---------------------------------------------------------------------
+   // FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1/2/5) — layout dwustronny.
+@@ -172,12 +221,19 @@
+   /** Rejestr czynników W gracza per zdarzenie (WIAR-UI-REJESTR). */
+   playerWiarygodnoscBreakdown?: WiarygodnoscBreakdown;
+   /**
++   * P5.6: pasmo + tooltip Wiarygodności gracza z Rust (`WiarygodnoscViewDto`; web `wiarygodnoscLabelPl`,
++   * `wiarygodnoscTooltipRozbiciePl`, pin `:1366,1531-1534`). Podawane razem z `playerWiarygodnosc`.
++   */
++  playerWiarygodnoscView?: WiarygodnoscViewDto;
++  /**
+    * Globalna Wiarygodność rozmówcy (−100…+100) — reputacja imperium rozmówcy.
+    * SILNIK: getWiarygodnosc(otherOwnerId).
+    */
+   otherWiarygodnosc?: number;
+   /** Rozbicie W rozmówcy — tooltip badge przy tytule. */
+   otherWiarygodnoscRozbicie?: WiarygodnoscRozbicie;
++  /** P5.6: pasmo + tooltip Wiarygodności rozmówcy z Rust (pin `:1421`). Podawane razem z `otherWiarygodnosc`. */
++  otherWiarygodnoscView?: WiarygodnoscViewDto;
+   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
+   playerSkarbiec?: number;
+   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
+@@ -205,6 +261,13 @@
+    * cywilizacji), z terminem ważności. SILNIK: getNegotiationsForPair (main.ts).
+    */
+   pendingNegotiations?: readonly PendingNegotiationRow[];
++  /**
++   * P5.6: panel PW całego stołu = web `balancePanelDataFromRows(pendingNegotiations)` (pin `:1964,2108`; P5.2 przeniósł
++   * tę regułę do Rust jako `PnBalancePanelDto`, proponowane zapytanie `diplomacy_table_balance`). `null` = brak propozycji.
++   */
++  negotiationTablePanel: PnBalancePanelDto | null;
++  /** P5.6: liczba wierszy stołu do decyzji = web `filterActionableNegotiationRows(pendingNegotiations).length` (pin `:2099`). */
++  actionableNegotiationCount: number;
+ 
+   /**
+    * R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1 (Maciej 2026-09-01): relacje ROZMÓWCY
+@@ -254,6 +317,20 @@
+   dealDetails?: string;
+   /** Surowy payload — do renderu HTML z ikonami surowców. */
+   dealPayload?: ProposalPayload;
++  /**
++   * P5.6: strony oferty z perspektywy gracza dla tego wiersza = web `splitNegotiationDealPlayerSides(dealPayload,
++   * direction === 'incoming')` (P5.3 `NegotiationDealSidesDto`; konsument `renderNegotiationTableDealSideHtml`).
++   */
++  dealSides?: NegotiationDealSidesDto | null;
++  /**
++   * P5.6: PW traktatu dwustronnego na kartach stołu = web `playerTreatyDisplayPw(acceptanceMy) ??
++   * bilateralTreatyDisplayPw(acceptanceMy, acceptanceTheir)` (strona „My”) i `partnerTreatyDisplayPw(acceptanceTheir) ??
++   * treatyBasePn` (strona „Oni”) — pin `:1945-1949`, liczy Rust.
++   */
++  treatyPwWe?: number;
++  treatyPwThey?: number;
++  /** P5.6 (P5-0 §6.6 `resource_access_withdrawn`): web `proposalHasResourceAccess(dealPayload)` (pin `:2030`). */
++  resourceAccessWithdrawn?: boolean;
+   /** Prefill koszyka przy „Kontruj" (perspektywa gracza). */
+   counterInitial?: TradeBasketInitial;
+   round: number;
+@@ -279,8 +356,8 @@
+   /** Jednostronny dar od nich (My puste) — nie pokazuj karty wymiany po stronie My. */
+   isGift?: boolean;
+   /** Saldo punktów akceptacji (PN) — perspektywa gracza. */
+-  acceptanceMy?: import('../game/diplomacy-acceptance-points').AcceptanceSideBalance;
+-  acceptanceTheir?: import('../game/diplomacy-acceptance-points').AcceptanceSideBalance;
++  acceptanceMy?: AcceptanceSideBalanceDto;
++  acceptanceTheir?: AcceptanceSideBalanceDto;
+ }
+ 
+ export interface DiplomacyAudienceConfig {
+@@ -1240,11 +1317,11 @@
+ 
+ function stanceBadgeHtml(st: DiplomacyAudienceState): string {
+   const atWar = audienceAtWar(st);
+-  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
++  const label = st.nastawienie.label;
+   const hostile = atWar || label === 'Wrogi' || label === 'Nieufny';
+   const cls = hostile ? 'da-stance-badge hostile' : 'da-stance-badge';
+   return (
+-    '<span class="' + cls + '" title="' + esc(nastawienieHintPl(atWar)) + '">' +
++    '<span class="' + cls + '" title="' + esc(st.nastawienie.hint) + '">' +
+     esc(label) + '</span>'
+   );
+ }
+@@ -1363,7 +1440,7 @@
+         '<div class="da-civtitle-row">' +
+           '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
+           (st.playerWiarygodnosc !== undefined
+-            ? wiarygodnoscBadgeHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie)
++            ? wiarygodnoscBadgeHtml(st.playerWiarygodnosc, st.playerWiarygodnoscView)
+             : '') +
+         '</div>' +
+       '</div>' +
+@@ -1375,7 +1452,7 @@
+       (st.playerWiarygodnosc !== undefined
+         ? '<div>' +
+             '<div class="da-sec-title">Reputacja</div>' +
+-            credibilityBarHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie) +
++            credibilityBarHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie, st.playerWiarygodnoscView) +
+             credibilityBreakdownHtml(st.playerWiarygodnoscBreakdown, st.playerWiarygodnoscRozbicie) +
+           '</div>'
+         : '') +
+@@ -1406,8 +1483,7 @@
+   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
+   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
+   const potencjal = st.sojuszPotencjal;
+-  const atWar = audienceAtWar(st);
+-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
++  const relScores = st.nastawienie.scores;
+   return (
+     '<div class="da-card them">' +
+       (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
+@@ -1418,7 +1494,7 @@
+         '<div class="da-civtitle-row">' +
+           '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
+           (st.otherWiarygodnosc !== undefined
+-            ? wiarygodnoscBadgeHtml(st.otherWiarygodnosc, st.otherWiarygodnoscRozbicie)
++            ? wiarygodnoscBadgeHtml(st.otherWiarygodnosc, st.otherWiarygodnoscView)
+             : '') +
+         '</div>' +
+         stanceBadgeHtml(st) +
+@@ -1524,14 +1600,13 @@
+ }
+ 
+ /** Pasek globalnej Wiarygodności gracza (−100…+100) — skala bipolarna jak Zaufanie/Respekt u rozmówcy. */
+-function credibilityBarHtml(value: number, rozbicie?: WiarygodnoscRozbicie): string {
++function credibilityBarHtml(value: number, rozbicie?: WiarygodnoscRozbicie, view?: WiarygodnoscViewDto): string {
+   const w = Math.round(Math.max(-100, Math.min(100, value)));
+   const pct = Math.round(((w + 100) / 200) * 100);
+   const signed = w > 0 ? '+' + w : String(w);
+-  const band = wiarygodnoscLabelPl(w);
+-  const tipBody = rozbicie
+-    ? wiarygodnoscTooltipDefPl() + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
+-    : wiarygodnoscTooltipPl();
++  // P5.6: pasmo (`wiarygodnoscLabelPl(w)`) i tooltip (z rozbiciem / bez) z Rust — `WiarygodnoscViewDto`.
++  const band = view?.band ?? '';
++  const tipBody = view?.tooltip ?? '';
+   const tip = ' title="' + esc(tipBody) + '"';
+   const hint = rozbicie && (rozbicie.trwalyZyciorys !== 0 || rozbicie.biezaceUczynki !== 0)
+     ? '<div class="da-credibility-hint">życiorys '
+@@ -1928,7 +2003,9 @@
+  */
+ function negotiationCardHasContent(r: PendingNegotiationRow, focus: 'we' | 'they', incoming: boolean): boolean {
+   if (!r.dealPayload) return true;
+-  return negotiationTableDealSideHasContent(r.dealPayload, focus, incoming, bilateralTreatyLabel(r));
++  // P5.6: strony oferty z Rust (`r.dealSides`, liczone dla `incoming = direction === 'incoming'` — ta sama wartość,
++  // którą pin podaje tu przy każdej karcie).
++  return negotiationTableDealSideHasContent(r.dealSides ?? null, focus, bilateralTreatyLabel(r));
+ }
+ 
+ /** HTML jednej strony dealu — wyłącznie przedmiot (koszyk lub traktat). */
+@@ -1944,14 +2021,13 @@
+     : undefined;
+   const treatyPw = treatyLabel
+     ? (focus === 'we'
+-      ? playerTreatyDisplayPw(r.acceptanceMy) ?? bilateralTreatyDisplayPw(r.acceptanceMy, r.acceptanceTheir)
+-      : partnerTreatyDisplayPw(r.acceptanceTheir) ?? treatyBasePw)
++      ? r.treatyPwWe
++      : r.treatyPwThey)
+     : undefined;
+   const showBasePw = focus === 'we' ? treatyBasePw : undefined;
+   return renderNegotiationTableDealSideHtml(
+-    r.dealPayload,
++    r.dealSides ?? null,
+     focus,
+-    incoming,
+     treatyLabel,
+     treatyPw,
+     showBasePw,
+@@ -1960,9 +2036,7 @@
+ 
+ /** Panel PN między kolumnami My / Oni — pakiet całego stołu (R-DYPLO-STOL-ACCEPT). */
+ function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
+-  const rows = st.pendingNegotiations ?? [];
+-  const data = balancePanelDataFromRows(rows);
+-  return renderPnBalancePanelHtml(data);
++  return renderPnBalancePanelHtml(st.negotiationTablePanel);
+ }
+ 
+ /**
+@@ -2027,7 +2101,7 @@
+ /** Prawa kolumna — ich strona linked dealu AI (tylko przedmiot dealu). */
+ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
+   const dirIcon = dipBrandIconHtml('chip-warning', 11, 'da-dir-ic');
+-  const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
++  const legacyAccess = r.dealPayload != null && r.resourceAccessWithdrawn === true;
+   const dealHtml = r.dealPayload ? tableDealSideHtml(r, 'they', true) : '';
+   const dealBlock = dealHtml
+     ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+@@ -2096,8 +2170,8 @@
+  * R-DYPLO-STOL-ACCEPT-Q1=A — jeden pasek Przyjmij/Odrzuć dla całego pakietu na stole.
+  */
+ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
+-  const rows = filterActionableNegotiationRows(st.pendingNegotiations ?? []);
+-  if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
++  const actionableCount = st.actionableNegotiationCount;
++  if (actionableCount === 0) return '<div class="da-negot-actionbar"></div>';
+ 
+   // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: canAccept wyłącznie z panelu — balancePanelDataFromRows
+   // jest JEDYNYM miejscem liczącym tę decyzję (i już package-aware dla umowa_szlakow/
+@@ -2105,7 +2179,7 @@
+   // nie-package-aware `acceptanceTheir.accepted` usunięty — dawał rozjazd: panel liczył
+   // net PW pakietu poprawnie, a ten drugi warunek i tak blokował przycisk per-wiersz
+   // (BUG-PAKIET-BILANS-DODATNI-BLOKADA).
+-  const panel = balancePanelDataFromRows(st.pendingNegotiations ?? []);
++  const panel = st.negotiationTablePanel;
+   const canAccept = panel?.canAccept !== false;
+   const acceptTitle = !canAccept
+     ? esc(panel?.responderPreview?.reason ?? 'Warunki pakietu niespełnione')
+@@ -2113,7 +2187,7 @@
+ 
+   return (
+     '<div class="da-negot-actionbar da-negot-actionbar--package">'
+-    + '<div class="da-neg-act-label">Decyzja dla całego pakietu (' + rows.length + ')</div>'
++    + '<div class="da-neg-act-label">Decyzja dla całego pakietu (' + actionableCount + ')</div>'
+     + '<div class="da-btnrow">'
+     + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
+     + ' data-negot-act="accept-package">Przyjmij</button>'
+@@ -2158,9 +2232,8 @@
+   const negRows = rb.negatywne.map(f =>
+     '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
+   ).join('') || '<div class="da-empty">Brak czynników.</div>';
+-  const atWar = audienceAtWar(st);
+-  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+-  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
++  const relScores = st.nastawienie.scores;
++  const label = st.nastawienie.label;
+   return (
+     '<div class="da-relbreak">' +
+       '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +

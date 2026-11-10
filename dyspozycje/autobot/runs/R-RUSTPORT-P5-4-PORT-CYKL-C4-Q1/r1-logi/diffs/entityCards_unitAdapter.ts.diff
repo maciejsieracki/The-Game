@@ -1,0 +1,39 @@
+--- pin:gra/src/ui/entityCards/unitAdapter.ts
++++ v2:src-tauri/frontend-v2/src/ui/entityCards/unitAdapter.ts
+@@ -36,14 +36,17 @@
+  * z tego samego powodu budowana/dopełniana w `unitInfoCard.ts` — adapter dostarcza
+  * tylko część niezależną od danych jednostki (status wymogu technologii).
+  */
+-import type { CounterDef, UnitDef } from '../../data/loader';
+-import countersData from '../../../data/counters.json';
+-import { categoryOf } from '../../units/setup';
++// P5.4: typy i dane z `StaticCatalogDto`; `categoryOf` (`units/setup.ts:239`) → `unitCategoryFromCatalog`
++// (pin `:39-41`). `CounterDef` = wiersz `counters.json` (pola czytane w `collectCounters`).
++import type { UnitDefDto as UnitDef } from '../../viewmodel/types';
++import { staticCatalog, unitCategoryFromCatalog } from '../../controller/staticCatalog';
++
++type CounterDef = { 'Typ atakujący'?: unknown; 'Cel (typ)'?: unknown; Bonus?: unknown };
+ import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
+ import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
+ import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+ 
+-const COUNTERS = countersData as unknown as CounterDef[];
++const COUNTERS = staticCatalog().counters as unknown as CounterDef[];
+ 
+ const PLACEHOLDER_ICON_SVG =
+   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
+@@ -101,12 +104,8 @@
+ 
+ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
+   const isSuperUnit = unit['Super-jednostka'] === 'TAK';
+-  const category = categoryOf(
+-    text(unit.Jednostka),
+-    text(unit['Rola (linia)']),
+-    isSuperUnit,
+-    unit.Typ,
+-  );
++  // P5.4: kategoria z katalogu Rust (web `categoryOf(Jednostka, Rola, isSuper, Typ)`; ZAŁOŻENIE P5.2-Z2).
++  const category = unitCategoryFromCatalog(unit.Jednostka, true);
+ 
+   // ============================================================================================
+   // P-KARTA-PRZEBUDOWA-UKLAD-Q1 — układ zaakceptowany przez właściciela 2026-09-08 (patrz

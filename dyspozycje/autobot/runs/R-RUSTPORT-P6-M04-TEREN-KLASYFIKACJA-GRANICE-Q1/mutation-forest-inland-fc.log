@@ -1,0 +1,36 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 1m 27s
+     Running tests/p6_m04_reapply.rs (/home/user/cargo-target-shared/fc-m04-wf4/debug/deps/p6_m04_reapply-8accc2cf3c58125d)
+
+running 4 tests
+test reapply_land_terrain_matches_web ... ok
+test forest_replay_hooks_reject_wrong_arguments ... ok
+test reapply_forest_overlay_targeted_inland_cases_match_web ... FAILED
+test reapply_forest_overlay_matches_web ... ok
+
+failures:
+
+---- reapply_forest_overlay_targeted_inland_cases_match_web stdout ----
+
+thread 'reapply_forest_overlay_targeted_inland_cases_match_web' (10635) panicked at tests/p6_m04_vectors/common.rs:196:9:
+assertion `left == right` failed: reapplyForestTie #0 tie-fp kontynenty/low/24x3: nakladka 17,1
+  left: Las
+ right: Brak
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::mapgen::terrain_class::Nakladka, civ_engine::domain::mapgen::terrain_class::Nakladka>
+   4: p6_m04_reapply::common::assert_hexes
+   5: p6_m04_reapply::reapply_forest_overlay_targeted_inland_cases_match_web
+   6: p6_m04_reapply::reapply_forest_overlay_targeted_inland_cases_match_web::{closure#0}
+   7: <p6_m04_reapply::reapply_forest_overlay_targeted_inland_cases_match_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    reapply_forest_overlay_targeted_inland_cases_match_web
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.37s
+
+error: test failed, to rerun pass `--test p6_m04_reapply`

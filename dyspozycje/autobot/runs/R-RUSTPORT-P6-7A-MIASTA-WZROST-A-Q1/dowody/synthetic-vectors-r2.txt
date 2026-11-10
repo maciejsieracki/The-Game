@@ -1,0 +1,5 @@
+patche 40 przypadki 724 z klamra=0 236
+postCentralSiege 40
+tiki oblegany 123
+advance (edge): 40 z injected: 40 z accessorsAfterClear: 40
+raiseFlow 60 planFlow 40 balanceFlow 40

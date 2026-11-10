@@ -1,0 +1,74 @@
+--- 0. SAVE_META_PREFIX rozłączny z SAVE_PREFIX ---
+  [OK] SAVE_META_PREFIX (thegame.savemeta.) NIE jest podprefiksem SAVE_PREFIX (thegame.save.) -- listSaves() nie zwróci fantomowego slotu meta.<realSlot>
+
+--- 0b. LAST_PLAYED_SLOT_KEY dzieli prefiks z SAVE_PREFIX CELOWO -- listSaves() filtruje po nazwie slotu, nie po rozłączności ---
+  [OK] LAST_PLAYED_SLOT_KEY (thegame.save._lastPlayed) START WITH SAVE_PREFIX (thegame.save.) -- w odróżnieniu od SAVE_META_PREFIX (sekcja 0) to jest CELOWE (schemat nazw kluczy), więc naprawą NIE MOŻE być rozłączność prefiksów
+  [OK] nazwa slotu po odcięciu SAVE_PREFIX ("_lastPlayed") zaczyna się od "_" -- listSaves() (save.ts) MUSI odrzucać takie sloty, tak jak summarizeSaveSlots() (saveLoadDialog.ts) już robi przy renderze listy
+
+--- 1. Roundtrip zapis -> wczytanie (nowy format kolumnowy, mapSnapshot obecny) ---
+  [OK] serializeMapForSave zwraca fmt=2 (format kolumnowy/słownikowy)
+  [OK] snapshot zawiera niepusty słownik stringów (dict)
+  [OK] kolumny q/r mają długość = liczbie heksów
+  [OK] serializeGame produkuje niepusty JSON string
+  [OK] JSON zapisu zawiera pole mapSnapshot
+  [OK] deserializeGame zachowuje mapSnapshot (nie gubi go w normalizacji)
+  [OK] mapSnapshot po roundtripie JSON przechodzi isValidMapSnapshot
+--- 0c. listSaves() (na żywo, localStorage zmockowany) NIE zwraca fantomowego slotu "_lastPlayed" ---
+  [OK] listSaves() (live) zwraca prawdziwy slot "moj-zapis" (got: ["moj-zapis"])
+  [OK] listSaves() (live) NIE zwraca fantomowego slotu "_lastPlayed" mimo że LAST_PLAYED_SLOT_KEY dzieli prefiks z SAVE_PREFIX (got: ["moj-zapis"])
+
+  [OK] loadMapForSave NIE wywołało generatora, gdy mapSnapshot jest poprawny (calls=0)
+  [OK] loadMapForSave zwraca usedSnapshot=true dla nowego formatu
+  [OK] map.hexes po roundtripie jest STRUKTURALNIE identyczna z oryginałem (canonicalJson porównanie, kolejność kluczy nieistotna)
+  [OK] pola dynamiczne spoza Hex bazowego (zloze/zlozeMinEra) przetrwały roundtrip
+  [OK] pole dynamiczne ulepszenia przetrwało roundtrip
+  [OK] wioska złupiona (istnieje=false) przetrwała roundtrip -- BEZ replaya lootedVillageHexKeys
+  [OK] las NIEwycięty (hex 1,0) przetrwał roundtrip bez zmian
+  [OK] widocznosc per gracz (hex 1,0) przetrwała roundtrip
+  [OK] wymiary mapy przetrwały roundtrip
+  [OK] seed przetrwał roundtrip
+  [OK] riverPaths/riverPathKinds przetrwały roundtrip
+
+--- 2. Wsteczna kompatybilność: stary zapis (bez mapSnapshot) -> regeneracja z seed ---
+  [OK] stary zapis (bez mapSnapshot) deserializuje się z mapSnapshot=undefined
+  [OK] loadMapForSave WOŁA generator dokładnie raz dla starego zapisu (calls=1)
+  [OK] loadMapForSave zwraca usedSnapshot=false dla starego formatu
+  [OK] loadMapForSave zwraca DOKŁADNIE to, co zwrócił generator (regeneracja z seed, zero zmian zachowania)
+
+--- 3. isValidMapSnapshot: odrzuca uszkodzone/niepełne snapshoty ---
+  [OK] null -> invalid
+  [OK] undefined -> invalid
+  [OK] obiekt pusty -> invalid
+  [OK] fmt != 2 (stary format rundy 1, nigdy niewdrożony) -> invalid
+  [OK] szerokoscQ<=0 -> invalid
+  [OK] n<=0 -> invalid
+  [OK] riverPaths nie-tablica -> invalid
+  [OK] kolumna q krótsza niż n -> invalid (niespójne długości)
+  [OK] kolumna rzadka zloze z niezgodną długością hexIdx/val -> invalid
+  [OK] widocznosc z niezgodnymi długościami -> invalid
+  [OK] snapshot poprawnej mapy fixture -> valid
+  [OK] mapSnapshot uszkodzony -> loadMapForSave spada na generator (fallback), nie cichą złą mapę
+  [OK] mapSnapshot uszkodzony -> usedSnapshot=false
+
+--- 3b. buildGameMapFromSnapshot rzuca na niespójnym indeksie -> loadMapForSave PROPAGUJE wyjątek (twardy błąd, bez fallbacku) ---
+  [OK] snapshot z hexIdx poza zakresem nadal przechodzi isValidMapSnapshot (sprawdza tylko kształt, nie wartości)
+  [OK] buildGameMapFromSnapshot RZUCA na hexIdx poza zakresem (demonstracja luki sprzed naprawy punktu 1)
+  [OK] loadMapForSave: mapSnapshot kształtowo poprawny, ale buildGameMapFromSnapshot rzuca -> wyjątek PROPAGUJE się do wywołującego (decyzja N1, twardy błąd zamiast cichego fallbacku)
+  [OK] loadMapForSave: genFn NIE jest wołany, gdy budowa ze snapshotu rzuca (zero cichego fallbacku na inną mapę)
+  [OK] loadMapForSave propaguje realny obiekt wyjątku (nie undefined/cichą porażkę)
+
+--- 4. Roundtrip prawdziwej mapy z generateMap() (36x28, seed=777) ---
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=19 landSea=430 relief=409 coast=160 riversMain=3615 riversFill=2588 forest=6 deposits=70 starts=393 total=7697
+  [OK] generateMap produkuje realną mapę (hexCount=1008)
+  [OK] JSON.stringify realnej mapy nie rzuca (brak pól nie-JSON-safe: funkcji/Date/Map/Set)
+  [OK] realna mapa: generator NIE wołany przy wczytywaniu mapSnapshot
+  [OK] realna mapa 36x28: hexes po pełnym roundtripie (JSON.stringify -> JSON.parse -> loadMapForSave) strukturalnie identyczna z oryginałem
+  [OK] realna mapa 36x28: liczba heksów po roundtripie niezmieniona (1008)
+
+--- 5. Roundtrip + rozmiar PRAWDZIWEJ mapy standardowy (168x120, seed=777) ---
+    (generateMap na 168x120 trwa ~110-120s, deterministyczny generator terenu/rzek -- proszę czekać)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=300.1

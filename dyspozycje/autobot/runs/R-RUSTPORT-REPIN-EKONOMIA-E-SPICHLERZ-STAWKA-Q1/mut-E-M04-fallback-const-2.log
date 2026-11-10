@@ -1,0 +1,16 @@
+MUTANT E-M04-fallback-const-2 file=src/domain/resource_production.rs
+OLD:
+pub const CITIZEN_UPKEEP_RATE_PER_CITIZEN: f64 = 1.0;
+NEW:
+pub const CITIZEN_UPKEEP_RATE_PER_CITIZEN: f64 = 2.0;
+
+FAILED TESTS:
+test nonfinite_and_negative_row_rates_fall_back ... FAILED
+test missing_rate_field_parses_as_none_and_round_trips ... FAILED
+test display_lines_use_rate_from_coverage_like_web ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test rate_and_required_grid_match_web ... FAILED
+test real_file_has_era_rates_one_two_three ... FAILED
+test result: FAILED. 1 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+VERDICT=KILLED
+EXIT=101

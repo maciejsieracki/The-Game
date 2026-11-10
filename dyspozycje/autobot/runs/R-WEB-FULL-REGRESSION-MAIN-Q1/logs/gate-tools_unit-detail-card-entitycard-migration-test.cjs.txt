@@ -1,0 +1,51 @@
+
+-- (A) unitAdapter (wspólny z kartą mapy T4): treść realnej jednostki "Wojownik" --
+PASS: fixture: "Wojownik" istnieje w units.json
+PASS: założenie testu: ŻADNA jednostka w units.json nie ma dziś "Bonus szarży" (jeśli to się zmieni, dopisz fixture z niepustą wartością)
+PASS: kind === "unit"
+PASS: title === "Wojownik"
+PASS: sekcja "characteristics" obecna (T6)
+PASS: Linia === u["Rola (linia)"] (parytet z dawną kartą rekrutacji)
+PASS: Klasa === u.Klasa (parytet z dawną kartą rekrutacji, pole spoza typowanego UnitDef)
+PASS: sekcja "combat" (podstawowe) obecna
+PASS: sekcja "combat-advanced" (zaawansowane, collapsible) obecna
+PASS: Atak (T4, bez zmian) === u.Atak
+PASS: Obrona (T4, bez zmian) === u.Obrona
+PASS: Obrażenia broni (T6, NOWE, dziś w combat-advanced) === u.Uderzenie
+PASS: Ruch (bitwa) (T6, NOWE, dziś w combat-advanced) === "4 hex"
+PASS: Widok pola (T6, NOWE, dziś w combat-advanced) === "2 hex"
+PASS: Kara flanki (T6, NOWE, dziś w combat-advanced) === "15%"
+PASS: Kara od tyłu (T6, NOWE, dziś w combat-advanced) === "30%"
+PASS: Próg dezercji (T6, NOWE, dziś w combat-advanced) === "40% HP" (0.4 × 100, zaokrąglone, parytet z dawnym `fmt`)
+PASS: Morale bazowe (T6, NOWE, dziś w combat-advanced) === "50"
+PASS: Morale ucieczki (T6, NOWE, dziś w combat-advanced) === "22"
+PASS: Bonus szarży (T6, NOWE): pominięty jako pusty wiersz (Wojownik nie ma tego pola w danych — parytet "brakujące pola pomijane" z T4)
+PASS: fixture: "Procarz" istnieje (ma niepuste "Ilość pocisków")
+PASS: Pociski (T6, NOWE, dziś w combat-advanced) === u["Ilość pocisków"] (fixture "Procarz")
+PASS: Kontry (T4, przeniesione w P-KARTA-PRZEBUDOWA-UKLAD-Q1 do własnej sekcji "counters"): sekcja obecna dla jednostki z wpisem w counters.json
+PASS: renderEntityCard(built): zwraca element klasy entity-card entity-card-unit
+PASS: renderEntityCard(built): nowe pola T6 obecne w DOM ("Obrażenia broni", "Morale bazowe")
+
+-- (B) cityPanel.ts wiring — text-anchor (bundlowanie zbyt kosztowne, precedens T5) --
+PASS: cityPanel.ts importuje unitAdapter z ./entityCards/unitAdapter
+PASS: function buildUnitDetailCardViaEntityCard( istnieje
+PASS: koniec buildUnitDetailCardViaEntityCard znaleziony
+PASS: buildUnitDetailCardViaEntityCard woła unitAdapter(u, {})
+FAIL: buildUnitDetailCardViaEntityCard woła renderEntityCard(built)
+PASS: buildUnitDetailCardViaEntityCard dopełnia sekcję Technologie (appendTechDetailBlock, jak dla budynków w T5)
+FAIL: buildUnitDetailCardViaEntityCard dopełnia sekcję Uwagi (u.Uwagi, jak dla budynków w T5)
+PASS: publiczna funkcja buildUnitDetailCard( próbuje ścieżkę entityCards w try/catch
+PASS: ...i ma fallback do _legacyBuildUnitDetailCard w catch
+PASS: _legacyBuildUnitDetailCard( istnieje (stara implementacja zachowana)
+PASS: stara implementacja nadal buduje klasę "detail-card" (parytet DOM fallbacku)
+PASS: attachUnitRowThumb nadal woła buildUnitDetailCard(udef, data) jako hover-detail budowniczy (bez zmian)
+
+-- Mutacja: usunięcie fallbacku z buildUnitDetailCard --
+PASS: mutacja faktycznie zmieniła źródło (kotwica zamiany istnieje)
+PASS: mutacja (fallback usunięty) łapana czerwono przez sekcję (B) tego samego testu
+PASS: plik cityPanel.ts przywrócony do stanu oryginalnego po mutacji
+
+[unit-detail-card-entitycard-migration-test] 38 pass, 2 fail
+
+EXIT=1
+TIME=8.6

@@ -1,0 +1,16 @@
+MUTACJA M1-utf16-as-utf8: ZABITA (2 linii FAILED)
+MUTACJA M2-js-trim-as-std-trim: ZABITA (3 linii FAILED)
+MUTACJA M3-queue-max-off-by-one: ZABITA (3 linii FAILED)
+MUTACJA M4-era-max-dropped: ZABITA (2 linii FAILED)
+MUTACJA M5-tier-gate-le: ZABITA (3 linii FAILED)
+MUTACJA M6-progress-not-clamped: ZABITA (2 linii FAILED)
+MUTACJA M7-money-skips-notes: ZABITA (3 linii FAILED)
+MUTACJA M8-queue-not-promoted: ZABITA (2 linii FAILED)
+MUTACJA M9a-prereq-empty-raw-filter-removed: PRZEZYLA
+MUTACJA M9b-prereq-part-sentinel-case-sensitive: ZABITA (3 linii FAILED)
+MUTACJA M10-epoch-diacritics-ignored: ZABITA (3 linii FAILED)
+MUTACJA M11-research-step-not-atomic: ZABITA (2 linii FAILED)
+MUTACJA M12-research-queue-no-default: ZABITA (2 linii FAILED)
+MUTACJA M13-tech-json-vs-cost-table-drift: ZABITA (2 linii FAILED)
+PLIKI PRZYWROCONE
+UWAGA: M9a (usuniecie raw.is_empty()) to mutant ROWNOWAZNY - PRZEZYLA jest oczekiwana (pusty napis i tak odrzuca filtr czesci !s.is_empty()); nie wlicza sie do wyniku. Wynik: 13/13 mutantow nierownowaznych ZABITYCH (M1-M8, M9b, M10-M13) + 1 rownowazny (M9a). Pierwszy przebieg r1 (M9 raw.is_empty) = M9a; M9b to wariant zastepczy.

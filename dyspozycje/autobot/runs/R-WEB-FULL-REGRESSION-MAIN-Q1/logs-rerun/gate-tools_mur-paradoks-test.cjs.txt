@@ -1,0 +1,51 @@
+mur-paradoks-test (R-MOC-TABLICZKA-VS-CIVPOWER-Q1)
+
+Fixture Konnica: meleeAttack=16 meleeDefence=10 armor=8 health=56 (rekrut, garnizon)
+
+--- 1-2. Paradoks zamkniety (tabliczka z Murami >= bez budynku, == realna Obrona) ---
+    M bez budynku obronnego (fortify-field +50%)         = 103
+    M z Murami (bonus struktury +200%, fortify-field off) = 190
+  [OK] PARADOKS ZAMKNIETY: tabliczka garnizonu z Murami (190) >= tabliczka bez zadnego budynku obronnego (103) -- bonus struktury (+200%) przewaza brak fortify-field (+50%)
+  [OK] M z Murami (190) > M bazowe surowe (98) -- tabliczka garnizonu za murem pokazuje PODNIESIONA Moc, nie czysta
+  [OK] cityWallDefenseBonusPercent(["mury"]) == 200% (miasto-params.json bonus_obrona_mur_proc)
+    Realna Obrona miasta z Murami (effectiveDefenderM, main.ts) = 190
+    Tabliczka nad zetonem tej samej jednostki                  = 190
+  [OK] PARADOKS ZAMKNIETY: tabliczka nad zetonem (190) == realna Obrona miasta z Murami w bitwie (190) (tolerancja zaokraglen) -- tabliczka pokazuje TA SAMA liczbe, ktora realnie rozstrzyga bitwe
+
+--- 3. Monotonicznosc wraca (Mury <= Mury+Cytadela <= Mury+Cytadela+Baszta) ---
+  [OK] M ROSNIE z kazda warstwa budynku obronnego -- tabliczka monotoniczna wzgledem liczby budynkow (Mury 190 <= Mury+Cytadela 236 <= komplet(+Baszta) 282)
+
+--- 4. Jednostka w polu (nie w garnizonie) -- funkcja no-op wzgledem bazy ---
+  [OK] Jednostka w polu (poza garnizonem): combatPowerFullDisplayDef == combatPowerScaledDef (98 == 98) -- struct bonus miasta NIGDY nie dotyka jednostki poza garnizonem
+
+--- 5. Moc cywilizacji STALA niezaleznie od muru/garnizonu (civ-power != tabliczka) ---
+  [OK] Moc cywilizacji (veteranScaledDefFor) IDENTYCZNA niezaleznie od muru/garnizonu (98 == 98) -- civ-power nie przyjmuje pozycji/muru jako wejscia w ogole
+  [OK] Moc cywilizacji rekruta bez weterana (98) == Moc bazowa surowa (98) -- zero bonusow poza weteranem/ulepszeniami
+  [OK] Moc cywilizacji (98) < tabliczka garnizonu za murem (190) -- DWIE ROZNE liczby, civ-power NIZSZA bo nie liczy struktury/terenu
+
+--- 6. Zrodlo main.ts ---
+  [FAIL] Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == 49 (98)
+  [OK] StackVitalsDeps.defOf (syncUnitsRender) wola combatPowerFullDisplayDefFor(u) -- tabliczka pokazuje PELNA Moc (R-MOC-TABLICZKA-VS-CIVPOWER-Q1)
+  [OK] StackVitalsDeps.defOf NIE wola juz golego combatPowerScaledDefFor(u) -- lapie cofniecie do R-MOC-DEFINICJA-Q1 (tabliczka bez struktury)
+  [OK] Funkcja main.ts::combatPowerFullDisplayDefFor ISTNIEJE w pliku
+  [OK] combatPowerScaledDefFor() znaleziona w main.ts
+  [OK] combatPowerScaledDefFor() NIE dolicza struct/teren bonusu w sobie (zapobiega PODWOJNEMU liczeniu w effectiveDefenderM i wyciekowi bonusu do rosterFieldPowerM atakujacego) -- cialo: "const def = fortifyFieldScaledDefFor(u);\n      return applyDifficultyCombatToUnitDef(def, difficultyCombatMultForOwner(u.ownerId));"
+  [OK] effectiveDefenderM buduje defRoster przez combatPowerScaledDefFor(u) -- znaleziono 1 wystapien -- realna bitwa dolicza struct/teren SAMA, NIETKNIETA przez ta decyzje
+  [OK] rosterFieldPowerM (atakujacy) buduje roster przez combatPowerScaledDefFor(u) -- znaleziono 1 wystapien -- atakujacy NIE dostaje bonusu struktury tabliczki
+  [OK] sumArmyMForOwnerEffective() znaleziona w main.ts
+  [OK] sumArmyMForOwnerEffective() wola armyFieldPower(veteranScaledDefFor(u)) -- civ-power BEZ fortyfikacji/terenu/muru/trudnosci AI
+  [OK] sumArmyMForOwnerEffective() NIE wola combatPowerScaledDefFor/combatPowerFullDisplayDefFor -- civ-power odseparowana od tabliczki
+  [OK] effectiveDefenderM() znaleziona w main.ts (funkcja produkcyjna realnej bitwy)
+  [OK] effectiveDefenderM() (galaz isCity, REALNA bitwa) liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 (ADDYTYWNA kombinacja struktury/terenu, C-COMBAT-Q2) -- lapie regresje/wyzerowanie bonusu muru w rozstrzygnieciu bitwy, ktorej sekcje 1-2 wyzej NIE lapia (wlasna reimplementacja)
+  [OK] effectiveDefenderM() stosuje combinedDefPct WYLACZNIE na czesc Obrony (terrAdjDefense = split.defense * (1 + combinedDefPct / 100))
+  [OK] effectiveDefenderM() (galaz isCity) NIE dolicza combinedDefPct do Ataku obroncy (terrAdjAttack = split.attack, bez zmian) -- mur/teren "nie chroni" skladowej ofensywnej obroncy w obronie miasta
+  [OK] combatPowerFullDisplayDefFor() znaleziona w main.ts (funkcja PODGLADU tabliczki)
+  [OK] combatPowerFullDisplayDefFor() liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 (ta sama ADDYTYWNA formula co effectiveDefenderM, galaz isCity) -- lapie regresje/wyzerowanie bonusu struktury w PODGLADZIE tabliczki, ktorej sekcje 1-4 wyzej NIE lapia (wlasna reimplementacja w JS)
+  [OK] combatPowerFullDisplayDefFor() ma blok return { ... } (obiekt wynikowy funkcji PODGLADU) do przeanalizowania
+  [OK] combatPowerFullDisplayDefFor(): BIALA LISTA -- w return{} skalowane (wywolaniem funkcji LUB mnozeniem, dowolna nazwa helpera) jest WYLACZNIE meleeDefence/armor/health (skladowe Obrony w fieldPower()) -- znaleziono niedozwolone skalowanie: []
+  [OK] combatPowerFullDisplayDefFor() stosuje mult (1 + combinedDefPct / 100) na meleeDefence/armor/health -- skladowe Obrony w fieldPower() (znalezione skalowane pola: meleeDefence, armor, health)
+
+=== mur-paradoks-test: 28 pass, 1 fail ===
+
+EXIT=1
+TIME=0.4

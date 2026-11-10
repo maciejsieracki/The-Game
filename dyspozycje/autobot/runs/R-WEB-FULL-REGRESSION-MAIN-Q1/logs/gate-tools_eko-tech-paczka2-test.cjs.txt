@@ -1,0 +1,14 @@
+  PASS: ABC-10 budynek fort → nazwa Cytadela
+  PASS: ABC-10 ulepszenie mapy fort → nazwa Fort
+  PASS: ABC-11 spichlerz_zachowanie normal=0.5
+  FAIL: ABC-14 depositAllows: zloze ruda
+  FAIL: ABC-14 depositAllows: ZlozeRudy
+  PASS: ABC-14 depositAllows: równina NIE
+  PASS: ABC-14 qualifies: heks z rudą
+  FAIL: ABC-14 qualifies: równina odrzucona
+  PASS: ABC-14 qualifies: Wzgórza + ZlozeRudy
+
+eko-tech-paczka2: 6 pass, 3 fail
+
+EXIT=1
+TIME=0.8

@@ -1,0 +1,6 @@
+$ node tools/dom-harness/run-cityux.mjs --pin-dir <PIN> --json r3-logi/05-dom-harness-cityux.json
+cityUxFrame.ts                 przypadki=  164 różnice=0 asercje_v2=5/5 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: układ i wygląd CSS w realnej przeglądarce (jsdom bez układu: `getBoundingClientRect` ustawiony jawnie, `min(24vw,…)`, przejścia `transition`) — CSS porównany bajtowo jako tekst `<style>`
+   NIE_ZMIERZONO: treść panelu miasta (`paintCityPanelSections`) — atrapa po obu stronach; port `cityPanel.ts` = P5.7 r4
+dom-harness-cityux: pin=edb8fb56 modułów=1 przypadków=164 różnic=0 jsdomErrors=0 consoleErrors=0
+EXIT=0

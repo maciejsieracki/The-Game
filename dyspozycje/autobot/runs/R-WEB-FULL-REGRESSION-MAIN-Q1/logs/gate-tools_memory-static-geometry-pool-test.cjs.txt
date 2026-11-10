@@ -1,0 +1,4 @@
+podaj --gra <kopia gra z node_modules>
+
+EXIT=2
+TIME=0.2

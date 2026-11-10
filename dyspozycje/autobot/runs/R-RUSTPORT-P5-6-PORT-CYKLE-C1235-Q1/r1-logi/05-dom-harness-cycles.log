@@ -1,0 +1,22 @@
+$ node tools/dom-harness/run-cycles.mjs --pin-dir <PIN_DIR> --json 05-dom-harness-cycles.json
+diplomacyAudience.ts           przypadki=  224 różnice=0 DOM_puste=15/182 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: muzyka dyplomacji (`startDiplomacyMusic(otherCivId)`/`stopDiplomacyMusic`) — pin: odtwarzacz nie gra (muzyka gry nie uruchomiona), v2: usługa audio niezainstalowana; nie wpływa na DOM
+   NIE_ZMIERZONO: eksploracja wewnątrz koszyka/modalu otwartego z audiencji — tylko pierwszy poziom (koszyk eksplorowany osobno w `diplomacyTradeBasket.ts`)
+diplomacyNegotiationModal.ts   przypadki=  165 różnice=0 DOM_puste=54/138
+diplomacyTradeBasket.ts        przypadki= 4747 różnice=0 asercje_v2=1/1 DOM_puste=94/1359 NIE_ZMIERZONO=7
+   NIE_ZMIERZONO: koszyk#1(trade,14,pelny): kliknięto 70 z 72 elementów (limit przypadków)
+   NIE_ZMIERZONO: koszyk#7(trade,14,limit): kliknięto 70 z 138 elementów (limit przypadków)
+   NIE_ZMIERZONO: koszyk#23(treaty,7,minimalny): kliknięto 70 z 128 elementów (limit przypadków)
+   NIE_ZMIERZONO: szybka-umowa(pelny): kliknięto 20 z 59 elementów (limit przypadków)
+   NIE_ZMIERZONO: szybka-umowa(sredni): kliknięto 20 z 43 elementów (limit przypadków)
+   NIE_ZMIERZONO: szybka-umowa(limit): kliknięto 20 z 138 elementów (limit przypadków)
+   NIE_ZMIERZONO: pola `validation`/`currencyForbiddenWar`/`treatyPw` w wyniku `basketSummary` — UI ich nie czyta (wartości atrapy harnessu)
+hexContextTooltip.ts           przypadki=  931 różnice=0 asercje_v2=1/1 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: filtr „Możliwe ulepszenia” i rozbicie plonów po stronie „Rust” = transkrypcja kodu pinu na funkcjach pinu (zgodność z przyszłym silnikiem Rust — poza harnessem)
+sidePanelHud.ts                przypadki=   56 różnice=0 DOM_puste=0/56
+sidePanelEventFilter.ts        przypadki=    8 różnice=0
+preBattle.ts                   przypadki=  270 różnice=0 asercje_v2=1/1 DOM_puste=170/270 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: efekt `setArmyStackHudSuppressed` na panelu rosteru armii (`hud.ts`, poza paczką) — v2: asercja wywołania mostu; pin: `hud.ts` bez zamontowanego panelu nie zmienia DOM
+   NIE_ZMIERZONO: muzyka nakładki (`startPreBattleMusic`/`stopPreBattleMusic`) — pin: odtwarzacz nie gra (muzyka gry nie uruchomiona), v2: usługa audio niezainstalowana; nie wpływa na DOM
+dom-harness-cycles: pin=edb8fb56 modułów=7 przypadków=6401 różnic=0 jsdomErrors=0 consoleErrors=0
+EXIT=0

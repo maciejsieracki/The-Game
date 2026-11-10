@@ -1,0 +1,33 @@
+baseline: ok=True failed=[] compile_error=False
+| ID | file | mutation | result | killed by |
+|---|---|---|---|---|
+| C01 | `src/cities/overlay/stat_chip.rs` | name budget base 305 -> 260 (round-3 value) | **KILLED** | chip_sprites_match_the_web_bit_for_bit, chip_textures_match_chromium, mean_abs_exceptions_are_needed, textures_match_golden_hashes |
+| C02 | `src/cities/overlay/stat_chip.rs` | portrait also drawn for a city-state | **KILLED** | cities::overlay::stat_chip::tests::portrait_is_ignored_for_a_city_state |
+| C03 | `src/cities/overlay/stat_chip.rs` | pill ring 2 px -> 1 px | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C04 | `src/cities/overlay/stat_chip.rs` | capital inner ring inset 6 -> 5 | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C05 | `src/cities/overlay/stat_chip.rs` | growth slot width not rounded up (Math.ceil dropped) | **KILLED** | chip_sprites_match_the_web_bit_for_bit, chip_textures_match_chromium, textures_match_golden_hashes |
+| C06 | `src/cities/overlay/stat_chip.rs` | hover row budget without the web's '- x' | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C07 | `src/cities/overlay/stat_chip.rs` | hover row separator ' · ' -> ' - ' | **KILLED** | textures_match_golden_hashes |
+| C08 | `src/cities/overlay/stat_chip.rs` | production icon requested without a prodKind | **KILLED** | chip_sprites_match_the_web_bit_for_bit, chip_textures_match_chromium, textures_match_golden_hashes |
+| C09 | `src/cities/overlay/stat_chip.rs` | medallion disc green darkened by 0.6 instead of 0.55 | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C10 | `src/cities/overlay/stat_chip.rs` | name font 22 px -> 21 px | **KILLED** | chip_sprites_match_the_web_bit_for_bit, chip_textures_match_chromium, mean_abs_exceptions_are_needed, textures_match_golden_hashes |
+| C11 | `src/cities/overlay/stat_chip.rs` | palisade shield drawn in the gold palette | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C12 | `src/cities/overlay/stat_chip.rs` | badge sprite world height 0.52 -> 0.5 | **KILLED** | chip_sprites_match_the_web_bit_for_bit |
+| C13 | `src/cities/overlay/stat_chip.rs` | population digits without the +1 px offset | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C14 | `src/cities/overlay/stat_chip.rs` | legacy overload with another civ | **KILLED** | chip_textures_match_chromium, textures_match_golden_hashes |
+| C15 | `src/cities/overlay/okolica.rs` | worked-field digits 1.28 -> 1.2 | **KILLED** | okolica_textures_match_chromium, textures_match_golden_hashes |
+| C16 | `src/cities/overlay/okolica.rs` | label lifted by 0.4 instead of 0.38 of its height | **KILLED** | okolica_trees_match_the_web_bit_for_bit |
+| C17 | `src/cities/overlay/okolica.rs` | city centre hidden under a covering improvement | **KILLED** | okolica_textures_match_chromium, okolica_trees_match_the_web_bit_for_bit, textures_match_golden_hashes |
+| C18 | `src/cities/overlay/okolica.rs` | range ring excluded (< instead of <=) | **KILLED** | cities::overlay::okolica::tests::range_enumeration_order, okolica_textures_match_chromium, okolica_trees_match_the_web_bit_for_bit, textures_match_golden_hashes |
+| C19 | `src/cities/overlay/okolica.rs` | okolica 👤 glyph 13 px -> 16 px (world-map size) | **KILLED** | textures_match_golden_hashes |
+| C20 | `src/cities/overlay/okolica.rs` | shallow sea treated as unworkable (isWaterTerrain) | **KILLED** | okolica_textures_match_chromium, okolica_trees_match_the_web_bit_for_bit, textures_match_golden_hashes |
+| C21 | `src/cities/overlay/okolica.rs` | worked digits with the idle shadow blur | **KILLED** | textures_match_golden_hashes |
+| C22 | `src/cities/overlay/worker_field.rs` | player worker badge radius 11 -> 12 | **KILLED** | textures_match_golden_hashes, worker_textures_match_chromium |
+| C23 | `src/cities/overlay/worker_field.rs` | worker icon opacity 0.9 -> 1 | **KILLED** | worker_trees_match_the_web_bit_for_bit |
+| C24 | `src/cities/overlay/worker_field.rs` | fog: unexplored worker icons stay visible | **KILLED** | worker_trees_match_the_web_bit_for_bit |
+| C25 | `src/cities/overlay/worker_field.rs` | palette index wraps negatives (JS % keeps the sign) | **KILLED** | chip_helpers_match_the_web, cities::overlay::worker_field::tests::palette_wraps_like_js_modulo |
+| C26 | `src/cities/overlay/mod.rs` | undefined owner colour painted white instead of black | **KILLED** | chip_helpers_match_the_web, cities::overlay::worker_field::tests::palette_wraps_like_js_modulo, textures_match_golden_hashes, worker_textures_match_chromium |
+
+Result: 26/26 killed
+git diff after the run: (none)
+EXIT=0

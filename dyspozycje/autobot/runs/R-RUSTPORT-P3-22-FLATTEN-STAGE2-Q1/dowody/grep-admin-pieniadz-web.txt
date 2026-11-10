@@ -1,0 +1,13 @@
+edb8fb56:gra/src/game/playerState.ts:28: *   changing economy.ts is not.  Instead we record a flag (pieniadzMnoznik) and
+edb8fb56:gra/src/game/playerState.ts:39: *                -> sets pieniadzMnoznik to PIENIADZ_MNOZNIK (x10)
+edb8fb56:gra/src/game/playerState.ts:75:export const PIENIADZ_MNOZNIK = 10;
+edb8fb56:gra/src/game/playerState.ts:112:  pieniadzMnoznik: number;
+edb8fb56:gra/src/game/playerState.ts:153:    pieniadzMnoznik: 1,
+edb8fb56:gra/src/game/playerState.ts:378: * Mutates `state` (nauka, zbadane, badana, era, pieniadzMnoznik) in place and
+edb8fb56:gra/src/game/playerState.ts:451:    if (money) state.pieniadzMnoznik = PIENIADZ_MNOZNIK;
+edb8fb56:gra/src/main.ts:28633:        pieniadzMnoznik: 1,
+edb8fb56:gra/src/main.ts:37086:      player.pieniadzMnoznik = 1;
+edb8fb56:gra/src/main.ts:37434:      player.pieniadzMnoznik = 1;
+edb8fb56:gra/src/main.ts:37711:      player.pieniadzMnoznik = 1;
+edb8fb56:gra/src/main.ts:37930:      player.pieniadzMnoznik = 1;
+EXIT=0

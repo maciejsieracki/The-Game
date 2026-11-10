@@ -1,0 +1,3 @@
+web: W=720 H=400 rows=400 bits=288000 bbox=(0.0723, 0.0551, 0.9917, 0.7243)
+rust: W=720 H=400 bits=288000 bbox=(0.0723, 0.0551, 0.9917, 0.7243)
+dims_equal = True | bbox_equal = True | bits_equal = True

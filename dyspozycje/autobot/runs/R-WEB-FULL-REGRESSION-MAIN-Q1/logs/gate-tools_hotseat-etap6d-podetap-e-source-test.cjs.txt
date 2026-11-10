@@ -1,0 +1,89 @@
+hotseat-etap6d-podetap-e-source-test (R-HOTSEAT-ETAP6D-PODETAP-E-Q1)
+
+A/B. 14 funkcji stołu negocjacyjnego — PO czyste, PRZED miało hardkod (nietautologiczność)
+
+  OK: negotiationPartnerOwnerIdOf: ciało PO znalezione w main.ts
+  OK: negotiationPartnerOwnerIdOf: ciało PRZED (HEAD) znalezione w main.ts
+  OK: negotiationPartnerOwnerIdOf: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: negotiationPartnerOwnerIdOf: PO -- zawiera isMe()/ME()
+  FAIL: negotiationPartnerOwnerIdOf: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: resolveNegotiationEntryAt: ciało PO znalezione w main.ts
+  OK: resolveNegotiationEntryAt: ciało PRZED (HEAD) znalezione w main.ts
+  OK: resolveNegotiationEntryAt: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: resolveNegotiationEntryAt: PO -- zawiera isMe()/ME()
+  FAIL: resolveNegotiationEntryAt: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: resolvePendingNegotiationsForOwner: ciało PO znalezione w main.ts
+  OK: resolvePendingNegotiationsForOwner: ciało PRZED (HEAD) znalezione w main.ts
+  OK: resolvePendingNegotiationsForOwner: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: resolvePendingNegotiationsForOwner: PO -- zawiera isMe()/ME()
+  FAIL: resolvePendingNegotiationsForOwner: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: handleNegotiationAccept: ciało PO znalezione w main.ts
+  OK: handleNegotiationAccept: ciało PRZED (HEAD) znalezione w main.ts
+  OK: handleNegotiationAccept: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: handleNegotiationAccept: PO -- zawiera isMe()/ME()
+  FAIL: handleNegotiationAccept: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: handleNegotiationCounter: ciało PO znalezione w main.ts
+  OK: handleNegotiationCounter: ciało PRZED (HEAD) znalezione w main.ts
+  OK: handleNegotiationCounter: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: handleNegotiationCounter: PO -- zawiera isMe()/ME()
+  OK: handleNegotiationReject: ciało PO znalezione w main.ts
+  OK: handleNegotiationReject: ciało PRZED (HEAD) znalezione w main.ts
+  OK: handleNegotiationReject: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: handleNegotiationReject: PO -- zawiera isMe()/ME()
+  FAIL: handleNegotiationCounter: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  FAIL: handleNegotiationReject: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: handleRequestAiNegotiationResponse: ciało PO znalezione w main.ts
+  OK: handleRequestAiNegotiationResponse: ciało PRZED (HEAD) znalezione w main.ts
+  OK: handleRequestAiNegotiationResponse: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: handleRequestAiNegotiationResponse: PO -- zawiera isMe()/ME()
+  FAIL: handleRequestAiNegotiationResponse: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: getNegotiationsForPair: ciało PO znalezione w main.ts
+  OK: getNegotiationsForPair: ciało PRZED (HEAD) znalezione w main.ts
+  OK: getNegotiationsForPair: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: getNegotiationsForPair: PO -- zawiera isMe()/ME()
+  FAIL: getNegotiationsForPair: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: negotiationSummary: ciało PO znalezione w main.ts
+  OK: negotiationSummary: ciało PRZED (HEAD) znalezione w main.ts
+  OK: negotiationSummary: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: negotiationSummary: PO -- zawiera isMe()/ME()
+  FAIL: negotiationSummary: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: previewNegotiationEntry: ciało PO znalezione w main.ts
+  OK: previewNegotiationEntry: ciało PRZED (HEAD) znalezione w main.ts
+  OK: previewNegotiationEntry: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: previewNegotiationEntry: PO -- zawiera isMe()/ME()
+  FAIL: previewNegotiationEntry: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: collectTurnEvents: ciało PO znalezione w main.ts
+  OK: collectTurnEvents: ciało PRZED (HEAD) znalezione w main.ts
+  OK: collectTurnEvents: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  FAIL: collectTurnEvents: PO -- zawiera isMe()/ME()
+  FAIL: collectTurnEvents: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: collectOpenDiploProposalQueue: ciało PO znalezione w main.ts
+  OK: collectOpenDiploProposalQueue: ciało PRZED (HEAD) znalezione w main.ts
+  OK: collectOpenDiploProposalQueue: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: collectOpenDiploProposalQueue: PO -- zawiera isMe()/ME()
+  FAIL: collectOpenDiploProposalQueue: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: openDiplomacyAudienceForNegotiation: ciało PO znalezione w main.ts
+  OK: openDiplomacyAudienceForNegotiation: ciało PRZED (HEAD) znalezione w main.ts
+  OK: openDiplomacyAudienceForNegotiation: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: openDiplomacyAudienceForNegotiation: PO -- zawiera isMe()/ME()
+  FAIL: openDiplomacyAudienceForNegotiation: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: actionableNegotiationIdsForPair: ciało PO znalezione w main.ts
+  OK: actionableNegotiationIdsForPair: ciało PRZED (HEAD) znalezione w main.ts
+  OK: actionableNegotiationIdsForPair: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: actionableNegotiationIdsForPair: PO -- zawiera isMe()/ME()
+  FAIL: actionableNegotiationIdsForPair: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+  OK: findIncomingNegotiationForAction: ciało PO znalezione w main.ts
+  OK: findIncomingNegotiationForAction: ciało PRZED (HEAD) znalezione w main.ts
+  OK: findIncomingNegotiationForAction: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)
+  OK: findIncomingNegotiationForAction: PO -- zawiera isMe()/ME()
+  FAIL: findIncomingNegotiationForAction: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+
+C. applyProposalOutcome -- WYKLUCZONA z migracji, ciało nietknięte
+
+  OK: applyProposalOutcome: ciało znalezione w obu wersjach
+  OK: applyProposalOutcome: ciało PO === ciało PRZED, bajt w bajt (funkcja nietknięta)
+
+hotseat-etap6d-podetap-e-source-test: 61 PASS, 16 FAIL
+
+EXIT=1
+TIME=0.2

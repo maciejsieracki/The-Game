@@ -1,0 +1,11 @@
+-- L1: kolejka niepusta + blokady -> prepareSessionForLoad
+  ok   L1 przed: kolejka odlozonych bitew niepusta
+  ok   L1 przed: koniec tury zablokowany (stan wyjsciowy)
+FAIL wyjatek: ReferenceError: eventDeferQueue is not defined
+    at resetEndTurnBlockers (eval at buildFactory (<REF-TMP>/ref/gra/tools/load-game-blockers-exec-test.cjs:129:10), <anonymous>:223:5)
+    at Object.prepareSessionForLoad (eval at buildFactory (<REF-TMP>/ref/gra/tools/load-game-blockers-exec-test.cjs:129:10), <anonymous>:230:5)
+    at main (<REF-TMP>/ref/gra/tools/load-game-blockers-exec-test.cjs:244:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+EXIT=1
+TIME=1.4

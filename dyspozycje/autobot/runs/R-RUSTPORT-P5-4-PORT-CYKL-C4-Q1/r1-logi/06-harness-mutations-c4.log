@@ -1,0 +1,23 @@
+$ node tools/dom-harness/mutate-c4.mjs --pin-dir <PIN_DIR>
+C1 registry: lista technologii z katalogu bez pierwszej: EXIT=1 WYKRYTA [entityCards/registry.ts, techDiscoveryNotice.ts, entityCards/unitAdapter.ts, entityCards/buildingAdapter.ts, entityCards/improvementAdapter.ts, entityCards/technologyAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1648 różnic=42 jsdomErrors=75 consoleErrors=10
+C2 unitAdapter: kategoria „tylko nazwa” zamiast wiersza: EXIT=1 WYKRYTA [entityCards/unitAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=94 jsdomErrors=75 consoleErrors=0
+C3 unitAdapter: kontry z katalogu ignorowane: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/unitAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=214 jsdomErrors=75 consoleErrors=0
+C4 buildingAdapter: koszt pracy z DTO +1: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=477 jsdomErrors=75 consoleErrors=0
+C5 buildingAdapter: skala poziomów przesunięta: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=176 jsdomErrors=75 consoleErrors=0
+C6 buildingAdapter: efekt na poziomie wyświetlanym ignorowany: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=422 jsdomErrors=75 consoleErrors=0
+C7 buildingAdapter: etykiety surowców z DTO ignorowane: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=466 jsdomErrors=75 consoleErrors=0
+C8 buildingAdapter: mnożnik roli stały: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=67 jsdomErrors=75 consoleErrors=0
+C9 buildingAdapter: utrzymanie w złocie z DTO ignorowane: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/buildingAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=466 jsdomErrors=75 consoleErrors=0
+C10 improvementAdapter: mapa nazwa→klucz bez „farma”: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/improvementAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=6 jsdomErrors=75 consoleErrors=0
+C11 technologyAdapter: lista jednostek technologii bez pierwszej: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/technologyAdapter.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=51 jsdomErrors=75 consoleErrors=0
+C12 techDiscoveryNotice: wyszukiwanie technologii w katalogu: EXIT=1 WYKRYTA [techDiscoveryNotice.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=22 jsdomErrors=75 consoleErrors=0
+C13 sciencePicker: koszt efektywny z DTO ignorowany: EXIT=1 WYKRYTA [sciencePicker.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=36 jsdomErrors=75 consoleErrors=0
+C14 sciencePicker: epoka drzewka z DTO ignorowana: EXIT=1 WYKRYTA [sciencePicker.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=24 jsdomErrors=75 consoleErrors=0
+C15 sciencePicker: lista huba z DTO bez pierwszego wpisu: EXIT=1 WYKRYTA [sciencePicker.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=18 jsdomErrors=75 consoleErrors=0
+C16 sciencePicker: etykiety ulepszeń z katalogu ignorowane: EXIT=1 WYKRYTA [sciencePicker.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=23 jsdomErrors=75 consoleErrors=0
+C17 scienceHubHud: liczba slotów planu z katalogu −1: EXIT=1 WYKRYTA [scienceHubHud.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=13 jsdomErrors=75 consoleErrors=0
+C18 kopia bajtowa: renderer — tekst przycisku Civpedii: EXIT=1 WYKRYTA [techDiscoveryNotice.ts, entityCards/renderer.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=271 jsdomErrors=75 consoleErrors=0
+C19 kopia bajtowa: wonderAdapter — etykieta dostępu E: EXIT=1 WYKRYTA [entityCards/renderer.ts, entityCards/wonderAdapter.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=50 jsdomErrors=75 consoleErrors=0
+C20 scienceHubHud: panel bramki epoki (tekst): EXIT=1 WYKRYTA [scienceHubHud.ts] dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=5 jsdomErrors=75 consoleErrors=0
+mutate-c4: mutacji=20 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

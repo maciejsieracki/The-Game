@@ -1,0 +1,55 @@
+# Literaly liczbowe i napisowe w modulach P6.6A (state.rs, terrain.rs); komentarze pominiete
+# Klasyfikacja: STRUKTURALNY = elementy neutralne/semantyka JS (0.0, 1.0, `+ 1.0`, krok petli, identyfikatory pol has*,
+# format cudzyslowu szablonu), nie dane ani mnozniki balansu. Dane: data/derived/*.json, data/miasto-params.json.
+## src/domain/state.rs od linii 193
+247: nums=[] strs=['miasto-params.json must parse'] | let miasto = parse_miasto_params().expect("miasto-params.json must parse");
+272: nums=[] strs=['{{{name}}}'] | out = out.replace(&format!("{{{name}}}"), value);
+307: nums=['0'] strs=[] | let min_pop = if owner_id > 0 {
+308: nums=['1.0'] strs=[] | js_max(pop_cost + 1.0, params.ai_source_min_pop)
+310: nums=['1.0'] strs=[] | pop_cost + 1.0
+327: nums=['1'] strs=[] | if tied.len() == 1 {
+328: nums=['0'] strs=[] | return Some(tied[0]);
+331: nums=['1.0'] strs=[] | let idx = crate::domain::recruitment::army_merge::js_min(len - 1.0, (rand() * len).floor());
+332: nums=['0.0'] strs=[] | if idx.is_nan() || idx < 0.0 {
+358: nums=['0.0'] strs=[] | let koszt_praca = if first_free { 0.0 } else { params.work_cost };
+360: nums=['0.0'] strs=[] | 0.0
+370: nums=[] strs=['koszt'] | &[("koszt", js_number_to_string(koszt_praca))],
+390: nums=['0'] strs=[] | let min_needed = if owner_id > 0 {
+391: nums=['1.0'] strs=[] | js_max(koszt_ludnosc + 1.0, params.ai_source_min_pop)
+393: nums=['1.0'] strs=[] | koszt_ludnosc + 1.0
+399: nums=[] strs=['koszt'] | &[("koszt", js_number_to_string(min_needed))],
+442: nums=['0.0'] strs=[] | 0.0
+447: nums=['0.0'] strs=[] | 0.0
+457: nums=[] strs=['koszt'] | &[("koszt", js_number_to_string(koszt_praca))],
+464: nums=['1.0'] strs=[] | if !first_city_free && source_city_population - koszt_ludnosc < 1.0 {
+469: nums=[] strs=['koszt'] | &[("koszt", js_number_to_string(koszt_ludnosc))],
+508: nums=[] strs=['praca'] | ("praca", js_number_to_string(params.work_cost)),
+509: nums=[] strs=['ludnosc'] | ("ludnosc", js_number_to_string(params.population_cost)),
+558: nums=['0.0', '1.0'] strs=[] | js_max(0.0, js_min(1.0, x))
+585: nums=['1.0'] strs=[] | .unwrap_or(1.0),
+587: nums=['1.0'] strs=[] | let share = clamp01(1.0 - prev);
+626: nums=[] strs=['hasAmfiteatr'] | "hasAmfiteatr" => out.has_amfiteatr = present,
+627: nums=[] strs=['hasBiblioteka'] | "hasBiblioteka" => out.has_biblioteka = present,
+628: nums=[] strs=['hasPalac'] | "hasPalac" => out.has_palac = present,
+629: nums=[] strs=['hasStela'] | "hasStela" => out.has_stela = present,
+630: nums=[] strs=['hasSad'] | "hasSad" => out.has_sad = present,
+631: nums=[] strs=['hasLaznia'] | "hasLaznia" => out.has_laznia = present,
+647: nums=[] strs=['hasSwiatynia'] | "hasSwiatynia" => out.has_swiatynia = present,
+648: nums=[] strs=['hasKamienneKregi'] | "hasKamienneKregi" => out.has_kamienne_kregi = present,
+690: nums=['1.0'] strs=[] | if share < 1.0 {
+692: nums=['0.0'] strs=[] | kultura_skumulowana: 0.0,
+718: nums=['0.0'] strs=[] | religion_converted: 0.0,
+729: nums=['0.0'] strs=[] | 0.0
+739: nums=['0.0'] strs=[] | 0.0
+748: nums=['0.0'] strs=[] | if garnizon_count > 0.0 {
+749: nums=['1.0'] strs=[] | return 1.0;
+752: nums=['1.0'] strs=[] | return 1.0;
+778: nums=[] strs=['map-gen-params.json must parse'] | .expect("map-gen-params.json must parse")
+789: nums=['0.0'] strs=[] | if value > 0.0 {
+878: nums=['1.0'] strs=[] | dr += 1.0;
+880: nums=['1.0'] strs=[] | dq += 1.0;
+1019: nums=['0.0'] strs=[] | let sight = city_sight_radius(c.population, c.kultura.unwrap_or(0.0), border_radius);
+1020: nums=['0.0'] strs=[] | if sight <= 0.0 {
+1044: nums=['0'] strs=[] | let player = player_owner_id.unwrap_or(0);
+## src/domain/terrain.rs od linii 449
+# linii z literalami: 49

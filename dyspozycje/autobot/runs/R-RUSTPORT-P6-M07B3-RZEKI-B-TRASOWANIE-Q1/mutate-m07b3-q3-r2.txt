@@ -1,0 +1,206 @@
+A01 | KILLED | astar.rs | oczek=K | :6399 h0 = openOceanDist ?? seaDist | RESTORED=True
+A02 | SURVIVED | astar.rs | oczek=E | :6399 h0 [h0 tylko startowy f/bestH: poza petla nieuzywany (fallback po petli martwy)] | RESTORED=True
+A03 | SURVIVED | astar.rs | oczek=E | :6401 start w oceanie [start w oceanie: bez galezi start jest zdejmowany pierwszy i goal-check zwraca [start]] | RESTORED=True
+A04 | SURVIVED | astar.rs | oczek=E | :6411 seq startu [seq startu: start zdjety pierwszy, kolejnosc seq potomkow zachowana] | RESTORED=True
+A05 | SURVIVED | astar.rs | oczek=E | :6420 pomin wpisy spoza open [wpis spoza open: nieaktualny wpis ma f != fScore[k] (A06 go odrzuca); h = BFS openOceanDist jest spojna (koszt >= 1)] | RESTORED=True
+A06 | SURVIVED | astar.rs | oczek=E | :6422 pomin przestarzale f [f != fScore: nieaktualny wpis wychodzi z kopca PO nowszym (nizsze f), wezel jest wtedy zamkniety (A05)] | RESTORED=True
+A07 | SURVIVED | astar.rs | oczek=E | :6431 bestH < [bestK/bestH: fallback po petli martwy (kazdy zdjety wezel jest od razu sprawdzany jako cel)] | RESTORED=True
+A08 | KILLED | astar.rs | oczek=K | :6435 cel w petli | RESTORED=True
+A09 | SURVIVED | astar.rs | oczek=E | :6439 open.delete(current) [open.delete: spojna heurystyka - zamkniety wezel nie poprawia g; nieaktualne wpisy odrzuca test f] | RESTORED=True
+A10 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen -> > | RESTORED=True
+A11 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen + 1 | RESTORED=True
+A12 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen - 1 | RESTORED=True
+A13 | KILLED | astar.rs | oczek=K | :6446 inDir odwrocony | RESTORED=True
+A14 | KILLED | astar.rs | oczek=K | :6450 blockExisting | RESTORED=True
+A15 | KILLED | astar.rs | oczek=K | :6450 allowRelief | RESTORED=True
+A16 | KILLED | astar.rs | oczek=K | :6451 nd ?? Infinity | RESTORED=True
+A17 | KILLED | astar.rs | oczek=K | :6452 postInlandPhase | RESTORED=True
+A18 | KILLED | astar.rs | oczek=K | :6453 koszt kroku | RESTORED=True
+A19 | KILLED | astar.rs | oczek=K | :6454 kara prostej 0.18 | RESTORED=True
+A20 | KILLED | astar.rs | oczek=K | :6454 jitter 0.12 [domkniete r2: prawie-remis tras prosta/zygzak, web-rivers-b-q3-closure.json] | RESTORED=True
+A21 | KILLED | astar.rs | oczek=K | :6454 znak kary | RESTORED=True
+A22 | KILLED | astar.rs | oczek=K | :6454 sameRiverDir | RESTORED=True
+A23 | SURVIVED | astar.rs | oczek=E | :6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3] | RESTORED=True
+A24 | SURVIVED | astar.rs | oczek=E | :6456 tg > maxLen + 3 [tg > maxLen+3 nieosiagalne: curG < maxLen i koszt < 1.3] | RESTORED=True
+A25 | KILLED | astar.rs | oczek=K | :6456 tg > maxLen + 1 | RESTORED=True
+A26 | KILLED | astar.rs | oczek=K | :6457 tg >= gScore -> > | RESTORED=True
+A27 | KILLED | astar.rs | oczek=K | :6458 cameFrom | RESTORED=True
+A28 | KILLED | astar.rs | oczek=K | :6465 f wpisu kopca | RESTORED=True
+A29 | KILLED | astar.rs | oczek=K | :6466 heapSeq++ | RESTORED=True
+A30 | SURVIVED | astar.rs | oczek=E | :6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy) [bestK != startK: start zdjety pierwszy i nie jest celem (inaczej return)] | RESTORED=True
+A31 | KILLED | astar.rs | oczek=K | :6473 cel dla bestK | RESTORED=True
+A32 | SURVIVED | astar.rs | oczek=E | :6429 curH ?? Infinity [curH default wplywa tylko na bestH/bestK: fallback po petli martwy] | RESTORED=True
+A33 | SURVIVED | astar.rs | oczek=E | :6462 nf: openOcean ?? Infinity [wezel w oceanConnected bez openOceanDist nie jest nigdy wstawiany: rodzic bylby juz celem drenazu] | RESTORED=True
+A34 | KILLED | astar.rs | oczek=K | :6387 maxLen | RESTORED=True
+A35 | SURVIVED | astar.rs | oczek=E | :6432 bestK [bestK: fallback po petli martwy] | RESTORED=True
+F01 | KILLED | extend.rs | oczek=K | :6657 mouthReady | RESTORED=True
+F02 | SURVIVED | extend.rs | oczek=E | :6661 wczesny return: petla sprawdza mouthReady(cur) w 1. iteracji | RESTORED=True
+F03 | KILLED | extend.rs | oczek=K | :6666 step < TAIL + 2 -> +3 | RESTORED=True
+F04 | KILLED | extend.rs | oczek=K | :6666 step < TAIL + 2 -> +1 | RESTORED=True
+F05 | KILLED | extend.rs | oczek=K | :6667 mouthReady w petli | RESTORED=True
+F06 | KILLED | extend.rs | oczek=K | :6679 nd ?? Infinity | RESTORED=True
+F07 | KILLED | extend.rs | oczek=K | :6680 wyjatek PlytkieMorze (drain) | RESTORED=True
+F08 | KILLED | extend.rs | oczek=K | :6680 postInlandPhase | RESTORED=True
+F09 | KILLED | extend.rs | oczek=K | :6680 !shallow && -> shallow || | RESTORED=True
+F10 | KILLED | extend.rs | oczek=K | :6682 && -> || | RESTORED=True
+F11 | SURVIVED | extend.rs | oczek=E | :6682 wyjatek PlytkieMorze (flow) [canRiverFlowThrough dla PlytkieMorze zawsze true (nie Morze, nie relief)] | RESTORED=True
+F12 | KILLED | extend.rs | oczek=K | :6682 blockExisting domyslnie false | RESTORED=True
+F13 | SURVIVED | extend.rs | oczek=E | :6682 allowRelief: relief odrzucony wczesniej (:6677) | RESTORED=True
+F14 | KILLED | extend.rs | oczek=K | :6684 openOceanDist ?? nd | RESTORED=True
+F15 | KILLED | extend.rs | oczek=K | :6684 nd = Infinity | RESTORED=True
+F16 | KILLED | extend.rs | oczek=K | :6686 PlytkieMorze -15 -> +15 | RESTORED=True
+F17 | SURVIVED | extend.rs | oczek=E | :6686 PlytkieMorze -15 -> -14: shallow o=0 vs land o>=1 (w obu wypadkach shallow wygrywa) | RESTORED=True
+F18 | KILLED | extend.rs | oczek=K | :6688 score < bestScore -> <= | RESTORED=True
+F19 | SURVIVED | extend.rs | oczek=E | :6693 brak kandydata: break -> continue (stan niezmienny) | RESTORED=True
+F20 | KILLED | extend.rs | oczek=K | :6695 visited.add | RESTORED=True
+F21 | KILLED | extend.rs | oczek=K | :6694 path.push | RESTORED=True
+F22 | KILLED | extend.rs | oczek=K | :6666 visited poczatkowy | RESTORED=True
+F23 | KILLED | extend.rs | oczek=K | :6650 path.length === 0 | RESTORED=True
+F24 | KILLED | extend.rs | oczek=K | :6673 visited | RESTORED=True
+F25 | SURVIVED | extend.rs | oczek=E | :6677 Morze wykluczone [Morze odrzucane i tak przez canRiverFlowThrough (false dla Morza)] | RESTORED=True
+F26 | KILLED | extend.rs | oczek=K | :6677 relief wykluczony | RESTORED=True
+G01 | KILLED | trace_coast.rs | oczek=K | :6290 petla step < maxLen -> <= | RESTORED=True
+G02 | KILLED | trace_coast.rs | oczek=K | :6290 petla maxLen-1 | RESTORED=True
+G03 | SURVIVED | trace_coast.rs | oczek=E | :6297 curOd == null: break -> continue (stan niezmienny: iteracja idempotentna) | RESTORED=True
+G04 | KILLED | trace_coast.rs | oczek=K | :6299 path.length >= 2 | RESTORED=True
+G05 | KILLED | trace_coast.rs | oczek=K | :6301 inDir odwrocony | RESTORED=True
+G06 | KILLED | trace_coast.rs | oczek=K | :6309 visited [domkniete r2: petla 36 heks. na plateau, web-rivers-b-q3-closure.json] | RESTORED=True
+G07 | KILLED | trace_coast.rs | oczek=K | :6310 okno skretu | RESTORED=True
+G08 | KILLED | trace_coast.rs | oczek=K | :6312 blockExisting | RESTORED=True
+G09 | KILLED | trace_coast.rs | oczek=K | :6312 allowRelief | RESTORED=True
+G10 | KILLED | trace_coast.rs | oczek=K | :6313 nd ?? Infinity | RESTORED=True
+G11 | KILLED | trace_coast.rs | oczek=K | :6314 postInlandPhase | RESTORED=True
+G12 | KILLED | trace_coast.rs | oczek=K | :6316 od > curOd + 0.5 -> +1.5 | RESTORED=True
+G13 | KILLED | trace_coast.rs | oczek=K | :6316 od > curOd + 0.5 -> -0.5 | RESTORED=True
+G14 | SURVIVED | trace_coast.rs | oczek=E | :6316 > vs >= przy calkowitym od i polowkowym progu | RESTORED=True
+G15 | SURVIVED | trace_coast.rs | oczek=E | :6316 prog 0.5 vs 0 przy calkowitych od | RESTORED=True
+G16 | KILLED | trace_coast.rs | oczek=K | :6318 waga od | RESTORED=True
+G17 | SURVIVED | trace_coast.rs | oczek=E | :6318 waga 12 -> 13 (kolejnosc ta sama: od dominuje, bonus < 12) | RESTORED=True
+G18 | SURVIVED | trace_coast.rs | oczek=E | :6318 jitter 0.35 -> 0.34 [jitter 0.35 vs 0.34: kolejnosc kandydatow ta sama (skala jittera < premia 1.8 i < 12)] | RESTORED=True
+G19 | KILLED | trace_coast.rs | oczek=K | :6319 bonus prostej | RESTORED=True
+G20 | KILLED | trace_coast.rs | oczek=K | :6319 bonus prostej 1.8 -> 0.3 | RESTORED=True
+G21 | KILLED | trace_coast.rs | oczek=K | :6319 sameRiverDir | RESTORED=True
+G22 | SURVIVED | trace_coast.rs | oczek=E | :6323 brak kandydatow: break -> continue (brak wolan rand, stan niezmienny) | RESTORED=True
+G23 | KILLED | trace_coast.rs | oczek=K | :6325 wybor najlepszego | RESTORED=True
+G24 | KILLED | trace_coast.rs | oczek=K | :6327 visited po wyborze [domkniete r2: lasso (start na ogonie), web-rivers-b-q3-closure.json] | RESTORED=True
+G25 | KILLED | trace_coast.rs | oczek=K | :6285 visited startu [domkniete r2: start na pierscieniu z ostroga, web-rivers-b-q3-closure.json] | RESTORED=True
+G26 | KILLED | trace_coast.rs | oczek=K | :6331 path.length > 1 | RESTORED=True
+G27 | KILLED | trace_coast.rs | oczek=K | :6331 path.length > 1 -> > 0 | RESTORED=True
+G28 | KILLED | trace_coast.rs | oczek=K | :6331 koncowy cel drenazu | RESTORED=True
+G29 | KILLED | trace_coast.rs | oczek=K | :6293 wczesny cel drenazu | RESTORED=True
+H01 | KILLED | astar.rs | oczek=K | :6381 less: f<= (przy rownym f decyduje seq, wynik taki sam) [etykieta E z r1 skorygowana: mutant ZABITY - f<= psuje porzadek kopca] | RESTORED=True
+H02 | KILLED | astar.rs | oczek=K | :6381 remis: seq malejaco | RESTORED=True
+H03 | KILLED | astar.rs | oczek=K | :6381 brak tie-break seq | RESTORED=True
+H04 | KILLED | astar.rs | oczek=K | :6381 odwrocone f | RESTORED=True
+H05 | KILLED | astar.rs | oczek=K | :6347 rodzic | RESTORED=True
+H06 | KILLED | astar.rs | oczek=K | :6349 sift-up porownanie | RESTORED=True
+H07 | KILLED | astar.rs | oczek=K | :6346 sift-up do korzenia | RESTORED=True
+H08 | KILLED | astar.rs | oczek=K | :6361 pop ostatniego elementu | RESTORED=True
+H09 | KILLED | astar.rs | oczek=K | :6367 lewe dziecko | RESTORED=True
+H10 | KILLED | astar.rs | oczek=K | :6369 sift-down lewe | RESTORED=True
+H11 | KILLED | astar.rs | oczek=K | :6370 sift-down prawe | RESTORED=True
+H12 | KILLED | astar.rs | oczek=K | :6370 prawe dziecko pominiete | RESTORED=True
+H13 | KILLED | astar.rs | oczek=K | :6369 lewe dziecko pominiete | RESTORED=True
+H14 | SURVIVED | astar.rs | oczek=E | :6363 top/last: przypisanie rownowazne mem::replace | RESTORED=True
+I01 | KILLED | extend.rs | oczek=K | :6535 path.length < 5 -> 4 | RESTORED=True
+I02 | KILLED | extend.rs | oczek=K | :6535 path.length < 5 -> 6 | RESTORED=True
+I03 | KILLED | extend.rs | oczek=K | :6535 maxExtraSteps <= 0 | RESTORED=True
+I04 | KILLED | extend.rs | oczek=K | :6535 || -> && | RESTORED=True
+I05 | KILLED | extend.rs | oczek=K | :6542 i < len - 2 -> len - 3 | RESTORED=True
+I06 | KILLED | extend.rs | oczek=K | :6542 i < len - 2 -> len - 1 | RESTORED=True
+I07 | KILLED | extend.rs | oczek=K | :6542 extra < max -> <= | RESTORED=True
+I08 | KILLED | extend.rs | oczek=K | :6542 extra < max - 1 | RESTORED=True
+I09 | KILLED | extend.rs | oczek=K | :6544 sameRiverDir(lastDir, d) | RESTORED=True
+I10 | KILLED | extend.rs | oczek=K | :6546 straightRun = 1 | RESTORED=True
+I11 | KILLED | extend.rs | oczek=K | :6547 lastDir = d | RESTORED=True
+I12 | KILLED | extend.rs | oczek=K | :6550 straightRun < 4 -> 3 | RESTORED=True
+I13 | KILLED | extend.rs | oczek=K | :6550 straightRun < 4 -> 5 | RESTORED=True
+I14 | SURVIVED | extend.rs | oczek=E | :6551 rand() >= 0.34: mulberry32 daje wielokrotnosci 2^-32, 0.34 nie jest wielokrotnoscia | RESTORED=True
+I15 | KILLED | extend.rs | oczek=K | :6551 prog 0.34 -> 0.35 | RESTORED=True
+I16 | KILLED | extend.rs | oczek=K | :6551 prog 0.34 -> 0.33 | RESTORED=True
+I17 | KILLED | extend.rs | oczek=K | :6551 negacja | RESTORED=True
+I18 | KILLED | extend.rs | oczek=K | :6555 argumenty findRiverMeanderStep | RESTORED=True
+I19 | KILLED | extend.rs | oczek=K | :6561 splice(i + 2) | RESTORED=True
+I20 | KILLED | extend.rs | oczek=K | :6562 extra++ | RESTORED=True
+I21 | KILLED | extend.rs | oczek=K | :6563 straightRun = 0 | RESTORED=True
+I22 | KILLED | extend.rs | oczek=K | :6564 i += 2 -> 1 | RESTORED=True
+I23 | KILLED | extend.rs | oczek=K | :6564 i += 2 -> 3 | RESTORED=True
+I24 | KILLED | extend.rs | oczek=K | :6542 i++ petli | RESTORED=True
+I25 | KILLED | extend.rs | oczek=U | :6568 sanitizeRiverPath(result) | RESTORED=True
+I26 | SURVIVED | extend.rs | oczek=E | :6568 sourceKey [sourceKey w repair: path[0] zawsze odwiedzony, a cel d==1 omija canRiverFlowThrough] | RESTORED=True
+I27 | KILLED | extend.rs | oczek=K | :6553 used | RESTORED=True
+T01 | KILLED | trace_coast.rs | oczek=K | :6251 startD > 2 -> 3 | RESTORED=True
+T02 | KILLED | trace_coast.rs | oczek=K | :6251 startD > 2 -> >=2 | RESTORED=True
+T03 | KILLED | trace_coast.rs | oczek=K | :6251 startD == null | RESTORED=True
+T04 | KILLED | trace_coast.rs | oczek=K | :6240 jawne wymiary zamienione | RESTORED=True
+T05 | KILLED | trace_coast.rs | oczek=K | :6240 wymiary wnioskowane | RESTORED=True
+T06 | KILLED | trace_coast.rs | oczek=K | :6254 domyslna hardMeanderLen | RESTORED=True
+T07 | KILLED | trace_coast.rs | oczek=K | :6255 domyslne allowRelief | RESTORED=True
+T08 | KILLED | trace_coast.rs | oczek=K | :6259 domyslne minPathSep | RESTORED=True
+T09 | KILLED | trace_coast.rs | oczek=K | :6257 growthCap +1 | RESTORED=True
+T10 | KILLED | trace_coast.rs | oczek=K | :6257 growthCap -1 | RESTORED=True
+T11 | KILLED | trace_coast.rs | oczek=K | :6275 len < 2 -> 3 | RESTORED=True
+T12 | KILLED | trace_coast.rs | oczek=K | :6275 len < 2 -> 1 | RESTORED=True
+T13 | KILLED | trace_coast.rs | oczek=K | :6277 odwrocenie trasy | RESTORED=True
+T14 | SURVIVED | trace_coast.rs | oczek=E | :6278 pathEndsAtSea bez wymiarow (ocean dany -> wymiary nieuzyte) [wymiary w pathEndsAtSea nieuzyte gdy oceanConnected podany] | RESTORED=True
+T15 | KILLED | trace_coast.rs | oczek=K | :6278 pathEndsAtSea bez oceanConnected | RESTORED=True
+T16 | KILLED | trace_coast.rs | oczek=K | :6278 negacja pathEndsAtSea | RESTORED=True
+T17 | KILLED | trace_coast.rs | oczek=K | :6269 landCentroid | RESTORED=True
+T18 | KILLED | trace_coast.rs | oczek=K | :6270 landCenterSquare | RESTORED=True
+T19 | SURVIVED | trace_coast.rs | oczek=E | :6271 indeks sep = optymalizacja (rowny brute force) | RESTORED=True
+T20 | KILLED | trace_coast.rs | oczek=K | :6267 blockRiverKeys | RESTORED=True
+T21 | SURVIVED | trace_coast.rs | oczek=E | :6243 openOcean z oceanConnected [openOceanDist przekazany do growRiverFromCoastInland jest tam nieczytany] | RESTORED=True
+T22 | KILLED | trace_coast.rs | oczek=K | :6246 domyslny rand | RESTORED=True
+T23 | KILLED | trace_coast.rs | oczek=K | :6248 mouthKey | RESTORED=True
+T24 | KILLED | trace_coast.rs | oczek=K | :6237 domyslny seaDist | RESTORED=True
+T25 | KILLED | trace_coast.rs | oczek=K | :6246 oceanConnected domyslny | RESTORED=True
+W01 | KILLED | extend.rs | oczek=K | :6604 path.length === 0 (panika przy pustej) | RESTORED=True
+W02 | KILLED | extend.rs | oczek=K | :6612 extra < RIVER_MOUTH_TAIL_LEN -> +1 | RESTORED=True
+W03 | KILLED | extend.rs | oczek=K | :6612 extra < RIVER_MOUTH_TAIL_LEN -> -1 | RESTORED=True
+W04 | SURVIVED | extend.rs | oczek=E | :6613 brak heksu konca: break -> continue (stan niezmienny, iteracje idempotentne) | RESTORED=True
+W05 | KILLED | extend.rs | oczek=K | :6615 isWaterTerrainLocal -> tylko Morze | RESTORED=True
+W06 | KILLED | extend.rs | oczek=K | :6615 koniec na wodzie | RESTORED=True
+W07 | KILLED | extend.rs | oczek=K | :6623 visited | RESTORED=True
+W08 | KILLED | extend.rs | oczek=K | :6625 Morze wykluczone | RESTORED=True
+W09 | KILLED | extend.rs | oczek=K | :6625 relief wykluczony | RESTORED=True
+W10 | KILLED | extend.rs | oczek=K | :6625 || -> && | RESTORED=True
+W11 | SURVIVED | extend.rs | oczek=E | :6626 seaDist ?? 999 -> 998 [seaDist ?? 999 vs 998: stala przesuwa wszystkich kandydatow bez seaDist jednakowo (finitowe < 990)] | RESTORED=True
+W12 | KILLED | extend.rs | oczek=K | :6626 seaDist ?? 999 -> 0 | RESTORED=True
+W13 | KILLED | extend.rs | oczek=K | :6627 PlytkieMorze -8 -> +8 | RESTORED=True
+W14 | KILLED | extend.rs | oczek=K | :6627 PlytkieMorze: -8 vs -0 (shallow nd=0 < land nd>=1; brak seaDist -> oba 999) [etykieta E z r1 skorygowana: ZABITY wektorami `csea` (brak seaDist na pasie przybrzeznym: 991 vs 999 -> remis przy -0)] | RESTORED=True
+W15 | KILLED | extend.rs | oczek=K | :6628 score < bestScore -> <= | RESTORED=True
+W16 | KILLED | extend.rs | oczek=K | :6628 score < bestScore -> > | RESTORED=True
+W17 | SURVIVED | extend.rs | oczek=E | :6633 brak kandydata: break -> continue (stan niezmienny) | RESTORED=True
+W18 | KILLED | extend.rs | oczek=K | :6636 visited.add | RESTORED=True
+W19 | KILLED | extend.rs | oczek=K | :6637 cq = best[0] | RESTORED=True
+W20 | KILLED | extend.rs | oczek=K | :6638 cr = best[1] | RESTORED=True
+W21 | KILLED | extend.rs | oczek=K | :6635 path.push | RESTORED=True
+X01 | SURVIVED | extend.rs | oczek=E | :6578 length >= minLen -> > [length == minLen: petla while i tak sie nie wykonuje, wynik = path] | RESTORED=True
+X02 | KILLED | extend.rs | oczek=K | :6578 length < 3 -> 2 | RESTORED=True
+X03 | KILLED | extend.rs | oczek=K | :6578 length < 3 -> 4 | RESTORED=True
+X04 | KILLED | extend.rs | oczek=K | :6578 || -> && | RESTORED=True
+X05 | KILLED | extend.rs | oczek=K | :6581 pass < 12 -> 11 | RESTORED=True
+X06 | KILLED | extend.rs | oczek=K | :6581 pass < 12 -> 13 | RESTORED=True
+X07 | KILLED | extend.rs | oczek=K | :6581 length < minLen -> <= | RESTORED=True
+X08 | KILLED | extend.rs | oczek=K | :6581 length < stepCap -> <= | RESTORED=True
+X09 | KILLED | extend.rs | oczek=K | :6582 min(.., 6) -> 5 | RESTORED=True
+X10 | KILLED | extend.rs | oczek=K | :6582 min(.., 6) -> 7 | RESTORED=True
+X11 | KILLED | extend.rs | oczek=K | :6582 bez stepCap | RESTORED=True
+X12 | KILLED | extend.rs | oczek=K | :6582 bez minLen | RESTORED=True
+X13 | KILLED | extend.rs | oczek=K | :6584 meandered.length > out.length | RESTORED=True
+X14 | KILLED | extend.rs | oczek=K | :6586 continue po meandrach | RESTORED=True
+X15 | KILLED | extend.rs | oczek=K | :6589 0.45 -> 0.5 | RESTORED=True
+X16 | KILLED | extend.rs | oczek=K | :6589 0.45 -> 0.4 | RESTORED=True
+X17 | KILLED | extend.rs | oczek=K | :6589 max(1, ..) -> 2 | RESTORED=True
+X18 | KILLED | extend.rs | oczek=K | :6589 max(1, ..) -> 0: len>=3 daje floor(0.45*3)=1 [etykieta E z r1 skorygowana: mutant ZABITY - wejscia po skroceniu sanitize/repair do dl. 2] | RESTORED=True
+X19 | KILLED | extend.rs | oczek=K | :6592 min(len-1, mid+1): mid+1 <= len-1 dla len>=3 [etykieta E z r1 skorygowana: mutant ZABITY - wejscia po skroceniu sanitize/repair do dl. 2] | RESTORED=True
+X20 | KILLED | extend.rs | oczek=K | :6592 b = out[mid] | RESTORED=True
+X21 | KILLED | extend.rs | oczek=K | :6591 a = out[mid] | RESTORED=True
+X22 | KILLED | extend.rs | oczek=K | :6595 slice(0, mid + 1) | RESTORED=True
+X23 | SURVIVED | extend.rs | oczek=E | :6595 slice(mid + 1) [duplikat out[mid] usuwa sanitize_river_path (seen) przed repair - wynik ten sam] | RESTORED=True
+X24 | KILLED | extend.rs | oczek=U | :6599 brak meandru: break | RESTORED=True
+X25 | KILLED | extend.rs | oczek=K | :6597 repair(sanitize(out)) | RESTORED=True
+X26 | KILLED | extend.rs | oczek=U | :6597 bez sanitize | RESTORED=True
+X27 | SURVIVED | extend.rs | oczek=E | :6579 srcKey [sourceKey w repair: jak I26] | RESTORED=True
+X28 | KILLED | extend.rs | oczek=K | :6581 pass++ (petla do cap kroku) | RESTORED=True
+EXIT=0

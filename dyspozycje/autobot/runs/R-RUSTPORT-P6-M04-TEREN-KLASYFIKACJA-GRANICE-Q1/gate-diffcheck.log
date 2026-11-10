@@ -1,0 +1,3 @@
+$ git diff --cached --check   (po jawnym `git add` wszystkich plikow tematu; brak koncowych spacji/konfliktow)
+(brak wyjscia)
+EXIT=0

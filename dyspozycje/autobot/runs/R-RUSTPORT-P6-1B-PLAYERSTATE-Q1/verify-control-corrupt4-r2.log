@@ -1,0 +1,23 @@
+  constants: 2
+  costs: 288
+  defaults: 2
+  dequeue: 57
+  enqueue: 174
+  epoch: 26
+  gates: 558
+  getState: 230
+  params: 18
+  plan: 64
+  prereqs: 290
+  rows: 222
+  set: 181
+  state: 13517
+  step: 844
+  table: 577
+  tie: 1
+ROZBIEZNOSC [costs] cost Obróbka drewna szybka easy
+ROZBIEZNOSC [costs] cost Obróbka drewna szybka normal
+ROZBIEZNOSC [costs] cost Obróbka drewna szybka hard
+ROZBIEZNOSC [costs] cost Obróbka drewna standardowa easy
+RAZEM: 17051 sprawdzen, rozbieznosci: 4
+EXIT=1

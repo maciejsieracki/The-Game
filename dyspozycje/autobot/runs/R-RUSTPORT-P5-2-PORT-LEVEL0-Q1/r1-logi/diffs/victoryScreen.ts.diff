@@ -1,0 +1,22 @@
+--- edb8fb56:gra/src/ui/victoryScreen.ts
++++ src-tauri/frontend-v2/src/ui/victoryScreen.ts
+@@ -5,8 +5,8 @@
+  * Wpięcie w silnik: handoff CYWILIZACJE-do-INTEGRATOR_victory-screen-2026-07-02.md (Grupa F).
+  */
+ 
+-import type { VictoryResult } from '../game/victory';
+-import { PROG_DOMINACJI_POWER } from '../game/victory';
++import type { VictoryResultDto as VictoryResult } from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
+ import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+ 
+ export type VictoryRodzaj = VictoryResult['rodzaj'];
+@@ -45,7 +45,7 @@
+ 
+ /** Podtytuł / opis warunku — testowalne bez DOM. */
+ export function formatVictorySubtitle(rodzaj: VictoryRodzaj, stats: VictoryScreenStats): string {
+-  const progPct = Math.round(PROG_DOMINACJI_POWER * 100);
++  const progPct = Math.round(staticCatalog().constants.progDominacjiPower * 100);
+   switch (rodzaj) {
+     case 'dominacja': {
+       const share = stats.powerShare != null

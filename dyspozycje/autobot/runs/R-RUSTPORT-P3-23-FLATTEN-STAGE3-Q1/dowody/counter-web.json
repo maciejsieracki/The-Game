@@ -1,0 +1,336 @@
+{
+  "zrodlo": "uruchomiony kod TS weba: counterMultiplier (gra/src/game/combat.ts) na counters.json (normCounters jak battleScene.ts:1267)",
+  "typy": [
+    "spearman",
+    "mount",
+    "distance",
+    "slinger",
+    "swordsman",
+    "falangite",
+    "offensive",
+    "naval"
+  ],
+  "liczba_wierszy_counters": 17,
+  "pary": [
+    {
+      "atakujacy": "spearman",
+      "cel": "spearman",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "mount",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "spearman",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "spearman",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "mount",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "distance",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "slinger",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "offensive",
+      "mnoznik": 1.25
+    },
+    {
+      "atakujacy": "mount",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "spearman",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "mount",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "distance",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "spearman",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "mount",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "slinger",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "spearman",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "mount",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "swordsman",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "spearman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "mount",
+      "mnoznik": 1.5
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "falangite",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "spearman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "mount",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "distance",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "slinger",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "swordsman",
+      "mnoznik": 1.25
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "offensive",
+      "cel": "naval",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "spearman",
+      "mnoznik": 1.15
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "mount",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "distance",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "slinger",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "swordsman",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "falangite",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "offensive",
+      "mnoznik": 1
+    },
+    {
+      "atakujacy": "naval",
+      "cel": "naval",
+      "mnoznik": 1
+    }
+  ]
+}

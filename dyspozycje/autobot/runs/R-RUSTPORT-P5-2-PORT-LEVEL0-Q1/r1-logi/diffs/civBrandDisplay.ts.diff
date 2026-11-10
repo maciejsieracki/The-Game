@@ -1,0 +1,20 @@
+--- edb8fb56:gra/src/ui/civBrandDisplay.ts
++++ src-tauri/frontend-v2/src/ui/civBrandDisplay.ts
+@@ -3,7 +3,7 @@
+  * Pełny opis tylko na starcie gry (newGameFlow); w trakcie gry — tooltip na nazwie.
+  */
+ 
+-import civsRaw from '../../data/civs.json';
++import { staticCatalog } from '../controller/staticCatalog';
+ 
+ type CivBrandRow = {
+   ikonaId?: string;
+@@ -30,7 +30,7 @@
+ export function civBrandLineForKey(civKey: string | null | undefined): string {
+   if (!civKey) return '';
+   const key = civKey.toLowerCase();
+-  const rows = (civsRaw as { cywilizacje?: CivBrandRow[] }).cywilizacje ?? [];
++  const rows = (staticCatalog().civs as { cywilizacje?: CivBrandRow[] }).cywilizacje ?? [];
+   for (const row of rows) {
+     const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
+       .filter((s): s is string => typeof s === 'string' && s.length > 0)

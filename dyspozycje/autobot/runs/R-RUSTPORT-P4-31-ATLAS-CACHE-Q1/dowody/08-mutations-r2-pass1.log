@@ -1,0 +1,36 @@
+| ID | file | mutation | result | failing tests |
+|---|---|---|---|---|
+| A01 | `src/raster/atlas/keys.rs` | JS trim replaced by Rust str::trim (U+FEFF / U+0085 differ) | **KILLED** | city_map_badge_key_matches_web, legacy_key_matches_web, raster::atlas::keys::tests::trim_differs_from_rust_on_feff_and_nel, related_keys_match_web |
+| A02 | `src/raster/atlas/keys.rs` | toLowerCase dropped | **KILLED** | city_map_badge_key_matches_web, related_keys_match_web |
+| A03 | `src/raster/atlas/keys.rs` | population Math.floor -> round | **KILLED** | city_map_badge_key_matches_web, legacy_key_matches_web |
+| A04 | `src/raster/atlas/keys.rs` | era Math.round -> Math.floor in the badge key | **KILLED** | city_map_badge_key_matches_web |
+| A05 | `src/raster/atlas/keys.rs` | growth label keeps the decimal point (no comma) | **KILLED** | city_map_badge_key_matches_web, growth_label_matches_web, raster::atlas::keys::tests::growth_label_basics |
+| A06 | `src/raster/atlas/keys.rs` | growth label ASCII minus instead of U+2212 | **KILLED** | city_map_badge_key_matches_web, growth_label_matches_web, raster::atlas::keys::tests::growth_label_basics |
+| A07 | `src/raster/atlas/keys.rs` | LOD segment: level 1 not recognised | **KILLED** | city_map_badge_key_matches_web, lod_and_scale_match_web, lod_purge_matches_web |
+| A08 | `src/raster/atlas/keys.rs` | prodKind default 'b' lost | **KILLED** | city_map_badge_key_matches_web |
+| A09 | `src/raster/atlas/keys.rs` | w-segment reads hoverExpanded | **KILLED** | city_map_badge_key_matches_web |
+| A10 | `src/raster/atlas/keys.rs` | barbarian emblem key renamed | **KILLED** | related_keys_match_web |
+| A11 | `src/raster/atlas/keys.rs` | worker ring flag inverted | **KILLED** | related_keys_match_web |
+| A12 | `src/raster/atlas/scale.rs` | DPI x LOD cap 4 -> 5 | **KILLED** | lod_and_scale_match_web, raster::atlas::scale::tests::widest_badge_fits |
+| A13 | `src/raster/atlas/scale.rs` | DPI cap 3 -> 2 | **KILLED** | lod_and_scale_match_web |
+| A14 | `src/raster/atlas/scale.rs` | 2048 ceiling not enforced | **KILLED** | lod_and_scale_match_web, raster::atlas::scale::tests::unreachable_badge_is_clamped |
+| A15 | `src/raster/atlas/cache.rs` | prune_unused frees nothing | **KILLED** | shared_key_is_one_texture_with_refcount |
+| A16 | `src/raster/atlas/cache.rs` | LOD purge keeps the wrong level | **KILLED** | lod_purge_matches_web |
+| A17 | `src/raster/atlas/cache.rs` | same-key shortcut removed (re-acquire every sync) | **KILLED** | shared_key_is_one_texture_with_refcount |
+| A18 | `src/raster/atlas/cache.rs` | finish_sync does not prune | **KILLED** | shared_key_is_one_texture_with_refcount |
+| A19 | `src/raster/atlas/cache.rs` | LOD change does not schedule the purge | **KILLED** | lod_change_purges_the_old_level_before_the_prune |
+| A20 | `src/raster/atlas/mip.rs` | RGBA8 mip rounding half-up instead of half-even | **KILLED** | mip_filter_matches_webgl_generate_mipmap |
+| A21 | `src/raster/atlas/mip.rs` | mip tap without the centre offset (box with dropped row) | **KILLED** | mip_filter_matches_webgl_generate_mipmap, t7_size_chain_matches_webgl |
+| A22 | `src/raster/atlas/mip.rs` | sRGB mips filtered in stored (encoded) space | **KILLED** | mip_filter_matches_webgl_generate_mipmap, t7_size_chain_matches_webgl |
+| A23 | `src/raster/atlas/mip.rs` | one mip level too few | **KILLED** | descriptors_follow_the_texture_data, mip_filter_matches_webgl_generate_mipmap, raster::atlas::mip::tests::level_counts, raster::atlas::upload::tests::presets, t7_size_chain_matches_webgl |
+| A24 | `src/raster/atlas/upload.rs` | unpremultiply truncates instead of round-half-even | **KILLED** | raster::atlas::upload::tests::premultiplied_mode_keeps_raster_bytes, raster::atlas::upload::tests::unpremultiply_edges, unpremultiply_matches_chromium_upload |
+| A25 | `src/raster/atlas/upload.rs` | LinearFilter textures get a mip chain | **KILLED** | raster::atlas::upload::tests::presets |
+| A26 | `src/raster/atlas/upload.rs` | straight-alpha colour blend ONE instead of SRC_ALPHA | **KILLED** | formats_and_blend_states, raster::atlas::upload::tests::blend_matches_three_normal_blending |
+| A27 | `src/raster/atlas/upload.rs` | default-filter producers (T1-T6, T15) uploaded as sRGB | **KILLED** | raster::atlas::upload::tests::presets |
+| A28 | `src/raster/atlas/cache.rs` | LOD purge matches the suffix anywhere (contains instead of endsWith) | **KILLED** | lod_purge_matches_web |
+| A29 | `src/raster/atlas/upload.rs` | unpremultiply keeps RGB for a = 0 | **KILLED** | raster::atlas::upload::tests::unpremultiply_edges |
+| A30 | `src/raster/atlas/gpu.rs` | read-back usage without COPY_SRC (copy_texture_to_buffer would fail validation) | **KILLED** | descriptors_follow_the_texture_data |
+| A31 | `src/raster/atlas/mip.rs` | sRGB re-encode rounded half-even instead of half-up | **SURVIVED** | - |
+
+killed 30/31
+EXIT=1

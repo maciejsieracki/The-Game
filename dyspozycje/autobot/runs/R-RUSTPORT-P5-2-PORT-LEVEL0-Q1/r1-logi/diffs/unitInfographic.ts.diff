@@ -1,0 +1,23 @@
+--- edb8fb56:gra/src/ui/unitInfographic.ts
++++ src-tauri/frontend-v2/src/ui/unitInfographic.ts
+@@ -2,8 +2,8 @@
+  * unitInfographic.ts — kanon ikon jednostek 1E (jednostki-infografiki-1E.html).
+  * Poziom B: 18 kategorii · sylwetki SVG inline z mockupu Design.
+  */
+-import type { UnitDef } from '../data/loader';
+-import { categoryOf } from '../units/setup';
++import type { UnitDefDto as UnitDef } from '../viewmodel/types';
++import { unitCategoryFromCatalog } from '../controller/staticCatalog';
+ 
+ /** Inner SVG markup per category (viewBox 0 0 24 24). */
+ const SVG_INNER: Record<string, string> = {
+@@ -95,8 +95,7 @@
+ };
+ 
+ export function unitInfographicCategory(u: UnitDef | undefined, id?: string): string {
+-  const isSuper = u?.['Super-jednostka'] === 'TAK';
+-  return categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', isSuper, u?.['Typ']);
++  return unitCategoryFromCatalog(u?.Jednostka ?? id ?? '', u !== undefined);
+ }
+ 
+ export function unitInfographicLabel(cat: string): string {

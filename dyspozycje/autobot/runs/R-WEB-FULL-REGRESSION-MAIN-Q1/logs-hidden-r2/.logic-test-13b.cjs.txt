@@ -1,0 +1,24 @@
+[logic-test] Bundling src/ with esbuild...
+[logic-test] Bundle written to /home/user/The-Game/.claude/worktrees/wf_c65feb17-82c-3/gra/tools/.logic-bundle.cjs
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=18 landSea=152 relief=93 coast=18 riversMain=990 riversFill=965 forest=5 deposits=14 starts=79 total=2338
+PASS  [1] generateMap hexes > 100
+FAIL  [2] placeStartingUnits returns >= 4 units — units.length=0
+FAIL  [3] at least one player (ownerId===0) unit — playerUnits.length=0
+PASS  [4] every unit has non-empty string category
+/home/user/The-Game/.claude/worktrees/wf_c65feb17-82c-3/gra/tools/.logic-test-13b.cjs:129
+assert('player settler category === "osadnik"', settler.category === 'osadnik',
+                                                        ^
+
+TypeError: Cannot read properties of undefined (reading 'category')
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_c65feb17-82c-3/gra/tools/.logic-test-13b.cjs:129:57)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0

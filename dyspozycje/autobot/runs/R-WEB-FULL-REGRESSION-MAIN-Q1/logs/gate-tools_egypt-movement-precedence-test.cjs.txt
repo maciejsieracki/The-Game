@@ -1,0 +1,14 @@
+AssertionError [ERR_ASSERTION]: other civilizations retain general and dedicated shallow-sea bonuses: 0.8130081300813008 != 0.6756756756756757
+    at near (<WT>/gra/tools/egypt-movement-precedence-test.cjs:38:5)
+    at <WT>/gra/tools/egypt-movement-precedence-test.cjs:58:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+EXIT=1
+TIME=0.3

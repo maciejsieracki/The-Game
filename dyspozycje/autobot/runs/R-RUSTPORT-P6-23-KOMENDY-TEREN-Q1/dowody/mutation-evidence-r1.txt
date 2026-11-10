@@ -1,0 +1,53 @@
+# Mutacje R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1 r1: kazda zmienia JEDNO miejsce kodu/tabeli, testy musza zaczerwienic
+=== M1 improvements.rs: js_round bez polowek (if x - floor >= 0.5 -> if false)
+test era_and_cost_scaling_match_web ... FAILED
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+error: test failed, to rerun pass `--test p6_23_improvements`
+test evaluate_order_matches_web ... FAILED
+test compute_order_matches_web ... FAILED
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+error: test failed, to rerun pass `--test p6_23_order`
+error: 2 targets failed:
+=== M2 porzadek-params.json: waga_szczescie 0.5 -> 0.6
+test evaluate_order_matches_web ... FAILED
+test fallback_params_equal_web_constant ... FAILED
+test compute_order_matches_web ... FAILED
+test load_order_params_matches_web ... FAILED
+test result: FAILED. 7 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+error: test failed, to rerun pass `--test p6_23_order`
+error: 1 target failed:
+=== M3 ulepszenia-reguly.json: fala2_mnoznik 2 -> 3
+test era_and_cost_scaling_match_web ... FAILED
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+error: test failed, to rerun pass `--test p6_23_improvements`
+error: 1 target failed:
+=== M4 terrain.rs: przejecie fortu bez resetu contested_useless
+test takeover_on_city_founded_matches_web ... FAILED
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+error: test failed, to rerun pass `--test p6_23_fort`
+error: 1 target failed:
+=== M5 pathfinding.rs: canAiEnter dystans != 1 -> > 1
+test ai_entry_into_empty_enemy_city_matches_web ... FAILED
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+error: test failed, to rerun pass `--test p6_23_hexmove`
+error: 1 target failed:
+=== M6 terrain.rs: ewakuacja sortowanie (q,r) -> (-q,-r)
+test evacuation_hex_matches_web ... FAILED
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+error: test failed, to rerun pass `--test p6_23_fort`
+error: 1 target failed:
+=== M7 improvements.rs: migracja wegla zwraca miedz zamiast None
+error[E0425]: cannot find value `migration` in this scope
+error: could not compile `civ-engine` (lib) due to 1 previous error
+=== M8 types.rs: tier order >= prog_t2 -> >
+test evaluate_order_matches_web ... FAILED
+test order_tier_matches_web ... FAILED
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+error: test failed, to rerun pass `--test p6_23_order`
+error: 1 target failed:
+KONIEC
+=== M7 (poprawiona; pierwsza proba sed trafila inne return i nie kompilowala sie) improvements.rs: migracja wegla zwraca kopalnia_miedzi zamiast None
+test migration_functions_match_web ... FAILED
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+error: test failed, to rerun pass `--test p6_23_improvements`
+error: 1 target failed:

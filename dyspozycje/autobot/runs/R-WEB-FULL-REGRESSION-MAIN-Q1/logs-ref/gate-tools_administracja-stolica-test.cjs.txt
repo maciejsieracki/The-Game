@@ -1,0 +1,62 @@
+
+[administracja-stolica-test]
+
+  [OK] Pałac I dostępny w stolicy (epoka 1)
+  [OK] Pałac I NIEdostępny w mieście regionalnym
+  [OK] Pałac II dostępny w stolicy (po Pałacu I)
+  [OK] Pałac II NIEdostępny w mieście regionalnym
+  [OK] Pałac III dostępny w stolicy (po Pałacu II)
+  [OK] Pałac III NIEdostępny w mieście regionalnym
+  [OK] buildings.json: palac istnieje
+  [OK] palac kosztBudowy=40 (ma: 40)
+  [OK] palac: brak koszt_surowce (C-PALAC-Q1=A, start pula=0)
+  [OK] palac_ii: koszt_surowce drewno zostaje (upgrade, nie start)
+  [OK] palac_iii: koszt_surowce drewno zostaje (upgrade, nie start)
+  [OK] Dom Starszyzny dostępny w mieście regionalnym (epoka 1)
+  [OK] Dom Starszyzny NIEdostępny w stolicy
+  [OK] Dwór Zarządcy dostępny w mieście regionalnym (po Domu Starszyzny)
+  [OK] Dwór Zarządcy NIEdostępny w stolicy
+  [OK] Pretorium dostępne w mieście regionalnym (po Dworze Zarządcy)
+  [OK] Pretorium NIEdostępne w stolicy
+  [OK] Trybunał dostępny w stolicy
+  [OK] Trybunał dostępny w regionie
+  [OK] Sąd dostępny w stolicy
+  [OK] Sąd dostępny w regionie
+  [OK] Miasto z Domem Starszyzny w Brązie widzi awans na Dwór Zarządcy
+  [OK] Dom Starszyzny znika z listy produkcji (już wybudowany)
+  [OK] Po awansie builtIds zawiera dwor_zarzadcy
+  [OK] Po awansie builtIds NIE zawiera już dom_starszyzny (zastąpienie, nie dokładanie)
+  [OK] Awans Dwór Zarządcy -> Pretorium zastępuje poprzednika
+  [OK] Dom Starszyzny (normal) -> 28
+  [OK] Dwór Zarządcy (normal) -> 33
+  [OK] Trybunał (normal) -> 17
+  [OK] Pretorium (normal) -> 38
+  [OK] Sąd (normal) -> 19
+  [OK] dom_starszyzny (easy) -> 36
+  [OK] dom_starszyzny (normal) -> 28
+  [OK] dom_starszyzny (hard) -> 22
+  [OK] dwor_zarzadcy (easy) -> 43
+  [OK] dwor_zarzadcy (normal) -> 33
+  [OK] dwor_zarzadcy (hard) -> 26
+  [OK] trybunal (easy) -> 22
+  [OK] trybunal (normal) -> 17
+  [OK] trybunal (hard) -> 13
+  [OK] Miasto regionalne (Żelazo): Pretorium+Trybunał+Sąd = 74 pkt Prawa
+  [OK] Stolica (Żelazo): Pałac III+Sąd = 74 pkt Prawa
+  [OK] Parytet AI (Prawo): wynik identyczny, brak gałęzi po ownerId
+  [OK] Parytet AI (produkcja): Pretorium dostępne w regionie identycznie dla gracza i AI
+  [OK] AI też dostaje Pretorium w mieście regionalnym (nie tylko gracz)
+  [OK] AI NIE dostaje Pałacu w mieście regionalnym
+  [OK] AI NIE dostaje Pretorium w stolicy
+  [OK] Pałac w katalogu miasta regionalnego: locked, locationBlocked=stolica
+  [OK] Dom Starszyzny w katalogu stolicy: locked, locationBlocked=region
+  [FAIL] Sąd w stolicy: ready, brak blokady lokalizacji
+  [OK] dom_starszyzny: unikalny w mieście (wielokrotny nieustawione/false)
+  [OK] dwor_zarzadcy: unikalny w mieście (wielokrotny nieustawione/false)
+  [OK] pretorium: unikalny w mieście (wielokrotny nieustawione/false)
+
+[administracja-stolica-test] 52 OK, 1 FAIL
+
+
+EXIT=1
+TIME=0.5

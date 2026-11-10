@@ -1,0 +1,12 @@
+  PASS: główny wiring utrzymuje otwartą listę Armie (keepListOpen=true)
+  PASS: zwykły klik nie otwiera karty
+  PASS: przycisk karty zatrzymuje propagację i otwiera osobną interakcję
+  PASS: karta ma jednoznaczny osobny obszar/przycisk
+  PASS: wiring przekazuje identyfikator reprezentanta runtime
+  FAIL: status runtime jest pobierany z właściwej jednostki
+  PASS: otwarcie karty nie niszczy/domyka listy Armie
+
+unit-info-card-army-interaction-test: 6 pass, 1 fail
+
+EXIT=1
+TIME=0.7

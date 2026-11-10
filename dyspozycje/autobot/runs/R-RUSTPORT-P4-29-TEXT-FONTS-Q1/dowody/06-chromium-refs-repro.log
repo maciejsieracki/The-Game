@@ -1,0 +1,10 @@
+scenes=36 widths=5105 trunc=12620 names=1665/1543 chromium=141.0.7390.37 hinting=none
+gen EXIT=0
+MANIFEST IDENTICAL (51 entries)
+diff EXIT=0
+files not OK: 0
+node v22.22.0
+playwright 1.56.1
+chromium 141.0.7390.37
+font-render-hinting none
+userAgent Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36

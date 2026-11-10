@@ -1,0 +1,22 @@
+37:const SECOND_HUMAN_SEED_XOR: u32 = 0x5eed_2f00;
+39:const HASH_MUL_Q: u32 = 0x27d4_eb2d;
+40:const HASH_MUL_R: u32 = 0x1656_67b1;
+41:const HASH_MUL_SEED: u32 = 0x9e37_79b1;
+42:const HASH_MUL_FINAL: u32 = 0x2c1b_3c6d;
+44:const UNIT_SCALE: f64 = 4_294_967_296.0;
+167:                 identyczne z playerCivId — ABC-Q3, wykluczenie duplikatu cywilizacji fotela 2."
+181:            .expect("miasto-params.json: min_dystans_miast.wartosc musi byc >= 0")
+262:    let pool_count = || ((with_dist.len() as f64 * fraction).ceil() as usize).max(1);
+270:    let index = ((rng.next_f64() * pool.len() as f64).floor() as usize).min(pool.len() - 1);
+281:        entry.1 = value;
+295:    PlayerId::new(ids.into_iter().map(PlayerId::get).max().unwrap_or(0) + 1)
+354:                accepted_names_by_civ.len() - 1
+365:                    &accepted_names_by_civ[used_index].1,
+372:            &mut accepted_names_by_civ[used_index].1,
+425:        let substitute_capital = owner_ids[0];
+581:    h ^= h >> 15;
+583:    h ^= h >> 12;
+623:    let mut seeded = 0;
+650:        candidates.sort_by(|a, b| a.1.total_cmp(&b.1));
+656:            seeded += 1;
+758:        EmpireStockArg::Stock(stock) => stock.get(stock_key).copied().unwrap_or(0.0) > 0.0,

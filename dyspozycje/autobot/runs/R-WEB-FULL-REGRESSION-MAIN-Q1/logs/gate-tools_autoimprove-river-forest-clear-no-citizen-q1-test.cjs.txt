@@ -1,0 +1,20 @@
+<WT>/gra/tools/live-verify-autoimprove-common.cjs:14
+if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>');
+             ^
+
+Error: Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>
+    at Object.<anonymous> (<WT>/gra/tools/live-verify-autoimprove-common.cjs:14:20)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (<WT>/gra/tools/autoimprove-river-forest-clear-no-citizen-q1-test.cjs:13:11)
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.1

@@ -1,0 +1,12 @@
+
+--- T1: loadAiWonderParams — throttle per poziom ---
+FAIL: T1d: L3 prog_koszt_x bez zmian = 70 (got 80, want 70)
+
+--- T2: decideAiWonderBuild — throttle 2 vs stary 3 (edge tura 4) ---
+
+--- T3: decideAiWonderBuild — throttle 2 blokuje nieparzystą turę ---
+
+=== ai-balans-step3-test: 7 passed, 1 failed ===
+
+EXIT=1
+TIME=1.8

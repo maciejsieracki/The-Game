@@ -1,0 +1,56 @@
+# EKSPERYMENT r2 (zarzut 2): koszt w tej samej linii co nazwa (CSS dopisany do UNIT_RECRUIT_CARD_CSS):
+# .unit-compact-text{flex-direction:row} .unit-compact-head{flex:1 1 0} .unit-compact-sub{flex:none} .unit-compact-meta{display:none}
+# Plik zrodlowy przywrocony po pomiarze (cp z kopii).
+[mode] clean (working tree)
+
+[340] {"panelWidth":340,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":9,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"]}
+PASS: (340) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (340) lista ma >= 13 wierszy
+PASS: (340) K1: wysokość każdego wiersza <= 36 px
+PASS: (340) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (340) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (340) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+PASS: (340) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem
+PASS: (340) K2: >= 12 z 13 pierwszych wierszy widocznych w całości pod blokiem Produkcji
+FAIL: (340) K3: ucięte nazwy <= 2 z 13 — ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński"]
+PASS: (340) zero pageerror/console.error
+[340/brak] ucięte nazwy: 9/13 ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Thorakites","Wojownik mykeński"]
+FAIL: (340) K3 przy braku rekrutów: ucięte nazwy <= 2 z 13 — ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Thorakites","Wojownik mykeński"]
+PASS: (340) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”
+PASS: (340) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (340) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (340) zero pageerror/console.error (brak rekrutów)
+
+[307] {"panelWidth":307,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":12,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"]}
+PASS: (307) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (307) lista ma >= 13 wierszy
+PASS: (307) K1: wysokość każdego wiersza <= 36 px
+PASS: (307) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (307) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (307) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+PASS: (307) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem
+PASS: (307) zero pageerror/console.error
+[307/brak] ucięte nazwy: 12/13 ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"]
+FAIL: (307) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N” — {"shortRows":12,"bad":[{"n":"Rydwan mykeński","t":"brak 3 tys."},{"n":"Konnica","t":"brak 3 tys."}]}
+PASS: (307) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (307) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (307) zero pageerror/console.error (brak rekrutów)
+
+[280] {"panelWidth":280,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":12,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"]}
+PASS: (280) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (280) lista ma >= 13 wierszy
+PASS: (280) K1: wysokość każdego wiersza <= 36 px
+PASS: (280) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (280) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+PASS: (280) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach
+FAIL: (280) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem — ["Katapulta","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Procarz"]
+PASS: (280) zero pageerror/console.error
+[280/brak] ucięte nazwy: 12/13 ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"]
+FAIL: (280) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N” — {"shortRows":12,"bad":[{"n":"Katapulta","t":"brak 3 tys."},{"n":"Rydwan mykeński","t":"brak 3 tys."},{"n":"Konnica","t":"brak 3 tys."},{"n":"Hieros Lochos (Święty Zastęp)","t":"brak 3 tys."},{"n":"Falanga","t":"brak 3 tys."},{"n":"Thorakites","t":"brak 3 tys."},{"n":"Procarz","t":"brak 3 tys."}]}
+PASS: (280) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+PASS: (280) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania
+PASS: (280) zero pageerror/console.error (brak rekrutów)
+
+[summary] {"280":{"panelWidth":280,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":12,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"],"shortFirst13Truncated":12,"shortTruncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"]},"307":{"panelWidth":307,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":12,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"],"shortFirst13Truncated":12,"shortTruncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz"]},"340":{"panelWidth":340,"rowCount":13,"maxRowHeight":26.9,"first13Visible":13,"first13Truncated":9,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"],"shortFirst13Truncated":9,"shortTruncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Thorakites","Wojownik mykeński"]}}
+
+SUMMARY: 34 pass, 5 fail

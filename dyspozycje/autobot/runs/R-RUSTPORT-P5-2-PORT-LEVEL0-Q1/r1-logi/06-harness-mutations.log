@@ -1,0 +1,17 @@
+$ node tools/dom-harness/mutate.mjs --pin-dir <scratch>/pin
+M1 tekst nagłówka panelu PW: EXIT=1 WYKRYTA [diplomacyAcceptanceBalance.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=1182 kolizji_kategorii=0 jsdomErrors=0
+M2 kolejność epok portretów: EXIT=1 WYKRYTA [leaderPortraits.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=162 kolizji_kategorii=0 jsdomErrors=0
+M3 ikona bez wiersza UnitDef czyta mapę „z wierszem”: EXIT=1 WYKRYTA [icons/brandAssets.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=7 kolizji_kategorii=0 jsdomErrors=0
+M4 klasa przycisku victoryScreen: EXIT=1 WYKRYTA [victoryScreen.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=12 kolizji_kategorii=0 jsdomErrors=0
+M5 domyślna liczba faz overlay: EXIT=1 WYKRYTA [mapLoadingOverlay.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=8 kolizji_kategorii=0 jsdomErrors=0
+M6 stempel builda w raporcie: EXIT=1 WYKRYTA [perfReport.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=16 kolizji_kategorii=0 jsdomErrors=0
+M7 wiersz lokalny traktowany jak zapis z dysku: EXIT=1 WYKRYTA [saveLoadDialog.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=1 kolizji_kategorii=0 jsdomErrors=0
+M8 jasność mgły explored na minimapie: EXIT=1 WYKRYTA [minimapHud.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=2 kolizji_kategorii=0 jsdomErrors=0
+M9 akceptacja traktatu odwrócona: EXIT=1 WYKRYTA [diplomacyAcceptanceBalance.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=416 kolizji_kategorii=0 jsdomErrors=0
+M10 próg fair min koszyka: EXIT=1 WYKRYTA [diplomacyAcceptanceBalance.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=481 kolizji_kategorii=0 jsdomErrors=0
+M11 etykieta Mocy: EXIT=1 WYKRYTA [] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=2 kolizji_kategorii=0 jsdomErrors=0
+M12 nazwa nowego ulepszenia: EXIT=1 WYKRYTA [improvementBuildConfirm.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=88 kolizji_kategorii=0 jsdomErrors=0
+M13 próg dominacji: EXIT=1 WYKRYTA [victoryScreen.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=2 kolizji_kategorii=0 jsdomErrors=0
+M14 lista jednostek technologii: EXIT=1 WYKRYTA [techUnlockParse.ts] dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=33 kolizji_kategorii=0 jsdomErrors=0
+mutate: mutacji=14 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

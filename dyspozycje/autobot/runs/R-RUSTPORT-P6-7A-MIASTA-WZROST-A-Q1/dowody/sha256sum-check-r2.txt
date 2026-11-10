@@ -1,0 +1,8 @@
+params.json: OK
+tempo_stawki.json: OK
+growth.json: OK
+empire.json: OK
+post_central.json: OK
+manpower.json: OK
+edge.json: OK
+sha256sum -c EXIT=0

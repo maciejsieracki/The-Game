@@ -1,0 +1,6 @@
+  FAIL: CITY_BUILDING_PREREQ ma dokładnie 9 wpisów (ma: 10)
+
+prereq-budynkow-test: 58 pass, 1 fail
+
+EXIT=1
+TIME=1.0

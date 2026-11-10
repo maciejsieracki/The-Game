@@ -1,0 +1,66 @@
+
+-- (A) obca stolica: sama nazwa miasta --
+  [OK] (A1) etykieta obcej stolicy = sama nazwa miasta
+  [OK] (A2) bez członu cywilizacji i bez separatora
+  [OK] (A3) NIE stan sprzed tematu (nazwa cywilizacji na plakietce)
+  [OK] (A4) NIE stan rundy 1 (dwa człony, 14/15 stolic przycięte)
+  [OK] (A5) stolica podpisana identycznie jak zwykłe obce miasto (parytet z żywego kodu)
+
+-- (B) degradacje --
+  [OK] (B1) „Rywal 7" jest rozpoznany jako nazwa techniczna (założenie B2)
+  [OK] (B2) obca stolica bez realnej nazwy miasta → sama nazwa cywilizacji
+  [OK] (B3) degradacja nie daje pustej etykiety ani separatora-sieroty
+  [OK] (B4) techniczna nazwa CYWILIZACJI odfiltrowana → zostaje nazwa miasta
+  [OK] (B5) oba człony techniczne → etykieta nadal niepusta (stare zachowanie)
+  [OK] (B6) `foreignCapitalMapName` sygnalizuje brak nazwy pustym stringiem, nie placeholderem
+
+-- (C) reszta etykiet DOKŁADNIE jak dziś --
+  [OK] (C1) państwo-miasto → „Sparta · miasto-państwo" (bez zmian)
+  [OK] (C2) isCityStateOwner nadal blokuje podmianę (bez zmian)
+  [OK] (C3) zwykłe obce miasto (nie stolica) → sama nazwa miasta (bez zmian)
+  [OK] (C4) stolica gracza → własna nazwa miasta (bez zmian)
+  [OK] (C5) zwykłe miasto gracza → własna nazwa miasta (bez zmian)
+  [OK] (C6) wołanie BEZ opcji (cityPanel.ts) → stare zachowanie
+  [OK] (C7) obca stolica bez nazwy cywilizacji → nazwa miasta (bez zmian)
+  [OK] (C8) dyplomacja/HUD → nadal sama nazwa nacji „Hetyci"
+  [OK] (C9) rdzeń etykiety państwa-miasta („Sparta · Grecja") nietknięty
+
+-- (D) strażnik zakresu --
+  [OK] (D1) opt-in `clusterCapitalWithCityName` z rundy 1 usunięty z KODU — brak martwego pokrętła
+  [OK] (D2) main.ts NIE woła ścieżki mapy — dyplomacja/HUD poza zakresem tematu
+  [OK] (D3) render/cities.ts karmi etykietę bez nowych pól — dane były tam już wcześniej
+
+-- (E) R2-2: źródło nazwy stolicy AI --
+  [OK] (E1) stolica AI Chińczyków = „Xi'an"
+  [OK] (E2) NIE „Qin" — nazwa państwa/dynastii z puli miast-państw
+  [OK] (E3) stolica AI Słowian = „Kijów"
+  [OK] (E4) NIE „Kiev" z puli miast-państw
+  [OK] (E5) WSZYSTKIE cywilizacje: stolica AI = miasta_cywilizacji[0] (parytet ze źródłem)
+  [FAIL] (E6) miasta-państwa klastra nadal z suffixu wspólnej listy (bez indeksu 0)
+  [OK] (E7) stolica GRACZA-Chińczyka = miasta_cywilizacji[0] („Xi'an") — R3-2
+  [OK] (E7a) NIE „Qin" z puli miast-państw (wartość utrwalona przez bramkę rundy 2)
+  [OK] (E7b) stolica GRACZA-Słowianina = „Kijów", nie „Kiev"
+  [OK] (E7c) WSZYSTKIE 15 cywilizacji: stolica gracza = miasta_cywilizacji[0]
+  [OK] (E7d) parytet: stolica gracza i stolica AI tej samej cywilizacji czytają to samo źródło
+  [OK] (E7e) nazwa stolicy gracza nie powtarza się w żadnym innym mieście startowym partii
+  [OK] (E8) kolejne miasto AI = następna wolna z miasta_cywilizacji, bez duplikatu stolicy
+
+-- (F) sprzężenie: pula → plakietka --
+  [OK] (F1) stolica AI Chińczyków na mapie: „Xi'an" (zrzut rundy 1 pokazywał „QIN · CHIŃCZ…")
+  [OK] (F2) stolica AI Słowian na mapie: „Kijów"
+  [OK] (F3) wszystkie 15 stolic AI: plakietka = pierwsze miasto cywilizacji, nic więcej
+
+-- (G) R3-1 + R4-1: budżet szerokości nazwy --
+  [OK] (G1) budżet nazwy liczony od CITY_NAME_BUDGET_BASE (nie od literału 200)
+  [OK] (G2) najdłuższe pierwsze miasto cywilizacji w pulach to nadal „uMgungundlovu"
+  [OK] (G3) budżet stolicy OBCEJ (korona, bez glifu produkcji i bez slotu WZROST%) mieści najdłuższą stolicę
+  [OK] (G4) budżet stolicy OBCEJ (korona + glif produkcji, bez slotu WZROST%) mieści najdłuższą stolicę — 0/15 przyciętych w TEJ konfiguracji, nie we wszystkich
+  [OK] (G6a) minimalna baza dla WŁASNEJ stolicy gracza (korona + glif produkcji + WZROST%) to 297,9 px — zmiana szerokości któregokolwiek slotu unieważnia tę liczbę
+  [OK] (G6) budżet WŁASNEJ stolicy gracza (korona + glif produkcji + WZROST%) mieści najdłuższą stolicę — 0/15 przyciętych w TRZECIEJ, najciaśniejszej konfiguracji
+  [OK] (G7) baza zostawia zapas na slot WZROST% do 52 px — najdłuższa stolica nie wpadnie w wielokropek przy skrajnym zapisie wzrostu
+  [OK] (G5) najszersza plakietka × sufit skali nadal mieści się w 2048 px tekstury
+
+[mapa-etykieta-stolicy-test] 46 passed, 1 failed
+
+EXIT=1
+TIME=0.3

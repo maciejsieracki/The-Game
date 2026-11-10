@@ -1,0 +1,14 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c26c9e68-dd7-3/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.31s
+     Running tests/p6_m00_skeleton.rs (/home/user/cargo-target-shared/wf_c26c9e68-dd7-3/debug/deps/p6_m00_skeleton-1864ffd75187226a)
+
+running 5 tests
+test doc_row_lists_expected_counts ... ok
+test mapgen_mod_declares_exactly_doc_modules ... ok
+test domain_mod_declares_top_level_skeleton_modules ... ok
+test files_exist_and_are_empty_doc_only ... ok
+test skeleton_headers_name_full_owner_ids_from_table ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

@@ -1,0 +1,7 @@
+[oboz-las] vite build (po) -> <REF-TMP>/w2/tmp/run/civ-dist-oboz-las-po-10459-b9ss70
+[oboz-las] vite build (przed) -> <REF-TMP>/w2/tmp/run/civ-dist-oboz-las-przed-10459-b9ss70
+
+== WARIANT PRZED (poprawka cofnieta w locie) ==
+
+EXIT=124
+TIME=360.6

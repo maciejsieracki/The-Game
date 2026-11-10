@@ -1,0 +1,30 @@
+=== Pangea kształt lądu (FALA 189, standardowy) ===
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=6 terrain=536 landSea=6603 relief=9693 coast=2355 riversMain=10 riversFill=385 forest=350 deposits=615 starts=1957 total=22511
+  seed 42: masy=1 dry=1 dominująca=100.0% bboxFill=0.883 coast/√A=4.130 aspect=1.16 annular=0 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=425 landSea=3179 relief=5527 coast=2057 riversMain=8 riversFill=283 forest=286 deposits=243 starts=1250 total=13258
+  seed 123: masy=1 dry=1 dominująca=100.0% bboxFill=0.881 coast/√A=4.219 aspect=1.17 annular=0 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=272 landSea=3558 relief=5055 coast=1856 riversMain=7 riversFill=397 forest=262 deposits=340 starts=1330 total=13077
+  seed 777: masy=1 dry=1 dominująca=100.0% bboxFill=0.876 coast/√A=4.122 aspect=1.17 annular=0 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=380 landSea=3401 relief=5552 coast=2293 riversMain=11 riversFill=280 forest=178 deposits=504 starts=1964 total=14566
+  seed 7: masy=1 dry=1 dominująca=100.0% bboxFill=0.866 coast/√A=4.488 aspect=1.19 annular=0 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=278 landSea=3833 relief=7841 coast=2789 riversMain=7 riversFill=352 forest=491 deposits=723 starts=2516 total=18830
+  seed 2026: masy=1 dry=1 dominująca=100.0% bboxFill=0.874 coast/√A=4.148 aspect=1.19 annular=0 → PASS
+
+=== AC ===
+  5 seedów PASS: PASS (0 fail)
+
+=== Pangea kształt lądu (standardowy · 20% lądu — anti-obwarzanek FALA 195) ===
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=226 landSea=5912 relief=6732 coast=3955 riversMain=124 riversFill=288 forest=113 deposits=278 starts=2963 total=20591
+  seed 42: masy=1 dry=1 dominująca=100.0% land=4032 annular=0 → PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=397 landSea=5905 relief=7462 coast=4548 riversMain=14 riversFill=666 forest=255 deposits=819 starts=3549 total=23615
+  seed 123: masy=1 dry=1 dominująca=100.0% land=4032 annular=0 → PASS
+
+EXIT=124
+TIME=150.1

@@ -1,0 +1,41 @@
+$ (cwd = <pin>/gra/src/ui) node tools/check-no-logic-imports.mjs <10 modułów C4>
+entityCards/buildingAdapter.ts:35: [CORE:data] import type { BuildingDef } from '../../data/loader';
+entityCards/buildingAdapter.ts:36: [CORE:data] import buildingsData from '../../../data/buildings.json';
+entityCards/buildingAdapter.ts:42: [CORE:game] } from '../../game/production';
+entityCards/buildingAdapter.ts:43: [CORE:game] import type { BuildingCostPace } from '../../game/building-cost-tempo';
+entityCards/buildingAdapter.ts:44: [CORE:game] import type { GameDifficulty } from '../../game/difficulty-cost';
+entityCards/buildingAdapter.ts:45: [CORE:game] import { buildingUpkeep, buildingResourceUpkeep } from '../../game/economy-upkeep';
+entityCards/buildingAdapter.ts:46: [CORE:game] import type { BuildingRecord } from '../../game/economy';
+entityCards/buildingAdapter.ts:47: [CORE:game] import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
+entityCards/buildingAdapter.ts:48: [CORE:game] import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
+entityCards/buildingAdapter.ts:49: [CORE:game] import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
+entityCards/improvementAdapter.ts:26: [CORE:data] import terrainImprovementsData from '../../../data/terrain-improvements.json';
+entityCards/registry.ts:20: [CORE:data] import type { UnitDef, BuildingDef } from '../../data/loader';
+entityCards/registry.ts:21: [CORE:data] import buildingsData from '../../../data/buildings.json';
+entityCards/registry.ts:22: [CORE:data] import unitsData from '../../../data/units.json';
+entityCards/registry.ts:23: [CORE:data] import terrainImprovementsData from '../../../data/terrain-improvements.json';
+entityCards/registry.ts:24: [CORE:data] import techData from '../../../data/tech.json';
+entityCards/registry.ts:25: [CORE:data] import wondersData from '../../../data/wonders.json';
+entityCards/technologyAdapter.ts:33: [CORE:data] import buildingsData from '../../../data/buildings.json';
+entityCards/technologyAdapter.ts:34: [CORE:data] import unitsData from '../../../data/units.json';
+entityCards/technologyAdapter.ts:35: [CORE:data] import terrainImprovementsData from '../../../data/terrain-improvements.json';
+entityCards/technologyAdapter.ts:36: [CORE:data] import techData from '../../../data/tech.json';
+entityCards/unitAdapter.ts:39: [CORE:data] import type { CounterDef, UnitDef } from '../../data/loader';
+entityCards/unitAdapter.ts:40: [CORE:data] import countersData from '../../../data/counters.json';
+entityCards/unitAdapter.ts:41: [CORE:units] import { categoryOf } from '../../units/setup';
+scienceHubHud.ts:10: [CORE:data] import type { BuildingDef } from '../data/loader';
+scienceHubHud.ts:15: [CORE:game] import { RESEARCH_QUEUE_MAX } from '../game/playerState';
+scienceHubHud.ts:16: [CORE:game] import type { EraGateInfo } from '../game/era-gate-ui';
+sciencePicker.ts:13: [CORE:data] import type {} from '../../data/tech.json';
+sciencePicker.ts:14: [CORE:data] import techData from '../../data/tech.json';
+sciencePicker.ts:15: [CORE:data] import buildingsData from '../../data/buildings.json';
+sciencePicker.ts:17: [CORE:game] import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
+sciencePicker.ts:18: [CORE:game] import type { TempoGry } from '../game/tech-tempo';
+sciencePicker.ts:19: [CORE:game] import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
+techDiscoveryNotice.ts:46: [CORE:data] import techData from '../../data/tech.json';
+techDiscoveryNotice.ts:47: [CORE:data] import buildingsData from '../../data/buildings.json';
+techDiscoveryNotice.ts:48: [CORE:data] import unitsData from '../../data/units.json';
+techDiscoveryNotice.ts:49: [CORE:data] import terrainImprovementsData from '../../data/terrain-improvements.json';
+techDiscoveryNotice.ts:53: [CORE:render] import type { ImprovementKey } from '../render/improvements';
+check-no-logic-imports: cele=entityCards/registry.ts,techDiscoveryNotice.ts,entityCards/unitAdapter.ts,sciencePicker.ts,entityCards/buildingAdapter.ts,scienceHubHud.ts,entityCards/improvementAdapter.ts,entityCards/technologyAdapter.ts,entityCards/renderer.ts,entityCards/wonderAdapter.ts plików=10 plików_z_trafieniami=8 trafień=38 {"CORE:data":23,"CORE:game":13,"CORE:units":1,"CORE:render":1}
+EXIT=1

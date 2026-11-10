@@ -1,0 +1,19 @@
+css_scale(sans,13)=14.5234
+LiberationSans-Bold 13px '−99,9%' kern=false: 44.453 ceil=45
+LiberationSans-Bold 13px '−99,9%' kern=true: 44.453 ceil=45
+LiberationSerif-Bold 22px 'UMGUNGUNDLOVU' kern=false: 213.877
+LiberationSerif-Bold 22px 'UMGUNGUNDLOVU' kern=true: 213.877
+LiberationSerif-Bold 22px 'uMgungundlovu' kern=true: 156.524
+LiberationSans-Bold: missing "⚔☠◆👤🔥🍞🔨💰"
+DejaVuSans-Bold: missing "👤🔥🍞🔨💰"
+NotoColorEmoji: missing "ĄĆĘŁŃÓŚŹŻąćęłńóśźż×…−—·%◆"
+NotoColorEmoji 🔥: id=784 outline=false raster=Some((136, 128, 109, "Png", 3219))
+NotoColorEmoji 👤: id=592 outline=false raster=Some((136, 128, 109, "Png", 701))
+NotoColorEmoji ⚔: id=105 outline=false raster=Some((136, 128, 109, "Png", 1717))
+emoji png decoded 136x128
+missing glyphs in PL sample: 0
+rgba_fnv64=95001f28a03f7ebc bytes=69120
+b8fa517820b5d1e29ff52f4c4fc69cf6e874cb6a9824455c3f850eabb9968a51  out1.png
+b8fa517820b5d1e29ff52f4c4fc69cf6e874cb6a9824455c3f850eabb9968a51  out2.png
+b8fa517820b5d1e29ff52f4c4fc69cf6e874cb6a9824455c3f850eabb9968a51  out3.png
+b8fa517820b5d1e29ff52f4c4fc69cf6e874cb6a9824455c3f850eabb9968a51  out4.png

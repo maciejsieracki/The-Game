@@ -1,0 +1,20 @@
+SHA256 poczatkowe: src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+   scatter-mask: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   scatter-mask: 1 testow FAILED: margin_scatter_score_matches_web
+   parse-radix-empty-digits-ok: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-radix-empty-digits-ok: 1 testow FAILED: parse_hex_key_edge_keys_match_web
+   parse-radix-rounding-no-sticky: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-radix-rounding-no-sticky: 1 testow FAILED: parse_hex_key_edge_keys_match_web
+   parse-radix-rounding-truncate: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-radix-rounding-truncate: 1 testow FAILED: parse_hex_key_edge_keys_match_web
+   parse-infinity-case-insensitive: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-infinity-case-insensitive: 1 testow FAILED: parse_hex_key_edge_keys_match_web
+   parse-exponent-without-digits-ok: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+PRZEZYLA  parse-exponent-without-digits-ok: wszystkie testy zielone
+   parse-sign-dropped: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   parse-sign-dropped: 2 testow FAILED: parse_hex_key_edge_keys_match_web, parse_hex_key_matches_js_number_for_hexkey_strings
+SHA256 koncowe:    src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['fade-cap-le-to-lt', 'land-restore-keeps-overlay']
+POWTORZENIA Z POWODU INFRA: []
+PODSUMOWANIE: wykryte 6/7, przezyly: ['parse-exponent-without-digits-ok'], pliki przywrocone bajt w bajt (SHA-256 poczatek == koniec): True
+EXIT=1

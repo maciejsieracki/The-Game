@@ -1,0 +1,28 @@
+--- pin edb8fb56:gra/src/ui/sceneTimingReport.ts
++++ v2:src-tauri/frontend-v2/src/ui/sceneTimingReport.ts
+@@ -2,11 +2,21 @@
+  * sceneTimingReport.ts — raport czasów mapy (FALA 159: plik + localStorage + chip HUD).
+  * Żółty panel opcjonalny (domyślnie wyłączony); priorytet = persistPerfReport.
+  */
+-import type { MapGenPhaseTimings } from '../map/mapGenProgress';
+-import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
+-import { getRiverGenEnabled } from '../map/riverGenSwitch';
+-import type { SceneBuildTimings } from '../render/scene';
++// P5.7 (D-UI-7, jak `perfReport.ts` w P5.2: tylko typy/struktura, bez sond WebGL): typy czasów → DTO, etykiety faz →
++// `StaticCatalogDto.constants.mapGenPhaseLabels`, przełącznik rzek → `PerfDiagnosticsDto` (powłoka).
++import type {
++  MapGenPhaseTimingsDto as MapGenPhaseTimings,
++  SceneBuildTimingsDto as SceneBuildTimings,
++} from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
++import { perfDiagnostics } from '../controller/diagnostics';
+ import { buildPerfReportText, persistPerfReport, type PerfReportPersistOptions } from './perfReport';
++type MapGenPhaseKey = Exclude<keyof MapGenPhaseTimings, 'total'>;
++/** Pin `map/mapGenProgress.ts:16-27` — odczyt z katalogu przy użyciu (raport powstaje po instalacji katalogu). */
++const MAP_GEN_PHASE_LABELS = new Proxy({} as Record<MapGenPhaseKey, string>, {
++  get: (_t, key: string) => staticCatalog().constants.mapGenPhaseLabels[key] ?? '',
++});
++const getRiverGenEnabled = (): boolean => perfDiagnostics().riverGenEnabled;
+ 
+ const PANEL_ID = 'civ-perf-report';
+ 

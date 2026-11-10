@@ -1,0 +1,13 @@
+M08 | KILLED | oczek=K | meander: prog MIN_INLAND <= (:6510) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M09 | KILLED | oczek=K | meander: filtr dotykania celu odwrocony (:6514) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M10 | KILLED | oczek=K | meander: warunek dotykania && -> || (:6512) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M12 | KILLED | oczek=K | meander: zwrot null przy pustych opcjach usuniety (:6518) - panika | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M14 | KILLED | oczek=L | meander: rand() zuzyte takze przy pustych opcjach (wywolanie pojedyncze w harnessie) - L: harness nie testuje wspoldzielonego rand | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M15 | KILLED | oczek=K | meander: warunek dotykania (drugi operand) zanegowany (:6512) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W01 | KILLED | oczek=K | window: prog |delta| > 1 -> 2 (:7105) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W02 | KILLED | oczek=K | window: granica okna (i+1 >= 6) -> > 6 (:7106) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W03 | KILLED | oczek=K | window: |suma| > 1 -> >= 1 (:7108) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W04 | KILLED | oczek=K | window: indeks ciecia okna -1 (:7109) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W07 | KILLED | oczek=K | window: negacja warunku 'brak naruszen' (:7101) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W09 | KILLED | oczek=K | window: sanityzacja po cieciu pominieta (:7115) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

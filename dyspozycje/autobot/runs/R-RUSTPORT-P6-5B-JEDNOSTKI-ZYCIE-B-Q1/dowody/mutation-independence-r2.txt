@@ -1,0 +1,28 @@
+# P6.5B r2 (zarzut 6): rozlacznosc grup mutacji (statycznie)
+
+## 1. Importy z civ_engine w binariach testowych
+- tests/p6_5b_bonuses.rs: ['domain::combat::unit_building_bonuses']
+- tests/p6_5b_format.rs: ['data::derived::locale_compare_ascii', 'domain::recruitment::manpower']
+- tests/p6_5b_manpower.rs: ['domain::recruitment::manpower']
+- tests/p6_5b_replenish.rs: ['domain::recruitment::manpower']
+- tests/p6_5b_tables.rs: ['data::derived', 'domain::combat::unit_building_bonuses', 'domain::recruitment::army_merge', 'domain::recruitment::manpower']
+- tests/p6_5b_vectors/common.rs: ['domain::recruitment::manpower']
+
+## 2. recruitment.rs -> combat (oczekiwane: brak)
+(brak trafien)
+
+## 3. combat::unit_building_bonuses -> recruitment (oczekiwane: tylko js_max i js_number_to_string)
+(5, 'use crate::domain::recruitment::army_merge::js_max;')
+(6, 'use crate::domain::recruitment::manpower::js_number_to_string;')
+
+## 4. Dane JSON: czytniki w src/domain
+- unit_building_bonuses: combat.rs=1, recruitment.rs=0
+- manpower_params: recruitment.rs=18, combat.rs=0
+- locale_compare_ascii: recruitment.rs=2, combat.rs=0
+
+## 5. Symbole recruitment uzywane przez combat -> mutacje w nich tylko pojedynczo (SINGLE_ONLY = M25, M26)
+- recruitment.rs:1433: pub fn js_number_to_string(x: f64) -> String {
+- recruitment.rs:336: pub fn js_max(a: f64, b: f64) -> f64 {
+
+WYNIK: NARUSZEN 0
+EXIT=0

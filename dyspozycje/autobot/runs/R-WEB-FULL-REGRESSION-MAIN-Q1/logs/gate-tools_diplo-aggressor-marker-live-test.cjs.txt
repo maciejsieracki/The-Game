@@ -1,0 +1,30 @@
+[marker-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-aggressor-marker-live-32485
+[T0] brak flagi
+  OK  T0: wiersz AI1 istnieje
+  OK  T0: brak znacznika przy braku flagi
+[T1] wojna AI1 -> gracz bez casus belli
+  OK  T1: flaga = tura + 20
+  OK  T1: tekst „Agresor (20)"
+  OK  T1: tooltip konsekwencji (20 tur)
+  OK  T1: nazwa cywilizacji i wimpel nadal w wierszu
+  OK  T1: znacznik nie nakłada się na nazwę ani wimpel (obok lub pod nazwą)
+[T2] licznik po turach
+  OK  T2: koniec tury #1 rozliczony
+  OK  T2: po turze 2 licznik = 19
+  OK  T2: tooltip 19 tur
+  OK  T2: koniec tury #2 rozliczony
+  OK  T2: po turze 3 licznik = 18
+  OK  T2: tooltip 18 tur
+  OK  T2: koniec tury #3 rozliczony
+  OK  T2: po turze 4 licznik = 17
+  OK  T2: tooltip 17 tur
+[T3] zapis/wczytanie z aktywną flagą
+  OK  T3: flaga i tura po wczytaniu bez zmian
+  OK  T3: po wczytaniu znacznik „Agresor (17)"
+[T5] casus belli AI2: brak flagi i znacznika
+  OK  T5: AI2 brak znacznika
+  OK  T5: AI1 nadal ma znacznik
+[T4] wygaśnięcie flagi (koniec tury do doTury)
+
+EXIT=124
+TIME=360.2

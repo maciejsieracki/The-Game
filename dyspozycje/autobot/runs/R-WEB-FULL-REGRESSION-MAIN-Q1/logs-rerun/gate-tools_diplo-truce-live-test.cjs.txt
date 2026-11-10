@@ -1,0 +1,9 @@
+[truce-live] vite build do katalogu tymczasowego: <REF-TMP>/w2/tmp/run/civ-truce-live-26948
+U1 UI: modal pokoj/rozejm
+ FAIL wyjątek: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for locator('button[data-aid="10"]').first() |     - locator resolved to <button type="button" data-aid="10" class="da-deal" title="Zakończenie aktywnej wojny pokojem (trwałym) lub rozejmem (tymczasowym). Może zawierać warunki: reparacje, cesja terytoriów.">…</button>
+  OK  C zero pageerror/console.error
+
+1 pass / 1 fail
+
+EXIT=1
+TIME=169.6

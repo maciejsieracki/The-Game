@@ -1,0 +1,9 @@
+AFTER CUT ['renderCityIconRightRail', 'rerender', 'switchCity']
+value fns 358 nontrivial SCC count 6
+6 sections ['C', 'G', 'R'] members ['CP_INLINE_EMOJI_BRAND', 'appendDetailAlgo', 'appendDetailSection', 'cpInlineIcons', 'el', 'gridDetailRow']
+2 sections ['I'] members ['computeOrderStateLocal', 'resolveOrderState']
+4 sections ['S'] members ['ENTITY_CARD_BUILDING_STYLE_ID', 'buildBuildingDetailCard', 'buildBuildingDetailCardViaEntityCard', 'ensureEntityCardBuildingStyles']
+2 sections ['E'] members ['cityFoodSplit', 'cityGrowthLive']
+2 sections ['M'] members ['buildPracaDetailCard', 'renderPodzialPracy']
+3 sections ['M'] members ['appendCitySkarbiecBalance', 'appendPodzialHandlu', 'renderEkonomiaStrip']
+EXIT=0

@@ -1,0 +1,2 @@
+$ cargo fmt --all -- --check; echo "EXIT=$?"
+EXIT=0

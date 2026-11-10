@@ -1,0 +1,89 @@
+CMD: cd rust-port/engine; CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_2bad25af-077-3 CARGO_PROFILE_DEV_DEBUG=0 cargo test --no-fail-fast --test p6_m11_gates --test p6_m11_layout --test p6_m11_repair --test p6_m11_tables --test p6_m11_integration  [z mutacja: cluster_layout.rs:914 active_min_sea = min_sea_dist;]
+    Updating crates.io index
+     Locking 17 packages to latest compatible versions
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling once_cell v1.21.4
+   Compiling tracing-core v0.1.36
+   Compiling itoa v1.0.18
+   Compiling pin-project-lite v0.2.17
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling memchr v2.8.3
+   Compiling serde_derive v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2bad25af-077-3/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 2m 02s
+     Running tests/p6_m11_gates.rs (/home/user/cargo-target-shared/wf_2bad25af-077-3/debug/deps/p6_m11_gates-70911875d6c88b8e)
+
+running 11 tests
+test by_label_matches_web ... ok
+test for_map_matches_web ... ok
+test hub_reach_and_body_buffer_match_web ... ok
+test band_penalty_matches_web ... ok
+test preferred_quadrants_match_web ... ok
+test capital_separation_gate_and_distance_match_web ... ok
+test rescue_ladder_matches_web ... ok
+test quadrant_helpers_match_web ... ok
+test hooks_impl_matches_web ... ok
+test sea_gates_match_web ... ok
+test pick_spawn_hex_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.61s
+
+     Running tests/p6_m11_integration.rs (/home/user/cargo-target-shared/wf_2bad25af-077-3/debug/deps/p6_m11_integration-9de8c89dfd74ed60)
+
+running 4 tests
+test m11_hooks_match_m10_web_hook_vectors ... ok
+test m11_hooks_reproduce_m10_candidate_sorting ... ok
+test m11_and_m10_vector_maps_are_identical ... ok
+test m11_hooks_reproduce_m10_center_placement ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.06s
+
+     Running tests/p6_m11_layout.rs (/home/user/cargo-target-shared/wf_2bad25af-077-3/debug/deps/p6_m11_layout-cc4df252415db121)
+
+running 10 tests
+test centroid_and_far_enough_match_web ... ok
+test capital_pos_matches_web ... ok
+test assign_types_matches_web ... ok
+test cities_with_land_gate_match_web ... ok
+test pick_capital_hex_in_region_matches_web ... ok
+test poisson_pick_cities_matches_web ... ok
+test build_cluster_cities_matches_web ... ok
+test layout_with_edge_capital_matches_web ... ok
+test simple_fallback_matches_web ... ok
+test enforce_local_land_dominance_matches_web ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.12s
+
+     Running tests/p6_m11_repair.rs (/home/user/cargo-target-shared/wf_2bad25af-077-3/debug/deps/p6_m11_repair-2ea5f9383c7a3744)
+
+running 7 tests
+test cluster_helpers_match_web ... ok
+test fixtures_have_web_shape_and_variety ... ok
+test quarter_spread_matches_web ... ok
+test hard_capital_separation_matches_web ... ok
+test repack_one_matches_web ... ok
+test body_separation_matches_web ... ok
+test repack_all_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.90s
+
+     Running tests/p6_m11_tables.rs (/home/user/cargo-target-shared/wf_2bad25af-077-3/debug/deps/p6_m11_tables-c893deff57812197)
+
+running 4 tests
+test every_value_has_a_web_source_with_file_and_line ... ok
+test values_have_sane_shape ... ok
+test derived_constants_are_aliases_of_table_fields ... ok
+test table_parses_with_deny_unknown_fields ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+EXIT=0

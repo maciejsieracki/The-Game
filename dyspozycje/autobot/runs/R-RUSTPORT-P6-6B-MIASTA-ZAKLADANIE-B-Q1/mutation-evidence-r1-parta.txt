@@ -1,0 +1,71 @@
+WYKRYTY   : disp: strip nie obcina dopisku -> 6 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: format - pusta baza zwraca baze -> 3 testow czerwonych: format_entity_display_name_matches_web, format_city_map_label_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: format - odwrocony isCityState -> 3 testow czerwonych: format_city_map_label_matches_web, format_owner_diplo_label_matches_web, format_entity_display_name_matches_web
+WYKRYTY   : disp: format - bez trim -> 3 testow czerwonych: format_city_map_label_matches_web, format_entity_display_name_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: slot - stolica gracza -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: slot - rywal tego samego typu -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: slot - stolica klastra -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: ownerCs - wlasciciel 0 -> 2 testow czerwonych: is_owner_cluster_city_state_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: ownerCs - startCityState lub -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: ownerCs - brak typCopy -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: ownerCs - brak simplified -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: clear - warunek flagi -> 1 testow czerwonych: clear_city_state_flag_on_capture_matches_web
+WYKRYTY   : disp: clear - nie gasi flagi -> 1 testow czerwonych: clear_city_state_flag_on_capture_matches_web
+WYKRYTY   : disp: force - brak wykluczenia stolic klastra -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - klucze bez trim -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - puste klucze rowne -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - wlasciciel 0 -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: mapLabel - MP tylko obce -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - bez wykluczenia MP-wlasciciela -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - gracz domyslnie 1 -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - stolica niewymagana -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: diplo - bez obciecia dopisku -> 1 testow czerwonych: format_owner_diplo_label_matches_web
+WYKRYTY   : disp: technical - cyfry opcjonalne -> 5 testow czerwonych: is_technical_owner_label_matches_web, format_city_map_label_matches_web, foreign_capital_map_name_matches_web
+WYKRYTY   : disp: technical - wielkosc liter -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: technical - wszystkie wzorce -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: technical - bez trim -> 5 testow czerwonych: foreign_capital_map_name_matches_web, is_technical_owner_label_matches_web, format_city_map_label_matches_web
+WYKRYTY   : disp: technical - dowolne znaki po prefiksie -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: clean - bez odsiewu placeholderow -> 3 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - rowne nazwy laczone -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - stolica klastra -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - nie-MP bierze kulture -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - cache pusty po trim -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+PRZEZYL   : disp: resolve - miasto pusty po trim
+KOMPILACJA: disp: truthy - pusty napis prawdziwy (mutant nie kompiluje sie)
+WYKRYTY   : disp: foreign - bez fallbacku na kulture -> 2 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web
+WYKRYTY   : disp: sanitize - bez odsiewu placeholderow -> 1 testow czerwonych: sanitize_owner_display_base_matches_web
+WYKRYTY   : disp: sanitize - civ bez odsiewu -> 1 testow czerwonych: sanitize_owner_display_base_matches_web
+WYKRYTY   : tab: separator -> 8 testow czerwonych: format_city_map_label_matches_web, format_entity_display_name_matches_web, foreign_capital_map_name_matches_web
+WYKRYTY   : tab: wzorzec oid- wielkosc liter -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : tab: wzorzec AI bez cyfr -> 5 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : pct: clamp ulepszen bez zaokraglenia -> 4 testow czerwonych: ensure_city_save_defaults_matches_web, clamp_functions_match_web, resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: clamp ulepszen domyslna -> 4 testow czerwonych: ensure_city_save_defaults_matches_web, clamp_functions_match_web, resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: clamp podzialu bez dolnej granicy -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, clamp_functions_match_web
+WYKRYTY   : pct: clamp podzialu domyslna -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, clamp_functions_match_web
+KOMPILACJA: pct: pula z budynkow (mutant nie kompiluje sie)
+WYKRYTY   : pct: podzial z procentu puli - brak odwrotnosci -> 1 testow czerwonych: podzial_pracy_z_procentu_puli_matches_web
+PRZEZYL   : pct: podzial z procentu puli - gorna granica
+WYKRYTY   : pct: migracja per-turn - ostatni wiersz -> 1 testow czerwonych: snap_and_migrate_match_web
+WYKRYTY   : pct: resolve raw - nowe pole przed legacy -> 3 testow czerwonych: ensure_city_save_defaults_is_idempotent_on_web_outputs, ensure_city_save_defaults_matches_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : pct: resolve raw - legacy tylko 1|2|3 -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : pct: cap AI - bez ograniczenia procentu -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: cap AI - sufit -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: polityka AI - pelna pula -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: polityka AI - odwrocony predykat -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: efektywne - override tylko true -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: efektywne - procent bez clampa -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: efektywne - wolno z imperium -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: snap - bez zaokraglenia -> 5 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, adjust_handel_split_matches_web
+WYKRYTY   : pct: normalize - brak limitu Nauki -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, normalize_podzial_handlu_matches_web
+WYKRYTY   : pct: normalize - nadwyzka do Luksusu -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, normalize_podzial_handlu_matches_web
+KOMPILACJA: pct: normalize - ponowny limit Nauki (mutant nie kompiluje sie)
+WYKRYTY   : pct: normalize - korekta Pieniadza -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, normalize_podzial_handlu_matches_web
+WYKRYTY   : pct: adjust - cap Nauki przy zmianie -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - nadmiar zeruje reszte -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - Nauka na capie -> 1 testow czerwonych: adjust_handel_split_matches_web
+PRZEZYL   : pct: adjust - reszta pod capem Nauki
+WYKRYTY   : pct: adjust - suma pozostalych zero -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - polowa po rowno -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - proporcja -> 1 testow czerwonych: adjust_handel_split_matches_web
+PRZEZYL   : pct: adjust - v0 ponad reszta
+EXIT=143

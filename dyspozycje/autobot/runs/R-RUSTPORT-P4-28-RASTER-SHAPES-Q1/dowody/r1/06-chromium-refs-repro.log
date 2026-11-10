@@ -1,0 +1,64 @@
+$ NODE_PATH=/opt/node22/lib/node_modules PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node gen.mjs
+scenes=46 colors=119 chromium=141.0.7390.37
+EXIT=0
+$ diff manifest_before MANIFEST.sha256
+EXIT=0 (0 = identical regeneration)
+$ sha256sum -c MANIFEST.sha256
+gen.mjs: OK
+scenes.tsv: OK
+colors.tsv: OK
+versions.txt: OK
+ref/h1_battle_minimap.rgba: OK
+ref/src_icon.rgba: OK
+ref/src_portrait.rgba: OK
+ref/t10_disc_barbarian.rgba: OK
+ref/t10_disc_cityState.rgba: OK
+ref/t10_disc_civ.rgba: OK
+ref/t10_portrait.rgba: OK
+ref/t10_sigil_city_state.rgba: OK
+ref/t11_badge_l1.rgba: OK
+ref/t11_badge_l2.rgba: OK
+ref/t11_badge_l3.rgba: OK
+ref/t11_badge_l3_icon.rgba: OK
+ref/t12_worker_other.rgba: OK
+ref/t12_worker_player.rgba: OK
+ref/t12_worker_player_owner4.rgba: OK
+ref/t13_worker_badge.rgba: OK
+ref/t13_worker_badge_owner0.rgba: OK
+ref/t14_crown_x4.rgba: OK
+ref/t14_medallion_disc_x1.rgba: OK
+ref/t14_medallion_disc_x2.rgba: OK
+ref/t14_pill_capital_x2.rgba: OK
+ref/t14_pill_full_x4.rgba: OK
+ref/t14_pill_hover_x3.rgba: OK
+ref/t14_pill_plain_x1.rgba: OK
+ref/t14_pill_portrait_x2.rgba: OK
+ref/t14_pill_sigil_x1_5.rgba: OK
+ref/t14_shield_t1_x3.rgba: OK
+ref/t14_shield_t2_x2.rgba: OK
+ref/t15_group_frame.rgba: OK
+ref/t4_gold_deficit.rgba: OK
+ref/t5_stack_badge_disc.rgba: OK
+ref/t6_turn_label_plate.rgba: OK
+ref/t7_plate_bg.rgba: OK
+ref/t8_power_frame.rgba: OK
+ref/x_arc_partial.rgba: OK
+ref/x_arcto_edges.rgba: OK
+ref/x_clear_rotated.rgba: OK
+ref/x_clip_nested_restore.rgba: OK
+ref/x_gradient_pad.rgba: OK
+ref/x_hairlines.rgba: OK
+ref/x_image_downscale.rgba: OK
+ref/x_miter_join.rgba: OK
+ref/x_path_keeps_old_ctm.rgba: OK
+ref/x_round_join.rgba: OK
+ref/x_shadow_idle.rgba: OK
+ref/x_shadow_worked.rgba: OK
+EXIT=0
+$ du -sb ref . (bytes)
+5328344	ref
+77487	.
+node v22.22.0
+playwright 1.56.1
+chromium 141.0.7390.37
+userAgent Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36

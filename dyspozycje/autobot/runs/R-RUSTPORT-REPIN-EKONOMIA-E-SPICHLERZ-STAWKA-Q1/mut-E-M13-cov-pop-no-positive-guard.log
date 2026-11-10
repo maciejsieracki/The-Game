@@ -1,0 +1,10 @@
+MUTANT E-M13-cov-pop-no-positive-guard file=src/domain/resource_production.rs
+OLD:
+Some(p) if has_pop && p > 0.0 => p.floor(),
+NEW:
+Some(p) if has_pop => p.floor(),
+
+FAILED TESTS:
+
+VERDICT=SURVIVED
+EXIT=0

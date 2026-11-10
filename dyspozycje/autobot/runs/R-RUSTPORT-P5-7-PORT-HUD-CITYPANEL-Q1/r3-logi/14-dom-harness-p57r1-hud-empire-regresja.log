@@ -1,0 +1,12 @@
+$ node tools/dom-harness/run-hud-empire.mjs --pin-dir <PIN>
+sceneTimingReport.ts           przypadki=   42 różnice=0 DOM_puste=0/42
+empireDetailPanel.ts           przypadki=  762 różnice=0 asercje_v2=4/4 DOM_puste=0/711 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: przewijanie (`scrollTop`, `scrollIntoView` po `requestAnimationFrame`) — jsdom nie liczy układu; obie strony wołają te same API (zrzut DOM identyczny)
+   NIE_ZMIERZONO: wygląd CSS (kolory, układ siatek) w realnej przeglądarce — porównanie dotyczy tekstu CSS i DOM, nie renderu
+empireDetailTypes.ts           przypadki=   11 różnice=0 asercje_v2=1/1 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: pozostała zawartość = typy TS (brak wartości w runtime); kształt DTO sprawdza `tsc --noEmit`
+hud.ts                         przypadki=  112 różnice=0 asercje_v2=1/1 DOM_puste=0/109 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: minimapa (`getMinimapData` → dane) oraz `mapToolbar`/`buildMode` — moduły porównane z pinem w P5.2 (`minimapHud.ts`) i P5.5 (`mapToolbarHud.ts`, `buildModeHud.ts`); tu przekazywane bez zmian (`hud.ts` = pin + most)
+   NIE_ZMIERZONO: pełny ekran / zoom UI (`requestFullscreen`, `transform: scale` na `body`) — jsdom bez API pełnego ekranu i układu
+dom-harness-hud-empire: pin=edb8fb56 modułów=4 przypadków=927 różnic=0 jsdomErrors=0 consoleErrors=0
+EXIT=0

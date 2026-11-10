@@ -1,0 +1,5 @@
+Brak kopii bazy PRZED: <WT>/gra/src/ui/hud.__base.ts
+Wygeneruj: git show 4905bac05:gra/src/ui/hud.ts > gra/src/ui/hud.__base.ts (plik tymczasowy, nie commituj; usun po tescie).
+
+EXIT=2
+TIME=0.2

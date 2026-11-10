@@ -1,0 +1,4 @@
+neg1-zmieniony-wektor: exit=1 SPRAWDZEN: 163633 | ROZBIEZNOSCI: 1
+neg2-pow-libm: exit=1 SPRAWDZEN: 163633 | ROZBIEZNOSCI: 2217
+neg3-hypot-libm: exit=1 SPRAWDZEN: 163633 | ROZBIEZNOSCI: 10974
+neg4-sin-libm: exit=1 SPRAWDZEN: 163633 | ROZBIEZNOSCI: 261

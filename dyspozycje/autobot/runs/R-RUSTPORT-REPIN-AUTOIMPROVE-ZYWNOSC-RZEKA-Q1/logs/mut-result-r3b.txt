@@ -1,0 +1,2 @@
+N20_clear_drop_farmbase: SURVIVED
+N35_env_horse_tie_drop: INVALID(compile)

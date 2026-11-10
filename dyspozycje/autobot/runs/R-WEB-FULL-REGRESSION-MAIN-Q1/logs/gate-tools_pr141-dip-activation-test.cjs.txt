@@ -1,0 +1,29 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=95 landSea=2667 relief=2311 coast=225 riversMain=13221 riversFill=18640 forest=39 deposits=164 starts=696 total=38066
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+node:assert:150
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: missing/non-major row preserves caller fallback
+    at Object.<anonymous> (<WT>/gra/tools/pr141-dip-activation-test.cjs:163:10)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0.5,
+  expected: 0.42,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=39.8

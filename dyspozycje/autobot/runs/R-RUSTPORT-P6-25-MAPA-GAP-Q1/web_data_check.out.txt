@@ -1,0 +1,6 @@
+DEFAULT_WIDTH/HEIGHT web = 36 28 | rust json = 36 28
+ROZMIAR_DIMS web = {"malenki":[76,52],"maly":[108,74],"standardowy":[168,120],"duzy":[240,168],"ogromny":[336,238],"superogromny":[672,476]}
+rozmiar_dims rust json = {"malenki":[76,52],"maly":[108,74],"standardowy":[168,120],"duzy":[240,168],"ogromny":[336,238],"superogromny":[672,476]}
+METAL_DEPOSIT_MIN_ERA web = {"miedz":2,"zelazo":3,"wegiel":8,"cyna":2}
+metal_deposit_min_era rust json = {"miedz":2,"zelazo":3,"wegiel":8,"cyna":2}
+MAX_MIAST_PANSTWA web = 9 | MAX_TYPY_CYWILIZACJI_MENU web = 15

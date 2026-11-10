@@ -1,0 +1,71 @@
+{
+  "zrodlo": "uruchomiony kod TS weba: applyRoadMovementModifier (gra/src/map/road-movement.ts:73-84)",
+  "stale": {
+    "ROAD_MOVE_SPEED_MULT": 3,
+    "ROAD_BRUK_MOVE_SPEED_MULT": 5,
+    "ROAD_MIN_MOVE_COST": 0.3333333333333333,
+    "ROAD_BRUK_MIN_MOVE_COST": 0.2
+  },
+  "wektory": [
+    {
+      "ulepszenie": "brak",
+      "koszt_bazowy": 0.5,
+      "wynik": 0.5
+    },
+    {
+      "ulepszenie": "brak",
+      "koszt_bazowy": 1,
+      "wynik": 1
+    },
+    {
+      "ulepszenie": "brak",
+      "koszt_bazowy": 2,
+      "wynik": 2
+    },
+    {
+      "ulepszenie": "brak",
+      "koszt_bazowy": 3,
+      "wynik": 3
+    },
+    {
+      "ulepszenie": "droga",
+      "koszt_bazowy": 0.5,
+      "wynik": 0.16666666666666666
+    },
+    {
+      "ulepszenie": "droga",
+      "koszt_bazowy": 1,
+      "wynik": 0.3333333333333333
+    },
+    {
+      "ulepszenie": "droga",
+      "koszt_bazowy": 2,
+      "wynik": 0.6666666666666666
+    },
+    {
+      "ulepszenie": "droga",
+      "koszt_bazowy": 3,
+      "wynik": 1
+    },
+    {
+      "ulepszenie": "droga_brukowana",
+      "koszt_bazowy": 0.5,
+      "wynik": 0.2
+    },
+    {
+      "ulepszenie": "droga_brukowana",
+      "koszt_bazowy": 1,
+      "wynik": 0.2
+    },
+    {
+      "ulepszenie": "droga_brukowana",
+      "koszt_bazowy": 2,
+      "wynik": 0.4
+    },
+    {
+      "ulepszenie": "droga_brukowana",
+      "koszt_bazowy": 3,
+      "wynik": 0.6
+    }
+  ]
+}

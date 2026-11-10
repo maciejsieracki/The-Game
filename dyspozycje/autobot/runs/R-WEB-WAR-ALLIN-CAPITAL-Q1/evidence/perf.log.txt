@@ -1,0 +1,5 @@
+OFF {"medianMsPerTurn":59.250976125,"all":[57.1,59.25,63.78],"moves":227,"battles":9}
+ON  {"medianMsPerTurn":80.23072105000003,"all":[76.53,80.23,87.39],"moves":2771,"battles":116}
+ratio ON/OFF (decyzje AI+barb na ture) = 1.35
+
+EXIT=0

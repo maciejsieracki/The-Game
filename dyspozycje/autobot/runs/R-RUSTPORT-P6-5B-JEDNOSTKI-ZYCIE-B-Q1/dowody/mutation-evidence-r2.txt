@@ -1,0 +1,13 @@
+MUTACJA B13-scalanie-bez-zasiegu (src/domain/combat.rs, test p6_5b_bonuses): WYKRYTA (exit=101); grupa [B13 + M33]; stat_multiplier_merge_matches_web ; stat_multiplier_merge_is_generic_over_any_structural_type ; city_pool_functions_match_web
+MUTACJA M33-ludki-bez-dolnej-granicy (src/domain/recruitment.rs, test p6_5b_manpower): WYKRYTA (exit=101); grupa [B13 + M33]; stat_multiplier_merge_matches_web ; stat_multiplier_merge_is_generic_over_any_structural_type ; city_pool_functions_match_web
+MUTACJA B14-prawda-bez-nan (src/domain/combat.rs, test p6_5b_bonuses): WYKRYTA (exit=101); grupa [B14 + M11]; stat_multiplier_merge_is_generic_over_any_structural_type ; stat_multiplier_merge_matches_web ; empire_deduct_refund_and_spawn_mutate_like_web
+MUTACJA M11-odejmij-remis-bez-id (src/domain/recruitment.rs, test p6_5b_manpower): WYKRYTA (exit=101); grupa [B14 + M11]; stat_multiplier_merge_is_generic_over_any_structural_type ; stat_multiplier_merge_matches_web ; empire_deduct_refund_and_spawn_mutate_like_web
+MUTACJA B21-cecha-zdrowie-na-atk (src/domain/combat.rs, test p6_5b_bonuses): WYKRYTA (exit=101); grupa [B21]; stat_multiplier_merge_matches_web
+MUTACJA M25-liczba-remis-parzysta (src/domain/recruitment.rs, test p6_5b_format): WYKRYTA (exit=101); grupa [M25]; number_to_string_matches_web
+MUTACJA M21-hp-bez-klamry (src/domain/recruitment.rs, test p6_5b_replenish): WYKRYTA (exit=101); grupa [M21]; replenishment_matches_web_state_results_and_closure_protocol
+MUTACJA M29-domyslny-regen (data/derived/manpower-params.json, test p6_5b_manpower): WYKRYTA (exit=101); grupa [M29]; city_pool_functions_match_web ; raw_param_loaders_match_web ; regen_gain_matches_web_including_default_params
+MUTACJA M26-liczba-prog-wykladnika (src/domain/recruitment.rs, test p6_5b_format): WYKRYTA (exit=101); grupa [M26]; number_to_string_matches_web
+MUTACJA M22-hpmax-bez-uzupelnienia (src/domain/recruitment.rs, test p6_5b_replenish): WYKRYTA (exit=101); grupa [M22]; replenishment_matches_web_state_results_and_closure_protocol
+MUTACJA M27-format-prog-tys-calkowite (data/derived/manpower-params.json, test p6_5b_format): WYKRYTA (exit=101); grupa [M27]; population_formats_match_web
+MUTACJA M24-callback-hpmax (src/domain/recruitment.rs, test p6_5b_replenish): WYKRYTA (exit=101); grupa [M24]; replenishment_matches_web_state_results_and_closure_protocol
+EXIT=0

@@ -1,0 +1,11 @@
+MUTANT E-M23-cov-pop-no-floor file=src/domain/resource_production.rs
+OLD:
+Some(p) if has_pop && p > 0.0 => p.floor(),
+NEW:
+Some(p) if has_pop && p > 0.0 => p,
+
+FAILED TESTS:
+test coverage_drain_lines_match_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+VERDICT=KILLED
+EXIT=101

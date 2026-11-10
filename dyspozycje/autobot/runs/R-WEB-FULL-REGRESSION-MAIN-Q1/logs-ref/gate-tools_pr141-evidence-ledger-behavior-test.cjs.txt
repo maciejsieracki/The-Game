@@ -1,0 +1,25 @@
+node:fs:440
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/workspace/pr141-review/current-consumers.json'
+    at Object.readFileSync (node:fs:440:20)
+    at readJson (<REF-TMP>/ref/gra/tools/pr141-evidence-ledger-behavior-test.cjs:28:48)
+    at Object.<anonymous> (<REF-TMP>/ref/gra/tools/pr141-evidence-ledger-behavior-test.cjs:81:21)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/workspace/pr141-review/current-consumers.json'
+}
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.1

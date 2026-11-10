@@ -1,0 +1,9 @@
+sprzątanie: node_modules i dist usunięte; ls: PORTING-QUEUE.md
+index.html
+package-lock.json
+package.json
+src
+tools
+tsconfig.json
+vite.config.ts
+EXIT=0

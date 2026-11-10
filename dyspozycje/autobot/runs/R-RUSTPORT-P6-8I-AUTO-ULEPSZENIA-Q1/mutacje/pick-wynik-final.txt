@@ -1,0 +1,367 @@
+C01_hexallows_noworked_false: KILLED
+C02_hexallows_worked_false: KILLED
+C03_hexallows_deposit_or: KILLED
+C04_hexallows_deposit_dropallows: KILLED
+C05_wyrabsens_nofilter_false: KILLED
+C06_wyrabsens_overlay: KILLED
+C07_krok0_or_meta: KILLED
+C08_krok0_drop_sens: KILLED
+C09_krok0_drop_river: KILLED
+C10_krok0_drop_scheduled: KILLED
+C11_krok0_overlay_neg: KILLED
+C12_krok0_drop_oboz: KILLED
+C13_krok0_drop_tartak: KILLED
+C14_krok0_drop_hexallows: KILLED
+C15_krok0_drop_civ: EKWIWALENT (SURVIVED) - wyrab: kazdy pick wyrab ma bramke civ w hex_phases (step0, FAZA2); river_krok0_ok tylko steruje bramkami, ktore koncza sie na picku
+C16_krok0_drop_tech: EKWIWALENT (SURVIVED) - wyrab nie ma bramki technologicznej (test wyrab_has_no_tech_gate_like_web)
+C17_krok0_qualifies_true: KILLED
+C18_hill_memo_stale: KILLED
+C19_hill_terrain_and: KILLED
+C20_hill_drop_riveraccess: KILLED
+C21_hill_drop_tartakhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny na heksie (improvement_build.rs:1155) - guard w hill_tartak_pending redundantny
+C22_hill_drop_scheduled: KILLED
+C23_hill_drop_hexallows: KILLED
+C24_hill_qualifies_true: KILLED
+C25_block_livestock: KILLED
+C26_block_livestock_names: KILLED
+C27_block_irrig_dropflag: KILLED
+C28_block_irrig_negfarm: KILLED
+C29_block_tartak_dozwolony: KILLED
+C30_block_river_dropoboz: KILLED
+C31_block_river_droptartak: KILLED
+C32_block_hill_terrain_neg: KILLED
+C33_block_hill_pending_neg: KILLED
+C34_env_skipwyrab_default: KILLED
+C35_env_demand_nofocus: KILLED
+C36_env_override_ignored: KILLED
+C37_env_zywnosc_forest_filter: KILLED
+C38_env_demand_wyrab: KILLED
+C39_env_demand_foodonly: KILLED
+C40_env_demand_deficitopen: KILLED
+C41_env_demand_roads: KILLED
+C42_env_onlyworked_default: KILLED
+C43_env_worked_center_dropzrown: KILLED
+C44_env_worked_center_dropzyw: KILLED
+C45_env_worked_needs_getter: KILLED
+C46_env_citycap_scale: KILLED
+C47_env_citycap_dropimperium: KILLED
+C48_env_citycap_onlyimperium: KILLED
+C49_env_citypercent_noclamp_hi: EKWIWALENT (SURVIVED) - effective_city_cap = min(city_cap, imperium_cap), imperium_cap <= pula => gorny clamp procentu redundantny
+C50_env_radius_plus1: KILLED
+C51_env_retain_and: KILLED
+C52_env_retain_nodeposit: KILLED
+C53_env_riveronly_filter: KILLED
+C54_env_order_river_reverse: KILLED
+C55_env_order_nodist: KILLED
+C56_env_order_q_reverse: KILLED
+C57_env_order_r_reverse: KILLED
+C58_env_hexphase_keepwyrab: KILLED
+C59_env_hexphase_keepzero: KILLED
+C60_env_defense_demand: EKWIWALENT (SURVIVED) - pod demand_active base_priority nie zawiera fort/posterunek (filtr demand w build_city_env) => defense_priority puste
+C61_env_defense_filter_neg: KILLED
+C62_env_wyrabon_dropskip: KILLED
+C63_env_wyrabon_dropincl: KILLED
+C64_env_wyrab_pod_farme_dropdemand: KILLED
+C65_env_wyrab_pod_farme_dropzyw: KILLED
+C66_env_tartak_demand: KILLED
+C67_env_tartak_drewno: KILLED
+C68_fin_rzeki_dropoff: KILLED
+C69_fin_rzeki_dropwlaczony: EKWIWALENT (SURVIVED) - step0 i tak wymaga wyrab_wlaczony w obu galeziach; rzeki_do_zagospodarowania steruje tylko step0
+C70_fin_lesnemin_floor: KILLED
+C71_fin_lesnemin_max0: KILLED
+C72_fin_lesnereq_demand: KILLED
+C73_fin_lesnereq_tartakdoz: EKWIWALENT (SURVIVED) - tartak_dozwolony == true gdy !demand_active; koniunkcja !demand_active && tartak_dozwolony redundantna
+C74_fin_lesnereq_inprio: KILLED
+C75_fin_lesnereq_droptech: KILLED
+C76_fin_lesnereq_dropciv: KILLED
+C77_fin_all_to_any: KILLED
+C78_fin_have_gt: KILLED
+C79_fin_have_counts_all: KILLED
+C80_fin_wolno_droponly: KILLED
+C81_fin_wolno_droprzeki: KILLED
+C82_fin_wolno_dropoff: KILLED
+C83_fin_wolno_droplesne: KILLED
+C84_popornan: KILLED
+C85_rtd_drop_river: KILLED
+C86_rtd_drop_scheduled: KILLED
+C87_rtd_krok0_or: KILLED
+C88_rtd_drop_devkeys: KILLED
+C89_rtd_drop_placedhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny (improvement_build.rs:1155); RIVER_DEVELOPMENT_KEYS nie zawiera droga
+C90_rtd_drop_tech: KILLED
+C91_rtd_drop_civ: KILLED
+C92_rtd_and_to_or: KILLED
+C93_rtd_drop_qualifies: KILLED
+C94_countforest_drop_scheduled: KILLED
+C95_countforest_overlay: KILLED
+C96_focus_default: KILLED
+C97_hexdist_halve: EKWIWALENT (SURVIVED) - hex_dist uzywane wylacznie w komparatorach sortowania; skalowanie stala zachowuje porzadek
+H01_def_plonowe_le: KILLED
+H02_def_drop_empty: EKWIWALENT (SURVIVED) - pusta defense_priority => petla for bez iteracji
+H03_def_cap_floor: KILLED
+H04_def_cap_max0: KILLED
+H05_def_border_asc: KILLED
+H06_def_top_spent_gt: EKWIWALENT (SURVIVED) - koszt > 0: wewnetrzny warunek global_spent + koszt > cap lapie rownosc
+H07_def_top_placed_gt: EKWIWALENT (SURVIVED) - wewnetrzny warunek placed >= max_items lapie rownosc
+H08_def_reserve_lt: EKWIWALENT (SURVIVED) - koszt > 0: wewnetrzny warunek praca_left - koszt < rezerwa lapie rownosc
+H09_def_drop_tech: KILLED
+H10_def_drop_civ: KILLED
+H11_def_have_gt: KILLED
+H12_def_inner_placed_gt: EKWIWALENT (SURVIVED) - po pierwszym pickingu nastepuje break; wewnetrzny placed>=max osiagany tylko w 1. iteracji po warunku zewnetrznym
+H13_def_inner_cost_ge: KILLED
+H14_def_inner_reserve_le: KILLED
+H15_def_inner_cap_ge: KILLED
+H16_def_drop_zeroyield_hex: KILLED
+H17_def_drop_hexallows: KILLED
+H18_def_drop_qualifies: KILLED
+H19_def_report_candidate: KILLED
+H20_def_no_break_after_pick: KILLED
+H21_hex_top_reserve_lt: EKWIWALENT (SURVIVED) - podwojny straznik: koncowy warunek praca_left <= rezerwa petli ustawia te same flagi
+H22_hex_top_spent_gt: EKWIWALENT (SURVIVED) - warunek w petli kluczy (spent >= cap) ustawia te same flagi
+H23_hex_top_placed_gt: KILLED
+H24_hex_step0_off: KILLED
+H25_hex_wyrab_drop_tech: EKWIWALENT (SURVIVED) - wyrab nie ma bramki technologicznej
+H26_hex_wyrab_drop_civ: KILLED
+H27_hex_wyrab_cost_lt: KILLED
+H28_hex_wyrab_reserve_gt: KILLED
+H29_hex_wyrab_cap_lt: KILLED
+H30_hex_wyrab_qualifies_true: KILLED
+H31_hex_wyrab_forest_dec: KILLED
+H32_hex_wyrab_no_continue: KILLED
+H33_hex_wyrab_no_schedule: KILLED
+H34_hex_key_top_spent_gt: EKWIWALENT (SURVIVED) - koszt > 0: sprawdzenie kosztu w petli kluczy pomija wszystkie klucze; FAZA 2 wymaga spent < cap
+H35_hex_key_top_placed_gt: KILLED
+H36_hex_key_cost_ge: KILLED
+H37_hex_key_reserve_le: KILLED
+H38_hex_key_cap_ge: KILLED
+H39_hex_key_drop_tech: KILLED
+H40_hex_key_drop_civ: KILLED
+H41_hex_key_drop_dup: KILLED
+H42_hex_key_krok0_dropoboz: EKWIWALENT (SURVIVED) - river_krok0_ok => heks w river_hex_keys => has_river_access => key_blocked_on_hex(tartak/oboz)=true; obie galezie to continue
+H43_hex_key_krok0_droptartak: EKWIWALENT (SURVIVED) - jak H42
+H44_hex_key_drop_hexallows: KILLED
+H45_hex_key_drop_blocked: KILLED
+H46_hex_key_drop_qualifies: KILLED
+H47_hex_key_report_candidate: KILLED
+H48_hex_key_no_layer: KILLED
+H49_hex_end_reserve_lt: EKWIWALENT (SURVIVED) - podwojny straznik (patrz H21)
+H50_hex_exhausted_flag_top: EKWIWALENT (SURVIVED) - FAZA 2 sama sprawdza te same trzy predykaty (spent<cap, placed<max, praca>rezerwa)
+H51_s0_drop_wlaczony: KILLED
+H52_s0_drop_lesne: KILLED
+H53_s0_drop_off: EKWIWALENT (SURVIVED) - wolno_karczowac_poza_rzeka juz zawiera (off || lesne)
+H54_s0_drop_wolno: KILLED
+H55_s0_drop_river: EKWIWALENT (SURVIVED) - kazdy koniunkt river_krok0_ok albo wystepuje w drugiej galezi, albo jest sprawdzany przy picku (tech/civ/qualifies)
+H56_s0_drop_scheduled: KILLED
+H57_s0_overlay_neg: KILLED
+H58_s0_drop_sens: KILLED
+H59_s0_forest_gt: KILLED
+H60_s0_forest_dropoff: KILLED
+H61_s0_forest_dropforest: KILLED
+H62_s0_drop_tartakobóz: KILLED
+H63_s0_drop_hexallows: KILLED
+H64_w2_drop_riveronly: KILLED
+H65_w2_drop_exhausted: EKWIWALENT (SURVIVED) - FAZA 2 sama sprawdza te same trzy predykaty
+H66_w2_drop_demand: KILLED
+H67_w2_drop_skip: KILLED
+H68_w2_drop_incl: KILLED
+H69_w2_drop_tech: EKWIWALENT (SURVIVED) - wyrab nie ma bramki technologicznej
+H70_w2_drop_civ: KILLED
+H71_w2_cost_lt: KILLED
+H72_w2_reserve_gt: KILLED
+H73_w2_forest_le: KILLED
+H74_w2_while_spent_le: EKWIWALENT (SURVIVED) - wewnetrzny warunek spent + koszt > cap lapie rownosc
+H75_w2_while_placed_le: KILLED
+H76_w2_while_cost_lt: KILLED
+H77_w2_inner_reserve_le: KILLED
+H78_w2_inner_cap_ge: KILLED
+H79_w2_drop_scheduled: KILLED(TIMEOUT)
+H80_w2_drop_sens: KILLED
+H81_w2_drop_hexallows: KILLED
+H82_w2_drop_oboz: KILLED
+H83_w2_drop_tartak: KILLED
+H84_w2_drop_qualifies: KILLED
+H85_w2_no_schedule: KILLED
+H86_w2_no_spend: KILLED
+H87_w2_owner: KILLED
+H88_probe_drop_early: EKWIWALENT (SURVIVED) - sonda tylko ustawia any_candidate=true (idempotentne)
+H89_probe_drop_loopbreak: EKWIWALENT (SURVIVED) - jak H88
+H90_probe_drop_tech: KILLED
+H91_probe_drop_civ: KILLED
+H92_probe_drop_dup: KILLED
+H93_probe_drop_hexallows: KILLED
+H94_probe_drop_blocked: KILLED
+H95_probe_drop_qualifies: KILLED
+H96_probe_never_set: KILLED
+H97_pushpick_nospent: KILLED
+H98_pushpick_noplaced: KILLED
+H99_pushpick_nopraca: KILLED
+S01_river_drop_present: KILLED
+S02_river_drop_n1: KILLED
+S03_river_drop_n2: KILLED
+S04_river_drop_n3: KILLED
+S05_river_drop_n4: KILLED
+S06_river_drop_n5: KILLED
+S07_river_drop_n6: KILLED
+S08_river_neighbors_off: KILLED
+S09_pool_reserve_lt: EKWIWALENT (SURVIVED) - rownosc pula==rezerwa: petla miast przerywa na wejsciu, brak pickow; surplus nie zmienia sie (demand_active=false)
+S10_cap_nonfinite: KILLED
+S11_cap_pct_noclamp_lo: EKWIWALENT (SURVIVED) - zewnetrzny max(0, ..) w imperium_budget_cap redundantny z wewnetrznym
+S12_cap_pct_noclamp_hi: EKWIWALENT (SURVIVED) - zewnetrzny min(pula, ..) i city_cap<=pula
+S13_cap_nomaxzero: EKWIWALENT (SURVIVED) - wewnetrzny clamp procentu >= 0
+S14_cap_nopool: EKWIWALENT (SURVIVED) - city_cap = pct%*pula <= pula; picki ograniczone praca_left <= pula
+S15_horse_owner_neg: KILLED
+S16_horse_nokon: KILLED
+S17_trade_route_true: KILLED
+S18_era_dropped: KILLED
+S19_civ_dropped: KILLED
+S20_techs_dropped: EKWIWALENT (SURVIVED) - researched_techs czytane tylko w create_improvement_build_api (improvement_build.rs:1580), nie w Qualifier
+S21_territory_dropped: KILLED
+S22_owner_dropped: KILLED
+S23_placed_dropped: KILLED
+S24_fortpass_off: KILLED
+S25_cities_order_reverse: KILLED
+S26_clearing_seed_dropped: KILLED
+S27_loop_reserve_lt: KILLED
+S28_no_reset_placed: KILLED
+S29_no_reset_exhausted: KILLED
+S30_report_deficit_dropped: KILLED
+S31_surplus_drop_demand: KILLED
+S32_surplus_drop_deficit: KILLED
+S33_surplus_drop_candidate: KILLED
+S34_report_demand_always: KILLED
+S35_deficit_open_always_empty: KILLED
+S36_default_civ_gate_true: KILLED
+S37_empty_cities_continues: KILLED
+S38_idsort_bytes: KILLED
+F01_nodes_dropoutpost: KILLED
+F02_nodes_dropfort: KILLED
+F03_layers_dropfort: KILLED
+F04_layers_dropposterunek: KILLED
+F05_layers_dedupe_off: KILLED
+F06_cityhexes_dropfort: EKWIWALENT (SURVIVED) - wezel fortu lezy w wlasnym okregu fort_circles (odleglosc 0) - kandydat odrzucony wczesniej
+F07_cityhexes_dropoutpost: EKWIWALENT (SURVIVED) - jak F06
+F08_own_owner_filter: KILLED
+F09_own_city_dedupe: EKWIWALENT (SURVIVED) - duplikat wezla miasta: seen i min(dist) idempotentne
+F10_keys_tech: KILLED
+F11_keys_civ: KILLED
+F12_keys_empty_return: EKWIWALENT (SURVIVED) - puste keys => wewnetrzna petla bez iteracji, best None
+F13_reserve_lt: EKWIWALENT (SURVIVED) - koszt > 0: praca_left - koszt < rezerwa lapie rownosc
+F14_cap_drop_imperium: KILLED
+F15_pct_default: KILLED
+F16_seen_off: EKWIWALENT (SURVIVED) - ponowna ocena tego samego kandydata daje ten sam wynik, better jest scisle
+F17_valuable_or_to_and: KILLED
+F18_valuable_dropgory: KILLED
+F19_valuable_dropdeposit: KILLED
+F20_cityhex_skip_off: KILLED
+F21_existing_fort_skip_off: EKWIWALENT (SURVIVED) - heks z fortem w warstwach ma okrag w fort_circles (odleglosc 0) - odrzucony przez rozlacznosc okregow
+F22_circle_overlap_le: KILLED
+F23_circle_overlap_off: KILLED
+F24_qualifies_off: KILLED
+F25_gain_sea_morze: KILLED
+F26_gain_sea_plytkie: KILLED
+F27_gain_owner_gt: KILLED
+F28_gain_owner_off: KILLED
+F29_gain_min: KILLED
+F30_better_gain: KILLED
+F31_better_dist: KILLED
+F32_better_q: KILLED
+F33_better_r: KILLED
+F34_no_break_first_key: EKWIWALENT (SURVIVED) - zysk monotoniczny w promieniu; remis nie jest better (scisle)
+F35_cost_gt: KILLED
+F36_reserve_le: KILLED
+F37_cap_ge: KILLED
+F38_no_layer: EKWIWALENT (SURVIVED) - okrag nowego fortu juz wyklucza ten heks i qualifies nie jest potrzebne dla kolejnych miast
+F39_no_circle: KILLED
+F40_no_ownnode: KILLED
+F41_no_nodesnow: EKWIWALENT (SURVIVED) - rozlacznosc okregow gwarantuje brak nakladania sie obszaru zysku
+F42_no_spend: KILLED
+F43_no_globalspent: KILLED
+F44_radius_fort: KILLED
+F45_cities_order: KILLED
+P01_maxitems_stage: KILLED
+P02_total_budget_nofloor: KILLED
+P03_total_budget_cap: EKWIWALENT (SURVIVED) - improvement_budget_cap = max(0, total - spent) w after() klampuje ujemne
+P04_deficit_demand_off: KILLED
+P05_deficit_cities_focus: KILLED
+P06_deficit_record_off: KILLED
+P07_used_by_city_lt: KILLED
+P08_food_cities_all: KILLED
+P09_stage_onlyfirst_break_off: EKWIWALENT (SURVIVED) - po niepustym etapie flagi pending nie sa czytane (kazdy konsument wymaga staged_picks.is_empty())
+P10_stage_probe_never_pending: KILLED
+P11_stage_probe_no_break: KILLED
+P12_stage_irrigation_needs_farm: KILLED
+P13_stage_riveronly: KILLED
+P14_stage_riverforest: KILLED
+P15_stage_offriver: KILLED
+P16_stage_maxitems: KILLED
+P17_stage_override_keys: KILLED
+P18_stage_spent: KILLED
+P19_record_staged_off: KILLED
+P20_fallback_cond_staged: KILLED
+P21_fallback_cond_pending: KILLED
+P22_fallback_record_off: KILLED
+P23_fallback_probe_off: KILLED
+P24_roadcities_demand: KILLED
+P25_roadcities_focus: KILLED
+P26_done_drop_staged: KILLED
+P27_done_drop_pending: KILLED
+P28_done_drop_fallback: KILLED
+P29_done_drop_fallbackpending: KILLED
+P30_done_drop_deficit: KILLED
+P31_deficit_memo_off: EKWIWALENT (SURVIVED) - memo tylko wydajnosc; stan identyczny w obu wywolaniach
+P32_deficit_pending_cities: EKWIWALENT (SURVIVED) - pass z pustymi miastami zwraca []
+P33_fort_cond_limit: KILLED
+P34_fort_cond_roadcities: EKWIWALENT (SURVIVED) - pass fortow na pustych miastach zwraca []
+P35_fort_cond_done: KILLED
+P36_fort_cond_deficit: NIE_ZABITY (SURVIVED) - wymaga kosztu fortu < kosztu ulepszenia niedoboru (dane: fort/posterunek >= 60 > kamieniolom 22/tartak 25) - nieosiagalne w danych pinu
+P37_fort_pass_flag: KILLED
+P38_fort_record_off: KILLED
+P39_fort_probe_off: KILLED
+P40_fort_spent: KILLED
+P41_road_cond_fort_picks: KILLED
+P42_road_cond_fort_pending: KILLED
+P43_road_cond_deficit: KILLED
+P44_road_cond_done: KILLED
+P45_road_roadspass: KILLED
+P46_road_override: EKWIWALENT (SURVIVED) - osiagniecie przebiegu drog wymaga braku celow zywnosciowych; lista bez override zwraca te same picki
+P47_road_maxitems: KILLED
+P48_road_spent: EKWIWALENT (SURVIVED) - osiagniecie przebiegu drog implikuje fort_spent == 0
+P49_normal_spent: KILLED
+P50_other_cities: KILLED
+P51_after_placed: KILLED
+P52_after_clearing: KILLED
+P53_after_praca: KILLED
+P54_after_cap: KILLED
+P55_after_deficitkeys: KILLED
+P56_record_wyrab_clearing: KILLED
+P57_unlimited_pool: KILLED
+P58_unlimited_cap: KILLED
+P59_unlimited_percent: KILLED
+P60_unlimited_getpercent: KILLED
+P61_unlimited_maxitems: EKWIWALENT (SURVIVED) - max_items tylko zmniejsza liczbe pickow; istnienie celu nie zalezy od limitu (dla max>=1)
+P62_unlimited_reserve: EKWIWALENT (SURVIVED) - pula sondy = MAX_SAFE_INTEGER, rezerwa nie ogranicza
+P63_deficit_pass_onlyworked: KILLED
+P64_deficit_pass_override: KILLED
+P65_deficit_pass_flags: KILLED
+P66_staged_empty_fallback_single: EKWIWALENT (SURVIVED) - przy braku territoryNodes kazdy przebieg zwraca [] (pojedynczy i etapowy)
+P67_staged_flag_percity: KILLED
+P68_staged_percity_neg: KILLED
+P69_other_cities_neg: KILLED
+P70_out_order: KILLED
+A01_hasnonfood_neg: KILLED
+A02_priorities_skipwyrab: KILLED
+A03_priorities_other_list: KILLED
+A04_priorities_infra: KILLED
+A05_deficit_wyrab: KILLED
+A06_deficit_dedupe: KILLED
+A07_actionable_neg: KILLED
+A08_limit_ge: KILLED
+A09_limit_era_step: KILLED
+A10_limit_era_max: KILLED
+A11_limit_founded_filter: KILLED
+A12_limit_finite: KILLED
+A13_territory_fort_radius: KILLED
+A14_territory_outpost_radius: KILLED
+A15_territory_fort_flag: KILLED
+A16_jsmax_nan: EKWIWALENT (SURVIVED) - NaN zawsze jako 2. argument js_max w kodzie (wynik identyczny bez jawnego sprawdzenia)
+A17_jsmin_nan: KILLED
+SUMA: 366 mutantow; KILLED=309 EKWIWALENT=56 NIE_ZABITY=1 NIESKLASYFIKOWANE=0

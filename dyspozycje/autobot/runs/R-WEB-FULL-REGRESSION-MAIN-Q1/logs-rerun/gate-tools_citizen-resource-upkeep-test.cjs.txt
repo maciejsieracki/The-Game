@@ -1,0 +1,29 @@
+
+-- A. Tabela zużycia per epoka (kumulatywna, data-driven) --
+
+-- B. Bramka binarna (ECHO Q3=A) -- magazyn CENTRALNY, nie proporcjonalna --
+
+-- C. Sumowanie kar -- wiele brakujących surowców naraz (epoka 3, 5 surowców) --
+
+-- D. Wiring: computeHappinessBreakdown + computeGrowthPercentV85 --
+
+-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --
+
+-- I. buildEmpireResourceRows czyta citizenUpkeepByOwner (regresja rundy 3: owner-leak przez cities.find) --
+
+-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika przed fallbackiem inline --
+
+-- G. computeCitizenResourceDrain -- realny drenaż 1,0 szt./obywatel --
+
+-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (nie per miasto) --
+
+-- F. Wiring main.ts -> silnik tury (N1: happinessDelta + growthPctByCityId) --
+FAIL: main.ts: kotwica "const ordPctRaw = evaluateOrderFromBreakdown(" znaleziona (po stripLineComments)
+FAIL: F1 (mutant 1): "citizenResourceHappinessDelta: citizenUpkeep.happinessDelta," obecne w oknie wywołania evaluateOrderFromBreakdown -- jako ŻYWY kod (nie w komentarzu)
+
+-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.clear() vs cityOrderState.clear() --
+
+citizen-resource-upkeep-test: 107 passed, 2 failed
+
+EXIT=1
+TIME=1.8

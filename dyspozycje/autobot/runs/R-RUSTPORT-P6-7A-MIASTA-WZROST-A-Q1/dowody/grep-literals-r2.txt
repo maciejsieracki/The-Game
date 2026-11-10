@@ -1,0 +1,167 @@
+# Literaly liczbowe i napisowe w module P6.7A (city_growth.rs::p6_7a, derived.rs); komentarze pominiete
+## src/domain/city_growth.rs od linii 537
+557: nums=['1e-9'] strs=[] | const FOOD_EPSILON: f64 = 1e-9;
+599: nums=[] strs=['wysoki'] | "wysoki" => Some(Self::Wysoki),
+600: nums=[] strs=['normalny'] | "normalny" => Some(Self::Normalny),
+601: nums=[] strs=['wolny'] | "wolny" => Some(Self::Wolny),
+608: nums=[] strs=['wysoki'] | Self::Wysoki => "wysoki",
+609: nums=[] strs=['normalny'] | Self::Normalny => "normalny",
+610: nums=[] strs=['wolny'] | Self::Wolny => "wolny",
+659: nums=['0.0'] strs=[] | 0.0
+690: nums=['19'] strs=[] | const HANGUL_L_COUNT: u32 = 19;
+691: nums=['21'] strs=[] | const HANGUL_V_COUNT: u32 = 21;
+692: nums=['28'] strs=[] | const HANGUL_T_COUNT: u32 = 28;
+709: nums=[] strs=['hangul L'] | out.push(char::from_u32(l).expect("hangul L"));
+710: nums=[] strs=['hangul V'] | out.push(char::from_u32(v).expect("hangul V"));
+712: nums=[] strs=['hangul T'] | out.push(char::from_u32(t).expect("hangul T"));
+770: nums=['0.0'] strs=[] | if v.is_finite() && *v > 0.0 {
+780: nums=['0.0'] strs=[] | if !base.is_finite() || base <= 0.0 {
+781: nums=['0.0'] strs=[] | return 0.0;
+788: nums=['0.0'] strs=[] | if !koszt_budowy.is_finite() || koszt_budowy <= 0.0 {
+789: nums=['0.0'] strs=[] | return 0.0;
+866: nums=[] strs=['econ-params.json'] | let econ = ECON.get_or_init(|| parse_econ_params().expect("econ-params.json"));
+908: nums=['0.0'] strs=[] | 0.0
+928: nums=[] strs=['lud_limit_populacji'] | Some(k) => civ_matrix_param(matrix, k, "lud_limit_populacji"),
+929: nums=['0.0'] strs=[] | None => 0.0,
+934: nums=['0.0'] strs=[] | 0.0
+969: nums=['1.0'] strs=[] | js_math_round((wyzywienie_max() - wyzywienie_min()) / wyzywienie_step()) + 1.0;
+970: nums=['0.0'] strs=[] | let n = if length.is_finite() && length > 0.0 {
+973: nums=['0'] strs=[] | 0
+975: nums=['0'] strs=[] | (0..n)
+1008: nums=['0.0'] strs=[] | 0.0
+1027: nums=['1.0'] strs=[] | hunger_loss_multiplier: 1.0,
+1028: nums=['1.0'] strs=[] | health_growth_multiplier: 1.0,
+1029: nums=['0.0'] strs=[] | happiness_base: 0.0,
+1030: nums=['0.0'] strs=[] | population_cap_delta: 0.0,
+1033: nums=[] strs=['lud_spadek_proc'] | let hunger_proc = civ_matrix_param(matrix, key, "lud_spadek_proc");
+1034: nums=[] strs=['lud_zdrowie_proc'] | let health_proc = civ_matrix_param(matrix, key, "lud_zdrowie_proc");
+1035: nums=[] strs=['lud_zadowolenie_bazowe'] | let happiness = civ_matrix_param(matrix, key, "lud_zadowolenie_bazowe");
+1037: nums=['0.0', '1.0'] strs=[] | hunger_loss_multiplier: js_max(0.0, 1.0 + finite_or_zero(hunger_proc)),
+1038: nums=['0.0', '1.0'] strs=[] | health_growth_multiplier: js_max(0.0, 1.0 + finite_or_zero(health_proc)),
+1068: nums=[] strs=['ekonomia_miasta'] | match raw.get("ekonomia_miasta") {
+1079: nums=['0'] strs=['racje_zywnosc_1'] | racje_zywnosc_1: pick(section.get("racje_zywnosc_1"), d, t.zywnosc[0]),
+1080: nums=['1'] strs=['racje_zywnosc_2'] | racje_zywnosc_2: pick(section.get("racje_zywnosc_2"), d, t.zywnosc[1]),
+1081: nums=['2'] strs=['racje_zywnosc_3'] | racje_zywnosc_3: pick(section.get("racje_zywnosc_3"), d, t.zywnosc[2]),
+1082: nums=['0'] strs=['racje_wzrost_proc_1'] | racje_wzrost_proc_1: pick(section.get("racje_wzrost_proc_1"), d, t.wzrost_proc[0]),
+1083: nums=['1'] strs=['racje_wzrost_proc_2'] | racje_wzrost_proc_2: pick(section.get("racje_wzrost_proc_2"), d, t.wzrost_proc[1]),
+1084: nums=['2'] strs=['racje_wzrost_proc_3'] | racje_wzrost_proc_3: pick(section.get("racje_wzrost_proc_3"), d, t.wzrost_proc[2]),
+1122: nums=[] strs=['racje.json must parse'] | ROWS.get_or_init(|| parse_racje().expect("racje.json must parse").wiersze)
+1145: nums=['0.0'] strs=[] | 0.0
+1154: nums=['1', '1'] strs=[','] | js_to_fixed(v, 1).replacen('.', ",", 1)
+1164: nums=['0.0'] strs=[] | let base = js_max(0.0, population) * ration_food_cost_per_pop(level);
+1165: nums=['1.0'] strs=[] | let mult = spichlerz_state.map_or(1.0, spichlerz_ration_food_cost_multiplier);
+1202: nums=['0.0'] strs=[] | let male_miasto = js_max(0.0, s.male_miasto_prog - input.population);
+1207: nums=['0.0'] strs=[] | let zdrowie_bazowe = (js_max(0.0, input.zdrowie) / s.zdrowie_na_punkt).floor();
+1209: nums=['0.0'] strs=[] | let szczescie = (js_max(0.0, input.szczescie_netto) / s.szczescie_na_punkt).floor();
+1211: nums=[] strs=['lud_wzrost_proc'] | Some(k) => civ_matrix_param(&load_civ_matrix().file, k, "lud_wzrost_proc"),
+1212: nums=['0.0'] strs=[] | None => 0.0,
+1216: nums=['0.0'] strs=[] | let zaopatrzenie = input.citizen_resource_growth_pct.unwrap_or(0.0);
+1253: nums=['0.0'] strs=[] | let mut frac = wzrost_ulamkowy.unwrap_or(0.0);
+1258: nums=['0.0', '0.0'] strs=[] | if fed && growth_pct != 0.0 && pop > 0.0 {
+1265: nums=['0.0'] strs=[] | if growth_pct > 0.0 && pop < pop_cap {
+1267: nums=['1.0'] strs=[] | while frac >= 1.0 && pop < pop_cap {
+1268: nums=['1.0'] strs=[] | pop += 1.0;
+1269: nums=['1.0'] strs=[] | frac -= 1.0;
+1272: nums=['0.0', '1.0'] strs=[] | } else if growth_pct < 0.0 && pop > 1.0 {
+1274: nums=['1.0', '1.0'] strs=[] | while frac >= 1.0 && pop > 1.0 {
+1275: nums=['1.0'] strs=[] | pop -= 1.0;
+1276: nums=['1.0'] strs=[] | frac -= 1.0;
+1297: nums=['0.0', '0.0'] strs=[] | if !fed || growth_pct == 0.0 || population <= 0.0 {
+1298: nums=['0.0'] strs=[] | return 0.0;
+1300: nums=['0.0'] strs=[] | if growth_pct > 0.0 && at_pop_cap {
+1301: nums=['0.0'] strs=[] | return 0.0;
+1311: nums=['0.0'] strs=[] | if gain_per_turn <= 0.0 {
+1314: nums=['0.0'] strs=[] | let frac = wzrost_ulamkowy.unwrap_or(0.0);
+1315: nums=['1.0'] strs=[] | if frac >= 1.0 {
+1316: nums=['0.0'] strs=[] | return Some(0.0);
+1318: nums=['1.0'] strs=[] | Some(((1.0 - frac) / gain_per_turn).ceil())
+1341: nums=['0.0'] strs=[] | tury_bez_doplaty: 0.0,
+1343: nums=['0.0'] strs=[] | hunger_loss_ulamkowy: 0.0,
+1346: nums=['0.0', '1.0'] strs=[] | let next_tury = tury_bez_doplaty.unwrap_or(0.0) + 1.0;
+1349: nums=['0.0'] strs=[] | js_max(0.0, hunger_loss_ulamkowy)
+1351: nums=['0.0'] strs=[] | 0.0
+1354: nums=['0.0'] strs=[] | js_max(0.0, hunger_loss_multiplier)
+1356: nums=['1.0'] strs=[] | 1.0
+1359: nums=['1.0', '1.0'] strs=[] | while debt >= 1.0 && pop > 1.0 {
+1360: nums=['1.0'] strs=[] | pop -= 1.0;
+1361: nums=['1.0'] strs=[] | debt -= 1.0;
+1366: nums=['0.0'] strs=[] | tury_bez_doplaty: if ubytek { 0.0 } else { next_tury },
+1417: nums=['0.0'] strs=[] | c.wzrost_ulamkowy = Some(0.0);
+1420: nums=['0.0'] strs=[] | c.tury_bez_doplaty = Some(0.0);
+1423: nums=['0.0'] strs=[] | gc.hunger_loss_ulamkowy = Some(0.0);
+1471: nums=['0'] strs=[] | for row_index in 0..owner_tick.per_city_rows.len() {
+1517: nums=['0.0'] strs=[] | .unwrap_or(0.0);
+1522: nums=['0.0'] strs=[] | .unwrap_or(0.0);
+1536: nums=['1.0'] strs=[] | .map_or(1.0, |w| w.poziom);
+1563: nums=['0.0'] strs=[] | cities[city_index].hunger_loss_ulamkowy.unwrap_or(0.0),
+1572: nums=['0.0'] strs=[] | if fed { breakdown.total } else { 0.0 },
+1605: nums=['1.0'] strs=[] | .unwrap_or(1.0);
+1630: nums=['1.0'] strs=[] | econ.growth += 1.0;
+1633: nums=['1.0'] strs=[] | econ.starved += 1.0;
+1733: nums=['0.0', '0.0'] strs=[] | js_max(0.0, tick.zywnosc_netto + tick.koszt_racji.unwrap_or(0.0))
+1841: nums=[] strs=['globalne'] | let gl = match raw.get("globalne") {
+1847: nums=[] strs=['magazyn_centralny_baza_zywnosc'] | nn(gl.get("magazyn_centralny_baza_zywnosc"))
+1848: nums=[] strs=['magazyn_centralny_baza_zywnosc'] | .or(em.get("magazyn_centralny_baza_zywnosc")),
+1853: nums=[] strs=['magazyn_centralny_bonus_zywnosc_na_budynek'] | nn(gl.get("magazyn_centralny_bonus_zywnosc_na_budynek"))
+1854: nums=[] strs=['magazyn_centralny_bonus_zywnosc_na_budynek'] | .or(em.get("magazyn_centralny_bonus_zywnosc_na_budynek")),
+1858: nums=[] strs=['glod_wojska_hp_frac'] | glod_wojska_hp_frac: pick(em.get("glod_wojska_hp_frac"), d, t.glod_hp_frac),
+1860: nums=[] strs=['glod_wojska_karencja_tur'] | em.get("glod_wojska_karencja_tur"),
+1864: nums=[] strs=['glod_wojska_stat_mult'] | glod_wojska_stat_mult: pick(em.get("glod_wojska_stat_mult"), d, t.glod_stat_mult),
+1872: nums=['0.0'] strs=[] | zapasy_panstwa: 0.0,
+1874: nums=['0.0'] strs=[] | tury_ujemnych_zapasow: Some(0.0),
+1943: nums=['0.0'] strs=[] | states.get(owner_id).map_or(0.0, |s| s.zapasy_panstwa)
+1948: nums=['0.0'] strs=[] | self.max_cap_by_owner.get(&owner_id).copied().unwrap_or(0.0)
+1981: nums=['1.0'] strs=[] | Some(js_max(1.0, karencja_tur - t.tury_ujemnych_zapasow_po))
+2008: nums=['0.0'] strs=[] | js_min(percent_whole(), js_max(0.0, n))
+2029: nums=['0.0'] strs=[] | let mut sum = 0.0;
+2059: nums=['0.0', '1.0'] strs=[] | *out.entry(tick.owner_id).or_insert(0.0) += 1.0;
+2074: nums=['0.0'] strs=[] | let mut spichlerz_cap = 0.0;
+2130: nums=['0.0'] strs=[] | let zapasy_przed = states.get(owner_id).map_or(0.0, |s| s.zapasy_panstwa);
+2132: nums=['0.0'] strs=[] | let mut uprawa_hodowla = 0.0;
+2133: nums=['0.0'] strs=[] | let mut wyzywienie_ludnosci = 0.0;
+2134: nums=['0.0'] strs=[] | let mut pomoc_miastom = 0.0;
+2145: nums=['0.0', '0.0'] strs=[] | js_max(0.0, tick.zywnosc_netto + tick.koszt_racji.unwrap_or(0.0))
+2147: nums=['0.0'] strs=[] | let koszt_racji = tick.koszt_racji.unwrap_or(0.0);
+2158: nums=['0.0'] strs=[] | wzrost_procent: tick.wzrost_procent.unwrap_or(0.0),
+2163: nums=['0.0'] strs=[] | if bilans >= 0.0 {
+2172: nums=['0.0'] strs=[] | let covered = js_min(*need, js_max(0.0, central));
+2187: nums=['1.0'] strs=[] | let owner_era = resolve_owner_era.map_or(1.0, |f| f(owner_id));
+2194: nums=['0.0'] strs=[] | .unwrap_or(0.0),
+2201: nums=['0.0'] strs=[] | let glod_wojska = central < 0.0;
+2202: nums=['0.0'] strs=[] | central = js_max(0.0, central);
+2207: nums=[] strs=['stan wlasciciela'] | let st = states.get_mut(owner_id).expect("stan wlasciciela");
+2209: nums=['0.0'] strs=[] | let tury_przed = st.tury_ujemnych_zapasow.unwrap_or(0.0);
+2210: nums=['1.0', '0.0'] strs=[] | let tury_po = if glod_wojska { tury_przed + 1.0 } else { 0.0 };
+2230: nums=['0.0'] strs=[] | do_rozwoju: 0.0,
+2259: nums=['1', '0'] strs=[] | pub const DEFAULT_HUMAN_OWNER_IDS: [i64; 1] = [0];
+2299: nums=['0.0'] strs=[] | let mut uprawa = 0.0;
+2300: nums=['0.0'] strs=[] | let mut koszt = 0.0;
+2305: nums=['0.0'] strs=[] | let produkcja = tick.zywnosc_brutto.unwrap_or(0.0);
+2306: nums=['0.0'] strs=[] | let koszt_racji = tick.koszt_racji.unwrap_or(0.0);
+2325: nums=['0.0'] strs=[] | let produkcja = tick.zywnosc_brutto.unwrap_or(0.0);
+2326: nums=['0.0'] strs=[] | let koszt = tick.koszt_racji.unwrap_or(0.0);
+2328: nums=['0.0'] strs=[] | if bilans >= 0.0 {
+2335: nums=['0.0'] strs=[] | let covered = js_min(need, js_max(0.0, central));
+2353: nums=['0.0'] strs=[] | let produkcja = tick.zywnosc_brutto.unwrap_or(0.0);
+2354: nums=['0.0'] strs=[] | let koszt = tick.koszt_racji.unwrap_or(0.0);
+2356: nums=['0.0'] strs=[] | if bilans >= 0.0 {
+2363: nums=['0.0'] strs=[] | let covered = js_min(need, js_max(0.0, central));
+2376: nums=['0.0'] strs=[] | .find(|l| ration_growth_percent(*l) >= 0.0)
+2409: nums=['0.0'] strs=[] | >= 0.0
+2421: nums=['0.0'] strs=[] | return compute_empire_city_food_nadwyzka(per_city, owner_id) - koszt_armii >= 0.0;
+2491: nums=['0'] strs=[] | for i in (0..levels.len()).rev() {
+2518: nums=[] strs=['poziom poczatkowy'] | .expect("poziom poczatkowy");
+2674: nums=['0.0'] strs=[] | if nadwyzka <= 0.0 {
+2677: nums=['0.0', '0.0'] strs=[] | } else if nadwyzka <= 0.0 && opts.zapasy_przed <= 0.0 {
+2772: nums=[] strs=['poziom poczatkowy'] | .expect("poziom poczatkowy"),
+2797: nums=['0.0'] strs=[] | if pool >= 0.0 && all_fed && target_met {
+2807: nums=[] strs=['poziom poczatkowy'] | .expect("poziom poczatkowy");
+## src/data/derived.rs od linii 3825
+3831: nums=[] strs=['../../data/derived/wzrost-ludnosci-params.json'] | include_str!("../../data/derived/wzrost-ludnosci-params.json");
+3832: nums=[] strs=['../../data/derived/era-diakrytyki.json'] | pub const ERA_DIAKRYTYKI_JSON: &str = include_str!("../../data/derived/era-diakrytyki.json");
+3915: nums=['3'] strs=[] | pub zywnosc: [f64; 3],
+3916: nums=['3'] strs=[] | pub wzrost_proc: [f64; 3],
+4011: nums=[] strs=['wzrost-ludnosci-params.json must parse'] | parse_wzrost_ludnosci_params().expect("wzrost-ludnosci-params.json must parse")
+4032: nums=[] strs=['era-diakrytyki.json must parse'] | .expect("era-diakrytyki.json must parse")
+# linii z literalami: 162
+EXIT=0

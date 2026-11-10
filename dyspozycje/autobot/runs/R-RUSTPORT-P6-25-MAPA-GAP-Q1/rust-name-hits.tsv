@@ -1,0 +1,50 @@
+plik_web	symbol	wariant	trafienia(max5)
+cluster-spawn.ts:35	ClusterSpawnSlot	ClusterSpawnSlot	src/domain/start_position.rs:70 src/domain/start_position.rs:73 src/domain/start_position.rs:97 src/domain/start_position.rs:275 tests/p6_1c_start_cluster.rs:12
+cluster-spawn.ts:48	ForeignTypeClusterGroup	ForeignTypeClusterGroup	src/domain/start_position.rs:83 src/domain/start_position.rs:85 src/domain/start_position.rs:98 src/domain/start_position.rs:116 src/domain/start_position.rs:408
+cluster-spawn.ts:54	ClusterSpawnPlan	ClusterSpawnPlan	src/domain/start_position.rs:91 src/domain/start_position.rs:94 src/domain/start_position.rs:303 tests/p6_1c_start_cluster.rs:12 tests/p6_1c_start_cluster.rs:75
+cluster-spawn.ts:216	buildClusterSpawnPlan	buildClusterSpawnPlan	src/domain/start_position.rs:11 src/domain/start_position.rs:132 src/domain/start_position.rs:299 tests/p6_1c_start_cluster.rs:4
+cluster-spawn.ts:445	HumanDistanceMode	HumanDistanceMode	src/domain/start_position.rs:50 src/domain/start_position.rs:52 src/domain/start_position.rs:58 src/domain/start_position.rs:139 src/domain/start_position.rs:239
+cluster-spawn.ts:445	HumanDistanceMode	human_distance_mode	src/domain/start_position.rs:139 src/domain/start_position.rs:450 tests/p6_1c_start_cluster.rs:318 tests/p6_1c_start_cluster.rs:458 tests/p6_1c_start_cluster.rs:499
+cluster-spawn.ts:477	pickSecondHumanStartHex	pickSecondHumanStartHex	src/domain/start_position.rs:4 src/domain/start_position.rs:35 src/domain/start_position.rs:234 tests/p6_1c_start_cluster.rs:1
+cluster-spawn.ts:477	pickSecondHumanStartHex	pick_second_human_start_hex	src/domain/start_position.rs:236 src/domain/start_position.rs:459 tests/p6_1c_start_cluster.rs:11 tests/p6_1c_start_cluster.rs:534
+cluster-spawn.ts:511	displayLabelForSlot	displayLabelForSlot	src/domain/start_position.rs:5 src/domain/start_position.rs:274 tests/p6_1c_start_cluster.rs:1
+cluster-spawn.ts:511	displayLabelForSlot	display_label_for_slot	src/domain/start_position.rs:275 src/domain/start_position.rs:385 tests/p6_1c_start_cluster.rs:10 tests/p6_1c_start_cluster.rs:569
+clusters.ts:128	ClusterPlacement	ClusterPlacement	src/domain/start_position.rs:13 src/domain/start_position.rs:91
+clusters.ts:3373	computeClusters	computeClusters	tests/p6_1c_start_cluster.rs:476
+deposit-era.ts:9	METAL_DEPOSIT_MIN_ERA	metal_deposit_min_era	src/data/terrain_map.rs:245 tests/data_terrain_map.rs:69 tests/data_terrain_map.rs:73 tests/data_terrain_map.rs:78
+earth-land-mask.generated.ts:10	EARTH_MASK_BBOX	EARTH_MASK_BBOX	src/domain/map_generator.rs:959 src/domain/map_generator.rs:1019 src/domain/map_generator.rs:1021 src/domain/map_generator.rs:1022 src/domain/map_generator.rs:1023
+earth-land-mask.ts:52	earthPolarOceanRows	earth_polar_ocean_rows	src/domain/map_generator.rs:1013 src/domain/map_generator.rs:1085 src/domain/map_generator.rs:1095
+earth-land-mask.ts:80	sampleEarthTemplateLand	sample_earth_template_land	src/domain/map_generator.rs:978 src/domain/map_generator.rs:1038 src/domain/map_generator.rs:1046
+earth-land-mask.ts:148	earthTemplateLandAt	earth_template_land_at	src/domain/map_generator.rs:1002 src/domain/map_generator.rs:1073
+gen-helpers.ts:57	mulberry32	mulberry32	src/domain/rng.rs:115 tests/p6_1_rng_mulberry.rs:1
+gen-helpers.ts:83	cosLerp	cos_lerp	src/domain/map_generator.rs:444 src/domain/map_generator.rs:460 src/domain/map_generator.rs:461 src/domain/map_generator.rs:462
+gen-helpers.ts:168	ClimateBand	ClimateBand	src/lib.rs:52 src/domain/map_generator.rs:46 src/domain/map_generator.rs:63 src/domain/map_generator.rs:1093 src/domain/map_generator.rs:1104
+gen-helpers.ts:168	ClimateBand	climate_band	src/domain/map_generator.rs:1183 src/domain/map_generator.rs:1199
+gen-helpers.ts:193	climateBandAt	climateBandAt	src/domain/map_generator.rs:1092
+gen-helpers.ts:193	climateBandAt	climate_band_at	src/domain/map_generator.rs:396 src/domain/map_generator.rs:1093 src/domain/map_generator.rs:1167 src/domain/map_generator.rs:1521 src/domain/map_generator.rs:1522
+gen-helpers.ts:253	ShapeParams	ShapeParams	src/domain/map_generator.rs:233 src/domain/map_generator.rs:246 src/domain/map_generator.rs:349 src/domain/map_generator.rs:1476 src/domain/map_generator.rs:1495
+gen-helpers.ts:297	ContinentCenter	ContinentCenter	src/domain/map_generator.rs:265 src/domain/map_generator.rs:276 src/domain/map_generator.rs:514 src/domain/map_generator.rs:534 src/domain/map_generator.rs:549
+gen-helpers.ts:334	buildContinentCenters	build_continent_centers	src/domain/map_generator.rs:516 src/domain/map_generator.rs:529
+gen-helpers.ts:911	terrainCellBias	terrain_cell_bias	src/domain/map_generator.rs:389 src/domain/map_generator.rs:1213 src/domain/map_generator.rs:1372 src/domain/map_generator.rs:1373 src/domain/map_generator.rs:1374
+gen-helpers.ts:923	classifyTerrain	classify_terrain	src/domain/map_generator.rs:390 src/domain/map_generator.rs:1177 src/domain/map_generator.rs:1388 src/domain/map_generator.rs:1397 src/domain/map_generator.rs:1406
+gen-helpers.ts:1294	landMaskBorderFade	land_mask_border_fade	src/domain/map_generator.rs:641 src/domain/map_generator.rs:671 src/domain/map_generator.rs:734 src/domain/map_generator.rs:797
+gen-helpers.ts:11953	DepositRule	DepositRule	src/data/terrain_map.rs:373 src/data/terrain_map.rs:381 src/data/terrain_map.rs:382 src/data/terrain_map.rs:383 src/data/terrain_map.rs:384
+gen-helpers.ts:12045	DEPOSIT_RULES	deposit_rules	src/data/terrain_map.rs:244 tests/data_terrain_map.rs:69 tests/data_terrain_map.rs:72 tests/data_terrain_map.rs:77
+gen-helpers.ts:12476	StartPosition	start_position	src/data/derived.rs:752 src/domain/mod.rs:23 tests/p6_1c_start_cluster.rs:9 tests/p6_1c_llama_seed.rs:8 tests/p6_1c_tables.rs:10
+generator.ts:125	DEFAULT_WIDTH	default_width	src/data/terrain_map.rs:353
+generator.ts:126	DEFAULT_HEIGHT	default_height	src/data/terrain_map.rs:354
+generator.ts:148	generateMap	generateMap	tests/p6_1c_start_cluster.rs:3 tests/p6_1c_llama_seed.rs:2
+generator.ts:148	generateMap	generate_map	src/lib.rs:50 src/domain/map_generator.rs:320 src/domain/map_generator.rs:329 src/domain/mod.rs:40 tests/map_generator.rs:1
+generator.ts:778	ROZMIAR_DIMS	rozmiar_dims	src/data/terrain_map.rs:355 tests/data_terrain_map.rs:69 tests/data_terrain_map.rs:71 tests/data_terrain_map.rs:76
+generator.ts:846	StartPosition	start_position	src/data/derived.rs:752 src/domain/mod.rs:23 tests/p6_1c_start_cluster.rs:9 tests/p6_1c_llama_seed.rs:8 tests/p6_1c_tables.rs:10
+generator.ts:848	START_REVEAL_RADIUS	start_reveal_radius	src/domain/player.rs:115 src/domain/player.rs:118
+newGameMapDefaults.ts:462	LandFractionPercent	land_fraction_percent	src/domain/playable.rs:63 src/domain/playable.rs:79 src/domain/playable.rs:114 src/domain/playable.rs:153 src/domain/playable.rs:221
+road-movement.ts:14	ROAD_MOVE_SPEED_MULT	ROAD_MOVE_SPEED_MULT	src/data/derived.rs:696 src/domain/pathfinding.rs:251 tests/road_movement_multipliers.rs:19 tests/road_movement_multipliers.rs:46
+road-movement.ts:29	ROAD_BRUK_MOVE_SPEED_MULT	ROAD_BRUK_MOVE_SPEED_MULT	src/data/derived.rs:696 src/domain/pathfinding.rs:253 tests/road_movement_multipliers.rs:20 tests/road_movement_multipliers.rs:47
+road-movement.ts:32	ROAD_MIN_MOVE_COST	ROAD_MIN_MOVE_COST	src/data/derived.rs:697 tests/road_movement_multipliers.rs:22
+road-movement.ts:57	ROAD_BRUK_MIN_MOVE_COST	ROAD_BRUK_MIN_MOVE_COST	tests/road_movement_multipliers.rs:21 tests/road_movement_multipliers.rs:58
+startScoring.ts:14	START_REVEAL_RADIUS	start_reveal_radius	src/domain/player.rs:115 src/domain/player.rs:118
+territory-work.ts:8	TerritoryNode	TerritoryNode	src/domain/trade.rs:265 src/domain/trade.rs:273 src/domain/trade.rs:549 src/domain/trade.rs:567 src/domain/trade.rs:711
+territory.ts:37	TerritoryNode	TerritoryNode	src/domain/trade.rs:265 src/domain/trade.rs:273 src/domain/trade.rs:549 src/domain/trade.rs:567 src/domain/trade.rs:711
+territory.ts:47	axialDistance	axial_distance	src/domain/playable.rs:538 src/domain/playable.rs:671
+territory.ts:106	territoryOwnerAt	territory_owner_at	src/domain/trade.rs:549 src/domain/trade.rs:603 src/domain/trade.rs:610

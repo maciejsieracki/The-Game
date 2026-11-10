@@ -1,0 +1,54 @@
+PASS: (0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w 6 case'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna
+PASS: (0b) mutacja B faktycznie wyłączyła regułę GOAL 3 w balancePanelDataFromRows — kontrola nietautologiczna dla Testu 3 aktywna
+PASS: (0c) mutacja D faktycznie popsuła pwBalance zaakceptowanej wasalizacji (0 -> -999) — wymuszony scenariusz "AI historycznie mogłoby zaproponować ujemny bilans" dla Testu 4
+PASS: (0d) mutacja D+C (na bundlu mutDC) faktycznie popsuła pwBalance ORAZ przywróciła starą wersję tryPayload w generateCounterOffer (bez sprawdzenia pwBalance<0) — kontrola nietautologiczna dla Testu 4 aktywna
+
+--- TEST 1 (case 1, WASAL incoming, relTotal=40, proposerRespekt=80) ---
+  PRZED (mutacja A — kod sprzed naprawy GOAL2): responderPreview={"accepted":true,"reason":"Wasalizacja zaakceptowana"} myOfferPn=140 theirOfferPn=350 net(theirBalance.balancePn)=-210 canAccept=true
+PASS: (1-PRZED) DOWÓD BŁĘDU: bilans silnie ujemny (-210) mimo poprawnie zaakceptowanej oferty (Respekt spełniony) — canAccept=true — DOKŁADNIE wzorzec zrzutu 1 Macieja ("bilans -51, zielone Możesz przyjąć, Przyjmij aktywny" mimo ujemnego bilansu)
+  PO (kod bieżący, GOAL2 pwBalance=0 dla wasal accept): responderPreview={"accepted":true,"reason":"Wasalizacja zaakceptowana","pwBalance":0} net=0 canAccept=true
+PASS: (1-PO) NAPRAWIONE: ten sam scenariusz — net=0 (nie -210), canAccept=true — SPÓJNE ("bez dopłaty" jest teraz i tekstem, i liczbą, nie sprzecznym -210 obok zielonego statusu)
+
+--- TEST 2 (case 2, pakiet 3 pozycji z granice odrzuconym) ---
+  PRZED (mutacja A): myOfferPn=277 theirOfferPn=141 net=136 canAccept=false responderPreview.reason="Relacja zbyt niska na traktat przemarszu (wymagana Relacja ≥ 100 i Zaufanie ≥ 45)"
+PASS: (2-PRZED) DOWÓD BŁĘDU: bilans DODATNI mimo zablokowanego pakietu (granice odrzucone) — DOKŁADNIE wzorzec zrzutu 2 (bilans netto +N, "Nie można przyjąć")
+  PO (kod bieżący): myOfferPn=277 theirOfferPn=141 net=-1 canAccept=false responderPreview.reason="Relacja zbyt niska na traktat przemarszu (wymagana Relacja ≥ 100 i Zaufanie ≥ 45)"
+PASS: (2-PO) NAPRAWIONE: bilans NIE jest już myląco dodatni (<=0, ciągnięty w dół przez symboliczny pwBalance=-1 granice) I canAccept=false — spójne, ORAZ konkretny powód blokady (Relacja/Zaufanie granice, nie generyczny tekst) jest niesiony w responderPreview
+
+--- TEST 3 (GOAL 3, reguła twarda: pwBalance<0 => canAccept=false, zawsze) ---
+PASS: (3-PO) canAccept=false mimo responderPreview.accepted=true, bo pwBalance=-5<0 — reguła GOAL 3 zadziałała niezależnie od `accepted`
+PASS: (3-KONTROLA) bundle mutB (reguła GOAL 3 wyłączona) odtwarza dokładnie odwrotny wynik (canAccept=true mimo pwBalance=-5) — dowodzi, że (3-PO) NAPRAWDĘ testuje tę regułę, nie przechodzi niezależnie od kodu
+
+--- TEST 4 (GOAL 4, generateCounterOffer vs wymuszony ujemny pwBalance) ---
+PASS: (4-setup) pierwsza wersja (bez słodzika) faktycznie odrzucona (Respekt 65<70) — generateCounterOffer MA co robić (musi szukać słodzika)
+  bundle mutD (pwBalance wasal zepsuty na -999, gate GOAL4 AKTYWNY): counter=null
+PASS: (4-PO) Z AKTYWNYM gate'em GOAL 4: generateCounterOffer NIE zwraca żadnego kandydata (null) zamiast zaproponować graczowi pakiet z pwBalance=-999 — silnik ODRZUCA generowanie takiej propozycji, zanim trafi do gracza
+  bundle mutDC (pwBalance wasal zepsuty NA -999 ORAZ gate GOAL4 wyłączony): counter={"payload":{"giveItems":[{"typ":"zloto","id":"zloto","ilosc":125}]},"note":"+125 ¤ słodzika do umowy"}
+PASS: (4-KONTROLA) bundle mutDC (gate GOAL4 WYŁĄCZONY, kod sprzed tej rundy): generateCounterOffer ZWRACA kandydata zaakceptowanego z pwBalance=-999 — dowodzi, że AI HISTORYCZNIE (bez gate'a z GOAL 4) mogłoby zaproponować graczowi pakiet o ujemnym bilansie, i że (4-PO) NAPRAWDĘ temu zapobiega, nie jest tautologią
+
+--- TEST 5 (zarzut 1 obrony, AI proponuje pokój z pustym koszykiem w wojnie) ---
+FAIL: (0e) mutacja E faktycznie usunęła (runda 4: już tylko 1, patrz komentarz przy mutE) dodane pole "pwBalance: pokojPwBalance" w case 'pokoj' evaluateProposal — kontrola nietautologiczna dla Testu 5 aktywna — 2
+  PRZED (mutacja E — kod sprzed tej obrony): responderPreview={"accepted":true,"reason":"Warunki pokoju spełnione"} theirBalance.balancePn=-450 canAccept=true
+PASS: (5-PRZED) DOWÓD ZARZUTU 1: AI-proponent 'pokoj' pustym koszykiem w wojnie -> accepted:true, pwBalance BRAK (undefined), canAccept=true — silnik nie ma żadnej bramki PW dla tej gałęzi (dokładnie zarzut Evaluatora)
+  PO (kod bieżący, runda 4): responderPreview={"accepted":true,"reason":"Warunki pokoju spełnione","pwBalance":-450} theirBalance.balancePn=-450 canAccept=true blockReason="Warunki pokoju spełnione"
+PASS: (5-PO) RUNDA 4: pwBalance nadal POPRAWNIE policzony i silnie ujemny (informacyjnie, GOAL 2 dispatchu rundy 4 — liczba w panelu ma nadal być widoczna), ale canAccept=true — decyzja właściciela: "pokoj" NIGDY nie blokuje Przyjmij liczbą pwBalance, niezależnie od znaku (przeciwieństwo (5-PO) rund 2/3, celowo zaktualizowane)
+  gracz proponuje pokój (zła relacja, pusty koszyk, wojna), PO (runda 4): {"accepted":false,"pwBalance":-450,"reason":"Brakuje 450 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+FAIL: (5-REGRESJA/PLAYER) RUNDA 4: gałąź gracz-proponent 'pokoj' NIE JEST już blokowana gap>0 — accepted:true mimo silnie ujemnego pwBalance (rundy 2/3 tu zwracały accepted:false, "Brakuje N PW do uczciwej oferty pokoju" — usunięte tą rundą, decyzja właściciela "OBA kierunki") — {"accepted":false,"pwBalance":-450,"reason":"Brakuje 450 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+FAIL: (5-KONTROLA/PLAYER) bundle mutE (pole pwBalance usunięte z case 'pokoj') zwraca accepted:true BEZ pwBalance — accepted nie jest przypadkowym efektem obecności pola pwBalance (runda 4 usunęła BLOKADĘ, nie samo pole) — {"accepted":false,"reason":"Brakuje 450 PW do uczciwej oferty pokoju @ Relacji (baza 500 PW) — dopłać, by wysłać"}
+
+--- TEST 6 (zarzut 2 obrony, tech/namow_wojne/ultimatum/wchloniecie AI-proponent) ---
+PASS: (6-setup) AIDiplomacyCommand (game/ai.ts) sparsowany żywo z pliku źródłowego — znaleziono >=8 typów komend (nie 0 — parser trafił w unię)
+FAIL: (6-setup) każdy typ komendy sparsowany z ai.ts ma fixture w tym teście (0 brakujących — gdyby przybył nowy typ komendy, ten test go NIE pominie milcząco) — ["oferuj_miasto_za_pokoj","zada_miasto_za_pokoj","zaproponuj_przemarsz"]
+  aiCommandToPendingProposal dla każdego typu komendy AI: [{"type":"wypowiedz_wojne","actionId":null},{"type":"oferuj_miasto_za_pokoj","actionId":"(brak fixture)"},{"type":"zada_miasto_za_pokoj","actionId":"(brak fixture)"},{"type":"zaproponuj_pokoj","actionId":"pokoj"},{"type":"zadaj_trybut","actionId":"trybut_zadanie"},{"type":"oferuj_trybut_za_pokoj","actionId":"trybut_oferta"},{"type":"zaproponuj_sojusz","actionId":"sojusz_pelny"},{"type":"zaproponuj_handel","actionId":"handel"},{"type":"zaproponuj_umowe_handlowa","actionId":"umowa_handlowa"},{"type":"zaproponuj_handel_surowiec","actionId":"handel"},{"type":"zaproponuj_pakt","actionId":"nap"},{"type":"zaproponuj_przemarsz","actionId":"(brak fixture)"},{"type":"zaproponuj_audiencje","actionId":null}]
+PASS: (6-PO) DOWÓD ŻYWY: dla WSZYSTKICH 13 typów komend AI, aiCommandToPendingProposal NIGDY nie tworzy propozycji actionId in {tech,namow_wojne,ultimatum,wchloniecie} — te 4 case'y evaluateProposal z proposerIsPlayer=false są martwym kodem w realnej grze (AI strukturalnie nie ma jak ich zaproponować), więc wzorzec "AI proponuje ujemny bilans" z zarzutu 2 jest dla nich nieosiągalny — nie założenie, dowód z wyczerpującego wyliczenia unii komend
+
+--- TEST 7 (zarzut 3 obrony, feeC/feeM traktatu przemarszu — etykieta bez egzekwowania) ---
+PASS: (7-setup) case 'granice' odnaleziony żywo w diplomacy-proposals.ts (nie pusty — parser trafił we właściwy blok)
+PASS: (7-DOWÓD) diplomacyTradeBasket.ts POKAZUJE etykietę opłaty feeC/feeM dla traktatu przemarszu (borderFeeCivil/borderFeeMilitary)
+PASS: (7-DOWÓD) case 'granice' w evaluateProposal NIE odczytuje feeC/feeM/borderFeeCivil/borderFeeMilitary/goldOnce — opłata z etykiety NIE jest dziś egzekwowana silnikiem (ani jako koszt złota, ani jako PW) — POTWIERDZONE żywym odczytem źródła, nie założeniem
+  UWAGA (nie naprawiane w tej obronie — poza allowlistą, wymaga decyzji produktowej): etykieta "Opłata cywilne: X ¤ · wojskowe: Y ¤" w formularzu traktatu przemarszu dziś nic nie kosztuje w realnej grze.
+
+=== PODSUMOWANIE: 20 PASS / 4 FAIL ===
+
+EXIT=1
+TIME=1.9

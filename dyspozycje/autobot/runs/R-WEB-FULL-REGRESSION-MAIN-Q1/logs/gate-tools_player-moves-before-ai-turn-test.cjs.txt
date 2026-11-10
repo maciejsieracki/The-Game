@@ -1,0 +1,27 @@
+[S] strukturalna + mutacje
+  OK   S: main.ts spelnia wszystkie asercje strukturalne
+  OK   MUTACJA M1 (powrot do enqueueMarchSegments w fazie gracza) — wykryta (nowa porazka S1)
+  OK   MUTACJA M2 (ruchy gracza PO swiecie) — wykryta (nowa porazka S3)
+  OK   MUTACJA M3 (brak oczekiwania na bitwe) — wykryta (nowa porazka S4)
+  OK   MUTACJA M4 (hot-seat: brak dokonczenia ruchow fotela) — wykryta (nowa porazka S5)
+  OK   MUTACJA M5 (hot-seat: marsz fotela PO przelaczeniu fotela) — wykryta (nowa porazka S5)
+[L] zywa (Chromium)
+[L1-L4] jeden fotel: marsze gracza vs faza AI
+  OK   L0 scenariusz: 3 jednostki na roznych heksach i cele znalezione
+  OK   L4a round-trip zapisu przed koncem tury: pozycje i ruch bez zmian (nic nie wykonane w trakcie wczytania)
+  OK   L4b round-trip zapisu: wszystkie 3 plany marszu zachowane
+  log faz: PLAYER_MOVES_START(seat 0)@172163 | PLAYER_MARCH_INSTANT(civtest-0-47-31-4 47,31->45,32)@172165 | PLAYER_MARCH_RESULT(civtest-0-47-31-4 arrived=true stop= atk= launch=true)@172237 | PLAYER_MARCH_INSTANT(civtest-0-47-32-5 47,32->45,34)@172254 | PLAYER_MARCH_RESULT(civtest-0-47-32-5 arrived=true stop= atk= launch=true)@172456 | PLAYER_MARCH_INSTANT(civtest-0-49-31-6 49,31->47,31)@172459 | PLAYER_MARCH_RESULT(civtest-0-49-31-6 arrived=false stop= atk= launch=true)@172597 | PLAYER_MOVES_END@172605 | WORLD_START@173748 | ECONOMY@175100 | AI_START@175997 | AI_CIV_START(1)@176853 | AI_END@177955 | PLAYER_TURN_BEGIN@179909
+  OK   L1a kolejnosc faz: ruchy gracza < swiat < ekonomia < AI < koniec AI < nowa tura gracza
+  OK   L1b zadnej animowanej sciezki marszu w koncu tury (PLAYER_MARCH_ANIM_START)
+  OK   L1c wszystkie 3 marsze wykonane natychmiast PRZED swiatem
+  OK   L1d brak ANIM_FINISH po starcie swiata
+  OK   L2a pozycje jednostek gracza przy KAZDYM znaczniku po PLAYER_MOVES_END == pozycje z PLAYER_MOVES_END (faza AI nie dopala ruchow)
+  OK   L2b jednostki u1,u2 faktycznie poruszone w fazie ruchow gracza
+  OK   L2c ruch odnowiony na nowa ture (ruchLeft == ruch) dla wszystkich 3
+  OK   L4c u3: po 1 turze posuniety o 1..ruch heksow (jeden segment, nie dwa) i plan nadal zakolejkowany
+  OK   L4d round-trip zapisu po turze: pozycje/ruch bez zmian (idempotencja)
+  OK   brak bledow strony
+[L8] nowa jednostka idaca do wodza: marsz tylko zaplanowany po flush, wykonany na koncu tury (scenariusz b)
+
+EXIT=124
+TIME=360.0

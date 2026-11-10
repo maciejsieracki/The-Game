@@ -1,0 +1,159 @@
+--- pin:gra/src/ui/entityCards/buildingAdapter.ts
++++ v2:src-tauri/frontend-v2/src/ui/entityCards/buildingAdapter.ts
+@@ -32,30 +32,40 @@
+  * (L1, domyślne pace/difficulty) — dokładnie zachowanie dzisiejszego opcjonalnego
+  * parametru `city?: City` w `buildBuildingDetailCard`.
+  */
+-import type { BuildingDef } from '../../data/loader';
+-import buildingsData from '../../../data/buildings.json';
++// P5.4: reguły karty budynku (pin `:38-49`: `game/production`, `building-cost-tempo`, `difficulty-cost`,
++// `economy-upkeep`, `economy`, `building-stock-cost`, `unit-building-bonuses`, `building-upgrades`) →
++// `BuildingCardRulesDto` z silnika (`controller/entityCardRules.ts`, P5-0 §6.11, ROZSZ. Z4-1); dane
++// statyczne z `StaticCatalogDto` (D-UI-4). Kształt `BuildingDef` = podzbiór pól czytanych niżej.
++import type { BuildingDefDto, BuildingCardRulesDto, BuildingCardStateDto } from '../../viewmodel/types';
++import { staticCatalog } from '../../controller/staticCatalog';
++import { buildingCardRules } from '../../controller/entityCardRules';
+ import { buildingIconSvg } from '../icons/brandAssets';
+-import {
+-  buildingEffectAtLevel,
+-  buildingWorkCost,
+-  itemCost,
+-} from '../../game/production';
+-import type { BuildingCostPace } from '../../game/building-cost-tempo';
+-import type { GameDifficulty } from '../../game/difficulty-cost';
+-import { buildingUpkeep, buildingResourceUpkeep } from '../../game/economy-upkeep';
+-import type { BuildingRecord } from '../../game/economy';
+-import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
+-import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
+-import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
++
++type YieldKey = 'praca' | 'pieniadz' | 'zywnosc' | 'nauka' | 'kultura' | 'zadowolenie' | 'obrona';
++type BuildingDef = BuildingDefDto & {
++  nazwa: string;
++  epokaWejscia: number;
++  maksPoziom: number;
++  wielokrotny?: boolean;
++  techUnlock?: string | null;
++  wymagania?: string | null;
++  baza: Partial<Record<YieldKey, number>>;
++  przyrost: Partial<Record<YieldKey, number>>;
++  przyrostKosztu?: number;
++  przyrostUtrzymania?: number;
++  nazwyPoziomow: string[];
++};
++type BuildingCostPace = string;
++type GameDifficulty = string;
+ import { resolveTechnologyRow, technologyIdFromName } from './registry';
+ import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+ 
+-const ALL_BUILDINGS = buildingsData as unknown as BuildingDef[];
++const ALL_BUILDINGS = staticCatalog().buildings as unknown as BuildingDef[];
+ 
+ /** Stan zależny od miasta/gracza (patrz nagłówek pliku) — kształt oczekiwany w
+  * `ctx.city` (pole `unknown` w kontrakcie ogólnym, per adapter — wzorem
+  * `unitInfoCard.ts` nadpisującego `medallion`/`sections` po zbudowaniu danych). */
+-export interface BuildingCardCityState {
++export interface BuildingCardCityState extends BuildingCardStateDto {
+   /** `true` gdy wołający ma realne miasto (wpływa na tekst wiersza „Poziom w tym
+    * mieście" — realne L$n vs. podgląd „L1 (podgląd; ...)"). */
+   hasCity: boolean;
+@@ -133,8 +143,7 @@
+ /** 1:1 z `cityPanel.ts::formatBuildingYieldDetailValue` — bez wtrąconej ikony HTML
+  * (kontrakt `EntityCardRow.value` to zwykły tekst, `.textContent`, nie `.innerHTML` —
+  * świadoma, udokumentowana delta: treść identyczna, brak inline-ikonki przy liczbie). */
+-function formatYieldDetailValue(baza: number, przyrost: number, level: number): string {
+-  const effect = buildingEffectAtLevel(baza, przyrost, level);
++function formatYieldDetailValue(baza: number, przyrost: number, level: number, effect: number): string {
+   if (effect === 0 && baza === 0 && przyrost === 0) return '—';
+   const sign = effect >= 0 ? '+' : '';
+   const main = `${sign}${effect} pkt/turę`;
+@@ -145,18 +154,18 @@
+ }
+ 
+ /** 1:1 z `cityPanel.ts::formatBuildingYieldScaleRow`. */
+-function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): string | null {
++function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number, scale: readonly number[]): string | null {
+   if (przyrost === 0 || def.maksPoziom <= 1) return null;
+   const parts: string[] = [];
+   for (let l = 1; l <= def.maksPoziom; l++) {
+-    const v = buildingEffectAtLevel(baza, przyrost, l);
++    const v = scale[l - 1] ?? 0;
+     parts.push(`L${l}: ${v >= 0 ? '+' : ''}${v}`);
+   }
+   return parts.join(' · ');
+ }
+ 
+ /** 1:1 z `cityPanel.ts::formatBuildingUpkeepGridValue`, bez ikon inline (patrz wyżej). */
+-function formatUpkeepValue(gold: number, resources: Record<string, number>): string {
++function formatUpkeepValue(gold: number, resources: Readonly<Record<string, number>>, stockResourceLabel: (k: string) => string): string {
+   if (gold === 0 && Object.keys(resources).length === 0) return 'utrzymanie zero';
+   const parts: string[] = [];
+   if (gold > 0) parts.push(`${gold} Pieniądza`);
+@@ -175,9 +184,13 @@
+   ownerId: 0,
+ };
+ 
+-export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) => {
++export const buildingAdapter: EntityCardAdapter<BuildingDefDto> = (buildingRow, ctx) => {
++  const building = buildingRow as BuildingDef;
+   const cityState = (ctx.city as BuildingCardCityState | undefined) ?? DEFAULT_CITY_STATE;
+   const displayLevel = cityState.displayLevel;
++  // P5.4: jedno zapytanie o wartości karty liczone przez silnik dla tego stanu miasta/gracza.
++  const rules: BuildingCardRulesDto = buildingCardRules(building.id, cityState);
++  const stockResourceLabel = (k: string): string => rules.resourceLabels[k] ?? k;
+ 
+   // ============================================================================================
+   // P-KARTA-PRZEBUDOWA-UKLAD-Q1 — układ zaakceptowany przez właściciela 2026-09-08 (patrz
+@@ -250,13 +263,13 @@
+     const baza = building.baza[y.key] ?? 0;
+     const inc = building.przyrost[y.key] ?? 0;
+     if (baza === 0 && inc === 0) continue;
+-    yieldRows.push({ label: y.label, value: formatYieldDetailValue(baza, inc, displayLevel) });
+-    const scale = formatYieldScaleRow(building, baza, inc);
++    yieldRows.push({ label: y.label, value: formatYieldDetailValue(baza, inc, displayLevel, rules.yieldAtDisplayLevel[y.key] ?? 0) });
++    const scale = formatYieldScaleRow(building, baza, inc, rules.yieldScale[y.key] ?? []);
+     if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: scale });
+   }
+-  const mnoznikRole = mnoznikRoleForBuildingId(building.id);
++  const mnoznikRole = rules.mnoznikRole;
+   if (mnoznikRole) {
+-    const cumulative = cumulativeMnoznikForBuildingId(building.id, ALL_BUILDINGS);
++    const cumulative = rules.cumulativeMnoznik;
+     if (cumulative !== 0) {
+       const label = mnoznikRole === 'pancerz'
+         ? 'Pancerz (jednostki, trwale)'
+@@ -264,7 +277,7 @@
+       yieldRows.push({ label, value: `+${cumulative}%` });
+     }
+   }
+-  const defenseLine = buildingStructuralDefenseBonusLine(building.id);
++  const defenseLine = rules.structuralDefenseLine;
+   if (defenseLine) yieldRows.push({ label: 'Obrona strukturalna', value: defenseLine });
+   if (yieldRows.length === 0) yieldRows.push({ label: 'Efekty', value: '—' });
+   const yieldSection: EntityCardSection = {
+@@ -275,9 +288,8 @@
+ 
+   // --- 8. KOSZTY — DWIE osobne pod-sekcje: „Koszt budowy" i „Koszt utrzymania" (dotąd jedna
+   // sekcja „Koszty budowy i utrzymania" mieszała jednorazowy wydatek z co-turowym) -----------
+-  const baseWork = itemCost('budynek', building.id, { buildings: ALL_BUILDINGS, units: [] }, 1);
+-  const workCost = buildingWorkCost(baseWork, undefined, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
+-  const stockCostDetail = buildingStockCost(building);
++  const workCost = rules.workCost;
++  const stockCostDetail = rules.stockCost;
+   const buildCostRows: EntityCardRow[] = [
+     { label: 'Praca (jednorazowo)', value: `${workCost} pkt Pracy` },
+   ];
+@@ -293,10 +305,10 @@
+   }
+   sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
+ 
+-  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, 1);
+-  const upkeepResources = buildingResourceUpkeep(building);
++  const upkeepGold = rules.upkeepGold;
++  const upkeepResources = rules.upkeepResources;
+   const upkeepCostRows: EntityCardRow[] = [
+-    { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources) },
++    { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources, stockResourceLabel) },
+   ];
+   if (building.przyrostUtrzymania) {
+     upkeepCostRows.push({

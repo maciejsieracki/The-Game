@@ -1,0 +1,35 @@
+LOC sum 11986 lines 11986
+A1    284     1-284   deps=
+A2    324   285-608   deps=
+B     251   609-859   deps=A2,AD
+C     179   860-1038  deps=A2,B,D,G
+D     309  1039-1347  deps=AA,B,C,I
+E     289  1348-1636  deps=B,C,D,R
+F     118  1637-1754  deps=B,D,E,G
+G     193  1755-1947  deps=C,D,F,R
+H    1067  1948-3014  deps=C,G
+I     536  3015-3550  deps=A2,AC,B,C,D,G,L,R
+J     285  3551-3835  deps=AC,B,C,G,I,L,R
+K     386  3836-4221  deps=A2,AC,B,C,D,F,G,I,J,L,O,R,X
+L     416  4222-4637  deps=AD,C,G,R
+M     556  4638-5193  deps=A2,AC,AD,B,C,D,E,F,G,L,Q,R,X
+N     280  5194-5473  deps=AC,AD,B,C,D,E,F,G,L,O
+O     619  5474-6092  deps=B,C,D,E,F,G,I,M,Q,R
+P     385  6093-6477  deps=AD,B,C,F,G
+Q     658  6478-7135  deps=B,C,D,E,G,P,R,U
+R     329  7136-7464  deps=C,G,W
+S     585  7465-8049  deps=B,C,G,H,P,Q,R,U
+T     379  8050-8428  deps=AD,B,C,G,P,Q,S,U
+U     828  8429-9256  deps=AB,AC,AD,B,C,D,E,G,I,L,P,Q,R,S,T
+V     238  9257-9494  deps=A2,AC,AD,B,C,D,G,R,S,U,X
+W     663  9495-10157 deps=AB,B,C,D,G,J,R
+X     226 10158-10383 deps=AD,AE,B,C,D,G,I,Y
+Y     310 10384-10693 deps=B,C,D,E,F,G,I
+Z     151 10694-10844 deps=AD,B,C,D,E,F,G,O,V,X,Y
+AA    211 10845-11055 deps=AC,B,C,D,G,L,M,R
+AB    419 11056-11474 deps=AD,B,C,G,U,Z
+AC     65 11475-11539 deps=B,C,D,G,X
+AD    408 11540-11947 deps=AA,AB,AC,AE,B,C,D,G,H,I,J,K,M,N,U,V,W,X,Z
+AE     39 11948-11986 deps=H,X
+SCC>1: [['AA', 'AB', 'AC', 'AD', 'AE', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']]
+EXIT=0

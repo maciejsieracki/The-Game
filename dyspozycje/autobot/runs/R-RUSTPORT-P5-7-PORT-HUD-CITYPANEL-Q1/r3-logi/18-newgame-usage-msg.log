@@ -1,0 +1,3 @@
+$ node tools/dom-harness/run-newgame.mjs   # bez --pin-dir: komunikat użycia (uwaga FC r2)
+Użycie: node tools/dom-harness/run-newgame.mjs --pin-dir <katalog z gra/src i gra/data z edb8fb56>
+EXIT=2

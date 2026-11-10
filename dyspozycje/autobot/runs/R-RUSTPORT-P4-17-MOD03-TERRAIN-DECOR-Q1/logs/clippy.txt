@@ -1,0 +1,4 @@
+    Checking pollster v0.4.0
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_b84d99df-bfb-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.80s
+EXIT=0

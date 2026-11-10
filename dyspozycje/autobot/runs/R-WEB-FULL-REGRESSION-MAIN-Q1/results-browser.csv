@@ -1,0 +1,89 @@
+name,group,exit,status,time_s,pass,fail,lastfail
+tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs,browser,2,RED,75.6,,," at async runLiveScenario (<WT>/gra/tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:252:24) | at async main (<WT>/gra/tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:410:13)"
+tools/ai-buduje-budynki-test.cjs,browser,124,TIMEOUT,580.2,,," OK H0b: bramka nie zmieniła ŻADNEGO śledzonego pliku źródłowego | [ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+tools/ai-general-war-campaign-live-test.cjs,browser,0,GREEN,351.1,68,0,
+tools/perf-endturn-render-progress-live-test.cjs,browser,124,TIMEOUT,360.5,,,"[large-empire] source identity after build: {'mainTsSha256':'07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b','productionTsSha256':'1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123','buildInputTreeSha256':'4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9','harnessSha256':'f1cf16d240b77e64afe188cdaac7ba765150d79b98945aa881f582f4e4fdd78f'} | [perf] bu"
+tools/perf-endturn-render-hud-live-test.cjs,browser,124,TIMEOUT,360.2,,,"[large-empire] source identity after build: {'mainTsSha256':'07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b','productionTsSha256':'1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123','buildInputTreeSha256':'4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9','harnessSha256':'053c8b4d6c8c07c3059b35f6495ec02f7353a892849000324e2f66f861005a3a'} | [perf] bu"
+tools/memory-unit-static-merge-test.cjs,browser,0,GREEN,34.0,9,0,
+tools/perf-endturn-ai-phase-live-test.cjs,browser,124,TIMEOUT,360.1,,,"[large-empire] source identity after build: {'mainTsSha256':'07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b','productionTsSha256':'1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123','buildInputTreeSha256':'4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9','harnessSha256':'1013b2c0b9fd3335cd23c1726b4cc1fc9796253b150ab11da17a59fc23b82c8e'} | [perf] bu"
+tools/minimap-viewport-rect-follow-live-test.cjs,browser,2,RED,0.3,,,"Brak CIV_MM_BUNDLE (katalog z index.html po vite build)."
+tools/minimapa-ikona-robotnik-kolor-live-test.cjs,browser,124,TIMEOUT,360.1,,," OK [worker] klik realnie zmienia obraz mapy 3D ponad szum tła | OK [worker] stan AKTYWNY: rozwiązany stroke nadal = rgb(232, 216, 138)"
+tools/memory-datauri-duplicates-test.cjs,browser,2,RED,0.3,,,"usage: --dist <dir> [--json out] [--snapdir dir] [--no-snap]"
+tools/memory-datauri-menu-pixel-test.cjs,browser,2,RED,0.4,,,"podaj --a <dist> --b <dist>"
+tools/memory-static-material-pool-pixel-test.cjs,browser,0,GREEN,20.2,7,0,
+tools/memory-static-ascii-bundle-test.cjs,browser,2,RED,0.3,,,"podaj --a <dist> --b <dist> --gra <kopia gra z node_modules>"
+tools/memory-static-model-pool-pixel-test.cjs,browser,0,GREEN,9.6,6,0,
+tools/memory-growth-improvement-cpu-release-test.cjs,browser,2,RED,0.8,,,"podaj --dist <katalog z index.html>"
+tools/perf-late-game-interaction-r2-live-test.cjs,browser,124,TIMEOUT,360.2,,,"[large-empire] source identity after build: {'mainTsSha256':'07710c08e18b1e19893afd47d97b5848cda16ae28b38ef467051d1445dd6ab5b','productionTsSha256':'1a3be5eefc5c5388c89d692820fe4e595697e27d91bcda9cfd094e92a7984123','buildInputTreeSha256':'4d9e602ddd20e2c5db970837c36baffff67e0f60b42a0c70834f27f8320a61a9','harnessSha256':'cf7c5a981e10f52ce78b963091a388aca9101a3e0268dc4ca1c88ba7d65665a4'} | [perf] bu"
+tools/memory-growth-visual-parity-test.cjs,browser,2,RED,0.7,,,"podaj --a <dist> --b <dist>"
+tools/hud-topbar-bigger-numbers-real-render-test.cjs,browser,2,RED,0.2,,,"Brak kopii bazy PRZED: <WT>/gra/src/ui/hud.__base.ts | Wygeneruj: git show 4905bac05:gra/src/ui/hud.ts > gra/src/ui/hud.__base.ts (plik tymczasowy, nie commituj; usun po tescie)."
+tools/sidepanel-event-header-wydarzenie-real-render-test.cjs,browser,0,GREEN,57.7,23,0,
+tools/sidepanel-hud-deadzone-test.cjs,browser,1,RED,264.2,20,13," FAIL PO WSTRZYKNIĘCIU: scrollHeight > clientHeight (realne przepełnienie dużym stosem jednostek odtworzone) -- {'found':true,'dockOpen':false,'scrollHeight':0,'clientHeight':0,'rect':{'top':0,'bottom':0,'left':0,'right':0}} | OK [konsola, page2] zero console.error / pageerror w scenariuszu P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | 20 pass · 13 fail"
+tools/wyrab-wycinka-nazwa-live-test.cjs,browser,0,GREEN,4.9,49,0,
+tools/emporion-build-list-real-render-test.cjs,browser,0,GREEN,6.8,13,0,
+tools/perf-late-game-interaction-live-test.cjs,browser,124,TIMEOUT,360.3,,,"[large-empire] phase: {'at':'2026-11-07T18:52:59.784Z','phase':'page-load'} | [large-empire] phase: {'at':'2026-11-07T18:53:06.769Z','phase':'new-game-start'}"
+tools/diplo-nap-trust-30-live-test.cjs,browser,0,GREEN,245.0,6,0,
+tools/newgame-defaults-test.cjs,browser,0,GREEN,12.7,61,0,
+tools/newgame-menu-reorder-layout-test.cjs,browser,0,GREEN,27.2,,,
+tools/newgame-sett-grid-layout-test.cjs,browser,0,GREEN,84.8,74,0,
+tools/newgame-settings-layout-reposition-test.cjs,browser,0,GREEN,5.1,,,
+tools/empire-recruit-live-test.cjs,browser,124,TIMEOUT,360.1,2,0,"PASS: L14 brak złota -> komunikat, brak zmian | PASS: L15 przycisk 'Rekrutacja' w górnym pasku HUD widoczny"
+tools/empire-recruit-panel-real-render-test.cjs,browser,0,GREEN,9.8,26,0,
+tools/player-moves-before-ai-turn-test.cjs,browser,124,TIMEOUT,360.0,,," OK brak bledow strony | [L8] nowa jednostka idaca do wodza: marsz tylko zaplanowany po flush, wykonany na koncu tury (scenariusz b)"
+tools/recruit-card-quantity-real-render-test.cjs,browser,0,GREEN,7.8,25,0,
+tools/army-panel-general-label-multiselect-live-test.cjs,browser,0,GREEN,184.1,7,0,
+tools/army-panel-general-label-multiselect-test.cjs,browser,0,GREEN,4.3,11,0,
+tools/auto-improve-q3-test.cjs,browser,0,GREEN,11.2,41,0,
+tools/hud-gross-net-rest-test.cjs,browser,0,GREEN,110.8,752,0,
+tools/hud-topbar-grid-gross-net-test.cjs,browser,0,GREEN,270.3,1199,0,
+tools/hud-topbar-no-labels-test.cjs,browser,0,GREEN,29.0,94,0,
+tools/general-capital-recruitment-order-test.cjs,browser,0,GREEN,9.6,,,
+tools/general-quick-follow-action-test.cjs,browser,1,RED,6.1,,,"PASS unreachable route reports failure without queuing a replacement march | AssertionError [ERR_ASSERTION]: production HUD handler delegates to the executed follow service and live title resolver"
+tools/generals-purchase-runtime-test.cjs,browser,1,RED,251.6,,," name: 'TimeoutError'"
+tools/hud-number-abbrev-test.cjs,browser,0,GREEN,7.2,,,
+tools/siege-badge-zorder-live-test.cjs,browser,2,RED,0.4,,,"brak --dist <katalog>"
+tools/tax-slider-thumb-align-real-render-test.cjs,browser,0,GREEN,57.0,3,0,
+tools/siege-surrender-forecast-live-test.cjs,browser,2,RED,0.4,,,"brak --dist <katalog>"
+tools/events-one-turn-lifetime-live-test.cjs,browser,2,RED,0.2,,,"brak --dist <katalog>"
+tools/manpower-panels-abbrev-test.cjs,browser,0,GREEN,0.5,,,
+tools/siege-blockade-no-recruit-reinforce-test.cjs,browser,1,RED,251.9,56,1," [FAIL] C5 blokada wejscia zarejestrowana (gracz/AI/barbarzyncy przez computePath/computeReachable) | [OK] D9 zero pageerror | wynik: 56 OK, 1 FAIL"
+tools/hex-tooltip-resources-line-dedup-test.cjs,browser,0,GREEN,5.0,28,0,
+tools/hud-recruits-abbrev-test.cjs,browser,0,GREEN,5.3,,,
+tools/hex-tooltip-unlock-label-dedup-test.cjs,browser,0,GREEN,5.2,28,0,
+tools/hud-resource-deficit-red-test.cjs,browser,0,GREEN,6.1,41,0,
+tools/roster-space-next-active-unit-test.cjs,browser,124,TIMEOUT,360.6,,," [OK] D7 jest wlasne miasto do testu oblezenia | [OK] D8 miasto NIEoblegane: oblegajaca i oblegana (ruch 0) poza kolejka Spacji"
+tools/hunting-camp-hill-no-flatten-test.cjs,browser,124,TIMEOUT,360.5,,," {'hillForestCount':224,'visible':[{'q':40,'r':29},{'q':38,'r':30},{'q':48,'r':42},{'q':59,'r':29},{'q':47,'r':43},{'q':48,'r':43}],'sawBefore':3,'sawAfter':3,'sawInfo':{'terrain':'wzgorza','overlay':'las','layers':['tartak'],'hasMesh':true,'groupY':0.65,'topY':0.64,'sectorR':0.86,'sectorSurfaceY':0,'hasSurfaceSampler':true,'keeps':true},'campBefore':3,'campHexBefore':{'teren':'wzgorza','nakladka'"
+tools/oboz-lowiecki-las-znika-render-test.cjs,browser,124,TIMEOUT,360.6,,,"[oboz-las] vite build (przed) -> <REF-TMP>/w2/tmp/run/civ-dist-oboz-las-przed-10459-b9ss70 | == WARIANT PRZED (poprawka cofnieta w locie) =="
+tools/siege-tower-breach-everywhere-test.cjs,browser,0,GREEN,198.0,47,0,
+tools/unit-frozen-fortified-unselectable-test.cjs,browser,0,GREEN,237.5,76,0,
+tools/hex-tooltip-improvement-production-text-test.cjs,browser,0,GREEN,3.7,19,0,
+tools/army-merge-panel-list-visibility-test.cjs,browser,0,GREEN,15.1,104,0,
+tools/army-merge-panel-production-mount-test.cjs,browser,0,GREEN,11.7,9,0,
+tools/army-merge-panel-scroll-real-render-test.cjs,browser,0,GREEN,5.4,27,0,
+tools/wall-defenders-bonus-range-test.cjs,browser,0,GREEN,217.2,58,0,
+tools/army-split-panel-scroll-grid-test.cjs,browser,1,RED,23.0,16,2,"FAIL: PRZED: scrollTop wraca do 0 po kliku (RED-PRE) — {'before':520,'after':520} | FAIL: PRZED: brak siatki 3x5 (RED-PRE) — {'cols':3,'fullVisible':15,'rows':5,'distinctLefts':3,'scrollable':true} | 16 PASS / 2 FAIL"
+tools/map-models-scale-2x-test.cjs,browser,2,RED,12.7,1107,199618,"[pid=22938][err] [22938:22938:1107/200735.051787:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote | [pid=22938][err] [22938:22938:1107/200735.060978:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote | [pid=22938][err] [22938:22938:1107/200735.061993:ERROR:content/c"
+tools/events-defer-to-turn-start-test.cjs,browser,0,GREEN,200.6,40,0,
+tools/recruit-card-manpower-real-render-test.cjs,browser,0,GREEN,6.0,20,0,
+tools/recruitment-panel-compact-row-test.cjs,browser,0,GREEN,18.3,39,0,
+tools/recruit-list-order-by-era-test.cjs,browser,0,GREEN,22.9,18,0,
+tools/army-panel-recruit-remove-test.cjs,browser,0,GREEN,6.5,21,0,
+tools/autoclear-priority-live-test.cjs,browser,124,TIMEOUT,360.2,,,"city {'id':'city0','q':29,'r':49,'population':1} policy [[0,{'focus':'zrownowazone','tryb':'auto','pracaAutoPercent':33}],[1,{'focus':'zrownowazone','tryb':'reczny','pracaAutoPercent':100}],[2,{'focus':'zrownowazone','tryb':'reczny','pracaAutoPercent':100}],[3,{'focus':'zrownowazone','tryb':'reczny','pracaAutoPercent':100}],[4,{'focus':'zrownowazone','tryb':'reczny','pracaAutoPercent':100}],[5,{'f"
+tools/diplo-aggressor-marker-live-test.cjs,browser,124,TIMEOUT,360.2,,," OK T5: AI1 nadal ma znacznik | [T4] wygaśnięcie flagi (koniec tury do doTury)"
+tools/diplo-aggressor-ui-live-test.cjs,browser,0,GREEN,247.2,7,0,
+tools/saveload-hud-cache-hotseat-live-test.cjs,browser,0,GREEN,205.5,18,0,
+tools/saveload-praca-pool-hotseat-live-test.cjs,browser,0,GREEN,309.8,22,0,
+tools/saveload-praca-pool-live-test.cjs,browser,0,GREEN,230.2,13,0,
+tools/fort-outpost-territory-live-test.cjs,browser,2,RED,0.1,,,"podaj --out <katalog scratch poza repo>"
+tools/city-clears-forest-live-test.cjs,browser,0,GREEN,210.5,17,0,
+tools/defeat-last-city-live-test.cjs,browser,124,TIMEOUT,360.1,,," OK S2 kolejny endTurn nie przesuwa tury po przegranej | -- S4: realna bitwa barbarzyńców (Auto) na jedynym mieście, bez endTurn --"
+tools/diplo-truce-ai-table-live-test.cjs,browser,1,RED,167.5,,," name: 'TimeoutError'"
+tools/diplo-truce-saveload-live-test.cjs,browser,124,TIMEOUT,360.1,3,0,"[saveload:save] wynik: 3 pass / 0 fail (127.6s) | OK load: zero pageerror | [saveload:load] wynik: 9 pass / 0 fail (96.9s)"
+tools/newgame-adv-apply-btn-test.cjs,browser,0,GREEN,16.0,87,0,
+tools/battle-mode-choice-labels-test.cjs,browser,0,GREEN,39.9,,,
+tools/newgame-adv-tooltip-test.cjs,browser,0,GREEN,43.3,30,0,
+tools/diplo-truce-live-test.cjs,browser,1,RED,217.0,3,1," FAIL wyjątek: locator.click: Timeout 10000ms exceeded. | Call log: | - waiting for locator('.cdb-chip-peacekind[data-kind='rozejm']') | - locator resolved to <button type='button' data-kind='rozejm' class='cdb-chip cdb-chip-peacekind'>Rozejm</button> | OK C zero pageerror/console.error | 3 pass / 1 fail"
+tools/diplomacy-city-cession-live-test.cjs,browser,124,TIMEOUT,360.1,,," OK T1: AI straciło dokładnie jedno miasto | OK T1: status pary po pokoju = pokoj"
+tools/diplomacy-city-picker-ui-test.cjs,browser,0,GREEN,12.1,13,0,
+tools/forced-war-r9-no-auto-end-live-test.cjs,browser,124,TIMEOUT,360.1,,," OK [bronze] pokój kończy wojnę wymuszoną (wpis rejestru usunięty, relacja != 'wojna') | OK [bronze] cleanup po pokoju: odpoczynek napastnika uzbrojony (restUntil > tura)"
+tools/diplo-war-peace-live-test.cjs,browser,124,TIMEOUT,360.5,,," OK A2 DOM: po 10 turach komunikat „czuje się silniejsze' NIE pojawia się na ekranie | stan po przywróceniu 5 tur wojny: AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny"

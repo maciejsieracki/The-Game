@@ -1,0 +1,10 @@
+file_lines 19494 pre_first_decl 291 symbols 731
+3D symbols 65 loc 3886
+MIX symbols 9 loc 1800
+UI symbols 112 loc 4687
+LOG symbols 529 loc 8479
+TYPE symbols 16 loc 351
+RUNDA-2 loc 2865
+RUNDA-3 loc 1691
+RUNDA-4 loc 665
+RUNDA-5 loc 465

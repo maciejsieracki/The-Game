@@ -1,0 +1,14 @@
+# R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1 — dispatch (2026-11-09) — START PO R-WEB-DIPLO-ALLIANCE-THRESHOLD-130-TRUST-90-Q1 (te same pliki dyplomacji)
+
+GOAL (polecenie właściciela): zobowiązania sojusznicze w wojnie:
+ 1. Gdy gracz ma sojusznika i dochodzi do WOJNY EPOKI (wymuszonej wojny epoki) z jakąś nacją, sojusznik gracza DOŁĄCZA do wojny przeciw tej nacji (AI-sojusznik wypowiada wojnę/wchodzi w stan wojny z tą samą stroną).
+ 2. Gdy KTOŚ ZAATAKUJE sojusznika gracza (wojna wypowiedziana/zaatakowana jednostka lub miasto sojusznika), sojusznik PROSI gracza o dołączenie do wojny — gracz jest „zobligowany”: pojawia się prośba (okno/powiadomienie w zakładce Dyplomacja) z wyborem Dołącz / Odrzuć; konsekwencje odmowy (spadek Zaufania/Relacji, ewentualne zerwanie sojuszu po N odmowach) — wartości w pliku danych; domyślne wartości do zaproponowania w raporcie.
+ 3. Symetria: ta sama zasada dla AI↔AI (sojusznicy AI dołączają do wojen sojuszników) i dla państw-miast tylko jeśli dziś mają sojusze (zgłoś). Zasada nie może łamać istniejących reguł: wojna epoki omija umowy poza sojuszem (ERAIGN), pokój AI↔AI nie może być ujemny (NONNEG), reguła 20% przewagi (AI-PEACE), brak wojny z sojusznikiem, zmęczenie wojną.
+BAZA: origin/main po deployu ALLIANCE-THRESHOLD-130-TRUST-90. Operator: SONNET 5.5 (uzasadnienie: reguły dyplomacji/wojny wielostronne, UI prośby, wpływ na AI).
+ZAKRES:
+1. Diagnoza stanu: co dziś robi sojusznik przy wojnie epoki i przy ataku na sojusznika (grep alliance/sojusz, wojna epoki: forced-war*.ts, diplomacy-*.ts, ERAIGN, MULTIWAR; czy istnieje „pomoc sojusznika”/call-to-arms; jak wygląda lista wojen i sojuszy).
+2. Implementacja 1 (sojusznik dołącza do wojny epoki gracza i do wojen sojuszników) i 2 (prośba o dołączenie do gracza po ataku na sojusznika; okno decyzji po polsku; konsekwencje odmowy z pliku danych; limit częstotliwości próśb (cooldown), brak próśb gdy gracz już w wojnie z tą stroną lub w pokoju wymuszonym).
+3. UI: prośba w zakładce „Dyplomacja” powiadomień + wpis w historii; stan „wspólna wojna z X” w audiencji sojusznika.
+4. Testy: wojna epoki z sojusznikiem → sojusznik w wojnie z tą nacją; atak na sojusznika → prośba; Dołącz → wojna; Odrzuć → kara; brak pętli (sojusznik sojusznika), brak dołączania gdy sojusznik jest w wojnie z samym graczem; regresje diplomacy-*/forced-war-*/ai-test. Wpis LEDGER (REPIN Rust).
+Jeśli wartości kar/progów są decyzją balansu — DECISION_REQUIRED z ABC (zalety/wady, rekomendacja) zamiast zgadywać.
+ALLOWLISTA: gra/src/game/diplomacy*.ts, forced-war*.ts, war-*.ts, ai.ts (tylko sojusze/wojna), main.ts (podpięcie), gra/src/ui/ (prośba, powiadomienia), gra/data/diplomacy*.json, nowy test gra/tools/diplo-alliance-call-to-arms-test.cjs, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów pojawiające się w kontekście.

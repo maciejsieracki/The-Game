@@ -1,0 +1,4 @@
+brak --dist <katalog>
+
+EXIT=2
+TIME=0.1

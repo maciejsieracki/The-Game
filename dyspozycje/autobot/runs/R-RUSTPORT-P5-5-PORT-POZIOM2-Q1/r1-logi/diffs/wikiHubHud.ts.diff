@@ -1,0 +1,20 @@
+--- pin/gra/src/ui/wikiHubHud.ts
++++ v2/src/ui/wikiHubHud.ts
+@@ -2,7 +2,8 @@
+  * wikiHubHud.ts — Civpedia in-game: Poradnik + Encyklopedia (rev. E bundle).
+  */
+ 
+-import wikiBundle from '../data/wikiBundle.json';
++// P5.5: `src/data/wikiBundle.json` (pin `:5`) → `StaticCatalogDto.wiki` (P5-0 §6.1 / Z2; D-UI-4: ten sam plik).
++import { staticCatalog } from '../controller/staticCatalog';
+ import { markdownToHtml } from './markdownLite';
+ import { wikiBookIcon } from './icons/wikiBookIcon';
+ import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+@@ -71,6 +72,7 @@
+   historia: string;
+ }
+ 
++const wikiBundle = staticCatalog().wiki as { poradnik: unknown; encyklopedia: unknown };
+ const PORADNIK = wikiBundle.poradnik as PoradnikChapter[];
+ const ENCY = wikiBundle.encyklopedia as EncyEntry[];
+ 

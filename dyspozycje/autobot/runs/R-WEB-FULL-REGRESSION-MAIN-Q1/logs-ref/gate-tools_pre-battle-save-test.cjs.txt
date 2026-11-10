@@ -1,0 +1,290 @@
+<WT>/gra/node_modules/esbuild/lib/main.js:2440
+      throw reject;
+      ^
+
+Error: Build failed with 2 errors:
+src/ui/icons/brandAssets.ts:18:26: ERROR: No loader is configured for ".svg" files: src/ui/icons/brand/menu-emblem.svg?raw
+src/ui/icons/scienceOwlIcon.ts:6:25: ERROR: No loader is configured for ".svg" files: src/ui/icons/brand/tier1/res-science-24.svg?raw
+    at failureErrorWithLog (<WT>/gra/node_modules/esbuild/lib/main.js:1752:15)
+    at <WT>/gra/node_modules/esbuild/lib/main.js:1211:25
+    at <WT>/gra/node_modules/esbuild/lib/main.js:1163:52
+    at buildResponseToResult (<WT>/gra/node_modules/esbuild/lib/main.js:1209:7)
+    at <WT>/gra/node_modules/esbuild/lib/main.js:1236:16
+    at responseCallbacks.<computed> (<WT>/gra/node_modules/esbuild/lib/main.js:886:9)
+    at handleIncomingPacket (<WT>/gra/node_modules/esbuild/lib/main.js:941:12)
+    at Socket.readFromStdout (<WT>/gra/node_modules/esbuild/lib/main.js:864:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 26,
+        file: 'src/ui/icons/brandAssets.ts',
+        length: 29,
+        line: 18,
+        lineText: "import menuEmblemSvg from './brand/menu-emblem.svg?raw';",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'No loader is configured for ".svg" files: src/ui/icons/brand/menu-emblem.svg?raw'
+    },
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 25,
+        file: 'src/ui/icons/scienceOwlIcon.ts',
+        length: 38,
+        line: 6,
+        lineText: "import resScience24 from './brand/tier1/res-science-24.svg?raw';",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'No loader is configured for ".svg" files: src/ui/icons/brand/tier1/res-science-24.svg?raw'
+    }
+  ],
+  warnings: [
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 22,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 520,
+        lineText: "const kamienModules = import.meta.glob('./utwory/kamien/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 20,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 527,
+        lineText: "const brazModules = import.meta.glob('./utwory/braz/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 21,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 534,
+        lineText: "const introModules = import.meta.glob('./utwory/intro/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 26,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 556,
+        lineText: "const dyplomacjaModules = import.meta.glob('./utwory/dyplomacja/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 29,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 565,
+        lineText: "const dyplomacjaCivModules = import.meta.glob('./utwory/dyplomacja/*/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 25,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 606,
+        lineText: "const preBattleModules = import.meta.glob('./utwory/prebattle/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 21,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 613,
+        lineText: "const bitwaModules = import.meta.glob('./utwory/bitwa/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 26,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 620,
+        lineText: "const zwyciestwoModules = import.meta.glob('./utwory/zwyciestwo/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 23,
+        file: 'src/audio/filePlayer.ts',
+        length: 11,
+        line: 627,
+        lineText: "const porazkaModules = import.meta.glob('./utwory/porazka/*.mp3', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 20,
+        file: 'src/ui/icons/brandAssets.ts',
+        length: 11,
+        line: 23,
+        lineText: "const svgBySuffix = import.meta.glob('./brand/**/*.svg', {",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    },
+    {
+      detail: undefined,
+      id: 'empty-import-meta',
+      location: {
+        column: 25,
+        file: 'src/ui/leaderPortraits.ts',
+        length: 11,
+        line: 172,
+        lineText: "const PORTRAIT_MODULES = import.meta.glob('../assets/portrety/*.jpg', { eager: true, import: 'default' }) as Record<string, string>;",
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [
+        {
+          location: null,
+          text: 'You need to set the output format to "esm" for "import.meta" to work correctly.'
+        }
+      ],
+      pluginName: '',
+      text: '"import.meta" is not available with the "cjs" output format and will be empty'
+    }
+  ]
+}
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=1.9

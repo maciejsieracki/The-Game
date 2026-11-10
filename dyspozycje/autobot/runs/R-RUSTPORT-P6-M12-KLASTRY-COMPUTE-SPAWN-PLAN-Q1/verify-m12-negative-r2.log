@@ -1,0 +1,11 @@
+CMD: python3 -I mutate-vectors.py <wektory R2> m12-mutated.json; M12_MAX_HEXES=1200 python3 -I verify-m12-vectors.py /home/user/m12web-r2c m12-mutated.json <jak w verify-m12-r2.log> (test negatywny: 3 zmutowane wartosci => oczekiwane rozbieznosci: 3, EXIT=1)
+[zaleznosc] dep-verify-m11-vectors.py: sprawdzen 17034 (+ 36960 z jego zaleznosci), rozbieznosci 0 (+ 0), exit 0
+ROZBIEZNOSC: seaField k42
+ROZBIEZNOSC: compute k42 {}
+compute: {'compute_checked': 298, 'compute_skipped': 380, 'threw': 24} czas 36s
+ROZBIEZNOSC: spawn w5 {'seed': 7, 'playerTyp': 'hetyci', 'rywale': 1, 'pools': False}
+spawn: {'checked': 169, 'skipped': 216, 'threw': 3} czas 15s
+sprawdzen M12: 583, rozbieznosci M12: 3
+RAZEM (M12 + zaleznosci M11/M10/M09): 54577 sprawdzen, rozbieznosci: 3
+UWAGA: limit M12_MAX_HEXES=1200: pominieto compute=380 spawn=216 przypadkow (NIE zweryfikowane w Pythonie)
+EXIT=1

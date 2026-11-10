@@ -1,0 +1,35 @@
+# R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q1, runda 2 (obrona Operatora) — bramki
+# z rust-port/renderer, CARGO_PROFILE_DEV_DEBUG=0, CARGO_TARGET_DIR=<scratch>/tgt (usunięty po pracy)
+## $ cargo fmt --all -- --check
+EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings
+    Finished `dev` profile [unoptimized] target(s) in 57.75s
+EXIT=0
+## $ cargo clippy --locked --all-targets --features gpu -- -D warnings
+    Finished `dev` profile [unoptimized] target(s) in 2m 10s
+EXIT=0
+## $ cargo test --locked --all-targets   (pełny log: test-full-r2.txt)
+EXIT=0
+## test totals: passed=377 failed=0 binaries=48   (r1: 376; +1 = map_helpers_follow_js_map_same_value_zero)
+## $ cargo test --locked --test battle3d_siege_wall -- --nocapture
+siegeWall: 95 cases: scalars 324999 (bit-equal), checks 240425
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.22s
+EXIT=0
+## $ cargo +1.87.0 test --locked --test battle3d_siege_wall -- --nocapture   (osobny CARGO_TARGET_DIR)
+siegeWall: 95 cases: scalars 324999 (bit-equal), checks 240425
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.29s
+EXIT=0
+## $ cargo +1.87.0 test --locked --lib -- battle
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.01s
+EXIT=0
+## $ python3 tests/fixtures/battle3d/mutate.py   (log: mutate-r2.txt)
+KILLED 34/34
+EXIT=0
+## $ sha256sum -c tests/fixtures/battle3d/MANIFEST.sha256
+README.md: OK / build.mjs: OK / gen.mjs: OK / gen.ts: OK / mutate.py: OK / siege_wall.json: OK
+## regeneracja w DWÓCH różnych katalogach scratch (…/bw3 oraz …/other-loc/x), git archive edb8fb56 + three@0.169.0 + esbuild@0.24.0, node v22.22.0
+bce895d837a392948ca7747a6cdb98e16eb6ab8f2ad3ebd0f0ffa6b80c2fdbf7  siege_wall.json   (oba katalogi = commitowany)
+b60f124dfa6278127761627702a197d5d337d0ab3f7d8143c668b252c244c637  gen.mjs           (oba katalogi = commitowany)
+## parytet PRZED poprawką map_set (nowa fixtura, kod r1): parity-minus0-before-fix-r2.txt
+siegeWall: 95 cases: "61 differences" = 60 wypisanych + znacznik "..." (limit `Cmp::err` = 60) — wszystkie wypisane to klucze -0 (rust 0x8000000000000000, web 0x0) w gate-zero-*/gate-half-*; test r1 by tego nie wykrył (brak przypadku z -0)
+## inwentarz r2: python3 -I dowody/inv3.py <battleScene.ts @edb8fb56> … — 2 przebiegi, wynik identyczny (cmp)

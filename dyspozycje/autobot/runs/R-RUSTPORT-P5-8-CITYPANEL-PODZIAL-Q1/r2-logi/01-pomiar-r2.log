@@ -1,0 +1,112 @@
+PIN edb8fb56 LINES 11986 BYTES 587707
+SECTIONS 32 coverage OK
+UNITS 378 coverage OK (each line in exactly one unit)
+CUT ['renderCityIconRightRail', 'rerender', 'switchCity']
+UNIT-LEVEL nontrivial SCC after cuts: 5
+  SCC 6 LOC 75 sections ['C', 'G', 'R'] members ['el', 'CP_INLINE_EMOJI_BRAND', 'cpInlineIcons', 'appendDetailSection', 'gridDetailRow', 'appendDetailAlgo']
+  SCC 18 LOC 1017 sections ['A2', 'AA', 'B', 'C', 'D', 'E', 'I'] members ['CityPanelConfig', 'cfg', 'configureCityPanel', 'gameData', 'readPodzialHandlu', 'readOwnerDefaultPodzialHandlu', 'isCapital', 'territoryNodesForPanel', 'computeView', 'ownerHasMennica', 'cityFoodSplit', 'CityGrowthLive', 'cityGrowthLive', 'buildingHappinessSum', 'resolveOrderState', 'computeOrderStateLocal', 'buildHandelDetailCard', 'activeTradeRouteCountForCity']
+  SCC 3 LOC 131 sections ['M'] members ['renderEkonomiaStrip', 'appendPodzialHandlu', 'appendCitySkarbiecBalance']
+  SCC 2 LOC 164 sections ['M'] members ['buildPracaDetailCard', 'renderPodzialPracy']
+  SCC 4 LOC 108 sections ['S'] members ['ENTITY_CARD_BUILDING_STYLE_ID', 'ensureEntityCardBuildingStyles', 'buildBuildingDetailCardViaEntityCard', 'buildBuildingDetailCard']
+BLOCKS 9 max_loc 1500
+  K01 LOC= 1360 units=139 lines 285-7390 sections={'G': 32, 'Q': 20, 'C': 18, 'P': 13, 'E': 11, 'R': 8, 'B': 7, 'F': 7, 'J': 6, 'L': 6, 'D': 4, 'A2': 3, 'I': 3, 'O': 1} top=['buildingBonusChipsHtml', 'isDevOnlyPlayerText', 'stripInlineDevAnnotations', 'CityView', 'buildingOwnedBonusCompactHtml', 'buildGrowthProgressUi']
+  K02 LOC= 1499 units= 23 lines 1948-7294 sections={'L': 8, 'P': 8, 'R': 3, 'H': 1, 'J': 1, 'N': 1, 'Q': 1} top=['ensureStyles', 'appendW4SignedBreakdownSections', 'appendW4PctMetricBlock', 'appendSignedBreakdownSections', 'appendBreakdownLines', 'appendIndywidualneToggle']
+  K03 LOC= 1466 units= 36 lines 314-11055 sections={'B': 7, 'R': 7, 'D': 4, 'E': 4, 'I': 3, 'J': 3, 'AA': 2, 'C': 2, 'L': 2, 'A2': 1, 'O': 1} top=['CityPanelConfig', 'computeView', 'buildHandelDetailCard', 'computeOrderStateLocal', 'bindRecruitQueueDragReorder', 'appendWealthCompactStrip']
+  K04 LOC= 1388 units= 32 lines 794-6756 sections={'P': 9, 'O': 6, 'Q': 5, 'I': 4, 'B': 1, 'C': 1, 'D': 1, 'E': 1, 'F': 1, 'J': 1, 'K': 1, 'M': 1} top=['buildKulturaDetailCard', 'buildPorzadekDetailCard', 'buildWealthDetailCard', 'buildRacjeWzrostDetailCard', 'buildTopBarLudnoscDetailCard', 'buildTopBarZywnoscDetailCard']
+  K05 LOC= 1500 units= 45 lines 4638-9616 sections={'W': 9, 'Q': 7, 'S': 7, 'T': 7, 'U': 7, 'M': 4, 'V': 2, 'O': 1, 'R': 1} top=['_legacyBuildBuildingDetailCard', 'buildBuildingInfocard', 'buildBuildingBuildTabDetailCard', 'buildingRequirementChips', 'appendPodzialHandlu', 'buildTopBarZlotoDetailCard']
+  K06 LOC= 1439 units= 37 lines 5028-10246 sections={'X': 14, 'W': 9, 'S': 5, 'T': 3, 'U': 3, 'V': 2, 'M': 1} top=['renderWorkedPreview', 'appendOwnedBuildingRow', 'appendBuildQueueSection', 'renderBuildList', 'buildOkolicaDetailCard', 'appendRecruitmentQueue']
+  K07 LOC= 1493 units= 23 lines 3295-11539 sections={'AC': 4, 'X': 4, 'Y': 4, 'AB': 3, 'Z': 2, 'I': 1, 'J': 1, 'K': 1, 'U': 1, 'V': 1, 'W': 1} top=['appendBudowaListaBar', 'buildCityOnlyW3FlankChips', 'renderOkolica', 'renderSpoleczenstwo', 'renderKultura', 'appendBudowaToolbarProfiles']
+  K08 LOC= 1430 units= 39 lines 4112-11986 sections={'AD': 15, 'AE': 5, 'Z': 4, 'M': 3, 'O': 2, 'U': 2, 'V': 2, 'X': 2, 'AA': 1, 'AB': 1, 'K': 1, 'N': 1} top=['renderMagazyn', 'renderReligia', 'paintCityPanelSections', 'renderPurchasableUnits', 'buildPracaDetailCard', 'renderPodzialPracy']
+  K09 LOC=  127 units=  3 lines 10209-11947 sections={'AD': 1, 'X': 1, 'Z': 1} top=['rerender', 'renderCityIconRightRail', 'switchCity']
+CHUNK-LEVEL nontrivial SCC: 0 []
+ACYCLIC: YES
+CHUNK EDGES (blok -> zależy od blok):
+  K02 -> K01  e.g. ensureStyles -> BUILD_QUEUE_VISIBLE
+  K03 -> K01  e.g. CityPanelConfig -> CityMoneySnap
+  K03 -> K02  e.g. playerFacingNote -> bindTechHintLinkDelegation
+  K04 -> K01  e.g. bindBuildQueueDragReorder -> reorderQueueItem
+  K04 -> K02  e.g. renderSurowce -> appendSurowceGrid
+  K04 -> K03  e.g. bindBuildQueueDragReorder -> getProd
+  K05 -> K01  e.g. renderEkonomiaStrip -> CityView
+  K05 -> K02  e.g. appendPodzialHandlu -> appendIndywidualneToggle
+  K05 -> K03  e.g. appendPodzialHandlu -> cfg
+  K05 -> K04  e.g. appendCitySkarbiecBalance -> formatResourceUpkeepSummary
+  K06 -> K01  e.g. appendPodzialPracyInfo -> CityView
+  K06 -> K02  e.g. attachUnitRowThumb -> fillIconElement
+  K06 -> K03  e.g. appendPodzialPracyInfo -> cfg
+  K06 -> K04  e.g. appendPodzialPracyInfo -> cityPracaSplit
+  K06 -> K05  e.g. buildOwnedBuildingsDetailCard -> _legacyBuildUnitDetailCard
+  K07 -> K01  e.g. renderSpoleczenstwo -> PH
+  K07 -> K02  e.g. renderSpoleczenstwo -> appendCitizenUpkeepBlock
+  K07 -> K03  e.g. renderSpoleczenstwo -> cfg
+  K07 -> K04  e.g. renderSpoleczenstwo -> buildPorzadekDetailCard
+  K07 -> K05  e.g. renderProd -> buildBuildingBuildTabDetailCard
+  K07 -> K06  e.g. renderKultura -> activeMap
+  K08 -> K01  e.g. renderReligia -> BreakdownLine
+  K08 -> K02  e.g. renderReligia -> appendTabIndicators
+  K08 -> K03  e.g. renderReligia -> appendCompositionBlock
+  K08 -> K04  e.g. renderReligia -> buildTopBarReligiaDetailCard
+  K08 -> K05  e.g. wireTopBarStatDetails -> buildTopBarZlotoDetailCard
+  K08 -> K06  e.g. renderReligia -> activeMap
+  K08 -> K07  e.g. renderReligia -> appendSectionTitleWithDetails
+  K09 -> K01  e.g. renderCityIconRightRail -> daninaLabelForCity
+  K09 -> K03  e.g. switchCity -> cfg
+  K09 -> K05  e.g. rerender -> renderEkonomiaStrip
+  K09 -> K06  e.g. switchCity -> activeCity
+  K09 -> K07  e.g. rerender -> renderKultura
+  K09 -> K08  e.g. renderCityIconRightRail -> CITY_PANEL_ICONS_RIGHT
+PER-BLOK: R = jednostki-reguł (do DTO/silnika); ODLOZONE = 3D/MAPA; WEJSCIA = funkcje UI wg prefiksu nazwy (heurystyka)
+  K01 R=['daninaLabelForCity', 'clampedGrowthBreakdown', 'resGlobalLocal']
+  K01 ODLOZONE=[]
+  K01 WEJSCIA=['showEraBuildingPreview', 'setShowEraBuildingPreview', 'buildGrowthProgressUi', 'setNoteHtml', 'setOkolicaProfileButtonContent', 'setOkolicaProfileButtonIconOnly', 'renderImperiumZywnosc', 'buildingIconHtml', 'buildingBonusChipsHtml', 'buildingOwnedBonusCompactHtml', 'buildingUpkeepDisplay', 'buildingReqChipSpan']
+  K02 R=[]
+  K02 ODLOZONE=[]
+  K02 WEJSCIA=['appendSurowceGrid', 'appendTabIndicators', 'appendBreakdownLines', 'appendPctBreakdownBlock', 'appendSignedBreakdownSections', 'appendW4SignedBreakdownSections', 'appendCitizenUpkeepBlock', 'appendW4PctMetricBlock', 'appendIndywidualneToggle', 'renderBilans', 'appendDisabledBuildActionButtons', 'appendBuildingInlineIcon']
+  K03 R=['readPodzialHandlu', 'readOwnerDefaultPodzialHandlu', 'isCapital', 'territoryNodesForPanel', 'computeView', 'ownerHasMennica', 'cityFoodSplit', 'cityGrowthLive', 'buildingHappinessSum', 'resolveOrderState', 'computeOrderStateLocal', 'buildHandelDetailCard', 'activeTradeRouteCountForCity']
+  K03 ODLOZONE=[]
+  K03 WEJSCIA=['getProd', 'setProd', 'bindRecruitQueueDragReorder', 'buildGrowthProgressTooltipCard', 'buildZdrowieDetailCard', 'buildSurowceDetailCard', 'appendCompositionBlock', 'appendWealthCompactStrip', 'buildWealthCompactTooltipCard', 'buildTopBarRekruciDetailCard', 'appendDetailGridIn', 'appendDetailGrid']
+  K04 R=['ownerHasSpichlerz', 'cityPracaSplit', 'resolveEmpireSnap', 'resolveCityHealth', 'buildingStockCostForItem', 'stockCostForQueueItem', 'buildingUiDisplayLevel']
+  K04 ODLOZONE=[]
+  K04 WEJSCIA=['bindBuildQueueDragReorder', 'buildPorzadekDetailCard', 'renderSurowce', 'buildKulturaDetailCard', 'buildWealthDetailCard', 'buildRacjeWzrostDetailCard', 'buildTopBarZywnoscDetailCard', 'buildTopBarLudnoscDetailCard', 'buildTopBarNaukaDetailCard', 'buildTopBarKulturaDetailCard', 'buildTopBarReligiaDetailCard', 'cancelQueueItem']
+  K05 R=['buildingRequirementChips', 'recruitManpowerCost', 'maxAffordableRecruitQuantity', 'missingTechSteps', 'productionCtxForCity', 'okolicaPreviewRadius', 'improvementsInCityRange']
+  K05 ODLOZONE=[]
+  K05 WEJSCIA=['renderEkonomiaStrip', 'appendPodzialHandlu', 'appendCitySkarbiecBalance', 'renderPodzialHandlu', 'buildTopBarZlotoDetailCard', 'buildingConverterProductionDisplay', 'buildingLocationRequirementMet', 'buildingCanBuildNow', 'appendBuildingRequirementsBlock', 'buildBuildingInfocard', 'appendTechDetailBlock', 'buildBuildingDetailCardViaEntityCard']
+  K06 R=[]
+  K06 ODLOZONE=['buildUnitDetailCard', 'attachUnitRowThumb', 'okolicaHexPoints', 'renderWorkedPreview']
+  K06 WEJSCIA=['appendPodzialPracyInfo', 'buildOwnedBuildingsDetailCard', 'buildUnitDetailCardViaEntityCard', 'appendBuildableItemRow', 'appendUnitRecruitCompactRow', 'appendRecruitmentQueue', 'appendBuildQueueSection', 'appendCatalogBuildingRow', 'renderBuildList', 'appendOwnedBuildingRow', 'renderTopBarGarrison', 'buildGarnizonDetailCard']
+  K07 R=['renderProd', 'w3CityChip', 'buildCityOnlyW3FlankChips', 'buildCityResourceStatItems']
+  K07 ODLOZONE=[]
+  K07 WEJSCIA=['renderSpoleczenstwo', 'renderZdrowie', 'renderKultura', 'renderBuildSplitPanel', 'renderOkolica', 'renderCityHeaderCompact', 'appendOkolicaToolbarProfiles', 'appendBudowaToolbarProfiles', 'appendBudowaListaBar', 'renderTopStatsBar', 'appendPanel', 'appendSectionTitleWithDetails']
+  K08 R=['renderPurchasableUnits', 'renderBuildingsOwned', 'renderHandelSlidersPanel']
+  K08 ODLOZONE=[]
+  K08 WEJSCIA=['renderReligia', 'renderWealth', 'buildPracaDetailCard', 'renderPodzialPracy', 'renderMagazyn', 'buildTopBarPracaDetailCard', 'wireTopBarStatDetails', 'renderOwnedBuildingsBar', 'renderBuildingsOwnedRightPanel', 'refreshCityPanelIfOpen', 'closeCityView', 'renderCityExitFooter']
+  K09 R=[]
+  K09 ODLOZONE=[]
+  K09 WEJSCIA=[]
+LOC SUM 11986 PIN LINES 11986 EQUAL
+EXPORTS (jednostka -> kawałki-konsumenci), liczba per kawałek:
+  K01 eksportuje 118 jednostek
+  K02 eksportuje 17 jednostek
+  K03 eksportuje 29 jednostek
+  K04 eksportuje 26 jednostek
+  K05 eksportuje 35 jednostek
+  K06 eksportuje 20 jednostek
+  K07 eksportuje 14 jednostek
+IMPORTS, liczba per kawałek:
+  K02 importuje 24 jednostek z innych kawałków
+  K03 importuje 30 jednostek z innych kawałków
+  K04 importuje 50 jednostek z innych kawałków
+  K05 importuje 58 jednostek z innych kawałków
+  K06 importuje 94 jednostek z innych kawałków
+  K07 importuje 77 jednostek z innych kawałków
+  K08 importuje 105 jednostek z innych kawałków
+  K01 najczesciej eksportowane: CityView->K02,K03,K04,K05,K06,K07,K08, el->K02,K03,K04,K05,K06,K07,K08, daninaLabelForCity->K03,K04,K05,K06,K07,K08, tury->K03,K04,K05,K06,K07,K08, appendDetailAlgo->K03,K04,K05,K06,K08, appendDetailSection->K03,K04,K05,K06,K08, cityPanelChipIconWrap->K03,K05,K06,K07,K08, cpInlineIcons->K03,K04,K06,K07,K08
+  K02 najczesciej eksportowane: appendIndywidualneToggle->K05,K08, appendTabIndicators->K07,K08, appendW4SignedBreakdownSections->K07,K08, createScrollList->K06,K08, ensureStyles->K05,K08, fillIconElement->K05,K06, appendBuildingInlineIcon->K06, appendBuildingRequirementChipSections->K05
+  K03 najczesciej eksportowane: cfg->K04,K05,K06,K07,K08, gameData->K04,K05,K06,K07,K08, getProd->K04,K05,K06,K07,K08, appendDetailFormula->K04,K05,K06,K08, appendDetailGrid->K04,K05,K06,K08, isMeCity->K05,K06,K07,K08, readPodzialHandlu->K04,K05,K07,K08, appendCompositionBlock->K04,K07,K08
+  K04 najczesciej eksportowane: cityPracaSplit->K06,K07,K08, resolveEmpireSnap->K06,K07,K08, appendBuildActionButtons->K05,K06, buildPorzadekDetailCard->K07,K08, buildTopBarKulturaDetailCard->K07,K08, cancelQueueItem->K06,K07, ownerSurowcePoolFor->K05,K06, sumOwnedBuildingsUpkeep->K06,K08
+  K05 najczesciej eksportowane: productionCtxForCity->K06,K07,K08, buildBuildingBuildTabDetailCard->K06,K07, rangeName->K06,K07, ringsTiles->K06,K07, TEREN_COL->K06, TEREN_LETTER->K06, _legacyBuildBuildingDetailCard->K06, _legacyBuildUnitDetailCard->K06
+  K06 najczesciej eksportowane: activeCity->K07,K08, activeMap->K07,K08, cityPanelTitle->K07,K08, ownerCities->K07,K08, activeOnClose->K08, appendBuildQueueSection->K07, appendOwnedBuildingRow->K08, appendPodzialPracyInfo->K08
+  K07 najczesciej eksportowane: CityPanelUxMounts->K08, appendPanel->K08, appendSectionTitleWithDetails->K08, buildCityOnlyW3FlankChips->K08, capitalBadgeOrButtonHtml->K08, renderBuildSplitPanel->K08, renderKultura->K08, renderOkolica->K08
+  K08 najczesciej eksportowane:
+  K09 najczesciej eksportowane:
+WROTE dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1/r2-logi/pomiar-r2.json

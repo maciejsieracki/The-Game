@@ -1,0 +1,8 @@
+rust-port/engine/src/domain/combat.rs:208:        | ("falangite", "mount") => 1.50,
+rust-port/engine/src/domain/combat.rs:209:        ("mount", "offensive") | ("offensive", "swordsman") => 1.25,
+rust-port/engine/src/domain/combat.rs:224:        Terrain::Forest => 1.25,
+rust-port/engine/src/domain/diplomacy.rs:668:            1.0 + w / 100.0 * 0.5
+rust-port/engine/src/domain/diplomacy.rs:670:            1.0 - w / 100.0 * 0.5
+rust-port/engine/src/domain/diplomacy.rs:714:        delta * (1.0 + w / 100.0 * 0.5)
+rust-port/engine/src/domain/diplomacy.rs:716:        delta * (1.0 - w / 100.0 * 0.5)
+EXIT=0

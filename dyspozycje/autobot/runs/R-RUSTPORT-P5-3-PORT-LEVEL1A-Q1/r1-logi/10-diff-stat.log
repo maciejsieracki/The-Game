@@ -1,0 +1,20 @@
+$ diff -u <pin>/gra/src/ui/<m> src/ui/<m>   (+/- = linie dodane/usunięte bez nagłówków; LOC = liczba linii)
+unitCardStatus.ts          LOC 394 -> 393  +15/-16
+diplomacyDealDisplay.ts    LOC 312 -> 303  +24/-33
+orderPanel.ts              LOC 231 -> 230  +12/-13
+unitRecruitCard.ts         LOC 286 -> 309  +31/-8
+cityAttackChoice.ts        LOC 239 -> 239  +1/-1
+postBattleSummary.ts       LOC 603 -> 606  +7/-4
+siegeMapPanel.ts           LOC 371 -> 374  +22/-19
+diploUiSkin.ts             LOC 231 -> 231  +0/-0  (identyczny bajtowo)
+icons/iconRegistry.ts      LOC 49 -> 49  +0/-0  (identyczny bajtowo)
+mapUnitHudSkin.ts          LOC 78 -> 78  +0/-0  (identyczny bajtowo)
+armyMergePanel.ts          LOC 221 -> 221  +0/-0  (identyczny bajtowo)
+icons/wikiBookIcon.ts      LOC 19 -> 19  +0/-0  (identyczny bajtowo)
+powerOverlayHud.ts         LOC 238 -> 238  +0/-0  (identyczny bajtowo)
+armyListHud.ts             LOC 368 -> 384  +18/-2
+bottomBarHud.ts            LOC 335 -> 335  +0/-0  (identyczny bajtowo)
+cityListHud.ts             LOC 332 -> 332  +0/-0  (identyczny bajtowo)
+empireOverlayHud.ts        LOC 138 -> 138  +0/-0  (identyczny bajtowo)
+battleHudTheme.ts: cmp gra/src/battle/battleHudTheme.ts src/ui/battleHudTheme.ts → identyczny bajtowo
+EXIT=0

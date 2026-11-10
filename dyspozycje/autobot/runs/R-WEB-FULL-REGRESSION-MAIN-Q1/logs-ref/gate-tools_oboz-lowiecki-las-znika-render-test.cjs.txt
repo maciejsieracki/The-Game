@@ -1,0 +1,14 @@
+[oboz-las] vite build (po) -> <REF-TMP>/w4/tmp/run/civ-dist-oboz-las-po-23621-f6g1b8
+[oboz-las] vite build (przed) -> <REF-TMP>/w4/tmp/run/civ-dist-oboz-las-przed-23621-f6g1b8
+
+== WARIANT PRZED (poprawka cofnieta w locie) ==
+       zrzut: <REF-TMP>/w4/tmp/run/oboz-las-shots-23621-f6g1b8/przed-1-wzgorze-las-przed-budowa.png
+       zrzut: <REF-TMP>/w4/tmp/run/oboz-las-shots-23621-f6g1b8/przed-2-wzgorze-las-po-obozie.png
+   {"foodKeysOnForest":["lama","lodzie_rybackie","oboz_lowiecki"],"hillForestCount":224,"camp":{"q":40,"r":29},"campBefore":3,"campInfoBefore":{"teren":"wzgorza","nakladka":"las","layers":[]},"campAfter":1,"campInfoAfter":{"teren":"wzgorza","nakladka":"las","layers":["oboz_lowiecki"]},"campToast":{"display":"block","html":"PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość)."},"cow":{"q":38,"r":30},"cowBefore":3,"cowInfoAfter":{"teren":"wzgorza","nakladka":"las","layers":["bydlo"]},"cowAfter":1,"quarryBefore":2,"quarryAfter":2,"quarryLayers":["kamieniolom"],"terraceBefore":2,"terraceAfter":1,"terraceLayers":["tarasy"],"bareTarget":{"q":39,"r":32},"bareInfoBefore":{"teren":"rownina","nakladka":"brak","layers":[]},"bareInfoAfter":{"teren":"rownina","nakladka":"brak","layers":[]},"bareToast":{"display":"none","html":"PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość)."},"bareControl":["posterunek"]}
+
+== WARIANT PO (kod z repo) ==
+       zrzut: <REF-TMP>/w4/tmp/run/oboz-las-shots-23621-f6g1b8/po-1-wzgorze-las-przed-budowa.png
+       zrzut: <REF-TMP>/w4/tmp/run/oboz-las-shots-23621-f6g1b8/po-2-wzgorze-las-po-obozie.png
+
+EXIT=124
+TIME=300.1

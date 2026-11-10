@@ -1,0 +1,14 @@
+$ git status --porcelain --untracked-files=all --ignored=matching (po rm -rf node_modules dist, po commicie ad5116d4)
+!! dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r2-logi/15-allowlist-git-status.log
+EXIT=0
+$ git diff --name-only 51a62a89 ad5116d4 | grep -vE "^(src-tauri/frontend-v2/|dyspozycje/rust-port/p5/P5-7-PORT-HUD-CITYPANEL\.md$|dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/)"  (poza allowlistą)
+EXIT=1 (1 = zero plików poza allowlistą)
+$ git diff --name-only 51a62a89 ad5116d4 | grep -E "node_modules|/dist/|gra/data|package-lock.json"
+EXIT=1 (1 = brak)
+$ git diff --check 51a62a89 ad5116d4   (na COMMICIE r2, obejmuje r1+r2)
+EXIT=0
+# Uwaga: git czyta atrybuty z drzewa roboczego, więc `git diff --check 51a62a89 c3f84c3d` daje tu również EXIT=0 —
+# to NIE dowodzi, że commit r1 był czysty (Evaluator r1 na drzewie bez .gitattributes: EXIT=2). Dowodem jest tylko check na ad5116d4,
+# który zawiera .gitattributes (runs/<ID>/.gitattributes: *.diff -whitespace, *.log -whitespace).
+$ git diff --check 51a62a89 ad5116d4 -- . ":(exclude)dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1"   (kod + dokumenty bez artefaktów dowodowych)
+EXIT=0

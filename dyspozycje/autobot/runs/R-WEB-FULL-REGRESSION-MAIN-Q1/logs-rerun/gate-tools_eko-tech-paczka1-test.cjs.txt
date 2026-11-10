@@ -1,0 +1,16 @@
+  PASS: Pismo blocked bez Cegielni (gate)
+  PASS: kręgi not superseded yet
+  PASS: Mielerz NIE istnieje juz w produkcji (usuniety 2026-07-23)
+  PASS: Mielerz NIE istnieje juz w buildings.json
+  PASS: setPlayerResearchTarget rejects bez Cegielni
+
+eko-tech-paczka1: 5 pass, 6 fail
+  FAIL: Pismo OK z Cegielnia
+  FAIL: Pismo on available list z gate
+  FAIL: upgrade replaces kręgi
+  FAIL: kręgi superseded after upgrade
+  FAIL: Stolarnia in production after Obróbka drewna
+  FAIL: setPlayerResearchTarget OK z Cegielnia
+
+EXIT=1
+TIME=0.4

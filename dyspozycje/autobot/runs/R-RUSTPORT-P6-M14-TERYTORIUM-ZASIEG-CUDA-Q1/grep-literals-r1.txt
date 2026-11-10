@@ -1,0 +1,113 @@
+# grep literali liczbowych w nowym kodzie (poza komentarzami), P6.M14 r1
+## wonder_placement.rs
+25:    pub q: i32,
+26:    pub r: i32,
+27:    pub population: f64,
+60:fn is_occupied(q: i32, r: i32, wonders: &[HexCoord], city_hexes: &[HexCoord]) -> bool {
+73:    let mut candidates: Vec<(f64, i32, i32)> = Vec::new();
+77:        if dist > radius || dist == 0.0 {
+91:        a.0.partial_cmp(&b.0)
+93:            .then(a.1.cmp(&b.1))
+94:            .then(a.2.cmp(&b.2))
+110:    let mut index: HashMap<(i32, i32), usize> = HashMap::new();
+## territory.rs
+31:    ('\u{2000}'..='\u{200A}').contains(&c)
+34:            '\u{0009}'
+35:                | '\u{000A}'
+36:                | '\u{000B}'
+37:                | '\u{000C}'
+38:                | '\u{000D}'
+39:                | '\u{0020}'
+40:                | '\u{00A0}'
+41:                | '\u{1680}'
+42:                | '\u{2028}'
+43:                | '\u{2029}'
+44:                | '\u{202F}'
+45:                | '\u{205F}'
+46:                | '\u{3000}'
+56:fn radix_literal(body: &str, radix: u32) -> f64 {
+58:        return f64::NAN;
+60:    let mut acc = 0.0_f64;
+63:            Some(d) => acc = acc * f64::from(radix) + f64::from(d),
+64:            None => return f64::NAN,
+72:    let mut i = 0;
+74:        i += 1;
+78:        i += 1;
+81:    let mut frac_digits = 0;
+83:        i += 1;
+86:            i += 1;
+90:    if int_digits == 0 && frac_digits == 0 {
+94:        i += 1;
+96:            i += 1;
+100:            i += 1;
+110:pub fn js_number(s: &str) -> f64 {
+113:        return 0.0;
+116:        "Infinity" | "+Infinity" => return f64::INFINITY,
+117:        "-Infinity" => return f64::NEG_INFINITY,
+120:    if let Some(rest) = t.strip_prefix("0x").or_else(|| t.strip_prefix("0X")) {
+121:        return radix_literal(rest, 16);
+123:    if let Some(rest) = t.strip_prefix("0o").or_else(|| t.strip_prefix("0O")) {
+124:        return radix_literal(rest, 8);
+126:    if let Some(rest) = t.strip_prefix("0b").or_else(|| t.strip_prefix("0B")) {
+127:        return radix_literal(rest, 2);
+130:        return t.parse::<f64>().unwrap_or(f64::NAN);
+132:    f64::NAN
+137:pub fn parse_hex_key(key: &str) -> Option<(f64, f64)> {
+139:    let q = parts.next().map_or(f64::NAN, js_number);
+140:    let r = parts.next().map_or(f64::NAN, js_number);
+149:fn js_max(a: f64, b: f64) -> f64 {
+151:        f64::NAN
+165:    pub owner_id: i64,
+169:    pub fn new(node: CityNode, owner_id: i64) -> Self {
+177:pub fn axial_distance_f64(aq: f64, ar: f64, bq: f64, br: f64) -> f64 {
+180:    ((aq - bq).abs() + (ar - br).abs() + (a_s - b_s).abs()) / 2.0
+187:    population: f64,
+188:    kultura_skumulowana: f64,
+189:    border_radius: &dyn Fn(f64) -> f64,
+190:) -> f64 {
+192:    if base <= 0.0 {
+193:        return 0.0;
+199:pub fn is_in_territory(q: impl Into<f64>, r: impl Into<f64>, nodes: &[CityNode]) -> bool {
+202:        axial_distance_f64(q, r, f64::from(node.q), f64::from(node.r))
+209:    q: impl Into<f64>,
+210:    r: impl Into<f64>,
+212:) -> Option<i64> {
+214:    let mut best_owner: Option<i64> = None;
+215:    let mut best_dist = f64::INFINITY;
+218:        let dist = axial_distance_f64(q, r, f64::from(tn.node.q), f64::from(tn.node.r));
+232:    q: impl Into<f64>,
+233:    r: impl Into<f64>,
+236:    player_owner_id: i64,
+254:    pub owner_id: i64,
+255:    pub q: i32,
+256:    pub r: i32,
+257:    pub population: f64,
+258:    pub okolica_reczne: Option<BTreeMap<String, f64>>,
+271:    q: impl Into<f64>,
+272:    r: impl Into<f64>,
+273:    owner_id: i64,
+285:    owner_id: i64,
+286:    base_workable: Option<&'a dyn Fn(i32, i32) -> bool>,
+287:) -> Box<dyn Fn(i32, i32) -> bool + 'a> {
+307:    owner_id: i64,
+332:    owner_id: i64,
+380:    let owners: BTreeSet<i64> = cities.iter().map(|c| c.owner_id).collect();
+394:    pub q: i32,
+395:    pub r: i32,
+396:    pub owner_id: i64,
+397:    pub population: f64,
+398:    pub kultura: f64,
+406:    pub counts: BTreeMap<String, f64>,
+425:pub type HexOwnerFilter<'a> = dyn Fn(&str, i64) -> bool + 'a;
+432:) -> BTreeMap<i64, BTreeSet<String>> {
+433:    let mut by_owner: BTreeMap<i64, BTreeSet<String>> = BTreeMap::new();
+455:    owner_id: i64,
+456:    border_radius: &dyn Fn(f64) -> f64,
+464:        if sight <= 0.0 {
+471:            if axial_distance_f64(q, r, f64::from(c.q), f64::from(c.r)) <= sight {
+487:    szerzenie_max_dystans: Option<f64>,
+489:    owner_id: i64,
+492:    let spread_extra = js_max(0.0, szerzenie_max_dystans.unwrap_or(0.0).floor());
+503:        let has_state = state.is_some_and(|s| rel.counts.get(s).copied().unwrap_or(0.0) > 0.0);
+515:        if range_r <= 0.0 {
+523:            if axial_distance_f64(q, r, f64::from(c.q), f64::from(c.r)) <= range_r {

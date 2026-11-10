@@ -1,0 +1,18 @@
+PASS: L1 gracz ma miasto
+PASS: L2 3 miasta gracza (klon realnego miasta dla rozkładu)
+PASS: L3 panel ma wiersze jednostek wojskowych
+PASS: L4 brak jednostek cywilnych (Zwiadowca/Osadnik/Robotnik)
+PASS: L5 co najmniej 2 typy dostępne we wszystkich 3 miastach
+PASS: L6 5 x Wojownik na 3 miasta = 2/2/1 w cityProd.rekrutacja
+PASS: L7 złoto pobrane jak przy ręcznej rekrutacji (5 x 5)
+PASS: L8 4 x Taran = 2/1/1, wpisy A nietknięte
+PASS: L9 złoto 4 x 7
+PASS: L10 zamówienie B nie zmieniło wpisów A
+PASS: L11 ręczna rekrutacja (purchaseRecruitmentUnit) nadal działa po zamówieniu zbiorczym
+PASS: L12 wiersz: "w kolejkach" = suma wpisów typu w miastach
+PASS: L13 oblężone miasto pomijane, 4 sztuki w pozostałych
+PASS: L14 brak złota -> komunikat, brak zmian
+PASS: L15 przycisk "Rekrutacja" w górnym pasku HUD widoczny
+
+EXIT=124
+TIME=360.1

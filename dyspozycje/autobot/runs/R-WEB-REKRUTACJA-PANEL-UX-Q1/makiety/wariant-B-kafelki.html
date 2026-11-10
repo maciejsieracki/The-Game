@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rekrutacja: wariant B</title>
+<!-- R-WEB-REKRUTACJA-PANEL-UX-Q1 — Wariant B — siatka kafelków + pasek akcji wybranej jednostki
+     Statyczna makieta, zero zależności. Parametry URL: ?w=480|340 (szerokość panelu), ?top=300 (blok "Produkcja" nad panelem jak na zrzucie).
+     Paleta/typografia: gra/src/ui/icons/brand/tokens.css:7-26, gra/src/ui/cityPanel.ts:1997-2003. -->
+<style>
+:root{--tg-bg-deep:#080a12;--tg-gold-primary:#e8d88a;--tg-gold-dim:#a08030;--tg-text-primary:#e8e0c8;--tg-text-muted:#8a8070;
+--tg-panel-bg:#121820;--tg-green:#50b070;--tg-red:#c84040;--tg-font-title:Georgia,'Times New Roman',serif;--tg-font-ui:'Segoe UI',Tahoma,sans-serif;
+--panel2:#121820;--border:rgba(232,216,138,0.22);--bord2:rgba(232,216,138,0.45);--text:#e8e0c8;--muted:#8a8070;--gold:#e8d88a;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0d1a10;color:var(--text);font-family:var(--tg-font-ui);font-size:16px;overflow:hidden}
+.prod-stub{height:var(--top,0px);margin:0 0 6px;border:1px solid var(--border);border-radius:10px;background:var(--tg-panel-bg);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;letter-spacing:.08em}
+.prod-stub[hidden]{display:none}
+.panel{width:var(--w,480px);height:calc(100vh - var(--top,0px) - var(--topgap,0px));display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(18,24,32,.96),rgba(8,10,16,.96));border:1px solid var(--bord2);border-radius:12px;overflow:hidden}
+.ph{display:flex;align-items:baseline;justify-content:space-between;padding:0.55em 0.85em 0.38em;border-bottom:1px solid var(--border);
+  font-family:var(--tg-font-title);letter-spacing:.12em;color:var(--gold);font-weight:700;font-size:0.95em}
+.ph a{font-family:var(--tg-font-ui);font-size:0.62em;color:var(--gold);letter-spacing:.1em}
+.body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:0.5em 0.85em 0.55em}
+.list{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.2em;background:linear-gradient(180deg,#3a4150,#2a3040);
+  border:1px solid var(--bord2);border-radius:3px;color:var(--text);font-size:0.82em;padding:0.18em 0.6em;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-g{background:linear-gradient(180deg,rgba(232,216,138,0.38),rgba(140,100,32,0.92));border:1px solid var(--bord2);color:#fff8e8;font-weight:700;border-radius:8px}
+.chip{display:inline-flex;align-items:center;gap:0.22em;white-space:nowrap;color:#c8b898;font-variant-numeric:tabular-nums}
+.chip.miss{color:#e88a7a}
+.gold-ic{color:#e0b24a}.mp-ic{color:#b8a0e0}
+
+.hdr{display:flex;flex-wrap:wrap;align-items:center;gap:0.25em 0.75em;padding:0.3em 0.5em;margin:0 0 0.45em;border:1px solid var(--border);border-radius:8px;background:rgba(232,216,138,.05);font-size:0.78em}
+.hdr .era{font-size:0.8em;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hdr .sep{width:1px;align-self:stretch;background:var(--border)}
+.hdr b{font-weight:700;color:var(--text)}
+
+.step{display:inline-flex;align-items:center;gap:1px;flex:none}
+.sb{width:1.5em;height:1.6em;padding:0;font-size:0.8em}
+.si{width:2.3em;height:1.45em;padding:0 0.1em;text-align:center;font-size:0.76em;background:#0a0d14;color:var(--text);border:1px solid var(--bord2);border-radius:3px;-moz-appearance:textfield}
+.si::-webkit-inner-spin-button{display:none}
+.si:disabled{opacity:.4}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:0.35em;align-content:start}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:0.2em;padding:0.4em 0.3em 0.35em;background:var(--panel2);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;height:6.1em}
+.tile.off{border-color:rgba(80,96,112,0.32)}
+.tile.off .ic,.tile.off .nm{opacity:.55}
+.tile.sel{border-color:var(--gold);box-shadow:0 0 0 1px rgba(232,216,138,.45) inset}
+.tile .ic{width:2em;height:2em;border-radius:6px;border:1px solid rgba(160,128,48,.35);background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.tile .nm{font-size:0.72em;font-weight:600;line-height:1.15;width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.3em}
+.tile .cost{display:flex;gap:0.4em;font-size:0.68em}
+.tile .lock{position:absolute;top:3px;right:4px;font-size:0.62em;color:#e88a7a}
+.bar{flex:none;margin-top:0.45em;padding:0.45em 0.55em;border:1px solid var(--bord2);border-radius:8px;background:rgba(232,216,138,.06);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0.3em 0.5em;align-items:center}
+.bar .t{font-weight:700;font-size:0.88em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .m{grid-column:1/2;display:flex;flex-wrap:wrap;gap:0.5em;font-size:0.74em}
+.bar .a{grid-row:1/3;grid-column:2;display:flex;align-items:center;gap:0.35em}
+.bar .go{padding:0.2em 0.7em;font-size:0.82em}
+</style></head>
+<body><div class="prod-stub" hidden>PRODUKCJA (blok nad panelem — tylko dla pomiaru)</div>
+<div class="panel"><div class="ph">REKRUTACJA <a>I SZCZEGÓŁY</a></div><div class="body"><div class="hdr" id="hdr"></div><div class="list grid" data-list id="list"></div><div class="bar" id="bar"></div></div></div>
+<script>
+const POOL = { drewno: 8, braz: 202, kon: 298 };   // pasek epoki ze zrzutu
+const SKARB = 3391, REKRUCI = 269000, KOLEJKA = 0, EPOKA = 'Brąz';
+const RES = { drewno: 'Drewno', braz: 'Brąz', kon: 'Koń' };
+// 3 pierwsze pozycje = zrzut właściciela; pozostałe 10 = ZAŁOŻENIE (nazwy z data/units.json, koszty ilustracyjne).
+const UNITS = [
+  { n: 'Galera', cat: 'Morska', era: 'Brąz', g: 12, res: 'braz', q: 50, up: 10, mp: 2000, ic: 'ship', src: 'zrzut' },
+  { n: 'Łucznik', cat: 'Dystans', era: 'Kamień', g: 6, res: 'drewno', q: 13, up: 3, mp: 2000, ic: 'bow', src: 'zrzut' },
+  { n: 'Oszczepnik', cat: 'Dystans', era: 'Kamień', g: 6, res: 'drewno', q: 13, up: 3, mp: 2000, ic: 'jav', src: 'zrzut' },
+  { n: 'Wojownik z mieczem i tarczą', cat: 'Wręcz', era: 'Brąz', g: 10, res: 'braz', q: 25, up: 5, mp: 2000, ic: 'sword' },
+  { n: 'Włócznik', cat: 'Wręcz', era: 'Brąz', g: 9, res: 'braz', q: 25, up: 5, mp: 2000, ic: 'spear' },
+  { n: 'Wojownik z toporem', cat: 'Wręcz', era: 'Brąz', g: 9, res: 'braz', q: 25, up: 5, mp: 2000, ic: 'axe' },
+  { n: 'Rydwan (woły)', cat: 'Flanka', era: 'Brąz', g: 14, res: 'braz', q: 25, up: 5, mp: 2000, ic: 'horse' },
+  { n: 'Konnica', cat: 'Flanka', era: 'Brąz', g: 15, res: 'braz', q: 25, up: 5, mp: 2000, ic: 'horse' },
+  { n: 'Procarz', cat: 'Dystans', era: 'Brąz', g: 8, res: 'drewno', q: 25, up: 5, mp: 2000, ic: 'sling' },
+  { n: 'Wojownik', cat: 'Wręcz', era: 'Kamień', g: 5, res: 'drewno', q: 13, up: 3, mp: 2000, ic: 'sword' },
+  { n: 'Taran', cat: 'Oblężnicza', era: 'Kamień', g: 8, res: 'drewno', q: 19, up: 4, mp: 2000, ic: 'ram' },
+  { n: 'Taran okuty', cat: 'Oblężnicza', era: 'Brąz', g: 16, res: 'braz', q: 38, up: 8, mp: 2000, ic: 'ram' },
+  { n: 'Zwiadowca', cat: 'Wsparcie', era: 'Kamień', g: 4, res: null, q: 0, up: 0, mp: 0, ic: 'scout' },
+];
+// ?n=40 — test pojemności: powiela 13 pozycji do N (pomiar ile wierszy mieści się bez przewijania).
+const N_FILL = +new URLSearchParams(location.search).get('n') || 0;
+for (let i = 0; UNITS.length < N_FILL; i++) UNITS.push(Object.assign({}, UNITS[i % 13], { n: UNITS[i % 13].n + ' ' + (2 + Math.floor(i / 13)) }));
+for (const u of UNITS) {
+  u.missing = u.res ? Math.max(0, u.q - POOL[u.res]) : 0;
+  u.ok = u.missing === 0 && SKARB >= u.g && REKRUCI >= u.mp;
+  u.reason = u.ok ? '' : 'Brakuje ' + u.missing + ' ' + RES[u.res];
+  u.max = u.ok ? Math.max(1, Math.min(Math.floor(SKARB / u.g), u.res ? Math.floor(POOL[u.res] / u.q) : 99, u.mp ? Math.floor(REKRUCI / u.mp) : 99)) : 1;
+}
+const fmtMp = v => v >= 1000 ? Math.round(v / 1000) + ' tys.' : String(v);
+const ICONS = {
+  ship: '<path d="M3 15h18l-3 5H6z"/><path d="M12 3v11M12 4l6 8h-6"/>',
+  bow: '<path d="M7 3c8 4 8 14 0 18"/><path d="M7 3v18M4 12h15M16 9l3 3-3 3"/>',
+  jav: '<path d="M4 20 19 5M15 5h4v4"/>',
+  sword: '<path d="M14 4h6v6L9 21l-3-3z"/><path d="M5 14l5 5M3 21l3-3"/>',
+  spear: '<path d="M12 2l2 5h-4zM12 7v15"/>',
+  axe: '<path d="M8 21 18 6"/><path d="M13 4c4 0 7 3 7 7l-5-2z"/>',
+  horse: '<path d="M5 20l2-8 4-2 2-6 3 3 3 1-2 3-3-1-1 4 1 6"/>',
+  sling: '<path d="M6 4c0 8 12 8 12 0"/><circle cx="12" cy="16" r="3"/>',
+  ram: '<path d="M3 13h14l4-3v6l-4-3"/><circle cx="7" cy="18" r="2"/><circle cx="14" cy="18" r="2"/>',
+  scout: '<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/>',
+  coin: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/>',
+  wood: '<rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="8" cy="12" r="2.5"/>',
+  bronze: '<path d="M4 16l3-7h10l3 7z"/>',
+  man: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21c1-6 13-6 14 0"/>',
+};
+const RES_IC = { drewno: 'wood', braz: 'bronze', kon: 'horse' };
+const svg = (k, s = 16) => '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + '</svg>';
+
+document.getElementById('hdr').innerHTML = '<span class="era">' + EPOKA + '</span>' +
+  Object.keys(POOL).map(k => '<span class="chip" title="' + RES[k] + ' w magazynie państwa">' + svg(RES_IC[k], 15) + '<b>' + POOL[k] + '</b></span>').join('') +
+  '<span class="sep"></span><span class="chip gold-ic" title="Skarb">' + svg('coin', 15) + '<b>' + SKARB + '</b></span>' +
+  '<span class="chip mp-ic" title="Pula rekrutów imperium (wspólna dla wszystkich jednostek)">' + svg('man', 15) + '<b>' + fmtMp(REKRUCI) + '</b></span>' +
+  '<span class="chip" title="Kolejka rekrutacji">Kolejka <b>' + KOLEJKA + '</b></span>';
+
+function stepper(u, cls) {
+  const d = u.ok ? '' : ' disabled';
+  return '<span class="step ' + (cls || '') + '"><button class="btn sb" data-d="-1" disabled aria-label="Mniej">−</button><input class="si" type="number" min="1" max="' + u.max + '" value="1"' + d + ' aria-label="Liczba"><button class="btn sb" data-d="1"' + d + ' aria-label="Więcej">+</button></span>';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.sb'); if (!b) return;
+  const inp = b.parentElement.querySelector('.si'); const v = Math.max(1, Math.min(+inp.max, +inp.value + +b.dataset.d)); inp.value = v;
+  b.parentElement.querySelector('[data-d="-1"]').disabled = v <= 1; b.parentElement.querySelector('[data-d="1"]').disabled = v >= +inp.max;
+});
+const costChips = (u, opts) => {
+  let h = '<span class="chip"><span class="gold-ic">' + svg('coin', 13) + '</span>' + u.g + '</span>';
+  if (u.res) h += '<span class="chip' + (u.missing ? ' miss' : '') + '" title="' + RES[u.res] + ' (jednorazowo)">' + svg(RES_IC[u.res], 13) + u.q + '</span>';
+  if (opts && opts.mp && u.mp) h += '<span class="chip"><span class="mp-ic">' + svg('man', 13) + '</span>' + fmtMp(u.mp) + '</span>';
+  if (opts && opts.up && u.up) h += '<span class="chip up" title="Utrzymanie na turę">−' + u.up + '/t</span>';
+  return h;
+};
+const tip = u => u.n + ' — ' + u.cat + ' · ' + u.era + '\nKoszt: ' + u.g + ' złota' + (u.res ? ', ' + u.q + ' ' + RES[u.res] : '') + (u.mp ? ', ' + fmtMp(u.mp) + ' rekrutów' : '') + (u.up ? '\nUtrzymanie: −' + u.up + ' ' + RES[u.res] + '/turę' : '') + (u.ok ? '' : '\nZablokowane: ' + u.reason);
+
+const list = document.getElementById('list');
+list.innerHTML = UNITS.map((u, i) =>
+  '<div class="tile' + (u.ok ? '' : ' off') + '" data-unit-row data-i="' + i + '" title="' + tip(u) + '">' + (u.ok ? '' : '<span class="lock">brak</span>') +
+  '<span class="ic">' + svg(u.ic, 22) + '</span><span class="nm" data-unit-name>' + u.n + '</span><span class="cost">' + costChips(u, {}) + '</span></div>').join('');
+function select(i) {
+  const u = UNITS[i];
+  list.querySelectorAll('.tile').forEach(t => t.classList.toggle('sel', +t.dataset.i === i));
+  document.getElementById('bar').innerHTML = '<span class="t">' + u.n + ' <span style="font-weight:400;color:var(--muted);font-size:.85em">' + u.cat + ' · ' + u.era + '</span></span>' +
+    '<span class="m">' + costChips(u, { mp: 1, up: 1 }) + (u.ok ? '' : '<span class="chip miss">' + u.reason + '</span>') + '</span>' +
+    '<span class="a">' + stepper(u) + '<button class="btn btn-g go"' + (u.ok ? '' : ' disabled') + '>Rekrutuj</button></span>';
+}
+list.addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) select(+t.dataset.i); });
+select(UNITS.findIndex(u => u.ok));
+
+window.measure = () => {
+  const list = document.querySelector('[data-list]');
+  const lr = list.getBoundingClientRect();
+  const rows = [...document.querySelectorAll('[data-unit-row]')].filter(r => r.offsetParent !== null);
+  const vis = rows.filter(r => { const b = r.getBoundingClientRect(); return b.top >= lr.top - 0.5 && b.bottom <= lr.bottom + 0.5; });
+  const names = [...document.querySelectorAll('[data-unit-name]')].filter(n => n.offsetParent !== null);
+  const cut = names.filter(n => n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1).length;
+  const hs = rows.map(r => r.getBoundingClientRect().height);
+  return { listTop: Math.round(lr.top), listHeight: Math.round(lr.height), rowsTotal: rows.length, rowsFullyVisible: vis.length,
+    rowHeightMin: Math.round(Math.min(...hs)), rowHeightMax: Math.round(Math.max(...hs)), namesCut: cut, namesTotal: names.length,
+    horizontalOverflow: document.querySelector('.panel').scrollWidth > document.querySelector('.panel').clientWidth };
+};
+const qs = new URLSearchParams(location.search);
+document.documentElement.style.setProperty('--w', (qs.get('w') || '480') + 'px');
+if (qs.get('top')) { document.documentElement.style.setProperty('--top', qs.get('top') + 'px'); document.querySelector('.prod-stub').hidden = false; document.documentElement.style.setProperty('--topgap', '6px'); }
+</script></body></html>

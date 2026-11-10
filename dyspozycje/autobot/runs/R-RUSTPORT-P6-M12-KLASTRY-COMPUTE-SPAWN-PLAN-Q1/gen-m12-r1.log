@@ -1,0 +1,16 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=44 landSea=232 relief=456 coast=62 riversMain=2055 riversFill=3128 forest=9 deposits=22 starts=130 total=6142
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=11 landSea=410 relief=263 coast=66 riversMain=1169 riversFill=2370 forest=8 deposits=41 starts=195 total=4534
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=62 landSea=323 relief=442 coast=188 riversMain=219 riversFill=476 forest=16 deposits=44 starts=285 total=2056
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=12 landSea=122 relief=115 coast=14 riversMain=488 riversFill=433 forest=11 deposits=18 starts=54 total=1266
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=17 landSea=316 relief=315 coast=45 riversMain=5783 riversFill=5757 forest=24 deposits=126 starts=277 total=12667
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=6 terrain=209 landSea=3220 relief=5797 coast=688 riversMain=61533 riversFill=58128 forest=164 deposits=263 starts=1359 total=131367
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=788 landSea=6281 relief=10439 coast=3054 riversMain=76559 riversFill=8506 forest=263 deposits=719 starts=3108 total=109717
+OK {"maps":46,"meta":{"pin":"edb8fb56","node":"v22.22.0","clustersLines":4251,"spawnLines":517},"counts":{"seaField":46,"compute":654,"spawn":372},"threwCompute":21,"threwSpawn":3,"noDiagSame":117}
+EXIT=0

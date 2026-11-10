@@ -1,0 +1,8 @@
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 visible
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 explored
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P2 memo
+ FAIL sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P3 nodes -- 0
+ FAIL sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P4 worked-owner -- 0
+
+EXIT=1
+TIME=0.2

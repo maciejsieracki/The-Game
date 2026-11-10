@@ -1,0 +1,11 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo tree --locked --target x86_64-pc-windows-msvc -i gpu-allocator -e normal
+# 2026-10-22T12:01:48Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+gpu-allocator v0.28.0
+└── wgpu-hal v30.0.1
+    ├── wgpu v30.0.1
+    │   └── spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed)
+    ├── wgpu-core v30.0.1
+    │   └── wgpu v30.0.1 (*)
+    └── wgpu-core-deps-windows-linux-android v30.0.1
+        └── wgpu-core v30.0.1 (*)
+EXIT=0

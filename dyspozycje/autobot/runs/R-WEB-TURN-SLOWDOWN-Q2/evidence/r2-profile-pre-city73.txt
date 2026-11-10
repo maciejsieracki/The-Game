@@ -1,0 +1,53 @@
+PROFIL r2pre-city73.cpuprofile: próbki 2415.9 ms; (program) 1740.2 ms; (idle) 3.9 ms; CZAS JS (mianownik %JS) 671.8 ms
+--- TOP self-time (bez (program)/(idle)) ---
+    161.0 ms  24.0%JS   6.7%all  computeVisibleAt @L68409                             gra/src/game/visibility.ts:64
+     47.3 ms   7.0%JS   2.0%all  ownPlayerVisibleHexes @L193682                       gra/src/main.ts:10526
+     35.7 ms   5.3%JS   1.5%all  okolicaTiles @L68072                                 gra/src/game/okolica.ts:152
+     30.4 ms   4.5%JS   1.3%all  hexKeysWithinRadius @L68033                          gra/src/game/okolica.ts:66
+     25.4 ms   3.8%JS   1.1%all  computeTerritoryResourceYieldByCity @L103516         gra/src/game/turn-economy.ts:806
+     25.3 ms   3.8%JS   1.0%all  (anon) @L190190                                      [pseudo-węzeł V8]
+     24.7 ms   3.7%JS   1.0%all  assignWorkedTiles @L68143                            gra/src/game/okolica.ts:294
+     19.3 ms   2.9%JS   0.8%all  keyOf$1 @L51327                                      gra/src/game/ai-fog.ts:33 | gra/src/game/ai-fog.ts:44 (+7) [niejednoznaczne 9]
+     19.0 ms   2.8%JS   0.8%all  axialDistance$1 @L67908                              gra/src/game/city-state-difficulty.ts:169 | gra/src/map/territory.ts:47 [niejednoznaczne 2]
+     18.1 ms   2.7%JS   0.7%all  computeLostToNearerSiblingByCity @L68352             gra/src/game/okolica.ts:767
+     17.9 ms   2.7%JS   0.7%all  improvementKeysForHex @L51134                        gra/src/game/terrain-improvements.ts:302
+     17.0 ms   2.5%JS   0.7%all  updateMatrixWorld @L4696                             [poza gra/src]
+     16.2 ms   2.4%JS   0.7%all  findSvgRaw @L77563                                   gra/src/ui/icons/brandAssets.ts:42
+     13.0 ms   1.9%JS   0.5%all  (anon) @L68136                                       [pseudo-węzeł V8]
+     11.3 ms   1.7%JS   0.5%all  hexDistance @L51330                                  gra/src/battle/manualBattle.ts:273 | gra/src/game/first-player-city.ts:29 (+2) [niejednoznaczne 4]
+     11.0 ms   1.6%JS   0.5%all  currentVisible @L193695                              gra/src/main.ts:10561
+     10.5 ms   1.6%JS   0.4%all  (garbage collector) @L0                              [pseudo-węzeł V8]
+      8.2 ms   1.2%JS   0.3%all  placedImprovementsForOwner @L190201                  gra/src/main.ts:4859
+      7.1 ms   1.1%JS   0.3%all  collectTerritoryHexKeysByOwner @L153877              gra/src/map/range-hexes.ts:28
+      6.5 ms   1.0%JS   0.3%all  getProgramInfoLog @L0                                [poza gra/src]
+      6.4 ms   1.0%JS   0.3%all  measureText @L0                                      [poza gra/src]
+      5.1 ms   0.8%JS   0.2%all  renderBar @L141243                                   gra/src/ui/hud.ts:1432
+      4.4 ms   0.7%JS   0.2%all  WebGLRenderer.renderBufferDirect @L17083             [poza gra/src]
+      3.9 ms   0.6%JS   0.2%all  texSubImage2D @L0                                    [poza gra/src]
+      3.7 ms   0.6%JS   0.2%all  (anon) @L67958                                       [pseudo-węzeł V8]
+--- TOP total-time (inclusive, bez (root)/(program)/(idle)) ---
+    362.1 ms  53.9%JS  15.0%all  openCityPanelForPlayer @L191058                      gra/src/main.ts:6299
+    362.1 ms  53.9%JS  15.0%all  openFirstPlayerCityPanel @L208754                    gra/src/main.ts:25022
+    362.1 ms  53.9%JS  15.0%all  (anon) @L1                                           [pseudo-węzeł V8]
+    362.1 ms  53.9%JS  15.0%all  evaluate @L297                                       [poza gra/src]
+    288.2 ms  42.9%JS  11.9%all  applyCityPanelWorldView @L190640                     gra/src/main.ts:5716
+    268.8 ms  40.0%JS  11.1%all  refreshTerritoryBorderOverlay @L194794               gra/src/main.ts:12814
+    265.6 ms  39.5%JS  11.0%all  collectTerritoryHexKeysByOwner @L153877              gra/src/map/range-hexes.ts:28
+    252.8 ms  37.6%JS  10.5%all  (anon) @L194800                                      [pseudo-węzeł V8]
+    250.3 ms  37.3%JS  10.4%all  currentVisible @L193695                              gra/src/main.ts:10561
+    238.8 ms  35.5%JS   9.9%all  ownPlayerVisibleHexes @L193682                       gra/src/main.ts:10526
+    233.1 ms  34.7%JS   9.6%all  frameOnClose @L120261                                [poza gra/src]
+    233.1 ms  34.7%JS   9.6%all  closeCityPanelIfOpen @L150478                        gra/src/ui/cityPanel.ts:12051
+    233.1 ms  34.7%JS   9.6%all  closeCityPanel @L208761                              gra/src/main.ts:25029
+    233.1 ms  34.7%JS   9.6%all  (anon) @L5                                           [pseudo-węzeł V8]
+    231.9 ms  34.5%JS   9.6%all  (anon) @L191075                                      [pseudo-węzeł V8]
+    210.2 ms  31.3%JS   8.7%all  buildHudState @L198644                               gra/src/main.ts:18746
+    187.7 ms  27.9%JS   7.8%all  computeVisibleAt @L68409                             gra/src/game/visibility.ts:64
+    163.7 ms  24.4%JS   6.8%all  buildEmpireResourceRows @L189269                     gra/src/main.ts:3384
+    159.5 ms  23.7%JS   6.6%all  updateHud @L141581                                   gra/src/main.ts:23218 | gra/src/ui/hud.ts:1826 [niejednoznaczne 2]
+    141.1 ms  21.0%JS   5.8%all  empireTerritoryResourceRatesForOwner @L189189        gra/src/main.ts:3254
+    118.9 ms  17.7%JS   4.9%all  computeWorkedMagazynYieldsByCity @L103565            gra/src/game/turn-economy.ts:892
+    104.0 ms  15.5%JS   4.3%all  updateHud$1 @L201638                                 gra/src/main.ts:23218 | gra/src/ui/hud.ts:1826 [niejednoznaczne 2]
+     99.0 ms  14.7%JS   4.1%all  showCityPanel @L150461                               gra/src/ui/cityPanel.ts:12028
+     97.7 ms  14.5%JS   4.0%all  refreshD1BModules @L141471                           gra/src/ui/hud.ts:1697
+     95.5 ms  14.2%JS   4.0%all  renderBar @L141243                                   gra/src/ui/hud.ts:1432

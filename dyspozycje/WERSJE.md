@@ -1,3 +1,15 @@
+## ROBOCZA 0ef655f0 -- 2026-11-06 -- FALA 597: HAAMONGA: usunięte martwe bonusy cudu Kamień Ha'amonga (lowie_rybackie, laka) (testowa)
+
+- HAAMONGA d0f08d184
+- Weryfikacja: wonder-haamonga-no-dead-bonuses 16/0, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO render karty; encyklopedia ×3 plony niezgodna (osobny temat); REPIN Rust dane cudu
+
+## ROBOCZA bbd9f3d8 -- 2026-11-06 -- FALA 596: ROAD-BUILD: gracz buduje drogi tak samo jak AI (przez heksy z farmą, do heksu miasta; powód odrzucenia po polsku) (testowa)
+
+- ROADPAR 7a10424ee
+- Weryfikacja: road-build-player-parity 17/0, road-connectivity 99/0, roads-city-links-only 57/0, tsc 0, logic 213, sidecar PASS
+- Limity: NIE_ZMIERZONO Chromium; AI nie stawia 2. drogi na heksie z drogą; REPIN Rust
+
 ## ROBOCZA e3cc8643 -- 2026-11-06 -- FALA 595: GOODS-LABEL (Ruda miedzi, ×0) + FARMHINT (podpowiedź Przydziel obywatela w trybie ręcznym) (testowa)
 
 - GOODSLBL 4f8d9728b + FARMHINT 305a65da7

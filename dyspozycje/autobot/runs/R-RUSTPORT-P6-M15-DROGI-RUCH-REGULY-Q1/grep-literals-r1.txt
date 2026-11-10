@@ -1,0 +1,4 @@
+# literaly liczbowe w src/domain/roads.rs (poza komentarzami //)
+87:    if key.len() > 1 && key.starts_with('0') {
+91:    if value <= u64::from(u32::MAX - 1) {
+110:            Some(slot) => slot.1 = hex,

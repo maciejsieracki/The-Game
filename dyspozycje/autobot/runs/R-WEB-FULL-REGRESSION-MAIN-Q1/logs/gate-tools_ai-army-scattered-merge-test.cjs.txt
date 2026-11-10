@@ -1,0 +1,7 @@
+POMIAR ms/wywolanie decideAITurn (min z 5, przeplatane): stos 40 (stan ustalony) PO=152.53 bez bramki=146.62; chmura 40 (faza zbierania, 10 tur) PO=65.78 bez bramki=14.56
+POMIAR planFieldStackGather (min z 5): stos 100 = 0.037 ms, chmura 100 = 1.585 ms na wywolanie
+FAIL: czas tury AI w fazie zbierania chmury (przejsciowej) <= 3x + 10 ms
+32 passed, 1 failed
+
+EXIT=1
+TIME=24.8

@@ -1,0 +1,17 @@
+miasta-zbyt-blisko-test
+MIN_CITY_DISTANCE=4 MIN_CITY_DISTANCE_START_CITY_STATE=3
+
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=139 landSea=9162 relief=5145 coast=1702 riversMain=32515 riversFill=611 forest=108 deposits=1069 starts=1999 total=52453
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=469 landSea=1897 relief=3133 coast=1097 riversMain=12508 riversFill=726 forest=261 deposits=406 starts=1307 total=21804
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=104 landSea=2329 relief=3670 coast=868 riversMain=10046 riversFill=485 forest=62 deposits=686 starts=4043 total=22293
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=91 landSea=2743 relief=3553 coast=1847 riversMain=12409 riversFill=795 forest=296 deposits=573 starts=1413 total=23720
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=463 landSea=1783 relief=2088 coast=765 riversMain=4012 riversFill=414 forest=108 deposits=100 starts=810 total=10543
+[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=150.1

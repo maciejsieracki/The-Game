@@ -1,0 +1,14 @@
+FAIL: tura 1: zapasy -20
+FAIL: tura 5 (nowy spadek): licznik startuje od 1, nie kontynuuje
+FAIL: własne terytorium: 1 żywność/turę (mnożnik x1,0)
+FAIL: poza własnym terytorium: 2 żywność/turę (mnożnik x2,0)
+FAIL: brak pola onOwnTerritory (stare wywołania) = domyślnie własne terytorium, BEZ regresji
+FAIL: mieszany stos: 2 własne (1+1) + 1 poza (2) = 4 żywności/turę
+FAIL: ufortyfikowana we własnym terytorium: 0,5 żywności/turę (0,5 obóz x 1,0 teren)
+FAIL: ufortyfikowana POZA własnym terytorium: 1,0 żywności/turę (0,5 obóz x 2,0 teren)
+FAIL: maszerująca poza własnym terytorium (regresja, camping=false): nadal 2,0 żywności/turę
+FAIL: stos w garnizonie: 2 ufortyfikowane (0,5+0,5) + 1 maszerująca (1) = 2,0 żywności/turę
+glod-wojska-karencja-test: 29 pass, 10 fail
+
+EXIT=1
+TIME=0.9

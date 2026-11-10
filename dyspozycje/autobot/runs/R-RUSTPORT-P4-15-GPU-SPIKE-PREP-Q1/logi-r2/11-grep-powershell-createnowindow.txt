@@ -1,0 +1,22 @@
+# cwd: /home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-3/rust-port/spike-gpu-embed
+# env: CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike
+# rustc: rustc 1.97.0 (2d8144b78 2026-07-07) / cargo 1.97.0 (c980f4866 2026-06-30)
+$ grep -n powershell\|CREATE_NO_WINDOW\|GetProcessMemoryInfo\|windows_subsystem -r src
+src/main.rs:5:    windows_subsystem = "windows"
+src/memory.rs:6://! - Windows, feature `app` (what the owner runs): `GetProcessMemoryInfo`
+src/memory.rs:12://!   `CREATE_NO_WINDOW`.
+src/memory.rs:20://!   `GetProcessMemoryInfo`.
+src/memory.rs:240:        /// `CREATE_NO_WINDOW` (winbase.h): no console window for the child.
+src/memory.rs:241:        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+src/memory.rs:244:        let out = std::process::Command::new("powershell")
+src/memory.rs:246:            .creation_flags(CREATE_NO_WINDOW)
+src/memory.rs:248:            .map_err(|e| format!("powershell: {e}"))?;
+src/memory.rs:255:                "windows:Get-Process WorkingSet64/PrivateMemorySize64 (CREATE_NO_WINDOW)".into(),
+src/memory.rs:258:            [] => Err(format!("powershell: nieczytelne wyjscie {txt:?}")),
+src/memory.rs:360:        GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS, PROCESS_MEMORY_COUNTERS_EX,
+src/memory.rs:374:            GetProcessMemoryInfo(
+src/memory.rs:380:        .map_err(|e| format!("GetProcessMemoryInfo: {e}"))?;
+src/memory.rs:391:            "windows:GetProcessMemoryInfo WorkingSetSize/PrivateUsage (w procesie, bez okna konsoli)"
+src/memory.rs:461:        const SOURCE: &str = "windows:CreateToolhelp32Snapshot (ppid) + GetProcessMemoryInfo, potomkowie procesu spike'a (msedgewebview2.exe)";
+src/memory.rs:488:    fn ps_and_powershell_parsed() {
+EXIT=0

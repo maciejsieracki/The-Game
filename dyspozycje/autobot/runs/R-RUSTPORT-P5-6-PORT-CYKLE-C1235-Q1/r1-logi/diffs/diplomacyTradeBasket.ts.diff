@@ -1,0 +1,443 @@
+--- pin:gra/src/ui/diplomacyTradeBasket.ts
++++ v2:src-tauri/frontend-v2/src/ui/diplomacyTradeBasket.ts
+@@ -4,52 +4,71 @@
+  */
+ import type { AudienceAction } from './diplomacyAudience';
+ import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
+-import { isCurrencyProposalForbiddenDuringWar } from '../game/diplomacy-war-gates';
+-import { computeQuickDealBasket, proposalPnTurnsMultiplier, type BasketItem } from '../game/diplomacy-pn-engine';
+-import { validateTradeBasketSides } from '../game/diplomacy-trade-validation';
+-import { balanceGiveItemsToFairMin } from '../game/diplomacy-ai-offer-balance';
+-import {
+-  proposalHasResourceAccess,
+-  stripWithdrawnResourceAccessItems,
+-} from '../game/diplomacy-proposals';
+-import type { TempoGry } from '../game/tech-tempo';
+-import type { GameDifficulty } from '../game/difficulty-cost';
+-import {
+-  diplomacySumPn,
+-  diplomacyFairGivePn,
+-  diplomacyTradeTrustFromDeal,
+-  diplomacyGiftTrustFromPn,
+-  diplomacyDobraWolaFromSurplus,
+-  diplomacyProgDarRelacja,
+-  diplomacyPnRelacjaParams,
+-  diplomacyZywnoscNaPn,
+-  diplomacyResourceAccessCatalog,
+-  diplomacyHandelZaufaniePerTura,
+-  diplomacyHandelSurowceCatalog,
+-  diplomacyHandelSurowiecKrok,
+-  diplomacyNormalizeSurowiecIlosc,
+-  type WartoscPozycjaTyp,
+-} from '../game/diplomacy-value-catalog';
+-import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
+-import { BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS } from '../game/diplomacy-barbarian-cooperation';
+-import unitsJson from '../../data/units.json';
+-import techJson from '../../data/tech.json';
++// P5.6 (R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1): reguły koszyka PW (wycena stron, podsumowanie handlu/daru, PW traktatu,
++// walidacja stron, bramka waluty w wojnie, szybka umowa, wyrównanie do fair, krok/normalizacja surowca, wycofany
++// dostęp) → zapytania kontrolera `controller/diplomacyQueries.ts` (Rust, P5-0 §6.6); stałe i dane → `StaticCatalogDto`
++// (D-UI-4); typy → `viewmodel/types.ts`. Lokalne adaptery niżej zachowują nazwy z pinu.
++import type {
++  BasketItemDto as BasketItem,
++  BasketItemTyp as WartoscPozycjaTyp,
++  BasketRulesCtxDto,
++  CurrencyPayloadDto,
++  DealBasketItemViewDto,
++} from '../viewmodel/types';
++import { diplomacyQueries } from '../controller/diplomacyQueries';
++import { staticCatalog } from '../controller/staticCatalog';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
+ import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+ import {
+   renderBasketItemValueHtml,
++  type BasketItemFormatCtx,
+ } from './diplomacyDealDisplay';
+-import type { BasketItemFormatCtx } from '../game/diplomacy-display';
+-import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
+ import { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty } from './diplomacyAcceptanceBalance';
+-import {
+-  bilateralTreatyDisplayPw,
+-  computePlayerAcceptanceSides,
+-  sideDisplayOfferPw,
+-} from '../game/diplomacy-acceptance-points';
+ import { proposalActionIdFromPayload } from './diplomacyNegotiationModal';
+-import type { ProposalPayload, ProposalActionId } from '../game/diplomacy-proposals';
++
++// ─── P5.6: adaptery zapytań kontrolera (nazwy jak na pinie; liczy Rust) ──────
++const isCurrencyProposalForbiddenDuringWar = (proposalActionId: string, payload: CurrencyPayloadDto, atWar: boolean): boolean =>
++  diplomacyQueries().currencyForbiddenDuringWar(proposalActionId, payload, atWar);
++const validateTradeBasketSidesQ = (mode: TradeBasketMode, give: readonly BasketItem[], receive: readonly BasketItem[]): { valid: boolean; reason?: string } =>
++  diplomacyQueries().validateTradeBasketSides(mode, give, receive);
++const stripWithdrawnResourceAccessItems = (items: readonly BasketItem[]): BasketItem[] =>
++  diplomacyQueries().stripWithdrawnResourceAccessItems(items);
++const proposalHasResourceAccess = (payload: { giveItems?: readonly BasketItem[]; receiveItems?: readonly BasketItem[] }): boolean =>
++  diplomacyQueries().proposalHasResourceAccess(payload);
++const diplomacyHandelSurowiecKrok = (surowiecKey: string): number => diplomacyQueries().handelSurowiecKrok(surowiecKey);
++const diplomacyNormalizeSurowiecIlosc = (surowiecKey: string, rawQty: number, max?: number): number =>
++  diplomacyQueries().normalizeSurowiecIlosc(surowiecKey, rawQty, max);
++// P5.6: stałe K (P5-0 §6.1) — `StaticCatalogDto.constants`.
++const diplomacyProgDarRelacja = (): number => staticCatalog().constants.progDarRelacja;
++const diplomacyZywnoscNaPn = (): number => staticCatalog().constants.zywnoscNaPn;
++const diplomacyHandelZaufaniePerTura = (): number => staticCatalog().constants.handelZaufaniePerTura;
++const BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS = staticCatalog().constants.barbarianCooperationDefaultDurationTurns;
++
++/**
++ * P5.6: web `resourceDisplayLabel` (`game/diplomacy-display.ts:434-437`) — nazwa z `StaticCatalogDto.labels.resourceKeyLabels`
++ * (= `RESOURCE_KEY_LABEL`), formatowanie zapasowe (wielka litera) jak web.
++ */
++function resourceDisplayLabel(key: string): string {
++  const k = key.trim().toLowerCase();
++  return staticCatalog().labels.resourceKeyLabels[k] ?? (key.charAt(0).toUpperCase() + key.slice(1));
++}
++
++/** P5.6: pozycja koszyka jako `DealBasketItemViewDto` (P5.3 `diplomacyDealDisplay.ts`; pin liczył `label` w rendererze). */
++function basketItemView(item: BasketItem): DealBasketItemViewDto {
++  return { ...item, label: resourceDisplayLabel(item.id) };
++}
++
++/** P5.6: kontekst wywołania zapytań — surowe pola modala, które pin podawał regułom (ZAŁOŻENIE P5.6-Z6). */
++function rulesCtx(ctx: NegotiationModalContext): BasketRulesCtxDto {
++  return {
++    relacjaTotal: ctx.relacjaTotal,
++    trustPnGainedThisTurn: ctx.trustPnGainedThisTurn,
++    tempoGry: ctx.tempoGry,
++    difficulty: ctx.difficulty,
++    playerSkarbiec: ctx.playerSkarbiec,
++  };
++}
+ 
+ export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
+ 
+@@ -187,28 +206,8 @@
+ 
+ const PROG_HANDEL_REL = 100;
+ 
+-function resolveTempo(ctx: NegotiationModalContext): TempoGry | number {
+-  return ctx.tempoGry ?? 'standardowa';
+-}
+-
+-function basketPnOpts(
+-  ctx: NegotiationModalContext,
+-  side: 'give' | 'receive',
+-  resourceTradeMode: 'once' | 'per_turn' = 'once',
+-  dealTurns = 1,
+-) {
+-  const perTurn = resourceTradeMode === 'per_turn';
+-  return {
+-    difficulty: ctx.difficulty ?? 'normal',
+-    proposerOwnerId: 0,
+-    playerOwnerId: 0,
+-    side,
+-    tempo: resolveTempo(ctx),
+-    perTurn,
+-    turnsMultiplier: perTurn ? Math.max(1, dealTurns) : 1,
+-  };
+-}
+-
++// P5.6: `resolveTempo`/`basketPnOpts`/`toPnItems` (pin `:190-227`: domyślne tempo/trudność, rola strony, mnożnik tur
++// `perTurn ? max(1, dealTurns) : 1`) → zapytanie `basketSumPn` (Rust).
+ function sumBasketPn(
+   items: BasketItem[],
+   ctx: NegotiationModalContext,
+@@ -216,14 +215,7 @@
+   resourceTradeMode: 'once' | 'per_turn' = 'once',
+   dealTurns = 1,
+ ): number | null {
+-  return diplomacySumPn(toPnItems(items, ctx), basketPnOpts(ctx, side, resourceTradeMode, dealTurns));
+-}
+-
+-type PnItem = Parameters<typeof diplomacySumPn>[0][number];
+-
+-function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] {
+-  const tempo = resolveTempo(ctx);
+-  return items.map(i => ({ typ: i.typ, id: i.id, ilosc: i.ilosc, tempo }));
++  return diplomacyQueries().basketSumPn({ items, side, resourceTradeMode, dealTurns, ctx: rulesCtx(ctx) });
+ }
+ 
+ function ensureStyles(): void {
+@@ -426,31 +418,13 @@
+   cb?.();
+ }
+ 
+-function defaultUnitOptions(): Array<{ id: string; label: string }> {
+-  return (unitsJson as Array<{ Jednostka?: string }>)
+-    .filter(u => typeof u.Jednostka === 'string')
+-    .map(u => ({ id: u.Jednostka!, label: u.Jednostka! }));
+-}
++// P5.6: `defaultUnitOptions`, `defaultZlozeOptions`, `defaultResourceOptions` (pin `:429-433,441-454`) nie mają
++// wywołań na pinie (martwy kod z importami `units.json`/`HANDEL_ZLOZE_CENA_BAZA`/`diplomacyResourceAccessCatalog`) — usunięte.
+ 
+ function defaultTechOptions(): Array<{ id: string; label: string }> {
+-  return ((techJson as { technologie?: Array<{ Technologia?: string }> }).technologie ?? [])
++  return ((staticCatalog().tech as { technologie?: Array<{ Technologia?: string }> }).technologie ?? [])
+     .filter(t => typeof t.Technologia === 'string')
+     .map(t => ({ id: t.Technologia!, label: t.Technologia! }));
+-}
+-
+-function defaultZlozeOptions(): Array<{ id: string; label: string }> {
+-  return Object.keys(HANDEL_ZLOZE_CENA_BAZA).map(id => ({
+-    id,
+-    label: id.charAt(0).toUpperCase() + id.slice(1),
+-  }));
+-}
+-
+-function defaultResourceOptions(): Array<{ id: string; label: string }> {
+-  const cat = diplomacyResourceAccessCatalog();
+-  return Object.entries(cat).map(([id, pn]) => ({
+-    id,
+-    label: id + ' (' + pn + ' PW)',
+-  }));
+ }
+ 
+ /**
+@@ -463,8 +437,8 @@
+ const FALLBACK_QUANTITY_MAX_QTY = 99;
+ 
+ function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxQty: number }> {
+-  const cat = diplomacyHandelSurowceCatalog();
+-  return Object.keys(cat).map(id => ({
++  // P5.6: klucze cennika `diplomacyHandelSurowceCatalog()` → `StaticCatalogDto.constants.handelSurowceKeys`.
++  return staticCatalog().constants.handelSurowceKeys.map(id => ({
+     id,
+     label: id.charAt(0).toUpperCase() + id.slice(1),
+     maxQty: FALLBACK_QUANTITY_MAX_QTY,
+@@ -1035,7 +1009,7 @@
+       const qtyHtml = basketItemQtyEditable(item) ? basketRowQtyStepperHtml(item, side, idx, ctx) : '';
+       return (
+         '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">'
+-        + '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>'
++        + '<div class="da-deal-item">' + renderBasketItemValueHtml(basketItemView(item), fmtCtx) + '</div>'
+         + qtyHtml
+         + '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń pozycję">×</button>'
+         + '</div>'
+@@ -1071,28 +1045,36 @@
+   const payload = buildTreatyPayload(
+     action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
+   );
+-  const cywId = proposalActionIdFromPayload(payload) as ProposalActionId;
+-  const rel = ctx.relacjaTotal ?? 100;
++  const cywId = proposalActionIdFromPayload(payload);
+   const { actionId: _aid, ...proposalFields } = payload;
+-  const sides = computePlayerAcceptanceSides(cywId, proposalFields as ProposalPayload, rel, false);
+-  const treatyBasePw = sides.my.treatyBasePn ?? sides.their.treatyBasePn;
+-  const bil = bilateralTreatyDisplayPw(sides.my, sides.their);
+-  const myPw = sideDisplayOfferPw(sides.my, bil);
+-  const theirPw = sideDisplayOfferPw(sides.their, bil);
++  // P5.6: `computePlayerAcceptanceSides` + `bilateralTreatyDisplayPw` + `sideDisplayOfferPw` (pin `:1075-1081`) oraz
++  // dane paneli (PW gracza/partnera wg Relacji, próg Relacji, bramka koszyka; pin `:1086-1095`) → zapytanie
++  // `treatyBasketSummary` (Rust). Gotowe `DiplomacyTreatyBasketPreviewDto` (P5.2) albo podgląd koszyka.
++  const sides = diplomacyQueries().treatyBasketSummary({
++    proposalActionId: cywId,
++    payload: proposalFields,
++    give: giveItems,
++    receive: receiveItems,
++    resourceTradeMode,
++    dealTurns,
++    ctx: rulesCtx(ctx),
++  });
++  const bil = sides.bilateralPw;
++  const myPw = sides.myPw;
++  const theirPw = sides.theirPw;
+   const basketGivePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns) ?? 0;
+   const basketReceivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? 0;
+ 
+   let html = '';
+   if (bil != null && bil > 0) {
+-    const playerPw = sides.my.treatyEffectivePn ?? bil;
+-    const partnerPw = sides.their.treatyEffectivePn ?? treatyBasePw ?? bil;
+-    const relRequired = sides.my.relRequired ?? sides.their.relRequired;
+     const treatyMetaLabel = cywId === 'pokoj' ? 'Traktat pokoju' : 'Traktat';
+-    html += renderPnBalancePanelForTreaty(
+-      playerPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel, treatyBasePw, partnerPw,
+-    );
++    if (sides.treatyPreview) {
++      html += renderPnBalancePanelForTreaty(sides.treatyPreview, action.label, treatyMetaLabel);
++    }
+   } else if (myPw > 0 || theirPw > 0) {
+-    html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);
++    if (sides.basketPreview) {
++      html += renderPnBalancePanelFromBasket(sides.basketPreview, action.label);
++    }
+   }
+ 
+   if (giveItems.length === 0 && receiveItems.length === 0) {
+@@ -1294,10 +1276,10 @@
+     return { valid: true };
+   }
+   if (mode === 'gift') {
+-    const sides = validateTradeBasketSides(mode, giveItems, receiveItems);
++    const sides = validateTradeBasketSidesQ(mode, giveItems, receiveItems);
+     if (!sides.valid) return sides;
+   } else if (mode === 'trade') {
+-    const sides = validateTradeBasketSides(mode, giveItems, receiveItems);
++    const sides = validateTradeBasketSidesQ(mode, giveItems, receiveItems);
+     if (!sides.valid) return sides;
+   }
+   const givePn = giveItems.length > 0
+@@ -1828,7 +1810,7 @@
+     const rowCls = 'cdb-deal-row' + (editingIdx === idx ? ' cdb-deal-row-editing' : '');
+     return (
+       '<div class="' + rowCls + '" data-side="' + side + '" data-idx="' + idx + '">' +
+-        '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
++        '<div class="da-deal-item">' + renderBasketItemValueHtml(basketItemView(item), fmtCtx) + '</div>' +
+         qtyHtml +
+         editBtn +
+         '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
+@@ -1896,33 +1878,39 @@
+   resourceTradeMode: 'once' | 'per_turn',
+   dealTurns: number,
+ ): string {
+-  const rel = ctx.relacjaTotal ?? 100;
+-  const trustGained = ctx.trustPnGainedThisTurn ?? 0;
+-  const pnParams = diplomacyPnRelacjaParams();
+-  const maxTrust = pnParams.max_zaufanie_na_ture;
+-
+-  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
++  // P5.6: wycena stron, panel PW (`accepted` = bramka Rust, P5.2), fair min, zaufanie z nadwyżki/daru, dobra wola,
++  // limit Zaufania/turę i skróty pozycji (pin `:1899-1934,1953-1957,1988`) → `DiplomacyBasketPreviewDto` (Rust).
++  const s = diplomacyQueries().basketSummary({
++    mode: mode === 'gift' ? 'gift' : 'trade',
++    give: giveItems,
++    receive: receiveItems,
++    resourceTradeMode,
++    dealTurns,
++    ctx: rulesCtx(ctx),
++  });
++  const rel = s.relation.total;
++  const trustGained = s.trust.gained;
++  const maxTrust = s.trust.cap;
++
++  const givePn = s.givePn;
+   const receivePn = mode === 'trade'
+-    ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns)
++    ? s.receivePn
+     : 0;
+ 
+   let html = '<div class="cdb-summary">';
+   if (mode === 'trade') {
+     html += renderPnBalancePanelFromBasket(
+-      givePn,
+-      receivePn,
+-      rel,
++      s,
+       'Wymiana',
+-      ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
+     );
+   }
+ 
+   if (mode === 'trade') {
+     html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PW</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PW</b></div>';
+     if (givePn != null && receivePn != null) {
+-      const fairMin = diplomacyFairGivePn(receivePn, rel);
++      const fairMin = s.summaryFairMinPn;
+       html += '<div>Fair min (Rel ' + rel + '): <b>' + fairMin + ' PW</b></div>';
+-      const preview = diplomacyTradeTrustFromDeal(givePn, receivePn, rel, trustGained);
++      const preview = { surplusPn: s.trust.surplusPn, deltaZaufanie: s.trust.delta, deltaZaufanieRaw: s.trust.deltaRaw };
+       html += '<div>Nadmiar: <b>' + preview.surplusPn + ' PW</b>';
+       if (preview.deltaZaufanie > 0) {
+         html += ' → <b>+' + preview.deltaZaufanie + ' Zauf.</b>';
+@@ -1931,7 +1919,9 @@
+         }
+       }
+       html += '</div>';
+-      const dobraWola = diplomacyDobraWolaFromSurplus(preview.surplusPn);
++      const dobraWola = s.dobraWola
++        ? { active: true, zaufaniePerTura: s.dobraWola.perTurn, tur: s.dobraWola.turns }
++        : { active: false, zaufaniePerTura: 0, tur: 0 };
+       if (dobraWola.active) {
+         html += '<div>Dobra wola: <b>+' + dobraWola.zaufaniePerTura + ' Zauf./turę × ' + dobraWola.tur + '</div>';
+       }
+@@ -1943,18 +1933,15 @@
+       // (nadmiar PN → Zaufanie od razu) vs CO TURĘ (dobra wola + — jeśli oferta ma dostęp
+       // do surowców/złóż — Zaufanie z aktywnej Umowy handlowej przez czas jej trwania).
+       // Same liczby co wyżej, tylko pogrupowane + jeden werdykt z uzasadnieniem.
+-      const fmtCtx: BasketItemFormatCtx = {
+-        perTurn: resourceTradeMode === 'per_turn',
+-        turns: dealTurns,
+-      };
++      // P5.6: `formatBasketListBrief(items, { perTurn, turns })` (F) → `s.brief.give`/`s.brief.receive` (tekst z Rust).
+       const oneShot: string[] = [];
+       const perTurn: string[] = [];
+       if (resourceTradeMode === 'per_turn') {
+-        if (giveItems.length > 0) perTurn.push('Oddajemy: ' + formatBasketListBrief(giveItems, fmtCtx));
+-        if (receiveItems.length > 0) perTurn.push('Dostajemy: ' + formatBasketListBrief(receiveItems, fmtCtx));
++        if (giveItems.length > 0) perTurn.push('Oddajemy: ' + s.brief.give);
++        if (receiveItems.length > 0) perTurn.push('Dostajemy: ' + s.brief.receive);
+       } else {
+-        if (giveItems.length > 0) oneShot.push('Oddajemy: ' + formatBasketListBrief(giveItems, fmtCtx));
+-        if (receiveItems.length > 0) oneShot.push('Dostajemy: ' + formatBasketListBrief(receiveItems, fmtCtx));
++        if (giveItems.length > 0) oneShot.push('Oddajemy: ' + s.brief.give);
++        if (receiveItems.length > 0) oneShot.push('Dostajemy: ' + s.brief.receive);
+       }
+       if (preview.deltaZaufanie > 0) oneShot.push('+' + preview.deltaZaufanie + ' Zaufania');
+       if (dobraWola.active) perTurn.push('+' + dobraWola.zaufaniePerTura + ' Zaufania/turę × ' + dobraWola.tur + ' tur');
+@@ -1985,7 +1972,7 @@
+   } else {
+     html += '<div>SUMA daru: <b>' + (givePn ?? '—') + ' PW</b></div>';
+     if (givePn != null) {
+-      const gift = diplomacyGiftTrustFromPn(givePn, trustGained);
++      const gift = { deltaZaufanie: s.giftTrust?.delta ?? 0, deltaZaufanieRaw: s.giftTrust?.deltaRaw ?? 0 };
+       html += '<div>Przewidywane: <b>+' + gift.deltaZaufanie + ' Zauf.</b>';
+       if (gift.deltaZaufanieRaw > gift.deltaZaufanie) {
+         html += ' <span style="color:#9aa6b6">(limit ' + maxTrust + '/turę, już +' + trustGained + ')</span>';
+@@ -2541,20 +2528,15 @@
+       readResourceTradeModeFromDom();
+       const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns);
+       if (receivePn == null || receivePn <= 0) return;
+-      const turnsOpts = proposalPnTurnsMultiplier({ resourceTradeMode, turns: dealTurns });
+-      giveItems = balanceGiveItemsToFairMin(
++      // P5.6: `proposalPnTurnsMultiplier` + `balanceGiveItemsToFairMin` (Relacja, skarbiec, trudność, tempo; pin
++      // `:2544-2557`) → zapytanie `balanceGiveItemsToFairMin` (`diplomacy_balance_to_fair`, Rust).
++      giveItems = diplomacyQueries().balanceGiveItemsToFairMin({
+         giveItems,
+         receivePn,
+-        ctx.relacjaTotal ?? 0,
+-        Math.floor(ctx.playerSkarbiec ?? 0),
+-        {
+-          difficulty: ctx.difficulty ?? 'normal',
+-          proposerOwnerId: 0,
+-          playerOwnerId: 0,
+-          tempoGry: resolveTempo(ctx),
+-          ...turnsOpts,
+-        },
+-      );
++        resourceTradeMode,
++        dealTurns,
++        ctx: rulesCtx(ctx),
++      });
+       refresh();
+     });
+ 
+@@ -2797,11 +2779,9 @@
+   onSubmit: (payload: NegotiationPayload) => void,
+   onCancel: () => void,
+ ): void {
+-  const quick = computeQuickDealBasket({
+-    relacjaTotal: ctx.relacjaTotal ?? 0,
+-    ourGoldAvailable: ctx.playerSkarbiec ?? 0,
+-    ourResourceOptions: [],
+-    theirResourceOptions: [],
++  // P5.6: `computeQuickDealBasket` (pin `:2800-2807`) → zapytanie `quickDealBasket` (`diplomacy_quick_deal`, Rust).
++  const quick = diplomacyQueries().quickDealBasket({
++    ctx: rulesCtx(ctx),
+     ourQuantityResourceOptions: ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
+     theirQuantityResourceOptions: ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
+   });
+@@ -2830,7 +2810,14 @@
+   return TRADE_BASKET_ACTION_IDS.has(actionId);
+ }
+ 
+-export { validateTradeBasketSides } from '../game/diplomacy-trade-validation';
++/** P5.6: re-eksport web `validateTradeBasketSides` (pin `:2833`) → to samo zapytanie kontrolera (Rust). */
++export function validateTradeBasketSides(
++  mode: TradeBasketMode,
++  giveItems: readonly BasketItem[],
++  receiveItems: readonly BasketItem[],
++): { valid: boolean; reason?: string } {
++  return validateTradeBasketSidesQ(mode, giveItems, receiveItems);
++}
+ 
+ /** Walidacja koszyka — eksport do testów (R-DYPLO-WYMIANA-ONEWAY). */
+ export function validateTradeBasketForm(

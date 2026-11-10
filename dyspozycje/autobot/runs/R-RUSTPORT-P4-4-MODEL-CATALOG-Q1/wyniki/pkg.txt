@@ -1,0 +1,23 @@
+INVENTORY 96 ASSIGNED 96 MISSING [] EXTRA []
+MULTI {'render/mapRenderStyle.ts': ['01-CORE', '03-TERRAIN-DECOR'], 'render/units.ts': ['04-UNIT-CORE', '06-UNITS-BRONZE', '07-UNITS-IRON']}
+01-CORE 8
+03-TERRAIN-DECOR 8
+04-UNIT-CORE 4
+05-UNITS-STONE 4
+06-UNITS-BRONZE 16
+07-UNITS-IRON 9
+08-UNIT-OVERLAY 4
+09-CITIES 8
+10-CITY-CHIP 3
+11-IMPROVEMENTS 12
+12-WONDERS 2
+13-MISC 7
+14-BATTLE-3D 2
+15-PREVIEWS 2
+P4.3 (architektura, nie paczka modeli) 6
+POZA PORTEM do decyzji (D-MOD-2/D-MOD-7) 4
+RECORDS 04-UNIT-CORE 4 Galera[Brąz]; Rydwan mykeński[Brąz]; Rydwan Shang[Brąz]; Rydwan celtycki[Żelazo]
+RECORDS 05-UNITS-STONE 10 Wojownik[Kamień]; Oszczepnik[Kamień]; Łucznik[Kamień]; Zwiadowca[Kamień]; Oszczepnik Zulu (Izijula)[Kamień]; Wojownik z maczugą (Chaska)[Kamień]; Oszczepnik (Estólica)[Kamień]; Łucznik egipski[Kamień]; Łucznik sumeryjski[Kamień]; Taran[Kamień]
+RECORDS 06-UNITS-BRONZE 37 Procarz[Brąz]; Włócznik[Brąz]; Wojownik z mieczem i tarczą[Brąz]; Rydwan (woły)[Brąz]; Konnica[Brąz]; Jeździec chiński[Brąz]; Hu Ben Wei (Gwardia Tygrysa)[Brąz]; Impi[Brąz]; uThulwana (Białe Tarcze)[Brąz]; Wojownik z toporem[Brąz]; Procarz (Huaracoc)[Brąz]; Królewska Gwardia[Brąz]; Rydwan konny[Brąz]; Rydwan egipski[Brąz]; Wojownik z khopesh[Brąz]; Medżaj (Gwardia Faraona)[Brąz]; Łucznik nubijski[Brąz]; Rydwan sumeryjski[Brąz]; Włócznik sumeryjski[Brąz]; Gwardia Królewska Sumeru[Brąz]; Wojownik mykeński[Brąz]; Wojownik Sherden[Brąz]; Halabardnik Shang[Brąz]; Łucznik akadyjski[Brąz]; Taran okuty[Brąz]; Wieża oblężnicza[Brąz]; Wojownik tyrreński[Brąz]; Wojownik szekelesz[Brąz]; Łucznik asyryjski[Brąz]; Strażnik bram Harappy[Brąz]; Piechota induska[Brąz]; Rydwan Kapadokijski[Brąz]; Piechota hetycka[Brąz]; Gwardia Ishtar[Brąz]; Wojownik babiloński[Brąz]; Wojownik fenicki[Brąz]; Gwardzista z champi[Brąz]
+RECORDS 07-UNITS-IRON 24 Falanga[Żelazo]; Hieros Lochos (Święty Zastęp)[Żelazo]; Hastati[Żelazo]; Triari[Żelazo]; Gaesatae[Żelazo]; Soldurii[Żelazo]; Wojownik germański[Żelazo]; Berserker germański[Żelazo]; Katapulta[Żelazo]; Konnica lancowa asyryjska[Żelazo]; Konnica łucznicza asyryjska[Żelazo]; Drużynnik[Żelazo]; Jeździec z oszczepami[Żelazo]; Garnizon Harappy[Żelazo]; Gwardia hetycka[Żelazo]; Piechota neobabilońska[Żelazo]; Tyrski miecznik[Żelazo]; Gwardia Tyreńska[Żelazo]; Thorakites[Żelazo]; Evocati[Żelazo]; iButho z iklwa[Żelazo]; Wojownik z żelaznym khopesh[Żelazo]; Mur tarcz (Sargonid)[Żelazo]; Miecznik galijski[Żelazo]
+RECORDS_TOTAL 75

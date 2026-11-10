@@ -1,0 +1,5 @@
+$ node tools/check-no-logic-imports.mjs <PIN>/gra/src/ui/cityUxFrame.ts
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/cityUxFrame.ts:4: [CORE:game] import type { City } from '../game/cities';
+/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/cityUxFrame.ts:5: [EXT:types] import type { GameMap } from '../types/map';
+check-no-logic-imports: cele=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pin/gra/src/ui/cityUxFrame.ts plików=1 plików_z_trafieniami=1 trafień=2 {"CORE:game":1,"EXT:types":1}
+EXIT=1

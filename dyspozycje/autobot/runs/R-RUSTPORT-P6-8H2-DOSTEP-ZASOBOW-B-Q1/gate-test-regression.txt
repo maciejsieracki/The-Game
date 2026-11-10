@@ -1,0 +1,38 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_fa872c75-9b0-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 41.09s
+     Running tests/p6_8h2_capital_labels.rs (/dev/shm/p6-8h2-b-target/debug/deps/p6_8h2_capital_labels-563bfca85dc5ec6d)
+
+running 11 tests
+test non_human_owner_is_never_capital ... ok
+test non_easy_difficulty_disables_bonus ... ok
+test panel_range_filter_keeps_only_three_and_sorts ... ok
+test stolica_bonus_honours_designated_capital ... ok
+test surowiec_fallback_capitalizes_and_empty_is_empty ... ok
+test surowiec_labels_full_table ... ok
+test tie_keeps_first_in_array_and_nan_keeps_first ... ok
+test turn_bounds_n_minus_1_n_n_plus_1 ... ok
+test zloze_labels_table ... ok
+test designated_some_overrides_fallback ... ok
+test designated_none_falls_back_to_oldest_owner_city ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8h_access.rs (/dev/shm/p6-8h2-b-target/debug/deps/p6_8h_access-00a51b06651064b5)
+
+running 13 tests
+test culture_share_clamp_boundaries_and_negative_zero ... ok
+test culture_share_and_mix_match_web ... ok
+test cyna_kopalnia_on_deposit_matches_web ... ok
+test odlewnia_predicates_match_web ... ok
+test has_access_matches_web ... ok
+test zloto_count_and_has_match_web ... ok
+test zelazo_kopalnia_on_deposit_matches_web ... ok
+test zloto_resolve_grace_matches_web ... ok
+test zloto_deduct_matches_web ... ok
+test zloto_trade_grant_is_identity ... ok
+test vector_files_are_not_empty ... ok
+test zloto_stock_predicates_match_web ... ok
+test js_trim_set_matches_v8_for_all_code_points ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.05s
+EXIT=0

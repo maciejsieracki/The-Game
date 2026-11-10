@@ -1,0 +1,35 @@
+
+[unit-recruit-nazwa-test] Running tests...
+
+0. units.json -- kazdy wpis ma niepuste pole Jednostka
+  [OK] 0 jednostek z pustym Jednostka (znaleziono 0)
+
+1. purchasableUnits() -- kazdy ProductionItem(jednostka) ma niepuste nazwa (kilka cyw/epok)
+  [OK] co najmniej jeden ProductionItem sprawdzony (166 razem)
+  [OK] zaden ProductionItem(jednostka) nie ma pustego nazwa
+
+2. availableReplacementsFor() -- kazdy zamiennik ma niepuste nazwa
+  [OK] lista zamiennikow niepusta (Hastati)
+  [OK] kazdy zamiennik ma niepuste nazwa
+
+3. availableReplacementsFor() -- galaz B (pole "Zastąp specjalnie") ma niepuste nazwa
+  [OK] kazdy wpis galezi B ma niepuste nazwa
+
+4. unitProductionItem() -- niepuste nazwa dla kilku jednostek
+  [OK] unitProductionItem('Wojownik') zwraca wpis
+  [OK] unitProductionItem('Wojownik').nazwa niepuste
+  [OK] unitProductionItem('Zwiadowca') zwraca wpis
+  [OK] unitProductionItem('Zwiadowca').nazwa niepuste
+  [OK] unitProductionItem('Łucznik') zwraca wpis
+  [OK] unitProductionItem('Łucznik').nazwa niepuste
+  [OK] unitProductionItem('Hastati') zwraca wpis
+  [OK] unitProductionItem('Hastati').nazwa niepuste
+  [OK] unitProductionItem('Evocati') zwraca wpis
+  [OK] unitProductionItem('Evocati').nazwa niepuste
+
+[unit-recruit-nazwa-test] 16 passed, 1 failed.
+
+  [FAIL] Evocati obecny w galezi B (pole "Zastąp specjalnie") -- []
+
+EXIT=1
+TIME=0.4

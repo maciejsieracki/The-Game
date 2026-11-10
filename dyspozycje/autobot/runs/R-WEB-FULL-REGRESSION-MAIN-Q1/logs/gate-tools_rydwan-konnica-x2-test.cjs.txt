@@ -1,0 +1,7 @@
+Sprawdzonych jednostek: 13, asercji: 548
+FAIL: 2 niezgodnosci
+  - Rydwan (woły).Surowiec: powinno pozostac "Brąz", jest "Drewno"
+  - Rydwan (woły).Utrzymanie surowiec: powinno pozostac "Brąz", jest "Drewno"
+
+EXIT=1
+TIME=0.0

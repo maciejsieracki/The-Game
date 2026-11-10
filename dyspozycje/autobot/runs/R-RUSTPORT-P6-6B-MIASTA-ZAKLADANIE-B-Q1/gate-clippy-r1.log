@@ -1,0 +1,4 @@
+$ cargo clippy --all-targets -- -D warnings
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9188d0d5-3d2-1/rust-port/engine)
+    Finished `dev` profile [unoptimized] target(s) in 3m 21s
+EXIT=0

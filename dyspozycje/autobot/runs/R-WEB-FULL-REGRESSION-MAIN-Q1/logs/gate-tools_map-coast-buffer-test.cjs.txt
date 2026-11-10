@@ -1,0 +1,76 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=15 terrain=46 landSea=474 relief=427 coast=54 riversMain=3708 riversFill=3832 forest=8 deposits=44 starts=239 total=8845
+FAIL: kontynenty seed=1: ląd w buforze brzegu (11,0, 12,0, 13,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=26 landSea=491 relief=474 coast=116 riversMain=4414 riversFill=5845 forest=24 deposits=40 starts=190 total=11620
+FAIL: kontynenty seed=7: ląd w buforze brzegu (10,1, 11,1, 12,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=9 terrain=14 landSea=231 relief=195 coast=50 riversMain=805 riversFill=3490 forest=9 deposits=18 starts=233 total=5055
+FAIL: kontynenty seed=42: ląd w buforze brzegu (11,0, 12,0, 13,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=32 landSea=360 relief=496 coast=245 riversMain=1271 riversFill=2307 forest=7 deposits=15 starts=87 total=4823
+FAIL: kontynenty seed=99: ląd w buforze brzegu (24,0, 25,0, 26,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=8 landSea=136 relief=339 coast=50 riversMain=1100 riversFill=4223 forest=7 deposits=30 starts=146 total=6040
+FAIL: kontynenty seed=2026: ląd w buforze brzegu (11,1, 12,1, 13,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=55 landSea=497 relief=443 coast=245 riversMain=309 riversFill=332 forest=16 deposits=92 starts=166 total=2157
+FAIL: pangea seed=1: ląd w buforze brzegu (16,1, 17,1, 18,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=35 landSea=416 relief=223 coast=145 riversMain=277 riversFill=177 forest=19 deposits=37 starts=157 total=1487
+FAIL: pangea seed=7: ląd w buforze brzegu (15,1, 16,1, 17,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=40 landSea=367 relief=215 coast=152 riversMain=795 riversFill=315 forest=9 deposits=16 starts=205 total=2121
+FAIL: pangea seed=42: ląd w buforze brzegu (15,1, 16,1, 17,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=13 landSea=507 relief=345 coast=173 riversMain=468 riversFill=283 forest=13 deposits=26 starts=203 total=2031
+FAIL: pangea seed=99: ląd w buforze brzegu (14,1, 15,1, 16,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=15 landSea=330 relief=316 coast=218 riversMain=513 riversFill=494 forest=12 deposits=28 starts=209 total=2135
+FAIL: pangea seed=2026: ląd w buforze brzegu (16,1, 17,1, 18,1)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=12 landSea=345 relief=353 coast=47 riversMain=3268 riversFill=6150 forest=12 deposits=17 starts=273 total=10478
+FAIL: wyspy seed=1: ląd w buforze brzegu (5,0, 6,0, 7,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=19 landSea=203 relief=145 coast=54 riversMain=2268 riversFill=8154 forest=33 deposits=69 starts=125 total=11072
+FAIL: wyspy seed=7: ląd w buforze brzegu (2,0, 3,0, 4,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=8 landSea=198 relief=268 coast=36 riversMain=3313 riversFill=5052 forest=8 deposits=16 starts=155 total=9055
+FAIL: wyspy seed=42: ląd w buforze brzegu (2,0, 3,0, 4,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=11 landSea=207 relief=288 coast=95 riversMain=1952 riversFill=6232 forest=8 deposits=20 starts=382 total=9196
+FAIL: wyspy seed=99: ląd w buforze brzegu (2,0, 3,0, 4,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=5 landSea=201 relief=230 coast=46 riversMain=2684 riversFill=5603 forest=11 deposits=28 starts=130 total=8945
+FAIL: wyspy seed=2026: ląd w buforze brzegu (2,0, 3,0, 4,0)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=27 landSea=119 relief=210 coast=18 riversMain=183 riversFill=1083 forest=5 deposits=11 starts=105 total=1762
+FAIL: ziemia seed=1: morze w środku lądu (21,13, 19,14, 20,14)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=9 landSea=679 relief=459 coast=20 riversMain=108 riversFill=1493 forest=5 deposits=12 starts=280 total=3067
+FAIL: ziemia seed=7: morze w środku lądu (21,13, 19,14, 20,14)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=15 landSea=261 relief=352 coast=41 riversMain=101 riversFill=895 forest=5 deposits=11 starts=113 total=1794
+FAIL: ziemia seed=42: morze w środku lądu (21,13, 19,14, 20,14)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=8 landSea=109 relief=569 coast=27 riversMain=558 riversFill=923 forest=5 deposits=12 starts=115 total=2325
+FAIL: ziemia seed=99: morze w środku lądu (21,13, 19,14, 20,14)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=17 landSea=312 relief=400 coast=26 riversMain=396 riversFill=1318 forest=6 deposits=14 starts=238 total=2728
+FAIL: ziemia seed=2026: morze w środku lądu (21,13, 19,14, 20,14)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=159 landSea=4527 relief=6107 coast=3990 riversMain=6266 riversFill=3396 forest=135 deposits=360 starts=3074 total=28015
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=538 landSea=4585 relief=6387 coast=5077 riversMain=6416 riversFill=2718 forest=428 deposits=270 starts=1331 total=27750
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=175 landSea=4550 relief=4816 coast=3835 riversMain=7244 riversFill=2419 forest=137 deposits=249 starts=1843 total=25269
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=16 landSea=353 relief=505 coast=81 riversMain=2181 riversFill=13930 forest=25 deposits=62 starts=266 total=17425
+FAIL: generujSwiat malenki: ląd w buforze (81)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=49 landSea=573 relief=796 coast=179 riversMain=6343 riversFill=57245 forest=36 deposits=102 starts=1077 total=66405
+FAIL: generujSwiat maly: ląd w buforze (28)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=300.1

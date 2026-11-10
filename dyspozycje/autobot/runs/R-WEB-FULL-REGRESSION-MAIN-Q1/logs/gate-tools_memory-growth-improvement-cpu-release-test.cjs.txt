@@ -1,0 +1,4 @@
+podaj --dist <katalog z index.html>
+
+EXIT=2
+TIME=0.8

@@ -1,0 +1,14 @@
+# R-WEB-DATA-FALANGA-BONUS-VS-SPEARMAN-30-Q1 — dispatch (2026-11-09)
+GOAL (decyzja właściciela): Falanga (Grecja, Żelazo, Typ Falangite) ma mieć „Bonus vs Spearman %” = 30 (dziś brak/0). Pozostałe parametry Falangi bez zmian. Efekt: Falanga zadaje +30% obrażeń jednostkom typu Spearman (włócznikom). 
+BAZA: origin/main (FALA 576+). Operator: HAIKU 5.5 (zmiana 1 pola danych + testy).
+ZAKRES: gra/data/units.json (tylko Falanga: `Bonus vs Spearman %` = 30; sprawdź czy silnik czyta to pole dla Typ Falangite jak dla innych jednostek — `combat.ts` Bonus vs ... ; jeśli nie czyta, zgłoś w raporcie i napraw minimalnie w ramach allowlisty), opis/karta/Top3 jednostki jeśli cytuje bonusy (generatory --check), testy statystyk jednostek (units-data/combat bonus), nowy test `gra/tools/falanga-bonus-vs-spearman-test.cjs` (Falanga atakuje Spearman → obrażenia ×1,3 względem bazy; inne typy bez zmian), wpis dług REPIN Rust (units.json).
+ALLOWLISTA: gra/data/units.json, gra/src/game/combat.ts (tylko jeśli pole nie jest czytane), karty/opisy jednostek, testy, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów.
+
+## DODATEK 1 (2026-11-09) — rozszerzenie decyzji właściciela (temat dopiero wystartowany)
+Falanga: OBRONA = 12 (dziś 10), PRZEBICIE = 4 (dziś 2; jak Thorakites), Bonus vs Spearman = 30. „Zaktualizuj w statystykach wszystkie elementy”: zaktualizuj WSZYSTKIE pola Falangi zależne od tych wartości w units.json i w pochodnych — `Obrona`, `meleeDefence`, `Przebicie`, `piercing`, `fieldPower` (przelicz wg wzoru używanego dla pozostałych jednostek; zgłoś wzór), ewentualne `Top3`/Opis/Uwagi/karta jednostki/CIVPEDIA/wiki/PORADNIK cytujące statystyki Falangi (generatory --check, wikiBundle), testy statystyk i balansu jednostek (fieldPower tabele, rankingi), tabele porównawcze. Uwaga w polu `Uwagi` Falangi („ZAŁOŻENIE: zastępuje Włócznik — do potwierdzenia”) NIE zmieniaj. Zgłoś w raporcie nowy fieldPower i wpływ na ranking mocy jednostek (Moc militarna).
+
+## DODATEK 2 (2026-11-09) — ATAK = 7
+Falanga finalnie: ATAK = 7 (dziś 6; zaktualizuj `Atak` i `meleeAttack`), OBRONA = 12, PRZEBICIE = 4, Bonus vs Spearman = 30. Pozostałe pola bez zmian. Przelicz `fieldPower` i wszystkie pochodne wg DODATKU 1.
+
+## DODATEK 3 (2026-11-09, runda 3) — BAZA: 4ed1b5a47 (gałąź/commit r2; sprawdź `git cat-file -t`, w razie braku `refs/keep` albo `web-wip/FALANGA`), raport FC r2: 22e476189 (03-final-control.md)
+Final Control r2 = FAIL z jednym punktem NAPRAW: `gra/data/tech-cards-top5.json:~1006` nadal mówi „Falanga (Obrona 10)”, a Obrona to teraz 12. Plik jest generowany z `dyspozycje/autobot/runs/R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1/zrodlo/odkrycia-top5.csv`: zmień tam 10→12, przegeneruj `gen-tech-cards-top5` i potwierdź `--check`. Allowlista rozszerzona o ten CSV i JSON. Reszta bez zmian (r2 zaakceptowana). Ignoruj pytania właściciela z innych tematów.

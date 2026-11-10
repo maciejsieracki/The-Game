@@ -1,0 +1,12 @@
+MUTANT S-M13-key-sol-eq-cer-ii file=src/domain/building_costs.rs
+OLD:
+pub const SPICHLERZ_DRAIN_JSON_KEY_SOL_II: &str = "budynek_spichlerz_ii_zuzywa_sol";
+NEW:
+pub const SPICHLERZ_DRAIN_JSON_KEY_SOL_II: &str = "budynek_spichlerz_ii_zuzywa_ceramika";
+
+FAILED TESTS:
+test constants_and_keys_match_web ... FAILED
+test load_params_matches_running_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+VERDICT=KILLED
+EXIT=101

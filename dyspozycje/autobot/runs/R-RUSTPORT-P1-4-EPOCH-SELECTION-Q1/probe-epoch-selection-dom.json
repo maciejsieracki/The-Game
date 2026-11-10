@@ -1,0 +1,42 @@
+{
+  "step2Heading": "Epoka Startowa",
+  "stepIndicator": "Krok 2 z 5",
+  "before": [
+    {
+      "cls": "ec sel",
+      "name": "Epoka Kamienia",
+      "badge": "8 cyw."
+    },
+    {
+      "cls": "ec",
+      "name": "Epoka Brazu",
+      "badge": "14 cyw."
+    },
+    {
+      "cls": "ec",
+      "name": "Epoka Zelaza",
+      "badge": "15 cyw."
+    }
+  ],
+  "dalejDisabledBefore": false,
+  "after": [
+    {
+      "cls": "ec",
+      "name": "Epoka Kamienia",
+      "badge": "8 cyw."
+    },
+    {
+      "cls": "ec sel",
+      "name": "Epoka Brazu",
+      "badge": "14 cyw."
+    },
+    {
+      "cls": "ec",
+      "name": "Epoka Zelaza",
+      "badge": "15 cyw."
+    }
+  ],
+  "infoAfterClick": "Masz juz wszystkie technologie epoki Kamienia. Epoke Braz badasz od zera.",
+  "dalejDisabledAfter": false,
+  "step3Heading": "Wybór Cywilizacji"
+}

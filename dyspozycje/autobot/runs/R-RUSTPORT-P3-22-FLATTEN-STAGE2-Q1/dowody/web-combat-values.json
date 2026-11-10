@@ -1,0 +1,85 @@
+{
+  "zrodlo": "uruchomiony kod TS weba (gen-combat-web.mjs) + odczyt JSON; game/ai.ts: NIE_URUCHOMIONE (brak pakietu three)",
+  "siege": {
+    "HILL_DEFENSE_MULT": 1.5,
+    "MOUNTAIN_DEFENSE_MULT": 1.75,
+    "FORTIFY_OBRONA_BONUS": 2
+  },
+  "combat_params": {
+    "counter_multiplier": 1.5,
+    "fortify_obrona_proc": 50,
+    "fortify_obrona_bonus": 2,
+    "siege_ai": {
+      "t1_assault_ratio": 1.8,
+      "t2_build_min_ratio": 1.4,
+      "t3_starve_min_ratio": 1.1,
+      "t2_max_wait_turns": 5,
+      "units_per_extra_machine": 10
+    },
+    "brod": {
+      "_opis": "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+      "ruchMult": 0.5,
+      "karaAtak": 0.25,
+      "karaObrona": 0.25,
+      "bonusObronaBrzegu": 0.15
+    }
+  },
+  "miasto_params": {
+    "mur": 200,
+    "cytadela": 100,
+    "baszta": 100,
+    "palisada": 100
+  },
+  "veteran_bonus_frac": {
+    "0": 0,
+    "1": 0.1,
+    "2": 0.15,
+    "3": 0.2
+  },
+  "embark_defense_mult": 0.5,
+  "siege_ai": {
+    "SIEGE_AI_T1_ASSAULT_RATIO": 1.8,
+    "SIEGE_AI_T2_BUILD_MIN_RATIO": 1.4,
+    "SIEGE_AI_T3_STARVE_MIN_RATIO": 1.1
+  },
+  "ai_major_absorb_power_ratio_min": 10,
+  "city_wall_probe": [
+    {
+      "ids": [
+        "mury"
+      ],
+      "procent": 200
+    },
+    {
+      "ids": [
+        "mury",
+        "fort"
+      ],
+      "procent": 300
+    },
+    {
+      "ids": [
+        "mury",
+        "fort",
+        "baszta"
+      ],
+      "procent": 400
+    },
+    {
+      "ids": [
+        "palisada"
+      ],
+      "procent": 100
+    },
+    {
+      "ids": [
+        "baszta"
+      ],
+      "procent": 100
+    },
+    {
+      "ids": [],
+      "procent": 0
+    }
+  ]
+}

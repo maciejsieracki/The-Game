@@ -1,0 +1,890 @@
+$ cargo fmt --all -- --check
+EXIT=0
+$ cargo clippy --locked --all-targets -- -D warnings
+    Checking simd-adler32 v0.3.10
+    Checking bytemuck v1.25.2
+    Checking adler2 v2.0.1
+    Checking arrayvec v0.7.8
+    Checking libm v0.2.16
+    Checking smallvec v1.16.3
+    Checking float-cmp v0.9.0
+    Checking log v0.4.34
+    Checking cfg-if v1.0.5
+    Checking strict-num v0.1.1
+    Checking crc32fast v1.5.3
+    Checking miniz_oxide v0.9.1
+    Checking polycool v0.4.0
+    Checking arrayref v0.3.9
+    Checking bitflags v2.13.2
+    Checking kurbo v0.13.1
+    Checking tiny-skia-path v0.12.0
+    Checking core_maths v0.1.1
+    Checking flate2 v1.1.10
+    Checking ttf-parser v0.25.1
+    Checking fdeflate v0.3.7
+    Checking miniz_oxide v0.8.9
+    Checking siphasher v1.0.4
+    Checking memchr v2.8.3
+    Checking svgtypes v0.16.1
+    Checking png v0.18.1
+    Checking roxmltree v0.21.1
+    Checking simplecss v0.2.2
+    Checking imagesize v0.15.0
+    Checking data-url v0.3.2
+    Checking pico-args v0.5.0
+    Checking rgb v0.8.53
+    Checking usvg v0.48.1
+    Checking tiny-skia v0.12.0
+    Checking unicode-properties v0.1.4
+    Checking unicode-script v0.5.8
+    Checking zune-core v0.5.3
+    Checking unicode-bidi-mirroring v0.4.0
+    Checking ab_glyph_rasterizer v0.1.10
+    Checking owned_ttf_parser v0.25.1
+    Checking unicode-ccc v0.4.0
+    Checking zune-jpeg v0.5.15
+    Checking ab_glyph v0.2.32
+    Checking rustybuzz v0.20.1
+    Checking pollster v0.4.0
+    Checking resvg v0.48.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c43cd53a-064-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 22s
+EXIT=0
+$ cargo clippy --locked --all-targets --features gpu -- -D warnings
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling cfg_aliases v0.2.2
+    Checking foldhash v0.2.0
+    Checking smallvec v1.16.3
+    Checking equivalent v1.0.3
+   Compiling autocfg v1.5.1
+   Compiling thiserror v2.0.21
+    Checking hashbrown v0.17.1
+    Checking libloading v0.8.9
+   Compiling num-traits v0.2.19
+   Compiling libc v0.2.191
+   Compiling zerocopy v0.8.63
+    Checking rustc-hash v1.1.0
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+    Checking indexmap v2.14.2
+   Compiling naga v30.0.1
+   Compiling ash v0.38.0+1.3.281
+   Compiling parking_lot_core v0.9.12
+    Checking once_cell v1.21.4
+   Compiling pkg-config v0.3.34
+    Checking unicode-width v0.2.2
+    Checking bit-vec v0.9.1
+   Compiling wayland-sys v0.31.11
+    Checking bit-set v0.10.0
+    Checking codespan-reporting v0.13.1
+    Checking spirv v0.4.0+sdk-1.4.341.0
+    Checking allocator-api2 v0.2.21
+    Checking raw-window-handle v0.6.2
+    Checking scopeguard v1.2.0
+    Checking static_assertions v1.1.0
+   Compiling khronos-egl v6.0.0
+    Checking lock_api v0.4.14
+    Checking hashbrown v0.16.1
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+    Checking bytemuck v1.25.2
+   Compiling zerocopy-derive v0.8.63
+    Checking naga-types v30.0.1
+    Checking wgpu-types v30.0.1
+    Checking dlib v0.5.3
+   Compiling wgpu-hal v30.0.1
+    Checking presser v0.3.1
+    Checking parking_lot v0.12.5
+    Checking ordered-float v5.4.0
+    Checking glow v0.17.0
+    Checking profiling v1.0.18
+    Checking renderdoc-sys v1.1.0
+    Checking tiny-skia-path v0.12.0
+    Checking kurbo v0.13.1
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+    Checking svgtypes v0.16.1
+   Compiling document-features v0.2.12
+   Compiling wgpu v30.0.1
+    Checking usvg v0.48.1
+    Checking tiny-skia v0.12.0
+    Checking rgb v0.8.53
+    Checking rustybuzz v0.20.1
+    Checking resvg v0.48.1
+    Checking half v2.7.1
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c43cd53a-064-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 34s
+EXIT=0
+$ cargo test --locked --all-targets
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c43cd53a-064-3/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 31s
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/civ_renderer-13f47b95565e2c6b)
+
+running 73 tests
+test core::jsnum::tests::to_fixed3_matches_node ... ok
+test jsmath::words::tests::scalbn_is_exact_power_of_two_scaling ... ok
+test labels::paint::tests::kernel_is_normalised_and_symmetric ... ok
+test labels::paint::tests::over_is_source_over ... ok
+test models::cities::model::tests::number_to_string_follows_ecma ... ok
+test models::cities::renderer::tests::owner_color_and_civ_follow_js_remainder ... ok
+test models::cities::renderer::tests::terrain_top_y_matches_inline_formula_bitwise ... ok
+test models::misc::overlay::tests::to_fixed5_matches_node ... ok
+test jsmath::words::tests::words_round_trip ... ok
+test models::misc::overlay::tests::to_fixed_d3_equals_core_to_fixed3 ... ok
+test models::wonders::builders::tests::registry_covers_the_19_ids_and_defaults_the_rest ... ok
+test models::wonders::renderer::tests::default_owner_color_follows_js_remainder ... ok
+test raster::atlas::keys::tests::badge_key_default_shape ... ok
+test raster::atlas::keys::tests::growth_label_basics ... ok
+test raster::atlas::keys::tests::trim_differs_from_rust_on_feff_and_nel ... ok
+test raster::atlas::mip::tests::level_counts ... ok
+test raster::atlas::mip::tests::rounding ... ok
+test raster::atlas::mip::tests::srgb_roundtrip ... ok
+test raster::atlas::scale::tests::unreachable_badge_is_clamped ... ok
+test raster::atlas::scale::tests::widest_badge_fits ... ok
+test raster::atlas::upload::tests::blend_matches_three_normal_blending ... ok
+test raster::atlas::upload::tests::premultiplied_mode_keeps_raster_bytes ... ok
+test raster::atlas::upload::tests::presets ... ok
+test raster::atlas::upload::tests::unpremultiply_edges ... ok
+test raster::color::tests::forms_used_by_the_web ... ok
+test raster::color::tests::rejects_garbage ... ok
+test raster::image::emoji::tests::cbdt_reader_agrees_with_ttf_parser ... ok
+test raster::image::emoji::tests::selection_is_per_character ... ok
+test models::wonders::builders::tests::grey_matches_hand_computation ... ok
+test labels::paint::tests::first_text_shadow_is_on_top ... ok
+test raster::image::mip::tests::levels ... ok
+test raster::image::svg::tests::parse_float_prefix ... ok
+test core::jsnum::tests::to_uint32_matches_ecmascript ... ok
+test raster::image::svg::tests::to_fixed_rounds_ties_up_like_js ... ok
+test raster::image::mip::tests::half_averages_with_rounding ... ok
+test raster::metric::tests::inverted_structure_has_negative_ssim ... ok
+test raster::metric::tests::known_constant_offset_ssim ... ok
+test raster::metric::tests::known_sparse_difference ... ok
+test raster::metric::tests::premultiply_rounds ... ok
+test raster::metric::tests::transparent_hidden_colour_is_ignored_after_premultiply ... ok
+test raster::path::tests::arc_to_rounded_corner ... ok
+test raster::path::tests::big_circle_subdivides ... ok
+test raster::path::tests::full_circle_is_four_quadrants_open ... ok
+test raster::path::tests::half_arc_ccw_goes_through_top ... ok
+test raster::shadow::tests::kernel_is_normalised_and_symmetric ... ok
+test raster::text::font::tests::invalid_values_are_rejected ... ok
+test raster::text::font::tests::prefix_keywords_and_line_height ... ok
+test raster::text::font::tests::quoted_generic_is_a_family_name ... ok
+test raster::text::font::tests::web_font_strings_parse ... ok
+test raster::text::fonts::tests::all_faces_parse_and_have_latin ... ok
+test raster::text::fonts::tests::web_stacks_map_like_a_browser_without_windows_fonts ... ok
+test raster::text::tests::per_glyph_fallback_switches_face ... ok
+test raster::text::tests::px_scale_is_not_the_css_em ... ok
+test raster::text::tests::round_64_is_26_6 ... ok
+test raster::text::tests::whitespace_is_replaced_by_space ... ok
+test raster::image::emoji::tests::subset_has_the_23_code_points_with_png_bitmaps ... ok
+test scene::material::tests::defaults_follow_three ... ok
+test scene::tests::euler_setters_keep_the_quaternion_in_sync ... ok
+test scene::tests::gpu_export_checks_every_field_against_hand_computed_values ... ok
+test scene::material::tests::hex_round_trip_is_exact_for_every_24_bit_colour ... ok
+test scene::tests::gpu_export_of_real_models_keeps_topology_buffers_and_sharing_keys ... ok
+test scene::tests::mesh_root_and_named_build_a_one_node_scene ... ok
+test scene::tests::module_bodies_downcast_through_the_arc_and_compare_by_value ... ok
+test scene::tests::tracked_materials_and_retint_follow_the_unit_factory ... ok
+test scene::tests::user_data_keeps_insertion_order_and_types ... ok
+test scene::tests::world_matrices_compose_parent_first_and_skip_detached_nodes ... ok
+test units::overlay::emblem::tests::keys_follow_the_web_rules ... ok
+test scene::tests::graft_moves_nodes_and_materials_with_shifted_ids ... ok
+test units::overlay::stat_plate::tests::canvas_sizes ... ok
+test units::overlay::stat_plate::tests::fractions_and_power_text ... ok
+test units::overlay::emblem::tests::portrait_is_anchored_at_the_top ... ok
+test raster::image::svg::tests::prepare_replaces_colour_and_width ... ok
+test raster::metric::tests::identical_images ... ok
+
+test result: ok. 73 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/assets_nturns.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/assets_nturns-df36d8d724f6b48d)
+
+running 6 tests
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+test new_game_frees_everything_and_restarts_identically ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+     Running tests/assets_registry.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/assets_registry-d7526582a506471f)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test live_report_lists_labels ... ok
+test handle_from_another_registry_is_rejected ... ok
+test owned_guards_count_references ... ok
+test reference_counting_frees_on_last_release ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/atlas_gpu.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/atlas_gpu-abbefdba7c9fa056)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/atlas_json.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/atlas_json-2615c4cb28658fd7)
+
+running 1 test
+test json_reader_round_trips_escapes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/atlas_keys.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/atlas_keys-215df49bcba4ea96)
+
+running 7 tests
+test atlas_json::json_reader_round_trips_escapes ... ok
+test legacy_key_matches_web ... ok
+test lod_and_scale_match_web ... ok
+test growth_label_matches_web ... ok
+test city_map_badge_key_matches_web ... ok
+test related_keys_match_web ... ok
+test lod_purge_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+     Running tests/atlas_mip.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/atlas_mip-a4b3f9fc2b547ad5)
+
+running 5 tests
+test atlas_json::json_reader_round_trips_escapes ... ok
+test naive_box_filter_is_rejected_on_odd_sizes ... ok
+test unpremultiply_matches_chromium_upload ... ok
+test t7_size_chain_matches_webgl ... ok
+test mip_filter_matches_webgl_generate_mipmap ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/atlas_nturns.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/atlas_nturns-33acd63b06f4e1ac)
+
+running 8 tests
+test lod_change_purges_the_old_level_before_the_prune ... ok
+test atlas_json::json_reader_round_trips_escapes ... ok
+test rebuild_in_place_1000_cycles_returns_to_start ... ok
+test shared_key_is_one_texture_with_refcount ... ok
+test n200_turns_texture_count_is_bounded_by_live_badges ... ok
+test without_prune_the_pin_cache_grows ... ok
+test lru_bound_keeps_shown_textures_alive ... ok
+test nturns_is_deterministic ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+
+     Running tests/camera_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/camera_web_parity-c63e78c5ca03466e)
+
+running 5 tests
+test drag_and_wheel_do_not_depend_on_dt ... ok
+test frame_at_60_fps_is_exactly_one_web_frame ... ok
+test pan_scales_with_dt_and_long_frames_are_capped ... ok
+test camera_controller_matches_web_100_percent ... ok
+test fixture_covers_every_branch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/cities_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/cities_web_parity-1eb3b79f990df139)
+
+running 5 tests
+test city_map_outlines_match_web ... ok
+test legacy_city_model_matches_web ... ok
+test layout_constants_and_types_match_web ... ok
+test city_renderer_matches_web ... ok
+test city_models_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.50s
+
+     Running tests/core_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/core_web_parity-40c4dbce1a8de5d6)
+
+running 8 tests
+test hex_shape_matches_web ... ok
+test fog_dim_matches_web ... ok
+test map_style_matches_web ... ok
+test vitals_match_web ... ok
+test hexutil_matches_web ... ok
+test zoom_lod_matches_web ... ok
+test bronze_city_types_match_web ... ok
+test merge_decor_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/cpu_sanity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/cpu_sanity-ec6340f4772df74a)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/decor_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/decor_web_parity-176fd09ce0e4c48d)
+
+running 8 tests
+test decor_reuses_core_instead_of_copies ... ok
+test decor_uses_jsmath_not_platform_libm ... ok
+test hex_hash_functions_match_web ... ok
+test river_lod_matches_web ... ok
+test shared_geometries_are_bit_identical_to_web ... ok
+test coast_builders_are_bit_identical_to_web ... ok
+test relief_surface_height_matches_web ... ok
+test builders_are_bit_identical_to_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.30s
+
+     Running tests/geom_three_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/geom_three_parity-c7aaf0ed3d414d37)
+
+running 17 tests
+test merge_rejects_mixed_indexing ... ok
+test parity_cone ... ok
+test index_buffer_covers_non_indexed_meshes ... ok
+test parity_cylinder ... ok
+test parity_extrude ... ok
+test parity_ops ... ok
+test parity_plane ... ok
+test parity_curve ... ok
+test parity_ring ... ok
+test parity_circle ... ok
+test parity_shape ... ok
+test parity_box ... ok
+test parity_sphere ... ok
+test parity_polyhedron ... ok
+test parity_torus ... ok
+test trs_matches_manual_composition ... ok
+test parity_tube ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/gpu_probe.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/gpu_probe-f1993c5a3d4fd21e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/image_assets.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/image_assets-1bd10382885c963c)
+
+running 4 tests
+test emoji_assets_match_manifest_sha256 ... ok
+test sha256_matches_standard_vectors ... ok
+test inputs_are_the_pin_bytes ... ok
+test fixtures_match_manifest_sha256 ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests/image_metrics.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/image_metrics-986e44644c787105)
+
+running 3 tests
+test emoji_baselines_match_chromium ... ok
+test prepare_svg_for_canvas_matches_the_web_function ... ok
+test emoji_widths_match_chromium_bit_for_bit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/image_scenes.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/image_scenes-62d5ad70443f7556)
+
+running 3 tests
+test scenes_match_golden_hashes ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.38s
+
+     Running tests/improvements_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/improvements_web_parity-c214234b5e99afce)
+
+running 3 tests
+test prototype_keys_documented_deviation ... ok
+test data_tables_match_web ... ok
+test models_are_bit_identical_to_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.43s
+
+     Running tests/jsmath_v8_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/jsmath_v8_parity-ae163793e94cbc10)
+
+running 14 tests
+test acos_matches_v8 ... ok
+test asin_matches_v8 ... ok
+test atan_matches_v8 ... ok
+test compatibility_paths_are_the_same_functions ... ok
+test atan2_matches_v8 ... ok
+test hypot_matches_v8 ... ok
+test log_matches_v8 ... ok
+test hypot_three_arguments_matches_v8 ... ok
+test pow_matches_v8 ... ok
+test tan_matches_v8 ... ok
+test sin_matches_v8 ... ok
+test whole_domain_without_platform_fallback ... ok
+test exp_matches_v8 ... ok
+test cos_matches_v8 ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/jsmath_wiring.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/jsmath_wiring-e60abed3f969de8b)
+
+running 6 tests
+test geom_rotation_and_euler_use_v8_trig ... ok
+test pick_hex_prism_vertices_use_v8_trig ... ok
+test scanner_catches_known_bypass_forms ... ok
+test pick_quat_from_euler_xyz_uses_v8_trig ... ok
+test terrain_rotation_uses_v8_trig ... ok
+test no_platform_transcendentals_anywhere_in_src ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+
+     Running tests/jsnum_to_fixed_v8.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/jsnum_to_fixed_v8-8c7714e024d6adc8)
+
+running 3 tests
+test to_fixed_entry_points_are_one_function ... ok
+test to_fixed_matches_v8 ... ok
+test to_fixed_rejects_digits_above_100 - should panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+     Running tests/labels_anchors.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/labels_anchors-6bf05f8e042a6a23)
+
+running 8 tests
+test anchor_heights_match_the_web ... ok
+test constants_are_the_webs ... ok
+test js_round_is_math_round ... ok
+test float_label_frames_match_tick_float_labels ... ok
+test sha256_matches_standard_vectors ... ok
+test projections_match_the_web_bit_for_bit ... ok
+test anchored_rects_match_chromium ... ok
+test fixtures_match_manifest_sha256 ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+
+     Running tests/labels_layout.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/labels_layout-ee8692bb83d481c7)
+
+running 7 tests
+test line_height_rules ... ok
+test r4_icons_table ... ok
+test reason_wraps_like_chromium ... ok
+test small_is_parent_over_1_2_in_f32 ... ok
+test layout_matches_chromium_bit_for_bit ... ok
+test texture_sizes_match_the_generator ... ok
+test layout_sweep_matches_chromium_bit_for_bit ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.08s
+
+     Running tests/labels_scenes.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/labels_scenes-58e25e945b11eab3)
+
+running 4 tests
+test float_frames_fade_like_css ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_golden_hashes ... ok
+test scenes_match_chromium ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.44s
+
+     Running tests/misc_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/misc_web_parity-81cb32f12cf000b1)
+
+running 11 tests
+test quadratic_bezier_matches_three ... ok
+test models_match_web ... ok
+test relief_sampler_matches_web ... ok
+test siege_sync_matches_web ... ok
+test siege_marker_matches_web ... ok
+test territory_border_matches_web ... ok
+test territory_loops_match_web ... ok
+test trade_routes_match_web ... ok
+test to_fixed_on_hex_corners_is_sign_stable ... ok
+test range_overlay_matches_web ... ok
+test range_overlay_real_relief_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.75s
+
+     Running tests/overlay_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/overlay_web_parity-2332fc393da67139)
+
+running 11 tests
+test badge_labels_match_the_web ... ok
+test chromium_tree_differences_are_only_last_bit_noise ... ok
+test constants_match_the_web_bit_for_bit ... ok
+test inputs_equal_the_rr_t8c_pin_inputs ... ok
+test emblem_keys_match_the_web ... ok
+test sha256_matches_standard_vectors ... ok
+test fixtures_match_manifest_sha256 ... ok
+test trees_match_the_web_bit_for_bit ... ok
+test textures_match_golden_hashes ... ok
+test rendering_twice_is_identical ... ok
+test textures_match_chromium ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.04s
+
+     Running tests/pick_golden.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/pick_golden-f2a5a372e2cf4216)
+
+running 7 tests
+test js_round_matches_math_round ... ok
+test prism_geometry_is_bitwise_three_cylinder ... ok
+test client_rect_to_ndc_matches_web ... ok
+test terrain_scene_instances_are_bitwise_web ... ok
+test world_to_axial_both_variants_match_web ... ok
+test camera_matrices_and_rays_are_bitwise_three ... ok
+test golden_picks_match_web_100_percent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.29s
+
+     Running tests/raster_api_closed.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/raster_api_closed-76deee6977e6baea)
+
+running 3 tests
+test all_28_shape_members_of_p4_25_are_covered ... ok
+test canvas_api_is_exactly_the_web_subset ... ok
+test unused_canvas_members_are_not_implemented ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/raster_color.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/raster_color-46a000151af22020)
+
+running 5 tests
+test acceptance_matches_chromium_except_documented_scope ... ok
+test every_web_colour_is_accepted ... ok
+test invalid_assignment_keeps_previous_value ... ok
+test filled_pixel_matches_chromium_within_one_step ... ok
+test opaque_colours_are_bit_exact ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/raster_scenes.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/raster_scenes-1202d41b25fb8ede)
+
+running 4 tests
+test manifest_hashes_are_listed_for_every_reference ... ok
+test scenes_match_golden_hashes ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.03s
+
+     Running tests/raster_unit.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/raster_unit-88c053d7ce20f80b)
+
+running 32 tests
+test arc_to_corner_matches_quarter_circle ... ok
+test begin_path_clears_the_path ... ok
+test circle_area_matches_pi_r_squared ... ok
+test antialiased_vertical_edge_has_known_coverage ... ok
+test clip_limits_drawing_and_restore_removes_it ... ok
+test color_stop_errors ... ok
+test clear_rect_respects_clip ... ok
+test degenerate_gradients_paint_nothing ... ok
+test draw_image_copies_and_scales ... ok
+test empty_clip_path_clips_everything ... ok
+test default_fill_style_is_opaque_black ... ok
+test equal_offset_stops_keep_insertion_order ... ok
+test line_to_without_subpath_acts_as_move_to ... ok
+test gradient_follows_the_ctm_at_paint_time ... ok
+test integer_fill_rect_is_exact ... ok
+test miter_limit_ten_keeps_a_20_degree_miter ... ok
+test line_width_is_ignored_when_not_positive ... ok
+test line_joins_differ_only_at_the_outer_corner ... ok
+test miter_limit_ten_bevels_sharp_angles ... ok
+test negative_radii_are_errors ... ok
+test non_finite_arguments_are_ignored ... ok
+test path_survives_fill_and_overlapping_fills_accumulate ... ok
+test quadratic_curve_without_subpath_starts_at_control_point ... ok
+test round_rect_radius_is_clamped_to_half_side ... ok
+test save_restore_restores_style_and_transform ... ok
+test shadow_is_drawn_below_and_offset ... ok
+test straight_output_unpremultiplies ... ok
+test stroke_rect_one_pixel_on_half_pixels ... ok
+test shadow_blur_spreads_and_conserves_mass ... ok
+test translate_rotate_and_set_transform ... ok
+test vertical_gradient_hits_control_points ... ok
+test zero_size_canvas_is_an_error ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/terrain_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/terrain_web_parity-2d50f5fad2bc2457)
+
+running 5 tests
+test js_pow_special_cases_follow_v8 ... ok
+test fog_hides_unknown_and_dims_explored ... ok
+test color_math_matches_three ... ok
+test terrain_fog_matches_web ... ok
+test terrain_build_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests/text_api_closed.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/text_api_closed-0e964bc9ad7a47dc)
+
+running 3 tests
+test text_api_is_exactly_the_six_web_members ... ok
+test shapes_file_gained_no_public_method ... ok
+test unused_text_members_are_not_implemented ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/text_fonts.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/text_fonts-849e8b82223a437c)
+
+running 6 tests
+test emoji_are_out_of_scope_and_render_notdef ... ok
+test sha256_matches_standard_vectors ... ok
+test symbols_fall_back_to_dejavu ... ok
+test charset_has_no_notdef ... ok
+test fonts_match_manifest_sha256 ... ok
+test fixtures_match_manifest_sha256 ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+
+     Running tests/text_metrics.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/text_metrics-447ddfa83694930c)
+
+running 6 tests
+test font_shorthand_parsing_matches_chromium ... ok
+test default_font_is_10px_sans_serif ... ok
+test invalid_font_keeps_previous_value ... ok
+test baselines_match_chromium ... ok
+test measure_text_widths_match_chromium ... ok
+test truncation_decisions_match_the_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.24s
+
+     Running tests/text_scenes.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/text_scenes-3546ec826d619c9c)
+
+running 4 tests
+test manifest_lists_every_fixture ... ok
+test scenes_match_golden_hashes ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.43s
+
+     Running tests/text_upper.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/text_upper-683a57540ade0d26)
+
+running 3 tests
+test the_22_city_name_letters_upper_case_like_js ... ok
+test whole_unicode_table_agrees_on_european_scripts ... ok
+test all_city_names_upper_case_like_js ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/unit_core_json.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/unit_core_json-d7ad847e813c6cd4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unit_core_model_rule.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/unit_core_model_rule-ac8f208293887e23)
+
+running 7 tests
+test pending_registry_is_explicit ... ok
+test legacy_en_path_reproduces_exactly_the_three_web_divergences ... ok
+test rule_table_covers_exactly_the_77_unit_types ... ok
+test unknown_type_falls_back_to_category_with_a_warning ... ok
+test table_equals_the_legacy_pl_route_and_names_never_matter ... ok
+test norm_name_and_culture_match_the_web ... ok
+test web_signature_classes_equal_rust_model_id_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+
+     Running tests/unit_core_trig.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/unit_core_trig-9f63766c81123afb)
+
+running 2 tests
+test quat_from_euler_honours_every_order ... ok
+test js_trig_matches_v8_bit_for_bit_and_libm_does_not ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/unit_core_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/unit_core_web_parity-e6d21820991feb18)
+
+running 3 tests
+test signature_is_sensitive_to_owner_colour_and_pose ... ok
+test part_catalogues_match_the_web_singletons ... ok
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests/units_braz_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/units_braz_web_parity-0a4a6d1a012670b4)
+
+running 4 tests
+test routing_no_longer_returns_not_yet_ported_for_the_bronze_package ... ok
+test the_records_cover_every_mod06_builder_and_counts_match_the_web ... ok
+test unit_core_record_signatures_of_the_bronze_records_match ... ok
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.38s
+
+     Running tests/units_kamien_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/units_kamien_web_parity-dc85ce56ac3485b3)
+
+running 5 tests
+test asin_matches_v8 ... ok
+test routing_no_longer_returns_not_yet_ported_for_the_stone_package ... ok
+test the_ten_records_cover_every_mod05_builder_and_counts_match_the_web ... ok
+test unit_core_record_signatures_of_the_stone_records_match ... ok
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.39s
+
+     Running tests/units_zelazo_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/units_zelazo_web_parity-b6834af98e7ea87b)
+
+running 4 tests
+test no_unit_builder_is_a_stub_any_more ... ok
+test unit_core_record_signatures_of_the_iron_records_match ... ok
+test the_records_cover_every_mod07_builder_and_counts_match_the_web ... ok
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.85s
+
+     Running tests/wonders_web_parity.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/wonders_web_parity-44dd8e1d72d3f048)
+
+running 4 tests
+test js_trig_is_bit_identical_to_v8 ... ok
+test renderer_scenario_is_bit_identical_to_web ... ok
+test registry_matches_web_ids ... ok
+test models_are_bit_identical_to_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+EXIT=0
+$ cargo +1.87.0 test --locked --test labels_layout --test labels_scenes --test labels_anchors
+   Compiling simd-adler32 v0.3.10
+   Compiling libm v0.2.16
+   Compiling crc32fast v1.5.3
+   Compiling adler2 v2.0.1
+   Compiling bytemuck v1.25.2
+   Compiling arrayvec v0.7.8
+   Compiling smallvec v1.16.3
+   Compiling log v0.4.34
+   Compiling cfg-if v1.0.5
+   Compiling float-cmp v0.9.0
+   Compiling strict-num v0.1.1
+   Compiling polycool v0.4.0
+   Compiling miniz_oxide v0.9.1
+   Compiling arrayref v0.3.9
+   Compiling bitflags v2.13.2
+   Compiling kurbo v0.13.1
+   Compiling tiny-skia-path v0.12.0
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling flate2 v1.1.10
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling siphasher v1.0.4
+   Compiling memchr v2.8.3
+   Compiling svgtypes v0.16.1
+   Compiling png v0.18.1
+   Compiling roxmltree v0.21.1
+   Compiling simplecss v0.2.2
+   Compiling data-url v0.3.2
+   Compiling imagesize v0.15.0
+   Compiling pico-args v0.5.0
+   Compiling owned_ttf_parser v0.25.1
+   Compiling tiny-skia v0.12.0
+   Compiling rgb v0.8.53
+   Compiling usvg v0.48.1
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling unicode-properties v0.1.4
+   Compiling zune-core v0.5.3
+   Compiling unicode-script v0.5.8
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-ccc v0.4.0
+   Compiling rustybuzz v0.20.1
+   Compiling zune-jpeg v0.5.15
+   Compiling resvg v0.48.1
+   Compiling ab_glyph v0.2.32
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c43cd53a-064-3/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 09s
+     Running tests/labels_anchors.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-187/debug/deps/labels_anchors-0c321506dec0e3a6)
+
+running 8 tests
+test anchor_heights_match_the_web ... ok
+test constants_are_the_webs ... ok
+test float_label_frames_match_tick_float_labels ... ok
+test projections_match_the_web_bit_for_bit ... ok
+test sha256_matches_standard_vectors ... ok
+test js_round_is_math_round ... ok
+test anchored_rects_match_chromium ... ok
+test fixtures_match_manifest_sha256 ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.89s
+
+     Running tests/labels_layout.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-187/debug/deps/labels_layout-9d1c9d31f32b05d2)
+
+running 7 tests
+test line_height_rules ... ok
+test r4_icons_table ... ok
+test small_is_parent_over_1_2_in_f32 ... ok
+test reason_wraps_like_chromium ... ok
+test layout_matches_chromium_bit_for_bit ... ok
+test texture_sizes_match_the_generator ... ok
+test layout_sweep_matches_chromium_bit_for_bit ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.63s
+
+     Running tests/labels_scenes.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-187/debug/deps/labels_scenes-1d36e920940646fa)
+
+running 4 tests
+test float_frames_fade_like_css ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_golden_hashes ... ok
+test scenes_match_chromium ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.33s
+
+EXIT=0

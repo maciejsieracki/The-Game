@@ -1,0 +1,11 @@
+E29 | KILLED | oczek=K | simplifyRiverRenderPath: powrot a==c nieusuwany (:7224) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E30 | KILLED | oczek=K | simplifyRiverRenderPath: zbedny heks - warunek sasiedztwa odwrocony (:7225) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E32 | KILLED | oczek=K | markRiverTransitEdgesOnPath: warunek pominiecia heksa (:7243) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E33 | KILLED | oczek=K | markRiverTransitEdgesOnPath: kierunek wejscia dla i=1 (:7237) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E34 | KILLED | oczek=K | markRiverTransitEdgesOnPath: kierunek wyjscia (:7240) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+G15 | KILLED | oczek=K | grow: estimateLandCentroidFromMouth z odwroconym allowReliefTraversal (:6202) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G16 | KILLED | oczek=K | grow: hardMeander w bazowym przebiegu wylaczony (:6209) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E36 | KILLED | oczek=K | riverCornersAlongHexEdges: normalizacja ((d%6)+6)%6 zastapiona %6 (:7167) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E37 | KILLED | oczek=K | walkRiverHexPerimeter: wczesne wyjscie na rogu docelowym usuniete (:7157) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E38 | KILLED | oczek=K | canReceiveRiverYieldMark: brak heksa -> true zamiast false (:7123) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

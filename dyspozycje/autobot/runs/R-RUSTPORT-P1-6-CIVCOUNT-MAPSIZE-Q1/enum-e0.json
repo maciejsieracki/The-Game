@@ -1,0 +1,137 @@
+{
+ "epoch": "Epoka Kamienia8 cyw.Pierwsze osady, kami",
+ "epochNames": [
+  "Epoka Kamienia8 cyw.Pierwsze osady, kamienne narzedzia. Fund",
+  "Epoka Brazu14 cyw.Metalurgia i pierwsze armie. Rydwany, mury",
+  "Epoka Zelaza15 cyw.Hartowane ostrza, potezne legiony, szlaki"
+ ],
+ "mapSizes": [
+  {
+   "map": "Standardowy",
+   "mapInfo": "Informacja: ~5000 hex (84×60)",
+   "civSeq": [
+    "4",
+    "5",
+    "7"
+   ],
+   "civAfterCycle": "4",
+   "cityRow": {
+    "val": "6",
+    "info": "Informacja: Zalecane dla tej mapy (np. Sparta, Kapua) — min 3 hex"
+   }
+  },
+  {
+   "map": "Duży",
+   "mapInfo": "Informacja: ~10000 hex (120×84)",
+   "civSeq": [
+    "5",
+    "6",
+    "8"
+   ],
+   "civAfterCycle": "5",
+   "cityRow": {
+    "val": "6",
+    "info": "Informacja: Mniej miast w klastrze"
+   }
+  },
+  {
+   "map": "Ogromny",
+   "mapInfo": "Informacja: ~20000 hex (168×119)",
+   "civSeq": [
+    "6",
+    "7",
+    "8"
+   ],
+   "civAfterCycle": "6",
+   "cityRow": {
+    "val": "8",
+    "info": "Informacja: Zalecane dla tej mapy (np. Sparta, Kapua) — min 3 hex"
+   }
+  },
+  {
+   "map": "Super Huge",
+   "mapInfo": "Informacja: ~80000 hex (336×238)",
+   "civSeq": [
+    "7",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8",
+    "8"
+   ],
+   "civAfterCycle": "8",
+   "cityRow": {
+    "val": "8",
+    "info": "Informacja: Mniej miast w klastrze"
+   }
+  },
+  {
+   "map": "Malenki",
+   "mapInfo": "Informacja: ~1000 hex (38×26)",
+   "civSeq": [
+    "5",
+    "2",
+    "3"
+   ],
+   "civAfterCycle": "5",
+   "cityRow": {
+    "val": "4",
+    "info": "Informacja: Zalecane dla tej mapy (np. Sparta, Kapua) — min 3 hex"
+   }
+  },
+  {
+   "map": "Mały",
+   "mapInfo": "Informacja: ~2000 hex (54×37)",
+   "civSeq": [
+    "4",
+    "6",
+    "3"
+   ],
+   "civAfterCycle": "4",
+   "cityRow": {
+    "val": "4",
+    "info": "Informacja: Mniej miast w klastrze"
+   }
+  }
+ ],
+ "initial": {
+  "map": {
+   "val": "Standardowy",
+   "info": "Informacja: ~5000 hex (84×60)"
+  },
+  "civ": {
+   "val": "7",
+   "info": "Informacja: Więcej frakcji na mapie"
+  },
+  "city": {
+   "val": "6",
+   "info": "Informacja: Zalecane dla tej mapy (np. Sparta, Kapua) — min 3 hex"
+  }
+ },
+ "mapSeq": [
+  "Standardowy",
+  "Duży",
+  "Ogromny",
+  "Super Huge",
+  "Malenki",
+  "Mały"
+ ],
+ "errors": [
+  "CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

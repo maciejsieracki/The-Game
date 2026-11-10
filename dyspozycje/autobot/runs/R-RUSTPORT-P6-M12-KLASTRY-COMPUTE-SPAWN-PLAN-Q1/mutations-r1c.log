@@ -1,0 +1,6 @@
+[shuffle-removed] WYKRYTA: etap S1, 68s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[diag-missing-always-ok] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (356s)
+PODSUMOWANIE: {'WYKRYTA': 1, 'PRZEZYLA-OCZEKIWANA': 1}
+  OCZEKIWANE PRZEZYCIE: diag-missing-always-ok - mutant rownowazny: dodane ramie `_ if false` jest nieosiagalne (brak zmiany zachowania)
+pliki przywrocone: True
+EXIT=0

@@ -1,0 +1,29 @@
+vite v5.4.21 building for production...
+transforming...
+✓ 959 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index-D7itsoOq.js
+computing gzip size...
+../../../../../../../tmp/civ-general-purchase-runtime/index.html  74,844.27 kB │ gzip: 49,462.52 kB
+✓ built in 1m 14s
+PASS: real game initialized and capital city founded
+PASS: runtime exposes an actual best-unit General offer
+PASS: real purchase transaction rejects non-capital with no resource or queue mutation
+PASS: real capital purchase succeeds and queues exactly one General
+PASS: real purchase deducts the quoted treasury amount and required stock/Manpower
+PASS: real purchase transaction rejects a second General at the era cap
+PASS: queued General spawns through the live end-turn recruitment pipeline
+PASS: runtime post-spawn hook assigns a new recruit to the General live position
+PASS: real map has three separated recruitment cities with routable multi-turn paths to the General
+PASS: Army-panel purchase callback queues one paid unit at each of three cities
+PASS: real end-turn recruitment completed all three queues and deferred flush assigned every march
+page.waitForFunction: Timeout 60000ms exceeded.
+    at main (<WT>/gra/tools/generals-purchase-runtime-test.cjs:124:16) {
+  log: [],
+  name: 'TimeoutError'
+}
+
+EXIT=1
+TIME=206.9

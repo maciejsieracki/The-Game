@@ -1,0 +1,68 @@
+WYKRYTY   : [64] gate: konwerter - bez budynku -> 5 testow czerwonych: missing_runtime_labels_match_running_web, label_satisfied_matches_running_web, resource_gate_matches_running_web
+WYKRYTY   : [65] gate: zapas > 0 -> 6 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, label_satisfied_matches_running_web, missing_runtime_labels_match_running_web
+WYKRYTY   : [66] gate: etykiety - bez deduplikacji -> 3 testow czerwonych: missing_runtime_labels_match_running_web, required_active_labels_match_running_web, inactive_status_matches_running_web
+WYKRYTY   : [67] gate: wymagany surowiec bez trim -> 5 testow czerwonych: required_active_labels_match_running_web, missing_runtime_labels_match_running_web, resource_gate_matches_running_web
+WYKRYTY   : [68] gate: wymagany surowiec bez malych liter -> 5 testow czerwonych: missing_runtime_labels_match_running_web, required_active_labels_match_running_web, runtime_gate_matches_running_web
+WYKRYTY   : [69] gate: bramka budowy - any -> 1 testow czerwonych: resource_gate_matches_running_web
+WYKRYTY   : [70] gate: Mennica runtime - odwrocony resolver -> 4 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, missing_runtime_labels_match_running_web, runtime_gate_matches_running_web
+WYKRYTY   : [71] gate: Mennica runtime - zawsze prawda -> 2 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, runtime_gate_matches_running_web
+WYKRYTY   : [72] gate: runtime - bez wybudowanych -> 1 testow czerwonych: runtime_gate_matches_running_web
+KOMPILACJA: [73] gate: filtr - pomija duplikaty (mutant nie kompiluje sie)
+WYKRYTY   : [74] gate: filtr - odwrocona bramka -> 1 testow czerwonych: filter_runtime_active_built_ids_matches_running_web
+PRZEZYL   : [75] gate: filtr - kolejnosc aktywnych
+WYKRYTY   : [76] gate: prerekwizyt - pusty napis -> 1 testow czerwonych: city_building_prereq_met_matches_running_web
+WYKRYTY   : [77] gate: prerekwizyt - and -> 1 testow czerwonych: city_building_prereq_met_matches_running_web
+WYKRYTY   : [78] gate: prerekwizyt - brak = niespelniony -> 1 testow czerwonych: city_building_prereq_met_matches_running_web
+WYKRYTY   : [79] gate: brakujace etykiety - odwrocone -> 2 testow czerwonych: missing_runtime_labels_match_running_web, inactive_status_matches_running_web
+WYKRYTY   : [80] gate: brakujace - Mennica odwrocona -> 2 testow czerwonych: missing_runtime_labels_match_running_web, inactive_status_matches_running_web
+WYKRYTY   : [81] gate: Spichlerz wylaczony z bramki -> 2 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, has_deposit_runtime_gate_matches_running_web
+WYKRYTY   : [82] sp: drain Ceramiki - strict > -> 1 testow czerwonych: pay_drain_matches_running_web
+WYKRYTY   : [83] sp: drain Soli - strict > -> 1 testow czerwonych: pay_drain_matches_running_web
+WYKRYTY   : [84] sp: dry-run pobiera -> 1 testow czerwonych: pay_drain_matches_running_web
+WYKRYTY   : [85] sp: dry-run - Ceramika -> 2 testow czerwonych: inactive_status_matches_running_web, pay_drain_matches_running_web
+WYKRYTY   : [86] sp: stan - Pop bez II -> 1 testow czerwonych: bonus_state_matches_running_web
+WYKRYTY   : [87] sp: stan - Sol tylko II -> 1 testow czerwonych: bonus_state_matches_running_web
+PRZEZYL   : [88] sp: stan - II wymaga II
+WYKRYTY   : [89] sp: zdrowie II -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [90] sp: wzrost II -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [91] sp: racja II -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [92] sp: zadowolenie - domyslna -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [93] sp: yields - tylko jeden -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [94] sp: armia poza terytorium -> 1 testow czerwonych: army_food_multiplier_matches_running_web
+WYKRYTY   : [95] sp: armia garnizon -> 1 testow czerwonych: army_food_multiplier_matches_running_web
+WYKRYTY   : [96] sp: nieaktywny - brak budynku -> 1 testow czerwonych: inactive_status_matches_running_web
+WYKRYTY   : [97] sp: nieaktywny - Sol tylko II -> 1 testow czerwonych: inactive_status_matches_running_web
+WYKRYTY   : [98] sp: nieaktywny - separator -> 1 testow czerwonych: inactive_status_matches_running_web
+WYKRYTY   : [99] sp: nieaktywny - budynek z opcji -> 1 testow czerwonych: inactive_status_matches_running_web
+WYKRYTY   : [100] sp: posiadanie - and -> 1 testow czerwonych: city_has_spichlerz_matches_running_web
+WYKRYTY   : [101] tab: tempo normalny -> 3 testow czerwonych: constants_match_running_web, building_cost_pace_matches_running_web, pace_matches_flattened_work_states_for_normal_mode
+WYKRYTY   : [102] tab: prog ery 3 -> 7 testow czerwonych: building_era_cost_multiplier_matches_running_web, building_stock_cost_matches_running_web, epoch_cost_multiplier_matches_running_web
+WYKRYTY   : [103] tab: prog ery 2 -> 8 testow czerwonych: building_era_cost_multiplier_matches_running_web, building_stock_cost_matches_running_web, epoch_cost_multiplier_matches_running_web
+PRZEZYL   : [104] tab: slowo epoki
+WYKRYTY   : [105] tab: FALA2 -> 2 testow czerwonych: building_stock_cost_matches_running_web, building_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [106] tab: koszt koni -> 3 testow czerwonych: constants_match_running_web, unit_stock_cost_matches_running_web, unit_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [107] tab: drain Ceramiki -> 2 testow czerwonych: constants_match_running_web, pay_drain_matches_running_web
+WYKRYTY   : [108] tab: zdrowie II -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [109] tab: racja I -> 1 testow czerwonych: bonuses_and_yields_match_running_web
+WYKRYTY   : [110] tab: prerekwizyt Akademii -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : [111] tab: zloze Kuzni -> 5 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, missing_runtime_labels_match_running_web, required_active_labels_match_running_web
+WYKRYTY   : [112] tab: etykieta Stali (bramka) -> 4 testow czerwonych: missing_runtime_labels_match_running_web, label_satisfied_matches_running_web, required_active_labels_match_running_web
+WYKRYTY   : [113] tab: drain Mennicy -> 6 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, constants_match_running_web, missing_runtime_labels_match_running_web
+WYKRYTY   : [114] tab: komunikat Brak -> 1 testow czerwonych: inactive_status_matches_running_web
+WYKRYTY   : [115] tab: konwerter Cegly -> 5 testow czerwonych: missing_runtime_labels_match_running_web, label_satisfied_matches_running_web, resource_gate_matches_running_web
+WYKRYTY   : [116] tab: Spichlerz poza bramka -> 2 testow czerwonych: filter_runtime_active_built_ids_matches_running_web, has_deposit_runtime_gate_matches_running_web
+WYKRYTY   : [117] tab: dostep wodny -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : [118] tab: cap Spichlerza -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : [119] tab: armia poza terytorium -> 1 testow czerwonych: army_food_multiplier_matches_running_web
+WYKRYTY   : [120] tab: wyjatek koni -> 3 testow czerwonych: constants_match_running_web, unit_stock_cost_matches_running_web, unit_stock_cost_matches_flattened_p3_19_table
+WYKRYTY   : [121] tab: etykieta Zlota (token) -> 4 testow czerwonych: label_satisfied_matches_running_web, missing_runtime_labels_match_running_web, required_active_labels_match_running_web
+WYKRYTY   : [122] tab: NFD wpis -> 1 testow czerwonych: nfd_strip_matches_running_web_for_every_code_point
+WYKRYTY   : [123] tab: NFD Hangul t_count -> 2 testow czerwonych: nfd_strip_matches_running_web_for_random_sequences, nfd_strip_matches_running_web_for_every_code_point
+WYKRYTY   : [124] tab: NFD ranga znaku -> 1 testow czerwonych: nfd_strip_table_has_valid_shape
+WYKRYTY   : [125] dr: token Zlota nie zamieniany -> 5 testow czerwonych: label_satisfied_matches_running_web, missing_runtime_labels_match_running_web, required_active_labels_match_running_web
+WYKRYTY   : [126] dr: indeks NFD -> 7 testow czerwonych: epoch_cost_multiplier_matches_running_web, scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+mutantow=63 przezylo/niekompilujace=4
+   gate: filtr - pomija duplikaty [nie kompiluje]
+   gate: filtr - kolejnosc aktywnych
+   sp: stan - II wymaga II
+   tab: slowo epoki

@@ -1,0 +1,63 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo check --locked --target aarch64-apple-darwin
+# 2026-10-22T12:01:32Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+    Checking bitflags v2.13.2
+   Compiling objc2-exception-helper v0.1.1
+    Checking stable_deref_trait v1.2.1
+   Compiling libc v0.2.189
+    Checking yoke v0.8.3
+warning: objc2-exception-helper@0.1.1: cc: error: unrecognized command-line option '-arch'
+warning: objc2-exception-helper@0.1.1: cc: error: unrecognized command-line option '-mmacosx-version-min=11.0'
+error: failed to run custom build command for `objc2-exception-helper v0.1.1`
+
+Caused by:
+  process didn't exit successfully: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/debug/build/objc2-exception-helper-5986e2d771373280/build-script-build` (exit status: 1)
+  --- stdout
+  cargo:rerun-if-changed=build.rs
+  cargo:rerun-if-changed=src/try_catch.m
+  cargo:rerun-if-env-changed=CC_FORCE_DISABLE
+  CC_FORCE_DISABLE = None
+  cargo:rerun-if-env-changed=CC_aarch64-apple-darwin
+  CC_aarch64-apple-darwin = None
+  cargo:rerun-if-env-changed=CC_aarch64_apple_darwin
+  CC_aarch64_apple_darwin = None
+  cargo:rerun-if-env-changed=TARGET_CC
+  TARGET_CC = None
+  cargo:rerun-if-env-changed=CC
+  CC = None
+  cargo:rerun-if-env-changed=CROSS_COMPILE
+  CROSS_COMPILE = None
+  cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=MACOSX_DEPLOYMENT_TARGET
+  MACOSX_DEPLOYMENT_TARGET = None
+  cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+  cargo:rerun-if-env-changed=CFLAGS
+  CFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CFLAGS
+  TARGET_CFLAGS = None
+  cargo:rerun-if-env-changed=CFLAGS_aarch64_apple_darwin
+  CFLAGS_aarch64_apple_darwin = None
+  cargo:rerun-if-env-changed=CFLAGS_aarch64-apple-darwin
+  CFLAGS_aarch64-apple-darwin = None
+  cargo:rerun-if-env-changed=CFLAGS
+  CFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CFLAGS
+  TARGET_CFLAGS = None
+  cargo:rerun-if-env-changed=CFLAGS_aarch64_apple_darwin
+  CFLAGS_aarch64_apple_darwin = None
+  cargo:rerun-if-env-changed=CFLAGS_aarch64-apple-darwin
+  CFLAGS_aarch64-apple-darwin = None
+  cargo:warning=cc: error: unrecognized command-line option '-arch'
+  cargo:warning=cc: error: unrecognized command-line option '-mmacosx-version-min=11.0'
+
+  --- stderr
+
+
+  error occurred in cc-rs: command did not execute successfully (status code exit status: 1): LC_ALL="C" "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-gdwarf-2" "-fno-omit-frame-pointer" "-arch" "arm64" "-mmacosx-version-min=11.0" "-Wall" "-Wextra" "-xobjective-c" "-fobjc-exceptions" "-o" "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/aarch64-apple-darwin/debug/build/objc2-exception-helper-f1b4da42f6aa071b/out/dce005d523844fc4-try_catch.o" "-c" "src/try_catch.m"
+
+
+warning: build failed, waiting for other jobs to finish...
+EXIT=101

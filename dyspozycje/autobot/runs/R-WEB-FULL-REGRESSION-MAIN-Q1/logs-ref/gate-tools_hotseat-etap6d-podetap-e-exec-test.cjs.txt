@@ -1,0 +1,39 @@
+hotseat-etap6d-podetap-e-exec-test (R-HOTSEAT-ETAP6D-PODETAP-E-Q1, runda 2)
+
+1. collectOpenDiploProposalQueue — realne wykonanie
+
+  OK: PRAWDZIWY isMe: kolejka ma 2 wpisy (pendingDiplomacyInbox + n-player-awaits), otrzymano 2
+  OK: zawiera wpis z pendingDiplomacyInbox nietknięty
+  OK: n-player-awaits: aiOwnerId=3 (proposer, bo responder=PLAYER)
+  OK: n-ai-awaits POMINIĘTY (awaitingOwnerId != PLAYER)
+  OK: n-dismissed POMINIĘTY (w dismissedSidePanelEventIds)
+  OK (mutacja poprawnie czerwieni): MUTACJA isMe=>false: n-player-awaits POWINIEN zniknąć z kolejki (czerwieni się poprawnie)
+
+2. collectTurnEvents — realne wykonanie (fragment stołu negocjacyjnego)
+
+  OK: PRAWDZIWY isMe: wpis n1 (awaitingOwnerId=PLAYER) wygenerował zdarzenie, otrzymano 1 zdarzeń
+  OK: zdarzenie n1: aiOwnerId=4 (proposer, bo responder=PLAYER) w tytule
+  OK (mutacja poprawnie czerwieni): MUTACJA isMe=>false: zdarzenie n1 POWINNO zniknąć z listy (czerwieni się poprawnie)
+
+3+4. resolveNegotiationEntryAt / resolvePendingNegotiationsForOwner — realne wykonanie
+
+<anonymous_script>:51
+      zarejestrujCasusBelli(entry.proposerOwnerId, awaitingId, turn);
+      ^
+
+ReferenceError: zarejestrujCasusBelli is not defined
+    at resolveNegotiationEntryAt (eval at compileRealFunction (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-e-exec-test.cjs:101:19), <anonymous>:51:7)
+    at run (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-e-exec-test.cjs:265:7)
+    at Object.<anonymous> (<REF-TMP>/ref/gra/tools/hotseat-etap6d-podetap-e-exec-test.cjs:270:19)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=0.2

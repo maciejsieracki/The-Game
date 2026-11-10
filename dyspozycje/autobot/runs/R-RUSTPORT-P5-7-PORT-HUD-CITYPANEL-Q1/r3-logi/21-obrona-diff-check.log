@@ -1,0 +1,32 @@
+# Obrona r3, zarzut 2 Evaluatora r3: `git diff --check c55d130c 04aca06c`
+# Worktree odtworzony na commicie Operatora: `git checkout --detach 04aca06c` (HEAD = 04aca06c)
+$ git diff --check c55d130c 04aca06c
+(brak wyjścia)
+EXIT=0
+$ git check-attr whitespace -- runs/<ID>/r3-logi/diffs/cityUxFrame.diff runs/<ID>/r3-logi/15-allowlist-git-status.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff: whitespace: unset
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/15-allowlist-git-status.log: whitespace: unset
+# źródło atrybutu: runs/<ID>/.gitattributes (`*.diff -whitespace`, `*.log -whitespace`), dodany w r2 (ad5116d4) jako
+# poprawka zarzutu 4 Evaluatora r1 (§10.1); obecny w 04aca06c, brak w 51a62a89:
+$ git cat-file -e 04aca06c:dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/.gitattributes
+w 04aca06c: OBECNY
+$ git cat-file -e 51a62a89:dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/.gitattributes
+fatal: path '...' exists on disk, but not in '51a62a89'
+w 51a62a89: BRAK
+# Odtworzenie wyniku Evaluatora (EXIT=2) = atrybuty czytane ze źródła BEZ tego pliku:
+$ git --attr-source=51a62a89 check-attr whitespace -- runs/<ID>/r3-logi/diffs/cityUxFrame.diff
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff: whitespace: unspecified
+$ git --attr-source=51a62a89 diff --check c55d130c 04aca06c
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff:23: trailing whitespace.
++
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff:40: trailing whitespace.
++
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff:51: trailing whitespace.
++
+EXIT=2
+# Wniosek: wynik `git diff --check` zależy od atrybutów drzewa roboczego (git czyta .gitattributes z worktree).
+# Na checkoucie 04aca06c: EXIT=0; z atrybutami spoza tematu (np. checkout innej gałęzi): EXIT=2 na 3 liniach
+# kontekstu pustego wiersza (" ") w surowym diffie — treść dowodu, nie błąd formatowania.
+# 35. plik commita = ten log allowlisty (15-…), dodany do indeksu PO pomiarze (adnotacja w logu); diffs/cityUxFrame.diff
+# był w indeksie podczas `git diff --cached --check` (34 pliki, lista w 15-…).
+EXIT=0

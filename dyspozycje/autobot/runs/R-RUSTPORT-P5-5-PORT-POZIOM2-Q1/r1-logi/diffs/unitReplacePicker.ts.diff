@@ -1,0 +1,23 @@
+--- pin/gra/src/ui/unitReplacePicker.ts
++++ v2/src/ui/unitReplacePicker.ts
+@@ -24,6 +24,11 @@
+   atk: number;
+   def: number;
+   hpMax: number;
++  /**
++   * P5.5 (reguła wpisana bez importu, pin `:155` `opts.skarb >= o.surcharge`): czy skarbiec pokrywa dopłatę
++   * — liczy Rust (jak `affordable` w `unitRecruitCard.ts`, P5.3).
++   */
++  affordable: boolean;
+ }
+ 
+ export interface UnitReplacePickerOptions {
+@@ -152,7 +157,7 @@
+   }
+ 
+   for (const o of opts.options) {
+-    const affordable = opts.skarb >= o.surcharge;
++    const affordable = o.affordable;
+     const item = document.createElement('div');
+     item.className = 'civ-urp-item' + (affordable ? '' : ' disabled');
+     item.setAttribute('role', 'button');

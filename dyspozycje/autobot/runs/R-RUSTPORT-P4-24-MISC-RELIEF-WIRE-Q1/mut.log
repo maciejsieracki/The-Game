@@ -1,0 +1,18 @@
+('DETECTED', 'src/models/misc/range.rs', '#[allow(clippy::cast_possible_truncation)]         let seed = seed as ', ['relief_sampler_matches_web', 'range_overlay_real_relief_matches_web', 'result:'])
+('DETECTED', 'src/models/misc/range.rs', 'let s = ReliefSampler::new(terrain, q, r, seed, 1.0)?;', ['relief_sampler_matches_web', 'result:'])
+('DETECTED', 'src/models/misc/range.rs', 'let s = ReliefSampler::new(terrain, q, r.wrapping_add(1), seed, radius', ['relief_sampler_matches_web', 'range_overlay_real_relief_matches_web', 'result:'])
+('DETECTED', 'src/models/misc/range.rs', 'Some(Box::new(move |x, z| s.sample(z, x)))', ['relief_sampler_matches_web', 'range_overlay_real_relief_matches_web', 'result:'])
+('DETECTED', 'src/models/misc/range.rs', 'build_range_overlay_group(map, keys, style, &FlatRelief)', ['range_overlay_real_relief_matches_web', 'result:'])
+('DETECTED', 'src/models/misc/range.rs', 'pub const HUG_RELIEF_SURFACE_LIFT: f64 = 0.0121;', ['range_overlay_matches_web', 'range_overlay_real_relief_matches_web', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'let body = if false {', ['core::jsnum::tests::to_fixed3_matches_node', 'models::misc::overlay::tests::to_fixed5_matches_node', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', "b'9' => b[i] = b'1',", ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', "b.insert(0, b'0');", ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'if !x.is_finite() || x.abs() > 1e21 {', ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'format!("{x:e}")', ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'return "nan".to_owned();', ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'let neg = x <= 0.0;     let a = x.abs();     let d = digits as usize;', ['core::jsnum::tests::to_fixed3_matches_node', 'models::misc::overlay::tests::to_fixed5_matches_node', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', '(1023 + u64::from(digits) + 2) << 52', ['core::jsnum::tests::to_fixed3_matches_node', 'models::misc::overlay::tests::to_fixed5_matches_node', 'models::misc::overlay::tests::to_fixed_d3_equals_core_to_fixed3', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', '', ['to_fixed_entry_points_are_one_function', 'to_fixed_matches_v8', 'result:'])
+('DETECTED', 'src/core/jsnum.rs', 'digits <= 101,', ['to_fixed_rejects_digits_above_100', 'result:'])
+result: 16 / 16 detected
+EXIT=0

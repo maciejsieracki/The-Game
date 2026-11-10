@@ -1,0 +1,37 @@
+BASE rc=0 (OK)
+M01 KILLED rc=101 label_for_hex: guard widoczności złoża -> pominięty
+M02 KILLED rc=101 label_for_hex: nakładka ZlozeRudy -> None
+M03 KILLED rc=101 hex_hidden_deposit_hint: guard `deposit_visible` -> pominięty
+M04 KILLED rc=101 improvement_unlock_active_on_hex: NO_DEPOSIT -> false
+M05 KILLED rc=101 improvement_unlock_active_on_hex: LIVESTOCK_NO_DEPOSIT -> false
+M06 KILLED rc=101 warzelnia_soli: `||` -> `&&`
+M07 KILLED rc=101 improvement_unlock_active_on_hex: DEPOSIT_LINKED -> pominięte (zawsze true)
+M08 SURVIVED rc=0 labels_for_kopalnia_miedzi_on_hex: `||` -> `&&`
+M09 KILLED rc=101 active_labels: LIVESTOCK_NOT_RESOURCE -> pominięte
+M10 KILLED rc=101 collect_active_access: bramka `sight > 0` -> zawsze
+M11 KILLED rc=101 collect_active_access: dystans `> sight` -> `>=`
+M12 KILLED rc=101 collect_deposit_potential: dystans `> sight` -> `>=`
+M13 KILLED rc=101 collect_deposit_potential: bramka `sight <= 0` -> pominięta
+M14 KILLED rc=101 collect_active_access: gałąź livestock `kon` -> pominięta
+BASE rc=0 (OK)
+M15 KILLED rc=101 collect_active_access: gałąź Brąz (has_braz_access) -> false
+M16 KILLED rc=101 collect_active_access: gałąź Złoto (owner_has_zloto_stock) -> false
+M17 KILLED rc=101 get_city_resource_access: wykluczenie aktywnych z potencjału -> brak
+M18 KILLED rc=101 parse_surowiec: gałąź `starts_with('[')` -> pominięta
+M19 KILLED rc=101 parse_surowiec: gałąź pustego napisu -> pominięta
+M20 KILLED rc=101 parse_surowiec: lista -> zwraca pustą
+M21 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustych etykiet -> brak
+M22 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustego klucza -> brak
+M23 KILLED rc=101 pl_collation_cmp: poziom wielkości liter -> pominięty
+M24 KILLED rc=101 era_ui_name: wpis 2 (Brąz) -> None
+M26 KILLED rc=101 collect_active_access: gałąź `if let Some(placed)` -> nigdy
+M27 KILLED rc=101 warzelnia_soli: operand `zloze == sol` -> false
+M28 KILLED rc=101 improvement_unlock_active_on_hex: brak normalizacji -> true
+M25 NIE_ZASTOSOWANO (wystapien=0) collect_active_access: domyślna kultura `unwrap_or(0.0)` -> 1.0
+BASE rc=0 (OK)
+M19 KILLED rc=101 parse_surowiec: gałąź pustego napisu -> pominięta
+M21 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustych etykiet -> brak
+M22 SURVIVED rc=0 labels_for_improvement_unlock: filtr pustego klucza -> brak
+M25 KILLED rc=101 collect_active_access: domyślna kultura `unwrap_or(0.0)` -> 1.0
+BASE rc=0 (OK)
+M29 KILLED rc=101 collect_active_access: klucz spoza mapy -> `return` zamiast `continue`

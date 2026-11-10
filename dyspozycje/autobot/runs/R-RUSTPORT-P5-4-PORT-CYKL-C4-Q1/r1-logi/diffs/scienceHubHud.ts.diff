@@ -1,0 +1,30 @@
+--- pin:gra/src/ui/scienceHubHud.ts
++++ v2:src-tauri/frontend-v2/src/ui/scienceHubHud.ts
+@@ -7,13 +7,15 @@
+ import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
+ import { brandIconSvg, buildingIconSvg, mapResourceIconSvg, improvementIconSvg } from './icons/brandAssets';
+ import type { TechUnlockItem } from './sciencePicker';
+-import type { BuildingDef } from '../data/loader';
++// P5.4: `BuildingDef` (`data/loader`, pin `:10`) → `BuildingDefDto`; `RESEARCH_QUEUE_MAX`
++// (`game/playerState`, pin `:15`) → `StaticCatalogDto.constants.researchQueueMax`; `EraGateInfo`
++// (`game/era-gate-ui`, pin `:16`) → `EraGateInfoDto`.
++import type { BuildingDefDto as BuildingDef, EraGateInfoDto as EraGateInfo } from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+ import { techIconSvg } from './techIcons';
+ import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
+-import { RESEARCH_QUEUE_MAX } from '../game/playerState';
+-import type { EraGateInfo } from '../game/era-gate-ui';
+ import { showTechDiscoveryNotice } from './techDiscoveryNotice';
+ 
+ export interface ScienceHubProgress {
+@@ -91,7 +93,7 @@
+ }
+ 
+ /** Max pozycji w planie badań — mirror RESEARCH_QUEUE_MAX (playerState.ts). */
+-const PLAN_MAX = RESEARCH_QUEUE_MAX;
++const PLAN_MAX = staticCatalog().constants.researchQueueMax;
+ 
+ export interface ScienceHubHudConfig {
+   getProgress: () => ScienceHubProgress | null;

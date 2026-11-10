@@ -1,0 +1,106 @@
+| Plik web | Symbol | Status | Rust | Test | Uwaga |
+|---|---|---|---|---|---|
+| `population-growth-v85.ts` | `PoziomRacji` | PORTOWANY | `PoziomRacji` | `-` | alias typu f64 |
+| `population-growth-v85.ts` | `WYZYWIENIE_MIN` | PORTOWANY | `wyzywienie_min` | `p6_7a_growth::constants_match_running_web` | tabela wzrost-ludnosci-params.json::wyzywienie.min |
+| `population-growth-v85.ts` | `WYZYWIENIE_MAX` | DANE-JUZ-W-RUST | `wyzywienie_max` | `p6_7a_growth::single_source_of_default_level_and_max` | cities-params.json::wejscia_z_innych_modulow_weba (P6.6B); jedno zrodlo |
+| `population-growth-v85.ts` | `WYZYWIENIE_STEP` | PORTOWANY | `wyzywienie_step` | `p6_7a_growth::constants_match_running_web` | tabela wyzywienie.krok |
+| `population-growth-v85.ts` | `WYZYWIENIE_LEVELS` | PORTOWANY | `wyzywienie_levels` | `p6_7a_growth::constants_match_running_web` | wyliczane z min/max/krok jak w webie |
+| `population-growth-v85.ts` | `WYZYWIENIE_GROWTH_PCT` | PORTOWANY | `ration_growth_percent` | `p6_7a_growth::ration_helpers_match_web` | tabela wyzywienie.wzrost_proc |
+| `population-growth-v85.ts` | `DEFAULT_POZIOM_RACJI` | DANE-JUZ-W-RUST | `default_poziom_racji` | `p6_7a_growth::single_source_of_default_level_and_max` | cities-params.json (P6.6B); jedno zrodlo |
+| `population-growth-v85.ts` | `RationParams` | PORTOWANY | `RationParams` | `p6_7a_growth::build_params_match_web` | struktura |
+| `population-growth-v85.ts` | `CIV_MATRIX_GROWTH_DIFFICULTY_MULT` | PORTOWANY | `civ_matrix_growth_difficulty_mult` | `p6_7a_growth::constants_match_running_web` | tabela trudnosc_mnoznik_macierzy (P3-22 poz. 35b) |
+| `population-growth-v85.ts` | `civMatrixGrowthDifficultyMultiplier` | PORTOWANY | `civ_matrix_growth_difficulty_multiplier` | `p6_7a_growth::difficulty_multiplier_matches_web` | - |
+| `population-growth-v85.ts` | `PopulationMatrixResolved` | PORTOWANY | `PopulationMatrixResolved` | `p6_7a_growth::population_matrix_matches_web` | struktura |
+| `population-growth-v85.ts` | `resolvePopulationMatrixForCiv` | PORTOWANY | `resolve_population_matrix_for_civ` | `p6_7a_growth::population_matrix_matches_web` | civMatrixParam = civ_matrix::civ_matrix_param (P6.1E) |
+| `population-growth-v85.ts` | `buildRationParams` | PORTOWANY | `build_ration_params` | `p6_7a_growth::build_params_match_web` | @deprecated w webie; wartosci zapasowe w tabeli |
+| `population-growth-v85.ts` | `clampPoziomRacji` | PORTOWANY | `clamp_poziom_racji` | `p6_7a_growth::ration_helpers_match_web` | - |
+| `population-growth-v85.ts` | `migrateLegacyRationLevel` | PORTOWANY | `migrate_legacy_ration_level` | `p6_7a_growth::ration_helpers_match_web` | tabela migracja_racji_legacy |
+| `population-growth-v85.ts` | `migrateProcentRozwojToPoziomRacji` | PORTOWANY | `migrate_procent_rozwoj_to_poziom_racji` | `p6_7a_growth::ration_helpers_match_web` | - |
+| `population-growth-v85.ts` | `getCityRationLevel` | PORTOWANY | `get_city_ration_level` | `p6_7a_growth::city_ration_level_matches_web` | - |
+| `population-growth-v85.ts` | `rationFoodCostPerPop` | PORTOWANY | `ration_food_cost_per_pop` | `p6_7a_growth::ration_helpers_match_web` | zywnosc/mieszkanca z racje.json (P3-19), bez mnoznika w kodzie |
+| `population-growth-v85.ts` | `rationGrowthPercent` | PORTOWANY | `ration_growth_percent` | `p6_7a_growth::ration_helpers_match_web` | - |
+| `population-growth-v85.ts` | `formatWyzwienieLabel` | PORTOWANY | `format_wyzwienie_label` | `p6_7a_growth::ration_helpers_match_web` | js_to_fixed / js_number_to_string |
+| `population-growth-v85.ts` | `computeCityRationCost` | PORTOWANY | `compute_city_ration_cost` | `p6_7a_growth::ration_cost_matches_web` | wejscie Spichlerz: spichlerz_ration_food_cost_multiplier |
+| `population-growth-v85.ts` | `GrowthPercentBreakdown` | PORTOWANY | `GrowthPercentBreakdown` | `p6_7a_growth::growth_percent_matches_web` | struktura |
+| `population-growth-v85.ts` | `GrowthPercentInput` | PORTOWANY | `GrowthPercentInput` | `p6_7a_growth::growth_percent_matches_web` | struktura |
+| `population-growth-v85.ts` | `computeGrowthPercentV85` | PORTOWANY | `compute_growth_percent_v85` | `p6_7a_growth::growth_percent_matches_web` | - |
+| `population-growth-v85.ts` | `FractionalGrowthResult` | PORTOWANY | `FractionalGrowthResult` | `p6_7a_growth::fractional_growth_matches_web` | struktura |
+| `population-growth-v85.ts` | `applyFractionalGrowthV85` | PORTOWANY | `apply_fractional_growth_v85` | `p6_7a_growth::fractional_growth_matches_web` | wejscie economy.ts: city_population_cap |
+| `population-growth-v85.ts` | `growthGainPerTurnSlots` | PORTOWANY | `growth_gain_per_turn_slots` | `p6_7a_growth::gain_and_turns_match_web` | - |
+| `population-growth-v85.ts` | `turnsUntilNextCitizen` | PORTOWANY | `turns_until_next_citizen` | `p6_7a_growth::gain_and_turns_match_web` | null -> None |
+| `population-growth-v85.ts` | `applyHungerPenaltyV85` | PORTOWANY | `apply_hunger_penalty_v85` | `p6_7a_growth::hunger_penalty_matches_web` | - |
+| `population-growth-v85.ts` | `ensureCityRationDefaults` | PORTOWANY | `ensure_city_ration_defaults` | `p6_7a_growth::ensure_city_ration_defaults_matches_web` | GrowthCity: pole hungerLossUlamkowy poza City (state.rs) |
+| `population-growth-v85.ts` | `CentralFoodFedSnapshot` | PORTOWANY | `EmpireFoodTick` | `p6_7a_post_central::post_central_growth_matches_web` | podzbior EmpireFoodTick (ZAL-3) |
+| `population-growth-v85.ts` | `PostCentralGrowthOpts` | PORTOWANY | `PostCentralGrowthOpts` | `p6_7a_post_central::post_central_growth_matches_web` | bez tablic mutowanych (cities, econ, wiersze) |
+| `population-growth-v85.ts` | `applyPostCentralPopulationGrowth` | PORTOWANY-Z-WSTRZYKNIETYMI | `apply_post_central_population_growth` | `p6_7a_post_central::post_central_growth_matches_web` | wstrzykniete: rebalanceWorkersAfterPopulationChange (okolica.ts), onCityPopulationChanged; manpower z recruitment::manpower (P6.5B) |
+| `population-growth-v85.ts` | `ApplyCentralFoodGrowthOpts` | PORTOWANY | `PostCentralGrowthOpts` | `p6_7a_post_central::post_central_growth_matches_web` | Omit<PostCentralGrowthOpts,'efResult'> = ta sama struktura |
+| `population-growth-v85.ts` | `applyCentralFoodPopulationGrowth` | PORTOWANY-Z-WSTRZYKNIETYMI | `apply_central_food_population_growth` | `p6_7a_post_central::post_central_growth_matches_web` | jak applyPostCentral...; warianty central2 / efAlias w wektorach |
+| `population-growth-v85.ts` | `pick` | PORTOWANY | `pick` | `p6_7a_growth::build_params_match_web` | nieeksportowana; wspolna z empire-food.ts |
+| `population-growth-v85.ts` | `RawParamRow` | NIE-DOTYCZY | `-` | `-` | typ pomocniczy TS; w Rust surowy serde_json::Value |
+| `population-growth-v85.ts` | `Difficulty` | NIE-DOTYCZY | `GameDifficulty` | `-` | alias typu: GameDifficulty = domain::types::Difficulty (ZAL-12) |
+| `growth-happiness.ts` | `computeGrowthHappinessNetto` | PORTOWANY | `happiness::compute_growth_happiness_netto` | `p6_7a_tempo::happiness_matches_web` | argumenty 2-3 swiadomie ignorowane |
+| `population-growth-tempo.ts` | `WZROST_LUDNOSCI_PACE` | PORTOWANY | `tempo::WzrostLudnosciPace::multiplier` | `p6_7a_tempo::pace_table_matches_web` | tabela tempo_wzrostu |
+| `population-growth-tempo.ts` | `WzrostLudnosciPace` | PORTOWANY | `tempo::WzrostLudnosciPace` | `p6_7a_tempo::pace_table_matches_web` | enum |
+| `population-growth-tempo.ts` | `applyGrowthThresholdPace` | PORTOWANY | `tempo::apply_growth_threshold_pace` | `p6_7a_tempo::tempo_threshold_matches_web` | - |
+| `r-stawki-strojenie.ts` | `R_STAWKI_KOSZT_MULT` | PORTOWANY | `r_stawki::r_stawki_koszt_mult` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | tabela r_stawki; silnik nie mnozy (P3-19 splaszczyl) |
+| `r-stawki-strojenie.ts` | `R_STAWKI_FALA2_MULT` | PORTOWANY | `r_stawki::r_stawki_fala2_mult` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | j.w. |
+| `r-stawki-strojenie.ts` | `R_STAWKI_FALA1_FALA2_MULT` | PORTOWANY | `r_stawki::r_stawki_fala1_fala2_mult` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | iloczyn z tabeli |
+| `r-stawki-strojenie.ts` | `normalizeResearchEra` | PORTOWANY | `r_stawki::normalize_research_era` | `p6_7a_tempo::research_era_matches_web` | NFD przez era-diakrytyki.json + algorytm Hangul |
+| `r-stawki-strojenie.ts` | `isResearchEraFala2Extra` | PORTOWANY | `r_stawki::is_research_era_fala2_extra` | `p6_7a_tempo::research_era_matches_web` | - |
+| `r-stawki-strojenie.ts` | `scaleStockCostRecord` | PORTOWANY | `r_stawki::scale_stock_cost_record` | `p6_7a_tempo::stock_cost_record_matches_web` | kolejnosc kluczy zachowana |
+| `r-stawki-strojenie.ts` | `scaleImprovementWorkCost` | PORTOWANY | `r_stawki::scale_improvement_work_cost` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | - |
+| `r-stawki-strojenie.ts` | `scaledWonderWorkCost` | PORTOWANY | `r_stawki::scaled_wonder_work_cost` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | - |
+| `r-stawki-strojenie.ts` | `scaledWonderFoodCost` | PORTOWANY | `r_stawki::scaled_wonder_food_cost` | `p6_7a_tempo::stawki_constants_and_scalars_match_web` | - |
+| `r-stawki-strojenie.ts` | `stripDiacriticsLower` | PORTOWANY | `r_stawki::strip_diacritics_lower` | `p6_7a_tempo::research_era_matches_web` | nieeksportowana |
+| `empire-food.ts` | `EmpireFoodState` | PORTOWANY | `EmpireFoodState` | `p6_7a_empire::advance_empire_food_matches_web` | struktura |
+| `empire-food.ts` | `EmpireFoodParams` | PORTOWANY | `EmpireFoodParams` | `p6_7a_growth::build_params_match_web` | struktura |
+| `empire-food.ts` | `EmpireFoodCityRow` | PORTOWANY | `EmpireFoodCityRow` | `p6_7a_empire::advance_empire_food_matches_web` | struktura |
+| `empire-food.ts` | `EmpireFoodTick` | PORTOWANY | `EmpireFoodTick` | `p6_7a_empire::advance_empire_food_matches_web` | struktura |
+| `empire-food.ts` | `EmpireFoodTickResult` | PORTOWANY | `EmpireFoodTickResult` | `p6_7a_empire::advance_empire_food_matches_web` | byOwner = widok perOwner |
+| `empire-food.ts` | `buildEmpireFoodParams` | PORTOWANY | `empire_food::build_empire_food_params` | `p6_7a_growth::build_params_match_web` | - |
+| `empire-food.ts` | `freshEmpireFoodState` | PORTOWANY | `empire_food::fresh_empire_food_state` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | - |
+| `empire-food.ts` | `advanceEmpireFood` | PORTOWANY-Z-WSTRZYKNIETYMI | `empire_food::advance_empire_food` | `p6_7a_empire::advance_empire_food_matches_web` | wstrzykniete: militaryFoodConsumptionWithSpichlerz (turn-economy.ts) |
+| `empire-food.ts` | `bindEmpireFoodRuntime` | PORTOWANY | `EmpireFoodRuntime::get_empire_food_reserve` | `p6_7a_empire::advance_empire_food_matches_web` | globalna referencja -> jawny parametr `states` (ZAL-4) |
+| `empire-food.ts` | `getEmpireFoodReserve` | PORTOWANY | `EmpireFoodRuntime::get_empire_food_reserve` | `p6_7a_empire::advance_empire_food_matches_web` | - |
+| `empire-food.ts` | `getEmpireFoodMaxCap` | PORTOWANY | `EmpireFoodRuntime::get_empire_food_max_cap` | `p6_7a_empire::advance_empire_food_matches_web` | - |
+| `empire-food.ts` | `getEmpireFoodSplit` | PORTOWANY | `empire_food::get_empire_food_split` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated |
+| `empire-food.ts` | `isArmyHungry` | PORTOWANY | `EmpireFoodRuntime::is_army_hungry` | `p6_7a_empire::advance_empire_food_matches_web` | - |
+| `empire-food.ts` | `isArmyStarving` | PORTOWANY | `EmpireFoodRuntime::is_army_starving` | `p6_7a_empire::advance_empire_food_matches_web` | - |
+| `empire-food.ts` | `getArmyStarvationCountdown` | PORTOWANY | `EmpireFoodRuntime::get_army_starvation_countdown` | `p6_7a_empire::advance_empire_food_matches_web` | null -> None |
+| `empire-food.ts` | `getLastEmpireFoodTick` | PORTOWANY | `EmpireFoodRuntime::get_last_empire_food_tick` | `p6_7a_empire::advance_empire_food_matches_web` | migawka z chwili advance (ZAL-4) |
+| `empire-food.ts` | `_setLastEmpireFoodTicks` | PORTOWANY | `EmpireFoodRuntime::set_last_empire_food_ticks` | `p6_7a_empire::advance_empire_food_matches_web` | - |
+| `empire-food.ts` | `clearLastEmpireFoodTicks` | PORTOWANY | `EmpireFoodRuntime::clear_last_empire_food_ticks` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | - |
+| `empire-food.ts` | `isCityAutoWyzywienieEnabled` | PORTOWANY | `empire_food::is_city_auto_wyzywienie_enabled` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | humanOwnerIds domyslnie [0] |
+| `empire-food.ts` | `AutoRationCityChange` | PORTOWANY | `AutoRationCityChange` | `p6_7a_empire::auto_balance_matches_web` | struktura |
+| `empire-food.ts` | `AutoRationAdjustResult` | PORTOWANY | `AutoRationAdjustResult` | `p6_7a_empire::auto_balance_matches_web` | struktura |
+| `empire-food.ts` | `computeEmpireCityFoodNadwyzka` | PORTOWANY | `empire_food::compute_empire_city_food_nadwyzka` | `p6_7a_empire::simulation_helpers_match_web` | - |
+| `empire-food.ts` | `simulateCityFoodCentralPool` | PORTOWANY | `empire_food::simulate_city_food_central_pool` | `p6_7a_empire::simulation_helpers_match_web` | - |
+| `empire-food.ts` | `simulateCityFoodAllFed` | PORTOWANY | `empire_food::simulate_city_food_all_fed` | `p6_7a_empire::simulation_helpers_match_web` | - |
+| `empire-food.ts` | `WYZYWIENIE_POZIOM_NA_LIMICIE` | PORTOWANY | `empire_food::wyzywienie_poziom_na_limicie` | `p6_7a_empire::wyzywienie_poziom_na_limicie_matches_web` | wyliczane z tabeli, nie literal |
+| `empire-food.ts` | `EqualGrowthRationPlanOpts` | PORTOWANY | `EqualGrowthRationPlanOpts` | `p6_7a_empire::equal_growth_plan_matches_web` | struktura bez tablic mutowanych |
+| `empire-food.ts` | `EqualGrowthRationPlan` | PORTOWANY | `EqualGrowthRationPlan` | `p6_7a_empire::equal_growth_plan_matches_web` | struktura |
+| `empire-food.ts` | `resolveEqualGrowthRationPlan` | PORTOWANY | `empire_food::resolve_equal_growth_ration_plan` | `p6_7a_empire::equal_growth_plan_matches_web` | wejscie turn-economy.ts: recompute_city_food_balances_in_econ |
+| `empire-food.ts` | `isEmpireCityFoodSolvent` | PORTOWANY | `empire_food::is_empire_city_food_solvent` | `p6_7a_empire::simulation_helpers_match_web` | - |
+| `empire-food.ts` | `AutoBalanceRationsOpts` | PORTOWANY | `AutoBalanceRationsOpts` | `p6_7a_empire::auto_balance_matches_web` | struktura bez tablic mutowanych |
+| `empire-food.ts` | `autoBalanceRationsToSolvency` | PORTOWANY | `empire_food::auto_balance_rations_to_solvency` | `p6_7a_empire::auto_balance_matches_web` | - |
+| `empire-food.ts` | `AutoRaiseRationsOpts` | PORTOWANY | `AutoRaiseRationsOpts` | `p6_7a_empire::auto_raise_matches_web` | struktura bez tablic mutowanych |
+| `empire-food.ts` | `autoRaiseRationsForGrowth` | PORTOWANY | `empire_food::auto_raise_rations_for_growth` | `p6_7a_empire::auto_raise_matches_web` | - |
+| `empire-food.ts` | `maxSafePoziomRacjiForCity` | PORTOWANY | `empire_food::max_safe_poziom_racji_for_city` | `p6_7a_empire::max_safe_poziom_matches_web` | - |
+| `empire-food.ts` | `computeEmpireFoodNetDelta` | PORTOWANY | `empire_food::compute_empire_food_net_delta` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated |
+| `empire-food.ts` | `computeEmpireFoodNetDeltaFromCityFoods` | PORTOWANY | `empire_food::compute_empire_food_net_delta_from_city_foods` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated |
+| `empire-food.ts` | `computeEmpireFoodMaxCap` | PORTOWANY | `empire_food::compute_empire_food_max_cap` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated |
+| `empire-food.ts` | `clampFoodSplitPct` | PORTOWANY | `empire_food::clamp_food_split_pct` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated |
+| `empire-food.ts` | `getCityFoodSplit` | PORTOWANY | `empire_food::get_city_food_split` | `p6_7a_empire::runtime_clear_and_deprecated_helpers_match_web` | @deprecated; drugi argument weba ignorowany |
+| `empire-food.ts` | `applyPostCentralPopulationGrowth` | PORTOWANY-Z-WSTRZYKNIETYMI | `apply_post_central_population_growth` | `p6_7a_post_central::post_central_growth_matches_web` | re-eksport z population-growth-v85.ts (empire-food.ts:1070-1074) |
+| `empire-food.ts` | `applyCentralFoodPopulationGrowth` | PORTOWANY-Z-WSTRZYKNIETYMI | `apply_post_central_population_growth` | `p6_7a_post_central::post_central_growth_matches_web` | w empire-food.ts to ALIAS applyPostCentral... (1 argument `opts` z efResult), NIE wariant 2-argumentowy z v85; wektory 'efAlias' |
+| `empire-food.ts` | `ApplyCentralFoodGrowthOpts` | PORTOWANY | `PostCentralGrowthOpts` | `p6_7a_post_central::post_central_growth_matches_web` | re-eksport typu PostCentralGrowthOpts |
+| `empire-food.ts` | `countMagazynByOwner` | PORTOWANY | `count_magazyn_by_owner` | `p6_7a_empire::advance_empire_food_matches_web` | nieeksportowana; dedup tikow (seen) |
+| `empire-food.ts` | `computeCentralFoodCap` | PORTOWANY | `compute_central_food_cap` | `p6_7a_empire::advance_empire_food_matches_web` | nieeksportowana; magazynEraMultiplier jako wejscie |
+| `empire-food.ts` | `ownerCitiesForAutoAdjust` | PORTOWANY | `owner_cities_for_auto_adjust` | `p6_7a_empire::equal_growth_plan_matches_web` | nieeksportowana |
+| `empire-food.ts` | `applyEqualGrowthRationPlan` | PORTOWANY | `apply_equal_growth_ration_plan` | `p6_7a_empire::auto_balance_matches_web` | nieeksportowana |
+| `empire-food.ts` | `isRationBalanceTargetMet` | PORTOWANY | `is_ration_balance_target_met` | `p6_7a_empire::auto_balance_matches_web` | nieeksportowana |
+| `empire-food.ts` | `_lastTicks` | PORTOWANY | `EmpireFoodRuntime` | `p6_7a_empire::advance_empire_food_matches_web` | stan modulu -> pole EmpireFoodRuntime |
+| `empire-food.ts` | `_statesRef` | PORTOWANY | `EmpireFoodRuntime` | `p6_7a_empire::advance_empire_food_matches_web` | stan modulu -> parametr `states` (ZAL-4) |
+| `empire-food.ts` | `_maxCapByOwner` | PORTOWANY | `EmpireFoodRuntime` | `p6_7a_empire::advance_empire_food_matches_web` | stan modulu -> pole EmpireFoodRuntime |
+| `empire-food.ts` | `RawParamRow` | NIE-DOTYCZY | `-` | `-` | typ pomocniczy TS; w Rust surowy serde_json::Value |
+| `empire-food.ts` | `CityFoodTickLike` | NIE-DOTYCZY | `CityEconomyTick` | `-` | Pick<CityEconomyTick,...> = ta sama struktura |

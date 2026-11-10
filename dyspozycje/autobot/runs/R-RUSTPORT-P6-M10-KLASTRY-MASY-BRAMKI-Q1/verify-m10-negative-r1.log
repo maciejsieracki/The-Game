@@ -1,0 +1,6 @@
+ROZBIEZNOSC: allocate [100] n=1
+ROZBIEZNOSC: place k42 n=7 seed=623944818
+ROZBIEZNOSC: v8sort random-int/16 num n=16
+pokrycie faz place (informacyjnie): {"faza1_brak_postepu": 36, "faza1_postawiono": 108, "faza2_postawiono": 64, "faza2_wejscie": 50, "faza3_przesunieto": 35, "faza3_wejscie": 57, "faza4_przesunieto": 1, "faza4_wejscie": 22, "faza5_postawiono": 41, "faza5_wejscie": 54, "faza5b_postawiono": 75, "faza5b_wejscie": 50}
+sprawdzen: 16400, rozbieznosci: 3
+EXIT=1

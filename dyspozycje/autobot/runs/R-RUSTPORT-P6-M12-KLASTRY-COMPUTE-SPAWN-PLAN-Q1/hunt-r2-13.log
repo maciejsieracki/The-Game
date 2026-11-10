@@ -1,0 +1,16 @@
+mapa 10/150, wywolan 100, znalezione: {}
+mapa 20/150, wywolan 200, znalezione: {"repack-final-and":1,"topup-player-dist-le":1}
+mapa 30/150, wywolan 300, znalezione: {"repack-final-and":1,"topup-player-dist-le":1}
+mapa 40/150, wywolan 400, znalezione: {"repack-final-and":1,"topup-player-dist-le":5}
+mapa 50/150, wywolan 493, znalezione: {"repack-final-and":2,"topup-player-dist-le":8}
+mapa 60/150, wywolan 586, znalezione: {"repack-final-and":2,"topup-player-dist-le":9}
+mapa 70/150, wywolan 679, znalezione: {"repack-final-and":3,"topup-player-dist-le":11}
+mapa 80/150, wywolan 765, znalezione: {"repack-final-and":3,"topup-player-dist-le":12}
+mapa 90/150, wywolan 858, znalezione: {"repack-final-and":3,"topup-player-dist-le":12}
+mapa 100/150, wywolan 944, znalezione: {"repack-final-and":3,"topup-player-dist-le":14}
+mapa 110/150, wywolan 1030, znalezione: {"repack-final-and":5,"topup-player-dist-le":16}
+mapa 120/150, wywolan 1130, znalezione: {"repack-final-and":5,"topup-player-dist-le":18}
+mapa 130/150, wywolan 1230, znalezione: {"repack-final-and":7,"topup-player-dist-le":18}
+mapa 140/150, wywolan 1323, znalezione: {"repack-final-and":7,"topup-player-dist-le":18}
+mapa 150/150, wywolan 1409, znalezione: {"repack-final-and":8,"topup-player-dist-le":18}
+koniec {"calls":1409,"tried":{"min-dyst-order-sep":1409,"player-growth-reserve-0-initial":1409,"repack-final-and":115,"topup-dedupe-removed":216,"topup-player-dist-le":216,"topup-region-lt":216,"table-topup-min-9":216,"table-topup-div-3":216,"player-cap-xor-1":542,"player-cap-xor-retry":542,"plan-dropped-typ-not-skipped":542,"plan-capital-name-swap":542,"topup-centers-local-land":60,"enforce-hard-removed":39},"foundCounts":{"repack-final-and":8,"topup-player-dist-le":18},"reached":{"rfXor":115,"fill":263,"tc":207,"tcFail":233,"top1":216,"altNull":167,"top2":169,"spawn:prefOk":516,"tcLast":60,"alt":60,"spawn:prefNull":22}}

@@ -1,0 +1,4 @@
+seed <= 99999: rozbieznosci 0/200000
+seed <= 4_000_000: rozbieznosci 0/200000
+seed u32 pelny: rozbieznosci 198908/200000
+EXIT=0

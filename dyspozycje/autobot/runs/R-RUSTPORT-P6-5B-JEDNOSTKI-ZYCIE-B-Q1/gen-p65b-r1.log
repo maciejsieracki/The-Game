@@ -1,0 +1,71 @@
+{
+ "fmt": {
+  "numberToString": 2949,
+  "formatPopulationAbs": 847,
+  "formatObywateleLabel": 315
+ },
+ "collate": {
+  "primaryOrder": "string",
+  "locale": "string",
+  "pairs": 18641,
+  "nonAscii": 256
+ },
+ "scalar": {
+  "epokaManpowerRow": 23,
+  "clampLudki": 17,
+  "cityLudnoscAbsolutna": 391,
+  "cityManpowerMax": 2000,
+  "unitManpowerCost": 368,
+  "unitManpowerCostForType": 1200,
+  "rekrutUnitEquivalents": 1500,
+  "isScoutTypeId": 9,
+  "manpowerCostForHeal": 1764,
+  "maxAffordableManpowerHeal": 5000,
+  "manpowerHealCapForTurn": 1210,
+  "manpowerRegenGain": 1500,
+  "regenGainDefaults": 9
+ },
+ "params": {
+  "replenish": 1221,
+  "regen": 228,
+  "civ": 1503
+ },
+ "city": {
+  "cityManpowerCurrent": 700,
+  "tickManpowerRegen": 700,
+  "cityManpowerSnapshot": 700,
+  "canAffordUnitManpower": 700,
+  "refreshManpowerAfterPopChange": 700,
+  "spendManpower": 700,
+  "refundUnitSpawnToCity": 700,
+  "tryDeductUnitSpawnCosts": 700,
+  "empireTotals": 500,
+  "canAffordEmpire": 500,
+  "refundDefaults": 200
+ },
+ "mut": {
+  "deduct": 900,
+  "refund": 900,
+  "tryDeductEmpire": 900
+ },
+ "misc": {
+  "isUnitInBesiegedLocation": 800,
+  "replenishmentUnitSortKey": 800,
+  "syncLiveUnitHp": 300,
+  "isCivilianUnit": 80
+ },
+ "replenish": 950,
+ "bld": {
+  "mnoznikRoleForBuildingId": 57,
+  "cityBonus": 2000,
+  "cumulative": 2000,
+  "depth": 63,
+  "real": 64,
+  "realCumulative": 42,
+  "unitProc": 33,
+  "badgeGrid": 125,
+  "apply": 1200,
+  "hint": 1936,
+  "merge": 600
+ }
+}

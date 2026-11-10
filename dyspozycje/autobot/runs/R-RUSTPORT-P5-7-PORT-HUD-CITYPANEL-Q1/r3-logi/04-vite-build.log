@@ -1,0 +1,87 @@
+$ npx vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 502 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                          1.83 kB │ gzip:  1.01 kB
+dist/assets/portrait-chinczycy-kamien-CZ4leoFX.jpg       7.92 kB
+dist/assets/portrait-fenicjanie-kamien-DuGm_Veq.jpg      8.13 kB
+dist/assets/portrait-slowianie-kamien-B_KPF3jb.jpg       8.44 kB
+dist/assets/portrait-babilonia-kamien-BxICZFVE.jpg       8.52 kB
+dist/assets/portrait-celtowie-kamien-DkZ48-1Y.jpg        8.58 kB
+dist/assets/portrait-slowianie-zelazo-BG4KSGB6.jpg       8.70 kB
+dist/assets/portrait-inkowie-kamien-DiK5aLXB.jpg         8.70 kB
+dist/assets/portrait-rzymianie-zelazo-CIdPrh5y.jpg       8.83 kB
+dist/assets/portrait-asyria-kamien-jEASCJGD.jpg          8.87 kB
+dist/assets/portrait-zulusi-kamien-6lmz32bD.jpg          8.93 kB
+dist/assets/portrait-grecy-kamien-DrPsyJ3U.jpg           9.04 kB
+dist/assets/portrait-hetyci-kamien-DH-RwZEX.jpg          9.04 kB
+dist/assets/portrait-sumer-kamien-BNpV6Pov.jpg           9.11 kB
+dist/assets/portrait-rzymianie-braz-DlgQlXjH.jpg         9.27 kB
+dist/assets/portrait-grecy-braz-Dd6YG0Qp.jpg             9.33 kB
+dist/assets/portrait-fenicjanie-zelazo-CUNHpRRn.jpg      9.35 kB
+dist/assets/portrait-germanie-kamien-D0UURFDU.jpg        9.47 kB
+dist/assets/portrait-harappa-kamien-DyttnAlz.jpg         9.48 kB
+dist/assets/portrait-hetyci-zelazo-C0CvEnIN.jpg          9.57 kB
+dist/assets/portrait-chinczycy-zelazo-BF2tdNIb.jpg       9.77 kB
+dist/assets/portrait-egipt-kamien-ChqyP1Bb.jpg           9.79 kB
+dist/assets/portrait-slowianie-braz-lqN9lIFF.jpg         9.79 kB
+dist/assets/portrait-celtowie-zelazo-DQjUKoMs.jpg        9.84 kB
+dist/assets/portrait-celtowie-braz-DP01Yw9l.jpg          9.94 kB
+dist/assets/portrait-asyria-zelazo-B11_7zkR.jpg          9.97 kB
+dist/assets/portrait-babilonia-zelazo-EAkWD4v4.jpg      10.00 kB
+dist/assets/portrait-sumer-zelazo-Lk3xTXhR.jpg          10.02 kB
+dist/assets/portrait-chinczycy-braz-CJC1hrCW.jpg        10.12 kB
+dist/assets/portrait-germanie-zelazo-Cc9-Dop4.jpg       10.18 kB
+dist/assets/portrait-harappa-zelazo-ByfBsk2U.jpg        10.19 kB
+dist/assets/portrait-hetyci-braz-vGytLmC0.jpg           10.24 kB
+dist/assets/portrait-zulusi-zelazo-Ckm7Oop4.jpg         10.32 kB
+dist/assets/portrait-germanie-braz-a8bcNZFQ.jpg         10.41 kB
+dist/assets/portrait-fenicjanie-braz-D8_3r3rg.jpg       10.58 kB
+dist/assets/portrait-inkowie-zelazo-BX4lVRi3.jpg        10.62 kB
+dist/assets/portrait-grecy-zelazo-BpqTNig_.jpg          10.71 kB
+dist/assets/portrait-harappa-braz-Db2meRVo.jpg          10.74 kB
+dist/assets/portrait-asyria-braz-CJ0gIAzZ.jpg           10.84 kB
+dist/assets/portrait-sumer-braz-tC7UZcv3.jpg            10.94 kB
+dist/assets/portrait-inkowie-braz-QAXgKbCD.jpg          11.29 kB
+dist/assets/portrait-zulusi-braz-EsACTCod.jpg           11.41 kB
+dist/assets/portrait-babilonia-braz-CNIZ6PHz.jpg        11.58 kB
+dist/assets/portrait-egipt-zelazo-Cikjxcer.jpg          11.85 kB
+dist/assets/portrait-egipt-braz-BeQC3sto.jpg            12.34 kB
+dist/assets/portrait-rzymianie-kamien-hN7FWlWA.jpg      13.21 kB
+dist/assets/hero-intro-CSMmENUq.png                  2,039.50 kB
+dist/assets/hero-menu-Blmit9p1.png                   2,175.17 kB
+dist/assets/sidePanelLayout-CO-wlqq0.js                  0.15 kB │ gzip:  0.15 kB
+dist/assets/uiParams-CEz7PuAS.js                         0.19 kB │ gzip:  0.18 kB
+dist/assets/power-labels-sBbAIMv9.js                     0.39 kB │ gzip:  0.28 kB
+dist/assets/hudPanelDismiss-CT1F9hM9.js                  0.98 kB │ gzip:  0.53 kB
+dist/assets/portCycleC4-Dh0KoTB0.js                      0.99 kB │ gzip:  0.47 kB
+dist/assets/techUnlockParse-BV9bjbzn.js                  1.49 kB │ gzip:  0.85 kB
+dist/assets/escapeOverlayStack-Dow9MHoi.js               1.53 kB │ gzip:  0.82 kB
+dist/assets/hoverDetailDock-BT0N7b55.js                  1.95 kB │ gzip:  0.87 kB
+dist/assets/battleHudTheme-0K32ZW2U.js                   1.98 kB │ gzip:  0.85 kB
+dist/assets/hudTitleTooltip-B-6bCnAX.js                  3.54 kB │ gzip:  1.53 kB
+dist/assets/diplomacyDealDisplay-BpMlI8kW.js             5.72 kB │ gzip:  1.73 kB
+dist/assets/wikiBookIcon-D7gUz5FT.js                     6.04 kB │ gzip:  1.95 kB
+dist/assets/unitInfographic-BeZDi_ea.js                  6.58 kB │ gzip:  2.67 kB
+dist/assets/unitActionBarHtml-CZI8YgSK.js                7.18 kB │ gzip:  2.55 kB
+dist/assets/leaderPortraits-DppqwjXb.js                  7.90 kB │ gzip:  1.97 kB
+dist/assets/portCityUx-DiroiIYr.js                       9.75 kB │ gzip:  2.96 kB
+dist/assets/minimapLayout-DkWJqYqH.js                   12.01 kB │ gzip:  4.39 kB
+dist/assets/perfReport-2A0SYae-.js                      14.22 kB │ gzip:  5.69 kB
+dist/assets/diploUiSkin-CtdS_EYI.js                     16.27 kB │ gzip:  5.57 kB
+dist/assets/portCycles-CvXt_UYz.js                      20.77 kB │ gzip:  7.08 kB
+dist/assets/index-Bu3gyBxN.js                           22.36 kB │ gzip:  9.29 kB
+dist/assets/portLevel0-D9uivsoS.js                      28.98 kB │ gzip:  9.57 kB
+dist/assets/empireOverlayHud-ClogBsqF.js                39.06 kB │ gzip: 12.03 kB
+dist/assets/portLevel1a-CqId6Spg.js                     48.95 kB │ gzip: 14.55 kB
+dist/assets/diploListHud-DUIbg2Z4.js                    61.73 kB │ gzip: 17.84 kB
+dist/assets/portNewGame-DP86uFDR.js                     66.08 kB │ gzip: 19.60 kB
+dist/assets/brandAssets-BFa-KxPD.js                    142.42 kB │ gzip: 19.99 kB
+dist/assets/portLevel2-GSUuwt3s.js                     151.79 kB │ gzip: 39.52 kB
+dist/assets/registry-yr1JRldR.js                       163.36 kB │ gzip: 50.72 kB
+dist/assets/portHudEmpire-Bi5ewxcR.js                  172.91 kB │ gzip: 52.47 kB
+dist/assets/armyStackHudSuppression-GGOUBAxM.js        189.36 kB │ gzip: 53.96 kB
+✓ built in 2.37s
+EXIT=0

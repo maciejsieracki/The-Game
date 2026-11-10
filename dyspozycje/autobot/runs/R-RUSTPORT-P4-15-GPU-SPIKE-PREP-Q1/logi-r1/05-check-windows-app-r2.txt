@@ -1,0 +1,27 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo check --locked --target x86_64-pc-windows-msvc
+# 2026-10-22T11:59:09Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+    Blocking waiting for file lock on package cache
+    Checking windows-strings v0.5.1
+    Checking windows v0.61.3
+   Compiling spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed)
+    Checking windows-core v0.62.2
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+    Checking windows-collections v0.3.2
+    Checking windows-numerics v0.3.1
+    Checking windows-future v0.3.2
+    Checking windows v0.62.2
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-hal v30.0.1
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking wgpu-core v30.0.1
+    Checking wgpu v30.0.1
+    Checking webview2-com-sys v0.38.2
+    Checking tao v0.35.3
+    Checking webview2-com v0.38.2
+    Checking wry v0.55.1
+    Checking tauri-runtime v2.11.3
+    Checking tauri-runtime-wry v2.11.4
+    Checking tauri v2.11.5
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 40.99s
+EXIT=0

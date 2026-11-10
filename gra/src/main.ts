@@ -15523,8 +15523,10 @@ async function boot(): Promise<void> {
         // dlaczego drogę można stawiać tylko w wybranych miejscach. Reguła (isRoadQualified,
         // map/improvement-build.ts, BEZ ZMIAN w tym temacie) jest świadoma i poprawna — brakowało
         // tylko wyjaśnienia w UI. Komunikat tylko opisowy, nie wpływa na `ok`/qualifies().
+        // R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1: powód z tej samej reguły co `qualifies('droga')`
+        // (roadBuildBlockReason: woda / poza terytorium / już droga / brak połączenia). Tylko opis.
         const reason = (!ok && activeImprovementKey === 'droga')
-          ? 'Droga musi łączyć się z miastem lub już istniejącą drogą'
+          ? (buildApi?.roadBlockReason?.(hit.q, hit.r) ?? 'Droga musi łączyć się z miastem lub już istniejącą drogą')
           : '';
         setBuildGhostChip(hit.q, hit.r, ic, ok, reason);
         return;
@@ -31510,7 +31512,7 @@ async function boot(): Promise<void> {
           // opisowe, nie zmienia canBuild()/qualifies().
           showHintMessage(
             activeImprovementKey === 'droga'
-              ? 'Droga musi łączyć się z miastem lub już istniejącą drogą'
+              ? (buildApi.roadBlockReason?.(hit.q, hit.r) ?? 'Droga musi łączyć się z miastem lub już istniejącą drogą')
               : 'Nie można tu zbudować (teren / złoże)',
             2500,
           );

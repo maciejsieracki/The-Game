@@ -1,0 +1,23 @@
+00:33:41 city founded, click at 700 450
+00:33:45   dismissed Wróć
+00:33:46   dismissed Wróć
+00:33:46   dismissed Wróć
+00:33:47   dismissed Wróć
+00:35:00 MEM [memdebug] koniec tury=2 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=309.4
+00:35:04 end-turn #1 TURA 1 -> 2 sceneTextures=63
+00:36:12 MEM [memdebug] koniec tury=3 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=300.5
+00:36:17 end-turn #2 TURA 2 -> 3 sceneTextures=63
+00:37:24 MEM [memdebug] koniec tury=4 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=302.6
+00:37:27 end-turn #3 TURA 3 -> 4 sceneTextures=63
+00:38:33 MEM [memdebug] koniec tury=5 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=303.1
+00:38:37 end-turn #4 TURA 4 -> 5 sceneTextures=63
+00:39:39 MEM [memdebug] koniec tury=6 · geometries=274 · textures=18 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=316.8
+00:39:42 end-turn #5 TURA 5 -> 6 sceneTextures=62
+00:40:44 MEM [memdebug] koniec tury=7 · geometries=274 · textures=21 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=321.0
+00:40:50 end-turn #6 TURA 6 -> 7 sceneTextures=65
+00:41:57 MEM [memdebug] koniec tury=8 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=322.4
+00:42:00 end-turn #7 TURA 7 -> 8 sceneTextures=66
+00:43:08 MEM [memdebug] koniec tury=9 · geometries=274 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=314.4
+00:43:13 end-turn #8 TURA 8 -> 9 sceneTextures=65
+00:44:17 MEM [memdebug] koniec tury=10 · geometries=294 · textures=22 · programs=18 · cityModels=49 · cityBadgeTextures=5 · cityBadgeTexturesFreed=0 · jsHeapMB=318.8
+00:44:21 end-turn #9 TURA 9 -> 10 sceneTextures=65

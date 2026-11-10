@@ -1,0 +1,114 @@
+# baseline (HEAD db015ea0, kod = 23ab7a83): textures_match_chromium --nocapture, EXIT=0
+texture | phase | ref | size | max_abs | mean_abs | px>16 % | ssim
+t0 | final | OwnerEmblem("civ:grecy:2") | 128x128 | 123 | 1.0809 | 2.374 | 0.99066
+t0 | initial | OwnerEmblem("civ:grecy:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t1 | final | OwnerEmblem("civ:zulusi:3") | 128x128 | 123 | 1.1031 | 2.362 | 0.99076
+t1 | initial | OwnerEmblem("civ:zulusi:3") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t10 | final | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 1.0334 | 2.869 | 0.99101
+t10 | initial | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t11 | final | OwnerEmblem("barb") | 128x128 | 91 | 0.6463 | 2.930 | 0.99308
+t11 | initial | OwnerEmblem("barb") | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t12 | final | PlateBackground | 512x168 | 37 | 0.4550 | 0.033 | 0.99146
+t13 | final | PowerFrame | 256x213 | 73 | 0.0857 | 0.189 | 0.99967
+t14 | final | PowerDigit(4) | 72x126 | 83 | 0.4859 | 1.565 | 0.99742
+t15 | final | PowerDigit(2) | 72x126 | 84 | 0.5868 | 2.458 | 0.99616
+t16 | final | PowerDigit(1) | 72x126 | 36 | 0.2244 | 0.661 | 0.99876
+t17 | final | PowerDigit(3) | 72x126 | 88 | 0.6663 | 2.954 | 0.99465
+t18 | final | PowerDigit(7) | 72x126 | 58 | 0.3620 | 1.036 | 0.99831
+t19 | final | PowerDigit(9) | 72x126 | 103 | 0.6461 | 2.679 | 0.99455
+t2 | final | OwnerEmblem("civ:egipt:1") | 128x128 | 123 | 1.0910 | 2.405 | 0.99053
+t2 | initial | OwnerEmblem("civ:egipt:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t20 | final | PowerDigit(0) | 72x126 | 90 | 0.6223 | 2.568 | 0.99471
+t21 | final | PowerDigit(5) | 72x126 | 111 | 0.6197 | 2.260 | 0.99502
+t22 | final | PowerDigit(6) | 72x126 | 70 | 0.7337 | 3.417 | 0.99390
+t23 | final | PowerDigit(8) | 72x126 | 87 | 0.7318 | 2.987 | 0.99325
+t24 | final | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.3228 | 1.074 | 0.99815
+t24 | initial | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t25 | final | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.5629 | 1.538 | 0.99738
+t25 | initial | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t26 | final | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.3940 | 1.581 | 0.99789
+t26 | initial | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t27 | final | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.2546 | 0.885 | 0.99862
+t27 | initial | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t28 | final | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.4278 | 1.031 | 0.99813
+t28 | initial | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t29 | final | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.3058 | 1.086 | 0.99847
+t29 | initial | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t3 | final | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 1.0078 | 3.101 | 0.99108
+t3 | initial | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t30 | final | OwnerEmblem("civ:grecy:2") (no assets) | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t31 | final | OwnerEmblem("cs:grecy") (no assets) | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t32 | final | OwnerEmblem("barb") (no assets) | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t33 | final | UpgradeBadge(Soft, 2) (no assets) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t34 | final | UpgradeBadge(Armor, 1) (no assets) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t35 | final | UpgradeBadge(Armor, 3) (no assets) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t4 | final | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 1.0124 | 2.985 | 0.99117
+t4 | initial | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t5 | final | OwnerEmblem("civ:brak:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t6 | final | OwnerEmblem("civ:unknown:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t7 | final | OwnerEmblem("cs:grecy") | 128x128 | 91 | 1.0281 | 2.838 | 0.99093
+t7 | initial | OwnerEmblem("cs:grecy") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t8 | final | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 1.0383 | 2.979 | 0.99100
+t8 | initial | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t9 | final | OwnerEmblem("cs:brak") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+
+# O17: stat_plate.rs bar_h_px * 0.32 -> bar_h_px * 0.5, EXIT=0 (test nadal zielony)
+texture | phase | ref | size | max_abs | mean_abs | px>16 % | ssim
+t0 | final | OwnerEmblem("civ:grecy:2") | 128x128 | 123 | 1.0809 | 2.374 | 0.99066
+t0 | initial | OwnerEmblem("civ:grecy:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t1 | final | OwnerEmblem("civ:zulusi:3") | 128x128 | 123 | 1.1031 | 2.362 | 0.99076
+t1 | initial | OwnerEmblem("civ:zulusi:3") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t10 | final | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 1.0334 | 2.869 | 0.99101
+t10 | initial | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t11 | final | OwnerEmblem("barb") | 128x128 | 91 | 0.6463 | 2.930 | 0.99308
+t11 | initial | OwnerEmblem("barb") | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t12 | final | PlateBackground | 512x168 | 37 | 0.5265 | 0.532 | 0.98545
+t13 | final | PowerFrame | 256x213 | 73 | 0.0857 | 0.189 | 0.99967
+t14 | final | PowerDigit(4) | 72x126 | 83 | 0.4859 | 1.565 | 0.99742
+t15 | final | PowerDigit(2) | 72x126 | 84 | 0.5868 | 2.458 | 0.99616
+t16 | final | PowerDigit(1) | 72x126 | 36 | 0.2244 | 0.661 | 0.99876
+t17 | final | PowerDigit(3) | 72x126 | 88 | 0.6663 | 2.954 | 0.99465
+t18 | final | PowerDigit(7) | 72x126 | 58 | 0.3620 | 1.036 | 0.99831
+t19 | final | PowerDigit(9) | 72x126 | 103 | 0.6461 | 2.679 | 0.99455
+t2 | final | OwnerEmblem("civ:egipt:1") | 128x128 | 123 | 1.0910 | 2.405 | 0.99053
+t2 | initial | OwnerEmblem("civ:egipt:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t20 | final | PowerDigit(0) | 72x126 | 90 | 0.6223 | 2.568 | 0.99471
+t21 | final | PowerDigit(5) | 72x126 | 111 | 0.6197 | 2.260 | 0.99502
+t22 | final | PowerDigit(6) | 72x126 | 70 | 0.7337 | 3.417 | 0.99390
+t23 | final | PowerDigit(8) | 72x126 | 87 | 0.7318 | 2.987 | 0.99325
+t24 | final | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.3228 | 1.074 | 0.99815
+t24 | initial | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t25 | final | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.5629 | 1.538 | 0.99738
+t25 | initial | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t26 | final | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.3940 | 1.581 | 0.99789
+t26 | initial | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t27 | final | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.2546 | 0.885 | 0.99862
+t27 | initial | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t28 | final | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.4278 | 1.031 | 0.99813
+t28 | initial | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t29 | final | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.3058 | 1.086 | 0.99847
+t29 | initial | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t3 | final | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 1.0078 | 3.101 | 0.99108
+t3 | initial | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t30 | final | OwnerEmblem("civ:grecy:2") (no assets) | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t31 | final | OwnerEmblem("cs:grecy") (no assets) | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t32 | final | OwnerEmblem("barb") (no assets) | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t33 | final | UpgradeBadge(Soft, 2) (no assets) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t34 | final | UpgradeBadge(Armor, 1) (no assets) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t35 | final | UpgradeBadge(Armor, 3) (no assets) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t4 | final | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 1.0124 | 2.985 | 0.99117
+t4 | initial | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t5 | final | OwnerEmblem("civ:brak:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t6 | final | OwnerEmblem("civ:unknown:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t7 | final | OwnerEmblem("cs:grecy") | 128x128 | 91 | 1.0281 | 2.838 | 0.99093
+t7 | initial | OwnerEmblem("cs:grecy") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t8 | final | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 1.0383 | 2.979 | 0.99100
+t8 | initial | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t9 | final | OwnerEmblem("cs:brak") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+
+# diff baseline vs O17
+10c10
+< t12 | final | PlateBackground | 512x168 | 37 | 0.4550 | 0.033 | 0.99146
+---
+> t12 | final | PlateBackground | 512x168 | 37 | 0.5265 | 0.532 | 0.98545
+# po pomiarze plik przywrocony, status worktree czysty

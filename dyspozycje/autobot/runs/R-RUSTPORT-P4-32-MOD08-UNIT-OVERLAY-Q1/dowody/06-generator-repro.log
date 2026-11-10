@@ -1,0 +1,13 @@
+## generator re-run into /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/out-repro, compared with the committed fixtures
+chromium-vs-node tree differences: 10 (colour channels 1 ulp: 8, star shape params: 2)
+textures=36 trees=111 keys=416 geos=3 images=load,load,load,load,load,load,load,error,load,load,load,load,load,load,load,load chromium=141.0.7390.37
+gen EXIT=0
+MANIFEST IDENTICAL (71 entries)
+sha256(MANIFEST.sha256) = 7d70d6e17065d13b3f9eac6498e34b2e4ff9f69653229f22145a491a2e7f16a8
+node v22.22.0
+playwright 1.56.1
+chromium 141.0.7390.37
+three 0.169.0
+esbuild 0.24.0
+font-render-hinting none
+userAgent Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36

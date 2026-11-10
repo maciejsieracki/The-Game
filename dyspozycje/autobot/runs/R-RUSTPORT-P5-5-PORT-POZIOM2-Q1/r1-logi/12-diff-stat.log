@@ -1,0 +1,30 @@
+$ diff -u <pin>/gra/src/ui/<m> src/ui/<m>   (+/- = linie dodane/usunięte bez nagłówków; LOC = liczba linii)
+leaderBannersHud.ts            LOC 68 -> 68  identyczny bajtowo
+cityCaptureNotice.ts           LOC 356 -> 356  identyczny bajtowo
+cityForeignPick.ts             LOC 244 -> 244  identyczny bajtowo
+cityUnitPick.ts                LOC 265 -> 265  identyczny bajtowo
+gamePauseMenu.ts               LOC 317 -> 317  identyczny bajtowo
+hotSeatHandoff.ts              LOC 135 -> 135  identyczny bajtowo
+mainMenu.ts                    LOC 514 -> 514  identyczny bajtowo
+unitForeignPick.ts             LOC 245 -> 245  identyczny bajtowo
+buildModeHud.ts                LOC 963 -> 975  +19/-7
+diplomacyPanel.ts              LOC 533 -> 532  +1/-2
+techTreeView.ts                LOC 1130 -> 1144  +24/-12
+unitInfoCard.ts                LOC 419 -> 422  +10/-8
+wikiHubHud.ts                  LOC 644 -> 646  +3/-1
+unitPanelHud.ts                LOC 183 -> 187  +4/-0
+contextPanelHud.ts             LOC 63 -> 63  identyczny bajtowo
+diplomacyProposalBanner.ts     LOC 55 -> 55  identyczny bajtowo
+hudChip6c.ts                   LOC 76 -> 76  identyczny bajtowo
+mapToolbarHud.ts               LOC 172 -> 172  identyczny bajtowo
+armyMergePickPanel.ts          LOC 183 -> 183  identyczny bajtowo
+armySplitPanel.ts              LOC 185 -> 185  identyczny bajtowo
+diplomacyPendingHud.ts         LOC 87 -> 87  identyczny bajtowo
+interHumanDiplomacyHud.ts      LOC 263 -> 263  identyczny bajtowo
+unitReplacePicker.ts           LOC 207 -> 212  +6/-1
+armyStackHud.ts                LOC 380 -> 383  +4/-1
+diploListHud.ts                LOC 502 -> 495  +4/-11
+unitActionBarHtml.ts           LOC 169 -> 169  identyczny bajtowo
+identycznych=17/26
+assets/hero/hero-menu.png identyczny bajtowo
+EXIT=0

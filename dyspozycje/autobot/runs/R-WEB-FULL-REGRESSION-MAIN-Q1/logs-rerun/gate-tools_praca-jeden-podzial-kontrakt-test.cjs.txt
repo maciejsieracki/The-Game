@@ -1,0 +1,595 @@
+-- 1. SIATKA KONTRAKTU: ustawienie X% ulepszeń → X% Pracy, suma zawsze 100% --
+  [OK] ustawienie 0% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 0, want 0)
+  [OK] 0% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=1, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=2, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=3, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=3, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 3, want 3)
+  [OK] praca=5, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=5, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=6, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=6, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 6, want 6)
+  [OK] praca=7, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=7, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 7, want 7)
+  [OK] praca=10, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=10, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 10, want 10)
+  [OK] praca=13, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=13, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 13, want 13)
+  [OK] praca=20, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=20, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 20, want 20)
+  [OK] praca=37, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=37, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 37, want 37)
+  [OK] praca=100, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=100, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 100, want 100)
+  [OK] praca=1000, ulepszenia=0%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=0%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=0%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=1000, ulepszenia=0%: doBudynkow = round(total × %budynki) (got 1000, want 1000)
+  [OK] ustawienie 10% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 10, want 10)
+  [OK] 10% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=10%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=10%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=10%: realny udział 0 ≈ nominalny 0.1 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=10%: realny udział 0 ≈ nominalny 0.2 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=3, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=10%: realny udział 0 ≈ nominalny 0.3 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 3, want 3)
+  [OK] praca=5, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=10%: realny udział 0 ≈ nominalny 0.5 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=6, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=10%: realny udział 1 ≈ nominalny 0.6 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=7, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=10%: realny udział 1 ≈ nominalny 0.7 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 6, want 6)
+  [OK] praca=10, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=10%: realny udział 1 ≈ nominalny 1 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=10%: nominał całkowity → udział DOKŁADNIE 1 (got 1, want 1)
+  [OK] praca=10, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 9, want 9)
+  [OK] praca=13, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=10%: realny udział 1 ≈ nominalny 1.3 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 12, want 12)
+  [OK] praca=20, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=10%: realny udział 2 ≈ nominalny 2 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=10%: nominał całkowity → udział DOKŁADNIE 2 (got 2, want 2)
+  [OK] praca=20, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 18, want 18)
+  [OK] praca=37, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=10%: realny udział 4 ≈ nominalny 3.7 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 33, want 33)
+  [OK] praca=100, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=10%: realny udział 10 ≈ nominalny 10 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=10%: nominał całkowity → udział DOKŁADNIE 10 (got 10, want 10)
+  [OK] praca=100, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 90, want 90)
+  [OK] praca=1000, ulepszenia=10%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=10%: realny udział 100 ≈ nominalny 100 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=10%: nominał całkowity → udział DOKŁADNIE 100 (got 100, want 100)
+  [OK] praca=1000, ulepszenia=10%: doBudynkow = round(total × %budynki) (got 900, want 900)
+  [OK] ustawienie 20% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 20, want 20)
+  [OK] 20% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=20%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=20%: realny udział 0 ≈ nominalny 0.2 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=20%: realny udział 0 ≈ nominalny 0.4 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=3, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=20%: realny udział 1 ≈ nominalny 0.6 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=5, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=20%: realny udział 1 ≈ nominalny 1 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 1 (got 1, want 1)
+  [OK] praca=5, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=6, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=20%: realny udział 1 ≈ nominalny 1.2 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=7, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=20%: realny udział 1 ≈ nominalny 1.4 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 6, want 6)
+  [OK] praca=10, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=20%: realny udział 2 ≈ nominalny 2 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 2 (got 2, want 2)
+  [OK] praca=10, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 8, want 8)
+  [OK] praca=13, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=20%: realny udział 3 ≈ nominalny 2.6 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 10, want 10)
+  [OK] praca=20, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=20%: realny udział 4 ≈ nominalny 4 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 4 (got 4, want 4)
+  [OK] praca=20, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 16, want 16)
+  [OK] praca=37, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=20%: realny udział 7 ≈ nominalny 7.4 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 30, want 30)
+  [OK] praca=100, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=20%: realny udział 20 ≈ nominalny 20 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 20 (got 20, want 20)
+  [OK] praca=100, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 80, want 80)
+  [OK] praca=1000, ulepszenia=20%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=20%: realny udział 200 ≈ nominalny 200 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=20%: nominał całkowity → udział DOKŁADNIE 200 (got 200, want 200)
+  [OK] praca=1000, ulepszenia=20%: doBudynkow = round(total × %budynki) (got 800, want 800)
+  [OK] ustawienie 30% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 30, want 30)
+  [OK] 30% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=30%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=30%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=30%: realny udział 0 ≈ nominalny 0.3 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=30%: realny udział 1 ≈ nominalny 0.6 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=3, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=30%: realny udział 1 ≈ nominalny 0.9 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=5, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=30%: realny udział 1 ≈ nominalny 1.5 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=6, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=30%: realny udział 2 ≈ nominalny 1.8 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=7, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=30%: realny udział 2 ≈ nominalny 2.1 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=10, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=30%: realny udział 3 ≈ nominalny 3 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=30%: nominał całkowity → udział DOKŁADNIE 3 (got 3, want 3)
+  [OK] praca=10, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 7, want 7)
+  [OK] praca=13, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=30%: realny udział 4 ≈ nominalny 3.9 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 9, want 9)
+  [OK] praca=20, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=30%: realny udział 6 ≈ nominalny 6 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=30%: nominał całkowity → udział DOKŁADNIE 6 (got 6, want 6)
+  [OK] praca=20, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 14, want 14)
+  [OK] praca=37, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=30%: realny udział 11 ≈ nominalny 11.1 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 26, want 26)
+  [OK] praca=100, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=30%: realny udział 30 ≈ nominalny 30 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=30%: nominał całkowity → udział DOKŁADNIE 30 (got 30, want 30)
+  [OK] praca=100, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 70, want 70)
+  [OK] praca=1000, ulepszenia=30%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=30%: realny udział 300 ≈ nominalny 300 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=30%: nominał całkowity → udział DOKŁADNIE 300 (got 300, want 300)
+  [OK] praca=1000, ulepszenia=30%: doBudynkow = round(total × %budynki) (got 700, want 700)
+  [OK] ustawienie 40% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 40, want 40)
+  [OK] 40% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=40%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=40%: realny udział 0 ≈ nominalny 0.4 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=40%: realny udział 1 ≈ nominalny 0.8 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=3, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=40%: realny udział 1 ≈ nominalny 1.2 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=5, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=40%: realny udział 2 ≈ nominalny 2 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 2 (got 2, want 2)
+  [OK] praca=5, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 3, want 3)
+  [OK] praca=6, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=40%: realny udział 2 ≈ nominalny 2.4 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=7, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=40%: realny udział 3 ≈ nominalny 2.8 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=10, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=40%: realny udział 4 ≈ nominalny 4 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 4 (got 4, want 4)
+  [OK] praca=10, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 6, want 6)
+  [OK] praca=13, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=40%: realny udział 5 ≈ nominalny 5.2 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 8, want 8)
+  [OK] praca=20, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=40%: realny udział 8 ≈ nominalny 8 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 8 (got 8, want 8)
+  [OK] praca=20, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 12, want 12)
+  [OK] praca=37, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=40%: realny udział 15 ≈ nominalny 14.8 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 22, want 22)
+  [OK] praca=100, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=40%: realny udział 40 ≈ nominalny 40 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 40 (got 40, want 40)
+  [OK] praca=100, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 60, want 60)
+  [OK] praca=1000, ulepszenia=40%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=40%: realny udział 400 ≈ nominalny 400 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=40%: nominał całkowity → udział DOKŁADNIE 400 (got 400, want 400)
+  [OK] praca=1000, ulepszenia=40%: doBudynkow = round(total × %budynki) (got 600, want 600)
+  [OK] ustawienie 50% ulepszeń jest zachowane (nie ścinane, nie mnożone) (got 50, want 50)
+  [OK] 50% ulepszeń + budynki = 100% (got 100, want 100)
+  [OK] praca=0, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 0, want 0)
+  [OK] praca=0: total = zaokrąglona Praca miasta (got 0, want 0)
+  [OK] praca=0, ulepszenia=50%: realny udział 0 ≈ nominalny 0 (odchyłka < 1 Pracy)
+  [OK] praca=0, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 0 (got 0, want 0)
+  [OK] praca=0, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 0, want 0)
+  [OK] praca=1, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 1, want 1)
+  [OK] praca=1: total = zaokrąglona Praca miasta (got 1, want 1)
+  [OK] praca=1, ulepszenia=50%: realny udział 0 ≈ nominalny 0.5 (odchyłka < 1 Pracy)
+  [OK] praca=1, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=2, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 2, want 2)
+  [OK] praca=2: total = zaokrąglona Praca miasta (got 2, want 2)
+  [OK] praca=2, ulepszenia=50%: realny udział 1 ≈ nominalny 1 (odchyłka < 1 Pracy)
+  [OK] praca=2, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 1 (got 1, want 1)
+  [OK] praca=2, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 1, want 1)
+  [OK] praca=3, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 3, want 3)
+  [OK] praca=3: total = zaokrąglona Praca miasta (got 3, want 3)
+  [OK] praca=3, ulepszenia=50%: realny udział 1 ≈ nominalny 1.5 (odchyłka < 1 Pracy)
+  [OK] praca=3, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 2, want 2)
+  [OK] praca=5, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 5, want 5)
+  [OK] praca=5: total = zaokrąglona Praca miasta (got 5, want 5)
+  [OK] praca=5, ulepszenia=50%: realny udział 2 ≈ nominalny 2.5 (odchyłka < 1 Pracy)
+  [OK] praca=5, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 3, want 3)
+  [OK] praca=6, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 6, want 6)
+  [OK] praca=6: total = zaokrąglona Praca miasta (got 6, want 6)
+  [OK] praca=6, ulepszenia=50%: realny udział 3 ≈ nominalny 3 (odchyłka < 1 Pracy)
+  [OK] praca=6, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 3 (got 3, want 3)
+  [OK] praca=6, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 3, want 3)
+  [OK] praca=7, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 7, want 7)
+  [OK] praca=7: total = zaokrąglona Praca miasta (got 7, want 7)
+  [OK] praca=7, ulepszenia=50%: realny udział 3 ≈ nominalny 3.5 (odchyłka < 1 Pracy)
+  [OK] praca=7, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 4, want 4)
+  [OK] praca=10, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 10, want 10)
+  [OK] praca=10: total = zaokrąglona Praca miasta (got 10, want 10)
+  [OK] praca=10, ulepszenia=50%: realny udział 5 ≈ nominalny 5 (odchyłka < 1 Pracy)
+  [OK] praca=10, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 5 (got 5, want 5)
+  [OK] praca=10, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 5, want 5)
+  [OK] praca=13, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 13, want 13)
+  [OK] praca=13: total = zaokrąglona Praca miasta (got 13, want 13)
+  [OK] praca=13, ulepszenia=50%: realny udział 6 ≈ nominalny 6.5 (odchyłka < 1 Pracy)
+  [OK] praca=13, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 7, want 7)
+  [OK] praca=20, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 20, want 20)
+  [OK] praca=20: total = zaokrąglona Praca miasta (got 20, want 20)
+  [OK] praca=20, ulepszenia=50%: realny udział 10 ≈ nominalny 10 (odchyłka < 1 Pracy)
+  [OK] praca=20, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 10 (got 10, want 10)
+  [OK] praca=20, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 10, want 10)
+  [OK] praca=37, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 37, want 37)
+  [OK] praca=37: total = zaokrąglona Praca miasta (got 37, want 37)
+  [OK] praca=37, ulepszenia=50%: realny udział 18 ≈ nominalny 18.5 (odchyłka < 1 Pracy)
+  [OK] praca=37, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 19, want 19)
+  [OK] praca=100, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 100, want 100)
+  [OK] praca=100: total = zaokrąglona Praca miasta (got 100, want 100)
+  [OK] praca=100, ulepszenia=50%: realny udział 50 ≈ nominalny 50 (odchyłka < 1 Pracy)
+  [OK] praca=100, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 50 (got 50, want 50)
+  [OK] praca=100, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 50, want 50)
+  [OK] praca=1000, ulepszenia=50%: budynki+ulepszenia = cała Praca (got 1000, want 1000)
+  [OK] praca=1000: total = zaokrąglona Praca miasta (got 1000, want 1000)
+  [OK] praca=1000, ulepszenia=50%: realny udział 500 ≈ nominalny 500 (odchyłka < 1 Pracy)
+  [OK] praca=1000, ulepszenia=50%: nominał całkowity → udział DOKŁADNIE 500 (got 500, want 500)
+  [OK] praca=1000, ulepszenia=50%: doBudynkow = round(total × %budynki) (got 500, want 500)
+
+-- 2. REGRES ZE ZGŁOSZENIA: domyślne ustawienia NIE dają już 0% na ulepszenia --
+  [OK] domyślny podział to nadal 70% budynki (got 70, want 70)
+  [OK] 10 Pracy, ustawienia domyślne → 3 na ulepszenia (było 0 — regres zamknięty) (got 3, want 3)
+  [OK] 10 Pracy, ustawienia domyślne → 7 na budynki (got 7, want 7)
+  [OK] 10 Pracy, suwak na maksimum → 5 na ulepszenia (było 2 = 20%) (got 5, want 5)
+  [OK] 10 Pracy, suwak na maksimum → 5 na budynki (got 5, want 5)
+
+-- 3. CAP: > 50% na ulepszenia jest NIEOSIĄGALNE (suwak, zapis, override) --
+  [OK] żądanie 51% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 51% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie 60% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 60% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie 75% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 75% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie 99% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 99% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie 100% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 100% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie 150% ulepszeń → budynki 50% (cap) (got 50, want 50)
+  [OK] żądanie 150% ulepszeń → 50% (cap) (got 50, want 50)
+  [OK] żądanie Infinity% ulepszeń → wartość domyślna (brak wartości ≠ 100%) (got 70, want 70)
+  [OK] żądanie Infinity% ulepszeń nigdy nie przekracza capu 50%
+  [OK] żądanie -Infinity% ulepszeń → wartość domyślna (brak wartości ≠ 100%) (got 70, want 70)
+  [OK] żądanie -Infinity% ulepszeń nigdy nie przekracza capu 50%
+  [OK] żądanie NaN% ulepszeń → wartość domyślna (brak wartości ≠ 100%) (got 70, want 70)
+  [OK] żądanie NaN% ulepszeń nigdy nie przekracza capu 50%
+  [OK] żądanie null% ulepszeń → wartość domyślna (brak wartości ≠ 100%) (got 70, want 70)
+  [OK] żądanie null% ulepszeń nigdy nie przekracza capu 50%
+  [OK] żądanie undefined% ulepszeń → wartość domyślna (brak wartości ≠ 100%) (got 70, want 70)
+  [OK] żądanie undefined% ulepszeń nigdy nie przekracza capu 50%
+  [OK] ulepszenia 0%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 0%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 0%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 10%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 10%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 20%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 20%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 30%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 30%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 40%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 40%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=0: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=0: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=1: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=1: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=2: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=2: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=3: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=3: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=5: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=5: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=6: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=6: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=7: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=7: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=10: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=10: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=13: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=13: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=20: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=20: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=37: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=37: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=100: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=100: budynki nigdy poniżej połowy Pracy
+  [OK] ulepszenia 50%, praca=1000: udział ulepszeń nigdy nie przekracza połowy Pracy
+  [OK] ulepszenia 50%, praca=1000: budynki nigdy poniżej połowy Pracy
+  [OK] zapis procentBudynki=0 → nigdy poniżej 50% dla budynków
+  [OK] zapis procentBudynki=10 → nigdy poniżej 50% dla budynków
+  [OK] zapis procentBudynki=25 → nigdy poniżej 50% dla budynków
+  [OK] zapis procentBudynki=49 → nigdy poniżej 50% dla budynków
+  [OK] zapis procentBudynki=-100 → nigdy poniżej 50% dla budynków
+  [OK] zapis procentBudynki=NaN → nigdy poniżej 50% dla budynków
+  [OK] override miasta 10% budynków → przycięty do 50% przy odczycie (got 50, want 50)
+  [OK] migracja: override 5% budynków przycięty do 50% (got 50, want 50)
+
+-- 4. IDENTYCZNY MECHANIZM globalnie i w mieście (ten sam cap, ta sama jednostka) --
+  [OK] cap globalny jest wyliczony z tego samego minimum co cap miasta (got 50, want 50)
+  [OK] 0% ulepszeń: miasto i imperium dają identyczną wartość (got 100, want 100)
+  [OK] 0% ulepszeń: identyczny wynik w mieście i globalnie (got 0, want 0)
+  [OK] 10% ulepszeń: miasto i imperium dają identyczną wartość (got 90, want 90)
+  [OK] 10% ulepszeń: identyczny wynik w mieście i globalnie (got 2, want 2)
+  [OK] 20% ulepszeń: miasto i imperium dają identyczną wartość (got 80, want 80)
+  [OK] 20% ulepszeń: identyczny wynik w mieście i globalnie (got 3, want 3)
+  [OK] 30% ulepszeń: miasto i imperium dają identyczną wartość (got 70, want 70)
+  [OK] 30% ulepszeń: identyczny wynik w mieście i globalnie (got 5, want 5)
+  [OK] 40% ulepszeń: miasto i imperium dają identyczną wartość (got 60, want 60)
+  [OK] 40% ulepszeń: identyczny wynik w mieście i globalnie (got 7, want 7)
+  [OK] 50% ulepszeń: miasto i imperium dają identyczną wartość (got 50, want 50)
+  [OK] 50% ulepszeń: identyczny wynik w mieście i globalnie (got 8, want 8)
+
+-- 5. OVERRIDE MIASTA (pkt 5): zapala się SAM przy różnicy, gaśnie przy powrocie --
+  [OK] wartość równa globalnej → override zgaszony (got false, want false)
+  [OK] wartość równa globalnej → pole lokalne skasowane (miasto śledzi globalną) (got undefined, want undefined)
+  [OK] wartość różna od globalnej → override zapalony SAM, bez klikania (got true, want true)
+  [OK] wartość różna od globalnej → zapisana lokalnie (got 50, want 50)
+  [OK] powrót do wartości globalnej → override gaśnie (got false, want false)
+  [OK] powrót do wartości globalnej → pole lokalne skasowane (got undefined, want undefined)
+  [OK] gdy globalna = 50, ustawienie 50 w mieście NIE zapala override (got false, want false)
+  [OK] żądanie 10% budynków przycięte do 50% = globalna → override NIE zapala się na sztucznej różnicy (got false, want false)
+  [OK] suwak miasta przyjmuje 50% budynków (nie jest zablokowany) (got 50, want 50)
+  [OK] suwak miasta przyjmuje 60% budynków (nie jest zablokowany) (got 60, want 60)
+  [OK] suwak miasta przyjmuje 70% budynków (nie jest zablokowany) (got 70, want 70)
+  [FAIL] kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ 24/turę daje 0 Pracy na ulepszenia (got 1460, want 0)
+  [FAIL] kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ 36/turę daje 0 Pracy na ulepszenia (got 1520, want 0)
+
+EXIT=1
+TIME=1.8

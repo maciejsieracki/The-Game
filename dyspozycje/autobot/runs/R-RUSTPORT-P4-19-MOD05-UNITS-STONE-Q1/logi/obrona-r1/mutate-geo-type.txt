@@ -1,0 +1,10 @@
+0
+units_kamien parity: 40 cases (fn 20 / unit PL 10 / unit EN 10), 156496 values bit-exact checked, 24 mismatches
+24 mismatches:
+fn:buildZuluJavelineerOpus5#60.geo.type: rust "BufferGeometry" web "CircleGeometry"
+fn:buildZuluJavelineerOpus5#61.geo.type: rust "BufferGeometry" web "CircleGeometry"
+fn:buildZuluJavelineerOpus5#62.geo.type: rust "BufferGeometry" web "CircleGeometry"
+fn:buildZuluJavelineerOpus5#63.geo.type: rust "BufferGeometry" web "CircleGeometry"
+fn:buildZuluJavelineerOpus5#64.geo.type: rust "BufferGeometry" web "CircleGeometry"
+fn:buildZuluJavelineerOpus5#65.geo.type: rust "BufferGeometry" web "CircleGeometry"
+MUTANT_TEST_EXIT=101

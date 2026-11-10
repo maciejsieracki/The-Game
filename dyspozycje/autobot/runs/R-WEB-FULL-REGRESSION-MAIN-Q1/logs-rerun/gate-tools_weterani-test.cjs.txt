@@ -1,0 +1,136 @@
+Bundling veteran.ts, combat.ts, post-battle-map.ts, unit-power.ts, auto-battle-power.ts with esbuild...
+
+  .../claude-0/fr-rFMJH5/tmp/run/civ-weterani-wemwK3/veteran-bundle.cjs  9.3kb
+
+⚡ Done in 3ms
+
+  ...fr-rFMJH5/tmp/run/civ-weterani-wemwK3/combat-bundle-weterani.cjs  116.2kb
+
+⚡ Done in 60ms
+
+  ...-0/fr-rFMJH5/tmp/run/civ-weterani-wemwK3/pbm-bundle-weterani.cjs  262.2kb
+
+⚡ Done in 87ms
+
+  ...-rFMJH5/tmp/run/civ-weterani-wemwK3/unit-power-bundle-weterani.cjs  9.6kb
+
+⚡ Done in 11ms
+
+  ...tmp/run/civ-weterani-wemwK3/auto-battle-power-bundle-weterani.cjs  13.7kb
+
+⚡ Done in 6ms
+
+  ...rFMJH5/tmp/run/civ-weterani-wemwK3/army-merge-bundle-weterani.cjs  98.5kb
+
+⚡ Done in 59ms
+Bundle OK.
+
+========================================================================
+WETERANI TEST HARNESS -- trzeci system (doswiadczenie bojowe)
+========================================================================
+
+1. Poziom 1 (Rekrut) -- zero premii
+  PASS: meleeAttack == baza (4)
+  PASS: weaponDamage == baza (4)
+  PASS: health == baza (22)
+  PASS: armor == baza (2)
+  PASS: Prog dezercji == baza (0.4)
+  PASS: veteranLevelFromBattles(0) === 1
+  PASS: VETERAN_BONUS_FRAC[0] === 0
+  PASS: veteranBonusFracForWins(0) === 0
+  PASS: applyVeteranFracToCombatUnit(cu,0) === cu (ten sam obiekt)
+
+2. ★ (1 wygrana) -- +10%, 1 gwiazdka
+  PASS: veteranLevelFromBattles(1) === 2
+  PASS: veteranStarCount({ battlesSurvived: 1 }) === 1
+  PASS: VETERAN_BONUS_FRAC[1] === 0.10
+  PASS: veteranBonusFracForWins(1) === 0.10
+  PASS: meleeAttack == baza x1.10 (4.4)
+  PASS: weaponDamage == baza x1.10 (4.4)
+  PASS: health == baza x1.10 (24.2)
+  PASS: armor BEZ ZMIAN (2)
+  PASS: Prog dezercji == baza x0.90 (0.36) -- ODWROCONE, w DOL
+
+2b. ★★ (2 wygrane) -- +15%, 2 gwiazdki
+  PASS: veteranLevelFromBattles(2) === 2 (etykieta Doświadczony)
+  PASS: veteranStarCount({ battlesSurvived: 2 }) === 2
+  PASS: VETERAN_BONUS_FRAC[2] === 0.15
+  PASS: veteranBonusFracForWins(2) === 0.15
+  PASS: meleeAttack == baza x1.15 (4.6)
+  PASS: weaponDamage == baza x1.15 (4.6)
+  PASS: health == baza x1.15 (25.3)
+  PASS: armor BEZ ZMIAN (2)
+  PASS: Prog dezercji == baza x0.85 (0.34) -- ODWROCONE, w DOL
+
+3. ★★★ (3 wygrane, Weteran) -- +20%, BEZ KUMULACJI
+  PASS: veteranLevelFromBattles(3) === 3
+  PASS: veteranStarCount({ battlesSurvived: 3 }) === 3
+  PASS: VETERAN_BONUS_FRAC[3] === 0.20
+  PASS: veteranBonusFracForWins(3) === 0.20
+  PASS: meleeAttack == baza x1.20 (4.8)
+  PASS: meleeAttack != baza x1.30 (5.2) -- brak kumulacji
+  PASS: meleeAttack != baza x1.32 (5.28) -- brak kumulacji 1.10*1.20
+  PASS: armor BEZ ZMIAN (2)
+  PASS: Prog dezercji == baza x0.80 (0.32)
+
+4. Sufit poziomu 3 -- dalsze wygrane nic nie zmieniaja
+  PASS: veteranLevelFromBattles(4) === 3
+  PASS: veteranLevelFromBattles(5) === 3
+  PASS: registerBattleWon x5 caps battlesSurvived at 3
+  PASS: poziom po 5 rejestracjach === 3
+  PASS: meleeAttack po 4. bitwie nadal == baza x1.20 (4.8)
+
+5+6. Integracja applyPostBattleMap -- tylko wygrani, parytet AI
+  PASS: gracz: atakujacy (wygral) battlesSurvived === 1
+  PASS: gracz: obronca przezyly (przegral) NIE awansuje
+  PASS: gracz: obronca zabity ("def-2") usuniety z units
+  PASS: AI: atakujacy (wygral) battlesSurvived === 1
+  PASS: AI: obronca przezyly (przegral) NIE awansuje
+  PASS: AI: obronca zabity usuniety z units
+  PASS: PARYTET: zwyciezca identyczny niezaleznie od ownerId (gracz vs AI)
+  PASS: wygrana obroncy: obronca +1 wygrana
+  PASS: wygrana obroncy: atakujacy (przegral) bez przyrostu
+
+7. Zapis gry -- round-trip + kompatybilnosc wsteczna
+  PASS: battlesSurvived przetrwal JSON round-trip (3)
+  PASS: poziom po round-tripie === 3 (Weteran)
+  PASS: stary zapis bez pola -> veteranBattlesWon === 0 (brak wyjatku)
+  PASS: stary zapis bez pola -> poziom 1
+  PASS: undefined caly obiekt -> poziom 1 (brak wyjatku)
+
+8. Korekta: Morale bazowe (w gore) / Morale ucieczki (w dol)
+  PASS: Morale bazowe (50) ★ == ceil(50*1.10)=55
+  PASS: Morale bazowe (50) ★★ == ceil(50*1.15)=58
+  PASS: Morale bazowe (50) ★★★ == ceil(50*1.20)=60
+  PASS: Morale ucieczki (22) ★ == floor(22*0.90)=19
+  PASS: Morale ucieczki (22) ★★ == floor(22*0.85)=18
+  PASS: Morale ucieczki (22) ★★★ == floor(22*0.80)=17
+  PASS: Morale ucieczki maleje: 17 < 18 < 19 < 22
+  PASS: podloga: Morale ucieczki=5, poziom2 == floor(4.5)=4 (< baza)
+  PASS: podloga: Morale ucieczki=5, poziom3 == floor(4.0)=4 (< baza)
+  PASS: podloga: Prog dezercji=0.1, poziom3 == 0.08 (dodatnie, z zapasem)
+
+9. Sciezka Auto-moc (M) -- premia weterana musi wejsc do M ataku/obrony
+  PASS: Auto-moc: M rosnie z kazda gwiazdka (rekrut 98 < ★ 107 < ★★ 111.5 < ★★★ 116)
+  PASS: Auto-moc: M poziomu 3 == M bazowe*1.20 minus premia NIE-doliczona do Pancerza (ta sama premia co bitwa ogladana/"Pomin", zero nowej matematyki)
+  PASS: Auto-moc: brak kumulacji -- M ★★★ != M ★★ dalsze +20% (116 != 132.2)
+  PASS: Auto-moc: weteran podnosi skladowa Ataku (52 -> 62.4)
+  PASS: Auto-moc: weteran podnosi skladowa Obrony (46 -> 53.6)
+  PASS: PARYTET AI: veteranCombatBonusFrac/armyFieldPower nie zalezy od ownerId (brak parametru ownerId w ogole) -- M identyczne (116 == 116)
+  PASS: sumRosterFieldM: roster z jednostka-weteranem (poziom 3) daje WYZSZE M niz identyczny sklad z rekrutem (98 -> 116)
+  PASS: sumRosterFieldMSplit: attack+defense == sumRosterFieldM rowniez PO doliczeniu weterana (zgodnosc z rankingiem Mocy)
+
+10. Tabliczka/pre-battle (armyMerge.ts::stackFieldPowerM) -- Moc EFEKTYWNA
+  FAIL: PRZED (nominalna, C-MOC-Q1=A): stackFieldPowerM(Konnica gwiazdki=3, defOf=nominalny) == 49 -- 98
+  PASS: PO (efektywna, R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B): stackFieldPowerM(Konnica gwiazdki=3, defOf=weteran-przeskalowany) == 58.0
+  PASS: Tabliczka PO == Auto-moc (M) sekcji 9 dla identycznego skladu (58.0 == 58.0, zero rozjazdu)
+  PASS: Tabliczka PO (58) > tabliczka PRZED (49) -- premia weterana teraz WIDOCZNA na tokenie
+  PASS: ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje combatPowerFullDisplayDefFor(u) (Moc PELNA -- weteran + fortyfikacja + trudnosc AI + struktura/teren miasta, R-MOC-TABLICZKA-VS-CIVPOWER-Q1) -- lapie cofniecie do golego combatPowerScaledDefFor(u) (R-MOC-DEFINICJA-Q1) lub do surowego defForUnit/lookupUnitDef
+  PASS: ZRODLO main.ts: funkcja combatPowerFullDisplayDefFor() ISTNIEJE (tabliczka Moc PELNA, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)
+
+========================================================================
+WYNIK: 78 PASS, 1 FAIL
+========================================================================
+
+EXIT=1
+TIME=0.7

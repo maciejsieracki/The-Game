@@ -1,0 +1,44 @@
+FAIL: kuznia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: odlewnia_brazu poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: odlewnia_zelaza poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: wielka_odlewnia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: port poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: port_wielki poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: spichlerz_ii poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: cegielnia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: cegielnia poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: swiatynia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: swiatynia poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: biblioteka poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: biblioteka poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: akwedukt poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: akwedukt poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: mennica poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: mennica poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: mury poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: mury poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: koszary poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: koszary poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: emporion poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: magazyn poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: magazyn poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: palac_ii poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: palac_iii poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: kuznia_zelaza poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: wielka_kuznia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: fort poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: baszta poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: warsztat_oblezniczy poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: akademia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: teatr poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: sad poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: dwor_zarzadcy poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: pretorium poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: trybunal poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: trybunal poziom 2: itemCost z kosztBudowy/przyrostKosztu
+FAIL: laznia_publiczna poziom 1: itemCost z kosztBudowy/przyrostKosztu
+FAIL: akademia_wojskowa poziom 1: itemCost z kosztBudowy/przyrostKosztu
+budynki-koszt-pracy-50-test: 138 pass, 40 fail; 43 budynków / 66 poziomów
+
+EXIT=1
+TIME=1.1

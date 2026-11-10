@@ -1,0 +1,9 @@
+O1-E03 truncate_name fit <= -> <	KILLED	test truncation_decisions_match_the_web ... FAILED
+O2-E09 hover len>1 -> >2	KILLED	test truncation_decisions_match_the_web ... FAILED
+O3-E05 bolder -> 400	KILLED	test font_shorthand_parsing_matches_chromium ... FAILED;test measure_text_widths_match_chromium ... FAILED
+O4 name loop > -> >=	KILLED	test truncation_decisions_match_the_web ... FAILED
+O5 hover fit > -> >=	KILLED	test truncation_decisions_match_the_web ... FAILED
+O6 hover loop guard >1 -> nonempty	KILLED	test truncation_decisions_match_the_web ... FAILED
+O7 width +1 ulp	KILLED	test measure_text_widths_match_chromium ... FAILED;test truncation_decisions_match_the_web ... FAILED
+O8 fixture tamper versions.txt	KILLED	test fixtures_match_manifest_sha256 ... FAILED
+O9 fixture tamper ref rgba 1 bit	KILLED	test fixtures_match_manifest_sha256 ... FAILED

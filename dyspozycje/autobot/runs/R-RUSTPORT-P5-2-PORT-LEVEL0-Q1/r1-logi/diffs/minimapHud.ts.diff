@@ -1,0 +1,20 @@
+--- edb8fb56:gra/src/ui/minimapHud.ts
++++ src-tauri/frontend-v2/src/ui/minimapHud.ts
+@@ -7,7 +7,7 @@
+  */
+ 
+ import { ensureBrandRootTokens } from './brandTokenVars';
+-import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
++import { staticCatalog } from '../controller/staticCatalog';
+ import {
+   HUD_ZOOM_EDGE_PX,
+   HUD_ZOOM_BOTTOM_PX,
+@@ -243,7 +243,7 @@
+     const base = TEREN_KOLOR[hex.teren] ?? TEREN_KOLOR_DEFAULT;
+ 
+     ctx.fillStyle = base;
+-    if (hex.fog === 'explored') ctx.globalAlpha = FOG_EXPLORED_BRIGHTNESS;
++    if (hex.fog === 'explored') ctx.globalAlpha = staticCatalog().constants.fogExploredBrightness;
+     fillHexCell(ctx, cx, cy, drawR);
+     ctx.globalAlpha = 1;
+ 

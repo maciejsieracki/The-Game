@@ -1,0 +1,128 @@
+
+[ai-zdobycie-miasta-adiacencja-test] P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1
+
+--- K1: reprodukcja stanu sprzed naprawy (rozkaz odrzucany, tura stracona) ---
+  [OK] K1a: REALNY decideAITurn emituje rozkaz move na heks obcego miasta
+  [FAIL] K1b: rozkaz niesie targetCityId celu — got undefined, want "wrog-c1"
+  [OK] K1c: to JEDYNA komenda tej jednostki w turze (unitActed — brak akcji zastępczej)
+  [OK] K1d: STAN SPRZED NAPRAWY — rozkaz odrzucony przez bezwarunkową blokadę heksu miasta
+  [OK] K1e: STAN SPRZED NAPRAWY — brak przejęcia
+  [OK] K1f: STAN SPRZED NAPRAWY — cities[].ownerId bez zmiany (2)
+  [OK] K1g: STAN SPRZED NAPRAWY — jednostka nie ruszyła się (tura stracona)
+       ślad: ownerId 2 -> 2, jednostka 5,4 -> 5,4, komend jednostki=1
+
+--- K2: po naprawie — przejęcie, stan cities[].ownerId przed i po ---
+  [OK] K2a: PRZED — cities[wrog-c1].ownerId === 2
+       ślad: ownerId 2 -> 2, jednostka 5,4 -> 5,4, ruchLeft=2
+
+--- K3: parytet gracz / barbarzyńcy / AI major na WSPÓLNYCH bramkach ---
+  [FAIL] K2b: rozkaz przyjęty przez egzekutor — got false, want true
+  [FAIL] K2c: egzekutor raportuje przejęcie — got false, want true
+  [FAIL] K2d: PO — cities[wrog-c1].ownerId === 1 (AI major faktycznie przejęło miasto) — got 2, want 1
+  [FAIL] K2e: PO — jednostka stoi na heksie zdobytego miasta — got "5,4", want "5,5"
+  [FAIL] K2f: PO — ruch jednostki zużyty (nie „stracona tura bez efektu") — got 2, want 0
+  [FAIL] K2g: przejęcie przeszło przez realną canCaptureCityWithoutBattle — got "", want "wrog-c1:1"
+  [OK] K3a gracz(0): canCaptureCityWithoutBattle(puste) === true (bramka nie zależy od ownera napastnika)
+  [OK] K3b gracz(0): canCaptureCityWithoutBattle(bronione) === false
+  [OK] K3c gracz(0): canUnitOccupyCityHex nadal blokuje obcy heks miasta — reguła nie została zniesiona
+  [OK] K3d gracz(0): canUnitOccupyCityHex przepuszcza pusty heks
+  [OK] K3a barbarzyńca(-1): canCaptureCityWithoutBattle(puste) === true (bramka nie zależy od ownera napastnika)
+  [OK] K3b barbarzyńca(-1): canCaptureCityWithoutBattle(bronione) === false
+  [OK] K3c barbarzyńca(-1): canUnitOccupyCityHex nadal blokuje obcy heks miasta — reguła nie została zniesiona
+  [OK] K3d barbarzyńca(-1): canUnitOccupyCityHex przepuszcza pusty heks
+  [OK] K3a AI major(1): canCaptureCityWithoutBattle(puste) === true (bramka nie zależy od ownera napastnika)
+  [OK] K3b AI major(1): canCaptureCityWithoutBattle(bronione) === false
+  [OK] K3c AI major(1): canUnitOccupyCityHex nadal blokuje obcy heks miasta — reguła nie została zniesiona
+  [OK] K3d AI major(1): canUnitOccupyCityHex przepuszcza pusty heks
+  [OK] K3e: ścieżka DODANA dla AI major (adiacencja + brak obrońców + brak fortyfikacji)
+  [OK] K3f: wyjątek nie dotyczy własnego miasta
+  [OK] K3g: cywil AI NIE wchodzi na heks obcego miasta — tak jak każda jednostka gracza
+
+--- K4: granica zakresu — bronione / ufortyfikowane / nieadiacentne NIE są przejmowane ---
+  [OK] K4-BRONIONEa: miasto BRONIONE — brak przejęcia
+  [OK] K4-BRONIONEb: miasto BRONIONE — ownerId zostaje 2
+  [OK] K4-BRONIONEc: miasto BRONIONE — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K4-BRONIONEd: miasto BRONIONE — jednostka NIE stoi na heksie miasta
+  [OK] K4-MURYa: miasto z MURAMI — brak przejęcia
+  [OK] K4-MURYb: miasto z MURAMI — ownerId zostaje 2
+  [OK] K4-MURYc: miasto z MURAMI — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K4-MURYd: miasto z MURAMI — jednostka NIE stoi na heksie miasta
+  [OK] K4-MAMURa: miasto z flagą maMur — brak przejęcia
+  [OK] K4-MAMURb: miasto z flagą maMur — ownerId zostaje 2
+  [OK] K4-MAMURc: miasto z flagą maMur — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K4-MAMURd: miasto z flagą maMur — jednostka NIE stoi na heksie miasta
+  [OK] K4-DYSTANSa: miasto ODDALONE (dystans 3, brak ataku dystansowego) — brak przejęcia
+  [OK] K4-DYSTANSb: miasto ODDALONE (dystans 3, brak ataku dystansowego) — ownerId zostaje 2
+  [OK] K4-DYSTANSc: miasto ODDALONE (dystans 3, brak ataku dystansowego) — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K4-DYSTANSd: miasto ODDALONE (dystans 3, brak ataku dystansowego) — jednostka NIE stoi na heksie miasta
+  [OK] K4-BEZCELUa: rozkaz move BEZ targetCityId — brak przejęcia
+  [OK] K4-BEZCELUb: rozkaz move BEZ targetCityId — ownerId zostaje 2
+  [OK] K4-BEZCELUc: rozkaz move BEZ targetCityId — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K4-BEZCELUd: rozkaz move BEZ targetCityId — jednostka NIE stoi na heksie miasta
+
+--- K7: cywil AI (robotnik/osadnik) — ani przejęcia, ani parkowania w cudzym mieście ---
+  [OK] K7a Robotnik: planista NIE emituje rozkazu move na heks obcego miasta
+  [OK] K7b Robotnik: cywil dostaje mimo to inną komendę — tura nie jest stracona
+  [OK] K7-Robotnika: cywil Robotnik na niebronionym obcym mieście — brak przejęcia
+  [OK] K7-Robotnikb: cywil Robotnik na niebronionym obcym mieście — ownerId zostaje 2
+  [OK] K7-Robotnikc: cywil Robotnik na niebronionym obcym mieście — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K7-Robotnikd: cywil Robotnik na niebronionym obcym mieście — jednostka NIE stoi na heksie miasta
+  [OK] K7a Osadnik: planista NIE emituje rozkazu move na heks obcego miasta
+  [OK] K7b Osadnik: cywil dostaje mimo to inną komendę — tura nie jest stracona
+  [OK] K7-Osadnika: cywil Osadnik na niebronionym obcym mieście — brak przejęcia
+  [OK] K7-Osadnikb: cywil Osadnik na niebronionym obcym mieście — ownerId zostaje 2
+  [OK] K7-Osadnikc: cywil Osadnik na niebronionym obcym mieście — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"
+  [OK] K7-Osadnikd: cywil Osadnik na niebronionym obcym mieście — jednostka NIE stoi na heksie miasta
+  [OK] K7c: ten sam rozkaz dla jednostki BOJOWEJ nadal przejmuje miasto (GOAL nietknięty)
+  [OK] K7d: ownerId 2 -> 1 dla jednostki bojowej
+
+--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---
+  [OK] A5a: main.ts wywołuje executeAiCityMove w pętli komend AI
+  [OK] A5b: egzekutor dostaje REALNĄ canUnitOccupyCityHex (reguła bazowa nadal liczona)
+  [FAIL] A5c: onCapture jest wpięty w tryAutoCaptureEmptyCityAt — bez tego rozkaz przechodzi, ale miasto NIE zmienia właściciela — got false, want true
+  [FAIL] A5d: hasCityDefenders liczone z realnego stanu jednostek — got false, want true
+  [OK] A5e: egzekutor w main.ts w ogóle dostaje pole unitIsCivilian
+  [OK] A5f: wyrazenie `isCivilianUnit(u)` liczy sie z SAMEJ jednostki (isCivilianUnit + u) — wykonywalne poza domknieciem main()
+  [OK] A5g: wpiecie ZWRACA true dla CYWILA (wyrazenie: `isCivilianUnit(u)`) — stala albo wartosc niezalezna od jednostki czyni silnikowa bramke cywila MARTWA (mutacja M3)
+  [OK] A5h: wpiecie ZWRACA false dla jednostki BOJOWEJ (wyrazenie: `isCivilianUnit(u)`) — inaczej wpiecie odcina GOAL rundy 1
+  [OK] A5i (FC-N4): podmiana isCivilianUnit na atrapę zwracającą sentinel PRZECHODZI przez wpięcie (wyrazenie: `isCivilianUnit(u)`) — kopia formuły zwróciłaby true/false, nigdy sentinel atrapy
+  [OK] A5j (FC-N4): jak wyżej dla jednostki bojowej — inny sentinel dla innej atrapy, dowód że wpięcie woła PRZEKAZANĄ funkcję modułową, nie zaszytą kopię
+  [OK] A6a: tryAutoCaptureEmptyCityAt istnieje w main.ts
+  [OK] A6b: tryAutoCaptureEmptyCityAt kończy się realnym captureCityWithoutBattle
+  [FAIL] A6c: jedyną bramką obrońców jest canCaptureCityWithoutBattle (wspólna dla gracza, barbarzyńców i AI) — got false, want true
+  [OK] A6d: rozpoznano blok „miasto już należy do napastnika"
+  [OK] A6e: przed blokiem własnego miasta NIE ma warunku po ownerId napastnika
+  [OK] A6f: między bramką obrońców a przejęciem NIE ma filtra po ownerId — ścieżka osiągalna dla cywilizacji major
+  [OK] A6g: przejęcie wymaga kotwicy NIECYWILNEJ — ten sam warunek odwzorowuje onCapture bramki
+
+--- K9: targetVisible=false (mgła) blokuje wejście na obce miasto (FC-N2) ---
+  [OK] K9a: targetVisible=false (mgła) — rozkaz ODRZUCONY (moved=false)
+  [OK] K9b: targetVisible=false (mgła) — brak przejęcia
+  [OK] K9c: targetVisible=false (mgła) — cities[].ownerId bez zmiany
+  [OK] K9d: targetVisible=false (mgła) — jednostka NIE stoi na heksie miasta
+  [FAIL] K9e: MUT-8 (targetVisible na sztywne true) — mgła PRZESTAJE blokować, przejęcie przechodzi mimo niewidoczności (dowód, że K9a-K9d na kodzie REALNYM faktycznie łapałyby tę mutację) — got false, want true
+  [FAIL] K9f: MUT-8 — ownerId zmienia się mimo mgły (potwierdzenie, że asercje K9a-K9d nie są puste — bez naprawy [REAL] fałszywie zielone by nie było, bo REAL blokuje; z mutacją [MUT-8] łapiemy czerwień) — got 2, want 1
+
+--- K6: mutacje egzekutora (dowód nietautologiczności) ---
+  [OK] K6a: MUT-1 (bezwarunkowa blokada obcego heksu, stan sprzed naprawy) — 4 czerwone asercje K2
+  [FAIL] K6b: MUT-2 („naprawa na papierze" — ruch przechodzi, callback przejęcia wycięty) — 2 czerwone asercje K2 (captured + ownerId) — got 4, want 2
+<WT>/gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs:96
+  if (mutated === source) throw new Error(`[${label}] kotwica mutacji nie znaleziona`);
+                          ^
+
+Error: [nounblock] kotwica mutacji nie znaleziona
+    at bundleExecutorVariant (<WT>/gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs:96:33)
+    at Object.<anonymous> (<WT>/gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs:648:26)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0
+
+EXIT=1
+TIME=1.7

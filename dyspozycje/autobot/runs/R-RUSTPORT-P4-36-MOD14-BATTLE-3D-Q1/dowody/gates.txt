@@ -1,0 +1,37 @@
+## pwd /home/user/The-Game/.claude/worktrees/wf_f82a6e6f-da7-1/rust-port/renderer  HEAD ba5dca73
+## rustc 1.97.0 (2d8144b78 2026-07-07) | cargo 1.97.0 (c980f4866 2026-06-30)
+## $ cargo fmt --all -- --check
+EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f82a6e6f-da7-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 8.39s
+EXIT=0
+## $ cargo clippy --locked --all-targets --features gpu -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f82a6e6f-da7-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 11.43s
+EXIT=0
+## $ cargo test --locked --all-targets   (full log: test-full.log)
+EXIT=0
+## test totals: passed=376 failed=0 binaries=48
+## $ cargo test --locked --test battle3d_siege_wall -- --nocapture
+test siege_wall_game_rows_quirk ... ok
+test siege_wall_typed_entry_matches_web_ids ... ok
+siegeWall: 68 cases: scalars 285409 (bit-equal), checks 207428
+test siege_wall_matches_web ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.78s
+EXIT=0
+## $ cargo +1.87.0 test --locked --test battle3d_siege_wall -- --nocapture   (own target dir, removed after)
+siegeWall: 68 cases: scalars 285409 (bit-equal), checks 207428
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s
+EXIT=0
+## $ git diff --check (tracked files; new files are checked with git diff --cached --check before the commit)
+EXIT=0
+## $ sha256sum -c tests/fixtures/battle3d/MANIFEST.sha256
+README.md: OK
+build.mjs: OK
+gen.mjs: OK
+gen.ts: OK
+mutate.py: OK
+siege_wall.json: OK
+EXIT=0
+## disk: /dev/vda        252G   28G   12G  72% /

@@ -1,0 +1,13 @@
+[R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test] build OK -> <REF-TMP>/w2/tmp/run/civ-hotseat-fotel2-cywilizacja-6427-zxlnon
+[R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test] BLOCK: scenariusz nie zadziałał headless: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('.civ-newgame .start')
+
+    at runWizardGrecyVsRzym (<WT>/gra/tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:181:45)
+    at async runLiveScenario (<WT>/gra/tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:252:24)
+    at async main (<WT>/gra/tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs:410:13)
+
+EXIT=2
+TIME=75.6

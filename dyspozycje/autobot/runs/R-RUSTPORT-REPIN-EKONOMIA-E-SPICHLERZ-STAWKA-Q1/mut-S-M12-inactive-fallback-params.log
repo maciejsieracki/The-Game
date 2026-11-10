@@ -1,0 +1,13 @@
+MUTANT S-M12-inactive-fallback-params file=src/domain/building_costs.rs
+OLD:
+                &opts.drain_params,
+            );
+NEW:
+                &SpichlerzDrainParams::FALLBACK,
+            );
+
+FAILED TESTS:
+test pay_and_inactive_status_match_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.26s
+VERDICT=KILLED
+EXIT=101

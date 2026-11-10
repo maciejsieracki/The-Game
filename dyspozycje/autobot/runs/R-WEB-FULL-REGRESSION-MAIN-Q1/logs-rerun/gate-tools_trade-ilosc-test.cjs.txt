@@ -1,0 +1,24 @@
+
+-- A/C. przeplyw ilosciowy cegly: odbiorca dostaje, nadawca traci --
+
+-- B. limit na ture (capacityPerRoutePerTurn) nie jest przekraczany --
+
+-- D. minStockReserve: nadawca zachowuje rezerwe, nie oddaje wszystkiego --
+
+-- E. regresja: boolean-grant braz/zelazo/kon niezmieniony; kon poza przeplywem --
+  FAIL: B: (kontrola) capacityPerRoutePerTurn jest dodatnia liczba skonczona
+  FAIL: B: transfer A nie przekracza limitu na ture (got false, want true)
+  FAIL: B: przy ogromnej nadwyzce transfer = DOKLADNIE limit na ture, nie wiecej (got 998, want undefined)
+  FAIL: E: kon NIE jest w TRADE_ROUTE_STOCK_FLOW_KEYS (brak magazynu ilosciowego) (got true, want false)
+  FAIL: E: dokladnie trzy klucze przeplywu ilosciowego (braz/zelazo/cegla) (got 6, want 3)
+
+-- F. parytet AI: (0,1) vs (5,6) daja identyczny ksztalt wyniku --
+
+-- G. kompatybilnosc starych zapisow: TradeRoute bez nowych pol --
+
+-- H. wiele tras jednego nadawcy: suma transferow nie przekracza realnej nadwyzki --
+
+trade-ilosc-test: 35 passed, 5 failed
+
+EXIT=1
+TIME=0.7

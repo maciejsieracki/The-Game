@@ -1,0 +1,8 @@
+FAIL: Włócznik braz — expected 2 got 50
+FAIL: format Włócznik — expected +16 Pieniądz, +2 Brąz got +16 Pieniądz, +50 Brąz
+FAIL: 2x Włócznik braz — expected 4 got 100
+FAIL: 50% braz — expected 1 got 25
+battle-loot-test: 8 pass, 4 fail
+
+EXIT=1
+TIME=0.3

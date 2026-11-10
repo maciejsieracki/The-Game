@@ -1,0 +1,7 @@
+PASS: wykrywa revisit w pętli
+PASS: sanitize usuwa revisit
+PASS: sanitize skraca pętlę (3 hex)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=150.3

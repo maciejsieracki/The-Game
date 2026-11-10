@@ -1,0 +1,22 @@
+# R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 — dispatch (2026-11-09) — START PO R-WEB-BATTLE-DEAD-UNITS-NOT-REMOVED-FROM-FIELD-Q1 (te same pliki battle/)
+
+GOAL (zgłoszenie właściciela, 4 zrzuty): przycisk „pomiń do wyniku” (ikona »» w scenie bitwy) daje ABSURDALNE wyniki:
+ - Zrzut A (po »»): „Zwycięstwo”, „Tura 0 · 00:00”, Twoje straty −0, Straty wroga −0, łupy +1472 Pieniądz +4600 Brąz — wynik „bez strat”, wygrana bez walki.
+ - Zrzut C (ta sama kategoria, po walce automatycznej/innej ścieżce): „Porażka”, „Tura 11 · 99:10”, straty −2443.1999999999925 i −1584.999999999996 (niesformatowane liczby zmiennoprzecinkowe), „Łupy 0”.
+ - Zrzut D „Szczegóły bitwy” (Tura 11 · 99:37, „zwycięstwo Chińczyków”): Grecy 3688 → 1610 ludzi po bitwie, Chińczycy 3162 → 1948; „ZNISZCZONE · 0” po obu stronach, „ROZBITE (ROUT) · 69 / 35”, same pozycje „HP 100% → X% · uciekli”.
+ Właściciel: „realny wynik wyglądał tak, przy walce automatycznej” (zrzuty C/D) — a »» (zrzut A) pokazuje zwycięstwo bez strat i z łupami. Skip-to-result musi dawać TEN SAM wynik co dokończenie walki automatycznej (ta sama symulacja do końca), nie osobną uproszczoną ścieżkę.
+BAZA: origin/main po deployu BATTLE-DEAD. Operator: SONNET 5.5 (uzasadnienie: silnik bitwy, wiele ścieżek wyniku, spójność strat/łupów/czasu).
+ZAKRES:
+1. Diagnoza: ścieżka „pomiń do wyniku” (battleScene.ts, battle*.ts, quickResolve/autoResolve/skipToResult) vs ścieżka walki automatycznej/ręcznej: dlaczego skip daje straty 0/0, „Tura 0 · 00:00”, łupy i „Zwycięstwo” (np. wywołanie wyniku przed symulacją, wartości domyślne, brak przeliczenia strat, zły obiekt wyniku). Dlaczego strony mają „Zniszczone 0” a ogromne „Rozbite” (ucieczka morale zamiast śmierci?) — ocena realności wyniku (wspólne z DEAD-UNITS).
+2. Naprawa: skip-to-result = dokończenie symulacji tym samym silnikiem (szybkie przewinięcie), te same straty/łupy/wynik/czas bitwy; poprawny numer tury i czas (Tura bieżąca, mm:ss realny), formatowanie liczb strat (liczby całkowite, separatory), brak NaN/float; wynik zapisywany na mapie raz.
+3. Test `gra/tools/battle-skip-equals-auto-resolve-test.cjs`: ten sam seed/armie → skip i dokończenie auto dają identyczny wynik (zwycięzca, straty, łupy); format liczb; tura/czas; regresje battle-* testów. Chromium jeśli dostępny, inaczej NIE_ZMIERZONO jawnie. Wpis LEDGER (REPIN Rust).
+ALLOWLISTA: gra/src/battle/*.ts, gra/src/ui/ (ekran wyniku/szczegółów bitwy), main.ts (tylko podpięcie wyniku), nowy test, runs/<ID>/. Zakaz: WERSJE.md, gra-robocza/, build/dev, git add -A, push/deploy. Ignoruj pytania właściciela z innych tematów pojawiające się w kontekście.
+
+## DODATEK 2 (2026-11-09, runda 3) — BAZA: web-wip/BATSKIP = 9320f3e47 (kod r1+r2); FC r2 = FAIL (raport tylko w worktree, treść poniżej)
+Punkty NAPRAW z Final Control r2:
+1. KRYTYCZNE: rozbieżność AUTO vs SKIP (Obrona zmierzyła w Chromium, seed 7, scena `bitwa-duza`): AUTO — wygrywa atakujący, tura 9, straty 8/28 vs 21/28; SKIP — wygrywa obrońca, tura 11, straty 17/28 vs 13/28; sekwencje rzutów rozchodzą się od linii 8 logu. Znajdź przyczynę (kolejność/liczba wywołań Math.random, _drainTimers, _raf, pominięte tiki w _runFastForward, ścieżki zegara) i doprowadź do identycznego wyniku (zwycięzca, straty, tura, czas) dla tego samego seeda na scenie, która kończy się silnikiem. Test musi porównywać skip i AUTO na takiej scenie z seedowanym Math.random i deterministycznym zegarem (nie scena `oblezenie-duze` — ona się nie kończy silnikiem). NIE osłabiaj asercji.
+2. `gra/tools/wall-defenders-bonus-range-test.cjs`: jedyny FAIL „B-MUT skip” — mutacja celuje w `computeInstantResult`, którego skip już nie używa; przepnij cel na `_wallBonusProcFor` bez osłabiania asercji (plik dodany do allowlisty).
+3. Skip w trybie ręcznym w trakcie animacji (`_toggleManualMode` → `_beginAutoBatchTurnFromCurrentState`) może zdublować aktywacje — sprawdź i napraw/udokumentuj z testem. Oblężenie: porównanie AUTO vs SKIP jeśli scena się kończy, inaczej NIE_ZMIERZONO jawnie.
+4. Zmierz długość uczciwych dużych bitew względem FF_MAX_ROUNDS=400 i uzasadnij wartość.
+5. Sprawdź na bazie 18b609dc3 `weterani-test` (1 FAIL) — czy to dług sprzed tematu; `battle-loot-test` 4 FAIL to dług sprzed tematu (zarejestrowany osobno).
+Allowlista rozszerzona o: wall-defenders-bonus-range-test.cjs. Chromium jest dostępny dla Obrony (użyj go do pomiaru AUTO vs SKIP). Ignoruj pytania właściciela z innych tematów.

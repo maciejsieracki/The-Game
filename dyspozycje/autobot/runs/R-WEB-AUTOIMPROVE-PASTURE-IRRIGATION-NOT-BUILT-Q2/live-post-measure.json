@@ -1,0 +1,1839 @@
+{
+  "tag": "post",
+  "seed": 18,
+  "cities": 26,
+  "pool": 3000,
+  "unlock": "none",
+  "map": "Malenki",
+  "turns": [
+    {
+      "turn": 2,
+      "cities": 26,
+      "praca": 2628,
+      "worked": 241,
+      "farm": 35,
+      "pasture": 0,
+      "irrig": 0,
+      "farmsRiver": 35,
+      "pastureOnFarmsRiver": 0,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "15,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "14,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "12,37",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "14,41",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [],
+      "reasons": {},
+      "decisions": 7567,
+      "ok": true
+    },
+    {
+      "turn": 3,
+      "cities": 26,
+      "praca": 2406,
+      "worked": 241,
+      "farm": 35,
+      "pasture": 0,
+      "irrig": 0,
+      "farmsRiver": 35,
+      "pastureOnFarmsRiver": 0,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "17,41",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "warzelnia_soli"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "15,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "14,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "12,37",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city20",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 45,
+            "prog": 3,
+            "pracaLeft": 9.600000000000001,
+            "globalSpent": 0,
+            "effectiveCityCap": 9.5,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,12",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,13",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 180,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "miasto|||bramki wycinki": 6,
+        "las||odrzucony|wycinka juz zaplanowana/w toku": 6,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 8304,
+      "ok": true
+    },
+    {
+      "turn": 4,
+      "cities": 26,
+      "praca": 2758.5,
+      "worked": 241,
+      "farm": 62,
+      "pasture": 0,
+      "irrig": 0,
+      "farmsRiver": 62,
+      "pastureOnFarmsRiver": 0,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "17,41",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "warzelnia_soli"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "15,33",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "14,34",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "12,37",
+          "city": "city0",
+          "layers": [
+            "farma"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city20",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 45,
+            "prog": 3,
+            "pracaLeft": 14.000000000000002,
+            "globalSpent": 0,
+            "effectiveCityCap": 14,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,12",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,13",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 180,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "miasto|||bramki wycinki": 6,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 16153,
+      "ok": true
+    },
+    {
+      "turn": 5,
+      "cities": 26,
+      "praca": 2441,
+      "worked": 242,
+      "farm": 113,
+      "pasture": 7,
+      "irrig": 0,
+      "farmsRiver": 113,
+      "pastureOnFarmsRiver": 7,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "18,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "19,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,34",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "15,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "14,34",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city20",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 45,
+            "prog": 3,
+            "pracaLeft": 18.400000000000002,
+            "globalSpent": 0,
+            "effectiveCityCap": 18,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,12",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,13",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 3462,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "miasto|||bramki wycinki": 58,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 15033,
+      "ok": true
+    },
+    {
+      "turn": 6,
+      "cities": 26,
+      "praca": 2483,
+      "worked": 245,
+      "farm": 118,
+      "pasture": 56,
+      "irrig": 0,
+      "farmsRiver": 118,
+      "pastureOnFarmsRiver": 55,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "17,41",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "warzelnia_soli",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "18,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "19,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "20,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "21,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city20",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 45,
+            "prog": 3,
+            "pracaLeft": 22.800000000000004,
+            "globalSpent": 0,
+            "effectiveCityCap": 22,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,12",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,13",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 3566,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "miasto|||bramki wycinki": 58,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 15449,
+      "ok": true
+    },
+    {
+      "turn": 7,
+      "cities": 26,
+      "praca": 2655,
+      "worked": 247,
+      "farm": 120,
+      "pasture": 106,
+      "irrig": 0,
+      "farmsRiver": 120,
+      "pastureOnFarmsRiver": 101,
+      "irrigRiver": 0,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "17,41",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "warzelnia_soli",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "18,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "19,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "20,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "21,31",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,33",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city20",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 45,
+            "prog": 3,
+            "pracaLeft": 27.200000000000003,
+            "globalSpent": 0,
+            "effectiveCityCap": 27,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,12",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city20",
+          "scope": "las",
+          "hex": "53,13",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 3550,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "miasto|||bramki wycinki": 58,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 15068,
+      "ok": true
+    },
+    {
+      "turn": 8,
+      "cities": 26,
+      "praca": 2672,
+      "worked": 250,
+      "farm": 121,
+      "pasture": 129,
+      "irrig": 12,
+      "farmsRiver": 121,
+      "pastureOnFarmsRiver": 121,
+      "irrigRiver": 12,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "21,41",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "23,39",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,39",
+          "city": "city0",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "22,31",
+          "city": "city25",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,38",
+          "city": "city25",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "22,30",
+          "city": "city25",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "zloze_gliny"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city0",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 225,
+            "prog": 3,
+            "pracaLeft": 3452,
+            "globalSpent": 0,
+            "effectiveCityCap": 790,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,33",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,40",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 7016,
+        "miasto|||bramki wycinki": 110,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 68,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 20,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 2
+      },
+      "decisions": 19181,
+      "ok": true
+    },
+    {
+      "turn": 9,
+      "cities": 26,
+      "praca": 2858,
+      "worked": 251,
+      "farm": 121,
+      "pasture": 128,
+      "irrig": 32,
+      "farmsRiver": 121,
+      "pastureOnFarmsRiver": 121,
+      "irrigRiver": 32,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "23,19",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,19",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "25,18",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "22,19",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,18",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "23,20",
+          "city": "city27",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city0",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 225,
+            "prog": 3,
+            "pracaLeft": 4178,
+            "globalSpent": 0,
+            "effectiveCityCap": 1378,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,33",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,40",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 7688,
+        "miasto|||bramki wycinki": 122,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 100,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 30
+      },
+      "decisions": 20933,
+      "ok": true
+    },
+    {
+      "turn": 10,
+      "cities": 26,
+      "praca": 2819,
+      "worked": 251,
+      "farm": 121,
+      "pasture": 128,
+      "irrig": 53,
+      "farmsRiver": 121,
+      "pastureOnFarmsRiver": 121,
+      "irrigRiver": 53,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "28,9",
+          "city": "city30",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "29,11",
+          "city": "city31",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "32,9",
+          "city": "city31",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "36,10",
+          "city": "city32",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "13,11",
+          "city": "city33",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "17,10",
+          "city": "city34",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city0",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 225,
+            "prog": 3,
+            "pracaLeft": 4199,
+            "globalSpent": 0,
+            "effectiveCityCap": 1385,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,33",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,40",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 7500,
+        "miasto|||bramki wycinki": 122,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 100,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 30
+      },
+      "decisions": 20228,
+      "ok": true
+    },
+    {
+      "turn": 11,
+      "cities": 26,
+      "praca": 2793,
+      "worked": 252,
+      "farm": 122,
+      "pasture": 129,
+      "irrig": 70,
+      "farmsRiver": 122,
+      "pastureOnFarmsRiver": 122,
+      "irrigRiver": 70,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "16,14",
+          "city": "city37",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "17,13",
+          "city": "city37",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "18,13",
+          "city": "city37",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "16,13",
+          "city": "city37",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "27,16",
+          "city": "city38",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "25,19",
+          "city": "city38",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "zloze_gliny"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city0",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 225,
+            "prog": 3,
+            "pracaLeft": 4113,
+            "globalSpent": 0,
+            "effectiveCityCap": 1330,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,33",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,40",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 7660,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 220,
+        "miasto|||bramki wycinki": 130,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 44,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 10
+      },
+      "decisions": 21815,
+      "ok": true
+    },
+    {
+      "turn": 12,
+      "cities": 26,
+      "praca": 2791,
+      "worked": 252,
+      "farm": 123,
+      "pasture": 130,
+      "irrig": 89,
+      "farmsRiver": 123,
+      "pastureOnFarmsRiver": 123,
+      "irrigRiver": 89,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "37,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "36,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "36,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "37,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,22",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "23,21",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city0",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 224,
+            "prog": 3,
+            "pracaLeft": 4051,
+            "globalSpent": 0,
+            "effectiveCityCap": 1310,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,33",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city0",
+          "scope": "las",
+          "hex": "10,40",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 9192,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 750,
+        "miasto|||bramki wycinki": 172,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 152,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 12
+      },
+      "decisions": 28698,
+      "ok": true
+    },
+    {
+      "turn": 13,
+      "cities": 26,
+      "praca": 2683,
+      "worked": 254,
+      "farm": 123,
+      "pasture": 130,
+      "irrig": 89,
+      "farmsRiver": 123,
+      "pastureOnFarmsRiver": 123,
+      "irrigRiver": 89,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "37,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "36,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "36,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "37,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,22",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "23,21",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city1",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 30,
+            "prog": 3,
+            "pracaLeft": 37,
+            "globalSpent": 0,
+            "effectiveCityCap": 37,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city1",
+          "scope": "las",
+          "hex": "12,29",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city1",
+          "scope": "las",
+          "hex": "12,32",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 2316,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 820,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 152,
+        "miasto|||bramki wycinki": 68,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 12
+      },
+      "decisions": 15824,
+      "ok": true
+    },
+    {
+      "turn": 14,
+      "cities": 26,
+      "praca": 3227,
+      "worked": 255,
+      "farm": 123,
+      "pasture": 130,
+      "irrig": 89,
+      "farmsRiver": 123,
+      "pastureOnFarmsRiver": 123,
+      "irrigRiver": 89,
+      "farmsOff": 0,
+      "pastureOnFarmsOff": 0,
+      "noneWorkedFlat": 0,
+      "missingSample": [
+        {
+          "k": "37,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "36,21",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "zloze_gliny"
+        },
+        {
+          "k": "36,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "37,22",
+          "city": "city43",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        },
+        {
+          "k": "24,22",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "laka",
+          "nakladka": "brak"
+        },
+        {
+          "k": "23,21",
+          "city": "city44",
+          "layers": [
+            "farma",
+            "bydlo"
+          ],
+          "teren": "rownina",
+          "nakladka": "brak"
+        }
+      ],
+      "sample": [
+        {
+          "cityId": "city1",
+          "scope": "miasto",
+          "reason": "bramki wycinki",
+          "detail": {
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false,
+            "focus": "zrownowazone",
+            "demandActive": true,
+            "citySkipWyrab": false,
+            "wyrabWlaczony": false,
+            "wyrabTylkoPodFarme": true,
+            "riverForestClearingOnly": false,
+            "offRiverClearing": false,
+            "rzekiDoZagospodarowania": false,
+            "lesneMinSpelnione": true,
+            "wolnoKarczowacPozaRzeka": true,
+            "forestLeftInRadius": 29,
+            "prog": 3,
+            "pracaLeft": 43,
+            "globalSpent": 0,
+            "effectiveCityCap": 43,
+            "foodWorkedFilter": true,
+            "techOk": true,
+            "civOk": true,
+            "kosztWyrab": 2.5,
+            "rekonstrukcja": true
+          }
+        },
+        {
+          "cityId": "city1",
+          "scope": "las",
+          "hex": "12,29",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        },
+        {
+          "cityId": "city1",
+          "scope": "las",
+          "hex": "12,32",
+          "verdict": "odrzucony",
+          "reason": "wycinka poza priorytetami tego przebiegu (etap bez wyrab)",
+          "detail": {
+            "naRzece": true,
+            "rezerwaZywnosc": true,
+            "kosztWyrab": 2.5,
+            "etap": "priorytety=[irygacja,tarasy]",
+            "sonda": false
+          }
+        }
+      ],
+      "reasons": {
+        "las||odrzucony|wycinka poza priorytetami tego przebiegu (etap bez wyrab)": 2450,
+        "las||odrzucony|limit wycinek rzecznych bez obywatela na miasto (RIVER_CLEAR_NO_CITIZEN_MAX_PER_CITY) albo teren/profil poza wyjatkiem": 590,
+        "las||odrzucony|kandydat E2 odpada: teren nie jest baza pod farme (Laka/Rownina) — wycinka tylko pod farme": 104,
+        "miasto|||bramki wycinki": 66,
+        "las||odrzucony|kandydat odpada: heks bez obywatela (zywnosc tylko przy obywatelach)": 12,
+        "las||odrzucony|wycinka juz zaplanowana/w toku": 4
+      },
+      "decisions": 16440,
+      "ok": true
+    }
+  ],
+  "start": {
+    "seedSeen": 18,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=18 typ=kontynenty rywale=4 typy=5",
+    "genMs": 12824
+  },
+  "setup": {
+    "founded": 26,
+    "policy": {
+      "focus": "zrownowazone",
+      "tryb": "auto",
+      "pracaAutoPercent": 33
+    }
+  },
+  "pctDistribution": {
+    "cities": 26,
+    "dist": {
+      "empire": 26
+    },
+    "empirePolicyKeys": null,
+    "empirePolicy0": null
+  },
+  "pageErrors": []
+}

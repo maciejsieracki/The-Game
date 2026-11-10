@@ -1,0 +1,18 @@
+ab_glyph-0.2.32 | rv= | forbid=0 | unsafe_lines=0 | src_loc=1931 | deps: ab_glyph_rasterizer libm owned_ttf_parser
+ab_glyph_rasterizer-0.1.10 | rv= | forbid=0 | unsafe_lines=5 | src_loc=555 | deps: libm
+cosmic-text-0.19.0 | rv=1.89 | forbid=0 | unsafe_lines=1 | src_loc=11805 | deps: bitflags core_maths cosmic_undo_2 fontdb harfrust hashbrown libm linebender_resource_handle log modit rangemap rustc-hash self_cell skrifa smol_str swash syntect sys-locale unicode-bidi unicode-linebreak unicode-script unicode-segmentation
+fontdb-0.24.0 | rv=1.71 | forbid=0 | unsafe_lines=6 | src_loc=2857 | deps: log memmap2 slotmap tinyvec
+fontdue-0.9.5 | rv= | forbid=0 | unsafe_lines=30 | src_loc=5060 | deps: hashbrown rayon ttf-parser
+harfrust-0.15.0 | rv=1.85 | forbid=1 | unsafe_lines=27 | src_loc=42204 | deps: bitflags bytemuck core_maths icu_normalizer icu_properties read-fonts smallvec spin yoke
+jpeg-decoder-0.3.2 | rv=1.61.0 | forbid=1 | unsafe_lines=16 | src_loc=5400 | deps: rayon
+resvg-0.48.1 | rv=1.85.0 | forbid=1 | unsafe_lines=0 | src_loc=4614 | deps: bytemuck gif image-webp log pico-args rgb svgtypes tiny-skia usvg zune-jpeg
+rustybuzz-0.20.1 | rv= | forbid=0 | unsafe_lines=25 | src_loc=29264 | deps: bitflags bytemuck core_maths log smallvec ttf-parser unicode-bidi-mirroring unicode-ccc unicode-properties unicode-script wasmi
+skrifa-0.49.0 | rv=1.85 | forbid=1 | unsafe_lines=0 | src_loc=41381 | deps: bytemuck core_maths once_cell read-fonts smallvec yoke
+swash-0.2.10 | rv= | forbid=0 | unsafe_lines=54 | src_loc=26528 | deps: core_maths skrifa yazi zeno
+tiny-skia-0.12.0 | rv= | forbid=0 | unsafe_lines=152 | src_loc=15466 | deps: arrayref arrayvec bytemuck cfg-if log png tiny-skia-path
+tiny-skia-path-0.12.0 | rv= | forbid=0 | unsafe_lines=3 | src_loc=7082 | deps: arrayref bytemuck libm strict-num
+ttf-parser-0.25.1 | rv=1.63.0 | forbid=1 | unsafe_lines=3 | src_loc=23196 | deps: core_maths
+usvg-0.48.1 | rv=1.85.0 | forbid=1 | unsafe_lines=0 | src_loc=19373 | deps: base64 data-url flate2 fontdb harfrust imagesize kurbo log pico-args roxmltree simplecss siphasher skrifa strict-num svgtypes tiny-skia-path unicode-bidi unicode-script unicode-vo xmlwriter
+vello-0.11.0 | rv=1.89 | forbid=0 | unsafe_lines=1 | src_loc=5482 | deps: bytemuck futures-intrusive log peniko png skrifa static_assertions thiserror vello_encoding vello_shaders wgpu wgpu-profiler
+vello_cpu-0.3.0 | rv=1.89 | forbid=1 | unsafe_lines=0 | src_loc=13954 | deps: bytemuck crossbeam-channel glifo hashbrown ordered-channel png rayon thread_local vello_common
+zune-jpeg-0.5.16-rc3 | rv=1.77.1 | forbid=1 | unsafe_lines=89 | src_loc=15999 | deps: zune-core

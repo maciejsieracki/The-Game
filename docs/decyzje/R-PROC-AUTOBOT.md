@@ -481,6 +481,10 @@ High/Medium") odnoszą się do innego narzędzia wykonawczego pracującego nad
 tym samym repozytorium i nie są tu nadpisywane. Pełny opis integracji z
 narzędziem orkiestracji: `AUTOBOT-UNIVERSAL.md` §11.
 
+**Uzupełnienie dla `R-RUSTPORT-*` — tematy graficzne/renderowe (właściciel, 2026-10-21):** wszędzie, gdzie wchodzą rendery, modele 3D i grafika
+(renderer w Rust, katalog i port modeli, UI wizualne), Operator, Evaluator i Final Control → **Opus 5.5, effort Medium** (`claude-opus-5-5`). Pozostałe tematy rust-port
+(dane, ID, testy, CI, loader) zostają na Haiku 5.5/Sonnet 5.5 jak wyżej. Orkiestrator klasyfikuje temat w dyspozycji (linia `MODEL+EFFORT`).
+
 **Wyjątek graficzny/wizualny (Maciej, 2026-08-22).** Dla tematów, których
 istotą jest wygląd/UX (CSS, layout, ikony, pozycjonowanie tooltipów, zgodność
 z makietą designera — nie logika/dane/ekonomia): **Operator I Evaluator →
@@ -502,6 +506,20 @@ obowiązywać jednocześnie, dla różnych zakresów kodu). Orkiestrator klasyfi
 każdy temat jawnie w dyspozycji (graficzny → Opus 5 obie role; logika/dane →
 Sonnet 5 baza) i zapisuje tę klasyfikację w raporcie/rejestrze, tak jak inne
 decyzje model+effort per rola.
+
+**Wyjątek: inicjatywa portu Rust/Tauri (`dyspozycje/rust-port/**`, potwierdzone
+przez właściciela, patrz `GOAL-RUST-PORT-20261020.md` „Decyzje przyjęte" poz. 3,
+oraz ustnie 2026-10-21).** Dla WSZYSTKICH tematów AutoBot w ramach tej inicjatywy
+(ID zaczynające się `R-RUSTPORT-*`), niezależnie od fazy P0-P11: Operator →
+**Haiku 5.5, effort Medium**; Evaluator → **Haiku 5.5, effort Medium** (nie High —
+odstępstwo od reguły bazowej, bo wolumen tematów w tej inicjatywie jest duży, a
+praca w większości mechaniczna: wiring, dane 1:1, assety, newtype); Final Control →
+**Sonnet 5.5, effort Medium**, wykonywany przez OSOBNEGO subagenta jak w regule
+bazowej. Ten wyjątek NIE dotyczy żadnej innej inicjatywy w tym repo — tam nadal
+obowiązuje reguła bazowa (Sonnet 5 Medium/High) powyżej. Jeśli Operator/Evaluator
+tematu `R-RUSTPORT-*` napotka w swoim prompcie lub w tym pliku pozorną sprzeczność
+model+effort — ROZSTRZYGA ten akapit, nie reguła bazowa wyżej; nie jest to pytanie
+wymagające decyzji właściciela (już rozstrzygnięte), tylko kontynuuj zadanie.
 
 ## 6. Bramki
 
@@ -962,3 +980,33 @@ FALA 307 → 306 wykonany improwizacją pod presją, bez wcześniej przećwiczon
 
 Historyczne routingi, dawne modele i snapshoty zachowano w
 [`docs/archiwum-procesu/`](../archiwum-procesu/); nie są aktywną instrukcją.
+
+## §5b — Aktualna polityka modeli (właściciel, 2026-10-25; nadrzędna wobec §5a i wcześniejszych)
+
+Wszystkie tematy (web i port Rust): **Operator i Obrona → Haiku 5.5 medium; Evaluator → Sonnet 5.5 medium; Final Control → Sonnet 5.5 medium** (Haiku za słaby na Final Control). **Opus 5.5 medium wyłącznie dla jednostek i obiektów 3D** (modele, bitwa 3D, renderer 3D). Model ustawia pole `model` w wywołaniu `agent()`; opis `description` skryptu Workflow musi to odzwierciedlać (nie kopiować starego „Opus 5.5”).
+
+## §5c — Sprzątanie po zakończeniu workflow (właściciel, 2026-10-25; obowiązkowe)
+
+Po KAŻDYM zakończonym Workflow oraz po każdym `git push`/publikacji na ROBOCZĄ orkiestrator od razu: (1) upewnia się, że wynik jest zabezpieczony (commit na zdalnym albo `refs/keep/*`), (2) usuwa kopie robocze zakończonych workflow (`git worktree remove --force .claude/worktrees/wf_<id>-*` + `git worktree prune`), (3) czyści katalogi tymczasowe w scratchpadzie (buildy `dist-*`, klony baz, logi) i `/tmp` po własnych przebiegach, (4) NIE rusza kopii robocznych workflowów wciąż trwających. Powód: dysk (~25 GB) zapełniał się (ENOSPC) i przewracał kolejne workflowy. Sprawdzenie `df -h /` przed startem każdego nowego workflow; poniżej ~5 GB wolnego — najpierw sprzątanie.
+
+
+## §5d — Ścieżka poprawki w 11 etapach i raportowanie postępu (właściciel, 2026-10-29; obowiązkowe)
+
+Dotyczy poprawek i zmian w wersji webowej oraz — tam, gdzie ma to zastosowanie — w porcie Rust/Tauri.
+
+**Ścieżka każdej poprawki (numeracja stała, 1–11):**
+1. Operator — osobny temat, sprawdza wcześniejsze zgłoszenia i kod.
+2. Rozpoznanie — odtwarza błąd i ustala przyczynę.
+3. Rejestracja — zapis tematu, kryteriów naprawy i planu testów.
+4. Implementacja — operator wprowadza zmianę.
+5. Testy operatora — regresja oraz odpowiednie testy gry/interfejsu.
+6. Evaluator — niezależnie sprawdza poprawkę, testy i ryzyko pominiętych przypadków.
+7. Obrona operatora — operator odpowiada na uwagi Evaluatora i przedstawia dowody, że zmiana spełnia kryteria. Etap warunkowy: gdy Evaluator nie zgłosi zarzutów, przechodzi się z 6 do 8. Gdy obrona nie przejdzie, poprawka wraca do operatora.
+8. Final Control — kontrola zatwierdzonego zakresu i kompletu wyników.
+9. Scalenie do `main`.
+10. Deploy do Roboczej.
+11. Kontrola po wdrożeniu — sprawdzenie wydania w Roboczej i zapis wyniku.
+
+Wynik Evaluatora (nawet z adnotacjami) nie zalicza całego procesu: potrzebna jest też obrona (gdy były zarzuty), potem Final Control. Starsze wdrożenia Roboczej są osobnymi wydaniami i nie zaliczają etapów 9–11 dla nowych poprawek.
+
+**Zasada raportowania:** gdy właściciel pyta o postępy / etap danej zmiany lub poprawki błędu, orkiestrator podaje dla KAŻDEGO tematu **numer aktualnego etapu (1–11)** z tej ścieżki, jego nazwę i jednozdaniowy powód (co zrobione, czego brakuje). Tematy odłożone przed etapem 1 oznacza jako „odłożone przed etapem 1”.

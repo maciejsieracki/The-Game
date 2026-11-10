@@ -1,0 +1,11 @@
+PASS: Maleński minLen (16) < Standard (25)
+PASS: Maleński minLen (16) <= floor(52*0.35)=18
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=36 terrain=56 landSea=1896 relief=1189 coast=793 riversMain=17634 riversFill=26725 forest=143 deposits=136 starts=378 total=48986
+PASS: Maleński: 0 głównych bez ujścia (0)
+PASS: Maleński: dopływy > 0 (9)
+PASS: Maleński: główne > 0 (35)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+
+EXIT=124
+TIME=150.2
