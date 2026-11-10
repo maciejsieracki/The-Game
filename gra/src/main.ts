@@ -14769,6 +14769,39 @@ async function boot(): Promise<void> {
       }
       const srcQ = active.q;
       const srcR = active.r;
+      const splitNeighborDirections = [
+        { dq: 1, dr: 0, direction: 'E' as const },
+        { dq: 1, dr: -1, direction: 'NE' as const },
+        { dq: 0, dr: -1, direction: 'NW' as const },
+        { dq: -1, dr: 0, direction: 'W' as const },
+        { dq: -1, dr: 1, direction: 'SW' as const },
+        { dq: 0, dr: 1, direction: 'SE' as const },
+      ];
+      const splitNeighbors = splitNeighborDirections.map(({ dq, dr, direction }) => {
+        const q = srcQ + dq;
+        const r = srcR + dr;
+        const hex = map.hexes[keyOf(q, r)];
+        const target = dests.find(d => d.q === q && d.r === r);
+        const visible = hex?.widocznosc?.[String(active.ownerId)] !== 'nieodkryty';
+        const terrainNames: Record<string, string> = {
+          laka: 'Łąka', rownina: 'Równina', wzgorza: 'Wzgórza', gory: 'Góry',
+          pustynia: 'Pustynia', polarny: 'Śnieg', plytkie_morze: 'Płytkie morze', morze: 'Morze',
+        };
+        let reason = '';
+        if (!hex) reason = 'Poza mapą';
+        else if (!isHexPassableForUnit(q, r)) reason = 'Teren nieprzejezdny';
+        else if (units.some(u => u.q === q && u.r === r && u.inGarnizon !== true)) reason = 'Heks zajęty';
+        else if (stackFreeSlots(units, active.ownerId, q, r, armyStackLimit()) < 1) reason = 'Limit stosu osiągnięty';
+        const terrain = !hex ? 'Poza mapą' : !visible ? 'Nieodkryty heks' : (terrainNames[String(hex.terenBazowy)] ?? String(hex.terenBazowy));
+        const overlay = visible && hex?.nakladka && String(hex.nakladka) !== 'brak'
+          ? String(hex.nakladka).replace(/_/g, ' ') : '';
+        return {
+          q, r, direction, terrain,
+          detail: visible ? overlay : '',
+          available: !!target && !reason,
+          reason: reason || (!target ? 'Cel niedostępny' : undefined),
+        };
+      });
       showArmySplitPanel({
         hexLabel: '(' + srcQ + ',' + srcR + ')',
         units: stack.map(mergeUnitRow),
@@ -14777,6 +14810,7 @@ async function boot(): Promise<void> {
           r: d.r,
           label: d.label ?? '(' + d.q + ',' + d.r + ')',
         })),
+        neighbors: splitNeighbors,
         onSplit: (ids, destQ, destR) => {
           const splitArrivals = ids
             .map(id => units.find(x => x.id === id))

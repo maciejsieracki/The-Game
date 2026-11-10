@@ -1,0 +1,20 @@
+# 10-operator — R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1
+
+STATUS: Operator complete; ready for independent Evaluator.
+
+ROUTING: OperatorLunaHigh, `gpt-6-luna`, `high`. No delegated role used.
+
+BASE / WORKTREE: Repo `/workspace/main-integration-20261029`, branch `main`; initial task readback: `HEAD=origin/main=4bd9b522aae2a2ed0c770965f5eeaacc7d6eeb8d`. Parallel unrelated integrations later advanced the shared tree; final browser evidence readback is recorded in `evidence/readback.md`. Shared worktree has unrelated pre-existing edits in language audit, unit data/adapter, and other measurement files; those were left untouched. No commit, deploy, or push.
+
+DIAGNOSIS: `armySplitPanel.ts` received only `findSplitDestHexes` results. That list contains legal targets and does not describe the six physical directions or blocked/edge neighbors, so a graphical picker could not be drawn from its existing input. The call site already has the map, movement passability, unit occupancy, and stack limit data.
+
+CHANGES: `gra/src/ui/armySplitPanel.ts` now renders a seven-cell hex diagram: current source stack in the center, six axial neighbors in map direction order, clickable valid destinations, disabled destinations with a reason, terrain/overlay and reasons, without visible coordinates in graphical mode, selected styling, and keyboard-focusable buttons with full Polish direction names in accessible labels. The same-city source target remains a selectable center button. `gra/src/main.ts` supplies the six neighbor records from the existing map and legality checks; the `onSplit` callback and gameplay rules are unchanged. Added focused real Chromium coverage at `gra/tools/army-split-graphical-hex-picker-test.cjs`.
+
+TESTS: `node gra/tools/army-split-graphical-hex-picker-test.cjs --shots dyspozycje/autobot/runs/R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1/evidence` — initial graphical iteration: 13/13 PASS on `/usr/bin/chromium`; superseded after root visual review by the correction recorded in `21-operator-response.md` (final run: 14/14 PASS): six coordinate mappings, source-city choice, disabled terrain reason, selected units callback, 150%-equivalent and narrow viewport fit, and keyboard focus. Normal and 150%-equivalent screenshots plus hashes are in `evidence/readback.md`. `node gra/tools/army-split-movement-test.cjs` — 4/4 PASS. `node gra/tools/army-merge-split-direction-icons-test.cjs` — PASS. `git diff --check` — PASS. `npm run typecheck -- --pretty false` — PASS at final readback (exit 0). An earlier run during parallel unrelated work reported two errors in the already-dirty `gra/src/ui/entityCards/unitAdapter.ts` at lines 119 and 128; the successful final run occurred after that separate work changed the shared tree. This task did not edit `unitAdapter.ts`. Existing `army-split-panel-scroll-grid-test.cjs --post-only`, run through a temporary Playwright launch shim to use system Chromium — 15 PASS, 0 FAIL. The first launch without the shim failed before browser startup because the Playwright cached Chromium binary is absent.
+
+ALLOWLIST AMENDMENT TIMING: The dispatch file records the minimal `main.ts` adapter extension after the first adapter edit; it is not backdated. The root operator task authorized extending the adapter data scope if required, and the reason/specific hunk are now explicit in `00-dispatch.md` and here.
+
+SCOPE READBACK: Product edits are `gra/src/ui/armySplitPanel.ts`, the minimal adapter addition in `gra/src/main.ts`, and the focused test above; this report is in the run directory. No changes to movement/split rules or other dirty files.
+
+
+FOLLOW-UP: The first iteration visibly included `(q,r)` labels inside the graphical cells and source. Root visual review identified this conflict with the graphical picker goal. The correction and final 14/14 browser run are recorded in `21-operator-response.md`; corrected screenshots and hashes are in `evidence/readback.md`. The initial captures remain only as explicitly named historical r1 evidence.

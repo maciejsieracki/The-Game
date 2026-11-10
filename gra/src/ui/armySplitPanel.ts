@@ -15,10 +15,22 @@ export interface SplitDestOption {
   label: string;
 }
 
+export interface SplitNeighborOption {
+  q: number;
+  r: number;
+  direction: 'E' | 'NE' | 'NW' | 'W' | 'SW' | 'SE';
+  terrain: string;
+  detail?: string;
+  available: boolean;
+  reason?: string;
+}
+
 export interface ArmySplitPanelOpts {
   hexLabel: string;
   units: ArmyMergeUnitRow[];
   destHexes: SplitDestOption[];
+  /** Six physical neighbors in the same axial directions used by the map. */
+  neighbors?: SplitNeighborOption[];
   onSplit: (unitIds: string[], destQ: number, destR: number) => void;
   onCancel: () => void;
 }
@@ -80,6 +92,23 @@ function ensureStyles(): void {
 .civ-asp-status{font-size:11px;color:var(--sub);margin:0 0 14px;min-height:15px;}
 .civ-asp-status.warn{color:var(--warn);font-weight:700;}
 .civ-asp-dests{display:flex;flex-wrap:wrap;gap:6px;}
+.civ-asp-map{position:relative;width:min(100%,340px);aspect-ratio:340/224;margin:0 auto 12px;}
+.civ-asp-cell{position:absolute;width:29.4%;height:38.4%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;padding:7px 5px;text-align:center;clip-path:polygon(25% 3%,75% 3%,99% 50%,75% 97%,25% 97%,1% 50%);
+  border:0;background:rgba(255,255,255,.08);color:var(--text);font:inherit;cursor:pointer;}
+.civ-asp-cell:before{content:"";position:absolute;inset:3px;background:rgba(13,18,27,.96);clip-path:polygon(25% 3%,75% 3%,99% 50%,75% 97%,25% 97%,1% 50%);z-index:-1;}
+.civ-asp-cell b,.civ-asp-cell small,.civ-asp-cell span{position:relative;pointer-events:none;}
+.civ-asp-cell b{font-size:10px;letter-spacing:.05em;color:var(--gold);}
+.civ-asp-cell small{font-size:9px;color:var(--sub);line-height:1.1;}
+.civ-asp-cell span{font-size:11px;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.civ-asp-cell.center{left:35.3%;top:30.8%;z-index:2;border:1px solid rgba(232,216,138,.5);background:rgba(232,216,138,.2);cursor:default;}
+.civ-asp-cell.center[data-dq]{cursor:pointer;}
+.civ-asp-cell.E{left:67.1%;top:30.8%}.civ-asp-cell.NE{left:51.2%;top:3.6%}.civ-asp-cell.NW{left:19.4%;top:3.6%}
+.civ-asp-cell.W{left:3.5%;top:30.8%}.civ-asp-cell.SW{left:19.4%;top:58%}.civ-asp-cell.SE{left:51.2%;top:58%}
+.civ-asp-cell.on{background:rgba(232,216,138,.44);color:var(--gold);outline:2px solid var(--gold);}
+.civ-asp-cell:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.8);}
+.civ-asp-cell:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}
+.civ-asp.graphical .civ-asp-dests{display:none;}
 .civ-asp-dest{font:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:7px 12px;border-radius:var(--tg-radius-btn,8px);
   border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);color:var(--sub);}
 .civ-asp-dest:hover{border-color:rgba(232,216,138,0.45);}
@@ -150,7 +179,7 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
   });
 
   const box = document.createElement('div');
-  box.className = 'civ-asp';
+  box.className = 'civ-asp' + (opts.neighbors?.length ? ' graphical' : '');
   box.setAttribute('role', 'dialog');
   box.setAttribute('aria-modal', 'true');
   box.setAttribute('aria-label', 'Rozdziel armię');
@@ -171,18 +200,46 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
     dHtml += '<button type="button" class="civ-asp-dest" data-dq="' + d.q + '" data-dr="' + d.r + '">'
       + esc(d.label) + '</button>';
   }
+  const directionOrder: SplitNeighborOption['direction'][] = ['E', 'NE', 'NW', 'W', 'SW', 'SE'];
+  const directionNames: Record<SplitNeighborOption['direction'], string> = {
+    E: 'wschód', NE: 'północny wschód', NW: 'północny zachód', W: 'zachód', SW: 'południowy zachód', SE: 'południowy wschód',
+  };
+  const neighborByDirection = new Map((opts.neighbors ?? []).map(n => [n.direction, n]));
+  const cellFor = (direction: SplitNeighborOption['direction']): string => {
+    const n = neighborByDirection.get(direction);
+    if (!n) return '<button type="button" class="civ-asp-cell ' + direction + '" disabled aria-label="' + direction + ': brak danych sąsiada"><b>' + direction + '</b><small>Brak danych</small></button>';
+    const target = opts.destHexes.find(d => d.q === n.q && d.r === n.r);
+    const disabled = !n.available || !target;
+    const reason = n.reason || (!target ? 'Cel niedostępny' : '');
+    const aria = directionNames[direction] + ' (' + direction + '), ' + n.terrain + (n.detail ? ', ' + n.detail : '')
+      + (disabled ? ', niedostępne: ' + reason : ', dostępne');
+    const detailHtml = n.detail || (disabled ? reason : '');
+    return '<button type="button" class="civ-asp-cell ' + direction + '" data-dq="' + n.q + '" data-dr="' + n.r + '"'
+      + (disabled ? ' disabled title="' + esc(reason) + '"' : ' title="' + esc(aria) + '"')
+      + ' aria-label="' + esc(aria) + '" aria-pressed="false"><b>' + direction + '</b><span>' + esc(n.terrain) + '</span>'
+      + (detailHtml ? '<small>' + esc(detailHtml) + '</small>' : '') + '</button>';
+  };
+  const cityDest = opts.neighbors?.length ? opts.destHexes.find(d => d.label?.includes('mieście')) : undefined;
+  const centerTag = cityDest ? 'button type="button" data-dq="' + cityDest.q + '" data-dr="' + cityDest.r + '" aria-label="'
+    + esc(cityDest.label) + '" aria-pressed="false"' : 'div';
+  const centerHtml = '<' + centerTag + ' class="civ-asp-cell center' + (cityDest ? '' : ' source') + '"><b>ARMIA</b>'
+    + '<small>' + opts.units.length + ' jedn.</small>' + (cityDest ? '<small>Miasto</small>' : '') + '</' + (cityDest ? 'button' : 'div') + '>';
+  const mapHtml = '<div class="civ-asp-map" role="group" aria-label="Sąsiednie heksy wokół źródła">'
+    + centerHtml + directionOrder.map(cellFor).join('') + '</div>';
   // Budowane RAZ: zmiana zaznaczenia aktualizuje tylko klasy/atrybuty (scrollTop listy zostaje).
   box.innerHTML =
     '<div class="civ-asp-hdr">'
       + '<div class="civ-asp-orn"><i></i><i class="r"></i></div>'
       + '<div class="civ-asp-title">Rozdziel armię</div>'
-      + '<div class="civ-asp-sub">Heks ' + esc(opts.hexLabel) + '</div>'
+      + '<div class="civ-asp-sub">' + (opts.neighbors?.length
+        ? 'Wybierz jednostki i sąsiedni heks' : 'Heks ' + esc(opts.hexLabel)) + '</div>'
     + '</div>'
     + '<div class="civ-asp-body">'
       + '<div class="civ-asp-lbl">Wybierz jednostki do odłączenia</div>'
       + '<div class="civ-asp-units" role="group" aria-label="Jednostki do odłączenia">' + uHtml + '</div>'
       + '<div class="civ-asp-status" role="status" aria-live="polite" data-status></div>'
       + '<div class="civ-asp-lbl">Docelowy heks</div>'
+      + mapHtml
       + '<div class="civ-asp-dests" role="group" aria-label="Docelowy heks">' + dHtml + '</div>'
       + '<div class="civ-asp-hint">Na heksie Źródłowym musi zostać co najmniej 1 jednostka.'
       + (opts.destHexes.some(d => d.label?.includes('mieście'))
