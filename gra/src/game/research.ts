@@ -18,7 +18,8 @@
  *      as the raw display strings, matching the A4 interface (string[] / string).
  *   2. Prerequisites live in the "Wymaga (prereq)" column.  Observed formats:
  *        "-" or em-dash        -> no prerequisite
- *        "Garncarstwo"         -> single prereq
+ *        "Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt"
+ *                                -> Garncarstwo in current tech.json; all four required
  *        "Kolo + Brazownictwo" -> conjunction; ALL parts required
  *      We split on "+" and trim.  An em-dash / hyphen / empty value means none.
  *   3. techCost: use the "Koszt nauki" field when present; otherwise fall back
