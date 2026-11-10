@@ -30,3 +30,5 @@ Najnowsze polecenie właściciela obejmuje całą listę, także wcześniej odł
 Zamkniętego testu przejmowania cudów nie wliczać do otwartych:11/11 receipt90-push-readback.md. Inne zakończone źródła w STAN-ZADAN, bez otwierania ich ponownie.
 
 Nowe zgłoszenie: R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1 — Z przodu/Z boku/Z tyłu; domyślnie skrzydła; sprawdzić rzeczywiste działanie. Operator start po read-only diagnozieAI, która czeka na decyzje N/ratio. Rekrutacja i scienceETA ukończyły Operatora, kierowane do Evaluatorów.
+
+PILNE: R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — właściciel40/40/40odwejściawkażdąepokę, tylkowoji. Koniecpoprzedniejwarera zwalnianastępną; ordinarywarsnieblokują. Konnica jawniepauzowana dla limitu4tematów.

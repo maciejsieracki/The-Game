@@ -9573,3 +9573,7 @@ STATUS: ZAREJESTROWANE. GOAL: ilości0 i dwa globalne przyciski Rekrutuj wszystk
 
 ## R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1 — 2026-11-10
 STATUS: ZAREJESTROWANE. GOAL: konnica/rydwany: dodać Zprzodu, domyślnie Zboku; sprawdzić niedziałające faktyczne rozstawienie. Screenshot/czatwłaściciela. Run:autobot/runs/R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1.
+
+
+## R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 — PILNE2026-11-10
+STATUS: ZAREJESTROWANE. Właścicielpotwierdził40tur odwejściawKAŻDĄepokę; braknakładaniawojenepoki, normalwarsbez zmian. Prioritetprzedkonnicą, ta jawniepauzowana w4/11. Dispatchautobot/runs/R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1.
