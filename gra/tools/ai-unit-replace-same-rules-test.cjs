@@ -15,7 +15,7 @@ const bundle = path.resolve(__dirname, '.ai-unit-replace-same-rules-bundle.cjs')
 fs.writeFileSync(entry, `
 export { executeUnitReplace } from '../src/game/unit-replace-execute';
 export { promoteAiUnitForEra } from '../src/game/ai-era-unit-promotion';
-export { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk, AI_UNIT_REPLACE_MAX_FRACTION } from '../src/game/ai-unit-replace-plan';
+export { aiUnitReplaceCap, loadAiUnitReplaceMaxFraction, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk, AI_UNIT_REPLACE_MAX_FRACTION } from '../src/game/ai-unit-replace-plan';
 export { unitReplaceFullCost, canAffordUnitReplace, mergeStockPaid } from '../src/game/unit-replace-cost';
 export { availableReplacementsFor, newestAvailableSameTypeUnit, unitProductionItem, epochNumber } from '../src/game/production';
 export { unitStockCost } from '../src/game/building-stock-cost';
@@ -26,7 +26,8 @@ try {
 } catch (e) { console.error(e.message || e); process.exit(1); }
 const M = require(bundle);
 const units = require('../data/units.json');
-const data = { units, buildings: [] };
+const aiParams = require('../data/ai-params.json');
+const data = { units, buildings: [], aiParams };
 const def = n => units.find(u => u.Jednostka === n);
 let passed = 0; let failed = 0;
 function assert(ok, label) { if (ok) { passed++; console.log('  [OK] ' + label); } else { failed++; console.error('  [FAIL] ' + label); } }
@@ -125,6 +126,9 @@ console.log('\n== E. AI: promoteAiUnitForEra deleguje do wspolnego modulu ==');
 console.log('\n== F. limit zamian na ture i kolejnosc (najstarsze/najslabsze najpierw) ==');
 assert(M.aiUnitReplaceCap(0) === 0 && M.aiUnitReplaceCap(5) === 1 && M.aiUnitReplaceCap(10) === 1 && M.aiUnitReplaceCap(35) === 3 && M.aiUnitReplaceCap(100) === 10, 'cap = max(1, floor(10% armii)): 0->0, 5->1, 35->3, 100->10');
 assert(M.AI_UNIT_REPLACE_MAX_FRACTION <= 0.1, 'parametr udzialu <= 10%');
+assert(M.loadAiUnitReplaceMaxFraction(data) === 0.1 && M.aiUnitReplaceCap(35, M.loadAiUnitReplaceMaxFraction(data)) === 3, 'ai-params.json ustawia dotychczasowe 10% i ten sam cap');
+assert(M.aiUnitReplaceCap(35, M.loadAiUnitReplaceMaxFraction({ aiParams: { ai_zamiana_jednostek_limit_udzial: { wartosc: 0.2 } } })) === 7, 'limit z konfiguracji wplywa na cap');
+assert(M.loadAiUnitReplaceMaxFraction({ aiParams: {} }) === 0.1 && M.loadAiUnitReplaceMaxFraction({ aiParams: { ai_zamiana_jednostek_limit_udzial: { wartosc: '0.2' } } }) === 0.1, 'brak lub niepoprawny limit zachowuje dawny fallback 10%');
 {
   const list = [
     { id: 'a', e: 2, p: 10, b: false }, { id: 'b', e: 1, p: 9, b: false }, { id: 'c', e: 1, p: 4, b: false },
@@ -154,7 +158,7 @@ const ai = slice('function upgradeAiUnitsForEra(', 'function bestGeneralUnitForO
 const perform = slice('function performUnitReplace(', 'function buildPlayerCityListEntries');
 assert(/executeUnitReplace\(u, newTypeId, unitReplaceExecuteDeps\(u\.ownerId, true\)\)/.test(perform), 'gracz: performUnitReplace -> executeUnitReplace (wspolny modul)');
 assert(/unitReplaceExecuteDeps\(ownerId, false\)/.test(ai) && /gateReason: \(unit, newTypeId\) => execDeps\.gateReason/.test(ai) && /execDeps\.moneyCost/.test(ai) && /execDeps\.payStock/.test(ai), 'AI: te same zaleznosci (brama Super, koszt, platnosc) co gracz');
-assert(/aiUnitReplaceCap\(/.test(ai) && /planAiUnitReplaceOrder\(/.test(ai) && /done >= cap/.test(ai), 'AI: limit zamian na ture + kolejnosc najstarsze/najslabsze');
+assert(/aiUnitReplaceCap\(military\.length, loadAiUnitReplaceMaxFraction\(data\)\)/.test(ai) && /planAiUnitReplaceOrder\(/.test(ai) && /done >= cap/.test(ai), 'AI: limit z ai-params.json steruje capem zamian na ture');
 assert(/isPlayerTerritoryHex\(u\.q, u\.r, \[\], territoryNodes, ownerId\)/.test(ai), 'AI: tylko na wlasnym terytorium (jak gracz)');
 assert(/oblegaCityId/.test(ai) && /hostilePositions/.test(ai), 'AI: nie rusza jednostek w oblezeniu ani pod bezposrednim zagrozeniem');
 assert(/aiReplaceKeepsArmyClass/.test(ai), 'AI: zachowanie klasy armii');

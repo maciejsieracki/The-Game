@@ -974,7 +974,7 @@ import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { attemptGeneralPurchase, canRecruitGeneral, canSpawnQueuedGeneral, planGeneralLimitDemotions, shouldAiBuyGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import { executeUnitReplace, type UnitReplaceExecuteDeps } from './game/unit-replace-execute';
-import { aiUnitReplaceCap, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk } from './game/ai-unit-replace-plan';
+import { aiUnitReplaceCap, loadAiUnitReplaceMaxFraction, planAiUnitReplaceOrder, aiReplaceKeepsArmyClass, aiReplaceReserveOk } from './game/ai-unit-replace-plan';
 import {
   unitReplaceFullCost, canAffordUnitReplace, unitReplaceStockMissingLabel, unitReplaceStockText, mergeStockPaid,
 } from './game/unit-replace-cost';
@@ -7362,7 +7362,7 @@ async function boot(): Promise<void> {
         if (hostile && !isCivilianUnit(other)) hostilePositions.push({ q: other.q, r: other.r });
       }
       const military = units.filter(u => u.ownerId === ownerId && !isCivilianUnit(u));
-      const cap = aiUnitReplaceCap(military.length);
+      const cap = aiUnitReplaceCap(military.length, loadAiUnitReplaceMaxFraction(data));
       const order = planAiUnitReplaceOrder(military, u => {
         const def = lookupUnitDef(u.typeId);
         const blocked = u.replaceUsedThisTurn === true

@@ -1,4 +1,9 @@
 {
+  "ai_zamiana_jednostek_limit_udzial": {
+    "wartosc": 0.1,
+    "sekcja": "§9 Armia AI",
+    "opis": "Maksymalny udział wojsk AI, które mogą zostać zamienione w jednej turze (0,1 = 10%)."
+  },
   "trudnosc_poziom1_bonus_produkcja": {
     "wartosc": 0,
     "sekcja": "§7 Trudność Lv1",

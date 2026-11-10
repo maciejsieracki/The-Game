@@ -14,6 +14,16 @@ import { shouldAIPurchaseUnit, type AiPurchaseReserveParams } from './ai';
 /** Maksymalny odsetek armii (jednostek wojskowych właściciela) zamienianych w JEDNEJ turze AI. */
 export const AI_UNIT_REPLACE_MAX_FRACTION = 0.1;
 
+/** Wczytuje limit udziału armii zamienianej w turze; brak/niepoprawny wpis zachowuje dawną wartość. */
+export function loadAiUnitReplaceMaxFraction(
+  data: { aiParams?: Record<string, { wartosc?: unknown } | undefined> },
+): number {
+  const value = data.aiParams?.ai_zamiana_jednostek_limit_udzial?.wartosc;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
+    : AI_UNIT_REPLACE_MAX_FRACTION;
+}
+
 /** Limit udanych zamian w turze: ≤ 10% armii, ale co najmniej 1 gdy armia niepusta. */
 export function aiUnitReplaceCap(militaryCount: number, fraction = AI_UNIT_REPLACE_MAX_FRACTION): number {
   if (!(militaryCount > 0)) return 0;
