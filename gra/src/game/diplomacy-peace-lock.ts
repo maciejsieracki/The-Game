@@ -162,7 +162,9 @@ export function aiTruceOrPeaceMode(input: {
  * Przyjmuje, gdy MOC WOJSKOWA proponującego jest mniejsza o co najmniej `prog` (20%, z
  * diplomacy-war-peace-params.json → przewagaMilitarna.prog) od mocy wojskowej adresata, tzn.
  * proponujący ≤ (1 − prog) × adresat. Moc wojskowa = suma M_pole armii (main.ts sumArmyMForOwner),
- * nie ogólna objectivePower. Zaufanie nie wchodzi do decyzji. Zero armii u obu = 0 ≤ 0 → zgoda.
+ * nie ogólna objectivePower (ZAŁOŻENIE-R5-A: zostaje nominalny sumArmyMForOwner, bo kod main.ts
+ * jawnie zabrania podłączać wariantu Effective do progów dyplomatycznych). Zaufanie nie wchodzi do decyzji.
+ * Adresat bez armii (≤ 0) → odmowa (r6, ZAŁOŻENIE-R5-C: „o 20% słabszy" wymaga przewagi > 0).
  * ZAŁOŻENIE orkiestratora (do potwierdzenia): „mniejsza o 20%" = proponujący ≤ 80% adresata.
  */
 export function truceEndAiAccepts(
@@ -172,6 +174,9 @@ export function truceEndAiAccepts(
 ): boolean {
   if (!Number.isFinite(proposerArmyM) || !Number.isFinite(addresseeArmyM)) return false;
   if (proposerArmyM < 0 || addresseeArmyM < 0) return false;
+  // R-WEB-DIPLO-TRUCE-IMPL-Q1 r6 (ZAŁOŻENIE-R5-C, rozstrzygnięte przez Operatora): adresat bez armii
+  // (0) nie może być słabszy o 20% — brak przewagi = odmowa, także przy 0 vs 0 (wcześniej 0 ≤ 0 = zgoda).
+  if (addresseeArmyM <= 0) return false;
   const eps = WAR_PEACE_PARAMS.przewagaMilitarna.epsilon;
   return proposerArmyM <= (1 - prog + eps) * addresseeArmyM;
 }

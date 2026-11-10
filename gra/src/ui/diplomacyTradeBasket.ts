@@ -9,6 +9,8 @@ import { isCurrencyProposalForbiddenDuringWar } from '../game/diplomacy-war-gate
 import { computeQuickDealBasket, proposalPnTurnsMultiplier, type BasketItem } from '../game/diplomacy-pn-engine';
 import { validateTradeBasketSides } from '../game/diplomacy-trade-validation';
 import { balanceGiveItemsToFairMin } from '../game/diplomacy-ai-offer-balance';
+// R-WEB-DIPLO-TRUCE-IMPL-Q1 r6 (DODATEK 3a): JEDNA lista długości rozejmu 5/10/15 dla gracza i AI.
+import { TRUCE_DURATION_OPTIONS, TRUCE_DEFAULT_TURNS, normalizeTruceDuration } from '../game/diplomacy-peace-lock';
 import {
   proposalHasResourceAccess,
   stripWithdrawnResourceAccessItems,
@@ -631,7 +633,7 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
     bribeGold: initial?.bribeGold ?? 30,
     targetOwnerId: initial?.targetOwnerId ?? rivals[0]?.ownerId ?? -1,
     peaceKind: initial?.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj',
-    truceTurns: initial?.truceTurns === 5 || initial?.truceTurns === 15 ? initial.truceTurns : 10,
+    truceTurns: normalizeTruceDuration(initial?.truceTurns) ?? TRUCE_DEFAULT_TURNS,
   };
 }
 
@@ -844,7 +846,7 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
           '<button type="button" class="cdb-chip cdb-chip-peacekind' + (state.peaceKind === k ? ' selected' : '')
           + '" data-kind="' + k + '">' + (k === 'pokoj' ? 'Pokój' : 'Rozejm') + '</button>',
         ).join('');
-        const truceChips = [5, 10, 15].map(t =>
+        const truceChips = TRUCE_DURATION_OPTIONS.map(t =>
           '<button type="button" class="cdb-chip cdb-chip-truceturns' + (state.truceTurns === t ? ' selected' : '')
           + '" data-turns="' + t + '">' + t + ' tur</button>',
         ).join('');
@@ -877,7 +879,8 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
     const k = (document.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null)?.value;
     if (k === 'pokoj' || k === 'rozejm') state.peaceKind = k;
     const t = parseInt((document.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null)?.value ?? '', 10);
-    if (t === 5 || t === 10 || t === 15) state.truceTurns = t;
+    const tn = normalizeTruceDuration(t);
+    if (tn != null) state.truceTurns = tn;
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -2865,7 +2868,7 @@ export function showTradeBasketModal(
       btn.addEventListener('click', () => {
         const t = parseInt(btn.getAttribute('data-turns') ?? '10', 10);
         const inp = box.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null;
-        if (inp) inp.value = String(t === 5 || t === 15 ? t : 10);
+        if (inp) inp.value = String(normalizeTruceDuration(t) ?? TRUCE_DEFAULT_TURNS);
         refresh();
       });
     });

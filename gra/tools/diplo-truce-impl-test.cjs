@@ -49,7 +49,10 @@ const ENTRY_SRC = [
   '  isTruceWindowBreach, peaceFinalizeTrustEvent,',
   '  truceEndTickPair, truceEndToWarCore, clearTruceEndOfferCore,',
   '} from \'./game/diplomacy-peace-lock\';',
+  'export { TRUCE_DEFAULT_TURNS, TRUCE_DURATION_OPTIONS } from \'./game/diplomacy-peace-lock\';',
   'export { applyDiplomaticEvent } from \'./game/diplomacy\';',
+  'export { decideAIDiplomacy, aiPeaceProposalKind } from \'./game/ai\';',
+  'export { aiCommandToPendingProposal, evaluateProposal } from \'./game/diplomacy-proposals\';',
   'export { warWearinessFraction, WAR_PEACE_PARAMS } from \'./game/diplomacy-war-peace-profile\';',
   '',
 ].join('\n');
@@ -370,6 +373,112 @@ function makeWorld() {
   check('M3 wykryty: oferta po rozejmie = złamanie w czystej wersji, brak złamania w mutancie',
     lib.isTruceWindowBreach({ truceEndOffer: { turn: 110, fromOwnerId: 7, toOwnerId: 0 } }, 111) === true
     && libM3.isTruceWindowBreach({ truceEndOffer: { turn: 110, fromOwnerId: 7, toOwnerId: 0 } }, 111) === false);
+
+  // ---- R-WEB-DIPLO-TRUCE-IMPL-Q1 r6 (DODATEK 3, wiążące): długości 5/10/15 wspólne dla gracza i AI ----
+  const uiSrc = src(path.resolve(GRA, 'src', 'ui', 'diplomacyTradeBasket.ts'));
+  const propSrc = src(path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts'));
+  const pnSrc = src(path.resolve(GRA, 'src', 'game', 'diplomacy-pn-engine.ts'));
+  // (a) jedna lista/walidacja: UI używa stałych z diplomacy-peace-lock, bez literałów długości.
+  check('R6 (a): UI importuje TRUCE_DURATION_OPTIONS i normalizeTruceDuration z diplomacy-peace-lock',
+    /import \{[^}]*TRUCE_DURATION_OPTIONS[^}]*\} from '\.\.\/game\/diplomacy-peace-lock';/.test(uiSrc)
+    && /import \{[^}]*normalizeTruceDuration[^}]*\} from '\.\.\/game\/diplomacy-peace-lock';/.test(uiSrc));
+  check('R6 (a): UI bez literałów długości rozejmu (truceTurns === 5/15, t === 5 || t === 10 || t === 15)',
+    !/truceTurns === 5|truceTurns === 15|t === 5 \|\| t === 10 \|\| t === 15|t === 5 \|\| t === 15/.test(uiSrc));
+  check('R6 (a): chipy rozejmu budowane z TRUCE_DURATION_OPTIONS (nie z literału [5, 10, 15])',
+    /TRUCE_DURATION_OPTIONS\.map\(t =>/.test(uiSrc) && !/\[5, 10, 15\]\.map\(t =>\s*'<button type="button" class="cdb-chip cdb-chip-truceturns/.test(uiSrc));
+  // (c) przeszukanie ścieżek generujących liczbę tur (ai.ts, diplomacy-pn-engine.ts, diplomacy-proposals.ts, main.ts).
+  check('R6 (c): TRUCE_DEFAULT_TURNS (domyślna AI/UI) należy do TRUCE_DURATION_OPTIONS',
+    lib.TRUCE_DURATION_OPTIONS.includes(lib.TRUCE_DEFAULT_TURNS) && lib.TRUCE_DEFAULT_TURNS === 10);
+  check('R6 (c): ai.ts / diplomacy-pn-engine.ts — brak literału długości rozejmu (rozejm + turns: <liczba>)',
+    !/rodzaj:\s*'rozejm'[^}]{0,120}turns:\s*\d/.test(aiSrc) && !/actionId:\s*'rozejm'[^}]{0,120}turns:\s*\d/.test(pnSrc));
+  check('R6 (c): diplomacy-proposals — AI rozejm payload = { turns: TRUCE_DEFAULT_TURNS }',
+    /payload: \{ turns: TRUCE_DEFAULT_TURNS \}/.test(propSrc));
+  check('R6 (c): main.ts — AI↔AI rozejm i finalizacja używają TRUCE_DEFAULT_TURNS (brak literału)',
+    /kind === 'rozejm' \? \{ turns: TRUCE_DEFAULT_TURNS \} : undefined/.test(mainSrc)
+    && /kind === 'rozejm' \? TRUCE_DEFAULT_TURNS : undefined/.test(mainSrc));
+
+  // (b) Z9 runtime: ręcznie wstrzyknięta zła długość → propozycja odrzucona bez efektu (evaluateProposal).
+  const r6Ctx = {
+    relation: { zaufanie: 50, respekt: 50, status: 'wojna' }, stanWojny: true, turn: 100,
+    proposerRespekt: 50, responderRespekt: 50,
+  };
+  const evalRozejm = turns => lib.evaluateProposal(
+    { actionId: 'rozejm', proposerOwnerId: 1, responderOwnerId: 0, payload: { rodzaj: 'rozejm', turns } }, r6Ctx);
+  const badLen = [0, 7, 11, 20, -5, NaN, Infinity];
+  check('R6 (b) Z9: długości spoza 5/10/15 odrzucone przez evaluateProposal (runtime)',
+    badLen.every(n => { const r = evalRozejm(n); return r.accepted === false && /dozwolone długości/.test(r.reason || ''); }),
+    badLen.map(n => evalRozejm(n)));
+  check('R6 (b) Z9: długości 5/10/15 nie są odrzucane za długość',
+    [5, 10, 15].every(n => !/dozwolone długości/.test(evalRozejm(n).reason || '')));
+
+  // (b) seed sweep: decideAIDiplomacy (ai.ts) nigdy nie generuje rozejmu o długości spoza {5,10,15}.
+  const mulberry32 = a => () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const sweepTurns = [];
+  for (let i = 0; i <= 25; i++) sweepTurns.push(i);
+  sweepTurns.push(40, 60, 100);
+  const rwGrid = [0.05, 0.2, 0.35, 0.5, 0.8];
+  const trustGrid = [0, 35, 70, 95];
+  const lostGrid = [0, 3];
+  const realRandom = Math.random;
+  let sweepN = 0;
+  let rozejmHits = 0;
+  let pokojHits = 0;
+  const badTurns = [];
+  const wrongShape = [];
+  try {
+    for (let seed = 1; seed <= 8; seed++) {
+      Math.random = mulberry32(seed * 7919);
+      for (const tw of sweepTurns) for (const rw of rwGrid) for (const zf of trustGrid) for (const lc of lostGrid) {
+        const cmds = lib.decideAIDiplomacy({
+          myPlayerId: 'ai-1', agresja: 0.5, currentTurn: 100 + tw, myTypCywilizacji: 'zulusi',
+          relacje: [{
+            partnerId: 'gracz',
+            relation: { zaufanie: zf, respekt: 20, status: 'wojna' },
+            respektWzgledny: rw, stanWojny: true, turnsAtWar: tw, lostCitiesInWar: lc,
+            turnsSinceCityChange: tw, armyHealthShare: 0.9,
+          }],
+        });
+        sweepN++;
+        for (const cmd of cmds) {
+          if (cmd.type !== 'zaproponuj_pokoj') continue;
+          const prop = lib.aiCommandToPendingProposal(cmd, 1, 0, 100 + tw);
+          if (cmd.rodzaj === 'rozejm') {
+            rozejmHits++;
+            const t = prop && prop.payload ? prop.payload.turns : undefined;
+            if (!lib.TRUCE_DURATION_OPTIONS.includes(t)) badTurns.push({ seed, tw, rw, zf, lc, t });
+          } else {
+            pokojHits++;
+            if (prop && prop.payload && prop.payload.turns !== undefined) wrongShape.push({ seed, tw, rodzaj: cmd.rodzaj });
+          }
+        }
+      }
+    }
+  } finally {
+    Math.random = realRandom;
+  }
+  check(`R6 (b) sweep: próba niepusta (${rozejmHits} rozejmów, ${pokojHits} pokojów z ${sweepN} wywołań AI)`,
+    rozejmHits > 0 && pokojHits > 0, { rozejmHits, pokojHits, sweepN });
+  check('R6 (b) sweep: każdy rozejm AI ma długość ∈ {5,10,15} (żadnej 7 ani innej wartości)',
+    badTurns.length === 0, badTurns.slice(0, 5));
+  check('R6 (b) sweep: pokój stały AI nie niesie pola turns', wrongShape.length === 0, wrongShape.slice(0, 5));
+
+  // (C) adresat bez armii: odmowa także przy 0 vs 0; przewaga > 0 nadal zgadza.
+  check('R6 (C): 0 vs 0 → odmowa (adresat bez armii nie jest słabszy o 20%)', lib.truceEndAiAccepts(0, 0) === false);
+  check('R6 (C): 5 vs 0 → odmowa', lib.truceEndAiAccepts(5, 0) === false);
+  check('R6 (C): 0 vs 100 → zgoda (proponujący bez armii, adresat z armią)', lib.truceEndAiAccepts(0, 100) === true);
+  {
+    const w = makeWorld();
+    w.status[w.key(0, 7)] = 'pokoj';
+    w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
+    w.army[0] = 0; w.army[7] = 0;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('R6 (C): truceEndTickPair 0 vs 0 → wojna, bez pokoju', w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+  }
 
   for (const f of [BUNDLE, BUNDLE_M1, BUNDLE_M2, BUNDLE_M3]) {
     try { fs.unlinkSync(f); } catch (_) { /* ignore */ }
