@@ -1489,6 +1489,7 @@ import {
   treatyEvalRelationTotal, treatyBasePnFromConfig,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
+import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';
 import {
   type RejectedOfferCooldown,
   type RejectCooldownKey,
@@ -11144,6 +11145,15 @@ async function boot(): Promise<void> {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
       const prevStatus = diplomacyRelations.get(key)?.status;
       diplomacyRelations.set(key, rel);
+      // Stamp every transition at its sole status mutation point. This captures declarations,
+      // forced wars, and truce expiry on the exact turn, and preserves the start through save/load.
+      if (rel.status === 'wojna' && prevStatus !== 'wojna') {
+        const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
+        if (meta.wojnaStartTura === undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
+      } else if (prevStatus === 'wojna' && rel.status !== 'wojna') {
+        const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
+        if (meta.wojnaStartTura !== undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: undefined } as DiploPairMeta);
+      }
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
       // gracz↔właściciel, więc musi się przemalować natychmiast po wypowiedzeniu wojny /
@@ -11269,6 +11279,12 @@ async function boot(): Promise<void> {
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
       };
+    }
+
+    function peaceProposalIsTooEarly(proposerId: number, responderId: number, actionId: string): boolean {
+      const atWar = getDiploRelation(proposerId, responderId).status === 'wojna';
+      const turnsAtWar = atWar ? diploWarStateFor(proposerId, responderId).turnsAtWar : 0;
+      return peaceProposalBlocked(actionId, atWar, turnsAtWar);
     }
 
     /** R-WEB-PEACE-RULES-Q1 R2: zapis utraty miasta przez `oldOwner` w TRWAJĄCEJ wojnie z `newOwner` (dla wszystkich wojen). */
@@ -19716,6 +19732,7 @@ async function boot(): Promise<void> {
 
       const converted = aiCommandToPendingProposal(workingCmd, ownerId, ME(), turn);
       if (!converted) return;
+      if (peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)) return;
 
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 6): uzasadnienie (reason) dla umowy handlowej z koszyka
       // surowców; wypełniane tylko gdy flaga ON i koszyk zawiera surowiec.
@@ -20374,6 +20391,10 @@ async function boot(): Promise<void> {
         return;
       }
       const aiOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
+      if (peaceProposalIsTooEarly(ME(), aiOwnerId, entry.actionId)) {
+        showHintMessage(`Pokój i rozejm będą dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny`, 4000);
+        return;
+      }
       const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
       negotiationTable[idx] = applyCounterOffer(entry, uiPayload, ME(), turn);
       refreshD1bHud();
@@ -20404,6 +20425,10 @@ async function boot(): Promise<void> {
       // odpowiedź) — nic do edycji tą ścieżką (kontrofertę patrz handleNegotiationCounter).
       if (entry.awaitingOwnerId === 0 || !canPlayerCounterNegotiation(entry)) return;
       const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      if (peaceProposalIsTooEarly(ME(), aiOwnerId, entry.actionId)) {
+        showHintMessage(`Pokój i rozejm będą dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny`, 4000);
+        return;
+      }
       const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
       // Ta sama bramka realnych zasobów co przy tworzeniu/kontrowaniu propozycji
       // (clampNegotiationPayloadToRealResources, resolveNegotiationEntryAt) — nie pozwól
@@ -24467,6 +24492,11 @@ async function boot(): Promise<void> {
 
     function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
       const { proposal } = buildProposalFromPayload(ownerId, payload);
+      if (peaceProposalIsTooEarly(ME(), ownerId, proposal.actionId)) {
+        showHintMessage(`Pokój i rozejm będą dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny`, 4000);
+        updateDiplomacyAudience();
+        return;
+      }
       // Ich propozycja już leży na stole — nie zakładaj drugiej (gracz jako proponent) i nie
       // wołaj resolveNegotiationEntryAt od razu; to wyglądało jak natychmiastowe przyjęcie.
       const incoming = findIncomingNegotiationForAction(ownerId, proposal.actionId);
@@ -34998,6 +35028,7 @@ async function boot(): Promise<void> {
     /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój/rozejm do zwycięzcy (`otherId`); start licznika tur. */
     function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string, kind: AiPeaceKind): void {
       if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
+      if (peaceProposalIsTooEarly(requesterId, otherId, kind)) return;
       // „Wyraźnie przegrywa": prośby z sygnałów pat/zmęczenia przy równowadze sił nie tworzą przymusu pokoju.
       refreshObjectivePowerCache();
       const share = requesterShare(objectivePowerForOwner(requesterId), objectivePowerForOwner(otherId));
@@ -35042,10 +35073,13 @@ async function boot(): Promise<void> {
         turn,
         pairEligible: aiAiForcedPeacePairEligible,
         requesterShareOf: (rq, ot) => requesterShare(objectivePowerForOwner(rq), objectivePowerForOwner(ot)),
+        peaceAllowed: (loser, winner) =>
+          diploWarStateFor(loser, winner).turnsAtWar >= PEACE_PROPOSAL_MIN_WAR_TURNS,
         gateVerdict: (winner, loser) => {
           const pot = (o: number): number => objectivePowerForOwner(o);
           const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
           const warW = diploWarStateFor(winner, loser);
+          if (warW.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) return 'too_early';
           return evaluatePeaceAiGate(
             { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
             resolveWarPeaceProfile(civKeyForOwnerId(winner)),

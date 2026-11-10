@@ -195,6 +195,17 @@ function mkDeps(o) {
   for (const t of [470, 474, 478, 482, 486]) { const { deps } = mkDeps({ ...o, turn: t, warStart: 380, turnsAtWar: 90 }); acts.push(W.runWarWearinessTick(deps)[0].action); }
   ok(!acts.includes('offer_accepted'), '4g: zmeczenie < progWzajemnyPokoj => brak kapitulacji bez pokrycia ceny');
 }
+// 4g-TEN: auto-pokój jest zablokowany przez elapsed 0..9, a szczyt zmęczenia nadal rośnie;
+// ten sam typ auto-rozstrzygnięcia może wejść dokładnie od elapsed 10.
+{
+  const store10 = new Map();
+  const o = { warStart: 100, share1: 0.5, lostA: 1000, store: store10, winnerNeed: 0 };
+  const { deps: d9 } = mkDeps({ ...o, turn: 109, turnsAtWar: 9 });
+  eq(W.runWarWearinessTick(d9)[0].action, 'none', '4g-TEN: elapsed 9 blokuje automatyczny pokój');
+  eq(store10.get('1-2').peak, 1, '4g-TEN: zmęczenie nadal nalicza się w elapsed 9');
+  const { deps: d10 } = mkDeps({ ...o, turn: 110, turnsAtWar: 10 });
+  eq(W.runWarWearinessTick(d10)[0].action, 'mutual_peace', '4g-TEN: elapsed 10 zwalnia automatyczny pokój');
+}
 // 4h. realna wycena (peaceOfferAiRequestPn / OwnBilans / tolerancja / baza z konfiguracji) zamiast atrap
 {
   const basePn = M.treatyBasePnFromConfig('pokoj');

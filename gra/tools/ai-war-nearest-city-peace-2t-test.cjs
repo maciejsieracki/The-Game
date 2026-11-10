@@ -164,6 +164,7 @@ function suite(E) {
         pairEligible: o.pairEligible || (() => true),
         requesterShareOf: o.share || (() => 0.3),
         gateVerdict: o.verdict || (() => 'ok'),
+        peaceAllowed: o.peaceAllowed || (() => true),
         price: (w, l, kind) => {
           log.priceKinds.push(kind);
           const req = PRICES[kind];
@@ -196,6 +197,20 @@ function suite(E) {
     const a = P.registerAiPeaceRequest(store, '1_2', 1, 2, 10);
     const b = P.registerAiPeaceRequest(store, '1_2', 1, 2, 11);
     return (a === true && b === false && store.get('1_2').sinceTurn === 10) || 'rejestr';
+  });
+  t('B2-TEN zapisane stare oczekujace offer nie moze wymusic pokoju przed elapsed 10', () => {
+    const savedStore = new Map();
+    reg({ store: savedStore }, 104);
+    const restoredStore = new Map(JSON.parse(JSON.stringify(Array.from(savedStore.entries()))));
+    let elapsed = 9;
+    const h = harness({ assets: [gold(700)], peaceAllowed: () => elapsed >= 10 });
+    for (const [key, req] of restoredStore) h.store.set(key, req);
+    if (h.deps(109).peaceAllowed(1, 2) !== false) return 'peaceAllowed harness hook missing';
+    const before = tick(h, 109)[0];
+    if (before.action !== 'wait' || h.log.fin.length || !h.store.has('1_2')) return JSON.stringify(before);
+    elapsed = 10;
+    const after = tick(h, 110)[0];
+    return after.action === 'force' && h.log.fin.length === 1 && !h.store.has('1_2') || JSON.stringify(after);
   });
   t('B3 przegrany placi zlotem: pokoj przechodzi PRZED limitem, bilans przed < 0, po >= 0, platnosc wykonana przed finalizacja', () => {
     const h = harness({ assets: [gold(700)] }); reg(h, 10);

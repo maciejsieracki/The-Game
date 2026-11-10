@@ -12,10 +12,6 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(GRA, 'src', '.dip-warpeace-gate-entry.ts');
 const BUNDLE_OK = path.resolve(__dirname, '.dip-warpeace-gate-ok.cjs');
-const BUNDLE_M1 = path.resolve(__dirname, '.dip-warpeace-gate-m1.cjs');
-const BUNDLE_M2 = path.resolve(__dirname, '.dip-warpeace-gate-m2.cjs');
-const PROPOSALS = path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts');
-const PROFILE = path.resolve(GRA, 'src', 'game', 'diplomacy-war-peace-profile.ts');
 
 let pass = 0;
 let fail = 0;
@@ -28,27 +24,9 @@ const ENTRY_SRC = [
   "export {",
   "  evaluateProposal, createNegotiation, negotiationAsProposal,",
   "} from './game/diplomacy-proposals';",
+  "export { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';",
   "",
 ].join('\n');
-
-function mutantPlugin(from, to, file = PROPOSALS) {
-  const info = { applied: 0 };
-  return {
-    info,
-    plugin: {
-      name: 'mutant-peace-gate',
-      setup(build) {
-        build.onLoad({ filter: new RegExp(path.basename(file).replace(/[.]/g, '\\.') + '$') }, async () => {
-          const src = fs.readFileSync(file, 'utf8');
-          const n = src.split(from).length - 1;
-          info.applied = n;
-          return { contents: src.split(from).join(to), loader: 'ts' };
-        });
-      },
-    },
-  };
-}
-
 
 // DODATEK 1 (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1): regula przewagi militarnej >20% jest testowana osobno
 // (diplo-peace-balance-accept-test.cjs). Ten test chroni reguly R3/R5 NIEZALEZNIE od niej, wiec bundle liczy
@@ -80,7 +58,7 @@ async function buildBundle(outfile, plugins) {
 
 function cleanup() {
   try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
-  for (const p of [BUNDLE_OK, BUNDLE_M1, BUNDLE_M2]) {
+  for (const p of [BUNDLE_OK]) {
     try { fs.unlinkSync(p); } catch (_) { /* ok */ }
   }
 }
@@ -115,6 +93,16 @@ function propose(mod, authorOwner) {
   return mod.negotiationAsProposal(entry);
 }
 
+function proposeAction(mod, actionId, authorOwner = 1) {
+  const entry = mod.createNegotiation(
+    { actionId, proposerOwnerId: authorOwner === 0 ? 0 : 1, responderOwnerId: authorOwner === 0 ? 1 : 0, payload: {} },
+    80,
+    authorOwner === 0 ? 'player' : 'ai',
+    2,
+  );
+  return mod.negotiationAsProposal(entry);
+}
+
 function run(mod, label) {
   const out = {};
   // A: gracz autorem, AI (Zulusi, minTur 7) po 3 turach -> za wcześnie
@@ -127,7 +115,7 @@ function run(mod, label) {
   }));
   // C: jak B, ale AI straciło miasto -> bramka (b) nie odrzuca
   out.afterLoss = mod.evaluateProposal(propose(mod, 0), ctxFor({
-    warState: { turnsAtWar: 9, lostCitiesResponder: 1, responderRw: 0.6 }, responderTyp: 'rzymianie', authorOwnerId: 0,
+    warState: { turnsAtWar: 10, lostCitiesResponder: 1, responderRw: 0.6 }, responderTyp: 'rzymianie', authorOwnerId: 0,
   }));
   // D: 20 tur, AI silniejsze -> bramka (b) i (c) nieaktywne
   out.after20 = mod.evaluateProposal(propose(mod, 0), ctxFor({
@@ -155,21 +143,14 @@ async function main() {
   fs.writeFileSync(ENTRY, ENTRY_SRC, 'utf8');
   try {
     await buildBundle(BUNDLE_OK, []);
-    const m1 = mutantPlugin("if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {", "if (false) {");
-    await buildBundle(BUNDLE_M1, [m1.plugin]);
-    const m2 = mutantPlugin("Math.max(0, input.turnsAtWar) < C.odrzucenieMaxTurWojny", "Math.max(0, input.turnsAtWar) < 0", PROFILE);
-    await buildBundle(BUNDLE_M2, [m2.plugin]);
-    check('(0) mutanty faktycznie zmienily zrodlo (M1, M2 po 1 podmianie)', m1.info.applied === 1 && m2.info.applied === 1, [m1.info, m2.info]);
 
     const ok = run(require(BUNDLE_OK), 'ok');
-    const m1r = run(require(BUNDLE_M1), 'M1');
-    const m2r = run(require(BUNDLE_M2), 'M2');
 
-    check('A: gracz->AI przed minimalnym czasem wojny = odrzucenie (za wcześnie)',
-      ok.early.accepted === false && /za wcześnie/.test(ok.early.reason || ''), ok.early);
-    check('B: gracz->AI silniejsze (bez utraty, <10 tur) = odrzucenie „czuje się silniejsze"',
-      ok.stronger.accepted === false && /czuje się silniejsze/.test(ok.stronger.reason || ''), ok.stronger);
-    check('C: po utracie miasta bramka (b) nie odrzuca',
+    check('A: gracz->AI elapsed 3 jest odrzucone przez globalny próg 10 tur',
+      ok.early.accepted === false && /10 pełnych tur/.test(ok.early.reason || ''), ok.early);
+    check('B: gracz->AI elapsed 9 jest odrzucone przez globalny próg 10 tur',
+      ok.stronger.accepted === false && /10 pełnych tur/.test(ok.stronger.reason || ''), ok.stronger);
+    check('C: po utracie miasta wcześniejsza bramka profilu nie jest źródłem odrzucenia',
       !GATE_REASON.test(ok.afterLoss.reason || ''), ok.afterLoss);
     check('D: po 20 turach bramka (b)/(c) nieaktywna',
       !GATE_REASON.test(ok.after20.reason || ''), ok.after20);
@@ -182,15 +163,41 @@ async function main() {
       && ok.highRw.pwBalance < ok.noWarState.pwBalance,
       { highRw: ok.highRw.pwBalance, noWarState: ok.noWarState.pwBalance });
 
-    // mutacje
-    check('M1 (brak bramki): przypadek B przechodzi (bramka usunieta wykrywalna)',
-      !(m1r.stronger.accepted === false && /czuje się silniejsze/.test(m1r.stronger.reason || '')),
-      m1r.stronger);
-    check('F2: propozycja AI (autor = AI, respondent = gracz) jest przyjeta (accepted=true)',
-      ok.aiAuthor.accepted === true, ok.aiAuthor);
-    check('M2 (bramka bez progu 10 tur): przypadek B przechodzi (mutacja progu wykrywalna)',
-      !(m2r.stronger.accepted === false && /czuje się silniejsze/.test(m2r.stronger.reason || '')),
-      m2r.stronger);
+    const timing = require(BUNDLE_OK);
+    const timingResult = (actionId, turnsAtWar, author = 1) => timing.evaluateProposal(
+      proposeAction(timing, actionId, author),
+      ctxFor({ warState: { turnsAtWar, lostCitiesResponder: 1, responderRw: 0.5 }, responderTyp: 'rzymianie', authorOwnerId: author }),
+    );
+    for (const actionId of ['pokoj', 'rozejm', 'trybut_oferta']) {
+      check(`${actionId}: elapsed 0 jest zablokowane`, timingResult(actionId, 0).accepted === false
+        && /10 pełnych tur/.test(timingResult(actionId, 0).reason || ''));
+      check(`${actionId}: elapsed 9 jest zablokowane`, timingResult(actionId, 9).accepted === false
+        && /10 pełnych tur/.test(timingResult(actionId, 9).reason || ''));
+      check(`${actionId}: elapsed 10 przechodzi bramkę czasu`, !/10 pełnych tur/.test(timingResult(actionId, 10).reason || ''));
+    }
+    for (const actionId of ['pokoj', 'rozejm']) {
+      check(`${actionId}: elapsed 10 przepuszcza do dotychczasowej wyceny po obu stronach`,
+        !/10 pełnych tur/.test(timingResult(actionId, 10, 1).reason || '')
+        && !/10 pełnych tur/.test(timingResult(actionId, 10, 0).reason || ''));
+    }
+    check('obie strony korzystają z tej samej bramki czasu',
+      /10 pełnych tur/.test(timingResult('rozejm', 9, 0).reason || '')
+      && !/10 pełnych tur/.test(timingResult('rozejm', 10, 0).reason || ''));
+    for (const [warKind, startTurn] of [['zwykla', 30], ['epoki', 900]]) {
+      const restored = JSON.parse(JSON.stringify({ wojnaStartTura: startTurn }));
+      const elapsed = (turn) => turn - restored.wojnaStartTura;
+      check(`${warKind}: zapis/wczytanie zachowuje start wojny; elapsed 0 i 9 blok, 10 wolne`,
+        timing.peaceProposalBlocked('pokoj', true, elapsed(startTurn))
+        && timing.peaceProposalBlocked('rozejm', true, elapsed(startTurn + 9))
+        && !timing.peaceProposalBlocked('pokoj', true, elapsed(startTurn + 10)));
+      const restartedAt = startTurn + 40; // po pokoju/rozejmie para rozpoczyna nową wojnę
+      check(`${warKind}: nowa wojna po zakończeniu poprzedniej dostaje nowe okno`,
+        timing.peaceProposalBlocked('pokoj', true, restartedAt - restartedAt)
+        && !timing.peaceProposalBlocked('pokoj', true, (restartedAt + 10) - restartedAt));
+    }
+
+    check('F2: propozycja AI elapsed 9 także zatrzymuje się na globalnym progu',
+      ok.aiAuthor.accepted === false && /10 pełnych tur/.test(ok.aiAuthor.reason || ''), ok.aiAuthor);
   } finally {
     cleanup();
   }
