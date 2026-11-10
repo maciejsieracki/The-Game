@@ -12,7 +12,7 @@ import combatParamsRaw from '../../data/combat-params.json';
 // (auto-battle-power.ts / auto-battle-params.json, wezel W1) nie jest tu
 // modyfikowana w zaden sposob.
 import { isFieldBattleUnit } from './auto-battle-power';
-import { armyFieldPower } from './unit-power';
+import { armyFieldPower, rangedDamageMultFor } from './unit-power';
 import type { UnitPowerInput } from './unit-power';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -467,6 +467,32 @@ export function damageTw(
  */
 export function rangeDamageTw(missileAttack: number, armor: number): number {
   return Math.max(1, missileAttack - armor);
+}
+
+/**
+ * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: celnosc pocisku = max(Atak wrecz, Atak
+ * dystansowy) strzelca (zamiast samego Ataku wrecz).
+ */
+export function rangedShotAccuracy(meleeAttack: number, missileAttack: number): number {
+  return Math.max(meleeAttack, missileAttack);
+}
+
+/**
+ * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: koncowe obrazenia pocisku auto-walki.
+ * Mnoznik klasy strzelca (ranged-damage-mult.ts) i kontra mnozone PRZED
+ * zaokragleniem do int; podloga 1.
+ */
+export function rangedShotDamage(
+  shooter: Pick<CombatUnit, 'counterTyp' | 'typNazwa'>,
+  missileAttack: number,
+  armor: number,
+  counterMult: number,
+): number {
+  const raw = rangeDamageTw(missileAttack, armor) * counterMult * rangedDamageMultFor({
+    Typ: shooter.counterTyp,
+    Jednostka: shooter.typNazwa,
+  });
+  return Math.max(1, Math.round(raw));
 }
 
 /** Alias kompatybilnosci — uzywa TW Rome 2. */
@@ -1006,10 +1032,13 @@ export function resolveCombat(
       // Attacker shoots
       if (atkIsRanged && ammoAtk > 0) {
         ammoAtk--;
-        const hitPct = hitChanceTw(atkEffMelee, defFinalObrona);
+        const hitPct = hitChanceTw(
+          rangedShotAccuracy(atkMelee0, atkMissile0) * terrRiverMult,
+          defFinalObrona,
+        );
         const roll = rng() * 100;
         if (roll < hitPct) {
-          const dmg = Math.round(rangeDamageTw(atkMissile0, defPanc0) * ctrAtkVsDef);
+          const dmg = rangedShotDamage(attacker, atkMissile0, defPanc0, ctrAtkVsDef);
           hpDef -= dmg;
           log.push(
             `R${totalRounds}[Dyst-ATK] trafienie (${roll.toFixed(1)}<${hitPct}%) -> ${dmg} obra. Obronca HP: ${hpDef}`,
@@ -1024,10 +1053,10 @@ export function resolveCombat(
       // Defender shoots back (if alive)
       if (defIsRanged && ammoDef > 0 && hpDef > 0) {
         ammoDef--;
-        const hitPct = hitChanceTw(defMelee0, atkObrona0);
+        const hitPct = hitChanceTw(rangedShotAccuracy(defMelee0, defMissile0), atkObrona0);
         const roll = rng() * 100;
         if (roll < hitPct) {
-          const dmg = Math.round(rangeDamageTw(defMissile0, atkPanc0) * ctrDefVsAtk);
+          const dmg = rangedShotDamage(defender, defMissile0, atkPanc0, ctrDefVsAtk);
           hpAtk -= dmg;
           log.push(
             `R${totalRounds}[Dyst-DEF] trafienie (${roll.toFixed(1)}<${hitPct}%) -> ${dmg} obra. Atakujacy HP: ${hpAtk}`,
