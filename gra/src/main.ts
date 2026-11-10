@@ -1396,6 +1396,7 @@ import {
   forcedEraTagEpoch,
   forcedEraTagForEpoch,
   eraWarCounterEpoch,
+  backfillMissingEraEntryTurns,
   isPlayerEligibleForEraWarPool,
   isPlayerEraWarSlotFree,
   type EngageArmyHex,
@@ -45872,6 +45873,12 @@ async function boot(): Promise<void> {
       if (savedOwnerEra?.length) {
         for (const [oid, e] of savedOwnerEra) ownerEraByOwner.set(oid, e);
       }
+      // Legacy saves have no trustworthy historical Bronze/Iron entry turn. Begin
+      // their 40-turn wait at load time, preserving every timestamp that was saved.
+      const restoredEraOwners = new Map(ownerEraByOwner);
+      restoredEraOwners.set(0, player.era ?? 1);
+      backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, restoredEraOwners, turn);
+      backfillMissingEraEntryTurns(ironEraEnterTurnByOwner, restoredEraOwners, turn);
       // R-WEB-ERA-WAR-COUNTER-Q1 (7): licznik wojen epoki per (cywilizacja, epoka). Zapis bez pola
       // (stary zapis) → odtwórz z AKTYWNYCH par wojen wymuszonych (obie strony = 1 w bieżącej
       // epoce), reszta 0. Odtworzenie wymaga już wczytanych epok (sekcja wyżej).

@@ -28,7 +28,7 @@ const J = (p) => JSON.stringify(path.join(SRC, p));
 fs.writeFileSync(entry, `
 export {
   WAR_RULES_PARAMS, evaluateInterCivWarGate, evaluateEraForcedWarGate,
-  isInterCivWarOpenAtTurn, isEraForcedWarIgnoringR1, eraWarCounterEpoch,
+  isInterCivWarOpenAtTurn, isEraForcedWarIgnoringR1, eraWarCounterEpoch, backfillMissingEraEntryTurns,
 } from ${J('game/war-rules-multiwar')};
 export { assignForcedWarPairings } from ${J('game/forced-war-common')};
 export { isEligibleForBronzeForcedWar, WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, WOJNA_WYMUSZONA_ODPOCZYNEK_TUR, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR } from ${J('game/forced-war-bronze')};
@@ -109,6 +109,20 @@ function main() {
   eq(ironIn(50, 10), true, 'Żelazo: tura 50, wejście 10 (40 tur) = eligible');
   eq(bronzeIn(219, 180), false, 'przykład ownera: global 219, wejście 180 (39 tur) = NIE eligible');
   eq(bronzeIn(220, 180), true, 'przykład ownera: global 220, wejście 180 (40 tur) = eligible');
+
+  console.log('--- E2: legacy save timestamps begin conservatively at load ---');
+  const legacyBronzeEntries = new Map();
+  const legacyIronEntries = new Map();
+  const loadedOwnerEras = new Map([[0, 2], [7, 2], [8, 3], [9, 1]]);
+  M.backfillMissingEraEntryTurns(legacyBronzeEntries, loadedOwnerEras, 219);
+  M.backfillMissingEraEntryTurns(legacyIronEntries, loadedOwnerEras, 219);
+  eq(JSON.stringify([...legacyBronzeEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'missing legacy timestamps are initialized at load only for Bronze/Iron owners');
+  eq(JSON.stringify([...legacyIronEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'legacy Iron map receives same conservative load turn');
+  eq(bronzeIn(258, legacyBronzeEntries.get(7)), false, 'legacy Bronze owner remains blocked after 39 turns');
+  eq(bronzeIn(259, legacyBronzeEntries.get(7)), true, 'legacy Bronze owner opens after 40 turns');
+  const knownEntries = new Map([[7, 180], [8, 190]]);
+  M.backfillMissingEraEntryTurns(knownEntries, loadedOwnerEras, 219);
+  eq(JSON.stringify([...knownEntries]), JSON.stringify([[7, 180], [8, 190], [0, 219]]), 'known saved entry turns survive backfill unchanged');
 
   console.log('--- F1: flow headless (pula -> parowanie -> bramki komendy), tura 30 ---');
   // Odwzorowanie filtra puli z main.ts (blok "R-WEB-ERA-DELAY-Q1"): przed turą 40 wypadają
