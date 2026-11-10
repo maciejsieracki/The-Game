@@ -1,22 +1,18 @@
 'use strict';
 /**
- * battle-skip-siege-parity-test.cjs -- R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1.
+ * battle-skip-siege-parity-test.cjs -- R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (runda 3).
  *
- * Przyczyna (diagnoza w 01-operator-r1.md): oblezenie bez wylomu nie konczy sie silnikiem
- * (_updateStallWatch pomija oblezenie, wiec _stalled nigdy nie jest true, a regula
- * "SZTURM ODPARTY" z _checkEnd nie odpala). AUTO krecil sie bez konca (zmierzone: 150 s
- * wall, tura 23, brak wyniku). Pomin przewijal do sufitu FF_MAX_ROUNDS i tam rozstrzygal
- * PAT po samym morale armii -- atakujacy z wyzszym ulamkiem morale bral miasto bez wylomu.
+ * TEST STATYCZNY struktury (szybki, bez przegladarki). Dowod BEHAWIORALNY (AUTO vs Pomin,
+ * N ziaren, mutant z 1d068199) to battle-skip-siege-parity-live-test.cjs (Chromium).
  *
- * Poprawka: wspolna funkcja _capRoundWinner() (oblezenie bez wylomu -> obronca; poza tym
- * morale, remis -> obronca) uzywana przez przewijanie (_ffRoundCapResult) ORAZ przez AUTO
- * (_checkEnd, gdy roundNo >= FF_MAX_ROUNDS). Test statyczny sprawdza, ze obie sciezki
- * uzywaja tej samej funkcji i ze stara, surowa regula morale nie zostala w sciezce sufitu.
+ * Przyczyna (diagnoza): w oblezeniu bez wylomu silnik nie konczy bitwy (_updateStallWatch pomija
+ * oblezenie, _stalled nigdy true). Pomin przewijal do FF_MAX_ROUNDS=400 i rozstrzygal PAT samym
+ * morale armii -> atakujacy z wyzszym ulamkiem morale bral miasto BEZ wylomu (exploit), a AUTO
+ * nie konczylo sie wcale.
  *
- * CZESC B (zywa scena Chromium, AUTO vs Pomin na ?playtest=oblezenie-duze, N ziaren) NIE
- * jest zaimplementowana w tym przebiegu: AUTO do sufitu 400 tur to ok. 45 min wall przy 1x
- * (zmierzone: tura 23 po 150 s, WSKIP_PT=oblezenie-duze w battle-skip-equals-auto-resolve-test.cjs).
- * Zwraca NIE_ZMIERZONO.
+ * Decyzje wlasciciela (ABC 2026-11-10): (a) krotszy sufit tur dla oblezenia bez wylomu
+ * (ZALOZENIE 150, parametr combat-params.json oblezenie.bez_wylomu_max_tur); (b) po suficie
+ * REMIS (odparty szturm): atakujacy sie wycofuje, miasto zostaje przy obroncy.
  *
  * Run z gra/: node tools/battle-skip-siege-parity-test.cjs
  */
@@ -25,8 +21,9 @@ const path = require('path');
 
 const GRA = path.resolve(__dirname, '..');
 const SRC = fs.readFileSync(path.join(GRA, 'src/battle/battleScene.ts'), 'utf8');
+const PARAMS = JSON.parse(fs.readFileSync(path.join(GRA, 'data/combat-params.json'), 'utf8'));
 
-let pass = 0; let fail = 0; let nz = 0;
+let pass = 0; let fail = 0;
 function check(name, cond, detail) {
   if (cond) { pass++; console.log('PASS: ' + name); }
   else { fail++; console.log('FAIL: ' + name + (detail !== undefined ? ' -- ' + JSON.stringify(detail) : '')); }
@@ -40,41 +37,47 @@ function methodBody(sig) {
   return end < 0 ? null : SRC.slice(start, end + 4);
 }
 
-// S1 -- wspolna funkcja rozstrzygania sufitu istnieje i ma regule oblezenia.
-const capBody = methodBody('private _capRoundWinner(');
-check('S1 _capRoundWinner istnieje', !!capBody);
-check(
-  'S2 oblezenie bez wylomu -> obronca (siegeWallCol>=0 && !wallEverBreached)',
-  !!capBody && /siegeWallCol\s*>=\s*0\s*&&\s*!this\.wallEverBreached[\s\S]*?winner:\s*'obronca'/.test(capBody),
-  capBody && capBody.slice(0, 400),
-);
+// S1 -- parametr sufitu w danych, osobny od FF_MAX_ROUNDS.
+const capParam = PARAMS['oblężenie'] && PARAMS['oblężenie'].bez_wylomu_max_tur;
+check('S1 combat-params.json: oblezenie.bez_wylomu_max_tur jest liczba calkowita > 0 i < 400', Number.isInteger(capParam) && capParam > 0 && capParam < 400, capParam);
+check('S1b battleScene czyta parametr z combat-params.json', /bez_wylomu_max_tur/.test(SRC) && /siegeNoBreachMaxRounds\s*:\s*number\s*=\s*SIEGE_NO_BREACH_MAX_ROUNDS/.test(SRC));
 
-// S3 -- przewijanie korzysta z funkcji wspolnej, bez surowego porownania morale.
-const ffBody = methodBody('private _ffRoundCapResult(');
-check('S3 _ffRoundCapResult wola _capRoundWinner', !!ffBody && ffBody.includes('this._capRoundWinner()'));
+// S2 -- jedyny werdykt sufitu.
+const verdict = methodBody('private _roundCapVerdict(');
+check('S2 _roundCapVerdict istnieje', !!verdict);
 check(
-  'S4 _ffRoundCapResult nie porownuje morale wprost',
-  !!ffBody && !/ratioA\s*<=\s*ratioD/.test(ffBody),
+  'S2b oblezenie bez wylomu (siegeWallCol>=0 && !wallEverBreached) -> REMIS po sufitcie siegeNoBreachMaxRounds',
+  !!verdict && /siegeWallCol\s*>=\s*0\s*&&\s*!this\.wallEverBreached[\s\S]*?siegeNoBreachMaxRounds[\s\S]*?winner:\s*'remis'/.test(verdict),
+  verdict && verdict.slice(0, 500),
 );
+check('S2c poza oblezeniem bez wylomu: sufit FF_MAX_ROUNDS i morale (remis morale -> obronca)',
+  !!verdict && /FF_MAX_ROUNDS/.test(verdict) && /ratioA\s*<=\s*ratioD\s*\?\s*'obronca'\s*:\s*'atakujacy'/.test(verdict));
 
-// S5 -- AUTO (_checkEnd) stosuje ten sam werdykt na sufitcie tur.
+// S3 -- wszystkie sciezki (AUTO/reczna: _checkEnd, Pomin: _runFastForward/_ffRoundCapResult) uzywaja go.
 const endBody = methodBody('private _checkEnd(): boolean {');
-check('S5 _checkEnd wola _capRoundWinner na sufitcie FF_MAX_ROUNDS',
-  !!endBody && /roundNo\s*>=\s*FF_MAX_ROUNDS[\s\S]*?this\._capRoundWinner\(\)/.test(endBody));
+check('S3 _checkEnd uzywa _roundCapVerdict i konczy remisem przez _finishDraw',
+  !!endBody && /_roundCapVerdict\(\)/.test(endBody) && /_finishDraw\(/.test(endBody));
+const ffBody = methodBody('private _ffRoundCapResult(');
+check('S3b _ffRoundCapResult uzywa _roundCapVerdict, bez wlasnego porownania morale',
+  !!ffBody && ffBody.includes('this._roundCapVerdict()') && !/ratioA\s*<=\s*ratioD/.test(ffBody));
+const runFf = methodBody('private _runFastForward(): void {');
+check('S3c _runFastForward sprawdza sufit przez _roundCapVerdict (nie surowe FF_MAX_ROUNDS)',
+  !!runFf && runFf.includes('this._roundCapVerdict()') && !/roundNo\s*>=\s*FF_MAX_ROUNDS/.test(runFf));
 
-// S6 -- skip() w trakcie gry nie wola osobnego rachunku (poza awaryjnym !started).
+// S4 -- remis: ocalali OBU stron wracaja na mape, wynik 'remis' trafia do BattleResult.
+const drawBody = methodBody('private _finishDraw(');
+check('S4 _finishDraw: _endWinner=remis i ocalali obu stron',
+  !!drawBody && /_endWinner\s*=\s*'remis'/.test(drawBody) && /_battleUnitsForMapExport\(this\.atk\)/.test(drawBody) && /_battleUnitsForMapExport\(this\.def\)/.test(drawBody));
+check('S4b ekran konca nie liczy remisu jako wygranej gracza', /const isDraw = winner === 'remis'/.test(SRC) && /const playerWon = !isDraw && /.test(SRC));
+
+// S5 -- skip() w trakcie gry nie wola osobnego rachunku (poza awaryjnym !started).
 const skipBody = methodBody('  skip(): void {');
 const instantCalls = skipBody ? (skipBody.match(/_skipInstantFallback\(\)/g) || []).length : -1;
-check('S6 skip() uzywa FF (jedna sciezka awaryjna !started)', instantCalls === 1, { instantCalls });
+check('S5 skip() uzywa FF (jedna sciezka awaryjna !started)', instantCalls === 1, { instantCalls });
 
-// S7 -- regresja: istniejace testy skip (czesc A/C) nadal przechodza.
-// (uruchamiane osobno przez operatora; tu tylko kontrola, ze plik istnieje)
-check('S7 istniejacy test battle-skip-equals-auto-resolve-test.cjs obecny',
-  fs.existsSync(path.join(GRA, 'tools/battle-skip-equals-auto-resolve-test.cjs')));
+// S6 -- test behawioralny obecny.
+check('S6 test zywy battle-skip-siege-parity-live-test.cjs obecny', fs.existsSync(path.join(GRA, 'tools/battle-skip-siege-parity-live-test.cjs')));
+check('S6b battle-skip-equals-auto-resolve-test.cjs obecny', fs.existsSync(path.join(GRA, 'tools/battle-skip-equals-auto-resolve-test.cjs')));
 
-// CZESC B -- zywa scena (NIE_ZMIERZONO w tym przebiegu, patrz naglowek).
-nz++;
-console.log('NIE_ZMIERZONO: B (zywa scena AUTO vs Pomin na oblezenie-duze): AUTO do sufitu 400 tur ~45 min wall przy 1x; czesc B nie zaimplementowana w tym przebiegu');
-
-console.log(`RESULT pass=${pass} fail=${fail} nie_zmierzono=${nz}`);
+console.log(`RESULT pass=${pass} fail=${fail}`);
 process.exit(fail === 0 ? 0 : 1);

@@ -1115,6 +1115,9 @@ const STALL_TURN_LIMIT = 6;   // tury bez zmiany HP/morale/strat -> rozstrzygnij
 // wirtualnym), o rzedy wiekszy niz rozgrywane bitwy (zrzuty wlasciciela: tura 11).
 // Po przekroczeniu rozstrzygniecie = ten sam wynik co PAT silnika (morale), nie rachunek natychmiastowy.
 const FF_MAX_ROUNDS = 400;
+// R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (r3, ABC wlasciciela 2026-11-10): krotszy sufit tur dla
+// oblezenia BEZ wylomu (mur/palisada/brama stoi). Wartosc z combat-params.json (oblezenie.bez_wylomu_max_tur).
+const SIEGE_NO_BREACH_MAX_ROUNDS: number = Math.max(1, Math.round(Number(combatParamsData['oblężenie'].bez_wylomu_max_tur) || FF_MAX_ROUNDS));
 const MORALE_DEATH_RADIUS    = 3;    // Manhattan tiles within which allies are shaken
 
 // ---------------------------------------------------------------------------
@@ -2487,6 +2490,8 @@ export class BattleScene {
   private wallTileHp = new Map<number, number>();
   /** R1 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): brama lub kafel muru/palisady zniszczony. */
   private wallEverBreached: boolean = false;
+  /** Sufit tur oblezenia bez wylomu (domyslnie z combat-params.json; test moze nadpisac instancje). */
+  private siegeNoBreachMaxRounds: number = SIEGE_NO_BREACH_MAX_ROUNDS;
   /** Max HP pojedynczego kafla muru. */
   private static readonly WALL_TILE_HP = 640;
   /** HUD: pasek HP bramy + kafla muru. */
@@ -2639,7 +2644,7 @@ export class BattleScene {
   private _battleStatsOpen = false;
   /** C-23 „Szczegóły bitwy" (endDetails1E, TW v5) — otwierany z ekranu końca (C-12). */
   private _endDetailsEl: HTMLDivElement | null = null;
-  private _endWinner: 'atakujacy' | 'obronca' | null = null;
+  private _endWinner: 'atakujacy' | 'obronca' | 'remis' | null = null;
   private _endSurvivors: BattleUnit[] = [];
 
   private floatLabels:  FloatLabel[]        = [];
@@ -9382,7 +9387,7 @@ export class BattleScene {
     // (w turach) dotyczy tylko bitew, ktore silnik nie konczy (stan ustalony w oblezeniu).
     const wall0 = performance.now();
     while (!this.finished && performance.now() - wall0 < 40) {
-      if (this.roundNo >= FF_MAX_ROUNDS) { this._ffRoundCapResult(); return; }
+      if (this._roundCapVerdict()) { this._ffRoundCapResult(); return; }
       if (this._ffPendingAuto && !this.busy) { this._ffPendingAuto = false; this._ffEnterAuto(); }
       this.vNow += FF_STEP_MS;
       this._ffVirtualMs += FF_STEP_MS;
@@ -9398,35 +9403,60 @@ export class BattleScene {
   }
 
   /**
-   * Jedyne kryterium rozstrzygniecia po osiagnieciu sufitu FF_MAX_ROUNDS -- wspolne dla
-   * przewijania (skip) i walki AUTO (_checkEnd), zeby oba wyniki byly identyczne.
-   * Oblezenie bez wylomu: atakujacy nie moga wygrac (szturm odparty, zasada z _checkEnd),
-   * inaczej przewijanie dawalo zwyciestwo atakujacemu po samym morale (exploit: slabsza
-   * armia bierze dobrze bronione miasto). Poza oblezeniem: morale armii, remis -> obronca.
+   * Jedyne kryterium konca po sufitach tur -- wspolne dla przewijania (skip), walki AUTO i recznej
+   * (_checkEnd), zeby wszystkie sciezki dawaly IDENTYCZNY wynik.
+   *  - Oblezenie BEZ wylomu (mur/palisada/brama stoi): sufit siegeNoBreachMaxRounds (150 tur,
+   *    combat-params.json). Werdykt = REMIS (odparty szturm): atakujacy sie wycofuje, miasto zostaje
+   *    przy obroncy, obie strony ponosza straty z przebiegu (decyzja wlasciciela ABC 2026-11-10).
+   *  - Pozostale bitwy (w tym oblezenie Z wylomem): sufit FF_MAX_ROUNDS (400), rozstrzygniecie po
+   *    morale armii, remis morale -> obronca (jak PAT silnika).
+   * Zwraca null, gdy sufit nie zostal osiagniety.
    */
-  private _capRoundWinner(): { winner: 'atakujacy' | 'obronca'; reason: string } {
-    if (this.siegeWallCol >= 0 && !this.wallEverBreached) {
-      return { winner: 'obronca', reason: 'SZTURM ODPARTY: brak wylomu w murze/palisadzie' };
+  private _roundCapVerdict(): { winner: 'atakujacy' | 'obronca' | 'remis'; reason: string; cap: number } | null {
+    const noBreach = this.siegeWallCol >= 0 && !this.wallEverBreached;
+    if (noBreach) {
+      const cap = Math.min(this.siegeNoBreachMaxRounds, FF_MAX_ROUNDS);
+      if (this.roundNo < cap) return null;
+      return { winner: 'remis', reason: 'SZTURM ODPARTY (remis): brak wylomu w murze/palisadzie, atakujacy sie wycofuja, miasto zostaje przy obroncy', cap };
     }
+    if (this.roundNo < FF_MAX_ROUNDS) return null;
     const ratioA = this._armyMoraleRatio('atk');
     const ratioD = this._armyMoraleRatio('def');
     return {
       winner: ratioA <= ratioD ? 'obronca' : 'atakujacy',
       reason: 'rozstrzygniecie po morale armii',
+      cap: FF_MAX_ROUNDS,
     };
   }
 
-  /**
-   * Sufit przewijania (FF_MAX_ROUNDS): rozstrzygniecie tym samym kryterium co PAT silnika
-   * (_capRoundWinner), z pelnym zakonczeniem bitwy i ekranem wyniku.
-   */
-  private _ffRoundCapResult(): void {
+  /** Koniec bitwy REMISEM (odparty szturm): ocalali obu stron wracaja na mape, bez zwyciezcy. */
+  private _finishDraw(reason: string, cap: number): void {
     this.finished = true;
     this._ffActive = false;
     this._ffQueue = [];
-    const cap = this._capRoundWinner();
+    this.log.push('=== PAT: ' + cap + ' tur bez rozstrzygniecia -- ' + reason + ' ===');
+    this.log.push('=== Koniec bitwy: REMIS ===');
+    this._endWinner = 'remis';
+    this._endSurvivors = [
+      ...this._battleUnitsForMapExport(this.atk),
+      ...this._battleUnitsForMapExport(this.def),
+    ];
+    this._showEndScreen('remis');
+  }
+
+  /**
+   * Sufit przewijania: rozstrzygniecie tym samym kryterium co _checkEnd (_roundCapVerdict),
+   * z pelnym zakonczeniem bitwy i ekranem wyniku.
+   */
+  private _ffRoundCapResult(): void {
+    const cap = this._roundCapVerdict();
+    if (!cap) return;
+    if (cap.winner === 'remis') { this._finishDraw(cap.reason, cap.cap); return; }
+    this.finished = true;
+    this._ffActive = false;
+    this._ffQueue = [];
     const winner = cap.winner;
-    this.log.push('=== PAT (przewijanie): ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+    this.log.push('=== PAT (przewijanie): ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
     this._endWinner = winner;
     this._endSurvivors = this._battleUnitsForMapExport(winner === 'atakujacy' ? this.atk : this.def);
     this._showEndScreen(winner);
@@ -10124,12 +10154,15 @@ export class BattleScene {
       this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- armia w rozsypce! ===');
       aliveD = false;
     }
-    // Sufit tur (FF_MAX_ROUNDS) w AUTO: ten sam werdykt co przewijanie (_capRoundWinner),
+    // Sufit tur w AUTO/recznej: ten sam werdykt co przewijanie (_roundCapVerdict),
     // dzieki czemu "Pomin do wyniku" i dojscie AUTO do sufitu daja identyczny wynik.
-    if (aliveA && aliveD && this.roundNo >= FF_MAX_ROUNDS) {
-      const cap = this._capRoundWinner();
-      this.log.push('=== PAT: ' + FF_MAX_ROUNDS + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
-      if (cap.winner === 'obronca') aliveA = false; else aliveD = false;
+    if (aliveA && aliveD) {
+      const cap = this._roundCapVerdict();
+      if (cap) {
+        if (cap.winner === 'remis') { this._finishDraw(cap.reason, cap.cap); return true; }
+        this.log.push('=== PAT: ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+        if (cap.winner === 'obronca') aliveA = false; else aliveD = false;
+      }
     }
 
     if (aliveA && aliveD) return false;
@@ -10239,7 +10272,7 @@ export class BattleScene {
   }
 
   private _battleSummaryWinner(): BattleSummaryWinner {
-    if (this._endWinner === 'atakujacy' || this._endWinner === 'obronca') return this._endWinner;
+    if (this._endWinner === 'atakujacy' || this._endWinner === 'obronca' || this._endWinner === 'remis') return this._endWinner;
     if (this.finished) {
       const aliveA = this.atk.some(u => !u.dead && !u.removed);
       const aliveD = this.def.some(u => !u.dead && !u.removed);
@@ -10590,7 +10623,7 @@ export class BattleScene {
     if (!suppress) this._syncBattleToolbarMode();
   }
 
-  private _showEndScreen(winner: 'atakujacy' | 'obronca'): void {
+  private _showEndScreen(winner: 'atakujacy' | 'obronca' | 'remis'): void {
     this._ffActive = false;
     this._ffQueue = [];
     if (this._endScreenShown) return;
@@ -10602,13 +10635,14 @@ export class BattleScene {
     const playerSide = this._playerControlSide();
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
-    const playerWon = this._playerWonFromBattleWinner(winner);
+    const isDraw = winner === 'remis';
+    const playerWon = !isDraw && this._playerWonFromBattleWinner(winner);
     // Muzyka ekranu końca bitwy (wg tej samej flagi playerWon, co wizualia):
     // wygrana -> utwór zwycięstwa, przegrana -> utwór porażki. Overlay bitwy jest
     // aktywny, więc to czysta wymiana utworu; muzykę mapy wznawia setMood('mapa')
     // wołane z callbacku onFinish/onCancel bitwy (patrz main.ts).
-    if (playerWon) startVictoryMusic(); else startDefeatMusic();
-    const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
+    if (playerWon) startVictoryMusic(); else if (!isDraw) startDefeatMusic();
+    const winSub = isDraw ? 'Remis \u2014 szturm odparty' : winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
     const enemyRoster = playerSide === 'atk' ? this.def : this.atk;
     const killedTypeIds = playerWon
       ? enemyRoster.map(u => String(u.bu.nazwa || '')).filter(Boolean)
@@ -10628,6 +10662,7 @@ export class BattleScene {
       : 0;
     const endUi = showEndScreen1E(this.overlay, {
       playerWon,
+      draw: isDraw,
       playerSide,
       winnerLabel: winSub,
       battleTitle: 'Tura ' + this.roundNo + ' \u00b7 ' + this._fmtBattleClock(elapsedMsEnd),

@@ -46,6 +46,8 @@
     "hill_defense_mult": 1.5,
     "mountain_defense_mult": 1.75,
     "fortify_obrona_bonus": 2,
+    "bez_wylomu_max_tur": 150,
+    "_bez_wylomu_max_tur_opis": "R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (ABC wlasciciela 2026-11-10): sufit tur taktycznej bitwy OBLEZENIA, w ktorej nikt nie zrobil wylomu (mur/palisada/brama stoi). Po osiagnieciu = REMIS (odparty szturm): atakujacy sie wycofuje, obie strony ponosza straty z przebiegu, miasto zostaje przy obroncy, bez lupu/weteranow/punktow mocy. Ten sam werdykt w AUTO, w recznej i w Pomin do wyniku. Wartosc 150 = ZALOZENIE (wlasciciel nie podal liczby) -- latwo zmienic tutaj. Bitwa z wylomem ma osobny sufit FF_MAX_ROUNDS=400 (rozstrzygniecie po morale).",
     "fortify_obrona_proc": 50,
     "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
     "_militia_opis": "R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec wlasciciela 2026-11-03): Milicja = 1 jednostka na 1 mieszkanca (militia_pop_fraction 1.0), ZAWSZE przy ataku na miasto z ukonczonym budynkiem Garnizon, jako wsparcie realnych obroncow. Polowa wrecz (nieparzysta: dodatkowa wrecz), polowa dystans; typy wg EPOKI wlasciciela miasta (militia_roster, nazwy z units.json). Wrecz: staty x militia_strength_fraction (min 1 gdy oryginal > 0). Dystans: PELNE staty. Morale ('Morale bazowe') x militia_morale_fraction, z podloga 'Morale ucieczki' + militia_morale_min_margin_over_flee (inaczej jednostka bylaby zlamana od startu). Polegli milicjanci zmniejszaja ludnosc (min. 1 zostaje).",

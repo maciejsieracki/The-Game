@@ -22,6 +22,10 @@
  *   WSKIP_BATTLE_SRC  mutant sceny        WSKIP_TIMEOUT_S (domyslnie 540)
  *   WSKIP_AUTO_SPEED_IDX (domyslnie 0 = 1x; 3 = 8x, skraca czas przebiegu AUTO)
  *   WSKIP_COMPARE=1  tylko porownanie wynikow z WSKIP_OUT
+ *   WSKIP_QUERY   dodatkowe parametry URL, np. "&bare=1" (oblezenie BEZ machin => brak wylomu)
+ *   WSKIP_NOBREACH_CAP  nadpisanie sufitu tur oblezenia bez wylomu (instancja sceny; domyslnie 150 z combat-params.json)
+ *   WSKIP_DEF_MORALE  ulamek morale startowego obroncow (np. 0.7) -- stan, w ktorym stara regula morale dawala atakujacemu miasto
+ *   WSKIP_EXPECT_WINNER / WSKIP_EXPECT_BREACH (=1|0)  asercje przy WSKIP_COMPARE=1
  *
  * Brak Chromium / playwright -> NIE_ZMIERZONO (exit 2).
  */
@@ -101,15 +105,21 @@ async function runOne(browser, distDir, mode, seed) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=oblezenie-duze', { waitUntil: 'load', timeout: 120000 });
+  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=oblezenie-duze' + (process.env.WSKIP_QUERY || ''), { waitUntil: 'load', timeout: 120000 });
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
     if (ready) break;
     await page.waitForTimeout(50);
   }
   await page.evaluate(() => { if (!window.__lastBattleScene) throw new Error('brak sceny bitwy po pompowaniu klatek'); });
-  await page.evaluate(([mode, speedIdx]) => {
+  await page.evaluate(([mode, speedIdx, capOverride, defMorale]) => {
     const bs = window.__lastBattleScene;
+    // Obroncy ze slabszym morale (jak kara startowa slabszej strony, MORALE przewaga mocy): to jest stan, w ktorym
+    // stara regula PAT po samym morale oddawala miasto atakujacemu (exploit). 1 = bez zmian.
+    if (defMorale && parseFloat(defMorale) < 1) {
+      for (const u of bs.def) u.morale = Math.max(1, Math.round(u.moraleMax * parseFloat(defMorale)));
+    }
+    if (capOverride) bs.siegeNoBreachMaxRounds = parseInt(capOverride, 10); // skrocony sufit testowy (oblezenie bez wylomu)
     window.__wskipSpeedIdx = speedIdx;
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
     window.__dt = 16;
@@ -121,7 +131,7 @@ async function runOne(browser, distDir, mode, seed) {
       if (bs._manualMode) bs._toggleManualMode();  // R -> AUTO (jak gracz)
       bs._setSpeedIdx(parseInt(window.__wskipSpeedIdx || '0', 10), { clamp: true }); // domyslnie 1x
     }
-  }, [mode, process.env.WSKIP_AUTO_SPEED_IDX || '0']);
+  }, [mode, process.env.WSKIP_AUTO_SPEED_IDX || '0', process.env.WSKIP_NOBREACH_CAP || '', process.env.WSKIP_DEF_MORALE || '']);
   const limitMs = parseInt(process.env.WSKIP_TIMEOUT_S || '540', 10) * 1000;
   const t0w = Date.now();
   let fin = false;
@@ -172,6 +182,18 @@ async function main() {
         && a.atk.hp === k.atk.hp && a.def.hp === k.def.hp;
       check('P1 seed ' + sd + ': wynik SKIP == wynik AUTO (zwyciezca, tura, straty, zywi, HP)', same, { auto: a, skip: k });
       if (!same) allOk = false;
+      if (process.env.WSKIP_EXPECT_WINNER) {
+        const exp = process.env.WSKIP_EXPECT_WINNER;
+        const okW = a.winner === exp && k.winner === exp;
+        check('P2 seed ' + sd + ': zwyciezca == ' + exp + ' (AUTO i SKIP)', okW, { auto: a.winner, skip: k.winner });
+        if (!okW) allOk = false;
+      }
+      if (process.env.WSKIP_EXPECT_BREACH) {
+        const expB = process.env.WSKIP_EXPECT_BREACH === '1';
+        const okB = a.breached === expB && k.breached === expB;
+        check('P3 seed ' + sd + ': wylom == ' + expB + ' (AUTO i SKIP)', okB, { auto: a.breached, skip: k.breached });
+        if (!okB) allOk = false;
+      }
     }
     console.log('--- ' + pass + ' ok, ' + fail + ' fail');
     process.exit(fail || !allOk ? 1 : 0);
