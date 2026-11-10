@@ -485,7 +485,7 @@ import {
   siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
 } from './game/diplomacy-siege-war-gate';
 import { combatAnchorFor } from './game/stack-leader';
-import { stackGroupIdOf as stackGroupIdOfAnchor } from './game/armyMerge';
+import { stackGroupIdOf as stackGroupIdOfAnchor, besiegingUnitsOnHex, inheritSiegeOnJoin } from './game/armyMerge';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -14416,7 +14416,11 @@ async function boot(): Promise<void> {
       const rep = units.find(x => x.id === movedUnitIds[0]);
       if (!rep || !isHuman(rep.ownerId)) return;
 
-      const onHex = coLocatedForMergePrompt(units, rep.q, rep.r, rep.ownerId);
+      // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: armia OBLEGAJĄCA na tym heksie
+      // (poza miastem) jest celem dołączenia -- dokładamy ją do zbioru; garnizon miasta nie wchodzi.
+      const besiegersHere = besiegingUnitsOnHex(units, rep.q, rep.r, rep.ownerId)
+        .filter(x => !movedSet.has(x.id));
+      const onHex = [...coLocatedForMergePrompt(units, rep.q, rep.r, rep.ownerId), ...besiegersHere];
       const existing = onHex.filter(x => !movedSet.has(x.id));
       if (existing.length === 0) return;
 
@@ -14463,6 +14467,9 @@ async function boot(): Promise<void> {
       }
       const applyMerge = (autoFollow: boolean): void => {
         const garnizonMode = existing.every(x => x.inGarnizon === true);
+        // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: dołączenie do armii oblegającej
+        // -- nowe jednostki przejmują stan oblężenia (oblegaCityId); liczniki w City bez zmian.
+        inheritSiegeOnJoin(arrivingUnits, besiegersHere);
         // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: garnizon dziedziczony tylko na heksie
         // WLASNEGO miasta (inaczej nowoprzybyli stawaliby sie niewybieralni).
         // Runda 2: normalizeMergedFortify (armyMerge.ts) -- poza garnizonem miasta merge
@@ -17470,6 +17477,7 @@ async function boot(): Promise<void> {
       if (city) {
         city.oblegane = false;
         delete city.oblegajacyOwnerId;
+        delete city.siegeArmyGroupId;
         city.siegeCapitulationPending = false;
         delete city.siegeStarveStartMaxHp;
         clearSiegeMachines(city);
@@ -17492,10 +17500,15 @@ async function boot(): Promise<void> {
       const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(cityId);
       if (bId === undefined) return;
 
+      // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: blokada (oblegaCityId + ruchLeft=0)
+      // dotyczy WYŁĄCZNIE stosu, który faktycznie oblega (armia gracza z startMapSiege). Sąsiedni
+      // stos tego samego właściciela przy murze NIE oblega i zostaje wolny. AI: bez zmian (wszyscy przy murze).
+      const armyGroup = bId === 0 ? city.siegeArmyGroupId : undefined;
       let marked = 0;
       for (const u of units) {
         if (u.ownerId !== bId) continue;
         if (hexDistance(u.q, u.r, city.q, city.r) !== 1) continue;
+        if (armyGroup !== undefined && stackGroupIdOfAnchor(u) !== armyGroup) continue;
         u.oblegaCityId = cityId;
         u.ruchLeft = 0;
         marked++;
@@ -17576,6 +17589,9 @@ async function boot(): Promise<void> {
       syncCityGarnizon(city);
       siegeTurnByCity.set(city.id, 1);
       siegeBesiegerByCity.set(city.id, ctx.oblegajacyOwnerId);
+      // R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1: zapamiętaj stos faktycznie oblegający.
+      // Zapis na City (nie w mapie domknięcia): tylko stos faktycznie oblegający dostaje blokadę.
+      city.siegeArmyGroupId = ctx.oblegajacyOwnerId === 0 ? stackGroupIdOfAnchor(ctx.atakujacy) : undefined;
       refreshSiegeMarkers();
       syncSiegePanelMeta(city);
       if (ctx.oblegajacyOwnerId === 0) {

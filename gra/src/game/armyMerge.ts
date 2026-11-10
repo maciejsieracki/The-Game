@@ -125,6 +125,49 @@ export function coLocatedForMergePrompt(
   );
 }
 
+/**
+ * DOŁĄCZENIE DO ARMII OBLEGAJĄCEJ (R-WEB-SIEGE-NEARBY-UNIT-LOCK-AND-JOIN-BESIEGING-ARMY-Q1).
+ * Jednostki właściciela stojące na heksie POZA miastem, które oblegają miasto (`oblegaCityId`).
+ * `coLocatedForMergePrompt` ich świadomie NIE zwraca (zbiór „do scalenia" bez oblegających), więc
+ * scalenie z armią oblegającą dokładamy osobno: to jest jedyna droga dołączenia do oblężenia.
+ * Garnizon (w mieście) nigdy nie jest tu zwracany -- dołączenie do armii w mieście pozostaje zakazane.
+ */
+export function besiegingUnitsOnHex(
+  units: ReadonlyArray<RuntimeUnit>,
+  q: number,
+  r: number,
+  ownerId: number,
+): RuntimeUnit[] {
+  return units.filter(
+    u => u.ownerId === ownerId
+      && u.q === q
+      && u.r === r
+      && u.inGarnizon !== true
+      && u.oblegaCityId !== undefined,
+  );
+}
+
+/**
+ * Stan oblężenia armii przechodzi na dołączające jednostki (nie resetuje licznika): każda dołączająca
+ * jednostka bez `oblegaCityId` dostaje id miasta z armii oblegającej. Liczniki oblężenia żyją w `City`
+ * (siegeTurnByCity, głód, machiny) i nie są tu dotykane. Zwraca liczbę przejętych jednostek.
+ * EN: joining units inherit the besieging army's `oblegaCityId`; city-side siege counters are untouched.
+ */
+export function inheritSiegeOnJoin(
+  arriving: ReadonlyArray<RuntimeUnit>,
+  besiegers: ReadonlyArray<RuntimeUnit>,
+): number {
+  const src = besiegers.find(b => b.oblegaCityId !== undefined);
+  if (!src || src.oblegaCityId === undefined) return 0;
+  let taken = 0;
+  for (const a of arriving) {
+    if (a.oblegaCityId !== undefined) continue;
+    a.oblegaCityId = src.oblegaCityId;
+    taken += 1;
+  }
+  return taken;
+}
+
 /** Sąsiednie heksy z widocznym stosem armii właściciela. */
 export function adjacentVisibleArmyHexes(
   units: ReadonlyArray<RuntimeUnit>,
