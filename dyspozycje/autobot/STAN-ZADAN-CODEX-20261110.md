@@ -1,40 +1,27 @@
-# Stan zadań Codex
+# Niezakończone zadania Codex
+Odczyt: 2026-11-10T19:14:21.012467+01:00
+Ostatni potwierdzony etap, nie przyszła bramka. Robocza FALA610, MD5efca99d547572228b8367878e777a391; push/readbackPASS. Zakończone nie są tu liczone jako otwarte.
 
-Odczyt: 2026-11-10T15:43:33.527399+01:00
-Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego po błędzie limitu. Długi bez rejestracji nie mają fikcyjnego1/11. Wdrożenia FALA589–606 nie są otwierane ponownie.
-
-|Temat|Etap|Status|
+|Temat|Etap|Rzeczywisty stan / następny krok|
 |---|---|---|
-|Zasady Codex max4tematy|11/11|zintegrowane/push8778e3613|
-|Limit zamiany jednostek AI w konfiguracji|11/11|RoboczaFALA607|
-|Mnożnik dystansowy na kartach #205|11/11|RoboczaFALA607|
-|Koszty technologii w encyklopedii|11/11|RoboczaFALA607|
-|Komentarz Garncarstwa|11/11|push87253ca4b|
-|Opis i tag Haamongi|11/11|RoboczaFALA608|
-|Widoczność Rekrutuj wszystkie|11/11|audytzograniczeniami,push18fc3ffe4|
-|Test łupów|11/11|12/12,pushc9cc33bc8|
-|Test weteranów|11/11|79/79,push727bfcf0f|
-|Test terminologii|11/11|796/796,pushaac34b521|
-|Test ekonomii AI|11/11|31/31+9/9,push8778e3613|
-|Test plonówPR141|11/11|135checks,push5f7a75943|
-|Teksty jednostek — wydzielona partia|11/11|Robocza FALA609; cały audyt języka pozostaje częściowy|
-|D-FOG-F: 3 skrypty pomiarowe|11/11|push88c6cc53a; preflight wykonany, pełny pomiar imperium nie był uruchomiony|
-|Test głodu/karencji wojska|11/11|40/40+FC,push39e24b65c|
-|Test kart technologii Top5|5/11|595/0 i generator PASS; niezależny Evaluator uruchomiony|
-|Graficzny wybór heksu rozdzielenia|11/11|Robocza FALA609, push/readback potwierdzony|
-|Pobliskie wojska do bitwy oblężniczej|5/11|kandydat8784fdd49; Node/typecheck PASS; niezależny Evaluator uruchomiony; pomocniczy fragment Chromium niezmierzony|
-|Pomiń/AUTO przywyłomie #202|1/11|KOLEJKA|
-|Machiny tylko podczasoblężenia|1/11|Zasady POTWIERDZONE w dodatkach1–2 dispatchu2026-11-09; nie wdrożono, gotowe do Operatora po zwolnieniu slotu|
-|AI szuka głównejarmiiwroga|1/11|KOLEJKA|
-|Wezwanie sojusznika dowojny|1/11|KOLEJKA|
-|Samodzielne ofertyhandloweAI|1/11|KOLEJKA/decyzje|
-|Test civpedia-karty-nazwa-przyciskiem|11/11|28/28, niezależne Eval/FC; push a88093eaf; test-only deploy N/A|
-|Test wonder-transfer-on-conquest|6/11|niezależny Evaluator PASS43/43; Final Control uruchomiony|
-|Pozostały audyt tras tekstowych UI Q2|5/11 — implementacja|audyt potwierdził4 usterki; poprawka39/39+typecheck; niezależna ewaluacja poprawki uruchomiona|
-|Model falangi|WSTRZYMANY|odłożonydecyzjąwłaściciela|
-|REPIN Rust|WSTRZYMANY|po kolejceweb|
-|Decyzje #201|OCZEKUJE|nie implementowaćbrakującychdecyzji|
+|Armia: ilości0 i globalna rekrutacja per miasto; osobnyHUD tylko górnyprzycisk|6/11|EvaluatorPASS45/0+31/0+25/0; FinalControluruchomiony|
+|Machiny budowane tylko w oblężeniu|4/11|Kandydat6218f2ab1, Node24/24+typecheck; Operatoraktywny, livebrowser i baseline2czerwonychjeszcze w toku|
+|sciencePicker odmiana ETA|6/11|EvaluatorPASS16/16Chromium+mutationred; FinalControluruchomiony|
+|Konnica/rydwany przód/boki/tył|4/11|Implementacja niezacommitowana; operator miałusageerror, próbawznowieniawysłana; liveUIjeszczebezwyniku. Nie liczyć jakoaktywnypoprawniepracujący dopóki wznowienieniepotwierdzone|
+|AI szuka głównej armii wroga|2/11|Diagnozazapisana; brak zatwierdzonych Ntur/ratiosiły i zakresuobronywłasnegooblężenia; implementacjanierozpoczęta|
+|Pomiń/AUTO przy wyłomie|1/11|Kolejka; serializowaćbattle/siege|
+|Wezwanie sojusznika do wojny|1/11|Kolejka|
+|Oferty handlowe AI dla gracza|1/11|Kolejka/decyzje|
+|Pełny audyt języka|PARTIAL|Zamkniętepartie609/610 niezamykającałości; kontynuacjapokryciapokolejnychslotach|
+|Pełny test dużej cywilizacji|Przed1|Skryptygotowe; właściwypomiarnaostatkuweb|
+|ModelFalangi|Przed1|Na końcuweb po najnowszejautoryzacjicałejkolejki|
+|REPINRust|Przed1|Po zmianachweb|
+|#201:obywatel/kamera/Ważne|Przed1|Odczytaćdecyzje i wyjaśnićbrakujące|
+|#201:marszpowiadomienia/limitstosu|Przed1|Sprawdzić599 przedzmianami|
+|#201:nazwyterenów|Przed1|Nie zgadywaćbrakującychdefinicji|
+|#201:×0SólKoń|Przed1|DecyzjaUX, niebłądilościmechaniki|
+|#201:20%rozejmu|Przed1|605jużwdrożony; tylkointerpretacjadoprecyzowania|
+|#201:Brąz1994AI|Przed1|Pomiar/repro; błądniepotwierdzony|
+|KontrolawizualnaRoboczej|Przed1|Macierzograniczeńbieżącychwydań; niesourcegrepjakolive|
 
-Cztery aktywne tematy: Top5 (Evaluator), oblężenia (Evaluator), wonder-transfer (Final Control), teksty UI Q2 (Evaluator implementacji). Operatorzy ukończyli pracę; kontrole uruchomione po sprawdzeniu raportów. Robocza nadal FALA609, MD5 eed8b5c146e3e5e3bbce803fc98a1c43.
-
-Aktualizacja po publikacji: Top5, cztery poprawki Q2 i pobliskie wojska oblężnicze11/11 FALA610, publication36e52cc82, MD5efca99d547572228b8367878e777a391, freshGitreadbackPASS. Cały parentaudytjęzykaPARTIAL. Aktualna kolejka: KOLEJKA-AKTYWNA-CODEX-20261110.md.
+Kolejka pełna: KOLEJKA-AKTYWNA-CODEX-20261110.md. Max4tematy, osobne roleLunaHigh. Raport nie zatrzymuje pracy. Nie ma callable scheduler, więc nie deklarujemy samoczynnych wake-upów w tle.
