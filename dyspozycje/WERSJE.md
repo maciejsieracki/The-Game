@@ -1,3 +1,9 @@
+## ROBOCZA 9bb97442 -- 2026-11-06 -- FALA 592: CITREC: karta listy dyplomacji pokazuje Rekruci (pełne jednostki, bieżąca/maks.) (testowa)
+
+- CITREC 01238e0cb (+allowlista main.ts, diplomacyPanel.ts)
+- Weryfikacja: diplomacy-display 40/0, recruits-level 22/22, lista-podglad 53/0, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO render w grze; dopisek jedn. i Obywatele w kolejnym temacie; REPIN Rust UI
+
 ## ROBOCZA f34dc756 -- 2026-11-06 -- FALA 591: RESPECT-DISPLAY: panel dyplomacji pokazuje prawdziwy Respekt (limit wojenny tylko w etykiecie Wrogi) (testowa)
 
 - RESPDISP 11c70f4ab
