@@ -10,3 +10,7 @@ ALLOWLISTA: gra/src/battle/*.ts, gra/src/game/siege*.ts, main.ts (zbieranie ucze
 
 ## Kwalifikacja Codex poFALI609
 Operator/Evaluator/FinalControlgpt-6-luna high. Nie używać przestarzałego120; odkryć i zachować aktualnyMAX_PER_SIDE. BATTLE-DEAD/SKIP orazSIEGELOCK606jużwdrożone. Zakres to skład bitwy, nie ponowneodblokowaniesąsiedniegostosu. Używać aktualnychregułwojny/sojuszy/neutralności, nie wciągaćpokojowychstron wwojnębezautoryzacji. Najpierw diagnoza/repro i konkretnaallowlista przededycją. IZOLACJA: /tmp/codex-siege-nearby-609, osobna gałąź. Można commitować własnykandydatna własnejgałęzi; bezpush/merge/deploy.
+
+## Korekta procesu po Final Control (2026-11-10)
+
+Po pierwotnej edycji dispatchu i kandydata, Final Control wykazał dwie braki formalne: `gra/src/game/diplomacy-siege-war-gate.ts` nie była wymieniona w allowliście, a wymagany wpis LEDGER nie istniał dla tego dokładnego ID. Nie zmieniam historii ani nie przedstawiam tych ścieżek jako zatwierdzonych przed edycją. Orkiestrator autoryzował teraz (2026-11-10) minimalne uzupełnienie allowlisty: `gra/src/game/diplomacy-siege-war-gate.ts` dla istniejącego helpera wspólnego predykatu rzeczywistej wojny i formalnego aktywnego sojuszu oraz `dyspozycje/rust-port/LEDGER.md` z dokładnym web ID/commitem i zobowiązaniem parytetu Rust P3+. To zobowiązanie dokumentacyjne nie uruchamia implementacji Rust. Kandydat `8784fdd49c5eadb432ebb0e8e23359740bd7d9b5` pozostaje w stanie FAIL do niezależnego Final Control follow-up.

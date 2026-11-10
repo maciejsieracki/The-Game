@@ -108,3 +108,7 @@ No Chromium run is part of this lane.
 - `siege-nearby-lock-join-test.cjs`: 23 assertions PASS; its browser portion reports NIE_ZMIERZONO because Chromium is unavailable.
 - `siege-blockade-no-recruit-reinforce-test.cjs`: Node logic/structural sections passed; its script then failed launching the absent Chromium executable at `/opt/pw-browsers/chromium`, so browser verification is NIE_ZMIERZONO.
 - An exploratory `defense-breakdown-test.cjs` run fails at its existing fixture lookup (`grecy.bonusy` is undefined) before reaching the changed siege path; the new focused test covers owner grouping wiring directly.
+
+## Process correction after Final Control (2026-11-10)
+
+The preceding allowlist records the paths used for the initial candidate; it did not include `gra/src/game/diplomacy-siege-war-gate.ts` or `dyspozycje/rust-port/LEDGER.md`. Final Control correctly flagged both omissions. After the initial edit, the orchestrator authorized the narrow correction: add `gra/src/game/diplomacy-siege-war-gate.ts` to the task allowlist for the already-added helper, because it is the common seam for actual-war and formal-active-alliance membership, and add `dyspozycje/rust-port/LEDGER.md` for the exact task-to-web-commit-to-Rust-P3+ parity obligation. This correction is dated 2026-11-10 and does not imply that the paths were in the original pre-edit allowlist. No Rust implementation is started by this entry. Candidate `8784fdd49c5eadb432ebb0e8e23359740bd7d9b5` remains FAIL pending independent Final Control follow-up.
