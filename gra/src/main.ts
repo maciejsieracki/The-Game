@@ -28440,7 +28440,9 @@ async function boot(): Promise<void> {
     // koordynaty wyłącznie wtedy, gdy REALNE ownersShareLandBorderLive potwierdzi
     // wspólną granicę. Wszystkie odczyty/preview/breakdown/tick poniżej wołają
     // istniejące funkcje produkcyjne; hak nie zna stawek ani nie przelicza reguł.
-    (window as any).__borderEraPenaltyRuntimeTestDebug = {
+    if (
+      new URLSearchParams(location.search).get('civTest') === '1'
+    ) (window as any).__borderEraPenaltyRuntimeTestDebug = {
       ownerIds: (): number[] => allPowerOwnerIds().filter(id => id > 0 && !isBarbarian(id)
         && !isCityStateOwner(id) && !isHuman(id) && aiOwnerCivMap.has(id)),
       setupFixture: (ownerA: number, ownerB: number): Record<string, unknown> => {

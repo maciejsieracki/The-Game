@@ -6,7 +6,10 @@
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
-const URL = process.env.GAME_URL || 'http://127.0.0.1:612/?playtest=mapa';
+const GAME_URL = new URL(process.env.GAME_URL || 'http://127.0.0.1:612/?playtest=mapa');
+GAME_URL.searchParams.set('civTest', '1');
+const UNFLAGGED_URL = new URL(GAME_URL);
+UNFLAGGED_URL.searchParams.delete('civTest');
 const SLOT = 'border-era-runtime-defense';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: got ${actual}, expected ${expected}`);
@@ -19,9 +22,25 @@ const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected)
   page.on('pageerror', e => pageErrors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') console.log(`[browser:${m.type()}] ${m.text().slice(0, 260)}`); });
   try {
-    await page.goto(URL, { waitUntil: 'load', timeout: 60000 });
+    await page.goto(UNFLAGGED_URL.toString(), { waitUntil: 'load', timeout: 60000 });
+    await page.waitForFunction(() => window.__eraTestDebug
+      && window.__eraTestDebug.getWorldState().citiesLen > 0, null, { timeout: 120000 });
+    assert.equal(await page.evaluate(() => typeof window.__borderEraPenaltyRuntimeTestDebug), 'undefined',
+      'state-mutating border hook is absent without civTest=1 after real app boot');
+    assert.deepEqual(pageErrors, [], 'no page errors in default playtest');
+    console.log('exposure default PASS: civTest hook absent after real playtest boot');
+
+    pageErrors.length = 0;
+    await page.goto(GAME_URL.toString(), { waitUntil: 'load', timeout: 60000 });
     await page.waitForFunction(() => window.__borderEraPenaltyRuntimeTestDebug
       && window.__eraTestDebug && window.__eraTestDebug.getWorldState().citiesLen > 0, null, { timeout: 120000 });
+    const hookMethods = await page.evaluate(() => Object.keys(window.__borderEraPenaltyRuntimeTestDebug)
+      .filter(name => typeof window.__borderEraPenaltyRuntimeTestDebug[name] === 'function'));
+    for (const method of ['ownerIds', 'setupFixture', 'pairEvidence', 'applyProductionTick', 'quickSave', 'loadSlot']) {
+      assert.ok(hookMethods.includes(method), `civTest=1 exposes ${method}`);
+    }
+    assert.deepEqual(pageErrors, [], 'no page errors with civTest=1');
+    console.log('exposure flagged PASS: civTest=1 hook methods', hookMethods.length);
     let ownerIds = await page.evaluate(() => window.__borderEraPenaltyRuntimeTestDebug.ownerIds());
     if (ownerIds.length < 2) {
       await page.waitForFunction(() => window.__aiBuildingsTestDebug, null, { timeout: 30000 });
