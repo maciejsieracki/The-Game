@@ -1,0 +1,21 @@
+PASS S1a HTML bez `data:audio/`
+PASS S1b HTML bez elementów danych audio (data-mime="audio/…")
+PASS S1c HTML ma <script src> dokładnie do wszystkich pakietów (względna ścieżka, kolejność) — {"packNames":["audio-pack-1.js","audio-pack-2.js","audio-pack-3.js"],"srcTags":["audio-pack-1.js","audio-pack-2.js","audio-pack-3.js"]}
+PASS S2a nazwy pakietów ciągłe audio-pack-1..N — ["audio-pack-1.js","audio-pack-2.js","audio-pack-3.js"]
+PASS S2b każdy pakiet < 90 MB — {"audio-pack-1.js":39803262,"audio-pack-2.js":39999512,"audio-pack-3.js":11556324,"index.html":14396604}
+PASS S2c żaden plik wyjściowy > 95 MB — {"audio-pack-1.js":39803262,"audio-pack-2.js":39999512,"audio-pack-3.js":11556324,"index.html":14396604}
+PASS S3 każdy mp3 źródłowy w dokładnie jednym pakiecie, bajty = SHA-256 źródła — {"srcMp3":91,"unique":91,"inPacks":91,"missing":[],"extra":0,"dup":0}
+FAIL WX wyjątek scenariusza — page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/codex-release-out-40db31f20/index.html?playtest=mapa
+Call log:
+[2m  - navigating to "file:///tmp/codex-release-out-40db31f20/index.html?playtest=mapa", waiting until "load"[22m
+
+    at gotoMapa (/tmp/codex-release-40db31f20/gra/tools/audio-sidecar-test.cjs:106:14)
+    at scenario (/tmp/codex-release-40db31f20/gra/tools/audio-sidecar-tes
+FAIL NX wyjątek scenariusza — page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/civ-nopack-m7hPxb/index.html?playtest=mapa
+Call log:
+[2m  - navigating to "file:///tmp/civ-nopack-m7hPxb/index.html?playtest=mapa", waiting until "load"[22m
+
+    at gotoMapa (/tmp/codex-release-40db31f20/gra/tools/audio-sidecar-test.cjs:106:14)
+    at scenario (/tmp/codex-release-40db31f20/gra/tools/audio-sidecar-test.cjs:139:11)
+    at
+audio-sidecar-test: FAIL (2)
