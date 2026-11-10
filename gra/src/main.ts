@@ -1565,6 +1565,9 @@ import {
   isTruceBreach,
   normalizeTruceDuration,
   TRUCE_DEFAULT_TURNS,
+  truceEndAiAccepts,
+  truceEndOfferTarget,
+  truceEndOfferExpired,
 } from './game/diplomacy-peace-lock';
 import {
   computeIncomingPlayerAcceptNetPw,
@@ -11666,11 +11669,17 @@ async function boot(): Promise<void> {
         });
       }
       const cur = getDiploRelation(proposerId, responderId);
-      setDiploRelation(
-        proposerId,
-        responderId,
-        applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
-      );
+      if (truceTurns != null) {
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C): rozejm NIE daje Zaufania (0) — tylko zmiana statusu
+        // na 'pokoj' (rozejm = status 'pokoj' + truceUntilTurn; pokój stały nadal +5).
+        setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
+      } else {
+        setDiploRelation(
+          proposerId,
+          responderId,
+          applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
+        );
+      }
       if (truceTurns != null) {
         // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
         // okna N3 — wypowiedzenie w oknie rozejmu jest złamaniem (kara + flaga, patrz
@@ -11682,13 +11691,17 @@ async function boot(): Promise<void> {
           peaceUntilTurn: undefined,
           n3Window: undefined,
           truceUntilTurn: until ?? undefined,
+          // B: inicjator rozejmu → adresatem propozycji pokoju po jego wygaśnięciu jest druga strona.
+          truceInitiatorId: proposerId,
+          truceEndOffer: undefined,
         });
       } else {
+        const metaS = getDiploPairMeta(proposerId, responderId);
         setDiploPairMeta(
           proposerId,
           responderId,
           startPeaceTreatyLock(
-            getDiploPairMeta(proposerId, responderId),
+            { ...metaS, truceInitiatorId: undefined, truceEndOffer: undefined, truceUntilTurn: undefined },
             turn,
             lockTurnsOverride,
           ),
@@ -11808,15 +11821,60 @@ async function boot(): Promise<void> {
           const a = ids[i]!;
           const b = ids[j]!;
           const meta = diplomacyPairMeta.get(diploPairKey(a, b));
+          // R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): oferta pokoju po rozejmie czeka na odpowiedź.
+          // Timeout (kolejna tura bez zgody) = wojna, bez kary.
+          if (meta?.truceEndOffer != null) {
+            if (truceEndOfferExpired(meta.truceEndOffer.turn, turn)) truceEndToWar(a, b);
+            continue;
+          }
           if (meta?.truceUntilTurn == null) continue;
           if (truceExpiryAction(meta.truceUntilTurn, turn) !== 'revert_to_war') continue;
           const cur = getDiploRelation(a, b);
-          if (cur.status === 'pokoj') {
-            setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
-          }
+          const initiator = meta.truceInitiatorId;
+          const target = truceEndOfferTarget(initiator, a, b);
           setDiploPairMeta(a, b, { ...meta, truceUntilTurn: undefined });
+          if (cur.status !== 'pokoj') continue;
+          if (initiator == null || target == null) {
+            // Stare zapisy bez inicjatora: zachowanie sprzed R-WEB-DIPLO-TRUCE-IMPL-Q1 (wojna).
+            truceEndToWar(a, b);
+          } else if (isHuman(target)) {
+            // Gracz dostaje propozycję pokoju w skrzynce (zgoda = pokój, odmowa/timeout = wojna).
+            setDiploPairMeta(a, b, {
+              ...getDiploPairMeta(a, b),
+              truceEndOffer: { turn, fromOwnerId: initiator, toOwnerId: target },
+            });
+            enqueueDiplomacyPending(initiator, 'zaproponuj_pokoj', 'Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)');
+          } else if (truceEndAiAccepts(cur.zaufanie)) {
+            // AI-adresat decyduje od razu wg gotowości (Zaufanie) — zgoda = pokój stały.
+            finalizePeaceTreatyBetween(initiator, target);
+          } else {
+            truceEndToWar(a, b);
+          }
         }
       }
+    }
+
+    /** R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): usuwa ofertę pokoju po rozejmie (meta + wpis w skrzynce). */
+    function clearTruceEndOffer(a: number, b: number): void {
+      const meta = getDiploPairMeta(a, b);
+      const offer = meta.truceEndOffer;
+      if (offer == null) return;
+      for (let k = pendingDiplomacyInbox.length - 1; k >= 0; k--) {
+        const p = pendingDiplomacyInbox[k]!;
+        if (p.ownerId === offer.fromOwnerId && p.cmdType === 'zaproponuj_pokoj') {
+          pendingDiplomacyInbox.splice(k, 1);
+        }
+      }
+      setDiploPairMeta(a, b, { ...meta, truceEndOffer: undefined });
+    }
+
+    /** R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): odmowa lub timeout pokoju po rozejmie = wojna (bez kary). */
+    function truceEndToWar(a: number, b: number): void {
+      const cur = getDiploRelation(a, b);
+      if (cur.status === 'pokoj') {
+        setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
+      }
+      clearTruceEndOffer(a, b);
     }
 
     /** Wszyscy znani ownerzy (gracz + AI na mapie) — do pętli P4 co turę. Barbarzyńcy wykluczeni (§1 — nie mają Wiarygodności). */
@@ -11880,10 +11938,14 @@ async function boot(): Promise<void> {
         }
       }
 
+      // R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): wojna wypowiedziana w trakcie oferty pokoju po rozejmie
+      // kasuje ofertę (wpis w skrzynce + meta), żeby późna zgoda nie przywróciła pokoju w wojnie.
+      clearTruceEndOffer(declarerId, targetId);
       const meta = getDiploPairMeta(declarerId, targetId);
       setDiploPairMeta(declarerId, targetId, {
         ...meta,
         truceUntilTurn: undefined,
+        truceInitiatorId: undefined,
         wojnaOdTury: turn,
         n1Zastosowany: false,
         ...(retaliation ? {} : {
@@ -20590,6 +20652,11 @@ async function boot(): Promise<void> {
               // paktu nieagresji jest bit-w-bit takie jak przed tą rundą.
               turns: uiActionId === '2' || uiActionId === '5' ? p.turns : undefined,
               treatyTurns: uiActionId === '5' ? (p.treatyTurns ?? p.turns) : undefined,
+              // R-WEB-DIPLO-TRUCE-IMPL-Q1 (G): kontroferta na rozejm otwiera się w trybie
+              // „rozejm” z tą samą długością (5/10/15), którą można zmienić w kontrofercie.
+              ...(uiActionId === '10' && entry.actionId === 'rozejm'
+                ? { peaceKind: 'rozejm' as const, truceTurns: p.turns }
+                : {}),
               allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
               borderMilitary: p.borderMilitary,
               barbarianCooperation: p.barbarianCooperation,
@@ -20695,6 +20762,10 @@ async function boot(): Promise<void> {
           }
         }
       } else {
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): odmowa pokoju po wygaśnięciu rozejmu = wojna (bez kary).
+        if (p.cmdType === 'zaproponuj_pokoj' && getDiploPairMeta(ME(), p.ownerId).truceEndOffer != null) {
+          truceEndToWar(ME(), p.ownerId);
+        }
         if (p.cmdType === 'zadaj_trybut' || p.cmdType === 'oferuj_trybut_za_pokoj') {
           setDiploRelation(ME(), p.ownerId, applyDiploEventTracked(ME(), p.ownerId, curRel, 'trybut_odmowa'));
         }

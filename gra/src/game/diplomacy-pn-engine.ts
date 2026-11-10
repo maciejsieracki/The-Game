@@ -94,6 +94,16 @@ export interface DiploPairMeta {
    */
   truceUntilTurn?: number;
   /**
+   * R-WEB-DIPLO-TRUCE-IMPL-Q1 (B/C): strona, która zaproponowała ROZEJM (adresat propozycji
+   * pokoju stałego po jego wygaśnięciu = druga strona). Brak = pokój stały / stare zapisy.
+   */
+  truceInitiatorId?: number;
+  /**
+   * R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): oferta pokoju stałego po wygaśnięciu rozejmu, czekająca
+   * na odpowiedź adresata. Zgoda → pokój; odmowa lub timeout (kolejna tura) → wojna.
+   */
+  truceEndOffer?: { turn: number; fromOwnerId: number; toOwnerId: number };
+  /**
    * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
    * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
    * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona

@@ -165,7 +165,7 @@ async function main() {
       { name: 'M2 gałąź rozejmu w propozycji wyłączona', file: PROPOSALS, out: BUNDLE_M2,
         from: "if (cmd.rodzaj === 'rozejm') {\n        return {", to: "if (false) {\n        return {" },
       { name: 'M3 AI zawsze pokój (brak rodzaju w decyzji)', file: AI_FILE, out: BUNDLE_M3,
-        from: 'rodzaj:   aiPeaceProposalKind(turnsAtWarRel),', to: "rodzaj:   'pokoj'," },
+        from: 'rodzaj:   peaceKindAi,', to: "rodzaj:   'pokoj'," },
     ];
     for (const m of mutants) {
       const { info, plugin } = mutantPlugin(m.file, m.from, m.to);

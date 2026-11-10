@@ -105,3 +105,64 @@ export function truceExpiryAction(
 export function isTruceBreach(until: number | null | undefined, currentTurn: number): boolean {
   return isTruceActive(until, currentTurn);
 }
+
+// ---------------------------------------------------------------------------
+// R-WEB-DIPLO-TRUCE-IMPL-Q1 (runda 3) — luki względem decyzji ABC 2026-11-09:
+// (B) po wygaśnięciu rozejmu druga strona dostaje PROPOZYCJĘ pokoju stałego;
+//     zgoda = pokój, odmowa/timeout = wojna (bez kary Wiarygodności);
+// (C) rozejm daje 0 Zaufania (pokój stały +5 bez zmian);
+// (E) AI wybiera tryb (rozejm vs pokój stały) wg pozycji i zmęczenia wojną;
+// (G) kontroferta może zmienić długość rozejmu (5/10/15) — obsługa w UI/main.
+// ---------------------------------------------------------------------------
+
+/** (E) Próg zmęczenia wojną (0..1), od którego AI proponuje pokój stały zamiast rozejmu. */
+export const TRUCE_AI_FATIGUE_PEACE_MIN = 0.5;
+
+/** (E) Próg Zaufania, od którego AI proponuje pokój stały zamiast rozejmu. */
+export const TRUCE_AI_TRUST_PEACE_MIN = 60;
+
+/**
+ * (E) Tryb propozycji pokoju AI. Słabsze AI (w trudnym położeniu) przy NISKIM zmęczeniu
+ * wojną i NISKIM Zaufaniu proponuje ROZEJM; przy dużym zmęczeniu LUB wysokim Zaufaniu —
+ * POKÓJ STAŁY. Gdy żaden sygnał nie rozstrzyga, zostaje `fallbackKind` (dotychczasowy
+ * wybór po liczbie tur wojny, np. aiPeaceProposalKind).
+ */
+export function aiTruceOrPeaceMode(input: {
+  fatigueShare: number;
+  zaufanie: number;
+  weaker: boolean;
+  fallbackKind: 'pokoj' | 'rozejm';
+}): 'pokoj' | 'rozejm' {
+  if (input.fatigueShare >= TRUCE_AI_FATIGUE_PEACE_MIN) return 'pokoj';
+  if (input.zaufanie >= TRUCE_AI_TRUST_PEACE_MIN) return 'pokoj';
+  if (input.weaker) return 'rozejm';
+  return input.fallbackKind;
+}
+
+/** (B) Próg Zaufania, od którego AI (adresat propozycji pokoju po rozejmie) zgadza się na pokój. */
+export const TRUCE_END_AI_ACCEPT_TRUST_MIN = 40;
+
+/** (B) Czy AI-adresat przyjmuje pokój stały po wygaśnięciu rozejmu. */
+export function truceEndAiAccepts(zaufanie: number): boolean {
+  return Number.isFinite(zaufanie) && zaufanie >= TRUCE_END_AI_ACCEPT_TRUST_MIN;
+}
+
+/**
+ * (B) Adresat propozycji pokoju po wygaśnięciu rozejmu = strona, która NIE zaproponowała
+ * rozejmu (`initiatorId`). Brak inicjatora (stare zapisy) → null (zachowanie: wojna).
+ */
+export function truceEndOfferTarget(
+  initiatorId: number | null | undefined,
+  a: number,
+  b: number,
+): number | null {
+  if (initiatorId == null) return null;
+  if (initiatorId === a) return b;
+  if (initiatorId === b) return a;
+  return null;
+}
+
+/** (B) Propozycja pokoju po rozejmie nierozstrzygnięta do kolejnej tury = timeout = wojna. */
+export function truceEndOfferExpired(offerTurn: number, currentTurn: number): boolean {
+  return Number.isFinite(offerTurn) && currentTurn > offerTurn;
+}
