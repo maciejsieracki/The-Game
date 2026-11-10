@@ -95,15 +95,21 @@ try {
   };
   const fixtureCiv = 'fixture-owner';
   const scenarios = [
-    ['eko_pieniadz_proc', 100, [], { dochodTrasHandlowych: 100 }, split, r => r.pieniadz, raw => Math.floor(100 * (1 + raw))],
-    ['eko_pieniadz_port_proc', 30, [building('port', { pieniadz: 10 })], { dochodTrasHandlowych: 20, dochodTrasMorskich: 8 }, split,
-      r => r.handelBrutto, raw => Math.floor(12 + 18 * (1 + raw))],
+    // Route proceeds settle in advanceCityEconomy after cityYieldPerTurn. Use local
+    // tax/building inputs here so these checks exercise the cityYield consumer stage.
+    ['eko_pieniadz_proc', 100, [building('tax-source', { pieniadz: 100 })], {}, split,
+      r => r.pieniadz, raw => Math.floor(100 * (1 + raw))],
+    ['eko_pieniadz_port_proc', 30, [building('port', { pieniadz: 10 })], {}, split,
+      r => r.handelBrutto, raw => Math.floor(10 * (1 + raw))],
     ['eko_zywnosc_proc', 0, [building('farm', { zywnosc: 10 })], {}, split, r => r.zywnoscBrutto, raw => Math.floor(10 * (1 + raw))],
     ['eko_nauka_proc', 0, [building('library', { nauka: 10 })], {}, splitSci, r => r.nauka, raw => Math.floor(10 * (1 + raw))],
     ['eko_kultura_proc', 0, [building('monument', { kultura: 10 })], {}, split, r => r.kultura, raw => Math.floor(10 * (1 + raw))],
-    ['eko_luksus_proc', 100, [], { dochodTrasHandlowych: 100 }, splitLuxury, r => r.luksus, raw => Math.floor(100 * (1 + raw))],
-    ['eko_handel_brutto_proc', 100, [], { dochodTrasHandlowych: 100 }, split, r => r.handelBrutto, raw => Math.floor(100 * (1 + raw))],
-    ['eko_korupcja_proc', 100, [], { dochodTrasHandlowych: 100, strataFraction: 0.2 }, split, r => r.pieniadz, raw => Math.floor(100 * (1 - Math.min(0.2 * (1 + raw), econParams.korupcjaCap)))],
+    ['eko_luksus_proc', 100, [building('tax-source', { pieniadz: 100 })], {}, splitLuxury,
+      r => r.luksus, raw => Math.floor(100 * (1 + raw))],
+    ['eko_handel_brutto_proc', 100, [building('tax-source', { pieniadz: 100 })], {}, split,
+      r => r.handelBrutto, raw => Math.floor(100 * (1 + raw))],
+    ['eko_korupcja_proc', 100, [building('tax-source', { pieniadz: 100 })], { strataFraction: 0.2 }, split,
+      r => r.pieniadz, raw => Math.floor(100 * (1 - Math.min(0.2 * (1 + raw), econParams.korupcjaCap)))],
   ];
   let ownerAssertions = 0;
   for (const row of approved.cywilizacje) {
@@ -119,7 +125,7 @@ try {
   for (const [id, context, buildings, tradeSplit, select, base] of [
     ['eko_zywnosc_proc', {}, [building('farm', { zywnosc: 10 })], split, r => r.zywnoscBrutto, 10],
     ['eko_kultura_proc', {}, [building('monument', { kultura: 10 })], split, r => r.kultura, 10],
-    ['eko_luksus_proc', { dochodTrasHandlowych: 100 }, [], splitLuxury, r => r.luksus, 100],
+    ['eko_luksus_proc', {}, [building('tax-source', { pieniadz: 100 })], splitLuxury, r => r.luksus, 100],
   ]) {
     for (const raw of [0.2, -0.2, 0]) {
       assert.equal(select(runYield(fixtureCiv, { [id]: raw }, buildings, context, tradeSplit)),
@@ -127,34 +133,35 @@ try {
     }
   }
   for (const raw of [0.2, -0.5, 0]) {
-    const result = runYield(fixtureCiv, { eko_korupcja_proc: raw }, [],
-      { dochodTrasHandlowych: 100, strataFraction: 0.2 });
+    const result = runYield(fixtureCiv, { eko_korupcja_proc: raw }, [building('tax-source', { pieniadz: 100 })],
+      { strataFraction: 0.2 });
     assert.equal(result.pieniadz, Math.floor(100 * (1 - Math.min(0.2 * (1 + raw), econParams.korupcjaCap))),
       `eko_korupcja_proc: synthetic ${raw} changes loss fraction with correct polarity`);
     assert.equal(result.handelBrutto, 100, 'corruption coefficient preserves gross-trade output');
   }
 
-  // Port source includes Port-building cash and only the typed sea subset; land stays in the total unchanged.
+  // cityYieldPerTurn applies the Port coefficient to Port-building cash. Route
+  // proceeds are settled separately by advanceCityEconomy and are covered here by
+  // the typed total/maritime route-breakdown checks below.
   const portBase = runYield(fixtureCiv, { eko_pieniadz_port_proc: 0.25 },
-    [building('port', { pieniadz: 10 })], { dochodTrasHandlowych: 20, dochodTrasMorskich: 8 });
-  assert.equal(portBase.handelBrutto, 34, 'port modifier applies to 10 building + 8 sea income, leaves 12 land income unchanged');
-  const wrongSea = runYield(fixtureCiv, { eko_pieniadz_port_proc: 0.25 }, [],
-    { dochodTrasHandlowych: 20, dochodTrasMorskich: 0 });
-  assert.equal(wrongSea.handelBrutto, 20, 'land-only route total is not port-tagged');
+    [building('port', { pieniadz: 10 })]);
+  assert.equal(portBase.handelBrutto, 12, 'port modifier applies once to 10 Port-building cash before flooring');
 
-  const greekGross = runYield('grecy', { eko_handel_brutto_proc: approved.cywilizacje.find(row => row.ikonaId === 'grecy').params.eko_handel_brutto_proc }, [], { dochodTrasHandlowych: 100 });
-  const romanGross = runYield('rzymianie', { eko_handel_brutto_proc: approved.cywilizacje.find(row => row.ikonaId === 'rzymianie').params.eko_handel_brutto_proc }, [], { dochodTrasHandlowych: 100 });
-  assert.equal(greekGross.handelBrutto, Math.floor(100 * (1 + 0.15)), 'Greek owner key receives its own +15% gross-trade source at existing floor boundary');
+  const greekGross = runYield('grecy', { eko_handel_brutto_proc: approved.cywilizacje.find(row => row.ikonaId === 'grecy').params.eko_handel_brutto_proc },
+    [building('tax-source', { pieniadz: 100 })]);
+  const romanGross = runYield('rzymianie', { eko_handel_brutto_proc: approved.cywilizacje.find(row => row.ikonaId === 'rzymianie').params.eko_handel_brutto_proc },
+    [building('tax-source', { pieniadz: 100 })]);
+  assert.equal(greekGross.handelBrutto, Math.floor(100 * (1 + 0.15)), 'Greek owner key receives its approved +15% gross-trade source at the floor boundary');
   assert.equal(romanGross.handelBrutto, 100, 'Roman owner key does not inherit Greek gross-trade value');
 
   // Matrix zero masks stale same-effect legacy context values while preserving separate effects.
-  const legacyMaskedGross = runYield(fixtureCiv, {}, [], { dochodTrasHandlowych: 100, civHandelMult: 1.5 });
+  const legacyMaskedGross = runYield(fixtureCiv, {}, [building('tax-source', { pieniadz: 100 })], { civHandelMult: 1.5 });
   assert.equal(legacyMaskedGross.handelBrutto, 100, 'source-zero gross matrix masks stale legacy gross-trade multiplier');
   const legacyMaskedScience = runYield(fixtureCiv, {}, [building('library', { nauka: 10 })], { civNaukaMult: 1.5 }, splitSci);
   assert.equal(legacyMaskedScience.nauka, 10, 'source-zero science matrix masks stale legacy science multiplier');
   const stackedPortAndGross = runYield(fixtureCiv, { eko_pieniadz_port_proc: 0.25, eko_handel_brutto_proc: 0.15 },
-    [building('port', { pieniadz: 10 })], { dochodTrasHandlowych: 20, dochodTrasMorskich: 8 });
-  assert.equal(stackedPortAndGross.handelBrutto, Math.floor(34.5 * 1.15), 'distinct port and gross-trade fields compose once at their separate named stages');
+    [building('port', { pieniadz: 10 })]);
+  assert.equal(stackedPortAndGross.handelBrutto, Math.floor(12.5 * 1.15), 'distinct port-building and gross-trade fields compose once at their separate named stages');
 
   // Sea/land breakdown conserves the historical total, and excludes disconnected routes.
   const routes = [
