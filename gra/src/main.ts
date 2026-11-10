@@ -11659,6 +11659,9 @@ async function boot(): Promise<void> {
       lockTurnsOverride?: number,
       truceTurns?: number,
     ): void {
+      // R-WEB-DIPLO-TRUCE-IMPL-Q1 (Z9, runda 5): podany czas rozejmu spoza 5/10/15 = propozycja
+      // ODRZUCONA (nic się nie dzieje) — nie „pokój stały +5". Brak pola = pokój stały (bez zmian).
+      if (truceTurns !== undefined && normalizeTruceDuration(truceTurns) == null) return;
       const pairKey = diploPairKey(proposerId, responderId);
       const forcedWar = stoneForceWarActiveByPairKey.get(pairKey)
         ?? bronzeForceWarActiveByPairKey.get(pairKey)
@@ -11826,7 +11829,8 @@ async function boot(): Promise<void> {
         getMeta: (a, b) => getDiploPairMeta(a, b),
         setMeta: (a, b, m) => setDiploPairMeta(a, b, m),
         getStatus: (a, b) => getDiploRelation(a, b).status,
-        getZaufanie: (a, b) => getDiploRelation(a, b).zaufanie,
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (runda 5): akceptacja pokoju przez AI wg SIŁY wojskowej (nie Zaufania).
+        getArmyM: ownerId => sumArmyMForOwner(ownerId),
         isHuman: id => isHuman(id),
         declareWarAfterTruce: (a, b) => {
           const cur = getDiploRelation(a, b);
@@ -24073,9 +24077,14 @@ async function boot(): Promise<void> {
           showHintMessage('\u{1F54A} Pokój zawarty', 4000);
         } else if (cywAction === 'rozejm') {
           // R-WEB-TRUCE-Q1 r3 (N1): długość z payloadu (5/10/15, domyślnie TRUCE_DEFAULT_TURNS).
-          const truceLen = normalizeTruceDuration(payload.turns ?? TRUCE_DEFAULT_TURNS) ?? TRUCE_DEFAULT_TURNS;
-          finalizePeaceTreatyBetween(proposerId, responderId, undefined, truceLen);
-          showHintMessage('\u{1F54A} Rozejm zawarty na ' + truceLen + ' tur', 4000);
+          // R-WEB-DIPLO-TRUCE-IMPL-Q1 (Z9, runda 5): długość spoza 5/10/15 → propozycja odrzucona.
+          const truceLen = normalizeTruceDuration(payload.turns ?? TRUCE_DEFAULT_TURNS);
+          if (truceLen == null) {
+            showHintMessage('Rozejm odrzucony: dozwolone długości to 5, 10 lub 15 tur', 4000);
+          } else {
+            finalizePeaceTreatyBetween(proposerId, responderId, undefined, truceLen);
+            showHintMessage('\u{1F54A} Rozejm zawarty na ' + truceLen + ' tur', 4000);
+          }
         }
       } else if (cywAction === 'trybut_zadanie') {
         const cur = getDiploRelation(proposerId, responderId);

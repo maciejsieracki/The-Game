@@ -12,6 +12,9 @@
  *          brak deduplikacji (dwie oferty tego samego AI nie wypadają), usuwanie po id, okno oferty = złamanie.
  * Część 2: wiring w main.ts / ai.ts / engine (sprawdzenie źródła). Pełny silnik tury (main.ts, ~46k linii,
  *          DOM/three) NIE jest uruchamiany — runtime w przeglądarce = NIE_ZMIERZONO (brak Chromium).
+ * Runda 5 (decyzje ABC 2026-11-10): (B) AI-adresat akceptuje pokój wg SIŁY WOJSKOWEJ (proponujący ≤ 80%
+ *          adresata, prog z diplomacy-war-peace-params.json), Zaufanie bez wpływu; (Z8) wypowiedzenie wojny
+ *          w oknie oferty = złamanie (wiring + predykat); (Z9) niepoprawne truceTurns → odrzucenie (finalize = no-op).
  * Mutanty: M1 truceEndAiAccepts zawsze true; M2 aiTruceOrPeaceMode ignoruje zmęczenie;
  *          M3 isTruceWindowBreach ignoruje ofertę pokoju po rozejmie.
  * Run: node tools/diplo-truce-impl-test.cjs
@@ -41,13 +44,13 @@ function check(name, cond, detail) {
 const ENTRY_SRC = [
   'export {',
   '  truceEndAiAccepts, truceEndOfferTarget, truceEndOfferExpired, aiTruceOrPeaceMode,',
-  '  TRUCE_AI_FATIGUE_PEACE_MIN, TRUCE_AI_WILLINGNESS_PEACE_MIN, TRUCE_AI_TRUST_PEACE_MIN, TRUCE_END_AI_ACCEPT_TRUST_MIN,',
+  '  TRUCE_AI_FATIGUE_PEACE_MIN, TRUCE_AI_WILLINGNESS_PEACE_MIN, TRUCE_AI_TRUST_PEACE_MIN,',
   '  normalizeTruceDuration, truceUntilTurn, truceExpiryAction,',
   '  isTruceWindowBreach, peaceFinalizeTrustEvent,',
   '  truceEndTickPair, truceEndToWarCore, clearTruceEndOfferCore,',
   '} from \'./game/diplomacy-peace-lock\';',
   'export { applyDiplomaticEvent } from \'./game/diplomacy\';',
-  'export { warWearinessFraction } from \'./game/diplomacy-war-peace-profile\';',
+  'export { warWearinessFraction, WAR_PEACE_PARAMS } from \'./game/diplomacy-war-peace-profile\';',
   '',
 ].join('\n');
 
@@ -94,7 +97,7 @@ function src(file) {
 /** Atrapy portów: stan pary w pamięci; ta sama semantyka co truceEndPorts() w main.ts. */
 function makeWorld() {
   const world = {
-    meta: {}, status: {}, zaufanie: {}, humans: new Set([0]), warCalls: [], finalize: [], inbox: [], seq: 0,
+    meta: {}, status: {}, army: {}, humans: new Set([0]), warCalls: [], finalize: [], inbox: [], seq: 0,
   };
   const key = (a, b) => (a < b ? a + '|' + b : b + '|' + a);
   world.key = key;
@@ -102,7 +105,7 @@ function makeWorld() {
     getMeta: (a, b) => world.meta[key(a, b)] || {},
     setMeta: (a, b, m) => { world.meta[key(a, b)] = m; },
     getStatus: (a, b) => world.status[key(a, b)] || 'wojna',
-    getZaufanie: (a, b) => (world.zaufanie[key(a, b)] != null ? world.zaufanie[key(a, b)] : 0),
+    getArmyM: id => (world.army[id] != null ? world.army[id] : 0),
     isHuman: id => world.humans.has(id),
     declareWarAfterTruce: (a, b) => { world.status[key(a, b)] = 'wojna'; world.warCalls.push(key(a, b)); },
     enqueueOffer: (ownerId, reason) => {
@@ -125,8 +128,16 @@ function makeWorld() {
   check('B: inicjator=b → adresat=a', lib.truceEndOfferTarget(7, 3, 7) === 3);
   check('B: brak inicjatora → null (stara wojna)', lib.truceEndOfferTarget(undefined, 3, 7) === null);
   check('B: inicjator spoza pary → null', lib.truceEndOfferTarget(9, 3, 7) === null);
-  check('B: AI przyjmuje przy progu Zaufania', lib.truceEndAiAccepts(lib.TRUCE_END_AI_ACCEPT_TRUST_MIN) === true);
-  check('B: AI odmawia poniżej progu Zaufania', lib.truceEndAiAccepts(lib.TRUCE_END_AI_ACCEPT_TRUST_MIN - 1) === false);
+  // R-WEB-DIPLO-TRUCE-IMPL-Q1 r5 (B): zgoda AI wg SIŁY wojskowej, nie Zaufania.
+  check('B-r5: prog 20% z diplomacy-war-peace-params.json', lib.WAR_PEACE_PARAMS.przewagaMilitarna.prog === 0.2);
+  check('B-r5: proponujący 80% adresata → zgoda (granica włącznie)', lib.truceEndAiAccepts(80, 100) === true);
+  check('B-r5: proponujący 81% adresata → odmowa (słabszy o < 20%)', lib.truceEndAiAccepts(81, 100) === false);
+  check('B-r5: proponujący 100% adresata (równy) → odmowa', lib.truceEndAiAccepts(100, 100) === false);
+  check('B-r5: proponujący silniejszy → odmowa', lib.truceEndAiAccepts(150, 100) === false);
+  check('B-r5: proponujący bez armii wobec adresata z armią → zgoda', lib.truceEndAiAccepts(0, 100) === true);
+  check('B-r5: NaN → odmowa', lib.truceEndAiAccepts(NaN, 100) === false && lib.truceEndAiAccepts(50, NaN) === false);
+  check('B-r5: próg z parametru (prog 0.3: 70 zgoda, 71 odmowa)',
+    lib.truceEndAiAccepts(70, 100, 0.3) === true && lib.truceEndAiAccepts(71, 100, 0.3) === false);
   check('B: timeout — oferta w T nie wygasa w T', lib.truceEndOfferExpired(10, 10) === false);
   check('B: timeout — oferta wygasa w T+1 (= wojna)', lib.truceEndOfferExpired(10, 11) === true);
 
@@ -179,19 +190,31 @@ function makeWorld() {
     w.humans.add(0);
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.zaufanie[w.key(0, 7)] = lib.TRUCE_END_AI_ACCEPT_TRUST_MIN;
+    // r5: inicjator (gracz 0) ma 80% armii AI(7) → słabszy o ≥20% → zgoda = finalizePeace(gracz, AI).
+    w.army[0] = 80; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('B-4: AI-adresat przy progu Zaufania → zgoda = finalizePeace(gracz, AI)',
+    check('B-4 (r5): AI-adresat, inicjator słabszy o ≥20% → zgoda = finalizePeace(gracz, AI)',
       w.finalize.length === 1 && w.finalize[0][0] === 0 && w.finalize[0][1] === 7, w.finalize);
-    check('B-4: zgoda AI nie daje wojny i nie tworzy oferty', w.warCalls.length === 0 && w.inbox.length === 0);
+    check('B-4 (r5): zgoda AI nie daje wojny i nie tworzy oferty', w.warCalls.length === 0 && w.inbox.length === 0);
   }
   {
     const w = makeWorld();
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.zaufanie[w.key(0, 7)] = lib.TRUCE_END_AI_ACCEPT_TRUST_MIN - 1;
+    // r5: inicjator tylko o 10% słabszy → odmowa = wojna (bez pokoju).
+    w.army[0] = 90; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('B-4: AI-adresat poniżej progu → odmowa = wojna (bez pokoju)',
+    check('B-4 (r5): AI-adresat, inicjator słabszy o < 20% → odmowa = wojna (bez pokoju)',
+      w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+  }
+  {
+    // r5: Zaufanie bez wpływu — wysokie Zaufanie, ale silniejszy inicjator → wojna.
+    const w = makeWorld();
+    w.status[w.key(0, 7)] = 'pokoj';
+    w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
+    w.army[0] = 120; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('B-4 (r5): wysokie Zaufanie nie zmienia odmowy przy silniejszym inicjatorze',
       w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
   }
   // B-5: stare zapisy bez inicjatora → wojna (zachowanie sprzed rundy 3).
@@ -274,6 +297,28 @@ function makeWorld() {
     /clearTruceEndOffer\(declarerId, targetId\);/.test(mainSrc));
   check('B/N1: chargeWarDeclarationCredibility liczy okno rozejmu przez isTruceWindowBreach (w tym ofertę)',
     /const truceBreach = isTruceWindowBreach\(getDiploPairMeta\(declarerId, targetId\), turn\);/.test(mainSrc));
+  // Z8 (runda 5): wypowiedzenie w oknie oferty pokoju po rozejmie = złamanie, kara jak za pakt (N2 NAP).
+  const cwcStart = mainSrc.indexOf('function chargeWarDeclarationCredibility(');
+  const cwcBody = cwcStart >= 0 ? mainSrc.slice(cwcStart, cwcStart + 3000) : '';
+  check('Z8: złamanie okna rozejmu/oferty daje zdarzenie zlamanie_paktu_nap (N2) gdy !skipN2',
+    /if \(truceBreach\) \{\s*appendWiarygodnoscEvent\(declarerId, 'zlamanie_paktu_nap', _diplomacyParams\(\)\.wiarygodnoscN2ZlamaniePaktuNap\);/.test(cwcBody));
+  check('Z8: oferta po rozejmie jest kasowana przy wypowiedzeniu (clearTruceEndOffer przed zapisem wojny)',
+    /clearTruceEndOffer\(declarerId, targetId\);/.test(cwcBody));
+  check('Z8 (predykat runtime): oferta po wygaśnięciu = okno złamania, brak oferty po zgodzie',
+    lib.isTruceWindowBreach({ truceEndOffer: { turn: 110, fromOwnerId: 7, toOwnerId: 0 } }, 110) === true
+    && lib.isTruceWindowBreach({ truceEndOffer: undefined, truceUntilTurn: undefined }, 110) === false);
+  // Z9 (runda 5): niepoprawne truceTurns = propozycja odrzucona (finalize no-op), nie „pokój stały +5".
+  const finGuard = /if \(truceTurns !== undefined && normalizeTruceDuration\(truceTurns\) == null\) return;/;
+  check('Z9: finalizePeaceTreatyBetween odrzuca truceTurns spoza 5/10/15 (no-op)', finGuard.test(finBody));
+  check('Z9: gałąź rozejmu nie fallbackuje do 10 tur (brak `?? TRUCE_DEFAULT_TURNS` po normalizeTruceDuration)',
+    /const truceLen = normalizeTruceDuration\(payload\.turns \?\? TRUCE_DEFAULT_TURNS\);\s*if \(truceLen == null\)/.test(mainSrc)
+    && !/normalizeTruceDuration\(payload\.turns \?\? TRUCE_DEFAULT_TURNS\) \?\? TRUCE_DEFAULT_TURNS/.test(mainSrc));
+  check('Z9 (predykat runtime): peaceFinalizeTrustEvent(7) = pokój stały (+5) — dlatego guard w finalize jest wymagany',
+    lib.peaceFinalizeTrustEvent(7) === 'pokoj');
+  check('Z9: walidacja propozycji rozejmu (diplomacy-proposals) odrzuca długość spoza 5/10/15',
+    /actionId === 'rozejm' && normalizeTruceDuration\(payload\.turns \?\? TRUCE_DEFAULT_TURNS\) == null/.test(src(path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts'))));
+  check('B-r5: truceEndTickPair liczy siłę (getArmyM), nie Zaufanie',
+    /truceEndAiAccepts\(ports\.getArmyM\(initiator\), ports\.getArmyM\(target\)\)/.test(lockSrc) && !/getZaufanie/.test(lockSrc));
   check('B: DiploPairMeta ma pola truceInitiatorId / truceEndOffer.inboxId',
     /truceInitiatorId\?: number/.test(engineSrc) && /truceEndOffer\?:[^\n]*inboxId\?: string/.test(engineSrc));
 
@@ -300,16 +345,16 @@ function makeWorld() {
   check('stała: TRUCE_AI_WILLINGNESS_PEACE_MIN = 0.7 (ZAŁOŻENIE)', /TRUCE_AI_WILLINGNESS_PEACE_MIN = 0\.7;/.test(lockSrc));
 
   // ---- Mutanty (wykrywalność testów części 1) ----
-  const m1 = mutantPlugin(LOCK, 'return Number.isFinite(zaufanie) && zaufanie >= TRUCE_END_AI_ACCEPT_TRUST_MIN;', 'return true;');
+  const m1 = mutantPlugin(LOCK, 'return proposerArmyM <= (1 - prog + eps) * addresseeArmyM;', 'return true;');
   const libM1 = await buildBundle(BUNDLE_M1, [m1.plugin]);
   check('M1 (zgoda AI zawsze) zastosowany', m1.info.applied === 1, m1.info);
   {
     const w = makeWorld();
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.zaufanie[w.key(0, 7)] = 0;
+    w.army[0] = 120; w.army[7] = 100;
     libM1.truceEndTickPair(w.ports, 0, 7, 110);
-    check('M1 wykryty: przy Zaufaniu 0 czysta wersja → wojna, mutant → pokój', w.finalize.length === 1, w.finalize);
+    check('M1 wykryty: silniejszy inicjator → czysta wersja wojna, mutant pokój', w.finalize.length === 1, w.finalize);
   }
 
   const m2 = mutantPlugin(LOCK, 'if (input.fatigueFraction >= TRUCE_AI_FATIGUE_PEACE_MIN) return \'pokoj\';', '');

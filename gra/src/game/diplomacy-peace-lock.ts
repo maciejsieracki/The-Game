@@ -6,6 +6,7 @@
 
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
+import { WAR_PEACE_PARAMS } from './diplomacy-war-peace-profile';
 
 /** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
@@ -155,12 +156,24 @@ export function aiTruceOrPeaceMode(input: {
   return input.fallbackKind;
 }
 
-/** (B) Próg Zaufania, od którego AI (adresat propozycji pokoju po rozejmie) zgadza się na pokój. */
-export const TRUCE_END_AI_ACCEPT_TRUST_MIN = 40;
-
-/** (B) Czy AI-adresat przyjmuje pokój stały po wygaśnięciu rozejmu. ZAŁOŻENIE (do ABC). */
-export function truceEndAiAccepts(zaufanie: number): boolean {
-  return Number.isFinite(zaufanie) && zaufanie >= TRUCE_END_AI_ACCEPT_TRUST_MIN;
+/**
+ * (B, R-WEB-DIPLO-TRUCE-IMPL-Q1 runda 5, decyzja właściciela 2026-11-10) Czy AI-adresat przyjmuje
+ * pokój stały po wygaśnięciu rozejmu: decyduje SIŁA, nie Zaufanie (po wojnie Zaufanie byłoby zerowe).
+ * Przyjmuje, gdy MOC WOJSKOWA proponującego jest mniejsza o co najmniej `prog` (20%, z
+ * diplomacy-war-peace-params.json → przewagaMilitarna.prog) od mocy wojskowej adresata, tzn.
+ * proponujący ≤ (1 − prog) × adresat. Moc wojskowa = suma M_pole armii (main.ts sumArmyMForOwner),
+ * nie ogólna objectivePower. Zaufanie nie wchodzi do decyzji. Zero armii u obu = 0 ≤ 0 → zgoda.
+ * ZAŁOŻENIE orkiestratora (do potwierdzenia): „mniejsza o 20%" = proponujący ≤ 80% adresata.
+ */
+export function truceEndAiAccepts(
+  proposerArmyM: number,
+  addresseeArmyM: number,
+  prog: number = WAR_PEACE_PARAMS.przewagaMilitarna.prog,
+): boolean {
+  if (!Number.isFinite(proposerArmyM) || !Number.isFinite(addresseeArmyM)) return false;
+  if (proposerArmyM < 0 || addresseeArmyM < 0) return false;
+  const eps = WAR_PEACE_PARAMS.przewagaMilitarna.epsilon;
+  return proposerArmyM <= (1 - prog + eps) * addresseeArmyM;
 }
 
 /**
@@ -213,7 +226,8 @@ export interface TruceEndPorts {
   getMeta(a: number, b: number): DiploPairMeta;
   setMeta(a: number, b: number, meta: DiploPairMeta): void;
   getStatus(a: number, b: number): string;
-  getZaufanie(a: number, b: number): number;
+  /** Moc wojskowa (suma M_pole armii) właściciela — próg akceptacji pokoju przez AI (truceEndAiAccepts). */
+  getArmyM(ownerId: number): number;
   isHuman(ownerId: number): boolean;
   /** Wojna wypowiedziana po rozejmie (status 'pokoj' → wojna, bez kary Wiarygodności). */
   declareWarAfterTruce(a: number, b: number): void;
@@ -268,7 +282,7 @@ export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, tur
     });
     return;
   }
-  if (truceEndAiAccepts(ports.getZaufanie(a, b))) {
+  if (truceEndAiAccepts(ports.getArmyM(initiator), ports.getArmyM(target))) {
     ports.finalizePeace(initiator, target);
   } else {
     truceEndToWarCore(ports, a, b);
