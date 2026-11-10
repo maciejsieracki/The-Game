@@ -28,6 +28,7 @@ import {
 import { RodzajTraktatu } from '../types/diplomacy';
 import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
+import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
 import { warWearinessLevel, wearinessPeacePriceFactor } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
@@ -1087,6 +1088,10 @@ export function evaluateProposal(
   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSON).
   const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);
   const stance = stanceForEval(ctx, proponentAgresor);
+
+  if (ctx.warState && peaceProposalBlocked(actionId, stanWojny, ctx.warState.turnsAtWar)) {
+    return { accepted: false, reason: `Pokój i rozejm dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny` };
+  }
 
   if (actionId === 'pokoj' && !stanWojny) {
     return { accepted: false, reason: 'Pokój — brak trwającej wojny' };

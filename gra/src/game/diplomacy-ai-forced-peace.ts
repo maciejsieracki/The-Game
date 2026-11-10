@@ -293,6 +293,8 @@ export interface AiPeaceTickDeps {
   requesterShareOf: (requester: number, other: number) => number;
   /** Bramka pokoju zwycięzcy (evaluatePeaceAiGate). */
   gateVerdict: (winner: number, loser: number) => 'ok' | 'too_early' | 'stronger';
+  /** False until the current war has completed the minimum peace-proposal window; keeps old saved requests queued. */
+  peaceAllowed?: (loser: number, winner: number) => boolean;
   /** Cena z istniejącej wyceny: wymagane PW od przegranego + bilans zwycięzcy dla danej zapłaty + tolerancja. */
   price: (winner: number, loser: number, kind: AiPeaceKind) => {
     requiredPn: number;
@@ -333,6 +335,10 @@ export function runAiAiPeaceTick(d: AiPeaceTickDeps): AiPeaceTickOutcome[] {
     if (!isStillLosing(d.requesterShareOf(loser, winner))) {
       d.store.delete(key);
       out.push({ pairKey: key, action: 'dropped_not_losing', kind });
+      continue;
+    }
+    if (d.peaceAllowed && !d.peaceAllowed(loser, winner)) {
+      out.push({ pairKey: key, action: 'wait', kind });
       continue;
     }
     const price = d.price(winner, loser, kind);

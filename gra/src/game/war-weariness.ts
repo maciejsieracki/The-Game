@@ -14,6 +14,7 @@ import {
   type PeaceAsset,
   type PeacePaymentPlan,
 } from './diplomacy-ai-forced-peace';
+import { PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
 
 export interface WarWearinessParams {
   zmeczenie: {
@@ -227,6 +228,8 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const st = stepPairState(d.store, key, w.warStart, level);
     const lvl = st.peak;
     const none = (): void => { out.push({ pairKey: key, action: 'none', level: lvl, stage: st.stage }); };
+    // Keep updating the fatigue peak each turn, but do not submit/resolve an automatic peace offer yet.
+    if (w.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) { none(); continue; }
     const shareA = d.shareOf(pr.a, pr.b);
     const loser = shareA <= 0.5 ? pr.a : pr.b;
     const winner = loser === pr.a ? pr.b : pr.a;

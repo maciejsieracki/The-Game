@@ -67,6 +67,17 @@ check('R1: stały 5 usunięty z diplomacy-proposals (stanceForEval)',
 check('R1: stracony stempel wojny (wojnaStartTura) ustawiany i zdejmowany przy pokoju',
   MAIN.includes('setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);')
   && MAIN.includes('wojnaStartTura: undefined'));
+check('TEN: jedyny setDiploRelation stempluje dokładne przejście do wojny i czyści stempel na pokoju',
+  MAIN.includes("if (rel.status === 'wojna' && prevStatus !== 'wojna')")
+  && MAIN.includes("else if (prevStatus === 'wojna' && rel.status !== 'wojna')"));
+check('TEN: stempel wojny przechodzi przez zapis i odczyt diplomacyPairMeta',
+  MAIN.includes('diplomacyPairMeta: Array.from(diplomacyPairMeta.entries())')
+  && MAIN.includes('const savedPairMeta = saved.meta?.diplomacyPairMeta')
+  && MAIN.includes('diplomacyPairMeta.set(key, meta)'));
+check('TEN: propozycje AI, gracza i automatyczne ścieżki używają wspólnego progu',
+  MAIN.includes('peaceProposalIsTooEarly(ownerId, ME(), converted.actionId)')
+  && MAIN.includes('peaceProposalIsTooEarly(ME(), ownerId, proposal.actionId)')
+  && MAIN.includes('PEACE_PROPOSAL_MIN_WAR_TURNS'));
 // mutacja R1: powrót do stałej w ai.ts
 check('mutacja R1 (stała 5 w ai.ts) jest wykrywalna',
   count(AI.replace('const turnsAtWarRel = rel.stanWojny ? Math.max(0, rel.turnsAtWar ?? 0) : 0;', 'const turnsAtWarRel = rel.stanWojny ? 5 : 0;'), 'Math.max(0, rel.turnsAtWar ?? 0)') === 0);
