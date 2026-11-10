@@ -1,32 +1,29 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publicatione529a1c9a; freshGitartifactreadbackPASS",
+  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "17d18433d236641b25b9c3a66b9d62db",
-  "bundleSha256": "afeeb547aaedefb9d863d5df207072cae3767118e3ba23320f07bc039d2891fc",
-  "bundleBytes": 14410376,
+  "bundleMd5": "dd096ffdd6a5801dd647e96a4b90719b",
+  "bundleSha256": "0737fc8b822fe81dd82c94b40a7547aa5c0d9e6d96ae42229f658b215e39c6fb",
+  "bundleBytes": 14411626,
   "sourceSnapshot": {
-    "source": "c81ea20375bc00b31063bf5c05c509a29990d6c7",
+    "source": "cb5721d6d59ac2eabd242b47a058b18c91310f1f",
     "build": "clean git archive; Vite outside repo; ROBOCZA stamp"
   },
   "scope": [
-    "Army recruitment percity default0, exact selected city/type quantities, global top/bottom actions; ordinary city default1 unchanged",
-    "Separate civilization recruitment panel retained, only top global button",
-    "Science picker Polish ETA inflection; numbers unchanged"
+    "No peace, truce or peace-tribute proposal during elapsed war turns0–9; allowed from10 across ordinary/era wars and player/AI paths",
+    "Central war-start metadata persists; pending offers guarded; fatigue continues during early-war window"
   ],
   "verification": [
-    "Independent Evaluator and FC PASS for both topics",
-    "ArmyChromium45/0, civilization31/0, ordinaryquantity25/0, typecheckPASS",
-    "ScienceChromium16/16; mutationred2/22; typecheckPASS",
-    "Clean production build and HTTP audio present/absent runtime PASS; 3audio unchanged"
+    "Independent Evaluator and Final Control PASS",
+    "24/24 proposal gate;41/41 AI-AI plus16mutants;96/96 fatigue;31/31 lifecycle;typecheckPASS",
+    "Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged"
   ],
   "limits": [
-    "Recruit drafts cityId/type keyed; recapturedcity may resurfaceoldlocaldraft; two-seat isolation notbrowsermeasured",
-    "Original file:// gate INFRA blocked; HTTP notclaimingfilePASS",
-    "No fullcampaign/largeempiretest"
+    "No task-specific live browser interaction measured; logic evidence uses actual modules plus main wiring review",
+    "Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Army50 scope note; Science50 PASS"
+    "notes": "peace timing50-final-control.md"
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-11-10T10:51:09",
@@ -35,77 +32,77 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "17d18433d236641b25b9c3a66b9d62db",
-      "sizeBytes": 14410376
+      "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+      "sizeBytes": 14411626
     }
   ],
-  "md5": "17d18433d236641b25b9c3a66b9d62db",
-  "sizeBytes": 14410376,
+  "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+  "sizeBytes": 14411626,
   "publisher": "Codex — autoryzowana publikacja Roboczej",
-  "source": "c81ea20375bc00b31063bf5c05c509a29990d6c7",
+  "source": "cb5721d6d59ac2eabd242b47a058b18c91310f1f",
   "immediatePreviousRelease": {
     "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
     "bundleSha256": "8102397f9584b4ec3fb3fe2b55c4f954a9ea0d1cf1f9570449d133a81a1c0d35",
@@ -1290,7 +1287,7 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-10T19:21:09.170636+01:00",
+  "publishedAt": "2026-11-10T20:38:34.996531+01:00",
   "buildStamp": "2026-11-05 23:42",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
@@ -1299,7 +1296,7 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA611: Army per-city zero quantities and batch recruitment; science picker ETA inflection",
+  "releaseScope": "FALA612: Peace and truce proposals after ten full war turns",
   "sidecars": [
     {
       "file": "audio-pack-1.js",
@@ -1317,6 +1314,6 @@
       "sizeBytes": 11556324
     }
   ],
-  "wave": 611,
-  "sha256": "afeeb547aaedefb9d863d5df207072cae3767118e3ba23320f07bc039d2891fc"
+  "wave": 612,
+  "sha256": "0737fc8b822fe81dd82c94b40a7547aa5c0d9e6d96ae42229f658b215e39c6fb"
 }

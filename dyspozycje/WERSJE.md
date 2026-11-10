@@ -6949,3 +6949,12 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - PanelArmia: domyślnie0, dwa przyciski Rekrutuj wszystko góra/dół; dokładne zamówienia permiasto/typ, częścioweprzyjęcie zachowujeresztę. OsobnyHUDpanelpozostajez1górnymprzyciskiem.
 - OdmianaETA sciencePicker.
 - Eval/FC PASSWITHSCOPE; Chromium45/31/25 i16, mutationred; cleanbuild+HTTPaudioPASS. sourcec81ea20375bc00b31063bf5c05c509a29990d6c7. MD517d18433d236641b25b9c3a66b9d62db. filegateINFRA; hotseat/recapturelimitywmanifest. Push/readbackpending.
+
+
+## ROBOCZA dd096ffd — 2026-11-10T20:38:34.996531+01:00 — FALA 612: Peace and truce proposals after ten full war turns
+
+- No peace, truce or peace-tribute proposal during elapsed war turns0–9; allowed from10 across ordinary/era wars and player/AI paths
+- Central war-start metadata persists; pending offers guarded; fatigue continues during early-war window
+- Weryfikacja: Independent Evaluator and Final Control PASS; 24/24 proposal gate;41/41 AI-AI plus16mutants;96/96 fatigue;31/31 lifecycle;typecheckPASS; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: No task-specific live browser interaction measured; logic evidence uses actual modules plus main wiring review; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source cb5721d6d59ac2eabd242b47a058b18c91310f1f; manifestMD5 dd096ffdd6a5801dd647e96a4b90719b; SHA256 0737fc8b822fe81dd82c94b40a7547aa5c0d9e6d96ae42229f658b215e39c6fb; push/readback pending.
