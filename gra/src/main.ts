@@ -1675,6 +1675,7 @@ import {
 import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
+  converterThroughputEraParamKey,
   converterThroughputForEra,
   converterOutputMultiplierForEra,
   converterBuildingIdForRecipe,
@@ -3703,8 +3704,8 @@ async function boot(): Promise<void> {
      * produkuje" w liczniku (Maciej: netto zbyt kosztowne, brutto OK).
      *
      * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowość bazowa
-     * przepuszczona przez `converterThroughputForEra` (Garncarnia +10%/epokę cykli,
-     * Cegielnia ×(1+0,5·(e−1)) WYJŚCIA, Odlewnie płaskie) -- ten sam wzorzec co advanceCityEconomy, żeby
+     * przepuszczona przez te same reguły co advanceCityEconomy: brąz jawnie per-era,
+     * żelazo/stal × m(e), Garncarnia +10%/epokę cykli i Cegielnia ×(1+0,5·(e−1)) WYJŚCIA -- żeby
      * licznik HUD nie rozjechał się z realnym silnikiem (klasa błędu HUD-SKARBIEC).
      * `empireEpochForOwner` = ten sam resolver PARYTETU AI używany wszędzie indziej
      * w main.ts (owner 0 -> player.era, AI -> ownerEraByOwner).
@@ -3717,7 +3718,10 @@ async function boot(): Promise<void> {
         const baseThroughput = loadThroughput(
           rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
         );
-        const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+        const eraParamKey = converterThroughputEraParamKey(recipe, era);
+        const throughput = eraParamKey
+          ? loadThroughput(rawForConverters, eraParamKey, _menuDifficulty, baseThroughput)
+          : converterThroughputForEra(recipe.id, baseThroughput, era);
         // P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (Maciej 2026-08-14): dopasowanie
         // budynek->receptura MUSI iść przez `converterBuildingIdForRecipe` (recipe.buildingId
         // gdy ustawione, inaczej recipe.id), NIE przez recipe.id wprost -- dla receptur typu

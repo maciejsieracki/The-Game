@@ -10,7 +10,7 @@
  *   - Paliwo USUNIĘTE całkowicie (Mielerz usunięty); konwertery biorą DREWNO 1:1.
  *   Cegielnia  | 2 glina + 1 drewno | 2 cegly   | 50/t + 50% bazy/epokę właściciela (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1; wcześniej 1 cegła/cykl i +10%/epokę)
  *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
- *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 50/t × m(e) epoki właściciela (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1)
+ *   Odlewnia brązu | 1 ruda + 1 drewno + 0.1 cyny | 1 braz | explicit owner-era throughput (era 2: 25, era 3+: 50)
  *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 50/t × m(e) każdy
  *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 50/t × m(e) każdy (założenie: ta sama rodzina)
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
@@ -56,6 +56,8 @@ export interface ConverterRecipe {
   outputAmount:       number;
   throughputParamKey: string;
   throughputFallback: number;
+  /** Optional explicit owner-era parameter rows. Values are flat caps, not era multipliers. */
+  throughputEraParamKeys?: Readonly<Record<number, string>>;
 }
 
 /**
@@ -94,10 +96,10 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
   // have('cyna') zawsze 0 gdyby nic tego pola nie zasilało). Cyna NICZEGO nie zastępuje —
   // to DODATKOWY wymóg obok ruda+drewno (brak Cyny w magazynie → throughput=0, mimo dostępnej
   // Miedzi/Drewna — patrz cyna-surowiec-test.cjs).
-  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50 },
-  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50 },
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
   { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 50 },
-  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50, throughputEraParamKeys: { 2: 'budynek_huta_braz_epoka2_przepustowosc', 3: 'budynek_huta_braz_epoka3_przepustowosc' } },
   { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 50 },
   { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 50 },
 ];
@@ -108,9 +110,8 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 // przepustowość rośnie +10% ADDYTYWNIE od bazy za KAŻDĄ epokę CYWILIZACJI
 // WŁAŚCICIELA budynku (nie globalną epokę gry, nie poziom budynku
 // buildingLevelForEpoch -- to OSOBNY system, patrz buildings.json maksPoziom).
-// Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie (huta/odlewnia_brazu/
-// odlewnia_zelaza*/wielka_odlewnia*) NIE dostają tego mechanizmu (od R-WEB-FOUNDRY-
-// THROUGHPUT-X2-ERA-MULT-Q1 odlewnie mają własny mnożnik m(e) cykli, patrz niżej).
+// Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie nie dostają tego mechanizmu.
+// Żelazo/stal używają m(e), a brąz jawnych parametrów per-era (R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1).
 // / EN: Brickworks/Pottery throughput grows +10% ADDITIVELY from the base for EVERY
 // era of the OWNING civilization (not the global game era, not the building's own
 // level system). Base 10: era1=10, era2=11, era3=12. Foundries are excluded and
@@ -138,17 +139,14 @@ export const CONVERTER_ERA_SCALING_PCT = 0.10;
 /**
  * R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): „zwiększ naturalną
  * ilość cykli z 25 do 50 dla odlewni brązu / żelaza … i w każdą epokę zwiększaj możliwości
- * zgodnie z mnożnikami 1, 1,5, 2 …". Odlewnie (łańcuch brązu/żelaza/stali) skalują PRZEPUSTOWOŚĆ
+ * zgodnie z mnożnikami 1, 1,5, 2 …". Żelazo/stal skalują PRZEPUSTOWOŚĆ
  * (cykle/turę) mnożnikiem epoki WŁAŚCICIELA m(e) = `citizenConsumptionEraMultiplier` (1 / 1,5 / 2 /
- * 2,5 / 3) -- jedna definicja wzoru dla konsumpcji obywateli i odlewni. Receptury (wejścia/wyjścia)
- * bez zmian. Huta (bez budynku w buildings.json) zostaje płaska; Cegielnia skaluje WYJŚCIE (BRICK).
- * Założenie: Wielka odlewnia (3 receptury) w tej samej rodzinie co Odlewnia brązu/żelaza.
+ * 2,5 / 3) -- jedna definicja wzoru dla konsumpcji obywateli i żelaza/stali. Brąz używa jawnych
+ * parametrów per era z econ-params. Receptury (wejścia/wyjścia) bez zmian. Huta zostaje płaska;
+ * Cegielnia skaluje WYJŚCIE (BRICK).
  */
 export const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: ReadonlySet<string> = new Set([
-  'odlewnia_brazu',
-  'odlewnia_zelaza__braz',
   'odlewnia_zelaza__zelazo',
-  'wielka_odlewnia__braz',
   'wielka_odlewnia__zelazo',
   'wielka_odlewnia__stal',
 ]);
@@ -175,6 +173,16 @@ export const CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE: Readonly<Record<string, number>
 /** Sufiks klucza w mapie `throughputs` przekazującego mnożnik wyjścia do `runConverters`. */
 export const CONVERTER_OUTPUT_MULT_KEY_SUFFIX = '#outMult';
 
+/** Explicit per-era parameter row for a recipe, carrying the latest configured era forward. */
+export function converterThroughputEraParamKey(recipe: ConverterRecipe, era: number): string | undefined {
+  const rows = recipe.throughputEraParamKeys;
+  if (!rows) return undefined;
+  const e = Number.isFinite(era) && era > 1 ? Math.floor(era) : 1;
+  const configured = Object.keys(rows).map(Number).filter(n => Number.isFinite(n)).sort((a, b) => a - b);
+  const selected = configured.filter(n => n <= e).pop() ?? configured[0];
+  return selected === undefined ? undefined : rows[selected];
+}
+
 /** Mnożnik WYJŚCIA receptury za epokę właściciela (1 dla receptur bez skalowania wyjścia). */
 export function converterOutputMultiplierForEra(recipeId: string, era: number): number {
   const pct = CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE[recipeId];
@@ -187,8 +195,8 @@ export function converterOutputMultiplierForEra(recipeId: string, era: number): 
  * Przepustowość konwertera po uwzględnieniu epoki WŁAŚCICIELA budynku (per-owner,
  * PARYTET AI -- ta sama funkcja dla gracza i AI, `era` to zwykły parametr liczbowy
  * bez gałęzi po ownerId). Garncarnia +10% bazy/epokę (addytywnie); Odlewnie
- * (CONVERTER_FOUNDRY_ERA_RECIPE_IDS) × m(e) = 1/1,5/2/2,5/3; Huta płaska; Cegielnia
- * skaluje WYJŚCIE (`converterOutputMultiplierForEra`), jej cykle płaskie.
+ * (CONVERTER_FOUNDRY_ERA_RECIPE_IDS) × m(e) = 1/1,5/2/2,5/3; brąz explicit per era;
+ * Huta płaska; Cegielnia skaluje WYJŚCIE (`converterOutputMultiplierForEra`), jej cykle płaskie.
  * `era` < 1 lub nieskończone/NaN traktowane jak 1 (brak ujemnego/undefined mnożnika).
  */
 export function converterThroughputForEra(
@@ -209,12 +217,15 @@ export function converterThroughputForEra(
  * `<id>#outMult` (tylko receptury ze skalowaniem wyjścia). Jedno miejsce dla gracza i AI.
  */
 export function converterThroughputsForEra(
-  baseOf: (recipe: ConverterRecipe) => number,
+  baseOf: (recipe: ConverterRecipe, era: number) => number,
   era: number,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-    out[recipe.id] = converterThroughputForEra(recipe.id, baseOf(recipe), era);
+    const base = baseOf(recipe, era);
+    out[recipe.id] = recipe.throughputEraParamKeys
+      ? base
+      : converterThroughputForEra(recipe.id, base, era);
     const m = converterOutputMultiplierForEra(recipe.id, era);
     if (m !== 1) out[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] = m;
   }
@@ -328,7 +339,10 @@ export function converterProductionDisplayForBuilding(
     const baseThroughput = loadThroughput(
       rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
     );
-    const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+    const eraParamKey = converterThroughputEraParamKey(recipe, era);
+    const throughput = eraParamKey
+      ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
+      : converterThroughputForEra(recipe.id, baseThroughput, era);
     for (const [key, perCykl] of Object.entries(recipe.inputs)) {
       if (!(perCykl > 0)) continue;
       consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
