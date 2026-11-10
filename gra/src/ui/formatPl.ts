@@ -1,6 +1,9 @@
-/** Odmiana „jednostka" (1 / 2–4 / 5+). */
+/** Odmiana „jednostka” z wyjątkiem 12–14: 1 / 2–4 / 5+. */
 export function formatJednostkiCount(n: number): string {
-  const word = n === 1 ? 'jednostka' : n >= 2 && n <= 4 ? 'jednostki' : 'jednostek';
+  const lastDigit = Math.abs(n) % 10;
+  const lastTwoDigits = Math.abs(n) % 100;
+  const fewForm = lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14);
+  const word = n === 1 ? 'jednostka' : fewForm ? 'jednostki' : 'jednostek';
   return `${n} ${word}`;
 }
 

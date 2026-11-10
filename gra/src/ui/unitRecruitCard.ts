@@ -8,6 +8,7 @@ import type { ProductionItem } from '../game/production';
 import { formatManpower, formatManpowerCompact } from '../game/manpower';
 // R-WEB-HUD-NUMBER-ABBREV-Q1 (runda 2): widoczny zapis na karcie = ten sam „k"/„M" co pula nad listą; title zostaje pełnym opisem.
 import { formatCompactNumber } from './formatCompactNumber';
+import { formatJednostkiCount } from './formatPl';
 import { categoryOf } from '../units/setup';
 import { unitIconSvg } from './icons/brandAssets';
 import {
@@ -347,7 +348,7 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
     if (!canPurchase && blockedReasons.length > 0) btn.title = blockedReasons.join('; ');
     else if (!canPurchase) btn.title = 'Wymaga podpięcia onPurchaseUnit przez silnik';
     else if (!canBuy && skarb !== undefined) btn.title = `Za mało złota (${skarb}/${item.koszt})`;
-    else if (quantity > 1) btn.title = `Rekrutuj ${quantity} jednostki za ${quantity * item.koszt} ze skarbca`;
+    else if (quantity > 1) btn.title = `Rekrutuj ${formatJednostkiCount(quantity)} za ${quantity * item.koszt} ze skarbca`;
     else btn.title = `Rekrutuj za ${item.koszt} ze skarbca`;
   };
   const setQuantity = (next: number): void => {

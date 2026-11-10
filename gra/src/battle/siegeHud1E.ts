@@ -92,6 +92,14 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function oddzialyCountLabel(n: number): string {
+  const lastDigit = Math.abs(n) % 10;
+  const lastTwoDigits = Math.abs(n) % 100;
+  const fewForm = lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14);
+  const word = n === 1 ? 'oddział' : fewForm ? 'oddziały' : 'oddziałów';
+  return `${n} ${word}`;
+}
+
 export function mountSiegeHud1E(overlay: HTMLElement, _callbacks: SiegeHudCallbacks): HTMLDivElement {
   disposeSiegeHud1E();
   phase = 'siege';
@@ -145,7 +153,7 @@ function renderSiegeHud1E(st: SiegeHudState): void {
   const rightBorder = isStorm ? 'rgba(200,64,64,0.35)' : BATTLE_PANEL_BORDER;
   const rightBody = isStorm
     ? `<div style="padding:16px;font-size:12px;color:${BATTLE_TEXT_DIM};line-height:1.8;">
-        <div style="display:flex;justify-content:space-between;"><span>Obro\u0144cy na murach</span><span style="color:${BATTLE_ENEMY_TEXT};">${st.garrison} oddzia\u0142y</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Obro\u0144cy na murach</span><span style="color:${BATTLE_ENEMY_TEXT};">${oddzialyCountLabel(st.garrison)}</span></div>
         <div style="margin-top:10px;font-size:11px;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;">Szturm przez wy\u0142om omija bonus muru.</div>
       </div>`
     : `<div style="padding:14px 16px;font-size:13px;line-height:1.7;">

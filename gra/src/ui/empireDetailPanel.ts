@@ -1140,7 +1140,7 @@ function renderSkarbiecSection(
     ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${handel} handel</span>`
     : '<span style="font-size:11px;color:#7d8798;font-weight:600">bez handlu</span>';
   const kosztySub = utrzB > 0
-    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">${utrzB} budynki</span>` : '';
+    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">utrzymanie budynków: ${utrzB} ¤</span>` : '';
   h += '<div class="civ-emp-two">'
     + `<div class="civ-emp-box"><div class="k">WPŁYWY / TURĘ</div><div class="v">${wplywy} ${wplywySub}</div></div>`
     + `<div class="civ-emp-box"${netto < 0 ? ' style="border-color:#4a2a2a"' : ''}><div class="k">KOSZTY / TURĘ</div>`
@@ -1681,7 +1681,7 @@ function renderNaukaSection(
     const pctBar = Math.max(0, Math.min(100, Math.round(research.postepFraction * 100)));
     const etaTxt = research.turnsLeft == null
       ? '—'
-      : (research.turnsLeft > 0 ? `${research.turnsLeft} tur` : '<1 tury');
+      : (research.turnsLeft > 0 ? `${research.turnsLeft} ${turaCountWord(research.turnsLeft)}` : '<1 tury');
     h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
       + `<div class="v">${esc(research.targetLabel)}</div>`
       + `<div class="civ-emp-bar" style="margin-top:7px;height:6px;margin-bottom:0">`
@@ -3604,7 +3604,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     const dealGrid = '0.9fr 1.05fr 0.8fr 1.05fr';
     h += `<div class="civ-emp-mini">${miniHeader(['PARTNER', 'POZOSTAŁO', 'ZAUFANIE', 'TRASA'], dealGrid)}`;
     for (const d of t.activeDeals) {
-      const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} tur`;
+      const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} ${turaCountWord(d.turnsLeft)}`;
       const trustCell = `<span style="color:#78c95a">+${d.trustPerTurn}/turę</span>`;
       const routeCell = d.hasActiveRoute
         ? 'aktywny szlak'
@@ -3772,18 +3772,7 @@ function typCountWord(n: number): string {
   return isPlFewForm(n) ? 'typy' : 'typów';
 }
 
-/**
- * N4 (RUNDA 2, P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK, Maciej 2026-08-16): odmiana
- * „tura/tury/tur" dla ETA w `renderArmiaProdukcjaMini()` — reużywa `isPlFewForm()` już
- * zdefiniowane wyżej zamiast duplikować regułę. Odpowiednik `tury(n)` z `cityPanel.ts`, ale
- * ten NIE jest wyeksportowany (moduł-prywatny) — zamiast go eksportować przez granicę modułu
- * wyłącznie dla jednej etykiety, dopisano lokalny wariant w idiomie już panującym w tym pliku
- * (`dealCountWord`/`typCountWord` obok).
- * EN: "tura/tury/tur" plural for the ETA label in `renderArmiaProdukcjaMini()` — reuses the
- * already-defined `isPlFewForm()` instead of duplicating the rule. Equivalent to `tury(n)` in
- * `cityPanel.ts`, but that one is module-private there — rather than exporting it across a
- * module boundary for a single label, this follows this file's own existing idiom instead.
- */
+/** Odmiana „tura/tury/tur” po liczebniku, z wyjątkiem 12–14. */
 function turaCountWord(n: number): string {
   if (n === 1) return 'tura';
   return isPlFewForm(n) ? 'tury' : 'tur';

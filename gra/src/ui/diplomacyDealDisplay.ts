@@ -11,6 +11,14 @@ import {
 } from '../game/diplomacy-display';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 
+function formatTuryCount(n: number): string {
+  const lastDigit = Math.abs(n) % 10;
+  const lastTwoDigits = Math.abs(n) % 100;
+  const fewForm = lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14);
+  const word = n === 1 ? 'tura' : fewForm ? 'tury' : 'tur';
+  return `${n} ${word}`;
+}
+
 function esc(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -45,7 +53,7 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
         if (turns != null && turns > 0) {
           return (
             main
-            + `<span class="da-deal-total">łącznie ${amt * turns} ¤ przez ${turns} tur</span>`
+            + `<span class="da-deal-total">łącznie ${amt * turns} ¤ przez ${formatTuryCount(turns)}</span>`
           );
         }
         return main;
@@ -62,7 +70,7 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
         if (turns != null && turns > 0) {
           return (
             main
-            + `<span class="da-deal-total">łącznie ${szt * turns} ${esc(label)} przez ${turns} tur</span>`
+            + `<span class="da-deal-total">łącznie ${szt * turns} ${esc(label)} przez ${formatTuryCount(turns)}</span>`
           );
         }
         return main;
@@ -303,7 +311,7 @@ export function renderTradeBasketDealPreviewHtml(
   const turns = opts.turns;
   if (opts.resourceTradeMode === 'per_turn') {
     if (turns != null && turns > 0) {
-      html += `<div class="da-deal-sched-foot">Wymiana co turę przez ${turns} tur</div>`;
+      html += `<div class="da-deal-sched-foot">Wymiana co turę przez ${formatTuryCount(turns)}</div>`;
     } else {
       html += '<div class="da-deal-sched-foot">Wymiana co turę</div>';
     }
