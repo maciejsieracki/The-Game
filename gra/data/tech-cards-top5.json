@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "f8ea0dabf2332ad936dc38390f9d44d9e5e9c7a67e4cf93f2a121b8f0856987e",
+    "csvSha256": "44d28f3dd34ee59c46243432ad1de0170bbc813e00b1541e74f3dd8e47c98d67",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -1298,7 +1298,7 @@
         "dowod": "gra/data/buildings.json:2082"
       },
       {
-        "tytul": "24 jednostki epoki Żelaza, np. Falanga (Obrona 12)",
+        "tytul": "Odblokowuje jednostki epoki Żelaza",
         "zdanie": "Odblokowuje rekrutację wszystkich narodowych jednostek epoki Żelaza w mieście z Koszarami.",
         "dowod": "gra/data/units.json; gra/src/game/production.ts:1063-1069"
       }

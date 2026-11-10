@@ -235,6 +235,8 @@ async function main() {
   for (const n of ['Matematyka', 'Obróbka żelaza']) {
     check(`[E] ${n}: Top1 = jawne „Otwiera drogę do …” (Q7 właściciela)`, /^Otwiera drogę do /.test(rendered[n].top5[0].tytul), rendered[n].top5[0]);
   }
+  check('[E] Sztuka wojenna: Top3 = zatwierdzone „Odblokowuje jednostki epoki Żelaza” bez liczby',
+    rendered['Sztuka wojenna'].top5[2]?.tytul === 'Odblokowuje jednostki epoki Żelaza', rendered['Sztuka wojenna'].top5);
   check('[E] Filozofia: Teatr (suppressed) ukryty', !rendered['Filozofia'].labels.buildings.includes('Teatr') && !rendered['Filozofia'].text.includes('Teatr'));
   check('[E] Obróbka żelaza: Wielka odlewnia/Wielka Kuźnia (epoka 4) ukryte',
     !/Wielka odlewnia|Wielka Kuźnia/.test(rendered['Obróbka żelaza'].text), rendered['Obróbka żelaza'].labels.buildings);
