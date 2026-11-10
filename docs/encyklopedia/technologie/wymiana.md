@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Wymiana** — epoka **Kamień** (poziom 2), koszt **32** PN (tempo Szybka), wymaga: Garncarstwo + Rolnictwo + Oswojenie zwierząt. Odblokowuje budynki: Targowisko (Rynek).
+**Wymiana** — epoka **Kamień** (poziom 2), koszt **64** PN (tempo Szybka), wymaga: Garncarstwo + Rolnictwo + Oswojenie zwierząt. Odblokowuje budynki: Targowisko (Rynek).
 
 ---
 
@@ -24,7 +24,7 @@
 ### Wymagania
 - **Epoka:** Kamień (poziom 2)
 - **Wymaga (prereq):** Garncarstwo + Rolnictwo + Oswojenie zwierząt
-- **Koszt nauki:** 32 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
+- **Koszt nauki:** 64 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
 - **Budynki:** Targowisko (Rynek)
