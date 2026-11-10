@@ -6927,3 +6927,6 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
 
 ## FALA 607 — 2026-11-10
 ROBOCZA `2ee58aa2`; publikacja `2da63d941`: limit zamiany jednostek AI w konfiguracji (bez zmiany10%), mnożnik pocisku na kartach, koszty technologii w encyklopedii. FC PASS-WITH-NOTES. Build i HTTP audio smoke PASS; pakiety audio bez zmian. Push i readback Git potwierdzone, nie HTTP Raw. file:// pozostaje INFRA-BLOCKED w tym środowisku. Receipts90-release-607.json w trzech runach.
+
+## FALA608 — 2026-11-10
+ROBOCZA6c95bf48, publicationaac34b521, source531d403f6. Haamonga: encyclopedia/catalogue reflect implemented effects; no gameplay bonus changes. IndependentDefense/FC PASSWITHNOTES; productionbuild+HTTPaudio smokePASS; audio unchanged. Offlinefile:// remainsINFRA-blocked, notclaimedPASS. Push/freshGitreadbackPASS; ownrelease dirs cleaned.

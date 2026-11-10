@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication aac34b521; Git remote readback confirmed",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
   "bundleSha256": "8102397f9584b4ec3fb3fe2b55c4f954a9ea0d1cf1f9570449d133a81a1c0d35",
@@ -110,8 +110,8 @@
     "wave": 607
   },
   "rollbackPlan": {
-    "method": "Restore gra-robocza artifacts from d0ccc260e; revert source commits40db31f20/39f8e2ce0/79a6c778e if gameplay source rollback required.",
-    "previousPublicationCommit": "d0ccc260edb35c952e6cd9eb5477cff02a4e2b3f"
+    "method": "Restore gra-robocza artifacts from 43c5487f6 (wave607); revert source531d403f6 for documentation source rollback.",
+    "previousPublicationCommit": "43c5487f69ab052820672dfbcddbfed0ab0bb5dc"
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1287,7 +1287,7 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-10T11:28:08.684353+00:00",
+  "publishedAt": "2026-11-10T11:54:28.281370+00:00",
   "buildStamp": "2026-11-05 23:42",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
