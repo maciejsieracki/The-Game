@@ -9565,3 +9565,7 @@ Wznowione roleLunaHigh: army_split_graphical_hex_operator; polish_language_audit
 
 ## 2026-11-10T14:57:41.808240+01:00 — planpoFALI609 / decyzjawłaściciela
 SztukawojennaTop3: „Odblokowuje jednostki epoki Żelaza”, bezliczby — kwalifikacjaTECH-CARDS. Graficzny splitFALA60911/11, unittextbatch11/11,parentPolishauditPARTIAL. Następne4przewidziane: TECH-CARDS, POLISH-UI-ROUTES-AUDIT-Q2, WONDER-TRANSFER-TEST-DEBT, BATTLE-SIEGE-NEARBY-UNITS-JOIN. Dispatchzapisanyprzeduruchomieniami; brakstarychFAŁ589-606wotwartejpracy.
+
+
+## R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1 — 2026-11-10
+STATUS: ZAREJESTROWANE. GOAL: ilości0 i dwa globalne przyciski Rekrutuj wszystko w Armia/rekrutacja per miasto. Właściciel potwierdził screenshot Ateny/Sparta. Oddzielny panel HUD pozostaje. Dispatch: `autobot/runs/R-WEB-ARMY-CITY-RECRUIT-ZERO-BATCH-Q1/00-dispatch.md`.
