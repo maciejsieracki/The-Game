@@ -48,3 +48,6 @@ Obowiązująca grupa do domknięcia: wojnyepoki, granica, pokój10tur, kosztybad
 
 ## Korekta kolejności po jawnym przypomnieniu właściciela
 Produkcja brązu25/50 i Brązownictwo480 są aktywnymiPRIORYTETAMI, nieczekająnazamknięciewszystkich>2. Razemzgranicąikonnicątworzą4aktywnetematy. Audytpriorytetów: PRIORYTETY-WLASCICIELA-20261110.md. Machiny11/11FALA614.
+
+## Kolejne3wolneslotypoFALI616
+R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1, R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1, R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1 startująrównoleglewosobnychworktrees. Granica domykanawczwartymtemacie. Originmainreadback/readcodeprzednaprawą, niepowtarzaćgotowychFAL.
