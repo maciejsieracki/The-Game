@@ -499,3 +499,15 @@ export function plannedMarchesToSave(
   }
   return { autoMarch: first, plannedMarches };
 }
+
+/**
+ * R-WEB-MARCH-RESUME-NEXT-TURN-Q1: zasadne przerwanie zaplanowanego marszu, o którym gracz ma
+ * dostać JEDNO powiadomienie (zatrzymanie + powód). `no_movement` (brak MP na koniec tury) i `fog`
+ * (granica mgły) to zwykłe, oczekiwane pauzy — nie są powiadamiane (bez szumu). Plan w obu
+ * przypadkach zostaje i wznawia się sam na końcu kolejnej tury.
+ * EN: a justified march interruption worth ONE player notice. Routine pauses (`no_movement`,
+ * `fog`) are not notified; the plan survives them and resumes on its own.
+ */
+export function isNotifiableMarchStop(reason: MarchStopReason | undefined): boolean {
+  return reason === 'obstacle' || reason === 'no_path' || reason === 'blocked_city';
+}
