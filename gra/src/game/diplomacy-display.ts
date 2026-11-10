@@ -326,15 +326,23 @@ export function nastawienieLabelFromScore(
   return 'Przyjazny';
 }
 
-/** Zaufanie/Respekt do wyświetlenia — w wojnie z podłogą score (spójne z clampRelationForWar). */
+/**
+ * Zaufanie/Respekt do wyświetlenia — PRAWDZIWA wartość efektywna (ABC „B”, R-WEB-DIPLO-RESPECT-DISPLAY-TRUE-VALUE-Q1).
+ * Limit wojenny (clampRelationForWar, 29) NIE obcina wartości w panelu: dotyczy wyłącznie etykiety „Wrogi”
+ * i dopisku (zob. `warRelationCapApplies`). Mechanika (silnik) pozostaje bez zmian.
+ */
 export function effectiveNastawienieScores(
   zaufanie: number,
   respekt: number,
-  atWar: boolean,
 ): { zaufanie: number; respekt: number } {
-  if (!atWar) return { zaufanie, respekt };
+  return { zaufanie, respekt };
+}
+
+/** True, gdy w wojnie surowy score relacji przekracza limit wojenny — wtedy UI dopisuje „limit wojenny 29”. */
+export function warRelationCapApplies(zaufanie: number, respekt: number, atWar: boolean): boolean {
+  if (!atWar) return false;
   const c = clampRelationForWar({ zaufanie, respekt, status: 'wojna' });
-  return { zaufanie: c.zaufanie, respekt: c.respekt };
+  return c.zaufanie !== zaufanie || c.respekt !== respekt;
 }
 
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
