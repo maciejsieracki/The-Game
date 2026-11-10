@@ -13,6 +13,7 @@ export {
   tradeGoodsCategoriesFromParts,
   formatTradeGoodDisplayLabel,
 } from '../src/game/diplomacy-goods.ts';
+export { resourceDisplayLabel } from '../src/game/diplomacy-display.ts';
 export { PASTWISKO_S } from '../src/render/pastwisko-modele.ts';
 `);
 esbuild.buildSync({
@@ -28,6 +29,7 @@ const {
   tradableGoodsForOwner,
   tradeGoodsCategoriesFromParts,
   formatTradeGoodDisplayLabel,
+  resourceDisplayLabel,
   PASTWISKO_S,
 } = require(BUNDLE);
 
@@ -60,6 +62,8 @@ ok(rudaZero.length === 1 && rudaZero[0].label === 'Ruda miedzi', 'Ruda → etyki
 ok(rudaZero[0].key === 'ruda', 'klucz danych ruda bez zmian');
 ok(formatTradeGoodDisplayLabel(rudaZero[0]) === 'Ruda miedzi ×0', 'aktywny surowiec z zapasem 0 → ×0');
 ok(!goods.some(g => g.label === 'Ruda'), 'brak osobnej etykiety „Ruda" w dobrach');
+ok(resourceDisplayLabel('ruda') === 'Ruda miedzi', 'diplomacy-display: resourceDisplayLabel(ruda) → Ruda miedzi (koszyk/oferty)');
+ok(resourceDisplayLabel('ruda') !== 'Ruda', 'diplomacy-display: brak etykiety „Ruda" w koszyku');
 const rudaStock = tradableGoodsForOwner({ activeResourceLabels: ['Ruda'], citySurowceSum: { ruda: 7 } });
 ok(formatTradeGoodDisplayLabel(rudaStock[0]) === 'Ruda miedzi ×7', 'surowiec z zapasem >0 bez zmian (×7)');
 const rudaFallback = tradableGoodsForOwner({ activeResourceLabels: [], citySurowceSum: { ruda: 3 } });
