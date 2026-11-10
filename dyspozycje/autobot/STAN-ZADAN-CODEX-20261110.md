@@ -17,11 +17,11 @@ Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego p
 |Test terminologii|11/11|796/796,pushaac34b521|
 |Test ekonomii AI|11/11|31/31+9/9,push8778e3613|
 |Test plonówPR141|11/11|135checks,push5f7a75943|
-|Teksty jednostek/audytPolish|5/11r2|kolejnarunda3WSTRZYMANA limitemLuna; cały audytczęściowy|
-|D-FOG-F:3skryptymeasure|1/11|dispatchjest; próbaOperatorazablokowanalimitem|
-|Test głodu/karencji wojska|1/11|dispatchjest; próbaOperatorazablokowanalimitem|
+|Teksty jednostek/audytPolish|5/11r2|runda3wznowiona po błędzie limitu; OperatorLunaHigh aktywny; cały audytczęściowy|
+|D-FOG-F:3skryptymeasure|2/11|Operatorwznowiony, diagnozawtoku; blokadaprzeglądarkidozwolnienia|
+|Test głodu/karencji wojska|2/11|Operatorwznowiony, diagnozawtoku|
 |Test kart technologiiTop5|1/11|dispatchjest; próbaOperatorazablokowanalimitem|
-|Graficzny wybór heksu rozdzielenia|1/11|nowydispatch; próbauruchomienianastępna|
+|Graficzny wybór heksu rozdzielenia|2/11|OperatorLunaHigh aktywny; nowezgłoszeniewrealizacji|
 |Pobliskie wojska do bitwyoblężniczej|1/11|KOLEJKA, nieSIEGELOCK606|
 |Pomiń/AUTO przywyłomie #202|1/11|KOLEJKA|
 |Machiny tylko podczasoblężenia|1/11|OCZEKUJEPOTWIERDZENIAzasad|
@@ -34,3 +34,5 @@ Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego p
 |Model falangi|WSTRZYMANY|odłożonydecyzjąwłaściciela|
 |REPIN Rust|WSTRZYMANY|po kolejceweb|
 |Decyzje #201|OCZEKUJE|nie implementowaćbrakującychdecyzji|
+
+Aktualizacja 2026-11-10T14:05:09.777274+01:00: ponowne uruchomienia po błędzie limitu. Cztery aktywne tematy: split graficzny, Polish r3, D-FOG-F, food-grace. Tech-cards nie wznowiono — czeka na slot po wcześniejszym błędzie limitu. Bez zmiany modelu LunaHigh.

@@ -9559,3 +9559,6 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 ## 2026-11-10T14:02:57.956073+01:00 — nowe zgłoszenie wyboru docelowego heksu
 - R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1: etap1/11, zarejestrowane; współrzędne zastąpić graficznym wyborem sześciu pól wokół jednostki, zachowując reguły rozdzielenia. Dispatch: runs/R-WEB-ARMY-SPLIT-GRAPHICAL-HEX-PICKER-Q1/00-dispatch.md.
 - Ostatnie próby Operatorów Luna dla Polish r3, D-FOG-F, food-grace i tech-cards zakończyły się limitem użycia. Status WSTRZYMANY/INFRA, nie aktywna praca. Brak zgody na ciche zastąpienie innym modelem; modele pozostają LunaHigh.
+
+## Odczyt Codex po wznowieniu limitowanych ról — 2026-11-10
+Wznowione roleLunaHigh: army_split_graphical_hex_operator; polish_language_audit_operator r3; d_fog_measure_scripts_operator; food_grace_tests_operator. Max4aktywnetematy. Wcześniejsze komunikaty o limicie pozostają historią; nowa diagnoza/testy nie są z góryPASS. Techcards czeka na wolnyslot. Stan etapów: STAN-ZADAN-CODEX-20261110.md.
