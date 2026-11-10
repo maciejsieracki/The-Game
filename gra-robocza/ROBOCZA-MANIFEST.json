@@ -1,29 +1,32 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication aac34b521; Git remote readback confirmed",
+  "releaseState": "DEPLOYED TO ROBOCZA; push/readback pending",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
-  "bundleSha256": "8102397f9584b4ec3fb3fe2b55c4f954a9ea0d1cf1f9570449d133a81a1c0d35",
-  "bundleBytes": 14397875,
+  "bundleMd5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+  "bundleSha256": "c29c747565cec98b36992547d468ac08d2e1be6a1ce91de155cf5f7fd6b01f85",
+  "bundleBytes": 14404656,
   "sourceSnapshot": {
-    "source": "531d403f6",
+    "source": "8109fb8e9",
     "build": "clean git archive; Vite outside repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA608: Haamonga encyclopedia/catalogue effects match runtime; inert profile tag cleanup; no gameplay bonus changes"
+    "FALA609: graphical army split destination picker: six physical neighbors and source army, no visible coordinates; disabled reasons, same-city target and legacy compatibility",
+    "FALA609: verified unit-card language fixes and Top3 display labels; source data identities/numbers unchanged; broader language audit remains PARTIAL"
   ],
   "verification": [
-    "Independent Evaluator/Defense/FinalControl PASS-WITH-NOTES after corrections",
-    "Clean source build PASS",
-    "HTTP runtime audio-present/audio-absent smoke PASS",
-    "All3audio packs byte-identical"
+    "Independent Evaluator/FinalControl PASS-WITH-NOTES for both scoped batches",
+    "Picker14/14 Chromium; legacy15/0; movement4/0; typecheckPASS; normal/150%captures",
+    "UnitTop3actualDOM75/75 plus rawinput/unknownpreservation; typecheckPASS",
+    "Clean production buildPASS; HTTP audio-present/audio-absent runtimePASS",
+    "All3audio packs unchanged"
   ],
   "limits": [
-    "Offline file:// audio gate remains INFRA-BLOCKED under managed system Chromium; not claimed verified",
-    "JSON +3 Influence remains unconsumed and unchanged; no active claim in player documentation"
+    "Picker evidence is componentfixture+adaptercontract, notfullcampaign",
+    "EntireUI/Civpedia language audit remainsPARTIAL despite shippedunitcardfixes",
+    "Offline file:// gate remains INFRA blocked by managedbrowser; notclaimedPASS"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "runs/R-WEB-WONDER-HAAMONGA-DOC-SYNC-Q1/50-final-control.md"
+    "notes": "army-split50-final-control.md andPolish50-final-control-r4.md"
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-11-10T10:51:09",
@@ -32,86 +35,86 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "6c95bf48a96e610ab152f1ca98f91619",
-      "sizeBytes": 14397875
+      "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+      "sizeBytes": 14404656
     }
   ],
-  "md5": "6c95bf48a96e610ab152f1ca98f91619",
-  "sizeBytes": 14397875,
+  "md5": "eed8b5c146e3e5e3bbce803fc98a1c43",
+  "sizeBytes": 14404656,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
-  "source": "gra/src main531d403f6",
+  "source": "gra/src main8109fb8e9",
   "immediatePreviousRelease": {
-    "bundleMd5": "2ee58aa298dda83cf3d7fcda7a29382f",
-    "bundleSha256": "b22e68d00187d7815c9e314e979e21ea1b7fa0888e3b87612a3329210e27e49c",
-    "bundleBytes": 14397731,
-    "wave": 607
+    "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
+    "bundleSha256": "8102397f9584b4ec3fb3fe2b55c4f954a9ea0d1cf1f9570449d133a81a1c0d35",
+    "bundleBytes": 14397875,
+    "wave": 608
   },
   "rollbackPlan": {
-    "method": "Restore gra-robocza artifacts from 43c5487f6 (wave607); revert source531d403f6 for documentation source rollback.",
-    "previousPublicationCommit": "43c5487f69ab052820672dfbcddbfed0ab0bb5dc"
+    "method": "Restore wave608 artifacts from ab7507706; revert source8109fb8e9 and98e0ad9e9 ifsource rollbackrequired.",
+    "previousPublicationCommit": "ab7507706d712f1ae675e6fef57459083399191b"
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1287,7 +1290,7 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-10T11:54:28.281370+00:00",
+  "publishedAt": "2026-11-10T13:41:47.982460+00:00",
   "buildStamp": "2026-11-05 23:42",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
@@ -1314,5 +1317,5 @@
       "sizeBytes": 11556324
     }
   ],
-  "wave": 608
+  "wave": 609
 }
