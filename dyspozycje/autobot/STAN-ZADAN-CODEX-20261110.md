@@ -1,6 +1,6 @@
 # Stan zadań Codex
 
-Odczyt: 2026-11-10T14:02:57.956073+01:00
+Odczyt UTC: 2026-11-10T14:09:28.961557+00:00
 Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego po błędzie limitu. Długi bez rejestracji nie mają fikcyjnego1/11. Wdrożenia FALA589–606 nie są otwierane ponownie.
 
 |Temat|Etap|Status|
@@ -17,22 +17,22 @@ Numer oznacza ostatnią potwierdzoną bramkę; nie udajemy Operatora aktywnego p
 |Test terminologii|11/11|796/796,pushaac34b521|
 |Test ekonomii AI|11/11|31/31+9/9,push8778e3613|
 |Test plonówPR141|11/11|135checks,push5f7a75943|
-|Teksty jednostek/audytPolish|5/11r2|runda3wznowiona po błędzie limitu; OperatorLunaHigh aktywny; cały audytczęściowy|
-|D-FOG-F:3skryptymeasure|2/11|Operatorwznowiony, diagnozawtoku; blokadaprzeglądarkidozwolnienia|
+|Teksty jednostek — wydzielona partia|11/11|Robocza FALA609; cały audyt języka pozostaje częściowy|
+|D-FOG-F: 3 skrypty pomiarowe|11/11|push88c6cc53a; preflight wykonany, pełny pomiar imperium nie był uruchomiony|
 |Test głodu/karencji wojska|11/11|40/40+FC,push39e24b65c|
-|Test kart technologiiTop5|3/11|DECISION_REQUIRED: źródłaTop3Sztukiwojennejsprzeczne,pytanieownerwysłane|
-|Graficzny wybór heksu rozdzielenia|2/11|OperatorLunaHigh aktywny; nowezgłoszeniewrealizacji|
-|Pobliskie wojska do bitwyoblężniczej|1/11|KOLEJKA, nieSIEGELOCK606|
+|Test kart technologii Top5|3/11|Operator aktywny po decyzji właściciela: opis jednostek Żelaza bez liczby; uzgadnia źródło CSV z zatwierdzonymi kartami|
+|Graficzny wybór heksu rozdzielenia|11/11|Robocza FALA609, push/readback potwierdzony|
+|Pobliskie wojska do bitwy oblężniczej|2/11|Operator aktywny w izolowanym worktree; model stron: uczestnicy i formalni sojusznicy wojny; nie SIEGELOCK606|
 |Pomiń/AUTO przywyłomie #202|1/11|KOLEJKA|
 |Machiny tylko podczasoblężenia|1/11|OCZEKUJEPOTWIERDZENIAzasad|
 |AI szuka głównejarmiiwroga|1/11|KOLEJKA|
 |Wezwanie sojusznika dowojny|1/11|KOLEJKA|
 |Samodzielne ofertyhandloweAI|1/11|KOLEJKA/decyzje|
-|Test civpedia-karty-nazwa-przyciskiem|1/11|zarejestrowany; Operatorstartnastępny|
-|Test wonder-transfer-on-conquest|braketapu|długdozarejestrowania/reprodukcji|
-|Pozostały audytwizualnyUI|braketapu|dozakwalifikowaniaodrębnychscenariuszy|
+|Test civpedia-karty-nazwa-przyciskiem|11/11|28/28, niezależne Eval/FC; push a88093eaf; test-only deploy N/A|
+|Test wonder-transfer-on-conquest|5/11|Operator ukończony 43/43, kandydat14c74a9b6; niezależny Evaluator aktywny|
+|Pozostały audyt tras tekstowych UI Q2|3/11|Operator zapisał macierz i4 kandydatów; niezależny Evaluator aktywny; brak zmian gry|
 |Model falangi|WSTRZYMANY|odłożonydecyzjąwłaściciela|
 |REPIN Rust|WSTRZYMANY|po kolejceweb|
 |Decyzje #201|OCZEKUJE|nie implementowaćbrakującychdecyzji|
 
-Aktualizacja 2026-11-10T14:05:09.777274+01:00: ponowne uruchomienia po błędzie limitu. Cztery aktywne tematy: split graficzny, Polish r3, D-FOG-F, food-grace. Tech-cards nie wznowiono — czeka na slot po wcześniejszym błędzie limitu. Bez zmiany modelu LunaHigh.
+Cztery aktywne tematy: Top5 (Operator), oblężenia (Operator), wonder-transfer (Evaluator), audyt tras UI Q2 (Evaluator). Role są sekwencyjne w obrębie tematu. Wydanie Roboczej nadal FALA609, MD5 eed8b5c146e3e5e3bbce803fc98a1c43.
