@@ -89,7 +89,11 @@ try {
   let bad = 0;
   for (const b of BUILDINGS) {
     const raw = rawL1(b);
-    const r = M.buildingResourceUpkeep(b, 1);
+    // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: stale `utrzymanie_surowce` (ceramika) jest poza regula koszt_surowce.
+    const fixedK = Object.keys(b.utrzymanie_surowce || {});
+    const full = M.buildingResourceUpkeep(b, 1);
+    if (fixedK.some(k => full[k] !== Math.floor(b.utrzymanie_surowce[k] * 1))) bad++; // pole utrzymania: stala ilosc (ratio 1)
+    const r = Object.fromEntries(Object.entries(full).filter(([k]) => !fixedK.includes(k)));
     const types = Object.keys(b.koszt_surowce || {}).filter(k => b.koszt_surowce[k] > 0);
     if (raw <= 0 || types.length === 0) { if (Object.keys(r).length !== 0) bad++; continue; }
     if (Object.keys(r).length !== types.length || Object.values(r).some(v => v !== raw)) bad++;
@@ -134,10 +138,11 @@ try {
     assert(mainSrc.includes('const hResUpkeep = econ.resourceUpkeepByOwner.get(hOid);')
       && mainSrc.includes('deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);'),
       'C3: gracz -- main.ts odejmuje resourceUpkeepByOwner tym samym mechanizmem');
-    // C4 jest tylko statyczne: ai-resource-needs nie zna utrzymania. Brak zmiany planowania AI -- patrz raport (NIE_ZMIERZONO).
+    // C4 (statyczne), zaktualizowane w R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: ai-resource-needs dostaje
+    // zapotrzebowanie utrzymania przez wejscie `upkeepDemand` (deficyt utrzymania widoczny dla planera AI).
     const needs = read('src/game/ai-resource-needs.ts');
-    assert(!/utrzyman|upkeep/i.test(needs),
-      'C4 (statyczne): ai-resource-needs nie zalezy od utrzymania; deficyt tylko obcina pule do 0 (brak zakleszczenia)');
+    assert(/upkeepDemand/.test(needs),
+      'C4 (statyczne): ai-resource-needs przyjmuje upkeepDemand (deficyt utrzymania ceramiki)');
   }
 
   // -------------------------------------------------------------------------

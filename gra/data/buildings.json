@@ -403,6 +403,7 @@
       { "tytul": "Otwiera Żeglugę i dalszy rozwój", "tekst": "Staje się dostępny wraz z technologią Żegluga i można go później rozbudować do Portu wielkiego." }
     ],
     "techUnlock": "Żegluga",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
       "drewno": 30,
       "kamien": 30
@@ -549,6 +550,7 @@
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
     "techUnlock": "Pismo",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
       "drewno": 50,
       "kamien": 50,
@@ -901,6 +903,7 @@
       { "tytul": "Otwiera Budownictwo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Budownictwo." }
     ],
     "techUnlock": "Budownictwo",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
       "drewno": 60,
       "kamien": 60,
@@ -2093,6 +2096,7 @@
     "wymagania": "Wybudowana Studnia w tym mieście",
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
       "drewno": 60,
       "kamien": 60,
