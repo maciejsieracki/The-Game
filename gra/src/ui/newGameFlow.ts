@@ -17,6 +17,7 @@
  * Source: literalny UTF-8 dla polskich napisow; symbole przez encje HTML.
  */
 
+import { humanizeId } from '../game/text-names';
 import { loadGameData, type GameData } from '../data/loader';
 import {
   isCivAvailableAtGameEpoch,
@@ -1709,7 +1710,7 @@ function advRowFromSett(key: string, hint: string): AdvSettingRow {
   const s = SETT.find(x => x.key === key);
   return {
     key,
-    lbl: s?.lbl ?? key,
+    lbl: s?.lbl ?? humanizeId(key),
     hint,
     opts: s?.opts ?? [],
     getIdx: () => s?.idx ?? 0,

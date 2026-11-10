@@ -52,6 +52,7 @@ import {
 } from '../game/diplomacy-acceptance-points';
 import { proposalActionIdFromPayload } from './diplomacyNegotiationModal';
 import type { ProposalPayload, ProposalActionId } from '../game/diplomacy-proposals';
+import { humanizeId, nazwaWyswietlana } from '../game/text-names';
 
 export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
@@ -237,7 +238,7 @@ function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] 
  */
 function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
   if (item.typ !== 'miasto') return renderBasketItemValueBaseHtml(item, fmtCtx);
-  const name = item.cityLabel ?? item.id;
+  const name = item.cityLabel ?? humanizeId(item.id);
   const pn = item.cityPn != null ? ' · ' + Math.round(item.cityPn) + ' PW' : '';
   return '<span class="da-deal-amt">miasto: ' + esc(name) + pn + '</span><span class="da-deal-once">(pokój)</span>';
 }
@@ -459,7 +460,7 @@ function defaultTechOptions(): Array<{ id: string; label: string }> {
 function defaultZlozeOptions(): Array<{ id: string; label: string }> {
   return Object.keys(HANDEL_ZLOZE_CENA_BAZA).map(id => ({
     id,
-    label: id.charAt(0).toUpperCase() + id.slice(1),
+    label: nazwaWyswietlana(id),
   }));
 }
 
@@ -467,7 +468,7 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
   const cat = diplomacyResourceAccessCatalog();
   return Object.entries(cat).map(([id, pn]) => ({
     id,
-    label: id + ' (' + pn + ' PW)',
+    label: nazwaWyswietlana(id) + ' (' + pn + ' PW)',
   }));
 }
 
@@ -484,7 +485,7 @@ function defaultQuantityResourceOptions(): Array<{ id: string; label: string; ma
   const cat = diplomacyHandelSurowceCatalog();
   return Object.keys(cat).map(id => ({
     id,
-    label: id.charAt(0).toUpperCase() + id.slice(1),
+    label: nazwaWyswietlana(id),
     maxQty: FALLBACK_QUANTITY_MAX_QTY,
   }));
 }
