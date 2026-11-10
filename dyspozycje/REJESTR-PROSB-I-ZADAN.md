@@ -9603,3 +9603,24 @@ STATUS: ZAREJESTROWANE. Gospodarka wodna i Koło bazowo180PN. Brązownictwo480PN
 
 ## R-WEB-BRONZEWORKING-RESEARCH-COST-480-Q1 — POTWIERDZONE2026-11-10
 STATUS: ZAREJESTROWANE. WłaścicieljednoznaczniepotwierdziłBrązownictwo480PN. Nie czeka jużnaodpowiedź. Pozostałezatwierdzonekoszty40/180/180wdrożone613; sprawdzićcałyzestawbezpowielaniaimplementacji.
+
+
+## Aktualizacja domknięć i aktywnej czwórki — 2026-11-10 po FALI616
+Poniższe statusy zastępują wcześniejsze wpisy REGISTERED/oczekiwania na decyzję tych samych ID; historycznych dowodów nie usuwać.
+
+|ID|Stan|Dowód|
+|---|---|---|
+|R-WEB-WAR-PEACE-TRUCE-FIRST-TEN-TURNS-Q1|ZAKOŃCZONE11/11|90-release-612.json|
+|R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1|ZAKOŃCZONE11/11|90-release-613.json|
+|R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1|ZAKOŃCZONE11/11|90-release-613.json|
+|R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1|ZAKOŃCZONE11/11|linked90-release-613.json|
+|R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1|ZAKOŃCZONE11/11|90-release-614.json|
+|R-WEB-BRONZEWORKING-RESEARCH-COST-480-Q1|ZAKOŃCZONE11/11|90-release-615.json; nieoczekujedecyzji|
+|R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1|ZAKOŃCZONE11/11|90-release-616.json|
+|R-WEB-CAVALRY-FRONT-FLANKS-PLACEMENT-Q1|ZAKOŃCZONE11/11|90-release-616.json|
+|R-WEB-BORDER-RELATIONS-ERA-PENALTY-Q1|W TOKU5/11|runtimeprzeszedł; gating41→followup42, niepublikowaćprzedFC|
+|R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1|W TOKU|OperatoractualsceneHTTPbreachtest, niepowtarzać589/600|
+|R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1|W TOKU|OperatorpotwierdziłexistingN4+lukępersistencji/historii prośby|
+|R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1|W TOKU|Operatorcyklicznaoferta barterowa; confirmedcooldown15|
+
+Max4aktywne tematy, role osobno,sekwencyjnie w temacie. Właściciel polecił start następnego od razu po zwolnieniu slotu. Buildy już wypchnięte usuwać; źródła, raporty i readback w Git. Bieżący stan: autobot/STAN-ZADAN-CODEX-20261110.md.
