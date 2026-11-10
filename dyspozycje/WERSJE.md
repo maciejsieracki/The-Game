@@ -6989,3 +6989,13 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent Evaluator and Final Control PASS; 48/48 actual research cost/tempo and four-cost-set assertions; typecheck and scope proof PASS; Regenerated encyclopedia bundle byte-matches generator output; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: No full campaign timing simulation; data change verified through actual research helpers and scope comparison; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source aa2127c82f76339a716cd1f647988ec13df49778; manifestMD5 297e1070d67e3341c9dab3ed12aebc3e; SHA256 1b4ec913c5fbd4afed9430fc8c42cb59d2353f327c5d81e4aaf967d2f736555c; push/readback pending.
+
+
+## ROBOCZA bca9ecf9 — 2026-11-10T21:35:20.538134+01:00 — FALA 616: Bronze output25/50 and cavalry front flank rear deployment
+
+- Bronze output capped per foundry at25/t in owning Bronze era and50/t in Iron; three canonical bronze recipes use explicit data rows; copper/wood/tin input ratios and iron/steel scaling unchanged
+- Actual production tick and resource pipeline preview, owner HUD and city converter display share the same rate selection
+- Cavalry/chariots deployment supports front, flanks and rear; default flanks; group manual mode retained in replay; narrow stretched lanes allocate sufficient depth to avoid overlapping destinations
+- Weryfikacja: Independent Evaluator and Final Control PASS for both topics; Bronze behavior159/159, real owner economy117/117, city panel83/83, HUD20/20; typecheckPASS; Cavalry model163, starting wings536 maxdistance3, close flank994 and formation regressionPASS; independent Chromium menu/default/front placement and killed mutationPASS; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
+- Ograniczenia: No full campaign foundry simulation; direct player/AI production tick parity fixture is tier1, higher tiers covered by shared recipe routing/display fixtures; Cavalry browser proof is production component/placement fixture, not full campaign battle replay; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
+- Source a248ba2f119c57c7f5b7dad800d05d85331aa28b; manifestMD5 bca9ecf94f70e61cda27ab5dbb2851c3; SHA256 2f42efbadd67142255824bf45ed68f855b42c30468b2b76bbf4962e575812038; push/readback pending.
