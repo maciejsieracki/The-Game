@@ -16,6 +16,57 @@ import { hexDistance } from '../units/setup';
 import { classifyCityAttack, type MapSiegeContext } from './mapSiegeDetect';
 
 export type AreEnemyOwnersFn = (ownerA: number, ownerB: number) => boolean;
+export type HasFormalAllianceFn = (ownerA: number, ownerB: number) => boolean;
+
+export interface SiegeBattleSideOwners {
+  attacker: ReadonlySet<number>;
+  defender: ReadonlySet<number>;
+}
+
+/**
+ * Owners represented in a two-sided siege battle. A side contains its principal
+ * and formal active allies that are already at war with the opposing principal.
+ * An unrelated third party that happens to be at war with the city is not a
+ * member of the besieger's side; barbarians hostile to both sides are likewise
+ * not assigned to either side unless one is the siege principal.
+ */
+export function siegeBattleSideOwners(
+  besiegerOwnerId: number,
+  cityOwnerId: number,
+  candidateOwnerIds: Iterable<number>,
+  areEnemies: AreEnemyOwnersFn,
+  hasFormalAlliance: HasFormalAllianceFn,
+): SiegeBattleSideOwners {
+  const attackers = new Set<number>();
+  const defenders = new Set<number>();
+  if (!siegeAllowedBetween(besiegerOwnerId, cityOwnerId, areEnemies)) {
+    return { attacker: attackers, defender: defenders };
+  }
+
+  attackers.add(besiegerOwnerId);
+  defenders.add(cityOwnerId);
+  for (const ownerId of candidateOwnerIds) {
+    if (ownerId !== besiegerOwnerId && hasFormalAlliance(ownerId, besiegerOwnerId)
+      && siegeAllowedBetween(ownerId, cityOwnerId, areEnemies)) {
+      attackers.add(ownerId);
+    }
+    if (ownerId !== cityOwnerId && hasFormalAlliance(ownerId, cityOwnerId)
+      && siegeAllowedBetween(ownerId, besiegerOwnerId, areEnemies)) {
+      defenders.add(ownerId);
+    }
+  }
+
+  // A contradictory/stale pair of alliances cannot be represented as two
+  // battle units at once. Keep both principals; omit a third owner that would
+  // otherwise be duplicated across the opposing rosters.
+  for (const ownerId of attackers) {
+    if (ownerId !== besiegerOwnerId && ownerId !== cityOwnerId && defenders.has(ownerId)) {
+      attackers.delete(ownerId);
+      defenders.delete(ownerId);
+    }
+  }
+  return { attacker: attackers, defender: defenders };
+}
 
 /** Czy strona `besiegerOwnerId` może oblegać/atakować miasto `defenderOwnerId` (wojna). */
 export function siegeAllowedBetween(

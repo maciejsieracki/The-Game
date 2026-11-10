@@ -183,7 +183,7 @@ assert(/eventLog:\s*buildBattleEventLog\(\s*this\.atk\.map\(u => u\.bu\),\s*this
 // 11) Komunikat o rezerwie musi byc NAD pelnoekranowa scena bitwy (.overlay z-index 9999):
 // hint ma z-index 10030 gdy aboveBattle, a obie sciezki reczne przekazuja ten flag.
 assert(/aboveBattle \? '10030'/.test(main), 'hint: aboveBattle -> z-index 10030 (ponad scene bitwy 9999)');
-assert((main.match(/showHintMessage\(reserveNote, 5000, undefined, true\)/g) || []).length === 2, 'main.ts: 2 komunikaty o rezerwie z aboveBattle=true');
+assert((main.match(/showHintMessage\(reserveNote, 5000, undefined, true\)/g) || []).length === 3, 'main.ts: 3 komunikaty o rezerwie z aboveBattle=true (field, incoming, siege)');
 assert(/deps\.showHint\(note, 5000, true\)/.test(mfb), 'mapFieldBattle: komunikat o rezerwie z aboveBattle=true');
 
 console.log(`battle-undeployed-units-test: PASS=${pass} FAIL=${fail}`);

@@ -33,6 +33,8 @@ export interface CityDefRosterOptions {
   ownerEra?: number;
   /** Biezaca tura globalna; potrzebna do okresu odnowy Milicji. Brak = bez odnowy (zgodnosc wsteczna). */
   currentTurn?: number;
+  /** Optional additional owners for a coalition siege roster; omitted preserves city-owner-only behavior. */
+  allowedOwnerIds?: ReadonlySet<number>;
   /** Override of the units.json rows (tests); default = data/units.json. */
   unitRows?: readonly Record<string, unknown>[];
 }
@@ -94,8 +96,16 @@ export function isGarrisonBuildingCompleted(options?: CityDefRosterOptions): boo
 export function defenderUnitsNearCity(
   city: City,
   units: readonly RuntimeUnit[],
+  allowedOwnerIds?: ReadonlySet<number>,
 ): RuntimeUnit[] {
-  return collectDefRosterNearCity(city, units).filter(u => u.ownerId === city.ownerId);
+  const roster = collectDefRosterNearCity(city, units).filter(u =>
+    allowedOwnerIds ? allowedOwnerIds.has(u.ownerId) : u.ownerId === city.ownerId,
+  );
+  if (!allowedOwnerIds) return roster;
+  return [
+    ...roster.filter(u => u.ownerId === city.ownerId),
+    ...roster.filter(u => u.ownerId !== city.ownerId),
+  ];
 }
 
 /**
@@ -301,7 +311,7 @@ export function collectCityDefRoster(
   units: readonly RuntimeUnit[],
   options?: CityDefRosterOptions,
 ): CityDefRosterResult {
-  const roster = defenderUnitsNearCity(city, units);
+  const roster = defenderUnitsNearCity(city, units, options?.allowedOwnerIds);
   const militiaDefs = new Map<string, Record<string, unknown>>();
   if (!isGarrisonBuildingCompleted(options)) return { roster, militiaDefs };
   // Okres odnowy po zniszczeniu Milicji: we wszystkich sciezkach (taktyczna, Pomin/Auto, oblezenie, AI).
