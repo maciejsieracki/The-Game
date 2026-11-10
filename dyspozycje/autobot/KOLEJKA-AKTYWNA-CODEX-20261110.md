@@ -42,3 +42,6 @@ Konnica jawniepauzowanadla priorytetów. Machiny jużzaimplementowane, kończąt
 PILNE4: R-WEB-POTTERY-RESTORE-PREVIOUS-COST-Q1 — Garncarstwo40PNprzywrócone zamiast5, inneodblokowaniabez zmian. Granicaczekatylkona decyzjęmixedepochasymetrii; operatornieaktywnypodczasczekania.
 
 Priorytet ostatni: R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1 — Wodna180, Koło180, Garncarstwo40, Brązownictwo480 oczekuje odpowiedzi. Dopiero po całej pilnej partii wrócić do pozostałej kolejki.
+
+## Najnowszy goal właściciela: zakończ tematy powyżej2/11
+Obowiązująca grupa do domknięcia: wojnyepoki, granica, pokój10tur, kosztybadań, machiny, konnica. Po każdych zakończonych gate uruchomić następny w tej grupie do11; bez nowych tematów1–2do jejzamknięcia. AktualnydetailedstanwSTAN-ZADAN-CODEX-20261110.md.

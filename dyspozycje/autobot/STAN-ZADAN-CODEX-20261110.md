@@ -1,27 +1,22 @@
-# Niezakończone zadania Codex
-Odczyt: 2026-11-10T19:14:21.012467+01:00
-Ostatni potwierdzony etap, nie przyszła bramka. Robocza FALA610, MD5efca99d547572228b8367878e777a391; push/readbackPASS. Zakończone nie są tu liczone jako otwarte.
+# Aktualny stan niezakończonych zadań
+Odczyt: 2026-11-10T20:33:47.150094+01:00
+Cel właściciela: zakończyć najpierw WSZYSTKIE otwarte tematy powyżej2/11. Numery oznaczają ostatnią zaliczoną bramkę. Max4 aktywne tematy, role sekwencyjne Luna high.
 
-|Temat|Etap|Rzeczywisty stan / następny krok|
+|Temat|Etap potwierdzony|Dalsza praca|
 |---|---|---|
-|Armia: ilości0 i globalna rekrutacja per miasto; osobnyHUD tylko górnyprzycisk|6/11|EvaluatorPASS45/0+31/0+25/0; FinalControluruchomiony|
-|Machiny budowane tylko w oblężeniu|4/11|Kandydat6218f2ab1, Node24/24+typecheck; Operatoraktywny, livebrowser i baseline2czerwonychjeszcze w toku|
-|sciencePicker odmiana ETA|6/11|EvaluatorPASS16/16Chromium+mutationred; FinalControluruchomiony|
-|Konnica/rydwany przód/boki/tył|4/11|Implementacja niezacommitowana; operator miałusageerror, próbawznowieniawysłana; liveUIjeszczebezwyniku. Nie liczyć jakoaktywnypoprawniepracujący dopóki wznowienieniepotwierdzone|
-|AI szuka głównej armii wroga|2/11|Diagnozazapisana; brak zatwierdzonych Ntur/ratiosiły i zakresuobronywłasnegooblężenia; implementacjanierozpoczęta|
-|Pomiń/AUTO przy wyłomie|1/11|Kolejka; serializowaćbattle/siege|
-|Wezwanie sojusznika do wojny|1/11|Kolejka|
-|Oferty handlowe AI dla gracza|1/11|Kolejka/decyzje|
-|Pełny audyt języka|PARTIAL|Zamkniętepartie609/610 niezamykającałości; kontynuacjapokryciapokolejnychslotach|
-|Pełny test dużej cywilizacji|Przed1|Skryptygotowe; właściwypomiarnaostatkuweb|
-|ModelFalangi|Przed1|Na końcuweb po najnowszejautoryzacjicałejkolejki|
-|REPINRust|Przed1|Po zmianachweb|
-|#201:obywatel/kamera/Ważne|Przed1|Odczytaćdecyzje i wyjaśnićbrakujące|
-|#201:marszpowiadomienia/limitstosu|Przed1|Sprawdzić599 przedzmianami|
-|#201:nazwyterenów|Przed1|Nie zgadywaćbrakującychdefinicji|
-|#201:×0SólKoń|Przed1|DecyzjaUX, niebłądilościmechaniki|
-|#201:20%rozejmu|Przed1|605jużwdrożony; tylkointerpretacjadoprecyzowania|
-|#201:Brąz1994AI|Przed1|Pomiar/repro; błądniepotwierdzony|
-|KontrolawizualnaRoboczej|Przed1|Macierzograniczeńbieżącychwydań; niesourcegrepjakolive|
+|Wojny epoki40/40/40 + brak nakładania|6/11|FC wykrył lukę starych zapisów; Operator poprawia fallback, potem niezależny followup|
+|Kara graniczna według wyższej epoki:−2/−3/−4|5/11|Evaluator BLOCK za dowód produkcyjnej ścieżki; Operator uzupełnia runtime/save-load|
+|Pokój/rozejm dopiero po10turach|6/11|Evaluator PASS; FinalControl aktywny|
+|Garncarstwo40, Gospodarka wodna180, Koło180|5/11|Evaluator FAIL za stare wikiS; Operator poprawia źródło i regenerację. Brązownictwo nadal180, brak potwierdzenia480|
+|Machiny wyłącznie w oblężeniu|5/11|24/24 i Chromium57/57; kandydat6218f2ab1/report67be61f5a. Następnywolnyslot→Evaluator|
+|Konnica/rydwany: przód/boki/tył|4/11|Zmiany zachowane; następnywolnyslot→wznowienieOperatora/testyChromium|
 
-Kolejka pełna: KOLEJKA-AKTYWNA-CODEX-20261110.md. Max4tematy, osobne roleLunaHigh. Raport nie zatrzymuje pracy. Nie ma callable scheduler, więc nie deklarujemy samoczynnych wake-upów w tle.
+Te sześć tematów stanowi bieżący goal do11/11. Zakończone Armia/rekrutacja i scienceETA nie są otwarte:11/11 FALA611, publicatione529a1c9a, MD517d18433d236641b25b9c3a66b9d62db, freshGitreadbackPASS.
+
+## Kolejka wstrzymana do zamknięcia powyższych
+- Produkcja brązu25/50:1/11, zarejestrowana, bez operatora.
+- AI główna armia:2/11, diagnoza i nieustalone progi.
+- Pomiń/AUTO przy wyłomie, wezwanie sojusznika, oferty AI:1/11.
+- Cały audyt języka:PARTIAL, bez numeru całej całości; ukończonepartie niezamykająparenta.
+- Pełny test dużej cywilizacji, Falanga, REPIN Rust:przed1, po powyższych.
+- #201 obywatel/kamera, powiadomienia marszu, nazwy terenów, ×0SólKoń, interpretacja20%rozejmu, pomiarBrąz1994AI:przed1/decyzje lub pomiar.
