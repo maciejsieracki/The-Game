@@ -220,6 +220,11 @@ function wall(q) {
   const clr = fnBody('function clearPlannedMarch(');
   ok(/marchStopNotified\.delete\(unitId\)/.test(clr) && /marchStopNotified\.clear\(\)/.test(clr), 'G6 clearPlannedMarch czysci stan powiadomien');
   ok(/marchStopDetail\.delete\(unitId\)/.test(clr) && /marchStopDetail\.clear\(\)/.test(clr), 'G7 clearPlannedMarch czysci powod wskaznika');
+  const plan = fnBody('function planMarchTo(');
+  const setIdx = plan.indexOf('plannedMarches.set(u.id, marchDest)');
+  const clrIdx = plan.indexOf('marchStopNotified.delete(u.id)');
+  ok(setIdx > 0 && clrIdx > setIdx && /marchStopDetail\.delete\(u\.id\)/.test(plan),
+    'G12 nowy plan (planMarchTo) zeruje dedup i powod wskaznika (zarzut NOTATKA 1)');
   ok(/registerMarchStop\(marchStopNotified/.test(noteBody), 'G8 noteMarchStop dedupuje przez registerMarchStop');
   const fin = fnBody('function finishMarchSegmentHints(');
   ok(/clearMarchStop\(marchStopNotified, unitId\)/.test(fin), 'G9 ruch/dojscie konczy epizod przerwania (wznowienie)');

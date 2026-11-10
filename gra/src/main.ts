@@ -30335,6 +30335,10 @@ async function boot(): Promise<void> {
 
       markPlayerMovedUnit(u.id);
       plannedMarches.set(u.id, marchDest);
+      // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 (zarzut NOTATKA 1): nowy plan = nowy epizod; stary powód
+      // wskaźnika i dedup nie mogą przetrwać przeplanowania. / new plan starts a new stop episode.
+      marchStopNotified.delete(u.id);
+      marchStopDetail.delete(u.id);
       syncMarchAttackTarget(u.id, marchDest);
       hoverKey = null;
       refreshPlannedMarchPreview(u.id);
