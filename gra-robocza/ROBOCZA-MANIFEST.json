@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8a92848ce98592f8879a36ee722484cb",
-  "bundleSha256": "b23abe531b3ef5b3c3a259b72213af84800e72df11f2f9aeadcde4fb4b4eb520",
-  "bundleBytes": 14380844,
+  "bundleMd5": "e3cc864345dca2a65d5376391438e81c",
+  "bundleSha256": "6de6d7d6107b0d63e572ca2c3681a75aaf60036e1a9f3cdfb169ad88dee46798",
+  "bundleBytes": 14384625,
   "sourceSnapshot": {
-    "source": "web-wip/POTTERY5",
+    "source": "web-wip/GOODSLBL, web-wip/FARMHINT",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 594: POTTERY5 e3382ff2f (3a881d48c+722fd3e1c)"
+    "FALA 595: GOODSLBL 4f8d9728b + FARMHINT 305a65da7"
   ],
   "verification": [
-    "tech-pottery-fifth 45/0, tech-tree 20/0, tech-tempo, logic 213/213, tsc 0, sidecar PASS"
+    "diplomacy-goods-kat 18/0, farm-assign-hint 36/0, tsc 0, logic 213, sidecar PASS"
   ],
   "limits": [
-    "4 starsze testy czerwone też na bazie; komentarz research.ts:21; encyklopedia innych technologii; REPIN Rust tech.json"
+    "NIE_ZMIERZONO Chromium; ×0 także dla Sól/Koń; przycisk w podpowiedzi do ABC; REPIN Rust UI"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-10T06:00:22",
+  "hubGeneratedAt": "2026-11-10T06:17:17",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8a92848ce98592f8879a36ee722484cb",
-      "sizeBytes": 14380844
+      "md5": "e3cc864345dca2a65d5376391438e81c",
+      "sizeBytes": 14384625
     }
   ],
-  "md5": "8a92848ce98592f8879a36ee722484cb",
+  "md5": "e3cc864345dca2a65d5376391438e81c",
   "sizeBytes": 70253395,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 4ebdf9fbf + merge MARCHEND",

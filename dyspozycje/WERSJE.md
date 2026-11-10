@@ -1,3 +1,9 @@
+## ROBOCZA e3cc8643 -- 2026-11-06 -- FALA 595: GOODS-LABEL (Ruda miedzi, ×0) + FARMHINT (podpowiedź Przydziel obywatela w trybie ręcznym) (testowa)
+
+- GOODSLBL 4f8d9728b + FARMHINT 305a65da7
+- Weryfikacja: diplomacy-goods-kat 18/0, farm-assign-hint 36/0, tsc 0, logic 213, sidecar PASS
+- Limity: NIE_ZMIERZONO Chromium; ×0 także dla Sól/Koń; przycisk w podpowiedzi do ABC; REPIN Rust UI
+
 ## ROBOCZA 8a92848c -- 2026-11-06 -- FALA 594: POTTERY-FIFTH: Garncarstwo wymaga 4 podstaw, koszt 5 PN jak Tier 1 (testowa)
 
 - POTTERY5 e3382ff2f (3a881d48c+722fd3e1c)
