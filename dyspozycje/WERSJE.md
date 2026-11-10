@@ -6933,3 +6933,12 @@ ROBOCZA6c95bf48, publicationaac34b521, source531d403f6. Haamonga: encyclopedia/c
 
 ## FALA609 —2026-11-10
 ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. Graficzny wybór sąsiedniego heksu rozdzielenia bez współrzędnych; sześć pól/ARMIA/teren/disabledpowód/samemiasto. Eval/FC14/14+15legacy+4movement,typecheckPASS. Dodatkowo zweryfikowana partia tekstówkart75/75; cały audytUI/CivpediaPARTIAL. Build+HTTPaudio present/absentPASS,3packsunchanged. Offlinefile:// remainsINFRAblocked, notPASS. Push/freshGitreadbackPASS, ownrelease/DFOGdirs cleaned.
+
+
+## ROBOCZA efca99d5 — 2026-11-10T16:17:06.089412+01:00 — FALA 610
+
+- Top5 Sztuki wojennej: „Odblokowuje jednostki epoki Żelaza”, źródła opisowe spójne bez zmian mechaniki.
+- Cztery poprawki odmiany/liczb i etykiety kosztu utrzymania w UI.
+- Pobliskie jednostki formalnych sojuszników biorących udział w wojnie dołączają do bitwy oblężniczej; konteksty właścicieli, rezerwy500 zachowane.
+- Build z b314bbe1ace4f1902615846081a5354a197f3e5b; HTTP audio smoke PASS; file:// gate INFRA, nie PASS. Browser oblężenia NIE_ZMIERZONO, UI JSDOM; parentaudytPARTIAL.
+- Manifest MD5 efca99d547572228b8367878e777a391 SHA256 a5eb6a879cd44e78129d163d5d2146781fece3a94d0c2479cd8f77ec5e69f976. Push/readback pending.
