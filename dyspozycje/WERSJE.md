@@ -6942,3 +6942,10 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Pobliskie jednostki formalnych sojuszników biorących udział w wojnie dołączają do bitwy oblężniczej; konteksty właścicieli, rezerwy500 zachowane.
 - Build z b314bbe1ace4f1902615846081a5354a197f3e5b; HTTP audio smoke PASS; file:// gate INFRA, nie PASS. Browser oblężenia NIE_ZMIERZONO, UI JSDOM; parentaudytPARTIAL.
 - Manifest MD5 efca99d547572228b8367878e777a391 SHA256 a5eb6a879cd44e78129d163d5d2146781fece3a94d0c2479cd8f77ec5e69f976. Push/readback pending.
+
+
+## ROBOCZA 17d18433 — 2026-11-10T19:21:09.173913+01:00 — FALA611
+
+- PanelArmia: domyślnie0, dwa przyciski Rekrutuj wszystko góra/dół; dokładne zamówienia permiasto/typ, częścioweprzyjęcie zachowujeresztę. OsobnyHUDpanelpozostajez1górnymprzyciskiem.
+- OdmianaETA sciencePicker.
+- Eval/FC PASSWITHSCOPE; Chromium45/31/25 i16, mutationred; cleanbuild+HTTPaudioPASS. sourcec81ea20375bc00b31063bf5c05c509a29990d6c7. MD517d18433d236641b25b9c3a66b9d62db. filegateINFRA; hotseat/recapturelimitywmanifest. Push/readbackpending.
