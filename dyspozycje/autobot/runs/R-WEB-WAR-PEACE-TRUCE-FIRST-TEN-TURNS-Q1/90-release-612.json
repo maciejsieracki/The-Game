@@ -1,0 +1,8 @@
+{
+  "stage": 11,
+  "wave": 612,
+  "publication": "7f7641bdb6ebe2d65040462ce3021efabf393d71",
+  "md5": "dd096ffdd6a5801dd647e96a4b90719b",
+  "verification": "independentEvalFC; cleanbuild;HTTPaudioPASS; freshGit3artifactbyteequal",
+  "limits": "no task-specific browser; originalfilegateINFRA"
+}
