@@ -3,12 +3,12 @@
  * tech-pottery-fifth-test.cjs — R-WEB-TECH-POTTERY-FIFTH-AFTER-FOUR-BASICS-Q1.
  * Garncarstwo (Garncarstwo / pottery) wymaga WSZYSTKICH czterech technologii poziomu 1:
  * Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt. Jest więc piątą technologią
- * do wynalezienia w Kamieniu. Koszt nauki ustawiony na 5 (Tier 1 Kamienia, decyzja C 2026-11-10); Poziom (1) NIE jest zmieniany.
+ * do wynalezienia w Kamieniu. Koszt nauki przywrócony do 40 (R-WEB-STONE-RESEARCH-COSTS-PRIORITY-Q1); Poziom (1) NIE jest zmieniany.
  *
  * Uruchom z gra/: node tools/tech-pottery-fifth-test.cjs
  *
  * Weryfikuje:
- *   - prereq Garncarstwa = dokładnie 4 podstawy (format „+”), koszt 5 (Tier 1), Poziom 1 bez zmian;
+ *   - prereq Garncarstwa = dokładnie 4 podstawy (format „+”), koszt 40, Poziom 1 bez zmian;
  *   - w osi epoki (orderedTechsInEpoch) Garncarstwo stoi po czterech podstawach;
  *   - availableTechs: niedostępne bez którejkolwiek z czterech, dostępne po wszystkich;
  *   - drzewo bez cykli (validateTechGraph), głębokość: Garncarstwo 1, Wymiana 2, Brązownictwo 2;
@@ -86,7 +86,7 @@ const pot = byName.get(POT);
 ok(pot !== undefined, 'tech.json zawiera Garncarstwo');
 ok(pot['Wymaga (prereq)'] === BASICS.join(' + '),
   `prereq Garncarstwa = „${BASICS.join(' + ')}” (got „${pot['Wymaga (prereq)']}”)`);
-ok(pot['Koszt nauki'] === 5, 'koszt nauki Garncarstwa = 5 (jak Tier 1 Kamienia)');
+ok(pot['Koszt nauki'] === 40, 'koszt nauki Garncarstwa = 40 (przywrócony koszt bazowy)');
 ok(pot.Poziom === 1, 'Poziom Garncarstwa bez zmian (1)');
 ok(pot.Epoka === 'Kamień', 'Garncarstwo w epoce Kamień');
 for (const b of BASICS) {
