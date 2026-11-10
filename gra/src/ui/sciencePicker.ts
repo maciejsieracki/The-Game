@@ -1315,6 +1315,17 @@ function ensureStyles(): void {
 // Render: górny pasek postępu
 // ---------------------------------------------------------------------------
 
+/** Odmiana rzeczownika po liczbie tur pokazywanej w ETA (mianownik/licznik). */
+function formatEtaTurns(turns: number): string {
+  const absolute = Math.abs(turns);
+  const lastTwo = absolute % 100;
+  const lastOne = absolute % 10;
+  const unit = absolute === 1 ? 'tura'
+    : lastOne >= 2 && lastOne <= 4 && !(lastTwo >= 12 && lastTwo <= 14) ? 'tury'
+      : 'tur';
+  return `${turns} ${unit}`;
+}
+
 function renderProgress(state: {
   pula: number; targetId: string | null;
   kosztCelu: number; postepFraction: number; turnsLeft: number;
@@ -1332,7 +1343,7 @@ function renderProgress(state: {
   const targetNode = TECH_MAP.get(state.targetId);
   const targetName = targetNode ? targetNode.nazwa : state.targetId;
   const pct = Math.max(0, Math.min(100, Math.round(state.postepFraction * 100)));
-  const eta = state.turnsLeft > 0 ? state.turnsLeft + ' tur' : '<1 tury';
+  const eta = state.turnsLeft > 0 ? formatEtaTurns(state.turnsLeft) : '<1 tury';
 
   html += '<div class="cs-prog-row">'
     + '<span>' + owl + ' Cel: <strong class="cs-val">' + esc(targetName) + '</strong></span>'
