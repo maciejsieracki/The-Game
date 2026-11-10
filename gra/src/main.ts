@@ -2389,7 +2389,7 @@ async function boot(): Promise<void> {
      */
     function eraWarCounterEpochOf(ownerId: number, tag: ForcedEraTag | null): number {
       const epoch = empireEpochForOwner(ownerId);
-      return isHuman(ownerId) ? eraWarCounterEpoch(forcedEraTagEpoch(tag), epoch) : epoch;
+      return eraWarCounterEpoch(forcedEraTagEpoch(tag), epoch);
     }
 
     function initOwnerEra(ownerId: number, era = 1): void {
@@ -39756,6 +39756,10 @@ async function boot(): Promise<void> {
             ];
             const totalActiveForcedWarsByOwner = (ownerId: number): number =>
               countActiveForcedWarsForOwner(ownerId, allActiveForcedWarPairsFlat);
+            // Era wars cannot overlap for either participant, even after an owner advances
+            // and receives a new pending-era trigger. Ordinary wars are not in this list.
+            const isOwnerInActiveEraWar = (ownerId: number): boolean =>
+              allActiveForcedWarPairsFlat.some(pair => pair.attackerId === ownerId || pair.targetId === ownerId);
 
             // Krok C: gracz dołącza do puli "triggered" gdy sam nie ma dziś żadnej aktywnej
             // wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 —
@@ -39849,6 +39853,8 @@ async function boot(): Promise<void> {
               playerFirst: {
                 playerOwnerId: 0,
                 isPlayerPairGateOpen: (aiOwnerId: number): boolean =>
+                  !isOwnerInActiveEraWar(aiOwnerId) && !isOwnerInActiveEraWar(0)
+                  &&
                   evaluateInterCivWarGate({
                     turn,
                     attackerEra: empireEpochForOwner(aiOwnerId),
@@ -39889,8 +39895,14 @@ async function boot(): Promise<void> {
             } : {};
             // R-WEB-ERA-WAR-COUNTER-Q1 (3): podmiot z zużytym licznikiem wojen epoki (w tej epoce,
             // napastnik LUB cel) odpada z puli, z kandydatów gracza i z dołączania do par.
-            const isEraWarExhausted = (oid: number): boolean =>
-              !canCivJoinEraForcedWar(eraWarCountByCivKey, oid, empireEpochForOwner(oid), WAR_RULES_PARAMS);
+            const isEraWarExhausted = (oid: number, era?: ForcedEraTag): boolean =>
+              isOwnerInActiveEraWar(oid)
+              || !canCivJoinEraForcedWar(
+                eraWarCountByCivKey,
+                oid,
+                eraWarCounterEpochOf(oid, era ?? forcedEraTagForEpoch(empireEpochForOwner(oid))),
+                WAR_RULES_PARAMS,
+              );
             const forcedWarPairingResult = assignForcedWarPairings(
               triggeredSubjects,
               existingActivePairsForJoin,
@@ -41000,7 +41012,7 @@ async function boot(): Promise<void> {
                         declaredByTag: forcedEraWarDeclaredByTag,
                         counts: eraWarCountByCivKey,
                         attackerId: ownerId,
-                        attackerEpoch: empireEpochForOwner(ownerId),
+                        attackerEpoch: eraWarCounterEpochOf(ownerId, gateForcedTagAny),
                         targetId,
                         // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: wojna Kamienia wobec gracza w Brązie
                         // liczy się w slocie Kamienia (0:1), nie Brązu (0:2).

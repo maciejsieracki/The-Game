@@ -17,8 +17,8 @@ import warRulesParamsRaw from '../../data/war-rules-params.json';
 
 export interface WarRulesParams {
   delayInterCivWarsUntilTurn: number;
-  /** R-WEB-ERA-DELAY-Q1: próg startu wojny epoki Brązu/Żelaza liczony od tury wejścia TEGO ownera w epokę (tury). */
-  eraForcedWarStartTurnsFromEra: { bronze: number; iron: number };
+  /** R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1: próg od wejścia TEGO ownera w Stone/Bronze/Iron. */
+  eraForcedWarStartTurnsFromEra: { stone: number; bronze: number; iron: number };
   /** R-WEB-ERA-DELAY-Q1: epoki wojen wymuszonych, dla których bramka R1 (tura 40) NIE obowiązuje. */
   eraForcedWarIgnoreR1: ForcedEraTag[];
   maxConcurrentWarsStone: number | null;

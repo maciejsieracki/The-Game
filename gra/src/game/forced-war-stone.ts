@@ -7,6 +7,7 @@ import {
   type ForcedWarPairState,
   type ForcedWarSaveState,
 } from './forced-war-common';
+import { WAR_RULES_PARAMS } from './war-rules-multiwar';
 
 /**
  * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): ochrona startowa mierzona turą gry —
@@ -15,7 +16,7 @@ import {
  * "tura gry" i "tura od początku epoki" są tożsame, bo każda cywilizacja zaczyna grę
  * w Kamieniu w turze 0 — zero zmiany mechanizmu, wyłącznie wartość stałej.
  */
-export const WOJNA_KAMIEN_WYMUSZONA_START_TURY = 25;
+export const WOJNA_KAMIEN_WYMUSZONA_START_TURY: number = WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.stone;
 export const WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE = 2;
 export const WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR = 20;
 export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;

@@ -1,8 +1,8 @@
 {
   "_opis": "R-WEB-WAR-RULES-MULTIWAR-Q1 r3 (regula TYMCZASOWA, flaga WAR_RULES_MULTIWAR_ENABLED w src/game/war-rules-multiwar.ts). Progi wojen w JSON, nie w kodzie. R-WEB-ERA-WAR-COUNTER-Q1: globalny limit wojen epoki (maxEraForcedWarsPerEra) zniesiony (null); zamiast niego licznik per (cywilizacja, epoka) -- maxEraForcedWarsPerCivPerEra=1 (także gracz; napastnik i cel liczeni). enabledForcedWarEras: Kamień, Brąz, Żelazo (R-WEB-ERA-ENABLE-Q1 r1; wcześniej tylko Kamień, kod zostaje).",
   "delayInterCivWarsUntilTurn": 40,
-  "_opisEraDelay": "R-WEB-ERA-DELAY-Q1 (decyzja właściciela 2026-11-08): bramka R1 (delayInterCivWarsUntilTurn) zostaje dla wojny epoki Kamienia; wojny epoki Brązu i Żelaza NIE podlegają R1 (eraForcedWarIgnoreR1) i wybuchają po eraForcedWarStartTurnsFromEra[epoka] turach od wejścia TEGO ownera w epokę. Zwykłe wypowiedzenia wojny nadal pod R1.",
-  "eraForcedWarStartTurnsFromEra": { "bronze": 20, "iron": 20 },
+  "_opisEraDelay": "R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1: Stone, Bronze and Iron forced era wars wait 40 turns from that owner's entry into the era. Ordinary declarations keep their existing rules.",
+  "eraForcedWarStartTurnsFromEra": { "stone": 40, "bronze": 40, "iron": 40 },
   "eraForcedWarIgnoreR1": ["bronze", "iron"],
   "maxConcurrentWarsStone": 1,
   "maxConcurrentWarsFromBronze": null,
