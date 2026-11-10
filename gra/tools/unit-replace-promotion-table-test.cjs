@@ -17,7 +17,8 @@
  *   6. brak cykli w grafie (przy punkcie 3 cykl jest niemożliwy, sprawdzane dodatkowo);
  *   7. wpisy spoza piechoty (Zwiadowca, Galera, Procarz, konnica, łucznicy, machiny)
  *      pozostają "—" (decyzja właściciela: luki zamienników bez zmian);
- *   8. dwa istniejące wpisy sprzed tematu (Wojownik mykeński, Wojownik tyrreński) zachowane.
+ *   8. dwa istniejące wpisy sprzed tematu (Wojownik mykeński, Wojownik tyrreński) zachowane;
+ *   9. pełna zawartość tabeli przypięta do EXPECTED_TABLE (dokładna równość, zarzut 2 r1).
  */
 
 const fs = require('fs');
@@ -119,6 +120,43 @@ const expectPairs = [
 for (const [s, t] of expectPairs) {
   const list = edges.get(s) || [];
   if (!list.includes(t)) fail(`brak oczekiwanego wpisu ${s} -> ${t}`);
+}
+
+// punkt 9 (R-WEB-UNIT-REPLACE-PROMOTION-TABLE-INFANTRY-Q1 r1 zarzut 2): przypięta pełna zawartość
+// tabeli. Każda zmiana pola "Zastąp specjalnie" wymaga świadomej aktualizacji tego słownika
+// (oraz akceptacji właściciela) -- sama walidacja integralności nie wystarcza.
+const EXPECTED_TABLE = {
+    "Wojownik": "Włócznik",
+    "Włócznik": "Falanga/Triari/Thorakites/iButho z iklwa/Mur tarcz (Sargonid)/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru",
+    "Wojownik z mieczem i tarczą": "Hastati/Gaesatae/Soldurii/Miecznik galijski/Berserker germański/Drużynnik/Garnizon Harappy/Gwardia hetycka/Piechota neobabilońska/Tyrski miecznik/Gwardia Tyreńska/Wojownik z żelaznym khopesh/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru",
+    "Falanga": "Hieros Lochos (Święty Zastęp)",
+    "Hastati": "Evocati",
+    "Triari": "Evocati",
+    "Impi": "iButho z iklwa/uThulwana (Białe Tarcze)",
+    "Wojownik z maczugą (Chaska)": "Wojownik z toporem/Gwardzista z champi",
+    "Wojownik z toporem": "Królewska Gwardia",
+    "Wojownik z khopesh": "Wojownik z żelaznym khopesh/Medżaj (Gwardia Faraona)",
+    "Włócznik sumeryjski": "Mur tarcz (Sargonid)/Gwardia Królewska Sumeru",
+    "Wojownik mykeński": "Hieros Lochos (Święty Zastęp)",
+    "Halabardnik Shang": "Hu Ben Wei (Gwardia Tygrysa)",
+    "Berserker germański": "Wojownik germański",
+    "Wojownik tyrreński": "Evocati",
+    "Strażnik bram Harappy": "Garnizon Harappy",
+    "Piechota induska": "Garnizon Harappy",
+    "Piechota hetycka": "Gwardia hetycka",
+    "Gwardia Ishtar": "Piechota neobabilońska",
+    "Wojownik babiloński": "Piechota neobabilońska",
+    "Wojownik fenicki": "Tyrski miecznik/Gwardia Tyreńska",
+    "Thorakites": "Hieros Lochos (Święty Zastęp)",
+    "Gwardzista z champi": "Królewska Gwardia"
+  };
+{
+  const actual = {};
+  for (const [s, list] of edges) if (list.length) actual[s] = list.join("/");
+  const srcAll = new Set([...Object.keys(EXPECTED_TABLE), ...Object.keys(actual)]);
+  for (const s of srcAll) {
+    if (EXPECTED_TABLE[s] !== actual[s]) fail(`tabela: ${s}: oczekiwano "${EXPECTED_TABLE[s] ?? "—"}", jest "${actual[s] ?? "—"}"`);
+  }
 }
 
 if (failures.length) {
