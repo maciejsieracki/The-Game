@@ -1,3 +1,9 @@
+## ROBOCZA c7da556e -- 2026-11-06 -- FALA 605: TRUCE-IMPL: rozejm 5/10/15 wspólny dla AI i gracza; pokój po rozejmie wg siły; propozycja pokoju po wygaśnięciu (testowa)
+
+- TRUCEIMPL e7bf8acc8
+- Weryfikacja: diplo-truce-impl 94/0, r1 30, r4-ai 24, peace-lock 9, war-gates 22, tsc 0, sidecar PASS
+- Limity: NIE_ZMIERZONO live Chromium i kara Wiarygodności runtime; założenia: moc militarna=sumArmyM, 20%=<=80%, 0 vs 0 odmowa; wiki/plakietka UI/save-load; REPIN Rust
+
 ## ROBOCZA f6af6d3c -- 2026-11-06 -- FALA 604: DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte (liczby obrażeń, ekran wyniku, szczegóły bitwy) (testowa)
 
 - DMGCOLORS 511acb63d
