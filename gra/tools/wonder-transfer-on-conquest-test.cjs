@@ -253,9 +253,9 @@ between(/function settleWonderTransfer\([^)]*\)[^{]*\{[\s\S]{0,400}?planWonderTr
 between(/Zdobyto cud:[\s\S]{0,400}?Utracono cud:/, 'main.ts: powiadomienia „Zdobyto cud" / „Utracono cud"');
 between(/const wonderWatchSurrender = beginWonderTransferWatch\(\);[\s\S]{0,6000}?city\.ownerId = newOwner;\s*settleWonderTransfer\(wonderWatchSurrender\);/,
   'main.ts: kapitulacja głodowa owinięta migawkami');
-between(/const wonderWatchAnnex = beginWonderTransferWatch\(\);[^\n]*\n\s*for \(const city of csCities\) \{\s*city\.ownerId = annexerId;[\s\S]{0,1500}?settleWonderTransfer\(wonderWatchAnnex\);/,
+between(/const wonderWatchAnnex = beginWonderTransferWatch\(\);[\s\S]{0,1500}?for \(const city of csCities\) \{[\s\S]{0,500}?city\.ownerId = annexerId;[\s\S]{0,1500}?\}\s*settleWonderTransfer\(wonderWatchAnnex\);/,
   'main.ts: aneksja miasta-państwa owinięta migawkami');
-between(/const wonderWatchCession = beginWonderTransferWatch\(\);[^\n]*\n\s*city\.ownerId = toOwnerId;\s*settleWonderTransfer\(wonderWatchCession\);/,
+between(/const wonderWatchCession = beginWonderTransferWatch\(\);[\s\S]{0,700}?city\.ownerId = toOwnerId;\s*settleWonderTransfer\(wonderWatchCession\);/,
   'main.ts: cesja w pokoju owinięta migawkami');
 between(/const wonderWatchRebel = beginWonderTransferWatch\(\);[^\n]*\n\s*markCityRebellionStarted\(city\);[\s\S]{0,200}?city\.ownerId = REBEL_FACTION_OWNER_ID;\s*settleWonderTransfer\(wonderWatchRebel\);/,
   'main.ts: rewolta owinięta migawkami');
