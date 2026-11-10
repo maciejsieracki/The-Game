@@ -506,6 +506,9 @@ export function diploListEntryFromRelation(rel: {
   epochLabel?: string;
   population?: number;
   armyCount?: number;
+  /** Rekruci rozmówcy w pełnych jednostkach werbu (bieżąca / maks.). */
+  recruitsUnits?: number;
+  recruitsUnitsMax?: number;
   activeTreaties?: readonly string[];
   isCityState?: boolean;
   kolorHex?: string;
@@ -520,6 +523,8 @@ export function diploListEntryFromRelation(rel: {
     epochLabel: rel.epochLabel,
     theirPopulation: rel.population,
     theirArmyCount: rel.armyCount,
+    theirRecruitsUnits: rel.recruitsUnits,
+    theirRecruitsUnitsMax: rel.recruitsUnitsMax,
     theirRespektTowardPlayer: rel.theirRespekt,
     ourRespektTowardThem: rel.respekt,
     zaufanie: rel.zaufanie,

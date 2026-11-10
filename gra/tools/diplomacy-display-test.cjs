@@ -28,6 +28,9 @@ export {
   respektTooltipPl,
   treatyDisplayLabel,
   activeTreatyLabelsForPair,
+  formatDiploCivListLines,
+  formatDiploPlayerSummaryLines,
+  formatRecruitsUnitsPart,
 } from './game/diplomacy-display';
 `);
 
@@ -154,6 +157,22 @@ ok(legacyGoldSplit && legacyGoldSplit.theyOffer.length === 1
   && legacyGoldSplit.theyOffer[0].typ === 'zloto' && legacyGoldSplit.theyOffer[0].ilosc === 42,
   'legacy goldOnce: incoming they offer gold');
 ok(legacyGoldSplit && legacyGoldSplit.weOffer.length === 0, 'legacy goldOnce: incoming we offer nothing');
+
+// R-WEB-DIPLO-CITIZENS-VS-RECRUITS-SEPARATE-Q1 (dodatek 2): wiersz „Rekruci" w uproszczonej karcie listy.
+const nb = (t) => t.replace(/\u00a0/g, ' ');
+ok(nb(mod.formatRecruitsUnitsPart(1234, 5678)) === 'Rekruci: 1 234 / 5 678', 'recruits part: format bieżąca / maks.');
+ok(nb(mod.formatRecruitsUnitsPart(-3, 0)) === 'Rekruci: 0 / 0', 'recruits part: clamp <0');
+const civLines = mod.formatDiploCivListLines({
+  theirPopulation: 98, theirArmyCount: 4, theirRecruitsUnits: 12, theirRecruitsUnitsMax: 40,
+});
+ok(civLines.detailLine.includes('Armia: 4') && nb(civLines.detailLine).includes('Rekruci: 12 / 40'),
+  'civ list: wiersz Rekruci obok Ludność/Armia');
+ok(!mod.formatDiploCivListLines({ theirPopulation: 98 }).detailLine.includes('Rekruci'),
+  'civ list: brak danych rekrutów -> brak wiersza');
+const plLines = mod.formatDiploPlayerSummaryLines({
+  militaryPower: 10, population: 50, armyCount: 2, recruitsUnits: 7, recruitsUnitsMax: 9,
+});
+ok(nb(plLines.detailLine).includes('Rekruci: 7 / 9'), 'player summary: wiersz Rekruci');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 
