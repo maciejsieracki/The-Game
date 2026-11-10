@@ -1,3 +1,9 @@
+## ROBOCZA c97272f9 -- 2026-11-06 -- FALA 601: RAW-IDS (jeden resolver nazw, efekty cudów bez snake_case) + PROMOTAB (tabela awansów piechoty Zastąp) (testowa)
+
+- RAWIDS c810d5511 + PROMOTAB d6341c5e1
+- Weryfikacja: wonder-text-no-raw-ids 132/0, unit-replace-promotion-table PASS, tsc 0, logic 213, sidecar PASS
+- Limity: audyt przecieków ID częściowy NIE_ZMIERZONO; nazwy robocze terenów do zatwierdzenia; 4 testy czerwone na bazie; REPIN Rust
+
 ## ROBOCZA 6e945110 -- 2026-11-06 -- FALA 600: SKIP-SIEGE: oblężenie bez wyłomu kończy się po 150 turach remisem (Pomiń = AUTO) (testowa)
 
 - SKIPSIEGE c8e3e4664
