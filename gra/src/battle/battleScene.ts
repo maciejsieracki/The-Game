@@ -83,6 +83,7 @@ import {
   terrainTerenTooltipColor,
 } from './battleTerrainTooltip';
 import type { CivBonusEntry } from '../game/civ-bonuses';
+import { battleUnitCivBonusy, battleUnitDifficultyCombatMult } from './battle-unit-context';
 import {
   applyMultiplier,
   civCombatStatMultipliers,
@@ -414,6 +415,10 @@ export interface BattleUnit {
   isArmyCommander?: boolean;
   /** Starting morale bonus shared by this commander's assigned army; cleared on leader loss. */
   armyLeaderMoraleBonusFrac?: number;
+  /** Per-unit owner's civ combat bonuses; absent synthetic units use BattleOpts side fallback. */
+  civBonusy?: readonly CivBonusEntry[];
+  /** Per-unit owner's difficulty combat multiplier; absent synthetic units use BattleOpts side fallback. */
+  difficultyCombatMult?: number;
   /**
    * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts).
    * Ulamkowy bonus Pancerza (Sciezka A: Kuznia/Kuznia zelaza/Wielka Kuznia)
@@ -7501,15 +7506,15 @@ export class BattleScene {
 
   private _movementPointsFor(bu: BattleUnit): number {
     const base = movementPoints(bu);
-    const bonuses = bu.ownerColor === 0xc84040
-      ? this.defenderCivBonusy : this.attackerCivBonusy;
+    const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy);
     return Math.max(1, Math.round(base * civMovementMultiplier(bonuses, civUnitShapeForBattleUnit(bu), this.terrain, this.shallowSea)));
   }
 
   private _attackRangeFor(bu: BattleUnit): number {
     const base = attackRange(bu);
-    const bonuses = bu.ownerColor === 0xc84040
-      ? this.defenderCivBonusy : this.attackerCivBonusy;
+    const bonuses = battleUnitCivBonusy(bu, bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy);
     return base > 0 ? Math.max(1, Math.round(base * civAttackRangeMultiplier(bonuses, civUnitShapeForBattleUnit(bu)))) : 0;
   }
 
@@ -8869,8 +8874,14 @@ export class BattleScene {
     );
     const defPenaltyFrac = flankRearDefensePenalty(cuD, hitArc);
 
-    const atkBonusy = attacker.side === 'atk' ? this.attackerCivBonusy : this.defenderCivBonusy;
-    const defBonusy = defender.side === 'def' ? this.defenderCivBonusy : this.attackerCivBonusy;
+    const atkBonusy = battleUnitCivBonusy(
+      attacker.bu,
+      attacker.side === 'atk' ? this.attackerCivBonusy : this.defenderCivBonusy,
+    );
+    const defBonusy = battleUnitCivBonusy(
+      defender.bu,
+      defender.side === 'def' ? this.defenderCivBonusy : this.attackerCivBonusy,
+    );
 
     let isCharge = false;
     if (!ranged) {
@@ -8913,12 +8924,14 @@ export class BattleScene {
       defender.bu.fortifiedInField === true,
       FORTIFY_OBRONA_PROC_FIELD,
     );
-    const atkOwnerDiffMult = attacker.side === 'atk'
-      ? this.attackerDifficultyCombatMult
-      : this.defenderDifficultyCombatMult;
-    const defOwnerDiffMult = defender.side === 'def'
-      ? this.defenderDifficultyCombatMult
-      : this.attackerDifficultyCombatMult;
+    const atkOwnerDiffMult = battleUnitDifficultyCombatMult(
+      attacker.bu,
+      attacker.side === 'atk' ? this.attackerDifficultyCombatMult : this.defenderDifficultyCombatMult,
+    );
+    const defOwnerDiffMult = battleUnitDifficultyCombatMult(
+      defender.bu,
+      defender.side === 'def' ? this.defenderDifficultyCombatMult : this.attackerDifficultyCombatMult,
+    );
 
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac) * defOwnerDiffMult);
     const wallCivMult = defender.onWallWalkway
@@ -20464,8 +20477,8 @@ function computeInstantResult(
         terrainData,
         counters,
         attackerPosition: arc,
-        attackerCivBonusy,
-        defenderCivBonusy,
+        attackerCivBonusy: battleUnitCivBonusy(a.ru.bu, attackerCivBonusy),
+        defenderCivBonusy: battleUnitCivBonusy(d.ru.bu, defenderCivBonusy),
         // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty, dopiety
         // do "Pomiń" -- patrz defOnWall/structBonusPctForPair powyżej.
         structureDefBonusPct: structBonusPctForPair,
@@ -20488,8 +20501,8 @@ function computeInstantResult(
         attackerGoldDeficit: a.ru.bu.goldDeficit === true,
         defenderGoldDeficit: d.ru.bu.goldDeficit === true,
         goldDeficitStatMult,
-        attackerDifficultyCombatMult,
-        defenderDifficultyCombatMult,
+        attackerDifficultyCombatMult: battleUnitDifficultyCombatMult(a.ru.bu, attackerDifficultyCombatMult),
+        defenderDifficultyCombatMult: battleUnitDifficultyCombatMult(d.ru.bu, defenderDifficultyCombatMult),
       });
       for (const line of res.log) log.push(line);
 

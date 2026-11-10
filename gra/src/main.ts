@@ -483,6 +483,7 @@ import {
 } from './game/mapSiegeDetect';
 import {
   siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
+  siegeBattleSideOwners,
 } from './game/diplomacy-siege-war-gate';
 import { combatAnchorFor } from './game/stack-leader';
 import {
@@ -32536,21 +32537,37 @@ async function boot(): Promise<void> {
      * civBonusyForOwnerId, difficultyCombatMultForOwner) -- zero rownoleglego
      * przeliczania, zero duplikatu logiki.
      */
-    function cityDefenseBreakdownFor(defRoster: RuntimeUnit[], terrain?: string): PreBattleModifier[] {
+    function cityDefenseBreakdownFor(
+      defRoster: RuntimeUnit[],
+      terrain?: string,
+      perOwner = false,
+    ): PreBattleModifier[] {
       if (defRoster.length === 0) return [];
-      const rosterUnits = buildDefenseRosterUnits(
-        defRoster,
-        u => unitGetsFortifyBonus(u),
-        u => veteranCombatBonusFrac(u),
-        u => civBonusUnitShapeFromDef(unitDefFor(u), u.typeId),
-      );
-      const defenderOwnerId = defRoster[0]!.ownerId;
-      return cityDefenseBreakdownLines(rosterUnits, {
-        fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
-        civBonusy: civBonusyForOwnerId(defenderOwnerId),
-        difficultyMult: difficultyCombatMultForOwner(defenderOwnerId),
-        terrain,
-      });
+      const ownerIds = perOwner
+        ? [...new Set(defRoster.map(u => u.ownerId))]
+        : [defRoster[0]!.ownerId];
+      const lines: PreBattleModifier[] = [];
+      for (const ownerId of ownerIds) {
+        const ownerRoster = perOwner
+          ? defRoster.filter(u => u.ownerId === ownerId)
+          : defRoster;
+        const rosterUnits = buildDefenseRosterUnits(
+          ownerRoster,
+          u => unitGetsFortifyBonus(u),
+          u => veteranCombatBonusFrac(u),
+          u => civBonusUnitShapeFromDef(unitDefFor(u), u.typeId),
+        );
+        const ownerLines = cityDefenseBreakdownLines(rosterUnits, {
+          fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
+          civBonusy: civBonusyForOwnerId(ownerId),
+          difficultyMult: difficultyCombatMultForOwner(ownerId),
+          terrain,
+        });
+        lines.push(...ownerLines.map(line => perOwner && ownerId !== defRoster[0]!.ownerId
+          ? { ...line, tekst: ownerDiploLabel(ownerId) + ': ' + line.tekst }
+          : line));
+      }
+      return lines;
     }
 
     /** Czy ustawienia nowej gry wymuszają auto dla bitwy z udziałem tego gracza. */
@@ -33917,21 +33934,33 @@ async function boot(): Promise<void> {
       return battleLoot;
     }
 
+    function siegeRosterOwnerIds(city: City, besiegerOwnerId: number) {
+      return siegeBattleSideOwners(
+        besiegerOwnerId,
+        city.ownerId,
+        units.map(u => u.ownerId),
+        areEnemyOwners,
+        hasAllianceDealBetween,
+      );
+    }
+
     function collectSiegeAtkRoster(city: City, anchor: RuntimeUnit): RuntimeUnit[] {
-      return collectAtkRosterNearCity(city, anchor, units);
+      const owners = siegeRosterOwnerIds(city, anchor.ownerId);
+      return collectAtkRosterNearCity(city, anchor, units, owners.attacker);
     }
 
     function completedBuildingIdsForCity(cityId: string): readonly string[] {
       return cityBuilt.get(cityId) ?? [];
     }
 
-    function cityDefenderOptions(city: City) {
+    function cityDefenderOptions(city: City, allowedOwnerIds?: ReadonlySet<number>) {
       // ownerEra: epoka WŁAŚCICIELA miasta wybiera typy jednostek Milicji (spec 2026-11-03, M3).
       return {
         completedBuildingIds: completedBuildingIdsForCity(city.id),
         ownerEra: empireEpochForOwner(city.ownerId),
         // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: tura globalna => okres odnowy Milicji.
         currentTurn: turn,
+        ...(allowedOwnerIds ? { allowedOwnerIds } : {}),
       };
     }
 
@@ -33952,16 +33981,26 @@ async function boot(): Promise<void> {
     setSiegePanelMilitiaRegenLeft((c: City) => militiaRegenTurnsLeft(c, turn));
 
     /** C3-ST-1: kanon w siegeDefenders.ts — realne jednostki, licznik garnizonu lub militia. */
-    function cityHasDefenders(city: City): boolean {
-      return hasCityDefenders(city, units, cityDefenderOptions(city));
+    function cityHasDefenders(city: City, besiegerOwnerId?: number): boolean {
+      const allowedOwnerIds = besiegerOwnerId === undefined
+        ? undefined
+        : siegeRosterOwnerIds(city, besiegerOwnerId).defender;
+      return hasCityDefenders(city, units, cityDefenderOptions(city, allowedOwnerIds));
     }
 
-    function collectSiegeDefRoster(city: City): RuntimeUnit[] {
-      const { roster, militiaDefs } = collectCityDefRoster(city, units, cityDefenderOptions(city));
+    function collectSiegeDefRoster(city: City, besiegerOwnerId: number): RuntimeUnit[] {
+      const allowedOwnerIds = siegeRosterOwnerIds(city, besiegerOwnerId).defender;
+      const { roster, militiaDefs } = collectCityDefRoster(city, units, cityDefenderOptions(city, allowedOwnerIds));
       for (const [id, def] of militiaDefs) {
         militiaDefOverrides.set(id, def);
       }
-      return roster;
+      // City owner leads the defender side; allies follow in stable map-unit order.
+      // This keeps prebattle identity, defender-side fallbacks, and 500-unit cap
+      // priority anchored to the besieged city rather than incidental global order.
+      return [
+        ...roster.filter(u => u.ownerId === city.ownerId),
+        ...roster.filter(u => u.ownerId !== city.ownerId),
+      ];
     }
 
     // -----------------------------------------------------------------------
@@ -35891,11 +35930,11 @@ async function boot(): Promise<void> {
         return;
       }
       atkRoster = appendReadyMachinesToRoster(atkRoster, city, anchor.ownerId);
-      if (!cityHasDefenders(city)) {
+      if (!cityHasDefenders(city, anchor.ownerId)) {
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
       }
-      const defRoster = collectSiegeDefRoster(city);
+      const defRoster = collectSiegeDefRoster(city, anchor.ownerId);
       if (defRoster.length === 0) {
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
@@ -35970,7 +36009,7 @@ async function boot(): Promise<void> {
         anchor.ownerId,
         false,
       );
-      if (!cityHasDefenders(city) || collectSiegeDefRoster(city).length === 0) {
+      if (!cityHasDefenders(city, anchor.ownerId) || collectSiegeDefRoster(city, anchor.ownerId).length === 0) {
         if (fortifiedCityCaptureBlocked(city, atkRoster)) {
           showHintMessage(city.name + ': mur/palisada nienaruszone — bez machin oblężniczych miasta nie zdobędziesz (brama lub mur muszą runąć).', 5000);
           return;
@@ -35979,7 +36018,7 @@ async function boot(): Promise<void> {
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
       }
-      const defRoster = collectSiegeDefRoster(city);
+      const defRoster = collectSiegeDefRoster(city, anchor.ownerId);
 
       const dHexKey = keyOf(city.q, city.r);
       const dHex = map.hexes[dHexKey];
@@ -36021,7 +36060,7 @@ async function boot(): Promise<void> {
         lokacja: '(' + city.q + ',' + city.r + ')',
         tura: turn,
         canRetreat: true,
-        warunki: cityDefenseBreakdownFor(defRoster, dTeren),
+        warunki: cityDefenseBreakdownFor(defRoster, dTeren, true),
       };
 
       const atkRosterRef = atkRoster.slice();
@@ -36031,11 +36070,19 @@ async function boot(): Promise<void> {
       hideSiegeMapPanel();
 
       function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
-        const hasCommander = roster.some(u => u.isGeneral === true);
-        const bonus = armyLeaderMoraleBonusFrac(hasCommander, empireBuiltIdsForOwner(roster[0]?.ownerId ?? 0));
+        const ownerHasCommander = new Map<number, boolean>();
+        for (const u of roster) {
+          if (u.isGeneral === true) ownerHasCommander.set(u.ownerId, true);
+          else if (!ownerHasCommander.has(u.ownerId)) ownerHasCommander.set(u.ownerId, false);
+        }
         return roster.map(u => ({
           ...runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color),
-          armyLeaderMoraleBonusFrac: bonus,
+          armyLeaderMoraleBonusFrac: armyLeaderMoraleBonusFrac(
+            ownerHasCommander.get(u.ownerId) === true,
+            empireBuiltIdsForOwner(u.ownerId),
+          ),
+          civBonusy: civBonusyForOwnerId(u.ownerId),
+          difficultyCombatMult: difficultyCombatMultForOwner(u.ownerId),
         }));
       }
 
@@ -36107,6 +36154,13 @@ async function boot(): Promise<void> {
         onAuto: () => { hidePreBattle(); doSiegeAutoResolve(); },
         onBattlefield: () => {
           hidePreBattle();
+          const playerSide = atkRosterRef.some(u => isMe(u.ownerId))
+            ? 'atk' as const
+            : defRosterRef.some(u => isMe(u.ownerId)) ? 'def' as const : null;
+          const reserveNote = battleReserveNotice(
+            atkRosterRef.length, defRosterRef.length, BATTLE_MAX_PER_SIDE, playerSide,
+          );
+          if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
           setMood('bitwa');
           const bs = new BattleScene({
             attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
