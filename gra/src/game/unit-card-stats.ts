@@ -12,6 +12,7 @@ import {
   type UnitBuildingProgress,
 } from './unit-building-bonuses';
 import { veteranCombatBonusFrac, type VeteranProgress } from './veteran';
+import { rangedDamageMultFor } from './unit-power';
 
 export interface UnitCardCombatBases {
   atak: number;
@@ -32,6 +33,8 @@ export interface UnitCardCombatBases {
   piercing: number;
   chargeBonus: number;
   missileAttack: number;
+  Typ: string;
+  Jednostka: string;
 }
 
 export interface UnitCardCombatDisplay {
@@ -60,6 +63,9 @@ export interface UnitCardCombatDisplay {
   chargeBonusEffective: number;
   missileAttackBase: number;
   missileAttackEffective: number;
+  Typ: string;
+  Jednostka: string;
+  rangedDamageMult: number;
 }
 
 function roundCardStat(n: number): number {
@@ -117,5 +123,8 @@ export function unitCardCombatDisplay(
     chargeBonusEffective: roundCardStat(applyMultiplier(chargeBonus, softFrac)),
     missileAttackBase: missileAttack,
     missileAttackEffective: roundCardStat(applyMultiplier(missileAttack, softFrac)),
+    Typ: bases.Typ,
+    Jednostka: bases.Jednostka,
+    rangedDamageMult: rangedDamageMultFor(bases),
   };
 }

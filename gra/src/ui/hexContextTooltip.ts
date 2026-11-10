@@ -838,6 +838,8 @@ function buildUnitForcesHtml(u: UnitContextTooltipInput): string {
     piercing: combat.piercingEffective,
     chargeBonus: combat.chargeBonusEffective,
     missileAttack: combat.missileAttackEffective,
+    Typ: combat.Typ,
+    Jednostka: combat.Jednostka,
   });
   return '<div class="sp-unit-forces">'
     + '<div class="sp-unit-forces-head">Siły zastosowane</div>'
@@ -857,6 +859,8 @@ function buildUnitExpandedStatsHtml(u: UnitContextTooltipInput): string {
     { label: 'Obrona', html: unitCardStatValueHtml(combat.obronaEffective, combat.obronaBase) },
     { label: 'Pancerz', html: unitCardStatValueHtml(combat.pancerzEffective, combat.pancerzBase) },
     { label: 'HP max', html: unitCardStatValueHtml(combat.hpMaxEffective, combat.hpMaxBase) },
+    { label: 'Atak dystansowy', html: unitCardStatValueHtml(combat.missileAttackEffective, combat.missileAttackBase)
+      + (combat.rangedDamageMult > 1 ? ` <span class="uc-stat-eff">×${combat.rangedDamageMult} obrażeń pocisku</span>` : '') },
     { label: 'Zasięg', html: `<span class="uc-stat-eff">${u.zasieg ?? 0}</span>` },
     { label: 'Ruch max', html: `<span class="uc-stat-eff">${u.ruchMax}</span>` },
   ];

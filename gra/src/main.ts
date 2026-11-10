@@ -32297,6 +32297,8 @@ async function boot(): Promise<void> {
         piercing: normFieldVal(def['piercing'], 0),
         chargeBonus: normFieldVal(def['chargeBonus'], 0),
         missileAttack: normFieldVal(def['missileAttack'], 0),
+        Typ: String(def['Typ'] ?? ''),
+        Jednostka: String(def['Jednostka'] ?? u.typeId),
       }, u);
     }
 
