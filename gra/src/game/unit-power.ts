@@ -11,6 +11,26 @@
 
 import combatParams from '../../data/combat-params.json';
 
+/**
+ * R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1 -- mnoznik obrazen pocisku wg klasy strzelca.
+ * Zrodlo: data/combat-params.json -> ranged_damage_mult (decyzja wlasciciela 2026-11-09).
+ *   - Typ 'Slinger' (Procarz, Procarz (Huaracoc))            -> slinger (x3)
+ *   - Typ 'Distance' + nazwa 'Łucznik…' (piesi lucznicy)     -> lucznik_piesi (x2)
+ *   - reszta (Oszczepnik, Typ 'Mount', Oblezenie...)          -> 1 (bez zmian)
+ * Jedna implementacja: combat.ts (auto-walka), battleScene.ts (bitwa animowana),
+ * fieldPower (moc AI / sortowanie).
+ */
+interface RangedDamageMultParams { slinger: number; lucznik_piesi: number }
+const RANGED_DAMAGE_MULT: RangedDamageMultParams = combatParams.ranged_damage_mult;
+
+export function rangedDamageMultFor(unit: { Typ?: unknown; Jednostka?: unknown }): number {
+  const typ = String(unit.Typ ?? '').trim();
+  if (typ === 'Slinger') return RANGED_DAMAGE_MULT.slinger;
+  const name = String(unit.Jednostka ?? '').trim().toLowerCase();
+  if (typ === 'Distance' && name.startsWith('łucznik')) return RANGED_DAMAGE_MULT.lucznik_piesi;
+  return 1;
+}
+
 export interface UnitPowerCoeffs {
   chargeDivisor: number;
   missileDivisor: number;
@@ -31,6 +51,9 @@ export interface UnitPowerInput {
   fieldPower?: number;
   siegePower?: number;
   'Rola (linia)'?: string;
+  /** Typ / Jednostka z units.json -- klasa strzelca dla mnoznika obrazen pocisku (R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1). */
+  Typ?: string;
+  Jednostka?: string;
 }
 
 export interface PowerBreakdown {
@@ -96,7 +119,7 @@ export function fieldPower(
     num(u.weaponDamage) +
     num(u.piercing) +
     num(u.chargeBonus) / coeff.chargeDivisor +
-    num(u.missileAttack) / coeff.missileDivisor;
+    (num(u.missileAttack) * rangedDamageMultFor(u)) / coeff.missileDivisor;
   const defense =
     num(u.meleeDefence) +
     num(u.armor) +
@@ -161,7 +184,15 @@ export function armyFieldPower(
   coeff?: UnitPowerCoeffs,
 ): number {
   if (isSiegeUnit(u)) return 0;
-  if (typeof u.fieldPower === 'number' && Number.isFinite(u.fieldPower)) {
+  // Cache eksportu units.json (fieldPower) jest liczony BEZ mnoznika obrazen pocisku
+  // (R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1). Dla klas z mnoznikiem (Procarz, piesi Lucznik)
+  // cache jest nieaktualny -> liczymy na zywo z surowych statystyk, zeby AI i auto-walka
+  // widzialy nowe obrazenia. Dla pozostalych jednostek cache == fieldPower() (zweryfikowane).
+  if (
+    typeof u.fieldPower === 'number' &&
+    Number.isFinite(u.fieldPower) &&
+    rangedDamageMultFor(u) === 1
+  ) {
     return u.fieldPower;
   }
   return fieldPower(u, coeff).total;

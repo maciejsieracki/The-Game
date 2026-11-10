@@ -55,6 +55,7 @@ import {
   hitChanceTw,
   baseDamage,
   rangeDamage,
+  rangedShotAccuracy,
   counterMultiplier,
   terrainDefenseMultiplier,
   terrainRiverAttackMultiplier,
@@ -76,6 +77,7 @@ import {
   applyStartingMoralePenalty,
 } from '../game/combat';
 import type { UnitPowerInput } from '../game/unit-power';
+import { rangedDamageMultFor } from '../game/unit-power';
 import {
   buildTerrainTerenTooltipParts,
   terrainTerenTooltipColor,
@@ -8922,14 +8924,17 @@ export class BattleScene {
       ? civWallDefenseMultiplier(defBonusy, cuD)
       : 1;
     const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt * wallCivMult;
-    const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt * atkOwnerDiffMult;
+    const atkMeleeRaw    = applyMultiplier(cuA.meleeAttack, atkMods.atk) * atkOwnerDiffMult;
+    const atkMelee       = atkMeleeRaw * terrRiverMlt;
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk) * atkOwnerDiffMult;
+    // R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: celnosc pocisku = max(wrecz, dystansowy) strzelca.
+    const atkShootAcc    = rangedShotAccuracy(atkMeleeRaw, atkMissile) * terrRiverMlt;
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
     const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
     const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
 
     const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
-    const hitPct = hitChanceTw(atkMelee, defFinalObrona, chargeHitBonus);
+    const hitPct = hitChanceTw(ranged ? atkShootAcc : atkMelee, defFinalObrona, chargeHitBonus);
     const roll   = Math.random() * 100;
     if (roll >= hitPct) {
       this.log.push(attacker.bu.nazwa + ' chybia w ' + defender.bu.nazwa + ' (' + roll.toFixed(0) + '>=' + hitPct + '%).');
@@ -8939,7 +8944,11 @@ export class BattleScene {
     let rawDmg: number;
     let meleeCharge = false; // FACTOR 2 flag: this blow is a mounted charge's first blow
     if (ranged) {
-      rawDmg = rangeDamage(atkMissile, defArmor);
+      // R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: mnoznik klasy strzelca przed zaokragleniem.
+      rawDmg = rangeDamage(atkMissile, defArmor) * rangedDamageMultFor({
+        Typ: cuA.counterTyp,
+        Jednostka: cuA.typNazwa,
+      });
     } else {
       meleeCharge = isCharge; // FACTOR 2: mounted charge morale hit (set below)
       rawDmg = baseDamage(
