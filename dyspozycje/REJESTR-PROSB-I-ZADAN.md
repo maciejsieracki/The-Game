@@ -1,5 +1,16 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-PROC-CODEX-FOUR-TOPICS-20261110` — aktywna zmiana procesu
+
+- **STATUS:** `OPERATOR` — runda 3/5, administracyjna korekta aktywna po `FINAL CONTROL FAIL`; po raporcie Operatora wymagane są niezależny Evaluator i Final Control. Bieżące artefakty: `dyspozycje/autobot/runs/R-PROC-CODEX-FOUR-TOPICS-20261110/00-dispatch.md`, `50-final-control.md` i `22-operator-response-r3.md`.
+- **HISTORICAL STATUS (runda 1):** wcześniejszy wpis `OPERATOR` / Evaluator jako następny etap jest nieaktualny; nie jest bieżącym werdyktem ani późniejszym PASS. Final Control dla rundy 2 zakończył się `FAIL` w `50-final-control.md`.
+- **DOMAIN:** `PROCESS`.
+- **GOAL:** ograniczyć pulę do maksymalnie czterech aktywnych tematów, utrzymać role Operator → Evaluator → warunkowa Obrona → niezależny Final Control sekwencyjnie per temat, ustawić role Codex na `gpt-6-luna/high`, oraz domykać autoryzowaną kolejkę przez integrację `main` → deploy Robocza → push/readback → cleanup → natychmiast kolejny kwalifikowany temat; rejestrować rzeczywiste statusy i kontrolę heartbeat bez fikcyjnego schedulerowego wybudzenia.
+- **RUN:** `dyspozycje/autobot/runs/R-PROC-CODEX-FOUR-TOPICS-20261110/`; dispatch przed rozpoczęciem pracy. Brak zmian w kodzie gry.
+- **KOLEJKA:** `dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md` — snapshot 11:40:08 UTC jest historyczny; świeży odczyt do kolejnego dispatchu znajduje się w `22-operator-response-r3.md`.
+- **SCOPE:** `README.md`, `docs/decyzje/R-PROC-AUTOBOT.md`, `docs/procesy/INDEX-PROCESU.md`, `.cursor/rules/autobot-evaluator-operator.mdc`, `.claude/skills/civ-autobot/SKILL.md`, `dyspozycje/autobot/runs/README.md`, rejestr i run.
+- **DEPLOY/PUSH:** nie wykonano; proces-only Robocza jest `N/A`. Owner delegation zezwala na dalszy cykl po niezależnej kontroli.
+
 ## `R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1` — PASS-WITH-NOTES / niezintegrowane
 
 - ZGŁOSZENIE: cykliczna wymiana handlowa kończyła się maksymalnie po 20 turach, mimo że stepper pokazywał `+100`; brakowało trybu bezterminowego.
@@ -9536,3 +9547,11 @@ Zgłoszenia właściciela z dnia (wszystkie zarejestrowane; ID = dyspozycje/auto
 - 2026-11-10 MARCH-RESUME: FC r2 FAIL (wskaźnik „trasa wstrzymana”, testy T5/dedup/wznowienie) → runda 3 na SONNET z uzasadnieniem (2 rundy Haiku), ref web-wip/MARCHRES-r2, dispatch DODATEK 1.
 - 2026-11-10 AUDYT AI-RECRUIT-RESOURCE-STOCK ZAKOŃCZONY (FC PASS-WITH-NOTES, 2d2759481; raporty skopiowane do runs/): hipoteza właściciela „AI rekrutuje mając tylko dostęp do rudy” NIE potwierdzona — zakup gracza i AI idzie tą samą purchaseRecruitmentUnit z bramką realnego zapasu (unitStockCost × ilość vs ownerResourceStockAll), także zamiana jednostek (unit-replace-execute odmawia przy braku zapasu); koszty jednostek to Brąz/Żelazo/Drewno (74 z 75), żadna nie kosztuje Rudy cyny/miedzi; jedyny wyjątek bez zapasu: garnizony barbarzyńców. Zero zmian kodu. Otwarte: skąd AI ma Brąz ×1994 — NIE_ZMIERZONO (osobny pomiar w symulacji, jeśli właściciel chce).
 - 2026-11-10 FALA 596 WDROŻONA NA ROBOCZĄ: ROAD-BUILD-PLAYER-PARITY (7a10424ee): droga gracza = AI; main 8bfcc3378, ROBOCZA bbd9f3d8; sidecary bez zmian. NIE_ZMIERZONO Chromium; zmiana AI: brak 2. drogi na heksie z drogą; REPIN Rust.
+
+## 2026-11-10T13:01:24.304590+01:00 — odczyt orkiestratora Codex (snapshot, nie bezterminowy status)
+- R-PROC-CODEX-FOUR-TOPICS-20261110: korekta Operatora r3 zakończona (22-operator-response-r3.md), niezależny Evaluator r3 aktywny. Wcześniejsze statusy Operator r1/r3 są historią; bieżąca bramka wynika z najnowszego raportu w runie, nie ze starego wpisu.
+- R-WEB-POLISH-LANGUAGE-AUDIT-Q1: Evaluator r2 aktywny po implementacji PL01/PL03; PL02 i pełny zakres audytu UI pozostają częściowe.
+- R-WEB-AI-MAJOR-ECONOMY-TEST-DEBT-Q1: Operator aktywny; brak gotowej poprawki do integracji.
+- R-WEB-PR141-F04-YIELDS-TEST-DEBT-Q1: Evaluator aktywny po korekcie fixture testu; bez zmian produktu.
+- Dokładnie4 aktywne tematy w chwili odczytu. Pełne ID obu testów ekonomii zostały zarejestrowane w00-dispatch.md, z jawną retrospektywną notą dla wcześniejszego dispatchu narzędziowego.
+- Zakończone i wypchnięte: FALA607(2ee58aa2, trzy poprawki), FALA608(6c95bf48, Haamonga), komentarz Garncarstwa, battle-loot12/12, weterani79/79, terminologia796/796, audyt widoczności Rekrutuj wszystkie. Receipty90 w odpowiadających runach. Nie otwierać ponownie jako niezaimplementowanych bez nowego dowodu.

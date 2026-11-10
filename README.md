@@ -26,7 +26,7 @@ mimo że tego dnia też trafiły do playbooka.
 - **C-055** (2026-08-20) — każdy raport etapu dostaje pole `DOMAIN:` (`GAME`/`PROCESS`/`INFRA`/`INFORMATIONAL`) zaraz po `STATUS:`.
 - **C-054** (2026-08-20) — `DECISION_REQUIRED` to nie `BLOCK` i nie zastępuje turnieju ABC (C-018); konflikt z wpływem na gameplay/UX wymaga pełnego turnieju, nie skróconej ścieżki.
 - **C-053** (2026-08-20) — po `LIMIT-5-EXCEEDED` ręczny nowy cykl tego samego ID wymaga jawnej decyzji właściciela i raportu porównawczego, nie jest automatyczną rundą 6.
-- **C-052** (2026-08-20) — w dispatchach Codex `multi_agent_v1` Operator i Evaluator muszą dostać jawnie `model=gpt-5.6-luna` i `reasoning_effort=high`, bez dziedziczenia po orkiestratorze.
+- **C-052** (2026-08-20; routing Codex Operator/Evaluator/Final Control zastąpiony decyzją właściciela 2026-11-10) — historycznie role używały jawnie `gpt-5.6-luna/high`; aktualny routing Codex Operator/Evaluator/Final Control to `gpt-6-luna/high`, opisany w `R-PROC-AUTOBOT.md` §1a. Routing Obrony i Claude pozostaje bez zmian.
 
 ## Zanim cokolwiek zrobisz
 
@@ -34,12 +34,18 @@ Każdy temat w tym repozytorium — kod, fix, dokumentacja procesu, audyt,
 przygotowanie deployu — idzie przez jeden obowiązkowy obieg:
 
 ```text
-Operator → Evaluator → Final Control → integracja orkiestratora → READY_FOR_DEPLOY
-                                                                  → osobna bramka deploy/push
+Operator → Evaluator → [warunkowo Obrona] → niezależny Final Control
+  → integracja main → deploy Robocza → push/readback → cleanup → następny temat
 ```
 
-Reguła jest nienegocjowalna, bez wyjątku „to tylko drobiazg". Pełny opis ról,
-pętli domknięcia i dwóch wąskich wyjątków: [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md).
+Maksymalnie cztery tematy mogą być aktywne jednocześnie; role jednego tematu zawsze
+działają sekwencyjnie. W dispatchach Codex Operator, Evaluator i Final Control używają
+jawnie `gpt-6-luna` / `high`; routingi Obrony i Claude pozostają bez zmian.
+Proces kończy etap 11/11, a następnie odczytuje kolejkę i uruchamia następny kwalifikowany
+temat. Jeśli nie ma wywoływalnego schedulera, kontrolę kolejki zapisuj przy każdym
+zakończeniu/statusie; nie deklaruj wybudzenia w tle. Pełna norma ról, pętli, limitu,
+heartbeatów i kolejki: [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md)
+oraz [`dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md`](dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md).
 
 ## Kolejność czytania na starcie sesji
 

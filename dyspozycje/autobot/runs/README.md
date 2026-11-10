@@ -28,7 +28,7 @@ etapu. Każdy etap wskazuje artefakt lub zdarzenie, w którym zapisuje się dow�
 | 8 | Niezależny Final Control zamknął weryfikację | `50-final-control.md` |
 | 9 | Zatwierdzony zakres zintegrowano do `main`, wymagane testy integracyjne przechodzą | `70-integration.md` i commit `main` |
 | 10 | Deploy do Roboczej i odczyt wersji wykonane; dla zmian wyłącznie procesowych/dokumentacyjnych wpisz `N/A` z powodem, bo nie trafiają do builda gry | `80-robocza-deploy.md` albo receipt wydania z jawnie odnotowanym `N/A` |
-| 11 | `git push` potwierdzony odczytem remote; rejestr/run zaktualizowane | `90-push-readback.md` albo receipt wydania |
+| 11 | `git push` potwierdzony odczytem remote; rejestr/run zaktualizowane; worktree i tymczasowe artefakty tematu posprzątane | `90-push-readback.md` albo receipt wydania + cleanup readback |
 
 **Przejścia warunkowe:** po etapie 5, jeśli Evaluator nie podał konkretnych zarzutów,
 raport `20-evaluator.md` musi wpisać `OBRONA: POMINIĘTA — BRAK ZARZUTÓW`; etapy 6 i 7
@@ -36,6 +36,11 @@ są oznaczone jako pominięte, a następna bramka to etap 8. Jeśli są zarzuty,
 jest 5 → 6 → 7 → 8: odpowiedź Operatora trafia do `21-operator-response.md`, a obrona do
 `30-defense.md`. Nie podnoś numeru za etap pominięty. Jeśli etap nie ma wymaganego
 artefaktu albo aktywnego procesu, raportuj `WSTRZYMANY/BLOCKED` z przyczyną.
+
+Temat ma cel `11/11`; dopiero po potwierdzeniu etapu 11 i cleanupu orkiestrator może
+uruchomić następny kwalifikowany temat z kolejki. Przy autoryzowanej czterotematycznej
+pętli kolejkę odczytuje się przy każdym zakończeniu etapu i raporcie statusu. Nie
+deklaruj background wake bez wywoływalnego schedulera.
 
 `04-integration.md` może oznaczyć `READY_FOR_DEPLOY` dopiero po faktycznej integracji;
 może pozostać nazwą legacy dla raportu etapu 9. Deploy i push zapisuje się oddzielnie. Wymagane jest jawne upoważnienie właściciela. Zmiany wyłącznie procesowe nie wymagają deployu gry, ale muszą mieć dowód `N/A` dla etapu 10 przed końcowym etapem 11.

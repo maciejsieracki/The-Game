@@ -9,13 +9,22 @@ Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany work
 Obowiązuje:
 
 ```text
-Operator GPT-5.6 Luna High
-→ Evaluator GPT-5.6 Luna High
-→ Final Control GPT-5.6 Luna High (osobny subagent)
-→ integracja głównego orkiestratora GPT-5.6 Luna Medium
+Operator Codex: gpt-6-luna / high
+→ Evaluator Codex: gpt-6-luna / high
+→ [warunkowo] Obrona Operatora po konkretnych zarzutach Evaluatora
+→ niezależny Final Control Codex: gpt-6-luna / high (osobny subagent)
+→ integracja głównego orkiestratora według aktualnie skonfigurowanego routingu
 → READY_FOR_DEPLOY
 → osobna bramka deploy/push
 ```
+
+`gpt-6-luna / high` dotyczy ról Codex od 2026-11-10. Nie zmienia routingu Claude Code.
+
+Po pozytywnym Final Control orkiestrator integruje do `main`, publikuje na Roboczą,
+wykonuje push/readback, sprząta zasoby i wtedy uruchamia następny kwalifikowany temat,
+zapisując cel 11/11. Zmiana wyłącznie procesowa ma deploy Roboczej `N/A` z powodem.
+Jeżeli wywoływalny scheduler nie jest dostępny, kolejkę sprawdza się i zapisuje przy
+każdym zakończeniu etapu i raporcie statusu; nie deklaruj automatycznego wybudzenia w tle.
 
 ## Etapy AutoBot bez Kanbanu
 
@@ -27,20 +36,33 @@ przyczyną. Nie twierdź, że temat jest „w trakcie” bez aktywnej pracy.
 
 ## Kontrakt modelu dla dispatchu Codex
 
-Przy użyciu `multi_agent_v1` każdy dispatch Operatora i Evaluatora musi jawnie
-ustawić `model: "gpt-5.6-luna"` oraz `reasoning_effort: "high"`. Dziedziczenie
-modelu po orkiestratorze jest niedozwolone. Final Control również używa Luna High;
-integracja orkiestratora używa Luna Medium. Raport i `00-dispatch.md` zapisują
-żądany model oraz effort.
+Przy użyciu `multi_agent_v1` Codex Operator, Evaluator i Final Control muszą jawnie
+ustawić `model: "gpt-6-luna"` oraz
+`reasoning_effort: "high"`. Dziedziczenie modelu po orkiestratorze jest niedozwolone.
+Nie narzucaj integratorowi modelu ani effortu; używa aktualnie skonfigurowanego routingu.
+Raport i `00-dispatch.md` zapisują jawny model i effort dla Operatora, Evaluatora i Final
+Control. Routing Obrony zależy od istniejących zasad per środowisko. Routing Claude pozostaje bez zmian.
 
-Raport Operatora uruchamia Evaluatora bez czekania. Jedna runda to jeden faktyczny
+## Limit i sekwencja
+
+Maksymalnie cztery tematy mogą być aktywne jednocześnie, na dowolnych różnych etapach;
+jeden temat liczy się jako jeden slot. W obrębie jednego ID role działają wyłącznie
+sekwencyjnie: Operator → Evaluator → Obrona tylko po konkretnych zarzutach → niezależny
+Final Control. Kolejna rola rusza po raporcie poprzedniej. Pozostaw pozostałe sloty i
+zasoby na orkiestrację, integrację i blokady. `WAITING` oraz `BLOCKED` bez aktywnej roli
+nie są aktywne. Status potwierdzaj artefaktem i readbackiem; nie twórz fikcyjnego
+„w toku”.
+
+Raport Operatora uruchamia Evaluatora po zapisaniu raportu. Po `PASS` bez zarzutów uruchom
+Final Control; przy zarzutach najpierw uruchom Obronę Operatora, potem Final Control.
+Jedna runda to jeden faktyczny
 dispatch Operatora i przypisany Evaluator; runda początkowa oraz każda korekta są
-liczone jawnie, a licznik zwiększa się przed dispatchiem. Po `PASS` uruchom Final Control;
-po jego pozytywnym wyniku orkiestrator integruje wyłącznie zatwierdzoną allowlistę.
+liczone jawnie, a licznik zwiększa się przed dispatchiem. Pozytywny Final Control
+przekazuje temat do integracji zatwierdzonej allowlisty.
 Żadna rola poza orkiestratorem po integracji nie wystawia `READY_FOR_DEPLOY`.
 
 `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo niegotowość Final Control
-wracają do `Operator → Evaluator → Final Control` z tym samym pełnym ID, ale tylko
+wracają do `Operator → Evaluator → [warunkowo Obrona] → niezależny Final Control` z tym samym pełnym ID, ale tylko
 jeżeli następna runda ma numer ≤5. Po piątej nieudanej/niezamkniętej rundzie blokada
 przed kolejnym dispatchiem jest obowiązkowa: raportuj
 `LIMIT-5-EXCEEDED`, liczbę rund, ostatni werdykt, blokadę
@@ -57,7 +79,8 @@ commita za zakończenie. Każdy dispatch ma dokładnie jeden rekord ledgeru z po
 `agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
 `timestamp_zakonczenia`, `routing_nastepnego_kroku`. Rekord przechodzi jawnie przez
 `pending → running → completed|interrupted|timeout|not_found|BLOCK|CLOSED` (brak raportu
-nie może zostać pustym przebiegiem). Watchdog sprawdza każdy aktywny rekord co minutę;
+nie może zostać pustym przebiegiem). Jeśli nie ma wywoływalnego schedulera, nie deklaruj
+monitoringu w tle; zapisuj kolejkę przy każdym zakończeniu etapu i raporcie statusu. Gdy scheduler jest dostępny, odnotuj jego faktyczny stan i heartbeat.
 `not_found` bez dowodu raportu klasyfikuje jako `BLOCK`, ciszę jako `ZWIS`, a przekroczenie
 limitu jako `TIMEOUT`. `FAIL`/`BLOCK` automatycznie routuje do tego samego ID i Operatora
 po guardzie rundy. Przy nieznanym statusie nie wolno tworzyć duplikatu ani dispatchować

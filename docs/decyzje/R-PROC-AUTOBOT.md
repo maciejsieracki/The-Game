@@ -22,13 +22,18 @@ domenowo-neutralny szkielet — w
 ## 1. Role i kolejność
 
 ```text
-Operator GPT-5.6 Luna High
-  → Evaluator GPT-5.6 Luna High
-  → Final Control GPT-5.6 Luna High (osobny subagent)
-  → integracja głównego orkiestratora GPT-5.6 Luna Medium
+Operator Codex: gpt-6-luna / high
+  → Evaluator Codex: gpt-6-luna / high
+  → [warunkowo] Obrona Operatora po konkretnych zarzutach Evaluatora
+  → Final Control Codex: gpt-6-luna / high (niezależny, osobny subagent)
+  → integracja głównego orkiestratora z aktualnie skonfigurowanym modelem/effort
   → READY_FOR_DEPLOY
   → osobna bramka deploy/push
 ```
+
+Routing `gpt-6-luna / high` dotyczy wyłącznie ról Codex Operator, Evaluator i Final
+Control na mocy decyzji właściciela z 2026-11-10. Routing Obrony i Claude pozostaje
+zależny od istniejących zasad per środowisko; nie jest zmieniany przez tę decyzję.
 
 | Etap | Odpowiedzialność | Zakaz |
 |---|---|---|
@@ -49,10 +54,36 @@ szablon `nagents-autobot` (upload właściciela, 2026-08-29) — mechanizm przen
 
 ### 1a. Jawny model dispatchu Codex
 
-Przy użyciu `multi_agent_v1` Operator i Evaluator są uruchamiani jawnie z
-`model="gpt-5.6-luna"` oraz `reasoning_effort="high"`. Nie wolno dziedziczyć modelu
-po orkiestratorze. Final Control używa Luna High, a integracja orkiestratora Luna
-Medium. Żądany model i effort muszą być zapisane w `00-dispatch.md` oraz raporcie etapu.
+Przy użyciu `multi_agent_v1` Codex Operator, Evaluator i Final Control są uruchamiani
+jawnie z `model="gpt-6-luna"` oraz `reasoning_effort="high"`. Nie wolno
+narzucać integratorowi osobnego modelu ani effortu; orkiestrator używa
+aktualnie skonfigurowanego routingu. Jawny model i effort zapisuje się dla ról Operator,
+Evaluator i Final Control. Ta zmiana dotyczy wyłącznie tych ról Codex; nie zmienia
+konfiguracji Claude ani modelu Obrony per środowisko.
+
+### Limit czterech tematów i sekwencyjne role
+
+W całej kolejce mogą być jednocześnie aktywne najwyżej **cztery tematy**, niezależnie
+od tego, na którym etapie jest każdy z nich. Jeden temat liczy się jako jeden aktywny
+temat przez cały czas pracy; równoległa praca nad jego rolami nie tworzy dodatkowych
+slotów. Temat jest aktywny tylko wtedy, gdy ma rzeczywiście uruchomioną rolę lub
+zapisany raport oczekujący na natychmiastowe uruchomienie kolejnej roli. Pozycja
+`WAITING`, `BLOCKED` bez aktywnej pracy albo sama obecność w kolejce nie jest aktywna.
+Rejestruj wyłącznie statusy potwierdzone readbackiem artefaktu/procesu; nie oznaczaj
+tematu „w toku" na podstawie planu ani samego dispatchu.
+
+W obrębie każdego tematu role wykonują się ściśle sekwencyjnie:
+`Operator → Evaluator → [warunkowo Obrona] → niezależny Final Control`. Kolejna rola
+może wystartować dopiero po zakończeniu poprzedniej i zapisaniu jej artefaktu. Nigdy
+nie uruchamiaj ról równolegle dla tego samego ID. Obrona jest wymagana wyłącznie po
+konkretnych zarzutach Evaluatora. Final Control zawsze jest niezależny od autora i
+Evaluatora.
+
+Limit czterech tematów nie jest limitem całej puli zasobów. Pozostaw pozostałe sloty,
+czas i zasoby na orkiestrację, niezależne kontrole, integrację i obsługę blokad; nie
+zapełniaj całej dostępnej puli tylko dlatego, że istnieje więcej pozycji w kolejce.
+Stan operacyjny kolejki i jej readback zapisuj w
+[`dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md`](../../dyspozycje/autobot/KOLEJKA-CODEX-FOUR-TOPICS-20261110.md).
 
 ### 1b. Co NIE jest dowodem zakończenia
 
@@ -85,6 +116,23 @@ AutoBot w tym repozytorium nie używa Kanbana ani zewnętrznego boardu jako waru
 rejestracji lub uruchomienia pracy. Decyzja właściciela z 2026-10-29 unieważnia
 wcześniejszy C-063 dotyczący obowiązkowych kart Kanban. Zapisane historyczne karty i
 raporty pozostają archiwum; nie blokują bieżących tematów.
+
+Po pozytywnym Final Control orkiestrator sekwencyjnie integruje zatwierdzoną allowlistę
+do `main`, publikuje do Roboczej, wykonuje push i readback remote, a następnie sprząta
+związane z tematem worktree i artefakty tymczasowe. Dopiero po potwierdzeniu bramki
+11/11 oraz cleanupu dispatchuje natychmiast następny kwalifikowany temat z kolejki,
+jeśli dostępny jest wolny slot z limitu czterech. Dla zmian wyłącznie procesowych,
+etap deploy Roboczej jest `N/A` z jawnym powodem; etapy integracji, push/readback i
+cleanup nadal wymagają dowodu. Nie powtarzaj już opublikowanych fal 589–606 ani ich
+zakresu. Każda zmiana zewnętrznego stanu musi mieć readback; samo polecenie nie jest
+dowodem.
+
+Nie deklaruj cyklicznego ani działającego w tle watchdoga/schedulera, jeśli w danym
+środowisku nie ma dostępnego, wywoływalnego mechanizmu. Gdy scheduler nie jest
+dostępny, zapisuj kontrolę kolejki przy każdym zakończeniu etapu i każdym raporcie
+statusu: czas odczytu, aktywne tematy, ich aktualną rolę/status, wolne sloty, blokady
+i następny kwalifikowany krok. Nie twierdź, że nastąpi przyszłe automatyczne
+wybudzenie. Heartbeat oznacza wykonaną kontrolę i readback, nie obietnicę tła.
 
 Każdy temat zapisuje się w `dyspozycje/autobot/runs/<pełne-ID>/` przez `00-dispatch.md`,
 raporty kolejnych ról, Final Control oraz integrację. Dispatch zawiera `GOAL`, binarne
@@ -201,17 +249,18 @@ jedną rundę; nie wolno obchodzić limitu przez ponawianie techniczne. `ABC-OCZ
 przed dispatchiem nie zwiększa licznika.
 
 ```text
-Operator → Evaluator (zarzuty) → Operator (obrona) → Final Control (werdykt/zarzut) → integracja → READY_FOR_DEPLOY
-   ↑              │                     │                      │
-   └──────────────┴─────────────────────┴──────────────────────┘  FAIL / BLOCK / TIMEOUT / INFRA / ZWIS / niegotowość
+Operator → Evaluator → [warunkowo Obrona Operatora] → niezależny Final Control → integracja → deploy ROBOCZA → push/readback → cleanup → następny temat
+   ↑              │                    │                         │
+   └──────────────┴────────────────────┴─────────────────────────┘  FAIL / BLOCK / TIMEOUT / INFRA / ZWIS / niegotowość
 ```
 
-Po raporcie Operatora Evaluator uruchamia się automatycznie. Lista zarzutów **pusta**
-prowadzi do Final Control od razu, jak dziś; lista **niepusta** uruchamia rundę Obrony
-(§3c) i dopiero potem Final Control. Werdykt Final Control bez żadnego `NAPRAW` prowadzi
-do integracji. Każdy wymieniony wynik negatywny wraca bez czekania do
-Operatora, Evaluatora i Final Control z tym samym ID **tylko dopóty, dopóki kolejna
-runda ma numer ≤5**. Gdy po piątej rundzie potrzebna byłaby kolejna próba, nie wolno
+Po raporcie Operatora Evaluator uruchamia się po jego zapisaniu. Lista zarzutów **pusta**
+pomija Obronę; lista **niepusta** uruchamia najpierw Operatora w roli Obrony, a po
+raporcie Obrony niezależny Final Control (§3c). W żadnym momencie role jednego ID nie
+nakładają się. Werdykt Final Control bez żadnego `NAPRAW` przekazuje temat do integracji.
+Każdy wymieniony wynik negatywny wraca bez czekania do Operatora, Evaluatora, warunkowej
+Obrony i Final Control z tym samym ID tylko dopóty, dopóki kolejna runda ma numer ≤5.
+Gdy po piątej rundzie potrzebna byłaby kolejna próba, nie wolno
 dispatchować Operatora: zgłoś `LIMIT-5-EXCEEDED`, podaj
 liczbę zużytych rund, ostatni faktyczny werdykt, blokadę oraz decyzję wymaganą od
 orkiestratora/właściciela. Jest to dodatkowa bramka zatrzymująca automatyczny dispatch,
