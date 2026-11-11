@@ -705,6 +705,60 @@ export function pickBronzeBarbUnit(seed: number): string {
   return LUDY_MORZA_BARB_UNIT_IDS[idx]!;
 }
 
+/**
+ * R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1 (właściciel 2026-11-11): Epoka Ludów Morza
+ * startuje w 20. turze OD WEJŚCIA danej nacji w Brąz (liczone per właściciel, nie od
+ * startu gry) i trwa do wejścia tej nacji w Żelazo. W tym oknie liczba jednostek
+ * barbarzyńców (limit na obóz i limit rajdów morskich) jest potrojona względem bazy
+ * wybranej trudności barbarzyńców.
+ * / EN: the Sea Peoples epoch starts on the 20th turn AFTER the owner enters Bronze
+ * (per-owner, not from game start) and lasts until that owner enters Iron. Inside that
+ * window the barbarian unit count (per-camp cap and sea-raid cap) is tripled over the
+ * selected barbarian difficulty's base.
+ */
+export const SEA_PEOPLES_BOOST_ELAPSED_TURNS = 20;
+
+/** Mnożnik liczby jednostek barbarzyńców w oknie Epoki Ludów Morza. / EN: unit multiplier inside the window. */
+export const SEA_PEOPLES_UNIT_MULT = 3;
+
+/**
+ * Czy okno Epoki Ludów Morza jest aktywne dla danego właściciela w tej turze.
+ * - brak wejścia w Brąz (`bronzeEntryTurn` undefined) -> false;
+ * - wejście w Żelazo (`ironEntryTurn` <= turn) -> false (okno zamyka się na wejściu w Żelazo);
+ * - `elapsed = turn - bronzeEntryTurn`; aktywne gdy `elapsed >= SEA_PEOPLES_BOOST_ELAPSED_TURNS`.
+ * ZAŁOŻENIE: elapsed liczony jako różnica tur (turn 20 po wejściu = elapsed 20 -> aktywne).
+ * / EN: true when the window is open for this owner on this turn.
+ */
+export function seaPeoplesBoostActive(
+  bronzeEntryTurn: number | undefined,
+  ironEntryTurn: number | undefined,
+  turn: number,
+): boolean {
+  if (bronzeEntryTurn === undefined) return false;
+  if (ironEntryTurn !== undefined && turn >= ironEntryTurn) return false;
+  return turn - bronzeEntryTurn >= SEA_PEOPLES_BOOST_ELAPSED_TURNS;
+}
+
+/**
+ * Zwraca parametry barbarzyńców z potrojonym `unitsPerCamp` gdy okno jest aktywne, inaczej
+ * te same obiekt-wartości. Tylko strona SPAWNU (tickCamps / spawnSeaPeoplesRaiders) -- reszta
+ * (ruch, gotowość do rajdu) dostaje bazowe parametry. Pozostałe pola bez zmian.
+ * / EN: returns params with unitsPerCamp x3 when active; used on the spawn side only.
+ */
+export function boostBarbParamsForSeaPeoples(params: BarbParams, active: boolean): BarbParams {
+  if (!active) return params;
+  return { ...params, unitsPerCamp: params.unitsPerCamp * SEA_PEOPLES_UNIT_MULT };
+}
+
+/**
+ * Powiadomienie o starcie okna jest jednorazowe: emituj tylko gdy okno aktywne i jeszcze
+ * nie wysłane (flaga zapisywana w save meta, więc przeżywa save/load).
+ * / EN: one-shot notice — emit only when active and not yet shown (flag persisted in save meta).
+ */
+export function shouldEmitSeaPeoplesEpochNotice(active: boolean, alreadyShown: boolean): boolean {
+  return active && !alreadyShown;
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
