@@ -1,3 +1,9 @@
+## ROBOCZA adf5fc8c -- 2026-11-06 -- FALA 640: Terminologia: grupa budynków 'Podatek i pieniądz' w panelu imperium (testowa)
+
+- R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1: wyświetlana etykieta grupy budynków w panelu imperium 'Handel i pieniądz' → 'Podatek i pieniądz' (mapa etykiet EMPIRE_BUILDING_GROUP_LABEL; klucz grupy w danych bez zmian); przegląd JSON kart: brak 'handel' w znaczeniu podatku; 'Mnożnik handlu/waluty' NIE zmieniony w tej fali (decyzja ABC → osobny temat CURRENCY-MULT-LABEL)
+- Weryfikacja: tsc czysty; terminology-trade-vs-tax 798/1 (jedyny FAIL [G] building-cards-top5 = dług bazowy, identyczny na bazie), 3 nowe asercje [C-FU] zielone, mutacja czerwona; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: render panelu imperium w Chromium; dług [G] gen-building-cards-top5 --check NIEZGODNY z generatorem (bazowy)
+
 ## ROBOCZA 3c75f0a4 -- 2026-11-06 -- FALA 639: Ikony surowców w kartach encji (budynki, ulepszenia, jednostki, technologie) (testowa)
 
 - R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: wiersze kosztu, utrzymania, wymagań, odblokowań i warunków surowców w kartach budynków, ulepszeń terenu, jednostek i technologii pokazują chipy ikona+liczba (kontrakt EntityCardRow.resources i valueParts; kwoty escapowane, tekst jako text node, nazwa surowca w title/aria-label); notatki deweloperskie (TYP 1 / B-SUROW-BUD-03) usunięte z tekstów gracza
