@@ -1,0 +1,10 @@
+STATUS: BLOCK
+DOMAIN: GAME (RUST)
+TEMAT: R-RUSTPORT-REPIN-OBLEZENIE-LIMIT-150-BLOKADA-Q1
+GOAL: REPIN web FALA 600/606: (a) oblezenie bez wylomu, sufit 150 tur = REMIS; (b) SIEGE-NEARBY (blokada tylko oblegajacych, dolaczanie poza miastem). Baza 43f4064b0; web origin/main 638e90bea.
+ZMIANY/COMMIT: kod + tabela luk w bff263cb7. Nowe: rust-port/engine/src/domain/siege_no_breach.rs, rust-port/engine/src/domain/siege_nearby_lock.rs, rust-port/engine/src/domain/mod.rs (2 wpisy), rust-port/engine/tests/p6_repin_oblezenie_limit_cap.rs, rust-port/engine/tests/p6_repin_oblezenie_limit_lock.rs, dyspozycje/rust-port/p6/P6-REPIN-OBLEZENIE-LIMIT-BLOKADA.md. Brak zmian w gra/**, data/**, src/data/**, Cargo.toml.
+TESTY: rustfmt --check na plikach tematu OK; clippy --all-targets -D warnings OK (exit 0; poprawka manual_clamp); cargo test --test p6_repin_oblezenie_limit_cap 8/8 OK; --test p6_repin_oblezenie_limit_lock 6/6 OK; cargo test --lib 22/22 OK. Wektory wyprowadzone recznie z kodu weba: NIE_ZMIERZONO (brak uruchomienia Node na TS weba).
+BLOKADY: (1) parametr oblezenie.bez_wylomu_max_tur nie wpiety do danych Rust: deny_unknown_fields w src/data/units_combat.rs (poza allowlista) -> BLOKADA; stala 150 jako ZALOZENIE Z-NB-1. (2) Brak petli taktycznej tur w Rust (domain/combat.rs:319 resolve_combat jednorazowe) -> sufit i remis nie dzialaja end-to-end. (3) Brak stanu wylomu muru w Rust. (4) Bitwa reczna i Pomin=AUTO: brak warstwy bitwy w Rust. (5) SIEGE-NEARBY: brak commitBesiege/siegeArmyGroupId i dolaczania poza miastem w Rust (zrobione tylko czyste funkcje). Szczegoly: dyspozycje/rust-port/p6/P6-REPIN-OBLEZENIE-LIMIT-BLOKADA.md, tabela L1-L11.
+RUNDY: 1/5; ostatni werdykt: brak (runda 1)
+NASTEPNY KROK: decyzja orkiestratora: (a) rozszerzyc allowliste o src/data/units_combat.rs i data/combat-params.json (wpiecie parametru) oraz zlecic temat petli bitwy taktycznej (L2-L5) jako warunek domkniecia (a); (b) potwierdzic, ze SIEGE-NEARBY w Rust zostaje na poziomie czystych funkcji do czasu warstwy stanu gry. Operator nie zadaje pytan ABC.
+DEPLOY/PUSH: NIE WYKONANO
