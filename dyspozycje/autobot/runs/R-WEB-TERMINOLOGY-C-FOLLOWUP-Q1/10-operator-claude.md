@@ -1,0 +1,21 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1
+GOAL: Dług #204 po R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1: (a) panel imperium — grupa „Handel i pieniądz” jako „Podatek i pieniądz” (klucz danych bez zmian); (b) style/teksty JSON kart — przegląd; (c) wiki „Mnożnik handlu/waluty” — sprawdzenie w silniku, zmiana tylko jeśli dotyczy podatku.
+ZMIANY/COMMIT: baza origin/main af1235544. Kod: gra/src/ui/empireDetailPanel.ts (mapa etykiet `EMPIRE_BUILDING_GROUP_LABEL` + użycie w wierszu grupy i w stopce), gra/tools/terminology-trade-vs-tax-test.cjs (+3 asercje [C-FU]). Raport: dyspozycje/autobot/runs/R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1/10-operator-claude.md. Allowlista (wyliczona przed edycją): empireDetailPanel.ts, terminology-trade-vs-tax-test.cjs, katalog runu. Commit kodu i commit raportu osobno (jawne ścieżki, bez -A).
+ZAKRES (a) — zrobione: empireDetailPanel.ts:112-120 (nowa mapa), wiersz grupy w sekcji „Budynki” (~linia 2309) używa `empireBuildingGroupLabel(grupa)`, stopka grup (~linia 2318) pokazuje „Podatek i pieniądz” zamiast „Handel i pieniądz”. Klucz `grupa` i `BUILDING_GROUP_ORDER` nietknięte. Poza tematem zostają klucze danych: ai.ts:1644, building-upgrades.ts:206, buildings.json „grupa”, loader.ts:152 (komentarz). Literały „Podział Handlu / suwak handlu / udział handlu” nie występują w cityPanel.ts ani empireDetailPanel.ts (sprawdzone grep-em).
+ZAKRES (b) — przegląd, BEZ zmian: w gra/data/*.json nie ma już literału „handlu/handel” w znaczeniu podatku w kartach. Pozostałe trafienia to B (trasy/Wymiana/Targowisko/Port; nazwa technologii „Handel” w tech-cards-top5.json:624 i :787; techUnlock „Handel” w buildings.json) albo identyfikatory (ai-params.json). Nie zmieniano generatorów ani zdań.
+ZAKRES (c) — NIE ZMIENIONO (DECISION_REQUIRED, zgłoszenie): wartość „Mnożnik handlu/waluty” to `meta_mnoznik_waluta` z civ-matrix.json (np. grecy 2.3). Dowody z kodu: (1) economy.ts:730-739 — `mnoznikHandelPieniadzForCiv` czyta `meta_mnoznik_waluta`, ale w gra/src nie ma wywołania tej funkcji poza economy.ts; (2) culture-religion.ts:1287 `cityTradeMultiplier` (mnożnik „trade/money” per miasto) — w gra/src nie ma wywołania poza definicją; (3) realny mnożnik podatku w silniku to `mennicaMnoznikPoWalucie` (1.5, economy.ts:964-967), który mnoży handelNetto (podatek). Wniosek: nie udowodniłem, że wartość z wiki (meta_mnoznik_waluta) mnoży podatek, a nie trasy; wg reguły dispatchu zostaje bez zmian. Test pr141-matrix-only-data-wiki-test.cjs:66 wymaga dokładnej frazy „Mnożnik handlu/waluty”, więc zmiana wymagałaby też jego i generatora gra/tools/gen-cyw-encyklopedia.py:148. Etykieta „Mnożnik waluty” (bez „handlu”) byłaby bezpieczna w obu wariantach — do decyzji właściciela. Zgłoszone też, poza zakresem: docs/PORADNIK-GRACZA-SPIS-TRESCI.md:2352 „Mnożnik handlu — więcej złota z suwaka Daniny” (dotyczy podatku, nie zmieniano).
+TESTY:
+- npm ci --ignore-scripts w gra/: exit 0.
+- npx tsc --noEmit (gra/): exit 0, 0 błędów TS.
+- node tools/terminology-trade-vs-tax-test.cjs: 798 pass, 1 fail. Jedyny fail: [G] gen-building-cards-top5.cjs --check („building-cards-top5.json NIEZGODNY z generatorem”). Nie zmieniano generatora, jego wejść ani building-cards-top5.json (git diff --name-only origin/main -- gra/tools gra/data pokazuje tylko terminology-trade-vs-tax-test.cjs), więc błąd jest dziedziczony z bazy. NIE_ZMIERZONO na czystym origin/main — nie uruchamiano osobno.
+- Nowe asercje [C-FU] (3 szt.) przechodzą: mapa etykiety; wiersz grupy używa helpera (brak surowego ${esc(grupa)}); stopka bez „Handel i pieniądz”.
+- git diff --check: czysto.
+- ids-leak-audit, wonder-text-no-raw-ids, city-administrator 117, odtworzenie wikiBundle, testy kart/CIVPEDII/diplomacy: NIE_ZMIERZONO — wikiBundle nie był zmieniany; reszta nie uruchamiana (zakres: jedna mapa, jeden wiersz renderu, jedna stopka).
+- Render w Chromium panelu imperium: NIE_ZMIERZONO.
+- npm run build/dev: NIE URUCHAMIANO (zakaz).
+BLOKADY: brak technicznych. Decyzja właściciela wymagana w sprawie (c) — patrz wyżej.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (ta sama runda/ID) → Obrona → Final Control. Orkiestrator: decyzja ABC w sprawie (c) i ewentualnie PORADNIK spis:2352; sprawdzić, czy błąd [G] building-cards-top5 jest dziedziczony z origin/main.
+DEPLOY/PUSH: NIE WYKONANO
