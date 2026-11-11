@@ -161,7 +161,7 @@ export const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: ReadonlySet<string> = new Set([
  * powinna zwiększać swoją produkcję o 50% w każdej epoce".
  *
  * (a) ×2: `outputAmount` Cegielni 1→2 (2 glina + 1 drewno → 2 cegły), baza przepustowości
- *     50 cykli/turę BEZ zmian.
+ *     50 cykli/turę BEZ zmian (stan historyczny tej decyzji; aktualne cykle per epoka: patrz niżej).
  * (b) +50% BAZY za epokę właściciela jako MNOŻNIK WYJŚCIA (nie cykli): m(e) = 1 + 0,5 × (e − 1)
  *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `citizenConsumptionEraMultiplier`
  *     (mnożniki surowców FALA 500). Pomiar w grze pokazał, że Cegielnię ogranicza WEJŚCIE

@@ -170,7 +170,7 @@ for (const id of ['garncarnia']) {
 {
   const mults = [1, 1.5, 2, 2.5, 3];
   for (let e = 1; e <= 5; e++) {
-    eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia: era${e} -> 50 cykli (plaskie)`);
+    eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia: era${e} -> 50 cykli (plaskie; sciezka BEZ wierszy epoki, baza 50)`);
     eq(M.converterOutputMultiplierForEra('cegielnia', e), mults[e - 1], `cegielnia: era${e} mnoznik wyjscia x${mults[e - 1]}`);
     eq(M.converterOutputMultiplierForEra('garncarnia', e), 1, `garncarnia: era${e} mnoznik wyjscia 1`);
     eq(M.converterOutputMultiplierForEra('huta', e), 1, `huta: era${e} mnoznik wyjscia 1`);
@@ -179,7 +179,7 @@ for (const id of ['garncarnia']) {
   eq(M.converterOutputMultiplierForEra('cegielnia', 0), 1, 'cegielnia: era0 -> mnoznik 1');
   eq(M.converterOutputMultiplierForEra('cegielnia', NaN), 1, 'cegielnia: NaN -> mnoznik 1');
   const t3 = M.converterThroughputsForEra(r => r.throughputFallback, 3);
-  eq(t3.cegielnia, 50, 'converterThroughputsForEra: cegielnia 50 cykli');
+  eq(t3.cegielnia, 50, 'converterThroughputsForEra (bez wierszy epoki): cegielnia baza 50 cykli');
   eq(t3['cegielnia' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], 2, 'converterThroughputsForEra: cegielnia#outMult = 2 w erze 3');
   eq(t3['huta' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], undefined, 'converterThroughputsForEra: huta bez mnoznika');
   eq(M.converterThroughputsForEra(r => r.throughputFallback, 1)['cegielnia' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], undefined, 'era1: brak klucza mnoznika');
