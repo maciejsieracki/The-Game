@@ -66,6 +66,8 @@ pub mod rng;
 pub mod roads;
 mod session;
 pub mod siege_enter_city;
+pub mod siege_nearby_lock;
+pub mod siege_no_breach;
 pub mod siege_sortie;
 pub mod siege_starvation;
 pub mod society_breakdown;
