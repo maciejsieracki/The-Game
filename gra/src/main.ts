@@ -2216,6 +2216,8 @@ async function boot(): Promise<void> {
     let recruitFollowGeneralDefault = true;
     // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: generał rekrutujący panelu Rekrutacja (brak = panel nie rekrutuje).
     let recruitGeneralId: string | null = null;
+    // Jednorazowe powiadomienie przy wczytaniu zapisu sprzed tego mechanizmu (brak pola w zapisie).
+    let recruitGeneralNoticeShown = true;
     let unitRenderer = new UnitRenderer(scene, map);
 
     // -----------------------------------------------------------------------
@@ -27185,6 +27187,15 @@ async function boot(): Promise<void> {
         return recruitGeneralId;
       },
       clearGeneralSelection: () => { recruitGeneralId = null; },
+      selectGeneral: (id: string | null) => { recruitGeneralId = id; },
+      generalInfo: () => livingGeneralsOf(units, ME()).map(g => ({ id: g.id, q: g.q, r: g.r })),
+      cityPos: (cityId: string) => { const c = cities.find(x => x.id === cityId); return c ? { q: c.q, r: c.r } : null; },
+      /** Jednostki gracza z rallyGeneralId + ich zaplanowany marsz (cel: generał). Tylko test. */
+      rallyUnits: () => units.filter(u => u.ownerId === ME() && u.rallyGeneralId).map(u => ({
+        id: u.id, rally: u.rallyGeneralId, q: u.q, r: u.r, march: plannedMarches.get(u.id) ?? null,
+      })),
+      quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'auto-recruit-general-live-test')).ok,
+      loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
       killGeneral: (id: string) => { const i = units.findIndex(u => u.id === id); if (i >= 0) units.splice(i, 1); },
       queueIntents: (cityId: string, rallyOnly = true) => (cityProd.get(cityId)?.rekrutacja ?? []).map(q => ({ id: q.id, followGeneral: q.followGeneral, rallyGeneralId: q.rallyGeneralId })).filter(q => !rallyOnly || q.rallyGeneralId),
     };
@@ -37079,6 +37090,7 @@ async function boot(): Promise<void> {
         plannedMarches: marchSave.plannedMarches,
         recruitFollowGeneralDefault,
         ...(recruitGeneralId ? { recruitGeneralId } : {}),
+        recruitGeneralNoticeShown: true,
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -43607,6 +43619,9 @@ async function boot(): Promise<void> {
           // NAPRAWDĘ dopiero TERAZ, endTurnInProgress jest już false (patrz komentarz przy
           // flushPendingEraChangeToast).
           flushPendingEraChangeToast();
+          // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: śmierć generała rekrutującego zgłaszana NA ŻYWO zaraz po
+          // końcu tury (endTurnInProgress=false => prawdziwy toast, nie bierny wpis), także przy zamkniętym panelu.
+          validateRecruitGeneral();
           syncPlayerUnitSelectionOnMap();
           console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
@@ -46075,6 +46090,13 @@ async function boot(): Promise<void> {
       for (const u of saved.units) units.push(u);
       recruitFollowGeneralDefault = saved.recruitFollowGeneralDefault !== false;
       recruitGeneralId = saved.recruitGeneralId ?? null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
+      // Zapis sprzed mechanizmu (brak flagi) nie ma wybranego generała: jednorazowo informujemy,
+      // że panel Rekrutacja wymaga teraz wyboru (zamiast cichej zmiany zachowania).
+      recruitGeneralNoticeShown = saved.recruitGeneralNoticeShown === true;
+      if (!recruitGeneralNoticeShown) {
+        recruitGeneralNoticeShown = true;
+        if (!recruitGeneralId) showHintMessage('Panel Rekrutacja wymaga teraz wybranego generała rekrutującego — wybierz go w panelu.', 5200);
+      }
       // Old saves may omit hpMax, while intermediate saves may contain the raw
       // base max. Recompute from the current unit bonuses and clamp current HP
       // before any panel, battle or starvation consumer sees the loaded state.

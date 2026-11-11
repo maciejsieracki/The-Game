@@ -65,6 +65,9 @@ assert.equal(loaded.cityProd.c1.rekrutacja[0].rallyGeneralId, 'g2'); ok('save ro
 const legacy = deserializeGame(JSON.stringify({ ...snapshot, recruitGeneralId: undefined, wersja: 3 }));
 assert.equal(legacy.recruitGeneralId, undefined); ok('legacy save: no chosen general (panel recruiting disabled until chosen; no silent change)');
 
+assert.equal(deserializeGame(serializeGame({ ...snapshot, recruitGeneralNoticeShown: true })).recruitGeneralNoticeShown, true); ok('save roundtrip keeps the notice flag');
+assert.equal(legacy.recruitGeneralNoticeShown, undefined); ok('legacy save has no notice flag (=> one-time notice on load)');
+
 // 6. Kontrakt wiązania w main.ts / panelu.
 const mainSrc = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
 const panelSrc = fs.readFileSync(path.join(root, 'src/ui/empireRecruitPanel.ts'), 'utf8');
@@ -78,4 +81,7 @@ assert.match(mainSrc, /\.\.\.\(recruitGeneralId \? \{ recruitGeneralId \} : \{\}
 assert.match(mainSrc, /pickRallyGeneral\(u, units, \(\) => pickNearestLeaderForUnit\(u\)\)/); ok('spawn march targets the chosen general');
 assert.match(panelSrc, /recruitingBlockedByGeneral/); ok('panel disables Rekrutuj without a chosen general');
 assert.match(panelSrc, /rekrutuje/); ok('panel marks the recruiting general');
+assert.match(mainSrc, /flushPendingEraChangeToast\(\);(?:\s*\/\/[^\n]*)*\s*validateRecruitGeneral\(\);/); ok('death of the recruiting general is reported live right after end of turn (panel closed too)');
+assert.match(mainSrc, /recruitGeneralNoticeShown = saved\.recruitGeneralNoticeShown === true;\s*if \(!recruitGeneralNoticeShown\) \{\s*recruitGeneralNoticeShown = true;\s*if \(!recruitGeneralId\) showHintMessage\(/); ok('legacy save load shows a one-time notice');
+assert.match(mainSrc, /recruitGeneralNoticeShown: true,/); ok('save writes the notice flag');
 console.log(`\n${pass} assertions passed`);

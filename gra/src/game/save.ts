@@ -430,6 +430,8 @@ export interface SaveGame {
 
   /** R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: generał rekrutujący z panelu Rekrutacja (brak = rekrutacja panelu wyłączona). */
   recruitGeneralId?: string;
+  /** Flaga: zapis powstał po wprowadzeniu wyboru generała (brak = zapis legacy -> jednorazowe powiadomienie). */
+  recruitGeneralNoticeShown?: boolean;
 
   /** R-RALLY-POINT-AUTOMARCH-Q1: one explicit rally point per empire. */
   rallyPoints?: Record<string, { q: number; r: number }>;
@@ -734,6 +736,7 @@ export function deserializeGame(json: string): SaveGame {
       ? obj2.recruitFollowGeneralDefault : undefined,
     recruitGeneralId: typeof obj2.recruitGeneralId === 'string' && obj2.recruitGeneralId.length > 0
       ? obj2.recruitGeneralId : undefined,
+    recruitGeneralNoticeShown: obj2.recruitGeneralNoticeShown === true ? true : undefined,
     rallyPoints: obj2.rallyPoints,
     tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : undefined,
     meta: obj.meta,
