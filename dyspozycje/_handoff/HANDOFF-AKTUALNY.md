@@ -1,7 +1,5 @@
-# HANDOFF-AKTUALNY — wskaźnik na najnowszą sesję
+# HANDOFF-AKTUALNY
 
-**Aktualna sesja:** 2026-10-27 — testowy deploy Robocza zakresu R-CIV-ALL-TOPICS-ROBOCZA-20261027.
+Bieżące przekazanie Codex, 2026-11-11: [PRZEKAZANIE-AUTOBOT-CODEX-2026-11-11.md](../PRZEKAZANIE-AUTOBOT-CODEX-2026-11-11.md).
 
-**Pełny stan i następny krok:** [`HANDOFF-SESJA-2026-10-27-ROBOCZA-ALL-TOPICS.md`](HANDOFF-SESJA-2026-10-27-ROBOCZA-ALL-TOPICS.md).
-
-**Starsze handoffy:** zachowane bez zmian w tym katalogu; bieżący stan wersji jest w `../WERSJE.md`, a pełny ślad tego wydania w `../autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+Źródło pełnej kolejki i decyzji: [rejestr próśb i zadań](../REJESTR-PROSB-I-ZADAN.md). Status publikacji w manifest/WERSJE i receipts poszczególnych runów. Handoff opisuje moment zapisu; po wznowieniu sprawdzić nowsze commity i rzeczywiste procesy.
