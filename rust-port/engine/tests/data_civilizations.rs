@@ -118,7 +118,7 @@ fn civ_ai_json_parses_and_spot_checks() {
 #[test]
 fn diplomacy_json_parses_and_spot_checks() {
     let f = parse_diplomacy().expect("diplomacy.json parse");
-    assert_eq!(f.params.prog_sojusz_relacja, 151);
+    assert_eq!(f.params.prog_sojusz_relacja, 130);
     assert_eq!(f.akcje_dyplomatyczne.len(), 15);
     assert_eq!(f.per_nacja.len(), 15);
     assert_eq!(f.zmiany_parametrow.len(), 24);

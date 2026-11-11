@@ -2,8 +2,8 @@
   "_opis": "Punkty akceptacji stołu negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (wartość strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala względna: sojusz >> NAP >> traktat handlowy >> wymiana.",
   "traktaty": {
     "pokoj": { "punkty": 500, "jednostka": "umowa", "uwaga": "zakończenie wojny — wymaga trwającej wojny; PN obowiązkowe (jak sojusz)" },
-    "sojusz_pelny": { "punkty": 500, "jednostka": "umowa", "prog_relacja": 151 },
-    "sojusz_defensywny": { "punkty": 420, "jednostka": "umowa", "prog_relacja": 151 },
+    "sojusz_pelny": { "punkty": 500, "jednostka": "umowa", "prog_relacja": 130 },
+    "sojusz_defensywny": { "punkty": 420, "jednostka": "umowa", "prog_relacja": 130 },
     "nap": { "punkty": 200, "jednostka": "umowa", "prog_relacja": 50 },
     "umowa_szlakow": { "punkty": 80, "jednostka": "umowa", "prog_relacja": 0 },
     "umowa_handlowa": { "punkty": 80, "jednostka": "umowa", "prog_relacja": 0 },

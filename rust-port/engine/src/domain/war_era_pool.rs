@@ -4,7 +4,7 @@
 //! - `forcedEraTagEpoch` (:255), `forcedEraTagForEpoch` (:263), `eraWarCounterEpoch` (:272),
 //! - `isPlayerEligibleForEraWarPool` (:295), `isPlayerEraWarSlotFree` (:314).
 //!
-//! Progi `eraForcedWarStartTurnsFromEra` (bronze/iron = 20) i limit licznika per (cywilizacja, epoka)
+//! Progi `eraForcedWarStartTurnsFromEra` (bronze/iron = 40) i limit licznika per (cywilizacja, epoka)
 //! (`maxEraForcedWarsPerCivPerEra` = 1) pochodza z juz zportowanych stalych (`diplomacy_multiwar*`).
 //! Odstepstwo: web przyjmuje `params: WarRulesParams`; tu progi sa stalymi (jedyny wariant z JSON).
 

@@ -171,7 +171,7 @@ fn g3b_id_order_matches_web_localecompare() {
 #[test]
 fn g3b_constants_match_web_source() {
     assert_eq!(WOJNA_WYMUSZONA_ODPOCZYNEK_TUR_FOR_TEST, 20.0);
-    assert_eq!(WOJNA_KAMIEN_START_FOR_TEST, 25.0);
+    assert_eq!(WOJNA_KAMIEN_START_FOR_TEST, 40.0);
 }
 
 const WOJNA_WYMUSZONA_ODPOCZYNEK_TUR_FOR_TEST: f64 =

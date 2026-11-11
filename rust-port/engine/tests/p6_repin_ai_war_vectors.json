@@ -2220,7 +2220,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2330,17 +2330,6 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
-  },
-  {
-   "inp": {
-    "currentTurn": 60,
-    "playerEpoch": 2,
-    "activeForcedWarsTotal": 1,
-    "activeForcedWarsInPlayerEra": 0,
-    "eraEnterTurn": 50,
-    "poolStartTurn": 40
-   },
    "out": false
   },
   {
@@ -2349,7 +2338,7 @@
     "playerEpoch": 2,
     "activeForcedWarsTotal": 1,
     "activeForcedWarsInPlayerEra": 0,
-    "eraEnterTurn": 60,
+    "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
    "out": false
@@ -2360,6 +2349,17 @@
     "playerEpoch": 2,
     "activeForcedWarsTotal": 1,
     "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 2,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
@@ -2440,7 +2440,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2451,7 +2451,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2550,7 +2550,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2561,7 +2561,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2671,7 +2671,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2682,7 +2682,7 @@
     "eraEnterTurn": 60,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2781,7 +2781,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2792,7 +2792,7 @@
     "eraEnterTurn": 60,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -2913,7 +2913,7 @@
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -3023,7 +3023,7 @@
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -3760,7 +3760,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -3870,17 +3870,6 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
-  },
-  {
-   "inp": {
-    "currentTurn": 60,
-    "playerEpoch": 3,
-    "activeForcedWarsTotal": 1,
-    "activeForcedWarsInPlayerEra": 0,
-    "eraEnterTurn": 50,
-    "poolStartTurn": 40
-   },
    "out": false
   },
   {
@@ -3889,7 +3878,7 @@
     "playerEpoch": 3,
     "activeForcedWarsTotal": 1,
     "activeForcedWarsInPlayerEra": 0,
-    "eraEnterTurn": 60,
+    "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
    "out": false
@@ -3900,6 +3889,17 @@
     "playerEpoch": 3,
     "activeForcedWarsTotal": 1,
     "activeForcedWarsInPlayerEra": 0,
+    "eraEnterTurn": 60,
+    "poolStartTurn": 40
+   },
+   "out": false
+  },
+  {
+   "inp": {
+    "currentTurn": 60,
+    "playerEpoch": 3,
+    "activeForcedWarsTotal": 1,
+    "activeForcedWarsInPlayerEra": 0,
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
@@ -3980,7 +3980,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -3991,7 +3991,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4090,7 +4090,7 @@
     "eraEnterTurn": 40,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4101,7 +4101,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4211,7 +4211,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4222,7 +4222,7 @@
     "eraEnterTurn": 60,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4321,7 +4321,7 @@
     "eraEnterTurn": 50,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4332,7 +4332,7 @@
     "eraEnterTurn": 60,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4453,7 +4453,7 @@
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {
@@ -4563,7 +4563,7 @@
     "eraEnterTurn": 70,
     "poolStartTurn": 40
    },
-   "out": true
+   "out": false
   },
   {
    "inp": {

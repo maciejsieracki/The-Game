@@ -2279,13 +2279,13 @@
   "in": {
    "tag": "bronze"
   },
-  "out": "20"
+  "out": "40"
  },
  {
   "fn": "eraForcedWarStartTurnsFromEra",
   "in": {
    "tag": "iron"
   },
-  "out": "20"
+  "out": "40"
  }
 ]

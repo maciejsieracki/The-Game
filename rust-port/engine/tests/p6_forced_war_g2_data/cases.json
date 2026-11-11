@@ -11075,7 +11075,7 @@
    "currentTurn": 25,
    "eraEnterTurn": 5
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForBronzeForcedWar",
@@ -11095,7 +11095,7 @@
    "currentTurn": 26,
    "eraEnterTurn": 6
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForBronzeForcedWar",
@@ -11105,7 +11105,7 @@
    "currentTurn": 30,
    "eraEnterTurn": 10
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForBronzeForcedWar",
@@ -11115,7 +11115,7 @@
    "currentTurn": 40,
    "eraEnterTurn": 20
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForBronzeForcedWar",
@@ -11135,7 +11135,7 @@
    "currentTurn": 40,
    "eraEnterTurn": 19
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForBronzeForcedWar",
@@ -11467,7 +11467,7 @@
    "currentTurn": 25,
    "eraEnterTurn": 5
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForIronForcedWar",
@@ -11487,7 +11487,7 @@
    "currentTurn": 26,
    "eraEnterTurn": 6
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForIronForcedWar",
@@ -11497,7 +11497,7 @@
    "currentTurn": 30,
    "eraEnterTurn": 10
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForIronForcedWar",
@@ -11507,7 +11507,7 @@
    "currentTurn": 40,
    "eraEnterTurn": 20
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForIronForcedWar",
@@ -11527,7 +11527,7 @@
    "currentTurn": 40,
    "eraEnterTurn": 19
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForIronForcedWar",
@@ -13534,7 +13534,7 @@
   "in": {
    "name": "WOJNA_WYMUSZONA_START_TURY_OD_EPOKI"
   },
-  "out": 20
+  "out": 40
  },
  {
   "fn": "constant",
@@ -13583,6 +13583,6 @@
   "in": {
    "name": "WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI"
   },
-  "out": 20
+  "out": 40
  }
 ]
