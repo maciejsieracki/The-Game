@@ -11,7 +11,7 @@ Legenda: ZMIERZONO = wynik grepa/odczytu pliku z podanego commita; ZAŁOŻENIE =
 | # | Mechanizm | Web 638e90bea (plik:linia) | Rust przed (43f4064b0) | Rust po (ten temat) | Test / status |
 |---|---|---|---|---|---|
 | 1 | Domyslny wspolczynnik utrzymania surowcowego | `gra/src/game/economy-upkeep.ts:688` `DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO = 1` | brak (stala 5.0 w `turn_economy.rs:1675`) | `turn_economy.rs:1681` `DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO = 1.0` | `p6_8e_upkeep_p2::building_resource_upkeep_matches_web` ZGODNE |
-| 2 | Model proporcjonalny: per typ z `koszt_surowce` = floor(surowe utrzymanie Pieniadza(poziom) x ratio) | `economy-upkeep.ts:716–748` `buildingResourceUpkeep` | `turn_economy.rs:1687–1700` stala 5 szt./typ (DRYF, ZMIERZONO) | `turn_economy.rs:1723` `building_resource_upkeep(building, level, ratio)`; surowe utrzymanie `:1703` | ZGODNE (wektory z webu 638e90bea, 792 przypadki) |
+| 2 | Model proporcjonalny: per typ z `koszt_surowce` = floor(surowe utrzymanie Pieniadza(poziom) x ratio) | `economy-upkeep.ts:716–748` `buildingResourceUpkeep` | `turn_economy.rs:1687–1700` stala 5 szt./typ (DRYF, ZMIERZONO) | `turn_economy.rs:1723` `building_resource_upkeep(building, level, ratio)`; surowe utrzymanie `:1703` | ZGODNE (wektory z webu 638e90bea, 860 przypadkow = 43 budynki x 4 poziomy x 5 wspolczynnikow; `tests/p6_repin_ekonomia_ceramika_vectors/web.json` `upkeep`) |
 | 3 | Stala ilosc `utrzymanie_surowce` (ceramika 2) | `gra/data/buildings.json:406` (port), `:553` (spichlerz_ii), `:906` (akwedukt), `:2099` (laznia_publiczna) | brak pola w rekordzie | `data/buildings_tech.rs:113` (`UtrzymanieSurowce`), galaz w `turn_economy.rs:1723`, mapowanie `turn_economy_tick.rs:121` | `p6_repin_ekonomia_ceramika_data::utrzymanie_surowce_ceramika_2_only_on_four_buildings` ZGODNE |
 | 4 | Wspolczynnik z danych | `gra/data/econ-params.json:425` `budynki.utrzymanie_surowce_wspolczynnik` (1/1/1) | brak klucza | `rust-port/engine/data/econ-params.json` (grupa `budynki`); pole `economy_society.rs` `EconParamsBudynki`; odczyt `turn_economy.rs:1685` | `p6_8e_upkeep_p2::read_building_resource_upkeep_ratio_matches_web` ZGODNE |
 | 5 | Garncarstwo: piate po czterech podstawach | `gra/data/tech.json` (Garncarstwo: Poziom 1, Koszt nauki 40, prereq `Obróbka drewna + Rolnictwo + Łowiectwo + Oswojenie zwierząt`) | `data/tech.json:26–39`: Poziom 2, prereq `—` (DRYF) | `data/tech.json` = bajtowa kopia webu | `p6_repin_ekonomia_ceramika_data::garncarstwo_fifth_basic_tech_after_four_basics` ZGODNE |
@@ -20,16 +20,21 @@ Legenda: ZMIERZONO = wynik grepa/odczytu pliku z podanego commita; ZAŁOŻENIE =
 | 7 | Dane budynkow/tech/cudow | `gra/data/buildings.json`, `tech.json`, `wonders.json` @638e90bea | rozjechane (data/*.json, 271/70/17 linii diffu) | bajtowa kopia (zgodnie z istniejacym trybem z REPIN-DANE-20261029 §1) | patrz sekcja 3 (testy czerwone poza allowlista) |
 | 8 | Sygnatury podgladu owner | `economy-upkeep.ts:794`, `:965` (ratio jako OSTATNI argument) | — | `preview_owner_*` przyjmuje `ratio` (przed `units`/closure) | ZAŁOZENIE: kolejnosc argumentow Rust != web (semantyka ta sama) |
 
-## 2. Dryf poza tym tematem (NIE_ZMIERZONO w tej rundzie, zostaje do kolejnych tematow)
+## 2. Dlug poza tym tematem (zarzuty Evaluatora r4, obrona Operatora r4)
 
-- `rust-port/engine/data/derived/*.json` (np. `research-costs.json`, `building-gold-upkeep.json`, `building-work-states.json`) nie regenerowane z nowych danych.
-- Koszty technologii web (np. Gospodarka wodna 72→180, Garncarstwo) — tabela badan Rust jeszcze stara.
-- Liczba budynkow web: 43 (Rust testy pinowe nadal 42).
+- Z-R4-1 (PRZYJETY jako odstepstwo, do decyzji orkiestratora): wektory q5/q6/empirefood/order_lane NIE pochodza z czystego weba 638e90bea. Pin hybrid2 `f873221ee` + nakladka zakresu tematu (§4). Dryf weba poza zakresem, do osobnych tematow REPIN: (1) korupcja Palac II/III + Trybunal (`economy.ts:1226`, Rust `domain/economy_city_fns.rs:220`); (2) odlewnie brazu 25/50 (`converters.ts`, Rust `turn_economy_resources.rs`); (3) handel kontaktowy + emporion w `TRADE_BUILDING_IDS` (`trade-routes.ts`, Rust `domain/trade.rs:345`); (4) lodzie rybackie 6/6/6, `units.json` (fieldPower, Rydwan), terrain-yields.
+- Z-R4-2 (PRZYJETY, do ratyfikacji): `rust-port/engine/tests/building_costs.rs` (43 budynki z Emporion, koszt palac_iii 560/560/560) jest POZA lista ratyfikowana z r4. Zmiana konieczna do 0 failed. Prosba o ratyfikacje orkiestratora.
+- Z-R4-5 (PRZYJETY jako dlug formatu): Rust nadal trzyma pole `civBonusy` usuniete w webie 638e90bea (`rust-port/engine/src/domain/player.rs:298`). Test `p6_1b_playerstate.rs:149-152` pomija klucz (`got.retain`) jako ZALOZENIE. Nie zmieniono formatu zapisu w tej rundzie (decyzja: osobny temat).
+- Koszty technologii w `derived/research-costs.json` i pozostale `rust-port/engine/data/derived/*.json`: NIE_ZMIERZONO w r4 (nie regenerowane; Garncarstwo nie weryfikowane w tych plikach).
+- Liczba budynkow web: 43 (Rust po zmianie: 43; przed zmiana testy pinowe mialy 42).
 
-## 3. Testy po zmianie (cargo test, CARGO_INCREMENTAL=0)
+## 3. Testy: baseline 43f4064b0 vs 849ed10aa (zmierzone w obronie r4)
 
-- Zielone: `p6_8e_upkeep_p2` (13/13 + nowy `read_building_resource_upkeep_ratio_matches_web`), `p6_repin_ekonomia_ceramika_data` (4/4), lib (22/22), `p6_m12_compute` (12/12) i pozostale binarki bez zmian.
-- Czerwone poza allowlista (18 testow, 10 binarek; przed zmiana wszystkie zielone): `data_buildings_tech` (2), `data_compliance` (5), `derived_values` (2), `p6_1b_playerstate` (2), `p6_7b_cost` (1), `p6_7b_tables` (1), `p6_adv_q5_tick` (2), `p6_adv_q6_wire` (1), `p6_empirefood_e2e` (1), `p6_order_lane` (1). Przyczyna: pinowane liczby/identyfikatory oraz dane derived ze starego pinu.
+Baseline (`git archive 43f4064b0 rust-port`, CARGO_INCREMENTAL=0, CARGO_PROFILE_*_DEBUG=0, cargo test --no-fail-fast, 11 celowanych binarek + lib): WSZYSTKIE ZIELONE: lib 22/0; building_costs 10/0; data_buildings_tech 3/0; data_compliance 40/0; derived_values 25/0; p6_1b_playerstate 19/0; p6_8e_upkeep_p2 12/0; p6_adv_q5_tick 2/0; p6_adv_q6_wire 2/0; p6_empirefood_e2e 2/0; p6_order_lane 10/0 (+1 ignored istniejacy). Wniosek: czerwien r2 pochodzi ze zmian danych/src/pinow, nie z zepsutego bazowego stanu.
+
+Stan po zmianie (wynik Evaluatora r4 zweryfikowany na 849ed10aa, bez powtorzenia calego przebiegu w obronie): fmt OK; clippy -D warnings OK; lib 22/0; 324 plikow tests/ w 7 partiach 0 failed, 1 ignored (istniejacy `p6_order_lane`), 0 nowych #[ignore].
+
+Sekcja 3 z r2 (lista 18 czerwonych testow) jest NIEAKTUALNA i zastapiona powyzsza.
 
 ## 4. Runda 4 (Operator Sonnet 5.5) — wektory z uruchomionego weba i testy parytetu
 
@@ -52,3 +57,15 @@ Ha'amonga bez bonusow terenowych, utrzymanie surowcowe 43 budynki x 4 poziomy x 
 
 Wynik testow R4: fmt OK; clippy --all-targets -D warnings OK; lib 22/0; cargo test per binarka (324 plikow tests/ w 7 partiach) 0 failed, 1 ignored (istniejacy `p6_order_lane.rs`), 0 nowych #[ignore].
 Sekcja 3 powyzej (lista czerwonych testow z r2) jest NIEAKTUALNA: wszystkie te binarki sa zielone.
+
+## 5. Obrona Operatora na zarzuty Evaluatora r4 (Haiku, odtworzenie stanu z 849ed10aa)
+
+| Zarzut | Decyzja | Dowod / dzialanie |
+|---|---|---|
+| Z-R4-1 odstepstwo: wektory q5/q6/empirefood/order_lane z hybrydy (pin hybrid2 + nakladka), nie z czystego weba 638e90bea | PRZYJMUJE jako odstepstwo; decyzja orkiestratora | §2 i §4; czysta regeneracja z 638e90bea daje czerwien poza zakresem (4 pozycje dlugu). Nie zmieniano wektorow w obronie. |
+| `tests/building_costs.rs` poza ratyfikowana allowlista | PRZYJMUJE; prosba o ratyfikacje | `git diff --name-only 43f4064b0 849ed10aa`; zmiana konieczna do 0 failed (§2, Z-R4-2). |
+| Sekcje 2 i 3 dokumentu nieaktualne | PRZYJMUJE i NAPRAWIONO | §2 i §3 przepisane; dodatkowo poprawiono liczbe przypadkow upkeep (792 -> 860 wg `web.json` `upkeep`). |
+| Zalozenie `civBonusy` (Rust trzyma pole usuniete w webie) | PRZYJMUJE jako dlug formatu | `rust-port/engine/src/domain/player.rs:298`; `tests/p6_1b_playerstate.rs:149-152`. Zmiana formatu zapisu = osobny temat (§2, Z-R4-5). |
+| Baseline 43f4064b0 NIE_ZMIERZONO | PRZYJMUJE i ZMIERZONO | `git archive 43f4064b0 rust-port`, ten sam tryb cargo; 11 celowanych binarek + lib: 0 failed, 1 ignored (istniejacy). Lista w §3. |
+
+Zadnego zarzutu nie odrzucono. Kod src/data nie zmieniany w tej rundzie.
