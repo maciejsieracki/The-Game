@@ -9682,3 +9682,15 @@ Przełącznikwłącz/wyłączmiejskiebudynkiprodukującesurowce. Wyłączeniewst
 STATUS: OTWARTE
 DOMAIN: GAME
 PanelRekrutacjacałacywilizacja: limitilości/wyraźnyczerwonybrakprzybrakuzasobów, wspólnakontrolakosztukoszyka, blokadaniedostępnejrekrutacji. Dodatkowopodsumowaniepertypisumaryczniejużrekrutowanych(wkolejkach) iosobnowybranychdozamówienia. Zarejestrowane w `autobot/runs/R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1/00-dispatch.md`, max4aktywnetematynadalobowiązuje.
+
+## 2026-11-11 — R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+Automatyczna budowa ma wymagać Administratora. Powiązanie z Ratuszem było propozycją asystenta, nie zatwierdzoną decyzją właściciela. Do ustalenia budynek i zakres automat budynków/ulepszeń. Dispatch `autobot/runs/R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1/00-dispatch.md`; brak operatora do czasu rozstrzygnięcia.
+
+## 2026-11-11 — uzupełnienie audytu zgłoszeń / stan po przeglądzie czatu
+- R-WEB-CAVALRY-IRON-ONLY-Q1: rozszerzenie właściciela obejmuje WSZYSTKIE jednostki Żelaza po Sztuce wojennej, w tym Katapultę; operator działa. Nie dodawać wymogu Akademii bez decyzji.
+- R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1 [related_to R-WEB-CAVALRY-IRON-ONLY-Q1]: ponowne zgłoszenie widocznej rekrutacji machin. Bieżąca bramka27/27PASS, produkcja miejska i Zastąp wykluczają Siege; operator konnicy audytuje wszystkie ścieżki. Budowa jedynie podczas aktywnego oblężenia pozostaje regułą. Brak dowodu pozwalającego uznać zgłoszenie za naprawione ponownie.
+- R-WEB-BRONZE-OUTPUT-50-75-Q1: zamknięte11/11, FALA618/push4919be9dc, receipt90-release-618.json. Zastępuje historyczne25/50.
+- R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1: audyt90c485a1c na origin/codex/work-pool, brak potwierdzonego dublowania. Zgodny bilans możliwy przez idle/completion zwroty; potrzebny zapis/stan jednej tury. Operator przeniesiony do limitów rekrutacji; temat nie jest naprawiony ani aktywnie poprawiany.
+- R-WEB-AI-BRONZE-STOCK-EXCESS-Q1: audyt nie potwierdził błędu, 24818 poniżej limitów; brak historii zapasu/zapisu. Nie działa operator poprawki bez reprodukcji.
