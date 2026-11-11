@@ -1002,6 +1002,11 @@ export interface City {
    * administratora. Logika: `city-administrator.ts`; tier liczony z budynków, nie zapisywany.
    */
   administrator?: CityAdministrator;
+  /**
+   * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ULEPSZEŃ (max 1) — bez bonusów; odblokowuje wyłącznie
+   * automatyczne ulepszenia terenu w tym mieście. Brak pola (stary zapis) = brak administratora ulepszeń.
+   */
+  administratorUlepszen?: CityAdministrator;
   /** Stan Wealth per miasto (D3). */
   wealthState?: WealthState;
   /** Skumulowana kultura miasta (UI / playtest). */

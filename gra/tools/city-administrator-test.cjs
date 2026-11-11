@@ -222,7 +222,7 @@ ok(/'ok' \| 'idle' \| 'off'/.test(icon) && /civ-adm-ic-warn/.test(icon) && /impr
   const body = i > 0 ? main.slice(i, i + 1600) : '';
   ok(/pendingAdministratorChanges\.(set|get)\(/.test(body) && /if \(notify\)/.test(body) && /for \(const ch of pendingAdministratorChanges\.values\(\)\) noteAdministratorChange\(ch\)/.test(body),
     'main.ts: zmiany z cichych odświeżeń kumulowane i zgłaszane przy najbliższym notify=true');
-  ok(/pendingAdministratorChanges\.delete\(ch\.city\.id\)/.test(body), 'main.ts: nie pracuje → wrócił (lub odwrotnie) w jednej turze znosi się (brak fałszywego powiadomienia)');
+  ok(/pendingAdministratorChanges\.delete\(pKey\)/.test(body), 'main.ts: nie pracuje → wrócił (lub odwrotnie) w jednej turze znosi się (brak fałszywego powiadomienia)');
   const refreshLive = main.slice(main.indexOf('function refreshLiveEmpireRatesUnsafe'), main.indexOf('function refreshLiveEmpireRatesUnsafe') + 300);
   ok(/refreshCityAdministrators\(false\)/.test(refreshLive), 'main.ts: podgląd HUD odświeża administratorów po cichu (kolejka powiadomień zachowuje zmianę)');
   ok(/pendingAdministratorChanges\.clear\(\)/.test(main.slice(main.indexOf('cityAdministratorNoticeShown = saved.meta'), main.indexOf('cityAdministratorNoticeShown = saved.meta') + 600)), 'main.ts: wczytanie zapisu czyści kolejkę (stan zapisu = punkt odniesienia)');

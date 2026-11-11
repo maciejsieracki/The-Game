@@ -53,6 +53,27 @@ export function isCityAutoBuildAllowed(
   return cityHasWorkingAdministrator === true;
 }
 
+/**
+ * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (właściciel 2026-11-11): automatyczne ulepszenia TERENU w mieście gracza
+ * działają WYŁĄCZNIE przy działającym administratorze ulepszeń tego miasta (oprócz globalnej opcji).
+ * Bez niego (albo gdy nie pracuje — brak środków) wszystko ręcznie. AI: tylko gdy `aiRequires` (JSON,
+ * domyślnie false — patrz raport rundy 1).
+ */
+export function isCityAutoImprovementAllowed(
+  ownerId: number,
+  humanOwnerIds: readonly number[],
+  autoBuildEnabled: boolean,
+  cityHasWorkingImprovementAdministrator: boolean,
+  aiRequires: boolean = false,
+): boolean {
+  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, autoBuildEnabled)) return false;
+  if (!isHumanSeatOwner(ownerId, humanOwnerIds) && !aiRequires) return true;
+  return cityHasWorkingImprovementAdministrator === true;
+}
+
+/** Podpowiedź UI: auto-ulepszenia terenu wymagają działającego administratora ulepszeń. */
+export const AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT = 'Auto-ulepszenia terenu w tym mieście wymagają działającego administratora ulepszeń';
+
 /** Podpowiedź UI: autobudowa wymaga działającego administratora miasta. */
 export const AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT = 'Autobudowa w tym mieście wymaga działającego administratora';
 

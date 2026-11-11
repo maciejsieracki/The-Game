@@ -110,7 +110,7 @@ async function testCallSite1TechDiscoveryNotice() {
     plugins: [{
       name: 'stub-icons',
       setup(build) {
-        build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_STUB }));
+        build.onResolve({ filter: /(^|\/)brandAssets$/ }, () => ({ path: BRAND_STUB }));
         build.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: OWL_STUB }));
       },
     }],
@@ -239,7 +239,7 @@ async function testCallSite2BuildModeHud() {
     plugins: [{
       name: 'stub-icons',
       setup(build) {
-        build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_STUB }));
+        build.onResolve({ filter: /(^|\/)brandAssets$/ }, () => ({ path: BRAND_STUB }));
         build.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: OWL_STUB }));
       },
     }],

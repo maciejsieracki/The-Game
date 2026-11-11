@@ -68,6 +68,11 @@ export interface CivTestDeps {
   adminState?: (cityId: string) => unknown;
   /** Zatrudnij administratora jak klik w panelu miasta (koszt ze skarbca). */
   adminHire?: (cityId: string) => boolean;
+  /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (tylko ?civTest=1): administrator ulepszeń (stan / zatrudnij / zwolnij / odśwież). */
+  impAdminState?: (cityId: string) => unknown;
+  impAdminHire?: (cityId: string) => boolean;
+  impAdminDismiss?: (cityId: string) => boolean;
+  impAdminRefresh?: () => void;
   /** Biezaca epoka (imperium) gracza — limit = baza + (epoka-1)*5. */
   meEra: () => number;
   /**
@@ -114,6 +119,10 @@ export interface CivTestApi {
   adminSetup: (cityId: string, builtIds: string[] | null, treasury: number | null, tryb?: string | null, stock?: Record<string, number> | null) => unknown;
   adminState: (cityId: string) => unknown;
   adminHire: (cityId: string) => boolean;
+  impAdminState: (cityId: string) => unknown;
+  impAdminHire: (cityId: string) => boolean;
+  impAdminDismiss: (cityId: string) => boolean;
+  impAdminRefresh: () => void;
   setPolicy: (ownerId: number, patch: CivTestPolicyPatch) => unknown;
   foundCandidates: (limit: number) => Array<{ q: number; r: number }>;
   foundCity: (q: number, r: number) => boolean;
@@ -175,6 +184,10 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     adminSetup: (cityId, builtIds, treasury, tryb, stock) => deps.adminSetup ? deps.adminSetup(cityId, builtIds, treasury, tryb, stock) : null,
     adminState: cityId => deps.adminState ? deps.adminState(cityId) : null,
     adminHire: cityId => deps.adminHire ? deps.adminHire(cityId) : false,
+    impAdminState: cityId => deps.impAdminState ? deps.impAdminState(cityId) : null,
+    impAdminHire: cityId => deps.impAdminHire ? deps.impAdminHire(cityId) : false,
+    impAdminDismiss: cityId => deps.impAdminDismiss ? deps.impAdminDismiss(cityId) : false,
+    impAdminRefresh: () => { deps.impAdminRefresh?.(); },
     setPolicy: (ownerId, patch) => { deps.setUlepszeniaPolicy(ownerId, patch); return deps.getUlepszeniaPolicy(ownerId); },
     foundCandidates: limit => deps.foundCandidates(limit),
     foundCity: (q, r) => deps.foundPlayerCity(q, r),

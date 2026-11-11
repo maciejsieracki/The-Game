@@ -19,5 +19,12 @@
   "ai": {
     "rezerwa_tur_utrzymania": 3
   },
+  "administrator_ulepszen": {
+    "_opis": "R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (decyzja właściciela ABC 2026-11-11): ten sam koszt co administrator miasta, ale BEZ bonusów i dodatków; jedyny skutek = odblokowuje automatyczne ulepszenia terenu w danym mieście. Utrzymanie = stawka tieru I administratora miasta (założenie: administrator ulepszeń nie ma budynku administracyjnego, więc nie ma tieru).",
+    "koszt_zatrudnienia_pieniadz": 40,
+    "utrzymanie_pieniadz_na_ture": 2,
+    "ai_wymaga_administratora": false,
+    "opis_gracza": "Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie."
+  },
   "opis_gracza": "Administrator miasta zmniejsza korupcję, podnosi produkcję i ściągalność podatków miasta oraz jako jedyny pozwala na automatyczną budowę budynków w tym mieście. Utrzymanie płaci skarbiec państwa."
 }

@@ -1433,7 +1433,18 @@ import {
   refreshAdministratorState,
   totalAdministratorUpkeepIfAllWorkForOwner,
   type AdministratorChange,
+  aiRequiresImprovementAdministrator,
+  cityHasImprovementAdministrator,
+  cityHasWorkingImprovementAdministrator,
+  dismissImprovementAdministrator,
+  hireImprovementAdministrator,
+  improvementAdministratorHireBlockReason,
+  improvementAdministratorHireBlockText,
+  improvementAdministratorHireCost,
+  improvementAdministratorUpkeep,
+  improvementAdministratorDescription,
 } from './game/city-administrator';
+import { isCityAutoImprovementAllowed } from './game/auto-build-gate';
 import { isAutoBuildAllowedForOwner, isCityAutoBuildAllowed, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
 import { fogRevealKeyFFromNewGameParam, fogRevealKeyFFromSaveMeta, isFogRevealKeyFActive, FOG_REVEAL_KEY_F_DEFAULT } from './game/fog-reveal-key-f';
 import {
@@ -10099,6 +10110,16 @@ async function boot(): Promise<void> {
       );
     }
     /**
+     * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: bramka auto-ulepszeń TERENU dla konkretnego miasta — globalna opcja
+     * (gracz) ORAZ działający administrator ulepszeń miasta. AI: tylko gdy JSON `ai_wymaga_administratora`.
+     */
+    function isCityAutoImprovementActive(city: City): boolean {
+      return isCityAutoImprovementAllowed(
+        city.ownerId, humanSeats.humanOwnerIds, autoBuildEnabled,
+        cityHasWorkingImprovementAdministrator(city), aiRequiresImprovementAdministrator(),
+      );
+    }
+    /**
      * R-WEB-CITY-ADMINISTRATOR-Q1: migracja — stare zapisy z włączoną automatyzacją nie mogą po cichu
      * przestać działać: JEDNORAZOWE powiadomienie (flaga `meta.cityAdministratorNoticeShown`).
      * Nowa gra startuje z flagą = true (nic do migrowania).
@@ -10107,7 +10128,7 @@ async function boot(): Promise<void> {
     /** R-WEB-CITY-ADMINISTRATOR-Q1: wpis w „Ważne” o zmianie stanu administratora (tylko gracz). */
     function noteAdministratorChange(ch: AdministratorChange): void {
       if (!isHuman(ch.city.ownerId)) return;
-      const evId = `city-admin-${ch.kind}-${ch.city.id}-${turn}`;
+      const evId = `city-admin-${ch.role}-${ch.kind}-${ch.city.id}-${turn}`;
       if (warEventLog.some(e => e.id === evId)) return;
       const text: Record<AdministratorChange['kind'], [string, string]> = {
         ended_no_building: ['Administrator odszedł', `${ch.city.name}: utracono budynek administracyjny — koniec służby administratora.`],
@@ -10115,7 +10136,13 @@ async function boot(): Promise<void> {
         stopped_no_funds: ['Administrator nie pracuje', `${ch.city.name}: brak środków w skarbcu państwa na utrzymanie — brak bonusów i autobudowy, dopóki skarbiec nie pokryje utrzymania.`],
         resumed: ['Administrator wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora.`],
       };
-      const [title, subtitle] = text[ch.kind];
+      const textImp: Record<AdministratorChange['kind'], [string, string]> = {
+        ended_no_building: ['Administrator ulepszeń odszedł', `${ch.city.name}: koniec służby administratora ulepszeń.`],
+        ended_owner_changed: ['Administrator ulepszeń odszedł', `${ch.city.name}: miasto zmieniło właściciela — koniec służby administratora ulepszeń.`],
+        stopped_no_funds: ['Administrator ulepszeń nie pracuje', `${ch.city.name}: brak środków w skarbcu państwa na utrzymanie — auto-ulepszenia terenu wstrzymane, dopóki skarbiec nie pokryje utrzymania.`],
+        resumed: ['Administrator ulepszeń wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora ulepszeń.`],
+      };
+      const [title, subtitle] = (ch.role === 'ulepszenia' ? textImp : text)[ch.kind];
       warEventLog.unshift({ id: evId, icon: 'A', title, subtitle, kind: 'enemy', turnCreated: turn });
       trimWarEventLog();
     }
@@ -10132,12 +10159,13 @@ async function boot(): Promise<void> {
       // akcja zatrudnienia). Przejście „nie pracuje” → „wrócił” (albo odwrotnie) w obrębie jednej tury znosi
       // się (brak fałszywego powiadomienia); koniec służby zawsze wygrywa.
       for (const ch of changes) {
-        const prev = pendingAdministratorChanges.get(ch.city.id);
+        const pKey = `${ch.role}:${ch.city.id}`;
+        const prev = pendingAdministratorChanges.get(pKey);
         const ended = ch.kind === 'ended_no_building' || ch.kind === 'ended_owner_changed';
         if (!ended && prev && (prev.kind === 'stopped_no_funds' || prev.kind === 'resumed') && prev.kind !== ch.kind) {
-          pendingAdministratorChanges.delete(ch.city.id);
+          pendingAdministratorChanges.delete(pKey);
         } else {
-          pendingAdministratorChanges.set(ch.city.id, ch);
+          pendingAdministratorChanges.set(pKey, ch);
         }
       }
       if (notify) {
@@ -10190,6 +10218,46 @@ async function boot(): Promise<void> {
         hireCost: administratorHireCost(),
         blockReasonText: reason ? administratorHireBlockText(reason) : null,
         effects,
+      };
+    }
+    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: zatrudnij administratora ulepszeń gracza (koszt ze skarbca państwa). */
+    function hireImprovementAdministratorForPlayer(cityId: string): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !isHuman(city.ownerId)) return false;
+      const treasury = ownerTreasury(city.ownerId);
+      if (!hireImprovementAdministrator(city, treasury, turn)) {
+        const reason = improvementAdministratorHireBlockReason(city, treasury);
+        if (reason) showHintMessage(improvementAdministratorHireBlockText(reason), 3500);
+        return false;
+      }
+      setOwnerTreasury(city.ownerId, treasury - improvementAdministratorHireCost());
+      refreshCityAdministrators(true);
+      updateHud();
+      showHintMessage(`Zatrudniono administratora ulepszeń: ${city.name} (−${improvementAdministratorHireCost()} Pieniądza)`, 3000);
+      return true;
+    }
+    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: zwolnij administratora ulepszeń gracza (bez zwrotu kosztu). */
+    function dismissImprovementAdministratorForPlayer(cityId: string): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !isHuman(city.ownerId)) return false;
+      if (!dismissImprovementAdministrator(city)) return false;
+      updateHud();
+      showHintMessage(`Zwolniono administratora ulepszeń: ${city.name}`, 3000);
+      return true;
+    }
+    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stan administratora ulepszeń miasta dla UI panelu ulepszeń. */
+    function improvementAdministratorUiState(cityId: string) {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) return null;
+      const hired = cityHasImprovementAdministrator(city);
+      const reason = hired ? null : improvementAdministratorHireBlockReason(city, ownerTreasury(city.ownerId));
+      return {
+        hired,
+        working: cityHasWorkingImprovementAdministrator(city),
+        upkeep: improvementAdministratorUpkeep(),
+        hireCost: improvementAdministratorHireCost(),
+        blockReasonText: reason ? improvementAdministratorHireBlockText(reason) : null,
+        description: improvementAdministratorDescription(),
       };
     }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: AI (parytet): zatrudnia, gdy stać i ma budynek administracyjny; płaci ze skarbca państwa. */
@@ -26754,6 +26822,10 @@ async function boot(): Promise<void> {
           listPlayerCities: () =>
             cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, name: c.name })),
           isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
+          // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń w panelu ulepszeń (rekrutacja/zwolnienie).
+          getImprovementAdministratorState: (cityId: string) => improvementAdministratorUiState(cityId),
+          onHireImprovementAdministrator: (cityId: string) => hireImprovementAdministratorForPlayer(cityId),
+          onDismissImprovementAdministrator: (cityId: string) => dismissImprovementAdministratorForPlayer(cityId),
           getUlepszeniaCityId: () => ensureUlepszeniaHudCityId(),
           onUlepszeniaCityIdChange: (cityId: string) => {
             ulepszeniaHudCityId = cityId;
@@ -29423,6 +29495,14 @@ async function boot(): Promise<void> {
         return { ...cityAdministratorUiState(cityId), queueLen: (cityProd.get(cityId)?.kolejka.length ?? 0), prod: cityProd.get(cityId) ?? null, tryb: c?.budowaTryb ?? null, treasury: c ? ownerTreasury(c.ownerId) : null, built: cityBuilt.get(cityId) ?? [] };
       },
       adminHire: cityId => hireCityAdministratorForPlayer(cityId),
+      // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (tylko ?civTest=1): administrator ulepszeń — REALNA logika gry.
+      impAdminState: cityId => {
+        const c = cities.find(x => x.id === cityId);
+        return { ...improvementAdministratorUiState(cityId), treasury: c ? ownerTreasury(c.ownerId) : null, raw: c?.administratorUlepszen ?? null };
+      },
+      impAdminHire: cityId => hireImprovementAdministratorForPlayer(cityId),
+      impAdminDismiss: cityId => dismissImprovementAdministratorForPlayer(cityId),
+      impAdminRefresh: () => { refreshCityAdministrators(false); },
       meEra: () => empireEpochForOwner(ME()),
       setCityWorkers: (cityId, keys) => {
         const city = cities.find(c => c.id === cityId);
@@ -40010,6 +40090,8 @@ async function boot(): Promise<void> {
                   if (c.ownerId !== hOid) return false;
                   // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bramka auto-ulepszeń terenu gracza.
                   if (!isAutoBuildAllowedFor(hOid)) return false;
+                  // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: tylko miasta z DZIAŁAJĄCYM administratorem ulepszeń.
+                  if (!isCityAutoImprovementActive(c)) return false;
                   return effectiveUlepszeniaForCity(c).tryb === 'auto';
                 });
                 const hOidPracaPool = ownerPracaPool(hOid);
@@ -47082,6 +47164,22 @@ async function boot(): Promise<void> {
       pendingAdministratorChanges.clear();
       if (!cityAdministratorNoticeShown) {
         cityAdministratorNoticeShown = true;
+        // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stary zapis z włączoną automatyzacją i miastami w auto-ulepszeniach
+        // terenu bez administratora ulepszeń — jednorazowe powiadomienie (nie wolno po cichu wyłączyć).
+        const affectedImp = cities.filter(c => isHuman(c.ownerId)
+          && autoBuildEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto' && !cityHasWorkingImprovementAdministrator(c));
+        if (affectedImp.length > 0) {
+          warEventLog.unshift({
+            id: `city-impadmin-migration-${turn}`,
+            icon: 'A',
+            title: 'Auto-ulepszenia terenu wymagają administratora ulepszeń',
+            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${affectedImp.length} miast bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
+            kind: 'enemy',
+            turnCreated: turn,
+          });
+          trimWarEventLog();
+          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem ulepszeń — ${affectedImp.length} miast bez niego (patrz „Ważne”)`, 6000);
+        }
         const affected = cities.filter(c => isHuman(c.ownerId)
           && autoBuildEnabled && isAutoBudowaTryb(c.budowaTryb) && !cityHasWorkingAdministrator(c));
         if (affected.length > 0) {
