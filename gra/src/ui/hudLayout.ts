@@ -2,6 +2,16 @@
  * hudLayout.ts — jedno źródło prawdy dla marginesów HUD mapy i miasta (mockup 1E, FALA 60).
  */
 
+/**
+ * Warstwy stałych kontrolek mapy (toolbar ikon, zoom/pełny ekran, minimapa).
+ * Kontrolki leżą POD każdym panelem rozwijanym (listy Dyplomacji/Nauki/Civpedii, panel
+ * imperium, panele miasta, okna modalne — wszystkie >= 311), żeby nie przykrywały treści
+ * paneli. Toast/tooltip mają z-index wyższy niż panele. Nie dopisuj tu kolejnych liczb —
+ * kontrolka mapy używa Z_MAP_CONTROLS, panel rozwijany >= Z_MAP_CONTROLS_MAX_BELOW_PANELS + 1.
+ */
+export const Z_MAP_CONTROLS = 309;
+export const Z_MAP_CONTROLS_MAX_BELOW_PANELS = 310;
+
 // MAPA (mockup HUD Mapy 1E)
 export const HUD_EDGE_PX = 20;
 export const HUD_TOP_PX = 16;
