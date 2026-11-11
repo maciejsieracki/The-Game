@@ -375,7 +375,10 @@ fn ticks_v2_match_web() {
                 .and_then(|m| m.iter().find(|(kk, _)| *kk == k).map(|(_, v)| *v))
                 .unwrap_or(true)
         };
-        let loser_fn = |w: i64, l: i64, covered: f64| -> Option<f64> {
+        let loser_fn = |w: i64, l: i64, kind: AiPeaceKind, covered: f64| -> Option<f64> {
+            // NIE_ZMIERZONO: wektory generatora maja jeden rodzaj na pare (klucz `w-l`), wiec ta domkniecie
+            // ignoruje `kind`; zaleznosc bilansu od rodzaju (basePn) nie jest pokryta wektorami.
+            let _ = kind;
             let k = format!("{w}-{l}");
             loser_shapes
                 .iter()
@@ -422,7 +425,7 @@ fn ticks_v2_match_web() {
                 loser_balance_for: if loser_shapes.is_empty() {
                     None
                 } else {
-                    Some(&loser_fn as &dyn Fn(i64, i64, f64) -> Option<f64>)
+                    Some(&loser_fn as &dyn Fn(i64, i64, AiPeaceKind, f64) -> Option<f64>)
                 },
             };
             let mut pays: Vec<(i64, i64, f64)> = Vec::new();

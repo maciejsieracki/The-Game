@@ -266,10 +266,15 @@ pub struct AiPeaceDecisionInput<'a> {
     pub limit: Option<f64>,
 }
 
-/// Web `decideAiPeaceRequest`:
+/// Web `decideAiPeaceRequest` (wariant V1, BEZ reguly bilansu AI<->AI):
 /// - po limicie tur od prosby -> `Force` (zawsze),
 /// - przed limitem: bramka != ok -> `Wait`; bilans po zaplacie >= -tolerancja (lub plan pelny) -> `AcceptPaid`,
 /// - inaczej `Wait`.
+///
+/// Uwaga: ta funkcja nie zna minimum bilansu AI<->AI, wiec po limicie zwraca `Force` takze przy ujemnym
+/// bilansie. Wywolujacy, ktory chce regule nieujemnego bilansu, MUSI uzyc `decide_ai_peace_request_v2`
+/// (bilans przed limitem) albo sprawdzic `is_ai_ai_peace_balance_allowed` przed wywolaniem tej funkcji
+/// (tak robi obejscie w `war_turn_ai_ai.rs::run_ai_ai_peace_turn`).
 pub fn decide_ai_peace_request(inp: &AiPeaceDecisionInput) -> AiPeaceDecision {
     let limit = inp.limit.unwrap_or(AI_PEACE_TURNS_AFTER_REQUEST);
     let turns_since = turns_since_peace_request(inp.req, inp.turn);
@@ -525,9 +530,10 @@ pub struct AiPeaceTickEnvV2<'a> {
     pub base: AiPeaceTickEnv<'a>,
     /// Web `peaceAllowed(loser, winner)`; `None` = brak pola w TS (zawsze dozwolone).
     pub peace_allowed: Option<&'a dyn Fn(i64, i64) -> bool>,
-    /// Web `loserBalanceFor(coveredPn)` z `price(winner, loser, kind)`, z parametrem para (winner, loser, covered).
+    /// Web `loserBalanceFor(coveredPn)` z `price(winner, loser, kind)`: argumenty (winner, loser, kind, covered),
+    /// `kind` = rodzaj prosby pary (web wiaze `kind` w zamknieciu `price`, bo `basePn` zalezy od rodzaju).
     /// Zwraca `None` gdy web zwraca `undefined` (wtedy bilans przegranego nie jest sprawdzany).
-    pub loser_balance_for: Option<&'a dyn Fn(i64, i64, f64) -> Option<f64>>,
+    pub loser_balance_for: Option<&'a dyn Fn(i64, i64, AiPeaceKind, f64) -> Option<f64>>,
 }
 
 /// Wynik ticka wariantu V2 (decyzja V2; `plan`/`decision` puste dla dropow i bramki `peaceAllowed`).
@@ -543,7 +549,7 @@ pub struct AiPeaceTickOutcomeV2 {
 /// Flagi wspolnego rdzenia ticka: wariant V1 (bez regul V2) i V2 roznia sie tylko tymi polami.
 struct TickFlags<'a> {
     peace_allowed: Option<&'a dyn Fn(i64, i64) -> bool>,
-    loser_balance_for: Option<&'a dyn Fn(i64, i64, f64) -> Option<f64>>,
+    loser_balance_for: Option<&'a dyn Fn(i64, i64, AiPeaceKind, f64) -> Option<f64>>,
     balance_rule: bool,
 }
 
@@ -653,7 +659,7 @@ fn run_tick_core(
         let decision = if flags.balance_rule {
             let loser_after = flags
                 .loser_balance_for
-                .and_then(|f| f(winner, loser, plan.covered_pn));
+                .and_then(|f| f(winner, loser, kind, plan.covered_pn));
             decide_ai_peace_request_v2(&AiPeaceDecisionInputV2 {
                 base: input,
                 loser_balance_after_pn: loser_after,
