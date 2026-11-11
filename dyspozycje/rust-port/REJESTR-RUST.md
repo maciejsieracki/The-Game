@@ -80,3 +80,9 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - W toku: W8 PIPELINE (wariant B, kolejność Rust), dispatch `2c8f75471`, Operator od 20:41 (`wf_d483df74`).
 - Sloty: 1/4 aktywny. Dysk 20 GB wolnego.
 - DECISION_REQUIRED: brak nowych decyzji gameplay poza zatwierdzonym wariantem B dla W8.
+
+## Decyzje techniczne orkiestratora (2026-11-11, noc)
+- BORDER-WIRING (zadanie 7): dispatch miał fałszywą przesłankę; w `ai_diplomacy_turn.rs` nie ma budowy `TickContext`, a `tick_pairs_relation_scores`, `run_brake_phase` i `shared_border_penalty_for_epochs` nie mają produkcyjnego wołającego. Wariant (c): wiring przechodzi do W8 (pętla tury). W8 r2 musi budować `TickContext` z `common_border_delta = shared_border_penalty_for_epochs(epoka obu stron)`. Temat zamknięty jako zależność do W8. Gałąź: `rust-port-wip/BORDER-WIRING-*`.
+- Sygnatura `run_war_turn`: struktura kontekstu `WarTurnContext` zamiast `(world, state, turn)` (advance_turn nie wykonuje efektów faz).
+- Kolejność integracji: W7 → REPLAY-DESER (FC PASS `964e44f58`) → SAVESNAPSHOT r2 (kolizja w `replay.rs`, runda integracyjna Operatora).
+- W8: blokada = baza bez W7; po integracji W7 start r2.
