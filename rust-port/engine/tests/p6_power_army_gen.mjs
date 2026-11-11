@@ -144,7 +144,7 @@ function randomDef() {
   } else if (roll < 0.7) {
     d.fieldPower = web.fieldPower(d).total;
   } else {
-    d.fieldPower = pick([4, 17.5, 0, 99.25]);
+    d.fieldPower = pick([4, 17.5, 0, 99.25, NaN, Infinity, -Infinity]);
   }
   return d;
 }
@@ -175,6 +175,10 @@ for (let i = 0; i < 80; i++) {
   const def = randomDef();
   armyFieldCases.push({ def, expect: web.armyFieldPower(def) });
 }
+
+// ---- armyFieldPower na REALNYCH rekordach units.json z pinu (bez losowania; rekord surowy jak w pliku) ----
+const realUnits = JSON.parse(read(path.join(WEB_ROOT, 'gra', 'data', 'units.json')));
+const armyFieldRealCases = realUnits.map(rec => ({ rec, expect: web.armyFieldPower(rec) }));
 
 // ---- terytorium: countTerritoryHexes(statsTerritoryNodesForOwner(owner)) ----
 const terrCases = [];
@@ -219,6 +223,7 @@ const out = {
     'gra/src/game/okolica.ts (hexKeysWithinRadius), gra/src/map/territory.ts (cityTerritoryRadius), ' +
     'gra/src/game/fort-territory.ts (foundingNodesForOwner)',
   armyField: armyFieldCases,
+  armyFieldReal: armyFieldRealCases,
   armia: armiaCases,
   terytorium: terrCases,
 };

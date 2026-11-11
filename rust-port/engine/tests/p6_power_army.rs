@@ -2,6 +2,7 @@
 //! web (07d2fbd72f758705f8e1d59cc4968027ffbafe75), generowane przez tests/p6_power_army_gen.mjs
 //! (wykonanie wycietych funkcji weba, nie reczne asercje).
 
+use civ_engine::data::units_combat::UnitRecord;
 use civ_engine::domain::brake_power_army::{
     armia_for_owner, army_field_power, count_territory_hexes, sum_army_m_for_owner,
     territory_hexes_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
@@ -70,7 +71,8 @@ fn def_from(d: &Value) -> ArmyUnitDef {
             jednostka: str_field(d, "Jednostka"),
         },
         rola_linia: str_field(d, "Rola (linia)"),
-        field_power_cache: d.get("fieldPower").and_then(Value::as_f64),
+        // NaN / +-Infinity jako napisy (f); brak pola = None (web: typeof !== 'number').
+        field_power_cache: d.get("fieldPower").map(f),
     }
 }
 
@@ -83,9 +85,43 @@ fn army_field_power_matches_web_pin() {
     let c = coeffs();
     let all = cases("armyField");
     assert!(all.len() >= 80, "za malo przypadkow armyField");
+    // Pokrycie galezi cache: niefinityczne wartosci cache musza wystapic w wektorach.
+    for lit in ["NaN", "Infinity", "-Infinity"] {
+        assert!(
+            all.iter()
+                .any(|c| c["def"]["fieldPower"].as_str() == Some(lit)),
+            "brak przypadku armyField z cache {lit}"
+        );
+    }
     for (idx, case) in all.iter().enumerate() {
         let got = army_field_power(&def_from(&case["def"]), &c);
         assert_same(got, f(&case["expect"]), &format!("armyField[{idx}]"));
+    }
+}
+
+/// Realne rekordy units.json z pinu (75 wpisow, surowe JSON w wektorze): `ArmyUnitDef::from_unit_record`
+/// (sciezka produkcyjna) musi dawac te sama definicje co mapowanie JSON-u uzyte w wektorach, a
+/// `army_field_power` te sama wartosc co web `armyFieldPower(rekord)`.
+#[test]
+fn real_unit_records_match_web_pin() {
+    let c = coeffs();
+    let all = cases("armyFieldReal");
+    assert_eq!(all.len(), 75, "liczba rekordow units.json z pinu");
+    for (idx, case) in all.iter().enumerate() {
+        let rec: UnitRecord = serde_json::from_value(case["rec"].clone())
+            .unwrap_or_else(|e| panic!("realny[{idx}] nie parsuje sie jako UnitRecord: {e}"));
+        let def = ArmyUnitDef::from_unit_record(&rec);
+        assert_eq!(
+            def,
+            def_from(&case["rec"]),
+            "realny[{idx}] {}: from_unit_record != mapowanie JSON",
+            rec.jednostka
+        );
+        assert_same(
+            army_field_power(&def, &c),
+            f(&case["expect"]),
+            &format!("realny[{idx}] {}", rec.jednostka),
+        );
     }
 }
 
