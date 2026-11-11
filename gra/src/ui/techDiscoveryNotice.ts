@@ -54,6 +54,7 @@ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandA
 import type { ImprovementKey } from '../render/improvements';
 import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
+import { yieldSentenceFields } from './entityCards/resourceRows';
 import { techCardContentOf, cmzSentence, isDeadTechCardBuilding } from './entityCards/technologyAdapter';
 import { hiddenTechEffectNames } from './entityCards/techDeadEffects';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
@@ -588,7 +589,20 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
   // dopinamy `linkTo` TU, na już zbudowanych danych, żeby otwierały tę samą kartę co
   // pozostałe 2 miejsca wywołania (`openEntityCard('improvement', key, {mode:'dialog'})`).
   // `IMPROVEMENT_NAME_TO_KEY` (góra pliku) — ten sam mostek nazwa→klucz co reszta pliku.
-  const sectionsWithImprovementLinks = cardData.sections.map((section) => {
+  // R-WEB-UI-RESOURCE-ICONS-TECH-DISCOVERY-NOTICE-Q1: zdania „Top 5 korzyści” (`tech-cards-top5.json`)
+  // trafiają do adaptera jako zwykły `value` — bez tokenizacji plony/surowce („żywność, Pracę i podatek”)
+  // zostawałyby gołymi nazwami. Ta sama tokenizacja co wiersze „Co możesz teraz zrobić” (`yieldSentenceFields`).
+  // Tekst `value` zostaje (rezerwa); `valueParts` niesie chipy ikona+liczba.
+  const sectionsWithYieldChips = cardData.sections.map((section) => {
+    if (section.key !== 'top5') return section;
+    return {
+      ...section,
+      rows: section.rows.map((row) => (typeof row.value === 'string'
+        ? { ...row, ...yieldSentenceFields(row.value) }
+        : row)),
+    };
+  });
+  const sectionsWithImprovementLinks = sectionsWithYieldChips.map((section) => {
     if (section.key !== 'improvements') return section;
     return {
       ...section,
