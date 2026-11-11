@@ -128,13 +128,14 @@ fn gate_blocked_set_checks_both_declaration_orders() {
 }
 
 #[test]
-fn contacts_exclude_player_and_are_sorted() {
+fn contacts_mirror_web_discovered_set_sorted_without_extra_filter() {
+    // Web zwraca zbior bez filtra; wykluczenie gracza jest po stronie zrodla (computeDiplomaticContacts).
     let discovered = BTreeSet::from([3, 0, 2, 1]);
-    assert_eq!(contacts_for(0, &discovered), vec![1, 2, 3]);
+    assert_eq!(contacts_for(&discovered), vec![0, 1, 2, 3]);
 }
 
 #[test]
-fn phase_owners_mark_player_and_drop_ineligible_inputs() {
+fn phase_owners_mark_player_and_fail_on_missing_facts() {
     let ids = [0, 1, 2, 3];
     let mut f = BTreeMap::new();
     let base = OwnerFacts {
@@ -152,8 +153,10 @@ fn phase_owners_mark_player_and_drop_ineligible_inputs() {
             ..base
         },
     );
-    // Owner 3 nie ma faktow -> pominiety.
-    let owners = phase_owners(0, &ids, &f);
+    // Owner 3 nie ma faktow -> jawny blad (nie cicha utrata wlasciciela).
+    let err = phase_owners(0, &ids, &f).expect_err("brak faktow musi byc bledem");
+    assert_eq!(err.owner_id, 3);
+    let owners = phase_owners(0, &[0, 1, 2], &f).expect("komplet faktow");
     let got: Vec<(i64, bool)> = owners.iter().map(|o| (o.id, o.info.is_player)).collect();
     assert_eq!(got, vec![(0, true), (1, false), (2, false)]);
     assert_eq!(owners[2].info.city_count, 0.0);

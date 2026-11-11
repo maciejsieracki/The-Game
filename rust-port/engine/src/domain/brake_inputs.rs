@@ -71,6 +71,9 @@ pub fn peace_locked_set(
 }
 
 /// Fakty wlasciciela potrzebne do bramki R1/R2 (web: `empireEpochForOwner`, `countActiveWarsForOwnerExcludingBarbarians`, `isHuman`).
+/// `era` = wynik `empireEpochForOwner` (web: liczba calkowita; f64 bez utraty dla malych wartosci).
+/// `is_player` = `isHuman(victim)` (web l.11642, `targetIsPlayer`) - OSOBNE zrodlo niz `isMe` w
+/// `OwnerFacts`/`phase_owners`; web uzywa obu funkcji w roznych miejscach, port zachowuje to rozdzielenie.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GateFacts {
     pub era: f64,
@@ -123,9 +126,11 @@ pub fn gate_blocked_set(
     out
 }
 
-/// Web `getDiplomaticContacts(ME)` bez gracza: odkryte nacje (kolejnosc rosnaca, bez `me`).
-pub fn contacts_for(me: i64, discovered: &BTreeSet<i64>) -> Vec<i64> {
-    discovered.iter().copied().filter(|&o| o != me).collect()
+/// Web `getDiplomaticContacts(ME)` (main.ts:22523): zwraca zbior `diplomaticallyDiscoveredOwnersSet`
+/// BEZ dodatkowego filtra. Wykluczenie gracza (owner 0) dzieje sie u zrodla: `computeDiplomaticContacts`
+/// (gra/src/game/diplomacy-layers.ts:221) z `playerOwnerId = 0`. Kolejnosc rosnaca (BTreeSet).
+pub fn contacts_for(discovered: &BTreeSet<i64>) -> Vec<i64> {
+    discovered.iter().copied().collect()
 }
 
 /// Fakty wlasciciela do kwalifikacji fazy (web: `isBarbarian`, `typCityCopyOwners`, `eliminatedOwners`, liczba miast).
@@ -137,18 +142,25 @@ pub struct OwnerFacts {
     pub city_count: f64,
 }
 
+/// Brak faktow dla wlasciciela z `allPowerOwnerIds` - blad wolajacego (web: ten przypadek nie wystepuje).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MissingOwnerFacts {
+    pub owner_id: i64,
+}
+
 /// Web `allPowerOwnerIds` + `diploOwnerEligibleForBrake`: lista wlascicieli w kolejnosci wejscia z
-/// informacja `AiAiOwnerInfo`. Wlasciciel bez faktow jest pomijany (web nie ma takiego przypadku).
+/// informacja `AiAiOwnerInfo`. `is_player` = `isMe(id)` (`id == me`). Brak faktu dla wlasciciela z
+/// listy zwraca `Err` zamiast cichego pominiecia (polityka jawna: niekompletne wejscie nie przechodzi).
 pub fn phase_owners(
     me: i64,
     all_owner_ids: &[i64],
     facts: &BTreeMap<i64, OwnerFacts>,
-) -> Vec<PhaseOwner> {
+) -> Result<Vec<PhaseOwner>, MissingOwnerFacts> {
     all_owner_ids
         .iter()
-        .filter_map(|&id| {
-            let f = facts.get(&id)?;
-            Some(PhaseOwner {
+        .map(|&id| {
+            let f = facts.get(&id).ok_or(MissingOwnerFacts { owner_id: id })?;
+            Ok(PhaseOwner {
                 id,
                 info: AiAiOwnerInfo {
                     is_player: id == me,
