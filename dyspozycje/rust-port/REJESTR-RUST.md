@@ -101,3 +101,7 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - Operatorzy (Haiku 5.5, 4/4): UNIT-REPLACE-L1 r2, BRAKE-INPUTS (W8 2/3), SIEGE-TRANSFER (Q2), ZAPIS-SAVELOAD-KOMENTARZ.
 - Kolejka: W8 r3 (po BRAKE-INPUTS i SIEGE-TRANSFER), L-3, siege #217.
 - DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6; 50 rozbieżności pól units.json vs pin (zadanie 27).
+
+## DECISION_REQUIRED (gameplay, 2026-11-11 noc) — UNIT-REPLACE-L1 zaparkowany
+- Temat `R-RUSTPORT-P6-UNIT-REPLACE-L1-Q1` (FC FAIL r2, kod `1ae4ab73c`, FC `987c24944`) stoi na bramce `p6_1d_civ_bonuses` (hash FNV `units.json`). Rust `units.json` różni się od pinu 07d2fbd72 w 50 polach balansu (Tech 27, fieldPower 9, Top3 3, Epoka 2, Historia 2, po 1 w Atak/Obrona/Przebicie/Bonus vs Spearman %/meleeAttack/meleeDefence/piercing).
+- PYTANIE DO WŁAŚCICIELA: A) wyrównać 50 pól `units.json` do pinu (rekomendacja; zmienia wartości jednostek w grze Rust), czy B) hash liczyć z danych Rust (słabsza gwarancja parytetu, dług tymczasowy)? Do czasu odpowiedzi temat zaparkowany; commity: `rust-port-wip/UNIT-REPLACE-L1-r2-*`.
