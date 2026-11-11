@@ -813,6 +813,7 @@ import {
   configureEmpireHandelSplit,
   configureEmpireMassRecruitment,
   configureEmpireGlobalDefaults,
+  configureEmpireProducerToggle,
   resetEmpireMassRecruitmentMessage,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
@@ -1150,6 +1151,7 @@ import {
   villageEventHex,
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
+import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -3707,7 +3709,7 @@ async function boot(): Promise<void> {
         let stolarniaCount = 0;
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
-          if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
+          if (isProductionBuildingEnabled(c, 'stolarnia') && (cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
         }
         const stolarniaBonus = loadThroughput(
           data.econParams as unknown as Parameters<typeof loadThroughput>[0],
@@ -3722,7 +3724,7 @@ async function boot(): Promise<void> {
         let kamieniarskiCount = 0;
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
-          if ((cityBuilt.get(c.id) ?? []).includes('kamieniarski')) kamieniarskiCount++;
+          if (isProductionBuildingEnabled(c, 'kamieniarski') && (cityBuilt.get(c.id) ?? []).includes('kamieniarski')) kamieniarskiCount++;
         }
         const kamieniarskiBonus = loadThroughput(
           data.econParams as unknown as Parameters<typeof loadThroughput>[0],
@@ -3778,7 +3780,8 @@ async function boot(): Promise<void> {
         // (turn-economy.ts::advanceCityEconomy) so the HUD never drifts from the engine.
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
-          const builtIds = cityBuilt.get(c.id) ?? [];
+          // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczony budynek = brak produkcji w liczniku.
+          const builtIds = operationalBuiltIds(c, cityBuilt.get(c.id) ?? []);
           if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
           out[recipe.output] = (out[recipe.output] ?? 0)
             + throughput * recipe.outputAmount * converterOutputMultiplierForEra(recipe.id, era);
@@ -3863,7 +3866,7 @@ async function boot(): Promise<void> {
       // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
       // using the exact same pure primitives the turn engine itself calls (no drift risk).
       const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
-        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, operationalBuiltByCity(cities, cityBuilt), bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
       const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
@@ -5603,6 +5606,12 @@ async function boot(): Promise<void> {
      * `econ.resourceUpkeepBuildingsByOwner`/`UnitsByOwner` — never recomputed here.
      */
     const buildingResourceUpkeepByOwner = new Map<number, Record<string, number>>();
+    /**
+     * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: FAKTYCZNA produkcja konwerterow w OSTATNIO przeliczonej
+     * turze (historia, nie prognoza), per owner -> surowiec -> szt. Brak wpisu = jeszcze nie bylo
+     * przeliczonej tury po nowej grze/wczytaniu (UI pokazuje "brak danych", nie zero).
+     */
+    const converterProducedLastTurnByOwner = new Map<number, Record<string, number>>();
     const unitResourceUpkeepByOwner = new Map<number, Record<string, number>>();
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
@@ -8732,7 +8741,8 @@ async function boot(): Promise<void> {
     }
 
     function buildingUpkeepForCityId(cityId: string, ownerId: number): number {
-      const builtIds = cityBuilt.get(cityId) ?? [];
+      // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczony budynek produkcyjny nie generuje utrzymania.
+      const builtIds = operationalBuiltIds(cities.find(x => x.id === cityId), cityBuilt.get(cityId) ?? []);
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       const era = empireEpochForOwner(ownerId);
       const tech = unlockedTechSetForOwner(ownerId);
@@ -8763,7 +8773,7 @@ async function boot(): Promise<void> {
     }
 
     function buildingResourceUpkeepForCityId(cityId: string, ownerId: number): Record<string, number> {
-      const builtIds = cityBuilt.get(cityId) ?? [];
+      const builtIds = operationalBuiltIds(cities.find(x => x.id === cityId), cityBuilt.get(cityId) ?? []);
       return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty));
     }
 
@@ -19793,7 +19803,37 @@ async function boot(): Promise<void> {
         religion,
         happiness,
         armiaProdukcja,
+        producers: buildEmpireProducersSnap({
+          cities,
+          ownerId: ME(),
+          builtByCity: cityBuilt,
+          era: empireEpochForOwner(ME()),
+          rawParams: data.econParams as unknown as RawConverterParamsJson,
+          difficulty: _menuDifficulty,
+          realizedLastTurn: converterProducedLastTurnByOwner.get(ME()),
+          buildingLabel: id => String(data.buildings.find(b => b.id === id)?.nazwa ?? id),
+        }),
       };
+    }
+
+    /**
+     * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wlacz/wylacz budynek produkcyjny w miescie gracza.
+     * Jedna sciezka dla panelu imperium (i ewentualnie panelu miasta). Stan = `City.wylaczoneBudynki`
+     * (zapisywany z miastem); skutek od najblizszego przeliczenia -- podglad HUD odswiezany od razu.
+     */
+    function setCityProductionBuildingEnabled(cityId: string, buildingId: string, enabled: boolean): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !isMe(city.ownerId)) return false;
+      if (!isToggleableProductionBuilding(buildingId)) return false;
+      if (!(cityBuilt.get(cityId) ?? []).includes(buildingId)) return false;
+      const changed = setProductionBuildingEnabled(city, buildingId, enabled);
+      if (!changed) return false;
+      markCityStateDirty();
+      refreshLiveEmpireRates();
+      updateHud();
+      refreshCityPanelIfOpen();
+      refreshEmpireDetailPanel();
+      return true;
     }
 
     /**
@@ -22143,7 +22183,7 @@ async function boot(): Promise<void> {
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
       _lastBogactwoUtrzymanieJednostek = bogactwoUpkeepPreview.utrzymanieJednostki;
       _lastBogactwoUtrzymanieSurowcow = previewOwnerTotalResourceUpkeep(
-        0, playerCities, data.buildings, cityBuilt,
+        0, playerCities, data.buildings, operationalBuiltByCity(playerCities, cityBuilt),
         playerEconUnitsForUpkeep,
         typeId => data.units.find(u => u.Jednostka === typeId),
         bdef => buildingLevelForOwnerBuilding(bdef, 0),
@@ -27162,6 +27202,9 @@ async function boot(): Promise<void> {
       });
       ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
+      configureEmpireProducerToggle({
+        onToggle: (cityId, buildingId, enabled) => { setCityProductionBuildingEnabled(cityId, buildingId, enabled); },
+      });
       configureEmpireMassRecruitment({
         mountCityRecruitment: (cityId, host) => mountCityRecruitmentCardsForArmy(cityId, host),
         mountGeneralRecruitment: (host) => {
@@ -38801,7 +38844,7 @@ async function boot(): Promise<void> {
               let stolarniaCount = 0;
               for (const c of cities) {
                 if (c.ownerId !== ownerId) continue;
-                if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
+                if (isProductionBuildingEnabled(c, 'stolarnia') && (cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
               }
               const stolarniaBonus = loadThroughput(
                 data.econParams as unknown as Parameters<typeof loadThroughput>[0],
@@ -39014,6 +39057,7 @@ async function boot(): Promise<void> {
               // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
               // Dla KAŻDEGO fotela człowieka (nie tylko `humanOwnerId`) — parytet z AI niżej.
               buildingResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepBuildingsByOwner.get(hOid) ?? {}) });
+              converterProducedLastTurnByOwner.set(hOid, { ...(econ.converterProducedByOwner.get(hOid) ?? {}) });
               unitResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepUnitsByOwner.get(hOid) ?? {}) });
 
               if (hOid === humanOwnerId) {
@@ -39050,6 +39094,7 @@ async function boot(): Promise<void> {
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
               buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });
+              converterProducedLastTurnByOwner.set(oid, { ...(econ.converterProducedByOwner.get(oid) ?? {}) });
               unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });
               // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
               // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść
@@ -43030,7 +43075,7 @@ async function boot(): Promise<void> {
                     let stolarniaCountAi = 0;
                     for (const c of cities) {
                       if (c.ownerId !== ownerId) continue;
-                      if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCountAi++;
+                      if (isProductionBuildingEnabled(c, 'stolarnia') && (cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCountAi++;
                     }
                     const stolarniaBonusAi = loadThroughput(
                       data.econParams as unknown as Parameters<typeof loadThroughput>[0],
@@ -45186,7 +45231,7 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
-      buildingResourceUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();
       unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -45503,7 +45548,7 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
-      buildingResourceUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();
       unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -45757,7 +45802,7 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
-      buildingResourceUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();
       unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -45991,7 +46036,7 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
-      buildingResourceUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();
       unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -46338,7 +46383,7 @@ async function boot(): Promise<void> {
       // wystarcza -- fallback computeCitizenResourceDrain przejmie na wczytanym stanie do
       // czasu pierwszego ticku silnika.
       citizenUpkeepByOwner.clear();
-      buildingResourceUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear(); converterProducedLastTurnByOwner.clear();
       unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);

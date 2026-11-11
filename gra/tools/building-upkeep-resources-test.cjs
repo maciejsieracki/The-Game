@@ -154,7 +154,7 @@ try {
     assert(mainSrc.includes('function buildingLevelForOwnerBuilding('), 'D2: main.ts ma helper poziomu wg epoki/techu wlasciciela (jak tick)');
     assert(mainSrc.includes('buildingResourceUpkeepForBuiltIds(builtIds, data.buildings, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty))'),
       'D3: podglad per miasto z poziomem i wspolczynnikiem');
-    assert(mainSrc.includes('previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt, bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty))'),
+    assert(mainSrc.includes('previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, operationalBuiltByCity(cities, cityBuilt), bdef => buildingLevelForOwnerBuilding(bdef, ownerId), readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty))'),
       'D4: fallback panelu surowcow z poziomem i wspolczynnikiem');
     assert(mainSrc.includes('bdef => buildingLevelForOwnerBuilding(bdef, 0),\n        readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),'),
       'D5: HUD brutto/netto (previewOwnerTotalResourceUpkeep) z poziomem i wspolczynnikiem');
