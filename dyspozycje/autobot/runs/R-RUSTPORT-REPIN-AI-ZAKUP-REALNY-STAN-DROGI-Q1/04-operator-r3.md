@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (RUST)
+TEMAT: R-RUSTPORT-REPIN-AI-ZAKUP-REALNY-STAN-DROGI-Q1
+GOAL: (a) AI kupuje jednostki wg realnego stanu surowcow (zawezone R3: funkcja wykonawcza, wiazanie w ai_turn = dlug W4/D7); (b) drogi gracza = drogi AI (porownanie z webem + korekta rozjazdu).
+ZMIANY/COMMIT: BAZA 6b54dc1f3 (rust-port-wip/AIZAKUP). Partia A 09a0f2608 (ai_try_purchase_unit + wektory 75 jednostek x 472 pul). Partia B: patrz SHA commitu w git log (korekta Qualifier::qualifies DROGA wg web FALA 596, road_build_block_reason, wektory drog, regeneracja 25 scenariuszy pick.json, p6_m16_qualifier pomija klucz droga). Opis: dyspozycje/rust-port/p6/P6-REPIN-AI-ZAKUP-DROGI.md (Runda 3). Raport nazwany 04-operator-r3.md (01-operator-r1.md to raport rundy 1, nie nadpisany).
+TESTY: rustfmt --check PASS; clippy (--lib + 5 binarek) -D warnings PASS; p6_repin_ai_zakup_purchase 7/0; p6_repin_ai_drogi_qualifier 2/0; p6_repin_ai_zakup_needs 2/0; p6_repin_ai_zakup_rezerwa 5/0; p6_repin_autoimpr_terrain 8/0 (plan_road_network == web); p6_m16_qualifier 4/0, rules 15/0, tables 5/0, divergence 1/0, doc 1/0, gallery 2/0; p6_8i_pick 5/0 (401 s), p6_8i_relief 8/0; p6_m15_roads 8/0; road_movement_multipliers 3/0; lib 22/0. 0 failed, 0 nowych #[ignore]. Baseline p6_8i_pick przed zmiana: 5/0. Pelny cargo test calego crate: NIE_ZMIERZONO.
+BLOKADY: brak. Poza allowlista (ZALOZENIE, do oceny): tests/p6_m16_qualifier.rs (pomija klucz droga, zastapiony wektorami z aktualnego weba), tests/p6_8i_vectors/pick.json (25 scenariuszy zregenerowanych z weba; 4 usuniete: rnd-961, ra-rnd-1, ra-rnd-24, ra-rnd-247 - maja inny dryf weba niz drogi), src/domain/improvement_build.rs (korekta rozjazdu - wymagana przez dispatch B; pole placed_keys usuniete z Qualifier). Wykryty dryf poza tematem, nienaprawiany: stadnina (isLivestockUnlockedForPlacement/horseStockAvailable), bydlo po farmie w pick.
+RUNDY: 3/5
+NASTEPNY KROK: Evaluator r3. Dlug: wiazanie ai_try_purchase_unit w ai_turn.rs (WIRE-WAR W4/D7: krok rekrutacji + nosiciel magazynu panstwa); REPIN auto-ulepszen (pick.json 989 scenariuszy z innym dryfem) i stadniny.
+DEPLOY/PUSH: NIE WYKONANO

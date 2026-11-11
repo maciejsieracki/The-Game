@@ -13,6 +13,11 @@ use civ_engine::domain::improvement_build::*;
 use common::*;
 use serde_json::Value;
 
+/// R-RUSTPORT-REPIN-AI-ZAKUP-REALNY-STAN-DROGI-Q1: klucz `droga` w tych wektorach (pin edb8fb56) koduje DAWNA regule
+/// `placedKeys.has(hex)` (web przed FALA 596). Zastapiony wektorami z aktualnego weba:
+/// `p6_repin_ai_drogi_qualifier.rs` (`droga`, `droga_brukowana`, `roadBuildBlockReason`).
+const SUPERSEDED_KEY: &str = "droga";
+
 fn data() -> Value {
     load("qualifier.json")
 }
@@ -38,6 +43,9 @@ fn qualifier_bits_match_web_for_every_key_and_hex() {
             .map(|p| (int(&p[0]), int(&p[1])))
             .collect();
         for key in &keys {
+            if key == SUPERSEDED_KEY {
+                continue;
+            }
             let want = s(&case["qual"][key.as_str()]);
             assert_eq!(want.len(), queries.len());
             let got: String = queries
@@ -80,7 +88,6 @@ fn qualifier_bits_match_web_for_every_key_and_hex() {
         "wyrab",
         "tartak",
         "lodzie_rybackie",
-        "droga",
         "droga_brukowana",
         "posterunek",
         "stadnina",
@@ -116,6 +123,9 @@ fn api_qualifying_hexes_and_work_cost_match_web() {
             case["api"]["has_click"].as_bool().unwrap()
         );
         for key in &keys {
+            if key == SUPERSEDED_KEY {
+                continue;
+            }
             // R2: `qualifying` zawiera KAZDY klucz w kazdym stanie (zarzut 7)
             let want: Vec<(i32, i32)> = arr(&case["api"]["qualifying"], key)
                 .iter()
@@ -133,6 +143,9 @@ fn api_qualifying_hexes_and_work_cost_match_web() {
         }
         for (i, r) in arr(&case["api"], "requests").iter().enumerate() {
             let (key, q, rr) = (s(&r["key"]), int(&r["q"]), int(&r["r"]));
+            if key == SUPERSEDED_KEY {
+                continue;
+            }
             assert_eq!(
                 api.can_build(key, q, rr),
                 r["can_build"].as_bool().unwrap(),
@@ -157,7 +170,7 @@ fn api_qualifying_hexes_and_work_cost_match_web() {
         }
     }
     assert!(
-        checked == arr(&d, "cases").len() * keys.len() && nonempty > 3000,
+        checked == arr(&d, "cases").len() * (keys.len() - 1) && nonempty > 3000,
         "{nonempty} {checked}"
     );
 }
@@ -170,6 +183,9 @@ fn api_hex_click_and_on_select_match_web() {
         let st = state(&case["state"]);
         for (ai, click) in arr(case, "clicks").iter().enumerate() {
             let active = opt_s(&click["active_key"]);
+            if active.as_deref() == Some(SUPERSEDED_KEY) {
+                continue;
+            }
             let api = create_improvement_build_api(&st, active.as_deref());
             let mut calls = 0usize;
             let mut total_calls = 0usize;

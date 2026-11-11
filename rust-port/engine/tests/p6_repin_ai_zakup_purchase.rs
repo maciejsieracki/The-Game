@@ -19,10 +19,10 @@ fn stock_of(v: &Value) -> ResourceStock {
     v.as_object()
         .expect("obiekt puli")
         .iter()
-        .filter_map(|(k, n)| {
+        .map(|(k, n)| {
             // web dopuszcza ujemne ilosci w puli (minus1 przy koszcie 0 nie wystepuje); clamp do 0.
             let n = n.as_f64().expect("liczba");
-            Some((k.clone(), if n < 0.0 { 0 } else { n as u32 }))
+            (k.clone(), if n < 0.0 { 0 } else { n as u32 })
         })
         .collect()
 }

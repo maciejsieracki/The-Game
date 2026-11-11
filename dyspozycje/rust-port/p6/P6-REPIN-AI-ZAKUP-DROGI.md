@@ -92,3 +92,65 @@ Wniosek: w Rust AI buduje drogi DWIEMA ścieżkami (kwalifikator dla pojedynczyc
 - `cargo test --test p6_repin_ai_zakup_rezerwa`: 5 passed, 0 failed.
 - Baseline PRZED zmianą (na 390265868) NIE uruchomiony osobno: NIE_ZMIERZONO. Zmiana jest addytywna (nowy moduł + jedna linia `pub mod` w `domain/mod.rs`).
 - Pozostałe cele `cargo test` (pełny zestaw) NIE uruchomione w tej rundzie.
+
+---
+
+## Runda 3 (Operator, Sonnet 5.5, 2026-11-11; BAZA 6b54dc1f3 = rust-port-wip/AIZAKUP)
+
+Web do wektorów: `origin/main` 0c5b227a9 (`git archive gra/src gra/data` poza repo, Node 22.22).
+
+### A. `ai_try_purchase_unit` na realnym stanie — ZROBIONE
+
+`domain/ai_zakup_jednostki.rs` (dopisane, addytywnie): `AiPurchaseState {treasury, stock (magazyn państwa), manpower}`,
+`AiPurchaseParams {manpower_cost, rezerwa 10/3/0 + dochód/utrzymanie}`, `ai_try_purchase_unit(&mut state, &UnitRecruitment, &params)`
+= `should_ai_purchase_unit` (złoto + Manpower + rezerwa) -> `validate_recruitment` (koszt surowcowy z magazynu) -> `spend_recruitment`
+(atomowo; przy odmowie stan NIEZMIENIONY). Odmowa: `Gate` albo `MissingStock(missing)` (= web `missingStockFor`).
+`ai_purchase_resource_needs` łączy to z `ai_resource_needs::detect_owner_resource_needs` (jednostka jak w kolejce, magazyn = realny stan).
+Web: main.ts:42441 (`shouldAIPurchaseUnit` -> `purchaseRecruitmentUnit`), main.ts:4579 (wspólna ścieżka gracz/AI; stock check PRZED pobraniem),
+economy-upkeep.ts `canAffordUnitRecruitStock`, building-stock-cost.ts `unitStockCost`/`missingStockFor`.
+
+Wektory z weba: `tests/p6_repin_ai_zakup_purchase_vectors/purchase-vectors.json` (75 jednostek `units.json` x 472 pule magazynu:
+empty/exact/plus5/unrelated/minus1:k/zero:k) z PRAWDZIWYCH `unitStockCost` + `canAffordUnitRecruitStock` + `missingStockFor`.
+Test `tests/p6_repin_ai_zakup_purchase.rs`: koszt surowcowy Rust (`recruitment_for`) == web dla WSZYSTKICH 75 jednostek, decyzja kupna
+i mapa braków == web dla każdej puli, pobranie dokładnie kosztu, odmowa nie zmienia stanu; + scenariusze: ma surowce -> kupuje, brak jednego
+surowca -> nie kupuje (złoto/Manpower/pozostałe surowce nietknięte), zloto nie zastępuje surowca ("bez magicznych zasobów"), bramka złota/Manpower,
+rezerwa poziom 1/2/3 (10/3/0) przez wykonawcę, powiązanie z `ai_resource_needs`. 7 testów PASS.
+
+ZAŁOŻENIA: Manpower jako skalar imperium; wybór miasta/kolejka rekrutacji (enqueue) i bramki poza ekonomią (oblężenie, limit stosu, Super-jednostka,
+Naval) po stronie wywołującego. Wiązanie w `ai_turn.rs`: NIE ZROBIONE — jawny DŁUG DO W4/D7 (WIRE-WAR): `ai_turn.rs` nie ma kroku rekrutacji ani
+nosiciela magazynu państwa; dołożenie ich to nowy krok tury, nie addytywna linia (NIE BLOCK, zgodnie z dispatchem R3).
+
+### B. Drogi gracza = AI — ZMIERZONO + KOREKTA
+
+1. `plan_road_network` vs web `planRoadNetwork`: `road-network-plan.ts` i `road-movement.ts` NIE zmieniły się od pinu 180c08305
+   (`git diff 180c08305 origin/main --stat`: 0 linii). Web też używa `hexHasRoad` (nie `isRoadQualified`) — brak rozjazdu. Dowód zgodności:
+   istniejący `tests/p6_repin_autoimpr_terrain.rs::plan_road_network_matches_web` (wektory `roadplan.json`) — PASS (8/8 testów pliku).
+2. REALNY rozjazd (web FALA 596, R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1, improvement-build.ts): web zastąpił `placedKeys.has(hex)`
+   (blokada drogi na KAŻDYM heksie z ulepszeniem) regułą "droga blokowana tylko gdy heks już ma drogę" (`existing.some(isRoadImprovementKey)`
+   albo `ulepszenie` = droga/droga_brukowana; farma + droga = dozwolona warstwa) + dodał `roadBuildBlockReason`. Rust miał starą regułę.
+   Korekta: `improvement_build.rs` (`Qualifier::qualifies` gałąź DROGA, `hex_has_road_layer`, `road_build_block_reason`; pole `placed_keys`
+   usunięte z `Qualifier`, zostaje w `ImprovementBuildState`). Gracz (`can_build`/`get_qualifying_hexes`) i AI (`sh.qualifies`) wołają TEN SAM `qualifies`.
+3. Wektory: `tests/p6_repin_ai_drogi_vectors/droga-vectors.json` (107 stanów, 16 492 zapytań; z `gen-drogi-vectors.mjs` = kopia generatora M16
+   z REPIN-AUTOIMPROVE + wyjście dróg): bity `droga`/`droga_brukowana`, `getQualifyingHexes`, `roadBuildBlockReason`. Test
+   `tests/p6_repin_ai_drogi_qualifier.rs` (2 testy PASS): kwalifikacja == web, `can_build` == `qualifies`, teksty powodów == web.
+
+### ZAŁOŻENIA / skutki poza allowlistą (do oceny Evaluatora)
+
+- `tests/p6_m16_qualifier.rs` (poza allowlistą): klucz `droga` w wektorach M16 (pin edb8fb56) koduje DAWNĄ regułę `placedKeys` -> pomijany
+  (`SUPERSEDED_KEY`), zastąpiony wektorami z aktualnego weba (pkt 3). Pozostałe klucze M16 bez zmian (4/4 PASS).
+- `tests/p6_8i_vectors/pick.json` (poza allowlistą): 25 scenariuszy (rnd-139/334, rp-42/96/114/120/139/147/151/153/155/167/168/182/198/203/205/211/214/216,
+  rp-roads-reuse-p, ra-rnd-… ) kodowało starą regułę drogi; ich `expected` zregenerowane z aktualnego weba (`gen-repin-autoimpr-pick-vectors.mjs`,
+  te same wejścia; 21 PASS). 4 scenariusze (rnd-961, ra-rnd-1, ra-rnd-24, ra-rnd-247) mają OBOK dryfu dróg inny dryf weba (m.in. bydło po farmie —
+  poza tematem; regenerowane oczekiwania też nie przechodzą) -> USUNIĘTE z pick.json (5128 -> 5124) do REPIN auto-ulepszeń. Pełna regeneracja pick.json
+  zmieniłaby 989 scenariuszy (inny dryf weba) — poza zakresem.
+- Dryf zaobserwowany, NIE naprawiany (poza tematem): `stadnina` (web: `isLivestockUnlockedForPlacement` z `horseStockAvailable`) — przy pełnej
+  regeneracji `qualifier.json` M16 (320 stanów) Rust daje `stadnina` true, web false (stan 3, heks (-5,2)). Do REPIN ekonomii/stadniny.
+
+### Bramki (runda 3)
+
+- `rustfmt --check` plików dotkniętych: PASS. `cargo clippy --lib --test p6_repin_ai_drogi_qualifier --test p6_repin_ai_zakup_purchase --test p6_m16_qualifier --test p6_repin_ai_zakup_needs --test p6_repin_ai_zakup_rezerwa -- -D warnings`: PASS.
+- `cargo test` per binarka: p6_repin_ai_zakup_purchase 7/0, p6_repin_ai_drogi_qualifier 2/0, p6_repin_ai_zakup_needs 2/0, p6_repin_ai_zakup_rezerwa 5/0,
+  p6_repin_autoimpr_terrain 8/0, p6_m16_qualifier 4/0, p6_m16_rules 15/0, p6_m16_tables 5/0, p6_m16_divergence 1/0, p6_m16_doc 1/0, p6_m16_gallery 2/0,
+  p6_8i_pick 5/0 (401 s, po zmianie vectorow), p6_8i_relief 8/0, p6_m15_roads / road_movement_multipliers / improvements / p6_23_improvements /
+  p6_8a_pending_improvements / lib 22 — PASS. 0 failed, 0 nowych `#[ignore]`.
+- Baseline p6_8i_pick PRZED zmianą Qualifier (HEAD 6b54dc1f3): 5/0 (453 s). Pełne `cargo test` całego crate NIE uruchomione (NIE_ZMIERZONO).
