@@ -26,12 +26,10 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 | 5 | Wire-war W8: pipeline `run_war_turn` (D1–D4) | 5 | Nierozpoczęte | Zależy od W6–W7 | Dispatch po W7 |
 | 6 | Długi: loader zapisu z `migrate_on_load`, `WIRE-EPOCH-WAR-FLAG-Q1` | 6 | Do zrobienia | Brak | Osobny dispatch |
 | 7 | Pętla taktyczna oblężenia #217 (L2–L5, SIEGE-NEARBY-STAN L9–L10) | 7 | Do zrobienia | Zależy od #5 | Dispatch po W8 |
-| 8 | UNIT-REPLACE L-1 (awanse INFANTRY 21/23), L-2, L-3 | 8 | Dług | L-1 wymaga ustalenia z webem | Pytanie do właściciela |
+| 8 | UNIT-REPLACE L-2, L-3 (Rust; L-1 pominięte) | 8 | Dług | Brak | Dispatch po W8 |
 | 9 | REPIN dryfu po czerwcu (Pałac II/III, odlewnie 50/75, handel, łodzie 6/6/6, `civBonusy`) | 9 | Do zrobienia | Brak | Pomiar dryfu, tylko dokumentacja |
 
 ## Uwagi i konflikty
-- Kolejka web (`dyspozycje/KOLEJKA-WEB-PO-OBECNYCH-OPERATORACH-20261111.md`) mówi, że Rust nie startuje nowych tematów, dopóki web nie jest skończony. Przekazanie zakłada równoległe czaty. Właściciel wskazał integrację DYSTANS-PETLA jako pierwszą pozycję, więc start jest jego decyzją. Konflikt zapisany, nie rozstrzygnięty w dokumentach.
-- Informacja w kolejce web, że `autobot/p6-repin-dystans` nie jest wypchnięta, jest nieaktualna (gałąź jest na GitHubie, `3b7841f14`).
 
 ## Log integracji 2026-11-11
 - DYSTANS-PETLA: Evaluator PASS-WITH-NOTES (N1 naprawiony w obronie, N2 odrzucony, N3 = pełny test). FC PASS-WITH-NOTES, SHA `460f84a05`, bez decyzji człowieka. Integracja `a4087f332` FF na `rust-port/parity-v2`. Kod WIP: `rust-port-wip/DYSTANS-fc`. Ref: `refs/keep/R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1-fc`.
