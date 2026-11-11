@@ -9448,3 +9448,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): panel „Rozdziel armię” — heksy docelowe nie przylegają ściśle (nierówne szczeliny), ma być plaster miodu → W11 R-WEB-UI-ARMY-SPLIT-HEX-HONEYCOMB-Q1 (Sonnet, pomiar w Chromium).
 
 - 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA: przycisk „Administrator ulepszeń +” bez informacji (czym jest, koszt, utrzymanie) → dopisane do W9 (DODATEK 3), bo te same pliki.
+
+- 2026-11-11 · ZGŁOSZENIA WŁAŚCICIELA (zrzuty): (a) panel imperium → Rekrutacja pokazuje surowy HTML chipów w linii „Magazyn:” (esc(stock) escapuje HTML chipów; regresja po ikonach) → W13 R-WEB-UI-RAW-HTML-IN-RECRUIT-PANEL-STOCK-Q1 (Sonnet, z audytem całego UI); (b) w widoku miasta lewy i prawy panel zasłaniają banery górne (surowce/produkcja) → W12 R-WEB-UI-CITY-SIDE-PANELS-OVERLAP-TOPBANNERS-Q1 (Sonnet, pomiar w Chromium). Start gdy zwolni się slot (6/6 zajęte: W4,W6,W7,W9,W10,W11), kolejność: W13, W12, PL-PLURAL-LOCAL.
