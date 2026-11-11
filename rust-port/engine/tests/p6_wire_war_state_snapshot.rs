@@ -13,6 +13,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 use civ_engine::domain::war_turn_state::WarTurnState;
 use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayableState, PlayerId, PositionDto,
@@ -21,6 +25,7 @@ use civ_engine::{
 use events::{EventQueue, TurnEvent};
 use save_load::{SaveSnapshot, TurnPhase};
 use serde_json::{json, Map, Value};
+use snapshot::decode_snapshot_value;
 
 fn valid_state() -> GameStateDto {
     let map = MapDto::new(
@@ -222,13 +227,4 @@ fn web_vectors_for_opaque_fields_round_trip_equal() {
     assert!(!vectors["aiGeneralWarCampaignByOwner"]
         .to_string()
         .contains("extraDropped"));
-}
-
-/// Wariant dla juz sparsowanego `Value`: surowy wczyt przez `RawSnapshot`, potem `migrate_on_load`
-/// (jak `zapis_loader::load_save_snapshot`).
-fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }

@@ -10,6 +10,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 use civ_engine::domain::diplomacy_multiwar::{
     rebuild_era_war_counts_from_active_pairs, record_era_forced_war_participation,
     restore_era_war_counts, ActiveWarPair, EraWarCounts,
@@ -21,6 +25,7 @@ use civ_engine::{
 use events::{EventQueue, TurnEvent};
 use save_load::{SaveMeta, SaveSnapshot, TurnPhase};
 use serde_json::{json, Value};
+use snapshot::{decode_snapshot_str, decode_snapshot_value};
 
 fn valid_state() -> GameStateDto {
     let map = MapDto::new(
@@ -148,21 +153,4 @@ fn pusta_tablica_zapisywana_jako_pole() {
     assert!(encoded.contains("warRulesEraWarCountByCiv"));
     let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("deserialize");
     assert_eq!(decoded.meta().era_war_count_by_civ(), Some(&json!([])));
-}
-
-/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
-/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
-fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
-}
-
-/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
-fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }

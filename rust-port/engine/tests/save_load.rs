@@ -6,6 +6,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayerId, PositionDto, Rng, TerrainDto,
     TurnDto, UnitDto, UnitId, UnitKindDto,
@@ -13,6 +17,7 @@ use civ_engine::{
 use save_load::{
     migrate_v1, EventQueue, SaveSnapshot, TurnEvent, TurnPhase, CURRENT_SNAPSHOT_VERSION,
 };
+use snapshot::decode_snapshot_str;
 
 fn valid_state() -> GameStateDto {
     let map = MapDto::new(
@@ -155,13 +160,4 @@ fn invalid_state_is_rejected_during_snapshot_deserialization() {
     );
 
     assert!(decode_snapshot_str(&json).is_err());
-}
-
-/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
-/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
-fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }

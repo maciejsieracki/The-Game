@@ -10,6 +10,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayerId, PositionDto, Rng, TerrainDto,
     TurnDto, UnitDto, UnitId, UnitKindDto,
@@ -17,6 +21,7 @@ use civ_engine::{
 use events::{EventQueue, TurnEvent};
 use save_load::{SaveMeta, SaveSnapshot, TurnPhase};
 use serde_json::{json, Value};
+use snapshot::{decode_snapshot_str, decode_snapshot_value};
 
 fn valid_state() -> GameStateDto {
     let map = MapDto::new(
@@ -119,21 +124,4 @@ fn p6_zapis_migracje_snapshot_wrong_types_fall_back_like_web() {
         decoded.meta().player_epoch_war_enabled(),
         "nie-boolean = jak brak pola"
     );
-}
-
-/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
-/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
-fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
-}
-
-/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
-fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }
