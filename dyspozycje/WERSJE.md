@@ -1,3 +1,9 @@
+## ROBOCZA d0ea0107 -- 2026-11-06 -- FALA 638: Nowy model Falangi: falangita z sarissą w obu rękach i tarczą (testowa)
+
+- R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1: jednostka Falanga ma model falangity macedońskiego — długa sarissa trzymana obiema rękami, mała tarcza (pelte) na lewym przedramieniu, tors skręcony; wyraźnie inny niż hoplita (Włócznik, Włócznik sumeryjski, Thorakites, Hieros Lochos bez zmian — identyczna liczba meshy i trójkątów); Falanga 29 meshy / 428 trójkątów, geometrie wspólne; scalanie statycznych części działa
+- Weryfikacja: tsc czysty; zelazo-falanga-real-render 50/0 (mutacje czerwone), zelazo-super-rzym-grecja 92/0, srodziemnomorze 83/0, slowianie-zulusi 75/0, germanie 80/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: wygląd w żywej scenie bitwy (zrzuty z harnessu buildUnitModel) — do wzrokowej weryfikacji właściciela na ROBOCZEJ; z daleka i z przodu sarissa skrócona perspektywą; dług bazowy celtowie-miecznik-rydwan (0e) 81/1 na bazie; dług Rust: REPIN modelu Falangi
+
 ## ROBOCZA 8e2329b6 -- 2026-11-06 -- FALA 637: Ikona administratora wszędzie (powiadomienia, wiersze utrzymania, chipy, Civpedia) (testowa)
 
 - R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: ikona administratora (pieczęć A; wariant z kilofem dla ulepszeń) w powiadomieniach Ważne, w nagłówku miasta (chip Administrator ulepszeń, ujednolicony z chipem administratora miasta), w wierszu 'Utrzymanie administratorów' (bilans miasta, karta skarbca i podsumowanie imperium); przy opcji Administratorzy OFF brak wiersza i ikon; Civpedia: hasła administrator-miasta i administrator-ulepszen z ikoną (wikiBundle regenerowany generatorem)
