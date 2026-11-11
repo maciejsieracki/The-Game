@@ -1,22 +1,26 @@
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-AI-TRADE-WIRING-E2E-Q1
-GOAL: dowod w zywej grze (Chromium, realny endTurn): AI proponuje graczowi wymiane surowcow -> okno gracza -> akceptacja -> realny tick dostaw -> odrzucenie/cooldown -> zapis/wczytanie -> stary zapis
-ZMIANY/COMMIT: allowlista: gra/src/main.ts, gra/tools/ai-trade-wiring-e2e-live-test.cjs, ten raport, evidence/ (SHA w polu sha wyniku; baza kodu f8af35f87, NIE czubek origin/main c90eb3e18)
-TESTY: (surowe wyjscie w evidence/run-fix.log, run-mutation.log)
-- tsc --noEmit: exit 0
-- nowy test live: 36 pass / 0 fail (Chromium, bundle vite poza repo, ?playtest=mapa&civTest=1)
-- MUTACJA: usuniecie galezi 'zaproponuj_wymiane_cykliczna' z main.ts -> test exit 1 (FAIL na "REALNY endTurn: AI skladala graczowi propozycje", stol pusty). Fix przywrocony.
-- bramki: logic-test 213/213, tech-tree 20/0 (ref. 19), research 33/33, unit-replace 21/21 (ref. 13), combat 6/6; ai-trade-proposal-branch-test 10/0; ai-trade-proposal-to-player-test 25/25. Referencja z R-PROC-AUTOBOT sec. 6 jest przestarzala dla tech-tree i unit-replace (wyzsze liczby, zero FAIL).
-- NIE_ZMIERZONO: mutacja drugiego fixu (aiResourceBarterLastProposalTurn.clear() przy wczytaniu) -- osobnej mutacji nie uruchomiono; unit-power, mgla-inwariant, map-gen i reszta bramek z sec. 6 nie uruchamiane; zrzuty to widok mapy (okno dyplomacji nie zostalo ocenione wizualnie -- test czyta stan przez hak, nie klika UI).
-ZNALEZISKA:
-1. DEFEKT WIRINGU (naprawiony, z testem): w lancuchu komend AI w main.ts brakowalo galezi dla 'zaproponuj_wymiane_cykliczna' -- komenda z ai.ts ginela po cichu, gracz nigdy nie widzial propozycji (FALA 622 byla zielona na unit-testach, bo nie szla przez main.ts). Dodano 1 galaz. Dowod: mutacja czerwona.
-2. DEFEKT ZAPISU (naprawiony): wczytanie zapisu bez pola aiResourceBarterLastProposalTurn dziedziczylo cooldown barteru z biezacej sesji; dodano aiResourceBarterLastProposalTurn.clear() przed odczytem.
-3. DECISION_REQUIRED (NIE naprawiono -- zmiana zachowania/balansu): przycisk "Przyjmij" gracza odrzuca KAZDA oferte barteru AI ("Przewaga u Ciebie"): bramka uczciwosci AI (AI oddaje ok. >=2x) jest sprzeczna z bramka podgladu gracza (net PW >= 0). Test to dokumentuje (previewAccept.accepted=false, accept() nie zdejmuje oferty). Dalsza sciezka umowy/dostaw zmierzona przez hak forceAccept (omija tylko podglad; reszta jak handleNegotiationAccept). Wniosek: w grze gracz NIE moze przyjac oferty AI -- wymaga decyzji ABC (poluzowac bramke gracza / zaostrzyc bramke AI / inny prog).
-4. OBSERWACJA (bez oceny): w ticku dostaw sprzedawca placi pelna ilosc z umowy (AI: 400->330 = 70 zelaza), kupujacy dostaje tyle ile miesci jego miasto (gracz +10; AI +7 cegly przy -8 gracza). Roznica znika -- czy to zamierzony cap magazynu (transferSurowiecIlosc), nie sprawdzono; kandydat na osobny temat.
-HAKI: window.__aiTradeWiringTestDebug tylko przy ?civTest=1 (zero wplywu bez parametru) + lokalna funkcja aiBarterAcceptableForPlayer (uzywana tylko przez hak).
-UWAGA PROCESOWA: worktree zawieral juz niezacommitowane zmiany (main.ts +178, test cjs) nie utworzone przeze mnie w tej rundzie; nie ufalem im -- uruchomilem, zmierzylem i zmutowalem sam. Zrodlo tych zmian nieznane (prawdopodobnie wczesniejsza przerwana proba tego samego tematu).
-BLOKADY: DECISION_REQUIRED pkt 3
-RUNDY: 1/5
-NASTEPNY KROK: Evaluator; decyzja ABC wlasciciela w sprawie pkt 3 (i ew. pkt 4)
+GOAL: dowod w zywej grze (Chromium, realny endTurn): propozycja AI -> okno gracza -> "Przyjmij" AKTYWNE -> umowa -> tick dostaw; (runda 2, ABC wariant A: gorny limit nadplaty AI w selekcji oferty barteru)
+ZMIANY/COMMIT: brak zmian kodu w tej rundzie. Baza ae3b823f4 + merge origin/main (6ade0f0ec, bez konfliktow, merge-commit; ancestry ae3b823f4 -> HEAD potwierdzone). Probna implementacja limitu (nowa opcja playerAcceptGate w gra/src/game/ai-trade-proposal.ts + przekazanie aiBarterAcceptableForPlayer z main.ts) zostala COFNIETA, bo po niej AI przestaje skladac JAKIEKOLWIEK oferty (patrz nizej). Diff zapisany poza repo w scratchpadzie sesji, nie dostarczany.
+TESTY:
+- tsc --noEmit z probna zmiana: exit 0; po cofnieciu kod = baza.
+- test live ai-trade-wiring-e2e-live-test.cjs z probna zmiana: FAIL "selekcja (ta sama funkcja co wiring): AI daje zelazo, bierze cegle -- null" oraz "REALNY endTurn: AI skladala graczowi propozycje" (stol pusty) -- selekcja zwraca null dla scenariusza z r1.
+- POMIAR NIEMOZLIWOSCI (zywa gra, Chromium, hak diagPayload = te same funkcje co wiring; Relacja 50): siatka giveQty 10..300 x recvQty 10..600 (krok 10), 6 par (zelazo/cegla, drewno/kamien, cegla/zelazo, kamien/drewno, zelazo/kamien, drewno/cegla): liczba ofert spelniajacych JEDNOCZESNIE bramke AI (fairBlock==null) i podglad gracza (playerOk) = 0 dla kazdej pary. Pomiar wstepny (siatka rzadsza, tylko bramka AI): 33/2/1/26/38/1 ofert przechodzi bramke AI, zadna nie przechodzi podgladu gracza; wszystkie maja givePn >= 2*receivePn.
+- NIE URUCHAMIANE (bez dzialajacego limitu nie ma czego dowodzic): bramki referencyjne, ai-trade-proposal-branch, ai-trade-proposal-to-player, zrzut z aktywnym "Przyjmij", mutacja zdjecia limitu. W drugiej polowie rundy headless Chromium przestal ladowac gre (waitForFunction timeout 150-500 s, bez bledow strony; load average ~15 od innych agentow) -- NIE_ZMIERZONO, czy to obciazenie hosta.
+PRZYCZYNA (z kodu, potwierdzona pomiarem): bramki sa ROZLACZNE; nie chodzi o ilosc oddawana przez AI.
+ 1. Bramka AI: handelFairnessGate (diplomacy-proposals.ts:1051; wolana w selekcji main.ts:23595, w enqueue main.ts:20438 i w evaluateProposal 'handel' cykliczny, diplomacy-proposals.ts:1575) wymaga givePn >= max(receivePn, ceil(receivePn*100/Relacja)). Relacja 50: givePn >= 2*receivePn; Relacja 100: givePn >= receivePn. Bramka dziala na AI jako DAJACYM: im gorsza relacja, tym wiecej AI musi dolozyc.
+ 2. Podglad gracza: previewIncomingPlayerAccept (diplomacy-acceptance-points.ts:695) wymaga netPw = myOfferPn - theirOfferPn >= 0, tj. receivePn (AI dostaje) >= givePn (AI oddaje).
+ 3. Przeciecie: givePn >= receivePn*100/Rel ORAZ givePn <= receivePn. Dla Rel < 100 puste; dla Rel >= 100 tylko givePn == receivePn (dokladna rownosc PW po kwantyzacji do krokow 10). Gorny limit "AI oddaje najwyzej tyle ile bilans" wyprowadza oferte poza bramke AI -- nie zostaje zadna.
+ 4. Dodatkowo filtr sensibleBalance w main.ts (~20420) i evaluateExactPayload w selekcji opieraja sie na tej samej bramce AI.
+KONSEKWENCJA: wariant A w brzmieniu "nie zmieniaj podgladu gracza, ogranicz ilosc po stronie AI" jest niewykonalny bez zmiany reguly po stronie AI (bramka uczciwosci dla AI jako dawcy) -- to zmiana reguly diplomacji/balansu, poza mandatem rundy (zakaz: balans cen poza limitem nadplaty).
+OPCJE DO DECYZJI WLASCICIELA (ABC, po polsku przez orkiestratora):
+ A1 (rekomendacja operatora): dla ofert AI->gracz (AI jako proponent) bramka AI uzywa wspolczynnika relacji = 1 (givePn >= receivePn, bez 100/Rel), a selekcja szuka par o bilansie PW blisko 0 (AI oddaje najwyzej tyle, ile dostaje; "Przyjmij" aktywne). Zmiana w selekcji (main.ts), filtrze enqueue (main.ts:20438) i sciezce evaluateProposal dla responderIsPlayer; nie dotyka podgladu gracza. Rownosc PW jest realna (np. 10 zelaza = 200 PW za 40 cegly = 200 PW).
+ A2: poluzowac podglad gracza o tolerancje (netPw >= -X) -- zmiana reguly gracza, wprost zakazana w dispatchu r2; tylko po jawnej zgodzie.
+ B: zostawic bramki; AI sklada oferty tylko przy Relacji >= 100 i rownym PW (praktycznie martwa funkcja).
+ C: zostawic stan z r1 (nadplata AI, "Przyjmij" zablokowane) -- UX-pulapka.
+PUNKT 4 dispatchu (AI placi 70 zelaza, gracz dostaje 10): zgodnie z pomiarem z obrony r1 (30-obrona-claude.md, kontrola bez umowy) ubytek 60 zelaza u odbiorcy wystepuje w ZWYKLYM ticku ekonomii bez umowy (zapas 70 -> 10), wiec dostawa niczego nie niszczy (transferSurowiecIlosc przenosi calosc; w tescie r1 AI -70, gracz +10 = 70-60). To NIE jest cap transferu. Ktory mechanizm zjada 60 z zapasu 70 (utrzymanie/zuzycie/limit): NIE_ZMIERZONO w tej rundzie (przegladarka przestala sie ladowac); nie jest to niszczenie towaru przez wymiane, wiec nie DECISION_REQUIRED z tego tytulu; kandydat na osobny temat.
+BLOKADY: DECISION_REQUIRED (rozlaczne bramki). Infrastruktura: headless Chromium nie ladowal gry w drugiej polowie rundy.
+RUNDY: 2/5
+NASTEPNY KROK: orkiestrator zadaje ABC (A1/A2/B/C). Po A1: runda 3 -- wspolczynnik relacji w trzech miejscach dla AI-proponenta + selekcja po bilansie, test live z "Przyjmij" aktywnym bez forceAccept, tabela proporcji, mutacja, zrzut okna, bramki referencyjne na scalonym czubku.
 DEPLOY/PUSH: NIE WYKONANO
