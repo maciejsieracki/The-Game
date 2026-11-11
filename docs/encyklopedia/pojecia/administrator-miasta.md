@@ -12,7 +12,7 @@
 
 ## Wiki‑S
 
-**Administrator miasta** to osoba przypisana do jednego miasta (maksymalnie jeden na miasto), którą zatrudniasz w nagłówku miasta. Zmniejsza korupcję, podnosi produkcję i ściągalność podatków miasta, a jako jedyny pozwala na **automatyczną budowę budynków** w tym mieście. Zatrudnienie kosztuje **40 Pieniądza** jednorazowo, utrzymanie **2 / 3 / 4 Pieniądza na turę** płaci skarbiec państwa.
+**{{ikona-administratora}} Administrator miasta** to osoba przypisana do jednego miasta (maksymalnie jeden na miasto), którą zatrudniasz w nagłówku miasta. Zmniejsza korupcję, podnosi produkcję i ściągalność podatków miasta, a jako jedyny pozwala na **automatyczną budowę budynków** w tym mieście. Zatrudnienie kosztuje **40 Pieniądza** jednorazowo, utrzymanie **2 / 3 / 4 Pieniądza na turę** płaci skarbiec państwa.
 
 ---
 

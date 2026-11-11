@@ -2,12 +2,17 @@
  * markdownLite.ts — lekki renderer Markdown dla panelu Civpedia (bez zależności).
  */
 
+import { administratorIconHtml } from './icons/administratorIcon';
+
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function inlineFmt(s: string): string {
   let t = esc(s);
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: znacznik ikony administratora w haśle Civpedii (bez HTML w md).
+  t = t.replace(/\{\{ikona-administratora(-ulepszen)?\}\}/g, (_m, imp: string | undefined) =>
+    administratorIconHtml({ size: 16, state: 'ok', variant: imp ? 'improvements' : 'city' }));
   t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
   t = t.replace(/`([^`]+)`/g, '<code>$1</code>');

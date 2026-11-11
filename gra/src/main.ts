@@ -1435,6 +1435,8 @@ import {
   hireAdministrator,
   refreshAdministratorState,
   totalAdministratorUpkeepIfAllWorkForOwner,
+  administratorUpkeepForCity,
+  improvementAdministratorUpkeepForCity,
   type AdministratorChange,
   aiRequiresImprovementAdministrator,
   cityHasImprovementAdministrator,
@@ -9003,6 +9005,7 @@ async function boot(): Promise<void> {
             bogactwoUtrzymanieBudynkow: hs.bogactwoUtrzymanieBudynkow,
             bogactwoUtrzymanieSurowcowBudynkow: hs.bogactwoUtrzymanieSurowcowBudynkow,
             bogactwoUtrzymanieJednostek: hs.bogactwoUtrzymanieJednostek,
+            bogactwoUtrzymanieAdministratorow: hs.bogactwoUtrzymanieAdministratorow,
             bogactwoRate: hs.bogactwoRate,
           };
         },
@@ -9018,6 +9021,11 @@ async function boot(): Promise<void> {
             utrzymanieSurowcowBudynkow: row.utrzymanieSurowcowBudynkow,
             utrzymanieGarnizonu: row.utrzymanieGarnizonu,
             nauka: row.nauka,
+            // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratora miasta + ulepszen (juz w bilansie; tylko wiersz).
+            utrzymanieAdministratora: (() => {
+              const c = cities.find(x => x.id === cityId);
+              return c ? administratorUpkeepForCity(c, cityBuilt.get(c.id) ?? []) + improvementAdministratorUpkeepForCity(c) : 0;
+            })(),
           };
         },
         getOkolicaState: (cityId: string) => {
@@ -14098,7 +14106,7 @@ async function boot(): Promise<void> {
       _lastPieniadzRate = 0; _lastWealthLevel = 1;
       _lastWealthMnoznik = 1; _lastNaukaRate = 0; _lastLudnoscRate = 0;
       _lastBogactwoRate = 0; _lastBogactwoHandel = 0;
-      _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {}; _lastPlayerCityEcon = [];
       _pracaRateFreshFromEndTurn = false; _liveFoodBrutto = 0; _livePracaForecast = null;
       markCityStateDirty(); // empireEconDirty=true, powerDirty=true, _maxSafeRationCache.clear()
@@ -14384,6 +14392,8 @@ async function boot(): Promise<void> {
     let _lastBogactwoHandel: number = 0;
     let _lastBogactwoUtrzymanieBudynkow: number = 0;
     let _lastBogactwoUtrzymanieJednostek: number = 0;
+    // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow (miast + ulepszen) gracza/ture -- tylko do wiersza w panelu imperium.
+    let _lastBogactwoUtrzymanieAdministratorow: number = 0;
     let _lastBogactwoUtrzymanieSurowcow: Record<string, number> = {};
     /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
     let _liveFoodBrutto: number = 0;
@@ -22189,6 +22199,7 @@ async function boot(): Promise<void> {
       _lastBogactwoHandel = playerEcon.pieniadzZTras;
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
       _lastBogactwoUtrzymanieJednostek = bogactwoUpkeepPreview.utrzymanieJednostki;
+      _lastBogactwoUtrzymanieAdministratorow = bogactwoUpkeepPreview.utrzymanieAdministratorow ?? 0;
       _lastBogactwoUtrzymanieSurowcow = previewOwnerTotalResourceUpkeep(
         0, playerCities, data.buildings, operationalBuiltByCity(playerCities, cityBuilt),
         playerEconUnitsForUpkeep,
@@ -22550,6 +22561,7 @@ async function boot(): Promise<void> {
         bogactwoUtrzymanieBudynkow: Math.floor(_lastBogactwoUtrzymanieBudynkow),
         bogactwoUtrzymanieSurowcowBudynkow: { ..._lastBogactwoUtrzymanieSurowcow },
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
+        bogactwoUtrzymanieAdministratorow: Math.floor(_lastBogactwoUtrzymanieAdministratorow),
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
@@ -39076,6 +39088,7 @@ async function boot(): Promise<void> {
                 _lastBogactwoHandel = hEcon.pieniadzZTras;
                 _lastBogactwoUtrzymanieBudynkow = hBalance?.utrzymanieBudynki ?? 0;
                 _lastBogactwoUtrzymanieJednostek = hBalance?.utrzymanieJednostki ?? 0;
+                _lastBogactwoUtrzymanieAdministratorow = hBalance?.utrzymanieAdministratorow ?? 0;
                 _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(hOid) ?? {}) };
                 _lastBogactwoRate = hEcon.pieniadz - (hBalance?.utrzymanieRazem ?? 0);
               }

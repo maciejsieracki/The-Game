@@ -292,7 +292,7 @@ import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
-import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS, administratorChipInnerHtml, administratorUpkeepValueHtml } from './icons/administratorIcon';
 import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
@@ -1250,6 +1250,8 @@ export interface EmpireHudSnap {
   bogactwoUtrzymanieBudynkow?: number;
   bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   bogactwoUtrzymanieJednostek?: number;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow (miast + ulepszen) / ture, juz w bilansie. */
+  bogactwoUtrzymanieAdministratorow?: number;
   bogactwoRate?: number;
 }
 
@@ -1269,6 +1271,8 @@ export interface CityMoneySnap {
   utrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek na heksie miasta (garnizon) / turę. */
   utrzymanieGarnizonu: number;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratora miasta + ulepszen (0 gdy brak / nie pracuje). */
+  utrzymanieAdministratora?: number;
   /** Nauka / turę z tego miasta (informacyjnie). */
   nauka: number;
 }
@@ -4929,6 +4933,7 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
     { label: 'Utrzymanie budynków (to miasto)', value: snap.utrzymanieBudynkow > 0 ? `−${snap.utrzymanieBudynkow}` : '—', cls: snap.utrzymanieBudynkow > 0 ? 'red' : undefined },
     { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), html: true, cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
     { label: 'Utrzymanie garnizonu (hex miasta)', value: snap.utrzymanieGarnizonu > 0 ? `−${snap.utrzymanieGarnizonu}` : '—', cls: snap.utrzymanieGarnizonu > 0 ? 'red' : undefined },
+    { label: 'Utrzymanie administratorów (to miasto)', value: administratorUpkeepValueHtml(snap.utrzymanieAdministratora ?? 0), html: true, cls: (snap.utrzymanieAdministratora ?? 0) > 0 ? 'red' : undefined },
   ];
 
   const grid = el('div', 'city-money-grid');
@@ -6049,6 +6054,7 @@ function buildTopBarZlotoDetailCard(
   gridDetailRow(gImp, 'Utrzymanie budynków', utrzB > 0 ? `−${utrzB}` : '—');
   gridDetailRow(gImp, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(utrzRes));
   gridDetailRow(gImp, 'Utrzymanie jednostek', utrzJ > 0 ? `−${utrzJ}` : '—');
+  gridDetailRow(gImp, 'Utrzymanie administratorów', administratorUpkeepValueHtml(empire.bogactwoUtrzymanieAdministratorow ?? 0));
   gridDetailRow(gImp, 'Netto / turę', signed(netto));
 
   appendDetailSection(card, 'Ten gród — przychody i koszty lokalne');
@@ -6061,6 +6067,7 @@ function buildTopBarZlotoDetailCard(
     gridDetailRow(gCity, 'Utrzymanie budynków', moneySnap.utrzymanieBudynkow > 0 ? `−${moneySnap.utrzymanieBudynkow}` : '—');
     gridDetailRow(gCity, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(moneySnap.utrzymanieSurowcowBudynkow ?? {}));
     gridDetailRow(gCity, 'Utrzymanie garnizonu', moneySnap.utrzymanieGarnizonu > 0 ? `−${moneySnap.utrzymanieGarnizonu}` : '—');
+    gridDetailRow(gCity, 'Utrzymanie administratorów', administratorUpkeepValueHtml(moneySnap.utrzymanieAdministratora ?? 0));
     gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));
   } else {
     gridDetailRow(gCity, 'Wpływ do skarbca', signed(cityMoney));
@@ -9967,7 +9974,7 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     const chip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (admSt.working ? '' : ' is-idle'));
     chip.setAttribute('data-adm-chip', admSt.working ? 'working' : 'idle');
     chip.title = administratorTooltipText(admSt);
-    chip.innerHTML = administratorIconHtml({ size: 18, state: admSt.working ? 'ok' : 'idle' }) + '<span>Administrator</span>';
+    chip.innerHTML = administratorChipInnerHtml('city', admSt.working, 'Administrator');
     mount.appendChild(chip);
   }
   // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: chip „Administrator ulepszeń” obok administratora miasta.
@@ -9978,7 +9985,7 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     impChip.title = impSt.working
       ? 'Administrator ulepszeń: pracuje'
       : 'Administrator ulepszeń: nie pracuje — brak środków w skarbcu państwa';
-    impChip.innerHTML = administratorIconHtml({ size: 18, state: impSt.working ? 'ok' : 'idle', variant: 'improvements' }) + '<span>Administrator ulepszeń</span>';
+    impChip.innerHTML = administratorChipInnerHtml('improvements', impSt.working, 'Administrator ulepszeń');
     mount.appendChild(impChip);
   }
   attachInteractiveDetail(label, showDetail, {

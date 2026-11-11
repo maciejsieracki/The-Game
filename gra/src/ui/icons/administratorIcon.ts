@@ -27,6 +27,24 @@ export interface AdministratorIconOptions {
 const IMPROVEMENT_PICK =
   '<g class="civ-adm-ic-pick" stroke-width="1.6"><path d="M14.5 19.5 20 14"></path><path d="M16.5 13.2c1.6-.4 3.2.2 4.3 1.4"></path></g>';
 
+/**
+ * R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: wnetrze chipa administratora (ikona + podpis).
+ * Wspolne dla chipa administratora miasta i chipa administratora ulepszen w naglowku miasta.
+ */
+export function administratorChipInnerHtml(variant: AdministratorIconVariant, working: boolean, label: string): string {
+  return administratorIconHtml({ size: 18, state: working ? 'ok' : 'idle', variant }) + `<span>${label}</span>`;
+}
+
+/**
+ * R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: wartosc wiersza „Utrzymanie administratorow” (ikona + liczba,
+ * jak chip surowca). Zero -> '—' (wiersz pusty, jak pozostale wiersze utrzymania). Kwota w Pieniadzu/ture.
+ */
+export function administratorUpkeepValueHtml(amount: number): string {
+  if (!(amount > 0)) return '—';
+  const icon = administratorIconHtml({ size: 14, state: 'ok' });
+  return `<span class="civ-adm-upkeep" style="display:inline-flex;align-items:center;gap:0.25em;white-space:nowrap;">−${Math.round(amount)} ${icon}</span>`;
+}
+
 /** CSS ikony (doklejany do arkusza panelu miasta). */
 export const ADMINISTRATOR_ICON_CSS =
   '.civ-adm-ic{display:inline-flex;position:relative;vertical-align:middle;color:var(--civ-adm-ic,#e8d88a);flex-shrink:0;line-height:0;}' +

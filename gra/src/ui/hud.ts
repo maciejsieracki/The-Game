@@ -151,6 +151,8 @@ export interface HudState {
   bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
   bogactwoUtrzymanieJednostek?: number;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow / ture (juz w bilansie). */
+  bogactwoUtrzymanieAdministratorow?: number;
   /** P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (Maciej 2026-08-12): suma `population` wszystkich
    *  miast gracza (cities.filter(ownerId===0).reduce(+population)) — teraz wyświetlana wprost
    *  w górnym pasku HUD (chip „Obywatele"), nie tylko w panelu Moc/MIASTA.

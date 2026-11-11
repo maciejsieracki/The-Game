@@ -54,6 +54,7 @@ import {
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { administratorUpkeepValueHtml } from './icons/administratorIcon';
 import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts } from './cityPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
@@ -1022,6 +1023,7 @@ function cityEconMiniSkarbiec(
   const utrzB = economy.bogactwoUtrzymanieBudynkow ?? 0;
   const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
   const utrzJ = economy.bogactwoUtrzymanieJednostek ?? 0;
+  const utrzA = economy.bogactwoUtrzymanieAdministratorow ?? 0;
   const netto = economy.bogactwoRate ?? 0;
 
   const sumGrid = '1fr auto';
@@ -1032,6 +1034,7 @@ function cityEconMiniSkarbiec(
   h += miniRow(['Utrzymanie budynków', treasuryBalanceSignedTxt(-utrzB)], sumGrid);
   h += miniRow(['Utrzymanie surowców budynków', formatResourceUpkeepEmpireLine(utrzRes)], sumGrid);
   h += miniRow(['Utrzymanie jednostek', treasuryBalanceSignedTxt(-utrzJ)], sumGrid);
+  h += miniRow(['Utrzymanie administratorów', administratorUpkeepValueHtml(utrzA)], sumGrid);
   h += miniRow(['<b>Netto skarbiec</b>', `<b>${treasuryBalanceSignedTxt(netto)}</b>`], sumGrid);
   h += '</div>';
 
