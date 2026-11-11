@@ -824,17 +824,29 @@ pub fn is_livestock_unlocked_for_placement(
 
 /// Web `isLivestockUnlockedForPlacement` (`livestock-unlock.ts:162`) z calym heksem: zloze konia przez
 /// `hexHasHorseDeposit` (takze stare zapisy `zloze === 'konie'`). Wariant `nakladka`-only powyzej zostaje (P6.16).
+///
+/// R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (web `livestock-unlock.ts:STADNINA_FREE_FROM_ERA`):
+/// w epokach ponizej Zelaza (`era < 3`) stadnina wymaga zloza konia NA TYM heksie; odblokowanie imperium
+/// (trasa / magazyn >= koszt) nie wystarcza.
+pub const STADNINA_FREE_FROM_ERA: f64 = 3.0;
+
 pub fn is_livestock_unlocked_for_placement_hex(
     improvement_key: &str,
     hex: &BuildHex,
     trade_route_kon_unlocked: bool,
     horse_stock_available: f64,
+    era: f64,
 ) -> bool {
     let norm = normalize_improvement_key(Some(improvement_key))
         .unwrap_or_else(|| improvement_key.to_owned());
     if norm == k::STADNINA {
-        return hex_has_horse_deposit(hex)
-            || trade_route_kon_unlocked
+        if hex_has_horse_deposit(hex) {
+            return true;
+        }
+        if era < STADNINA_FREE_FROM_ERA {
+            return false;
+        }
+        return trade_route_kon_unlocked
             || horse_stock_available >= tables().file.hodowla.stadnina_koszt_koni;
     }
     true
@@ -1247,6 +1259,7 @@ impl<'a> Qualifier<'a> {
                     hex,
                     self.trade_route_kon_unlocked,
                     self.horse_stock_available,
+                    self.player_era,
                 )
         };
 

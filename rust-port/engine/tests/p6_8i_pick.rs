@@ -1,4 +1,4 @@
-//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main 180c08305):
+//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main cffe39cb9):
 //! `tests/p6_8i_vectors/pick.json` (scenariusze `pickAutoImprovements`) i `helpers.json` (helpery P1),
 //! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/gen-repin-autoimpr-pick-vectors.mjs`.
 //! Kodowanie liczb: skonczona -> liczba, NaN/Infinity/-Infinity -> napis.
@@ -277,11 +277,11 @@ fn expected_picks(v: &Value) -> Vec<Pick> {
 }
 
 #[test]
-fn vectors_pin_is_web_main_180c08305() {
+fn vectors_pin_is_web_main_cffe39cb9() {
     let d: Value = serde_json::from_str(PICK).unwrap();
-    assert_eq!(d["pin"].as_str(), Some("180c08305"));
+    assert_eq!(d["pin"].as_str(), Some("cffe39cb9"));
     let h: Value = serde_json::from_str(HELPERS).unwrap();
-    assert_eq!(h["pin"].as_str(), Some("180c08305"));
+    assert_eq!(h["pin"].as_str(), Some("cffe39cb9"));
 }
 
 #[test]
