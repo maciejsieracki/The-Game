@@ -1,0 +1,1184 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "source": "gra/data/units.json",
+  "note": "Wygenerowane przez p6_unit_replace_l1_gen.mjs. Nie edytowac recznie.",
+  "techs": [
+    "Brązownictwo",
+    "Jeździectwo",
+    "Koło",
+    "Obróbka drewna",
+    "Sztuka wojenna",
+    "Łucznictwo",
+    "Żegluga"
+  ],
+  "rows": [
+    {
+      "Jednostka": "Wojownik",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 5,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Drewno",
+      "Typ": "Swordsman",
+      "Nacja": "",
+      "Tech": "-",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "Włócznik"
+    },
+    {
+      "Jednostka": "Procarz",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 4,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Slinger",
+      "Nacja": "",
+      "Tech": "-",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Oszczepnik",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 3,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "",
+      "Tech": "-",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 3,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "",
+      "Tech": "Łucznictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Zwiadowca",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 4,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wsparcie",
+      "Surowiec": null,
+      "Typ": "Civilian",
+      "Nacja": "",
+      "Tech": "-",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Włócznik",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "",
+      "Tech": "Brązownictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "Falanga/Triari/Thorakites/iButho z iklwa/Mur tarcz (Sargonid)/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru"
+    },
+    {
+      "Jednostka": "Wojownik z mieczem i tarczą",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "",
+      "Tech": "Brązownictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "Hastati/Gaesatae/Soldurii/Miecznik galijski/Berserker germański/Drużynnik/Garnizon Harappy/Gwardia hetycka/Piechota neobabilońska/Tyrski miecznik/Gwardia Tyreńska/Wojownik z żelaznym khopesh/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru"
+    },
+    {
+      "Jednostka": "Rydwan (woły)",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 15,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Drewno",
+      "Typ": "Mount",
+      "Nacja": "",
+      "Tech": "Koło",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Konnica",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 11,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Galera",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Morska",
+      "Surowiec": "Brąz",
+      "Typ": "Naval",
+      "Nacja": "",
+      "Tech": "Żegluga",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Falanga",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Falangite",
+      "Nacja": "Grecja",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Hieros Lochos (Święty Zastęp)"
+    },
+    {
+      "Jednostka": "Hieros Lochos (Święty Zastęp)",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Grecja",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Hastati",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Rzym",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Evocati"
+    },
+    {
+      "Jednostka": "Triari",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Spearman",
+      "Nacja": "Rzym",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Evocati"
+    },
+    {
+      "Jednostka": "Jeździec chiński",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 14,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Chiny",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Konnica",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Chiny",
+      "Tech": "—",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Impi",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Zulu",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "iButho z iklwa/uThulwana (Białe Tarcze)"
+    },
+    {
+      "Jednostka": "Oszczepnik Zulu (Izijula)",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 10,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Zulu",
+      "Tech": "-",
+      "W zamian za": "Oszczepnik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "uThulwana (Białe Tarcze)",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Zulu",
+      "Tech": "—",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik z maczugą (Chaska)",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 13,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Drewno",
+      "Typ": "Offensive",
+      "Nacja": "Inkowie",
+      "Tech": "-",
+      "W zamian za": "Wojownik",
+      "Zastąp specjalnie": "Wojownik z toporem/Gwardzista z champi"
+    },
+    {
+      "Jednostka": "Wojownik z toporem",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Offensive",
+      "Nacja": "Inkowie",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Królewska Gwardia"
+    },
+    {
+      "Jednostka": "Procarz (Huaracoc)",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 4,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Slinger",
+      "Nacja": "Inkowie",
+      "Tech": "-",
+      "W zamian za": "Procarz",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Oszczepnik (Estólica)",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 5,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Inkowie",
+      "Tech": "-",
+      "W zamian za": "Oszczepnik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Królewska Gwardia",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Inkowie",
+      "Tech": "-",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Rydwan konny",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 14,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "",
+      "Tech": "Jeździectwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik egipski",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Egipt",
+      "Tech": "Łucznictwo",
+      "W zamian za": "Łucznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Rydwan egipski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 16,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Egipt",
+      "Tech": "Jeździectwo",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik z khopesh",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Egipt",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Wojownik z żelaznym khopesh/Medżaj (Gwardia Faraona)"
+    },
+    {
+      "Jednostka": "Medżaj (Gwardia Faraona)",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Egipt",
+      "Tech": "—",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik nubijski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 10,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Egipt",
+      "Tech": "Łucznictwo",
+      "W zamian za": "Łucznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik sumeryjski",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 5,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Sumer",
+      "Tech": "Łucznictwo",
+      "W zamian za": "Łucznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Rydwan sumeryjski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 19,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Sumer",
+      "Tech": "Jeździectwo",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Włócznik sumeryjski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Sumer",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Mur tarcz (Sargonid)/Gwardia Królewska Sumeru"
+    },
+    {
+      "Jednostka": "Gwardia Królewska Sumeru",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Sumer",
+      "Tech": "—",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik mykeński",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Grecja",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Hieros Lochos (Święty Zastęp)"
+    },
+    {
+      "Jednostka": "Rydwan mykeński",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 15,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Grecja",
+      "Tech": "Jeździectwo",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik Sherden",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Ludy Morza",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Halabardnik Shang",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Chiny",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Hu Ben Wei (Gwardia Tygrysa)"
+    },
+    {
+      "Jednostka": "Rydwan Shang",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 16,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Chiny",
+      "Tech": "Jeździectwo",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik akadyjski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Sumer",
+      "Tech": "Łucznictwo",
+      "W zamian za": "Łucznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Gaesatae",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Celtowie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Soldurii",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Celtowie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Rydwan celtycki",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 14,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Żelazo",
+      "Typ": "Mount",
+      "Nacja": "Celtowie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik germański",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Germanie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Berserker germański",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Germanie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Wojownik germański"
+    },
+    {
+      "Jednostka": "Taran",
+      "Epoka": "Kamień",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Oblężnicza",
+      "Surowiec": "Drewno",
+      "Typ": "Siege",
+      "Nacja": "",
+      "Tech": "Obróbka drewna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Taran okuty",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Oblężnicza",
+      "Surowiec": "Brąz",
+      "Typ": "Siege",
+      "Nacja": "",
+      "Tech": "Brązownictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Katapulta",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Oblężnicza",
+      "Surowiec": "Żelazo",
+      "Typ": "Siege",
+      "Nacja": "",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wieża oblężnicza",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 10,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Oblężnicza",
+      "Surowiec": "Brąz",
+      "Typ": "Siege",
+      "Nacja": "",
+      "Tech": "Brązownictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik tyrreński",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Offensive",
+      "Nacja": "Rzym",
+      "Tech": "Brązownictwo",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "Evocati"
+    },
+    {
+      "Jednostka": "Wojownik szekelesz",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Ludy Morza",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Konnica lancowa asyryjska",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 16,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Żelazo",
+      "Typ": "Mount",
+      "Nacja": "Asyria",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Konnica",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Konnica łucznicza asyryjska",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 15,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Żelazo",
+      "Typ": "Mount",
+      "Nacja": "Asyria",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Konnica",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Łucznik asyryjski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Dystans",
+      "Surowiec": "Drewno",
+      "Typ": "Distance",
+      "Nacja": "Asyria",
+      "Tech": "Łucznictwo",
+      "W zamian za": "Łucznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Drużynnik",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Słowianie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Jeździec z oszczepami",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 13,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Żelazo",
+      "Typ": "Mount",
+      "Nacja": "Słowianie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Konnica",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Strażnik bram Harappy",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Harappa",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Garnizon Harappy"
+    },
+    {
+      "Jednostka": "Piechota induska",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Harappa",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Garnizon Harappy"
+    },
+    {
+      "Jednostka": "Garnizon Harappy",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Harappa",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Rydwan Kapadokijski",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 17,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Flanka",
+      "Surowiec": "Brąz",
+      "Typ": "Mount",
+      "Nacja": "Hetyci",
+      "Tech": "Jeździectwo",
+      "W zamian za": "Rydwan konny",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Piechota hetycka",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Spearman",
+      "Nacja": "Hetyci",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Włócznik",
+      "Zastąp specjalnie": "Gwardia hetycka"
+    },
+    {
+      "Jednostka": "Gwardia hetycka",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Hetyci",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Gwardia Ishtar",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Babilonia",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z khopesh",
+      "Zastąp specjalnie": "Piechota neobabilońska"
+    },
+    {
+      "Jednostka": "Wojownik babiloński",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Babilonia",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z khopesh",
+      "Zastąp specjalnie": "Piechota neobabilońska"
+    },
+    {
+      "Jednostka": "Piechota neobabilońska",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Babilonia",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Tyrski miecznik",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Fenicjanie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Wojownik fenicki",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Swordsman",
+      "Nacja": "Fenicjanie",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Tyrski miecznik/Gwardia Tyreńska"
+    },
+    {
+      "Jednostka": "Gwardia Tyreńska",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Fenicjanie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Thorakites",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Spearman",
+      "Nacja": "Grecja",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "Hieros Lochos (Święty Zastęp)"
+    },
+    {
+      "Jednostka": "Evocati",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 0,
+      "Super-jednostka": "TAK",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Rzym",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "—",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "iButho z iklwa",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 8,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Spearman",
+      "Nacja": "Zulu",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Impi",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Gwardzista z champi",
+      "Epoka": "Brąz",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Brąz",
+      "Typ": "Offensive",
+      "Nacja": "Inkowie",
+      "Tech": "Brązownictwo",
+      "W zamian za": "Wojownik z toporem",
+      "Zastąp specjalnie": "Królewska Gwardia"
+    },
+    {
+      "Jednostka": "Wojownik z żelaznym khopesh",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Egipt",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z khopesh",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Mur tarcz (Sargonid)",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 9,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Spearman",
+      "Nacja": "Sumer",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Włócznik sumeryjski",
+      "Zastąp specjalnie": "—"
+    },
+    {
+      "Jednostka": "Miecznik galijski",
+      "Epoka": "Żelazo",
+      "Pieniądz (koszt)": 7,
+      "Super-jednostka": "—",
+      "Rola (linia)": "Wręcz",
+      "Surowiec": "Żelazo",
+      "Typ": "Swordsman",
+      "Nacja": "Celtowie",
+      "Tech": "Sztuka wojenna",
+      "W zamian za": "Wojownik z mieczem i tarczą",
+      "Zastąp specjalnie": "—"
+    }
+  ],
+  "infantry": [
+    {
+      "source": "Wojownik",
+      "zastap": "Włócznik",
+      "targets": [
+        "Włócznik"
+      ]
+    },
+    {
+      "source": "Włócznik",
+      "zastap": "Falanga/Triari/Thorakites/iButho z iklwa/Mur tarcz (Sargonid)/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru",
+      "targets": [
+        "Falanga",
+        "Triari",
+        "Thorakites",
+        "iButho z iklwa",
+        "Mur tarcz (Sargonid)",
+        "Hu Ben Wei (Gwardia Tygrysa)",
+        "uThulwana (Białe Tarcze)",
+        "Królewska Gwardia",
+        "Medżaj (Gwardia Faraona)",
+        "Gwardia Królewska Sumeru"
+      ]
+    },
+    {
+      "source": "Wojownik z mieczem i tarczą",
+      "zastap": "Hastati/Gaesatae/Soldurii/Miecznik galijski/Berserker germański/Drużynnik/Garnizon Harappy/Gwardia hetycka/Piechota neobabilońska/Tyrski miecznik/Gwardia Tyreńska/Wojownik z żelaznym khopesh/Hu Ben Wei (Gwardia Tygrysa)/uThulwana (Białe Tarcze)/Królewska Gwardia/Medżaj (Gwardia Faraona)/Gwardia Królewska Sumeru",
+      "targets": [
+        "Hastati",
+        "Gaesatae",
+        "Soldurii",
+        "Miecznik galijski",
+        "Berserker germański",
+        "Drużynnik",
+        "Garnizon Harappy",
+        "Gwardia hetycka",
+        "Piechota neobabilońska",
+        "Tyrski miecznik",
+        "Gwardia Tyreńska",
+        "Wojownik z żelaznym khopesh",
+        "Hu Ben Wei (Gwardia Tygrysa)",
+        "uThulwana (Białe Tarcze)",
+        "Królewska Gwardia",
+        "Medżaj (Gwardia Faraona)",
+        "Gwardia Królewska Sumeru"
+      ]
+    },
+    {
+      "source": "Falanga",
+      "zastap": "Hieros Lochos (Święty Zastęp)",
+      "targets": [
+        "Hieros Lochos (Święty Zastęp)"
+      ]
+    },
+    {
+      "source": "Hastati",
+      "zastap": "Evocati",
+      "targets": [
+        "Evocati"
+      ]
+    },
+    {
+      "source": "Triari",
+      "zastap": "Evocati",
+      "targets": [
+        "Evocati"
+      ]
+    },
+    {
+      "source": "Impi",
+      "zastap": "iButho z iklwa/uThulwana (Białe Tarcze)",
+      "targets": [
+        "iButho z iklwa",
+        "uThulwana (Białe Tarcze)"
+      ]
+    },
+    {
+      "source": "Wojownik z maczugą (Chaska)",
+      "zastap": "Wojownik z toporem/Gwardzista z champi",
+      "targets": [
+        "Wojownik z toporem",
+        "Gwardzista z champi"
+      ]
+    },
+    {
+      "source": "Wojownik z toporem",
+      "zastap": "Królewska Gwardia",
+      "targets": [
+        "Królewska Gwardia"
+      ]
+    },
+    {
+      "source": "Wojownik z khopesh",
+      "zastap": "Wojownik z żelaznym khopesh/Medżaj (Gwardia Faraona)",
+      "targets": [
+        "Wojownik z żelaznym khopesh",
+        "Medżaj (Gwardia Faraona)"
+      ]
+    },
+    {
+      "source": "Włócznik sumeryjski",
+      "zastap": "Mur tarcz (Sargonid)/Gwardia Królewska Sumeru",
+      "targets": [
+        "Mur tarcz (Sargonid)",
+        "Gwardia Królewska Sumeru"
+      ]
+    },
+    {
+      "source": "Wojownik mykeński",
+      "zastap": "Hieros Lochos (Święty Zastęp)",
+      "targets": [
+        "Hieros Lochos (Święty Zastęp)"
+      ]
+    },
+    {
+      "source": "Halabardnik Shang",
+      "zastap": "Hu Ben Wei (Gwardia Tygrysa)",
+      "targets": [
+        "Hu Ben Wei (Gwardia Tygrysa)"
+      ]
+    },
+    {
+      "source": "Berserker germański",
+      "zastap": "Wojownik germański",
+      "targets": [
+        "Wojownik germański"
+      ]
+    },
+    {
+      "source": "Wojownik tyrreński",
+      "zastap": "Evocati",
+      "targets": [
+        "Evocati"
+      ]
+    },
+    {
+      "source": "Strażnik bram Harappy",
+      "zastap": "Garnizon Harappy",
+      "targets": [
+        "Garnizon Harappy"
+      ]
+    },
+    {
+      "source": "Piechota induska",
+      "zastap": "Garnizon Harappy",
+      "targets": [
+        "Garnizon Harappy"
+      ]
+    },
+    {
+      "source": "Piechota hetycka",
+      "zastap": "Gwardia hetycka",
+      "targets": [
+        "Gwardia hetycka"
+      ]
+    },
+    {
+      "source": "Gwardia Ishtar",
+      "zastap": "Piechota neobabilońska",
+      "targets": [
+        "Piechota neobabilońska"
+      ]
+    },
+    {
+      "source": "Wojownik babiloński",
+      "zastap": "Piechota neobabilońska",
+      "targets": [
+        "Piechota neobabilońska"
+      ]
+    },
+    {
+      "source": "Wojownik fenicki",
+      "zastap": "Tyrski miecznik/Gwardia Tyreńska",
+      "targets": [
+        "Tyrski miecznik",
+        "Gwardia Tyreńska"
+      ]
+    },
+    {
+      "source": "Thorakites",
+      "zastap": "Hieros Lochos (Święty Zastęp)",
+      "targets": [
+        "Hieros Lochos (Święty Zastęp)"
+      ]
+    },
+    {
+      "source": "Gwardzista z champi",
+      "zastap": "Królewska Gwardia",
+      "targets": [
+        "Królewska Gwardia"
+      ]
+    }
+  ]
+}
