@@ -72,3 +72,11 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - W trakcie przebiegów: ZAPIS-REPLAY-MIGRATE, ZAPIS-ERA-Z-ZAPISU (decyzje właściciela), TICKDIPLO-GEN, W6 r4 eval (zawężony zakres brake + tick).
 - Czeka: CITY-PEACE (kod `31cee3102`, FC `cc1a66768`) po SIEGE-GATE. DECISION_REQUIRED: czy usunąć stary test `p6_ai_peace_city_offer.rs` (duplikat); podpięcie `decide_city_offer` w W8.
 - Dysk: 11 GB wolnego po czyszczeniu worktree zakończonych przebiegów.
+
+## Przebieg 2026-11-11 20:41 UTC (heartbeat)
+- parity-v2 = `ca33abdd6` (zintegrowane: L-2 `084321020`/`82c74289c`, BORDER-EPOCH `0f8737f9c`, REPLAY r2 `ca25d6fd2`, COOLDOWN, LOCKS, SIEGE-GATE, batch ERA/TICKDIPLO/CITY-PEACE).
+- Wypchnięte, nie zintegrowane: W7 SIEGE-AIAI kod `211f8a2ab` / FC `6914a102d`; KOMENTARZE kod `058e6cae3` / FC `ce7b154d4`.
+- Przerwane restartem, wynik FC utracony, commity na GitHubie: REPLAY-DESER-REMOVE (`a520b94ef`, `80c901bc1`), SAVESNAPSHOT-DESER r2 (`c2b52266c`, `23130e331`). Wymagają ponownego Evaluatora + FC przed integracją.
+- W toku: W8 PIPELINE (wariant B, kolejność Rust), dispatch `2c8f75471`, Operator od 20:41 (`wf_d483df74`).
+- Sloty: 1/4 aktywny. Dysk 20 GB wolnego.
+- DECISION_REQUIRED: brak nowych decyzji gameplay poza zatwierdzonym wariantem B dla W8.
