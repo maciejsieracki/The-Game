@@ -1,0 +1,11 @@
+Base: 0329072b1346116011dc56edce249739e93e2426
+Branch: codex/bronze-50-75
+Pre-edit source state: explicit bronze rows are 25/t in owner era 2 and 50/t from owner era 3; epoch 1 carries the first configured row. Iron/steel use the shared 50/t foundry base and owner-era multiplier.
+
+Baseline tests before implementation (all passed):
+- `node tools/foundry-throughput-x2-era-mult-test.cjs` — 159 passed.
+- `node tools/converter-era-scaling-test.cjs` — 117 passed.
+- `node tools/hud-konwerter-dopasowanie-test.cjs` — 20 passed.
+- `node tools/citypanel-konwerter-produkcja-test.cjs` — 83 passed.
+
+The parameter rows are the only runtime behavior change required: tick and UI already resolve the same explicit owner-era parameter rows for all three bronze recipes. Coverage will be expanded to verify that shared path produces/displays 50/75 and preserves iron/steel 50/75/100.
