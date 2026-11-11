@@ -1,14 +1,14 @@
 //! P6-ZAPIS-LOADER-MIGRATE: jedyna produkcyjna sciezka ladowania [`SaveSnapshot`] z tekstu JSON.
 //!
-//! Deserializacja `serde_json::from_str::<SaveSnapshot>` NIE wykonuje migracji (patrz komentarz
-//! przy `impl Deserialize for SaveSnapshot` w `save_load.rs`). Ta funkcja deserializuje snapshot
-//! i od razu wola [`SaveSnapshot::migrate_on_load`], zwracajac raport migracji. Kazdy nowy kod
-//! ladujacy zapis powinien przechodzic przez te funkcje, a nie przez surowe `from_str`.
+//! `SaveSnapshot` nie ma publicznej deserializacji (patrz komentarz przy `RawSnapshot` w `save_load.rs`):
+//! surowy wczyt nie wykonuje migracji. Ta funkcja deserializuje snapshot przez prywatny typ
+//! `RawSnapshot` i od razu wola [`SaveSnapshot::migrate_on_load`], zwracajac raport migracji.
+//! Kazdy kod ladujacy zapis przechodzi przez te funkcje.
 
 use std::error::Error;
 use std::fmt;
 
-use super::save_load::SaveSnapshot;
+use super::save_load::{RawSnapshot, SaveSnapshot};
 use super::save_migrations::LoadMigrationReport;
 
 /// Bledy ladowania zapisu z tekstu.
@@ -41,7 +41,8 @@ impl Error for LoadError {
 /// epoki dostaje udokumentowany wynik (`SaveMeta::start_era_fallback`). Zwraca snapshot po migracji
 /// oraz raport tego, co migracja zmienila (zdegradowani wodzowie, przeniesione jednostki).
 pub fn load_save_snapshot(text: &str) -> Result<(SaveSnapshot, LoadMigrationReport), LoadError> {
-    let mut snapshot: SaveSnapshot = serde_json::from_str(text).map_err(LoadError::Json)?;
+    let raw: RawSnapshot = serde_json::from_str(text).map_err(LoadError::Json)?;
+    let mut snapshot: SaveSnapshot = raw.into_snapshot();
     let report = snapshot.migrate_on_load();
     Ok((snapshot, report))
 }

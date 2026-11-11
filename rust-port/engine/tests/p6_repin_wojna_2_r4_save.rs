@@ -123,7 +123,7 @@ fn save_meta_vectors_match_web_restore_and_automatic_only() {
         let snap = snapshot().with_meta(meta);
         // Zapis -> odczyt przez pelny serde (ten sam ksztalt co na dysku).
         let encoded = serde_json::to_string(&snap).expect("snapshot serializes");
-        let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("snapshot deserializes");
+        let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("snapshot deserializes");
 
         let want_version = case["restoredVersion"].as_f64();
         let got_version = restored(&decoded);
@@ -153,7 +153,7 @@ fn snapshot_without_r4_fields_omits_them_and_loads_with_defaults() {
     assert!(!encoded.contains("\"meta\""), "{encoded}");
     assert!(!encoded.contains("plannedMarches"), "{encoded}");
     assert!(!encoded.contains("autoMarch"), "{encoded}");
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("decodes");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("decodes");
     assert!(decoded.meta().is_empty());
     assert!(decoded.planned_marches().is_empty());
     assert!(decoded.auto_march().is_none());
@@ -195,7 +195,7 @@ fn meta_and_planned_marches_round_trip_through_snapshot_json() {
         !encoded.contains("attackUnitId"),
         "pole None nie jest zapisywane: {encoded}"
     );
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("decodes");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("decodes");
     assert_eq!(decoded, original);
     assert!(auto_only(&decoded, true));
     assert!(!auto_only(&decoded, false));
@@ -292,7 +292,7 @@ fn planned_marches_wiring_through_save_matches_web_from_save_vectors() {
             .with_planned_marches(entries)
             .with_auto_march(auto);
         let encoded = serde_json::to_string(&saved).expect("serializes");
-        let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("decodes");
+        let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("decodes");
 
         let pairs: Vec<(String, Option<PlannedMarchSaved>)> = decoded
             .planned_marches()
@@ -379,7 +379,7 @@ fn planned_marches_web_object_form_decodes_like_list_form() {
         }
         let mut wire = serde_json::to_value(snapshot()).expect("value");
         wire["plannedMarches"] = Value::Object(web_map);
-        let decoded: SaveSnapshot = serde_json::from_value(wire).expect("web form decodes");
+        let decoded: SaveSnapshot = decode_snapshot_value(wire).expect("web form decodes");
         let mut got = decoded.planned_marches().to_vec();
         got.sort_by(|a, b| a.unit_id.cmp(&b.unit_id));
         expected.sort_by(|a, b| a.unit_id.cmp(&b.unit_id));
@@ -395,8 +395,25 @@ fn wrong_json_types_for_r4_fields_are_ignored_like_web_optional_lookups() {
     wire["meta"] = Value::String("text".to_owned());
     wire["plannedMarches"] = Value::String("x".to_owned());
     wire["autoMarch"] = Value::Number(5.into());
-    let decoded: SaveSnapshot = serde_json::from_value(wire).expect("decodes without error");
+    let decoded: SaveSnapshot = decode_snapshot_value(wire).expect("decodes without error");
     assert!(decoded.meta().is_empty());
     assert!(decoded.planned_marches().is_empty());
     assert!(decoded.auto_march().is_none());
+}
+
+/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
+/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
+fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
+}
+
+/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
+fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }

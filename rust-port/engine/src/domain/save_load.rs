@@ -100,6 +100,15 @@ impl Error for SnapshotError {}
 /// The version is private so a caller cannot serialize a version-2 payload
 /// stamped as an unsupported version.  Use [`SaveSnapshot::version`] to inspect
 /// it and [`SaveSnapshot::new`] to construct a current snapshot.
+///
+/// `SaveSnapshot` nie implementuje `Deserialize`: wczytanie wymaga migracji, wiec jedyne sciezki
+/// to `zapis_loader::load_save_snapshot` i `ReplayLog::load_json_with_migration_reports`.
+/// Ponizszy doctest pilnuje tego na poziomie kompilacji (R-RUSTPORT-ZAPIS-SAVESNAPSHOT-DESER-Q1).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::save_load::SaveSnapshot>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SaveSnapshot {
     version: u16,
@@ -750,13 +759,26 @@ impl SaveSnapshot {
     }
 }
 
-/// Deserializacja NIE wykonuje migracji P6-ZAPIS-MIGRACJE: limit wodzow zalezy od epoki wlasciciela
-/// (odczytywanej z zapisu przez [`SaveSnapshot::owner_era`]), a limit stosu od listy ludzkich graczy,
-/// czyli od kontekstu wolajacego. Kazdy wczytujacy zapis MUSI po `serde_json::from_str::<SaveSnapshot>`
-/// wywolac [`SaveSnapshot::migrate_on_load`] (lub `zapis_loader::load_save_snapshot`, ktory robi to sam)
-/// oraz `auto_build_allowed_for_owner` przy decyzji o budowie. Rust nie ma dzis loadera plikow
-/// (`replay.rs` przyjmuje gotowy `SaveSnapshot`), wiec ta odpowiedzialnosc lezy po stronie wolajacego.
-impl<'de> Deserialize<'de> for SaveSnapshot {
+/// Surowy wczyt snapshotu: wersja, wymagane pola, walidacja. NIE wykonuje migracji P6-ZAPIS-MIGRACJE:
+/// limit wodzow zalezy od epoki wlasciciela (odczytywanej z zapisu przez [`SaveSnapshot::owner_era`]),
+/// a limit stosu od listy ludzkich graczy, czyli od kontekstu wolajacego.
+///
+/// Typ prywatny (`pub(crate)`): [`SaveSnapshot`] NIE ma publicznej deserializacji. Jedyne publiczne
+/// sciezki wczytania to `zapis_loader::load_save_snapshot` (migracja w srodku) oraz
+/// `ReplayLog::load_json_with_migration_reports`, ktore wolaja [`RawSnapshot::into_snapshot`]
+/// i zaraz [`SaveSnapshot::migrate_on_load`]. Oddzielny typ wejsciowy nie pozwala wyprodukowac
+/// niezmigrowanego `SaveSnapshot` przez zwykle `serde_json::from_str`.
+#[derive(Debug)]
+pub(crate) struct RawSnapshot(SaveSnapshot);
+
+impl RawSnapshot {
+    /// Oddaje niezmigrowany snapshot. Wolajacy MUSI wykonac migracje przed uzyciem w domenie.
+    pub(crate) fn into_snapshot(self) -> SaveSnapshot {
+        self.0
+    }
+}
+
+impl<'de> Deserialize<'de> for RawSnapshot {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -827,7 +849,7 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
             .with_owner_eras(owner_eras)
             .with_gracze(wire.gracze);
         snapshot.validate().map_err(de::Error::custom)?;
-        Ok(snapshot)
+        Ok(RawSnapshot(snapshot))
     }
 }
 

@@ -103,7 +103,7 @@ fn old_save_without_war_fields_loads_unchanged_and_writes_no_new_keys() {
     let text = base.to_string();
     assert!(!text.contains("\"war\""));
     assert!(!text.contains("ForceWar"));
-    let decoded: SaveSnapshot = serde_json::from_value(base.clone()).expect("old save loads");
+    let decoded: SaveSnapshot = decode_snapshot_value(base.clone()).expect("old save loads");
     assert!(decoded.war_turn_state().is_default());
     assert_eq!(serde_json::to_value(&decoded).expect("re-serialize"), base);
 }
@@ -121,7 +121,7 @@ fn snapshot_with_war_state_round_trips_through_serde() {
     assert!(encoded["state"]["war"].is_object());
     // Jedno zrodlo prawdy: wojna nie jest zapisana drugi raz w `meta`.
     assert!(encoded.get("meta").is_none());
-    let decoded: SaveSnapshot = serde_json::from_value(encoded.clone()).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_value(encoded.clone()).expect("deserialize");
     assert_eq!(decoded.war_turn_state(), &war);
     assert_eq!(
         serde_json::to_value(&decoded).expect("re-serialize"),
@@ -133,7 +133,7 @@ fn snapshot_with_war_state_round_trips_through_serde() {
 fn web_format_meta_is_migrated_into_state_and_exports_back_identically() {
     let meta = web_meta_with_vectors();
     let decoded: SaveSnapshot =
-        serde_json::from_value(web_save_json(&meta)).expect("web save loads");
+        decode_snapshot_value(web_save_json(&meta)).expect("web save loads");
     let war = decoded.war_turn_state();
     assert_eq!(war.forced[0].pending_owners, vec![2, 3]);
     assert_eq!(war.bronze_era_enter_turn_by_owner, vec![(0, 150.0)]);
@@ -147,7 +147,7 @@ fn web_format_meta_is_migrated_into_state_and_exports_back_identically() {
     }
     // Zapis wlasny -> odczyt daje ten sam stan.
     let again: SaveSnapshot =
-        serde_json::from_value(serde_json::to_value(&decoded).expect("ser")).expect("de");
+        decode_snapshot_value(serde_json::to_value(&decoded).expect("ser")).expect("de");
     assert_eq!(again.war_turn_state(), war);
 }
 
@@ -155,7 +155,7 @@ fn web_format_meta_is_migrated_into_state_and_exports_back_identically() {
 fn other_meta_fields_survive_next_to_war_migration() {
     let mut meta = web_meta_with_vectors();
     meta.insert("battleModeSettingVersion".into(), json!(2));
-    let decoded: SaveSnapshot = serde_json::from_value(web_save_json(&meta)).expect("loads");
+    let decoded: SaveSnapshot = decode_snapshot_value(web_save_json(&meta)).expect("loads");
     let out = serde_json::to_value(&decoded).expect("ser");
     assert_eq!(out["meta"]["battleModeSettingVersion"], json!(2));
     assert!(out["meta"].get("stoneForceWarPendingOwners").is_none());
@@ -169,7 +169,7 @@ fn state_war_wins_over_meta_when_both_present() {
         ..Default::default()
     };
     v["state"]["war"] = serde_json::to_value(&war).expect("war");
-    let decoded: SaveSnapshot = serde_json::from_value(v).expect("loads");
+    let decoded: SaveSnapshot = decode_snapshot_value(v).expect("loads");
     assert_eq!(decoded.war_turn_state(), &war);
     assert!(decoded.meta().is_empty());
 }
@@ -222,4 +222,13 @@ fn web_vectors_for_opaque_fields_round_trip_equal() {
     assert!(!vectors["aiGeneralWarCampaignByOwner"]
         .to_string()
         .contains("extraDropped"));
+}
+
+/// Wariant dla juz sparsowanego `Value`: surowy wczyt przez `RawSnapshot`, potem `migrate_on_load`
+/// (jak `zapis_loader::load_save_snapshot`).
+fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }
