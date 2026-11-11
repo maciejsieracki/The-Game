@@ -24,6 +24,7 @@
  * Realny render w Chromium: tools/entity-cards-resource-icons-real-render-test.cjs.
  * Uruchomienie (z gra/): node tools/entity-cards-yield-icons-test.cjs
  */
+const { FORMS, normalizeText } = require('./entity-card-chip-text.cjs');
 const fs = require('fs');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
@@ -98,7 +99,7 @@ async function main() {
     "export { technologyAdapter } from '../src/ui/entityCards/technologyAdapter.ts';",
     "export { wonderAdapter } from '../src/ui/entityCards/wonderAdapter.ts';",
     "export { resourceIdFromName, resourcesFromList, yieldProseParts } from '../src/ui/entityCards/resourceRows.ts';",
-    "export { resourceAmountChipHtml, escapeHtmlText } from '../src/ui/resourceAmountChip.ts';",
+    "export { resourceAmountChipHtml, escapeHtmlText, YIELD_CHIP } from '../src/ui/resourceAmountChip.ts';",
     "export { STOCK_RESOURCE_LABEL, stockResourceLabel } from '../src/game/building-stock-cost.ts';",
     '',
   ].join('\n'), 'utf8');
@@ -231,6 +232,40 @@ async function main() {
   if (process.env.DUMP_OFFENDERS) console.log(JSON.stringify(offenders, null, 1));
   check('A: ZERO gołych nazw surowców/plonów w value/valueParts/resourcesSuffix wierszy WSZYSTKICH kart (z cudami)',
     offenders.length === 0, offenders.slice(0, 60));
+  // Runda 3 (obrona, zarzut 2 Evaluatora): NIEZALEZNA od tech-cards-top5-test kontrola TOZSAMOSCI chipow.
+  // Dla tytulow Top 5 (label) i zdan "Co mozesz teraz zrobic" (value) kart budynkow i technologii:
+  // kolejnosc nazw chipow (id -> etykieta) jest podciagiem kolejnosci nazw plonow/surowcow wykrytych w tekscie z danych
+  // (tabela FORMS, jawna). Zmiana tozsamosci chipa (np. praca -> kultura) daje czerwono tutaj.
+  {
+    const chipName = (c) => (M.YIELD_CHIP[c.id] ? M.YIELD_CHIP[c.id].label : M.stockResourceLabel(c.id).replace(/\s*\(surowiec\)/, ''));
+    const formNames = new Set(Object.values(FORMS));
+    const namesIn = (t) => (normalizeText(String(t || '').replace(/Kamień Ha['’]amonga/g, 'Ha-amonga').replace(/\b[Rr]ud[ay] żelaza\b/g, 'RudaŻ')).match(/[\p{L}]+/gu) || [])
+      .map((w) => (w === 'RudaŻ' ? 'Ruda żelaza' : w)).filter((w) => formNames.has(w) || w === 'Ruda żelaza');
+    const identBad = [];
+    let identChecked = 0;
+    for (const { kind, id, card } of cards) {
+      if (kind !== 'building' && kind !== 'technology') continue;
+      for (const section of card.sections || []) {
+        const isTop = section.layout === 'top3';
+        if (!isTop && section.key !== 'actions') continue;
+        for (const row of section.rows || []) {
+          const raw = isTop ? row.label : row.value;
+          const parts = isTop ? row.labelParts : row.valueParts;
+          if (!parts || !parts.some((p) => typeof p !== 'string')) continue;
+          identChecked++;
+          const got = parts.filter((p) => typeof p !== 'string').map(chipName);
+          const exp = namesIn(raw);
+          // got musi byc PODCIAGIEM exp (kolejnosc zachowana): exp zawiera tez slowa w nazwach encji/epok
+          // ("Odlewni zelaza", "epoka Brazu"), ktore nie sa chipami.
+          let k = 0;
+          for (const n of exp) if (k < got.length && got[k] === n) k++;
+          if (k !== got.length) identBad.push({ kind, id, section: section.key, raw, got, exp });
+        }
+      }
+    }
+    check('R3-ident: tozsamosc i kolejnosc chipow w tytulach Top 5 i zdaniach actions = podciag nazw plonow z tekstu danych',
+      identChecked > 20 && identBad.length === 0, { identChecked, bad: identBad.slice(0, 10), nbad: identBad.length });
+  }
   // Runda 2 (obrona, zarzut 3 + skan): Wpływ (res-influence) i Koszt nauki jako chipy.
   {
     const allChips = (card) => (card.sections || []).flatMap((sec) => (sec.rows || []).flatMap((r) =>
