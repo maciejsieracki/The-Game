@@ -154,3 +154,9 @@ nosiciela magazynu państwa; dołożenie ich to nowy krok tury, nie addytywna li
   p6_8i_pick 5/0 (401 s, po zmianie vectorow), p6_8i_relief 8/0, p6_m15_roads / road_movement_multipliers / improvements / p6_23_improvements /
   p6_8a_pending_improvements / lib 22 — PASS. 0 failed, 0 nowych `#[ignore]`.
 - Baseline p6_8i_pick PRZED zmianą Qualifier (HEAD 6b54dc1f3): 5/0 (453 s). Pełne `cargo test` całego crate NIE uruchomione (NIE_ZMIERZONO).
+
+### Obrona r3 — długi do rejestru (R-RUSTPORT-REPIN-AI-ZAKUP-REALNY-STAN-DROGI-Q1)
+
+- D-PICK-4: pick.json bez scenariuszy ra-rnd-1, ra-rnd-24, ra-rnd-247, rnd-961 (ZMIERZONO po nazwach: 5128 -> 5124, 21 expected zmienionych). Oryginały: `git show 6b54dc1f3:rust-port/engine/tests/p6_8i_vectors/pick.json`.
+- D-PICK-PIN: pin pliku i testu `vectors_pin_is_web_main_180c08305` = 180c08305, a część `expected` z nowszego weba; NIE_ZMIERZONO który SHA weba użył generator.
+- Pełny `cargo test` całego crate: NIE_ZMIERZONO.
