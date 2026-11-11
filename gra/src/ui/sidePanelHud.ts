@@ -5,6 +5,7 @@
  */
 
 import { brandIconSvg } from './icons/brandAssets';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { UNIT_CONTEXT_PANEL_CSS } from './hexContextTooltip';
 import {
@@ -148,6 +149,16 @@ const EVENTS_PANEL_BOTTOM_ZOOM = eventsPanelBottomPx(true);
 const MINIMAP_EDGE = MINIMAP_EDGE_PX;
 
 function eventIconHtml(kind: SidePanelEventKind, fallback: string): string {
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: powiadomienia administratora (zakładka Ważne) — ikona pieczęci zamiast litery „A”.
+  if (fallback === 'ADM' || fallback === 'ADM-IMP') {
+    if (!document.getElementById('civ-adm-ic-css')) {
+      const st = document.createElement('style');
+      st.id = 'civ-adm-ic-css';
+      st.textContent = ADMINISTRATOR_ICON_CSS;
+      document.head.appendChild(st);
+    }
+    return administratorIconHtml({ size: 24, state: 'ok', variant: fallback === 'ADM-IMP' ? 'improvements' : 'city' });
+  }
   const map: Partial<Record<SidePanelEventKind, string>> = {
     city: 'cp-labor',
     enemy: 'chip-warning',
@@ -795,7 +806,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       let blockingSeen = 0;
       for (const ev of orderedEvents) {
         const icInner = eventIconHtml(ev.kind, ev.icon);
-        const icoContent = icInner.startsWith('<svg')
+        const icoContent = icInner.startsWith('<svg') || icInner.startsWith('<span class="civ-adm-ic')
           ? icInner
           : `<span class="sp-ico-emoji">${ev.icon || '•'}</span>`;
 

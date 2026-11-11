@@ -391,6 +391,8 @@ export interface CityPanelConfig {
    * Brak haka = funkcja administratora niedostępna w UI.
    */
   getCityAdministratorState?: (cityId: string) => CityAdministratorUiState | null;
+  /** R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: stan administratora ulepszeń (chip w nagłówku miasta). */
+  getImprovementAdministratorState?: (cityId: string) => { hired: boolean; working: boolean } | null;
   /** Zatrudnij administratora (koszt ze skarbca państwa); true = zatrudniono. */
   onHireAdministrator?: (cityId: string) => boolean;
   /** Zwolnij administratora; true = zwolniono. */
@@ -9967,6 +9969,17 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     chip.title = administratorTooltipText(admSt);
     chip.innerHTML = administratorIconHtml({ size: 18, state: admSt.working ? 'ok' : 'idle' }) + '<span>Administrator</span>';
     mount.appendChild(chip);
+  }
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: chip „Administrator ulepszeń” obok administratora miasta.
+  const impSt = isMeCity(city.ownerId) ? (cfg.getImprovementAdministratorState?.(city.id) ?? null) : null;
+  if (impSt && impSt.hired) {
+    const impChip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (impSt.working ? '' : ' is-idle'));
+    impChip.setAttribute('data-imp-adm-chip', impSt.working ? 'working' : 'idle');
+    impChip.title = impSt.working
+      ? 'Administrator ulepszeń: pracuje'
+      : 'Administrator ulepszeń: nie pracuje — brak środków w skarbcu państwa';
+    impChip.innerHTML = administratorIconHtml({ size: 18, state: impSt.working ? 'ok' : 'idle', variant: 'improvements' }) + '<span>Administrator ulepszeń</span>';
+    mount.appendChild(impChip);
   }
   attachInteractiveDetail(label, showDetail, {
     delayMs: 220,

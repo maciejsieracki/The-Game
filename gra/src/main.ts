@@ -8854,6 +8854,8 @@ async function boot(): Promise<void> {
         isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         // R-WEB-CITY-ADMINISTRATOR-Q1: przycisk/chip administratora w nagłówku miasta + bramka autobudowy.
         getCityAdministratorState: (cityId: string) => cityAdministratorUiState(cityId),
+        // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: chip administratora ulepszeń w nagłówku miasta.
+        getImprovementAdministratorState: (cityId: string) => improvementAdministratorUiState(cityId),
         onHireAdministrator: (cityId: string) => hireCityAdministratorForPlayer(cityId),
         onDismissAdministrator: (cityId: string) => dismissCityAdministratorForPlayer(cityId),
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
@@ -10197,7 +10199,7 @@ async function boot(): Promise<void> {
         resumed: ['Administrator ulepszeń wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora ulepszeń.`],
       };
       const [title, subtitle] = (ch.role === 'ulepszenia' ? textImp : text)[ch.kind];
-      warEventLog.unshift({ id: evId, icon: 'A', title, subtitle, kind: 'enemy', turnCreated: turn });
+      warEventLog.unshift({ id: evId, icon: ch.role === 'ulepszenia' ? 'ADM-IMP' : 'ADM', title, subtitle, kind: 'enemy', turnCreated: turn });
       trimWarEventLog();
     }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: zmiany stanu administratorów jeszcze niezgłoszone w „Ważne”. */
@@ -47326,7 +47328,7 @@ async function boot(): Promise<void> {
         if (show) {
           warEventLog.unshift({
             id: `city-impadmin-migration-${turn}`,
-            icon: 'A',
+            icon: 'ADM-IMP',
             title: 'Auto-ulepszenia terenu wymagają administratora ulepszeń',
             subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${affectedImp.length} miast bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
             kind: 'enemy',
@@ -47343,7 +47345,7 @@ async function boot(): Promise<void> {
         if (affected.length > 0) {
           warEventLog.unshift({
             id: `city-admin-migration-${turn}`,
-            icon: 'A',
+            icon: 'ADM',
             title: 'Autobudowa wymaga administratora',
             subtitle: `Automatyczna budowa budynków działa teraz tylko w miastach z działającym administratorem (${affected.length} miast bez niego). Zatrudnij administratora w nagłówku miasta (koszt ${administratorHireCost()} Pieniądza).`,
             kind: 'enemy',
@@ -47356,7 +47358,7 @@ async function boot(): Promise<void> {
       if (legacyAutomationMigration) {
         warEventLog.unshift({
           id: `administrators-legacy-migration-${turn}`,
-          icon: 'A',
+          icon: 'ADM',
           title: LEGACY_AUTOMATION_NOTICE_TITLE,
           subtitle: LEGACY_AUTOMATION_NOTICE_TEXT,
           kind: 'enemy',
