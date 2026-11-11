@@ -649,7 +649,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 /* R-WEB-HUD-TOPBAR-LAYOUT-A-Q1 (decyzja wlasciciela 2026-11-07: uklad A + prawy baner w jednej linii).
    LEWY BANER = 6 zetonow (Skarbiec·Praca·Spichlerz·Handel·Nauka·Surowce). Zeton ma dwa pietra:
    ikona po lewej na cala wysokosc; po prawej mala etykieta / DUZA liczba sumaryczna (--hud-cell-val) /
-   "+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
+   „+brutto / +netto" = 70% liczby sumarycznej (--hud-cell-sm). Tryb wybiera fitHudTopbar() (JS, po renderze):
    wszystkie 6 w JEDNEJ linii (6 rownych kolumn => pozycje zetonow STALE przy zmianie liczb), a gdy
    najszerszy zeton sie nie miesci — klasa .hud-left-fallback = 2 rzedy po 3 (ten sam zeton, bez uciec).
    Baner zajmuje cala szerokosc od lewego marginesu do medalionu Mocy (50vw − 150 px). */

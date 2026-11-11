@@ -64,6 +64,11 @@ const UI_BAD = [
   [/\$\{city\.population\} obywateli/, 'N obywateli -> formatObywateleLabel', '`${city.population} obywateli`'],
   [/\$\{actionable\.length\} umów/, 'N umów -> formatUmowyCount', '`(${actionable.length} umów)`'],
   [/utracono \$\{\w+\} jednostek/, 'utracono N jednostek -> pluralPl (biernik)', '`Głód: utracono ${n} jednostek`'],
+  [/(?:nieagresji|[Rr]ozejm) na \$\{[^}]+\} tur[`'" .,]/, 'na N tur -> formatTurCountAcc (biernik)', '`Pakt nieagresji na ${p.turns ?? 15} tur`'],
+  [/przez \$\{[^}]+\} tur[`'" .,]/, 'przez N tur -> formatTurCountAcc (biernik)', '` za 5 zlota/turę przez ${AI_RESOURCE_TRADE_DEFAULT_TURNS} tur`'],
+  [/za \$\{[^}]+\} tur[<`'" .,]/, 'za N tur -> formatTurCountAcc (biernik)', '`<b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b>`'],
+  [/max HP u \$\{[^}]+\} jednostek/, 'u N jednostek -> pluralPl (dopełniacz)', '`max HP u ${playerDamagedCount} jednostek`'],
+  [/\$\{totalBuildings\} budynków/, 'N budynków -> formatBudynkiCount', '`<span class="val">${totalBuildings} budynków</span>`'],
 ];
 const UI_FILES = walk('gra/src/ui').filter((f) => f.endsWith('.ts') && !/entityCards|resourceAmountChip|administratorIcon|buildModeHud/.test(f))
   .concat(['gra/src/main.ts']);
@@ -101,6 +106,8 @@ try {
   const src = rd('gra/src/game/manpower.ts');
   const m = /export function formatObywateleLabel\(count: number\): string \{[\s\S]*?\n\}/.exec(src);
   const G = (() => { const mm = { exports: {} }; new Function('module', 'exports', esbuild.transformSync(m[0].replace('export function', 'function') + '\nmodule.exports = { formatObywateleLabel };', { loader: 'ts', format: 'cjs' }).code)(mm, mm.exports); return mm.exports; })();
+  eq(F.formatMiastaCount(22), '22 miasta', 'miasta22'); eq(F.formatMiastaCount(12), '12 miast', 'miast12'); eq(F.formatMiastaCount(3), '3 miasta', 'miasta3'); eq(F.formatMiastaCount(1), '1 miasto', 'miasto1'); eq(F.formatMiastaCount(25), '25 miast', 'miast25');
+  eq(F.formatKolejkiCount(23), '23 kolejki', 'kolejki23'); eq(F.formatKolejkiCount(11), '11 kolejek', 'kolejek11');
   eq(G.formatObywateleLabel(1), '1 obywatel', 'ob1'); eq(G.formatObywateleLabel(3), '3 obywatele', 'ob3'); eq(G.formatObywateleLabel(5), '5 obywateli', 'ob5'); eq(G.formatObywateleLabel(13), '13 obywateli', 'ob13'); eq(G.formatObywateleLabel(23), '23 obywatele', 'ob23');
 } catch (e) { uiFail++; console.log('FAIL odmiana (esbuild):', e && e.message); }
 pass += uiPass; fail += uiFail;
