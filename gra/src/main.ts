@@ -1372,6 +1372,7 @@ import {
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
+  seaPeoplesBoostActive, boostBarbParamsForSeaPeoples, shouldEmitSeaPeoplesEpochNotice,
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
@@ -2278,6 +2279,8 @@ async function boot(): Promise<void> {
      * grze — zero regresu na starych zapisach, patrz `restoreGameFromSave` niżej.
      */
     const bronzeEraEnterTurnByOwner = new Map<number, number>();
+    /** R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: jednorazowy komunikat startu okna Epoki Ludów Morza (gracz). Zapisywany w meta save. / EN: one-shot Sea Peoples window notice flag (player), persisted in save meta. */
+    let seaPeoplesNoticeShown = false;
     /** OwnerId zapisane do PERPETUAL cyklu „wojna wymuszona → pokój → odpoczynek → nowy cel" (raz zapisany, zostaje na stałe do eliminacji). / EN: owners enrolled in the perpetual "forced war → peace → rest → new target" cycle (permanent once enrolled, until elimination). */
     const bronzeForceWarCycleOwners = new Set<number>();
     /** Tura, do której (wyłącznie) owner NIE szuka nowego celu wojny wymuszonej po pokoju (`WOJNA_WYMUSZONA_ODPOCZYNEK_TUR`). / EN: turn until which (exclusive) the owner does NOT search for a new forced-war target after peace. */
@@ -37162,6 +37165,8 @@ async function boot(): Promise<void> {
           // traktowałby KAŻDEGO ownera jako "brak wpisu" -> próg pominięty), nie tylko
           // dla naprawdę starych zapisów sprzed tej naprawy.
           bronzeEraEnterTurnByOwner: Array.from(bronzeEraEnterTurnByOwner.entries()),
+          // R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: flaga jednorazowego komunikatu Ludów Morza (dedup po load).
+          seaPeoplesNoticeShown,
           bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
           bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
           bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
@@ -42863,9 +42868,30 @@ async function boot(): Promise<void> {
             // Ludy Morza (BACKLOG): w epoce Brąz (2) pełne zastąpienie domyślnego
             // typu barbarzyńcy -- oba warianty naprzemiennie wg tury, wszystkie
             // poziomy trudności jednakowo (decyzja właściciela 2026-07-19).
+            // R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: okno Epoki Ludów Morza liczone per właściciel
+            // (gracz, owner 0): start w 20. turze od wejścia w Brąz, koniec na wejściu w Żelazo.
+            // W oknie spawn jednostek x3 (tickCamps + rajdy morskie); komunikat raz.
+            const seaPeoplesActive = player.era === 2 && seaPeoplesBoostActive(
+              bronzeEraEnterTurnByOwner.get(0),
+              ironEraEnterTurnByOwner.get(0),
+              turn,
+            );
+            if (shouldEmitSeaPeoplesEpochNotice(seaPeoplesActive, seaPeoplesNoticeShown)) {
+              seaPeoplesNoticeShown = true;
+              warEventLog.unshift(stampEventTurn({
+                id: `sea-peoples-epoch-t${turn}`,
+                icon: '\u{1F30A}',
+                title: 'Epoka Ludów Morza',
+                subtitle: 'Od dziś barbarzyńcy atakują z morza: ich siły są potrojone aż do wejścia w Epokę Żelaza.',
+                kind: 'enemy',
+                negative: true,
+              }, turn));
+              trimWarEventLog();
+            }
+            const barbLiveBoosted = boostBarbParamsForSeaPeoples(barbLive, seaPeoplesActive);
             const barbLiveForSpawn = player.era === 2
-              ? { ...barbLive, unitTypeId: pickBronzeBarbUnit(turn) }
-              : barbLive;
+              ? { ...barbLiveBoosted, unitTypeId: pickBronzeBarbUnit(turn) }
+              : barbLiveBoosted;
             const barbUnitsNow = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
             const tickRes = tickCamps(barbCamps, barbUnitsNow, units, map, barbLiveForSpawn);
             barbCamps = tickRes.camps;
@@ -42873,7 +42899,7 @@ async function boot(): Promise<void> {
             // R-LUDY-MORZA-Q1=A: w Brązie rajderzy spawnują zaokrętowani na wodzie (bez obozów naval).
             const seaRaiderSpawns = player.era === 2
               ? spawnSeaPeoplesRaiders(
-                map, cities, barbUnitsNow, units, barbLive, seaBarbParams, turn, turn * 31337 + 7,
+                map, cities, barbUnitsNow, units, barbLiveBoosted, seaBarbParams, turn, turn * 31337 + 7,
               )
               : [];
 
@@ -44862,6 +44888,7 @@ async function boot(): Promise<void> {
       bronzeForceWarPendingOwners.clear();
       // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): to samo dla tury wejścia w Brąz per-owner.
       bronzeEraEnterTurnByOwner.clear();
+      seaPeoplesNoticeShown = false;
       bronzeForceWarCycleOwners.clear();
       bronzeForceWarRestUntilByOwner.clear();
       bronzeForceWarActiveByPairKey.clear();
@@ -46348,6 +46375,8 @@ async function boot(): Promise<void> {
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
       // wtedy pomija próg czasu (patrz komentarz przy `bronzeEraEnterTurnByOwner` wyżej).
       bronzeEraEnterTurnByOwner.clear();
+      // R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: brak pola (stary zapis) = false.
+      seaPeoplesNoticeShown = saved.meta?.seaPeoplesNoticeShown === true;
       const savedBronzeEraEnterTurn = saved.meta?.bronzeEraEnterTurnByOwner as
         Array<[number, number]> | undefined;
       if (savedBronzeEraEnterTurn?.length) {
