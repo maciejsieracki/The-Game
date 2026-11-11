@@ -10115,13 +10115,31 @@ async function boot(): Promise<void> {
       warEventLog.unshift({ id: evId, icon: 'A', title, subtitle, kind: 'enemy', turnCreated: turn });
       trimWarEventLog();
     }
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: zmiany stanu administratorów jeszcze niezgłoszone w „Ważne”. */
+    const pendingAdministratorChanges = new Map<string, AdministratorChange>();
     /**
      * R-WEB-CITY-ADMINISTRATOR-Q1: odśwież stan administratorów wszystkich właścicieli (koniec służby,
      * finansowanie ze skarbca państwa). `notify` = wpisy w „Ważne” (tylko realne zmiany tury/akcji gracza).
      */
     function refreshCityAdministrators(notify: boolean): void {
       const changes = refreshAdministratorState(cities, cityBuilt, ownerTreasury);
-      if (notify) for (const ch of changes) noteAdministratorChange(ch);
+      // Zmiany z cichych odświeżeń (podgląd HUD `refreshLiveEmpireRatesUnsafe`, wydatki gracza w trakcie tury)
+      // NIE są tracone: akumulujemy je per miasto, a powiadamiamy przy pierwszym `notify=true` (start ticku /
+      // akcja zatrudnienia). Przejście „nie pracuje” → „wrócił” (albo odwrotnie) w obrębie jednej tury znosi
+      // się (brak fałszywego powiadomienia); koniec służby zawsze wygrywa.
+      for (const ch of changes) {
+        const prev = pendingAdministratorChanges.get(ch.city.id);
+        const ended = ch.kind === 'ended_no_building' || ch.kind === 'ended_owner_changed';
+        if (!ended && prev && (prev.kind === 'stopped_no_funds' || prev.kind === 'resumed') && prev.kind !== ch.kind) {
+          pendingAdministratorChanges.delete(ch.city.id);
+        } else {
+          pendingAdministratorChanges.set(ch.city.id, ch);
+        }
+      }
+      if (notify) {
+        for (const ch of pendingAdministratorChanges.values()) noteAdministratorChange(ch);
+        pendingAdministratorChanges.clear();
+      }
     }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: zatrudnij administratora gracza (koszt ze skarbca państwa). */
     function hireCityAdministratorForPlayer(cityId: string): boolean {
@@ -47019,7 +47037,9 @@ async function boot(): Promise<void> {
       autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
       // R-WEB-CITY-ADMINISTRATOR-Q1: stary zapis (bez pola) = powiadomienie migracyjne jeszcze niepokazane.
       cityAdministratorNoticeShown = saved.meta?.cityAdministratorNoticeShown === true;
+      pendingAdministratorChanges.clear(); // stan z zapisu jest punktem odniesienia (bez powiadomień o „zmianach” sprzed wczytania)
       refreshCityAdministrators(false);
+      pendingAdministratorChanges.clear();
       if (!cityAdministratorNoticeShown) {
         cityAdministratorNoticeShown = true;
         const affected = cities.filter(c => isHuman(c.ownerId)

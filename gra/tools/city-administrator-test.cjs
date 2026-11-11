@@ -216,6 +216,22 @@ ok(fs.existsSync(path.join(SRC, 'ui', 'icons', 'brand', 'chip-administrator.svg'
 const icon = fs.readFileSync(path.join(SRC, 'ui', 'icons', 'administratorIcon.ts'), 'utf8');
 ok(/'ok' \| 'idle' \| 'off'/.test(icon) && /civ-adm-ic-warn/.test(icon) && /improvements/.test(icon), 'ikona: stany ok/idle(!)/off + wariant ulepszeń (wspólny komponent)');
 
+// Zarzut 2 Evaluatora (runda 2): ciche odświeżenia (podgląd HUD / wydatki w trakcie tury) nie mogą gubić powiadomień.
+{
+  const i = main.indexOf('function refreshCityAdministrators(notify: boolean)');
+  const body = i > 0 ? main.slice(i, i + 1600) : '';
+  ok(/pendingAdministratorChanges\.(set|get)\(/.test(body) && /if \(notify\)/.test(body) && /for \(const ch of pendingAdministratorChanges\.values\(\)\) noteAdministratorChange\(ch\)/.test(body),
+    'main.ts: zmiany z cichych odświeżeń kumulowane i zgłaszane przy najbliższym notify=true');
+  ok(/pendingAdministratorChanges\.delete\(ch\.city\.id\)/.test(body), 'main.ts: nie pracuje → wrócił (lub odwrotnie) w jednej turze znosi się (brak fałszywego powiadomienia)');
+  const refreshLive = main.slice(main.indexOf('function refreshLiveEmpireRatesUnsafe'), main.indexOf('function refreshLiveEmpireRatesUnsafe') + 300);
+  ok(/refreshCityAdministrators\(false\)/.test(refreshLive), 'main.ts: podgląd HUD odświeża administratorów po cichu (kolejka powiadomień zachowuje zmianę)');
+  ok(/pendingAdministratorChanges\.clear\(\)/.test(main.slice(main.indexOf('cityAdministratorNoticeShown = saved.meta'), main.indexOf('cityAdministratorNoticeShown = saved.meta') + 600)), 'main.ts: wczytanie zapisu czyści kolejkę (stan zapisu = punkt odniesienia)');
+}
+
+// Zarzut 4 Evaluatora (runda 2): Bilans plonów w cityPanel.ts uwzględnia mnożniki administratora (ta sama funkcja co silnik).
+ok(/administratorEffectsFor\(city, built\)/.test(panel) && /administratorProdukcjaMult: administratorEfekty\.produkcjaMult/.test(panel) && /administratorPodatkiMult: administratorEfekty\.podatkiMult/.test(panel),
+  'cityPanel.ts: Bilans plonów dostaje mnożniki administratora (Praca +3%, podatki +3% × tier) jak silnik');
+
 try { fs.rmSync(temp, { recursive: true, force: true }); } catch { /* ignore */ }
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

@@ -291,7 +291,7 @@ import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
 import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
-import { administratorBaseEffectsPct, administratorTierScale, type AdminTier } from '../game/city-administrator';
+import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -1327,7 +1327,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const civKey = cfg.getCivKey?.(city.ownerId);
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
+    // R-WEB-CITY-ADMINISTRATOR-Q1 r2 (zarzut 4): działający administrator miasta — Praca +3% i ściągalność
+    // podatków +3% (× tier) tą samą funkcją co silnik (turn-economy.ts), żeby Bilans plonów zgadzał się z HUD/tickiem.
+    const administratorEfekty = administratorEffectsFor(city, built);
     const base: CityYieldContext = {
+      administratorProdukcjaMult: administratorEfekty.produkcjaMult,
+      administratorPodatkiMult: administratorEfekty.podatkiMult,
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
       maCegielnia: built.includes('cegielnia'),
