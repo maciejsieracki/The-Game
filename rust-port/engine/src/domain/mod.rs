@@ -66,6 +66,7 @@ pub mod resource_access;
 pub mod resource_production;
 pub mod rng;
 pub mod roads;
+pub mod save_migrations;
 mod session;
 pub mod siege_enter_city;
 pub mod siege_nearby_lock;
