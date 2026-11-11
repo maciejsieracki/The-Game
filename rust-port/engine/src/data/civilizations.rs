@@ -319,6 +319,10 @@ pub struct Params {
     pub odmienna_religia_zaufanie_per_tura: f64,
     #[serde(rename = "ekspansjaGranica_zaufanie_perTura")]
     pub ekspansja_granica_zaufanie_per_tura: i64,
+    #[serde(rename = "ekspansjaGranicaBraz_zaufanie_perTura")]
+    pub ekspansja_granica_braz_zaufanie_per_tura: i64,
+    #[serde(rename = "ekspansjaGranicaZelazo_zaufanie_perTura")]
+    pub ekspansja_granica_zelazo_zaufanie_per_tura: i64,
     #[serde(rename = "urazyHistoryczne_zaufanie_perTura")]
     pub urazy_historyczne_zaufanie_per_tura: i64,
     #[serde(rename = "progSojuszZaufanie")]
@@ -355,6 +359,10 @@ pub struct Params {
     pub prog_poboczne_wojna: i64,
     #[serde(rename = "progNapRelacja")]
     pub prog_nap_relacja: i64,
+    #[serde(rename = "progNapZaufanie")]
+    pub prog_nap_zaufanie: i64,
+    #[serde(rename = "progNapBezterminowyRelacja")]
+    pub prog_nap_bezterminowy_relacja: i64,
     #[serde(rename = "progHandelRelacja")]
     pub prog_handel_relacja: i64,
     #[serde(rename = "progSojuszPartnerRwMin")]
@@ -1021,6 +1029,19 @@ pub struct Nap {
     pub prog_relacja: i64,
 }
 
+/// Web `diplomacy-acceptance-points.json` -> `traktaty.rozejm` (R-WEB-TRUCE-Q1: 200 PW).
+/// Stala uzywana w kodzie: `diplomacy_truce_flow::TRUCE_BASE_PN` (test pilnuje zgodnosci).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Rozejm {
+    #[serde(rename = "punkty")]
+    pub punkty: i64,
+    #[serde(rename = "jednostka")]
+    pub jednostka: String,
+    #[serde(rename = "uwaga")]
+    pub uwaga: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UmowaSzlakow {
@@ -1153,6 +1174,8 @@ pub struct Traktaty {
     pub sojusz_defensywny: SojuszDefensywny,
     #[serde(rename = "nap")]
     pub nap: Nap,
+    #[serde(rename = "rozejm")]
+    pub rozejm: Rozejm,
     #[serde(rename = "umowa_szlakow")]
     pub umowa_szlakow: UmowaSzlakow,
     #[serde(rename = "umowa_handlowa")]

@@ -8,10 +8,25 @@
 //! Zasada (R-WEB-DIPLO-NAP-TRUST-30-Q1): pakt wymaga Relacji ORAZ Zaufania (`progNapZaufanie`, fallback 30 —
 //! fail-closed). Próg Relacji = `napRelacjaProgEfektywny` (baza + narzut wspólnej granicy + delta agresora).
 
+use std::sync::OnceLock;
+
 use super::diplomacy_multiwar::js_max;
+use crate::data::civilizations::parse_diplomacy;
 
 /// Web `NAP_ZAUFANIE_FALLBACK` (diplomacy-locks.ts:50). Ta sama wartość co `diplomacy.json progNapZaufanie`.
+/// Używany TYLKO gdy `diplomacy.json` nie daje się sparsować (zabezpieczenie fail-closed).
 pub const NAP_ZAUFANIE_FALLBACK: f64 = 30.0;
+
+/// Wartość `progNapZaufanie` z `diplomacy.json` (`params`), parsowana raz. Źródłem produkcyjnego
+/// domyślnego progu Zaufania dla paktu jest TEN JSON (nie stała), zgodnie z webem.
+pub fn nap_zaufanie_z_danych() -> f64 {
+    static V: OnceLock<f64> = OnceLock::new();
+    *V.get_or_init(|| {
+        parse_diplomacy()
+            .map(|f| f.params.prog_nap_zaufanie as f64)
+            .unwrap_or(NAP_ZAUFANIE_FALLBACK)
+    })
+}
 
 /// Web `NAP_GRANICA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS` (diplomacy-proposals.ts:533, :521).
 pub const NAP_GRANICA_RELACJA_NARZUT: f64 = 20.0;
@@ -222,7 +237,7 @@ pub fn resolve_nap_lock(ctx: &NapLockCtx) -> NapLockOutcome {
         powody.push(format!("+{} za flagę agresora", NAP_DELTA_AGRESOR as i64));
     }
     let powod = powody.join(", ");
-    let min_zauf = ctx.prog_nap_zaufanie.unwrap_or(NAP_ZAUFANIE_FALLBACK);
+    let min_zauf = ctx.prog_nap_zaufanie.unwrap_or_else(nap_zaufanie_z_danych);
     match dual_gate(ctx.rel_total, ctx.zaufanie, nap_rel_prog, min_zauf, &powod) {
         Some((note, requirement)) => NapLockOutcome::Locked {
             note,
