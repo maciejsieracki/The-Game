@@ -193,7 +193,7 @@ async function main() {
         assert('[R-WEB-IRON-STUD-ADJACENCY-Q1] PO próbie D: stadnina NIE postawiona na NOWYM heksie (bez sąsiada; magazyn 50 nietknięty — brak odjęcia)',
           !afterD.includes('stadnina'), afterD);
         const toastD = await page.evaluate(() => window.__buildRequestTestDebug.getToast());
-        assert('toast D czyta AKTUALNY magazyn — "masz 0" (DOKŁADNIE 50 odjęte w kroku C, nie mniej/więcej)',
+        assert('toast D wskazuje brak sąsiada ("obok"); kwota magazynu NIE jest tu weryfikowana bezpośrednio (NIE_ZMIERZONO)',
           !!toastD && typeof toastD.html === 'string' && toastD.html.includes('obok'), toastD);
       }
 

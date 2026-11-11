@@ -143,6 +143,22 @@ async function main() {
     ok(q('stadnina', 0, 1) === true, 'własna stadnina (sąsiad (0,1) w terytorium gracza) -> TAK (kontrola)');
   }
 
+  console.log('\n--- (5b) własność sąsiada: heks CELU własny, stadnina sąsiada w OBCYM terytorium -> NIE (kontrola: własny -> TAK) ---');
+  {
+    // Stadnina zbudowana na (1,0); (1,0) należy do obcego właściciela. Cel (0,1) jest w terytorium gracza
+    // i sąsiaduje z (1,0) — wynik zależy WYŁĄCZNIE od własności sąsiada (inPlayerTerritory(cel) = true).
+    const studAt10 = new Map([['1,0', ['stadnina']]]);
+    const terrForeign = ownTerritory(new Set(['1,0']));
+    terrForeign.push({ q: 1, r: 0, pop: 10, level: 1, ownerId: 1 });
+    ok(qual(3, 50, false, studAt10, undefined, terrForeign)('stadnina', 0, 1) === false,
+      'cel (0,1) własny, stadnina sąsiada (1,0) w obcym terytorium -> NIE (własność sąsiada)');
+    ok(M.hasBuiltOwnStudNeighbor({ map, cityNodes, territoryNodes: terrForeign, playerOwnerIdNum: 0,
+      placedImprovements: studAt10, pendingUndoKeys: undefined }, 0, 1) === false,
+      'hasBuiltOwnStudNeighbor: obca stadnina sąsiada nie wlicza się (cel własny)');
+    ok(qual(3, 50, false, studAt10, undefined, territoryNodes)('stadnina', 0, 1) === true,
+      'kontrola: ta sama stadnina (1,0) w terytorium gracza -> TAK');
+  }
+
   console.log('\n--- (6) złoże konia: naturalne złoże bez zmian (bez sąsiada, epoka 1) ---');
   {
     const q = qual(1, 0, false, undefined);
