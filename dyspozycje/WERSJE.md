@@ -1,3 +1,9 @@
+## ROBOCZA b66d2638 -- 2026-11-06 -- FALA 632: Cegielnia: cykle 50/75/100 na epokę (testowa)
+
+- R-WEB-BRICK-CYCLES-75-100-Q1: cykle Cegielni per epoka właściciela 50/75/100 (carry-forward), receptura 2 glina+1 drewno→2 cegły i mnożnik wyjścia 1/1,5/2 bez zmian; pełny Brąz 150/75 → 225 cegieł, pełne Żelazo 200/100 → 400 cegieł
+- Weryfikacja: tsc czysty; brick-cycles-75-100 46/0, brick-production-x2 69/0, converter-era-scaling 117/0, converters 49/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, ai-test 296/0; mutacja throughputEraParamKeys czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: Chromium; dług bazowy koszty-surowcowe 160/1 (mury_kamienne) identyczny na bazie; dług Rust: REPIN econ-params cykle cegielni
+
 ## ROBOCZA 89f5a5d6 -- 2026-11-06 -- FALA 631: Administrator ulepszeń (auto-ulepszenia terenu tylko z administratorem) (testowa)
 
 - R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń rekrutowany w panelu ulepszeń (przycisk z ikoną A z kilofem), 40 Pieniądza zatrudnienie + 2/turę ze skarbca państwa, bez bonusów; auto-ulepszenia terenu GRACZA działają w mieście tylko z działającym administratorem (brak środków = nie pracuje); osobna flaga migracji starych zapisów z powiadomieniem; AI BEZ administratora (decyzja właściciela B)
