@@ -100,6 +100,15 @@ impl Error for SnapshotError {}
 /// The version is private so a caller cannot serialize a version-2 payload
 /// stamped as an unsupported version.  Use [`SaveSnapshot::version`] to inspect
 /// it and [`SaveSnapshot::new`] to construct a current snapshot.
+///
+/// `SaveSnapshot` nie implementuje `Deserialize`: wczytanie wymaga migracji, wiec jedyne sciezki
+/// to `zapis_loader::load_save_snapshot` i `ReplayLog::load_json_with_migration_reports`.
+/// Ponizszy doctest pilnuje tego na poziomie kompilacji (R-RUSTPORT-ZAPIS-SAVESNAPSHOT-DESER-Q1).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::save_load::SaveSnapshot>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SaveSnapshot {
     version: u16,

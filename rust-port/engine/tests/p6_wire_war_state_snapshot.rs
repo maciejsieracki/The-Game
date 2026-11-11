@@ -224,7 +224,8 @@ fn web_vectors_for_opaque_fields_round_trip_equal() {
         .contains("extraDropped"));
 }
 
-/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
+/// Wariant dla juz sparsowanego `Value`: surowy wczyt przez `RawSnapshot`, potem `migrate_on_load`
+/// (jak `zapis_loader::load_save_snapshot`).
 fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
     let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
     let mut snapshot = raw.into_snapshot();

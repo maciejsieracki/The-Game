@@ -72,6 +72,18 @@ fn save_text(specs: &[UnitSpec], owner_eras: Value) -> String {
     serde_json::to_string(&wire).expect("ser text")
 }
 
+/// Id jednostek z flaga wodza bezposrednio w tekscie JSON zapisu (bez deserializacji i migracji).
+fn general_ids_in_text(text: &str) -> Vec<u64> {
+    let wire: Value = serde_json::from_str(text).expect("json");
+    wire["state"]["units"]
+        .as_array()
+        .expect("units")
+        .iter()
+        .filter(|u| u["is_general"] == json!(true))
+        .map(|u| u["id"].as_u64().expect("id"))
+        .collect()
+}
+
 fn generals(s: &SaveSnapshot) -> Vec<u64> {
     s.state()
         .units()
@@ -97,9 +109,13 @@ fn p6_zapis_loader_migrates_old_save_through_production_path() {
         &excess_generals_specs(),
         json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
     );
-    // Surowy typ wire (`RawSnapshot`) jest prywatny, wiec nie ma publicznej surowej sciezki do porownania.
-    // Dowodem, ze zapis przed migracja niesie 4 wodzow, jest raport produkcyjnego loadera ponizej
-    // (degradacja wodza 12 wymaga 4 flag wodzow w danych zapisu).
+    // Kontrola surowa (bez migracji, bez prywatnego typu wire): tekst zapisu przed migracja niesie
+    // 4 wodzow z flaga `isGeneral: true`. Przywraca asercje z poprzedniej wersji testu.
+    assert_eq!(
+        general_ids_in_text(&text),
+        vec![10, 11, 12, 20],
+        "zapis przed migracja"
+    );
     // Produkcyjny loader: epoka 2 z zapisu => limit 2 na wlasciciela; najmlodszy wodz gracza 1 (id 12) traci flage.
     let (loaded, report) = load_save_snapshot(&text).expect("loader");
     assert_eq!(report.demoted_generals, vec![UnitId::new(12)]);
