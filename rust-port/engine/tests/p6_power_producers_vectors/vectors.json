@@ -6,23 +6,23 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 7
+     "population": 10
     },
     {
      "ownerId": 2,
-     "population": 3.7
+     "population": 15.5
+    },
+    {
+     "ownerId": 0,
+     "population": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "population": 10
     },
     {
      "ownerId": 0,
      "population": -2
-    },
-    {
-     "ownerId": 2,
-     "population": 7
-    },
-    {
-     "ownerId": 0,
-     "population": 12
     },
     {
      "ownerId": 0,
@@ -30,109 +30,109 @@
     }
    ],
    "owner": 2,
-   "expect": 10
+   "expect": 25
   },
   {
    "cities": [
+    {
+     "ownerId": 0,
+     "population": 12
+    },
+    {
+     "ownerId": 2,
+     "population": 10
+    }
+   ],
+   "owner": 0,
+   "expect": 12
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 3.7
+    },
+    {
+     "ownerId": 2,
+     "population": 7
+    },
+    {
+     "ownerId": 1,
+     "population": 10
+    },
+    {
+     "ownerId": 1,
+     "population": 2
+    },
+    {
+     "ownerId": 1,
+     "population": 1
+    },
+    {
+     "ownerId": 2,
+     "population": 12
+    },
     {
      "ownerId": 0,
      "population": 9
     },
     {
      "ownerId": 2,
-     "population": 7
+     "population": "-Infinity"
     }
    ],
-   "owner": 0,
+   "owner": 1,
+   "expect": 16
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "population": 7
+    },
+    {
+     "ownerId": 2,
+     "population": 7
+    },
+    {
+     "ownerId": 0,
+     "population": 5
+    },
+    {
+     "ownerId": 2,
+     "population": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "population": 1
+    }
+   ],
+   "owner": 2,
    "expect": 9
   },
   {
    "cities": [
     {
-     "ownerId": 1,
-     "population": 10
-    },
-    {
      "ownerId": 2,
-     "population": 5
-    },
-    {
-     "ownerId": 1,
-     "population": 7
-    },
-    {
-     "ownerId": 1,
-     "population": 1
-    },
-    {
-     "ownerId": 1,
-     "population": 1
-    },
-    {
-     "ownerId": 2,
-     "population": 9
-    },
-    {
-     "ownerId": 0,
      "population": 7
     },
     {
      "ownerId": 2,
-     "population": 15.5
-    }
-   ],
-   "owner": 1,
-   "expect": 19
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "population": 5
-    },
-    {
-     "ownerId": 2,
-     "population": 5
+     "population": "-Infinity"
     },
     {
      "ownerId": 0,
-     "population": 3
-    },
-    {
-     "ownerId": 2,
-     "population": -2
-    },
-    {
-     "ownerId": 2,
-     "population": 1
+     "population": 10
     }
    ],
    "owner": 2,
-   "expect": 7
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "population": 5
-    },
-    {
-     "ownerId": 2,
-     "population": 15.5
-    },
-    {
-     "ownerId": 0,
-     "population": 9
-    }
-   ],
-   "owner": 2,
-   "expect": 20
+   "expect": 8
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 10
+     "population": 3.7
     }
    ],
    "owner": 2,
@@ -146,45 +146,45 @@
     },
     {
      "ownerId": 0,
-     "population": -2
+     "population": "Infinity"
     },
     {
      "ownerId": 2,
-     "population": 5
+     "population": 7
     },
     {
      "ownerId": 0,
-     "population": 12
+     "population": -2
     },
     {
      "ownerId": 1,
-     "population": 5
-    },
-    {
-     "ownerId": 2,
-     "population": 3.7
+     "population": 7
     },
     {
      "ownerId": 2,
      "population": 15.5
+    },
+    {
+     "ownerId": 2,
+     "population": "-Infinity"
     }
    ],
    "owner": 0,
-   "expect": 13
+   "expect": "Infinity"
   },
   {
    "cities": [
     {
      "ownerId": 2,
-     "population": 7
+     "population": 10
     },
     {
      "ownerId": 2,
-     "population": 2
+     "population": 3
     },
     {
      "ownerId": 0,
-     "population": -2
+     "population": "NaN"
     }
    ],
    "owner": 1,
@@ -194,15 +194,15 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 3.7
+     "population": "NaN"
     },
     {
      "ownerId": 1,
-     "population": 3
+     "population": 5
     },
     {
      "ownerId": 2,
-     "population": 2
+     "population": 3
     }
    ],
    "owner": 1,
@@ -212,25 +212,25 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 3
-    },
-    {
-     "ownerId": 0,
-     "population": 3
-    }
-   ],
-   "owner": 1,
-   "expect": 3
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "population": 10
+     "population": 5
     },
     {
      "ownerId": 0,
      "population": 5
+    }
+   ],
+   "owner": 1,
+   "expect": 5
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "population": 3.7
+    },
+    {
+     "ownerId": 0,
+     "population": 7
     },
     {
      "ownerId": 2,
@@ -242,25 +242,25 @@
     },
     {
      "ownerId": 2,
-     "population": 9
+     "population": 12
     }
    ],
    "owner": 2,
-   "expect": 21
+   "expect": 17
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": -2
+     "population": "Infinity"
     },
     {
      "ownerId": 1,
-     "population": -2
+     "population": "Infinity"
     },
     {
      "ownerId": 2,
-     "population": -2
+     "population": "Infinity"
     },
     {
      "ownerId": 1,
@@ -268,37 +268,37 @@
     },
     {
      "ownerId": 1,
-     "population": 3.7
+     "population": 15.5
+    },
+    {
+     "ownerId": 1,
+     "population": -2
+    },
+    {
+     "ownerId": 0,
+     "population": "-Infinity"
+    },
+    {
+     "ownerId": 2,
+     "population": 3
+    }
+   ],
+   "owner": 0,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 5
     },
     {
      "ownerId": 1,
      "population": 12
     },
     {
-     "ownerId": 0,
-     "population": 15.5
-    },
-    {
-     "ownerId": 2,
-     "population": 2
-    }
-   ],
-   "owner": 0,
-   "expect": 15
-  },
-  {
-   "cities": [
-    {
      "ownerId": 1,
-     "population": 3
-    },
-    {
-     "ownerId": 1,
-     "population": 9
-    },
-    {
-     "ownerId": 1,
-     "population": 9
+     "population": 10
     },
     {
      "ownerId": 2,
@@ -317,7 +317,7 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 5
+     "population": 7
     }
    ],
    "owner": 0,
@@ -327,7 +327,7 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 3.7
+     "population": 15.5
     },
     {
      "ownerId": 0,
@@ -343,7 +343,7 @@
     },
     {
      "ownerId": 0,
-     "population": 7
+     "population": 9
     }
    ],
    "owner": 2,
@@ -357,7 +357,7 @@
     },
     {
      "ownerId": 1,
-     "population": 7
+     "population": 10
     }
    ],
    "owner": 2,
@@ -375,11 +375,11 @@
     },
     {
      "ownerId": 1,
-     "population": 15.5
+     "population": "-Infinity"
     },
     {
      "ownerId": 1,
-     "population": 9
+     "population": 10
     },
     {
      "ownerId": 0,
@@ -387,15 +387,15 @@
     },
     {
      "ownerId": 2,
-     "population": 7
+     "population": 9
     },
     {
      "ownerId": 2,
-     "population": 12
+     "population": -2
     }
    ],
    "owner": 2,
-   "expect": 21
+   "expect": 12
   },
   {
    "cities": [
@@ -405,11 +405,11 @@
     },
     {
      "ownerId": 0,
-     "population": 0
+     "population": 1
     },
     {
      "ownerId": 1,
-     "population": 7
+     "population": 9
     },
     {
      "ownerId": 2,
@@ -417,41 +417,41 @@
     },
     {
      "ownerId": 0,
-     "population": 15.5
+     "population": "Infinity"
     },
     {
      "ownerId": 2,
-     "population": 5
+     "population": 7
     }
    ],
    "owner": 0,
-   "expect": 16
+   "expect": "Infinity"
   },
   {
    "cities": [
     {
      "ownerId": 2,
-     "population": 3.7
+     "population": 15.5
     },
     {
      "ownerId": 0,
-     "population": 2
+     "population": 3
     },
     {
      "ownerId": 1,
-     "population": 2
-    },
-    {
-     "ownerId": 0,
-     "population": 9
+     "population": 3
     },
     {
      "ownerId": 0,
      "population": 12
+    },
+    {
+     "ownerId": 0,
+     "population": -2
     }
    ],
    "owner": 1,
-   "expect": 2
+   "expect": 3
   },
   {
    "cities": [],
@@ -462,11 +462,11 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 15.5
+     "population": "-Infinity"
     },
     {
      "ownerId": 2,
-     "population": 10
+     "population": 3.7
     }
    ],
    "owner": 0,
@@ -488,61 +488,47 @@
     },
     {
      "ownerId": 1,
-     "population": 5
+     "population": 7
     },
     {
      "ownerId": 2,
+     "population": 10
+    }
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "population": 3
+    },
+    {
+     "ownerId": 0,
+     "population": -2
+    },
+    {
+     "ownerId": 0,
+     "population": 3.7
+    },
+    {
+     "ownerId": 1,
      "population": 7
     }
    ],
    "owner": 0,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "population": 2
-    },
-    {
-     "ownerId": 0,
-     "population": 12
-    },
-    {
-     "ownerId": 0,
-     "population": 10
-    },
-    {
-     "ownerId": 1,
-     "population": 5
-    }
-   ],
-   "owner": 0,
-   "expect": 22
+   "expect": 4
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 15.5
+     "population": "Infinity"
     },
     {
      "ownerId": 1,
-     "population": -2
-    }
-   ],
-   "owner": 2,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "population": 9
-    },
-    {
-     "ownerId": 0,
-     "population": 10
+     "population": "NaN"
     }
    ],
    "owner": 2,
@@ -555,52 +541,66 @@
      "population": 12
     },
     {
-     "ownerId": 1,
-     "population": 5
-    },
-    {
      "ownerId": 0,
-     "population": 3
-    },
-    {
-     "ownerId": 0,
-     "population": 3
-    },
-    {
-     "ownerId": 1,
-     "population": -2
+     "population": 12
     }
    ],
-   "owner": 0,
-   "expect": 18
+   "owner": 2,
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "population": 10
-    },
-    {
-     "ownerId": 1,
      "population": 15.5
     },
     {
      "ownerId": 1,
-     "population": 3
+     "population": 7
+    },
+    {
+     "ownerId": 0,
+     "population": 5
+    },
+    {
+     "ownerId": 0,
+     "population": 5
+    },
+    {
+     "ownerId": 1,
+     "population": "Infinity"
     }
    ],
    "owner": 0,
-   "expect": 10
+   "expect": 25
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "population": 3.7
+    },
+    {
+     "ownerId": 1,
+     "population": "-Infinity"
+    },
+    {
+     "ownerId": 1,
+     "population": 5
+    }
+   ],
+   "owner": 0,
+   "expect": 3
   },
   {
    "cities": [
     {
      "ownerId": 2,
-     "population": 7
+     "population": 10
     },
     {
      "ownerId": 2,
-     "population": 9
+     "population": 12
     },
     {
      "ownerId": 1,
@@ -608,139 +608,33 @@
     },
     {
      "ownerId": 1,
-     "population": 5
-    },
-    {
-     "ownerId": 1,
-     "population": -2
-    },
-    {
-     "ownerId": 2,
-     "population": -2
-    },
-    {
-     "ownerId": 2,
-     "population": 1
-    },
-    {
-     "ownerId": 0,
-     "population": 2
-    }
-   ],
-   "owner": 0,
-   "expect": 2
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "population": 7
-    }
-   ],
-   "owner": 0,
-   "expect": 7
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "population": 2
-    },
-    {
-     "ownerId": 1,
-     "population": 12
-    },
-    {
-     "ownerId": 2,
-     "population": 15.5
-    },
-    {
-     "ownerId": 2,
-     "population": 1
-    },
-    {
-     "ownerId": 0,
-     "population": 1
-    },
-    {
-     "ownerId": 1,
-     "population": 10
-    },
-    {
-     "ownerId": 2,
-     "population": 10
-    },
-    {
-     "ownerId": 2,
-     "population": 9
-    }
-   ],
-   "owner": 1,
-   "expect": 22
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
      "population": 7
     },
     {
      "ownerId": 1,
-     "population": 3.7
+     "population": "NaN"
     },
     {
-     "ownerId": 1,
-     "population": 9
+     "ownerId": 2,
+     "population": "Infinity"
     },
     {
-     "ownerId": 0,
-     "population": 3.7
-    },
-    {
-     "ownerId": 0,
-     "population": 12
-    },
-    {
-     "ownerId": 1,
+     "ownerId": 2,
      "population": 1
     },
     {
      "ownerId": 0,
-     "population": 1
+     "population": 3
     }
    ],
-   "owner": 1,
-   "expect": 20
+   "owner": 0,
+   "expect": 3
   },
   {
    "cities": [
     {
-     "ownerId": 1,
-     "population": 0
-    },
-    {
      "ownerId": 0,
      "population": 9
-    },
-    {
-     "ownerId": 2,
-     "population": 5
-    },
-    {
-     "ownerId": 1,
-     "population": 10
-    },
-    {
-     "ownerId": 1,
-     "population": 2
-    },
-    {
-     "ownerId": 1,
-     "population": 3.7
-    },
-    {
-     "ownerId": 1,
-     "population": 10
     }
    ],
    "owner": 0,
@@ -750,29 +644,53 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 2
+     "population": 3
     },
     {
-     "ownerId": 0,
+     "ownerId": 1,
      "population": -2
     },
     {
      "ownerId": 2,
-     "population": 1
+     "population": "-Infinity"
+    },
+    {
+     "ownerId": 2,
+     "population": 2
+    },
+    {
+     "ownerId": 0,
+     "population": 2
+    },
+    {
+     "ownerId": 1,
+     "population": 3.7
+    },
+    {
+     "ownerId": 2,
+     "population": 3.7
+    },
+    {
+     "ownerId": 2,
+     "population": 12
     }
    ],
-   "owner": 2,
-   "expect": 3
+   "owner": 1,
+   "expect": 4
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 9
+     "population": 10
     },
     {
      "ownerId": 1,
-     "population": 0
+     "population": 15.5
+    },
+    {
+     "ownerId": 1,
+     "population": 10
     },
     {
      "ownerId": 0,
@@ -783,12 +701,108 @@
      "population": -2
     },
     {
-     "ownerId": 0,
-     "population": 7
+     "ownerId": 1,
+     "population": 1
     },
     {
      "ownerId": 0,
-     "population": -2
+     "population": 1
+    }
+   ],
+   "owner": 1,
+   "expect": 36
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 1
+    },
+    {
+     "ownerId": 0,
+     "population": 12
+    },
+    {
+     "ownerId": 2,
+     "population": 7
+    },
+    {
+     "ownerId": 1,
+     "population": 3.7
+    },
+    {
+     "ownerId": 1,
+     "population": 2
+    },
+    {
+     "ownerId": 1,
+     "population": 15.5
+    },
+    {
+     "ownerId": 1,
+     "population": 3.7
+    }
+   ],
+   "owner": 0,
+   "expect": 12
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "population": 3
+    },
+    {
+     "ownerId": 0,
+     "population": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "population": 1
+    }
+   ],
+   "owner": 2,
+   "expect": 4
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 10
+    },
+    {
+     "ownerId": 1,
+     "population": 1
+    },
+    {
+     "ownerId": 0,
+     "population": "-Infinity"
+    },
+    {
+     "ownerId": 0,
+     "population": "NaN"
+    },
+    {
+     "ownerId": 0,
+     "population": 9
+    },
+    {
+     "ownerId": 0,
+     "population": "NaN"
+    }
+   ],
+   "owner": 1,
+   "expect": 11
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 10
+    },
+    {
+     "ownerId": 0,
+     "population": 1
     }
    ],
    "owner": 1,
@@ -797,34 +811,20 @@
   {
    "cities": [
     {
-     "ownerId": 1,
-     "population": 7
-    },
-    {
-     "ownerId": 0,
-     "population": 0
-    }
-   ],
-   "owner": 1,
-   "expect": 7
-  },
-  {
-   "cities": [
-    {
      "ownerId": 2,
-     "population": 5
+     "population": 9
     },
     {
      "ownerId": 1,
-     "population": 3.7
+     "population": 15.5
     },
     {
      "ownerId": 0,
-     "population": 2
+     "population": 3
     }
    ],
    "owner": 1,
-   "expect": 3
+   "expect": 15
   },
   {
    "cities": [],
@@ -839,15 +839,15 @@
     },
     {
      "ownerId": 1,
-     "population": 2
+     "population": 3
     },
     {
      "ownerId": 1,
-     "population": -2
+     "population": "Infinity"
     },
     {
      "ownerId": 0,
-     "population": 5
+     "population": 7
     },
     {
      "ownerId": 1,
@@ -855,11 +855,11 @@
     },
     {
      "ownerId": 2,
-     "population": 15.5
+     "population": "-Infinity"
     }
    ],
    "owner": 1,
-   "expect": 4
+   "expect": "Infinity"
   },
   {
    "cities": [],
@@ -872,13 +872,13 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 1,
-     "manpower": 0
+     "population": 2,
+     "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 3,
-     "manpower": 999
+     "population": 5,
+     "manpower": 4000
     },
     {
      "ownerId": 0,
@@ -886,17 +886,17 @@
     },
     {
      "ownerId": 0,
-     "population": 7,
+     "population": 10,
      "manpower": 0
     },
     {
      "ownerId": 1,
-     "population": 9,
-     "manpower": 999
+     "population": 10,
+     "manpower": 4000
     },
     {
      "ownerId": 0,
-     "population": -2,
+     "population": "Infinity",
      "manpower": 0
     }
    ],
@@ -916,18 +916,18 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 5,
+     "population": 7,
      "manpower": 0
     },
     {
      "ownerId": 1,
-     "population": 7,
+     "population": 10,
      "manpower": 999
     },
     {
      "ownerId": 1,
-     "population": 5,
-     "manpower": -7
+     "population": 7,
+     "manpower": "NaN"
     }
    ],
    "owner": 1,
@@ -935,28 +935,29 @@
    "maxMult": 0.5,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 17,
-    "ludnoscAbsolutna": 10880000,
-    "rekruci": 999,
-    "poborRaw": 10880999,
-    "rekrutEkw": 0
+    "sumaLudkow": 24,
+    "ludnoscAbsolutna": 15360000,
+    "rekruci": 224999,
+    "poborRaw": 15584999,
+    "rekrutEkw": 3
    }
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "population": 7,
+     "population": 10,
      "manpower": 0
     },
     {
      "ownerId": 1,
-     "population": 3
+     "population": 5,
+     "manpower": 0
     },
     {
      "ownerId": 1,
-     "population": 7,
-     "manpower": 0
+     "population": 9,
+     "manpower": 1
     }
    ],
    "owner": 0,
@@ -964,10 +965,10 @@
    "maxMult": -1,
    "costMult": 0,
    "expect": {
-    "sumaLudkow": 7,
-    "ludnoscAbsolutna": 33600000,
+    "sumaLudkow": 10,
+    "ludnoscAbsolutna": 48000000,
     "rekruci": 0,
-    "poborRaw": 33600000,
+    "poborRaw": 48000000,
     "rekrutEkw": 0
    }
   },
@@ -1031,18 +1032,18 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 10,
+     "population": 3.7,
      "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": 1
+     "population": -2,
+     "manpower": 120.5
     },
     {
      "ownerId": 2,
-     "population": 7,
-     "manpower": -7
+     "population": 9,
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
@@ -1051,18 +1052,18 @@
     },
     {
      "ownerId": 0,
-     "population": 3.7,
-     "manpower": -7
+     "population": 15.5,
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
-     "population": 9,
-     "manpower": 4000
+     "population": 10,
+     "manpower": -7
     },
     {
      "ownerId": 1,
      "population": 2,
-     "manpower": 999
+     "manpower": 4000
     }
    ],
    "owner": 2,
@@ -1070,11 +1071,11 @@
    "maxMult": 2,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 7,
-    "ludnoscAbsolutna": 70000,
-    "rekruci": 0,
-    "poborRaw": 70000,
-    "rekrutEkw": 0
+    "sumaLudkow": 9,
+    "ludnoscAbsolutna": 90000,
+    "rekruci": 18000,
+    "poborRaw": 108000,
+    "rekrutEkw": 9
    }
   },
   {
@@ -1087,17 +1088,17 @@
     {
      "ownerId": 2,
      "population": 1,
-     "manpower": 4000
+     "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": -2,
+     "population": "NaN",
      "manpower": 0
     },
     {
      "ownerId": 2,
-     "population": 1,
-     "manpower": -7
+     "population": 2,
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
@@ -1106,8 +1107,8 @@
     },
     {
      "ownerId": 0,
-     "population": 5,
-     "manpower": 4000
+     "population": 7,
+     "manpower": -7
     }
    ],
    "owner": 1,
@@ -1126,31 +1127,31 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 10,
+     "population": 3.7,
      "manpower": 0
     },
     {
      "ownerId": 1,
-     "population": 5,
+     "population": 9,
      "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": 15.5,
-     "manpower": 1
-    },
-    {
-     "ownerId": 0,
-     "population": 3.7,
+     "population": "Infinity",
      "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 0
+     "population": 15.5,
+     "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 15.5,
+     "population": 1
+    },
+    {
+     "ownerId": 0,
+     "population": "-Infinity",
      "manpower": 0
     }
    ],
@@ -1159,10 +1160,10 @@
    "maxMult": 0.5,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 10,
-    "ludnoscAbsolutna": 6400000,
+    "sumaLudkow": 3,
+    "ludnoscAbsolutna": 1920000,
     "rekruci": 0,
-    "poborRaw": 6400000,
+    "poborRaw": 1920000,
     "rekrutEkw": 0
    }
   },
@@ -1170,33 +1171,33 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 12,
+     "population": -2,
      "manpower": 120.5
     },
     {
      "ownerId": 2,
-     "population": 3,
-     "manpower": 0
+     "population": 5,
+     "manpower": 1
     },
     {
      "ownerId": 1,
-     "population": 3.7,
-     "manpower": 4000
+     "population": 15.5,
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 9,
-     "manpower": 999
+     "population": 10,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 7,
-     "manpower": -7
+     "population": 9,
+     "manpower": "NaN"
     }
    ],
    "owner": 0,
@@ -1204,10 +1205,10 @@
    "maxMult": 2,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 21,
-    "ludnoscAbsolutna": 100800000,
-    "rekruci": 1119,
-    "poborRaw": 100801119,
+    "sumaLudkow": 11,
+    "ludnoscAbsolutna": 52800000,
+    "rekruci": 4120,
+    "poborRaw": 52804120,
     "rekrutEkw": 0
    }
   },
@@ -1215,18 +1216,18 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 0
     },
     {
      "ownerId": 2,
-     "population": 5,
+     "population": 7,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 3,
-     "manpower": 120.5
+     "population": 5,
+     "manpower": 999
     },
     {
      "ownerId": 0,
@@ -1239,10 +1240,10 @@
    "maxMult": 2,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 20,
-    "ludnoscAbsolutna": 200000,
+    "sumaLudkow": 8,
+    "ludnoscAbsolutna": 80000,
     "rekruci": 120,
-    "poborRaw": 200120,
+    "poborRaw": 80120,
     "rekrutEkw": 0
    }
   },
@@ -1250,11 +1251,11 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 7
+     "population": 10
     },
     {
      "ownerId": 1,
-     "population": 3,
+     "population": 5,
      "manpower": 0
     }
    ],
@@ -1263,10 +1264,10 @@
    "maxMult": -1,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 10,
-    "ludnoscAbsolutna": 400000,
+    "sumaLudkow": 15,
+    "ludnoscAbsolutna": 600000,
     "rekruci": 0,
-    "poborRaw": 400000,
+    "poborRaw": 600000,
     "rekrutEkw": 0
    }
   },
@@ -1293,16 +1294,16 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 5,
+     "population": 7,
      "manpower": 1
     },
     {
      "ownerId": 1,
-     "population": 9
+     "population": 12
     },
     {
      "ownerId": 0,
-     "population": 3.7
+     "population": "NaN"
     }
    ],
    "owner": 1,
@@ -1310,10 +1311,10 @@
    "maxMult": 0,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 9,
-    "ludnoscAbsolutna": 21600000,
+    "sumaLudkow": 12,
+    "ludnoscAbsolutna": 28800000,
     "rekruci": 0,
-    "poborRaw": 21600000,
+    "poborRaw": 28800000,
     "rekrutEkw": 0
    }
   },
@@ -1321,37 +1322,37 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 9,
+     "population": 10,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 1,
-     "manpower": 4000
+     "population": 2,
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 0
     },
     {
      "ownerId": 1,
+     "population": 12,
+     "manpower": 1
+    },
+    {
+     "ownerId": 2,
+     "population": 5,
+     "manpower": -7
+    },
+    {
+     "ownerId": 2,
      "population": 9,
-     "manpower": 0
-    },
-    {
-     "ownerId": 2,
-     "population": 3,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 2,
-     "population": 7,
-     "manpower": 0
+     "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 3.7,
+     "population": 15.5,
      "manpower": 0
     }
    ],
@@ -1360,10 +1361,10 @@
    "maxMult": -1,
    "costMult": 0,
    "expect": {
-    "sumaLudkow": 10,
-    "ludnoscAbsolutna": 48000000,
+    "sumaLudkow": 14,
+    "ludnoscAbsolutna": 67200000,
     "rekruci": 0,
-    "poborRaw": 48000000,
+    "poborRaw": 67200000,
     "rekrutEkw": 0
    }
   },
@@ -1371,13 +1372,13 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 5,
-     "manpower": 1
+     "population": 7,
+     "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": -7
+     "population": 9,
+     "manpower": "NaN"
     }
    ],
    "owner": 0,
@@ -1385,10 +1386,10 @@
    "maxMult": 0,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 7,
-    "ludnoscAbsolutna": 33600000,
+    "sumaLudkow": 9,
+    "ludnoscAbsolutna": 43200000,
     "rekruci": 0,
-    "poborRaw": 33600000,
+    "poborRaw": 43200000,
     "rekrutEkw": 0
    }
   },
@@ -1410,32 +1411,32 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 7,
-     "manpower": 999
+     "population": 10,
+     "manpower": 4000
     },
     {
      "ownerId": 0,
-     "population": 15.5,
+     "population": "Infinity",
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": -7
+     "population": 10,
+     "manpower": "NaN"
     },
     {
      "ownerId": 1,
      "population": 3,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 2,
-     "population": 9,
      "manpower": -7
     },
     {
+     "ownerId": 2,
+     "population": 12,
+     "manpower": "NaN"
+    },
+    {
      "ownerId": 0,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 999
     }
    ],
@@ -1444,10 +1445,73 @@
    "maxMult": 0,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 37,
-    "ludnoscAbsolutna": 5920000,
+    "sumaLudkow": "Infinity",
+    "ludnoscAbsolutna": "Infinity",
+    "rekruci": "NaN",
+    "poborRaw": "NaN",
+    "rekrutEkw": "NaN"
+   }
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "population": 7,
+     "manpower": -7
+    },
+    {
+     "ownerId": 0,
+     "population": 15.5,
+     "manpower": "NaN"
+    },
+    {
+     "ownerId": 1,
+     "population": 10
+    },
+    {
+     "ownerId": 2,
+     "population": 15.5,
+     "manpower": "NaN"
+    },
+    {
+     "ownerId": 0,
+     "population": 7
+    }
+   ],
+   "owner": 2,
+   "epoka": 7,
+   "maxMult": 1.25,
+   "costMult": 1.5,
+   "expect": {
+    "sumaLudkow": 15,
+    "ludnoscAbsolutna": 9600000,
+    "rekruci": 1200000,
+    "poborRaw": 10800000,
+    "rekrutEkw": 12
+   }
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "population": 3.7,
+     "manpower": 120.5
+    },
+    {
+     "ownerId": 1,
+     "population": 15.5,
+     "manpower": "NaN"
+    }
+   ],
+   "owner": 0,
+   "epoka": 9,
+   "maxMult": 2,
+   "costMult": 0.5,
+   "expect": {
+    "sumaLudkow": 0,
+    "ludnoscAbsolutna": 0,
     "rekruci": 0,
-    "poborRaw": 5920000,
+    "poborRaw": 0,
     "rekrutEkw": 0
    }
   },
@@ -1455,12 +1519,17 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 5,
-     "manpower": 4000
+     "population": 9,
+     "manpower": 1
     },
     {
-     "ownerId": 0,
-     "population": 3.7,
+     "ownerId": 1,
+     "population": 2,
+     "manpower": 999
+    },
+    {
+     "ownerId": 2,
+     "population": "NaN",
      "manpower": -7
     },
     {
@@ -1471,74 +1540,6 @@
      "ownerId": 2,
      "population": 12,
      "manpower": -7
-    },
-    {
-     "ownerId": 0,
-     "population": 5
-    }
-   ],
-   "owner": 2,
-   "epoka": 7,
-   "maxMult": 1.25,
-   "costMult": 1.5,
-   "expect": {
-    "sumaLudkow": 12,
-    "ludnoscAbsolutna": 7680000,
-    "rekruci": 0,
-    "poborRaw": 7680000,
-    "rekrutEkw": 0
-   }
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
-     "population": 10,
-     "manpower": 120.5
-    },
-    {
-     "ownerId": 1,
-     "population": 12,
-     "manpower": -7
-    }
-   ],
-   "owner": 0,
-   "epoka": 9,
-   "maxMult": 2,
-   "costMult": 0.5,
-   "expect": {
-    "sumaLudkow": 0,
-    "ludnoscAbsolutna": 0,
-    "rekruci": 0,
-    "poborRaw": 0,
-    "rekrutEkw": 0
-   }
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "population": 7,
-     "manpower": 0
-    },
-    {
-     "ownerId": 1,
-     "population": 2,
-     "manpower": 999
-    },
-    {
-     "ownerId": 2,
-     "population": -2,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 1,
-     "population": 7
-    },
-    {
-     "ownerId": 2,
-     "population": 9,
-     "manpower": 4000
     }
    ],
    "owner": 1,
@@ -1546,10 +1547,10 @@
    "maxMult": -1,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 9,
-    "ludnoscAbsolutna": 5760000,
+    "sumaLudkow": 11,
+    "ludnoscAbsolutna": 7040000,
     "rekruci": 0,
-    "poborRaw": 5760000,
+    "poborRaw": 7040000,
     "rekrutEkw": 0
    }
   },
@@ -1557,28 +1558,28 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 10,
+     "population": 3.7,
      "manpower": 1
     },
     {
      "ownerId": 2,
-     "population": 3,
-     "manpower": -7
+     "population": 5,
+     "manpower": "NaN"
     },
     {
      "ownerId": 2,
-     "population": 9,
-     "manpower": 999
+     "population": 10,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": -7
+     "population": -2,
+     "manpower": "NaN"
     },
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": -7
+     "population": -2,
+     "manpower": "NaN"
     }
    ],
    "owner": 1,
@@ -1586,10 +1587,10 @@
    "maxMult": -1,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 24,
-    "ludnoscAbsolutna": 115200000,
+    "sumaLudkow": 2,
+    "ludnoscAbsolutna": 9600000,
     "rekruci": 0,
-    "poborRaw": 115200000,
+    "poborRaw": 9600000,
     "rekrutEkw": 0
    }
   },
@@ -1597,33 +1598,33 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 0,
+     "population": 1,
      "manpower": 999
     },
     {
      "ownerId": 1,
-     "population": 7,
+     "population": 10,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 9,
-     "manpower": 999
+     "population": 12,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 9,
+     "population": 12,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 9,
+     "population": 10,
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": 999
+     "population": 10,
+     "manpower": 4000
     }
    ],
    "owner": 2,
@@ -1642,7 +1643,8 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 2
+     "population": 3,
+     "manpower": 0
     }
    ],
    "owner": 1,
@@ -1650,10 +1652,10 @@
    "maxMult": -1,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 2,
-    "ludnoscAbsolutna": 80000,
+    "sumaLudkow": 3,
+    "ludnoscAbsolutna": 120000,
     "rekruci": 0,
-    "poborRaw": 80000,
+    "poborRaw": 120000,
     "rekrutEkw": 0
    }
   },
@@ -1661,16 +1663,16 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": -7
+     "population": -2,
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
-     "population": 3
+     "population": 5
     },
     {
      "ownerId": 1,
-     "population": 10,
+     "population": 12,
      "manpower": 4000
     }
    ],
@@ -1679,10 +1681,10 @@
    "maxMult": 0.5,
    "costMult": 0,
    "expect": {
-    "sumaLudkow": 22,
-    "ludnoscAbsolutna": 105600000,
-    "rekruci": 4000,
-    "poborRaw": 105604000,
+    "sumaLudkow": 13,
+    "ludnoscAbsolutna": 62400000,
+    "rekruci": 244000,
+    "poborRaw": 62644000,
     "rekrutEkw": 0
    }
   },
@@ -1691,12 +1693,12 @@
     {
      "ownerId": 2,
      "population": 3,
-     "manpower": 4000
+     "manpower": -7
     },
     {
      "ownerId": 1,
      "population": 0,
-     "manpower": 120.5
+     "manpower": 999
     },
     {
      "ownerId": 2,
@@ -1705,7 +1707,7 @@
     },
     {
      "ownerId": 0,
-     "population": 7,
+     "population": 9,
      "manpower": 1
     }
    ],
@@ -1714,10 +1716,10 @@
    "maxMult": 0.5,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 7,
-    "ludnoscAbsolutna": 70000,
+    "sumaLudkow": 9,
+    "ludnoscAbsolutna": 90000,
     "rekruci": 1,
-    "poborRaw": 70001,
+    "poborRaw": 90001,
     "rekrutEkw": 0
    }
   },
@@ -1725,36 +1727,36 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 5,
+     "population": 7,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 10,
-     "manpower": 120.5
-    },
-    {
-     "ownerId": 0,
-     "population": 7
-    },
-    {
-     "ownerId": 2,
      "population": 3.7,
      "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 15.5
+     "population": 10
     },
     {
      "ownerId": 2,
-     "population": 9,
-     "manpower": 4000
+     "population": 15.5,
+     "manpower": 999
+    },
+    {
+     "ownerId": 0,
+     "population": "-Infinity"
     },
     {
      "ownerId": 2,
      "population": 10,
-     "manpower": 0
+     "manpower": 4000
+    },
+    {
+     "ownerId": 2,
+     "population": 12,
+     "manpower": 1
     }
    ],
    "owner": 0,
@@ -1762,43 +1764,43 @@
    "maxMult": 2,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 27,
-    "ludnoscAbsolutna": 270000,
-    "rekruci": 44120,
-    "poborRaw": 314120,
-    "rekrutEkw": 44
+    "sumaLudkow": 18,
+    "ludnoscAbsolutna": 180000,
+    "rekruci": 22120,
+    "poborRaw": 202120,
+    "rekrutEkw": 22
    }
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "population": 3.7,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 0,
-     "population": 10,
+     "population": 15.5,
      "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 12,
+     "population": 3.7,
+     "manpower": "NaN"
+    },
+    {
+     "ownerId": 0,
+     "population": -2,
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 15.5
+     "population": "-Infinity"
+    },
+    {
+     "ownerId": 2,
+     "population": 1,
+     "manpower": "NaN"
     },
     {
      "ownerId": 2,
      "population": 0,
-     "manpower": -7
-    },
-    {
-     "ownerId": 2,
-     "population": 0,
-     "manpower": 999
+     "manpower": 4000
     }
    ],
    "owner": 1,
@@ -1817,17 +1819,17 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 10,
+     "population": 3.7,
      "manpower": 0
     },
     {
      "ownerId": 1,
      "population": 2,
-     "manpower": 4000
+     "manpower": -7
     },
     {
      "ownerId": 2,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 0
     },
     {
@@ -1837,8 +1839,8 @@
     },
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": 4000
+     "population": 15.5,
+     "manpower": -7
     }
    ],
    "owner": 2,
@@ -1846,10 +1848,10 @@
    "maxMult": -1,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 15,
-    "ludnoscAbsolutna": 300000,
+    "sumaLudkow": 1,
+    "ludnoscAbsolutna": 20000,
     "rekruci": 0,
-    "poborRaw": 300000,
+    "poborRaw": 20000,
     "rekrutEkw": 0
    }
   },
@@ -1857,17 +1859,17 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 3
+     "population": 5
     },
     {
      "ownerId": 1,
      "population": 0,
-     "manpower": -7
+     "manpower": "NaN"
     },
     {
      "ownerId": 2,
-     "population": 10,
-     "manpower": 999
+     "population": 12,
+     "manpower": 4000
     }
    ],
    "owner": 1,
@@ -1877,9 +1879,9 @@
    "expect": {
     "sumaLudkow": 1,
     "ludnoscAbsolutna": 4800000,
-    "rekruci": 0,
-    "poborRaw": 4800000,
-    "rekrutEkw": 0
+    "rekruci": 240000,
+    "poborRaw": 5040000,
+    "rekrutEkw": 1
    }
   },
   {
@@ -1910,23 +1912,23 @@
     },
     {
      "ownerId": 0,
-     "population": 1,
+     "population": 2,
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": 999
+     "population": 9,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 1,
+     "population": 2,
      "manpower": 1
     },
     {
      "ownerId": 1,
-     "population": -2,
-     "manpower": -7
+     "population": "NaN",
+     "manpower": "NaN"
     }
    ],
    "owner": 2,
@@ -1959,13 +1961,13 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": -2,
-     "manpower": 0
+     "population": "NaN",
+     "manpower": 1
     },
     {
      "ownerId": 2,
      "population": 0,
-     "manpower": 120.5
+     "manpower": 999
     }
    ],
    "owner": 2,
@@ -1975,17 +1977,17 @@
    "expect": {
     "sumaLudkow": 1,
     "ludnoscAbsolutna": 10000,
-    "rekruci": 120,
-    "poborRaw": 10120,
-    "rekrutEkw": 0
+    "rekruci": 999,
+    "poborRaw": 10999,
+    "rekrutEkw": 1
    }
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 3.7,
-     "manpower": 4000
+     "population": "NaN",
+     "manpower": -7
     }
    ],
    "owner": 2,
@@ -2019,7 +2021,7 @@
     {
      "ownerId": 1,
      "population": 3,
-     "manpower": 999
+     "manpower": 4000
     }
    ],
    "owner": 1,
@@ -2029,32 +2031,32 @@
    "expect": {
     "sumaLudkow": 3,
     "ludnoscAbsolutna": 30000,
-    "rekruci": 999,
-    "poborRaw": 30999,
-    "rekrutEkw": 0
+    "rekruci": 1500,
+    "poborRaw": 31500,
+    "rekrutEkw": 1
    }
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 5,
+     "population": 9,
      "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 3,
-     "manpower": 1
+     "population": 5,
+     "manpower": 120.5
     },
     {
      "ownerId": 0,
      "population": 0,
-     "manpower": 0
+     "manpower": 1
     },
     {
      "ownerId": 2,
-     "population": 15.5,
-     "manpower": 999
+     "population": "Infinity",
+     "manpower": 4000
     }
    ],
    "owner": 2,
@@ -2062,10 +2064,10 @@
    "maxMult": 2,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 15,
-    "ludnoscAbsolutna": 9600000,
-    "rekruci": 999,
-    "poborRaw": 9600999,
+    "sumaLudkow": "Infinity",
+    "ludnoscAbsolutna": "Infinity",
+    "rekruci": 4000,
+    "poborRaw": "Infinity",
     "rekrutEkw": 0
    }
   },
@@ -2073,28 +2075,28 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 1,
+     "population": 2,
      "manpower": 120.5
     },
     {
      "ownerId": 1,
-     "population": 7,
-     "manpower": 4000
+     "population": 10,
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 5,
-     "manpower": 999
+     "population": 7,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 7,
-     "manpower": 4000
+     "population": 9,
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": -2,
-     "manpower": 1
+     "population": "Infinity",
+     "manpower": 120.5
     },
     {
      "ownerId": 2,
@@ -2104,7 +2106,7 @@
     {
      "ownerId": 1,
      "population": 0,
-     "manpower": 999
+     "manpower": 4000
     }
    ],
    "owner": 1,
@@ -2112,10 +2114,10 @@
    "maxMult": -1,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 15,
-    "ludnoscAbsolutna": 150000,
+    "sumaLudkow": 20,
+    "ludnoscAbsolutna": 200000,
     "rekruci": 0,
-    "poborRaw": 150000,
+    "poborRaw": 200000,
     "rekrutEkw": 0
    }
   },
@@ -2123,12 +2125,12 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 15.5,
-     "manpower": 1
+     "population": "-Infinity",
+     "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 9,
+     "population": 12,
      "manpower": 0
     },
     {
@@ -2138,18 +2140,18 @@
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": 999
-    },
-    {
-     "ownerId": 1,
      "population": 10,
      "manpower": 999
     },
     {
-     "ownerId": 0,
+     "ownerId": 1,
      "population": 3.7,
-     "manpower": 0
+     "manpower": 4000
+    },
+    {
+     "ownerId": 0,
+     "population": 15.5,
+     "manpower": 1
     }
    ],
    "owner": 0,
@@ -2157,10 +2159,10 @@
    "maxMult": 2,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 21,
-    "ludnoscAbsolutna": 420000,
-    "rekruci": 1119,
-    "poborRaw": 421119,
+    "sumaLudkow": 39,
+    "ludnoscAbsolutna": 780000,
+    "rekruci": 1120,
+    "poborRaw": 781120,
     "rekrutEkw": 0
    }
   },
@@ -2168,27 +2170,27 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": -2,
-     "manpower": 4000
+     "population": "Infinity",
+     "manpower": -7
     },
     {
      "ownerId": 1,
+     "population": 12,
+     "manpower": 999
+    },
+    {
+     "ownerId": 0,
      "population": 9,
-     "manpower": 120.5
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 7,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 0,
-     "population": 3.7,
+     "population": 15.5,
      "manpower": 120.5
     },
     {
      "ownerId": 2,
-     "population": 2,
+     "population": 3,
      "manpower": 999
     }
    ],
@@ -2197,11 +2199,11 @@
    "maxMult": 2,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 10,
-    "ludnoscAbsolutna": 100000,
-    "rekruci": 4120,
-    "poborRaw": 104120,
-    "rekrutEkw": 4
+    "sumaLudkow": 24,
+    "ludnoscAbsolutna": 240000,
+    "rekruci": 120,
+    "poborRaw": 240120,
+    "rekrutEkw": 0
    }
   },
   {
@@ -2222,11 +2224,11 @@
    "cities": [
     {
      "ownerId": 1,
-     "population": 5
+     "population": 9
     },
     {
      "ownerId": 2,
-     "population": 15.5
+     "population": "Infinity"
     },
     {
      "ownerId": 1,
@@ -2235,17 +2237,17 @@
     },
     {
      "ownerId": 2,
-     "population": 9,
-     "manpower": 1
+     "population": 12,
+     "manpower": 120.5
     },
     {
      "ownerId": 2,
-     "population": 2,
+     "population": 3,
      "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 9,
+     "population": 12,
      "manpower": 0
     }
    ],
@@ -2254,19 +2256,19 @@
    "maxMult": 1,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 26,
-    "ludnoscAbsolutna": 16640000,
-    "rekruci": 964001,
-    "poborRaw": 17604001,
-    "rekrutEkw": 7
+    "sumaLudkow": "Infinity",
+    "ludnoscAbsolutna": "Infinity",
+    "rekruci": "Infinity",
+    "poborRaw": "Infinity",
+    "rekrutEkw": "Infinity"
    }
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": 15.5,
-     "manpower": -7
+     "population": "-Infinity",
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
@@ -2274,11 +2276,11 @@
     },
     {
      "ownerId": 0,
-     "population": 0
+     "population": 1
     },
     {
      "ownerId": 2,
-     "population": 12,
+     "population": -2,
      "manpower": 4000
     }
    ],
@@ -2298,17 +2300,17 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": -2,
+     "population": "Infinity",
      "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 5,
+     "population": 9,
      "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 9,
+     "population": 12,
      "manpower": 0
     }
    ],
@@ -2317,10 +2319,10 @@
    "maxMult": 2,
    "costMult": 0.5,
    "expect": {
-    "sumaLudkow": 14,
-    "ludnoscAbsolutna": 8960000,
+    "sumaLudkow": 21,
+    "ludnoscAbsolutna": 13440000,
     "rekruci": 120,
-    "poborRaw": 8960120,
+    "poborRaw": 13440120,
     "rekrutEkw": 0
    }
   },
@@ -2333,7 +2335,7 @@
     },
     {
      "ownerId": 1,
-     "population": 12,
+     "population": -2,
      "manpower": 1
     },
     {
@@ -2342,8 +2344,8 @@
     },
     {
      "ownerId": 0,
-     "population": 5,
-     "manpower": 120.5
+     "population": 7,
+     "manpower": 999
     }
    ],
    "owner": 1,
@@ -2351,10 +2353,10 @@
    "maxMult": 1,
    "costMult": 0.5,
    "expect": {
-    "sumaLudkow": 13,
-    "ludnoscAbsolutna": 31200000,
+    "sumaLudkow": 2,
+    "ludnoscAbsolutna": 4800000,
     "rekruci": 240001,
-    "poborRaw": 31440001,
+    "poborRaw": 5040001,
     "rekrutEkw": 2
    }
   },
@@ -2372,11 +2374,11 @@
     {
      "ownerId": 1,
      "population": 1,
-     "manpower": 4000
+     "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": 3.7,
+     "population": "NaN",
      "manpower": 0
     },
     {
@@ -2385,7 +2387,7 @@
     },
     {
      "ownerId": 2,
-     "population": 12,
+     "population": 15.5,
      "manpower": 0
     }
    ],
@@ -2394,10 +2396,10 @@
    "maxMult": -1,
    "costMult": 0,
    "expect": {
-    "sumaLudkow": 5,
-    "ludnoscAbsolutna": 50000,
+    "sumaLudkow": 3,
+    "ludnoscAbsolutna": 30000,
     "rekruci": 0,
-    "poborRaw": 50000,
+    "poborRaw": 30000,
     "rekrutEkw": 0
    }
   },
@@ -2433,27 +2435,27 @@
    "cities": [
     {
      "ownerId": 0,
-     "population": 1,
-     "manpower": 4000
+     "population": 2,
+     "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": 3.7,
+     "population": 15.5,
      "manpower": 999
     },
     {
      "ownerId": 2,
-     "population": 15.5,
-     "manpower": -7
+     "population": "-Infinity",
+     "manpower": "NaN"
     },
     {
      "ownerId": 2,
-     "population": 2,
+     "population": 3,
      "manpower": 120.5
     },
     {
      "ownerId": 0,
-     "population": 3,
+     "population": 5,
      "manpower": 0
     }
    ],
@@ -2462,10 +2464,10 @@
    "maxMult": 0.5,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 4,
-    "ludnoscAbsolutna": 640000,
-    "rekruci": 4000,
-    "poborRaw": 644000,
+    "sumaLudkow": 7,
+    "ludnoscAbsolutna": 1120000,
+    "rekruci": 0,
+    "poborRaw": 1120000,
     "rekrutEkw": 0
    }
   },
@@ -2473,32 +2475,32 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 15.5,
+     "population": "-Infinity",
      "manpower": 999
     },
     {
      "ownerId": 1,
-     "population": 7,
+     "population": 9,
      "manpower": 1
     },
     {
      "ownerId": 0,
-     "population": 10,
+     "population": 3.7,
      "manpower": 4000
     },
     {
      "ownerId": 0,
      "population": 2,
-     "manpower": 120.5
+     "manpower": 999
     },
     {
      "ownerId": 1,
-     "population": 7,
+     "population": 9,
      "manpower": 1
     },
     {
      "ownerId": 1,
-     "population": 12,
+     "population": -2,
      "manpower": 999
     }
    ],
@@ -2507,10 +2509,10 @@
    "maxMult": 0.5,
    "costMult": 0,
    "expect": {
-    "sumaLudkow": 26,
-    "ludnoscAbsolutna": 62400000,
+    "sumaLudkow": 19,
+    "ludnoscAbsolutna": 45600000,
     "rekruci": 1001,
-    "poborRaw": 62401001,
+    "poborRaw": 45601001,
     "rekrutEkw": 0
    }
   },
@@ -2523,21 +2525,22 @@
     },
     {
      "ownerId": 1,
-     "population": 12
+     "population": -2
     },
     {
      "ownerId": 2,
-     "population": 1,
+     "population": 2,
      "manpower": 0
     },
     {
      "ownerId": 1,
      "population": 2,
-     "manpower": 4000
+     "manpower": -7
     },
     {
      "ownerId": 0,
-     "population": 3.7
+     "population": "NaN",
+     "manpower": 0
     }
    ],
    "owner": 1,
@@ -2545,10 +2548,10 @@
    "maxMult": 0,
    "costMult": 1,
    "expect": {
-    "sumaLudkow": 14,
-    "ludnoscAbsolutna": 33600000,
+    "sumaLudkow": 3,
+    "ludnoscAbsolutna": 7200000,
     "rekruci": 0,
-    "poborRaw": 33600000,
+    "poborRaw": 7200000,
     "rekrutEkw": 0
    }
   },
@@ -2570,36 +2573,36 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 5
+     "population": 9
     },
     {
      "ownerId": 0,
-     "population": 9,
-     "manpower": 4000
+     "population": 10,
+     "manpower": -7
     },
     {
      "ownerId": 1,
-     "population": 3,
+     "population": 5,
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 10
+     "population": 3.7
     },
     {
      "ownerId": 2,
      "population": 3,
-     "manpower": 999
+     "manpower": 4000
     },
     {
      "ownerId": 2,
-     "population": 10,
+     "population": 12,
      "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 12,
-     "manpower": 999
+     "population": -2,
+     "manpower": 4000
     }
    ],
    "owner": 0,
@@ -2607,43 +2610,43 @@
    "maxMult": 2,
    "costMult": 1.5,
    "expect": {
-    "sumaLudkow": 19,
-    "ludnoscAbsolutna": 91200000,
-    "rekruci": 9604000,
-    "poborRaw": 100804000,
-    "rekrutEkw": 13
+    "sumaLudkow": 13,
+    "ludnoscAbsolutna": 62400000,
+    "rekruci": 2880000,
+    "poborRaw": 65280000,
+    "rekrutEkw": 4
    }
   },
   {
    "cities": [
     {
      "ownerId": 2,
-     "population": 12,
-     "manpower": 999
+     "population": -2,
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 15.5
-    },
-    {
-     "ownerId": 0,
-     "population": 9,
-     "manpower": 0
+     "population": "-Infinity"
     },
     {
      "ownerId": 0,
      "population": 10,
-     "manpower": 4000
-    },
-    {
-     "ownerId": 2,
-     "population": -2,
      "manpower": 0
     },
     {
      "ownerId": 0,
-     "population": 3,
-     "manpower": 4000
+     "population": 12,
+     "manpower": -7
+    },
+    {
+     "ownerId": 2,
+     "population": "NaN",
+     "manpower": 0
+    },
+    {
+     "ownerId": 0,
+     "population": 5,
+     "manpower": -7
     }
    ],
    "owner": 2,
@@ -2651,24 +2654,24 @@
    "maxMult": 1,
    "costMult": 0.5,
    "expect": {
-    "sumaLudkow": 13,
-    "ludnoscAbsolutna": 130000,
-    "rekruci": 999,
-    "poborRaw": 130999,
-    "rekrutEkw": 1
+    "sumaLudkow": 2,
+    "ludnoscAbsolutna": 20000,
+    "rekruci": 1000,
+    "poborRaw": 21000,
+    "rekrutEkw": 2
    }
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "population": 12,
+     "population": -2,
      "manpower": 120.5
     },
     {
      "ownerId": 2,
-     "population": -2,
-     "manpower": 120.5
+     "population": "NaN",
+     "manpower": 999
     }
    ],
    "owner": 1,
@@ -2688,7 +2691,7 @@
     {
      "ownerId": 1,
      "population": 3,
-     "manpower": 120.5
+     "manpower": 999
     },
     {
      "ownerId": 1,
@@ -2711,21 +2714,22 @@
    "cities": [
     {
      "ownerId": 2,
-     "population": 7,
-     "manpower": -7
+     "population": 9,
+     "manpower": "NaN"
     },
     {
      "ownerId": 2,
-     "population": 7
+     "population": 9,
+     "manpower": 0
     },
     {
      "ownerId": 2,
-     "population": 1,
-     "manpower": -7
+     "population": 2,
+     "manpower": "NaN"
     },
     {
      "ownerId": 0,
-     "population": -2,
+     "population": "Infinity",
      "manpower": 0
     }
    ],
@@ -2734,28 +2738,28 @@
    "maxMult": 1.25,
    "costMult": 2,
    "expect": {
-    "sumaLudkow": 15,
-    "ludnoscAbsolutna": 72000000,
-    "rekruci": 4200000,
-    "poborRaw": 76200000,
-    "rekrutEkw": 4
+    "sumaLudkow": 20,
+    "ludnoscAbsolutna": 96000000,
+    "rekruci": 6600000,
+    "poborRaw": 102600000,
+    "rekrutEkw": 6
    }
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "population": -2,
+     "population": "NaN",
      "manpower": 4000
     },
     {
      "ownerId": 0,
      "population": 1,
-     "manpower": 999
+     "manpower": 4000
     },
     {
      "ownerId": 1,
-     "population": 7,
+     "population": 9,
      "manpower": 999
     }
    ],
@@ -2781,81 +2785,81 @@
     },
     {
      "ownerId": 2,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 1,
      "kulturaSkumulowana": -4
     },
     {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
      "ownerId": 2,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": -4
     }
    ],
    "owner": 1,
-   "expect": 78.5
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": -4
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "NaN"
     }
    ],
    "owner": 0,
-   "expect": 12.5
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "kulturaSkumulowana": -4
+     "kulturaSkumulowana": 33
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 2,
      "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
     }
    ],
    "owner": 2,
-   "expect": 1012.75
+   "expect": 1000.25
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 1,
@@ -2867,43 +2871,43 @@
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "Infinity"
     }
    ],
    "owner": 2,
-   "expect": 33
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
      "kulturaSkumulowana": 1000.25
     },
     {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
+     "ownerId": 2,
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": -4
     }
    ],
    "owner": 0,
-   "expect": 45.5
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 2,
@@ -2911,23 +2915,23 @@
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
      "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     }
    ],
    "owner": 1,
-   "expect": 45.5
+   "expect": 1000.25
   },
   {
    "cities": [
@@ -2943,45 +2947,45 @@
    "cities": [
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "NaN"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": -4
+     "kulturaSkumulowana": 33
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": -4
+     "kulturaSkumulowana": 33
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": -4
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     }
    ],
    "owner": 2,
-   "expect": 12.5
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 2,
      "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "-Infinity"
     }
    ],
    "owner": 1,
-   "expect": 33
+   "expect": 0
   },
   {
    "cities": [],
@@ -2992,19 +2996,19 @@
    "cities": [
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "NaN"
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 0,
      "kulturaSkumulowana": -4
     },
     {
-     "ownerId": 1,
+     "ownerId": 0,
      "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "NaN"
     },
     {
      "ownerId": 1,
@@ -3012,7 +3016,7 @@
     }
    ],
    "owner": 1,
-   "expect": 1000.25
+   "expect": 0
   },
   {
    "cities": [
@@ -3022,7 +3026,7 @@
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 0,
@@ -3030,37 +3034,37 @@
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "NaN"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "NaN"
     }
    ],
    "owner": 1,
-   "expect": 33
+   "expect": 0
   },
   {
    "cities": [
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 0
+     "kulturaSkumulowana": 12.5
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     }
    ],
    "owner": 2,
@@ -3070,19 +3074,71 @@
    "cities": [
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     }
    ],
    "owner": 1,
-   "expect": 66
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "-Infinity"
+    }
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 1000.25
+    }
+   ],
+   "owner": 2,
+   "expect": 12.5
   },
   {
    "cities": [
@@ -3092,6 +3148,124 @@
     },
     {
      "ownerId": 0,
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 12.5
+    }
+   ],
+   "owner": 2,
+   "expect": 1000.25
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 33
+    }
+   ],
+   "owner": 1,
+   "expect": 33
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 33
+    }
+   ],
+   "owner": 2,
+   "expect": 33
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": -4
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "NaN"
+    }
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "-Infinity"
+    }
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
      "kulturaSkumulowana": 1000.25
     },
     {
@@ -3099,8 +3273,207 @@
      "kulturaSkumulowana": 33
     },
     {
+     "ownerId": 0,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 33
+    }
+   ],
+   "owner": 0,
+   "expect": 33
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 0
+    }
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cities": [],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 12.5
+    },
+    {
      "ownerId": 2,
      "kulturaSkumulowana": 0
+    }
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": -4
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "NaN"
+    }
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 12.5
+    }
+   ],
+   "owner": 2,
+   "expect": 1000.25
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 33
+    }
+   ],
+   "owner": 2,
+   "expect": 33
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 0
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 1000.25
+    }
+   ],
+   "owner": 0,
+   "expect": 45.5
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "NaN"
+    }
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": "NaN"
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 12.5
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "-Infinity"
+    }
+   ],
+   "owner": 1,
+   "expect": 12.5
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 2,
@@ -3112,65 +3485,53 @@
     },
     {
      "ownerId": 1,
+     "kulturaSkumulowana": "-Infinity"
+    },
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 0,
      "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": -4
     }
    ],
-   "owner": 1,
+   "owner": 0,
    "expect": 1033.25
   },
   {
    "cities": [
     {
-     "ownerId": 1,
+     "ownerId": 2,
      "kulturaSkumulowana": -4
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "Infinity"
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": "NaN"
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 0
+     "kulturaSkumulowana": "Infinity"
     },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    }
-   ],
-   "owner": 2,
-   "expect": 0
-  },
-  {
-   "cities": [
     {
      "ownerId": 2,
      "kulturaSkumulowana": 12.5
     },
     {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
-    },
-    {
      "ownerId": 1,
-     "kulturaSkumulowana": 0
-    }
-   ],
-   "owner": 2,
-   "expect": 12.5
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
      "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
     }
    ],
    "owner": 1,
@@ -3180,115 +3541,15 @@
    "cities": [
     {
      "ownerId": 2,
-     "kulturaSkumulowana": -4
-    }
-   ],
-   "owner": 2,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 1,
      "kulturaSkumulowana": 1000.25
-    }
-   ],
-   "owner": 2,
-   "expect": 1012.75
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
-    }
-   ],
-   "owner": 0,
-   "expect": 2033.5
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    }
-   ],
-   "owner": 0,
-   "expect": 2000.5
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
+     "kulturaSkumulowana": "Infinity"
     },
     {
      "ownerId": 0,
@@ -3306,291 +3567,34 @@
   {
    "cities": [
     {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
-    },
-    {
      "ownerId": 2,
-     "kulturaSkumulowana": 0
-    }
-   ],
-   "owner": 0,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    }
-   ],
-   "owner": 2,
-   "expect": 12.5
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
+     "kulturaSkumulowana": 33
     },
     {
      "ownerId": 2,
      "kulturaSkumulowana": 33
     },
     {
+     "ownerId": 2,
+     "kulturaSkumulowana": 1000.25
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": -4
+    },
+    {
      "ownerId": 0,
-     "kulturaSkumulowana": 0
+     "kulturaSkumulowana": 33
     }
    ],
-   "owner": 2,
+   "owner": 0,
    "expect": 33
   },
   {
    "cities": [
     {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    }
-   ],
-   "owner": 2,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
      "ownerId": 1,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    }
-   ],
-   "owner": 0,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    }
-   ],
-   "owner": 2,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 33
-    }
-   ],
-   "owner": 1,
-   "expect": 1000.25
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    }
-   ],
-   "owner": 0,
-   "expect": 1000.25
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 0
-    }
-   ],
-   "owner": 1,
-   "expect": 1066.25
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 33
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 0
-    }
-   ],
-   "owner": 2,
-   "expect": 66
-  },
-  {
-   "cities": [],
-   "owner": 1,
-   "expect": 0
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": 1000.25
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 0,
-     "kulturaSkumulowana": 1000.25
-    }
-   ],
-   "owner": 0,
-   "expect": 1000.25
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 33
+     "kulturaSkumulowana": "-Infinity"
     },
     {
      "ownerId": 2,
@@ -3608,40 +3612,30 @@
    "cities": [
     {
      "ownerId": 2,
-     "kulturaSkumulowana": 0
+     "kulturaSkumulowana": 12.5
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": -4
     },
     {
      "ownerId": 2,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
-    },
-    {
-     "ownerId": 1,
-     "kulturaSkumulowana": 12.5
+     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 1,
      "kulturaSkumulowana": -4
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": -4
+    },
+    {
+     "ownerId": 1,
+     "kulturaSkumulowana": 1000.25
     },
     {
      "ownerId": 0,
-     "kulturaSkumulowana": 12.5
-    }
-   ],
-   "owner": 0,
-   "expect": 25
-  },
-  {
-   "cities": [
-    {
-     "ownerId": 1,
      "kulturaSkumulowana": -4
     }
    ],
@@ -3651,16 +3645,26 @@
   {
    "cities": [
     {
-     "ownerId": 0,
-     "kulturaSkumulowana": -4
-    },
-    {
-     "ownerId": 2,
-     "kulturaSkumulowana": -4
+     "ownerId": 1,
+     "kulturaSkumulowana": 33
     }
    ],
    "owner": 0,
    "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "kulturaSkumulowana": 33
+    },
+    {
+     "ownerId": 2,
+     "kulturaSkumulowana": 33
+    }
+   ],
+   "owner": 0,
+   "expect": 33
   }
  ]
 }

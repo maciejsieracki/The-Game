@@ -67,9 +67,9 @@ const rnd = () => {
   return seed / 4294967296;
 };
 const pick = arr => arr[Math.floor(rnd() * arr.length)];
-const POPS = [0, 1, 2, 3, 5, 7, 9, 10, 12, 3.7, -2, 15.5];
-const MANPOWERS = [undefined, 0, 1, 120.5, 999, 4000, -7];
-const CULTURES = [0, 12.5, -4, 1000.25, 33];
+const POPS = [0, 1, 2, 3, 5, 7, 9, 10, 12, 3.7, -2, 15.5, NaN, Infinity, -Infinity];
+const MANPOWERS = [undefined, 0, 1, 120.5, 999, 4000, -7, NaN];
+const CULTURES = [0, 12.5, -4, 1000.25, 33, NaN, Infinity, -Infinity];
 const EPOKI = [0, 1, 2, 3.7, 5, 7, 9, 10, 12];
 const MAX_MULTS = [0, 0.5, 1, 1.25, 2, -1];
 const COST_MULTS = [0, 0.5, 1, 2, 1.5];
@@ -128,4 +128,9 @@ const out = {
   pobor: poborCases,
   kultura: kulturaCases,
 };
-process.stdout.write(JSON.stringify(out, null, 1) + '\n');
+// Niefinityczne liczby (NaN, +-Infinity) nie maja zapisu JSON: kodowane jako napisy, ktore testy Rust parsuja.
+const nonFinite = (_k, v) => {
+  if (typeof v !== 'number' || Number.isFinite(v)) return v;
+  return Number.isNaN(v) ? 'NaN' : v > 0 ? 'Infinity' : '-Infinity';
+};
+process.stdout.write(JSON.stringify(out, nonFinite, 1) + '\n');

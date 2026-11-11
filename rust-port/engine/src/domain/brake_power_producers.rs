@@ -28,7 +28,7 @@ pub enum ComponentSource {
 pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     (
         "armia",
-        ComponentSource::NoProducer("web sumArmyMForOwner (suma M_pole); brak zweryfikowanego producenta w tej rundzie"),
+        ComponentSource::NoProducer("web sumArmyMForOwner (suma M_pole); armyFieldPower nieportowane (unit_power.rs); Rust army_m (diplomacy_truce_flow.rs) to pole stubu trait, NIE producent"),
     ),
     (
         "bitwy",
@@ -42,7 +42,7 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ("miasta", ComponentSource::RustProducer("liczba miast wlasciciela (owner_city_ids)")),
     (
         "terytorium",
-        ComponentSource::NoProducer("web countTerritoryHexes(statsTerritoryNodesForOwner); brak zweryfikowanego producenta"),
+        ComponentSource::NoProducer("web countTerritoryHexes(statsTerritoryNodesForOwner) = foundingNodesForOwner + cityTerritoryRadius; kandydat territory.rs::collect_territory_hex_keys_by_owner NIE zweryfikowany semantycznie"),
     ),
     (
         "infra",
@@ -66,6 +66,17 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
         ComponentSource::NoProducer("web zdobyczePowerByOwner (trwaly bonus po eliminacji); brak producenta w Rust"),
     ),
 ];
+
+/// Klucze skladnikow bez producenta (`NoProducer`). Wolajacy (W8 r3) musi podac je jawnie w `ObjectivePowerRaw`.
+pub fn no_producer_keys() -> Vec<&'static str> {
+    COMPONENT_SOURCES
+        .iter()
+        .filter_map(|(k, s)| match s {
+            ComponentSource::NoProducer(_) => Some(*k),
+            ComponentSource::RustProducer(_) => None,
+        })
+        .collect()
+}
 
 /// Producent `empireSumaLudkow` (web manpower.ts:574): suma `clampLudki(population)` miast wlasciciela.
 pub fn ludki_for_owner(cities: &[ManpowerCity], owner_id: i64) -> f64 {

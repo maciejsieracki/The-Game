@@ -4,8 +4,8 @@
 
 use civ_engine::domain::brake_power::ObjectivePowerRaw;
 use civ_engine::domain::brake_power_producers::{
-    apply_produced, kultura_for_owner, ludki_for_owner, miasta_for_owner, produce_for_owner,
-    rekruci_ekw_for_owner, ComponentSource, ProducerInputs, COMPONENT_SOURCES,
+    apply_produced, kultura_for_owner, ludki_for_owner, miasta_for_owner, no_producer_keys,
+    produce_for_owner, rekruci_ekw_for_owner, ComponentSource, ProducerInputs, COMPONENT_SOURCES,
 };
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::{empire_pobor_totals, ManpowerCity};
@@ -25,8 +25,26 @@ fn cases(key: &str) -> Vec<Value> {
         .clone()
 }
 
+/// Liczba z wektora; NaN / +-Infinity zakodowane jako napisy (generator, JSON nie ma tych wartosci).
 fn f(v: &Value) -> f64 {
-    v.as_f64().expect("liczba w wektorze")
+    match v {
+        Value::String(s) => match s.as_str() {
+            "NaN" => f64::NAN,
+            "Infinity" => f64::INFINITY,
+            "-Infinity" => f64::NEG_INFINITY,
+            other => panic!("nieznany napis liczbowy w wektorze: {other}"),
+        },
+        _ => v.as_f64().expect("liczba w wektorze"),
+    }
+}
+
+/// Porownanie bitowo-rownowazne dla wartosci z weba: NaN == NaN, reszta przez `==`.
+fn assert_same(got: f64, exp: f64, msg: &str) {
+    if exp.is_nan() {
+        assert!(got.is_nan(), "{msg}: oczekiwano NaN, otrzymano {got}");
+    } else {
+        assert_eq!(got, exp, "{msg}");
+    }
 }
 
 fn i(v: &Value) -> i64 {
@@ -59,7 +77,7 @@ fn ludki_match_pin_empire_suma_ludkow() {
     for c in cases("ludki") {
         let cities = manpower_cities(c["cities"].as_array().unwrap());
         let got = ludki_for_owner(&cities, i(&c["owner"]));
-        assert_eq!(got, f(&c["expect"]), "ludki dla {c}");
+        assert_same(got, f(&c["expect"]), &format!("ludki dla {c}"));
     }
 }
 
@@ -71,18 +89,26 @@ fn pobor_totals_match_pin() {
         let epoka = f(&c["epoka"]);
         let exp = &c["expect"];
         let pobor = empire_pobor_totals(&cities, owner, epoka, f(&c["maxMult"]));
-        assert_eq!(
+        assert_same(
             pobor.suma_ludkow,
             f(&exp["sumaLudkow"]),
-            "sumaLudkow dla {c}"
+            &format!("sumaLudkow dla {c}"),
         );
-        assert_eq!(
+        assert_same(
             pobor.ludnosc_absolutna,
             f(&exp["ludnoscAbsolutna"]),
-            "ludnosc dla {c}"
+            &format!("ludnosc dla {c}"),
         );
-        assert_eq!(pobor.rekruci, f(&exp["rekruci"]), "rekruci dla {c}");
-        assert_eq!(pobor.pobor_raw, f(&exp["poborRaw"]), "poborRaw dla {c}");
+        assert_same(
+            pobor.rekruci,
+            f(&exp["rekruci"]),
+            &format!("rekruci dla {c}"),
+        );
+        assert_same(
+            pobor.pobor_raw,
+            f(&exp["poborRaw"]),
+            &format!("poborRaw dla {c}"),
+        );
     }
 }
 
@@ -97,7 +123,11 @@ fn rekruci_ekw_match_pin_rekrut_unit_equivalents() {
             f(&c["maxMult"]),
             f(&c["costMult"]),
         );
-        assert_eq!(got, f(&c["expect"]["rekrutEkw"]), "rekrutEkw dla {c}");
+        assert_same(
+            got,
+            f(&c["expect"]["rekrutEkw"]),
+            &format!("rekrutEkw dla {c}"),
+        );
     }
 }
 
@@ -106,8 +136,47 @@ fn kultura_matches_pin_empire_culture_total() {
     for c in cases("kultura") {
         let cities = pressure_cities(c["cities"].as_array().unwrap());
         let got = kultura_for_owner(&cities, i(&c["owner"]));
-        assert_eq!(got, f(&c["expect"]), "kultura dla {c}");
+        assert_same(got, f(&c["expect"]), &format!("kultura dla {c}"));
     }
+}
+
+/// Test krzyzowy: `ludki_for_owner` (empire_suma_ludkow) == `pobor.sumaLudkow` z pinu na tych samych wejsciach.
+/// Web liczy oba przez te same `clampLudki`; tu sprawdzane jawnie, a nie tylko przez dwa osobne testy.
+#[test]
+fn ludki_equal_pobor_suma_ludkow_on_same_inputs() {
+    for c in cases("pobor") {
+        let cities = manpower_cities(c["cities"].as_array().unwrap());
+        let owner = i(&c["owner"]);
+        let ludki = ludki_for_owner(&cities, owner);
+        let pobor = empire_pobor_totals(&cities, owner, f(&c["epoka"]), f(&c["maxMult"]));
+        assert_same(
+            ludki,
+            pobor.suma_ludkow,
+            &format!("ludki vs pobor.sumaLudkow dla {c}"),
+        );
+        assert_same(
+            ludki,
+            f(&c["expect"]["sumaLudkow"]),
+            &format!("ludki vs pin sumaLudkow dla {c}"),
+        );
+    }
+}
+
+#[test]
+fn no_producer_keys_are_exactly_the_eight_open_components() {
+    assert_eq!(
+        no_producer_keys(),
+        vec![
+            "armia",
+            "bitwy",
+            "terytorium",
+            "infra",
+            "tech",
+            "ulepszenia",
+            "religia",
+            "zdobycze"
+        ]
+    );
 }
 
 #[test]
