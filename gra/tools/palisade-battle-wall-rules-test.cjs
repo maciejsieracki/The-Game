@@ -46,14 +46,23 @@ const PBM = bundle('src/game/post-battle-map.ts', 'pbm');
 const params = JSON.parse(fs.readFileSync(path.join(GRA, 'data/miasto-params.json'), 'utf8'));
 const buildings = JSON.parse(fs.readFileSync(path.join(GRA, 'data/buildings.json'), 'utf8'));
 const bl = Array.isArray(buildings) ? buildings : (buildings.budynki || buildings);
+const techData = JSON.parse(fs.readFileSync(path.join(GRA, 'data/tech.json'), 'utf8'));
+const techRows = techData.technologie || [];
+const stoneWallDef = bl.find(b => b.id === 'mury_kamienne');
+const brickWallDef = bl.find(b => b.id === 'mury');
+assert(stoneWallDef?.techUnlock === 'Murarstwo' && brickWallDef?.techUnlock === 'Budownictwo'
+  && brickWallDef?.nazwa === 'Mury ceglane', 'tier data: stone follows Murarstwo; legacy mury ID is brick/Budownictwo');
+assert(techRows.find(t => t.Technologia === 'Murarstwo')?.['Odblokowuje budynek']?.includes('Mury kamienne')
+  && techRows.find(t => t.Technologia === 'Budownictwo')?.['Odblokowuje budynek']?.includes('Mury ceglane'), 'technology cards identify both wall unlocks');
 const P = {
-  mur: params.bonus_obrona_mur_proc.wartosc, cytadela: params.bonus_obrona_cytadela_proc.wartosc,
+  mur: params.bonus_obrona_mur_proc.wartosc, murKamienny: params.bonus_obrona_mur_kamienny_proc.wartosc, cytadela: params.bonus_obrona_cytadela_proc.wartosc,
   baszta: params.bonus_obrona_baszta_proc.wartosc, palisada: params.bonus_obrona_palisada_proc.wartosc,
 };
 
 console.log('\nCZESC A -- prawdziwe funkcje');
 assert(F.cityFortificationKind(['palisada']) === 'palisada', 'palisada => obwarowanie "palisada"');
 assert(F.cityFortificationKind(['mury']) === 'mur', 'mury => "mur"');
+assert(F.cityFortificationKind(['mury_kamienne']) === 'mur', 'mury_kamienne => "mur"');
 assert(F.cityFortificationKind(['mury', 'fort']) === 'mur', 'mury+cytadela => "mur"');
 assert(F.cityFortificationKind(['palisada', 'mury']) === 'mur', 'pierwszenstwo: mur > palisada (bez podwojnego liczenia)');
 assert(F.cityFortificationKind([]) === 'none' && F.cityFortificationKind(undefined) === 'none', 'brak obwarowania => none');

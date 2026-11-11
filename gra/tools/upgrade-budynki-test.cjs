@@ -96,6 +96,20 @@ function ok(c, m) {
   ok(M.cityHasMurLine(after), 'cityHasMurLine z obydwoma budynkami w miescie');
 }
 
+// R-WEB-WALL-TIERS-MASONRY-BRICK-Q1: preserve old brick save ID and replace only lower tiers.
+{
+  const stone = buildings.find(b => b.id === 'mury_kamienne');
+  const brick = buildings.find(b => b.id === 'mury');
+  ok(stone.techUnlock === 'Murarstwo' && brick.techUnlock === 'Budownictwo', 'stone/brick tiers unlock at Murarstwo/Budownictwo');
+  ok(brick.nazwa === 'Mury ceglane', 'legacy mury ID visibly names the brick tier');
+  const afterStone = M.applyCompletedBuildingIds(['palisada'], 'mury_kamienne', buildings);
+  ok(JSON.stringify(afterStone) === JSON.stringify(['mury_kamienne']), 'stone replaces palisade without stacking');
+  const afterBrick = M.applyCompletedBuildingIds(['mury_kamienne', 'fort'], 'mury', buildings);
+  ok(afterBrick.includes('mury') && !afterBrick.includes('mury_kamienne') && afterBrick.includes('fort'), 'brick replaces stone while preserving additive Citadel');
+  const legacy = M.applyCompletedBuildingIds(['mury'], 'mury', buildings);
+  ok(legacy.includes('mury') && legacy.length === 1, 'legacy saved mury record remains intact');
+}
+
 // GRUPY-BUDYNKOW: Biblioteka + Akademia TERAZ niezalezne (upgradeFrom usuniety).
 // Wartosci rozdzielone, zeby wklad Biblioteki nie liczyl sie w Akademii drugi raz:
 // Nauka 9=3(Biblioteka)+6(Akademia), Kultura 7=2(Biblioteka)+5(Akademia).

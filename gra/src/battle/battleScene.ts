@@ -2746,11 +2746,12 @@ export class BattleScene {
     // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
     {
       const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
+      const murKamiennyProc = (miastoParamsData as any)?.bonus_obrona_mur_kamienny_proc?.wartosc ?? 150;
       const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
       const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
       const palisadaProc = (miastoParamsData as any)?.bonus_obrona_palisada_proc?.wartosc ?? 100;
       const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
-        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
+        mur: murProc, murKamienny: murKamiennyProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
       });
       this.wallDefenseMult = 1 + totalProc / 100;
       this.wallDefenseTotalProc = totalProc;

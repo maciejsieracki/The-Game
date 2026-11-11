@@ -44,7 +44,7 @@ export interface CityDefenseBonusParams {
   baszta: number;
   /** bonus_obrona_palisada_proc (miasto-params.json) -- wczesna palisada, zwykle 100. */
   palisada?: number;
-  /** Owner-approved stone wall tier between palisade and brick wall. */
+  /** bonus_obrona_mur_kamienny_proc (miasto-params.json), usually 150. */
   murKamienny?: number;
 }
 

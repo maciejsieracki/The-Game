@@ -8,6 +8,7 @@ import miastoParams from '../../data/miasto-params.json';
 const STRUCTURAL_DEFENSE_PARAM_KEY: Readonly<Record<string, keyof typeof miastoParams>> = {
   palisada: 'bonus_obrona_palisada_proc',
   mury: 'bonus_obrona_mur_proc',
+  mury_kamienne: 'bonus_obrona_mur_kamienny_proc',
   fort: 'bonus_obrona_cytadela_proc',
   baszta: 'bonus_obrona_baszta_proc',
 };

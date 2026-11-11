@@ -59,8 +59,8 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'entity-card-contract-brandAsse
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'entity-card-contract-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.building-cards-top5-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.building-cards-top5-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const SCREEN_IDS = ['mennica', 'koszary', 'trybunal', 'akwedukt', 'garnizon', 'warsztat_oblezniczy'];
+const FALLBACK_CHROME = process.env.BUILD_CARDS_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const SCREEN_IDS = ['mennica', 'koszary', 'trybunal', 'akwedukt', 'garnizon', 'warsztat_oblezniczy', 'mury', 'mury_kamienne'];
 const EXPECTED_HIDDEN = ['wielka_odlewnia', 'wielka_kuznia', 'teatr'];
 
 const screensArgIdx = process.argv.indexOf('--screens');
@@ -82,7 +82,7 @@ function check(name, cond, detail) {
 }
 
 async function launchBrowser() {
-  try { return await chromium.launch({ headless: true }); }
+  try { return await chromium.launch({ headless: true, executablePath: process.env.BUILD_CARDS_CHROME || undefined }); }
   catch (e) {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox'] });
   }

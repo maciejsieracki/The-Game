@@ -20,7 +20,7 @@
  *
  * Zmienne srodowiska:
  *   WDBR_SRC   -- alternatywny katalog `src` (np. eksport HEAD sprzed zmiany: pomiar RED).
- *   WDBR_SHOT  -- sciezka zrzutu JPEG sceny (wariant base).
+ *   WDBR_SHOT  -- sciezka zrzutu JPEG sceny ceglanej; WDBR_STONE_SHOT / WDBR_PALISADE_SHOT -- pozostale warianty.
  *   WDBR_TAG   -- etykieta w logu.
  * Usage (z gra/): TMPDIR=/dev/shm node tools/wall-defenders-bonus-range-test.cjs
  */
@@ -28,6 +28,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
+const http = require('http');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 let chromium;
 try { ({ chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'playwright'))); }
@@ -98,7 +99,7 @@ function buildVite(variant, mutations) {
 
 const params = JSON.parse(fs.readFileSync(path.join(GRA, 'data/miasto-params.json'), 'utf8'));
 const P = {
-  mur: params.bonus_obrona_mur_proc.wartosc, cytadela: params.bonus_obrona_cytadela_proc.wartosc,
+  mur: params.bonus_obrona_mur_proc.wartosc, murKamienny: params.bonus_obrona_mur_kamienny_proc.wartosc, cytadela: params.bonus_obrona_cytadela_proc.wartosc,
   baszta: params.bonus_obrona_baszta_proc.wartosc, palisada: params.bonus_obrona_palisada_proc.wartosc,
 };
 
@@ -152,16 +153,36 @@ function partA(D, label, expectGreen) {
 // CZESC B -- pomiar na prawdziwej scenie
 // ---------------------------------------------------------------------------
 async function launch() {
-  try { return await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new'] }); }
+  try { return await chromium.launch({ executablePath: process.env.WDBR_CHROME || '/usr/bin/chromium', args: ['--no-sandbox', '--headless=new'] }); }
   catch (e) { return await chromium.launch({ headless: true, args: ['--no-sandbox'] }); }
 }
 
+async function serveStatic(root) {
+  const base = path.resolve(root);
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url || '/', 'http://127.0.0.1');
+    const rel = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+    const file = path.resolve(base, '.' + rel);
+    if (!file.startsWith(base + path.sep)) { res.writeHead(403).end(); return; }
+    fs.readFile(file, (err, body) => {
+      if (err) { res.writeHead(404).end(); return; }
+      const ext = path.extname(file);
+      const type = ({ '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' })[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'content-type': type }); res.end(body);
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  return { baseUrl: `http://127.0.0.1:${address.port}/`, close: () => new Promise((resolve) => server.close(resolve)) };
+}
+
 async function measureScene(browser, outDir, fort, shotPath) {
+  const staticServer = await serveStatic(outDir);
   const page = await browser.newPage({ viewport: { width: 1024, height: 768 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   const q = '?playtest=oblezenie-duze' + (fort ? '&fort=' + fort : '');
-  await page.goto('file://' + path.join(outDir, 'index.html') + q, { waitUntil: 'load', timeout: 120000 });
+  await page.goto(staticServer.baseUrl + q, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction(() => !!window.__lastBattleScene, { timeout: 30000 });
   await page.waitForTimeout(1500);
 
@@ -177,8 +198,13 @@ async function measureScene(browser, outDir, fort, shotPath) {
     const crownArcher = def.find((u) => u.onWallWalkway && u.rangedBase && !isCata(u));
     const crownCata = def.find((u) => u.onWallWalkway && isCata(u));
     const rest = def.find((u) => !u.onWallWalkway);
+    const wallColors = new Set();
+    bs.siegeWallGroup?.traverse((node) => {
+      const materials = Array.isArray(node.material) ? node.material : (node.material ? [node.material] : []);
+      for (const material of materials) if (material.color?.getHex) wallColors.add(material.color.getHex());
+    });
     const out = {
-      hasApi, wallCol: wc, total: bs.wallDefenseTotalProc,
+      hasApi, wallCol: wc, total: bs.wallDefenseTotalProc, wallColors: [...wallColors],
       n: { def: def.length, crownMelee: !!crownMelee, crownArcher: !!crownArcher, crownCata: !!crownCata, rest: !!rest },
     };
     const withPos = (u, q, onWall, fn) => {
@@ -258,7 +284,7 @@ async function measureScene(browser, outDir, fort, shotPath) {
     // Zrzut (jpeg <= 1 MB): scena z murem i obroncami; po skip() ekran konca -- wiec robimy zrzut z osobnej strony.
     try {
       const p2 = await browser.newPage({ viewport: { width: 1024, height: 768 } });
-      await p2.goto('file://' + path.join(outDir, 'index.html') + q, { waitUntil: 'load', timeout: 120000 });
+      await p2.goto(staticServer.baseUrl + q, { waitUntil: 'load', timeout: 120000 });
       await p2.waitForFunction(() => !!window.__lastBattleScene, { timeout: 30000 });
       await p2.waitForTimeout(2500);
       await p2.screenshot({ path: shotPath, type: "jpeg", quality: 55, timeout: 150000 });
@@ -266,14 +292,15 @@ async function measureScene(browser, outDir, fort, shotPath) {
     } catch (e) { console.log('[shot] blad: ' + e); }
   }
   await page.close();
+  await staticServer.close();
   return { m, skipM, errors };
 }
 
-function partB(res, label, mur, isPal) {
+function partB(res, label, mur, isPal, isStone = false) {
   const out = [];
   const ok = (name, cond, detail) => out.push({ name: label + ' ' + name, cond: !!cond, detail });
   const { m, skipM } = res;
-  const exp = isPal ? P.palisada : P.mur;
+  const exp = isPal ? P.palisada : (isStone ? P.murKamienny : P.mur);
   ok('B0 total bonus sceny = ' + exp + '% (' + (isPal ? 'palisada' : 'mur') + ')', m.total === exp, m.total);
   ok('B0b scena ma obroncow: korona-wrecz, korona-strzelec, poza korona', m.n.crownMelee && m.n.crownArcher && m.n.rest, m.n);
   ok('B1 obronca na koronie: bonus ' + exp + '%', m.crown === exp, m.crown);
@@ -300,7 +327,8 @@ function partB(res, label, mur, isPal) {
       skipM.tactical && skipM.tactical.crown === skipM.instant.crown && skipM.tactical.inner === skipM.instant.inner
       && skipM.tactical.outer === skipM.instant.outer, { tactical: skipM.tactical, instant: skipM.instant });
   }
-  ok('B15 brak bledow JS (pageerror)', res.errors.length === 0, res.errors);
+  ok('B15 brick material matches fortification tier', isStone ? !m.wallColors.includes(0x8b3a2a) : (isPal ? !m.wallColors.includes(0x8b3a2a) : m.wallColors.includes(0x8b3a2a)), m.wallColors);
+  ok('B16 brak bledow JS (pageerror)', res.errors.length === 0, res.errors);
   void mur;
   return out;
 }
@@ -334,6 +362,13 @@ async function main() {
   check('C2 Auto: effectiveDefenderM stosuje bonus do CALEJ Obrony rostera (split.defense * (1 + combinedDefPct/100))',
     /terrAdjDefense = split\.defense \* \(1 \+ combinedDefPct \/ 100\)/.test(mainSrc));
 
+  // Brick rendering shares the existing stone geometry and uses the real city build state.
+  const sceneSrc = fs.readFileSync(path.join(GRA, SCENE_REL), 'utf8');
+  const wallSrc = fs.readFileSync(path.join(GRA, 'src/battle/siegeWall.ts'), 'utf8');
+  check('R1 cegla renderowana tylko gdy zbudowane legacy ID mury', /brickWallRed = opts\.siege\?\.builtBuildingIds\?\.includes\('mury'\) === true/.test(sceneSrc));
+  check('R2 rzeczywisty City built state przekazuje wariant ceglasty do modelu muru', /brickRed: this\.brickWallRed/.test(sceneSrc));
+  check('R3 wariant ceglasty zachowuje geometrie cywilizacji i zmienia material na nie-neonowy czerwony', /wall\.traverse\([\s\S]*material\.color\.setHex\(0x8b3a2a\)/.test(wallSrc));
+
   // CZESC B
   const mutScene = {
     inside: [{ file: SCENE_REL, from: 'return fortificationDefenseBonusForUnit(\n      { side: u.side, onWallWalkway: u.onWallWalkway === true, q: u.q, siegeWallCol: this.siegeWallCol },',
@@ -352,8 +387,11 @@ async function main() {
   const base = await measureScene(browser, dist.base, '', process.env.WDBR_SHOT || '');
   console.log('[' + TAG + '] POMIAR mur ' + JSON.stringify(base.m));
   console.log('[' + TAG + '] POMIAR skip ' + JSON.stringify(base.skipM));
-  report(partB(base, '[B mur]', true, false));
-  const basePal = await measureScene(browser, dist.base, 'palisada', '');
+  report(partB(base, '[B ceglane]', true, false));
+  const baseStone = await measureScene(browser, dist.base, 'stone', process.env.WDBR_STONE_SHOT || '');
+  console.log('[' + TAG + '] POMIAR mury kamienne ' + JSON.stringify(baseStone.m));
+  report(partB(baseStone, '[B kamienne]', true, false, true));
+  const basePal = await measureScene(browser, dist.base, 'palisada', process.env.WDBR_PALISADE_SHOT || '');
   console.log('[' + TAG + '] POMIAR palisada ' + JSON.stringify(basePal.m));
   console.log('[' + TAG + '] POMIAR skip palisada ' + JSON.stringify(basePal.skipM));
   report(partB(basePal, '[B palisada]', true, true));
