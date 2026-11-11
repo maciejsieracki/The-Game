@@ -11,6 +11,7 @@
 
 import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { pluralPl } from './formatPl';
 import {
   BOTTOM_BAR_END_TURN_H_PX,
   BOTTOM_BAR_WYKONAJ_H_PX,
@@ -148,8 +149,8 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 }
 
 /** Klasyczny fallback bez konkretnych nazw: „{n} karta/karty/kart wymaga/wymagają decyzji." */
-function blockingCountPhrase(count: number): string {
-  const noun = count === 1 ? 'karta' : (count >= 2 && count <= 4 ? 'karty' : 'kart');
+export function blockingCountPhrase(count: number): string {
+  const noun = pluralPl(count, 'karta', 'karty', 'kart');
   const verb = count === 1 ? 'wymaga' : 'wymagają';
   return count + ' ' + noun + ' ' + verb + ' decyzji.';
 }
