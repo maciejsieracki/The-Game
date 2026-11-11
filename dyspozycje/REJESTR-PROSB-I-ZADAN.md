@@ -9666,3 +9666,8 @@ Stadnina bez surowca Koń w Żelazie wymaga bezpośredniego sąsiedztwa istniej�
 STATUS: OTWARTE
 DOMAIN: GAME
 Pilne: przy0%pula/100%budynki panel13295Pracy/t pokazuje0dopuli, alepula58092+9857. Zbadać bilans tury, ewentualny zwrot niewykorzystanejPracy/forecast i podwójne naliczanie; niezakładaćprzyczynyzezdjęcia. Dispatch `autobot/runs/R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1/00-dispatch.md`; priorytetnajbliższegoslotuporelease618.
+
+## 2026-11-11 — R-WEB-BRICK-CYCLES-75-100-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Cegielnia75cykliBrąz/100Żelazo, zużycieproporcjonalne. Przyistniejącejrecepturze oznacza150gliny75drewna→225cegieł i200gliny100drewna→400cegieł. Zarejestrowanedonajbliższegoslotu max4, dispatch `autobot/runs/R-WEB-BRICK-CYCLES-75-100-Q1/00-dispatch.md`.
