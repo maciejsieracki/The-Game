@@ -65,10 +65,14 @@ pub mod player;
 pub mod production_queue;
 pub mod production_units;
 pub mod recruitment;
+#[cfg(not(test))]
+pub mod replay;
 pub mod resource_access;
 pub mod resource_production;
 pub mod rng;
 pub mod roads;
+#[cfg(not(test))]
+pub mod save_load;
 pub mod save_migrations;
 mod session;
 pub mod siege_engine_build;
@@ -131,6 +135,8 @@ pub mod war_turn_state;
 pub mod war_world_view;
 pub mod wonder_placement;
 pub mod work_tax;
+#[cfg(not(test))]
+pub mod zapis_loader;
 
 pub use error::EngineError;
 pub use events::{canonical_phase_order, phase_order, TurnEvent, TurnPhase, PHASE_COUNT};

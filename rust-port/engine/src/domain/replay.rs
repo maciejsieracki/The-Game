@@ -421,6 +421,8 @@ impl<'a, I> ReplayPlayback<'a, I> {
 
     /// Returns the next input and restores the exact RNG checkpoint recorded
     /// for it before advancing the cursor.
+    // Public cursor API kept as-is (not an `Iterator`: it yields `&ReplayStep` and restores RNG state).
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Option<&'a ReplayStep<I>> {
         let step = self.replay.step(self.position)?;
         self.rng = Rng::from_state(step.rng_state());
