@@ -1058,7 +1058,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Warsztat oblężniczy",
-        "korzysc": "wzmocnić jednostki o kolejne +10% i otworzyć dostęp do Katapulty"
+        "korzysc": "wzmocnić jednostki o kolejne +10%; Katapultę budujesz podczas aktywnego oblężenia po zbadaniu Sztuki wojennej"
       }
     ]
   },

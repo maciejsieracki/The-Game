@@ -102,8 +102,12 @@ function unitExample(u) {
   const ruch = u.Ruch || 2;
   const t20g = utrzG * 20;
   const t20f = utrzF * 20;
+  const siegeEngine = String(u.Typ || '').trim() === 'Siege';
 
-  return `**Rekrutacja:** **${gold} ¤** ze skarbca + **${pop}** mieszkańców (np. pop. 5 → 4 po werbunku).
+  const acquisition = siegeEngine
+    ? '**Budowa:** wyłącznie podczas aktywnego oblężenia; opłać koszt pieniądza i surowca wyświetlony na karcie, bez kosztu mieszkańców.'
+    : `**Rekrutacja:** **${gold} ¤** ze skarbca + **${pop}** mieszkańców (np. pop. 5 → 4 po werbunku).`;
+  return `${acquisition}
 
 **Utrzymanie 20 tur** (jednostka stoi lub walczy):
 - Złoto: ${utrzG} × 20 = **${t20g} ¤**
@@ -113,7 +117,7 @@ function unitExample(u) {
 
 **Ruch ${ruch}** na mapie: z miasta A do B (3 heksy lasu) ≈ **${ruch >= 3 ? 3 : ruch}** tur marszu lub mniej na drodze.
 
-**Kiedy opłaca się:** ${u['Rola (linia)'] === 'Dystans' ? 'Chroń za linią piechoty — 1 jednostka dystansowa na 2–3 wojowników.' : u['Rola (linia)'] === 'Kawaleria' ? 'Uderzenie na skrzydło, unikaj oszczepników.' : u['Rola (linia)'] === 'Oblężnicza' ? 'Tylko przy murze — na polu siła armii liczy się bez machin.' : 'Podstawowa jednostka linii frontu — tania, ale wymaga liczebności.'}`;
+**Kiedy opłaca się:** ${siegeEngine ? 'Buduj podczas aktywnego oblężenia, gdy potrzebujesz przełamać mury.' : u['Rola (linia)'] === 'Dystans' ? 'Chroń za linią piechoty — 1 jednostka dystansowa na 2–3 wojowników.' : u['Rola (linia)'] === 'Kawaleria' ? 'Uderzenie na skrzydło, unikaj oszczepników.' : u['Rola (linia)'] === 'Oblężnicza' ? 'Tylko przy murze — na polu siła armii liczy się bez machin.' : 'Podstawowa jednostka linii frontu — tania, ale wymaga liczebności.'}`;
 }
 
 function improvementExample(key, imp) {
@@ -265,15 +269,19 @@ function generateUnits() {
     seen.set(id, true);
     const rola = u['Rola (linia)'] || 'Standardowa';
     const epoka = u.Epoka || '—';
+    const siegeEngine = String(u.Typ || '').trim() === 'Siege';
 
-    const wikiS = `**${name}** (${rola}, ${epoka}): rekrutacja **${u['Pieniądz (koszt)']}** ¤ + **${u.Ludność}** mieszk., utrzymanie **${u['Utrzymanie (Pieniądz/turę)']}** ¤/t i **${u['żywność/turę']}** żywn./t. Siła w polu **${u.fieldPower ?? '—'}**.`;
+    const wikiS = siegeEngine
+      ? `**${name}** (${rola}, ${epoka}): budowa wyłącznie podczas aktywnego oblężenia; wymaga właściwej technologii i opłacenia kosztu z karty. Utrzymanie **${u['Utrzymanie (Pieniądz/turę)']}** ¤/t i **${u['żywność/turę']}** żywn./t. Siła w polu **${u.fieldPower ?? '—'}**.`
+      : `**${name}** (${rola}, ${epoka}): rekrutacja **${u['Pieniądz (koszt)']}** ¤ + **${u.Ludność}** mieszk., utrzymanie **${u['Utrzymanie (Pieniądz/turę)']}** ¤/t i **${u['żywność/turę']}** żywn./t. Siła w polu **${u.fieldPower ?? '—'}**.`;
 
     const wikiM = [
       `### Rola`,
       `${name} to jednostka typu **${rola}** z epoki **${epoka}**. ${u.Kultura ? `Unikalna dla **${u.Kultura}**.` : 'Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.'}`,
       ``,
-      `### Rekrutacja i utrzymanie`,
-      `- **Koszt:** ${u['Pieniądz (koszt)']} ¤, ${u.Ludność} mieszkańców`,
+      siegeEngine ? `### Budowa i utrzymanie` : `### Rekrutacja i utrzymanie`,
+      siegeEngine ? `- **Dostępność:** tylko podczas aktywnego oblężenia; bez kosztu mieszkańców` : `- **Koszt:** ${u['Pieniądz (koszt)']} ¤, ${u.Ludność} mieszkańców`,
+      siegeEngine ? `- **Koszt:** pieniądz i surowiec według karty jednostki` : '',
       `- **Tech:** ${u.Tech && u.Tech !== '-' ? u.Tech : 'brak (poza epoką)'}`,
       `- **Utrzymanie:** ${u['Utrzymanie (Pieniądz/turę)']} ¤/t, ${u['żywność/turę']} żywności/t`,
       `- **Ruch:** ${u.Ruch} (mapa) / ${u['Ruch w bitwie (heksy)']} (bitwa)`,

@@ -2,8 +2,8 @@
 /**
  * iron-gating-impl-test.cjs -- R-WEB-TECH-IRON-GATING-IMPL-Q1.
  * Decyzja wlasciciela 2026-11-09: Hutnictwo zelaza = surowiec zelazo + Kopalnia/Odlewnia/Kuznia
- * (bez jednostek epoki Zelaza); WSZYSTKIE jednostki epoki Zelaza (poza Katapulta) rekrutuje
- * dopiero Sztuka wojenna (prereq: Oblezenictwo + Obrobka zelaza + Hutnictwo zelaza).
+ * (bez jednostek epoki Zelaza); WSZYSTKIE jednostki epoki Zelaza, w tym Katapulta, wymagaja
+ * Sztuki wojennej. Konnica i Jeździec chiński przechodzą do Żelaza.
  * Uruchom z gra/:  node tools/iron-gating-impl-test.cjs
  * Pure logic (esbuild bundle production.ts + research.ts, prawdziwe dane JSON).
  */
@@ -17,7 +17,8 @@ const esbuild = (() => {
 const ENTRY = path.resolve(__dirname, '.iron-gating-impl-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.iron-gating-impl-bundle.cjs');
 fs.writeFileSync(ENTRY, `
-export { availableProduction } from '../src/game/production';
+export { availableProduction, availableReplacementsFor } from '../src/game/production';
+export { advanceRecruitmentGated } from '../src/game/production';
 export { parsePrerequisites, canResearch, availableTechs } from '../src/game/research';
 export { chooseAIResearch } from '../src/game/ai';
 `, 'utf8');
@@ -46,14 +47,25 @@ const techDef = n => TECHS_DEF.find(t => t.Technologia === n);
 
 console.log('\n[iron-gating-impl-test]\n');
 
-console.log('1. units.json: 24 jednostki epoki Zelaza -> Tech = Sztuka wojenna, Katapulta -> Oblezenictwo');
+console.log('1. units.json: kazda jednostka epoki Zelaza -> Tech = Sztuka wojenna');
 const iron = unitsList.filter(u => u.Epoka === 'Żelazo');
-assert(iron.length === 25, '25 jednostek epoki Zelaza w danych', 'got=' + iron.length);
-const ironNoCat = iron.filter(u => u.Jednostka !== 'Katapulta');
-assert(ironNoCat.length === 24, '24 jednostki bez Katapulty', 'got=' + ironNoCat.length);
-for (const u of ironNoCat) assert(u.Tech === SW, `${u.Jednostka}: Tech = Sztuka wojenna`, 'got=' + u.Tech);
+assert(iron.length === 27, '27 jednostek epoki Zelaza po przesunieciu konnicy', 'got=' + iron.length);
+for (const u of iron) assert(u.Tech === SW, `${u.Jednostka}: Tech = Sztuka wojenna`, 'got=' + u.Tech);
 const kat = iron.find(u => u.Jednostka === 'Katapulta');
-assert(kat && kat.Tech === 'Oblężnictwo', 'Katapulta zostaje na Oblezenictwie', 'got=' + (kat && kat.Tech));
+assert(kat && kat.Tech === SW, 'Katapulta wymaga Sztuki wojennej', 'got=' + (kat && kat.Tech));
+for (const name of ['Konnica', 'Jeździec chiński']) {
+  const u = unitsList.find(row => row.Jednostka === name);
+  assert(u && u.Epoka === 'Żelazo' && u.Tech === SW, `${name}: Żelazo/Sztuka wojenna`, u && `${u.Epoka}/${u.Tech}`);
+}
+for (const [name, era, tech] of [
+  ['Rydwan (woły)', 'Kamień', 'Koło'], ['Rydwan konny', 'Brąz', 'Jeździectwo'],
+  ['Rydwan egipski', 'Brąz', 'Jeździectwo'], ['Rydwan sumeryjski', 'Brąz', 'Jeździectwo'],
+  ['Rydwan mykeński', 'Brąz', 'Jeździectwo'], ['Rydwan Shang', 'Brąz', 'Jeździectwo'],
+  ['Rydwan celtycki', 'Żelazo', SW], ['Rydwan Kapadokijski', 'Brąz', 'Jeździectwo'],
+]) {
+  const u = unitsList.find(row => row.Jednostka === name);
+  assert(u && u.Epoka === era && u.Tech === tech, `${name}: zachowuje epoke/tech`, u && `${u.Epoka}/${u.Tech}`);
+}
 const hieros = iron.find(u => u.Jednostka.startsWith('Hieros Lochos'));
 assert(hieros && hieros.Tech === SW, 'Hieros Lochos ma teraz Tech = Sztuka wojenna');
 
@@ -77,7 +89,8 @@ const sw = techDef(SW);
 const pre = M.parsePrerequisites(sw['Wymaga (prereq)']);
 for (const p of ['Oblężnictwo', 'Obróbka żelaza', 'Hutnictwo żelaza']) assert(pre.includes(p), 'prereq zawiera ' + p, JSON.stringify(pre));
 assert(/Akademia wojskowa/.test(sw['Odblokowuje budynek']), 'Sztuka wojenna nadal odblokowuje Akademie wojskowa');
-for (const u of ironNoCat) assert(sw['Odblokowuje budynek'].includes(u.Jednostka), `opis Sztuki wojennej wymienia: ${u.Jednostka}`);
+for (const u of iron) assert(sw['Odblokowuje budynek'].includes(u.Jednostka), `opis Sztuki wojennej wymienia: ${u.Jednostka}`);
+assert(!/Katapulta/.test(techDef('Oblężnictwo')['Odblokowuje budynek']), 'Oblężnictwo nie wymienia juz Katapulty');
 
 console.log('\n4. Brak cyklu: prereq techow + wymagany budynek -> techUnlock budynku');
 {
@@ -105,7 +118,7 @@ console.log('\n4. Brak cyklu: prereq techow + wymagany budynek -> techUnlock bud
   assert(!cycle, 'graf zaleznosci techow bez cyklu', cycle);
 }
 
-console.log('\n5. Rekrutacja: zablokowana bez Sztuki wojennej, odblokowana z nia (availableProduction)');
+console.log('\n5. Produkcja i Zastap: bramki ery/techu dla jazdy i calej epoki Zelaza');
 const BASE_TECHS = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Obróbka żelaza', 'Oblężnictwo'];
 const ctxFor = nacja => ({
   epoch: 3, civUnitNacja: nacja, civBonusy: [],
@@ -118,20 +131,30 @@ const CITY = { id: 'c1', ownerId: 0, q: 0, r: 0 };
 const DATA = { buildings: [], units: unitsList };
 const ids = items => new Set(items.map(i => i.id));
 let withoutOk = 0, withOk = 0;
-for (const u of ironNoCat) {
+for (const u of iron) {
   const without = ids(M.availableProduction(CITY, DATA, BASE_TECHS, ctxFor(u.Nacja)));
   const withSW = ids(M.availableProduction(CITY, DATA, [...BASE_TECHS, SW], ctxFor(u.Nacja)));
-  assert(!without.has(u.Jednostka), `${u.Jednostka}: brak w rekrutacji bez Sztuki wojennej (Hutnictwo+Obrobka+Oblezenictwo)`);
-  assert(withSW.has(u.Jednostka), `${u.Jednostka}: dostepna w rekrutacji ze Sztuka wojenna`);
+  if (u.Typ === 'Siege') {
+    assert(!without.has(u.Jednostka) && !withSW.has(u.Jednostka), `${u.Jednostka}: wykluczona z rekrutacji miejskiej`);
+  } else {
+    assert(!without.has(u.Jednostka), `${u.Jednostka}: brak w rekrutacji bez Sztuki wojennej (Hutnictwo+Obrobka+Oblezenictwo)`);
+    assert(withSW.has(u.Jednostka), `${u.Jednostka}: dostepna w rekrutacji ze Sztuka wojenna`);
+  }
 }
 {
-  const withKat = ids(M.availableProduction(CITY, DATA, BASE_TECHS, ctxFor('Grecja')));
-  assert(withKat.has('Katapulta'), 'Katapulta rekrutowana bez Sztuki wojennej (tylko Oblezenictwo)');
-  const noObl = ids(M.availableProduction(CITY, DATA, BASE_TECHS.filter(t => t !== 'Oblężnictwo'), ctxFor('Grecja')));
-  assert(!noObl.has('Katapulta'), 'Katapulta zablokowana bez Oblezenictwa');
+  const noSW = ids(M.availableReplacementsFor('Konnica', DATA, BASE_TECHS, ctxFor('Chiny')));
+  const withSW = ids(M.availableReplacementsFor('Konnica', DATA, [...BASE_TECHS, SW], ctxFor('Chiny')));
+  assert(!noSW.has('Jeździec chiński'), 'Zastap blokuje Jezdzca chinskiego przed Sztuka wojenna');
+  assert(withSW.has('Jeździec chiński'), 'Zastap udostepnia Jezdzca chinskiego po Sztuce wojennej');
+  const bronzeItems = ids(M.availableProduction(CITY, DATA, [...BASE_TECHS, SW], { ...ctxFor('Grecja'), epoch: 2 }));
+  assert(!bronzeItems.has('Konnica') && !bronzeItems.has('Jeździec chiński'), 'nowa rekrutacja konnicy jest zablokowana przed Żelazem');
+  const alreadyPaid = M.advanceRecruitmentGated({ kolejka: [], postep: 0,
+    rekrutacja: [{ kind: 'jednostka', id: 'Konnica', nazwa: 'Konnica', koszt: 22 }] },
+  { population: 5, manpower: 5 }, 2, 1, true);
+  assert(alreadyPaid.completed.some(item => item.id === 'Konnica'), 'stara oplacona kolejka Konnicy zachowuje prawo do ukonczenia po aktualizacji danych');
   const onlyHut = ids(M.availableProduction(CITY, DATA, ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'], ctxFor('Grecja')));
-  const anyIron = [...onlyHut].filter(id => ironNoCat.some(u => u.Jednostka === id));
-  assert(anyIron.length === 0, 'po samym Hutnictwie: zero jednostek epoki Zelaza (poza Katapulta)', anyIron.join(','));
+  const anyIron = [...onlyHut].filter(id => iron.some(u => u.Jednostka === id));
+  assert(anyIron.length === 0, 'po samym Hutnictwie: zero jednostek epoki Zelaza', anyIron.join(','));
   const bronze = [...onlyHut].filter(id => unitsList.some(u => u.Jednostka === id && u.Epoka === 'Brąz'));
   assert(bronze.length > 0, 'po samym Hutnictwie: lista rekrutacji NIE jest pusta (jednostki Brazu)', 'n=' + bronze.length);
 }

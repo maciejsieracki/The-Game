@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Oblężnictwo** — epoka **Żelazo** (poziom 7), koszt **280** PN (tempo Szybka), wymaga: Matematyka + Wojskowość. Odblokowuje budynki: Warsztat oblężniczy; jednostki: Katapulta.
+**Oblężnictwo** — epoka **Żelazo** (poziom 7), koszt **280** PN (tempo Szybka), wymaga: Matematyka + Wojskowość. Odblokowuje budynki: Warsztat oblężniczy. Katapultę można budować podczas aktywnego oblężenia po zbadaniu Sztuki wojennej.
 
 ---
 
@@ -29,12 +29,12 @@
 
 ### Co odblokowuje
 - **Budynki:** Warsztat oblężniczy
-- **Jednostki:** Katapulta
+- **Jednostki:** brak bezpośrednich odblokowań; Sztuka wojenna odblokowuje Katapultę do budowy podczas aktywnego oblężenia
 - **Ulepszenia terenu:** brak
 - **Surowce:** brak
 
 ### Uwagi
-jednostki: Katapulta, Taran, Wieża oblężnicza (część już w UNITS — weryfikacja przez UNITS); Warsztat oblężniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga tego tech (aktualizacja Tech w units.json przez UNITS)
+jednostki: Taran, Wieża oblężnicza (budowane wyłącznie podczas aktywnego oblężenia); Warsztat oblężniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga Sztuki wojennej
 
 **Powiązane:** Drzewko technologii · Nauka · Epoki
 

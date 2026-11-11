@@ -107,7 +107,7 @@ const BUD = [
   { k: 'trybunal', p: 'top5.2.zdanie', z: 'W epoce Żelaza +2 pieniądza i +3 Szczęścia.', na: 'W epoce Żelaza +2 podatku i +3 Szczęścia.', c: 'A', r: A_PODATEK },
   { k: 'warsztat_oblezniczy', p: 'top5.1.tytul', z: '+2 pieniądza', na: '+2 podatku', c: 'A', r: A_PODATEK },
   { k: 'warsztat_oblezniczy', p: 'top5.1.zdanie', z: 'Drobny dochód miasta.', na: 'Drobny stały przychód Pracy i podatku w mieście.', c: 'A', r: A_PODATEK },
-  { k: 'warsztat_oblezniczy', p: 'cmz.0.korzysc', z: 'wzmocnić jednostki o kolejne +10%', na: 'wzmocnić jednostki o kolejne +10% i otworzyć dostęp do Katapulty', c: 'R', r: 'DODATEK 1 (decyzja właściciela ABC 2026-11-09): Katapulta jest realną jednostką odblokowywaną przez Warsztat oblężniczy (buildings.json:1637-1639, cities.ts:845-851); karta i kafelek mają mówić to samo.' },
+  { k: 'warsztat_oblezniczy', p: 'cmz.0.korzysc', z: 'wzmocnić jednostki o kolejne +10%', na: 'wzmocnić jednostki o kolejne +10%; Katapultę budujesz podczas aktywnego oblężenia po zbadaniu Sztuki wojennej', c: 'R', r: 'R-WEB-CAVALRY-IRON-ONLY-Q1 (decyzja właściciela 2026-11-11): Warsztat nie odblokowuje maszyn w mieście; Katapulta wymaga Sztuki wojennej i jest budowana wyłącznie podczas aktywnego oblężenia.' },
   { k: 'akademia_wojskowa', p: 'top5.1.tytul', z: '+2 pieniądza', na: '+2 podatku', c: 'A', r: A_PODATEK },
   { k: 'akademia_wojskowa', p: 'top5.1.zdanie', z: 'Drobny dochód miasta.', na: 'Drobny stały przychód Pracy i podatku w mieście.', c: 'A', r: A_PODATEK },
   { k: 'kuznia_zelaza', p: 'top5.2.tytul', z: '+2 pieniądza', na: '+2 podatku', c: 'A', r: A_PODATEK },

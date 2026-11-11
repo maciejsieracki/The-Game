@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Katapulta** (Oblężnicza, Żelazo): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **128**.
+**Katapulta** (Oblężnicza, Żelazo): budowa wyłącznie podczas aktywnego oblężenia; wymaga właściwej technologii i opłacenia kosztu z karty. Utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **128**.
 
 ---
 
@@ -23,9 +23,10 @@
 
 ### Rola
 Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.
-### Rekrutacja i utrzymanie
-- **Koszt:** 18 ¤, 1 mieszkańców
-- **Tech:** Oblężnictwo
+### Budowa i utrzymanie
+- **Dostępność:** tylko podczas aktywnego oblężenia; bez kosztu mieszkańców
+- **Koszt:** pieniądz i surowiec według karty jednostki
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 1 (bitwa)
 - **Zasięg:** 6 heksów
@@ -39,17 +40,17 @@ Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wiel
 
 ## Przykład liczbowy
 
-**Rekrutacja:** **18 ¤** ze skarbca + **1** mieszkańców (np. pop. 5 → 4 po werbunku).
+**Budowa:** wyłącznie podczas aktywnego oblężenia; opłać koszt pieniądza i surowca wyświetlony na karcie, bez kosztu mieszkańców.
 
 **Utrzymanie 20 tur** (jednostka stoi lub walczy):
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **128** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
+**Siła w polu:** **128** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
 
 **Ruch 1** na mapie: z miasta A do B (3 heksy lasu) ≈ **1** tur marszu lub mniej na drodze.
 
-**Kiedy opłaca się:** Tylko przy murze — na polu siła armii liczy się bez machin.
+**Kiedy opłaca się:** Buduj podczas aktywnego oblężenia, gdy potrzebujesz przełamać mury.
 
 ---
 
@@ -62,7 +63,3 @@ Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wiel
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
-
-## Rys historyczny
-
-Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.

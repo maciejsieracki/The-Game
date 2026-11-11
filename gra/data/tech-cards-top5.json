@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "44d28f3dd34ee59c46243432ad1de0170bbc813e00b1541e74f3dd8e47c98d67",
+    "csvSha256": "28ea3c6d8970f3accc66be85bc1cf8cb0b0817665399b89165c4e29f3a879c77",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -742,7 +742,7 @@
         "dowod": "gra/data/wonders.json:371-375; gra/data/wonders.json:491-496; gra/data/wonders.json:440-448"
       },
       {
-        "tytul": "Otwiera Oblężnictwo (Katapulta)",
+        "tytul": "Otwiera Oblężnictwo (warunek Katapulty)",
         "zdanie": "Razem z Matematyką prowadzi do Katapulty i Warsztatu oblężniczego.",
         "dowod": "gra/data/tech.json:365"
       }
@@ -758,7 +758,7 @@
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
-        "korzysc": "dojść do Katapult"
+        "korzysc": "odblokować drogę do budowy Katapulty podczas oblężenia"
       }
     ],
     "ukryte": []
@@ -1109,8 +1109,8 @@
     ],
     "cmz": [
       {
-        "czynnosc": "Rekrutuj Katapulty",
-        "korzysc": "burzyć mury z dystansu 6 pól"
+        "czynnosc": "Zbadaj Sztukę wojenną",
+        "korzysc": "budować Katapulty wyłącznie podczas aktywnego oblężenia i burzyć mury z dystansu 6 pól"
       },
       {
         "czynnosc": "Zbuduj Warsztat oblężniczy (obok Koszar)",
@@ -1309,8 +1309,8 @@
         "korzysc": "wzmocnić jednostki o kolejne +20% (razem do +50%)"
       },
       {
-        "czynnosc": "Rekrutuj jednostki epoki Żelaza (w mieście z Koszarami i zapasem żelaza)",
-        "korzysc": "wystawić narodową piechotę i jazdę (np. Falanga z Obroną 12)"
+        "czynnosc": "Rekrutuj jednostki epoki Żelaza w mieście z Koszarami i zapasem właściwego surowca",
+        "korzysc": "wystawić narodową piechotę i jazdę (np. Falangę z Obroną 12); machiny oblężnicze buduj wyłącznie podczas aktywnego oblężenia"
       }
     ],
     "ukryte": []

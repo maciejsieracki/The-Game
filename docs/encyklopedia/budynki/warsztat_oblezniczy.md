@@ -37,10 +37,10 @@ Warsztat oblężniczy:
 - **Wymaganie:** **Koszary** (lub Akademia wojskowa jako upgrade Koszar) w tym mieście
 
 ### Strategia gracza
-Miasto oblężnicze: Warsztat przed kampanią na ufortyfikowane miasta wroga. Katapulta z tego miasta + armia ze ścieżką B.
+Warsztat wzmacnia jednostki, które odwiedziły miasto. Machiny oblężnicze buduje się wyłącznie podczas aktywnego oblężenia; Katapulta dodatkowo wymaga Sztuki wojennej.
 
 ### Typowe błędy
-- Oczekiwanie Tarana/Wieży z kolejki miasta — tylko **Katapulta**.
+- Oczekiwanie na Katapultę lub inne machiny w kolejce miasta — buduje się je podczas aktywnego oblężenia.
 - Budowa bez Koszar.
 
 **Powiązane:** Katapulta · Koszary · Oblężenie
@@ -51,7 +51,7 @@ Miasto oblężnicze: Warsztat przed kampanią na ufortyfikowane miasta wroga. Ka
 
 | Efekt | Wartość |
 |-------|---------|
-| Odblokowanie | Katapulta w rekrutacji |
+| Dostępność machin | Tylko podczas aktywnego oblężenia; Katapulta wymaga Sztuki wojennej |
 | Ścieżka B | +10% miękkie (z Koszarami +20% = +30%) |
 
 Koszt **65** pracy przy 10/t ≈ **7 tur**.
