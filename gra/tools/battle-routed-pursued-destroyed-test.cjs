@@ -18,12 +18,20 @@ const MAX_MS = Number(process.env.ROUT_MAX_MS || 280000);
 const CASES = [
   { name: 'konnica goni piechote', atk: 'Konnica:8', def: 'Wojownik:14', seed: 1, loser: 'def',
     expect: (r, c) => [
-      ['killedWhileRouted >= 4 (uciekinier trafiony w drodze ginie)', r.killedWhileRouted >= 4, r.killedWhileRouted],
-      ['def zabitych >= 6', r.def.killed >= 6, r.def.killed],
+      // Progi z marginesem na jitter klatek (bez zegara deterministycznego: killedWhileRouted 3-5, def zabitych 6-9 po zmianie;
+      // przed zmiana / mutacja 1: killedWhileRouted 0-1, def zabitych 4).
+      ['killedWhileRouted >= 2 (uciekinier trafiony w drodze ginie)', r.killedWhileRouted >= 2, r.killedWhileRouted],
+      ['def zabitych >= 5', r.def.killed >= 5, r.def.killed],
+    ] },
+  { name: 'konnica goni piechote (seed 2)', atk: 'Konnica:8', def: 'Wojownik:14', seed: 2, loser: 'def',
+    expect: (r, c) => [
+      ['killedWhileRouted >= 2', r.killedWhileRouted >= 2, r.killedWhileRouted],
+      ['def zabitych >= 5', r.def.killed >= 5, r.def.killed],
     ] },
   { name: 'przewaga 2:1 wrecz', atk: 'Hastati:20', def: 'Hastati:10', seed: 1, loser: 'def',
     expect: (r, c) => [
       ['wszyscy uciekinierzy dobiegli do krawedzi swojej strony', r.fledNotAtEdge === 0 && r.fledAtEdge > 0, [r.fledAtEdge, r.fledNotAtEdge]],
+      ['poscig piechoty: ataki na routed >= 10 (po zmianie 22-24, przed 0)', r.attacksOnRouted >= 10, r.attacksOnRouted],
     ] },
 ];
 

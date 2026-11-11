@@ -2,7 +2,7 @@
 // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: pomiar losu jednostek po bitwie
 // (zabici / uciekli / routed-na-polu / ocalali) AUTO(skip) vs auto-rozstrzygniecie (instant).
 // Usage (z gra/): node tools/battle-rout-pursuit-measure.cjs
-// Env: ROUT_SEEDS="1,2,3" ROUT_SCEN="0,1" ROUT_MAX_MS=280000 ROUT_OUT=plik.json
+// Env: ROUT_MODES="skip,watch,instant" ROUT_SEEDS="1,2,3" ROUT_SCEN="0,1" ROUT_MAX_MS=280000 ROUT_OUT=plik.json
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
@@ -27,7 +27,7 @@ const only = process.env.ROUT_SCEN ? process.env.ROUT_SCEN.split(',').map(Number
     for (const [si, sc] of SCEN.entries()) {
       if (only && !only.includes(si)) continue;
       for (const seed of SEEDS) {
-        for (const mode of ['skip', 'instant']) {
+        for (const mode of (process.env.ROUT_MODES || 'skip,instant').split(',')) {
           const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
           const errors = []; page.on('pageerror', e => errors.push(e.message));
           await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-rout-pursuit-browser-entry.html?mode=${mode}&seed=${seed}&atk=${sc.atk}&def=${sc.def}`, { waitUntil: 'load', timeout: 60000 });

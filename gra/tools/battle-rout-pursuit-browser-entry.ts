@@ -62,7 +62,7 @@ api.killedWhileRouted = 0; api.collapseRound = -1; api.fledAtEdge = 0; api.fledN
   scene._removeUnitFromScene = (ru: any) => {
     // klony planowania AUTO-batch nie maja wlasnych materialow (mats=[]) -- pomijamy je
     if (!ru.removed && ru.routed && ru.bu.hp > 0 && ru.mats.length > 0) {
-      const edge = scene._fleeHomeCol(ru);
+      const edge = scene._fleeHomeCol ? scene._fleeHomeCol(ru) : -1;
       if (ru.q === edge) api.fledAtEdge++; else { api.fledNotAtEdge++; (api.notEdge ||= []).push([ru.side, ru.q, ru.r, ru.fleeStuck]); }
     }
     return origRemove(ru);
@@ -75,18 +75,26 @@ function fate(ru: any): string {
   if (ru.routed) return 'routedLeft';
   return 'survived';
 }
-function tally(roster: any[]) {
+const hpStart: any = { atk: 0, def: 0 };
+for (const [k, side] of [['atk', armies.attacker], ['def', armies.defender]] as const) hpStart[k] = (side as any[]).reduce((s, bu) => s + bu.hp, 0);
+function tally(roster: any[], key: string) {
   const t: any = { total: roster.length, killed: 0, fled: 0, routedLeft: 0, survived: 0 };
   for (const ru of roster) t[fate(ru)]++;
+  // DODATEK 4: straty HP strony (zabici = 0 HP); hpLostPct wzgledem HP startowego
+  t.hpStart = hpStart[key]; t.hpEnd = roster.reduce((s, ru) => s + Math.max(0, ru.bu.hp), 0);
+  t.hpLostPct = Math.round(100 * (1 - t.hpEnd / t.hpStart));
   return t;
 }
 function finish(): void {
   api.result = {
     winner: scene._endWinner, round: scene.roundNo,
-    atk: tally(scene.atk), def: tally(scene.def),
+    atk: tally(scene.atk, 'atk'), def: tally(scene.def, 'def'),
     exported: (scene._endSurvivors ?? []).length,
     exportedAtk: (scene._endSurvivors ?? []).filter((s: any) => String(s.id).startsWith('atk')).length,
     exportedDef: (scene._endSurvivors ?? []).filter((s: any) => String(s.id).startsWith('def')).length,
+    exportedHpAtk: (scene._endSurvivors ?? []).filter((s: any) => String(s.id).startsWith('atk')).reduce((a: number, s: any) => a + Math.max(0, s.hp ?? 0), 0),
+    exportedHpDef: (scene._endSurvivors ?? []).filter((s: any) => String(s.id).startsWith('def')).reduce((a: number, s: any) => a + Math.max(0, s.hp ?? 0), 0),
+    hpStartAtk: hpStart.atk, hpStartDef: hpStart.def,
     attacksOnRouted: api.attacksOnRouted, killedWhileRouted: api.killedWhileRouted, collapseRound: api.collapseRound,
     fledAtEdge: api.fledAtEdge, fledNotAtEdge: api.fledNotAtEdge, notEdge: (api.notEdge ?? []).slice(0, 8),
     log: (scene.log as string[]).filter(l => /Koniec|zalamane|PAT/.test(l)).slice(-4),

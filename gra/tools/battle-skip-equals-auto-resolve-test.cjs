@@ -129,6 +129,14 @@ async function runOne(browser, distDir, mode, seed) {
   await page.evaluate(([mode, speedIdx]) => {
     const bs = window.__lastBattleScene;
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: liczniki poscigu (ataki na routed, zabici jako routed)
+    window.__pur = { atkOnRouted: 0, killedRouted: 0 };
+    for (const fn of ['_doMeleeAttack', '_doRangedAttack']) {
+      const orig = bs[fn].bind(bs);
+      bs[fn] = (a, d, done) => { if (d.routed) window.__pur.atkOnRouted++; return orig(a, d, done); };
+    }
+    const origFade = bs._startFade.bind(bs);
+    bs._startFade = (ru) => { if (ru.routed && !ru.removed) window.__pur.killedRouted++; return origFade(ru); };
     window.__dt = parseInt(window.__wskipDt || '16', 10);
     window.__wskipT0 = bs.vNow;
     window.__wskipDeploy = !!bs.deployPhase;
@@ -160,6 +168,7 @@ async function runOne(browser, distDir, mode, seed) {
       deployAtStart: window.__wskipDeploy, framesRun: window.__framesRun, speedMul: bs.speedMul, ffVirtualMs: Math.round(bs._ffVirtualMs || 0),
       atk: { total: sa.total, lost: sa.lost, remaining: sa.remaining, hp: Math.round(sa.hp) },
       def: { total: sd.total, lost: sd.lost, remaining: sd.remaining, hp: Math.round(sd.hp) },
+      pursuit: window.__pur,
       logLines: bs.log.length, endText: (document.body.innerText.match(/Koniec bitwy|Zwyci[ęe]stwo|Pora[żz]ka/g) || []).slice(0, 3),
     };
   });
@@ -281,6 +290,11 @@ async function partB() {
     check('B3 seed ' + seed + ': straty i HP calkowite po skip', [skip.atk, skip.def].every((x) => Number.isInteger(x.hp) && Number.isInteger(x.lost)), skip);
     check('B4 seed ' + seed + ': SKIP == AUTO (zwyciezca, straty, HP, tura)', key(skip) === key(auto1),
       { auto: key(auto1), skip: key(skip) });
+    // Parytet w FAZIE POSCIGU: scena bitwa-duza ma zalamania morale; poscig musi byc realnie cwiczony (>0 atakow na routed)
+    // i identyczny w SKIP i AUTO (ta sama petla ticków) -- zarzut 3 Evaluatora W21.
+    check('B6 seed ' + seed + ': poscig cwiczony (ataki na routed > 0) i SKIP == AUTO (ataki na routed, zabici jako routed)',
+      skip.pursuit.atkOnRouted > 0 && JSON.stringify(skip.pursuit) === JSON.stringify(auto1.pursuit),
+      { auto: auto1.pursuit, skip: skip.pursuit });
     check('B5 seed ' + seed + ': czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)', Math.abs(skip.virtMs - auto1.virtMs) <= 200, { auto: auto1.virtMs, skip: skip.virtMs });
     console.log('INFO seed ' + seed + ' czas wirtualny: auto=' + auto1.virtMs + ' ms (tura ' + auto1.round + '), skip=' + skip.virtMs + ' ms (tura ' + skip.round + ')');
   }
