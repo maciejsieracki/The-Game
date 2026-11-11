@@ -15,11 +15,14 @@
 //! Uwaga o zakresie: `runWarWearinessTick` w webie zapisuje zmeczenie i wywoluje `pay`/`finalize` przez
 //! `main.ts`; tu te callbacki sa przekazywane z zewnatrz (W8 - podpiecie do petli tury).
 
+use std::cell::RefCell;
 use std::collections::HashSet;
 
 use crate::domain::diplomacy_ai_forced_peace::{
-    is_still_losing, register_ai_peace_request, run_ai_ai_peace_tick, AiPeaceKind,
-    AiPeaceRequestStore, AiPeaceTickAction, AiPeaceTickEnv, AiPeaceTickOutcome, PeacePriceQuote,
+    is_still_losing, js_round, register_ai_peace_request, run_ai_ai_peace_tick,
+    turns_since_peace_request, AiPeaceAction, AiPeaceDecision, AiPeaceKind, AiPeaceReason,
+    AiPeaceRequest, AiPeaceRequestStore, AiPeaceTickAction, AiPeaceTickEnv, AiPeaceTickOutcome,
+    PeacePriceQuote,
 };
 use crate::domain::diplomacy_multiwar_peace::{
     plan_peace_payment, PeaceAsset, PeaceAssetKind, PeacePaymentPlan, WarWearinessStore,
@@ -115,15 +118,22 @@ fn quote_and_plan(
 
 /// Web `tickAiAiPeaceRequests` z `peaceAllowed` i regula nieujemnego bilansu AI-AI.
 ///
-/// Kolejnosc sprawdzen dla kazdego wpisu (jak web `runAiAiPeaceTick`):
+/// Wpisy sa rozstrzygane SEKWENCYJNIE, jak web `runAiAiPeaceTick` w petli: kazdy wpis widzi stan
+/// po zaplacie wpisow poprzednich (`pay` / `finalize` mutuja stan przez callbacki `env`).
+/// Kolejnosc sprawdzen dla kazdego wpisu:
 /// 1. `pair_eligible` fałsz -> tick usuwa (`dropped_ineligible`);
 /// 2. `isStillLosing` fałsz -> tick usuwa (`dropped_not_losing`);
-/// 3. `peace_allowed` fałsz -> `wait` BEZ planu, wpis zostaje;
+/// 3. `peace_allowed` fałsz -> `wait` BEZ planu, wpis zostaje (web `out.push({action:'wait'})`);
 /// 4. bilans PW obu AI po zaplacie `< min_balance_pn` -> `wait` Z planem, wpis zostaje, bez zaplaty
 ///    (web: sprawdzane PRZED limitem tur, wiec wymuszenie tez czeka);
-/// 5. reszta idzie przez [`run_ai_ai_peace_tick`] (bramka zwyciezcy, limit, zaplata, finalize).
+/// 5. reszta idzie przez [`run_ai_ai_peace_tick`] na jednoelementowym magazynie (bramka zwyciezcy,
+///    limit, zaplata, finalize).
 ///
 /// Punkty 3-4 sa realizowane tutaj, bo `AiPeaceTickEnv` nie niesie bilansu przegranego ani minimum.
+/// Wywolania `env.assets` i `env.city_cession_ok` sa spamietywane na czas JEDNEGO wpisu (klucz: zbior
+/// pominietych miast; id miasta), wiec gate i tick widza ten sam wynik bez powtornego wolania
+/// callbackow. Pamiec nie przechodzi miedzy wpisami: po zaplacie stan sie zmienia.
+///
 /// Kolejnosc wynikow = kolejnosc wpisow magazynu (jak `Map`).
 #[allow(clippy::too_many_arguments)]
 pub fn run_ai_ai_peace_turn(
@@ -139,70 +149,101 @@ pub fn run_ai_ai_peace_turn(
     if !peace_tick_should_run(store.len()) {
         return Vec::new();
     }
-    let snapshot: Vec<(String, _)> = store.entries().to_vec();
+    let snapshot: Vec<(String, AiPeaceRequest)> = store.entries().to_vec();
+    let mut out = Vec::with_capacity(snapshot.len());
 
-    // Wpis -> `Some(plan)` gdy wstrzymany przez bramke (punkt 3 bez planu: `None` w mapie `held`).
-    let mut held: Vec<(String, Option<PeacePaymentPlan>)> = Vec::new();
-    let mut filtered = AiPeaceRequestStore::new();
     for (key, req) in &snapshot {
         let (loser, winner) = (req.requester_id, req.other_id);
         let eligible = (env.pair_eligible)(loser, winner);
         let losing = eligible && is_still_losing((env.requester_share_of)(loser, winner));
-        if !losing {
-            // Tick sam usunie (dropped_ineligible / dropped_not_losing).
-            register_ai_peace_request(&mut filtered, key, loser, winner, req.since_turn, req.kind);
-            continue;
-        }
-        if !peace_allowed(loser, winner) {
-            held.push((key.clone(), None));
-            continue;
-        }
-        let (price, plan) = quote_and_plan(env, loser, winner, req.kind);
-        let winner_after = price.balance.balance_for(plan.covered_pn);
-        let loser_after = loser_balance_for(winner, loser, plan.covered_pn);
-        if !ai_ai_peace_balance_allowed(winner_after, loser_after, min_balance_pn) {
-            held.push((key.clone(), Some(plan)));
-            continue;
-        }
-        register_ai_peace_request(&mut filtered, key, loser, winner, req.since_turn, req.kind);
-    }
 
-    let inner_env = AiPeaceTickEnv {
-        turn: env.turn,
-        limit: env.limit,
-        pair_eligible: env.pair_eligible,
-        requester_share_of: env.requester_share_of,
-        gate_verdict: env.gate_verdict,
-        price: env.price,
-        assets: env.assets,
-        city_cession_ok: env.city_cession_ok,
-        battle_pending: env.battle_pending,
-    };
-    let inner_out = run_ai_ai_peace_tick(&mut filtered, &inner_env, pay, finalize, log);
+        // Pamiec callbackow tylko dla tego wpisu (stan moze sie zmienic po zaplacie poprzedniego).
+        let asset_memo: RefCell<Vec<(Vec<String>, Vec<PeaceAsset>)>> = RefCell::new(Vec::new());
+        let assets_fn = |l: i64, w: i64, skip: &HashSet<String>| -> Vec<PeaceAsset> {
+            let mut k: Vec<String> = skip.iter().cloned().collect();
+            k.sort();
+            let hit = asset_memo
+                .borrow()
+                .iter()
+                .find(|(kk, _)| *kk == k)
+                .map(|(_, v)| v.clone());
+            if let Some(v) = hit {
+                return v;
+            }
+            let v = (env.assets)(l, w, skip);
+            asset_memo.borrow_mut().push((k, v.clone()));
+            v
+        };
+        let cco_memo: RefCell<Vec<(String, bool)>> = RefCell::new(Vec::new());
+        let cco_fn = |id: &str, l: i64, w: i64| -> bool {
+            let hit = cco_memo
+                .borrow()
+                .iter()
+                .find(|(k, _)| k == id)
+                .map(|(_, v)| *v);
+            if let Some(v) = hit {
+                return v;
+            }
+            let v = (env.city_cession_ok)(id, l, w);
+            cco_memo.borrow_mut().push((id.to_string(), v));
+            v
+        };
+        let entry_env = AiPeaceTickEnv {
+            turn: env.turn,
+            limit: env.limit,
+            pair_eligible: env.pair_eligible,
+            requester_share_of: env.requester_share_of,
+            gate_verdict: env.gate_verdict,
+            price: env.price,
+            assets: &assets_fn,
+            city_cession_ok: &cco_fn,
+            battle_pending: env.battle_pending,
+        };
 
-    // Uzgodnienie magazynu: wpisy przepuszczone do ticka, ktorych tick nie zostawil, zostaly usuniete.
-    let held_keys: HashSet<&str> = held.iter().map(|(k, _)| k.as_str()).collect();
-    for (key, _) in &snapshot {
-        if !held_keys.contains(key.as_str()) && !filtered.has(key) {
+        if losing {
+            if !peace_allowed(loser, winner) {
+                out.push(AiPeaceTickOutcome {
+                    pair_key: key.clone(),
+                    action: AiPeaceTickAction::Wait,
+                    kind: req.kind,
+                    plan: None,
+                    decision: None,
+                });
+                continue;
+            }
+            let (price, plan) = quote_and_plan(&entry_env, loser, winner, req.kind);
+            let winner_after = price.balance.balance_for(plan.covered_pn);
+            let loser_after = loser_balance_for(winner, loser, plan.covered_pn);
+            if !ai_ai_peace_balance_allowed(winner_after, loser_after, min_balance_pn) {
+                // Zgodnie z webem: decyzja `wait` z bilansami i tura od prosby. Powod to kod
+                // zastepczy `BalanceBelowTolerance` (wariantu dla reguly AI-AI brak w
+                // diplomacy_ai_forced_peace.rs; tekst weba: 'ujemny bilans PW jednej z AI').
+                let decision = AiPeaceDecision {
+                    action: AiPeaceAction::Wait,
+                    reason: AiPeaceReason::BalanceBelowTolerance,
+                    balance_before: js_round(price.balance.balance_for(0.0)),
+                    balance_after: js_round(winner_after),
+                    turns_since: turns_since_peace_request(req, env.turn),
+                };
+                out.push(AiPeaceTickOutcome {
+                    pair_key: key.clone(),
+                    action: AiPeaceTickAction::Wait,
+                    kind: req.kind,
+                    plan: Some(plan),
+                    decision: Some(decision),
+                });
+                continue;
+            }
+        }
+
+        // Jednoelementowy magazyn: tick rozstrzyga wpis (usuwa, czeka albo zaplaca i finalizuje).
+        let mut one = AiPeaceRequestStore::new();
+        register_ai_peace_request(&mut one, key, loser, winner, req.since_turn, req.kind);
+        let mut tick_out = run_ai_ai_peace_tick(&mut one, &entry_env, pay, finalize, log);
+        if !one.has(key) {
             store.delete(key);
         }
-    }
-
-    // Zlozenie wynikow w kolejnosci magazynu.
-    let mut inner_iter = inner_out.into_iter().peekable();
-    let mut out = Vec::with_capacity(snapshot.len());
-    for (key, req) in &snapshot {
-        if let Some((_, plan)) = held.iter().find(|(k, _)| k == key) {
-            out.push(AiPeaceTickOutcome {
-                pair_key: key.clone(),
-                action: AiPeaceTickAction::Wait,
-                kind: req.kind,
-                plan: plan.clone(),
-                decision: None,
-            });
-        } else if let Some(o) = inner_iter.next_if(|o| o.pair_key == *key) {
-            out.push(o);
-        }
+        out.append(&mut tick_out);
     }
     out
 }
