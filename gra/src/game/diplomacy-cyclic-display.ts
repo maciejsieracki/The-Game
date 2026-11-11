@@ -6,6 +6,7 @@
  */
 import type { ActiveDeal, HandelSurowiecCyklicznyItem } from './diplomacy-treaties';
 import { resourceDisplayLabel } from './diplomacy-display';
+import { pluralPl } from '../ui/formatPl';
 
 export interface CyclicExchangeLine {
   /** np. „Dostarczasz: 3 Żelazo na turę → Chińczycy za 12 ¤ na turę" */
@@ -66,8 +67,7 @@ export function describeCyclicExchangeItem(
 export function cyclicExchangeFrequencyLabel(wygasaTura: number | null, turn: number): string {
   if (wygasaTura === null) return 'co turę, bezterminowo';
   const left = Math.max(0, wygasaTura - turn);
-  const noun = left === 1 ? 'tura' : (left >= 2 && left <= 4 ? 'tury' : 'tur');
-  return `co turę, pozostało ${left} ${noun}`;
+  return `co turę, pozostało ${left} ${pluralPl(left, 'tura', 'tury', 'tur')}`;
 }
 
 /** Wszystkie wiersze wymiany cyklicznej danej umowy (pusta tablica, gdy umowa jej nie ma). */
