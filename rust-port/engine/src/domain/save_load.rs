@@ -635,6 +635,11 @@ impl SaveSnapshot {
     }
 }
 
+/// Deserializacja NIE wykonuje migracji P6-ZAPIS-MIGRACJE: limit wodzow zalezy od epoki wlasciciela,
+/// a limit stosu od listy ludzkich graczy, czyli od kontekstu wołajacego. Kazdy wczytujacy zapis
+/// MUSI po `serde_json::from_str::<SaveSnapshot>` wywolac [`SaveSnapshot::migrate_on_load`]
+/// (i `auto_build_allowed_for_owner` przy decyzji o budowie). Rust nie ma dzis loadera plikow
+/// (`replay.rs` przyjmuje gotowy `SaveSnapshot`), wiec ta odpowiedzialnosc lezy po stronie wolajacego.
 impl<'de> Deserialize<'de> for SaveSnapshot {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

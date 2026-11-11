@@ -2257,7 +2257,6 @@ pub mod ruch_jednostek {
             };
         }
         let mut planned: Vec<(String, PlannedMarchDest)> = Vec::new();
-        let mut first: Option<(String, f64, f64)> = None;
         for (unit_id, dest) in marches {
             let attack_unit_id = dest
                 .attack_unit_id
@@ -2269,19 +2268,22 @@ pub mod ruch_jednostek {
                 .as_ref()
                 .filter(|id| !id.is_empty())
                 .cloned();
-            planned.push((
-                unit_id.clone(),
-                PlannedMarchDest {
-                    dest_q: dest.dest_q,
-                    dest_r: dest.dest_r,
-                    attack_unit_id,
-                    general_target_id,
-                },
-            ));
-            if first.is_none() {
-                first = Some((unit_id.clone(), dest.dest_q, dest.dest_r));
+            let value = PlannedMarchDest {
+                dest_q: dest.dest_q,
+                dest_r: dest.dest_r,
+                attack_unit_id,
+                general_target_id,
+            };
+            // Semantyka JS `Map` (web trzyma plannedMarches w Map): powtorzony klucz nadpisuje
+            // wartosc i zachowuje pierwsza pozycje; `autoMarch` = pierwszy klucz z wartoscia koncowa.
+            match planned.iter_mut().find(|(id, _)| id == unit_id) {
+                Some(slot) => slot.1 = value,
+                None => planned.push((unit_id.clone(), value)),
             }
         }
+        let first = planned
+            .first()
+            .map(|(id, dest)| (id.clone(), dest.dest_q, dest.dest_r));
         PlannedMarchesSaveOut {
             auto_march: first,
             planned_marches: Some(planned),

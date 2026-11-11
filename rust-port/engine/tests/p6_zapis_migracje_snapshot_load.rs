@@ -304,3 +304,32 @@ fn p6_zapis_migracje_auto_build_flag_consumer_old_and_new_save() {
     assert!(new.auto_build_allowed_for_owner(1.0, &humans));
     assert!(!new.meta().player_epoch_war_enabled());
 }
+
+#[test]
+fn p6_zapis_migracje_epoch_limit_depends_on_owner_era() {
+    // Odpowiedz na zarzut Evaluatora: testy stalej epoki (`|_| 1.0`) nie sprawdzaly limitu zaleznego
+    // od wlasciciela. Gracz (era 1 => limit 1) traci 2 wodzow; AI (era 3 => limit 3) nietkniete.
+    let s = snapshot(
+        state(
+            map(3, 2, &[]),
+            &[
+                (10, OWNER, 0, 0, true),
+                (11, OWNER, 1, 0, true),
+                (12, OWNER, 2, 0, true),
+                (20, FOREIGN, 0, 1, true),
+                (21, FOREIGN, 1, 1, true),
+                (22, FOREIGN, 2, 1, true),
+            ],
+            &[],
+        ),
+        SaveMeta::default(),
+    );
+    let mut loaded = reload(&to_json(&s));
+    let report = loaded.migrate_on_load(|o| if o.get() == OWNER { 1.0 } else { 3.0 });
+    assert_eq!(
+        report.demoted_generals,
+        vec![UnitId::new(11), UnitId::new(12)]
+    );
+    assert_eq!(generals(&loaded), vec![10, 20, 21, 22]);
+    assert_eq!(loaded.state().units().len(), 6, "nikt nie ginie");
+}
