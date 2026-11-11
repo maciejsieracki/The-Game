@@ -995,6 +995,7 @@ import {
   type AiGeneralWarCampaign,
 } from './game/ai-general-war-campaign';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
+  recruitFollowGeneralForOrder, resolveRecruitFollowGeneral, type RecruitOrigin,
   enqueueRecruitment, reservedUnitTypeNamesOfOwner, generalSyncTargets, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
@@ -4473,7 +4474,9 @@ async function boot(): Promise<void> {
         ownerId: city.ownerId,
         typeId: completed.id,
         isGeneral: completed.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
-        ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
+        // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: jednostka z kolejki produkcji miasta = zamówienie
+        // bezpośrednio w mieście -> „Idź do wodza” domyślnie OFF (niezależnie od globalnego przełącznika).
+        ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralForOrder('city', recruitFollowGeneralDefault) } : {}),
         category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
         r: city.r,
@@ -4584,7 +4587,7 @@ async function boot(): Promise<void> {
       koszt: number,
       ownerId = 0,
       quantity = 1,
-      opts: { isGeneral?: boolean; generalGateChecked?: boolean } = {},
+      opts: { isGeneral?: boolean; generalGateChecked?: boolean; origin?: RecruitOrigin } = {},
     ): boolean {
       const requestedQuantity = Math.floor(quantity);
       if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1) return false;
@@ -4605,7 +4608,7 @@ async function boot(): Promise<void> {
           offeredItemId: offer?.id ?? null,
           offeredCost: offer?.koszt ?? null,
         }, () => purchaseRecruitmentUnit(cityId, itemId, koszt, ownerId, quantity,
-          { isGeneral: true, generalGateChecked: true }));
+          { isGeneral: true, generalGateChecked: true, origin: opts.origin }));
       }
       const totalGoldCost = koszt * requestedQuantity;
       if (!Number.isFinite(totalGoldCost) || totalGoldCost < 0 || !Number.isSafeInteger(totalGoldCost)) return false;
@@ -4737,11 +4740,16 @@ async function boot(): Promise<void> {
       }
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja „Idź do wodza” trwa w zamówieniu do zrodzenia.
+      const followIntent = city.ownerId === 0
+        ? { followGeneral: recruitFollowGeneralForOrder(opts.origin ?? 'city', recruitFollowGeneralDefault) }
+        : {};
       for (let i = 0; i < requestedQuantity; i++) {
         nextProd = enqueueRecruitment(nextProd, {
           ...item,
           koszt,
           ...(opts.isGeneral === true ? { isGeneral: true, nazwa: armyLeaderTitle(empireBuiltIdsForOwner(city.ownerId)) } : {}),
+          ...followIntent,
         });
       }
       cityProd.set(cityId, nextProd);
@@ -4855,8 +4863,12 @@ async function boot(): Promise<void> {
         deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
       }
       let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: partia z Armii/Rekrutacji dziedziczy globalny przełącznik.
+      const batchFollowIntent = ownerId === 0
+        ? { followGeneral: recruitFollowGeneralForOrder('army', recruitFollowGeneralDefault) }
+        : {};
       for (let i = 0; i < count; i++) {
-        prod = enqueueRecruitment(prod, { ...item });
+        prod = enqueueRecruitment(prod, { ...item, ...batchFollowIntent });
       }
       cityProd.set(cityId, prod);
       markCityStateDirty();
@@ -4967,7 +4979,7 @@ async function boot(): Promise<void> {
         maxTotalReason: SUPER_UNIT_LIMIT_BLOCK_PL,
         miasta: inputs,
         afford,
-        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count),
+        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count, { origin: 'army' }),
       });
       refreshEmpireRecruitPanel();
       return { message: out.message, changed: out.changed, accepted: out.accepted };
@@ -30658,16 +30670,16 @@ async function boot(): Promise<void> {
       onPodzialPracyOverrideToggle: (cityId: string) => {
         toggleCityPodzialPracyOverride(cityId);
       },
-      onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
+      onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1, origin: RecruitOrigin = 'city') => {
         const city = cities.find(c => c.id === cityId);
         if (!city) return false;
-        return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
+        return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity, { origin });
       },
       getGeneralRecruitmentOffer: (cityId: string) => generalRecruitmentOfferForCity(cityId),
-      onPurchaseGeneral: (cityId: string, itemId: string, koszt: number) => {
+      onPurchaseGeneral: (cityId: string, itemId: string, koszt: number, origin: RecruitOrigin = 'city') => {
         const city = cities.find(c => c.id === cityId);
         return city
-          ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true })
+          ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true, origin })
           : false;
       },
       onCancelRecruitment: (cityId: string, itemId: string, koszt: number) => {
@@ -39545,7 +39557,8 @@ async function boot(): Promise<void> {
                   ownerId: city.ownerId,
                   typeId: rec.id,
                   isGeneral: rec.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
-                  ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
+                  // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja zapisana przy zamówieniu; stary zapis -> przełącznik.
+                  ...(city.ownerId === 0 ? { followGeneral: resolveRecruitFollowGeneral(rec, recruitFollowGeneralDefault) } : {}),
                   category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
                   r: city.r,
@@ -44337,10 +44350,10 @@ async function boot(): Promise<void> {
         onPodzialPracyOverrideToggle: (cityId: string) => {
           toggleCityPodzialPracyOverride(cityId);
         },
-        onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
+        onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1, origin: RecruitOrigin = 'city') => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return false;
-          return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
+          return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity, { origin });
         },
         getGeneralRecruitmentOffer: (cityId: string) => generalRecruitmentOfferForCity(cityId),
         onPurchaseGeneral: (cityId: string, itemId: string, koszt: number) => {
