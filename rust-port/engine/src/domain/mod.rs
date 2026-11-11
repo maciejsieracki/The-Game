@@ -66,14 +66,14 @@ pub mod player;
 pub mod production_queue;
 pub mod production_units;
 pub mod recruitment;
-// Wymagane: replay.rs i save_load.rs używają ścieżki `civ_engine::` (cfg(test) w gałęziach importów); bez bramki `cargo test --lib` nie kompiluje się.
+// Wymagane: replay.rs używa `civ_engine::`, a tests/replay.rs włącza go przez #[path]; lib test nie ma tej ścieżki.
 #[cfg(not(test))]
 pub mod replay;
 pub mod resource_access;
 pub mod resource_production;
 pub mod rng;
 pub mod roads;
-// Wymagane: save_load.rs ma gałęzie importów `civ_engine::` (cfg(test)); bez bramki `cargo test --lib` nie kompiluje się.
+// Wymagane: save_load.rs używa `civ_engine::`; tests/*.rs włączają go przez #[path], lib test nie ma tej ścieżki.
 #[cfg(not(test))]
 pub mod save_load;
 pub mod save_migrations;
@@ -138,7 +138,7 @@ pub mod war_turn_state;
 pub mod war_world_view;
 pub mod wonder_placement;
 pub mod work_tax;
-// Wymagane: zapis_loader.rs importuje `super::save_load` (bramkowane cfg(not(test))); bez bramki `cargo clippy --all-targets` nie kompiluje wersji lib test.
+// Wymagane: zapis_loader.rs importuje `super::save_load`, którego brak w buildzie lib test (E0432 w `cargo test --lib`).
 #[cfg(not(test))]
 pub mod zapis_loader;
 
