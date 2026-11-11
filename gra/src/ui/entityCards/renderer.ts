@@ -18,6 +18,7 @@ import { improvementAdapter } from './improvementAdapter';
 import { wonderAdapter } from './wonderAdapter';
 import { defaultOwnerColor, mountUnitMiniPreview } from '../unitMiniPreview';
 import { openCivpediaEntry } from './civpediaOpenGate';
+import { resourceAmountChipHtml, escapeHtmlText, RESOURCE_CHIP_CSS } from '../resourceAmountChip';
 import type {
   EntityCardData,
   EntityCardCtx,
@@ -168,7 +169,20 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   }
   const valIsLink = row.linkTo != null && !anchorOnLabel;
   const val = el(valIsLink ? 'button' : 'span', 'entity-card-row-value');
-  val.textContent = row.value;
+  if (row.resources && row.resources.length > 0) {
+    // R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: surowce jako DANE → chipy (ikona + liczba).
+    // `row.value` i `resourcesSuffix` to zwykły tekst (text node); HTML powstaje wyłącznie z
+    // `resourceAmountChipHtml`, a kwoty są escapowane — żadnego surowego HTML z adaptera.
+    if (row.value !== '') val.append(document.createTextNode(`${row.value}, `));
+    const chips = el('span', 'entity-card-row-res');
+    chips.innerHTML = row.resources
+      .map((r) => resourceAmountChipHtml(r.id, escapeHtmlText(r.amount === undefined ? '' : String(r.amount))))
+      .join(' + ');
+    val.appendChild(chips);
+    if (row.resourcesSuffix) val.append(document.createTextNode(` ${row.resourcesSuffix}`));
+  } else {
+    val.textContent = row.value;
+  }
   if (row.linkTo) {
     if (valIsLink) {
       val.setAttribute('data-entity-kind', row.linkTo.kind);
@@ -1215,4 +1229,7 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
   bottom:auto;z-index:3;min-width:0;padding:0 14px 12px;text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);}
 .entity-card-building .entity-card-title-row h2{min-width:0;overflow-wrap:anywhere;}
 /* R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 — BUILDING FLOW END */
+/* R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: chipy surowców (liczba + ikona) w komórce wartości. */
+.entity-card-row-res{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 6px;}
+${RESOURCE_CHIP_CSS}
 `;

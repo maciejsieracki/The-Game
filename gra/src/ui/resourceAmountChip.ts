@@ -30,6 +30,11 @@ export function resourceAmountChipHtml(key: string, amountText: string, unitSuff
   return `<span class="bld-res-chip">${amountText} ${icon}${unitSuffix}</span>`;
 }
 
+/** Escapowanie tekstu wstawianego do HTML chipa (kwoty pochodzą z danych/adapterów). */
+export function escapeHtmlText(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 /** Style chipa (wspólne dla panelu miasta i imperium — oba panele muszą mieć je bez zależności od kolejności otwarcia). */
 export const RESOURCE_CHIP_CSS = `
 /* R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: surowiec = liczba + ikona (bez nazwy słownej). Chip jest

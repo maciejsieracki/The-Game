@@ -31,6 +31,7 @@ import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } fro
 import type { ImprovementRow } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../../game/text-names';
+import { resourcesFromList } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -197,9 +198,11 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   // --- Surowce i terytorium --------------------------------------------------------------------
   const resourceRows: EntityCardRow[] = [];
   if (hasValue(improvement.surowiecOdblokowany)) {
+    const unlocked = resourcesFromList(text(improvement.surowiecOdblokowany));
     resourceRows.push({
       label: 'Odblokowuje surowiec',
-      value: nazwyZListyId(text(improvement.surowiecOdblokowany)),
+      value: unlocked.rest ? nazwyZListyId(unlocked.rest) : '',
+      ...(unlocked.resources.length > 0 ? { resources: unlocked.resources } : {}),
     });
   }
   // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1): każdy surowiec ulepszenia mówi, do czego służy
@@ -208,7 +211,12 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
     resourceRows.push({ label: 'Do czego', value: text(improvement.zastosowanie_surowca) });
   }
   if (hasValue(improvement.surowiec_ilosc_tura)) {
-    resourceRows.push({ label: 'Produkcja surowca', value: `${text(improvement.surowiec_ilosc_tura)} / turę` });
+    // Surowiec produkcji = odblokowany przez to ulepszenie; gdy jednoznaczny — ikona + liczba.
+    const prodRes = resourcesFromList(text(improvement.surowiecOdblokowany)).resources;
+    const prodAmount = text(improvement.surowiec_ilosc_tura);
+    resourceRows.push(prodRes.length === 1
+      ? { label: 'Produkcja surowca', value: '', resources: [{ id: prodRes[0]!.id, amount: prodAmount }], resourcesSuffix: '/ turę' }
+      : { label: 'Produkcja surowca', value: `${prodAmount} / turę` });
   }
   if (hasValue(improvement.zasieg_terytorium)) {
     resourceRows.push({ label: 'Zasięg terytorium', value: `${text(improvement.zasieg_terytorium)} pól` });
