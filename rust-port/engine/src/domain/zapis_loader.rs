@@ -8,6 +8,9 @@
 use std::error::Error;
 use std::fmt;
 
+use serde::de::DeserializeOwned;
+
+use super::replay::{ReplayLog, ReplayMigrationReports};
 use super::save_load::SaveSnapshot;
 use super::save_migrations::LoadMigrationReport;
 use super::PlayerId;
@@ -47,4 +50,19 @@ pub fn load_save_snapshot(
     let mut snapshot: SaveSnapshot = serde_json::from_str(text).map_err(LoadError::Json)?;
     let report = snapshot.migrate_on_load(era_for_owner);
     Ok((snapshot, report))
+}
+
+/// P6-ZAPIS-REPLAY-MIGRATE: produkcyjna sciezka ladowania [`ReplayLog`] z tekstu JSON.
+///
+/// Deserializacja samego `ReplayLog` zostawia checkpointy niezmigrowane i blokuje odtwarzanie
+/// (`ReplayError::SnapshotsNotMigrated`). Ta funkcja deserializuje replay i od razu migruje
+/// kazdy snapshot przez [`SaveSnapshot::migrate_on_load`], zwracajac raport per krok
+/// (klucz: sekwencja kroku). Analogiczny wzorzec do [`load_save_snapshot`].
+pub fn load_replay_log_json<I: DeserializeOwned>(
+    text: &str,
+    era_for_owner: impl Fn(PlayerId) -> f64,
+) -> Result<(ReplayLog<I>, ReplayMigrationReports), LoadError> {
+    let mut replay: ReplayLog<I> = serde_json::from_str(text).map_err(LoadError::Json)?;
+    let reports = replay.migrate_on_load(era_for_owner);
+    Ok((replay, reports))
 }

@@ -16,6 +16,16 @@ pub use super::save_load::SaveSnapshot;
 pub use super::save_load::SaveSnapshot;
 
 #[cfg(not(test))]
+use super::save_migrations::LoadMigrationReport;
+#[cfg(test)]
+use civ_engine::domain::save_migrations::LoadMigrationReport;
+
+#[cfg(not(test))]
+use super::PlayerId;
+#[cfg(test)]
+use civ_engine::PlayerId;
+
+#[cfg(not(test))]
 use super::Rng;
 #[cfg(test)]
 use civ_engine::Rng;
@@ -26,6 +36,9 @@ pub const CURRENT_REPLAY_VERSION: u16 = 1;
 /// Stable sequence number assigned to a recorded input.
 pub type ReplaySequence = u64;
 
+/// Per-step migration reports returned by [`ReplayLog::migrate_on_load`].
+pub type ReplayMigrationReports = Vec<(ReplaySequence, LoadMigrationReport)>;
+
 /// One input together with the deterministic state at which it was observed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReplayStep<I> {
@@ -34,8 +47,10 @@ pub struct ReplayStep<I> {
     input: I,
     rng_state: u32,
     /// Snapshot zapisany w kroku. Deserializacja tego pola (przez `ReplayLog`) NIE wykonuje
-    /// `migrate_on_load` - to otwarty dlug: migracja po wczytaniu replayu wymaga decyzji o zrodle
-    /// epoki wlasciciela (patrz `zapis_loader::load_save_snapshot`).
+    /// `migrate_on_load` (wymaga epoki wlasciciela, ktorej serde nie zna). Dlatego wczytany
+    /// replay z checkpointami jest zablokowany do `ReplayLog::migrate_on_load`: `replay()` /
+    /// `playback()` zwracaja `ReplayError::SnapshotsNotMigrated`. Produkcyjna sciezka:
+    /// `zapis_loader::load_replay_log_json`.
     snapshot: Option<SaveSnapshot>,
 }
 
@@ -112,6 +127,9 @@ pub enum ReplayError {
     },
     /// A checkpoint did not satisfy the save/load snapshot contract.
     InvalidSnapshot(String),
+    /// A deserialized replay carries checkpoints that were not passed through
+    /// `migrate_on_load`; playback is refused until they are.
+    SnapshotsNotMigrated,
 }
 
 impl fmt::Display for ReplayError {
@@ -130,6 +148,9 @@ impl fmt::Display for ReplayError {
             Self::InvalidSnapshot(error) => {
                 write!(formatter, "replay snapshot is invalid: {error}")
             }
+            Self::SnapshotsNotMigrated => formatter.write_str(
+                "replay snapshots must be migrated on load (migrate_on_load) before playback",
+            ),
         }
     }
 }
@@ -137,12 +158,25 @@ impl fmt::Display for ReplayError {
 impl Error for ReplayError {}
 
 /// A serializable, deterministic input log.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ReplayLog<I> {
     version: u16,
     seed: u32,
     steps: Vec<ReplayStep<I>>,
+    /// `true` after deserialization when some step carries a checkpoint that has not yet
+    /// been passed through `migrate_on_load`. Runtime-only state: not serialized, and it
+    /// does not take part in equality.
+    #[serde(skip)]
+    migration_pending: bool,
 }
+
+impl<I: PartialEq> PartialEq for ReplayLog<I> {
+    fn eq(&self, other: &Self) -> bool {
+        self.version == other.version && self.seed == other.seed && self.steps == other.steps
+    }
+}
+
+impl<I: Eq> Eq for ReplayLog<I> {}
 
 #[derive(Debug, Deserialize)]
 struct ReplayWire<I> {
@@ -164,10 +198,12 @@ where
         let version = wire
             .version
             .ok_or_else(|| de::Error::custom(ReplayError::MissingVersion))?;
+        let migration_pending = wire.steps.iter().any(|step| step.snapshot.is_some());
         let replay = Self {
             version,
             seed: wire.seed,
             steps: wire.steps,
+            migration_pending,
         };
         replay.validate().map_err(de::Error::custom)?;
         Ok(replay)
@@ -181,6 +217,7 @@ impl<I> ReplayLog<I> {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps: Vec::new(),
+            migration_pending: false,
         }
     }
 
@@ -190,6 +227,7 @@ impl<I> ReplayLog<I> {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps: Vec::with_capacity(capacity),
+            migration_pending: false,
         }
     }
 
@@ -199,9 +237,27 @@ impl<I> ReplayLog<I> {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps,
+            migration_pending: false,
         };
         replay.validate()?;
         Ok(replay)
+    }
+
+    /// Runs `migrate_on_load` on every checkpoint of this log (the same production migration
+    /// as `zapis_loader::load_save_snapshot`) and returns one report per migrated step, keyed
+    /// by step sequence. After this call playback is allowed.
+    pub fn migrate_on_load(
+        &mut self,
+        era_for_owner: impl Fn(PlayerId) -> f64,
+    ) -> ReplayMigrationReports {
+        let mut reports = Vec::new();
+        for step in &mut self.steps {
+            if let Some(snapshot) = step.snapshot.as_mut() {
+                reports.push((step.sequence, snapshot.migrate_on_load(&era_for_owner)));
+            }
+        }
+        self.migration_pending = false;
+        reports
     }
 
     pub const fn version(&self) -> u16 {
@@ -272,6 +328,9 @@ impl<I> ReplayLog<I> {
     /// Starts deterministic playback from the log's initial seed.
     pub fn replay(&self) -> Result<ReplayPlayback<'_, I>, ReplayError> {
         self.validate()?;
+        if self.migration_pending {
+            return Err(ReplayError::SnapshotsNotMigrated);
+        }
         Ok(ReplayPlayback {
             replay: self,
             position: 0,
