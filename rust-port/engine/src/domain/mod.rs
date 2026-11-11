@@ -121,6 +121,7 @@ pub mod war_home_defense;
 pub mod war_home_defense_plan;
 pub mod war_rules_multiwar;
 pub mod war_target_select;
+pub mod war_turn_declare;
 pub mod war_turn_forced;
 pub mod war_turn_state;
 pub mod war_world_view;
