@@ -1169,11 +1169,31 @@ export function availableProduction(
 // ---------------------------------------------------------------------------
 
 /**
+ * Exact units.json combat types used by infantry that fights in melee.
+ * Keep this list explicit: Distance/Slinger, Mount, Siege, Civilian, and Naval
+ * must never become eligible through the cross-type replacement rule. Some
+ * melee infantry have a secondary projectile attack, but their primary `Typ`
+ * remains one of these four values (for example Hastati); ranged units use
+ * `Distance` or `Slinger` instead.
+ */
+const MELEE_INFANTRY_TYPES: ReadonlySet<string> = new Set([
+  'Swordsman',
+  'Spearman',
+  'Falangite',
+  'Offensive',
+]);
+
+function isMeleeInfantryType(typ: string): boolean {
+  return MELEE_INFANTRY_TYPES.has(typ);
+}
+
+/**
  * Lista jednostek, którymi gracz może ZASTĄPIĆ `currentUnitName` (nie "awans" —
  * nawet słabsza jednostka tego samego `Typ` jest dopuszczalna).
  *
  * Lista = SUMA:
- *   A) wszystkie odblokowane TERAZ jednostki tego samego `Typ` (epoka/tech/nacja/
+ *   A) wszystkie odblokowane TERAZ jednostki tego samego `Typ`, plus każda
+ *      piechota wręcz niezależnie od Typ (epoka/tech/nacja/
  *      koszary/braz-access — te same bramki co availableProduction), WŁĄCZNIE
  *      z jednostkami słabszymi od bieżącej (w przeciwieństwie do availableProduction
  *      ten krok NIE chowa jednostki bazowej gdy istnieje lepszy zamiennik cyw.).
@@ -1266,7 +1286,9 @@ export function availableReplacementsFor(
   for (const u of data.units) {
     if (u.Jednostka === currentUnitName) continue; // nie zastępuj sobą
     const utyp = (u.Typ ?? '').toString().trim();
-    if (!utyp || utyp !== currentTyp) continue;
+    const sameType = !!utyp && utyp === currentTyp;
+    const crossTypeMelee = isMeleeInfantryType(currentTyp) && isMeleeInfantryType(utyp);
+    if (!sameType && !crossTypeMelee) continue;
     if (!passesAvailabilityGates(u)) continue;
     // Reużyte 1:1 z availableProduction: jednostka "Specjalna" (W zamian za wypełnione)
     // pokazuje się TYLKO gdy cyw gracza ma dopasowany token w bonusy[] (civs.json).
