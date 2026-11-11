@@ -87,7 +87,9 @@ for (const [n, want] of EXPLICIT) eq(M.formatMiastaCount(n), want, `jawnie forma
 console.log('\n[3] jawne przypadki graniczne (kolejki)');
 const EXPLICIT_K = [
   [0, '0 kolejek'], [1, '1 kolejka'], [2, '2 kolejki'], [4, '4 kolejki'], [5, '5 kolejek'],
-  [12, '12 kolejek'], [22, '22 kolejki'], [24, '24 kolejki'], [25, '25 kolejek'], [112, '112 kolejek'], [122, '122 kolejki'],
+  [11, '11 kolejek'], [12, '12 kolejek'], [14, '14 kolejek'], [15, '15 kolejek'],
+  [21, '21 kolejek'], [22, '22 kolejki'], [24, '24 kolejki'], [25, '25 kolejek'],
+  [101, '101 kolejek'], [102, '102 kolejki'], [111, '111 kolejek'], [112, '112 kolejek'], [122, '122 kolejki'],
 ];
 for (const [n, want] of EXPLICIT_K) eq(M.formatKolejkiCount(n), want, `jawnie formatKolejkiCount(${n})`);
 
