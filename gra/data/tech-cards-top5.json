@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "7d4abe76a2744760574022baa4306b2185a1634a55b2ab281049f81f97dc0bb5",
+    "csvSha256": "c4f7bc5403b0b1a50b7b0373b085b6011fc9cc27015d9fd7f568d9131fea6355",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -468,8 +468,8 @@
         "dowod": "gra/data/terrain-improvements.json:288"
       },
       {
-        "tytul": "Z Brązownictwem otwiera Jeździectwo (Konnica)",
-        "zdanie": "Razem z Brązownictwem prowadzi do Konnicy i Stadniny.",
+        "tytul": "Z Brązownictwem otwiera Jeździectwo (rydwanów epoki Brązu)",
+        "zdanie": "Razem z Brązownictwem otwiera rydwany epoki Brązu i Stadninę.",
         "dowod": "gra/data/tech.json:224"
       }
     ],
@@ -488,7 +488,7 @@
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
-        "korzysc": "dojść do Konnicy"
+        "korzysc": "odblokować rydwany epoki Brązu"
       }
     ],
     "ukryte": []
@@ -688,10 +688,9 @@
         "dowod": "gra/data/terrain-improvements.json:100; gra/data/terrain-improvements.json:109; gra/src/game/building-stock-cost.ts:362-369"
       },
       {
-        "tytul": "Konnica: Atak 12, 320 HP, ruch 4 (koszt: brąz i 25 koni)",
-        "liczba": "320 HP",
-        "zdanie": "Najszybsza jednostka uderzeniowa; rekrutujesz ją w mieście z Koszarami.",
-        "dowod": "gra/data/units.json:595; gra/src/game/production.ts:1075; gra/src/game/building-stock-cost.ts:362-369"
+        "tytul": "Odblokowuje sześć rydwanów epoki Brązu",
+        "zdanie": "Technologia odblokowuje sześć standardowych i narodowych rydwanów epoki Brązu.",
+        "dowod": "gra/data/tech.json:228; gra/data/units.json"
       },
       {
         "tytul": "Rydwan konny: 360 HP, ruch 4",
@@ -711,8 +710,8 @@
         "korzysc": "hodować 25 koni na turę — tyle kosztuje rekrutacja 1 jednostki konnej"
       },
       {
-        "czynnosc": "Rekrutuj Konnicę (w mieście z Koszarami)",
-        "korzysc": "mieć najszybszą jednostkę uderzeniową (ruch 4)"
+        "czynnosc": "Rekrutuj Rydwan egipski (w mieście z Koszarami)",
+        "korzysc": "mieć rydwan o ruchu 5"
       }
     ],
     "ukryte": []
@@ -742,7 +741,7 @@
         "dowod": "gra/data/wonders.json:371-375; gra/data/wonders.json:491-496; gra/data/wonders.json:440-448"
       },
       {
-        "tytul": "Otwiera Oblężnictwo (Katapulta)",
+        "tytul": "Otwiera Oblężnictwo (warunek Katapulty)",
         "zdanie": "Razem z Matematyką prowadzi do Katapulty i Warsztatu oblężniczego.",
         "dowod": "gra/data/tech.json:365"
       }
@@ -758,7 +757,7 @@
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
-        "korzysc": "dojść do Katapult"
+        "korzysc": "odblokować drogę do budowy Katapulty podczas oblężenia"
       }
     ],
     "ukryte": []
@@ -1109,8 +1108,8 @@
     ],
     "cmz": [
       {
-        "czynnosc": "Rekrutuj Katapulty",
-        "korzysc": "burzyć mury z dystansu 6 pól"
+        "czynnosc": "Zbadaj Sztukę wojenną",
+        "korzysc": "budować Katapulty wyłącznie podczas aktywnego oblężenia i burzyć mury z dystansu 6 pól"
       },
       {
         "czynnosc": "Zbuduj Warsztat oblężniczy (obok Koszar)",
@@ -1309,8 +1308,8 @@
         "korzysc": "wzmocnić jednostki o kolejne +20% (razem do +50%)"
       },
       {
-        "czynnosc": "Rekrutuj jednostki epoki Żelaza (w mieście z Koszarami i zapasem żelaza)",
-        "korzysc": "wystawić narodową piechotę i jazdę (np. Falanga z Obroną 12)"
+        "czynnosc": "Rekrutuj jednostki epoki Żelaza w mieście z Koszarami i zapasem właściwego surowca",
+        "korzysc": "wystawić narodową piechotę i jazdę (np. Falangę z Obroną 12); machiny oblężnicze buduj wyłącznie podczas aktywnego oblężenia"
       }
     ],
     "ukryte": []

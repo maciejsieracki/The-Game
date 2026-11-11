@@ -32,7 +32,7 @@ const ctx = (n, extra = {}) => {
   const ownerId = extra.ownerId ?? 1;
   return {
   activeSiege: true, atWar: true, ownerId, turn: 7, army: [...units(n, ownerId), ...engines(extra.engineCount ?? 0, ownerId)],
-  unlockedTechs: new Set(['Obróbka drewna', 'Brązownictwo', 'Oblężnictwo']),
+  unlockedTechs: new Set(['Obróbka drewna', 'Brązownictwo', 'Oblężnictwo', 'Sztuka wojenna']),
   treasury: 100000, stock: { drewno: 10000, braz: 10000, zelazo: 10000 }, ...extra,
 }; };
 const costOf = unit => M.unitStockCost(unit);
@@ -53,6 +53,9 @@ check('army below ten blocked', buildOpt('Taran', ctx(9)).reason === 'too_few_un
 check('no money blocked', buildOpt('Taran', ctx(10, { treasury: 0 })).reason === 'insufficient_money');
 check('missing card resource blocked', buildOpt('Taran', ctx(10, { stock: {} })).reason === 'insufficient_resources');
 check('unresearched card technology blocked', buildOpt('Katapulta', ctx(10, { unlockedTechs: new Set() })).reason === 'technology_locked');
+check('Katapulta is blocked by old Oblężnictwo-only save and available after Sztuka wojenna',
+  buildOpt('Katapulta', ctx(10, { unlockedTechs: new Set(['Oblężnictwo']) })).reason === 'technology_locked'
+  && buildOpt('Katapulta', ctx(10, { unlockedTechs: new Set(['Sztuka wojenna']) })).allowed);
 check('all four card tech gates are enforced', siegeDefs.every(unit =>
   M.siegeEngineBuildOption(unit, ctx(10, { unlockedTechs: new Set() }), 1).reason === 'technology_locked'
   && Boolean(unit.Tech)));

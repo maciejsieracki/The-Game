@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Jeździectwo** — epoka **Brąz** (poziom 4), koszt **112** PN (tempo Szybka), wymaga: Koło + Brązownictwo. Odblokowuje jednostki: Konnica, Jeździec chiński, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang.
+**Jeździectwo** — epoka **Brąz** (poziom 4), koszt **112** PN (tempo Szybka), wymaga: Koło + Brązownictwo. Odblokowuje rydwany epoki Brązu: Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang i Rydwan Kapadokijski. Konnica i Jeździec chiński wymagają Sztuki wojennej w epoce Żelaza.
 
 ---
 

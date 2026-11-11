@@ -15,21 +15,20 @@
 
 ## Wiki‑S
 
-**Jeździec chiński** (Flanka, Brąz): rekrutacja **28** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **45.5**.
+**Jeździec chiński** (Flanka, Żelazo): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **91**.
 
 ---
 
 ## Wiki‑M
 
 ### Rola
-Jeździec chiński to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **Chińczycy**.
+Jeździec chiński to jednostka typu **Flanka** z epoki **Żelazo**. Unikalna dla **Chińczycy**.
 ### Rekrutacja i utrzymanie
-- **Koszt:** 28 ¤, 1 mieszkańców
-- **Surowiec:** 1× koń
-- **Tech:** Jeździectwo
+- **Koszt:** 14 ¤, 1 mieszkańców
+- **Tech:** Sztuka wojenna
 - **Utrzymanie:** 3 ¤/t, 1 żywności/t
 - **Ruch:** 4 (mapa) / 6 (bitwa)
-- **Siła w polu:** 45.5
+- **Siła w polu:** 91
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -39,13 +38,13 @@ Jeździec chiński to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla 
 
 ## Przykład liczbowy
 
-**Rekrutacja:** **28 ¤** ze skarbca + **1** mieszkańców (np. pop. 5 → 4 po werbunku).
+**Rekrutacja:** **14 ¤** ze skarbca + **1** mieszkańców (np. pop. 5 → 4 po werbunku).
 
 **Utrzymanie 20 tur** (jednostka stoi lub walczy):
 - Złoto: 3 × 20 = **60 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **45.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
+**Siła w polu:** **91** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
 
 **Ruch 4** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 
@@ -62,7 +61,3 @@ Jeździec chiński to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
-
-## Rys historyczny
-
-Konnica jako regularna formacja bojowa pojawiła się w Chinach później niż na stepach Azji Wewnętrznej, dokąd chińscy władcy wysyłali poselstwa właśnie po to, by przejąć umiejętności jeździeckie koczowniczych sąsiadów. Przełomem była reforma króla Wu Linga z państwa Zhao z IV wieku p.n.e., który wbrew sprzeciwowi konserwatywnych dworzan nakazał swoim wojownikom przyjąć strój koczowników stepowych — spodnie zamiast szat — aby móc w ogóle dosiąść konia i strzelać z łuku w jeździe. Chińska jazda epoki Walczących Królestw i wczesnych dynastii łączyła zwiadowczą szybkość z ostrzałem łuczniczym, uzupełniając ciężkie rydwany, które wcześniej dominowały na chińskich polach bitew. Hodowla koni bojowych stała się sprawą państwową, a sprowadzanie rasowych wierzchowców z zachodnich stepów, w tym legendarnych „niebiańskich koni” Fergany, traktowano jako priorytet strategiczny. Z czasem konnica stała się nieodzownym narzędziem obrony chińskiej granicy północnej przed najazdami koczowników.

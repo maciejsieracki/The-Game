@@ -7,7 +7,7 @@
 
 W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne kulturowe i super-jednostki stolicy. Rekrutacja kosztuje **złoto** (super-jednostki: część nadal **0 ¤**, ale np. **Triari** i **Wojownik germański** mają dziś realny koszt złota — sprawdź kartę [H] przed zakładaniem, że super = darmowe) oraz **Manpower** z puli miasta (Część VII §47.2) — **nie** ludność wprost. Utrzymanie — złoto i żywność co turę.
 
-**Surowiec przy rekrutacji (2026-07-24):** w `units.json` wiele jednostek epoki Brązu (**34** pozycje) i Żelaza (**25** pozycji) ma pole `Surowiec` = **Brąz** lub **Żelazo** + `Surowiec (ilość)` (zwykle **2–3** szt.). Ta ilość jest **realnie odejmowana** z magazynu surowców całego imperium przy rekrutacji — blokada, gdy pula nie starcza, dokładnie ten sam mechanizm dla gracza i AI. Tabela zbiorcza niżej **nie ma** osobnej kolumny „Surowiec" (patrz `units.json` dla wartości per jednostka) — pełny opis mechaniki: Część VII §47.2a.
+**Surowiec przy rekrutacji (2026-07-24):** w `units.json` wiele jednostek epoki Brązu (**32** pozycje) i Żelaza (**27** pozycji) ma pole `Surowiec` = **Brąz** lub **Żelazo** + `Surowiec (ilość)` (zwykle **2–3** szt.). Ta ilość jest **realnie odejmowana** z magazynu surowców całego imperium przy rekrutacji — blokada, gdy pula nie starcza, dokładnie ten sam mechanizm dla gracza i AI. Tabela zbiorcza niżej **nie ma** osobnej kolumny „Surowiec" (patrz `units.json` dla wartości per jednostka) — pełny opis mechaniki: Część VII §47.2a.
 
 ## Skrót ról bojowych
 
@@ -32,13 +32,13 @@ W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne 
 | Włócznik | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 44 | 50 | [Włócznik](../encyklopedia/jednostki/w-ocznik.md) |
 | Wojownik z mieczem i tarczą | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 39 | 0 | [Wojownik z mieczem i tarczą](../encyklopedia/jednostki/wojownik-z-mieczem-i-tarcza.md) |
 | Rydwan (woły) | Brąz | Flanka | 30 | 1 | Koło | Standardowa | 52 | 0 | [Rydwan (woły)](../encyklopedia/jednostki/rydwan-wo-y.md) |
-| Konnica | Brąz | Flanka | 22 | 1 | Jeździectwo | Standardowa | 49 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
+| Konnica | Żelazo | Flanka | 22 | 1 | Sztuka wojenna | Standardowa | 49 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
 | Galera | Brąz | Morska | 18 | 1 | Żegluga | Standardowa | 25 | 0 | [Galera](../encyklopedia/jednostki/galera.md) |
 | Falanga | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 58.5 | 50 | [Falanga](../encyklopedia/jednostki/falanga.md) |
 | Hieros Lochos (Święty Zastęp) | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 63 | 50 | [Hieros Lochos (Święty Zastęp)](../encyklopedia/jednostki/hieros-lochos-swiety-zastep.md) |
 | Hastati | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 57.5 | 0 | [Hastati](../encyklopedia/jednostki/hastati.md) |
 | Triari | Żelazo | Wręcz | 18 (super) | 1 | Hutnictwo żelaza | Specjalna | 62 | 50 | [Triari](../encyklopedia/jednostki/triari.md) |
-| Jeździec chiński | Brąz | Flanka | 28 | 1 | Jeździectwo | Specjalna | 45.5 | 0 | [Jeździec chiński](../encyklopedia/jednostki/jezdziec-chinski.md) |
+| Jeździec chiński | Żelazo | Flanka | 28 | 1 | Sztuka wojenna | Specjalna | 45.5 | 0 | [Jeździec chiński](../encyklopedia/jednostki/jezdziec-chinski.md) |
 | Hu Ben Wei (Gwardia Tygrysa) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 61 | 0 | [Hu Ben Wei (Gwardia Tygrysa)](../encyklopedia/jednostki/hu-ben-wei-gwardia-tygrysa.md) |
 | Impi | Brąz | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 38.5 | 50 | [Impi](../encyklopedia/jednostki/impi.md) |
 | Oszczepnik Zulu (Izijula) | Kamień | Dystans | 20 | 1 | — | Specjalna | 16 | 0 | [Oszczepnik Zulu (Izijula)](../encyklopedia/jednostki/oszczepnik-zulu-izijula.md) |
@@ -305,7 +305,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 ### Konnica
 
-**Konnica** — flanka, typ **Mount**. Rekrutacja: **22** ¤ i **1** mieszkańców; technologia **Jeździectwo**. Utrzymanie **3** ¤/turę, **1** żywności/turę. Ruch na mapie: **4** heksów. Klasa: **Standardowa**. Moc w polu: **42**. wymaga konia (Uderzenie do potwierdzenia)
+**Konnica** — flanka, typ **Mount**. Rekrutacja: **22** ¤ i **1** mieszkańców; technologia **Sztuka wojenna**. Utrzymanie **3** ¤/turę, **1** żywności/turę. Ruch na mapie: **4** heksów. Klasa: **Standardowa**. Moc w polu: **42**. wymaga konia (Uderzenie do potwierdzenia)
 
 
 ### Przykład liczbowy
@@ -353,7 +353,7 @@ Utrzymanie **0** ¤/t × **10** tur = **0** ¤ — uwzględnij w bilansie skarbc
 
 ### Jeździec chiński
 
-**Jeździec chiński** — flanka, typ **Mount**. Rekrutacja: **28** ¤ i **1** mieszkańców; technologia **Jeździectwo**. Utrzymanie **3** ¤/turę, **1** żywności/turę. Ruch na mapie: **4** heksów. Jednostka **specjalna** cywilizacji **Chińczycy**. Moc w polu: **34.5**. jednostka specjalna; chińska konnica szybkiego uderzenia (Xiongnu styl); silniejsza od standardowej konnicy; wymaga Konia i tech Jeździectwo
+**Jeździec chiński** — flanka, typ **Mount**. Rekrutacja: **28** ¤ i **1** mieszkańców; technologia **Sztuka wojenna**. Utrzymanie **3** ¤/turę, **1** żywności/turę. Ruch na mapie: **4** heksów. Jednostka **specjalna** cywilizacji **Chińczycy**. Moc w polu: **34.5**. jednostka specjalna; chińska konnica szybkiego uderzenia (Xiongnu styl); silniejsza od standardowej konnicy; wymaga Konia i tech Sztuka wojenna
 
 
 ### Przykład liczbowy

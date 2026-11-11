@@ -9,7 +9,7 @@
     "Pretorium": ["Top1_GLOWNA"]
   },
   "_martweFrazy": {
-    "_opis": "Efekty martwe / niedostępne z ANALIZA-KART-BUDYNKOW.md §8 (decyzja właściciela (4): ukryć z kart i z odwołań). Test building-cards-top5-test.cjs sprawdza, że żadna fraza nie występuje w treści karty danego budynku (bez Rysu historycznego). Usunięte w R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1, decyzja właściciela ABC 2026-11-09): wpisy warsztat_oblezniczy („Katapult” — Katapulta to realna jednostka odblokowywana przez Warsztat oblężniczy, buildings.json:1637-1639, cities.ts:845-851) i akademia_wojskowa („elit” — realna bramka jednostek elit). Wpisy Pałac II/III („−30% znika”) i Trybunał („nie zmniejsza korupcji”) z §8 są NIEAKTUALNE od FALI 560 (economy.ts:1226 KORUPCJA_REDUKCJA_BUDYNKI) — zamiast ukrycia karta pokazuje −30% korupcji (decyzja (5)).",
+    "_opis": "Efekty martwe / niedostępne z ANALIZA-KART-BUDYNKOW.md §8 (decyzja właściciela (4): ukryć z kart i z odwołań). Test building-cards-top5-test.cjs sprawdza, że żadna fraza nie występuje w treści karty danego budynku (bez Rysu historycznego). Usunięte w R-WEB-CARDS-RESOURCE-PURPOSE-Q1: dawne odwołanie „Katapult” do Warsztatu oblężniczego; od 2026-11-11 Katapultę buduje się wyłącznie podczas aktywnego oblężenia i wymaga Sztuki wojennej. Akademia wojskowa („elit” — bramka jednostek) pozostaje osobnym odwołaniem. Wpisy Pałac II/III („−30% znika”) i Trybunał („nie zmniejsza korupcji”) z §8 są NIEAKTUALNE od FALI 560 (economy.ts:1226 KORUPCJA_REDUKCJA_BUDYNKI) — zamiast ukrycia karta pokazuje −30% korupcji (decyzja (5)).",
     "kuznia": ["45%", "Wielk"],
     "odlewnia_zelaza": ["Wielk"],
     "spichlerz": ["zapasów armii", "50% zapasu"],

@@ -98,7 +98,7 @@
       { "z": "Top2", "zdanie": "Silna jednostka uderzeniowa epoki Kamienia, której rekrutacja nie wymaga Koszar." },
       { "z": "Top3", "zdanie": "Wódz w epoce Kamienia jeździ Rydwanem (woły), więc jest wielokrotnie trwalszy." },
       { "z": "Top4", "zdanie": "Każde pole z Drogą daje dodatkowy podatek." },
-      { "z": "Top5", "zdanie": "Razem z Brązownictwem prowadzi do Konnicy i Stadniny." }
+      { "z": "Top5", "zdanie": "Razem z Brązownictwem otwiera rydwany epoki Brązu i Stadninę." }
     ]
   },
   "Brązownictwo": {
@@ -142,7 +142,7 @@
   "Jeździectwo": {
     "top5": [
       { "z": "Top1_GLOWNA", "zdanie": "Ulepszenie na złożu koni; 25 koni to koszt rekrutacji jednej jednostki konnej." },
-      { "z": "Top2", "zdanie": "Najszybsza jednostka uderzeniowa; rekrutujesz ją w mieście z Koszarami." },
+      { "z": "Top2", "zdanie": "Technologia odblokowuje sześć standardowych i narodowych rydwanów epoki Brązu." },
       { "z": "Top3", "zdanie": "Rydwan zaprzężony w konie — trwalszy od Konnicy przy tym samym ruchu." },
       { "z": "Top4", "zdanie": "Sześć cywilizacji dostaje własne rydwany lub jeźdźców." }
     ]

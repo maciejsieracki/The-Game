@@ -349,8 +349,10 @@ async function main() {
   }
   check('[E] Pretorium: brak nieaktualnego „Jedyny — obok Sądu”', !/Jedyny/.test(R('pretorium').text), all('pretorium'));
   check('[E] Garnizon: Top1 = Milicja (1 obrońca na mieszkańca)', /^Milicja: 1 obrońca na mieszkańca/.test(R('garnizon').top5[0].tytul), R('garnizon').top5[0]);
-  check('[E] Warsztat oblężniczy: Top1 = +10% parametrów jednostek; Katapulta na karcie (DODATEK 1: realna jednostka, karta = kafelek)',
-    /^\+10% parametrów jednostek/.test(R('warsztat_oblezniczy').top5[0].tytul) && /Katapult/.test(cards.warsztat_oblezniczy.cmz[0].korzysc), R('warsztat_oblezniczy').top5[0]);
+  check('[E] Warsztat oblężniczy: Top1 = +10%; Katapulta tylko podczas oblężenia po Sztuce wojennej',
+    /^\+10% parametrów jednostek/.test(R('warsztat_oblezniczy').top5[0].tytul)
+      && /Katapultę budujesz podczas aktywnego oblężenia po zbadaniu Sztuki wojennej/.test(cards.warsztat_oblezniczy.cmz[0].korzysc),
+    cards.warsztat_oblezniczy.cmz[0]);
   check('[E] Asymilacja kultury z dopiskiem „podbite miasta” (założenie Q6-A) na każdej karcie',
     buildings.filter((b) => !cards[b.id].ukryty).every((b) => R(b.id).top5.filter((i) => /^Asymilacja kultury/.test(i.tytul)).every((i) => /podbite miasta/.test(i.tytul))));
   check('[E] Targowisko: zamiana Pracy na podatek (tylko gracz, założenie Q7-A)', /Zamiana Pracy na podatek/.test(all('targowisko')) && /tylko gracz/.test(all('targowisko')), all('targowisko'));

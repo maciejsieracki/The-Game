@@ -78,6 +78,7 @@
 - [Wojownik germański](jednostki/wojownik-germanski.md)
 - [Berserker germański](jednostki/berserker-germanski.md)
 - [Taran](jednostki/taran.md)
+- [Taran okuty](jednostki/taran-okuty.md)
 - [Katapulta](jednostki/katapulta.md)
 - [Wieża oblężnicza](jednostki/wieza-obleznicza.md)
 - [Wojownik tyrreński](jednostki/wojownik-tyrrenski.md)
