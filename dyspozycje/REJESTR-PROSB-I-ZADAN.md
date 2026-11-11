@@ -9656,3 +9656,8 @@ Nowe zlecenie: od20.tury własnej epoki Brązu komunikat Epoki Ludów Morza i3×
 STATUS: OTWARTE
 DOMAIN: GAME
 Idź do wodza: wspólne ustawienie dziedziczą tylko zamówienia z Armii/Rekrutacji, rekrutacja bezpośrednia w mieście domyślnie wyłączona. Zachować indywidualny przełącznik jednostki. Zarejestrowane w kolejce, max4 tematy. Dispatch w `autobot/runs/R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-IRON-STUD-ADJACENCY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Stadnina bez surowca Koń w Żelazie wymaga bezpośredniego sąsiedztwa istniejącej stadniny. Istniejących stadnin zapisów nie usuwać. Wspólna reguła gracza/AI/autobudowy oraz podświetlenia i wykonania. Dispatch `autobot/runs/R-WEB-IRON-STUD-ADJACENCY-Q1/00-dispatch.md`; kolejka przy max4 aktywnych tematach.
