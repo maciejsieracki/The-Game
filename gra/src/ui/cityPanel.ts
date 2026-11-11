@@ -6811,9 +6811,8 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
     const have = pool?.[k] ?? 0;
     const met = pool !== undefined && have >= need;
     return {
-      label: pool !== undefined
-        ? `${need} ${stockResourceLabel(k)} (masz ${have})`
-        : `${need} ${stockResourceLabel(k)}`,
+      label: pool !== undefined ? `(masz ${have})` : '',
+      iconHtml: resourceAmountChipHtml(k, `${need}`),
       met,
       kind: 'stock' as const,
     };
@@ -6921,10 +6920,10 @@ function formatBuildingUpkeepTotalHtml(
   return `Utrzymanie łącznie: <b>${parts.join(' · ')}</b>/turę`;
 }
 
-function formatResourceUpkeepSummary(resources: Record<string, number>): string {
+function formatResourceUpkeepSummary(resources: Record<string, number>, unitSuffix = ''): string {
   const keys = Object.keys(resources);
   if (keys.length === 0) return '—';
-  return keys.map(k => `−${resources[k]} ${stockResourceLabel(k)}`).join(' · ');
+  return keys.map(k => resourceAmountChipHtml(k, `−${resources[k]}`, unitSuffix)).join(' · ');
 }
 
 /**
@@ -7109,7 +7108,8 @@ function buildingRequirementChips(
   for (const [k, need] of Object.entries(stockCost)) {
     const have = pool[k] ?? 0;
     chips.push({
-      label: `${need} ${stockResourceLabel(k)} w magazynie (masz ${have})`,
+      label: ` w magazynie (masz ${have})`,
+      iconHtml: resourceAmountChipHtml(k, `${need}`),
       met: have >= need,
       kind: 'stock',
     });
@@ -7883,7 +7883,7 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
     gridDetailRow(
       gCost,
       'Koszt surowcowy (jednorazowy)',
-      Object.entries(stockCostDetail).map(([k, v]) => `${v} ${stockResourceLabel(k)}`).join(' + ')
+      Object.entries(stockCostDetail).map(([k, v]) => resourceAmountChipHtml(k, `${v}`)).join(' + ')
         + ' — z magazynu państwa',
     );
   }
@@ -8173,7 +8173,7 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     gridDetailRow(
       gEco,
       'Utrzymanie surowców',
-      formatResourceUpkeepSummary(resUpkeep) + '/t',
+      formatResourceUpkeepSummary(resUpkeep, '/t'),
     );
   }
   gridDetailRow(gEco, 'Żywność', u['żywność/turę'] != null ? `${u['żywność/turę']}` : null);
@@ -8337,7 +8337,8 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
     const missing = isUnitRecruitStockChipMissing(pool, u, k);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
     // R-WEB-RECRUIT-LIST-REGRESSION-Q1: brak surowca widoczny tekstem w chipie („13 Drewno (brak)").
-    const text = missing ? `${need} ${stockResourceLabel(k)} (brak)` : `${need} ${stockResourceLabel(k)}`;
+    const chip = resourceAmountChipHtml(k, `${need}`);
+    const text = missing ? `${chip} (brak)` : chip;
     return `<span class="${cls}">${text}</span>`;
   });
   return chips.join('');
@@ -8349,7 +8350,7 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
   const keys = Object.keys(upkeep);
   if (keys.length === 0) return '';
   return keys
-    .map(k => `<span class="bld-infocard-chip">−${upkeep[k]} ${stockResourceLabel(k)}/t</span>`)
+    .map(k => `<span class="bld-infocard-chip">${resourceAmountChipHtml(k, `−${upkeep[k]}`, '/t')}</span>`)
     .join('');
 }
 

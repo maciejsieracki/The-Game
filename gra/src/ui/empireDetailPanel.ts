@@ -31,6 +31,7 @@ import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import { resourceAmountChipHtml } from './resourceAmountChip';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
@@ -993,7 +994,7 @@ export { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 function formatResourceUpkeepEmpireLine(resources: Record<string, number> | undefined): string {
   const keys = Object.keys(resources ?? {});
   if (keys.length === 0) return '—';
-  return keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join(' · ');
+  return keys.map(k => resourceAmountChipHtml(k, `−${resources![k]}`)).join(' · ');
 }
 
 function cityEconMiniSkarbiec(
@@ -1059,7 +1060,7 @@ function tblValTxt(n: number): string {
 function formatResourceUpkeepEmpireLineColored(resources: Record<string, number> | undefined): string {
   const keys = Object.keys(resources ?? {});
   if (keys.length === 0) return '<span style="color:#6f7889">—</span>';
-  const lines = keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join('<br>');
+  const lines = keys.map(k => resourceAmountChipHtml(k, `−${resources![k]}`)).join('<br>');
   return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
 }
 
@@ -2832,7 +2833,7 @@ export function renderMassRecruitmentSection(
 ): string {
   const stock = Object.entries(state.stock)
     .filter(([, amount]) => amount > 0)
-    .map(([key, amount]) => `${formatRawCount(amount)} ${stockResourceLabel(key)}`)
+    .map(([key, amount]) => resourceAmountChipHtml(key, formatRawCount(amount)))
     .join(' · ');
   let h = `<div class="civ-emp-mass" data-mass-recruitment>`
     + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
