@@ -144,7 +144,8 @@ function run(input) {
   return { homeOrders: home.orders, wave };
 }
 
-const N = Number(process.env.W5_SCENARIOS ?? 220);
+// Domyslnie 500 = liczba scenariuszy w commitowanym p6_wire_war_march_vectors.json (zweryfikowane cmp: identyczny plik).
+const N = Number(process.env.W5_SCENARIOS ?? 500);
 const scenarios = [];
 const cov = { homeOrders: 0, attack: 0, approach: 0, hold: 0, waves: 0, waveWithActive: 0, waveWithHistory: 0, homeAndWave: 0 };
 for (let i = 0; i < N; i++) {

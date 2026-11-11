@@ -46,7 +46,11 @@ co odpowiada kolejności priorytetów S1 → P1 → S3 → atak (atak all-in = o
 - Z2 `is_own_territory` i `strength_of` podaje wołający.
 - Z3 histereza obrony domu: pamięć świeża na każde wywołanie (trwała pamięć -> W8).
 - Z4 kontakt dyplomatyczny zakładany; `isRelevantSiege` = brak filtra.
-- Z5 fala dostaje jednostki bez przydziałów obrony domu i bez `locked_unit_ids`.
+- Z5 fala dostaje jednostki bez przydziałów obrony domu i bez `locked_unit_ids`. Odchylenie od weba (jawne, dług W8): web (`ai.ts` ~3912–3926)
+  wywołuje `planForcedWarWave` TYLKO gdy `forcedWarAttack && (aktywne fale || historia fal niepusta) && canConcentrateArmy`, na wszystkich
+  `myUnits`, z `excluded = homeDefenderAssignments ∪ activeFlankingUnitIds ∪ activeWaveUnitIds`. Rust wywołuje falę bezwarunkowo, na jednostkach
+  już przefiltrowanych, z `excluded = locked ∪ jednostki rozkazów domu`. Brak w Rust odpowiednika `activeFlankingUnitIds` (flankowanie poza W5)
+  i bramki „niepusta historia/fale”. Wektory W5 nie obejmują tych gałęzi (generator wywołuje funkcję składową, nie blok `ai.ts`).
 - Z6 mapę ruchu (`RuchMapa` w `WarAllInNav`) podaje wołający w `AllInParams::nav` (jak Z2). Bez niej etap all-in jest pominięty.
 - Z7 all-in dostaje jednostki wołającego bez `locked_unit_ids`, bez jednostek przydzielonych obronie domu i bez jednostek wybranych przez falę.
   Web: priorytet armii wg `planWarAllInCapital`; zgodność z kolejnością webową nie jest zmierzona wektorem.
@@ -67,6 +71,12 @@ co odpowiada kolejności priorytetów S1 → P1 → S3 → atak (atak all-in = o
 - Z3 i Z4 odchylają się od weba w wielotur­owym użyciu (histereza, kontakt); dług W8 (trwała pamięć histerezy między turami).
   Wektory W5 są jednoturowe ze świeżą histerezą, więc zgodne z Z3 z założenia.
 - Kampania generała: wybór celu zgodny z `chooseAiGeneralWarTarget` (funkcja pure); reconcile i zapis kampanii poza W5.
+- Odtwarzalność wektorów (runda 4, pomiar NIE_ZMIERZONO → ZMIERZONO): `git archive cffe39cb9 gra/src gra/data` do katalogu poza repo,
+  `W5_SCENARIOS=500 node gen-w5-march-vectors.mjs <src>/gra/src <esbuild> out.json` daje plik BAJT W BAJT równy `p6_wire_war_march_vectors.json`
+  (`cmp` = identyczne). Domyślna wartość N w generatorze to teraz 500 (wcześniej 220 — stary przepis nie odtwarzał JSON-a).
+- Czułość testów na mutanty: runda 3 (Evaluator) — usunięcie `excluded.extend(used)` w planerze → padają test rdzenia
+  `forced_wave_excludes_units_already_ordered_at_home` i test wektorowy (`p6_wire_war_march_vectors.rs`, panic ok. linii 264).
+  Luka: kampania i all-in nie mają wektorów z weba w W5 (patrz wyżej); ich czułość nie jest zmierzona.
 
 ## 5. Bramki (runda 3)
 
