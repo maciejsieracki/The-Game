@@ -9388,3 +9388,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · FALA 631 WDROŻONA (ROBOCZA): R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (FC PASS-WITH-NOTES, 058cc56e9; ref `refs/keep/R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1-fc`, wip `web-wip/IMPROVEMENT-ADMINISTRATOR`). AI bez administratora (decyzja ABC B). Nowy dług: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE; REPIN Rust (blok JSON administrator_ulepszen + utrzymanie).
 
 - 2026-11-11 · FALA 631 = 09ddc9345 (Raw MD5 89f5a5d6…). FALA 632 WDROŻONA (ROBOCZA): R-WEB-BRICK-CYCLES-75-100-Q1 (FC PASS-WITH-NOTES, f7fcc9663; ref `refs/keep/R-WEB-BRICK-CYCLES-75-100-Q1-fc`, wip `web-wip/BRICK-CYCLES`). Dług Rust: REPIN cykle cegielni. Odblokowuje RESOURCE-BUILDING-ENABLE-TOGGLE (potrzebny dispatch).
+
+- 2026-11-11 · FALA 632 = 674f9faef (Raw MD5 b66d2638…). FALA 633 WDROŻONA (ROBOCZA): R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (FC PASS-WITH-NOTES, kod 7bed9d379/raport 5df05c456; ref `refs/keep/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1-fc`, wip `web-wip/SURVIVOR-RETREAT`). Odwrót tylko w polu; w mieście giną. Dług: zamknięte granice a legalność odwrotu, Chromium przez main.ts; REPIN Rust.
