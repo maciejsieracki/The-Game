@@ -66,7 +66,7 @@ function sourceChecks() {
     armyCityRendererStart >= 0 && !/mountGeneralRecruitmentCardForArmy\(/.test(armyCityRenderer)
       && /renderPurchasableUnits\(host, city, data,/.test(armyCityRenderer));
   check('production card forwards the selected commander offer to onPurchaseGeneral',
-    /onRecruit:\s*\(\)\s*=>\s*cfg\.onPurchaseGeneral\?\.\(cityId, offer\.item!\.id, offer\.item!\.koszt(, 'army')?\)/.test(citySource));
+    /onRecruit:\s*\(\)\s*=>\s*cfg\.onPurchaseGeneral\?\.\(cityId, offer\.item!\.id, offer\.item!\.koszt, 'army'\)/.test(citySource));
   check('production purchase invokes real commander preflight before ordinary payment',
     /opts\.isGeneral === true && opts\.generalGateChecked !== true/.test(mainSource)
       && /return attemptGeneralPurchase\(/.test(mainSource));

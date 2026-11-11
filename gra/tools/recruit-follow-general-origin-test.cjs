@@ -54,8 +54,17 @@ const mainSrc = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
 const panelSrc = fs.readFileSync(path.join(root, 'src/ui/cityPanel.ts'), 'utf8');
 assert.match(mainSrc, /recruitFollowGeneralForOrder\(opts\.origin \?\? 'city', recruitFollowGeneralDefault\)/); ok('purchaseRecruitmentUnit stamps intent from origin (default city)');
 assert.match(mainSrc, /purchase: \(cityId, count\) => purchaseRecruitmentUnit\(cityId, unitId, empireRecruitCityKoszt\(cityId, unitId, koszt\), ownerId, count, \{ origin: 'army' \}\)/); ok('empire recruitment panel orders carry origin army');
-assert.match(mainSrc, /onPurchaseUnit: \(cityId: string, itemId: string, koszt: number, quantity = 1, origin: RecruitOrigin = 'city'\)/); ok('city onPurchaseUnit forwards origin');
-assert.match(mainSrc, /onPurchaseGeneral: \(cityId: string, itemId: string, koszt: number, origin: RecruitOrigin = 'city'\)/); ok('general onPurchaseGeneral forwards origin');
+// Obie kopie configureCityPanel (pierwsza po starcie, druga po Nowej grze) muszą przekazywać origin.
+const countOf = (src, re) => (src.match(new RegExp(re.source, 'g')) || []).length;
+assert.equal(countOf(mainSrc, /onPurchaseUnit: \(cityId: string, itemId: string, koszt: number, quantity = 1, origin: RecruitOrigin = 'city'\)/), 2); ok('both configureCityPanel copies: onPurchaseUnit forwards origin');
+assert.equal(countOf(mainSrc, /onPurchaseGeneral: \(cityId: string, itemId: string, koszt: number, origin: RecruitOrigin = 'city'\)/), 2); ok('both configureCityPanel copies: onPurchaseGeneral forwards origin (incl. post-new-game copy)');
+assert.equal(countOf(mainSrc, /\{ isGeneral: true, origin \}\)/), 1 + 1); ok('both general callbacks pass origin into purchaseRecruitmentUnit');
+// Wiązanie zapisu intencji z realnym enqueue w purchaseRecruitmentUnit (mutacja usuwająca ...followIntent czerwieni test).
+const purchStart = mainSrc.indexOf('function purchaseRecruitmentUnit(');
+const purchEnd = mainSrc.indexOf('function purchaseRecruitmentUnits(', purchStart);
+const purchBody = mainSrc.slice(purchStart, purchEnd);
+assert.ok(purchStart >= 0 && purchEnd > purchStart);
+assert.match(purchBody, /enqueueRecruitment\(nextProd, \{\s*\.\.\.item,[\s\S]*?\.\.\.followIntent,\s*\}\);/); ok('purchaseRecruitmentUnit: enqueue call spreads followIntent into every queued unit');
 assert.match(mainSrc, /followGeneral: resolveRecruitFollowGeneral\(rec, recruitFollowGeneralDefault\)/); ok('recruitment-queue spawn reads stored intent with legacy fallback');
 assert.match(panelSrc, /recruitUnit\(entry\.city, entry\.item, batch, false, 'army'\)/); ok('Army batch recruit passes army origin');
 assert.match(panelSrc, /recruitUnit\(city, item, quantity, true, opts\?\.armyBatch \? 'army' : 'city'\)/); ok('Army cards pass army origin, city cards city origin');

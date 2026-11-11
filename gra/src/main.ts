@@ -44356,10 +44356,10 @@ async function boot(): Promise<void> {
           return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity, { origin });
         },
         getGeneralRecruitmentOffer: (cityId: string) => generalRecruitmentOfferForCity(cityId),
-        onPurchaseGeneral: (cityId: string, itemId: string, koszt: number) => {
+        onPurchaseGeneral: (cityId: string, itemId: string, koszt: number, origin: RecruitOrigin = 'city') => {
           const city = cities.find(c => c.id === cityId);
           return city
-            ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true })
+            ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true, origin })
             : false;
         },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
