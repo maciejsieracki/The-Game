@@ -16,8 +16,10 @@
 //!   i Manpower wspolna z graczem, potem rezerwa magazynu panstwa).
 //!
 //! ZALOZENIA (do akceptacji, kazde pokryte nazwa w kodzie lub testem):
-//! - Z1 wpisy map `meta` (`regularWarCapturedByPairKey`, `forcedEraPeaceUntilNextEraByPairKey`) sa serializowane
-//!   jako tablica par `[klucz, wartosc]` (jak `*ActiveByPairKey` w W1); pole brakujace = pusta mapa.
+//! - Z1 (ZWERYFIKOWANE grepem, r2): wpisy map `meta` sa serializowane jako tablica par `[klucz, wartosc]`:
+//!   `serializeForcedEraPeaceLocks` = `Array.from(locks.entries())` (`gra/src/game/forced-war-common.ts:155-158`),
+//!   `regularWarCapturedByPairKey`, `aiAiPeaceRequestByPairKey`, `warWearinessByPairKey` = `Array.from(...entries())`
+//!   (`gra/src/main.ts` ok. 37020-37022). Pole brakujace = pusta mapa (brak klucza = brak zapisu).
 //! - Z2 wypowiedzenie wymuszone to wpis z `assignForcedWarPairings` (`ForcedWarPairingAssignment`), ktorego
 //!   para zostala faktycznie wypowiedziana (wolajacy podaje `declared`); web sprawdza to przez
 //!   `targetId === *ForceWarTargetId`, tu rownowazne przez przekazanie tylko udanych wypowiedzen.
@@ -50,6 +52,10 @@ use super::war_turn_state::WarTurnState;
 pub const KEY_REGULAR_WAR_CAPTURED: &str = "regularWarCapturedByPairKey";
 /// Klucz `meta` (web `forcedEraPeaceUntilNextEraByPairKey`), surowo w `opaque` (Z1).
 pub const KEY_ERA_PEACE_LOCK: &str = "forcedEraPeaceUntilNextEraByPairKey";
+/// Klucz `meta` (web `aiAiPeaceRequestByPairKey`), czyszczony przy KAZDYM pokoju pary (web `cleanupRegularWarOnPeace`).
+pub const KEY_AI_AI_PEACE_REQUEST: &str = "aiAiPeaceRequestByPairKey";
+/// Klucz `meta` (web `warWearinessByPairKey`), czyszczony przy KAZDYM pokoju pary (web `cleanupRegularWarOnPeace`).
+pub const KEY_WAR_WEARINESS: &str = "warWearinessByPairKey";
 
 /// Prog konca wojny wg miast (web `WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE`, D3=1:1).
 pub const REGULAR_WAR_CITY_LIMIT: i64 = WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE;
@@ -198,6 +204,10 @@ pub fn cleanup_forced_war_on_peace(
 /// Blokada pokoju epoki (web ok. 11690): przy pokoju na parze z aktywna wojna wymuszona zapisuje
 /// `{ownerId: napastnik, era: epoka napastnika}`. Kolejnosc szukania jak web: kamien, braz, zelazo.
 /// Zwraca true, gdy blokade zapisano.
+///
+/// KONTRAKT KOLEJNOSCI: funkcja MUSI byc wywolana PRZED `cleanup_forced_war_on_peace` dla tej pary
+/// (cleanup usuwa wpis aktywny, ktorego ta funkcja potrzebuje). Wolajacy pokoj powinien uzywac
+/// `finalize_peace_between`, ktora zachowuje te kolejnosc. Test: `peace_lock_requires_cleanup_after`.
 pub fn set_era_peace_lock(
     state: &mut WarTurnState,
     a: i64,
@@ -267,6 +277,9 @@ impl CityCapture {
 pub enum CityLossVerdict {
     /// Pary nie ma w stanie wojny: nic nie zapisano (web: wczesny `return`).
     NotAtWar,
+    /// Para ma aktywna wojne WYMUSZONA w dowolnej epoce: bezpiecznik weba (`*ForceWarActiveByPairKey.has`),
+    /// nic nie zapisano, zeby nie liczyc miast podwojnie (web main.ts ok. 35614-35620).
+    ForcedWarPair,
     /// Licznik zapisany, prog nieosiagniety.
     Counted,
     /// Prog osiagniety, ale bilans AI-AI ujemny: licznik zostaje, pokoj nie nastepuje (Z3).
@@ -298,6 +311,75 @@ fn write_entries(opaque: &mut Map<String, Value>, key: &str, entries: Vec<(Strin
     opaque.insert(key.to_string(), Value::Array(arr));
 }
 
+/// Czy para ma wpis aktywnej wojny wymuszonej w ktorejkolwiek epoce (web: `*ForceWarActiveByPairKey.has`).
+fn has_forced_war_pair(state: &WarTurnState, key: &str) -> bool {
+    state
+        .forced
+        .iter()
+        .any(|slot| slot.active_by_pair_key.iter().any(|(k, _)| k == key))
+}
+
+/// Web `cleanupRegularWarOnPeace(proposer, responder)` (ok. 11648-11653): przy KAZDYM pokoju pary usuwa
+/// licznik zwyklej wojny, zadanie pokoju AI-AI i zmeczenie wojna. Zwraca liczbe realnie usunietych wpisow.
+/// Mapy bez wpisu pozostaja nietkniete (brak klucza = brak zapisu), wiec round-trip meta sie nie zmienia.
+pub fn cleanup_regular_war_on_peace(state: &mut WarTurnState, a: i64, b: i64) -> usize {
+    let key = pair_key(a, b);
+    let mut removed = 0;
+    for meta_key in [
+        KEY_REGULAR_WAR_CAPTURED,
+        KEY_AI_AI_PEACE_REQUEST,
+        KEY_WAR_WEARINESS,
+    ] {
+        if !state.opaque.contains_key(meta_key) {
+            continue;
+        }
+        let mut entries = read_entries(&state.opaque, meta_key);
+        let before = entries.len();
+        entries.retain(|(k, _)| *k != key);
+        if entries.len() != before {
+            removed += 1;
+            write_entries(&mut state.opaque, meta_key, entries);
+        }
+    }
+    removed
+}
+
+/// Raport pokoju z `finalize_peace_between`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PeaceFinalizeReport {
+    /// Czy zapisano blokade pokoju epoki (wymaga aktywnej wojny wymuszonej pary).
+    pub era_lock_set: bool,
+    /// Sprzatniete wpisy wojny wymuszonej (kolejnosc: kamien, zelazo, braz - jak web).
+    pub forced_cleaned: Vec<PeaceCleanup>,
+    /// Liczba usunietych wpisow wojny zwyklej (`cleanup_regular_war_on_peace`).
+    pub regular_cleaned: usize,
+}
+
+/// Wspolny punkt wejscia dla KAZDEGO pokoju pary (web `finalizePeaceTreatyBetween`, kolejnosc z ok. 11690
+/// i 11739-11742): najpierw blokada epoki (czyta wpis aktywny), potem sprzatanie wojny wymuszonej
+/// i wojny zwyklej. Wolajacy nie moze zmienic tej kolejnosci.
+pub fn finalize_peace_between(
+    state: &mut WarTurnState,
+    a: i64,
+    b: i64,
+    turn: f64,
+    attacker_epoch_of: &dyn Fn(i64) -> i64,
+) -> PeaceFinalizeReport {
+    let era_lock_set = set_era_peace_lock(state, a, b, attacker_epoch_of);
+    let mut forced_cleaned = Vec::new();
+    for era in [ForcedEra::Stone, ForcedEra::Iron, ForcedEra::Bronze] {
+        if let Some(c) = cleanup_forced_war_on_peace(state, era, a, b, turn) {
+            forced_cleaned.push(c);
+        }
+    }
+    let regular_cleaned = cleanup_regular_war_on_peace(state, a, b);
+    PeaceFinalizeReport {
+        era_lock_set,
+        forced_cleaned,
+        regular_cleaned,
+    }
+}
+
 /// Web `recordRegularWarCityLoss(oldOwner, newOwner)` (ok. 35620-35660). `at_war` = relacja pary to wojna;
 /// `ai_ai_balance_ok` = wynik bramki bilansu AI-AI (Z3), liczony tylko gdy prog osiagniety.
 pub fn register_regular_war_city_loss(
@@ -307,10 +389,16 @@ pub fn register_regular_war_city_loss(
     at_war: bool,
     ai_ai_balance_ok: bool,
 ) -> CityLossVerdict {
-    if old_owner == new_owner || !at_war {
+    if old_owner == new_owner {
         return CityLossVerdict::NotAtWar;
     }
     let key = pair_key(old_owner, new_owner);
+    if has_forced_war_pair(state, &key) {
+        return CityLossVerdict::ForcedWarPair;
+    }
+    if !at_war {
+        return CityLossVerdict::NotAtWar;
+    }
     let owner_a = old_owner.min(new_owner);
     let owner_b = old_owner.max(new_owner);
     let mut entries = read_entries(&state.opaque, KEY_REGULAR_WAR_CAPTURED);

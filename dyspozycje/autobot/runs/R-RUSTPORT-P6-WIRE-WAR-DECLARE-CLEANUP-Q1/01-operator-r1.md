@@ -3,7 +3,7 @@ DOMAIN: GAME (RUST)
 TEMAT: R-RUSTPORT-P6-WIRE-WAR-DECLARE-CLEANUP-Q1 (W4)
 GOAL: W4 wg dispatchu: deklaracja wojny wymuszonej, sprzątanie przy pokoju, koniec wojny wg liczby miast (próg 2, D3=1:1), blokada pokoju epoki, wykonanie zakupu jednostki AI jako krok komend (D7=A, wynik = `ai_try_purchase_unit`).
 BAZA: origin/rust-port/parity-v2 = d2d533a77 (worktree detach, sparse rust-port + dyspozycje).
-ZMIANY/COMMIT: allowlista: `rust-port/engine/src/domain/war_turn_declare.rs` (NOWY, ~330 LOC), `rust-port/engine/src/domain/mod.rs` (+1 linia `pub mod`), `rust-port/engine/tests/p6_wire_war_declare.rs` (NOWY, 15 testów), `dyspozycje/rust-port/p6/P6-WIRE-WAR-DECLARE-CLEANUP.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIRE-WAR-DECLARE-CLEANUP-Q1/01-operator-r1.md`. SHA: podany w wiadomości zwrotnej orkiestratora (commit lokalny, bez push).
+ZMIANY/COMMIT: allowlista: `rust-port/engine/src/domain/war_turn_declare.rs` (NOWY, 387 LOC wg `wc -l` w r1; korekta: ~330 było błędną liczbą), `rust-port/engine/src/domain/mod.rs` (+1 linia `pub mod`), `rust-port/engine/tests/p6_wire_war_declare.rs` (NOWY, 15 testów), `dyspozycje/rust-port/p6/P6-WIRE-WAR-DECLARE-CLEANUP.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIRE-WAR-DECLARE-CLEANUP-Q1/01-operator-r1.md`. SHA: podany w wiadomości zwrotnej orkiestratora (commit lokalny, bez push).
   Akcesory W1/W2/W3 NIE zmieniane (moduł używa `pub` pól `WarTurnState`/`ForcedWarSaveState` i `opaque`, więc addytywne akcesory nie były potrzebne).
 TESTY:
 - `cargo fmt -- --check`: exit 0 (po rustfmt na nowych plikach).
