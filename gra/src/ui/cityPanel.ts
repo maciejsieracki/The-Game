@@ -183,6 +183,7 @@ import type { EntityCardData } from './entityCards/types';
 import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
 import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
+import { resourceAmountChipHtml } from './resourceAmountChip';
 import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 import { filterDeadEffectText } from './entityCards/techDeadEffects';
@@ -3054,7 +3055,13 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-name--inactive{color:#e07070;}
 .bld-owned-lvl{flex:none;font-size:0.58em;font-weight:700;color:#2a2208;background:#c8b070;border-radius:4px;padding:0.08em 0.32em;line-height:1.2;}
 .bld-owned-tail{display:flex;align-items:center;justify-content:flex-end;gap:0.35em 0.45em;flex:1 1 8em;min-width:0;margin-left:auto;flex-wrap:wrap;font-size:0.66em;line-height:1.25;}
-.bld-owned-upkeep{flex:none;color:#e8a090;font-weight:600;white-space:nowrap;}
+.bld-owned-upkeep{flex:0 1 auto;min-width:0;color:#e8a090;font-weight:600;white-space:normal;overflow-wrap:anywhere;}
+/* R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: surowiec = liczba + ikona (bez nazwy słownej). Chip jest
+   niełamliwy, wiersz zawija się między chipami (flex-wrap), ikona skaluje się z tekstem. */
+.bld-res-chip{display:inline-flex;align-items:center;gap:0;white-space:nowrap;}
+.bld-res-chip-ic{display:inline-flex;align-items:center;justify-content:center;width:1.35em;height:1.35em;flex:none;line-height:0;vertical-align:-0.3em;}
+.bld-res-chip-ic svg{width:100%;height:100%;display:block;}
+.bld-res-chip-ic--text{font-size:0.6em;line-height:1;}
 .bld-owned-upkeep.muted{color:#6a6458;font-weight:500;}
 .bld-owned-bonus{display:inline-flex;flex-wrap:wrap;gap:0.18em 0.32em;min-width:0;justify-content:flex-end;}
 /* P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: druga linia -- bilans produkcji
@@ -6748,16 +6755,20 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
 
 const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
 
+/**
+ * Utrzymanie surowcowe jako chipy „liczba + ikona surowca" (R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1):
+ * nazwa surowca nie jest widocznym tekstem wiersza, tylko title/aria-label ikony.
+ * `perTurnUnit` dokłada "/t" (wiersz budynku, karta); łączna suma w nagłówku pomija je.
+ */
 function formatResourceUpkeepText(
   resources: Record<string, number>,
   compact: boolean,
+  perTurnUnit: boolean = !compact,
 ): string {
   const keys = Object.keys(resources);
   if (keys.length === 0) return '';
   return keys
-    .map(k => (compact
-      ? `−${resources[k]} ${stockResourceLabel(k)}`
-      : `−${resources[k]} ${stockResourceLabel(k)}/t`))
+    .map(k => resourceAmountChipHtml(k, `−${resources[k]}`, perTurnUnit ? '/t' : ''))
     .join(' · ');
 }
 
@@ -6837,7 +6848,7 @@ function formatBuildingUpkeepTotalHtml(
   if (totalGold > 0) {
     parts.push(`−${totalGold}${cityPanelChipIconWrap('res-treasury', 12)}`);
   }
-  const res = formatResourceUpkeepText(totalResources, false).replace(/\/t/g, '');
+  const res = formatResourceUpkeepText(totalResources, false, false);
   if (res) parts.push(res);
   return `Utrzymanie łącznie: <b>${parts.join(' · ')}</b>/turę`;
 }
@@ -6920,14 +6931,14 @@ function formatConverterProductionRowHtml(
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `−${amtTxt} ${stockResourceLabel(k)}` : `−${amtTxt} ${stockResourceLabel(k)}/t`;
+    const txt = resourceAmountChipHtml(k, `−${amtTxt}`, compact ? '' : '/t');
     parts.push(`<span class="bld-owned-conv-in">${txt}</span>`);
   }
   for (const [k, v] of Object.entries(display.produced)) {
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `+${amtTxt} ${stockResourceLabel(k)}` : `+${amtTxt} ${stockResourceLabel(k)}/t`;
+    const txt = resourceAmountChipHtml(k, `+${amtTxt}`, compact ? '' : '/t');
     parts.push(`<span class="bld-owned-conv-out">${txt}</span>`);
   }
   if (parts.length === 0) return '';
@@ -9489,6 +9500,8 @@ function appendOwnedBuildingRow(
   appendBuildingInlineIcon(hd, def);
   const bn = el('span', 'bld-owned-name');
   bn.textContent = def ? def.nazwa : id;
+  // R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: pełna nazwa w tooltipie przy obcięciu (ellipsis).
+  bn.title = bn.textContent ?? '';
   let upgradeChainTitle = '';
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
     upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(' → ');
