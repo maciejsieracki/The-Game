@@ -44,7 +44,7 @@ Każda nacja ma jeden unikalny cud startowy (Chińczycy: dwa — Terakotowa armi
 
 ### Piramidy
 
-**Piramidy** — Egipt, epoka **Kamień**. Tech: **Murarstwo**; teren: **pustynia, sąsiad rzeki**. Koszt **160** pracy. Stolica na pustyni: +3 Pieniądz/turę (cywilizacja); +3 Wpływu — prestiż faraonów (cywilizacja)
+**Piramidy** — Egipt, epoka **Kamień**. Tech: **Murarstwo**; teren: **pustynia, sąsiad rzeki**. Koszt **160** pracy. Stolica na pustyni: +3 Pieniądza/turę (cywilizacja); +3 Wpływu — prestiż faraonów (cywilizacja)
 
 
 ### Przykład liczbowy
@@ -68,7 +68,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Wiszące ogrody
 
-**Wiszące ogrody** — Babilonia, epoka **Kamień**. Tech: **Gospodarka wodna**; teren: **sąsiad rzeki**. Koszt **150** pracy. +15% wzrost populacji we wszystkich miastach (cywilizacja); +2 bazowe Zaufanie wobec sąsiadów (cywilizacja)
+**Wiszące ogrody** — Babilonia, epoka **Kamień**. Tech: **Gospodarka wodna**; teren: **sąsiad rzeki**. Koszt **150** pracy. +15% wzrostu populacji we wszystkich miastach (cywilizacja); +2 bazowego Zaufania wobec sąsiadów (cywilizacja)
 
 
 ### Przykład liczbowy
@@ -240,7 +240,7 @@ Dokładnie **jeden** cud R na epokę Antyku. Wszyscy widzą postęp rywali — p
 
 ### Wyrocznia
 
-**Wyrocznia** — wyścig epoki **Kamień**. Tech: **Mistycyzm**. +15 Kultury za nagrody z wydarzeń narracyjnych (cywilizacja); +3 Zaufanie — wyrocznia jako arbiter (cywilizacja)
+**Wyrocznia** — wyścig epoki **Kamień**. Tech: **Mistycyzm**. +15 Kultury za nagrody z wydarzeń narracyjnych (cywilizacja); +3 Zaufania — wyrocznia jako arbiter (cywilizacja)
 
 
 ### Przykład liczbowy

@@ -232,10 +232,10 @@ async function main() {
   const waluta = rendered['Waluta'];
   // R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: Mennica mnoży PODATEK (nie „handel”) — oczekiwanie zaktualizowane
   // do nowej terminologii (asercja nie osłabiona: nadal wymaga ×1,50 i nazwanego strumienia).
-  check('[E] Waluta: pozycja Mennicy z „×1,50” i „podatek” (bez „handel”)',
-    waluta.top5.some((i) => /Mennica/.test(i.tytul) && (i.tytul + ' ' + i.zdanie).includes('×1,50')
+  check('[E] Waluta: pozycja Mennicy z „×1,38” i „podatek” (bez „handel”)',
+    waluta.top5.some((i) => /Mennica/.test(i.tytul) && (i.tytul + ' ' + i.zdanie).includes('×1,38')
       && /podat/i.test(i.tytul + ' ' + i.zdanie) && !/handl|handel/.test(i.tytul + ' ' + i.zdanie)), waluta.top5);
-  check('[E] Waluta: Top1 = Mennica ×1,50', /^Mennica: ×1,50/.test(waluta.top5[0].tytul), waluta.top5[0]);
+  check('[E] Waluta: Top1 = Mennica z minimum ×1,38 (per cywilizacja)', /^Mennica: podatek ×1,38/i.test(waluta.top5[0].tytul), waluta.top5[0]);
   for (const n of ['Matematyka', 'Obróbka żelaza']) {
     check(`[E] ${n}: Top1 = jawne „Otwiera drogę do …” (Q7 właściciela)`, /^Otwiera drogę do /.test(rendered[n].top5[0].tytul), rendered[n].top5[0]);
   }

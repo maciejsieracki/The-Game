@@ -138,6 +138,15 @@ export const PRODUCED_RESOURCE_LABELS: Readonly<Record<string, string>> = {
   braz: 'Brąz',
   zelazo: 'Żelazo',
   stal: 'Stal',
+  // Dopyw z mapy zwiekszany przez Stolarnie / Warsztat kamieniarski (+% dopywu, nie konwerter).
+  drewno: 'Drewno',
+  kamien: 'Kamień',
+};
+
+/** Surowiec "dopywu z mapy" -> budynek, ktory go zwieksza (wiersz agregatu pojawia sie tylko gdy taki stoi). */
+export const RAW_INFLOW_RESOURCE_BUILDING: Readonly<Record<string, string>> = {
+  drewno: 'stolarnia',
+  kamien: 'kamieniarski',
 };
 
 export interface EmpireProducerBuildingRow {
@@ -161,6 +170,12 @@ export interface EmpireProducerResourceRow {
    * `null` = brak danych (nowa gra / po wczytaniu, przed pierwsza przeliczona tura).
    */
   realizedLastTurn: number | null;
+  /**
+   * PROGNOZA nastepnej tury: wartosc z TEGO SAMEGO kodu co realny tick (`forecastNextTurnProduction`),
+   * z uwzglednieniem wylaczonych budynkow, biezacych zapasow wejsc i konkurencji o wspolne wejscia.
+   * `null` = brak prognozy (np. nie podano). "Jesli nic sie nie zmieni do konca tury."
+   */
+  forecastNextTurn: number | null;
   /** Mozliwa produkcja z budynkow WLACZONYCH, przy nieograniczonych wejsciach i magazynie. */
   potentialEnabled: number;
   /** Mozliwa produkcja ze WSZYSTKICH zbudowanych (wlacznie z wylaczonymi) -- jw. */
@@ -190,11 +205,19 @@ export function buildEmpireProducersSnap(args: {
   rawParams: RawConverterParamsJson;
   difficulty: Difficulty;
   realizedLastTurn: Readonly<Record<string, number>> | undefined;
+  /** Prognoza nastepnej tury per surowiec (konwertery + dopyw drewna/kamienia); brak = bez prognozy. */
+  forecastNext?: Readonly<Record<string, number>>;
+  /** Maksimum dopywu drewna/kamienia (przy wlaczonych / przy wszystkich zainstalowanych budynkach). */
+  rawInflowPotential?: {
+    enabled: Readonly<Record<string, number>>;
+    installed: Readonly<Record<string, number>>;
+  };
   buildingLabel: (buildingId: string) => string;
 }): EmpireProducersSnap {
   const enabledPot: Record<string, number> = {};
   const installedPot: Record<string, number> = {};
   const cityRows: EmpireProducerCityRow[] = [];
+  const rawBuiltInstalled = new Set<string>();
   for (const city of args.cities) {
     if (city.ownerId !== args.ownerId) continue;
     const built = args.builtByCity.get(city.id) ?? [];
@@ -203,6 +226,7 @@ export function buildEmpireProducersSnap(args: {
       if (!isToggleableProductionBuilding(id)) continue;
       const enabled = isProductionBuildingEnabled(city, id);
       rows.push({ buildingId: id, label: args.buildingLabel(id), enabled });
+      if (RAW_PRODUCER_BUILDING_IDS.includes(id)) rawBuiltInstalled.add(id);
       const disp = converterProductionDisplayForBuilding(id, args.rawParams, args.difficulty, args.era);
       if (!disp) continue;
       for (const [res, amount] of Object.entries(disp.produced)) {
@@ -214,12 +238,27 @@ export function buildEmpireProducersSnap(args: {
   }
   const resources: EmpireProducerResourceRow[] = [];
   for (const [id, label] of Object.entries(PRODUCED_RESOURCE_LABELS)) {
+    const rawBuilding = RAW_INFLOW_RESOURCE_BUILDING[id];
+    const forecast = args.forecastNext ? (args.forecastNext[id] ?? 0) : null;
+    if (rawBuilding !== undefined) {
+      // Drewno / Kamien: wiersz tylko gdy stoi Stolarnia / Warsztat kamieniarski (inaczej to zwykly dopyw z mapy).
+      if (!rawBuiltInstalled.has(rawBuilding)) continue;
+      resources.push({
+        id, label,
+        realizedLastTurn: args.realizedLastTurn ? (args.realizedLastTurn[id] ?? 0) : null,
+        forecastNextTurn: forecast,
+        potentialEnabled: Math.floor(args.rawInflowPotential?.enabled[id] ?? 0),
+        potentialInstalled: Math.floor(args.rawInflowPotential?.installed[id] ?? 0),
+      });
+      continue;
+    }
     const installed = installedPot[id] ?? 0;
     const realized = args.realizedLastTurn ? (args.realizedLastTurn[id] ?? 0) : null;
     if (installed <= 0 && !(realized !== null && realized > 0)) continue;
     resources.push({
       id, label,
       realizedLastTurn: realized,
+      forecastNextTurn: forecast,
       potentialEnabled: Math.floor(enabledPot[id] ?? 0),
       potentialInstalled: Math.floor(installed),
     });

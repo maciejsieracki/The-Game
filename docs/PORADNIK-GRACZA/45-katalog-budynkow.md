@@ -33,7 +33,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Targowisko (Rynek) | Podatek | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
 | Port handlowy | Podatek | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 podatek | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
-| Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
+| Świątynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Świątynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
 | Studnia | Zdrowie | Kamień | Gospodarka wodna | 15 pracy | 1 ¤/t | +1 szczęście | [Studnia](../encyklopedia/budynki/studnia.md) |
 | Mury kamienne | Obrona | Kamień | Murarstwo | 35 pracy | 2 ¤/t | +150% Obrony (max 2 poz.) | [Mury kamienne](../encyklopedia/budynki/mury-kamienne.md) |
@@ -145,9 +145,9 @@ Bonus **+2 żywność** — przy **4** polach w okolicy suma skalowana liniowo z
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/spichlerz.md`](../encyklopedia/budynki/spichlerz.md)
 
-### Swiatynia
+### Świątynia
 
-**Swiatynia** (Kultura) odblokowuje się w epoce **Kamień** po technologii **Mistycyzm**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **1** ¤ na turę (rosnie o **1** per poziom).
+**Świątynia** (Kultura) odblokowuje się w epoce **Kamień** po technologii **Mistycyzm**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **1** ¤ na turę (rosnie o **1** per poziom).
 
 Na poziomie 1 daje: **+2 kultura, +2 szczęście**. Każdy kolejny poziom dodaje: **+1 kultura, +1 szczęście**.
 **Wymagania:** brak.

@@ -274,6 +274,7 @@ import {
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
   civEconomyYieldMultipliers,
+  mennicaMnoznikForCiv,
   type CityYieldContext,
   type BuildingRecord,
 } from '../game/economy';
@@ -11493,7 +11494,10 @@ function buildHandelDetailCard(
   const mennicaAktywna = maMennica && walutaOdkryta;
   // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
   const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
-  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
+  // R-WEB-CURRENCY-MULT-PER-CIV-Q1: ta sama wartosc per cywilizacja co w silniku (economy.ts).
+  const mennicaMnoznikTxt = params
+    ? `×${Number(mennicaMnoznikForCiv(cfg.getCivKey?.(city.ownerId), params).toFixed(2))}`
+    : '×?';
   const est = estimateHandelChips(view, split);
   // Decyzje 65B/66B: etykieta widoczna dla gracza (Danina domyslnie, Podatek gdy
   // Waluta+Mennica W STOLICY -- scislejsze niz `mennicaAktywna` powyzej, ktore

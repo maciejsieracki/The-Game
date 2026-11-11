@@ -52,7 +52,7 @@ Dochód z tras handlowych trafia w całości do skarbca i omija korupcję, suwak
 
 ## Danina → Podatek, Mennica i Waluta
 
-Gdy cywilizacja odkryje **Walutę** i zbuduje **Mennicę w stolicy**, strumień zmienia nazwę z **Danina** na **Podatek** dla całej cywilizacji. Mennica zwiększa podatek przed podziałem: ×1,62 (łatwy) / ×1,50 (normalny) / ×1,38 (trudny). Dochód ze szlaków handlowych jest rozliczany osobno i nie podlega Mennicy. Mennica wymaga dostępu do Złota; po utracie dostępu efekt usypia do czasu odzyskania dostępu. Pełny opis: Część VIII §49.3b.
+Gdy cywilizacja odkryje **Walutę** i zbuduje **Mennicę w stolicy**, strumień zmienia nazwę z **Danina** na **Podatek** dla całej cywilizacji. Mennica zwiększa podatek przed podziałem mnożnikiem swojej cywilizacji (wartość z macierzy cywilizacji, np. Grecy ×2,3 na normalnym; poziom trudności koryguje ją o ±0,5, a wynik nie spada poniżej ×1,38). Dokładną wartość pokazuje hasło cywilizacji. Dochód ze szlaków handlowych jest rozliczany osobno i nie podlega Mennicy. Mennica wymaga dostępu do Złota; po utracie dostępu efekt usypia do czasu odzyskania dostępu. Pełny opis: Część VIII §49.3b.
 
 ## Korupcja dotyka tylko Daniny/Podatku
 

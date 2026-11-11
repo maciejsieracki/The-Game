@@ -36,7 +36,7 @@ Ulepszenie **Farma** na polu w **twoim terytorium**. Teren: Łąka, Równina.
 
 **Budowa:** **20 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +3 żywność/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +3 żywności/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+3**/t vs bez ulepszenia → **7 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
 
