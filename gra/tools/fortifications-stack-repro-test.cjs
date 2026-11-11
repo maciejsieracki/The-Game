@@ -44,8 +44,8 @@ process.on('exit', () => { try { fs.rmSync(OUT, { recursive: true, force: true }
 
 const entry = path.join(OUT, 'entry.ts');
 fs.writeFileSync(entry, `
-export { applyCompletedBuildingIds, buildableProduction, buildingProductionItem, enqueue } from '${GRA.replace(/\\/g, '/')}/src/game/production';
-export { buildingStockCost } from '${GRA.replace(/\\/g, '/')}/src/game/building-stock-cost';
+export { applyCompletedBuildingIds, buildableProduction, buildingProductionItem, enqueue, buildingLevelForEpoch } from '${GRA.replace(/\\/g, '/')}/src/game/production';
+export { buildingStockCost, deductBuildingStockCostAcrossCities, ownerResourceStockAll } from '${GRA.replace(/\\/g, '/')}/src/game/building-stock-cost';
 export { buildingUpkeep, buildingResourceUpkeep, totalBuildingUpkeep, totalBuildingResourceUpkeep } from '${GRA.replace(/\\/g, '/')}/src/game/economy-upkeep';
 export { cityWallDefenseBonusPercent } from '${GRA.replace(/\\/g, '/')}/src/game/city-defense';
 export { cityFortificationKind } from '${GRA.replace(/\\/g, '/')}/src/game/city-fortification';
@@ -98,6 +98,41 @@ assert(CHAIN.every(id => !!def(id)), 'D1 wszystkie trzy definicje istnieja');
 assert(CHAIN.every(id => !(def(id).upgradeFrom || '').trim()), 'D2 (O2) brak pola upgradeFrom w lancuchu palisada/mury_kamienne/mury');
 assert(def('palisada').utrzymanie === 1 && def('mury_kamienne').utrzymanie === 2 && def('mury').utrzymanie === 2, 'D3 utrzymanie bazowe 1 / 2 / 2');
 assert(dparams.palisada === 100 && dparams.murKamienny === 150 && dparams.mur === 200, 'D4 bonusy +100/+150/+200');
+
+console.log('\n=== (1b) POZIOMY L1/L2 wg epoki (maksPoziom=2; poziom wynika z EPOKI miasta, nie jest zapisany per miasto) ===');
+{
+  for (const id of CHAIN) {
+    const d = def(id);
+    for (let ep = 1; ep <= 4; ep++) {
+      const lvl = M.buildingLevelForEpoch(d.epokaWejscia, ep, d.maksPoziom, d.poziomTechGate, TECHS);
+      const it = M.buildingProductionItem(id, data, lvl);
+      console.log(`  ${id.padEnd(14)} epoka=${ep} poziom=${lvl} praca=${it.koszt} upkeepGold=${M.buildingUpkeep(d, lvl)} upkeepRes={${fmt(M.buildingResourceUpkeep(d, lvl, 1))}}`);
+    }
+  }
+  const lv = (id, ep) => M.buildingLevelForEpoch(def(id).epokaWejscia, ep, def(id).maksPoziom, def(id).poziomTechGate, TECHS);
+  assert(lv('mury_kamienne', 1) === 1 && lv('mury_kamienne', 2) === 2, 'Z1 mury_kamienne: L1 w epoce 1, L2 od epoki 2 (poziom z epoki, bez stanu per miasto)');
+  assert(lv('mury', 2) === 1 && lv('mury', 3) === 2, 'Z2 mury: L1 w epoce 2, L2 od epoki 3');
+  assert(lv('palisada', 3) === 1, 'Z3 palisada: zawsze L1');
+  // Wniosek: "Ulepsz" poziomu (ten sam id) i awans lancucha (inny id) to DWA rozne mechanizmy; poziom nie jest
+  // resetowany przy awansie, bo jest wyliczany z epoki -- awans kamienne->ceglane w epoce 3 daje od razu mury L2.
+  const s2 = M.buildingUpkeep(def('mury_kamienne'), 2), m1 = M.buildingUpkeep(def('mury'), 1), m2 = M.buildingUpkeep(def('mury'), 2);
+  console.log(`  utrzymanie zl: kamienne L2=${s2}, ceglane L1=${m1}, ceglane L2=${m2}`);
+  assert(s2 > M.buildingUpkeep(def('mury_kamienne'), 1) && m2 > m1, 'Z4 utrzymanie rosnie z poziomem (L2 > L1) -- tabela A/B/C w raporcie liczy L1; L2 w sekcji 4a raportu');
+}
+
+console.log('\n=== (2b) FAKTYCZNE POTRACENIE surowcow (deductBuildingStockCostAcrossCities, ta sama funkcja co main.ts l.4783/4911/9924) ===');
+{
+  const cities = [
+    { id: 'a', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
+    { id: 'b', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
+  ];
+  const sum = k => cities.reduce((a, c) => a + (c.surowce[k] || 0), 0);
+  const before = { drewno: sum('drewno'), kamien: sum('kamien'), cegla: sum('cegla') };
+  for (const id of CHAIN) M.deductBuildingStockCostAcrossCities(cities, 0, M.buildingStockCost(def(id)));
+  const spent = { drewno: before.drewno - sum('drewno'), kamien: before.kamien - sum('kamien'), cegla: before.cegla - sum('cegla') };
+  console.log(`  realnie pobrane z magazynow (3 etapy po kolei): drewno=${spent.drewno} kamien=${spent.kamien} cegla=${spent.cegla}`);
+  assert(spent.drewno === 600 && spent.kamien === 480 && spent.cegla === 480, 'F1 (O2) funkcja potracenia faktycznie pobiera PELNY koszt kazdego z 3 etapow: 600/480/480 (nie tylko arytmetyka cen)');
+}
 
 console.log('\n=== (2) SCENARIUSZ SEKWENCYJNY: palisada -> mury kamienne -> mury ceglane ===');
 let built = []; let queue = [];
@@ -178,6 +213,9 @@ console.log('\n=== (5) PARYTET GRACZ / AI (pinezki zrodla) ===');
   assert(/isWallTierBlockedByStrongerWall\(b\.id, builtList, queue\)/.test(prod) && (prod.match(/isWallTierBlockedByStrongerWall\(b\.id/g) || []).length === 2, 'P1 blokada "wyzszy blokuje nizszy" jest we wspolnej dostepnosci (availableProduction) dla gracza i AI');
   assert(completions === 1 && /cityBuilt\.set\(cityId, applyCompletedBuildingIds\(/.test(main), 'P2 jedyna sciezka ukonczenia budynku (gracz i AI, tick produkcji miasta) = applyCompletedBuildingIds');
   assert(/!built\.includes\('palisada'\) && !built\.includes\('mury'\) && !built\.includes\('mury_kamienne'\)/.test(ai), 'P3 AI (ai.ts) nie forsuje palisady gdy stoi mur -- ta sama funkcja kosztu i ukonczenia co gracz');
+  // AI: wlasna logika kamienne->ceglane (ai.ts ~2018 obrona, ~2058 boost) -- tylko gdy NIE stoi zaden mur; po zbudowaniu
+  // kamiennych AI nie dobiera ceglanych tymi sciezkami (nie wystepuje podwojna oplata), a zwykla dostepnosc (availableProduction) jest wspolna.
+  assert((ai.match(/!built\.includes\('mury'\) && !built\.includes\('mury_kamienne'\)/g) || []).length >= 2, 'P4 AI: obie sciezki wyboru murow (obrona ~l.2018, boost ~l.2058) wymagaja braku mury ORAZ mury_kamienne; ternary kamienne->mury jest tam martwe (parytet: AI nie kupuje drugiego etapu tymi sciezkami)');
 }
 
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
