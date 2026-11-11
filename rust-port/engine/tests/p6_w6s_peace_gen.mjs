@@ -221,6 +221,38 @@ for (let k = 0; k < 2600; k++) {
     miastaAI: randCities(Math.floor(rnd() * 5), 'a'),
     miastaPartnera: randCities(Math.floor(rnd() * 5), 'g'),
   };
+  runDecide(o);
+}
+
+// 6. Przypadki brzegowe tur wojny (web: Math.max(0, rel.turnsAtWar ?? 0) w wojnie): wartości ułamkowe
+// i ujemne, tuż przy progach 20 (N1b) i min. tur wojny profilu. Siatka deterministyczna (bez rnd),
+// dopisana PO bloku 2600 przypadków, więc poprzednie wektory pozostają bajt w bajt identyczne.
+for (const t of [-3, -0.5, 0.5, 2.5, 19.5, 20, 20.5]) {
+  for (const rw of [0.1, 0.2, 0.7, 0.75]) {
+    for (const partnerId of ['0', '1']) {
+      for (const lost of [0, 2]) {
+        runDecide({
+          rw,
+          civ: 'grecy',
+          stanWojny: true,
+          partnerId,
+          turnsAtWar: t,
+          lost,
+          zdobyte: 1,
+          tsc: 29,
+          agr: 5,
+          eks: 3,
+          minorSelf: false,
+          minorPartner: false,
+          miastaAI: [mkCity('a0', 800), mkCity('a1', 500)],
+          miastaPartnera: [mkCity('g0', 800)],
+        });
+      }
+    }
+  }
+}
+
+function runDecide(o) {
   const inp = {
     relacje: [mkRel(o)],
     agresja: 0.5,

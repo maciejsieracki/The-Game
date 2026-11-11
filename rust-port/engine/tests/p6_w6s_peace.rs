@@ -5,8 +5,10 @@
 //! (bundle TS przez esbuild poza repo; nagłówek generatora opisuje uruchomienie).
 //! Pokrycie: stałe przeliczone przez web, wybór miasta (granice cena/waga, minMiast, zakazane, remis),
 //! żądanie miasta (próg 500 PW), profile wojny per cywilizacja oraz blok N1a/N1b przez `decideAIDiplomacy`
-//! (2600 deterministycznych przypadków z siatki granic). Pole `first` (pierwsza komenda całego bloku
-//! decideAIDiplomacy, priorytety 1–6) NIE jest tu weryfikowane: port obejmuje wyłącznie N1a/N1b.
+//! (2600 deterministycznych przypadków z siatki granic oraz 112 brzegowych: tury wojny ułamkowe i ujemne).
+//! Pole `first` (rodzaj pierwszej komendy całego bloku decideAIDiplomacy) jest sprawdzane tylko w zakresie
+//! N1a/N1b: gdy N1 wystawia komendę, `first` to jej rodzaj; gdy nie, `first` NIE jest rodzajem N1.
+//! Priorytety 1–6 (treść `first` poza N1) NIE są tu portowane ani weryfikowane.
 
 use civ_engine::domain::ai_peace_city_offer::{
     ai_miasto_przekaz_rw_prog, ai_miasto_waga_oddawanego, decide_city_offer,
@@ -57,6 +59,17 @@ fn wektory_zaladowane_i_nie_puste() {
     assert!(v["pure"]["pickZadania"].as_array().unwrap().len() >= 5);
     let d = v["decide"].as_array().unwrap();
     assert!(d.len() >= 2000);
+    assert!(
+        d.iter()
+            .any(|c| c["in"]["turnsAtWar"].as_f64().is_some_and(|t| t < 0.0)),
+        "brak przypadków z ujemnymi turami wojny"
+    );
+    assert!(
+        d.iter().any(|c| c["in"]["turnsAtWar"]
+            .as_f64()
+            .is_some_and(|t| t.fract() != 0.0)),
+        "brak przypadków z ułamkowymi turami wojny"
+    );
     let oferuj = d.iter().filter(|c| c["out"]["kind"] == "oferuj").count();
     let zada = d.iter().filter(|c| c["out"]["kind"] == "zada").count();
     let brak = d.iter().filter(|c| c["out"].is_null()).count();
@@ -231,6 +244,22 @@ fn blok_oferuj_zada_zgodny_z_decide_ai_diplomacy() {
         };
         let got = decide_city_offer(&rel, &ctx);
         let exp = &c["out"];
+        // `first` (rodzaj pierwszej komendy bloku web): przy N1 == rodzaj N1 (blok kończy się na N1),
+        // bez N1 nie może być rodzajem N1 (pierwsza komenda pochodzi z priorytetów 1–6, poza portem).
+        let first = c["first"].as_str();
+        if exp.is_null() {
+            assert!(
+                first != Some("oferuj_miasto_za_pokoj") && first != Some("zada_miasto_za_pokoj"),
+                "first wskazuje N1 bez komendy N1 {c}"
+            );
+        } else {
+            let oczekiwany = if exp["kind"] == "oferuj" {
+                "oferuj_miasto_za_pokoj"
+            } else {
+                "zada_miasto_za_pokoj"
+            };
+            assert_eq!(first, Some(oczekiwany), "first {c}");
+        }
         match (got, exp.is_null()) {
             (None, true) => {}
             (Some(cmd), false) => match cmd {
