@@ -9707,3 +9707,8 @@ DOMAIN: GAME
 STATUS: OTWARTE
 DOMAIN: GAME
 [related_to R-BITWA-DEAD-UNIT-DISAPPEARS-Q1] Ponownezgłoszenie: całkowiciezniszczonejednostkinadalwidocznenapolubitwy. Q1wdrożonawcześniej6b7f40b4; sprawdzićregresję/inneścieżki,zegarSkip/fade,nieusuwaćjednostektylkoroutowanych. Dispatch `autobot/runs/R-BITWA-DEAD-UNIT-DISAPPEARS-Q2/00-dispatch.md`. Pilnenajbliższegoslotu,max4.
+
+## 2026-11-11 — R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Ocalałejednostkiprzegranejarmii mająwycofaćsię2heksyodprzeciwnika, niezniknąć. Auditwynikubitwy→mapa,zabici/rout/żywi/rezerwy,playerAI/manualAUTOskip ioblężenia. Bezniezleconegozabijania/teleportu gdybraklegalnejtrasy; zbadaćdotychczasowyfallback. Dispatch `autobot/runs/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1/00-dispatch.md`, kolejkapilnych,max4.
