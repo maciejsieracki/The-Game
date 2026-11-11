@@ -91,6 +91,16 @@ fn peace_locked_set_contains_only_locked_pairs() {
 }
 
 #[test]
+fn peace_locked_set_finds_meta_for_unsorted_pair_order() {
+    // Zarzut FC r2 nr 5: meta zapisana pod kluczem znormalizowanym (1,3); wolajacy podaje pare (3,1).
+    let mut metas = BTreeMap::new();
+    metas.insert(pair_key(3, 1), meta_with_peace_until(100.0));
+    let pairs = [(3, 1), (1, 3)];
+    let set = peace_locked_set(&pairs, &BTreeMap::new(), |_| 0, &metas, 10.0);
+    assert_eq!(set, BTreeSet::from([(3, 1), (1, 3)]));
+}
+
+#[test]
 fn gate_disabled_never_blocks() {
     assert!(!crisis_war_gate_blocked(
         false,

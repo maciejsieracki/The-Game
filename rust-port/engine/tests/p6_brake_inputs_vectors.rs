@@ -271,6 +271,9 @@ fn owner_eligibility_matches_pinned_all_power_owner_ids_and_diplo_eligible() {
     }
 }
 
+/// UWAGA (zarzut FC r2 nr 4): ten test sprawdza WYLACZNIE konwersje Set -> Vec. Web `getDiplomaticContacts`
+/// zwraca Array.from(zbior), wiec wektor nie testuje filtra `computeDiplomaticContacts` (diplomacy-layers.ts:221),
+/// ktory nie jest portowany. Pokrycie filtra: NIE_ZWERYFIKOWANE, zaleznosc do W8 r3.
 #[test]
 fn contacts_match_pinned_get_diplomatic_contacts_as_set() {
     let root = vec_root();

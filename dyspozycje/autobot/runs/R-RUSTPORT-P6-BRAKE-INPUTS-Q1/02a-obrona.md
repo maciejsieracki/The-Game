@@ -1,60 +1,47 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-BRAKE-INPUTS-Q1
-GOAL: obrona Operatora r1 wobec zarzutow Evaluatora r1 (FAIL); poprawka tego, co da sie poprawic w tej rundzie, z dowodem.
-ZMIANY/COMMIT: baza 1dcb6f718 (Operator r1, ancestor-check OK). Commit obrony: patrz SHA ponizej. Allowlista: rust-port/engine/src/domain/brake_inputs.rs, rust-port/engine/tests/p6_brake_inputs.rs, dyspozycje/autobot/runs/R-RUSTPORT-P6-BRAKE-INPUTS-Q1/**. Cargo.lock nie zmieniony.
-TESTY: cargo fmt --check EXIT 0; cargo clippy --all-targets -- -D warnings EXIT 0; cargo test --lib EXIT 0 (48 passed); cargo test --test p6_brake_inputs EXIT 0 (9 passed). Wektory z pinu: NIE WYKONANO (patrz zarzut 2). CARGO_TARGET_DIR poza repo (scratchpad/target-p6-def), usuniety po bramkach.
-BLOKADY: (a) objective_power_for_owner / computeObjectivePower (zarzut 1) - NIEZAMKNIETE, wymagany port w rundzie 2; (b) wektory z pinu i generator (zarzut 2) - NIEZAMKNIETE, runda 2; (c) producenci nie wolani w Rust (zarzut 5) - swiadoma zaleznosc do W8 r3, do wpisu w rejestrze po stronie orkiestratora.
-RUNDY: 1/5 (obrona Operatora, Evaluator r1 FAIL)
-NASTEPNY KROK: Operator r2 (ten sam ID): port computeObjectivePower (11+ skladnikow, pin 07d2fbd72 gra/src/main.ts:2759) z wektorami wycinanymi z pinu; Evaluator i Final Control r2.
-DEPLOY/PUSH: NIE WYKONANO (push tylko galezi wip, bez integracji do rust-port/parity-v2).
+GOAL: obrona Operatora r2 wobec zarzutow Evaluatora r2 (FAIL). Poprawki z dowodem tam, gdzie da sie je dowiezc w tej rundzie; reszta jawnie odlozona z powodem.
+ZMIANY/COMMIT: baza 63f17f65b (Evaluator r2, nad Operator r2 63af46170). Zmienione pliki: rust-port/engine/src/domain/brake_inputs.rs, rust-port/engine/tests/p6_brake_inputs.rs, rust-port/engine/tests/p6_brake_inputs_vectors.rs, dyspozycje/autobot/runs/R-RUSTPORT-P6-BRAKE-INPUTS-Q1/02a-obrona.md. Cargo.lock nie zmieniony i nie commitowany. Commit obrony: patrz SHA ponizej.
+TESTY: cargo fmt --check EXIT 0; cargo clippy --all-targets -- -D warnings EXIT 0; cargo test --lib EXIT 0 (48 passed); cargo test --test p6_brake_inputs EXIT 0 (10 passed, w tym nowy test nr 5); cargo test --test p6_brake_inputs_vectors EXIT 0 (8 passed). Regeneracja wektorow z pinu: NIE WYKONANO w tej rundzie (patrz zarzut 3). CARGO_TARGET_DIR poza repo (scratchpad/target).
+BLOKADY: (a) objective_power_for_owner jako producent z PlayableState - NIEZAMKNIETE (zarzut 1), 9 z 12 skladnikow bez zrodla w Rust; (b) wpiecie producentow manpower/kultury (zarzut 2) - NIEZAMKNIETE, wymaga civManpowerMultsForOwner i zrodel miast; (c) wektory custom computeObjectivePower (zarzut 3) - NIE DOWIEZIONE: sandbox nie pozwala zapisac wyjscia z pinu na dysk (guard git), wiec generator nie zostal uruchomiony; zmiany generatora i testu wycofane, zeby nie commitowac testu bez wektorow; (d) producenci nie wolani w Rust (zarzut 1/5) - zaleznosc do W8 r3.
+RUNDY: 2/5 (obrona Operatora r2, Evaluator r2 FAIL)
+NASTEPNY KROK: orkiestrator decyduje: (i) W8 r3 albo osobny temat producentow mocy (zarzut 1, luka skladnikow), (ii) osobny temat generatora z WEB_ROOT poza repo na maszynie bez blokady guardu (zarzut 3: galaz FlatCount, custom coeff, militaryKeys, polowy Math.round), (iii) wpiecie manpower (zarzut 2) z wektorami z manpower.ts.
+DEPLOY/PUSH: NIE WYKONANO (bez push, bez integracji, bez dotykania gra/ i origin/main).
 
 ## Odpowiedzi na zarzuty
 
-### Zarzut 1 (KRYTYCZNY): brak objective_power_for_owner - PRZYJMUJE, NIE NAPRAWIONE w r1
-- Dowod: `grep computeObjectivePower|compute_objective_power|objective_power` w rust-port/engine/src zwraca tylko plik brake_inputs.rs (komentarz i `power_map`). Brak portu.
-- Web: pin 07d2fbd72 gra/src/main.ts:2759 `computeObjectivePower({...})` z polami: ownerId, epoka, jednostki, bitwyPktSum, wygraneBitwy, sumaLudkow, rekrutEkw, miasta, heksyTerytorium, budynki, techZbadane, ulepszeniaTerenu, kulturaImperium, miastaJednoscReligii, zdobyczePower. objectivePowerForOwner (l.2874) = cache z buildObjectivePowerForOwner, a web uzywa go takze w l.2880 (respekt) i 11590+ (dyplomacja).
-- Zmiana w tej rundzie: brak. Port wymaga przeniesienia calego pipeline'u (sumArmyMForOwner, empirePoborTotals, countTerritoryHexes, countBuildingsForOwner, countTechForOwner, countImprovementsForOwner, empireCultureTotal, countCitiesWithDominantStateReligion, zdobyczePowerByOwner) - zakres wiekszy niz jedna runda obrony. Wejscia z closure'ow main.ts trzeba najpierw wyprowadzic jako czyste fakty.
-- Status: zarzut przyjety, otwarty, wymagany w r2. Nie deklaruje GOAL spelnionego.
+### Zarzut 1 (istotny, GOAL): objective_power_for_owner nie jest producentem z PlayableState - PRZYJMUJE, bez zmiany kodu
+- Dowod: brake_power.rs eksportuje czysta `compute_objective_power` i adapter `objective_power_for_owner(raw, ...)`, ktory przyjmuje gotowy `ObjectivePowerRaw`. Zbieranie pol z PlayableState nie istnieje (brak wywolan w rust-port/engine/src poza testami). Tabela pokrycia jest w 02b-operator-r2.md.
+- Dlaczego nie naprawione w tej rundzie: 9 z 12 skladnikow nie ma zrodla w Rust (armia, bitwy, terytorium, infra, tech, ulepszenia, zdobycze, religia - NIE_ZMIERZONO). Zbudowanie producentow wykracza poza allowlista (tylko brake_inputs/brake_power i testy) i jest zakresem W8 r3 albo osobnego tematu.
+- Status: GOAL NIE JEST ZAMKNIETY. Operator nie deklaruje go spelnionego. Decyzja o trybie domkniecia po stronie orkiestratora.
 
-### Zarzut 2 (KRYTYCZNY): brak wektorow z pinu i generatora - PRZYJMUJE, NIE NAPRAWIONE w r1
-- Dowod: brak rust-port/engine/tests/p6_brake_inputs_gen.mjs i katalogu p6_brake_inputs_vectors/ w 1dcb6f718 (allowlista je przewiduje, nie zostaly dodane).
-- Czesc funkcji (isPeaceLockedBetween l.11817, diploCrisisWarGateBlocked l.11632, getDiplomaticContacts l.22523) to closure'y nad stanem main.ts (forcedEraPeaceUntilNextEraByPairKey, getDiploPairMeta, isWarRulesMultiwarEnabled, empireEpochForOwner). Wyciecie ich do wykonania wymaga harnessu z zamockowanym stanem; to nie zostalo zrobione. Dlatego testy z r1 sa asercjami autora, nie potwierdzeniem wzgledem webu. Przyznaje: rozumowanie kolowe jest mozliwe.
-- Status: przyjety, otwarty; wymagany w r2 (generator + wektory dla funkcji czystych z modulow gra/src/game/*, a dla closure'ow harness).
+### Zarzut 2 (sredni): kandydaci manpower i kultury nie zweryfikowani, nie podpieci, bez wektorow - PRZYJMUJE CZESCIOWO
+- Dowod porownania kodu (wykonane w tej rundzie, bez zmian w kodzie): web `empireSumaLudkow` (manpower.ts:548-556), `rekrutUnitEquivalents` (manpower.ts:561-565) i `empirePoborTotals` (manpower.ts:567-583) maja logike tozsama z recruitment.rs (empire_suma_ludkow, rekrut_unit_equivalents, empire_pobor_totals). Web buduje sumaLudkow = pobor.sumaLudkow i rekrutEkw = rekrutUnitEquivalents(pobor.rekruci, epoka, costMult) (main.ts:2743-2766). `empireCultureTotal` (order_effects_culture.rs:682) wymaga PressureCity z `kultura_skumulowana` i religion_state.
+- Dlaczego nie podpiete: adapter wymagalby `civManpowerMultsForOwner` (maxMult/costMult), ktorego Rust nie ma, oraz zrodel miast w ManpowerCity/PressureCity z PlayableState. To zaleznosc od producentow, czyli zarzut 1. Wektory: generator musialby wykonac manpower.ts (importy civ-matrix, units/setup, formatCompactNumber) - patrz zarzut 3 o sandboxie.
+- Status: weryfikacja przez czytanie kodu DOWIEZIONA (dowod powyzej). Wpiecie i wektory - NIE DOWIEZIONE, odlozone do tematu producentow.
 
-### Zarzut 3 (contacts_for): filtr `me` i rozbieznosc z webem - PRZYJMUJE, NAPRAWIONE
-- Dowod: web `getDiplomaticContacts(humanOwnerId = ME())` (pin main.ts:22523) zwraca `diplomaticallyDiscoveredOwnersSet(humanOwnerId)` (l.10058) BEZ filtra. Wykluczenie gracza jest u zrodla: `updateDiplomaticDiscovery` wola `computeDiplomaticContacts(visible, cities, units)` z domyslnym `playerOwnerId = 0` (gra/src/game/diplomacy-layers.ts:221-237), a funkcja pomija `c.ownerId === playerOwnerId` i barbarzyncow.
-- Zmiana: `contacts_for(discovered: &BTreeSet<i64>) -> Vec<i64>` - bez parametru `me` i bez filtra; komentarz opisuje zrodlo wykluczenia. Test `contacts_mirror_web_discovered_set_sorted_without_extra_filter` (zbior {3,0,2,1} -> [0,1,2,3]).
-- Uwaga: BrakePhaseInput konsumuje contacts w run_brake_phase (ai_diplomacy_turn.rs:171-172), ktore pomija `oid == me`, wiec usuniecie filtra nie zmienia wyniku fazy.
-- Zarzut "trywialny wrapper" przyjety: funkcja jest tozsama z kopia zbioru, co zgadza sie z webem.
-- Nie zamknieto: zgodnosc z pinem nie ma wektora (zarzut 2).
+### Zarzut 3 (maly): wektory computeObjectivePower - FlatCount, custom coeff, militaryKeys, polowy Math.round - PRZYJMUJE, NIE DOWIEZIONE
+- Przygotowano: rozszerzenie generatora (sekcja 3g: computeObjectivePower z jawnymi coeff, battleModel 'flat_count'/'enemy_m_sum', militaryKeys, wygraneBitwy > 0 i < 0, wspolczynniki w wielokrotnosciach 0.5) i test Rust z asercjami pokrycia (FlatCount >= 30, ujemne >= 3, polowy >= 5).
+- Blokada: pinowane zrodla trzeba zapisac na dysk, zeby generator je wykonal. Kazda komenda z zapisem wyjscia `git show <pin>:...` do pliku jest odrzucana przez guard worktree (potwierdzone w tej sesji kilkoma formami). Bez uruchomienia generatora nie ma wektorow z pinu, a test bez wektorow bylby asercja autora.
+- Decyzja: zmiany generatora i testu wycofane (git checkout); commit ich nie zawiera. Zarzut otwarty do tematu z dostepem do pinu na dysku (WEB_ROOT poza repo).
 
-### Zarzut 4 (phase_owners): ciche pomijanie i eligibility - PRZYJMUJE, NAPRAWIONE
-- Dowod: poprzednia wersja uzywala `filter_map` z `?` - brak faktow cicho usuwal wlasciciela.
-- Polityka jawna: `phase_owners(...) -> Result<Vec<PhaseOwner>, MissingOwnerFacts>`; brak faktu zwraca `Err` z `owner_id`. Test `phase_owners_mark_player_and_fail_on_missing_facts` sprawdza Err dla wlasciciela 3 oraz poprawna liste dla kompletnych faktow.
-- Eligibility: `diploOwnerEligibleForBrake` (web l.11590) jest stosowane w konsumencie: run_brake_phase (ai_diplomacy_turn.rs:187-190) filtruje przez `is_ai_ai_eligible_owner(&o.info)` i `o.id != me`. Zatem `AiAiOwnerInfo` nie jest "tylko przekazywany" - jest zjadany przez faze. Pozostaje do potwierdzenia wektorem (zarzut 2).
-- Commit: patrz SHA.
+### Zarzut 4 (maly): test contacts_for tautologiczny - PRZYJMUJE, NAPRAWIONE (opis i zakres)
+- Dowod: web getDiplomaticContacts zwraca Array.from(zbior); wektor sprawdza wiec konwersje Set -> Vec, nie filtr computeDiplomaticContacts.
+- Zmiana: komentarz w brake_inputs.rs (sekcja ZAKRES: tylko konwersja, filtr nieportowany, zaleznosc W8 r3) oraz komentarz przy tescie w p6_brake_inputs_vectors.rs (UWAGA: NIE_ZWERYFIKOWANE dla filtra). Kod funkcji bez zmian.
+- Status: pokrycie filtra computeDiplomaticContacts - NIE_ZWERYFIKOWANE, zaleznosc do W8 r3.
 
-### Zarzut 5 (producenci nie wolani w Rust) - PRZYJMUJE, bez zmiany kodu
-- Dowod: brak wolania producentow w rust-port/engine/src poza testami; dispatch jawnie zapisal "Wolajacy w Rust: jawna zaleznosc do W8 r3" (00-dispatch.md).
-- Zmiana: nie wykonana w tym temacie (allowlista nie obejmuje run_war_turn). Wpis do REJESTR/dispatchu W8 r3 nalezy do orkiestratora (allowlista obejmuje tylko dyspozycje/autobot/runs/R-RUSTPORT-P6-BRAKE-INPUTS-Q1/**).
-- Status: przyjety jako zaleznosc otwarta do W8 r3.
+### Zarzut 5 (maly): peace_locked_set i kolejnosc pary - PRZYJMUJE, NAPRAWIONE
+- Dowod: przed poprawka `meta_by_pair.get(&(a, b))` szukalo po surowej parze, a blokady wymuszone po `pair_key(a,b)`. Dla (3,1) meta zapisana pod (1,3) byla pomijana.
+- Zmiana: brake_inputs.rs `peace_locked_set` szuka meta po `pair_key(a, b)`. Nowy test `peace_locked_set_finds_meta_for_unsorted_pair_order` (p6_brake_inputs.rs) podaje pary (3,1) i (1,3) z meta pod kluczem (1,3) i oczekuje obu w wyniku. Test przechodzi.
+- Zachowanie dla par znormalizowanych bez zmian.
 
-### Zarzut 6 (baza): blokada 2 "decyzja orkiestratora" jest niepotrzebna - PRZYJMUJE
-- Dowod: `git merge-base --is-ancestor 82c57a412 origin/rust-port/parity-v2` -> exit 0. Tip origin/rust-port/parity-v2 w tej sesji = 82c57a412 (git rev-parse). Baza z dispatchu jest zgodna z parity-v2; blokada 2 z 01-operator-r1.md jest nieprawdziwa. Nie wymaga decyzji orkiestratora.
-- Zmiana: brak w kodzie. Nalezy usunac blokade 2 z rejestru.
+### Zarzut 6 (informacyjnie): wejscia isBarbarian, countActiveWars, diplomaticallyDiscoveredOwnersSet, cities/aiStartHexes, mapy forced/meta/epok sa faktami wektora - PRZYJMUJE jako informacje
+- Brak zmiany. Zaleznosc do W8 r3 pozostaje opisana w 02b.
 
-### Zarzut 7 (era f64 i dwa zrodla "gracza") - PRZYJMUJE CZESCIOWO, UDOKUMENTOWANE
-- `GateFacts.era: f64` vs web `empireEpochForOwner` (l.2419) zwraca liczbe calkowita - mapowanie jest bezstratne dla malych wartosci; zrodlo wpisane w komentarz do struktury.
-- Dwa zrodla "gracza": web uzywa `isHuman(victim)` w `diploCrisisWarGateBlocked` (l.11642, `targetIsPlayer`) i `isMe(o)` (l.13748, `ME()`) w kwalifikacji. Port zachowuje rozdzielenie (GateFacts.is_player = isHuman, OwnerFacts/phase_owners.is_player = id==me) i opisuje to w komentarzu. Zmiany zachowania nie ma.
-- Brak testu zgodnosci obu zrodel: przyjety, odroczony do wektorow (r2). W jednym gracz-ludzki (single-player, ME=0) oba sa rownowazne, ale to NIE_ZMIERZONO dla hotseat.
-
-### Zarzut 8 (Evaluator commit ecf835df7 bez push) - PRZYJMUJE jako fakt procesu
-- Commit Evaluatora zawiera tylko 02-evaluator.md (doc). Nie wplywa na kod. Nie pushuje ani nie integruje ten commit. Brak zmian w kodzie.
-
-### Zarzut 9 (bramki zielone) - PRZYJMUJE jako informacje
-- Nie jest zarzutem wobec kodu. Zielone bramki nie zamykaja zarzutow 1 i 2 (zgodnie z zarzutem). Odtworzone w obronie: patrz TESTY.
+### Zarzut 7 (informacyjnie): baza 82c57a412 jest przodkiem origin/rust-port/parity-v2; bramki odtworzone - PRZYJMUJE jako informacje
+- Brak zmiany. Bramki powtorzone w tej rundzie (patrz TESTY).
 
 ## SHA
-- Commit obrony: patrz wynik `git rev-parse HEAD` po commicie (podany w raporcie orkiestratora).
-- Baza: 1dcb6f718 (Operator r1).
+- Baza: 63f17f65b (Evaluator r2). Operator r2: 63af46170.
+- Commit obrony: patrz `git rev-parse HEAD` po commicie (podany w raporcie orkiestratora).

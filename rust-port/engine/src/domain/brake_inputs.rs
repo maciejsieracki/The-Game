@@ -48,6 +48,9 @@ pub fn is_peace_locked_between(
 }
 
 /// Zbior par zablokowanych pokojem sposrod `pairs` (wejscie `BrakePhaseInput::peace_locked`).
+/// Pary moga byc podane w dowolnej kolejnosci `(a, b)` / `(b, a)`: meta jest szukana po `pair_key`
+/// (klucz znormalizowany, jak w `is_peace_locked_between` i w mapie blokad wymuszonych).
+/// Zwracany zbior zachowuje kolejnosc, w jakiej para zostala podana.
 pub fn peace_locked_set(
     pairs: &[PairKey],
     forced_era_locks: &BTreeMap<PairKey, ForcedEraLock>,
@@ -64,7 +67,7 @@ pub fn peace_locked_set(
                 b,
                 forced_era_locks,
                 &current_epoch,
-                meta_by_pair.get(&(a, b)),
+                meta_by_pair.get(&pair_key(a, b)),
                 turn,
             )
         })
@@ -165,6 +168,9 @@ pub fn gate_blocked_set(
 /// Web `getDiplomaticContacts(ME)` (main.ts:22523): zwraca zbior `diplomaticallyDiscoveredOwnersSet`
 /// BEZ dodatkowego filtra. Wykluczenie gracza (owner 0) dzieje sie u zrodla: `computeDiplomaticContacts`
 /// (gra/src/game/diplomacy-layers.ts:221) z `playerOwnerId = 0`. Kolejnosc rosnaca (BTreeSet).
+///
+/// ZAKRES: sama konwersja Set -> Vec (kolejnosc). Filtr `computeDiplomaticContacts` NIE jest tu portowany
+/// i nie ma wektora; zalezy od producenta `diplomaticallyDiscoveredOwnersSet` po stronie Rust (W8 r3).
 pub fn contacts_for(discovered: &BTreeSet<i64>) -> Vec<i64> {
     discovered.iter().copied().collect()
 }
