@@ -27,7 +27,7 @@ import {
   powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
 } from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl, formatBudynkiCount, formatJednostkiCount, formatTurCountAcc } from './formatPl';
 import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
@@ -229,7 +229,7 @@ function renderDefaultPoziomRacjiSection(): string {
   const fillPct = maxSteps > minSteps ? ((steps - minSteps) / (maxSteps - minSteps)) * 100 : 0;
   let h = `<div class="civ-emp-sect" data-section="ekonomia-zywnosc-racje" id="${id}">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNE WYŻYWIENIE</div>`
-    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten poziom Racji.</div>`;
+    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne”) dziedziczą ten poziom Racji.</div>`;
   h += `<div class="civ-emp-mini civ-emp-sp-slider-card">`
     + `<div class="civ-emp-sp-slider-hd">`
     + `<span class="civ-emp-slider-label">Wyżywienie</span>`
@@ -248,7 +248,7 @@ function renderDefaultPoziomRacjiSection(): string {
     // osobnego komponentu dla jednego elementu.
     // EN: label = feature name only; scope + caveats moved into the native `title` tooltip.
     const autofeedTip = 'Włącza Auto-Żywienie we wszystkich miastach bez indywidualnego '
-      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne") pozostają '
+      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne”) pozostają '
       + 'bez zmian. Akcja jednorazowa — ustawia stan teraz, nie jest trwałym przełącznikiem.';
     h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn `
       + `title="${esc(autofeedTip).replace(/"/g, '&quot;')}">`
@@ -1059,7 +1059,7 @@ function cityEconMiniSkarbiec(
     ], grid);
   }
   h += '</div>';
-  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
+  h += '<div class="civ-emp-foot">„Do skarbca” = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
   return h;
 }
 
@@ -1224,7 +1224,7 @@ function renderSkarbiecSection(
     + `<div style="text-align:right">${treasuryBalanceSignedTxt(sumUtrz)}</div></div>`;
   h += '</div>';
 
-  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie '
+  h += '<div class="civ-emp-foot">„Do skarbca” = wpływ miasta po suwakach (Skarb %). Utrzymanie '
     + 'budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi '
     + 'z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie '
     + 'per miasto w tabeli.</div>';
@@ -1321,7 +1321,7 @@ function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon'], upkeep?: number):
   const grid = '1fr 1fr 1fr';
   let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
-  h += '</div><div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  h += '</div><div class="civ-emp-foot">„Do puli” trafia do globalnej puli Pracy (górny pasek). „Do budynków” zasila kolejkę w mieście.</div>';
   if (upkeep && upkeep > 0) {
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${Math.round(upkeep)} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
   }
@@ -1473,7 +1473,7 @@ function renderPracaSection(
     + `<div style="text-align:right">${signedTxt(tblSumBud)}</div></div>`;
   h += '</div>';
 
-  h += '<div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  h += '<div class="civ-emp-foot">„Do puli” trafia do globalnej puli Pracy (górny pasek). „Do budynków” zasila kolejkę w mieście.</div>';
   if (upkeep > 0) {
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
   }
@@ -1821,7 +1821,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
   h += '</div>';
 
   h += '<div class="civ-emp-foot">Pełne rozbicie per miasto — panel miasta, zakładka Religia. '
-    + '„Efekty" — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
+    + '„Efekty” — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
   h += '</div>';
   return h;
 }
@@ -1998,12 +1998,12 @@ export function cityMiastaMiniDetail(
     + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
     + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta) · '
     + 'SUROWCE = zapotrzebowanie surowcowe budynków wybudowanych W TYM mieście / turę (pełne, '
-    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia" niżej) — obywatele '
+    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia” niżej) — obywatele '
     + '(magazyn centralny) i wojsko (porusza się po mapie) są civ-wide, bez podziału na miasta; '
     + 'to POPYT przypisany do miasta — faktyczny drenaż magazynu idzie z puli CAŁEGO imperium '
     + '(surowiec może zejść z zapasu innego miasta); pełne rozbicie budynki/obywatele/wojsko per '
-    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia".</div>'
-    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA" na dole — suma dla każdej kolumny, poza '
+    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia”.</div>'
+    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA” na dole — suma dla każdej kolumny, poza '
     + 'WZROST (tam średnia z miast, dla których wzrost jest znany).</div>';
   // N1 (Evaluator, notatka na 89c16ec1): queueMicrotask(wireMiastaColFilter) NIE jest tu wołane —
   // ta funkcja bywa wołana 2x na render() (patrz detailFor w render()), co podpinałoby listenery
@@ -2311,7 +2311,7 @@ export function renderMiastoSection(
       }
       h += '<div class="civ-emp-grp-sum">'
         + '<span class="nm">RAZEM W ZAKRESIE</span>'
-        + `<span class="val">${totalBuildings} budynków</span></div>`;
+        + `<span class="val">${formatBudynkiCount(totalBuildings)}</span></div>`;
       h += '</div>';
     }
     h += '<div class="civ-emp-foot">Grupy wg `BUILDING_GROUP_ORDER` (building-upgrades.ts): '
@@ -2369,9 +2369,9 @@ export function renderMiastoSection(
     h += anyQueue
       ? '<div class="civ-emp-foot">Pasek = UKOŃCZENIE pozycji na froncie (zgromadzony postęp ÷ jej '
         + 'koszt, 0-100%) — <b>nie</b> udział względem innych miast, inaczej niż pasek w sekcji '
-        + '„Produkcja nauki". Wygaszony pasek = kolejka wstrzymana, postęp nie rośnie. '
+        + '„Produkcja nauki”. Wygaszony pasek = kolejka wstrzymana, postęp nie rośnie. '
         + 'Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
-        + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem — ich '
+        + 'zgromadzony na tym budynku/jednostce). „W kolejce” = liczba pozycji ZA frontem — ich '
         + 'ewentualny wcześniejszy postęp ten widok nie pokazuje.</div>'
       : '<div class="civ-emp-empty">Brak aktywnej produkcji w zakresie.</div>';
   }
@@ -2693,7 +2693,7 @@ export function renderObywateleSection(
       + `<div>CYWILIZACJA</div><div>${sZdrowie}</div></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Studnia · Akwedukt · Łaźnia publiczna. Podnoszą Zadowolenie '
-      + '(patrz „Budynki" w rozbiciu źródeł niżej) i cap populacji miasta.</div>';
+      + '(patrz „Budynki” w rozbiciu źródeł niżej) i cap populacji miasta.</div>';
   }
 
   // — SZCZĘŚCIE / ZADOWOLENIE — rozbicie na źródła (dociągnięcie
@@ -2731,7 +2731,7 @@ export function renderObywateleSection(
   }
   h += '<div class="civ-emp-foot">Źródła zsumowane ze wszystkich miast gracza, WPROST z tego samego '
     + 'rozbicia co panel miasta (Porządek → Szczęście). Liczba aktywnych źródeł zmienia się z turą '
-    + 'na turę (silnik pomija źródła o wartości 0) — nie jest sztywno „5", to realny stan gry.</div>';
+    + 'na turę (silnik pomija źródła o wartości 0) — nie jest sztywno „5”, to realny stan gry.</div>';
 
   // — PRAWO I ADMINISTRACJA (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) — % Prawa per
   // miasto czytany WPROST z `cityOrderState.prawPct` (main.ts, ta sama liczba co panel miasta,
@@ -2816,7 +2816,7 @@ export function renderObywateleSection(
       + `na obywatela na turę (mnożnik epoki ×${eraMultTxt}), z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO `
       + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
       + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
-      + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia".</div>';
+      + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia”.</div>';
   }
 
   h += '</div>';
@@ -3632,7 +3632,7 @@ function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailS
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
-    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz" · panel Spichlerz centralny. `
+    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz” · panel Spichlerz centralny. `
     + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
 
   sur += `<div class="civ-emp-res-legend">`
@@ -4171,7 +4171,7 @@ function render(): void {
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('tb-army', 14)}</span>`
     + `<span class="civ-emp-eyebrow">ARMIA</span></div>`
-    + `<div class="civ-emp-hero">${p.unitsOnMap} jednostek na mapie</div>`
+    + `<div class="civ-emp-hero">${formatJednostkiCount(p.unitsOnMap)} na mapie</div>`
     + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
     + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
     + `<div class="civ-emp-bar"><div class="${rekrFill}" style="width:${rekrPct}%"></div></div>`;
@@ -4236,7 +4236,7 @@ function render(): void {
     // jednego czerwonego `.civ-emp-alert`. Dwa poziomy pilności wracają przez modyfikator `.warn`.
     // / EN: AMBER variant — this is an UPCOMING event, not one already happening; the reskin had
     // flattened both urgency levels into the single red alert.
-    armia += `<div class="civ-emp-alert warn"><b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b> — magazyn ujemny.</div>`;
+    armia += `<div class="civ-emp-alert warn"><b>Głód wojska za ${formatTurCountAcc(e.zywnoscKarencjaZaTur ?? 0)}</b> — magazyn ujemny.</div>`;
   }
   if (uchwaly.length > 0) {
     armia += renderUchwalyHtml(uchwaly);

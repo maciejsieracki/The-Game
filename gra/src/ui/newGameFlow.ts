@@ -645,9 +645,9 @@ function sanitizeSelAiCivIds(): void {
 
 interface EpochOption { id: string; name: string; icon: string; flavor: string; avail: boolean; badge: string; }
 const EPOCHS: EpochOption[] = [
-  { id: 'kamien', name: 'Epoka Kamienia', icon: 'K', flavor: 'Pierwsze osady, kamienne narzedzia. Fundamenty imperium.', avail: true, badge: 'Dostepna' },
-  { id: 'braz', name: 'Epoka Brazu', icon: 'B', flavor: 'Metalurgia i pierwsze armie. Rydwany, mury, wczesna dyplomacja.', avail: true, badge: 'Dostepna' },
-  { id: 'zelazo', name: 'Epoka Zelaza', icon: 'Z', flavor: 'Hartowane ostrza, potezne legiony, szlaki handlowe. Start: cale Kamien + caly Braz juz zbadane.', avail: true, badge: 'Dostepna' },
+  { id: 'kamien', name: 'Epoka Kamienia', icon: 'K', flavor: 'Pierwsze osady, kamienne narzędzia. Fundamenty imperium.', avail: true, badge: 'Dostępna' },
+  { id: 'braz', name: 'Epoka Brązu', icon: 'B', flavor: 'Metalurgia i pierwsze armie. Rydwany, mury, wczesna dyplomacja.', avail: true, badge: 'Dostępna' },
+  { id: 'zelazo', name: 'Epoka Żelaza', icon: 'Z', flavor: 'Hartowane ostrza, potężne legiony, szlaki handlowe. Start: cały Kamień i cały Brąz już zbadane.', avail: true, badge: 'Dostępna' },
 ];
 
 /** Medalion cywilizacji (Brand Book W1b — SVG z civ-icon-map). */
@@ -1604,9 +1604,9 @@ function renderSeat2Step(host: HTMLElement): void {
 }
 
 function epochTechSummary(epochId: string): string {
-  if (epochId === 'kamien') return 'Brak wczesniejszych epok — badasz technologie Kamienia od zera.';
-  if (epochId === 'braz') return 'Masz juz <strong>wszystkie technologie epoki Kamienia</strong>. Epoke Braz badasz od zera.';
-  if (epochId === 'zelazo') return 'Masz juz <strong>wszystkie technologie Kamienia i Brazu</strong>. Epoke Zelaza badasz od zera.';
+  if (epochId === 'kamien') return 'Brak wcześniejszych epok — badasz technologie Kamienia od zera.';
+  if (epochId === 'braz') return 'Masz już <strong>wszystkie technologie epoki Kamienia</strong>. Epokę Brązu badasz od zera.';
+  if (epochId === 'zelazo') return 'Masz już <strong>wszystkie technologie Kamienia i Brązu</strong>. Epokę Żelaza badasz od zera.';
   return '';
 }
 
@@ -1634,7 +1634,7 @@ function renderEpochStep(host: HTMLElement): void {
   const info = el('div', 'epoch-info');
   info.innerHTML = epochTechSummary(selEpoch);
   wrap.appendChild(info);
-  wrap.appendChild(el('div', 'epoch-navhint', 'Wybrana epoka — kliknij „Dalej", aby wybrać cywilizację dostępną w tej epoce.'));
+  wrap.appendChild(el('div', 'epoch-navhint', 'Wybrana epoka — kliknij „Dalej”, aby wybrać cywilizację dostępną w tej epoce.'));
   host.appendChild(wrap);
 }
 
@@ -2226,19 +2226,19 @@ function renderGenStep(host: HTMLElement): void {
   const rows: [string, string][] = [
     ['Cywilizacja', p.civName || '(nie wybrano)'],
     ['Epoka startowa', p.epoch],
-    ['Trudnosc', p.difficulty],
+    ['Trudność', p.difficulty],
     ['Rozmiar mapy', p.mapSize],
-    ['Typ swiata', p.worldType],
-    ['Miasta-panstwa', String(p.cityStatesCount) + ' w klastrze'],
+    ['Typ świata', p.worldType],
+    ['Miasta-państwa', String(p.cityStatesCount) + ' w klastrze'],
     ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],
-    ['Predkosc', p.speed],
+    ['Prędkość', p.speed],
     ['Surowce', p.worldDensityLabels.resources],
     // R-WEB-FOLLOWUPS-LAND-AI-Q1 (1): Ziemia = stały szablon kontynentów (bez suwaka) — nie pokazuj sztucznego 20% / 80%.
     ['Ląd / morze', p.typSwiata === 'ziemia'
       ? 'szablon kontynentów (bez suwaka)'
       : p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
     ['Rzeki / pustynie / las / góry', p.worldDensityLabels.rivers + ' · ' + p.worldDensityLabels.desert + ' · ' + p.worldDensityLabels.forest + ' · ' + p.worldDensityLabels.relief],
-    ['Jakosc grafiki', p.mapQualityLabel],
+    ['Jakość grafiki', p.mapQualityLabel],
   ];
   if (p.advanced) {
     const vLabel = p.advanced.victoryMode === 'moc'
@@ -2247,32 +2247,32 @@ function renderGenStep(host: HTMLElement): void {
         ? 'Tylko dominacja'
         : 'Moc + dominacja';
     const bLabel = p.advanced.barbariansLevel === 'latwy'
-      ? 'Latwy'
+      ? 'Łatwy'
       : p.advanced.barbariansLevel === 'trudny'
         ? 'Trudny'
         : p.advanced.barbariansLevel === 'brak'
           ? 'Brak'
           : 'Normalny';
     const costLabel = p.advanced.buildingCostPace === 'normalny'
-      ? 'Normalny (x2)'
+      ? 'Normalny (×2)'
       : p.advanced.buildingCostPace === 'wysoki'
-        ? 'Wysoki (x4)'
-        : 'Niski (x1)';
+        ? 'Wysoki (×4)'
+        : 'Niski (×1)';
     const unitCostLabel = p.advanced.kosztJednostekPace === 'normalny'
-      ? 'Normalny (x2)'
+      ? 'Normalny (×2)'
       : p.advanced.kosztJednostekPace === 'wysoki'
-        ? 'Wysoki (x4)'
-        : 'Niski (x1)';
+        ? 'Wysoki (×4)'
+        : 'Niski (×1)';
     const growthPaceLabel = p.advanced.wzrostLudnosciPace === 'normalny'
-      ? 'Normalny (x2 prog)'
+      ? 'Normalny (×2 próg)'
       : p.advanced.wzrostLudnosciPace === 'wolny'
-        ? 'Wolny (x4 prog)'
-        : 'Wysoki (x1 prog)';
+        ? 'Wolny (×4 próg)'
+        : 'Wysoki (×1 próg)';
     const ruchSwiataLabel = p.advanced.ruchSwiataPace === 'normalny'
-      ? 'Normalny (x3)'
+      ? 'Normalny (×3)'
       : p.advanced.ruchSwiataPace === 'dlugi'
-        ? 'Długi (x6)'
-        : 'Krótki (x1)';
+        ? 'Długi (×6)'
+        : 'Krótki (×1)';
     const csOverride = p.advanced.cityStateDifficultyOverride;
     const csLabel = csOverride === 'easy'
       ? 'Łatwy'
@@ -2282,21 +2282,21 @@ function renderGenStep(host: HTMLElement): void {
           ? 'Wyłączone'
           : csOverride === 'normal'
             ? 'Normalny'
-            : p.difficulty + ' (jak glowna)';
+            : p.difficulty + ' (jak główna)';
     const cityLimitLabel = p.advanced.cityLimitBase === 15
       ? '15 miast'
       : p.advanced.cityLimitBase === 20
         ? '20 miast'
         : '10 miast';
     rows.push(
-      ['Barbarzyncy', bLabel],
+      ['Barbarzyńcy', bLabel],
       ['Bitwy', p.advanced.battleAlwaysManual ? 'Bitwa ręczna i automatyczna' : 'Bitwa automatyczna'],
-      ['Zwyciestwo', vLabel],
-      ['Koszty budynkow', costLabel],
+      ['Zwycięstwo', vLabel],
+      ['Koszty budynków', costLabel],
       ['Koszty jednostek', unitCostLabel],
-      ['Wzrost ludnosci', growthPaceLabel],
-      ['Zasieg ruchu', ruchSwiataLabel],
-      ['Trudnosc miast-panstw', csLabel],
+      ['Wzrost ludności', growthPaceLabel],
+      ['Zasięg ruchu', ruchSwiataLabel],
+      ['Trudność miast-państw', csLabel],
       ['Limit miast zakładanych (baza)', cityLimitLabel],
     );
   }

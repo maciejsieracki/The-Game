@@ -11,6 +11,7 @@
 import type { SocietyLine } from '../game/society-breakdown';
 import type { CitizenUpkeepCoverage } from '../game/citizen-resource-upkeep';
 import { brandIconSvg } from './icons/brandAssets';
+import { formatTurCount } from './formatPl';
 
 export interface OrderState {
   /** Legacy pkt szczęścia (kompat). */
@@ -184,7 +185,7 @@ export function buildOrderSectionHtml(
   }
 
   if (s.revoltWarning && s.revoltGraceRemaining != null && s.revoltGraceRemaining > 0) {
-    html += '<div class="' + pfx + 'status crit">' + brandIconSvg('chip-warning', 16) + ' Grozi bunt! ' + s.revoltGraceRemaining + ' tur(y) na reakcję</div>';
+    html += '<div class="' + pfx + 'status crit">' + brandIconSvg('chip-warning', 16) + ' Grozi bunt! ' + formatTurCount(s.revoltGraceRemaining) + ' na reakcję</div>';
   } else if (s.rebelState) {
     html += '<div class="' + pfx + 'status t2">Rebelia — miasto pod kontrolą rebeliantów</div>';
   } else if (tn === 0) {

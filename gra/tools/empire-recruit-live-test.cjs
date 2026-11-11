@@ -95,8 +95,8 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     await btn.click();
     await page.waitForSelector('#civ-empire-recruit-panel [data-unit]', { timeout: 10000 });
     const rowA = page.locator(`#civ-empire-recruit-panel [data-unit="${A.id}"]`), rowB = page.locator(`#civ-empire-recruit-panel [data-unit="${B.id}"]`);
-    for (let i = 0; i < 4; i++) await rowA.locator('[data-erp="inc"]').click();
-    for (let i = 0; i < 3; i++) await rowB.locator('[data-erp="inc"]').click();
+    for (let i = 0; i < 5; i++) await rowA.locator('[data-erp="inc"]').click(); // licznik startowy = 0 (RECRUIT-ALL, DEFAULT_QTY=0)
+    for (let i = 0; i < 4; i++) await rowB.locator('[data-erp="inc"]').click();
     await rowA.locator('[data-erp="go"]').click();
     const qv = async (r) => Number(await r.locator('[data-erp="qty"]').inputValue());
     ok(await qv(rowA) === 5 && await qv(rowB) === 4, 'L16 klik "Rekrutuj" przy A nie zeruje liczników (A=5, B=4)');

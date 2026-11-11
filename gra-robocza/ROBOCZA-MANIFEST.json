@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "81b1893aacd6859176d4f2d201f3a83f",
-  "bundleSha256": "75e67957a388ca53c19809cd65f9fdbe0bd763b3295aaa4c4ea4ad326d527f2d",
-  "bundleBytes": 14522194,
+  "bundleMd5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+  "bundleSha256": "93ec8696507bb5d509310ffd9d89ac9a4640d89c0604ffdda85593d8b700f636",
+  "bundleBytes": 14523288,
   "sourceSnapshot": {
-    "source": "merge FC d4f8ccfe2 (FF)",
+    "source": "W3 148c57b56",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 646: R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1 (decyzja ABC właściciela): plony i bonusy w kartach encji (budynki, technologie, ulepszenia, cuda, jednostki) pokazują chipy ikona+liczba: tytuły Top 5 budynków i technologii, zdania 'Co możesz teraz zrobić', wiersze Warunek/Odblokowuje/Do czego, Koszt nauki, bonusy cudów (w tym Wpływ), Pieniądz w utrzymaniu; kontrakt resources/valueParts/labelParts, kwoty escapowane, nazwa w title/aria-label; testy Top 5 porównują tekst po normalizacji chip→nazwa (entity-card-chip-text.cjs), żadna asercja nie osłabiona"
+    "FALA 648: tylko testy: nowy empire-recruit-all-live-test (29/0, mutanty czerwone) i korekta empire-recruit-live-test; kod gry bez zmian"
   ],
   "verification": [
-    "tsc czysty; entity-cards-yield-icons 27/0, yield-icons-real-render (Chromium, prawdziwe karty + XSS) 186/0, tech-cards-top5 595/0, building-cards-top5 1208/0 (z [A] --check), entity-card-contract 75/0, entity-card-wonder 134/0, resource-icons real-render 199/0, ids-leak-audit 1648/0, wonder-text 132/0, polish-guard 1674/0, currency-mult 202/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; tech-tree 20/0; research ALL GREEN; unit-replace 21/21; combat OK; recruit-all-live 29/0; audio-sidecar PASS"
   ],
   "limits": [
-    "Wyjątki jawne w teście: proza pod tytułem Top 5, etykiety wierszy (nagłówki), 'Kamień Ha'amonga'; bez ikony zostają: Szczęście, Obrona, Pancerz, Prawo, Zaufanie, cyna; osobny temat: okno odkrycia technologii (techDiscoveryNotice.ts) nadal tekstem; NIE_ZMIERZONO: żywa gra na Vite z main.ts (tylko harness Chromium)"
+    "NIE_ZMIERZONO: zrodzenie 9 jednostek w wielu turach (mapa playtestowa konczy sie dominacja po turze 1)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T20:03:01",
+  "hubGeneratedAt": "2026-11-11T20:47:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "81b1893aacd6859176d4f2d201f3a83f",
-      "sizeBytes": 14522194
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+      "sizeBytes": 14523288
     }
   ],
-  "md5": "81b1893aacd6859176d4f2d201f3a83f",
+  "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
