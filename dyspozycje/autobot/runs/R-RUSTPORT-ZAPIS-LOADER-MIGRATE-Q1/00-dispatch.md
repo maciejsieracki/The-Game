@@ -32,3 +32,25 @@ Zmienne: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG
 
 ## Format raportu
 STATUS / DOMAIN: GAME / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY: 1/5 / NASTĘPNY KROK: Evaluator / DEPLOY-PUSH: NIE WYKONANO. Raport `01-operator-r1.md` w run dir, commit na gałęzi roboczej.
+
+## DODATEK r2 — wariant A (decyzja właściciela 2026-11-11)
+Po DECISION_REQUIRED r1 właściciel wybrał wariant A. Baza: `origin/rust-port/parity-v2` = `f207ea6b1` (zawiera dokument REPIN-DRYFT). Worktree: `git checkout --detach origin/rust-port/parity-v2`.
+
+Krok 0 (obowiązkowy, z KODEM WYJŚCIA): `cargo check --lib` po dopisaniu `pub mod save_load;` i `pub mod replay;` do `rust-port/engine/src/domain/mod.rs`. Zapisz exit code. Jeśli EXIT != 0 — popraw, nie omijaj.
+
+Zakres (GOAL, binarnie):
+1. Nowy plik `rust-port/engine/src/domain/zapis_loader.rs`: funkcja `load_save_snapshot(text: &str) -> Result<(SaveSnapshot, MigrationReport), LoadError>`, która deserializuje `SaveSnapshot` i WOŁA `migrate_on_load` (zwraca raport). Jedyna produkcyjna ścieżka ładowania zapisu.
+2. `domain/mod.rs`: dopisz `pub mod save_load;`, `pub mod replay;`, `pub mod zapis_loader;` (tylko te linie).
+3. Test BEHAWIORALNY `rust-port/engine/tests/p6_zapis_loader_migrate.rs`: zapis w starej wersji (fixture jak w `p6_zapis_migracje_snapshot_load.rs`) przechodzi przez `load_save_snapshot`; asercje na stanie PO migracji, nie tylko na wywołaniu.
+4. Brak zmian w logice `save_load.rs` poza tym, co konieczne do kompilacji (jeśli konieczne — wymień w raporcie).
+
+Allowlista (naruszenie = FAIL):
+- `rust-port/engine/src/domain/mod.rs` (tylko 3 linie `pub mod`)
+- `rust-port/engine/src/domain/zapis_loader.rs` (nowy)
+- `rust-port/engine/src/domain/save_load.rs` i `replay.rs` (tylko konieczne do kompilacji)
+- `rust-port/engine/tests/p6_zapis_loader_migrate.rs` (nowy)
+- `dyspozycje/autobot/runs/R-RUSTPORT-ZAPIS-LOADER-MIGRATE-Q1/**`
+- ZAKAZ: `gra/**`, `origin/main`, `WERSJE.md`, `Cargo.toml`, `Cargo.lock` (nie commitować).
+
+Bramki (EXIT zapisany): `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; `cargo test --test p6_zapis_loader_migrate --test p6_zapis_migracje_snapshot_load`.
+Raport: `02b-operator-r2.md`, SHA, EXIT każdej bramki.
