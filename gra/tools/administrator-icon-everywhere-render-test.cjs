@@ -17,6 +17,9 @@
  *     {{ikona-administratora-ulepszen}} zamienia go na ikonę (bez surowego tekstu znacznika).
  *  E. Układ: wiersz bilansu miasta nie przepełnia poziomo kontenera przy 520 px.
  *
+ * OFF = snapshot bez wartości (undefined), tak jak main.ts przy administratorsEnabled=false: wiersze nie są
+ * dodawane. Test NIE przełącza prawdziwej opcji kreatora (to robi gra; patrz main.ts).
+ *
  * NIE objęte tym testem (NIE_ZMIERZONO): chip nagłówka miasta (renderTopBarGarrison, prywatna
  * funkcja), przycisk „Administrator ulepszeń +” i test mutacyjny.
  *
@@ -232,13 +235,20 @@ async function main() {
       out.cityRowFound = !!vOn;
       out.cityRowIcon = !!(vOn && vOn.querySelector('.civ-adm-ic svg'));
       out.cityRowText = vOn ? vOn.textContent.trim() : '';
-      const mOff = mkCity(0);
+      // ON bez zatrudnionego administratora (wartosc 0): wiersz z „—”, bez ikony.
+      const mZero = mkCity(0);
+      const vZero = rowOf(mZero);
+      out.cityZeroFound = !!vZero;
+      out.cityZeroIcons = vZero ? vZero.querySelectorAll('.civ-adm-ic').length : -1;
+      out.cityZeroText = vZero ? vZero.textContent.trim() : '';
+      // OFF (opcja „Administratorzy” wyłączona = snap bez wartości): BRAK wiersza.
+      const mOff = mkCity(undefined);
       const vOff = rowOf(mOff);
       out.cityOffFound = !!vOff;
       out.cityOffIcons = vOff ? vOff.querySelectorAll('.civ-adm-ic').length : -1;
       out.cityOffText = vOff ? vOff.textContent.trim() : '';
       out.cityOverflow = mOn.scrollWidth <= mOn.clientWidth + 1;
-      out.cityOffHtmlLeak = vOff ? /</.test(vOff.textContent) : true;
+      out.cityZeroHtmlLeak = vZero ? /</.test(vZero.textContent) : true;
 
       // C. podsumowanie imperium
       const econMount = (adm) => {
@@ -256,9 +266,12 @@ async function main() {
       const eRow = Array.from(eOn.querySelectorAll('div')).find(d => (d.textContent || '').indexOf('Utrzymanie administratorów') === 0 && d.querySelector('.civ-adm-ic'));
       out.empireRowIcon = !!eRow;
       out.empireRowText = eRow ? eRow.textContent.replace(/\s+/g, ' ').trim() : '';
-      const eOff = econMount(0);
-      const eRowOff = Array.from(eOff.querySelectorAll('div')).find(d => (d.textContent || '').indexOf('Utrzymanie administratorów') === 0);
-      out.empireOffIcons = eRowOff ? eRowOff.querySelectorAll('.civ-adm-ic').length : -1;
+      const eZero = econMount(0);
+      const eRowZero = Array.from(eZero.querySelectorAll('div')).find(d => (d.textContent || '').indexOf('Utrzymanie administratorów') === 0);
+      out.empireZeroIcons = eRowZero ? eRowZero.querySelectorAll('.civ-adm-ic').length : -1;
+      // OFF: podsumowanie imperium bez wiersza administratora.
+      const eOff = econMount(undefined);
+      out.empireOffRowFound = Array.from(eOff.querySelectorAll('div')).some(d => (d.textContent || '').indexOf('Utrzymanie administratorów') === 0);
 
       // D. Civpedia
       const md = T.markdownToHtml('**{{ikona-administratora}} Administrator miasta** to osoba.\n\n**{{ikona-administratora-ulepszen}} Administrator ulepszeń** to osoba.');
@@ -281,14 +294,16 @@ async function main() {
     check('B: wiersz bilansu miasta znaleziony', res.cityRowFound);
     check('B: wiersz miasta z administratorem ma ikonę SVG', res.cityRowIcon);
     check('B: wiersz miasta z administratorem pokazuje „−2”', /−2/.test(res.cityRowText), res.cityRowText);
-    check('B: wiersz miasta przy OFF/0 znaleziony', res.cityOffFound);
-    check('B: wiersz miasta przy OFF/0 bez ikony administratora', res.cityOffIcons === 0, String(res.cityOffIcons));
-    check('B: wiersz miasta przy OFF/0 pokazuje „—”', res.cityOffText === '—', res.cityOffText);
+    check('B: wiersz miasta ON/0 znaleziony', res.cityZeroFound);
+    check('B: wiersz miasta ON/0 bez ikony administratora', res.cityZeroIcons === 0, String(res.cityZeroIcons));
+    check('B: wiersz miasta ON/0 pokazuje „—”', res.cityZeroText === '—', res.cityZeroText);
+    check('B: OFF (opcja wyłączona): BRAK wiersza „Utrzymanie administratorów” w bilansie miasta', !res.cityOffFound);
     check('B: brak poziomego przepełnienia bilansu miasta (520 px)', res.cityOverflow);
-    check('B: brak surowego HTML w wierszu przy 0', !res.cityOffHtmlLeak);
+    check('B: brak surowego HTML w wierszu przy 0', !res.cityZeroHtmlLeak);
     check('C: podsumowanie imperium: wiersz z ikoną administratora', res.empireRowIcon);
     check('C: podsumowanie imperium: kwota „−4”', /−4/.test(res.empireRowText), res.empireRowText);
-    check('C: podsumowanie imperium przy 0: bez ikony administratora', res.empireOffIcons === 0, String(res.empireOffIcons));
+    check('C: podsumowanie imperium ON/0: bez ikony administratora', res.empireZeroIcons === 0, String(res.empireZeroIcons));
+    check('C: OFF (opcja wyłączona): BRAK wiersza w podsumowaniu imperium', !res.empireOffRowFound);
     check('D: Civpedia {{ikona-administratora}} zamieniona na ikonę', res.wikiCityIcon);
     check('D: Civpedia {{ikona-administratora-ulepszen}} zamieniona na ikonę z kilofem', res.wikiImpIcon);
     check('D: Civpedia bez surowego znacznika {{', !res.wikiRaw);

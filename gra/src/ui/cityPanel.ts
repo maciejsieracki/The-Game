@@ -4933,7 +4933,8 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
     { label: 'Utrzymanie budynków (to miasto)', value: snap.utrzymanieBudynkow > 0 ? `−${snap.utrzymanieBudynkow}` : '—', cls: snap.utrzymanieBudynkow > 0 ? 'red' : undefined },
     { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), html: true, cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
     { label: 'Utrzymanie garnizonu (hex miasta)', value: snap.utrzymanieGarnizonu > 0 ? `−${snap.utrzymanieGarnizonu}` : '—', cls: snap.utrzymanieGarnizonu > 0 ? 'red' : undefined },
-    { label: 'Utrzymanie administratorów (to miasto)', value: administratorUpkeepValueHtml(snap.utrzymanieAdministratora ?? 0), html: true, cls: (snap.utrzymanieAdministratora ?? 0) > 0 ? 'red' : undefined },
+    // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): wiersz tylko gdy opcja „Administratorzy” ON (main.ts podaje wartość); OFF = brak wiersza.
+    ...(snap.utrzymanieAdministratora !== undefined ? [{ label: 'Utrzymanie administratorów (to miasto)', value: administratorUpkeepValueHtml(snap.utrzymanieAdministratora), html: true, cls: snap.utrzymanieAdministratora > 0 ? 'red' : undefined }] : []),
   ];
 
   const grid = el('div', 'city-money-grid');
@@ -6054,7 +6055,10 @@ function buildTopBarZlotoDetailCard(
   gridDetailRow(gImp, 'Utrzymanie budynków', utrzB > 0 ? `−${utrzB}` : '—');
   gridDetailRow(gImp, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(utrzRes));
   gridDetailRow(gImp, 'Utrzymanie jednostek', utrzJ > 0 ? `−${utrzJ}` : '—');
-  gridDetailRow(gImp, 'Utrzymanie administratorów', administratorUpkeepValueHtml(empire.bogactwoUtrzymanieAdministratorow ?? 0));
+  // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): wiersz tylko przy opcji „Administratorzy” ON.
+  if (empire.bogactwoUtrzymanieAdministratorow !== undefined) {
+    gridDetailRow(gImp, 'Utrzymanie administratorów', administratorUpkeepValueHtml(empire.bogactwoUtrzymanieAdministratorow));
+  }
   gridDetailRow(gImp, 'Netto / turę', signed(netto));
 
   appendDetailSection(card, 'Ten gród — przychody i koszty lokalne');
@@ -6067,7 +6071,9 @@ function buildTopBarZlotoDetailCard(
     gridDetailRow(gCity, 'Utrzymanie budynków', moneySnap.utrzymanieBudynkow > 0 ? `−${moneySnap.utrzymanieBudynkow}` : '—');
     gridDetailRow(gCity, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(moneySnap.utrzymanieSurowcowBudynkow ?? {}));
     gridDetailRow(gCity, 'Utrzymanie garnizonu', moneySnap.utrzymanieGarnizonu > 0 ? `−${moneySnap.utrzymanieGarnizonu}` : '—');
-    gridDetailRow(gCity, 'Utrzymanie administratorów', administratorUpkeepValueHtml(moneySnap.utrzymanieAdministratora ?? 0));
+    if (moneySnap.utrzymanieAdministratora !== undefined) {
+      gridDetailRow(gCity, 'Utrzymanie administratorów', administratorUpkeepValueHtml(moneySnap.utrzymanieAdministratora));
+    }
     gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));
   } else {
     gridDetailRow(gCity, 'Wpływ do skarbca', signed(cityMoney));

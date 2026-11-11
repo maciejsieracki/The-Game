@@ -9022,7 +9022,8 @@ async function boot(): Promise<void> {
             utrzymanieGarnizonu: row.utrzymanieGarnizonu,
             nauka: row.nauka,
             // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratora miasta + ulepszen (juz w bilansie; tylko wiersz).
-            utrzymanieAdministratora: (() => {
+            // OFF (opcja „Administratorzy” wyłączona) -> undefined: brak wiersza w panelu.
+            utrzymanieAdministratora: !administratorsEnabled ? undefined : (() => {
               const c = cities.find(x => x.id === cityId);
               return c ? administratorUpkeepForCity(c, cityBuilt.get(c.id) ?? []) + improvementAdministratorUpkeepForCity(c) : 0;
             })(),
@@ -22561,7 +22562,8 @@ async function boot(): Promise<void> {
         bogactwoUtrzymanieBudynkow: Math.floor(_lastBogactwoUtrzymanieBudynkow),
         bogactwoUtrzymanieSurowcowBudynkow: { ..._lastBogactwoUtrzymanieSurowcow },
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
-        bogactwoUtrzymanieAdministratorow: Math.floor(_lastBogactwoUtrzymanieAdministratorow),
+        // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): OFF -> undefined -> panel nie pokazuje wiersza.
+        bogactwoUtrzymanieAdministratorow: administratorsEnabled ? Math.floor(_lastBogactwoUtrzymanieAdministratorow) : undefined,
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
@@ -45238,7 +45240,7 @@ async function boot(): Promise<void> {
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
-      _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
@@ -47188,7 +47190,7 @@ async function boot(): Promise<void> {
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
-      _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;

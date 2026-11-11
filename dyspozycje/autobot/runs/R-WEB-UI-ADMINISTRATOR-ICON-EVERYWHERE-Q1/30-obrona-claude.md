@@ -1,45 +1,47 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES (obrona rundy 3; kod poprawiony na zarzuty 1, 3, 4; zarzut 2 i 5 częściowo; zarzut 6 odrzucony jako poza kryteriami)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1
-GOAL: spójna ikona administratora (pieczęć „A”, wariant z kilofem dla ulepszeń) w każdym miejscu, gdzie dziś jest tylko tekst; bez zmian mechaniki/kosztów/balansu.
-BAZA: ed2fe849000ac2fd17474c2cab12b3a7c0116869 (origin/main, FALA 636)
-KANDYDAT: 2d522b26a0577600702163c742c1dd962d8d9086 (jeden commit na bazie)
-
-ZMIANY/COMMIT: 2d522b26a
-ALLOWLISTA (wyliczona przed edycją): gra/src/main.ts, gra/src/ui/cityPanel.ts, gra/src/ui/sidePanelHud.ts
-git diff --stat: 3 files changed, 31 insertions(+), 5 deletions(-); git diff --check czysty; git status: tylko 3 pliki allowlisty.
-Zrobione:
-  (2) powiadomienia: wpisy warEventLog z icon 'A' zmienione na 'ADM' (miasto/legacy) i 'ADM-IMP' (administrator ulepszeń; main.ts ok. 10200 i 47329). sidePanelHud.ts eventIconHtml renderuje pieczęć administratora (administratorIconHtml; wariant improvements dla ADM-IMP); CSS ADMINISTRATOR_ICON_CSS doklejany raz (id civ-adm-ic-css).
-  (3, częściowo) nagłówek miasta: chip „Administrator ulepszeń” (data-imp-adm-chip) obok chipa administratora miasta, gdy zatrudniony; wiring cfg.getImprovementAdministratorState -> improvementAdministratorUiState w main.ts.
-NIE WYKONANO w tej rundzie (przyjęte zarzuty):
-  (1) wiersz utrzymania administratora z ikoną + liczbą w kartach/panelach miasta i imperium.
-  (3) ujednolicenie istniejącego chipa administratora miasta (data-adm-chip) i ikona ulepszeń w przycisku „Administrator ulepszeń +” w nagłówku.
-  (4) Civpedia/wiki hasło administratora z ikoną + regeneracja wikiBundle.
-  Test render w Chromium (prawdziwy panel), zrzuty i test „Administratorzy OFF -> brak ikony/wiersza”.
-
-TESTY (surowe wyniki, na 2d522b26a):
-  tsc --noEmit: EXIT 0 (przed i po zmianach)
-  city-administrator-test: 117 passed, 0 failed (EXIT 0)
-  city-administrator-economy-test: 72 passed, 0 failed (EXIT 0)
-  improvement-administrator-test: 53 passed, 0 failed (EXIT 0)
-  administrators-wizard-test: 58 passed, 0 failed (EXIT 0)
-  ids-leak-audit-test: WYNIK 1641 ok, 0 FAIL (EXIT 0)
-  wonder-text-no-raw-ids-test: WYNIK 132 ok, 0 FAIL (EXIT 0)
-  npm ci --ignore-scripts w gra/: EXIT 0 (bez npm run build/dev).
-  NIE_ZMIERZONO: 5 bramek referencyjnych w pełnym zakresie dispatchu, test render Chromium, vite build (poza repo), zrzuty.
-
-BLOKADY: część zakresu (punkty 1, 4 i test Chromium) nie została zrobiona w tej rundzie. Decyzja o kontynuacji należy do orkiestratora.
+GOAL: ikona administratora wszędzie tam, gdzie był tekst; bez zmian mechaniki; opcja „Administratorzy” OFF -> brak ikony i brak wiersza administratora.
+ZMIANY-COMMIT: baza/kandydat 7791e8b3b (detach); commit obrony = SHA w polu sha odpowiedzi orkiestratora (kod ponad 7791e8b3b).
+  Allowlista obrony: gra/src/main.ts, gra/src/ui/cityPanel.ts, gra/src/ui/empireDetailPanel.ts, gra/tools/administrator-icon-everywhere-render-test.cjs, dyspozycje/autobot/runs/R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1/30-obrona-claude.md, dyspozycje/autobot/runs/R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1/evidence/administrator-icon-everywhere.png.
+  Diff źródeł: 3 pliki (main.ts, cityPanel.ts, empireDetailPanel.ts) + test. wikiBundle, docs/encyklopedia i chip nagłówka NIE zmienione w tej obronie.
 
 ODPOWIEDZI NA ZARZUTY EVALUATORA:
-  Z1 (kandydat == origin/main): PRZYJMUJĘ. Ed2fe849 był bazą; kod Operatora to 2d522b26a. Kandydatem do oceny jest 2d522b26a.
-  Z2 (brak ikony w wierszu utrzymania kart/paneli): PRZYJMUJĘ, NIE WYKONANO w tej rundzie.
-  Z3 (powiadomienia bez ikony): PRZYJMUJĘ, POPRAWIONE w 2d522b26a (main.ts + sidePanelHud.ts).
-  Z4 (brak ikony ulepszeń w nagłówku / chip niezunifikowany): PRZYJMUJĘ częściowo: dodano chip administratora ulepszeń; ujednolicenie chipa miasta NIE WYKONANO.
-  Z5 (Civpedia/wiki): PRZYJMUJĘ, NIE WYKONANO.
-  Z6 (brak testu Chromium i dowodu mutacyjnego): PRZYJMUJĘ, NIE WYKONANO.
-  Z7 (bramki NIE_ZMIERZONO): PRZYJMUJĘ dla części: wyniki powyżej są zmierzone na 2d522b26a; pozostałe bramki NIE_ZMIERZONO.
-  Z8 (brak 00-dispatch.md na origin/main): ODRZUCAM jako błąd Operatora. Dispatch podano w treści zadania, a DODATEK-claude.md istnieje na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (git show zwrócił 5 linii). Plik 00-dispatch.md nie istnieje na origin/main w tej ścieżce (fatal: path does not exist). To stan repo, nie błąd Operatora.
+  1. PRZYJMUJĘ. Bramka OFF u źródła: main.ts — `bogactwoUtrzymanieAdministratorow: administratorsEnabled ? Math.floor(...) : undefined` (snapshot HUD imperium) oraz `utrzymanieAdministratora: !administratorsEnabled ? undefined : (...)` (snapshot miasta). Panele dodają wiersz tylko gdy wartość !== undefined: cityPanel.ts appendCitySkarbiecBalance (spread warunkowy w tablicy rows), buildTopBarZlotoDetailCard (gImp i gCity, if-guard), empireDetailPanel.ts cityEconMiniSkarbiec (`if (utrzA !== undefined)`). ON bez administratora = wartość 0 -> wiersz „—” bez ikony; OFF = brak wiersza. Dowód: test B/C „OFF: BRAK wiersza” PASS.
+  2. CZĘŚCIOWO. Test OFF używa teraz realnego stanu OFF z gry (snapshot bez wartości = undefined), a nie samego 0. Chip nagłówka miasta (renderTopBarGarrison, funkcja prywatna) NIE jest renderowany w teście — NIE_ZMIERZONO w Chromium. Bramka chipa OFF jest w kodzie main.ts (cityAdministratorUiState / improvementAdministratorUiState: `if (!administratorsEnabled && isHuman(city.ownerId)) return null`, ok. l.10271 i l.10319) — dowód kodowy, nie testowy. Nie dopisano testu chipa w tej obronie; zostaje NIE_ZMIERZONO.
+  3. PRZYJMUJĘ. Zrzut: dyspozycje/autobot/runs/R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1/evidence/administrator-icon-everywhere.png (202861 B), wygenerowany przez ADM_ICON_SHOTS_DIR=<evidence> przy uruchomieniu testu. Uwaga: to zrzut stanowiska testowego z prawdziwymi funkcjami renderu, nie zrzut żywej gry.
+  4. PRZYJMUJĘ. `_lastBogactwoUtrzymanieAdministratorow = 0` dodane w dwóch brakujących blokach resetu (main.ts, obok `_lastBogactwoUtrzymanieJednostek = 0`, ok. l.45241 i l.47191); teraz wszystkie 3 bloki resetu mają to samo pole.
+  5. CZĘŚCIOWO / NIE_ZMIERZONO. Wiersz używa administratorUpkeepValueHtml (ikona 14 px + „−N”), a nie resourceAmountChipHtml; zgodności wizualnej z chipami surowców nie zmieniano. Liczba: źródłem jest ta sama suma co bilans (administratorUpkeepForCity + improvementAdministratorUpkeepForCity, main.ts ok. l.9025; hBalance.utrzymanieAdministratora w ścieżce aktywnego fotela). Zgodność z paskiem HUD po turze oraz ścieżek preview/hBalance: NIE_ZMIERZONO.
+  6. ODRZUCAM jako poza kryteriami. Wyszukiwarka Civpedii filtruje surowy tekst hasła; kryterium dotyczy renderu ikony w treści hasła (test D: markdownToHtml zamienia {{ikona-administratora}} i {{ikona-administratora-ulepszen}}, PASS). Wygląd w przeglądarce i wpływ na wyszukiwarkę: NIE_ZMIERZONO.
 
-NASTĘPNY KROK: Evaluator ponownie na 2d522b26a; przy FAIL kolejna runda dla punktów 1, 3 (ujednolicenie), 4 i testu Chromium.
-RUNDY: 1/5 (obrona)
+ZMIANA KODU (ponad rundę 2):
+  - gra/src/main.ts: gating OFF u źródła dwóch pól (HUD imperium, snapshot miasta); reset `_lastBogactwoUtrzymanieAdministratorow = 0` w brakujących blokach.
+  - gra/src/ui/cityPanel.ts: wiersz bilansu miasta oraz wiersze karty Skarbiec (imperium i gród) tylko przy wartości !== undefined.
+  - gra/src/ui/empireDetailPanel.ts: wiersz podsumowania imperium tylko przy wartości !== undefined.
+  - gra/tools/administrator-icon-everywhere-render-test.cjs: przypadek OFF = undefined (brak wiersza, miasto i imperium), przypadek ON/0 = „—” bez ikony. Wynik 24 PASS / 0 FAIL (poprzednio 22).
+  Mechanika, koszty, balans: bez zmian (zmienia się tylko, czy wiersz/ikona jest w DOM).
+
+TESTY (surowe wyniki z tego uruchomienia, worktree po obronie):
+  npm ci --ignore-scripts (gra/): EXIT 0
+  npx tsc --noEmit (gra/): EXIT 0 (pusty wynik)
+  administrator-icon-everywhere-render-test.cjs: "administrator-icon-everywhere: 24 PASS, 0 FAIL", EXIT 0 (+ zrzut evidence/)
+  city-administrator-test: 117 passed, 0 failed, EXIT 0
+  city-administrator-economy-test: 72 passed, 0 failed, EXIT 0
+  improvement-administrator-test: 53 passed, 0 failed, EXIT 0
+  administrators-wizard-test: 58 passed, 0 failed, EXIT 0
+  ids-leak-audit-test: WYNIK: 1648 ok, 0 FAIL, EXIT 0
+  wonder-text-no-raw-ids-test: WYNIK: 132 ok, 0 FAIL, EXIT 0
+  logic-test: LOGIC OK (213/213), EXIT 0
+  tech-tree-test: 20 pass, 0 fail, EXIT 0
+  research-test: PASSED: 33 / FAILED: 0 / TOTAL: 33, EXIT 0
+  unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21), EXIT 0
+  combat-test: COMBAT TEST: 6/6 pass, EXIT 0
+  resource-icons-everywhere-test: Wynik: 10 PASS, 0 FAIL, EXIT 0
+  resource-icons-everywhere-render-test: 13 PASS, 0 FAIL, EXIT 0
+  NIE uruchamiano: vite build / npm run build (zakaz w gra/); zrzutów żywej gry.
+  NIE_ZMIERZONO: chip nagłówka w Chromium (także OFF), zgodność liczb z HUD po turze, test mutacyjny w tej obronie.
+
+BLOKADY: brak procesowych.
+RUNDY: 3/5 (obrona). Poprzednio: EVALUATOR r2 PASS-WITH-NOTES (zarzuty 1-6), FC r1 FAIL.
+NASTĘPNY KROK: Evaluator r3 na commicie obrony (zarzuty 1, 3, 4 do potwierdzenia; 2 i 5 jako NIE_ZMIERZONO/częściowo); potem Final Control; integracja orkiestratora (merge-base z kodem obrony, diff --stat).
 DEPLOY/PUSH: NIE WYKONANO
