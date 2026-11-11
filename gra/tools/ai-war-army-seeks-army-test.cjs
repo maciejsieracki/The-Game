@@ -194,6 +194,16 @@ section('T9 planer: wybiera NAJWIEKSZA armie wroga');
   ok(plan2.reason === 'ok' && plan2.orders.length === 2 && plan2.orders.every(o => o.kind === 'approach'), 'zblizanie, jednostka zablokowana pominieta');
 }
 
+section('T10 odsprzezenie: nakladka dziala przy WYLACZONEJ obronie domu (homeDefense:false)');
+{
+  const offHD = run(scAdjacent, true, 1, { homeDefense: false });
+  ok(offHD.battles >= 1, 'PO przy homeDefense:false: bitwa w 1. turze (battles=' + offHD.battles + ')');
+  const noOverlayHD = run(scAdjacent, false, 1, { homeDefense: false });
+  console.log('  homeDefense:false -> PO battles=' + offHD.battles + ' captures=' + offHD.captures + ' | PRZED battles=' + noOverlayHD.battles + ' captures=' + noOverlayHD.captures);
+  const onT3 = run(scThree, true, 4, { homeDefense: false });
+  ok(onT3.battles >= 1 && onT3.captures === 0, 'PO przy homeDefense:false: zblizanie 3 heksy -> bitwa w <=4 turach bez zajec (battles=' + onT3.battles + ', captures=' + onT3.captures + ')');
+}
+
 console.log(`\nWYNIK: ${passed} PASS, ${failed} FAIL`);
 S.cleanup(E);
 process.exit(failed === 0 ? 0 : 1);
