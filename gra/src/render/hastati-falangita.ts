@@ -138,6 +138,8 @@ let gNIEpisema:  THREE.RingGeometry | null = null;   // neutralny pierscien na a
 let gNIDoryShaft:THREE.BoxGeometry | null = null;
 let gNIDoryTip:  THREE.ConeGeometry | null = null;
 let gNISauroter: THREE.BoxGeometry | null = null;
+let gNISACloak:  THREE.BoxGeometry | null = null;   // chlamys (falangita macedonski)
+let gNISAPlume:  THREE.BoxGeometry | null = null;   // piora helmu (falangita macedonski)
 
 // ---------------------------------------------------------------------------
 // OWALNA SKORUPA SCUTUM — fasetowany obrys elipsy (N segmentow) z lukiem
@@ -227,7 +229,10 @@ function getGNIAspisRim(): THREE.CylinderGeometry { return (gNIAspisRim  ||= new
 // 12 segmentow x 2 tri = 24 tri — dokladnie tyle, ile zajmowaly dwie belki
 // zastapionej lambdy, wiec budzet 404 tri bez zmian.
 function getGNIEpisema(): THREE.RingGeometry { return (gNIEpisema ||= new THREE.RingGeometry(0.058 * HEX_R, 0.082 * HEX_R, 12, 1)); }
-function getGNIDoryShaft():THREE.BoxGeometry { return (gNIDoryShaft||= new THREE.BoxGeometry(0.021 * HEX_R, 0.740 * HEX_R, 0.021 * HEX_R)); }
+function getGNISACloak(): THREE.BoxGeometry { return (gNISACloak ||= new THREE.BoxGeometry(0.168 * HEX_R, 0.170 * HEX_R, 0.012 * HEX_R)); }
+function getGNISAPlume(): THREE.BoxGeometry { return (gNISAPlume ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.072 * HEX_R, 0.014 * HEX_R)); }
+// Drzewce = SARISSA (0.90*HEX_R; hoplicka dory miala 0.74).
+function getGNIDoryShaft():THREE.BoxGeometry { return (gNIDoryShaft||= new THREE.BoxGeometry(0.021 * HEX_R, 0.900 * HEX_R, 0.021 * HEX_R)); }
 function getGNIDoryTip():  THREE.ConeGeometry{ return (gNIDoryTip  ||= new THREE.ConeGeometry(0.020 * HEX_R, 0.062 * HEX_R, 4)); }
 function getGNISauroter(): THREE.BoxGeometry { return (gNISauroter ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.055 * HEX_R, 0.022 * HEX_R)); }
 
@@ -439,20 +444,24 @@ export function buildHastati(ownerColor_: number): THREE.Group {
 }
 
 // ---------------------------------------------------------------------------
-// FALANGITA (Grecja, hoplita falangi) — 404 tri, POZA ATAKU
-// Helm koryncki z grzebieniem, linothorax + pteruges, okragly wypukly ASPIS
-// (pole = kolor gracza + neutralna episema + brazowy rant) na LEWYM (+X)
-// przedramieniu PRZED KORPUSEM, dory 0.74*HEX_R w PRAWEJ (-X) dloni
-// NADRECZNIE: lokiec nad barkiem, grot w przod lekko w dol NA OSI wloczni;
-// nagolenniki na obu goleniach, wykrok (biodra -0.010).
+// FALANGITA MACEDONSKI (Grecja, „Falanga") — 428 tri, POZA ATAKU
+// (R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1; dawny hoplita 404 tri)
+// Dlugi SARISSA trzymana OBYDWIEMA rekami (prawa dlon z tylu, lewa przed nia,
+// obie NA osi drzewca; ramiona 3D-IK), tors skrecony w prawo (lewy bark do
+// przodu — szyk pikinierow), mala okragla PELTE przypieta do LEWEGO przedramienia
+// (pole = kolor gracza + neutralna episema + braz rant), helm koryncki bez
+// grzebienia hoplity z dwoma bialymi piorami, linothorax + chlamys, nagolenniki,
+// wykrok (biodra -0.010). Wszystkie geometrie = wspolne singletony modulu
+// (zero nowych geometrii per instancja — zgodnie z wariantem B scalania
+// statycznych czesci, unitStaticMerge: mesh bez userData, dodatni wyznacznik).
 //
-// DISPATCH: jednostka „Falanga" (units.json: Epoka=Zelazo, Kultura=Grecka,
-// Typ=Falangite) trafia tu przez JAWNE rozpoznanie PO NAZWIE w buildNamedUnit()
-// (units.ts, sekcja GRECJA). `case 'falanga'` w buildCategoryModel() zostaje
-// jako fallback dla ewentualnych przyszlych jednostek tej kategorii.
+// WSPOLDZIELENIE: tylko „Falanga" (dispatch po nazwie falanga/hoplit/phalanx
+// w buildNamedUnit() + `case 'falanga'` w buildCategoryModel). Wlocznik,
+// Thorakites, Hieros Lochos i reszta wloczniczych maja WLASNE buildery —
+// zmierzone: ich model bez zmian (test: zelazo-falanga-real-render-test.cjs E7).
 //
 // ===========================================================================
-// ZGODNOSC HISTORYCZNA — hoplita grecki, ok. 500-350 p.n.e.
+// ZGODNOSC HISTORYCZNA — falanga macedonska, ok. 350-300 p.n.e. (hoplita: K1-K4, K8)
 // ===========================================================================
 // Rama czasowa: klasyczna falanga hoplicka, od wojen perskich do Cheronei.
 // W grze jednostka nalezy do epoki Zelazo cywilizacji „Grecy", ktora jest
@@ -471,7 +480,8 @@ export function buildHastati(ownerColor_: number): THREE.Group {
 // K3. PTERUGES. Pas skorzano-lnianych jezykow chroniacych biodra i uda, wiszacy
 //   spod dolnej krawedzi pancerza. Uproszczone do jednej bryly — na skali
 //   tokena pojedyncze jezyki zlalyby sie w szum.
-// K4. HELM KORYNCKI. Kuty z jednego plata brazu, zakrywajacy cala twarz,
+// K4. HELM KORYNCKI. (Hoplita. Falangita macedonski ma ten sam dzwon, ale BEZ
+//   grzebienia — zamiast niego dwa biale piora po bokach; ponizej opis hoplity.) Kuty z jednego plata brazu, zakrywajacy cala twarz,
 //   z waska szczelina oczna i nosalem; ikoniczny dla hoplity. Grzebien biegnie
 //   WZDLUZ (przod-tyl), nie w poprzek — poprzeczny grzebien to oznaka oficera
 //   (a u Rzymian centuriona), wiec dla szeregowego falangity byloby to bledne.
@@ -479,20 +489,27 @@ export function buildHastati(ownerColor_: number): THREE.Group {
 //   Swiadome uproszczenie: dolna krawedz dzwonu zostawia ~0.014*HEX_R odslonietej
 //   szczeki; prawdziwy helm koryncki schodzil do podstawy szyi, ale na skali
 //   tokena calkowite zamkniecie twarzy zamienia glowe w jednolita bryle.
-// K5. DORY. Wlocznia jednoreczna 2-2,5 m, NIE sarissa — sarissa (5-6 m, chwyt
-//   oburacz, mala tarcza pelte przy barku) to pozniejsza falanga macedonska
-//   Filipa II i bylaby tu anachronizmem oraz zla sylwetka. Drzewce dereniowe
-//   (NI_WOOD), grot zelazny, na drugim koncu SAUROTER — brazowy kolec sluzacy
-//   do dobijania i do wbicia wloczni w ziemie na postoju. Chwyt w punkcie
-//   ROWNOWAGI, przesunietym ku tylowi wlasnie przez ciezar sauroter: 0.240
-//   drzewca za dlonia, 0.500 przed nia (32%/68% dlugosci) — dlatego drzewce
-//   MUSI wystawac za reke, a poza musi to pomiescic (patrz naprawa przy armR).
-// K6. POZA NADRECZNA. units.json daje tej jednostce „Atak dystansowy"=0 —
-//   wlocznia nie jest miotana, wiec poza musi byc jednoznacznie do walki
-//   wrecz. Chwyt nadreczny (dlon na wysokosci skroni, grot skierowany w dol
-//   ku przeciwnikowi) to najczestsze ujecie hoplity w malarstwie wazowym i
-//   jedyne, ktore w zwartym szyku pozwala zadac cios ponad krawedzia tarczy.
-// K7. ASPIS I EPISEMA — ROZSTRZYGNIETA KWESTIA BLAZONU (2026-08-25).
+// K5. SARISSA. (Zastepuje dory hoplity.) Pika 5-6 m (w modelu 0.90*HEX_R drzewca
+//   + grot, ~1.2x dawnej dory 0.74), chwyt OBYDWIEMA rekami: prawa dlon z tylu w
+//   punkcie rownowagi (0.30 drzewca ZA dlonia — przeciwwaga sauroter), lewa dlon
+//   0.09 przed nia. Drzewce dereniowe (NI_WOOD), grot zelazny, na tylnym koncu
+//   SAUROTER. To jednostka Filipa II/Aleksandra — dlatego mala tarcza (K7), a nie
+//   hoplon: pike wymaga obu rak, tarcza wisi na przedramieniu.
+//   POZA/GEOMETRIA (dobrana liczbowo, nie "na oko"): przy ramionach ~0.19*HEX_R
+//   zasiegu drzewce przed tulowiem nie da sie utrzymac obydwiema rekami bez
+//   przejscia przez korpus (zmierzone). Rozwiazanie historyczne i geometryczne
+//   jednoczesnie: TORS SKRECONY o SA_TORSO_YAW = -0.60 rad (lewy bark do przodu,
+//   postawa pikiniera), drzewce 0.25 rad w lewo i 0.16 rad w gore, dlonie na
+//   wysokosci piersi obok tulowia. Test H5 mierzy odleglosc osi drzewca od
+//   tulowia (> polowa grubosci drzewca), H1 — ze obie piesci leza na osi.
+// // K6. POZA. units.json daje tej jednostce „Atak dystansowy"=0 — sarissa nie jest
+//   miotana, wiec poza jednoznacznie do walki wrecz: pika wystawiona do przodu
+//   obydwiema rekami (poza ataku = poza stania; animacje na mapie ruszaja tylko
+//   korzen zetonu, wiec model jest jedna statyczna poza).
+// K7. PELTE I EPISEMA — ROZSTRZYGNIETA KWESTIA BLAZONU (2026-08-25; tarcza zmieniona na pelte w Q1).
+//   Falangita macedonski niesie mala PELTE (~0.19*HEX_R srednicy, ta sama geometria
+//   co aspis w skali 0.74) na LEWYM przedramieniu; ponizsze uzasadnienie epismy
+//   (brak blazonu polis, brak umba) obowiazuje bez zmian.
 //   Aspis/hoplon: okragla, wypukla tarcza ~90 cm, niesiona na LEWYM
 //   przedramieniu na uchwycie PORPAX (stad przedramie CALKOWICIE za polem
 //   tarczy, nie obok niej). Aspis NIE MA umba — centralny guz to cecha tarczy
@@ -524,6 +541,55 @@ export function buildHastati(ownerColor_: number): THREE.Group {
 //   lewa (tarczowa) noga wykroczna, prawa zakroczna: postawa parcia w zwartym
 //   szyku, w ktorym falanga napiera na przeciwnika masa szeregow.
 // ===========================================================================
+// Falangita macedonski (sarissa) — stale ukladu postaci. Wszystko w HEX_R.
+// Ukl. wspolrzednych jak w reszcie pliku: przod +Z, LEWA reka = +X, PRAWA = -X.
+const SA_TORSO_YAW = -0.60;          // tors skrecony w prawo: lewy bark do przodu (szyk pikinierow)
+const SA_SHAFT_PITCH = 0.16;         // sarissa lekko w gore (grot ponad linia wzroku wroga)
+const SA_SHAFT_YAW = 0.25;           // i lekko w lewo — przechodzi przed piersia, nie przez korpus
+const SA_GRIP_R = new THREE.Vector3(-0.10 * HEX_R, 0.39 * HEX_R, 0.06 * HEX_R);   // prawa dlon (tylna)
+const SA_GRIP_GAP = 0.09 * HEX_R;    // odstep miedzy dlonmi wzdluz drzewca
+const SA_BUTT_BEHIND = 0.30 * HEX_R; // dlugosc drzewca ZA prawa dlonia (rownowaga: sauroter)
+const SA_SHAFT_LEN = 0.90 * HEX_R;   // drzewce; z grotem ~0.96*HEX_R (dory bylo 0.74)
+
+/**
+ * Ramie 3D (dwa segmenty, IK) od barku `S` do nadgarstka `W` — dlon ZAWSZE w
+ * `W` (czyli NA drzewcu). Gdy cel jest dalej niz zasieg, oba segmenty sa
+ * rozciagniete (scale.y) o niewielki wspolczynnik zamiast zrywac chwyt.
+ * Lokiec odchylony ku `hint`. Zwraca {elbow, stretch}. Geometrie = wspolne
+ * singletony (zadnych nowych per instancja).
+ */
+function saBuildArm(
+  group: THREE.Group, S: THREE.Vector3, W: THREE.Vector3, hint: THREE.Vector3,
+  mUp: THREE.MeshStandardMaterial, mFore: THREE.MeshStandardMaterial,
+  mFist: THREE.MeshStandardMaterial,
+): { elbow: THREE.Vector3; stretch: number } {
+  const D = W.clone().sub(S);
+  const dist = D.length();
+  const u = D.clone().divideScalar(dist);
+  const stretch = Math.max(1, dist / (0.97 * (NI_UPARM_L + NI_FOREARM_L)));
+  const a = NI_UPARM_L * stretch, b = NI_FOREARM_L * stretch;
+  const t = (a * a - b * b + dist * dist) / (2 * dist);
+  const h = Math.sqrt(Math.max(0, a * a - t * t));
+  const perp = hint.clone().addScaledVector(u, -hint.dot(u)).normalize();
+  const elbow = S.clone().addScaledVector(u, t).addScaledVector(perp, h);
+  const Y = new THREE.Vector3(0, 1, 0);
+  const seg = (geo: THREE.BufferGeometry, mtl: THREE.MeshStandardMaterial,
+               P: THREE.Vector3, Q: THREE.Vector3, len: number): void => {
+    const dir = Q.clone().sub(P);
+    const m = new THREE.Mesh(geo, mtl);
+    m.quaternion.setFromUnitVectors(Y, dir.clone().normalize());
+    m.scale.y = dir.length() / len;
+    m.position.copy(P.clone().add(Q).multiplyScalar(0.5));
+    group.add(m);
+  };
+  seg(getGNIUpArm(), mUp, S, elbow, NI_UPARM_L);
+  seg(getGNIForearm(), mFore, elbow, W, NI_FOREARM_L);
+  const fist = new THREE.Mesh(getGNIFist(), mFist);
+  fist.position.copy(W);
+  group.add(fist);
+  return { elbow, stretch };
+}
+
 export function buildFalangita(ownerColor_: number): THREE.Group {
   const group = new THREE.Group();
   const { mats, mat } = makeMats();
@@ -534,52 +600,62 @@ export function buildFalangita(ownerColor_: number): THREE.Group {
   const mSteel  = mat(NI_STEEL,     0.50, 0.40);
   const mOwner  = mat(ownerColor_,  0.16, 0.62);
   const mWood   = mat(NI_WOOD,      0.05, 0.85);
-  const mCrest  = mat(NI_CRIMSON,   0.08, 0.74);
+  const mCrim   = mat(NI_CRIMSON,   0.08, 0.74);
   const mLeath  = mat(NI_LEATHER,   0.06, 0.82);
-  const mWoad   = mat(NI_WOAD,      0.05, 0.85);
   const mSkin   = mat(NI_SKIN,      0.05, 0.80);
   const mDark   = mat(0x20180f,     0.05, 0.90);
 
   const HIP_Y = NI_HIP_Y - 0.010 * HEX_R;   // biodra obnizone — wykrok bojowy
 
-  // Nazwy mesh (instrumentacja pomiarowa dla real-render testu). Helpery
-  // niBuildCore/niBuildLeg/niBuildArm sa WSPOLNE z buildHastati, wiec NIE
-  // wolno ich modyfikowac — zamiast tego nazywamy dzieci dodane przez helper
-  // po zakresie indeksow. Kolejnosc dodawania jest kontraktem helpera:
-  //   niBuildCore -> [tors, szyja, glowa]
-  //   niBuildLeg  -> [udo, golen, stopa]
-  //   niBuildArm  -> [ramie, przedramie, (piesc jesli mFist != null)]
+  // ── KORPUS (obrocony o SA_TORSO_YAW): tors + naramienniki + pteruges + plaszcz ──
+  const upper = new THREE.Group();
+  upper.rotation.y = SA_TORSO_YAW;
+  upper.name = 'falangita-upper-body';
+  const torso = new THREE.Mesh(getGNITorso(), mLinen);       // kotthybos (linothorax)
+  torso.position.set(0, NI_TORSO_CTR, 0);
+  torso.name = 'falangita-torso';
+  upper.add(torso);
+  for (const sx of [-1, 1]) {
+    const yoke = new THREE.Mesh(getGNIYoke(), mLinen);
+    yoke.position.set(sx * 0.056 * HEX_R, NI_TORSO_TOP - 0.006 * HEX_R, 0);
+    yoke.name = sx < 0 ? 'falangita-yoke-right' : 'falangita-yoke-left';
+    upper.add(yoke);
+  }
+  const skirt = new THREE.Mesh(getGNISkirt(), mLeath);
+  skirt.position.set(0, NI_TORSO_BOT - 0.018 * HEX_R, 0);
+  skirt.name = 'falangita-pteruges';
+  upper.add(skirt);
+  const cloak = new THREE.Mesh(getGNISACloak(), mCrim);       // chlamys zarzucona na plecy
+  cloak.position.set(0, NI_TORSO_CTR - 0.020 * HEX_R, -(NI_TORSO_D * 0.5 + 0.008 * HEX_R));
+  cloak.name = 'falangita-chlamys';
+  upper.add(cloak);
+  group.add(upper);
+
+  // glowa i szyja zostaja PRZODEM do +Z (patrzy na wroga)
+  const neck = new THREE.Mesh(getGNINeck(), mSkin);
+  neck.position.set(0, NI_TORSO_TOP + NI_NECK_H * 0.5, 0);
+  neck.name = 'falangita-neck';
+  group.add(neck);
+  const head = new THREE.Mesh(getGNIHead(), mSkin);
+  head.position.set(0, NI_HEAD_CTR, 0);
+  head.name = 'falangita-head';
+  group.add(head);
+
+  // nogi: LEWA (+X) wykroczna, PRAWA (-X) zakroczna; golenie = nagolenniki
   const tag = (from: number, ...labels: string[]): void => {
     for (let i = 0; i < labels.length; i++) {
       const child = group.children[from + i];
       if (child !== undefined) child.name = 'falangita-' + labels[i];
     }
   };
-
-  // korpus: tors = linothorax (chiton woad na udach/ramionach); twarz pod helmem
   let k = group.children.length;
-  niBuildCore(group, mat, mLinen);
-  tag(k, 'torso', 'neck', 'head');
-  for (const sx of [-1, 1]) {                       // naramienniki (yoke)
-    const yoke = new THREE.Mesh(getGNIYoke(), mLinen);
-    yoke.position.set(sx * 0.056 * HEX_R, NI_TORSO_TOP - 0.006 * HEX_R, 0);
-    yoke.name = sx < 0 ? 'falangita-yoke-right' : 'falangita-yoke-left';
-    group.add(yoke);
-  }
-  const skirt = new THREE.Mesh(getGNISkirt(), mLeath);
-  skirt.position.set(0, NI_TORSO_BOT - 0.018 * HEX_R, 0);
-  skirt.name = 'falangita-pteruges';
-  group.add(skirt);
-
-  // nogi: LEWA (+X) wykroczna, PRAWA (-X) zakroczna; golenie = nagolenniki
-  k = group.children.length;
-  niBuildLeg(group,  NI_HIP_X,  0.55,  0.30, mWoad, mBronzL, mLeath, HIP_Y);
+  niBuildLeg(group,  NI_HIP_X,  0.55,  0.30, mCrim, mBronzL, mLeath, HIP_Y);
   tag(k, 'leg-left-thigh', 'leg-left-greave', 'leg-left-foot');
   k = group.children.length;
-  niBuildLeg(group, -NI_HIP_X, -0.50, -0.16, mWoad, mBronzL, mLeath, HIP_Y);
+  niBuildLeg(group, -NI_HIP_X, -0.50, -0.16, mCrim, mBronzL, mLeath, HIP_Y);
   tag(k, 'leg-right-thigh', 'leg-right-greave', 'leg-right-foot');
 
-  // HELM KORYNCKI (bez zmian): dzwon na twarz + szczelina + grzebien
+  // HELM: dzwon + szczelina, BEZ grzebienia hoplity — dwa biale piora po bokach
   const dome = new THREE.Mesh(getGNICorDome(), mBronze);
   dome.position.set(0, NI_HEAD_CTR + 0.014 * HEX_R, 0);
   dome.name = 'falangita-helmet-dome';
@@ -588,93 +664,79 @@ export function buildFalangita(ownerColor_: number): THREE.Group {
   slit.position.set(0, NI_HEAD_CTR + 0.002 * HEX_R, 0.062 * HEX_R);
   slit.name = 'falangita-helmet-slit';
   group.add(slit);
-  const crestB = new THREE.Mesh(getGNICrestBase(), mBronzL);
-  crestB.position.set(0, NI_HEAD_TOP + 0.026 * HEX_R, -0.004 * HEX_R);
-  crestB.name = 'falangita-crest-base';
-  group.add(crestB);
-  const crestH = new THREE.Mesh(getGNICrestHair(), mCrest);
-  crestH.rotation.x = 0.12;
-  crestH.position.set(0, NI_HEAD_TOP + 0.076 * HEX_R, -0.008 * HEX_R);
-  crestH.name = 'falangita-crest-hair';
-  group.add(crestH);
+  for (const sx of [-1, 1]) {
+    const plume = new THREE.Mesh(getGNISAPlume(), mLinen);
+    plume.rotation.z = -sx * 0.45;
+    plume.position.set(sx * 0.050 * HEX_R, NI_HEAD_TOP + 0.034 * HEX_R, -0.004 * HEX_R);
+    plume.name = sx < 0 ? 'falangita-plume-right' : 'falangita-plume-left';
+    group.add(plume);
+  }
 
-  // PRAWE (-X) RAMIE + DORY NADRECZNIE: lokiec NAD barkiem i ZA nim, przedramie
-  // w przod-w gore do dloni na wysokosci skroni, wlocznia NA OSI DLONI pozioma-
-  // lekko w dol (grot ku wrogowi, sauroter w gore-tyl ponad ramieniem).
-  //
-  // NAPRAWA 2026-08-25 (temat R-ZELAZO-MODELE-BRAKUJACE-Q1-T3, pomiar w zywym
-  // Three.js, nie odczyt zrodla). Kat przedramienia byl 1.32 — czyli PRAWIE
-  // DOKLADNIE os wloczni (1.371 w tej samej konwencji, roznica 0.05 rad = 2.9°).
-  // Przy chwycie w punkcie rownowagi dory 0.240*HEX_R drzewca wystaje ZA dlon,
-  // a skoro przedramie bylo wspolliniowe z drzewcem, ta czesc drzewca szla
-  // wzdluz przedramienia PROSTO W LOKIEC i dalej w ramie. Zmierzone PRZED:
-  // odleglosc osi ramienia od osi wloczni spadala z 0.0747*HEX_R przy barku do
-  // 0.0044*HEX_R przy lokciu, przy progu stycznosci 0.027+0.0105=0.0375 —
-  // drzewce bylo zanurzone w gornych ~45% ramienia, w tej samej plaszczyznie X
-  // (drzewce -0.1305..-0.1095, ramie -0.147..-0.093), wiec bez ucieczki bokiem.
-  // To ten sam typ bledu, ktory w T1 tej serii wychwycily dopiero asercje
-  // mierzace RELACJE geometryczne (lanca w udzie jezdzca) — niewidoczny dla
-  // testu liczacego same nazwy mesh.
-  // POPRAWKA: przedramie 1.32 -> 1.85 (dlon idzie w gore-w przod, nadgarstek
-  // zalamany jak przy realnym chwycie nadrecznym). Lokiec schodzi teraz 0.049
-  // PONIZEJ osi wloczni, bark byl i jest 0.135 ponizej — cale ramie po tej
-  // samej stronie drzewca, klirens na calej dlugosci > progu. Sam kat ramienia
-  // (-2.55) i punkt chwytu (rownowaga dory) BEZ ZMIAN — chwyt jest historyczny.
-  k = group.children.length;
-  const armR = niBuildArm(group, -NI_SHLD_X, -2.55, 1.85, mWoad, mSkin, mLeath);
-  tag(k, 'arm-right-upper', 'arm-right-fore', 'arm-right-fist');
-  const spearTh = Math.PI * 0.5 + 0.20;              // os: przod +Z, 0.20 w dol
-  const spearAxis = new THREE.Vector3(0, -Math.sin(0.20), Math.cos(0.20));
-  const grip = armR.wrist.clone().addScaledVector(armR.axis, 0.014 * HEX_R);
+  // ── SARISSA: jedna os, trzymana OBYDWIEMA rekami ───────────────────────────
+  const sarDir = new THREE.Vector3(
+    Math.sin(SA_SHAFT_YAW) * Math.cos(SA_SHAFT_PITCH),
+    Math.sin(SA_SHAFT_PITCH),
+    Math.cos(SA_SHAFT_YAW) * Math.cos(SA_SHAFT_PITCH),
+  ).normalize();
+  const gripR = SA_GRIP_R.clone();
+  const gripL = gripR.clone().addScaledVector(sarDir, SA_GRIP_GAP);
+  const sarQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), sarDir);
+  const placeOnAxis = (m: THREE.Mesh, s: number): void => {
+    m.quaternion.copy(sarQ);
+    m.position.copy(gripR.clone().addScaledVector(sarDir, s));
+  };
   const shaft = new THREE.Mesh(getGNIDoryShaft(), mWood);
-  shaft.rotation.x = spearTh;
-  shaft.position.copy(grip.clone().addScaledVector(spearAxis, 0.130 * HEX_R));
-  shaft.name = 'falangita-dory-shaft';
+  placeOnAxis(shaft, -SA_BUTT_BEHIND + SA_SHAFT_LEN * 0.5);
+  shaft.name = 'falangita-sarissa-shaft';
   group.add(shaft);
-  const dtip = new THREE.Mesh(getGNIDoryTip(), mSteel);
-  dtip.rotation.x = spearTh;
-  dtip.rotation.y = Math.PI / 4;
-  dtip.position.copy(grip.clone().addScaledVector(spearAxis, (0.130 + 0.370 + 0.028) * HEX_R));
-  dtip.name = 'falangita-dory-tip';
+  const dtip = new THREE.Mesh(getGNIDoryTip(), mSteel);       // grot lisciasty
+  placeOnAxis(dtip, -SA_BUTT_BEHIND + SA_SHAFT_LEN + 0.031 * HEX_R);
+  dtip.name = 'falangita-sarissa-tip';
   group.add(dtip);
-  const sauro = new THREE.Mesh(getGNISauroter(), mBronze);
-  sauro.rotation.x = spearTh;
-  sauro.position.copy(grip.clone().addScaledVector(spearAxis, (0.130 - 0.370 - 0.024) * HEX_R));
+  const sauro = new THREE.Mesh(getGNISauroter(), mBronze);     // sauroter — przeciwwaga
+  placeOnAxis(sauro, -SA_BUTT_BEHIND - 0.0275 * HEX_R);
   sauro.name = 'falangita-sauroter';
   group.add(sauro);
 
-  // LEWE (+X) RAMIE + ASPIS PRZED KORPUSEM (porpax: przedramie za polem tarczy)
+  // RAMIONA (IK): barki w swiecie = barki korpusu obroconego o SA_TORSO_YAW
+  const Yax = new THREE.Vector3(0, 1, 0);
+  const shR = new THREE.Vector3(-NI_SHLD_X, NI_SHLD_Y, 0).applyAxisAngle(Yax, SA_TORSO_YAW);
+  const shL = new THREE.Vector3( NI_SHLD_X, NI_SHLD_Y, 0).applyAxisAngle(Yax, SA_TORSO_YAW);
   k = group.children.length;
-  const armL = niBuildArm(group, NI_SHLD_X, 0.52, 1.05, mWoad, mSkin, null);
-  tag(k, 'arm-left-upper', 'arm-left-fore');
+  const armR = saBuildArm(group, shR, gripR, new THREE.Vector3(-1, 0.5, -0.2), mCrim, mSkin, mLeath);
+  tag(k, 'arm-right-upper', 'arm-right-fore', 'arm-right-fist');
+  k = group.children.length;
+  const armL = saBuildArm(group, shL, gripL, new THREE.Vector3(0.7, -0.8, -0.1), mCrim, mSkin, mLeath);
+  tag(k, 'arm-left-upper', 'arm-left-fore', 'arm-left-fist');
+
+  // PELTE — mala okragla tarcza PRZYPIETA do lewego przedramienia (pole = kolor
+  // gracza, rant braz, neutralna episema). Te same geometrie co aspis, mniejsza skala.
   const sh = new THREE.Group();
-  sh.position.set(
-    armL.wrist.x - 0.055 * HEX_R,
-    armL.wrist.y + 0.065 * HEX_R,
-    armL.wrist.z + 0.052 * HEX_R,
-  );
-  sh.rotation.y = -0.20;                            // lekko ku osi ciala — oslona
-  const face = new THREE.Mesh(getGNIAspisFace(), mOwner);  // zwezany walec = wypuklosc
+  sh.position.copy(armL.elbow.clone().lerp(gripL, 0.40)).add(new THREE.Vector3(0.060 * HEX_R, -0.004 * HEX_R, 0.050 * HEX_R));
+  sh.rotation.y = 0.30;                              // lico ku przodowi-lewej (widoczne z frontu)
+  sh.name = 'falangita-pelte';
+  const SA_PELTE_S = 0.74;
+  const face = new THREE.Mesh(getGNIAspisFace(), mOwner);
   face.rotation.x = Math.PI / 2;
-  face.name = 'falangita-aspis-face';
+  face.scale.set(SA_PELTE_S, 1, SA_PELTE_S);
+  face.name = 'falangita-pelte-face';
   sh.add(face);
   const rim = new THREE.Mesh(getGNIAspisRim(), mBronzL);
   rim.rotation.x = Math.PI / 2;
+  rim.scale.set(SA_PELTE_S, 1, SA_PELTE_S);
   rim.position.set(0, 0, -0.004 * HEX_R);
-  rim.name = 'falangita-aspis-rim';
+  rim.name = 'falangita-pelte-rim';
   sh.add(rim);
-  // EPISEMA — patrz K7. Neutralny malowany pierscien zamiast lambdy (Λ =
-  // Lakedaimon, godlo JEDNEJ z dziesieciu greckich polis w tej grze).
-  const epis = new THREE.Mesh(getGNIEpisema(), mLinen);
+  const epis = new THREE.Mesh(getGNIEpisema(), mLinen);       // neutralna episema (K7)
+  epis.scale.set(SA_PELTE_S, SA_PELTE_S, 1);
   epis.position.set(0, 0, 0.022 * HEX_R);
-  epis.name = 'falangita-aspis-episema';
+  epis.name = 'falangita-pelte-episema';
   sh.add(epis);
   group.add(sh);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
-  // Kotwice do asercji geometrycznych — punkty odniesienia BIORĄ SIĘ Z MODELU,
-  // nie są wpisane liczbowo w teście (lekcja T1/T2 serii).
+  // Kotwice do asercji geometrycznych (bierza sie z modelu, nie z liczb w tescie).
   group.userData['anchors'] = {
     headTopY: NI_HEAD_TOP,
     headCtrY: NI_HEAD_CTR,
@@ -682,12 +744,17 @@ export function buildFalangita(ownerColor_: number): THREE.Group {
     torsoBotY: NI_TORSO_BOT,
     torsoHalfW: NI_TORSO_W * 0.5,
     torsoHalfD: NI_TORSO_D * 0.5,
+    torsoYaw: SA_TORSO_YAW,
     hipY: HIP_Y,
     shoulderY: NI_SHLD_Y,
     shoulderX: NI_SHLD_X,
-    grip: grip.toArray(),
-    spearAxis: spearAxis.toArray(),
-    doryLen: 0.740 * HEX_R,
+    gripR: gripR.toArray(),
+    gripL: gripL.toArray(),
+    sarissaAxis: sarDir.toArray(),
+    sarissaButtBehind: SA_BUTT_BEHIND,
+    sarissaLen: SA_SHAFT_LEN,
+    armStretchR: armR.stretch,
+    armStretchL: armL.stretch,
     hexR: HEX_R,
   };
   return group;
