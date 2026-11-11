@@ -1,0 +1,4973 @@
+{
+ "source": "origin/main gra/src/game/{building-stock-cost,economy-upkeep}.ts",
+ "cases": [
+  {
+   "unit": "Wojownik",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Procarz",
+   "stockCost": {
+    "drewno": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Oszczepnik",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Zwiadowca",
+   "stockCost": {},
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "exact",
+     "pool": {},
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {},
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": true,
+     "missing": {}
+    }
+   ]
+  },
+  {
+   "unit": "Włócznik",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik z mieczem i tarczą",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan (woły)",
+   "stockCost": {
+    "drewno": 25
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 25
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 25
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 30
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 25
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 24
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 25
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Konnica",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Galera",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Falanga",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Hieros Lochos (Święty Zastęp)",
+   "stockCost": {
+    "zelazo": 152
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 152
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 157
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 151
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Hastati",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Triari",
+   "stockCost": {
+    "zelazo": 152
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 152
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 157
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 151
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Jeździec chiński",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Hu Ben Wei (Gwardia Tygrysa)",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Impi",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Oszczepnik Zulu (Izijula)",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "uThulwana (Białe Tarcze)",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik z maczugą (Chaska)",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik z toporem",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Procarz (Huaracoc)",
+   "stockCost": {
+    "drewno": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Oszczepnik (Estólica)",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Królewska Gwardia",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan konny",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik egipski",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan egipski",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik z khopesh",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Medżaj (Gwardia Faraona)",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik nubijski",
+   "stockCost": {
+    "drewno": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik sumeryjski",
+   "stockCost": {
+    "drewno": 13
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 13
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 12
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 13
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan sumeryjski",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Włócznik sumeryjski",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gwardia Królewska Sumeru",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik mykeński",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan mykeński",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik Sherden",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Halabardnik Shang",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan Shang",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik akadyjski",
+   "stockCost": {
+    "drewno": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gaesatae",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Soldurii",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan celtycki",
+   "stockCost": {
+    "zelazo": 100,
+    "kon": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100,
+      "kon": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105,
+      "kon": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik germański",
+   "stockCost": {
+    "zelazo": 152
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 152
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 157
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 151
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Berserker germański",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Taran",
+   "stockCost": {
+    "drewno": 19
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 19
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 19
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 24
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 19
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 18
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 19
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Taran okuty",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Katapulta",
+   "stockCost": {
+    "zelazo": 152
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 152
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 157
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 151
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wieża oblężnicza",
+   "stockCost": {
+    "braz": 76
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 76
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 81
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 75
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 76
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik tyrreński",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik szekelesz",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Konnica lancowa asyryjska",
+   "stockCost": {
+    "zelazo": 100,
+    "kon": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100,
+      "kon": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105,
+      "kon": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Konnica łucznicza asyryjska",
+   "stockCost": {
+    "zelazo": 100,
+    "kon": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100,
+      "kon": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105,
+      "kon": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Łucznik asyryjski",
+   "stockCost": {
+    "drewno": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "drewno": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "drewno": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    },
+    {
+     "label": "minus1:drewno",
+     "pool": {
+      "drewno": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 1
+     }
+    },
+    {
+     "label": "zero:drewno",
+     "pool": {
+      "drewno": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "drewno": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Drużynnik",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Jeździec z oszczepami",
+   "stockCost": {
+    "zelazo": 100,
+    "kon": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100,
+      "kon": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105,
+      "kon": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100,
+      "kon": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0,
+      "kon": 100
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "zelazo": 100,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Strażnik bram Harappy",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Piechota induska",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Garnizon Harappy",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Rydwan Kapadokijski",
+   "stockCost": {
+    "braz": 50,
+    "kon": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50,
+      "kon": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55,
+      "kon": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50,
+      "kon": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "minus1:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0,
+      "kon": 50
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "zero:kon",
+     "pool": {
+      "braz": 50,
+      "kon": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "kon": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Piechota hetycka",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gwardia hetycka",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gwardia Ishtar",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik babiloński",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Piechota neobabilońska",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Tyrski miecznik",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik fenicki",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gwardia Tyreńska",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Thorakites",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Evocati",
+   "stockCost": {
+    "zelazo": 152
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 152
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 157
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 151
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 152
+     }
+    }
+   ]
+  },
+  {
+   "unit": "iButho z iklwa",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Gwardzista z champi",
+   "stockCost": {
+    "braz": 50
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "braz": 50
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "braz": 55
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    },
+    {
+     "label": "minus1:braz",
+     "pool": {
+      "braz": 49
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 1
+     }
+    },
+    {
+     "label": "zero:braz",
+     "pool": {
+      "braz": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "braz": 50
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Wojownik z żelaznym khopesh",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Mur tarcz (Sargonid)",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  },
+  {
+   "unit": "Miecznik galijski",
+   "stockCost": {
+    "zelazo": 100
+   },
+   "pools": [
+    {
+     "label": "empty",
+     "pool": {},
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "exact",
+     "pool": {
+      "zelazo": 100
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "plus5",
+     "pool": {
+      "zelazo": 105
+     },
+     "canAfford": true,
+     "missing": {}
+    },
+    {
+     "label": "unrelated",
+     "pool": {
+      "diament": 999
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    },
+    {
+     "label": "minus1:zelazo",
+     "pool": {
+      "zelazo": 99
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 1
+     }
+    },
+    {
+     "label": "zero:zelazo",
+     "pool": {
+      "zelazo": 0
+     },
+     "canAfford": false,
+     "missing": {
+      "zelazo": 100
+     }
+    }
+   ]
+  }
+ ]
+}
