@@ -58,7 +58,7 @@ const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/let fogRevealKeyFEnabled = FOG_REVEAL_KEY_F_DEFAULT;/.test(main), 'main.ts: stan fogRevealKeyFEnabled startuje z domyślnej (false)');
 ok(/fogRevealKeyFEnabled = fogRevealKeyFFromNewGameParam\(params\.fogRevealKeyFEnabled\)/.test(main), 'main.ts: doStartGame czyta parametr nowej gry');
 ok(/fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta\(saved\.meta\?\.fogRevealKeyFEnabled\)/.test(main), 'main.ts: wczytanie zapisu (brak pola => false)');
-ok(/autoBuildEnabled,\s*(?:\/\/[^\n]*\n\s*)*fogRevealKeyFEnabled,/.test(main), 'main.ts: zapis gry niesie meta.fogRevealKeyFEnabled');
+ok(/improvementAdministratorNoticeShown,\s*(?:\/\/[^\n]*\n\s*)*fogRevealKeyFEnabled,/.test(main), 'main.ts: zapis gry niesie meta.fogRevealKeyFEnabled');
 // Obsługa F: bramka musi stać PRZED preventDefault i toggleDevFogFull, w gałęzi KeyF.
 const fIdx = main.indexOf("if (e.code === 'KeyF' || e.key.toLowerCase() === 'f') {");
 const fEnd = fIdx >= 0 ? main.indexOf('toggleDevFogFull();', fIdx) : -1;

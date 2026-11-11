@@ -1446,7 +1446,7 @@ import {
   improvementAdministratorDescription,
 } from './game/city-administrator';
 import { isCityAutoImprovementAllowed, selectCitiesForAutoImprovement, shouldShowImprovementAdminMigration } from './game/auto-build-gate';
-import { isAutoBuildAllowedForOwner, isCityAutoBuildAllowed, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
+import { isAutoBuildAllowedForOwner, isCityAutoBuildAllowed, administratorsFromSaveMeta, administratorsFromNewGameParam, ADMINISTRATORS_ENABLED_DEFAULT, shouldShowLegacyAutomationMigration, LEGACY_AUTOMATION_NOTICE_TITLE, LEGACY_AUTOMATION_NOTICE_TEXT } from './game/auto-build-gate';
 import { fogRevealKeyFFromNewGameParam, fogRevealKeyFFromSaveMeta, isFogRevealKeyFActive, FOG_REVEAL_KEY_F_DEFAULT } from './game/fog-reveal-key-f';
 import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
@@ -10123,13 +10123,14 @@ async function boot(): Promise<void> {
      */
     let playerEpochWarEnabled = false;
     /**
-     * R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): „Automatyzacja budowy" GRACZA
-     * (auto-ulepszenia terenu + auto-budowa budynków w miastach). DOMYŚLNIE WYŁĄCZONA; AI bez zmian.
-     * Zapis: meta.autoBuildEnabled; stary zapis (brak pola) = WYŁĄCZONA. Tryby auto zapisane w mieście
-     * zostają w danych, ale silnik ich nie wykonuje dla gracza, dopóki opcja jest wyłączona.
-     * / EN: player build-automation master switch (default OFF); AI unaffected.
+     * R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (właściciel 2026-11-11): opcja „Administratorzy” z kreatora nowej gry
+     * (zastąpiła przełącznik „Automatyzacja budowy” z ustawień; R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1). DOMYŚLNIE WYŁĄCZONE,
+     * zapisana w grze NA STAŁE (bez przełącznika w trakcie gry). ON: administratorzy miasta/ulepszeń istnieją, a automatyzacja
+     * działa tylko z nimi; OFF: brak mechaniki administratora i brak automatyzacji gracza (wszystko ręcznie). AI bez zmian
+     * (nie podlega opcji). Zapis: meta.administratorsEnabled; stary zapis → patrz migracja przy wczytaniu.
+     * / EN: wizard option "Administrators" (default OFF, permanent per game); player only, AI unaffected.
      */
-    let autoBuildEnabled = AUTO_BUILD_ENABLED_DEFAULT;
+    let administratorsEnabled = ADMINISTRATORS_ENABLED_DEFAULT;
     /**
      * R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1 (właściciel): „Odkrywanie mapy klawiszem F (tryb testowy)”.
      * Klawisz F (pełne odkrycie/wyłączenie mgły) działa TYLKO gdy opcja ON. DOMYŚLNIE WYŁĄCZONA;
@@ -10139,7 +10140,7 @@ async function boot(): Promise<void> {
     let fogRevealKeyFEnabled = FOG_REVEAL_KEY_F_DEFAULT;
     /** Jedna bramka silnika i UI: czy automatyka budowy może działać dla ownera (AI zawsze tak). */
     function isAutoBuildAllowedFor(ownerId: number): boolean {
-      return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, autoBuildEnabled);
+      return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, administratorsEnabled);
     }
     /**
      * R-WEB-CITY-ADMINISTRATOR-Q1: bramka auto-budowy BUDYNKÓW dla konkretnego miasta — globalna opcja
@@ -10147,7 +10148,7 @@ async function boot(): Promise<void> {
      */
     function isCityAutoBuildActive(city: City): boolean {
       return isCityAutoBuildAllowed(
-        city.ownerId, humanSeats.humanOwnerIds, autoBuildEnabled, cityHasWorkingAdministrator(city),
+        city.ownerId, humanSeats.humanOwnerIds, administratorsEnabled, cityHasWorkingAdministrator(city),
       );
     }
     /**
@@ -10156,7 +10157,7 @@ async function boot(): Promise<void> {
      */
     function isCityAutoImprovementActive(city: City): boolean {
       return isCityAutoImprovementAllowed(
-        city.ownerId, humanSeats.humanOwnerIds, autoBuildEnabled,
+        city.ownerId, humanSeats.humanOwnerIds, administratorsEnabled,
         cityHasWorkingImprovementAdministrator(city), aiRequiresImprovementAdministrator(),
       );
     }
@@ -10220,6 +10221,7 @@ async function boot(): Promise<void> {
     function hireCityAdministratorForPlayer(cityId: string): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isHuman(city.ownerId)) return false;
+      if (!administratorsEnabled) return false; // opcja „Administratorzy” wyłączona: brak mechaniki
       const built = cityBuilt.get(city.id) ?? [];
       const treasury = ownerTreasury(city.ownerId);
       if (!hireAdministrator(city, built, treasury, turn)) {
@@ -10246,6 +10248,7 @@ async function boot(): Promise<void> {
     function cityAdministratorUiState(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city) return null;
+      if (!administratorsEnabled && isHuman(city.ownerId)) return null; // OFF: brak przycisku/chipa/kosztów gracza
       const built = cityBuilt.get(city.id) ?? [];
       const tier = administrativeBuildingTier(built);
       const hired = cityHasAdministrator(city);
@@ -10267,6 +10270,7 @@ async function boot(): Promise<void> {
     function hireImprovementAdministratorForPlayer(cityId: string): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isHuman(city.ownerId)) return false;
+      if (!administratorsEnabled) return false; // opcja „Administratorzy” wyłączona: brak mechaniki
       const treasury = ownerTreasury(city.ownerId);
       if (!hireImprovementAdministrator(city, treasury, turn)) {
         const reason = improvementAdministratorHireBlockReason(city, treasury);
@@ -10292,6 +10296,7 @@ async function boot(): Promise<void> {
     function improvementAdministratorUiState(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city) return null;
+      if (!administratorsEnabled && isHuman(city.ownerId)) return null; // OFF: brak sekcji administratora ulepszeń gracza
       const hired = cityHasImprovementAdministrator(city);
       const reason = hired ? null : improvementAdministratorHireBlockReason(city, ownerTreasury(city.ownerId));
       return {
@@ -10317,9 +10322,9 @@ async function boot(): Promise<void> {
         break; // max 1 zatrudnienie / właściciel / turę
       }
     }
-    /** Czy opcja „Automatyzacja budowy" gracza jest włączona (UI). */
+    /** Czy opcja „Administratorzy" tej gry jest włączona (UI: aktywność kontrolek automatyzacji gracza). */
     function isPlayerAutoBuildEnabled(): boolean {
-      return autoBuildEnabled;
+      return administratorsEnabled;
     }
     /**
      * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
@@ -26355,14 +26360,8 @@ async function boot(): Promise<void> {
 
     configureGamePauseMenu({
       hasSave: hasAnySaveSlot,
-      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: przełącznik „Automatyzacja budowy” także w trakcie gry (stare zapisy: domyślnie WYŁ.).
-      getAutoBuildEnabled: isPlayerAutoBuildEnabled,
-      onAutoBuildToggle: (enabled: boolean) => {
-        autoBuildEnabled = enabled === true;
-        // Obrona zarzutu 4: odśwież otwarte panele (miasto + budowa), żeby stan kontrolek auto był od razu aktualny.
-        try { updateHud(); } catch { /* HUD jeszcze nie gotowy */ }
-        try { refreshCityPanelIfOpen(); } catch { /* panel zamknięty */ }
-      },
+      // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: BRAK przełącznika automatyzacji w menu — opcja „Administratorzy” jest wybierana
+      // w kreatorze nowej gry i zapisana w grze na stałe.
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
       onLoad: () => { void openLoadGameDialog(true); },
@@ -29550,7 +29549,7 @@ async function boot(): Promise<void> {
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
-      setAutoBuildEnabled: v => { autoBuildEnabled = v === true; }, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (tylko ?civTest=1)
+      setAutoBuildEnabled: v => { administratorsEnabled = v === true; }, // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (tylko ?civTest=1; opcja kreatora „Administratorzy”)
       // R-WEB-CITY-ADMINISTRATOR-Q1 (tylko ?civTest=1): przygotowanie sceny do weryfikacji w Chromium.
       adminSetup: (cityId, builtIds, treasury, tryb, stock) => {
         const city = cities.find(c => c.id === cityId);
@@ -37412,8 +37411,8 @@ async function boot(): Promise<void> {
           negotiationSeq,
           // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): ustawienie opcji nowej gry trwa w zapisie.
           dealsEndTurnGate: dealsEndTurnGateEnabled,
-          // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: automatyzacja budowy gracza trwa w zapisie.
-          autoBuildEnabled,
+          // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: opcja „Administratorzy” trwa w zapisie na stałe.
+          administratorsEnabled,
           // R-WEB-CITY-ADMINISTRATOR-Q1: jednorazowe powiadomienie migracyjne już pokazane.
           cityAdministratorNoticeShown,
           improvementAdministratorNoticeShown,
@@ -44995,8 +44994,8 @@ async function boot(): Promise<void> {
     async function doStartGame(params: NewGameParams): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja z ekranu nowej gry (domyślnie ON).
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
-      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
-      autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
+      // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: opcja „Administratorzy” z kreatora nowej gry (domyślnie WYŁĄCZONE).
+      administratorsEnabled = administratorsFromNewGameParam(params.administratorsEnabled);
       cityAdministratorNoticeShown = true; // R-WEB-CITY-ADMINISTRATOR-Q1: nowa gra — nic do migrowania
       improvementAdministratorNoticeShown = true;
       // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F (domyślnie WYŁĄCZONA).
@@ -47251,8 +47250,21 @@ async function boot(): Promise<void> {
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): stary zapis bez pola = opcja WYŁĄCZONA.
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
-      // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
-      autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
+      // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: stary zapis bez pola = administratorzy WYŁĄCZENI (nic po cichu).
+      // Zapis sprzed opcji z włączoną dotąd automatyzacją (`meta.autoBuildEnabled`) → JEDNORAZOWE powiadomienie (niżej).
+      administratorsEnabled = administratorsFromSaveMeta(saved.meta?.administratorsEnabled);
+      // Czy gracz miał zatrudnionego administratora (liczone PRZED kasowaniem niżej) — wtedy komunikat także przy autoBuildEnabled=false.
+      const hadHiredAdministrator = cities.some(c => isHuman(c.ownerId)
+        && !!((c as { administrator?: unknown }).administrator || (c as { administratorUlepszen?: unknown }).administratorUlepszen));
+      const legacyAutomationMigration = shouldShowLegacyAutomationMigration(saved.meta as { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined, hadHiredAdministrator);
+      if (!administratorsEnabled) {
+        // Bez opcji nie istnieje mechanika administratora dla gracza: zatrudnieni administratorzy gracza znikają (bez bonusów i utrzymania).
+        for (const c of cities) {
+          if (!isHuman(c.ownerId)) continue;
+          delete (c as { administrator?: unknown }).administrator;
+          delete (c as { administratorUlepszen?: unknown }).administratorUlepszen;
+        }
+      }
       // R-WEB-CITY-ADMINISTRATOR-Q1: stary zapis (bez pola) = powiadomienie migracyjne jeszcze niepokazane.
       cityAdministratorNoticeShown = saved.meta?.cityAdministratorNoticeShown === true;
       pendingAdministratorChanges.clear(); // stan z zapisu jest punktem odniesienia (bez powiadomień o „zmianach” sprzed wczytania)
@@ -47263,7 +47275,7 @@ async function boot(): Promise<void> {
       improvementAdministratorNoticeShown = saved.meta?.improvementAdministratorNoticeShown === true;
       {
         const affectedImp = cities.filter(c => isHuman(c.ownerId)
-          && autoBuildEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto' && !cityHasWorkingImprovementAdministrator(c));
+          && administratorsEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto' && !cityHasWorkingImprovementAdministrator(c));
         const show = shouldShowImprovementAdminMigration(improvementAdministratorNoticeShown, affectedImp.length);
         improvementAdministratorNoticeShown = true;
         if (show) {
@@ -47282,7 +47294,7 @@ async function boot(): Promise<void> {
       if (!cityAdministratorNoticeShown) {
         cityAdministratorNoticeShown = true;
         const affected = cities.filter(c => isHuman(c.ownerId)
-          && autoBuildEnabled && isAutoBudowaTryb(c.budowaTryb) && !cityHasWorkingAdministrator(c));
+          && administratorsEnabled && isAutoBudowaTryb(c.budowaTryb) && !cityHasWorkingAdministrator(c));
         if (affected.length > 0) {
           warEventLog.unshift({
             id: `city-admin-migration-${turn}`,
@@ -47295,6 +47307,18 @@ async function boot(): Promise<void> {
           trimWarEventLog();
           showHintMessage(`Autobudowa działa teraz tylko z administratorem miasta — ${affected.length} miast bez administratora (patrz „Ważne”)`, 6000);
         }
+      }
+      if (legacyAutomationMigration) {
+        warEventLog.unshift({
+          id: `administrators-legacy-migration-${turn}`,
+          icon: 'A',
+          title: LEGACY_AUTOMATION_NOTICE_TITLE,
+          subtitle: LEGACY_AUTOMATION_NOTICE_TEXT,
+          kind: 'enemy',
+          turnCreated: turn,
+        });
+        trimWarEventLog();
+        showHintMessage('Administratorzy wyłączeni w tej grze — automatyzacja nieaktywna (patrz „Ważne”)', 6000);
       }
       // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: stary zapis bez pola = WYŁĄCZONA.
       fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta(saved.meta?.fogRevealKeyFEnabled);

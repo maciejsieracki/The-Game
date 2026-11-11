@@ -6,15 +6,22 @@
  *   - auto-budowa budynków w miastach (tryby `priorytet`/`lista`/`zrownowazone`,
  *     kolejkowanie po ukończeniu, kolejkowanie z Zarządcy ⚙).
  *
- * Opcja `autoBuildEnabled` jest DOMYŚLNIE WYŁĄCZONA (nowa gra i zapisy bez pola).
+ * Opcja `administratorsEnabled` jest DOMYŚLNIE WYŁĄCZONA (nowa gra i zapisy bez pola).
  * AI / państwa-miasta / barbarzyńcy NIE są dotknięci (zawsze budują automatycznie).
  * Wyłączenie NIE kasuje trybów zapisanych w mieście — tryb zostaje w danych, ale
  * silnik go nie wykonuje, dopóki opcja jest wyłączona.
  * / EN: single pure gate for the human-player build automation; AI unaffected.
  */
 
-/** Wartość domyślna opcji (nowa gra, zapis bez pola). */
-export const AUTO_BUILD_ENABLED_DEFAULT = false;
+/**
+ * R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (właściciel 2026-11-11): globalna opcja „Administratorzy” z kreatora
+ * nowej gry zastąpiła przełącznik „Automatyzacja budowy” z ustawień. Zapisana w grze NA STAŁE
+ * (`meta.administratorsEnabled`), bez przełącznika w trakcie gry. Dotyczy WYŁĄCZNIE gracza (ludzkich foteli);
+ * AI nie podlega opcji (ZAŁOŻENIE z DODATKU 2: AI buduje i ulepsza jak dotąd, `ai_wymaga_administratora=false`).
+ * Armia (R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1) jest niezależna od tej opcji.
+ */
+/** Wartość domyślna opcji „Administratorzy” (nowa gra, zapis bez pola): WYŁĄCZONE. */
+export const ADMINISTRATORS_ENABLED_DEFAULT = false;
 
 /** Czy owner jest ludzkim fotelem. */
 export function isHumanSeatOwner(ownerId: number, humanOwnerIds: readonly number[]): boolean {
@@ -28,10 +35,10 @@ export function isHumanSeatOwner(ownerId: number, humanOwnerIds: readonly number
 export function isAutoBuildAllowedForOwner(
   ownerId: number,
   humanOwnerIds: readonly number[],
-  autoBuildEnabled: boolean,
+  administratorsEnabled: boolean,
 ): boolean {
   if (!isHumanSeatOwner(ownerId, humanOwnerIds)) return true;
-  return autoBuildEnabled === true;
+  return administratorsEnabled === true;
 }
 
 /**
@@ -45,10 +52,10 @@ export function isAutoBuildAllowedForOwner(
 export function isCityAutoBuildAllowed(
   ownerId: number,
   humanOwnerIds: readonly number[],
-  autoBuildEnabled: boolean,
+  administratorsEnabled: boolean,
   cityHasWorkingAdministrator: boolean,
 ): boolean {
-  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, autoBuildEnabled)) return false;
+  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, administratorsEnabled)) return false;
   if (!isHumanSeatOwner(ownerId, humanOwnerIds)) return true;
   return cityHasWorkingAdministrator === true;
 }
@@ -62,11 +69,11 @@ export function isCityAutoBuildAllowed(
 export function isCityAutoImprovementAllowed(
   ownerId: number,
   humanOwnerIds: readonly number[],
-  autoBuildEnabled: boolean,
+  administratorsEnabled: boolean,
   cityHasWorkingImprovementAdministrator: boolean,
   aiRequires: boolean = false,
 ): boolean {
-  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, autoBuildEnabled)) return false;
+  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, administratorsEnabled)) return false;
   if (!isHumanSeatOwner(ownerId, humanOwnerIds) && !aiRequires) return true;
   return cityHasWorkingImprovementAdministrator === true;
 }
@@ -107,15 +114,34 @@ export const AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT = 'Auto-ulepszenia terenu w t
 /** Podpowiedź UI: autobudowa wymaga działającego administratora miasta. */
 export const AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT = 'Autobudowa w tym mieście wymaga działającego administratora';
 
-/** Odczyt z meta zapisu: brak pola / nie-boolean = wyłączona. */
-export function autoBuildFromSaveMeta(raw: unknown): boolean {
+/** Odczyt z meta zapisu: brak pola / nie-boolean = wyłączone (stary zapis: migracja w main.ts). */
+export function administratorsFromSaveMeta(raw: unknown): boolean {
   return raw === true;
 }
 
-/** Odczyt z parametrów nowej gry: brak pola = domyślnie wyłączona. */
-export function autoBuildFromNewGameParam(raw: unknown): boolean {
-  return typeof raw === 'boolean' ? raw : AUTO_BUILD_ENABLED_DEFAULT;
+/** Odczyt z parametrów nowej gry: brak pola = domyślnie wyłączone. */
+export function administratorsFromNewGameParam(raw: unknown): boolean {
+  return typeof raw === 'boolean' ? raw : ADMINISTRATORS_ENABLED_DEFAULT;
 }
 
-/** Podpowiedź UI dla zablokowanych kontrolek auto. */
-export const AUTO_BUILD_DISABLED_HINT = 'Włącz automatyzację budowy w Ustawieniach';
+/**
+ * Migracja starego zapisu (sprzed opcji „Administratorzy”): zapis BEZ `administratorsEnabled`, ale z włączoną
+ * dotąd automatyzacją (`autoBuildEnabled === true`) → administratorzy WYŁĄCZENI + jednorazowe powiadomienie.
+ */
+export function shouldShowLegacyAutomationMigration(
+  meta: { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined | null,
+  hadHiredAdministrator: boolean = false,
+): boolean {
+  if (!meta) return false;
+  // Zarzut Evaluatora 1: opłacony administrator ginie przy wczytaniu także przy autoBuildEnabled=false — wtedy też komunikat.
+  return typeof meta.administratorsEnabled !== 'boolean' && (meta.autoBuildEnabled === true || hadHiredAdministrator === true);
+}
+
+/** Treść jednorazowego powiadomienia (zakładka „Ważne”) po wczytaniu starego zapisu z włączoną automatyzacją. */
+export const LEGACY_AUTOMATION_NOTICE_TITLE = 'Automatyzacja wymaga administratorów';
+export const LEGACY_AUTOMATION_NOTICE_TEXT =
+  'Ta gra powstała przed opcją „Administratorzy”: automatyczna budowa budynków i ulepszeń terenu jest w niej wyłączona, a administratorzy usunięci. '
+  + 'Aby odzyskać automatyzację, rozpocznij nową grę z włączoną opcją „Administratorzy” w kreatorze nowej gry.';
+
+/** Podpowiedź UI dla zablokowanych kontrolek auto (opcja „Administratorzy” wyłączona w tej grze). */
+export const AUTO_BUILD_DISABLED_HINT = 'Automatyzacja jest dostępna tylko w grze z włączoną opcją „Administratorzy” (kreator nowej gry)';

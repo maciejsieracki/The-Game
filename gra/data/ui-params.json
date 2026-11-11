@@ -301,15 +301,15 @@
         "domyslny": 0
       },
       {
-        "key": "auto_build_enabled",
-        "label": "Automatyzacja budowy",
+        "key": "administrators_enabled",
+        "label": "Administratorzy",
         "opts": [
-          "Włączona",
-          "Wyłączona"
+          "Włączone",
+          "Wyłączone"
         ],
         "descs": [
-          "Auto-budowa budynków w miastach i auto-ulepszenia terenu działają dla Ciebie (AI buduje jak dotąd)",
-          "Budynki i ulepszenia terenu budujesz ręcznie; przyciski „Auto” są niedostępne"
+          "Możesz zatrudniać administratorów miast i ulepszeń (koszt ze skarbca państwa); tylko z nimi działa automatyczna budowa budynków i automatyczne ulepszenia terenu. Wybór obowiązuje przez całą grę",
+          "Brak administratorów i automatyzacji budowy — budynki i ulepszenia terenu budujesz ręcznie. Wybór obowiązuje przez całą grę"
         ],
         "domyslny": 1
       },

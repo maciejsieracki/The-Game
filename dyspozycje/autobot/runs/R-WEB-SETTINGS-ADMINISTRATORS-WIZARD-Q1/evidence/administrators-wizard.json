@@ -1,0 +1,30 @@
+{
+  "wizard": {
+    "found": true,
+    "text": "AdAdministratorzyⓘ‹Wyłączone›",
+    "oldRow": false
+  },
+  "openOff": true,
+  "panelOff": {
+    "adminBtn": false,
+    "adminChip": false,
+    "adminText": true,
+    "lockedButtons": 7,
+    "hint": "Automatyzacja jest dostępna tylko w grze z włączoną opcją „Administratorzy” (kreator nowej gry)"
+  },
+  "pause": {
+    "open": true,
+    "autobuildToggle": false,
+    "autobuildSection": false,
+    "textHasOld": false
+  },
+  "openOn": true,
+  "panelOn": {
+    "adminBtn": true,
+    "adminChip": false,
+    "adminText": true,
+    "lockedButtons": 7,
+    "hint": "Automatyzacja jest dostępna tylko w grze z włączoną opcją „Administratorzy” (kreator nowej gry)"
+  },
+  "errors": []
+}

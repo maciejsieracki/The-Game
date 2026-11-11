@@ -136,7 +136,7 @@ ok(/selectCitiesForAutoImprovement\(\s*cities, hOid,[\s\S]{0,400}isCityAutoImpro
 ok(/improvementAdministratorNoticeShown = saved\.meta\?\.improvementAdministratorNoticeShown === true/.test(main) && /shouldShowImprovementAdminMigration\(improvementAdministratorNoticeShown/.test(main) && /^\s*improvementAdministratorNoticeShown,$/m.test(main), 'main.ts: OSOBNA flaga migracji ulepszeń (zapis/odczyt/użycie)');
 const migBlock = main.slice(main.indexOf('if (!cityAdministratorNoticeShown) {'), main.indexOf("fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta"));
 ok(!/city-impadmin-migration/.test(migBlock), 'main.ts: migracja ulepszeń NIE siedzi w bloku flagi administratora miasta');
-ok(/isCityAutoImprovementAllowed\(\s*city\.ownerId, humanSeats\.humanOwnerIds, autoBuildEnabled,\s*cityHasWorkingImprovementAdministrator\(city\), aiRequiresImprovementAdministrator\(\)/.test(main), 'main.ts: bramka z flagą AI z JSON');
+ok(/isCityAutoImprovementAllowed\(\s*city\.ownerId, humanSeats\.humanOwnerIds, administratorsEnabled,\s*cityHasWorkingImprovementAdministrator\(city\), aiRequiresImprovementAdministrator\(\)/.test(main), 'main.ts: bramka z flagą AI z JSON');
 ok(/setOwnerTreasury\(city\.ownerId, treasury - improvementAdministratorHireCost\(\)\)/.test(main), 'main.ts: koszt zatrudnienia ze skarbca państwa');
 ok(/getImprovementAdministratorState:/.test(main) && /onHireImprovementAdministrator:/.test(main) && /onDismissImprovementAdministrator:/.test(main), 'main.ts: panel ulepszeń dostaje haki');
 ok(/city-impadmin-migration/.test(main) && /affectedImp/.test(main), 'main.ts: jednorazowe powiadomienie migracyjne (stare zapisy z auto-ulepszeniami)');
