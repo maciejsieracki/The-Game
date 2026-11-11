@@ -31,7 +31,7 @@ import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
-import { resourceAmountChipHtml } from './resourceAmountChip';
+import { resourceAmountChipHtml, RESOURCE_CHIP_CSS } from './resourceAmountChip';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
@@ -297,6 +297,7 @@ function blockForSection(section: string | null): EmpirePanelBlock {
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
+${RESOURCE_CHIP_CSS}
 .civ-emp-panel{position:fixed;top:0;right:0;bottom:0;width:min(404px,94vw);z-index:450;
   background:#141a24;border-left:1px solid #2b3543;color:#e8ebf0;
   box-shadow:-18px 0 44px rgba(0,0,0,0.45);

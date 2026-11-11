@@ -65,9 +65,9 @@ check('A2: empireDetailPanel — brak tekstu „liczba + nazwa” w linii utrzym
 const cityText = cityLines.join('\n');
 const empireText = empireLines.join('\n');
 check('B1: cityPanel importuje resourceAmountChipHtml z ./resourceAmountChip',
-  /import \{ resourceAmountChipHtml \} from '\.\/resourceAmountChip'/.test(cityText));
+  /import \{ resourceAmountChipHtml(?:, RESOURCE_CHIP_CSS)? \} from '\.\/resourceAmountChip'/.test(cityText));
 check('B2: empireDetailPanel importuje resourceAmountChipHtml z ./resourceAmountChip',
-  /import \{ resourceAmountChipHtml \} from '\.\/resourceAmountChip'/.test(empireText));
+  /import \{ resourceAmountChipHtml(?:, RESOURCE_CHIP_CSS)? \} from '\.\/resourceAmountChip'/.test(empireText));
 const cityUses = (cityText.match(/resourceAmountChipHtml\(/g) || []).length;
 const empireUses = (empireText.match(/resourceAmountChipHtml\(/g) || []).length;
 check('B3: cityPanel używa komponentu w co najmniej 9 miejscach (stock, utrzymanie, jednostki, konwerter)',
