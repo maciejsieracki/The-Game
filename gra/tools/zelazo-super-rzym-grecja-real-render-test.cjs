@@ -235,6 +235,9 @@ const MUTATIONS = [
   // model falangity macedonskiego, wyraznie rozny od Hieros Lochos, wiec zmiana koloru pierscienia
   // aspidy Hieros nie obniza pary Hieros/Falanga ponizej progu. Mutacja zostaje w macierzy jako
   // kontrola (musi byc zielona dla H13), ale NIE jest wymagana jako czerwona w M1.
+  // POKRYCIE H13 PO ZMIANIE (obrona r1, zarzut 2): para Evocati/Hastati w H13 jest rozstrzygana przez M12
+  // (tors Evocatiego czerwony jak Hastatiego) — zmierzone: M12 zapala H12 ORAZ H13 (RED/RED w macierzy).
+  // Para Hieros/Falanga ma teraz duzy zapas z natury (inny model), wiec nie ma dla niej osobnej mutacji.
   { id: 'M16', cel: 'H13', przestarzala: true, plik: P6_TS,
     opis: 'zloty pierscien aspidy Hieros Lochos w kolorze pola — znika roznica wobec Falangity',
     from: '  const band = new THREE.Mesh(getGS6AspisBand(), mGold);',

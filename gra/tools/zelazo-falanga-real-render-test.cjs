@@ -606,14 +606,9 @@ async function main() {
     srcUnits.includes(LINE_DISPATCH));
   check('(0b) units.ts: `case \'falanga\'` NADAL istnieje jako fallback kategorii',
     srcUnits.includes("case 'falanga': {") && srcUnits.includes(LINE_FALLBACK));
-  check('(0c) hastati-falangita.ts: sekcja ZGODNOŚĆ HISTORYCZNA z punktami K1-K9 i K5 = SARISSA',
-    /ZGODNOSC HISTORYCZNA/.test(srcModel) && /K1\. LINOTHORAX/.test(srcModel)
-    && /K5\. SARISSA/.test(srcModel) && /K9\. WYKROK/.test(srcModel));
-  check('(0d) K7 rozstrzyga kwestię blazonu z uzasadnieniem (Lakedaimon + roster gry), tarcza = pelte',
-    /K7\. PELTE I EPISEMA/.test(srcModel) && /Lakedaimon/.test(srcModel)
-    && /city-names-pools/.test(srcModel) && /Hieros/.test(srcModel));
-  check('(0e) dokumentacja pozy: skręt korpusu i dobór parametrów chwytu opisane w źródle',
-    /SA_TORSO_YAW/.test(srcModel) && /obydwiema rekami|OBYDWOMA rekami|OBYDWIEMA rekami/i.test(srcModel));
+  // (0c)/(0d)/(0e) USUNIETE (obrona r1, zarzut 3): sprawdzaly tekst komentarzy, nie zachowanie.
+  // Zachowanie pozy/tarczy pilnuja asercje H1-H11 (chwyt, skret torsu, pelte, episema), a przeslanki
+  // blazonu (Lakedaimon/roster) — sekcja (K).
   check('(0f) buildHastati() nietknięty — nadal montefortino + gladius (poza zakresem tematu)',
     /export function buildHastati/.test(srcModel) && /getGNIMontBowl\(\), mGold/.test(srcModel));
 
