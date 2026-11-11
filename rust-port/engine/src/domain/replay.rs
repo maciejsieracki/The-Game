@@ -32,6 +32,13 @@ pub const CURRENT_REPLAY_VERSION: u16 = 1;
 pub type ReplaySequence = u64;
 
 /// One input together with the deterministic state at which it was observed.
+///
+/// `ReplayStep` nie implementuje `Deserialize` (patrz doctest przy [`ReplayLog`]).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::replay::ReplayStep<u8>>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayStep<I> {
     sequence: ReplaySequence,
@@ -152,6 +159,15 @@ impl fmt::Display for ReplayError {
 impl Error for ReplayError {}
 
 /// A serializable, deterministic input log.
+///
+/// `ReplayLog` nie implementuje `Deserialize`: wczytanie z JSON wymaga migracji snapshotow,
+/// wiec jedyna sciezka to [`ReplayLog::load_json_with_migration_reports`]. Ponizszy doctest
+/// pilnuje tego na poziomie kompilacji (GOAL 4 temat R-RUSTPORT-ZAPIS-REPLAY-DESER-REMOVE-Q1).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::replay::ReplayLog<u8>>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayLog<I> {
     version: u16,
