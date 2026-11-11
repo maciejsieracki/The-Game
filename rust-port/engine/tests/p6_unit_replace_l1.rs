@@ -16,7 +16,7 @@ use civ_engine::domain::production_units::{
     UnitReplaceRow,
 };
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 const VECTORS: &str = include_str!("p6_unit_replace_l1_vectors/infantry-promotion.json");
 const REAL_UNITS: &str = include_str!("../data/units.json");
@@ -124,6 +124,15 @@ fn infantry_promotion_targets_available_in_rust_logic() {
             is_infantry(src_row["Typ"].as_str()),
             "zrodlo spoza piechoty: {source}"
         );
+        let src_typ = src_row["Typ"].as_str().unwrap_or("").trim();
+        // Cele awansu o innym Typ (galaz B: `Zastąp specjalnie`), oczekiwany zbior.
+        let exp_cross: BTreeSet<&str> = src["targets"]
+            .as_array()
+            .expect("targets")
+            .iter()
+            .map(|t| t.as_str().expect("target"))
+            .filter(|t| by_name[t]["Typ"].as_str().unwrap_or("").trim() != src_typ)
+            .collect();
 
         for t in src["targets"].as_array().expect("targets") {
             let target = t.as_str().expect("target");
@@ -156,6 +165,18 @@ fn infantry_promotion_targets_available_in_rust_logic() {
                 got.iter().any(|it| it.id == target),
                 "cel z pinu nieosiagalny w available_replacements_for: {source} -> {target}; wynik={:?}",
                 got.iter().map(|it| it.id.as_str()).collect::<Vec<_>>()
+            );
+            // Galaz A (ten sam Typ) nie wnosi celu innego Typ, wiec kazdy wynik o innym Typ
+            // musi pochodzic z `Zastąp specjalnie` zrodla: zbior nie moze byc wiekszy niz pin.
+            let got_cross: BTreeSet<&str> = got
+                .iter()
+                .map(|it| it.id.as_str())
+                .filter(|id| by_name[id]["Typ"].as_str().unwrap_or("").trim() != src_typ)
+                .collect();
+            assert!(
+                got_cross.is_subset(&exp_cross),
+                "nadmiarowy cel innego Typ: {source} -> {target}; nadmiar={:?}",
+                got_cross.difference(&exp_cross).collect::<Vec<_>>()
             );
             checked += 1;
         }
