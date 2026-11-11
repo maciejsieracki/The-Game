@@ -15,6 +15,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 use civ_engine::domain::general_quick_follow::{
     plan_tracked_general_follow_march, sync_general_march_targets, MarchMap, MovementContext,
     PathPlan, TrackedFollowPlanner, TrackedMarchDest,
@@ -30,6 +34,7 @@ use civ_engine::{
 use events::{EventQueue, TurnEvent};
 use save_load::{SaveSnapshot, SavedPlannedMarch, TurnPhase};
 use serde_json::{Number, Value};
+use snapshot::decode_snapshot_str;
 use std::collections::HashSet;
 
 const HOOK: &str = include_str!("p6_repin_wojna_3_vectors/hook.json");
@@ -588,13 +593,4 @@ fn march_map_from_entries_behaves_like_js_map_set() {
     );
     assert!(!map.follow_off_clears("missing"));
     assert!(!map.is_general_follow("missing"));
-}
-
-/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
-/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
-fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }

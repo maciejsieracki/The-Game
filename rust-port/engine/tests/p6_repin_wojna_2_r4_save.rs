@@ -19,6 +19,10 @@ mod events;
 #[allow(dead_code)]
 mod save_load;
 
+#[path = "common/snapshot.rs"]
+#[allow(dead_code)]
+mod snapshot;
+
 #[path = "p6_4_vectors/common.rs"]
 mod common;
 
@@ -34,6 +38,7 @@ use common::{load, num, opt_string, units};
 use events::{EventQueue, TurnEvent};
 use save_load::{SaveMeta, SaveSnapshot, SavedAutoMarch, SavedPlannedMarch, TurnPhase};
 use serde_json::{Number, Value};
+use snapshot::{decode_snapshot_str, decode_snapshot_value};
 
 const META_VECTORS: &str = include_str!("p6_repin_wojna_2_r4_vectors/save-meta.json");
 const PLANNED_VECTORS: &str =
@@ -399,21 +404,4 @@ fn wrong_json_types_for_r4_fields_are_ignored_like_web_optional_lookups() {
     assert!(decoded.meta().is_empty());
     assert!(decoded.planned_marches().is_empty());
     assert!(decoded.auto_march().is_none());
-}
-
-/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
-/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
-fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
-}
-
-/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
-fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
-    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
-    let mut snapshot = raw.into_snapshot();
-    snapshot.migrate_on_load();
-    Ok(snapshot)
 }
