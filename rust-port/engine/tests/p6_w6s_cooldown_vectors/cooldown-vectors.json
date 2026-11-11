@@ -1,0 +1,494 @@
+{
+  "source": "gra/src/game/diplomacy-rejection-cooldown.ts@07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "runner": "node v22.23.4 module.stripTypeScriptTypes",
+  "constants": {
+    "AI_REJECTED_OFFER_COOLDOWN_TURNS": 3,
+    "CITY_FOR_PEACE_COOLDOWN_KEY": "miasto_za_pokoj",
+    "CYCLIC_BARTER_COOLDOWN_KEY": "wymiana_cykliczna"
+  },
+  "keyFor": [
+    {
+      "cmdType": "oferuj_miasto_za_pokoj",
+      "actionId": "pokoj",
+      "key": "miasto_za_pokoj"
+    },
+    {
+      "cmdType": "zada_miasto_za_pokoj",
+      "actionId": "pokoj",
+      "key": "miasto_za_pokoj"
+    },
+    {
+      "cmdType": "zaproponuj_wymiane_cykliczna",
+      "actionId": "handel",
+      "key": "wymiana_cykliczna"
+    },
+    {
+      "cmdType": "oferuj_pokoj",
+      "actionId": "pokoj",
+      "key": "pokoj"
+    },
+    {
+      "cmdType": "zaproponuj_handel_surowiec",
+      "actionId": "handel",
+      "key": "handel"
+    }
+  ],
+  "partnerOwner": [
+    {
+      "proposer": 0,
+      "responder": 4,
+      "partner": 4
+    },
+    {
+      "proposer": 4,
+      "responder": 0,
+      "partner": 4
+    },
+    {
+      "proposer": 2,
+      "responder": 3,
+      "partner": 2
+    }
+  ],
+  "ops": [
+    {
+      "op": "record",
+      "partner": 2,
+      "action": "pokoj",
+      "turn": 10,
+      "cd": 3,
+      "result": null
+    },
+    {
+      "op": "record",
+      "partner": 2,
+      "action": "miasto_za_pokoj",
+      "turn": 10,
+      "cd": 3,
+      "result": null
+    },
+    {
+      "op": "record",
+      "partner": 2,
+      "action": "pokoj",
+      "turn": 11,
+      "cd": 2,
+      "result": null
+    },
+    {
+      "op": "record",
+      "partner": 3,
+      "action": "wymiana_cykliczna",
+      "turn": 12,
+      "cd": 3,
+      "result": null
+    },
+    {
+      "op": "record",
+      "partner": 3,
+      "action": "handel",
+      "turn": 12,
+      "cd": 3,
+      "result": null
+    },
+    {
+      "op": "check",
+      "partner": 2,
+      "action": "pokoj",
+      "turn": 12,
+      "result": true
+    },
+    {
+      "op": "check",
+      "partner": 2,
+      "action": "pokoj",
+      "turn": 13,
+      "result": false
+    },
+    {
+      "op": "check",
+      "partner": 2,
+      "action": "miasto_za_pokoj",
+      "turn": 12,
+      "result": true
+    },
+    {
+      "op": "check",
+      "partner": 2,
+      "action": "miasto_za_pokoj",
+      "turn": 13,
+      "result": false
+    },
+    {
+      "op": "check",
+      "partner": 3,
+      "action": "wymiana_cykliczna",
+      "turn": 14,
+      "result": true
+    },
+    {
+      "op": "check",
+      "partner": 3,
+      "action": "handel",
+      "turn": 14,
+      "result": true
+    },
+    {
+      "op": "check",
+      "partner": 4,
+      "action": "handel",
+      "turn": 12,
+      "result": false
+    },
+    {
+      "op": "prune",
+      "turn": 13,
+      "result": null
+    },
+    {
+      "op": "check",
+      "partner": 2,
+      "action": "pokoj",
+      "turn": 13,
+      "result": false
+    },
+    {
+      "op": "prune",
+      "turn": 15,
+      "result": null
+    },
+    {
+      "op": "record",
+      "partner": 5,
+      "action": "nap",
+      "turn": 20,
+      "cd": 0,
+      "result": null
+    },
+    {
+      "op": "check",
+      "partner": 5,
+      "action": "nap",
+      "turn": 20,
+      "result": false
+    },
+    {
+      "op": "prune",
+      "turn": 20,
+      "result": null
+    }
+  ],
+  "cooldownStates": [
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 2,
+        "actionId": "miasto_za_pokoj",
+        "rejectedAtTurn": 10,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 2,
+        "actionId": "pokoj",
+        "rejectedAtTurn": 11,
+        "expiresAtTurn": 13
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 3,
+        "actionId": "wymiana_cykliczna",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      },
+      {
+        "partnerOwnerId": 3,
+        "actionId": "handel",
+        "rejectedAtTurn": 12,
+        "expiresAtTurn": 15
+      }
+    ],
+    [],
+    [
+      {
+        "partnerOwnerId": 5,
+        "actionId": "nap",
+        "rejectedAtTurn": 20,
+        "expiresAtTurn": 20
+      }
+    ],
+    [
+      {
+        "partnerOwnerId": 5,
+        "actionId": "nap",
+        "rejectedAtTurn": 20,
+        "expiresAtTurn": 20
+      }
+    ],
+    []
+  ],
+  "finalState": []
+}
