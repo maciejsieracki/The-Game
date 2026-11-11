@@ -46,3 +46,49 @@ STATUS RUNDY 1: POMIAR WYKONANY, KOD NIEZMIENIONY (brak cargo, brak testów p6_r
 ## Ograniczenia
 
 - Runda 1 = pomiar + tabela; bez implementacji. Pozostaje: (a) nowy `ai_resource_needs.rs` + wiązanie w `ai_turn.rs`; (b) pomiar wywołań ścieżki gracza.
+
+---
+
+## Runda 2 (Operator, 2026-11-11)
+
+### (a) Port `detectOwnerResourceNeeds` — ZROBIONE (partia 1)
+
+| Element | Web (origin/main f9c6300c6) | Rust | Status |
+|---|---|---|---|
+| deficyty magazynu (`detectPricedResourceDeficits`, sort po luce) | `diplomacy-resource-trade-pick.ts:34` | `domain/ai_resource_needs.rs::detect_priced_resource_deficits` | PORT 1:1 |
+| koszt budynków w kolejce (FALA2 x2) | `ai-resource-needs.ts:45` + `building-stock-cost.ts` | `resource_keys_needed_for_building_queue` + `building_costs::p6_7b::scale_stock_cost_record` | PORT |
+| koszt jednostek w kolejce | `ai-resource-needs.ts:70` | `resource_keys_needed_for_unit_queue` | PORT (wejście = rekord kosztu, źródło po stronie wywołującego) |
+| utrzymanie surowcowe (`upkeepDemand`) | `ai-resource-needs.ts:136` | `detect_owner_resource_needs` (wejście `&[(String,f64)]`, kolejność wstawiania) | PORT |
+| żywność < próg (domyślnie 8) | `ai-resource-needs.ts:141` | `detect_owner_resource_needs` | PORT |
+| `urgentKeys` (< ¼ pakietu / żywność) | `ai-resource-needs.ts:151` | `detect_owner_resource_needs` | PORT |
+
+ZAŁOŻENIA (partia 1):
+- Kolejność kluczy WEWNĄTRZ jednego kosztu budynku/jednostki: web = kolejność wstawiania z JSON; Rust `BTreeMap` w danych gubi ją, więc wejście to `Vec<(String, _)>` w kolejności JSON podanej przez wywołującego. Wpływa tylko na kolejność remisów w `deficitKeys`, nie na przynależność.
+- `Map(goods)` w kolejkach = ostatni wpis wygrywa; `find` (deficyty, utrzymanie) = pierwszy wpis. Odtworzone 1:1.
+- Źródło danych kosztu jednostki po stronie Rust (`unit-stock-costs.json`) NIE podpięte w tej partii: funkcja przyjmuje lookup.
+
+Wektory: `rust-port/engine/tests/p6_repin_ai_zakup_needs_vectors/needs-vectors.json` (248 przypadków: 8 ręcznych brzegów + 240 losowych deterministycznych), generator `gen-needs-vectors.mjs` (Node 22, `--experimental-transform-types`, `register.mjs`/`hooks.mjs` rozwiązują importy bez `.ts`/JSON) uruchamia PRAWDZIWY `detectOwnerResourceNeeds` z `git archive origin/main gra/src gra/data`. Test: `tests/p6_repin_ai_zakup_needs.rs` (2 testy, PASS).
+
+### Wiązanie w `ai_turn.rs` — NIE ZROBIONE (partia 2)
+
+Pomiar (grep): `ai_turn.rs` nie ma kroku zakupu/rekrutacji AI (0 trafień `recruit|purchase|zakup`), a `should_ai_purchase_unit` jest wołany tylko z testu rezerwy. Web wiąże zakup z `shouldAIPurchaseUnit` + `ownerSurowcePoolFor` (main.ts ~42441, ~22818). Brak istniejącego kroku w Rust oznacza, że wiązanie to nowy moduł wykonawczy (wybór kandydata, koszt magazynu państwa przez `validate_recruitment`/`spend_recruitment`, egzekucja). To przekracza partię ≤600 LOC; przenosi się do partii 2.
+
+### (b) Drogi gracza = AI — POMIAR (ZMIERZONO grepem), bez zmian kodu
+
+| Ścieżka | Miejsce w Rust | Reguła kwalifikacji |
+|---|---|---|
+| Gracz (`can_build`, `get_qualifying_hexes`) | `improvement_build.rs:1258` gałąź `k::DROGA` → `is_road_qualified` (`:1086`) | `teren_ladu` && `in_player_territory` && `is_road_qualified` |
+| AI/auto (`sh.qualifies` z `single_pass.rs:132`) | ten sam `Qualifier` (`improvement_build.rs:1173`), więc DROGA też przez `is_road_qualified` | wspólna |
+| AI plan sieci (`single_pass.rs:118` → `plan_road_network`) | `auto_improvements/road_network_plan.rs:199`; używa `hex_has_road` (`:111`), NIE `is_road_qualified` | RÓŻNA od kwalifikatora gracza |
+
+Wniosek: w Rust AI buduje drogi DWIEMA ścieżkami (kwalifikator dla pojedynczych kroków, `plan_road_network` dla sieci). Czy `plan_road_network` odpowiada web `planRoadNetwork` (road-network-plan.ts) i czy web gracza używa tej samej reguły co AI (improvement-build.ts:956–1053) — to jest do zrobienia w partii 2 i NIE jest rozstrzygnięte w tej rundzie (NIE_ZMIERZONO co do zgodności z webem, ZMIERZONO co do ścieżek Rust).
+
+## Bramki (runda 2)
+
+- `cargo fmt` (nowe pliki): PASS (`rustfmt --check`).
+- `cargo clippy --lib --test p6_repin_ai_zakup_needs --test p6_repin_ai_zakup_rezerwa -- -D warnings`: PASS.
+- `cargo test --lib`: 22 passed, 0 failed.
+- `cargo test --test p6_repin_ai_zakup_needs`: 2 passed, 0 failed (248 wektorów z webu).
+- `cargo test --test p6_repin_ai_zakup_rezerwa`: 5 passed, 0 failed.
+- Baseline PRZED zmianą (na 390265868) NIE uruchomiony osobno: NIE_ZMIERZONO. Zmiana jest addytywna (nowy moduł + jedna linia `pub mod` w `domain/mod.rs`).
+- Pozostałe cele `cargo test` (pełny zestaw) NIE uruchomione w tej rundzie.
