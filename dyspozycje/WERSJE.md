@@ -1,3 +1,9 @@
+## ROBOCZA dd13546f -- 2026-11-06 -- FALA 642: Generator kart budynków: korekta Cegielni w wejściach generatora (--check zielony) (testowa)
+
+- R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1: dług gen-building-cards-top5 --check NIEZGODNY z plikiem danych naprawiony — ręczna edycja karty Cegielni (cykle 50/75/100, commit BRICK-CYCLES) przeniesiona do korekt generatora (gen-building-cards-top5.korekty.json, card-text-corrections.cjs); building-cards-top5.json bez zmiany treści (0 bajtów diffu); generator deterministyczny
+- Weryfikacja: tsc czysty; --check OK x2 (identyczny sha256); terminology-trade-vs-tax 799/0; building-cards-top5 1207/0; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; brick-cycles 46/0, brick-production-x2 69/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Długi: korekta Cegielni hardkoduje tytuł/zdanie (przyszła zmiana liczb nie zostanie wychwycona), dwie rozbieżne kopie budynki-top5.csv, nieaktualne punkty odniesienia §6 R-PROC-AUTOBOT (tech-tree 19→20, unit-replace 13→21)
+
 ## ROBOCZA fbcde734 -- 2026-11-06 -- FALA 641: Wiki: etykieta 'Mnożnik waluty' (bez 'handlu') (testowa)
 
 - R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1: etykieta 'Mnożnik handlu/waluty' → 'Mnożnik waluty' w 9 hasłach cywilizacji (docs/encyklopedia + szablon gen-cyw-encyklopedia.py), wikiBundle regenerowany generatorem; poradnik gracza (SPIS-TRESCI:2352) przepisany neutralnie zgodnie z silnikiem (bez obietnicy 'więcej złota'); komentarz meta_mnoznik_waluta w civ-matrix-semantic.ts poprawiony (bez zmiany kodu wykonywalnego); mechanika bez zmian (decyzja właściciela ABC A)

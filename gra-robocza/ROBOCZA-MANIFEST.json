@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "fbcde734cec4363f476373c847eb7f89",
-  "bundleSha256": "818cb00d176b470c280106a9c5b47f66e230932b782da0521333aab7d7af7b18",
+  "bundleMd5": "dd13546f7549eb028358caeb0f9ad940",
+  "bundleSha256": "832b52a11f2ad6322732a56d2d291f92ed977e7a49375debab0abae4a2ca880a",
   "bundleBytes": 14510833,
   "sourceSnapshot": {
-    "source": "merge FC 5e26f2293",
+    "source": "merge FC 3f9f66034",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 641: R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1: etykieta 'Mnożnik handlu/waluty' → 'Mnożnik waluty' w 9 hasłach cywilizacji (docs/encyklopedia + szablon gen-cyw-encyklopedia.py), wikiBundle regenerowany generatorem; poradnik gracza (SPIS-TRESCI:2352) przepisany neutralnie zgodnie z silnikiem (bez obietnicy 'więcej złota'); komentarz meta_mnoznik_waluta w civ-matrix-semantic.ts poprawiony (bez zmiany kodu wykonywalnego); mechanika bez zmian (decyzja właściciela ABC A)"
+    "FALA 642: R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1: dług gen-building-cards-top5 --check NIEZGODNY z plikiem danych naprawiony — ręczna edycja karty Cegielni (cykle 50/75/100, commit BRICK-CYCLES) przeniesiona do korekt generatora (gen-building-cards-top5.korekty.json, card-text-corrections.cjs); building-cards-top5.json bez zmiany treści (0 bajtów diffu); generator deterministyczny"
   ],
   "verification": [
-    "tsc czysty; pr141-matrix-only-data-wiki 15 civ + 9 stron; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0, economy 72/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; --check OK x2 (identyczny sha256); terminology-trade-vs-tax 799/0; building-cards-top5 1207/0; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; brick-cycles 46/0, brick-production-x2 69/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Encyklopedia nadal pokazuje wartość per-civ z macierzy, a silnik używa globalnego mennicaMnoznikPoWalucie (1,5) — rozbieżność wartości poza zakresem (osobny temat/ABC); terminology-trade-vs-tax 795/1 ([G] building-cards-top5 = dług bazowy, osobny temat w toku)"
+    "Długi: korekta Cegielni hardkoduje tytuł/zdanie (przyszła zmiana liczb nie zostanie wychwycona), dwie rozbieżne kopie budynki-top5.csv, nieaktualne punkty odniesienia §6 R-PROC-AUTOBOT (tech-tree 19→20, unit-replace 13→21)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T18:29:34",
+  "hubGeneratedAt": "2026-11-11T18:47:22",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "md5": "dd13546f7549eb028358caeb0f9ad940",
       "sizeBytes": 14510833
     }
   ],
-  "md5": "fbcde734cec4363f476373c847eb7f89",
+  "md5": "dd13546f7549eb028358caeb0f9ad940",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
