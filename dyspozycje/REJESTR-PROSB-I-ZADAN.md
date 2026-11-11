@@ -9677,3 +9677,8 @@ STATUS: OTWARTE
 DOMAIN: GAME
 Przełącznikwłącz/wyłączmiejskiebudynkiprodukującesurowce. Wyłączeniewstrzymujeprodukcję,zużyciewejśćikosztyutrzymania; stantrwały, starezapisyON. Bezrefundukosztubudowy. Dispatch `autobot/runs/R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1/00-dispatch.md`; kolejkaprzymax4tematach.
 - DODATEK2026-11-11 do R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: na końcu paneluMiasta lista wszystkichmiastwyłączniezbudynkamisurowcowymi iichprzełącznikami; globalnieper-surowiec produkcjarealizowana vsprzeróbpotencjalny (przypełnymzaopatrzeniu), jasnoodróżnićwyłączonąmocizasilanie.
+
+## 2026-11-11 — R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+PanelRekrutacjacałacywilizacja: limitilości/wyraźnyczerwonybrakprzybrakuzasobów, wspólnakontrolakosztukoszyka, blokadaniedostępnejrekrutacji. Dodatkowopodsumowaniepertypisumaryczniejużrekrutowanych(wkolejkach) iosobnowybranychdozamówienia. Zarejestrowane w `autobot/runs/R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1/00-dispatch.md`, max4aktywnetematynadalobowiązuje.
