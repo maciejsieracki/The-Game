@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "881b150cf8474c463b2c7f65e12725b9",
-  "bundleSha256": "0f8efb33b09d7dd60e21f85d0abbde869407713fd3d0614c7d1624974f0b138b",
-  "bundleBytes": 14453735,
+  "bundleMd5": "6911acc968413f9e7e4089698c874ef0",
+  "bundleSha256": "51e7513cf2f8ed448191b4479adb62c53734a9086f9d77b6f366e79f2ad6930e",
+  "bundleBytes": 14454399,
   "sourceSnapshot": {
-    "source": "merge main cfa5d1e65 + FC CITY-ICONS b6a919b96",
+    "source": "merge main 0571c8731 + FC SEA-PEOPLES a88d05607",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 625: R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: w wierszach budynków panelu miasta (utrzymanie, produkcja konwerterów, nagłówek Utrzymanie łącznie) nazwy surowców zastąpione ikonami z HUD/Spichlerza + liczby; nazwa surowca w tooltipie; zawijanie wierszy bez nachodzenia przy 520 px; nowy moduł resourceAmountChip.ts"
+    "FALA 626: R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: od 20. tury od wejścia gracza w Brąz do wejścia w Żelazo liczba jednostek barbarzyńców na każdym aktywnym poziomie ×3 (obozy i rajdy morskie), komunikat raz (zakładka Ważne) z dedupem po zapisie/wczytaniu; istniejący mechanizm Ludów Morza rozszerzony; wyłączeni barbarzyńcy pozostają wyłączeni"
   ],
   "verification": [
-    "tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, test realnego renderu w Chromium 29/0 (brak overflow i nachodzenia 520 px), citypanel-konwerter-produkcja 100/0; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, barbarians 213/0, sea-peoples-boost 42/0, sea-peoples-wiring 23/0 (mutacje main.ts czerwone), vite build OK; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Zakres: karty kosztu budowy, formatResourceUpkeepSummary i koszty utrzymania jednostek nadal tekstem (poza zgłoszeniem ze zrzutu); czytelność małych ikon (~9 px) na żywej grze NIE_ZMIERZONO; nazwa budynku nadal może być obcięta (tooltip)"
+    "Okno liczone dla gracza (owner 0), spawn barbarzyńców globalny, brak parytetu dla nacji AI; próg 20. tury = 20 tur od wejścia w Brąz; stary zapis bez flagi może pokazać komunikat raz po wczytaniu; Chromium/widok komunikatu NIE_ZMIERZONO; forced-war-bronze/iron-main-guard i ai-dlug-porzadki-q1 czerwone identycznie na bazie"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T13:29:35",
+  "hubGeneratedAt": "2026-11-11T13:42:52",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "881b150cf8474c463b2c7f65e12725b9",
-      "sizeBytes": 14453735
+      "md5": "6911acc968413f9e7e4089698c874ef0",
+      "sizeBytes": 14454399
     }
   ],
-  "md5": "881b150cf8474c463b2c7f65e12725b9",
+  "md5": "6911acc968413f9e7e4089698c874ef0",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

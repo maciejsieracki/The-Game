@@ -1,3 +1,9 @@
+## ROBOCZA 6911acc9 -- 2026-11-06 -- FALA 626: Epoka Ludów Morza: ×3 barbarzyńców od 20. tury po wejściu w Brąz (testowa)
+
+- R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: od 20. tury od wejścia gracza w Brąz do wejścia w Żelazo liczba jednostek barbarzyńców na każdym aktywnym poziomie ×3 (obozy i rajdy morskie), komunikat raz (zakładka Ważne) z dedupem po zapisie/wczytaniu; istniejący mechanizm Ludów Morza rozszerzony; wyłączeni barbarzyńcy pozostają wyłączeni
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, barbarians 213/0, sea-peoples-boost 42/0, sea-peoples-wiring 23/0 (mutacje main.ts czerwone), vite build OK; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Okno liczone dla gracza (owner 0), spawn barbarzyńców globalny, brak parytetu dla nacji AI; próg 20. tury = 20 tur od wejścia w Brąz; stary zapis bez flagi może pokazać komunikat raz po wczytaniu; Chromium/widok komunikatu NIE_ZMIERZONO; forced-war-bronze/iron-main-guard i ai-dlug-porzadki-q1 czerwone identycznie na bazie
+
 ## ROBOCZA 881b150c -- 2026-11-06 -- FALA 625: Ikony surowców zamiast nazw w liście budynków miasta (testowa)
 
 - R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: w wierszach budynków panelu miasta (utrzymanie, produkcja konwerterów, nagłówek Utrzymanie łącznie) nazwy surowców zastąpione ikonami z HUD/Spichlerza + liczby; nazwa surowca w tooltipie; zawijanie wierszy bez nachodzenia przy 520 px; nowy moduł resourceAmountChip.ts
