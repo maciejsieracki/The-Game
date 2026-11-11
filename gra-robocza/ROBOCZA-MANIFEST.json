@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "be5d3e417eae4afa10bdac9141016adc",
-  "bundleSha256": "7946a4aac17f8f676596487064094da74bfe8c636f3e8ef52458c5a5eac6932b",
-  "bundleBytes": 14452331,
+  "bundleMd5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+  "bundleSha256": "e040fbac50b1ce9facb5f5867546beee2f2b346a4c1cc582b06217518ab1153a",
+  "bundleBytes": 14452661,
   "sourceSnapshot": {
-    "source": "merge main 546fdf6bf + FC IRON-STUD 1dff44b63",
+    "source": "merge main 681a0a828 + FC FARMHINT-CAM 6a50daeb3",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 623: R-WEB-IRON-STUD-ADJACENCY-Q1: stadnina bez złoża Konia w epoce Żelaza+ tylko na bezpośrednim sąsiedzie zbudowanej własnej stadniny (6 kierunków; dystans 2 i brak sąsiada odrzucone; kolejka tury nie liczy się; własność wg terytorium gracza); złoże Konia bez zmian; parytet gracz/AI/autobudowa; stare stadniny zachowane"
+    "FALA 624: R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1 (#201, decyzja właściciela 2 b+c): podpowiedź Przydziel obywatela? w zakładce Ważne, przycisk Pokaż centruje kamerę na polu/mieście; ogólna akcja centerCamera w powiadomieniach panelu bocznego"
   ],
   "verification": [
-    "tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, stadnina-iron-adjacency 37/0 (mutacja własności 35/2 czerwona), stadnina-early-eras-ai-picker 23/0, stadnina-kon-koszt-live Chromium 19/0 (FC); audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, farm-assign-hint-camera-important 16/0, farm-assign-citizen-hint-manual 36/0, sidepanel-notification-tabs 29/0, side-panel-event-link 37/0; Chromium: Ważne 1, przycisk Pokaż, kamera wycentrowana (delta 0); audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Niezmierzone: dodatnia ścieżka live (budowa przy sąsiedzie + realne odjęcie 50 koni) w Chromium, koszt wydajności tooltipu; hex-tooltip-unlock-label-dedup 27/1 = dług bazowy; mgla-sciezka-inwariant 41/1 = baza"
+    "Dowód Chromium na wstrzykniętej karcie (hak scratch poza commitem); realny wpis z nowym polem w turze ręcznej do obejrzenia na ROBOCZEJ; akcja tylko centruje kamerę (bez otwierania panelu miasta)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T12:56:18",
+  "hubGeneratedAt": "2026-11-11T13:10:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "be5d3e417eae4afa10bdac9141016adc",
-      "sizeBytes": 14452331
+      "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
+      "sizeBytes": 14452661
     }
   ],
-  "md5": "be5d3e417eae4afa10bdac9141016adc",
+  "md5": "603c7016ed3f92fca02dc6fc1f37c1ca",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

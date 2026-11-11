@@ -1,3 +1,9 @@
+## ROBOCZA 603c7016 -- 2026-11-06 -- FALA 624: Podpowiedź Przydziel obywatela: Ważne + przycisk kamery (testowa)
+
+- R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1 (#201, decyzja właściciela 2 b+c): podpowiedź Przydziel obywatela? w zakładce Ważne, przycisk Pokaż centruje kamerę na polu/mieście; ogólna akcja centerCamera w powiadomieniach panelu bocznego
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, farm-assign-hint-camera-important 16/0, farm-assign-citizen-hint-manual 36/0, sidepanel-notification-tabs 29/0, side-panel-event-link 37/0; Chromium: Ważne 1, przycisk Pokaż, kamera wycentrowana (delta 0); audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Dowód Chromium na wstrzykniętej karcie (hak scratch poza commitem); realny wpis z nowym polem w turze ręcznej do obejrzenia na ROBOCZEJ; akcja tylko centruje kamerę (bez otwierania panelu miasta)
+
 ## ROBOCZA be5d3e41 -- 2026-11-06 -- FALA 623: Stadnina w Żelazie tylko przy istniejącej stadninie (testowa)
 
 - R-WEB-IRON-STUD-ADJACENCY-Q1: stadnina bez złoża Konia w epoce Żelaza+ tylko na bezpośrednim sąsiedzie zbudowanej własnej stadniny (6 kierunków; dystans 2 i brak sąsiada odrzucone; kolejka tury nie liczy się; własność wg terytorium gracza); złoże Konia bez zmian; parytet gracz/AI/autobudowa; stare stadniny zachowane
