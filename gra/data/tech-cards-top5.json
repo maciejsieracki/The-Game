@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "c4f7bc5403b0b1a50b7b0373b085b6011fc9cc27015d9fd7f568d9131fea6355",
+    "csvSha256": "4d15292706f1dd0da711fb98c19eb5071523f5b7db70fa540313ca44e26fc18d",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -278,7 +278,7 @@
         "dowod": "gra/src/game/converters.ts:85; gra/data/buildings.json:554"
       },
       {
-        "tytul": "Cegielnia: cegła (2 glina + 1 drewno → 2 cegły)",
+        "tytul": "Cegielnia: cegła (2 gliny + 1 drewno → 2 cegły)",
         "zdanie": "Cegielnia jest dostępna od epoki Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.",
         "dowod": "gra/src/game/converters.ts:84; gra/data/tech.json:196; gra/src/game/research.ts:180"
       },
@@ -736,8 +736,8 @@
         "dowod": "gra/data/terrain-improvements.json:270"
       },
       {
-        "tytul": "Cuda: Terakotowa armia, Yerkapı, Brama narodów",
-        "zdanie": "Terakotowa armia (Chiny) i Yerkapı (Hetyci) to cuda narodowe; Brama narodów to wyścig — najwyżej 1 na świecie.",
+        "tytul": "Cuda: Terakotowa armia, Yerkapı, Brama wszystkich narodów",
+        "zdanie": "Terakotowa armia (Chiny) i Yerkapı (Hetyci) to cuda narodowe; Brama wszystkich narodów to wyścig — najwyżej 1 na świecie.",
         "dowod": "gra/data/wonders.json:371-375; gra/data/wonders.json:491-496; gra/data/wonders.json:440-448"
       },
       {
@@ -929,8 +929,8 @@
   "Waluta": {
     "top5": [
       {
-        "tytul": "Mennica: ×1,50 podatku w każdym mieście",
-        "liczba": "×1,50",
+        "tytul": "Mennica: podatek ×1,38 lub więcej (zależnie od cywilizacji)",
+        "liczba": "×1,38",
         "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus.",
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967; gra/src/game/economy.ts:644-653"
       },
@@ -960,7 +960,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Mennicę w stolicy (z Targowiskiem i dostępem do złota)",
-        "korzysc": "pomnożyć podatek wszystkich miast ×1,50 (a z podatku powstają pieniądz i nauka)"
+        "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji, min. ×1,38 (a z podatku powstają pieniądz i nauka)"
       },
       {
         "czynnosc": "Postaw Kopalnię złota na złożu",
@@ -1037,7 +1037,7 @@
         "dowod": "gra/data/miasto-params.json:84; gra/src/game/city-defense.ts:67-69; gra/data/buildings.json:1498"
       },
       {
-        "tytul": "Cud Brama narodów: +15% dochodu z tras, +10 Wpływu",
+        "tytul": "Cud Brama wszystkich narodów: +15% dochodu z tras, +10 Wpływu",
         "liczba": "+15%",
         "zdanie": "Cud wyścigowy (wymaga też Wojskowości) — stanie tylko raz na świecie.",
         "dowod": "gra/data/wonders.json:440-448"

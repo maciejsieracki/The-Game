@@ -202,7 +202,7 @@
       },
       {
         "czynnosc": "Zbuduj w stolicy Mennicę (Waluta)",
-        "korzysc": "pomnożyć podatek wszystkich miast ×1,5"
+        "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji (min. ×1,38)"
       }
     ]
   },
@@ -645,9 +645,9 @@
   "mennica": {
     "top5": [
       {
-        "tytul": "×1,5 podatku w każdym mieście państwa",
-        "liczba": "×1,5",
-        "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.",
+        "tytul": "Podatek wszystkich miast ×1,38 lub więcej (zależnie od cywilizacji)",
+        "liczba": "×1,38",
+        "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus; mnożnik zależy od cywilizacji i trudności, nie spada poniżej ×1,38; nie obejmuje tras.",
         "rodzaj": "efekt",
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:644-653; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967"
       },
@@ -662,7 +662,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Mennicę w stolicy",
-        "korzysc": "pomnożyć podatek wszystkich miast ×1,5"
+        "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji (min. ×1,38)"
       }
     ]
   },

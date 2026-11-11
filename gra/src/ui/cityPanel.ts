@@ -170,7 +170,7 @@ import {
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
+import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpowerCompact, formatObywateleLabel, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -274,6 +274,7 @@ import {
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
   civEconomyYieldMultipliers,
+  mennicaMnoznikForCiv,
   type CityYieldContext,
   type BuildingRecord,
 } from '../game/economy';
@@ -287,7 +288,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
 // formatLiczbaPl: separator polski (przecinek) — P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD 2026-08-09,
 // wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
-import { formatLiczbaPl, signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl, formatTurCount, formatJednostkiCount } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
@@ -3500,7 +3501,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     orderChips.push({
       icon: cityPanelChipIcon('chip-warning', 14),
       label: 'Bunt',
-      value: `${state.revoltGraceRemaining} tur`,
+      value: formatTurCount(state.revoltGraceRemaining),
       cls: 'red',
       title: 'Brak reakcji — ryzyko rebelii',
     });
@@ -3510,7 +3511,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     orderChips.push({
       icon: cityPanelChipIcon('chip-garrison', 14),
       label: 'Prawo',
-      value: `${state.postCaptureLawTurnsRemaining} tur`,
+      value: formatTurCount(state.postCaptureLawTurnsRemaining),
       cls: 'green',
       title: postCaptureLawBannerLabel(city) ?? 'Bonus Prawa po podboju',
     });
@@ -3590,7 +3591,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
       }
       if (state.revoltWarning && state.revoltGraceRemaining != null) {
         const st = el('div', 'civ-w4-order-banner crit');
-        st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${state.revoltGraceRemaining} tur</span>`;
+        st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${formatTurCount(state.revoltGraceRemaining)}</span>`;
         porBlock.appendChild(st);
       } else if (state.rebelState) {
         const st = el('div', 'civ-w4-order-banner rebel');
@@ -3646,7 +3647,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
       : `${Math.round(praw)}%`,
   );
   if (state.revoltWarning && state.revoltGraceRemaining != null) {
-    gridDetailRow(g0, 'Alert buntu', `${state.revoltGraceRemaining} tur(y) na reakcję`);
+    gridDetailRow(g0, 'Alert buntu', `${formatTurCount(state.revoltGraceRemaining)} na reakcję`);
   }
   if (state.rebelState) {
     gridDetailRow(g0, 'Rebelia', 'Miasto pod kontrolą rebeliantów');
@@ -4810,7 +4811,7 @@ function appendIndywidualneToggle(
   btn.setAttribute('aria-pressed', String(overrideOn));
   btn.title = overrideOn
     ? 'WŁ: to miasto ma własne ustawienie — ignoruje zmiany globalne z panelu cywilizacji (mapa świata).'
-    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy").';
+    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy”).';
   row.appendChild(btn);
   btn.addEventListener('click', () => {
     onToggle();
@@ -5324,7 +5325,7 @@ function renderPodzialPracy(
   // wartosci globalnej je gasi (logika: `applyCityPodzialPracyChange` w main.ts).
   const podzialTip = `Podział przyrostu Pracy tego miasta: Budynki ${MIN_PODZIAL_PRACY_BUDYNKI_PERCENT}–100%, `
     + `${PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}% — zawsze razem 100%. Kroki co ${HANDEL_PCT_STEP}%. `
-    + 'Ustawienie inne niż globalne włącza „Indywidualne" samo; powrót do globalnego je gasi.';
+    + 'Ustawienie inne niż globalne włącza „Indywidualne” samo; powrót do globalnego je gasi.';
 
   // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
   const summary = el('div', 'praca-split-summary');
@@ -6520,7 +6521,7 @@ function appendBuildActionButtons(
     let buyTitle: string;
     if (!purchaseHook) buyTitle = 'Wymaga wpiecia onPurchaseBuilding przez silnik';
     else if (!canBuild) buyTitle = 'Najpierw spełnij wymagania budowy';
-    else if (!stac) buyTitle = `Za malo zlota (${skarb ?? 0}/${goldKoszt})`;
+    else if (!stac) buyTitle = `Za mało złota (${skarb ?? 0}/${goldKoszt})`;
     else buyTitle = `Kup natychmiast za ${goldKoszt} złota (×2 kosztu Pracy)`;
     applyBuildButtonVisualState(bBuy, canBuy, buyTitle);
     bBuy.addEventListener('click', () => {
@@ -8865,15 +8866,15 @@ function appendBuildQueueSection(
       const promote = el('button', 'btn btn-sm', '⇈');
       promote.style.cssText = 'padding:0 0.35em;';
       promote.title =
-        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}" ` +
-        `(zebrana Praca „${front.nazwa}": ${Math.round(prod.postep)}/${front.koszt} — zostanie zachowana i wróci na front, ` +
+        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}” ` +
+        `(zebrana Praca „${front.nazwa}”: ${Math.round(prod.postep)}/${front.koszt} — zostanie zachowana i wróci na front, ` +
         `gdy ten element ponownie stanie się aktualnie budowanym — czy to przez kolejną zamianę, czy przez naturalne dokończenie poprzedzającego elementu)`;
       promote.addEventListener('click', () => { setProd(city.id, promoteToFront(getProd(city.id), idx)); rerender(); });
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';
       (up as HTMLButtonElement).disabled = false;
       up.title = idx === 1
-        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}"`
+        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}”`
         : 'Przesuń w górę kolejki oczekujących';
       up.addEventListener('click', () => {
         if (idx === 1) { setProd(city.id, promoteToFront(getProd(city.id), idx)); }
@@ -9009,7 +9010,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       const wykup = el('button', 'btn btn-g');
       wykup.innerHTML = `${cityPanelChipIconWrap('res-treasury', 14)} Wykup (${koszt})`;
       (wykup as HTMLButtonElement).disabled = !stac;
-      wykup.title = stac ? 'Zaplac zlotem i ukoncz natychmiast' : 'Za malo zlota (' + skarb + '/' + koszt + ')';
+      wykup.title = stac ? 'Zapłać złotem i ukończ natychmiast' : 'Za mało złota (' + skarb + '/' + koszt + ')';
       wykup.addEventListener('click', () => { cfg.onRushBuy?.(city.id, front, koszt); rerender(); });
       actions.appendChild(wykup);
     }
@@ -10047,7 +10048,7 @@ function buildGarnizonDetailCard(
       allBtn.className = 'civ-v-garrison-leave-all-btn';
       allBtn.textContent = hiddenCount > 1 ? 'Odfortyfikuj wszystkie' : 'Odfortyfikuj';
       allBtn.title = hiddenCount > 1
-        ? `Odfortyfikuj wszystkie ${hiddenCount} jednostki — zostają na heksie miasta`
+        ? `Odfortyfikuj wszystkie (${formatJednostkiCount(hiddenCount)}) — zostają na heksie miasta`
         : 'Odfortyfikuj jednostkę — zostaje na heksie miasta';
       allBtn.addEventListener('click', () => cfg.onLeaveAllGarrison?.(cityQ, cityR));
       card.appendChild(allBtn);
@@ -11435,7 +11436,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   mount.innerHTML =
     `<div class="civ-v-city-name">${city.name}</div>` +
-    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpowerCompact(osobRazem)} · epoka ${epoch}</div>`;
+    `<div class="civ-v-city-pop">${formatObywateleLabel(city.population)} · ≈ ${formatManpowerCompact(osobRazem)} · epoka ${epoch}</div>`;
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
@@ -11493,7 +11494,10 @@ function buildHandelDetailCard(
   const mennicaAktywna = maMennica && walutaOdkryta;
   // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
   const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
-  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
+  // R-WEB-CURRENCY-MULT-PER-CIV-Q1: ta sama wartosc per cywilizacja co w silniku (economy.ts).
+  const mennicaMnoznikTxt = params
+    ? `×${Number(mennicaMnoznikForCiv(cfg.getCivKey?.(city.ownerId), params).toFixed(2))}`
+    : '×?';
   const est = estimateHandelChips(view, split);
   // Decyzje 65B/66B: etykieta widoczna dla gracza (Danina domyslnie, Podatek gdy
   // Waluta+Mennica W STOLICY -- scislejsze niz `mennicaAktywna` powyzej, ktore

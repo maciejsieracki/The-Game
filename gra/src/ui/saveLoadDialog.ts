@@ -14,6 +14,7 @@ import {
 } from '../game/save';
 import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { formatMiastaCount } from './formatPl';
 
 export interface SaveSlotSummary {
   slotId: string;
@@ -45,7 +46,7 @@ function formatSaveContext(f: {
   const world = TYP_SWIATA_LABEL[f.worldType] ?? (f.worldType || '—');
   const origin = f.saveOrigin === 'playtest' ? ' · PLAYTEST' : '';
   const seedPart = f.seed > 0 ? ` · seed ${f.seed}` : '';
-  return `${f.mapSize} · ${world} · ${f.civId} · ${f.unitsCount} j. / ${f.citiesCount} miast${seedPart}${origin}`;
+  return `${f.mapSize} · ${world} · ${f.civId} · ${f.unitsCount} j. / ${formatMiastaCount(f.citiesCount)}${seedPart}${origin}`;
 }
 
 /** Jedna linia kontekstu: rozmiar · typ · cywilizacja · jednostki/miasta · seed. */

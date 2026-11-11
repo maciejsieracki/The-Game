@@ -125,6 +125,19 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
  * fallback do `row.value === ''` — świadomie, żeby NIE poszerzać obszaru klikalności
  * tam, gdzie ECHO tamtego tematu wymagało zera zmiany zachowania. Ten temat jest
  * odwrotną, jawną dyspozycją właściciela: poszerzenie MA się stać wszędzie. */
+/** Części (tekst zwykły + chipy surowców/plonów) → węzły elementu; kwoty escapowane, nazwa w title/aria-label. */
+function appendRowParts(target: HTMLElement, parts: ReadonlyArray<string | { id: string; amount?: string | number }>): void {
+  for (const part of parts) {
+    if (typeof part === 'string') {
+      target.append(document.createTextNode(part));
+    } else {
+      const chip = el('span', 'entity-card-row-res');
+      chip.innerHTML = resourceAmountChipHtml(part.id, escapeHtmlText(part.amount === undefined ? '' : String(part.amount)));
+      target.appendChild(chip);
+    }
+  }
+}
+
 function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   if (row.badge) {
     const rowEl = el('div', 'entity-card-row entity-card-row-action');
@@ -243,7 +256,8 @@ function buildPillRowEl(row: EntityCardData['sections'][number]['rows'][number])
  * label/value: proza ma płynąć przez całą szerokość karty (patrz `types.ts`). */
 function buildProseRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   const p = el('p', 'entity-card-prose');
-  p.textContent = row.value !== '' ? row.value : row.label;
+  if (row.valueParts && row.valueParts.length > 0) appendRowParts(p, row.valueParts);
+  else p.textContent = row.value !== '' ? row.value : row.label;
   return p;
 }
 
@@ -262,11 +276,13 @@ function buildTop3RowEl(
   else rank.textContent = String(index + 1);
   const body = el('div', 'entity-card-top3-body');
   const title = el('b', 'entity-card-top3-title');
-  title.textContent = row.label;
+  if (row.labelParts && row.labelParts.length > 0) appendRowParts(title, row.labelParts);
+  else title.textContent = row.label;
   body.appendChild(title);
   if (row.value !== '') {
     const textEl = el('span', 'entity-card-top3-text');
-    textEl.textContent = row.value;
+    if (row.valueParts && row.valueParts.length > 0) appendRowParts(textEl, row.valueParts);
+    else textEl.textContent = row.value;
     body.appendChild(textEl);
   }
   item.append(rank, body);

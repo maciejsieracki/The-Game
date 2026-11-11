@@ -12,7 +12,7 @@ import {
   treatyPwForRole,
 } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
-import { formatLiczbaPl } from './formatPl';
+import { formatLiczbaPl, formatUmowyCount } from './formatPl';
 
 export interface NegotiationBalanceSource {
   id?: string;
@@ -418,7 +418,7 @@ export function balancePanelDataFromRows(
   return {
     ...base,
     actionLabel: actionable.length > 1
-      ? `Pakiet na stole (${actionable.length} umów)`
+      ? `Pakiet na stole (${formatUmowyCount(actionable.length)})`
       : base.actionLabel,
     myOfferPn,
     theirOfferPn,

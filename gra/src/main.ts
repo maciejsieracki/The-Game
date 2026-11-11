@@ -635,6 +635,7 @@ import {
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
   recomputeCityFoodBalancesInEcon,
+  forecastNextTurnProduction,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -797,7 +798,7 @@ import {
 } from './ui/diploListHud';
 import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
 import { sortArmyStackGeneralsFirst } from './ui/armyStackLabel';
-import { formatArmiaLabel, formatJednostkiCount } from './ui/formatPl';
+import { formatArmiaLabel, formatJednostkiCount, formatMiastaCount, formatTurCountAcc, pluralPl } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
   PowerOverlayData, CultureOverlayData, ReligionOverlayData,
@@ -1014,6 +1015,7 @@ import {
   createMennicaZlotoGraceState,
   clearMennicaZlotoGraceState,
   prepareMennicaZlotoGraceForTick,
+  predictMennicaZlotoAccessForNextTick,
   finalizeMennicaZlotoGraceAfterTick,
   ownerZlotoAccessForMennica,
   serializeMennicaZlotoGrace,
@@ -9413,7 +9415,7 @@ async function boot(): Promise<void> {
           refreshCityPanelIfOpen();
           refreshD1bHud();
           showHintMessage(
-            (n > 1 ? `${n} jednostek odfortyfikowano` : garStack[0]!.typeId + ' odfortyfikowano')
+            (n > 1 ? `${formatJednostkiCount(n)} odfortyfikowano` : garStack[0]!.typeId + ' odfortyfikowano')
               + ' — armia na heksie miasta'
               + (city ? ' (' + city.name + ')' : ''),
             2500,
@@ -19413,7 +19415,7 @@ async function boot(): Promise<void> {
         return cultureHappiness({ kulturaSkumulowana: 0, ownCultureShare: share }, cp) < 0;
       }).length;
       const happinessNote = lowHappy > 0
-        ? `${lowHappy} miast z obcą kulturą — kara do zadowolenia`
+        ? `${formatMiastaCount(lowHappy)} z obcą kulturą — kara do zadowolenia`
         : 'Kultura własna we wszystkich miastach — bonus do zadowolenia';
       const rate = Math.floor(_lastKulturaRate);
       const sourcesNote = (rate >= 0 ? '+' : '') + rate + '/t · progi zasięgu: '
@@ -19829,9 +19831,57 @@ async function boot(): Promise<void> {
           rawParams: data.econParams as unknown as RawConverterParamsJson,
           difficulty: _menuDifficulty,
           realizedLastTurn: converterProducedLastTurnByOwner.get(ME()),
+          ...producersForecastArgs(),
           buildingLabel: id => String(data.buildings.find(b => b.id === id)?.nazwa ?? id),
         }),
       };
+    }
+
+    /**
+     * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: prognoza produkcji surowcow na NASTEPNA ture dla panelu
+     * imperium. TEN SAM kod co realny tick (forecastNextTurnProduction -> advanceCityEconomy, faza produkcji)
+     * na klonie miast; nic nie zmienia w grze. Maksimum dopywu drewna/kamienia = ten sam kod bez zapasow
+     * (bez przyciecia do limitu magazynu), przy biezacych i przy wszystkich wlaczonych budynkach.
+     */
+    function producersForecastArgs(): {
+      forecastNext?: Record<string, number>;
+      rawInflowPotential?: { enabled: Record<string, number>; installed: Record<string, number> };
+    } {
+      try {
+        const me = ME();
+        const ownerCivMap = new Map<number, string>();
+        ownerCivMap.set(me, (player.civType as string) || 'grecy');
+        const base = {
+          cities, map, data, difficulty: _menuDifficulty, builtByCity: cityBuilt,
+          playerEra: player.era, playerZbadane: player.zbadane, ownerCivByOwnerId: ownerCivMap,
+          resolveOwnerEra: empireEpochForOwner, resolveOwnerTech: unlockedTechSetForOwner,
+          resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(
+            predictMennicaZlotoAccessForNextTick(mennicaZlotoGraceState, ownerHasZlotoAccessNow)),
+          resolveOwnerActiveLabels: makeOwnerRuntimeActiveLabelsResolver(),
+          resolveOwnerEmpireStock: makeOwnerEmpireStockResolver(),
+        };
+        const f = forecastNextTurnProduction(base);
+        const forecastNext: Record<string, number> = {
+          ...(f.producedByOwner.get(me) ?? {}),
+          ...(f.rawInflowByOwner.get(me) ?? {}),
+        };
+        const mine = cities.filter(c => c.ownerId === me);
+        const hasRaw = mine.some(c => (cityBuilt.get(c.id) ?? []).some(id => id === 'stolarnia' || id === 'kamieniarski'));
+        if (!hasRaw) return { forecastNext };
+        const pot = forecastNextTurnProduction({ ...base, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
+        // wszystkie zainstalowane wlaczone: klon miast bez listy wylaczonych (tylko do tego liczenia)
+        const allOn = cities.map(c => {
+          if (c.ownerId !== me || !c.wylaczoneBudynki) return c;
+          const copy = { ...c };
+          delete copy.wylaczoneBudynki;
+          return copy;
+        });
+        const potAll = forecastNextTurnProduction({ ...base, cities: allOn, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
+        return { forecastNext, rawInflowPotential: { enabled: { ...pot }, installed: { ...potAll } } };
+      } catch (eForecast) {
+        console.error('[Panel imperium] Blad prognozy produkcji:', eForecast);
+        return {};
+      }
     }
 
     /**
@@ -20139,7 +20189,7 @@ async function boot(): Promise<void> {
         return religionHappiness(rel, stateRel === '—' ? null : stateRel, rp) < 0;
       }).length;
       const happinessNote = lowHappy > 0
-        ? `${lowHappy} miast z obcą dominującą wiarą — kara do zadowolenia`
+        ? `${formatMiastaCount(lowHappy)} z obcą dominującą wiarą — kara do zadowolenia`
         : 'Religia państwa dominuje lub brak silnej obcej presji';
       return {
         stateReligion: stateRel,
@@ -21008,7 +21058,7 @@ async function boot(): Promise<void> {
         case 'nap':
           return p.turns != null && p.turns <= 0
             ? 'Pakt nieagresji (bezterminowy)'
-            : `Pakt nieagresji na ${p.turns ?? 15} tur`;
+            : `Pakt nieagresji na ${formatTurCountAcc(p.turns ?? 15)}`;
         case 'sojusz_defensywny': return 'Sojusz obronny';
         case 'sojusz_pelny': return 'Sojusz wojskowy';
         case 'granice': return p.barbarianCooperation
@@ -21032,7 +21082,7 @@ async function boot(): Promise<void> {
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'pokoj': return basketDetail || 'Propozycja pokoju (PW baza 500)';
-        case 'rozejm': return basketDetail || `Rozejm na ${p.turns ?? 10} tur`;
+        case 'rozejm': return basketDetail || `Rozejm na ${formatTurCountAcc(p.turns ?? 10)}`;
         case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
         case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'wchloniecie': return `Wchłonięcie — ${p.goldOnce ?? 0} ¤`;
@@ -21619,7 +21669,7 @@ async function boot(): Promise<void> {
         return `Propozycja sojuszu (${kindLbl}). Powód: ` + powod;
       }
       if (cmd.type === 'zaproponuj_pakt') {
-        return `Propozycja paktu nieagresji na ${cmd.turns ?? 15} tur. Powód: ` + powod;
+        return `Propozycja paktu nieagresji na ${formatTurCountAcc(cmd.turns ?? 15)}. Powód: ` + powod;
       }
       if (cmd.type === 'zaproponuj_audiencje') {
         return 'Prośba o audiencję' + (cmd.motive ? ' — ' + cmd.motive : '') + '. Powód: ' + powod;
@@ -23604,7 +23654,7 @@ async function boot(): Promise<void> {
         type: 'zaproponuj_handel_surowiec',
         targetId: '0',
         powod: `${verb}: ${offer.pakietyPerTura} szt./turę`
-          + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${AI_RESOURCE_TRADE_DEFAULT_TURNS} tur`
+          + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(AI_RESOURCE_TRADE_DEFAULT_TURNS)}`
           + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
         surowiecKey: offer.surowiecKey,
         label: offer.label,
@@ -26091,7 +26141,7 @@ async function boot(): Promise<void> {
         syncUnitsRender();
         refreshCityPanelIfOpen();
         showHintMessage(
-          (n > 1 ? `${n} jednostek odfortyfikowano` : u.typeId + ' odfortyfikowano')
+          (n > 1 ? `${formatJednostkiCount(n)} odfortyfikowano` : u.typeId + ' odfortyfikowano')
             + ' \u2014 armia na heksie miasta'
             + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
           2500,
@@ -37971,7 +38021,7 @@ async function boot(): Promise<void> {
         snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
       } catch (eSnap) {
         console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
-        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
+        notifyAutosaveFailureOnce('Autozapis nieudany (błąd zapisu)');
         return;
       }
       if (PERF_DEBUG) {
@@ -38047,12 +38097,12 @@ async function boot(): Promise<void> {
           notifyAutosaveFailureOnce(
             reason === 'quota'
               ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'
-              : 'Autozapis nieudany (blad zapisu)',
+              : 'Autozapis nieudany (błąd zapisu)',
           );
         }
       } catch (eRot) {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
-        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
+        notifyAutosaveFailureOnce('Autozapis nieudany (błąd zapisu)');
       }
       } finally {
         autosaveInFlight = false;
@@ -38517,7 +38567,7 @@ async function boot(): Promise<void> {
         if (turn % getAutosaveFrequency() === 0) {
           void doRotatingAutosave().catch((eAutosave) => {
             console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
-            notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
+            notifyAutosaveFailureOnce('Autozapis nieudany (błąd zapisu)');
           });
         }
 
@@ -38970,9 +39020,9 @@ async function boot(): Promise<void> {
 
             // --- Komunikaty HUD gracza (tylko ownerId===0 — AI głoduje po cichu) ---
             if (playerDestroyedCount > 0) {
-              showHintMessage(`Głód: utracono ${playerDestroyedCount} jednostek`, 3500);
+              showHintMessage(`Głód: utracono ${playerDestroyedCount} ${pluralPl(playerDestroyedCount, 'jednostkę', 'jednostki', 'jednostek')}`, 3500);
             } else if (playerDamagedCount > 0) {
-              showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP u ${playerDamagedCount} jednostek`, 2800);
+              showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP u ${playerDamagedCount} ${pluralPl(playerDamagedCount, 'jednostki', 'jednostek', 'jednostek')}`, 2800);
             } else {
               // ZADANIE 5 (Maciej 2026-07-26): ostrzeżenie Z WYPRZEDZENIEM w trakcie karencji —
               // inaczej mechanizm karencji działa po cichu przez glodWojskaKarencjaTur tur, zanim
@@ -39248,7 +39298,7 @@ async function boot(): Promise<void> {
               // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
               // Dla KAŻDEGO fotela człowieka (nie tylko `humanOwnerId`) — parytet z AI niżej.
               buildingResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepBuildingsByOwner.get(hOid) ?? {}) });
-              converterProducedLastTurnByOwner.set(hOid, { ...(econ.converterProducedByOwner.get(hOid) ?? {}) });
+              converterProducedLastTurnByOwner.set(hOid, { ...(econ.converterProducedByOwner.get(hOid) ?? {}), ...(econ.rawInflowByOwner?.get(hOid) ?? {}) });
               unitResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepUnitsByOwner.get(hOid) ?? {}) });
 
               if (hOid === humanOwnerId) {
@@ -39286,7 +39336,7 @@ async function boot(): Promise<void> {
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
               buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });
-              converterProducedLastTurnByOwner.set(oid, { ...(econ.converterProducedByOwner.get(oid) ?? {}) });
+              converterProducedLastTurnByOwner.set(oid, { ...(econ.converterProducedByOwner.get(oid) ?? {}), ...(econ.rawInflowByOwner?.get(oid) ?? {}) });
               unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });
               // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
               // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść
@@ -39501,10 +39551,10 @@ async function boot(): Promise<void> {
 
             // --- Komunikaty HUD gracza (tylko ownerId===0 — AI cierpi po cichu, parytet jak głód) ---
             if (gdPlayerDestroyedCount > 0) {
-              showHintMessage(`Deficyt Złota: utracono ${gdPlayerDestroyedCount} jednostek`, 3500);
+              showHintMessage(`Deficyt Złota: utracono ${gdPlayerDestroyedCount} ${pluralPl(gdPlayerDestroyedCount, 'jednostkę', 'jednostki', 'jednostek')}`, 3500);
             } else if (gdPlayerDamagedCount > 0) {
               showHintMessage(
-                `Deficyt Złota: -${Math.round(gdParams.zlotoDeficytHpFrac * 100)}% max HP u ${gdPlayerDamagedCount} jednostek`,
+                `Deficyt Złota: -${Math.round(gdParams.zlotoDeficytHpFrac * 100)}% max HP u ${gdPlayerDamagedCount} ${pluralPl(gdPlayerDamagedCount, 'jednostki', 'jednostek', 'jednostek')}`,
                 2800,
               );
             } else {
@@ -44329,7 +44379,7 @@ async function boot(): Promise<void> {
         }
 
         if (foundQ === null || foundR === null) {
-          showHintMessage('Nie wybrano heksu — najedz na pole i nacisnij B', 3000);
+          showHintMessage('Nie wybrano heksu — najedź na pole i naciśnij B', 3000);
           return;
         }
         tryFoundPlayerCityAt(foundQ, foundR);
@@ -45705,7 +45755,7 @@ async function boot(): Promise<void> {
           wallClockMs: Math.round(performance.now() - loadWallT0),
           error: 'Playtest walki: brak miejsca na mapie',
         }, 'doStartPlaytestWalkaMapy');
-        showHintMessage('Playtest walki: brak miejsca na mapie — sprobuj inny seed', 5000);
+        showHintMessage('Playtest walki: brak miejsca na mapie — spróbuj innego seeda', 5000);
         showMainMenu();
         return;
       }
@@ -45955,7 +46005,7 @@ async function boot(): Promise<void> {
           wallClockMs: Math.round(performance.now() - loadWallT0),
           error: 'Playtest miasta: brak miejsca na mapie',
         }, 'doStartPlaytestMiasto');
-        showHintMessage('Playtest miasta: brak miejsca na mapie — sprobuj inny seed', 5000);
+        showHintMessage('Playtest miasta: brak miejsca na mapie — spróbuj innego seeda', 5000);
         showMainMenu();
         playtestMiastoActive = false;
         return;
@@ -46179,7 +46229,7 @@ async function boot(): Promise<void> {
           wallClockMs: Math.round(performance.now() - loadWallT0),
           error: 'Playtest mapy: brak miejsca',
         }, 'doStartPlaytestMapaSwiata');
-        showHintMessage('Playtest mapy: brak miejsca — sprobuj inny seed', 5000);
+        showHintMessage('Playtest mapy: brak miejsca — spróbuj innego seeda', 5000);
         showMainMenu();
         return;
       }
@@ -47523,12 +47573,12 @@ async function boot(): Promise<void> {
             id: `city-impadmin-migration-${turn}`,
             icon: 'ADM-IMP',
             title: 'Auto-ulepszenia terenu wymagają administratora ulepszeń',
-            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${affectedImp.length} miast bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
+            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${formatMiastaCount(affectedImp.length)} bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
             kind: 'enemy',
             turnCreated: turn,
           });
           trimWarEventLog();
-          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem ulepszeń — ${affectedImp.length} miast bez niego (patrz „Ważne”)`, 6000);
+          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem ulepszeń — ${formatMiastaCount(affectedImp.length)} bez niego (patrz „Ważne”)`, 6000);
         }
       }
       if (!cityAdministratorNoticeShown) {
@@ -47540,12 +47590,12 @@ async function boot(): Promise<void> {
             id: `city-admin-migration-${turn}`,
             icon: 'ADM',
             title: 'Autobudowa wymaga administratora',
-            subtitle: `Automatyczna budowa budynków działa teraz tylko w miastach z działającym administratorem (${affected.length} miast bez niego). Zatrudnij administratora w nagłówku miasta (koszt ${administratorHireCost()} Pieniądza).`,
+            subtitle: `Automatyczna budowa budynków działa teraz tylko w miastach z działającym administratorem (${formatMiastaCount(affected.length)} bez niego). Zatrudnij administratora w nagłówku miasta (koszt ${administratorHireCost()} Pieniądza).`,
             kind: 'enemy',
             turnCreated: turn,
           });
           trimWarEventLog();
-          showHintMessage(`Autobudowa działa teraz tylko z administratorem miasta — ${affected.length} miast bez administratora (patrz „Ważne”)`, 6000);
+          showHintMessage(`Autobudowa działa teraz tylko z administratorem miasta — ${formatMiastaCount(affected.length)} bez administratora (patrz „Ważne”)`, 6000);
         }
       }
       if (legacyAutomationMigration) {

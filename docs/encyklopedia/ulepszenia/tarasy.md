@@ -36,7 +36,7 @@ Ulepszenie **Tarasy uprawne** na polu w **twoim terytorium**. Teren: Wzgórza.
 
 **Budowa:** **25 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **4 tur**.
 
-**Po ukończeniu:** heks daje +3 żywność/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +3 żywności/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+3**/t vs bez ulepszenia → **9 tur** na „odrobienie" 25 pracy (ignorując bazę pola).
 

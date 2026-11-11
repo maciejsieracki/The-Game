@@ -29,7 +29,7 @@ Palac wzmacnia miasto w kategorii **Kultura/Administracja**. Poziom 1: **+3 kult
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
 - Bez dodatkowej technologii.
 Warunek: -.
-- **Uwaga:** 1 na miasto (siedziba zarzadcy); glowne zrodlo kultury miasta
+- **Uwaga:** 1 na miasto (siedziba zarządcy); główne źródło kultury miasta
 - **Budynek startowy:** Pałac stoi **już zbudowany** w każdym nowo założonym mieście, poza normalną kolejką produkcji — w praktyce nigdy nie płacisz zań surowca przy zakładaniu miasta, tylko Pracę na kolejne poziomy rozbudowy. (`buildings.json` formalnie ma wpisany koszt materiałowy drewno/kamień — dotyczy tylko hipotetycznego przypadku odbudowy, nie normalnej gry.)
 ### Strategia gracza
 Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obcego miasta — szczęście podnosi też **porządek**.

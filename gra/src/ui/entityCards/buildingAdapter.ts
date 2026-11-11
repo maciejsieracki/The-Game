@@ -55,7 +55,7 @@ import {
   type BuildingRecord,
 } from '../../game/economy';
 import { buildingStockCost } from '../../game/building-stock-cost';
-import { proseRowFields } from './resourceRows';
+import { proseRowFields, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -172,15 +172,15 @@ function top3Of(building: BuildingDef): EntityCardRow[] {
     .filter((r) => r.label !== '' || r.value !== '');
 }
 
-const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string }[] = [
-  { key: 'praca', label: 'Praca' },
+const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string; chip?: string }[] = [
+  { key: 'praca', label: 'Praca', chip: 'praca' },
   // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 3): `baza.pieniadz` budynku wchodzi do bazy PODATKU
   // (economy.ts:881-920 `handelBazowy = handelTerenu + pieniadzBudynkow`) — pieniądz powstaje dopiero
   // po podziale podatku / w Mennicy. Klucz danych zostaje `pieniadz`, zmienia się tylko etykieta.
-  { key: 'pieniadz', label: 'Podatek' },
-  { key: 'zywnosc', label: 'Żywność' },
-  { key: 'nauka', label: 'Nauka' },
-  { key: 'kultura', label: 'Kultura' },
+  { key: 'pieniadz', label: 'Podatek', chip: 'podatek' },
+  { key: 'zywnosc', label: 'Żywność', chip: 'zywnosc' },
+  { key: 'nauka', label: 'Nauka', chip: 'nauka' },
+  { key: 'kultura', label: 'Kultura', chip: 'kultura' },
   { key: 'zadowolenie', label: 'Zadowolenie' },
   { key: 'obrona', label: 'Obrona' },
 ];
@@ -258,15 +258,12 @@ function upkeepRowFields(gold: number, resources: Record<string, number>):
   Pick<EntityCardRow, 'value' | 'resources' | 'resourcesSuffix'> {
   const keys = Object.keys(resources);
   if (gold === 0 && keys.length === 0) return { value: 'utrzymanie zero' };
-  const goldText = gold > 0
-    ? `${gold} ${plUpkeepForm(gold, UPKEEP_NOUN_FORMS['pieniądz'] ?? ['Pieniądz', 'Pieniądze', 'Pieniędzy'])}`
-    : '';
-  if (keys.length === 0) return { value: `${goldText} / turę` };
-  return {
-    value: goldText,
-    resources: keys.map((k) => ({ id: k, amount: resources[k] ?? 0 })),
-    resourcesSuffix: '/ turę',
-  };
+  // Pieniądz jako chip „N [ikona]" razem z surowcami (R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1).
+  const chips = [
+    ...(gold > 0 ? [{ id: 'pieniadz', amount: gold }] : []),
+    ...keys.map((k) => ({ id: k, amount: resources[k] ?? 0 })),
+  ];
+  return { value: '', resources: chips, resourcesSuffix: '/ turę' };
 }
 
 const DEFAULT_CITY_STATE: BuildingCardCityState = {
@@ -341,7 +338,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // Tylko realne pozycje (1–5, bez dopełniania); layout `top3` renderera numeruje dowolną
   // liczbę pozycji. Budynek ukryty (decyzja (4)) nie ma treści — sekcja się nie renderuje. ---
   const top5Rows: EntityCardRow[] = content
-    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, value: item.zdanie })))
+    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie })))
     : top3Of(building);
   if (top5Rows.length > 0) sections.push({ key: 'top5', title: 'Top 5', rows: top5Rows, layout: 'top3' });
 
@@ -349,7 +346,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // zdania „[CZYNNOŚĆ], aby [KORZYŚĆ].” z danych; ten sam wygląd co sekcja `actions` karty
   // odkrycia (etap 1). Brak wpisu / budynek ukryty ⇒ brak sekcji (zero wymyślonej treści). ---
   const actionRows: EntityCardRow[] = content && !content.ukryty
-    ? content.cmz.slice(0, 3).map((item) => ({ label: '', value: buildingCmzSentence(item) }))
+    ? content.cmz.slice(0, 3).map((item) => ({ label: '', ...yieldSentenceFields(buildingCmzSentence(item)) }))
     : [];
   if (actionRows.length > 0) {
     sections.push({
@@ -383,9 +380,10 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
     const baza = building.baza[y.key] ?? 0;
     const inc = building.przyrost[y.key] ?? 0;
     if (baza === 0 && inc === 0) continue;
-    yieldRows.push({ label: y.label, value: formatYieldDetailValue(baza, inc, displayLevel) });
+    const yieldText = formatYieldDetailValue(baza, inc, displayLevel);
+    yieldRows.push({ label: y.label, ...(y.chip ? yieldValueFields(y.chip, yieldText) : { value: yieldText }) });
     const scale = formatYieldScaleRow(building, baza, inc);
-    if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: scale });
+    if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, ...(y.chip ? yieldValueFields(y.chip, scale) : { value: scale }) });
   }
   const mnoznikRole = mnoznikRoleForBuildingId(building.id);
   if (mnoznikRole) {
@@ -412,10 +410,10 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   const workCost = buildingWorkCost(baseWork, cityState.civBonusy, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
   const stockCostDetail = buildingStockCost(building);
   const buildCostRows: EntityCardRow[] = [
-    { label: 'Praca (jednorazowo)', value: `${workCost} pkt Pracy` },
+    { label: 'Praca (jednorazowo)', ...yieldValueFields('praca', `${workCost} pkt`) },
   ];
   if (building.przyrostKosztu) {
-    buildCostRows.push({ label: 'Przyrost za poziom', value: `+${building.przyrostKosztu} pkt Pracy / poziom` });
+    buildCostRows.push({ label: 'Przyrost za poziom', ...yieldValueFields('praca', `+${building.przyrostKosztu} pkt / poziom`) });
   }
   const stockKeys = Object.keys(stockCostDetail);
   if (stockKeys.length > 0) {
@@ -439,7 +437,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   ];
   if (building.przyrostUtrzymania) {
     upkeepCostRows.push({
-      label: 'Przyrost za poziom', value: `+${building.przyrostUtrzymania} pkt Pieniądza / poziom`,
+      label: 'Przyrost za poziom', ...yieldValueFields('pieniadz', `+${building.przyrostUtrzymania} pkt / poziom`),
     });
   }
   sections.push({ key: 'cost-upkeep', title: 'Koszt utrzymania', rows: upkeepCostRows });

@@ -231,7 +231,7 @@ TECHS['Wojskowość'] = [
     c('b', 'B:koszary', 'Koszary: +20% parametrów bojowych jednostek', 'wzmocnić jednostki o +20% parametrów bojowych', 'B:1047;UB:23-33;UB:178', 4, 4, 4, 3, 3, 5),
     c('c', 'B:koszary', 'Koszary: +2 Pracy', None, 'B:1047', 1, 1, 1, 2, 4, 5),
     c('d', 'I:fort', 'Fort: +100% Obrony obozujących i strefa 5 pól', 'lepiej bronić granic (+100% Obrony, strefa 5 pól)', 'TI:270', 4, 4, 4, 3, 3, 4, True),
-    c('e', None, 'Cuda: Terakotowa armia, Yerkapı, Brama narodów', None, 'W:371-375;W:491-496;W:440-448', 3, 3, 4, 2, 2, 3),
+    c('e', None, 'Cuda: Terakotowa armia, Yerkapı, Brama wszystkich narodów', None, 'W:371-375;W:491-496;W:440-448', 3, 3, 4, 2, 2, 3),
     c('f', 'T:next', 'Otwiera Oblężnictwo (Katapulta)', 'dojść do Katapult', 'T:365', 3, 3, 5, 4, 2, 3),
     c('g', 'B:koszary', 'Koszary są warunkiem Warsztatu i Akademii wojskowej', None, 'BG:111;BG:115', 2, 2, 4, 2, 1, 3),
 ]
@@ -293,7 +293,7 @@ TECHS['Inżynieria'] = [
     c('a', 'B:cytadela', 'Cytadela: +100% Obrony ponad Mury (razem +300%)', 'podnieść obronę miasta do +300%', 'MP:84;CD:67-69;B:1498', 4, 2, 4, 2, 3, 5),
     c('b', 'B:baszta', 'Baszta: kolejne +100% Obrony (komplet +400%)', 'podnieść obronę miasta do +400%', 'MP:89;CD:73;B:1547', 4, 2, 4, 2, 3, 5),
     c('c', 'B:port_wielki', 'Port wielki: +10 pieniądza i +1 trasa handlowa', 'podwoić dochód portu (+10 pieniądza)', 'B:409;TR:908-909', 3, 1, 3, 2, 3, 5),
-    c('d', 'W:brama', 'Cud Brama narodów: +15% dochodu z tras, +10 Wpływu', 'zwiększyć dochód z tras o 15% i zyskać 10 Wpływu', 'W:440-448', 4, 3, 5, 4, 2, 3),
+    c('d', 'W:brama', 'Cud Brama wszystkich narodów: +15% dochodu z tras, +10 Wpływu', 'zwiększyć dochód z tras o 15% i zyskać 10 Wpływu', 'W:440-448', 4, 3, 5, 4, 2, 3),
     c('e', 'T:next', 'Z Budownictwem otwiera Drogi brukowane', 'dojść do Dróg brukowanych (ruch 5×)', 'T:407', 3, 3, 5, 4, 1, 3),
 ]
 
@@ -368,7 +368,7 @@ NOTES = {
     'Waluta': 'Na karcie: „Mennica: pieniadz +2" (przyrost na poziom) — mnożnik ×1,5 nieobecny. Realny współczynnik: econ-params.json:585-591 (easy 1,62 / normal 1,50 / hard 1,38), liczony w economy.ts:952-955 na podatku miejskim PRZED podziałem suwakami (economy.ts:962-967) — mnoży więc pieniądz, naukę i luksus. Warunki: Waluta + Mennica w stolicy (jedna na państwo) + Targowisko + dostęp do Złota; zużywa 1 Złota/turę (zloto-access.ts:31, turn-economy.ts:1879-1894). Dochód z tras handlowych nie podlega mnożnikowi. civ-matrix meta_mnoznik_waluta (cityTradeMultiplier, mnoznikHandelPieniadzForCivByDifficulty) — brak wywołań w runtime (grep), martwy.',
     'Astronomia': 'Jedyny efekt (poziomTechGate {"6":"Astronomia"} Biblioteki, buildings.json:797) jest nieosiągalny: maksPoziom Biblioteki = 2 (buildings.json:750). Żadna technologia nie wymaga Astronomii. Realnie: brak korzyści — Top2–Top5 = NIE_USTALONO.',
     'Hutnictwo żelaza': 'Badanie wymaga Odlewni brązu (tech.json:336). Wszystkie 19 jednostek z Tech=Hutnictwo żelaza mają przypisaną nację (units.json) — brak ogólnodostępnej jednostki żelaznej. Kopalnia żelaza niepokazana na karcie. Po awansie do epoki 3 jednostki epoki Kamienia znikają z rekrutacji (production.ts:1051).',
-    'Inżynieria': 'Cud Brama narodów wymaga też Wojskowości (wonders.json:448; wonder-availability.ts:65) i jest wyścigiem: maxNaSwiecie=1 (wonders.json:440-448 blok cudu) — kto pierwszy, ten zbuduje.',
+    'Inżynieria': 'Cud Brama wszystkich narodów wymaga też Wojskowości (wonders.json:448; wonder-availability.ts:65) i jest wyścigiem: maxNaSwiecie=1 (wonders.json:440-448 blok cudu) — kto pierwszy, ten zbuduje.',
     'Oblężnictwo': 'Badanie wymaga Koszar. W production.ts nie znaleziono bramki Warsztatu oblężniczego dla Katapulty (cities.ts:844-850: flaga „REZERWA") — Katapulta wymaga tylko technologii, żelaza i Koszar. 4 efekty — Top5 = NIE_USTALONO.',
     'Filozofia': 'Teatr jest na karcie, ale ma suppressed=true (buildings.json:1728) — nie da się go zbudować. Badanie wymaga Biblioteki. 3 efekty — Top4–Top5 = NIE_USTALONO.',
     'Prawo': 'Brak kolejnych technologii.',

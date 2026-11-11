@@ -1450,7 +1450,7 @@ function render(): void {
       + '<span class="cs-title">Drzewko technologii</span>'
       + '<button class="cs-close" aria-label="Zamknij">&#x2715;</button>'
       + '</div>'
-      + '<p style="padding:24px;color:#c88">Nie udalo sie odswiezyc drzewka. Zamknij i otworz ponownie.</p>';
+      + '<p style="padding:24px;color:#c88">Nie udało się odświeżyć drzewka. Zamknij je i otwórz ponownie.</p>';
     bindClose();
   }
 }

@@ -41,6 +41,7 @@
  *
  * Usage (z gra/): node tools/building-cards-top5-test.cjs [--screens <dir>]
  */
+const { normalizeText: normChip, BROWSER_SRC: CHIP_BROWSER_SRC } = require('./entity-card-chip-text.cjs');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -221,6 +222,7 @@ async function main() {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
   await page.setContent('<html><body style="margin:0;background:#0b0e14;color:#e8e0c8;font-family:Segoe UI,Tahoma,sans-serif"><div id="root" style="width:660px;padding:16px"></div></body></html>');
   await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
+  await page.addScriptTag({ content: CHIP_BROWSER_SRC });
   await page.evaluate(() => {
     const style = document.createElement('style');
     style.textContent = window.__ENTITY_CARD_CSS;
@@ -237,15 +239,16 @@ async function main() {
       const orderedKeys = Array.from(body.children).map((c) =>
         c.classList.contains('entity-card-historia') ? '__historia__' : c.getAttribute('data-section-key'));
       const top5 = Array.from(card.querySelectorAll('[data-section-key="top5"] .entity-card-top3-item')).map((it) => ({
-        tytul: (it.querySelector('.entity-card-top3-title') || {}).textContent || '',
-        zdanie: (it.querySelector('.entity-card-top3-text') || {}).textContent || '',
+        // chipy plonów/surowców → „<kwota> <Nazwa chipa>" (patrz tools/entity-card-chip-text.cjs)
+        tytul: it.querySelector('.entity-card-top3-title') ? window.__chipText(it.querySelector('.entity-card-top3-title')) : '',
+        zdanie: it.querySelector('.entity-card-top3-text') ? window.__chipText(it.querySelector('.entity-card-top3-text')) : '',
       }));
       const headingOf = (key) => {
         const h = card.querySelector(`[data-section-key="${key}"] .entity-card-section-heading-label`)
           || card.querySelector(`[data-section-key="${key}"] .entity-card-section-heading`);
         return h ? h.textContent.trim() : null;
       };
-      const cmz = Array.from(card.querySelectorAll('[data-section-key="actions"] .entity-card-prose')).map((p) => p.textContent);
+      const cmz = Array.from(card.querySelectorAll('[data-section-key="actions"] .entity-card-prose')).map((p) => window.__chipText(p));
       const actionRowsAll = card.querySelectorAll('[data-section-key="actions"] .entity-card-row, [data-section-key="actions"] .entity-card-prose').length;
       out[row.id] = {
         orderedKeys, top5, cmz, actionRowsAll,
@@ -285,7 +288,8 @@ async function main() {
     check(`[B] ${id}: brak dawnej sekcji „Top 3”`, !r.hasTop3Section && !r.orderedKeys.includes('top3'));
     check(`[B] ${id}: Top 5 ma 1–5 pozycji`, r.top5.length >= 1 && r.top5.length <= 5, r.top5.length);
     check(`[B] ${id}: Top 5 zgodne z danymi (tytuł + zdanie, kolejność)`,
-      JSON.stringify(r.top5) === JSON.stringify(exp.top5.map((i) => ({ tytul: i.tytul, zdanie: i.zdanie }))),
+      JSON.stringify(r.top5.map((i) => ({ tytul: normChip(i.tytul), zdanie: normChip(i.zdanie) })))
+        === JSON.stringify(exp.top5.map((i) => ({ tytul: normChip(i.tytul), zdanie: normChip(i.zdanie) }))),
       { got: r.top5, exp: exp.top5 });
     check(`[B] ${id}: każda pozycja ma tytuł i jedno zdanie`,
       r.top5.every((i) => i.tytul.trim() !== '' && i.zdanie.trim() !== ''
@@ -311,7 +315,7 @@ async function main() {
     check(`[C] ${id}: dane CMZ — czynność i korzyść niepuste, różne, bez spójnika i interpunkcji szablonu`, cmzDataBad.length === 0, cmzDataBad);
     check(`[C] ${id}: każde zdanie CMZ = „<czynność>, aby <korzyść>.” złożone dokładnie z danych`,
       r.cmz.length === exp.cmz.length
-        && r.cmz.every((s, i) => s.trim() === `${exp.cmz[i].czynnosc.trim()}, aby ${exp.cmz[i].korzysc.trim()}.`),
+        && r.cmz.every((s, i) => normChip(s) === normChip(`${exp.cmz[i].czynnosc.trim()}, aby ${exp.cmz[i].korzysc.trim()}.`)),
       { got: r.cmz, exp: exp.cmz });
     check(`[C] ${id}: CMZ tylko z danych (brak dodatkowych wierszy)`, r.actionRowsAll === exp.cmz.length, r.actionRowsAll);
     for (const ban of BANNED) check(`[C/D] ${id}: brak frazy „${ban}”`, !r.text.includes(ban), ban);
@@ -332,7 +336,7 @@ async function main() {
   const R = (id) => rendered[id];
   const all = (id) => R(id).top5.map((i) => i.tytul + ' ' + i.zdanie).join(' | ');
   const t1 = (id) => R(id).top5[0].tytul + ' ' + R(id).top5[0].zdanie;
-  check('[E] Mennica: Top1 z „×1,5”', /^×1,5\b/.test(R('mennica').top5[0].tytul), R('mennica').top5[0]);
+  check('[E] Mennica: Top1 z minimum ×1,38 (per cywilizacja)', /×1,38/.test(R('mennica').top5[0].tytul), R('mennica').top5[0]);
   // R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: podatek z pól i budynków to nie handel — Top1 mówi „podatek”.
   check('[E] Mennica: Top1 = podatek → pieniądz (mnoży podatek miast, część trafia w pieniądz; bez „handlu”)',
     /podat/.test(t1('mennica')) && /pieniądz/.test(t1('mennica')) && !/handl|handel/.test(t1('mennica')), R('mennica').top5[0]);
@@ -354,8 +358,11 @@ async function main() {
       && /Katapultę budujesz podczas aktywnego oblężenia po zbadaniu Sztuki wojennej/.test(cards.warsztat_oblezniczy.cmz[0].korzysc),
     cards.warsztat_oblezniczy.cmz[0]);
   check('[E] Asymilacja kultury z dopiskiem „podbite miasta” (założenie Q6-A) na każdej karcie',
-    buildings.filter((b) => !cards[b.id].ukryty).every((b) => R(b.id).top5.filter((i) => /^Asymilacja kultury/.test(i.tytul)).every((i) => /podbite miasta/.test(i.tytul))));
-  check('[E] Targowisko: zamiana Pracy na podatek (tylko gracz, założenie Q7-A)', /Zamiana Pracy na podatek/.test(all('targowisko')) && /tylko gracz/.test(all('targowisko')), all('targowisko'));
+    buildings.filter((b) => !cards[b.id].ukryty).every((b) => R(b.id).top5.filter((i) => normChip(i.tytul).startsWith(normChip('Asymilacja kultury'))).every((i) => /podbite miasta/.test(i.tytul))));
+  // Tytuł z chipem Kultury nie może po cichu wypaść z filtra powyżej (pusty filtr = „every" prawdziwe): pozycji jest > 0.
+  check('[E] Asymilacja kultury: pozycje znalezione po normalizacji chipów (> 0, nie pusty filtr)',
+    buildings.filter((b) => !cards[b.id].ukryty).reduce((n, b) => n + R(b.id).top5.filter((i) => normChip(i.tytul).startsWith(normChip('Asymilacja kultury'))).length, 0) > 0);
+  check('[E] Targowisko: zamiana Pracy na podatek (tylko gracz, założenie Q7-A)', normChip(all('targowisko')).includes(normChip('Zamiana Pracy na podatek')) && /tylko gracz/.test(all('targowisko')), all('targowisko'));
 
   // ---- zrzuty (część E dispatchu) ------------------------------------------------------------
   if (SCREENS_DIR) {

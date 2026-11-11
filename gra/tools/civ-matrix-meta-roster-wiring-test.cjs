@@ -74,7 +74,7 @@ try {
   // Waluta+Mennica trade result, not only a loader/accessor value.
   const params = M.loadEconParams({ ekonomia_miasta: {}, budynki: {} }, 'normal');
   const city = {
-    id: 'c1', ludnosc: 1, zdrowie: 0, czyStolica: true,
+    id: 'c1', civKey: 'grecy', ludnosc: 1, zdrowie: 0, czyStolica: true,
     maSpichlerz: false, maAkwedukt: false, magazynZywnosci: 0,
     specjalisci: [], kolejkaProdukcji: [],
     podziałHandlu: { procentNauka: 100, procentPieniadz: 0, procentLuksus: 0 },
@@ -86,16 +86,9 @@ try {
     maMlyn: false, maCegielnia: false, maTargowisko: false,
     maMennica: true, walutaOdkryta: true,
   };
-  const greekCtx = {
-    ...baseCtx,
-    walutaMnoznikOverride: M.mnoznikHandelPieniadzForCivByDifficulty('grecy', civs, 'normal', 1.5),
-  };
-  const zulusiCtx = {
-    ...baseCtx,
-    walutaMnoznikOverride: M.mnoznikHandelPieniadzForCivByDifficulty('zulusi', civs, 'normal', 1.5),
-  };
-  const greekYield = M.cityYieldPerTurn(city, Array(10).fill(tile), [], params, greekCtx);
-  const zulusiYield = M.cityYieldPerTurn(city, Array(10).fill(tile), [], params, zulusiCtx);
+  // R-WEB-CURRENCY-MULT-PER-CIV-Q1: mnoznik wynika z city.civKey (macierz), nie z override.
+  const greekYield = M.cityYieldPerTurn({ ...city, civKey: 'grecy' }, Array(10).fill(tile), [], params, baseCtx);
+  const zulusiYield = M.cityYieldPerTurn({ ...city, civKey: 'zulusi' }, Array(10).fill(tile), [], params, baseCtx);
   assert(greekYield.nauka > zulusiYield.nauka,
     `real economy result differs by matrix currency multiplier (${greekYield.nauka} > ${zulusiYield.nauka})`);
 

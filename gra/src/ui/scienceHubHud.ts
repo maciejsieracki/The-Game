@@ -617,7 +617,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = 'Klik odblokowanej technologii = dodaj do planu badań. Przycisk „Karta" = podgląd karty technologii. Esc zamyka kartę/hub.';
+    hint.textContent = 'Klik odblokowanej technologii = dodaj do planu badań. Przycisk „Karta” = podgląd karty technologii. Esc zamyka kartę/hub.';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);

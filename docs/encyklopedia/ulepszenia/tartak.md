@@ -37,7 +37,7 @@ Ulepszenie **Tartak** na polu w **twoim terytorium**. Teren: Ląd w terytorium (
 
 **Budowa:** **25 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **4 tur**.
 
-**Po ukończeniu:** heks daje +3 praca/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +3 pracy/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+3**/t vs bez ulepszenia → **9 tur** na „odrobienie" 25 pracy (ignorując bazę pola).
 

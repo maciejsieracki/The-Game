@@ -514,7 +514,7 @@ export function showPerfTestPanel(opts: PerfTestPanelOptions = {}): void {
 
       <div class="civ-perftest-h3">Benchmark (~10–15 s)</div>
       <div class="civ-perftest-bar-wrap" id="civ-perftest-barwrap"><div class="civ-perftest-bar" id="civ-perftest-bar"></div></div>
-      <p class="civ-perftest-bench-status" id="civ-perftest-benchstatus">Kliknij „Uruchom test", aby zmierzyć CPU i GPU.</p>
+      <p class="civ-perftest-bench-status" id="civ-perftest-benchstatus">Kliknij „Uruchom test”, aby zmierzyć CPU i GPU.</p>
       <ul class="civ-perftest-list" id="civ-perftest-benchlist"></ul>
 
       <div class="civ-perftest-verdict" id="civ-perftest-verdict"></div>
