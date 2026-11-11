@@ -10,7 +10,7 @@ import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
-import { TOOLBAR_BTN_PX, TOOLBAR_LEFT_PX, TOOLBAR_TOP_PX } from './hudLayout';
+import { TOOLBAR_BTN_PX, TOOLBAR_LEFT_PX, TOOLBAR_TOP_PX, Z_MAP_CONTROLS } from './hudLayout';
 
 export interface MapToolbarHudConfig {
   onOpenCities?: () => void;
@@ -60,7 +60,7 @@ function ensureStyles(): void {
   document.getElementById('civ-map-toolbar-hud-css-w2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-map-toolbar{position:fixed;top:${TOOLBAR_TOP_PX}px;left:${TOOLBAR_LEFT_PX}px;z-index:310;
+.civ-map-toolbar{position:fixed;top:${TOOLBAR_TOP_PX}px;left:${TOOLBAR_LEFT_PX}px;z-index:${Z_MAP_CONTROLS};
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:12px;padding:0;
   background:transparent;border:none;width:auto;font:11px var(--civ-font-ui);}

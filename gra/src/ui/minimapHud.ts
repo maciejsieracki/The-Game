@@ -13,6 +13,7 @@ import {
   HUD_ZOOM_BOTTOM_PX,
   MINIMAP_TOOL_BTN_PX,
   MINIMAP_TOOL_GAP_PX,
+  Z_MAP_CONTROLS,
 } from './hudLayout';
 import {
   MINIMAP_EDGE_PX,
@@ -360,7 +361,7 @@ function ensureStyles(): void {
   document.getElementById('civ-minimap-hud-css-w2b')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${minimapWrapBottomCss()};z-index:310;
+.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${minimapWrapBottomCss()};z-index:${Z_MAP_CONTROLS};
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:${MINIMAP_TOOL_GAP_PX}px;width:max-content;
   filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));overflow:visible;pointer-events:none;}
 .civ-minimap-wrap .civ-minimap-hud,.civ-minimap-wrap .civ-minimap-tools{pointer-events:auto;}
