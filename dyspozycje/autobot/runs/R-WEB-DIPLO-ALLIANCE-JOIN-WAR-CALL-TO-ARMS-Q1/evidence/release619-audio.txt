@@ -1,0 +1,11 @@
+PASS HTTP+packs: muzyka gry gra, blob, duration>0, currentTime rośnie — {"bg1":[{"src":"blob:","dur":27.350167,"t":0.236854}],"bg2":[{"src":"blob:","dur":27.350167,"t":2.512919}]}
+PASS HTTP+packs: przywitanie Greków gra, blob, 30–60 s, currentTime rośnie — {"diplo1":[{"src":"blob:","dur":40.699841,"t":0}],"diplo2":[{"src":"blob:","dur":40.699841,"t":1.916772}]}
+PASS HTTP+packs: window.__CIV_AUDIO__ zwolniony po dekodowaniu — {"registry":0}
+PASS HTTP+packs: pakiety audio odpowiedziały 200 — [{"url":"audio-pack-3.js","status":200},{"url":"audio-pack-2.js","status":200},{"url":"audio-pack-1.js","status":200}]
+PASS HTTP+packs: zero pageerror i console.error — {"pageErrors":[],"consoleErrors":[]}
+PASS HTTP bez pakietów: gra startuje i nie gra audio — {"silentBg":[],"silentBg2":[]}
+PASS HTTP bez pakietów: dyplomacja nie odtwarza audio — {"silentDiplo":[]}
+PASS HTTP bez pakietów: HUD działa — {"hud":1}
+PASS HTTP bez pakietów: jedyne braki to 3 oczekiwane HTTP 404 sąsiadów — {"packResponses":[{"url":"audio-pack-1.js","status":404},{"url":"audio-pack-2.js","status":404},{"url":"audio-pack-3.js","status":404}],"consoleErrors":["Failed to load resource: the server responded with a status of 404 (Not Found)","Failed to load resource: the server responded with a status of 404 (Not Found)","Failed to load resource: the server responded with a status of 404 (Not Found)"]}
+PASS HTTP bez pakietów: zero pageerror — []
+audio-sidecar-http-smoke: PASS

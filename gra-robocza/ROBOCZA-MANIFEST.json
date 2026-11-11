@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED LOCALLY; PUSH/READBACK PENDING",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "722419d02dcdf72408dffe4374bb1e73",
   "bundleSha256": "59e0c10852549583a58f4c763145efebc4b450b39b9a6c14afa30fe6ac286f63",
@@ -1287,8 +1287,9 @@
     }
   },
   "publishPlan": {
-    "status": "PENDING push/readback",
+    "status": "PUSHED; three artifacts byte-identical after fresh fetch",
     "target": "origin/main",
+    "publicationCommit": "186d0f03b",
     "sourceCommit": "d2ff370e79451de6411641a199bc554473caeb15"
   },
   "publishedAt": "2026-11-11T09:11:27.525193+01:00",

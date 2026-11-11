@@ -1,5 +1,14 @@
 # Przekazanie AutoBot Codex — 2026-11-11
 
+## NAJNOWSZA AKTUALIZACJA — nadrzędna wobec wcześniejszej migawki poniżej
+
+FALA619 już opublikowana i wypchnięta: `186d0f03b`, MD5 `722419d02dcdf72408dffe4374bb1e73`. FreshGit readback bundle/manifest/START byte-identical PASS, audio HTTP present/absent PASS. Mury i wezwania sojusznicze zakończone11/11; receipts90-release-619.json w obu runach. Wcześniejsza sekcja „Budowana FALA619” jest historią i NIE oznacza trwającej publikacji.
+
+Bieżące cztery aktywne tematy: (1) konnica/Żelazo,6/11, `codex/cavalry-iron` najnowszy `cdaac71277`, niezależny `cavalry_iron_evaluator`; (2) limity i podsumowanie rekrutacji,6/11, `codex/recruit-affordability` `0b6107782`, niezależny `recruit_affordability_evaluator`; (3) martwe jednostki Q2,1/11, `dead_unit_regression_operator`; (4) globalna zamiana typów piechoty,1/11, `melee_replacement_operator`. Nowi operatorzy mają natychmiast zapisywać postępy na swoich gałęziach.
+
+Starszy zapasbrązu i bilansPracy są audytami bez potwierdzonego błędu/bez danych żywej partii, nie aktywnymi operatorami. Administrator nadal czeka na decyzję. Kolejka pozostałych zgłoszeń zachowana; poniższa lista oczekujących zawiera dwa właśnie uruchomione tematy, ich status nadrzędny jest w tym akapicie.
+
+
 ## Jak kontynuować
 
 Źródło kodu: `gra/src` i `gra/data`. Repo bieżącej sesji `/workspace/The-Game`, lokalna gałąź `work` wypychana bez force na `origin/main`. Nie zakładać zachowania `/tmp` ani żywotności operatorów po zakończeniu sesji. Po wznowieniu pobrać main i gałęzie kandydatów, sprawdzić faktyczne commity i uruchomić brakujący następny etap. Nie uznawać raportu z czatu za nowy wynik testu.
