@@ -10,7 +10,6 @@ use std::fmt;
 
 use super::save_load::SaveSnapshot;
 use super::save_migrations::LoadMigrationReport;
-use super::PlayerId;
 
 /// Bledy ladowania zapisu z tekstu.
 #[derive(Debug)]
@@ -37,14 +36,12 @@ impl Error for LoadError {
 
 /// Wczytuje [`SaveSnapshot`] z tekstu JSON i wykonuje migracje przy wczytaniu.
 ///
-/// `era_for_owner` podaje epoke wlasciciela (limit wodzow zalezy od epoki); wywolujacy musi go
-/// dostarczyc, bo silnik nie ma wlasnego zrodla epok. Zwraca snapshot po migracji oraz raport
-/// tego, co migracja zmienila (zdegradowani wodzowie, przeniesione jednostki).
-pub fn load_save_snapshot(
-    text: &str,
-    era_for_owner: impl Fn(PlayerId) -> f64,
-) -> Result<(SaveSnapshot, LoadMigrationReport), LoadError> {
+/// Epoka kazdego wlasciciela (limit wodzow zalezy od epoki) pochodzi z DANYCH ZAPISU: ludzie z
+/// `gracze[].era`, AI z `meta.ownerEraByOwner` (zob. [`SaveSnapshot::owner_era`]). Zapis bez
+/// epoki dostaje udokumentowany wynik (`SaveMeta::start_era_fallback`). Zwraca snapshot po migracji
+/// oraz raport tego, co migracja zmienila (zdegradowani wodzowie, przeniesione jednostki).
+pub fn load_save_snapshot(text: &str) -> Result<(SaveSnapshot, LoadMigrationReport), LoadError> {
     let mut snapshot: SaveSnapshot = serde_json::from_str(text).map_err(LoadError::Json)?;
-    let report = snapshot.migrate_on_load(era_for_owner);
+    let report = snapshot.migrate_on_load();
     Ok((snapshot, report))
 }

@@ -9,6 +9,7 @@ use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayerId, PositionDto, Rng, TerrainDto,
     TileDto, TurnDto, TurnEvent, TurnPhase, UnitDto, UnitId, UnitKindDto,
 };
+use serde_json::{json, Value};
 
 const OWNER: u64 = 1;
 const FOREIGN: u64 = 2;
@@ -60,12 +61,15 @@ fn state(map: MapDto, specs: &[UnitSpec]) -> GameStateDto {
 }
 
 /// Zapis tekstowy w formacie produkcyjnym (serde JSON), tak jak zapisany przed migracja.
-fn save_text(specs: &[UnitSpec]) -> String {
+/// `owner_eras` trafia do `meta.ownerEraByOwner` (web: epoki AI), skad loader czyta epoke.
+fn save_text(specs: &[UnitSpec], owner_eras: Value) -> String {
     let mut queue = EventQueue::new();
     queue.enqueue(3, TurnPhase::Ai, TurnEvent::AiTurn(1));
     let snapshot = SaveSnapshot::new(state(map(3, 1), specs), queue, Rng::new(42))
         .with_meta(SaveMeta::default());
-    serde_json::to_string(&snapshot).expect("ser")
+    let mut wire = serde_json::to_value(&snapshot).expect("ser");
+    wire["meta"]["ownerEraByOwner"] = owner_eras;
+    serde_json::to_string(&wire).expect("ser text")
 }
 
 fn generals(s: &SaveSnapshot) -> Vec<u64> {
@@ -89,14 +93,17 @@ fn excess_generals_specs() -> Vec<UnitSpec> {
 
 #[test]
 fn p6_zapis_loader_migrates_old_save_through_production_path() {
-    let text = save_text(&excess_generals_specs());
+    let text = save_text(
+        &excess_generals_specs(),
+        json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
+    );
     // Kontrola: surowa deserializacja NIE migruje, wiec wszyscy 4 wodzowie zostaja
     // (ta kontrola jest jednoczesnie dowodem, ze zapis przed migracja niesie flagi wodzow).
     let raw_loaded: SaveSnapshot = serde_json::from_str(&text).expect("raw load");
     assert_eq!(generals(&raw_loaded), vec![10, 11, 12, 20]);
 
-    // Produkcyjny loader: era 2 => limit 2 na wlasciciela; najmlodszy wodz gracza 1 (id 12) traci flage.
-    let (loaded, report) = load_save_snapshot(&text, |_| 2.0).expect("loader");
+    // Produkcyjny loader: epoka 2 z zapisu => limit 2 na wlasciciela; najmlodszy wodz gracza 1 (id 12) traci flage.
+    let (loaded, report) = load_save_snapshot(&text).expect("loader");
     assert_eq!(report.demoted_generals, vec![UnitId::new(12)]);
     assert_eq!(generals(&loaded), vec![10, 11, 20], "stan po migracji");
     assert_eq!(loaded.state().units().len(), 4, "nikt nie ginie");
@@ -104,29 +111,28 @@ fn p6_zapis_loader_migrates_old_save_through_production_path() {
 
 #[test]
 fn p6_zapis_loader_is_idempotent_on_reload() {
-    let text = save_text(&excess_generals_specs());
-    let (loaded, first) = load_save_snapshot(&text, |_| 2.0).expect("first load");
+    let text = save_text(
+        &excess_generals_specs(),
+        json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
+    );
+    let (loaded, first) = load_save_snapshot(&text).expect("first load");
     assert!(!first.demoted_generals.is_empty());
 
     let again_text = serde_json::to_string(&loaded).expect("ser");
-    let (again, second) = load_save_snapshot(&again_text, |_| 2.0).expect("second load");
+    let (again, second) = load_save_snapshot(&again_text).expect("second load");
     assert!(second.demoted_generals.is_empty(), "drugi odczyt bez zmian");
     assert_eq!(generals(&again), vec![10, 11, 20]);
 }
 
 #[test]
 fn p6_zapis_loader_uses_per_owner_era() {
-    let text = save_text(&excess_generals_specs());
-    // Era 1 dla gracza (limit 1): wodzowie 10, 11 i 12 wlasciciela traca flage poza najstarszym;
-    // era 3 dla obcego (limit 3) - jego wodz nietkniety.
-    let (loaded, report) = load_save_snapshot(&text, |owner| {
-        if owner == PlayerId::new(OWNER) {
-            1.0
-        } else {
-            3.0
-        }
-    })
-    .expect("loader");
+    // Epoka 1 dla gracza (limit 1): wodzowie 10, 11 i 12 wlasciciela traca flage poza najstarszym;
+    // epoka 3 dla obcego (limit 3) - jego wodz nietkniety.
+    let text = save_text(
+        &excess_generals_specs(),
+        json!([[OWNER, 1.0], [FOREIGN, 3.0]]),
+    );
+    let (loaded, report) = load_save_snapshot(&text).expect("loader");
     assert_eq!(
         report.demoted_generals,
         vec![UnitId::new(11), UnitId::new(12)]
@@ -136,6 +142,6 @@ fn p6_zapis_loader_uses_per_owner_era() {
 
 #[test]
 fn p6_zapis_loader_rejects_invalid_json_without_panic() {
-    assert!(load_save_snapshot("{ to nie jest zapis", |_| 1.0).is_err());
-    assert!(load_save_snapshot("", |_| 1.0).is_err());
+    assert!(load_save_snapshot("{ to nie jest zapis").is_err());
+    assert!(load_save_snapshot("").is_err());
 }
