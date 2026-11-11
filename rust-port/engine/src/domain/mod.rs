@@ -8,6 +8,7 @@ pub mod ai_resource_needs;
 pub mod ai_zakup_jednostki;
 pub mod alliance_war_obligation;
 pub mod army_consolidation;
+pub mod army_follow_auto_merge;
 pub mod army_leadership;
 pub mod auto_improvements;
 pub mod barbarians;
