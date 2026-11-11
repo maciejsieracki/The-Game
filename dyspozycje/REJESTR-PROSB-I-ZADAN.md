@@ -9676,3 +9676,4 @@ Cegielnia75cykliBrąz/100Żelazo, zużycieproporcjonalne. Przyistniejącejrecept
 STATUS: OTWARTE
 DOMAIN: GAME
 Przełącznikwłącz/wyłączmiejskiebudynkiprodukującesurowce. Wyłączeniewstrzymujeprodukcję,zużyciewejśćikosztyutrzymania; stantrwały, starezapisyON. Bezrefundukosztubudowy. Dispatch `autobot/runs/R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1/00-dispatch.md`; kolejkaprzymax4tematach.
+- DODATEK2026-11-11 do R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: na końcu paneluMiasta lista wszystkichmiastwyłączniezbudynkamisurowcowymi iichprzełącznikami; globalnieper-surowiec produkcjarealizowana vsprzeróbpotencjalny (przypełnymzaopatrzeniu), jasnoodróżnićwyłączonąmocizasilanie.
