@@ -1,5 +1,6 @@
 //! Domain building blocks shared by future engine systems.
 
+pub mod ai_diplomacy_turn;
 pub mod ai_era_unit_promotion;
 pub mod ai_general_war_campaign;
 pub mod ai_move_range;

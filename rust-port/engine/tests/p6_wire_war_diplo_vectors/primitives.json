@@ -1,0 +1,946 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "advanceCrisisCounter": [
+    {
+      "prev": 0,
+      "zaufanie": -3,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 0,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": -3,
+      "out": {
+        "counter": 2,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": 0,
+      "out": {
+        "counter": 2,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 1,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": -3,
+      "out": {
+        "counter": 5,
+        "warningActive": true,
+        "warTriggerReady": true
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": 0,
+      "out": {
+        "counter": 5,
+        "warningActive": true,
+        "warTriggerReady": true
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 4,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": -3,
+      "out": {
+        "counter": 6,
+        "warningActive": true,
+        "warTriggerReady": true
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": 0,
+      "out": {
+        "counter": 6,
+        "warningActive": true,
+        "warTriggerReady": true
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 5,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": -3,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": 0,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": -1,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": -3,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": 0,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": "NaN",
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": -3,
+      "out": {
+        "counter": 3,
+        "warningActive": true,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": 0,
+      "out": {
+        "counter": 3,
+        "warningActive": true,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": 0.5,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": 1,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": 7,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 2.7,
+      "zaufanie": "NaN",
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    }
+  ],
+  "crisisStepForPair": [
+    {
+      "prev": 0,
+      "zaufanie": -1,
+      "atWar": false,
+      "out": {
+        "counter": 1,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 2,
+      "atWar": false,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 3,
+      "zaufanie": -1,
+      "atWar": false,
+      "out": {
+        "counter": 4,
+        "warningActive": true,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 3,
+      "zaufanie": 2,
+      "atWar": false,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": -1,
+      "atWar": true,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 0,
+      "zaufanie": 2,
+      "atWar": true,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 3,
+      "zaufanie": -1,
+      "atWar": true,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    },
+    {
+      "prev": 3,
+      "zaufanie": 2,
+      "atWar": true,
+      "out": {
+        "counter": 0,
+        "warningActive": false,
+        "warTriggerReady": false
+      }
+    }
+  ],
+  "pickWarDeclarer": [
+    {
+      "a": {
+        "ownerId": 1,
+        "power": 10
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 5
+      },
+      "out": 1
+    },
+    {
+      "a": {
+        "ownerId": 3,
+        "power": 4
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 4
+      },
+      "out": 2
+    },
+    {
+      "a": {
+        "ownerId": 5,
+        "power": 1
+      },
+      "b": {
+        "ownerId": 4,
+        "power": 9
+      },
+      "out": 4
+    }
+  ],
+  "brakeWarOutcome": [
+    {
+      "a": {
+        "ownerId": 1,
+        "power": 10
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 5
+      },
+      "players": [],
+      "out": {
+        "declarer": 1,
+        "victim": 2,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 1,
+        "power": 10
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 5
+      },
+      "players": [
+        1
+      ],
+      "out": {
+        "declarer": 1,
+        "victim": 2,
+        "mayDeclare": false
+      }
+    },
+    {
+      "a": {
+        "ownerId": 1,
+        "power": 10
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 5
+      },
+      "players": [
+        2
+      ],
+      "out": {
+        "declarer": 1,
+        "victim": 2,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 3,
+        "power": 4
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 4
+      },
+      "players": [],
+      "out": {
+        "declarer": 2,
+        "victim": 3,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 3,
+        "power": 4
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 4
+      },
+      "players": [
+        3
+      ],
+      "out": {
+        "declarer": 2,
+        "victim": 3,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 3,
+        "power": 4
+      },
+      "b": {
+        "ownerId": 2,
+        "power": 4
+      },
+      "players": [
+        2
+      ],
+      "out": {
+        "declarer": 2,
+        "victim": 3,
+        "mayDeclare": false
+      }
+    },
+    {
+      "a": {
+        "ownerId": 5,
+        "power": 1
+      },
+      "b": {
+        "ownerId": 4,
+        "power": 9
+      },
+      "players": [],
+      "out": {
+        "declarer": 4,
+        "victim": 5,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 5,
+        "power": 1
+      },
+      "b": {
+        "ownerId": 4,
+        "power": 9
+      },
+      "players": [
+        5
+      ],
+      "out": {
+        "declarer": 4,
+        "victim": 5,
+        "mayDeclare": true
+      }
+    },
+    {
+      "a": {
+        "ownerId": 5,
+        "power": 1
+      },
+      "b": {
+        "ownerId": 4,
+        "power": 9
+      },
+      "players": [
+        4
+      ],
+      "out": {
+        "declarer": 4,
+        "victim": 5,
+        "mayDeclare": false
+      }
+    }
+  ],
+  "sortCrisisQueue": [
+    {
+      "entries": [
+        {
+          "ownerA": 3,
+          "ownerB": 1,
+          "counter": 2
+        },
+        {
+          "ownerA": 2,
+          "ownerB": 4,
+          "counter": 5
+        },
+        {
+          "ownerA": 1,
+          "ownerB": 2,
+          "counter": 5
+        },
+        {
+          "ownerA": 0,
+          "ownerB": 9,
+          "counter": 1
+        },
+        {
+          "ownerA": 5,
+          "ownerB": 6,
+          "counter": 2
+        }
+      ],
+      "out": [
+        {
+          "ownerA": 1,
+          "ownerB": 2,
+          "counter": 5
+        },
+        {
+          "ownerA": 2,
+          "ownerB": 4,
+          "counter": 5
+        },
+        {
+          "ownerA": 3,
+          "ownerB": 1,
+          "counter": 2
+        },
+        {
+          "ownerA": 5,
+          "ownerB": 6,
+          "counter": 2
+        },
+        {
+          "ownerA": 0,
+          "ownerB": 9,
+          "counter": 1
+        }
+      ]
+    }
+  ],
+  "dobraWolaTurnStep": [
+    {
+      "remaining": 0,
+      "out": {
+        "activeThisTurn": false,
+        "next": 0
+      }
+    },
+    {
+      "remaining": 0.4,
+      "out": {
+        "activeThisTurn": false,
+        "next": 0
+      }
+    },
+    {
+      "remaining": 1,
+      "out": {
+        "activeThisTurn": true,
+        "next": 0
+      }
+    },
+    {
+      "remaining": 1.9,
+      "out": {
+        "activeThisTurn": true,
+        "next": 0
+      }
+    },
+    {
+      "remaining": 3,
+      "out": {
+        "activeThisTurn": true,
+        "next": 2
+      }
+    },
+    {
+      "remaining": -2,
+      "out": {
+        "activeThisTurn": false,
+        "next": 0
+      }
+    },
+    {
+      "remaining": "NaN",
+      "out": {
+        "activeThisTurn": false,
+        "next": 0
+      }
+    },
+    {
+      "remaining": "Infinity",
+      "out": {
+        "activeThisTurn": false,
+        "next": 0
+      }
+    }
+  ],
+  "isAiAiEligibleOwner": [
+    {
+      "o": {
+        "isPlayer": true,
+        "isBarbarian": false,
+        "isCityCopy": false,
+        "eliminated": false,
+        "cityCount": 3
+      },
+      "out": false
+    },
+    {
+      "o": {
+        "isPlayer": false,
+        "isBarbarian": true,
+        "isCityCopy": false,
+        "eliminated": false,
+        "cityCount": 2
+      },
+      "out": false
+    },
+    {
+      "o": {
+        "isPlayer": false,
+        "isBarbarian": false,
+        "isCityCopy": true,
+        "eliminated": false,
+        "cityCount": 1
+      },
+      "out": false
+    },
+    {
+      "o": {
+        "isPlayer": false,
+        "isBarbarian": false,
+        "isCityCopy": false,
+        "eliminated": true,
+        "cityCount": 1
+      },
+      "out": false
+    },
+    {
+      "o": {
+        "isPlayer": false,
+        "isBarbarian": false,
+        "isCityCopy": false,
+        "eliminated": false,
+        "cityCount": 0
+      },
+      "out": false
+    },
+    {
+      "o": {
+        "isPlayer": false,
+        "isBarbarian": false,
+        "isCityCopy": false,
+        "eliminated": false,
+        "cityCount": 4
+      },
+      "out": true
+    }
+  ],
+  "aiAiPairs": [
+    {
+      "owners": [],
+      "out": []
+    },
+    {
+      "owners": [
+        4
+      ],
+      "out": []
+    },
+    {
+      "owners": [
+        1,
+        2,
+        3
+      ],
+      "out": [
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "owners": [
+        9,
+        2,
+        7,
+        5
+      ],
+      "out": [
+        [
+          9,
+          2
+        ],
+        [
+          9,
+          7
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          7,
+          5
+        ]
+      ]
+    }
+  ],
+  "crisisPairKey": [
+    {
+      "a": 1,
+      "b": 2,
+      "out": "1-2"
+    },
+    {
+      "a": 2,
+      "b": 1,
+      "out": "1-2"
+    },
+    {
+      "a": 0,
+      "b": 0,
+      "out": "0-0"
+    },
+    {
+      "a": 7,
+      "b": 3,
+      "out": "3-7"
+    }
+  ],
+  "parseCrisisCounters": [
+    {
+      "raw": {
+        "1_2": 3,
+        "0_4": 0,
+        "2_5": -1,
+        "6_7": 2.9,
+        "8_9": "x"
+      },
+      "out": [
+        [
+          "1_2",
+          3
+        ],
+        [
+          "6_7",
+          2
+        ]
+      ]
+    }
+  ]
+}

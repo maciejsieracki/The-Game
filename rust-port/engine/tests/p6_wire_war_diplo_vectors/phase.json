@@ -1,0 +1,1016 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "scenarios": [
+    {
+      "name": "ai_ai_five_turns_declare",
+      "meId": 0,
+      "contacts": [
+        1,
+        2,
+        3
+      ],
+      "owners": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "cityCount": {
+        "1": 2,
+        "2": 2,
+        "3": 2
+      },
+      "power": {
+        "0": 1,
+        "1": 10,
+        "2": 5,
+        "3": 7
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_3": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_3": {
+          "prog": 0,
+          "n": 5
+        },
+        "2_3": {
+          "prog": 0,
+          "n": 5
+        }
+      },
+      "war": [],
+      "initCounters": {},
+      "initDobra": {},
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 1,
+              "1_3": 1,
+              "2_3": 1
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 2,
+              "1_3": 2,
+              "2_3": 2
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 3,
+              "1_3": 3,
+              "2_3": 3
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 4,
+              "1_3": 4,
+              "2_3": 4
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [
+              {
+                "declarer": 1,
+                "victim": 2
+              },
+              {
+                "declarer": 1,
+                "victim": 3
+              },
+              {
+                "declarer": 3,
+                "victim": 2
+              }
+            ],
+            "counters": {},
+            "atWar": [
+              "1_2",
+              "1_3",
+              "2_3"
+            ],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "1_2": -1,
+              "1_3": -1,
+              "2_3": -1,
+              "0_1": 5,
+              "0_2": 5,
+              "0_3": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {},
+            "atWar": [
+              "1_2",
+              "1_3",
+              "2_3"
+            ],
+            "dobra": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "player_stronger_no_auto_war",
+      "meId": 0,
+      "contacts": [
+        1
+      ],
+      "owners": [
+        0,
+        1
+      ],
+      "cityCount": {
+        "1": 3
+      },
+      "power": {
+        "0": 20,
+        "1": 5
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        }
+      },
+      "war": [],
+      "initCounters": {},
+      "initDobra": {},
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 1
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 2
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 3
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 4
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 5
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 6
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -2
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 7
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "counter_reset_on_recovery",
+      "meId": 0,
+      "contacts": [
+        1
+      ],
+      "owners": [
+        0,
+        1,
+        2
+      ],
+      "cityCount": {
+        "1": 2,
+        "2": 2
+      },
+      "power": {
+        "0": 1,
+        "1": 3,
+        "2": 8
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_2": {
+          "prog": 0,
+          "n": 5
+        }
+      },
+      "war": [],
+      "initCounters": {},
+      "initDobra": {},
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 1,
+              "1_2": 1
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 2,
+              "1_2": 2
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 3,
+              "1_2": 3
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 1,
+              "0_2": 3,
+              "1_2": 1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {},
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 1,
+              "1_2": 1
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 2,
+              "1_2": 2
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 3,
+              "1_2": 3
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 4,
+              "1_2": 4
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": 3,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [
+              {
+                "declarer": 1,
+                "victim": 0
+              },
+              {
+                "declarer": 2,
+                "victim": 1
+              }
+            ],
+            "counters": {},
+            "atWar": [
+              "0_1",
+              "1_2"
+            ],
+            "dobra": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "gate_and_peace_lock_delay",
+      "meId": 0,
+      "contacts": [
+        1
+      ],
+      "owners": [
+        0,
+        1,
+        2
+      ],
+      "cityCount": {
+        "1": 2,
+        "2": 2
+      },
+      "power": {
+        "0": 1,
+        "1": 9,
+        "2": 4
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_2": {
+          "prog": 0,
+          "n": 2
+        }
+      },
+      "war": [],
+      "initCounters": {},
+      "initDobra": {},
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": [
+              "1>2"
+            ]
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 1
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": [
+              "1>2"
+            ]
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 2
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": [
+              "1>2"
+            ]
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 3
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [
+              "1_2"
+            ],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "1_2": 4
+            },
+            "atWar": [],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [
+              {
+                "declarer": 1,
+                "victim": 2
+              }
+            ],
+            "counters": {},
+            "atWar": [
+              "1_2"
+            ],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 9,
+              "0_2": 9,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {},
+            "atWar": [
+              "1_2"
+            ],
+            "dobra": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "dobra_wola_countdown",
+      "meId": 0,
+      "contacts": [
+        1,
+        2
+      ],
+      "owners": [
+        0,
+        1,
+        2
+      ],
+      "cityCount": {
+        "1": 2,
+        "2": 2
+      },
+      "power": {
+        "0": 1,
+        "1": 2,
+        "2": 3
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_2": {
+          "prog": 0,
+          "n": 5
+        }
+      },
+      "war": [],
+      "initCounters": {},
+      "initDobra": {
+        "0_1": 2,
+        "0_2": 0
+      },
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "0_1": 5,
+              "0_2": 5,
+              "1_2": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [
+              "0_1"
+            ],
+            "declarations": [],
+            "counters": {},
+            "atWar": [],
+            "dobra": {
+              "0_1": 1,
+              "0_2": 0
+            }
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 5,
+              "0_2": 5,
+              "1_2": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [
+              "0_1"
+            ],
+            "declarations": [],
+            "counters": {},
+            "atWar": [],
+            "dobra": {
+              "0_1": 0,
+              "0_2": 0
+            }
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 5,
+              "0_2": 5,
+              "1_2": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {},
+            "atWar": [],
+            "dobra": {
+              "0_1": 0,
+              "0_2": 0
+            }
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": 5,
+              "0_2": 5,
+              "1_2": 5
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {},
+            "atWar": [],
+            "dobra": {
+              "0_1": 0,
+              "0_2": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "resume_from_saved_counters",
+      "meId": 0,
+      "contacts": [
+        1
+      ],
+      "owners": [
+        0,
+        1,
+        2
+      ],
+      "cityCount": {
+        "1": 2,
+        "2": 2
+      },
+      "power": {
+        "0": 1,
+        "1": 4,
+        "2": 6
+      },
+      "params": {
+        "0_1": {
+          "prog": 0,
+          "n": 5
+        },
+        "0_2": {
+          "prog": 0,
+          "n": 5
+        },
+        "1_2": {
+          "prog": 0,
+          "n": 5
+        }
+      },
+      "war": [
+        "0_2"
+      ],
+      "initCounters": {
+        "1_2": 4,
+        "0_2": 9
+      },
+      "initDobra": {},
+      "turns": [
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": -1,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [
+              {
+                "declarer": 2,
+                "victim": 1
+              }
+            ],
+            "counters": {
+              "0_1": 1
+            },
+            "atWar": [
+              "0_2",
+              "1_2"
+            ],
+            "dobra": {}
+          }
+        },
+        {
+          "input": {
+            "rel": {
+              "0_1": -1,
+              "0_2": -1,
+              "1_2": -1
+            },
+            "peaceLocked": [],
+            "gateBlocked": []
+          },
+          "expect": {
+            "dobraActive": [],
+            "declarations": [],
+            "counters": {
+              "0_1": 2
+            },
+            "atWar": [
+              "0_2",
+              "1_2"
+            ],
+            "dobra": {}
+          }
+        }
+      ]
+    }
+  ]
+}
