@@ -62,6 +62,8 @@ const panelInfo = (page) => page.evaluate(() => {
   try {
     const s = await C.openMenu(browser);
     const page = s.page;
+    let dialogMode = 'accept'; let dialogSeen = 0;
+    page.on('dialog', (d) => { dialogSeen++; if (dialogMode === 'dismiss') d.dismiss(); else d.accept(); });
     await page.evaluate(() => window.__cityStateStartUnitsTestDebug.startNewGame('normal', 2, 'normal'));
     await C.waitAwaitingCity(page);
     await C.foundCapital(page);
@@ -132,6 +134,13 @@ const panelInfo = (page) => page.evaluate(() => {
 
     // zwolnienie z panelu
     await page.evaluate(() => document.querySelector('[data-imp-admin-open]').click()); await wait(400);
+    // odmowa dialogu potwierdzenia: administrator zostaje
+    dialogMode = 'dismiss';
+    await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(600);
+    const stKeep = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    ok(dialogSeen >= 1 && stKeep.hired, 'Zwolnij: odmowa w dialogu potwierdzenia — administrator zostaje', { dialogSeen, stKeep });
+    if (!(await page.evaluate(() => !!document.querySelector('[data-adm-panel-dismiss]')))) { await page.evaluate(() => document.querySelector('[data-imp-admin-open]').click()); await wait(400); }
+    dialogMode = 'accept';
     await page.evaluate(() => document.querySelector('[data-adm-panel-dismiss]').click()); await wait(600);
     const st3 = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
     ok(!st3.hired, 'Zwolnij w panelu zwalnia administratora (dotychczasowa logika)', st3);
@@ -152,7 +161,7 @@ const panelInfo = (page) => page.evaluate(() => {
     ok(ac.hired && ac.working && ac.treasury === tc0 - 40, 'administrator miasta: Zatrudnij działa jak dotąd (−40)', { tc0, ac });
     await page.keyboard.press('Escape'); await wait(300);
     ok(!(await page.evaluate(() => !!document.querySelector('.civ-adm-panel-host'))), 'Esc zamyka panel administratora miasta');
-    out.errors = s.errors.filter((e) => !/favicon|ERR_FILE_NOT_FOUND/.test(e));
+    out.errors = s.errors.filter((e) => !/favicon|ERR_FILE_NOT_FOUND|ResizeObserver loop completed with undelivered notifications/.test(e));
     ok(out.errors.length === 0, 'brak błędów konsoli/pageerror', out.errors);
   } catch (e) {
     failed++; console.log('EXC: ' + (e && e.stack || e));
