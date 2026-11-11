@@ -10,6 +10,17 @@ import counters from '../data/counters.json';
 import terrainCombat from '../data/terrain-combat.json';
 
 const q = new URLSearchParams(location.search);
+// Determinizm: stale ziarno PRNG (Math.random) -- ten sam przebieg przy kazdym uruchomieniu (?seed=N).
+{
+  let a = (Number(q.get('seed') ?? '12345') >>> 0) || 1;
+  Math.random = () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 const siege = q.has('siege');
 const mode = q.get('mode') ?? 'skip';
 const armies = buildTestArmies(units, siege ? 'oblezenie_duze' : 'bitwa_duza_pole');
@@ -41,7 +52,10 @@ function finish(): void {
   const defRoster = world.filter(u => u.ownerId === 1);
   const survivorIds = new Set(survivors.map(s => String(s.id)));
   applyPostBattleMap({
-    units: world, map: { hexes: {} } as any, cities: [],
+    units: world, map: { hexes: {} } as any,
+    // Oblezenie = bitwa W MIESCIE (miasto obroncy na heksie bitwy): przegrani gina (decyzja wlasciciela).
+    cities: siege ? [{ id: 'cD', ownerId: 1, q: 11, r: 22, name: 'D' }] as any : [],
+    cityOnBattleHex: siege ? ({ id: 'cD', ownerId: 1, q: 11, r: 22, name: 'D' } as any) : null,
     battleQ: 11, battleR: 22,
     atkAnchor: atkRoster[0], atkRoster, defRoster,
     atkStart: new Map(atkRoster.map(u => [u.id, { q: 11, r: 23 }])),
@@ -50,14 +64,17 @@ function finish(): void {
     isPassableHex: () => true,
     isUnitAt: (qq: number, rr: number, ex?: any) => world.some(u => u.id !== ex && u.q === qq && u.r === rr),
   } as any);
-  const loserOwner = winner === 'atakujacy' ? 1 : 0;
+  const isDraw = winner === 'remis'; // remis nie jest przegrana: brak przegranych, nic nie wymaga odwrotu
+  const loserOwner = isDraw ? -1 : winner === 'atakujacy' ? 1 : 0;
   const hd = (a: any, b: any) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
-  const loserIds = (loserOwner === 1 ? defIds : atkIds);
+  const loserIds = isDraw ? [] : (loserOwner === 1 ? defIds : atkIds);
   const loserSurvivorIds = loserIds.filter(id => survivorIds.has(id));
   const loserOnMap = world.filter(u => u.ownerId === loserOwner);
   const loserDeadIds = loserIds.filter(id => !survivorIds.has(id));
   api.result = {
-    siege, winner, rosterSizes: [atkIds.length, defIds.length],
+    siege, winner, isDraw, atkOnMap: world.filter(u => u.ownerId === 0).length, defOnMap: world.filter(u => u.ownerId === 1).length,
+    exportedIds: survivors.map(s => String(s.id)), worldIds: world.map(u => u.id),
+    rosterSizes: [atkIds.length, defIds.length],
     exportedSurvivors: survivors.length,
     loserSurvivorsExported: loserSurvivorIds.length,
     loserDead: loserDeadIds.length,

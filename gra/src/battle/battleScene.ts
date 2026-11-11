@@ -9492,7 +9492,7 @@ export class BattleScene {
     const winner = cap.winner;
     this.log.push('=== PAT (przewijanie): ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
     this._endWinner = winner;
-    this._endSurvivors = this._battleUnitsForMapExport([...this.atk, ...this.def]);
+    this._endSurvivors = this._battleUnitsForMapExport(this._mapExportRoster(winner));
     this._showEndScreen(winner);
   }
 
@@ -10221,9 +10221,10 @@ export class BattleScene {
 
     // Rout na polu 3D ustawia dead=true przy _removeUnitFromScene — na mapie świata
     // jednostka rozbita (rout) ma wrócić z HP>0 (post-battle-map.ts wycofanie).
-    // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: ocalali (w tym rozbici/rout, HP>0)
-    // PRZEGRANEJ strony tez wracaja na mape -- applyPostBattleMap cofa ich o 2 heksy.
-    const survivors = this._battleUnitsForMapExport([...this.atk, ...this.def]);
+    // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: w bitwie W POLU ocalali (w tym rozbici/
+    // rout, HP>0) PRZEGRANEJ strony tez wracaja na mape -- applyPostBattleMap cofa ich o 2 heksy.
+    // W MIESCIE (isCityDefenseBattle / oblezenie) przegrani gina jak dotad (decyzja wlasciciela).
+    const survivors = this._battleUnitsForMapExport(this._mapExportRoster(winner));
 
     const winMsg = winner === 'atakujacy' ? 'ATAKUJACEGO' : 'OBRONCY';
     this.log.push('=== Koniec bitwy: zwyciestwo ' + winMsg + ' ===');
@@ -10243,6 +10244,12 @@ export class BattleScene {
    * Ocalałe jednostki zwycięskiej strony do applyPostBattleMap (manualSurvivors).
    * Rout = ucieczka z pola bitwy, nie kasacja z units[] — HP>0 wraca na mapę.
    */
+  /** Roster eksportowany na mape: w polu OBIE strony (przegrani sie cofna), w miescie tylko zwyciezca. */
+  private _mapExportRoster(winner: 'atakujacy' | 'obronca' | 'remis'): RuntimeBattleUnit[] {
+    if (!this.isCityDefenseBattle) return [...this.atk, ...this.def];
+    return winner === 'atakujacy' ? this.atk : this.def;
+  }
+
   private _battleUnitsForMapExport(roster: RuntimeBattleUnit[]): BattleUnit[] {
     return roster
       .filter(u => u.bu.hp > 0 && (!u.dead || u.routed))
@@ -20588,7 +20595,10 @@ function computeInstantResult(
   }
   // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: na mape wracaja ocalali OBU stron
   // (przegrani z HP>0 cofaja sie o 2 heksy w applyPostBattleMap, nie znikaja).
-  survivors = [...survivorsA, ...survivorsD];
+  // Tylko bitwa W POLU; w miescie (isCityDefense) przegrani gina jak dotad.
+  survivors = isCityDefense
+    ? (winner === 'atakujacy' ? survivorsA : survivorsD)
+    : [...survivorsA, ...survivorsD];
 
   log.push('=== Natychmiastowy wynik: ' + (winner === 'atakujacy' ? 'ATAKUJACY' : 'OBRONCA') + ' wygrywa ===');
   return { winner, survivors, log, defBonus };

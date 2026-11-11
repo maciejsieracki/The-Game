@@ -33,8 +33,15 @@ const cases = [{ siege: false, mode: 'skip' }, { siege: true, mode: 'skip' }, { 
       const r = await page.evaluate(() => window.__e2e.result);
       await page.close();
       console.log(JSON.stringify({ case: (c.siege ? 'siege' : 'field') + '/' + c.mode, timedOut, errors, r }));
-      const ok = !timedOut && !errors.length && r
-        && (r.loserSurvivorsExported > 0 || c.noLoserSurvivorsOk)
+      // Remis nie jest przegrana (brak przegranych): wystarczy spojnosc -- na mapie dokladnie eksportowani.
+      // Pole: przegrani z HP>0 stoja 2 heksy dalej. Miasto/oblezenie (c.siege): przegrani GINA (jak baza),
+      // na mapie zostaja wylacznie zwyciezcy z eksportu; nikt z przegranej strony.
+      const base = !timedOut && !errors.length && r;
+      let ok;
+      if (!base) ok = false;
+      else if (r.isDraw) ok = r.loserDeadStillOnMap === 0 && r.worldIds.every(id => r.exportedIds.includes(id));
+      else if (c.siege) ok = r.loserOnMap === 0 && r.loserDeadStillOnMap === 0;
+      else ok = (r.loserSurvivorsExported > 0 || c.noLoserSurvivorsOk)
         && r.loserOnMap === r.loserSurvivorsExported
         && r.loserDeadStillOnMap === 0
         && r.loserRetreatDistances.every(d => d === 2);

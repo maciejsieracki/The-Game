@@ -94,6 +94,13 @@ function runManual({ nAtk, nDef, atkSurvive, defSurvive, winner, useDeployedLog,
   // przegranych (2 heksy od heksu bitwy 11,10 -> 9,10) zamiast zostac sama obok zwyciezcy.
   assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.q === 9 && u.r === 10 && u.hp === 100), 'przegrana: rezerwa nie ginie, cofa sie ze stosem o 2 heksy');
 }
+// 3b) Przegrana atakujacego W MIESCIE (decyzja wlasciciela 2026-11-11): bez odwrotu 2 heksow,
+// ocalali wystawieni gina (jak baza), a rezerwa NIE ginie i zostaje na hexie startowym.
+{
+  const r = runManual({ nAtk: A, nDef: D, atkSurvive: 10, defSurvive: 90, winner: 'obronca', useDeployedLog: true, cityDefense: true });
+  assert(r.own.length === A - CAP, `przegrana w miescie: zostaje tylko rezerwa A-CAP (jest ${r.own.length})`);
+  assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.q === 10 && u.r === 10), 'przegrana w miescie: rezerwa zostaje na hexie startowym');
+}
 // 4) Remis
 {
   const r = runManual({ nAtk: A, nDef: D, atkSurvive: 60, defSurvive: 60, winner: 'remis', useDeployedLog: true });

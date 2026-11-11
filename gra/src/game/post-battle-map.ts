@@ -421,7 +421,7 @@ function pickLiveDefLead(
 /** Ocalali obrońcy odwrót o 2 heksy od zwycięzcy (R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1; bez trasy 2 heksów: dawny fan-out). Pierwotnie −1 heks (pole i miasto — Maciej B 2026-06-26). Centrum miasta = wipe przed fan-out. */
 function retreatDefendersAfterAtkWin(
   input: PostBattleMapInput,
-  twoHex: { retreated: string[]; noRoute: string[] },
+  twoHex?: { retreated: string[]; noRoute: string[] },
 ): void {
   const defAlive = input.defRoster
     .map(r => liveUnit(input.units, r.id))
@@ -473,7 +473,7 @@ function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
 
 function retreatAtkRosterToStart(
   input: PostBattleMapInput,
-  twoHex: { retreated: string[]; noRoute: string[] },
+  twoHex?: { retreated: string[]; noRoute: string[] },
 ): void {
   const back: RuntimeUnit[] = [];
   for (const ref of input.atkRoster) {
@@ -486,6 +486,7 @@ function retreatAtkRosterToStart(
     }
     back.push(u);
   }
+  if (!twoHex) return; // bitwa o miasto/oblezenie: bez odwrotu 2 heksy (dotychczasowe zachowanie)
   // Odwrot o 2 heksy od obroncy: dalej wzdluz kierunku bitwa -> start (tylko gdy start
   // sasiaduje z heksem bitwy). Oblegajacy (oblegaCityId) zostaja na pozycji blokady --
   // zachowanie ograniczen oblezenia bez zmian.
@@ -551,7 +552,18 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
   const removedIds: string[] = [];
   const twoHex = { retreated: [] as string[], noRoute: [] as string[] };
 
+  // DECYZJA WLASCICIELA 2026-11-11: odwrot ocalalych przegranej dotyczy TYLKO walki w polu.
+  // W MIESCIE (heks bitwy = miasto: szturm, obrona miasta, oblezenie) przegrani gina jak dotad.
+  const cityBattle = !!input.cityOnBattleHex;
+  const fieldTwoHex = cityBattle ? undefined : twoHex;
   if (input.manualSurvivors !== undefined) {
+    if (cityBattle && input.winner !== 'remis') {
+      // Ocalali PRZEGRANEJ strony nie wracaja na mape (zachowanie bazy: eksport tylko zwyciezcow).
+      const loserIds = new Set(
+        (input.winner === 'atakujacy' ? input.defRoster : input.atkRoster).map(u => String(u.id)),
+      );
+      input.manualSurvivors = input.manualSurvivors.filter(s => !loserIds.has(String(s.id)));
+    }
     applyManualSurvivors(input);
   } else {
     const dead = applyAutoLosses(input);
@@ -564,10 +576,10 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
   } else if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    retreatDefendersAfterAtkWin(input, twoHex);
+    retreatDefendersAfterAtkWin(input, fieldTwoHex);
     moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === 'obronca') {
-    retreatAtkRosterToStart(input, twoHex);
+    retreatAtkRosterToStart(input, fieldTwoHex);
     for (const ref of input.defRoster) {
       const u = liveUnit(input.units, ref.id);
       if (u) u.defLossesThisTurn = (u.defLossesThisTurn ?? 0) + 1;

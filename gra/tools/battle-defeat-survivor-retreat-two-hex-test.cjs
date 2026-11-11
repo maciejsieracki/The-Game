@@ -206,10 +206,9 @@ async function main() {
     assert(res.retreatedTwoHexIds.length === 0, '11: remis nie uzywa odwrotu 2-heksowego');
   }
 
-  // 12) Oblezenie, realna geometria: miasto obroncy na heksie bitwy (cityOnBattleHex), wygrywa atakujacy.
-  //     Garnizon NA centrum miasta jest kasowany (istniejaca zasada zdobycia miasta, poza zakresem tematu --
-  //     decyzja ABC); obroncy POZA centrum (heks obok) cofaja sie o 2 heksy; oblegajacy z oblegaCityId
-  //     wchodzi na heks bitwy; miasto (cudze dla przegranych poza centrum nie liczy sie) nie jest celem.
+  // 12) MIASTO/oblezenie (decyzja wlasciciela 2026-11-11: odwrot TYLKO w polu, w miescie gina).
+  //     Miasto obroncy na heksie bitwy, wygrywa atakujacy: caly roster obroncy gina -- takze ocalali
+  //     z eksportu poza centrum (brak odwrotu 2 heksow, zachowanie bazy); zwyciezca wchodzi na heks.
   {
     const city = { id: 'cD', ownerId: 1, q: 11, r: 22, name: 'D' };
     const a0 = U('a0', 0, 11, 23, { oblegaCityId: 'cD' });
@@ -219,26 +218,45 @@ async function main() {
     const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [gar, out0], winner: 'atakujacy',
       cities: [city], cityOnBattleHex: { q: 11, r: 22 },
       survivors: [{ id: 'a0', hp: 80 }, { id: 'gar', hp: 30 }, { id: 'out0', hp: 30 }] });
-    assert(!at(units, 'gar'), '12: garnizon na centrum miasta kasowany (istniejaca zasada zdobycia miasta)');
-    const o = at(units, 'out0');
-    assert(!!o, '12: obronca poza centrum nie znika');
-    assert(o && dist(o, { q: 11, r: 22 }) === 2, '12: obronca poza centrum o 2 heksy, jest ' + (o && o.q + ',' + o.r));
-    assert(!(o && o.q === 11 && o.r === 22), '12: nie wraca na centrum miasta');
-    assert(res.retreatedTwoHexIds.includes('out0'), '12: out0 w retreatedTwoHexIds');
+    assert(!at(units, 'gar'), '12: garnizon na centrum miasta gina');
+    assert(!at(units, 'out0'), '12: w miescie ocalaly obronca poza centrum TEZ gina (brak odwrotu)');
+    assert(res.retreatedTwoHexIds.length === 0 && res.retreatNoTwoHexRouteIds.length === 0, '12: brak raportu odwrotu w miescie');
+    assert(at(units, 'a0') && at(units, 'a0').q === 11 && at(units, 'a0').r === 22, '12: zwyciezca na heksie miasta');
   }
 
-  // 13) Oblezenie, przegrany szturm: miasto obroncy (wlasne dla obroncy) nie jest legalnym celem odwrotu
-  //     atakujacych (cudze miasto) -- atakujacy bez oblegaCityId; start sasiaduje z bitwa, cel odwrotu = miasto wroga.
+  // 13) MIASTO, przegrany szturm: ocalali atakujacy (eksport) gina, obronca zostaje.
   {
-    const city = { id: 'cE', ownerId: 1, q: 11, r: 24, name: 'E' };
+    const city = { id: 'cE', ownerId: 1, q: 11, r: 22, name: 'E' };
+    const a0 = U('a0', 0, 11, 23);
+    const a1 = U('a1', 0, 11, 23);
+    const d0 = U('d0', 1, 11, 22);
+    const units = [a0, a1, d0];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0, a1], def: [d0], winner: 'obronca', cities: [city],
+      cityOnBattleHex: { q: 11, r: 22 }, survivors: [{ id: 'd0', hp: 90 }, { id: 'a0', hp: 20 }, { id: 'a1', hp: 15 }] });
+    assert(!at(units, 'a0') && !at(units, 'a1'), '13: w miescie przegrani atakujacy gina (nie wracaja na mape)');
+    assert(at(units, 'd0') && at(units, 'd0').hp === 90, '13: zwycieski obronca zostaje');
+    assert(res.retreatedTwoHexIds.length === 0, '13: brak odwrotu 2 heksow w miescie');
+  }
+
+  // 13b) MIASTO, tryb AUTO (bez survivors, lossPct): brak odwrotu 2 heksow (dotychczasowy fan-out/start).
+  {
+    const city = { id: 'cF', ownerId: 1, q: 11, r: 22, name: 'F' };
+    const a0 = U('a0', 0, 11, 23);
+    const d0 = U('d0', 1, 10, 22);
+    const units = [a0, d0];
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'atakujacy', cities: [city],
+      cityOnBattleHex: { q: 11, r: 22 }, lossAtkPct: 0, lossDefPct: 0 });
+    assert(res.retreatedTwoHexIds.length === 0 && res.retreatNoTwoHexRouteIds.length === 0, '13b: AUTO w miescie bez odwrotu 2 heksow');
+  }
+
+  // 13c) POLE (brak miasta na heksie): odwrot nadal dziala (kontrola, ze bramka nie wylacza pola).
+  {
     const a0 = U('a0', 0, 11, 23);
     const d0 = U('d0', 1, 11, 22);
     const units = [a0, d0];
-    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'obronca', cities: [city],
-      survivors: [{ id: 'd0', hp: 90 }, { id: 'a0', hp: 20 }] });
-    const a = at(units, 'a0');
-    assert(a && !(a.q === 11 && a.r === 24), '13: atakujacy nie cofa sie do cudzego miasta');
-    assert(a && res.retreatNoTwoHexRouteIds.includes('a0'), '13: brak trasy raportowany, nie skasowany/teleportowany');
+    const res = run(P, { units, bq: 11, br: 22, atk: [a0], def: [d0], winner: 'atakujacy',
+      survivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 40 }] });
+    assert(res.retreatedTwoHexIds.includes('d0'), '13c: w polu przegrany sie cofa');
   }
 
   // Czesc 2: eksport ocalalych z bitwy (BattleScene) -- przegrani z HP>0 wracaja na mape.
@@ -249,6 +267,12 @@ async function main() {
     const out = BattleScene.prototype._battleUnitsForMapExport.call({}, roster).map(u => u.id);
     assert(out.includes('l_routed') && out.includes('l_alive') && out.includes('w1'), 'BS: ocalali (w tym rozbici) eksportowani');
     assert(!out.includes('l_dead'), 'BS: polegly (hp 0) nie eksportowany');
+    // Roster eksportu: pole = obie strony, miasto (isCityDefenseBattle) = tylko zwyciezca.
+    const atk = [mk('a1', 50, false, false)], def = [mk('d1', 50, false, false)];
+    const pick = (city, w) => BattleScene.prototype._mapExportRoster.call({ isCityDefenseBattle: city, atk, def }, w);
+    assert(pick(false, 'atakujacy').length === 2, 'BS: pole eksportuje obie strony');
+    assert(pick(true, 'atakujacy')[0] === atk[0] && pick(true, 'atakujacy').length === 1, 'BS: miasto, wygrywa atk -> tylko atk');
+    assert(pick(true, 'obronca')[0] === def[0] && pick(true, 'obronca').length === 1, 'BS: miasto, wygrywa def -> tylko def');
   }
 
   console.log('battle-defeat-survivor-retreat-two-hex-test: ' + pass + ' pass, ' + fail + ' fail');

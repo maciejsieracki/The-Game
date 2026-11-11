@@ -34171,7 +34171,7 @@ async function boot(): Promise<void> {
 
       const chronAtkOwner = atkRoster[0]?.ownerId;
       const chronDefOwner = defRoster[0]?.ownerId;
-      applyPostBattleMap({
+      const postBattleRes = applyPostBattleMap({
         units,
         map,
         cities,
@@ -34198,6 +34198,12 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: odwrot ocalalych (pole) o 2 heksy to
+      // przemieszczenie wieloheksowe -- odkrycie mgly gracza wzdluz drogi (heks bitwy -> cel).
+      for (const rid of postBattleRes.retreatedTwoHexIds) {
+        const ru = units.find(x => String(x.id) === rid);
+        if (ru && ru.ownerId === ME()) revealAlongPathForStack([ru], [{ q: battleQ, r: battleR }, { q: ru.q, r: ru.r }]);
+      }
       // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1: straty obu stron do kronik (atrybucja per
       // właściciel). Polegli = jednostki rosteru, których nie ma już w `units`. Wirtualna
       // Milicja (poza units[]) nie jest liczona.
