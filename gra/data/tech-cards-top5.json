@@ -3,7 +3,7 @@
     "temat": "R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-tech-cards-top5.cjs (+ gen-tech-cards-top5.zdania.json)",
     "zrodloCsv": "odkrycia-top5.csv (FC 58339997b, docs bdf44fd9d)",
-    "csvSha256": "28ea3c6d8970f3accc66be85bc1cf8cb0b0817665399b89165c4e29f3a879c77",
+    "csvSha256": "b179dba43383f95239b139cf0be7cf675967b5f61a65488ad642cf5b8408f782",
     "pola": "top5:[{tytul, liczba?, zdanie, dowod?}] · cmz:[{czynnosc, korzysc}] · ukryte:[nazwy efektów martwych ukrytych z karty]"
   },
   "Obróbka drewna": {
@@ -468,8 +468,8 @@
         "dowod": "gra/data/terrain-improvements.json:288"
       },
       {
-        "tytul": "Z Brązownictwem otwiera Jeździectwo (Konnica)",
-        "zdanie": "Razem z Brązownictwem prowadzi do Konnicy i Stadniny.",
+        "tytul": "Z Brązownictwem otwiera Jeździectwo (rydwanów epoki Brązu)",
+        "zdanie": "Razem z Brązownictwem otwiera rydwany epoki Brązu i Stadninę.",
         "dowod": "gra/data/tech.json:224"
       }
     ],
@@ -488,7 +488,7 @@
       },
       {
         "czynnosc": "Wybierz kolejne badanie",
-        "korzysc": "dojść do Konnicy"
+        "korzysc": "odblokować rydwany epoki Brązu"
       }
     ],
     "ukryte": []
@@ -688,10 +688,9 @@
         "dowod": "gra/data/terrain-improvements.json:100; gra/data/terrain-improvements.json:109; gra/src/game/building-stock-cost.ts:362-369"
       },
       {
-        "tytul": "Konnica: Atak 12, 320 HP, ruch 4 (koszt: brąz i 25 koni)",
-        "liczba": "320 HP",
-        "zdanie": "Najszybsza jednostka uderzeniowa; rekrutujesz ją w mieście z Koszarami.",
-        "dowod": "gra/data/units.json:595; gra/src/game/production.ts:1075; gra/src/game/building-stock-cost.ts:362-369"
+        "tytul": "Odblokowuje sześć rydwanów epoki Brązu",
+        "zdanie": "Technologia odblokowuje sześć standardowych i narodowych rydwanów epoki Brązu.",
+        "dowod": "gra/data/tech.json:228; gra/data/units.json"
       },
       {
         "tytul": "Rydwan konny: 360 HP, ruch 4",
@@ -711,8 +710,8 @@
         "korzysc": "hodować 25 koni na turę — tyle kosztuje rekrutacja 1 jednostki konnej"
       },
       {
-        "czynnosc": "Rekrutuj Konnicę (w mieście z Koszarami)",
-        "korzysc": "mieć najszybszą jednostkę uderzeniową (ruch 4)"
+        "czynnosc": "Rekrutuj Rydwan egipski (w mieście z Koszarami)",
+        "korzysc": "mieć rydwan o ruchu 5"
       }
     ],
     "ukryte": []

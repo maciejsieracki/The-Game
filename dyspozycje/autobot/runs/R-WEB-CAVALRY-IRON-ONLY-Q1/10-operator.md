@@ -18,6 +18,6 @@ The production catalogue used by human city recruitment and AI excludes every `T
 - `siege-engines-built-during-siege-test.cjs`: **28 passed, 0 failed** (added Katapulta's old-Oblężnictwo blocked / Sztuka wojenna enabled check; existing save and siege cases included).
 - `tech-unlock-units-test.cjs`: **119 passed, 0 failed**.
 - `general-eligible-unit-roster-test.cjs`: **137 checks passed**; `unit-recruit-nazwa-test.cjs`: **17 passed**; `super-unit-limit-one-test.cjs`: **40 passed**.
-- `gen-tech-cards-top5.cjs --check` and `gen-building-cards-top5.cjs --check`: both pass.
+- `gen-tech-cards-top5.cjs --check` and `gen-building-cards-top5.cjs --check`: both pass. Follow-up copy edits also refreshed the Jeździectwo card to describe only Bronze chariots and corrected Konnica/Jeździec chiński roster references in the player guide; the listed Bronze/Iron resource-unit counts now match the changed era assignments.
 - `npm run typecheck -- --pretty false` and `git diff --check`: pass.
-- Browser-backed `building-cards-top5-test.cjs` and `tech-cards-top5-test.cjs` could not launch: this environment has no Chromium executable at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`. The generated card output and generator `--check` pass; browser screenshots were not measured.
+- Browser-backed card tests: `building-cards-top5-test.cjs` **1179 passed, 0 failed** and `tech-cards-top5-test.cjs` **595 passed, 0 failed** using available `/usr/bin/chromium`. The test scripts have a stale hard-coded fallback path, so I temporarily redirected that local fallback for the test invocation only; no test source change was retained.
