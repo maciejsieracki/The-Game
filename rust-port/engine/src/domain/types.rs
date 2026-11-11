@@ -415,6 +415,15 @@ pub struct UnitDto {
     owner_id: PlayerId,
     kind: UnitKindDto,
     position: PositionDto,
+    /// P6-ZAPIS-MIGRACJE (r3): flaga wodza (web `unit.isGeneral`). Brak pola = `false` (stary
+    /// zapis); `false` nie jest zapisywane, wiec stary format pozostaje bajt w bajt. Kolejnosc
+    /// narodzin wodzow = kolejnosc jednostek w `GameStateDto::units`.
+    #[serde(default, skip_serializing_if = "is_false")]
+    is_general: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 #[derive(Debug, Deserialize)]
@@ -423,6 +432,9 @@ struct RawUnitDto {
     owner_id: PlayerId,
     kind: UnitKindDto,
     position: PositionDto,
+    /// Web `unit.isGeneral === true`: tylko JSON `true` oznacza wodza, inny typ = `false`.
+    #[serde(default)]
+    is_general: Option<serde_json::Value>,
 }
 
 impl UnitDto {
@@ -437,6 +449,7 @@ impl UnitDto {
             owner_id,
             kind,
             position,
+            is_general: false,
         };
         match unit.validate() {
             Ok(()) => Ok(unit),
@@ -463,13 +476,34 @@ impl UnitDto {
     pub const fn position(&self) -> PositionDto {
         self.position
     }
+
+    /// Czy jednostka jest wodzem (web `isGeneral`).
+    pub const fn is_general(&self) -> bool {
+        self.is_general
+    }
+
+    /// Kopia z ustawiona flaga wodza.
+    pub const fn with_general(mut self, is_general: bool) -> Self {
+        self.is_general = is_general;
+        self
+    }
+
+    pub(crate) fn set_general(&mut self, is_general: bool) {
+        self.is_general = is_general;
+    }
+
+    pub(crate) fn set_position(&mut self, position: PositionDto) {
+        self.position = position;
+    }
 }
 
 impl TryFrom<RawUnitDto> for UnitDto {
     type Error = ValidationError;
 
     fn try_from(raw: RawUnitDto) -> Result<Self, Self::Error> {
+        let general = super::save_migrations::general_flag_from_raw(raw.is_general.as_ref());
         Self::new(raw.id, raw.owner_id, raw.kind, raw.position)
+            .map(|unit| unit.with_general(general))
     }
 }
 

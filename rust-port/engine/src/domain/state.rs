@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 use super::war_turn_state::WarTurnState;
-use super::{CityDto, CivilizationDto, MapDto, TurnDto, UnitDto, ValidationError};
+use super::{
+    CityDto, CivilizationDto, MapDto, PositionDto, TurnDto, UnitDto, UnitId, ValidationError,
+};
 
 /// Canonical serializable state for the staged engine.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -64,6 +66,36 @@ impl GameStateDto {
     /// Podmienia stan wojny w miejscu.
     pub fn set_war_turn_state(&mut self, war: WarTurnState) {
         self.war = war;
+    }
+
+    /// P6-ZAPIS-MIGRACJE (r3): zdejmuje flage wodza z podanych jednostek (web `unit.isGeneral = false`,
+    /// `main.ts:46568`). Nieznane identyfikatory sa pomijane (web `if (demoted)`). Zwraca liczbe
+    /// faktycznie zdegradowanych jednostek.
+    pub fn demote_generals(&mut self, ids: &[UnitId]) -> usize {
+        let mut count = 0;
+        for unit in self.units.iter_mut().filter(|u| ids.contains(&u.id())) {
+            if unit.is_general() {
+                unit.set_general(false);
+                count += 1;
+            }
+        }
+        count
+    }
+
+    /// P6-ZAPIS-MIGRACJE (r3): relokacja jednostek na wskazane pozycje (web `u.q = mv.toQ`, relokacja,
+    /// nie marsz). Pozycje poza mapa sa pomijane; zwraca liczbe przeniesionych jednostek.
+    pub fn relocate_units(&mut self, moves: &[(UnitId, PositionDto)]) -> usize {
+        let mut count = 0;
+        for (id, position) in moves {
+            if !self.map.contains(*position) {
+                continue;
+            }
+            if let Some(unit) = self.units.iter_mut().find(|u| u.id() == *id) {
+                unit.set_position(*position);
+                count += 1;
+            }
+        }
+        count
     }
 
     pub fn validate(&self) -> Result<(), ValidationError> {

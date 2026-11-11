@@ -22,11 +22,31 @@ use serde_json::{Map, Number, Value};
 // The production branch resolves these types from the sibling domain modules;
 // the test branch resolves them from the same path-loaded dependency module.
 #[cfg(not(test))]
+use super::auto_improvements::auto_build_gate::auto_build_from_save_meta;
+#[cfg(not(test))]
+use super::auto_improvements::auto_build_gate::is_auto_build_allowed_for_owner;
+#[cfg(not(test))]
+use super::diplomacy_multiwar::player_epoch_war_enabled;
+#[cfg(not(test))]
+use super::save_migrations::{migrate_loaded_state, LoadMigrationReport};
+#[cfg(not(test))]
 use super::war_turn_state::{managed_meta_keys, WarTurnState};
+#[cfg(not(test))]
+use super::PlayerId;
 #[cfg(not(test))]
 use super::{GameStateDto, Rng};
 #[cfg(test)]
+use civ_engine::domain::auto_improvements::auto_build_gate::auto_build_from_save_meta;
+#[cfg(test)]
+use civ_engine::domain::auto_improvements::auto_build_gate::is_auto_build_allowed_for_owner;
+#[cfg(test)]
+use civ_engine::domain::diplomacy_multiwar::player_epoch_war_enabled;
+#[cfg(test)]
+use civ_engine::domain::save_migrations::{migrate_loaded_state, LoadMigrationReport};
+#[cfg(test)]
 use civ_engine::domain::war_turn_state::{managed_meta_keys, WarTurnState};
+#[cfg(test)]
+use civ_engine::PlayerId;
 #[cfg(test)]
 use civ_engine::{GameStateDto, Rng};
 
@@ -235,6 +255,22 @@ impl SaveMeta {
             .get("advanced")?
             .get("battleAlwaysManual")?
             .as_bool()
+    }
+
+    /// Web `autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled)` (`main.ts:46701`): tylko JSON `true`
+    /// wlacza; brak pola / inny typ = wylaczona (`auto_build_gate::auto_build_from_save_meta`).
+    pub fn auto_build_enabled(&self) -> bool {
+        auto_build_from_save_meta(self.extra.get("autoBuildEnabled"))
+    }
+
+    /// Web `meta.playerEpochWarEnabled` (`main.ts:46706`): boolean z zapisu, brak pola / inny typ = `true`
+    /// (`diplomacy_multiwar::player_epoch_war_enabled`).
+    pub fn player_epoch_war_enabled(&self) -> bool {
+        player_epoch_war_enabled(
+            self.extra
+                .get("playerEpochWarEnabled")
+                .and_then(Value::as_bool),
+        )
     }
 }
 
@@ -531,6 +567,24 @@ impl SaveSnapshot {
             .with_war_turn_state(self.state.war_turn_state())
     }
 
+    /// P6-ZAPIS-MIGRACJE (r3): migracje przy wczytaniu zapisu w kolejnosci weba (`main.ts:46566-46573`):
+    /// degradacja nadmiaru wodzow ponad limit epoki, potem podzial stosow ponad limit na sasiednie
+    /// heksy. Zmienia stan snapshotu; stary zapis bez nadmiaru zostaje bez zmian (raport pusty).
+    /// Ta sama siatka stosu obowiazuje na starcie tury (`main.ts:37754`): wywolujacy moze uzyc
+    /// `save_migrations::enforce_army_stack_limit`.
+    pub fn migrate_on_load(
+        &mut self,
+        era_for_owner: impl Fn(PlayerId) -> f64,
+    ) -> LoadMigrationReport {
+        migrate_loaded_state(&mut self.state, era_for_owner)
+    }
+
+    /// Konsument flagi `meta.autoBuildEnabled`: web `isAutoBuildAllowedForOwner` z wartoscia z zapisu
+    /// (AI zawsze tak, gracz tylko gdy zapis ma `true`; brak pola = wylaczona).
+    pub fn auto_build_allowed_for_owner(&self, owner_id: f64, human_owner_ids: &[f64]) -> bool {
+        is_auto_build_allowed_for_owner(owner_id, human_owner_ids, self.meta.auto_build_enabled())
+    }
+
     /// Returns the additive save metadata (empty for saves written before R4).
     pub fn meta(&self) -> &SaveMeta {
         &self.meta
@@ -581,6 +635,11 @@ impl SaveSnapshot {
     }
 }
 
+/// Deserializacja NIE wykonuje migracji P6-ZAPIS-MIGRACJE: limit wodzow zalezy od epoki wlasciciela,
+/// a limit stosu od listy ludzkich graczy, czyli od kontekstu wołajacego. Kazdy wczytujacy zapis
+/// MUSI po `serde_json::from_str::<SaveSnapshot>` wywolac [`SaveSnapshot::migrate_on_load`]
+/// (i `auto_build_allowed_for_owner` przy decyzji o budowie). Rust nie ma dzis loadera plikow
+/// (`replay.rs` przyjmuje gotowy `SaveSnapshot`), wiec ta odpowiedzialnosc lezy po stronie wolajacego.
 impl<'de> Deserialize<'de> for SaveSnapshot {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
