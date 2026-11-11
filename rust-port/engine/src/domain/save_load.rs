@@ -13,7 +13,7 @@
 //! file adapter can use serde's `Serialize`/`Deserialize` implementations at
 //! its JSON boundary without coupling the engine to storage or UI code.
 
-use std::{error::Error, fmt};
+use std::{collections::BTreeMap, error::Error, fmt};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
 use serde_json::{Map, Number, Value};
@@ -119,6 +119,15 @@ pub struct SaveSnapshot {
     /// Additive legacy `autoMarch` fallback (web `planned-march.ts:424-431`).
     #[serde(rename = "autoMarch", default, skip_serializing_if = "Option::is_none")]
     auto_march: Option<SavedAutoMarch>,
+    /// P6-ZAPIS-ERA-ZAPISU: epoka wlascicieli wyprowadzona z zapisu (klucz = id wlasciciela), zrodla
+    /// jak web `empireEpochForOwner` (`main.ts:2069`): ludzie z `gracze[].era`, AI z `meta.ownerEraByOwner`.
+    /// Pomijana przy serializacji (zrodla pozostaja w zapisie jak dotad).
+    #[serde(skip)]
+    owner_eras: BTreeMap<u64, Number>,
+    /// Surowe top-level `gracze` z zapisu (web `playerStateByHuman`). Przepisywane bez zmian przy
+    /// serializacji, zeby epoka ludzi przezyla ponowny zapis i odczyt.
+    #[serde(rename = "gracze", skip_serializing_if = "Option::is_none")]
+    gracze: Option<Value>,
 }
 
 /// Web `AutoMarchSave` (`autoMarch` in the save). Only `leaderId` as non-empty string survives.
@@ -196,6 +205,28 @@ impl SaveMeta {
     /// Stan wojny tury odczytany z pozostalych kluczy `meta` (brak kluczy => stan pusty).
     pub fn war_turn_state(&self) -> WarTurnState {
         WarTurnState::from_meta_json(&self.extra)
+    }
+
+    /// Surowy `meta.ownerEraByOwner` (web: tablica `[[ownerId, era]]` epok AI), gdy jest w zapisie.
+    pub fn owner_era_entries(&self) -> Option<&Value> {
+        self.extra.get("ownerEraByOwner")
+    }
+
+    /// P6-ZAPIS-ERA-ZAPISU: epoka startowa wlasciciela BEZ wpisu epoki w zapisie. Wyprowadzona z
+    /// `meta.newGameParams.epochId` tak jak web `loadStartEra` (`main.ts:38405-38411`): `zelazo` = 3,
+    /// `braz` = 2, `kamien` = 1. Brak pola albo nieznany id = 1. ODCHYLENIE od weba: web w takim
+    /// przypadku bierze `player.era` z sesji, a Rust nie ma sesji, wiec przyjmuje 1.
+    pub fn start_era_fallback(&self) -> f64 {
+        match self
+            .new_game_params
+            .as_ref()
+            .and_then(|params| params.get("epochId"))
+            .and_then(Value::as_str)
+        {
+            Some("zelazo") => 3.0,
+            Some("braz") => 2.0,
+            _ => 1.0,
+        }
     }
 
     /// Zapisuje stan wojny do `meta`. Stan domyslny nie zostawia kluczy wojennych (zapis jak przed W1).
@@ -508,6 +539,53 @@ struct SnapshotWire {
     planned_marches: Option<Vec<SavedPlannedMarch>>,
     #[serde(default, rename = "autoMarch", deserialize_with = "lenient_object")]
     auto_march: Option<SavedAutoMarch>,
+    /// P6-ZAPIS-ERA-ZAPISU: web top-level `gracze` (`[[ownerId, {era, ...}]]`, wpisy ludzi).
+    /// Zla forma nie jest bledem ladowania - wpis po prostu nie daje epoki.
+    #[serde(default)]
+    gracze: Option<Value>,
+}
+
+/// P6-ZAPIS-ERA-ZAPISU: epoki wlascicieli z zapisu, zrodla jak web `empireEpochForOwner`
+/// (`main.ts:2069-2072`). AI: `meta.ownerEraByOwner` = `[[ownerId, era]]`. Ludzie: `gracze` =
+/// `[[ownerId, {era, ...}]]`, ktorzy maja pierwszenstwo (web: `isHuman` -> `playerStateByHuman.era`).
+/// Wpis bez poprawnego id (calkowite, >= 0) albo bez liczbowej epoki jest pomijany.
+fn owner_eras_from_save(
+    gracze: Option<&Value>,
+    ai_entries: Option<&Value>,
+) -> BTreeMap<u64, Number> {
+    let ai = owner_era_pairs(ai_entries, Value::as_f64);
+    let human = owner_era_pairs(gracze, |state| state.get("era").and_then(Value::as_f64));
+    let mut eras = BTreeMap::new();
+    for (owner, era) in ai.into_iter().chain(human) {
+        if let Some(number) = Number::from_f64(era) {
+            eras.insert(owner, number);
+        }
+    }
+    eras
+}
+
+/// Pary `[ownerId, X]` z tablicy zapisu; `era_of` wyciaga epoke z `X`.
+fn owner_era_pairs(
+    entries: Option<&Value>,
+    era_of: impl Fn(&Value) -> Option<f64>,
+) -> Vec<(u64, f64)> {
+    let Some(Value::Array(items)) = entries else {
+        return Vec::new();
+    };
+    items
+        .iter()
+        .filter_map(|item| {
+            let Value::Array(pair) = item else {
+                return None;
+            };
+            let owner = pair.first()?.as_f64()?;
+            if !owner.is_finite() || owner < 0.0 || owner.fract() != 0.0 {
+                return None;
+            }
+            let era = era_of(pair.get(1)?)?;
+            Some((owner as u64, era))
+        })
+        .collect()
 }
 
 impl SaveSnapshot {
@@ -521,6 +599,8 @@ impl SaveSnapshot {
             meta: SaveMeta::default(),
             planned_marches: Vec::new(),
             auto_march: None,
+            owner_eras: BTreeMap::new(),
+            gracze: None,
         }
     }
 
@@ -528,6 +608,28 @@ impl SaveSnapshot {
     pub fn with_auto_march(mut self, auto_march: Option<SavedAutoMarch>) -> Self {
         self.auto_march = auto_march;
         self
+    }
+
+    /// Returns a copy carrying the owner eras read from the save (see `owner_eras_from_save`).
+    fn with_owner_eras(mut self, owner_eras: BTreeMap<u64, Number>) -> Self {
+        self.owner_eras = owner_eras;
+        self
+    }
+
+    /// Returns a copy carrying the raw top-level `gracze` of the save (re-emitted on serialize).
+    fn with_gracze(mut self, gracze: Option<Value>) -> Self {
+        self.gracze = gracze;
+        self
+    }
+
+    /// P6-ZAPIS-ERA-ZAPISU: epoka wlasciciela wedlug zapisu (ludzie: `gracze`, AI:
+    /// `meta.ownerEraByOwner`). Brak wpisu daje [`SaveMeta::start_era_fallback`] (udokumentowany
+    /// domyslny wynik, nie cicha wartosc).
+    pub fn owner_era(&self, owner: PlayerId) -> f64 {
+        self.owner_eras
+            .get(&owner.get())
+            .and_then(Number::as_f64)
+            .unwrap_or_else(|| self.meta.start_era_fallback())
     }
 
     /// Returns the legacy `autoMarch` entry, if the save carried one.
@@ -570,9 +672,22 @@ impl SaveSnapshot {
     /// P6-ZAPIS-MIGRACJE (r3): migracje przy wczytaniu zapisu w kolejnosci weba (`main.ts:46566-46573`):
     /// degradacja nadmiaru wodzow ponad limit epoki, potem podzial stosow ponad limit na sasiednie
     /// heksy. Zmienia stan snapshotu; stary zapis bez nadmiaru zostaje bez zmian (raport pusty).
-    /// Ta sama siatka stosu obowiazuje na starcie tury (`main.ts:37754`): wywolujacy moze uzyc
+    /// Epoka kazdego wlasciciela pochodzi z DANYCH ZAPISU ([`SaveSnapshot::owner_era`]), nie od
+    /// wywolujacego. Ta sama siatka stosu obowiazuje na starcie tury (`main.ts:37754`): wywolujacy moze uzyc
     /// `save_migrations::enforce_army_stack_limit`.
-    pub fn migrate_on_load(
+    pub fn migrate_on_load(&mut self) -> LoadMigrationReport {
+        let eras = &self.owner_eras;
+        let fallback = self.meta.start_era_fallback();
+        migrate_loaded_state(&mut self.state, |owner| {
+            eras.get(&owner.get())
+                .and_then(Number::as_f64)
+                .unwrap_or(fallback)
+        })
+    }
+
+    /// Jawne nadpisanie epoki wlascicieli, uzywane WYLACZNIE w testach migracji, ktore celowo
+    /// podmieniaja epoke. Produkcyjna sciezka ladowania uzywa [`SaveSnapshot::migrate_on_load`].
+    pub fn migrate_on_load_with_era_override_for_test(
         &mut self,
         era_for_owner: impl Fn(PlayerId) -> f64,
     ) -> LoadMigrationReport {
@@ -635,10 +750,11 @@ impl SaveSnapshot {
     }
 }
 
-/// Deserializacja NIE wykonuje migracji P6-ZAPIS-MIGRACJE: limit wodzow zalezy od epoki wlasciciela,
-/// a limit stosu od listy ludzkich graczy, czyli od kontekstu wołajacego. Kazdy wczytujacy zapis
-/// MUSI po `serde_json::from_str::<SaveSnapshot>` wywolac [`SaveSnapshot::migrate_on_load`]
-/// (i `auto_build_allowed_for_owner` przy decyzji o budowie). Rust nie ma dzis loadera plikow
+/// Deserializacja NIE wykonuje migracji P6-ZAPIS-MIGRACJE: limit wodzow zalezy od epoki wlasciciela
+/// (odczytywanej z zapisu przez [`SaveSnapshot::owner_era`]), a limit stosu od listy ludzkich graczy,
+/// czyli od kontekstu wolajacego. Kazdy wczytujacy zapis MUSI po `serde_json::from_str::<SaveSnapshot>`
+/// wywolac [`SaveSnapshot::migrate_on_load`] (lub `zapis_loader::load_save_snapshot`, ktory robi to sam)
+/// oraz `auto_build_allowed_for_owner` przy decyzji o budowie. Rust nie ma dzis loadera plikow
 /// (`replay.rs` przyjmuje gotowy `SaveSnapshot`), wiec ta odpowiedzialnosc lezy po stronie wolajacego.
 impl<'de> Deserialize<'de> for SaveSnapshot {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -703,10 +819,13 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
         } else {
             meta.with_war_turn_state(&WarTurnState::default())
         };
+        let owner_eras = owner_eras_from_save(wire.gracze.as_ref(), meta.owner_era_entries());
         let snapshot = snapshot
             .with_meta(meta)
             .with_planned_marches(wire.planned_marches.unwrap_or_default())
-            .with_auto_march(wire.auto_march);
+            .with_auto_march(wire.auto_march)
+            .with_owner_eras(owner_eras)
+            .with_gracze(wire.gracze);
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(snapshot)
     }
