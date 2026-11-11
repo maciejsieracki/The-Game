@@ -124,16 +124,17 @@ function basketShortfallText(summary: RecruitBasketSummary): string {
 function syncAffordability(root: HTMLElement): void {
   if (!panelCfg) return;
   const rows = panelCfg.getRows();
+  for (const row of rows) if (row.capableCities <= 0) drafts.set(row.id, 0);
   const budget = panelCfg.getBudget?.();
   const byId = new Map(rows.map(r => [r.id, r]));
-  const basket = budget ? summarizeEmpireRecruitBasket(rows.map(r => ({
+  const basket = budget ? summarizeEmpireRecruitBasket(rows.filter(r => r.capableCities > 0).map(r => ({
     quantity: getEmpireRecruitDraft(r.id), unitGold: r.koszt,
     unitManpower: r.manpowerCost ?? 0, unitStock: r.stockCost,
   })), budget) : null;
   const queuedTotal = rows.reduce((sum, r) => sum + Math.max(0, Math.floor(r.queued || 0)), 0);
   const summaryEl = root.querySelector<HTMLElement>('[data-erp-summary]');
   if (summaryEl) {
-    const selected = basket?.quantity ?? rows.reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+    const selected = basket?.quantity ?? rows.reduce((sum, r) => sum + (r.capableCities > 0 ? getEmpireRecruitDraft(r.id) : 0), 0);
     const stockLine = budget && basket
       ? Object.keys(basket.stockNeeded).sort().map(k =>
         `${stockResourceLabel(k)} ${basket.stockNeeded[k]} / ${Math.floor(budget.stockPool?.[k] ?? 0)}`,
@@ -160,12 +161,12 @@ function syncAffordability(root: HTMLElement): void {
   root.querySelectorAll<HTMLElement>('[data-unit]').forEach(rowEl => {
     const id = rowEl.getAttribute('data-unit') ?? '';
     const row = byId.get(id);
-    const qty = getEmpireRecruitDraft(id);
+    const qty = row && row.capableCities > 0 ? getEmpireRecruitDraft(id) : 0;
     const shortEl = rowEl.querySelector<HTMLElement>('[data-erp-row-shortfall]');
     const selectedEl = rowEl.querySelector<HTMLElement>('[data-erp-selected]');
     const go = rowEl.querySelector<HTMLButtonElement>('[data-erp="go"]');
     if (selectedEl) selectedEl.textContent = String(qty);
-    if (!row || !budget || qty <= 0) {
+    if (!row || row.capableCities <= 0 || !budget || qty <= 0) {
       if (shortEl) shortEl.textContent = '';
       go?.classList.remove('is-shortfall');
       if (go) go.setAttribute('aria-label', `Rekrutuj ${row?.label ?? id}`);
@@ -184,11 +185,13 @@ function syncAffordability(root: HTMLElement): void {
 function render(root: HTMLElement, force = true): void {
   if (!panelCfg) return;
   const rows = panelCfg.getRows();
-  const total = rows.reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+  for (const row of rows) if (row.capableCities <= 0) drafts.set(row.id, 0);
+  const total = rows.reduce((sum, r) => sum + (r.capableCities > 0 ? getEmpireRecruitDraft(r.id) : 0), 0);
   const allBtn = `<button type="button" class="erp-go-all" data-erp="go-all"${total <= 0 ? ' disabled' : ''}>Rekrutuj wszystkie</button>`;
   const list = rows.map(r => {
-    const q = getEmpireRecruitDraft(r.id);
-    const blocked = r.capableCities <= 0;
+    const orderable = r.capableCities > 0;
+    const q = orderable ? getEmpireRecruitDraft(r.id) : 0;
+    const blocked = !orderable;
     const meta = blocked
       ? esc(r.blockedReason ?? 'Brak miasta zdolnego do rekrutacji')
       : `${r.koszt} ¤ · miasta: <b>${r.capableCities}</b>/${r.totalCities}`;
@@ -198,9 +201,9 @@ function render(root: HTMLElement, force = true): void {
       + `<div class="erp-info"><span class="erp-name" title="${esc(r.label)}">${esc(r.label)}</span>`
       + `<span class="erp-meta">${meta}</span>${queuedLine}<span class="erp-selected">wybrane w koszyku: <b data-erp-selected>${q}</b></span>`
       + `<span class="erp-shortfall" data-erp-row-shortfall></span></div>`
-      + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 0 ? ' disabled' : ''}>−</button>`
-      + `<input type="number" min="0" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
-      + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
+      + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${!orderable || q <= 0 ? ' disabled' : ''}>−</button>`
+      + `<input type="number" min="0" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}"${!orderable ? ' disabled' : ''}>`
+      + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${!orderable || q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
       + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
@@ -231,6 +234,13 @@ function onClick(ev: Event): void {
   const rowEl = t.closest('[data-unit]') as HTMLElement | null;
   const id = rowEl?.getAttribute('data-unit');
   if (!id) return;
+  const currentRow = panelCfg.getRows().find(row => row.id === id);
+  if (!currentRow || currentRow.capableCities <= 0) {
+    drafts.set(id, 0);
+    syncControls(root, false);
+    syncAffordability(root);
+    return;
+  }
   if (act === 'inc' || act === 'dec') {
     drafts.set(id, clampQty(getEmpireRecruitDraft(id) + (act === 'inc' ? 1 : -1)));
     syncControls(root, false);
@@ -250,6 +260,7 @@ function onClick(ev: Event): void {
 function orderAll(root: HTMLElement): void {
   if (!panelCfg) return;
   const todo = panelCfg.getRows()
+    .filter(r => r.capableCities > 0)
     .map(r => ({ id: r.id, label: r.label, q: getEmpireRecruitDraft(r.id) }))
     .filter(x => x.q > 0);
   if (todo.length === 0) return;
@@ -277,7 +288,9 @@ function orderAll(root: HTMLElement): void {
  */
 function syncControls(root: HTMLElement, keepInput: boolean): void {
   if (!panelCfg) return;
-  const total = panelCfg.getRows().reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+  const rows = panelCfg.getRows();
+  for (const row of rows) if (row.capableCities <= 0) drafts.set(row.id, 0);
+  const total = rows.reduce((sum, r) => sum + (r.capableCities > 0 ? getEmpireRecruitDraft(r.id) : 0), 0);
   root.querySelectorAll<HTMLButtonElement>('[data-erp="go-all"]').forEach(b => { b.disabled = total <= 0; });
   root.querySelectorAll<HTMLElement>('[data-unit]').forEach(rowEl => {
     const id = rowEl.getAttribute('data-unit') ?? '';
@@ -287,9 +300,10 @@ function syncControls(root: HTMLElement, keepInput: boolean): void {
     const inc = rowEl.querySelector<HTMLButtonElement>('[data-erp="inc"]');
     const go = rowEl.querySelector<HTMLButtonElement>('[data-erp="go"]');
     const input = rowEl.querySelector<HTMLInputElement>('[data-erp="qty"]');
-    if (dec) dec.disabled = q <= 0;
-    if (inc) inc.disabled = q >= MAX_QTY;
+    if (dec) dec.disabled = blocked || q <= 0;
+    if (inc) inc.disabled = blocked || q >= MAX_QTY;
     if (go) go.disabled = blocked || q <= 0;
+    if (input) input.disabled = blocked;
     if (input && !keepInput) input.value = String(q);
   });
 }
@@ -300,6 +314,13 @@ function onInput(ev: Event): void {
   const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
   const root = document.getElementById(ROOT_ID);
   if (!id || !root) return;
+  const currentRow = panelCfg?.getRows().find(row => row.id === id);
+  if (!currentRow || currentRow.capableCities <= 0) {
+    drafts.set(id, 0);
+    syncControls(root, false);
+    syncAffordability(root);
+    return;
+  }
   drafts.set(id, clampQty(t.valueAsNumber));
   syncControls(root, true); // przyciski reagują od razu, zanim gracz kliknie gdziekolwiek indziej
   syncAffordability(root);
@@ -311,6 +332,13 @@ function onChange(ev: Event): void {
   const id = (t.closest('[data-unit]') as HTMLElement | null)?.getAttribute('data-unit');
   const root = document.getElementById(ROOT_ID);
   if (!id || !root) return;
+  const currentRow = panelCfg?.getRows().find(row => row.id === id);
+  if (!currentRow || currentRow.capableCities <= 0) {
+    drafts.set(id, 0);
+    syncControls(root, false);
+    syncAffordability(root);
+    return;
+  }
   drafts.set(id, clampQty(t.valueAsNumber)); // np. 999+ lub wartość ujemna → przycięta
   syncControls(root, false);
   syncAffordability(root);

@@ -4,6 +4,8 @@ Status: **WIP, not evaluator-validated**
 Base: `1e48b8282` (merged walls/alliance), branch `codex/recruit-affordability`  
 WIP commit: `c94668bc2`
 
+FC follow-up: queued-only rows with zero capable cities are now read-only and contribute zero selected units/cost to the basket; their already-paid queue counts remain visible. The regression test includes a row with an unavailable catalogue price and large manpower/stock costs, attempts a scripted manual input, then bulk-orders a valid row. It asserts the queued-only type creates no shortfall and never reaches the callback. The `allow-queued-only` UI mutant fails this assertion. Follow-up commit: pending.
+
 ## Change
 
 The empire recruitment panel now distinguishes each unit type's already-paid queue count from its selected basket count and shows both empire totals. It previews the complete selected basket against shared current gold, manpower, and resource pools. A row's Recruit button turns red with the exact shortfall when that one order is unaffordable; the top Recruit All button and basket summary turn red when combined selected orders exceed a shared balance. Manual typing and plus/minus update the warnings without rebuilding the input DOM.
@@ -16,7 +18,8 @@ Queued unit orders remain in the normal `cityProd` save data. Draft quantities r
 
 - `npm run typecheck`: pass.
 - `node tools/empire-recruit-plan-test.cjs`: 17/17 pass.
-- `node tools/empire-recruit-affordability-test.cjs`: 11/11 pass in Chromium `/usr/bin/chromium`. Exercises per-type/global queued-vs-selected totals, manual typing, plus, individual and shared-stock shortfalls, stale-preview resource reduction before click, partial acceptance, retained remainder, and 999 input clamp.
+- `node tools/empire-recruit-affordability-test.cjs`: 13/13 pass in Chromium `/usr/bin/chromium`. Exercises queued-only read-only rows, per-type/global queued-vs-selected totals, manual typing, plus, individual and shared-stock shortfalls, stale-preview resource reduction before click, partial acceptance, retained remainder, and 999 input clamp.
+- `EMPIRE_RECRUIT_AFFORDABILITY_MUTANT=allow-queued-only node tools/empire-recruit-affordability-test.cjs`: expected mutation failure, 12 pass / 1 fail on the queued-only editability assertion.
 - `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium node tools/empire-recruit-all-test.cjs`: 31/31 pass; existing bulk-button, keyboard, full/partial acceptance, and remaining draft behavior.
 - `node tools/empire-recruit-live-test.cjs`, run through a temporary Chromium/HTTP adapter because the checked-in harness hardcodes `/opt/pw-browsers/chromium` and `file://`: 20 pass / 3 fail at L16–L18. The same 20/23 result reproduces on untouched base `1e48b8282`; those three assertions follow several earlier purchases in the fixture and fail on both checkouts. The actual main callback checks in L6–L14 (city distribution, gold deduction, siege eligibility, and zero-gold rejection) pass in both runs. No test file was changed for the adapter.
 - `node tools/unit-epoch-cost-test.cjs`: 57/57 pass.
