@@ -624,6 +624,13 @@
       "jednostka": "×",
       "opis": "Mennica mnoży wyłącznie podatek miejski przed jego podziałem suwakami: easy ×1,62 / normal ×1,50 / hard ×1,38. Jedna Mennica w stolicy aktywuje mnożnik we wszystkich miastach właściciela. Wymagania aktywacji: technologia Waluta oraz dostęp do Złota; brak Złota usypia efekt do czasu odzyskania dostępu. Dochód ze szlaków handlowych nie podlega mnożnikowi Mennicy."
     },
+    "mennica_mnoznik_po_walucie_minimum": {
+      "easy": 1.38,
+      "normal": 1.38,
+      "hard": 1.38,
+      "jednostka": "×",
+      "opis": "Dolny limit mnożnika Waluta+Mennica liczonego per cywilizacja (wartość civ z macierzy + korekta trudności ±0,5): wynik = max(1,38; wartość). Bez górnego limitu. 1,38 = dawna globalna wartość poziomu Trudny. Globalne mennica_mnoznik_po_walucie zostaje fallbackiem, gdy brak wartości civ."
+    },
     "luksus_przelicznik_zadowolenie": {
       "easy": 4,
       "normal": 5,

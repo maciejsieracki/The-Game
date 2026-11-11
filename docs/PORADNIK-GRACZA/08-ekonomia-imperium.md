@@ -73,9 +73,7 @@ Gdy cywilizacja **odkryje Walutę** i zbuduje **Mennicę w stolicy**, dzieją si
 1. **Nazwa strumienia** zmienia się z **Danina** na **Podatek** — sama etykieta, liczby się nie zmieniają.
 2. **Mnożnik Mennicy** przemnaża **całą Daninę/Podatek netto** cywilizacji:
 
-| Trudność | Łatwy | Normalny | Trudny |
-|---|---|---|---|
-| Mnożnik Mennicy | ×2,0 | ×1,5 | ×1,0 |
+Wartość mnożnika zależy od **cywilizacji** (parametr „Mnożnik waluty” z macierzy, pokazany w haśle cywilizacji w Encyklopedii; np. Grecy ×2,3, Germanie ×1,7, Fenicjanie ×2,6) i jest podana dla poziomu **Normalny**. Poziom trudności koryguje ją: **Łatwy +0,5**, **Trudny −0,5**. Żaden poziom nie schodzi poniżej minimum **×1,38** (Germanie, Asyria, Zulusi i Słowianie na Trudnym mają dokładnie ×1,38); górnego limitu nie ma (Fenicjanie na Łatwym ×3,1). Gdy cywilizacja nie ma własnej wartości, obowiązuje globalny mnożnik poziomu trudności (×1,62 / ×1,50 / ×1,38). Gracz i AI liczą ten mnożnik tak samo.
 
 **Warunek dodatkowy — dostęp do złota.** Mennica wymaga **dostępu do złota** (własna Kopalnia złota na złożu **albo** szlak handlowy z cywilizacją posiadającą złoto). Gdy dostęp do złota zostaje utracony (złoże podbite, kopalnia zniszczona, szlak zerwany):
 
