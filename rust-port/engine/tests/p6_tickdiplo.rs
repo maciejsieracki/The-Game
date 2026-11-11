@@ -17,8 +17,8 @@
 //! Mapowanie TickCtx (web, camelCase) -> TickContext (Rust) jest jawne w `tick_ctx_of`.
 
 use civ_engine::domain::diplomacy::{
-    CivilizationPair, DiplomacyParams, DiplomacyState, PeaceTrustTier, Relation, RelationStatus,
-    TickContext,
+    shared_border_penalty_for_epochs, CivilizationPair, DiplomacyParams, DiplomacyState,
+    PeaceTrustTier, Relation, RelationStatus, TickContext,
 };
 use civ_engine::domain::PlayerId;
 use serde_json::Value;
@@ -47,9 +47,23 @@ fn status_of(s: &str) -> RelationStatus {
 
 /// Jawne mapowanie `TickCtx` (web) -> `TickContext` (Rust).
 /// Web: `pokojTrustTier ?? (aktywnyPakt ? 'nap' : undefined)` (pole deprecated).
-/// Web `karaWspolnaGranica` (-2) -> Rust `common_border`; `wiarygodnoscSelf` -> `credibility`.
-fn tick_ctx_of(c: &Value) -> TickContext {
+/// Web `karaWspolnaGranica` -> Rust `common_border`; web `karaWspolnaGranicaDelta` (rozstrzygnięte
+/// wg epoki pary, -2/-3/-4) -> Rust `common_border_delta` (brak = domyślna, epoka 1).
+/// Dodatkowo: wektor z `epokaA`/`epokaB` musi dać tę samą stawkę co `shared_border_penalty_for_epochs`.
+fn tick_ctx_of(c: &Value, params: &DiplomacyParams) -> TickContext {
     let flag = |k: &str| c[k].as_bool().unwrap_or(false);
+    let common_border_delta = c.get("karaWspolnaGranicaDelta").map(num);
+    if let (Some(delta), Some(ea), Some(eb)) = (
+        common_border_delta,
+        c["epokaA"].as_f64(),
+        c["epokaB"].as_f64(),
+    ) {
+        assert_eq!(
+            shared_border_penalty_for_epochs(ea, eb, params),
+            delta,
+            "epoki ({ea},{eb}) -> stawka granicy (wektor {c})"
+        );
+    }
     let peace_tier = match c["pokojTrustTier"].as_str() {
         Some("sojusz") => Some(PeaceTrustTier::Alliance),
         Some("nap") => Some(PeaceTrustTier::Nap),
@@ -66,6 +80,7 @@ fn tick_ctx_of(c: &Value) -> TickContext {
         same_religion: flag("wspolnaReligia"),
         different_religion: flag("odmiennaReligia"),
         common_border: flag("karaWspolnaGranica"),
+        common_border_delta,
         credibility: c.get("wiarygodnoscSelf").map(num),
     }
 }
@@ -86,6 +101,16 @@ fn tick_pair_matches_pinned_web_tick_diplomacy_on_vectors() {
     let mut cred_undefined = 0usize;
     let mut clamped_top = 0usize;
     let mut clamped_bottom = 0usize;
+    // Stawki granicy: [domyślna (brak delty), epoka 1-2 (-2), Brąz (-3), Żelazo (-4)].
+    let mut border_seen = [false; 4];
+
+    // Pinned web default for epochs <2 must equal the Rust base parameter.
+    assert_eq!(
+        shared_border_penalty_for_epochs(0.0, 1.0, &params),
+        params.common_border_trust_per_turn
+    );
+    assert_eq!(shared_border_penalty_for_epochs(1.0, 2.0, &params), -3.0);
+    assert_eq!(shared_border_penalty_for_epochs(4.0, 0.0, &params), -4.0);
 
     for (idx, row) in rows.iter().enumerate() {
         let rel = &row["rel"];
@@ -94,7 +119,18 @@ fn tick_pair_matches_pinned_web_tick_diplomacy_on_vectors() {
         let trust_in = num(&rel["zaufanie"]);
         let respect_in = num(&rel["respekt"]);
         let relation = Relation::new(trust_in, respect_in, status);
-        let ctx = tick_ctx_of(ctx_json);
+        let ctx = tick_ctx_of(ctx_json, &params);
+
+        if ctx.common_border {
+            let slot = match ctx.common_border_delta {
+                None => 0,
+                Some(d) if d == params.common_border_trust_per_turn => 1,
+                Some(d) if d == params.common_border_trust_per_turn_bronze => 2,
+                Some(d) if d == params.common_border_trust_per_turn_iron => 3,
+                Some(d) => panic!("wiersz {idx}: nieoczekiwana stawka granicy {d}"),
+            };
+            border_seen[slot] = true;
+        }
 
         match ctx.peace_tier {
             Some(PeaceTrustTier::Alliance) => tier_seen[0] = true,
@@ -144,4 +180,9 @@ fn tick_pair_matches_pinned_web_tick_diplomacy_on_vectors() {
     );
     assert!(cred_undefined > 0, "brak wierszy bez wiarygodności");
     assert!(clamped_top + clamped_bottom > 0, "brak klamrowania 0/100");
+    // Epoka 1 (-2) jest pokryta przez wiersze z deltą -2 albo brak delty (domyślna = -2).
+    assert!(
+        border_seen.iter().all(|&s| s),
+        "brak pokrycia stawek granicy (domyślna, -2, -3, -4): {border_seen:?}"
+    );
 }

@@ -247,6 +247,10 @@ pub struct DiplomacyParams {
     pub same_religion_trust_per_turn: f64,
     pub different_religion_trust_per_turn: f64,
     pub common_border_trust_per_turn: f64,
+    /// Kara za wspólną granicę dla epoki Brązu (web `ekspansjaGranicaBraz_zaufanie_perTura`).
+    pub common_border_trust_per_turn_bronze: f64,
+    /// Kara za wspólną granicę dla epoki Żelaza (web `ekspansjaGranicaZelazo_zaufanie_perTura`).
+    pub common_border_trust_per_turn_iron: f64,
     pub historical_grievance_decay_per_turn: f64,
     pub alliance_trust_threshold: f64,
     pub technology_trust_threshold: f64,
@@ -355,6 +359,8 @@ impl Default for DiplomacyParams {
             same_religion_trust_per_turn: 0.5,
             different_religion_trust_per_turn: -0.5,
             common_border_trust_per_turn: -2.0,
+            common_border_trust_per_turn_bronze: -3.0,
+            common_border_trust_per_turn_iron: -4.0,
             historical_grievance_decay_per_turn: -2.0,
             alliance_trust_threshold: 90.0,
             technology_trust_threshold: 70.0,
@@ -706,7 +712,28 @@ pub struct TickContext {
     pub same_religion: bool,
     pub different_religion: bool,
     pub common_border: bool,
+    /// Stawka kary granicznej już rozstrzygnięta wg epoki pary (web `karaWspolnaGranicaDelta`).
+    /// `None` = epoka 1 = `DiplomacyParams::common_border_trust_per_turn` (-2).
+    pub common_border_delta: Option<f64>,
     pub credibility: Option<f64>,
+}
+
+/// Stawka kary za wspólną granicę wg wyższej epoki właścicieli pary.
+/// Odpowiednik web `sharedBorderPenaltyForEpochs`: max(epoki) >= 3 -> Żelazo,
+/// >= 2 -> Brąz, w pozostałych przypadkach -> wartość bazowa (epoka 1, -2).
+pub fn shared_border_penalty_for_epochs(
+    epoch_a: f64,
+    epoch_b: f64,
+    params: &DiplomacyParams,
+) -> f64 {
+    let pair_epoch = epoch_a.max(epoch_b);
+    if pair_epoch >= 3.0 {
+        params.common_border_trust_per_turn_iron
+    } else if pair_epoch >= 2.0 {
+        params.common_border_trust_per_turn_bronze
+    } else {
+        params.common_border_trust_per_turn
+    }
 }
 
 pub fn apply_credibility_tempo(delta: f64, credibility: Option<f64>) -> f64 {
@@ -758,7 +785,9 @@ pub fn compute_trust_delta(ctx: &TickContext, at_war: bool, params: &DiplomacyPa
         delta += params.different_religion_trust_per_turn;
     }
     if ctx.common_border {
-        delta += params.common_border_trust_per_turn;
+        delta += ctx
+            .common_border_delta
+            .unwrap_or(params.common_border_trust_per_turn);
     }
     let delta = apply_credibility_tempo(delta, ctx.credibility);
     if at_war && delta > 0.0 {

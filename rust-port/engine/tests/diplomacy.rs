@@ -76,6 +76,7 @@ fn tick_stacks_trade_and_peace_tier_but_positive_growth_stops_in_war() {
         different_religion: false,
         common_border: true,
         credibility: Some(100.0),
+        common_border_delta: None,
     };
 
     assert_eq!(compute_trust_delta(&tick, false, &params), 11.25);
