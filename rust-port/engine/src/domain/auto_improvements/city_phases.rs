@@ -220,9 +220,9 @@ impl CityEnv {
         if ROAD_KEYS.contains(&key) && !sh.road_plan_has(hex_key) {
             return true;
         }
-        let livestock = key == "bydlo" || key == "owce" || key == "lama";
-        // hunk :1791 (`riverHexKeys.has` -> `onRiverHex`).
-        if livestock && !sh.on_river_hex(hex_key) {
+        // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (web 8064ad744..cffe39cb9): rzeka to PRIORYTET kolejnosci, nie wymog
+        // hodowli; bydlo poza rzeka tylko na farmie, owce/lama bez warunku rzeki.
+        if key == "bydlo" && !sh.on_river_hex(hex_key) && !sh.hex_layers_contain(hex_key, "farma") {
             return true;
         }
         if key == "irygacja"
@@ -504,9 +504,6 @@ pub(super) fn river_to_develop(sh: &Shared, acc: &Acc, env: &CityEnv, q: i32, r:
             return false;
         }
         if placed_here.iter().any(|p| p == k) {
-            return false;
-        }
-        if (k == "bydlo" || k == "owce" || k == "lama") && !sh.on_river_hex(&hk) {
             return false;
         }
         if !sh.tech_ok(k) || !sh.civ_ok(k) {

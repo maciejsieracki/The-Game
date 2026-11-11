@@ -1,0 +1,38 @@
+--- a/rust-port/engine/src/domain/auto_improvements/pick.rs	2026-11-11 11:35:57.449262629 +0000
++++ b/rust-port/engine/src/domain/auto_improvements/pick.rs
+@@ -94,7 +94,9 @@
+     outer: &PickAutoImprovementsOpts,
+     mut o: PickAutoImprovementsOpts<'a>,
+ ) -> PickAutoImprovementsOpts<'a> {
+-    o.cities.retain(|c| city_may_build(outer, c));
++    if !std::env::var("ABL").is_ok_and(|v| v.contains('C')) {
++        o.cities.retain(|c| city_may_build(outer, c));
++    }
+     o.praca_available = MAX_SAFE;
+     o.improvement_budget_cap = Some(MAX_SAFE);
+     o.praca_budget_percent = Some(100.0);
+@@ -237,6 +239,9 @@
+                 run.record(&stage_picks);
+                 let has_wyrab = stage_picks.iter().any(|p| p.key == "wyrab");
+                 staged_picks.extend(stage_picks);
++                if std::env::var("ABL").is_ok_and(|v| v.contains('A')) {
++                    break;
++                }
+                 // Czy etap ma jeszcze cel PO tych pickach (nieograniczony budzet)? Tak -> czeka na Prace.
+                 let leftover_opts =
+                     run.after(river_clear_spent + deficit_spent + staged_spent, configure);
+--- a/rust-port/engine/src/domain/auto_improvements/city_phases.rs	2026-11-11 11:35:57.453149418 +0000
++++ b/rust-port/engine/src/domain/auto_improvements/city_phases.rs
+@@ -222,7 +222,11 @@
+         }
+         // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (web 8064ad744..cffe39cb9): rzeka to PRIORYTET kolejnosci, nie wymog
+         // hodowli; bydlo poza rzeka tylko na farmie, owce/lama bez warunku rzeki.
+-        if key == "bydlo" && !sh.on_river_hex(hex_key) && !sh.hex_layers_contain(hex_key, "farma") {
++        if std::env::var("ABL").is_ok_and(|v| v.contains('B')) {
++            if (key == "bydlo" || key == "owce" || key == "lama") && !sh.on_river_hex(hex_key) {
++                return true;
++            }
++        } else if key == "bydlo" && !sh.on_river_hex(hex_key) && !sh.hex_layers_contain(hex_key, "farma") {
+             return true;
+         }
+         if key == "irygacja"

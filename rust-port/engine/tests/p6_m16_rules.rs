@@ -1,6 +1,6 @@
 //! P6.M16 - `map/improvement-build.ts` (50-1558): reguly (las / farma / stadnina, warstwy zywnosci,
 //! sektory, zloza, hodowla, meta/tech, `hexKeysWithinRadius`). Wektory z URUCHOMIONEGO weba (pin
-//! edb8fb56), 0 rozbieznosci; liczby porownywane BITOWO. Kazdy blok liczy tez, ile wynikow bylo
+//! cffe39cb9), 0 rozbieznosci; liczby porownywane BITOWO. Kazdy blok liczy tez, ile wynikow bylo
 //! "niepustych" (test istotnosci: wektory nie sa trywialne).
 
 #[path = "p6_m16_vectors/common.rs"]

@@ -1,4 +1,4 @@
-//! P6.8I (8I-P2c): port `pickAutoImprovements` (`auto-improvements.ts`, REPIN-AUTOIMPROVE: web 180c08305) -
+//! P6.8I (8I-P2c): port `pickAutoImprovements` (`auto-improvements.ts`, REPIN-AUTOIMPROVE: web 180c08305 -> cffe39cb9 (Q2: kaskada etapow, hodowla poza rzeka, sonda bez miast 0%)) -
 //! orkiestrator etapow: KROK 1 brakujacy surowiec, KROK 0 wycinka rzeczna na polu obywatela (hunki 30, 31, 34, 36),
 //! KROK 2 etapy zywnosciowe E1-E6, sciezka zapasowa, KROK 2b E-FORT, KROK 3 drogi, KROK 7 wycinka rzeczna BEZ
 //! obywatela (hunk 42). Kazdy przebieg to `pick_auto_improvements_single_pass` na kopii opcji (`after`).
@@ -79,13 +79,28 @@ impl<'a> Run<'_, 'a> {
     }
 }
 
-/// Sonda: ten sam przebieg z nieograniczonym budzetem (czy istnieje cel czekajacy na Prace).
-fn unlimited(mut o: PickAutoImprovementsOpts<'_>) -> PickAutoImprovementsOpts<'_> {
+/// Web `cityMayBuild`: miasto, ktore w rzeczywistym przebiegu moze wydac Prace (efektywny % puli > 0).
+fn city_may_build(outer: &PickAutoImprovementsOpts, c: &AutoImprovementCity) -> bool {
+    let pct = match outer.get_praca_budget_percent {
+        Some(f) => f(c),
+        None => outer.praca_budget_percent.unwrap_or(100.0),
+    };
+    js_max(0.0, js_min(100.0, pct)) > 0.0
+}
+
+/// Web `unlimitedBudgetProbe` (R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2): ten sam przebieg z nieograniczonym
+/// budzetem (czy istnieje cel czekajacy na Prace), BEZ miast o efektywnym % puli = 0 (liczone wg opcji `outer`).
+fn unlimited<'a>(
+    outer: &PickAutoImprovementsOpts,
+    mut o: PickAutoImprovementsOpts<'a>,
+) -> PickAutoImprovementsOpts<'a> {
+    o.cities.retain(|c| city_may_build(outer, c));
     o.praca_available = MAX_SAFE;
     o.improvement_budget_cap = Some(MAX_SAFE);
     o.praca_budget_percent = Some(100.0);
     o.get_praca_budget_percent = None;
     o.praca_surplus_threshold = Some(0.0);
+    o.surplus_report = None;
     o
 }
 
@@ -201,34 +216,51 @@ fn pick_auto_improvements_staged(opts: &PickAutoImprovementsOpts) -> Vec<AutoImp
     // Brak limitu liczby sztuk na miasto: wszystkie miasta etapowe biora udzial w etapach.
     let food_cities: Vec<AutoImprovementCity> = staged_cities.clone();
 
-    // KROK 2: etapy zywnosciowe E1...E6.
+    // KROK 2: etapy zywnosciowe E1...E6 (web cf236dafc -> Q2 r2: kaskada etapow po wyczerpaniu).
     let mut staged_picks: Vec<AutoImprovementPick> = Vec::new();
+    let mut staged_spent = 0.0;
     let mut earlier_stage_is_pending = false;
     if !food_cities.is_empty() {
         for stage in FOOD_STAGES.iter() {
-            let stage_opts = run.after(river_clear_spent + deficit_spent, |o| {
+            let configure = |o: &mut PickAutoImprovementsOpts<'_>| {
                 o.cities = food_cities.clone();
                 o.priority_override = Some(stage.keys.iter().map(|k| (*k).to_owned()).collect());
                 o.river_forest_clearing_only = stage.river_forest_clearing_only;
                 o.river_hexes_only = stage.river_hexes_only;
                 o.off_river_clearing = stage.off_river_clearing;
                 o.irrigation_needs_farm = true;
-            });
+            };
+            let stage_opts = run.after(river_clear_spent + deficit_spent + staged_spent, configure);
             let stage_picks = pick_auto_improvements_single_pass(&stage_opts);
             if !stage_picks.is_empty() {
-                staged_picks = stage_picks;
-                break;
+                staged_spent += sum(&stage_picks);
+                run.record(&stage_picks);
+                let has_wyrab = stage_picks.iter().any(|p| p.key == "wyrab");
+                staged_picks.extend(stage_picks);
+                // Czy etap ma jeszcze cel PO tych pickach (nieograniczony budzet)? Tak -> czeka na Prace.
+                let leftover_opts =
+                    run.after(river_clear_spent + deficit_spent + staged_spent, configure);
+                if !pick_auto_improvements_single_pass(&unlimited(opts, leftover_opts)).is_empty() {
+                    earlier_stage_is_pending = true;
+                    break;
+                }
+                // Niedobor surowca postawil ulepszenie w tej turze: dawna kolejnosc "jeden etap na ture".
+                if !deficit_picks.is_empty() {
+                    break;
+                }
+                // Etap rozpoczal wycinke (E2/E5) albo KROK 0 ja otworzyl: koniec etapow tej tury.
+                if !river_clear_picks.is_empty() || has_wyrab {
+                    break;
+                }
+                continue;
             }
-            let mut probe = unlimited(stage_opts);
-            probe.surplus_report = None;
-            if !pick_auto_improvements_single_pass(&probe).is_empty() {
+            if !pick_auto_improvements_single_pass(&unlimited(opts, stage_opts)).is_empty() {
                 earlier_stage_is_pending = true;
                 break;
             }
         }
     }
-    run.record(&staged_picks);
-    let stage_spent = river_clear_spent + deficit_spent + sum(&staged_picks);
+    let stage_spent = river_clear_spent + deficit_spent + staged_spent;
 
     // Sciezka zapasowa (zwykla wycinka) dopiero gdy zaden etap nie ma celu.
     let mut fallback_picks: Vec<AutoImprovementPick> = Vec::new();
@@ -238,9 +270,8 @@ fn pick_auto_improvements_staged(opts: &PickAutoImprovementsOpts) -> Vec<AutoImp
         fallback_picks = pick_auto_improvements_single_pass(&fallback_opts);
         run.record(&fallback_picks);
         if fallback_picks.is_empty() {
-            let mut probe = unlimited(fallback_opts);
-            probe.surplus_report = None;
-            fallback_is_pending = !pick_auto_improvements_single_pass(&probe).is_empty();
+            fallback_is_pending =
+                !pick_auto_improvements_single_pass(&unlimited(opts, fallback_opts)).is_empty();
         }
     }
     let fallback_spent = stage_spent + sum(&fallback_picks);
@@ -267,8 +298,7 @@ fn pick_auto_improvements_staged(opts: &PickAutoImprovementsOpts) -> Vec<AutoImp
             return v;
         }
         let v = !deficit_cities.is_empty() && {
-            let mut probe = unlimited(deficit_pass_opts(run, &deficit_cities, &deficit_keys));
-            probe.surplus_report = None;
+            let probe = unlimited(opts, deficit_pass_opts(run, &deficit_cities, &deficit_keys));
             !pick_auto_improvements_single_pass(&probe).is_empty()
         };
         deficit_pending_memo = Some(v);
@@ -294,7 +324,8 @@ fn pick_auto_improvements_staged(opts: &PickAutoImprovementsOpts) -> Vec<AutoImp
         fort_picks = pick_auto_improvements_single_pass(&fort_opts);
         run.record(&fort_picks);
         if fort_picks.is_empty() {
-            fort_is_pending = !pick_auto_improvements_single_pass(&unlimited(fort_opts)).is_empty();
+            fort_is_pending =
+                !pick_auto_improvements_single_pass(&unlimited(opts, fort_opts)).is_empty();
         }
     }
     let fort_spent = fallback_spent + sum(&fort_picks);

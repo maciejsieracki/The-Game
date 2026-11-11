@@ -1,0 +1,30 @@
+baseline niezgodnych: 947
+
+[B] 662 scenariuszy; rodziny: [('rnd', 158), ('rcd-b', 144), ('ci', 74), ('ra-rnd', 70), ('rc-rnd', 26), ('hc', 16)]
+  przyklady: budzetCapNaN, ci-53-zrownowazone-one-few-6000, ci-53-zrownowazone-one-many-6000, ci-53-zrownowazone-one-none-6000, ci-53-zywnosc-one-few-6000
+
+[AB] 167 scenariuszy; rodziny: [('rnd', 56), ('stg', 37), ('ra-rnd', 27), ('rp', 20), ('fort', 16), ('d4-rnd-102', 1)]
+  przyklady: d4-rnd-102, d4-rnd-11, d4-rnd-111, d4-rnd-121, d4-rnd-17
+
+[A] 107 scenariuszy; rodziny: [('rnd', 24), ('stg', 19), ('rc-rnd', 13), ('rp', 11), ('kz-gory-zrownowazone', 3), ('kz-gory-zywnosc', 3)]
+  przyklady: ai-max1, ci-rep-56, ci-rep-8, d4-dwie-wody-offriver, d4-dwie-wody-riverforest
+
+[C] 5 scenariuszy; rodziny: [('ra-rnd', 2), ('rnd', 2), ('stg', 1)]
+  przyklady: ra-rnd-213, ra-rnd-66, rnd-1117, rnd-87, stg-210
+
+[ABC] 5 scenariuszy; rodziny: [('stg', 3), ('rnd', 2)]
+  przyklady: rnd-855, rnd-948, stg-113, stg-26, stg-295
+
+[BC] 1 scenariuszy; rodziny: [('stg', 1)]
+  przyklady: stg-242
+
+Per port (scenariusze, dla ktorych port jest niezbedny):
+  A kaskada etapow: 279
+  B hodowla poza rzeka: 835
+  C sonda pomija miasta 0%: 11
+
+Cztery przywrocone scenariusze:
+  rnd-961: baseline=tak; wymaga=B
+  ra-rnd-1: baseline=tak; wymaga=B
+  ra-rnd-24: baseline=tak; wymaga=B
+  ra-rnd-247: baseline=tak; wymaga=B

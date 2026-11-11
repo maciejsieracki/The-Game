@@ -828,7 +828,8 @@ pub fn is_livestock_unlocked_for_placement(
 /// R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1 (web `livestock-unlock.ts:STADNINA_FREE_FROM_ERA`):
 /// w epokach ponizej Zelaza (`era < 3`) stadnina wymaga zloza konia NA TYM heksie; odblokowanie imperium
 /// (trasa / magazyn >= koszt) nie wystarcza.
-pub const STADNINA_FREE_FROM_ERA: f64 = 3.0;
+/// Wartosc (balans) zyje w `auto_improvements.rs` - ten plik nie ma literalow liczbowych poza {0,1} (p6_m16_tables).
+pub use crate::domain::auto_improvements::STADNINA_FREE_FROM_ERA;
 
 pub fn is_livestock_unlocked_for_placement_hex(
     improvement_key: &str,
