@@ -54,7 +54,8 @@ import {
   buildingHappinessAtLevel,
   type BuildingRecord,
 } from '../../game/economy';
-import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
+import { buildingStockCost } from '../../game/building-stock-cost';
+import { proseRowFields } from './resourceRows';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -251,18 +252,21 @@ function plUpkeepForm(n: number, forms: [string, string, string]): string {
   return forms[2];
 }
 
-/** Karta budynku: „2 Pieniądze, 2 drewna, 2 kamienie, 2 cegły / turę” (bez surowych id). */
-function formatUpkeepValue(gold: number, resources: Record<string, number>): string {
-  if (gold === 0 && Object.keys(resources).length === 0) return 'utrzymanie zero';
-  const parts: string[] = [];
-  if (gold > 0) parts.push(`${gold} ${plUpkeepForm(gold, UPKEEP_NOUN_FORMS['pieniądz'] ?? ['Pieniądz', 'Pieniądze', 'Pieniędzy'])}`);
-  for (const k of Object.keys(resources)) {
-    const n = resources[k] ?? 0;
-    const name = stockResourceLabel(k).toLowerCase();
-    const forms = UPKEEP_NOUN_FORMS[name];
-    parts.push(`${n} ${forms ? plUpkeepForm(n, forms) : name}`);
-  }
-  return `${parts.join(', ')} / turę`;
+/** Karta budynku: „2 Pieniądze, [2 ikona drewna], [2 ikona kamienia] / turę” — surowce jako DANE
+ * (`resources`), renderer rysuje ikony (R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1). */
+function upkeepRowFields(gold: number, resources: Record<string, number>):
+  Pick<EntityCardRow, 'value' | 'resources' | 'resourcesSuffix'> {
+  const keys = Object.keys(resources);
+  if (gold === 0 && keys.length === 0) return { value: 'utrzymanie zero' };
+  const goldText = gold > 0
+    ? `${gold} ${plUpkeepForm(gold, UPKEEP_NOUN_FORMS['pieniądz'] ?? ['Pieniądz', 'Pieniądze', 'Pieniędzy'])}`
+    : '';
+  if (keys.length === 0) return { value: `${goldText} / turę` };
+  return {
+    value: goldText,
+    resources: keys.map((k) => ({ id: k, amount: resources[k] ?? 0 })),
+    resourcesSuffix: '/ turę',
+  };
 }
 
 const DEFAULT_CITY_STATE: BuildingCardCityState = {
@@ -311,7 +315,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
     reqRows.push(upgradeRow);
   }
   if (building.wymagania && !isEmptyDataVal(building.wymagania)) {
-    reqRows.push({ label: 'Dodatkowe warunki', value: text(building.wymagania) });
+    reqRows.push({ label: 'Dodatkowe warunki', ...proseRowFields(text(building.wymagania)) });
   }
   if (reqRows.length === 0) reqRows.push({ label: 'Wymagania', value: 'brak — dostępny od startu' });
   const requirementsSection: EntityCardSection = { key: 'requirements', title: 'Wymagania', rows: reqRows };
@@ -417,7 +421,9 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   if (stockKeys.length > 0) {
     buildCostRows.push({
       label: 'Surowce (jednorazowo)',
-      value: `${stockKeys.map((k) => `${stockCostDetail[k]} ${stockResourceLabel(k)}`).join(' + ')} — z magazynu państwa`,
+      value: '',
+      resources: stockKeys.map((k) => ({ id: k, amount: stockCostDetail[k] ?? 0 })),
+      resourcesSuffix: '— z magazynu państwa',
     });
   }
   sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
@@ -429,7 +435,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
     cityState.difficulty,
   ));
   const upkeepCostRows: EntityCardRow[] = [
-    { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources) },
+    { label: 'Co turę', ...upkeepRowFields(upkeepGold, upkeepResources) },
   ];
   if (building.przyrostUtrzymania) {
     upkeepCostRows.push({

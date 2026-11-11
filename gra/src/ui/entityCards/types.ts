@@ -28,10 +28,30 @@ export interface EntityCardRowBadge {
   label: string;
 }
 
+/** Jedna pozycja surowca w wierszu karty (R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1): renderer
+ * składa z niej chip „liczba + ikona" (`resourceAmountChipHtml`), a nazwa surowca trafia
+ * wyłącznie do `title`/`aria-label`. `id` = klucz magazynu (`drewno`, `ruda_cyny`) lub slug
+ * surowca z `resources.json`. `amount` — gotowy tekst/liczba (np. `5`, `−2`); brak = sama ikona. */
+export interface EntityCardRowResource {
+  id: string;
+  amount?: string | number;
+}
+
 /** Jeden wiersz w sekcji karty (np. "Atak: 6"). */
 export interface EntityCardRow {
   label: string;
   value: string;
+  /** Surowce wiersza jako DANE (nie HTML) — renderer sam buduje chipy z ikonami i escapuje
+   * `amount`. Kolejność w komórce wartości: `value` (zwykły tekst, `.textContent`) → ", " →
+   * chipy rozdzielone „ + " → `resourcesSuffix`. `value` NIE może zawierać nazw surowców,
+   * które mają ikonę (pilnuje `tools/entity-cards-resource-icons-test.cjs`). */
+  resources?: EntityCardRowResource[];
+  /** Proza z surowcami w treści („Dostęp do [ikona] w imperium”): kolejne części to tekst zwykły
+   * (text node) albo `{id}` → ikona-chip bez liczby (nazwa w title/aria-label). Ma pierwszeństwo
+   * przed `value`/`resources` w renderze; `value` zostaje pełnym tekstem rezerwowym. */
+  valueParts?: Array<string | EntityCardRowResource>;
+  /** Zwykły tekst po chipach surowców (np. „/ turę", „— z magazynu państwa"). */
+  resourcesSuffix?: string;
   emphasize?: boolean;
   /** Jeśli podane — wiersz jest klikalny i otwiera kartę innej encji (T10). */
   linkTo?: { kind: EntityKind; id: string };

@@ -164,9 +164,11 @@ async function main() {
     // nagłówek) — koszt_surowce.drewno=25 w danych → 50 w karcie, TA SAMA funkcja co dawny
     // `buildBuildingDetailCard`, więc to parytet, nie regresja (zweryfikowane czytaniem
     // `game/building-stock-cost.ts::buildingStockCost`/`scaleStockCostRecord`).
-    check('wiersz "Surowce (jednorazowo)" zawiera "50" (drewno=25 ×2 FALA2) i "— z magazynu państwa"',
-      !!stockRow && stockRow.value.includes('50') && stockRow.value.includes('— z magazynu państwa'),
-      stockRow && stockRow.value);
+    // R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: surowce jako dane (ikona + liczba w rendererze), bez nazwy w tekście.
+    check('wiersz "Surowce (jednorazowo)" niesie 50 (drewno=25 ×2 FALA2) jako dane resources i sufiks "— z magazynu państwa"',
+      !!stockRow && Array.isArray(stockRow.resources) && stockRow.resources.some((r) => r.id === 'drewno' && String(r.amount) === '50')
+        && stockRow.resourcesSuffix === '— z magazynu państwa' && !/drewn/i.test(stockRow.value),
+      stockRow);
 
     // --- Poziomy -------------------------------------------------------------
     const lvlRows = bySectionKey.levels ? bySectionKey.levels.rows : [];
