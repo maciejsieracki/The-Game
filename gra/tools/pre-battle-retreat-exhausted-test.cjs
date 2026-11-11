@@ -52,10 +52,13 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 const fnStart = mainSrc.indexOf('function launchIncomingMapFieldBattle(');
 ok(fnStart >= 0, '[A] znaleziono function launchIncomingMapFieldBattle( w main.ts');
 
-const endMarker = "}, { defaultAction: 'manual' });";
-const fnEndMarkerIdx = fnStart >= 0 ? mainSrc.indexOf(endMarker, fnStart) : -1;
-ok(fnEndMarkerIdx > fnStart, '[A] znaleziono koniec funkcji (showPreBattle(...}, { defaultAction: \'manual\' }))');
-const fnEnd = fnEndMarkerIdx > fnStart ? fnEndMarkerIdx + endMarker.length : -1;
+// R-WEB-TEST-DEBT-BASELINE-Q3 R2 (klasa A, zarzut 2): stary marker konca funkcji
+// "}, { defaultAction: 'manual' });" nie istnieje juz w main.ts (showPreBattle wywolany
+// z obiektem opcji w innym ksztalcie; grep: defaultAction: 'manual' w l. 33410/34174/36818).
+// Granica ciala = nastepna deklaracja funkcji na tym samym poziomie zagniezdzenia (4 spacje).
+const fnEndMarkerIdx = fnStart >= 0 ? mainSrc.indexOf('\n    function ', fnStart + 10) : -1;
+ok(fnEndMarkerIdx > fnStart, '[A] znaleziono koniec funkcji (kolejna funkcja na poziomie 4 spacji po launchIncomingMapFieldBattle)');
+const fnEnd = fnEndMarkerIdx > fnStart ? fnEndMarkerIdx : -1;
 const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
 
 // A1) retreatExhaustedThisTurn policzone z defRosterRef PRZED budową pbInfo.

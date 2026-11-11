@@ -230,11 +230,26 @@ console.log('\n2.2 wszystkie 4 realne miejsca zmiany wlasciciela miasta nadal wo
   // (a) Kapitulacja z glodu (resolveSiegeSurrender) -- city.ownerId = newOwner PRZED
   // seedCityOwnerDefaults. Odstep az do 1500 znakow -- miedzy nimi jest dlugi
   // dwujezyczny komentarz B1 (Evaluator RUNDA 1) tlumaczacy R-EPOKA-BRAZU-WYMUSZONA-WOJNA.
-  ok(/city\.ownerId = newOwner;[\s\S]{0,1500}?seedCityOwnerDefaults\(city\);/.test(MAIN_TS_SRC),
-    '(a) kapitulacja glodowa (resolveSiegeSurrender): city.ownerId = newOwner -> seedCityOwnerDefaults(city)');
+  // R-OKOLICA-TEST-OKNA-Q1 (klasa A, Operator R2): okna regex (1500/300/200 znakow) byly
+  // ZA KROTKIE wobec realnego kodu miedzy przypisaniem ownerId a wywolaniem reconcile
+  // (zmierzone: (a) 6744, (b) 506, (c) 1199 znakow; wszystko w TEJ SAMEJ funkcji). Zamiast
+  // magicznego okna: wywolanie musi wystapic PO przypisaniu, w tym samym ciele funkcji
+  // (brak granicy `function` miedzy nimi) i w odleglosci <= 8000 znakow.
+  const sameFnAfter = (src, assignStr, callStr) => {
+    const i = src.indexOf(assignStr);
+    if (i < 0) return false;
+    const j = src.indexOf(callStr, i + assignStr.length);
+    if (j < 0 || j - i > 8000) return false;
+    const between = src.slice(i, j);
+    return !/\n\s{0,4}(export\s+)?function\s/.test(between);
+  };
+
+  ok(sameFnAfter(MAIN_TS_SRC, 'city.ownerId = newOwner;', 'seedCityOwnerDefaults(city);'),
+    '(a) kapitulacja glodowa (resolveSiegeSurrender): city.ownerId = newOwner -> seedCityOwnerDefaults(city) w tym samym ciele');
 
   // (b) Wchloniecie dyplomatyczne (annexCityStateToOwner) -- petla po csCities, kazde dostaje nowego wlasciciela.
-  ok(/for \(const city of csCities\) \{[\s\S]{0,300}?city\.ownerId = annexerId;[\s\S]{0,300}?seedCityOwnerDefaults\(city\);/.test(MAIN_TS_SRC),
+  ok(/for \(const city of csCities\) \{[\s\S]{0,300}?city\.ownerId = annexerId;/.test(MAIN_TS_SRC) &&
+    sameFnAfter(MAIN_TS_SRC, 'city.ownerId = annexerId;', 'seedCityOwnerDefaults(city);'),
     '(b) wchloniecie dyplomatyczne (annexCityStateToOwner): city.ownerId = annexerId -> seedCityOwnerDefaults(city) w petli po csCities');
 
   // (c) Podboj w bitwie (applyCityCaptureToMap -> onOwnerChanged callback).
@@ -242,7 +257,7 @@ console.log('\n2.2 wszystkie 4 realne miejsca zmiany wlasciciela miasta nadal wo
     "(c) podboj w bitwie (applyCityCaptureToMap): callback onOwnerChanged wola seedCityOwnerDefaults(c)");
   // post-battle-map.ts musi USTAWIC city.ownerId PRZED wywolaniem tego callbacku --
   // inaczej reconcile w seedCityOwnerDefaults widzialby jeszcze STAREGO wlasciciela.
-  ok(/city\.ownerId = atkOwner;[\s\S]{0,200}?captureOpts\?\.onOwnerChanged\?\.\(city\);/.test(POST_BATTLE_MAP_SRC),
+  ok(sameFnAfter(POST_BATTLE_MAP_SRC, 'city.ownerId = atkOwner;', 'captureOpts?.onOwnerChanged?.(city);'),
     'post-battle-map.ts::applyCityCaptureAfterBattle: city.ownerId = atkOwner USTAWIONE przed wywolaniem onOwnerChanged (wiec reconcile widzi juz NOWEGO wlasciciela)');
 
   // (d) Rebelia (city.ownerId = REBEL_FACTION_OWNER_ID).

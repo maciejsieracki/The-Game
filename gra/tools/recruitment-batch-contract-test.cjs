@@ -80,10 +80,28 @@ const ENV_NAMES = [
   'units',
   'armyStackLimit',
   'hexHasRoomFor',
+  'superUnitLimitViolation',
+  'reservedUnitTypeNamesForOwner',
+  'SUPER_UNIT_LIMIT_BLOCK_PL',
 ];
 const STACK_LIMIT_SRC = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'army-stack-limit.ts'), 'utf8');
 const stackLimitJs = esbuild.transformSync(STACK_LIMIT_SRC.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
 const { hexHasRoomFor } = new Function(`${stackLimitJs}\nreturn { hexHasRoomFor };`)();
+
+// R-WEB-TEST-DEBT-BASELINE-Q3 (R2, zarzut Evaluatora 2): purchaseRecruitmentUnit wola teraz
+// superUnitLimitViolation (limit 1 Super-jednostki) i reservedUnitTypeNamesForOwner. Prawdziwa
+// superUnitLimitViolation + SUPER_UNIT_LIMIT_BLOCK_PL wycinane z src/game/production.ts (ta sama
+// metoda co hexHasRoomFor). reservedUnitTypeNamesForOwner w grze zamyka sie na żywej armii i
+// kolejkach miast; fixture tego testu nie ma żywych Super-jednostek, więc zwraca pusty Set
+// (ZAŁOŻENIE: test sprawdza atomowość zakupu, nie samą regułę Super-jednostki).
+const PRODUCTION_SRC = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'production.ts'), 'utf8');
+const superBlockMatch = PRODUCTION_SRC.match(/export const SUPER_UNIT_LIMIT_BLOCK_PL =\n\s*('[^']*');/);
+if (!superBlockMatch) throw new Error('brak SUPER_UNIT_LIMIT_BLOCK_PL w production.ts');
+const superFnSrc = sliceFunction(PRODUCTION_SRC, 'export function superUnitLimitViolation(', '\n}\n') + '\n}\n';
+const superSrc = `${superBlockMatch[0].replace('export const', 'const')}\n${superFnSrc.replace('export function', 'function')}`;
+const { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL } = new Function(
+  `${esbuild.transformSync(superSrc, { loader: 'ts', target: 'es2020' }).code}\nreturn { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL };`,
+)();
 
 // eslint-disable-next-line no-new-func
 const makeFunctions = new Function(
@@ -233,6 +251,9 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     [],
     () => 120,
     hexHasRoomFor,
+    superUnitLimitViolation,
+    () => new Set(),
+    SUPER_UNIT_LIMIT_BLOCK_PL,
   );
 
   function snapshot() {
