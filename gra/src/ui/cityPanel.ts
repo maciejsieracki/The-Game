@@ -8261,9 +8261,9 @@ function appendBuildableItemRow(
   fillIconElement(ic, buildingIconHtml(def));
   row.appendChild(ic);
   const name = el('span', 'bld-compact-name');
-  // Awans w łańcuchu (Palisada -> Mury kamienne): „Ulepsz -> Mury kamienne” z nazwą źródła w tooltipie.
-  // Awans POZIOMU (ten sam id) pokazuje etykiete „Nazwa → poz. N” -- odroznialna od awansu etapu lancucha.
-  name.textContent = opts.fromName ? `Ulepsz → ${def.nazwa}` : (opts.upgrade ? item.nazwa : def.nazwa);
+  // Awans w łańcuchu (Palisada -> Mury kamienne): „Ulepsz → Mury kamienne” z nazwą źródła w tooltipie.
+  // Pozostałe wiersze (w tym awans POZIOMU) zachowują dotychczasową etykietę def.nazwa (bez zmiany zachowania).
+  name.textContent = opts.fromName ? `Ulepsz → ${def.nazwa}` : def.nazwa;
   if (opts.fromName) name.title = `${opts.fromName} → ${def.nazwa}`;
   row.appendChild(name);
 
@@ -9690,7 +9690,8 @@ function appendOwnedBuildingRow(
       bn.textContent = `${def.nazwa} L${level}`;
     }
   }
-  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+  // Łańcuch fortyfikacji (upgradeSkip): bez przycisku „Skład bonusów” -- to zamiana, nie suma poziomów.
+  if (def && (def.upgradeFrom ?? '').trim().length > 0 && def.upgradeSkip !== true) {
     const upBtn = el('button', 'bld-upg');
     upBtn.type = 'button';
     upBtn.textContent = '↗';

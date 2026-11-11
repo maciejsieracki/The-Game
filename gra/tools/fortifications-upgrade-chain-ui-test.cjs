@@ -178,7 +178,8 @@ async function main() {
   console.log('  buduj(lancuch):', JSON.stringify(inBuduj(r2)), ' ulepsz:', JSON.stringify(upNames(r2)));
   check('U9: tylko awans na Mury ceglane w "Ulepsz"', upNames(r2).filter(n => /^Ulepsz → /.test(n)).join() === 'Ulepsz → Mury ceglane', upNames(r2));
   check('U10: "Buduj" bez etapow lancucha', inBuduj(r2).length === 0, inBuduj(r2));
-  check('U10b: awans poziomu (L1->L2) rozroznialny od awansu etapu: etykieta "... → poz. N", nie goly "Mury kamienne"', upNames(r2).some(n => /^Mury kamienne → poz(\.|iom) 2/.test(n)) && !upNames(r2).includes('Mury kamienne'), upNames(r2));
+  // Obrona zarzut 6: wiersz awansu POZIOMU zachowuje dotychczasowa etykiete (goly def.nazwa), tylko wiersze lancucha maja prefiks "Ulepsz → ".
+  check('U10b: awans poziomu zachowuje dotychczasowa etykiete (bez prefiksu lancucha), wiersz lancucha ma prefiks', upNames(r2).includes('Mury kamienne') && upNames(r2).filter(n => /^Ulepsz → /.test(n)).length === 1, upNames(r2));
   await page.screenshot({ path: path.join(SHOTS, '03-kamienne-stoja.png') });
 
   console.log('\n-- nic z lancucha nie stoi --');
