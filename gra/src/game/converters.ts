@@ -83,7 +83,11 @@ export interface ConverterRecipe {
 // to get 5× output, since cycles = min(throughput, input limit, output limit) and the
 // input limit already scales automatically with the ×5'd territorial resource production.
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 2, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50 },
+  // R-WEB-BRICK-CYCLES-75-100-Q1 (decyzja właściciela 2026-11-11): cykle Cegielni jawnie per epoka
+  // właściciela -- epoka 1: 50, epoka 2: 75, epoka 3+: 100 (carry-forward ostatniej skonfigurowanej).
+  // Mnożnik WYJŚCIA cegły (1 / 1,5 / 2) zostaje bez zmian (CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE).
+  // Pełny Brąz 150 gliny/75 drewna → 225 cegieł (era 2); pełne Żelazo 200 gliny/100 drewna → 400 (era 3).
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 2, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50, throughputEraParamKeys: { 1: 'budynek_cegielnia_przepustowosc', 2: 'budynek_cegielnia_epoka2_przepustowosc', 3: 'budynek_cegielnia_epoka3_przepustowosc' } },
   { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 50 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
   { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 50 },
@@ -157,13 +161,15 @@ export const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: ReadonlySet<string> = new Set([
  * powinna zwiększać swoją produkcję o 50% w każdej epoce".
  *
  * (a) ×2: `outputAmount` Cegielni 1→2 (2 glina + 1 drewno → 2 cegły), baza przepustowości
- *     50 cykli/turę BEZ zmian.
+ *     50 cykli/turę BEZ zmian (stan historyczny tej decyzji; aktualne cykle per epoka: patrz niżej).
  * (b) +50% BAZY za epokę właściciela jako MNOŻNIK WYJŚCIA (nie cykli): m(e) = 1 + 0,5 × (e − 1)
  *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `citizenConsumptionEraMultiplier`
  *     (mnożniki surowców FALA 500). Pomiar w grze pokazał, że Cegielnię ogranicza WEJŚCIE
  *     (drewno 30/30 tur), więc mnożnik na cyklach byłby martwy; mnożnik na wyjściu działa
  *     w każdym reżimie i NIE zwiększa zużycia gliny/drewna (cykle i wejścia/cykl bez zmian).
- *     Cykle Cegielni są od tej pory PŁASKIE (poza CONVERTER_ERA_SCALING_RECIPE_IDS).
+ *     Cykle Cegielni NIE są skalowane mnożnikiem epoki; od R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11)
+ *     są jawne per epoka właściciela (50 / 75 / 100, throughputEraParamKeys), a wyjście cegły skaluje
+ *     wyłącznie CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE.
  * Jedna funkcja `converterOutputMultiplierForEra` dla gracza i AI.
  */
 export const CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE: Readonly<Record<string, number>> = {

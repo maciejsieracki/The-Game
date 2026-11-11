@@ -170,7 +170,7 @@ for (const id of ['garncarnia']) {
 {
   const mults = [1, 1.5, 2, 2.5, 3];
   for (let e = 1; e <= 5; e++) {
-    eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia: era${e} -> 50 cykli (plaskie)`);
+    eq(M.converterThroughputForEra('cegielnia', 50, e), 50, `cegielnia: era${e} -> 50 cykli (plaskie; sciezka BEZ wierszy epoki, baza 50)`);
     eq(M.converterOutputMultiplierForEra('cegielnia', e), mults[e - 1], `cegielnia: era${e} mnoznik wyjscia x${mults[e - 1]}`);
     eq(M.converterOutputMultiplierForEra('garncarnia', e), 1, `garncarnia: era${e} mnoznik wyjscia 1`);
     eq(M.converterOutputMultiplierForEra('huta', e), 1, `huta: era${e} mnoznik wyjscia 1`);
@@ -179,7 +179,7 @@ for (const id of ['garncarnia']) {
   eq(M.converterOutputMultiplierForEra('cegielnia', 0), 1, 'cegielnia: era0 -> mnoznik 1');
   eq(M.converterOutputMultiplierForEra('cegielnia', NaN), 1, 'cegielnia: NaN -> mnoznik 1');
   const t3 = M.converterThroughputsForEra(r => r.throughputFallback, 3);
-  eq(t3.cegielnia, 50, 'converterThroughputsForEra: cegielnia 50 cykli');
+  eq(t3.cegielnia, 50, 'converterThroughputsForEra (bez wierszy epoki): cegielnia baza 50 cykli');
   eq(t3['cegielnia' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], 2, 'converterThroughputsForEra: cegielnia#outMult = 2 w erze 3');
   eq(t3['huta' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], undefined, 'converterThroughputsForEra: huta bez mnoznika');
   eq(M.converterThroughputsForEra(r => r.throughputFallback, 1)['cegielnia' + M.CONVERTER_OUTPUT_MULT_KEY_SUFFIX], undefined, 'era1: brak klucza mnoznika');
@@ -298,9 +298,9 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era2, AI era3), jawny
     );
     assert(!!econ, 'advanceCityEconomy nie rzuca wyjatku (2 ownerow, era1 vs era3)');
 
-    eq(cPlayer.surowce.cegla, 150, 'gracz (era2): 150 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 1.5)');
+    eq(cPlayer.surowce.cegla, 225, 'gracz (era2): 225 cegiel/ture (75 cykli x 2 x mnoznik wyjscia 1.5; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 150)');
     eq(cPlayer.surowce.ceramika, 55, 'gracz (era2): 55 ceramiki/ture (+10% bazy)');
-    eq(cAi.surowce.cegla, 200, 'AI (era3): 200 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; bylo 60)');
+    eq(cAi.surowce.cegla, 400, 'AI (era3): 400 cegiel/ture (100 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 200)');
     eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
     // Brąz korzysta z jawnych parametrów throughput per-era: owner era2 = 50, era3 = 75.

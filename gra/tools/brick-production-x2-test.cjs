@@ -98,8 +98,8 @@ cP.surowce = { glina: 9000, drewno: 9000, cegla: 0 };
 cA.surowce = { glina: 9000, drewno: 9000, cegla: 0 };
 M.advanceCityEconomy(cities, map, data, 'normal', [], new Map(), new Map([[cP.id, ['cegielnia']], [cA.id, ['cegielnia']]]),
   2, new Set(), new Map(), new Map(), o => (o === 0 ? 2 : 3));
-eq(cP.surowce.cegla, 150, 'gracz era2: 150 cegiel/ture');
-eq(cA.surowce.cegla, 200, 'AI era3: 200 cegiel/ture');
+eq(cP.surowce.cegla, 225, 'gracz era2: 225 cegiel/ture (75 cykli x 2 x 1,5)');
+eq(cA.surowce.cegla, 400, 'AI era3: 400 cegiel/ture (100 cykli x 2 x 2)');
 
 // Reżim ograniczony DREWNEM w realnym silniku: ta sama sytuacja, era1 vs era3 -> wyjscie x2 przy tym samym zuzyciu drewna.
 {
@@ -116,9 +116,9 @@ eq(cA.surowce.cegla, 200, 'AI era3: 200 cegiel/ture');
 
 console.log('-- E. wyswietlanie (panel miasta) czyta ta sama funkcje --');
 const disp = M.converterProductionDisplayForBuilding('cegielnia', econ, 'normal', 2);
-eq(disp.produced.cegla, 150, 'panel: cegla era2 = 150 (50 cykli x 2 x 1,5)');
-eq(disp.consumed.glina, 100, 'panel: glina era2 = 100 (50 cykli x 2, bez wzrostu)');
-eq(disp.consumed.drewno, 50, 'panel: drewno era2 = 50');
+eq(disp.produced.cegla, 225, 'panel: cegla era2 = 225 (75 cykli x 2 x 1,5)');
+eq(disp.consumed.glina, 150, 'panel: glina era2 = 150 (75 cykli x 2)');
+eq(disp.consumed.drewno, 75, 'panel: drewno era2 = 75');
 
 console.log(`\nbrick-production-x2-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (e) {}
