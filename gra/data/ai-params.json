@@ -958,5 +958,20 @@
     "wartosc": 10,
     "sekcja": "§9 Skład armii",
     "opis": "R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1 (tabela zatwierdzona przez właściciela 2026-11-09): Fenicjanie — docelowy udział jednostek konnica i rydwany (liczone razem) w armii AI, %. Suma trzech pól = 100, wręcz >= 50 (inaczej cel ignorowany). Czytane w game/ai-army-composition.ts przez chooseCityProduction (game/ai.ts); dotyczy wyłącznie AI."
+  },
+  "ai_wojna_armia_szuka_armii_wlaczone": {
+    "wartosc": 1,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: 1 = w wojnie najwieksza armia AI idzie na najwieksza widoczna armie przeciwnika przed zdobywaniem miast; 0 = wylaczone. Czytane w game/ai.ts (applyArmySeeksEnemyArmy)."
+  },
+  "ai_wojna_armia_szuka_armii_zasieg_ruchow": {
+    "wartosc": 3,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: zasieg w turach marszu najwolniejszej jednostki armii (odleglosc <= N*ruch+1); poza nim obowiazuja dotychczasowe reguly."
+  },
+  "ai_wojna_armia_szuka_armii_prog_sil": {
+    "wartosc": 0.8,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: minimalny stosunek sily wlasnej armii do sily armii wroga (0,8 = 10:8, jak atak ostatniej woli i obrona domu); ponizej -- dotychczasowe reguly (bez samobojczego ataku)."
   }
 }

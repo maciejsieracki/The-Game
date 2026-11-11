@@ -27,6 +27,12 @@ import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
 import {
+  ARMY_SEEKS_ARMY_DEFAULTS,
+  isArmySeeksArmyEnabled,
+  planArmySeeksArmy,
+  type SeekUnit,
+} from './ai-war-army-seeks-army';
+import {
   ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
   assignRallyTargets,
   isArmyConsolidationEnabled,
@@ -3484,7 +3490,10 @@ export function decideAITurn(
     const commands = decideAITurnCore(playerId, units, cities, map, data, opts);
     // R-WEB-AI-WAR-DEFEND-HOME-BEFORE-OFFENSE-Q1: obrona wlasnego terenu i odbicie utraconych miast
     // przed zdobywaniem cudzych -- ostatnie slowo nad rozkazami ruchu (po war-allin, kampanii wodza).
-    return opts.defensiveCopy ? commands : applyHomeWarPriorities(commands, playerId, units, cities, map, data, opts);
+    if (opts.defensiveCopy) return commands;
+    const afterHome = applyHomeWarPriorities(commands, playerId, units, cities, map, data, opts);
+    // R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: najwieksza armia na najwieksza armie wroga (po obronie domu).
+    return applyArmySeeksEnemyArmy(afterHome, playerId, units, cities, map, data, opts);
   } finally {
     activeMarchGuard = prevGuard;
   }
@@ -3635,6 +3644,105 @@ function applyHomeWarPriorities(
       const endIdx = commands.findIndex(c => c.type === 'endTurn');
       if (endIdx >= 0) commands.splice(endIdx, 0, replacement); else commands.push(replacement);
     }
+  }
+  return commands;
+}
+
+/**
+ * R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: w wojnie najwieksza wlasna armia idzie na najwieksza
+ * WIDOCZNA armie przeciwnika (atak gdy sasiaduja, marsz gdy w zasiegu N ruchow i sila >= prog) --
+ * przed zdobywaniem miast. Planer: ai-war-army-seeks-army.ts; parametry: ai-params.json.
+ * Obrona domu (wrog w pierscieniu zagrozenia wlasnego miasta) ma pierwszenstwo -- wtedy brak ingerencji.
+ * Nakladka jest rozszerzeniem obrony domu: wylaczona, gdy obrona domu jest wylaczona (isHomeWarDefenseEnabled).
+ */
+function applyArmySeeksEnemyArmy(
+  commands: AICommand[],
+  playerId: number,
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+): AICommand[] {
+  const enabledParam = getAiParam(data, 'ai_wojna_armia_szuka_armii_wlaczone', ARMY_SEEKS_ARMY_DEFAULTS.enabled);
+  if (!isArmySeeksArmyEnabled(enabledParam) || !isHomeWarDefenseEnabled()) return commands;
+  const BARB = -1;
+  const myCities = cities.filter(c => c.ownerId === playerId);
+  const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u) && u.embarked !== true;
+  const enemyField = units.filter(u =>
+    u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
+  if (enemyField.length === 0 || myCities.length === 0) return commands;
+  // Obrona domu ma pierwszenstwo: wrog w pierscieniu zagrozenia wlasnego miasta (isHomeDefenseThreatForCity;
+  // niezaleznie od mgly: AI zna wlasna ziemie) -> rzadzi nakladka obrony domu, bez ingerencji.
+  if (enemyField.some(e => myCities.some(c => isHomeDefenseThreatForCity(e.q, e.r, c)))) {
+    return commands;
+  }
+  // Odbicie utraconego miasta (P1 obrony domu) tez ma pierwszenstwo przed szukaniem armii.
+  if (cities.some(c => isCityLostOf(c, playerId) && aiCanEngageOwner(opts, c.ownerId) && aiHasContactWith(opts, c.ownerId))) {
+    return commands;
+  }
+  const visibleEnemy = enemyField.filter(
+    u => opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r)));
+  if (visibleEnemy.length === 0) return commands;
+
+  const toSeek = (u: RuntimeUnit): SeekUnit => ({ id: u.id, q: u.q, r: u.r, ownerId: u.ownerId, ruch: u.ruch ?? 2 });
+  // Armia = jednostki bojowe poza garnizonem (najslabsza jednostka na heksie wlasnego miasta zostaje).
+  const cityHexes = new Set(myCities.map(c => keyOf(c.q, c.r)));
+  const mine = units.filter(u => u.ownerId === playerId && isField(u));
+  const garrison = new Set<string>();
+  for (const k of cityHexes) {
+    const here = mine.filter(u => keyOf(u.q, u.r) === k)
+      .sort((a, b) => aiUnitCombatStrength(a, data) - aiUnitCombatStrength(b, data) || (a.id < b.id ? -1 : 1));
+    if (here.length > 0) garrison.add(here[0]!.id);
+  }
+  const locked = new Set<string>();
+  for (const c of commands) if (c.type === 'attack') locked.add(c.unitId);
+  const byId = new Map(units.map(u => [u.id, u] as const));
+  const plan = planArmySeeksArmy({
+    myArmyUnits: mine.filter(u => !garrison.has(u.id)).map(toSeek),
+    enemyUnits: visibleEnemy.map(toSeek),
+    lockedUnitIds: locked,
+    strengthOf: s => { const u = byId.get(s.id); return u !== undefined ? aiUnitCombatStrength(u, data) : 0; },
+    distance: hexDistance,
+    inAttackRange: (s, e) => { const u = byId.get(s.id); return u !== undefined && isWithinAttackRange(u, e.q, e.r, data); },
+    params: {
+      reachMoves: getAiParam(data, 'ai_wojna_armia_szuka_armii_zasieg_ruchow', ARMY_SEEKS_ARMY_DEFAULTS.reachMoves),
+      minRatio: getAiParam(data, 'ai_wojna_armia_szuka_armii_prog_sil', ARMY_SEEKS_ARMY_DEFAULTS.minRatio),
+    },
+  });
+  for (const order of plan.orders) {
+    const unit = byId.get(order.unitId);
+    if (unit === undefined) continue;
+    let replacement: AICommand | null = null;
+    if (order.kind === 'attack') {
+      replacement = { type: 'attack', unitId: unit.id, targetUnitId: order.targetUnitId };
+    } else {
+      // Cel zajety przez wroga: probuj heks wroga, potem jego sasiadow (od najblizszych jednostce).
+      const cands: { q: number; r: number }[] = [{ q: order.toQ, r: order.toR }];
+      const nb: { q: number; r: number }[] = [];
+      for (let dq = -1; dq <= 1; dq++) for (let dr = -1; dr <= 1; dr++) {
+        if ((dq !== 0 || dr !== 0) && hexDistance(order.toQ, order.toR, order.toQ + dq, order.toR + dr) === 1) {
+          nb.push({ q: order.toQ + dq, r: order.toR + dr });
+        }
+      }
+      nb.sort((a, b) => hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+        || a.q - b.q || a.r - b.r);
+      cands.push(...nb);
+      for (const cnd of cands) {
+        const step = firstStep(unit, map, cnd.q, cnd.r, units);
+        if (step !== null && !(step.q === unit.q && step.r === unit.r)) {
+          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r };
+          break;
+        }
+      }
+    }
+    if (replacement === null) continue; // brak trasy: zostaje komenda rdzenia
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const c = commands[i]!;
+      if (c.type === 'move' && c.unitId === unit.id) commands.splice(i, 1);
+    }
+    const endIdx = commands.findIndex(c => c.type === 'endTurn');
+    if (endIdx >= 0) commands.splice(endIdx, 0, replacement); else commands.push(replacement);
   }
   return commands;
 }
