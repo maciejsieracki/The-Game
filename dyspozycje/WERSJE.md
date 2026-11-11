@@ -1,3 +1,9 @@
+## ROBOCZA ed9a2032 -- 2026-11-06 -- FALA 622: Rekrutacja: Idź do wodza wg pochodzenia zamówienia (testowa)
+
+- R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: zamówienie rekrutacji bezpośrednio w mieście domyślnie bez Idź do wodza (OFF), zamówienie z Armii/Rekrutacji dziedziczy wspólny przełącznik, intencja zapisana w kolejce do zrodzenia, stare kolejki bez pola = przełącznik globalny; poprawiona druga kopia panelu miasta (po Nowej grze)
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, recruit-follow-general-origin 22, army-panel-recruit-rally-general 5, recruit-remove 21/0, super-unit-limit-one 40/0, empire-mass-recruitment 45/0, empire-recruit-all 31/0; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Weryfikacja w Chromium na żywej grze NIE_ZMIERZONO (do obejrzenia na ROBOCZEJ: miasto startuje z OFF, Armia dziedziczy); część przeglądarkowa general-capital-recruitment-order i recruitment-batch-contract pada na bazie (hexHasRoomFor w harnessie); purchaseRecruitmentUnits martwy kod
+
 ## ROBOCZA 0348f31e -- 2026-11-06 -- FALA 621: AI proponuje graczowi cykliczną wymianę surowców (testowa)
 
 - R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: AI sama składa graczowi uczciwą cykliczną wymianę surowców (deficyt AI + najbardziej brakujący surowiec gracza), cooldown 15 tur po złożeniu, osobny klucz cooldownu odrzucenia; cooldown stemplowany dopiero po końcowych filtrach
