@@ -14143,7 +14143,7 @@ async function boot(): Promise<void> {
       zaplataPerTura?: number;
       resTurns?: number;
     }> = [];
-    const allianceWarCallHistory: Array<{ id: string; warId: string; allyId: number; targetId: number; outcome: 'joined' | 'refused' }> = [];
+    const allianceWarCallHistory: Array<{ id: string; warId: string; allyId: number; targetId: number; outcome: 'joined' | 'refused' | 'expired' }> = [];
 
     /**
      * R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1: kolejka propozycji dyplomatycznych MIĘDZY
@@ -20917,7 +20917,7 @@ async function boot(): Promise<void> {
       // to war. Store the candidate here; response/load validation runs after that commit.
       const warId = `alliance-war-${turn}-${attackerId}-${victimId}`;
       const id = `${warId}-call-${targetId}`;
-      if (pendingDiplomacyInbox.some(p => p.id === id)) return;
+      if (pendingDiplomacyInbox.some(p => p.id === id) || allianceWarCallHistory.some(entry => entry.id === id)) return;
       const requesterId = targetId === attackerId ? victimId : attackerId;
       pendingDiplomacyInbox.push({
         id, ownerId: requesterId, civName: ownerDiploLabel(requesterId),
@@ -20928,29 +20928,55 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    function recordAllianceWarCallOutcome(
+      id: string,
+      call: NonNullable<(typeof pendingDiplomacyInbox)[number]['allianceWar']>,
+      outcome: 'joined' | 'refused' | 'expired',
+    ): void {
+      if (allianceWarCallHistory.some(entry => entry.id === id)) return;
+      allianceWarCallHistory.push({ id, warId: call.warId, allyId: ME(), targetId: call.targetId, outcome });
+    }
+
     function resolveAllianceWarCall(id: string, accept: boolean): void {
       const idx = pendingDiplomacyInbox.findIndex(p => p.id === id);
       if (idx < 0) return;
       const p = pendingDiplomacyInbox[idx]!;
       const call = p.allianceWar;
       pendingDiplomacyInbox.splice(idx, 1);
-      if (!call || !isMe(p.ownerId) || call.targetId === ME()) { refreshD1bHud(); return; }
+      if (!call) { refreshD1bHud(); return; }
+      if (!isMe(p.ownerId) || call.targetId === ME()) {
+        recordAllianceWarCallOutcome(id, call, 'expired');
+        refreshD1bHud();
+        return;
+      }
       // A call expires without a penalty if peace or the underlying defensive alliance
       // ended while it was pending. Recheck the principal war and obligation at response time.
-      if (getDiploRelation(call.attackerId, call.victimId).status !== 'wojna') { refreshD1bHud(); return; }
+      if (getDiploRelation(call.attackerId, call.victimId).status !== 'wojna') {
+        recordAllianceWarCallOutcome(id, call, 'expired');
+        refreshD1bHud();
+        return;
+      }
       const obligation = allianceObligationsForWarDeclaration(activeDeals, call.attackerId, call.victimId)
         .find(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(ME()));
-      if (!obligation) { refreshD1bHud(); return; }
+      if (!obligation) {
+        recordAllianceWarCallOutcome(id, call, 'expired');
+        refreshD1bHud();
+        return;
+      }
       // Never honor a call that would make the human fight an existing ally.
-      if (allianceFormalKindBetween(activeDeals, ME(), call.targetId)) { refreshD1bHud(); return; }
+      if (allianceFormalKindBetween(activeDeals, ME(), call.targetId)) {
+        recordAllianceWarCallOutcome(id, call, 'expired');
+        refreshD1bHud();
+        return;
+      }
       if (getDiploRelation(ME(), call.targetId).status === 'wojna') {
-        allianceWarCallHistory.push({ id, warId: call.warId, allyId: ME(), targetId: call.targetId, outcome: 'joined' });
+        recordAllianceWarCallOutcome(id, call, 'joined');
         refreshD1bHud();
         return;
       }
       if (accept) {
         joinAllyToWar(ME(), call.targetId, call.attackerId);
-        allianceWarCallHistory.push({ id, warId: call.warId, allyId: ME(), targetId: call.targetId, outcome: 'joined' });
+        recordAllianceWarCallOutcome(id, call, 'joined');
         showHintMessage('Wypełniasz sojusz — wojna z: ' + ownerDiploLabel(call.targetId), 4500);
       } else {
         appendWiarygodnoscEvent(ME(), 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
@@ -20958,7 +20984,7 @@ async function boot(): Promise<void> {
         if (brokenIds.length) activeDeals = removeTreatiesById(activeDeals, brokenIds);
         syncRelationFromDeals(ME(), p.ownerId);
         showHintMessage('Odmówiono wezwania — sojusz zerwany', 4500);
-        allianceWarCallHistory.push({ id, warId: call.warId, allyId: ME(), targetId: call.targetId, outcome: 'refused' });
+        recordAllianceWarCallOutcome(id, call, 'refused');
       }
       refreshD1bHud();
       updateDiplomacyAudience();
@@ -29245,8 +29271,11 @@ async function boot(): Promise<void> {
           return (await persistSaveToSlot(slot, 'alliance-war-call-reload-test')).ok;
         },
         loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+        resolve: (id: string, accept: boolean): void => { resolveAllianceWarCall(id, accept); },
+        requeueSameWar: (): void => { enqueueAllianceWarCall(ME(), 2, 3, 3); },
         pending: (): unknown[] => JSON.parse(JSON.stringify(pendingDiplomacyInbox)),
         history: (): unknown[] => JSON.parse(JSON.stringify(allianceWarCallHistory)),
+        n4Count: (): number => getWiarygodnoscEvents(ME()).filter(event => event.typ === 'odmowa_obowiazku_sojuszu').length,
       };
     }
 
@@ -46627,7 +46656,10 @@ async function boot(): Promise<void> {
         const liveWar = getDiploRelation(call.attackerId, call.victimId).status === 'wojna';
         const liveObligation = liveWar && allianceObligationsForWarDeclaration(activeDeals, call.attackerId, call.victimId)
           .some(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(ME()));
-        if (!liveObligation) pendingDiplomacyInbox.splice(pi, 1);
+        if (!liveObligation) {
+          pendingDiplomacyInbox.splice(pi, 1);
+          recordAllianceWarCallOutcome(p.id, call, 'expired');
+        }
       }
       // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — stara gra BEZ tego pola wczytuje się
       // z pustą tablicą (brak pola = brak oczekujących propozycji, nie błąd). Wpisy, których

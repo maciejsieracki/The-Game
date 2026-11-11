@@ -29,8 +29,8 @@ async function main() {
     assert.equal(back.meta.allianceWarCallHistory, undefined);
   });
   const main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
-  check('wołanie jest idempotentne dla stable warID i targetu', () => {
-    assert.match(main, /const id = `\$\{warId\}-call-\$\{targetId\}`;\s*if \(pendingDiplomacyInbox\.some\(p => p\.id === id\)\) return;/);
+  check('wołanie deduplikuje pending i rozwiązane stable ID', () => {
+    assert.match(main, /const id = `\$\{warId\}-call-\$\{targetId\}`;\s*if \(pendingDiplomacyInbox\.some\(p => p\.id === id\) \|\| allianceWarCallHistory\.some\(entry => entry\.id === id\)\) return;/);
   });
   check('odpowiedź ponownie waliduje wojnę i formalny obowiązek', () => {
     const start = main.indexOf('function resolveAllianceWarCall(');
@@ -50,7 +50,13 @@ async function main() {
     assert.ok(dealsAt >= 0 && validateAt > dealsAt);
     const segment = main.slice(validateAt, validateAt + 1600);
     assert.match(segment, /allianceObligationsForWarDeclaration\(activeDeals, call\.attackerId, call\.victimId\)/);
-    assert.match(segment, /if \(!liveObligation\) pendingDiplomacyInbox\.splice\(pi, 1\)/);
+    assert.match(segment, /if \(!liveObligation\) \{\s*pendingDiplomacyInbox\.splice\(pi, 1\);\s*recordAllianceWarCallOutcome\(p\.id, call, 'expired'\);/);
+  });
+  check('stale call ma trwały wynik expired bez kary', () => {
+    const start = main.indexOf('function resolveAllianceWarCall(');
+    const body = main.slice(start, start + 2600);
+    assert.match(body, /status !== 'wojna'[\s\S]*?recordAllianceWarCallOutcome\(id, call, 'expired'\)/);
+    assert.match(main, /if \(!liveObligation\) \{\s*pendingDiplomacyInbox\.splice\(pi, 1\);\s*recordAllianceWarCallOutcome\(p\.id, call, 'expired'\);/);
   });
   console.log(`\n${pass} pass / 0 fail`);
   try { fs.unlinkSync(BUNDLE); } catch (_) {}
