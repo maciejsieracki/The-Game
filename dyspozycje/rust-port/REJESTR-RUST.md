@@ -86,3 +86,11 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - Sygnatura `run_war_turn`: struktura kontekstu `WarTurnContext` zamiast `(world, state, turn)` (advance_turn nie wykonuje efektów faz).
 - Kolejność integracji: W7 → REPLAY-DESER (FC PASS `964e44f58`) → SAVESNAPSHOT r2 (kolizja w `replay.rs`, runda integracyjna Operatora).
 - W8: blokada = baza bez W7; po integracji W7 start r2.
+
+## Przebieg 2026-11-11 21:18 UTC (heartbeat zapas)
+- parity-v2 = `83ac67875` (W7 zintegrowane). W bramkach: batch REPLAY-DESER (`964e44f58`) + KOMENTARZE (`ce7b154d4`) + CFGTEST (`d7f9b78dc`), czubek `33cd715cf`.
+- W8: BLOCK r1, r2 (FC potwierdził). Podział: WAR-STATE-OWNER (zad. 22), producenci wejść brake (zad. 23, do napisania), SIEGE-SURRENDER (zad. 24); potem W8 r3 (zad. 25).
+- Operatorzy (Haiku 5.5) w toku: WAR-STATE-OWNER, AIPEACE-BALANS, UNIT-REPLACE-L1, SIEGE-SURRENDER. Sloty 4/4.
+- BORDER-WIRING zamknięty jako zależność do W8 (brak produkcyjnej pętli tury).
+- Czeka: SAVESNAPSHOT r2 (FC PASS `c2b52266c`) — kolizja w `replay.rs` z REPLAY-DESER; runda integracyjna po batchu.
+- DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6.
