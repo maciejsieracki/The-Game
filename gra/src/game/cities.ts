@@ -12,6 +12,7 @@ import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isWaterTerrain } from '../units/setup';
 import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
+import { sanitizeDisabledBuildings } from './building-toggle';
 import {
   DEFAULT_POZIOM_RACJI,
   ensureCityRationDefaults,
@@ -797,6 +798,8 @@ export function ensureCitySaveDefaults(city: City): void {
   // brak w starym zapisie (sprzed tej rundy) = pusta pamięć, zero zmiany
   // zachowania -- ten sam wzorzec co `surowce` wyżej.
   if (!city.postepBudynkowUsuniete) city.postepBudynkowUsuniete = {};
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: brak pola = wszystko wlaczone; smieci z zapisu odsiane.
+  sanitizeDisabledBuildings(city);
 }
 
 export interface City {
@@ -1117,6 +1120,13 @@ export interface City {
    * missing field on an old save = empty memory, no behaviour change.
    */
   postepBudynkowUsuniete?: Record<string, number>;
+  /**
+   * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1 (2026-11-11): id budynkow produkujacych surowce,
+   * WYLACZONYCH w tym miescie (patrz `game/building-toggle.ts`). Wylaczony budynek nadal stoi,
+   * ale nie produkuje, nie zuzywa wejsc i nie generuje utrzymania. Brak pola (stary zapis) =
+   * wszystko wlaczone. Serializowane razem z miastem; bez bumpu SAVE_VERSION.
+   */
+  wylaczoneBudynki?: string[];
 }
 
 export const MIN_CITY_DISTANCE = (miastoParams.min_dystans_miast?.wartosc as number) ?? 5;

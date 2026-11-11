@@ -79,6 +79,18 @@ export interface EmpireMassRecruitmentUiConfig {
   onRecruitFollowGeneralDefaultChange?: (enabled: boolean) => void;
 }
 
+/**
+ * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wlaczanie/wylaczanie budynkow produkcyjnych z listy miast
+ * na dole zakladki Miasta. Silnik (main.ts) podpina `onToggle`; panel tylko wywoluje i sie odswieza.
+ */
+export interface EmpireProducerToggleUiConfig {
+  onToggle?: (cityId: string, buildingId: string, enabled: boolean) => void;
+}
+let producerToggleUi: EmpireProducerToggleUiConfig = {};
+export function configureEmpireProducerToggle(cfg: EmpireProducerToggleUiConfig): void {
+  producerToggleUi = { ...producerToggleUi, ...cfg };
+}
+
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
 let massRecruitmentUi: EmpireMassRecruitmentUiConfig = {};
 let lastArmyRecruitMessage = '';
@@ -2112,6 +2124,7 @@ export function renderMiastoSection(
   e: EmpireDetailSnap['economy'],
   trade: EmpireDetailSnap['trade'],
   resources: EmpireResourceRow[],
+  producers?: EmpireDetailSnap['producers'],
 ): string {
   let h = '<div class="civ-emp-sect" data-section="miasto">'
     + '<div style="display:flex;align-items:center;gap:6px">'
@@ -2441,8 +2454,80 @@ export function renderMiastoSection(
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
+  // — BUDYNKI PRODUKCYJNE: lista wszystkich miast + przełączniki (R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1) —
+  // Zawsze CAŁA cywilizacja (nie zależy od przełącznika zakresu) — jawne wymaganie właściciela.
+  h += renderProducersSection(producers);
+
   h += '</div>';
   return h;
+}
+
+/**
+ * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1 (rozszerzenie UI właściciela 2026-11-11): na dole zakładki
+ * Miasta pełna lista miast, w każdym WYŁĄCZNIE budynki produkujące surowce z przełącznikiem
+ * Włączony/Wyłączony, oraz zbiorcze liczby per surowiec: produkcja faktyczna z OSTATNIEJ tury
+ * (historia) vs. możliwa przy włączonych budynkach vs. możliwa ze wszystkich zbudowanych.
+ * Czysto prezentacja migawki `producers` — zero liczenia ekonomii w panelu.
+ */
+export function renderProducersSection(producers: EmpireDetailSnap['producers'] | undefined): string {
+  let h = subHdr('Budynki produkcyjne — włączanie i wyłączanie');
+  if (!producers || producers.cities.length === 0) {
+    return h + '<div class="civ-emp-empty">Brak zbudowanych budynków produkujących surowce.</div>';
+  }
+  h += '<div class="civ-emp-grp-list" id="civ-emp-producers-list">';
+  for (const c of producers.cities) {
+    h += `<div class="civ-emp-grp-sum" data-prod-city="${esc(c.cityId)}"><span class="nm">${esc(c.name)}</span></div>`;
+    for (const b of c.buildings) {
+      h += `<div class="civ-emp-grp-row${b.enabled ? '' : ' off'}" style="cursor:default" `
+        + `data-prod-row="${esc(c.cityId)}|${esc(b.buildingId)}">`
+        + `<span class="nm">${esc(b.label)}</span>`
+        + `<button type="button" class="civ-emp-mocview-btn${b.enabled ? ' active' : ''}" style="flex:none;min-width:96px" `
+        + `data-prod-toggle="${esc(c.cityId)}|${esc(b.buildingId)}" data-prod-enabled="${b.enabled ? '1' : '0'}" `
+        + `title="${b.enabled ? 'Kliknij, aby wyłączyć: budynek przestaje produkować, zużywać surowce i kosztować utrzymanie' : 'Kliknij, aby włączyć'}">`
+        + `${b.enabled ? 'Włączony' : 'Wyłączony'}</button></div>`;
+    }
+  }
+  h += '</div>';
+  h += subHdr('Produkcja surowców przetworzonych — cała cywilizacja');
+  const grid = '1fr 0.9fr 0.9fr 0.9fr';
+  h += `<div class="civ-emp-mini">${miniHeader(['SUROWIEC', 'OSTATNIA TURA', 'MOŻLIWE (WŁĄCZONE)', 'MOŻLIWE (WSZYSTKIE)'], grid)}`;
+  for (const r of producers.resources) {
+    h += miniRow([
+      esc(r.label),
+      r.realizedLastTurn === null ? '<span style="color:#6f7889">brak danych</span>' : String(Math.round(r.realizedLastTurn)),
+      String(r.potentialEnabled),
+      String(r.potentialInstalled),
+    ], grid);
+  }
+  h += '</div>';
+  h += '<div class="civ-emp-foot">OSTATNIA TURA = ile faktycznie wyprodukowano w ostatnio zakończonej turze '
+    + '(to historia, nie prognoza; „brak danych” = jeszcze nie było przeliczonej tury po starcie/wczytaniu gry). '
+    + 'MOŻLIWE (WŁĄCZONE) = ile dałyby tylko włączone budynki, gdyby nigdy nie brakowało surowców '
+    + 'na wejściu ani miejsca w magazynie — to górna granica, nie wynik. '
+    + 'MOŻLIWE (WSZYSTKIE) = to samo ze wszystkich zbudowanych, także wyłączonych, żeby wyłączenie nie '
+    + 'wprowadzało w błąd. Odlewnie i huty biorą te same drewno i rudę, więc rzeczywista produkcja bywa niższa. '
+    + 'Liczby zależą od epoki państwa i poziomu trudności. Wyłączony budynek nadal stoi (nic nie jest zwracane '
+    + 'ani niszczone), ale nie produkuje, nie zużywa surowców i nie kosztuje utrzymania. '
+    + 'Tartak/Stolarnia i Warsztat kamieniarski dodają +10% do dopływu drewna/kamienia — po wyłączeniu tego bonusu nie ma.</div>';
+  return h;
+}
+
+/** Podpięcie przełączników budynków produkcyjnych (delegacja po `data-prod-toggle`). */
+export function wireProducerToggles(host?: ParentNode, afterToggle?: () => void): void {
+  const scope: ParentNode | null = host ?? bodyEl;
+  if (scope === null) return;
+  for (const btn of Array.from(scope.querySelectorAll<HTMLButtonElement>('[data-prod-toggle]'))) {
+    btn.addEventListener('click', () => {
+      const raw = btn.dataset.prodToggle ?? '';
+      const sep = raw.indexOf('|');
+      if (sep < 0) return;
+      const cityId = raw.slice(0, sep);
+      const buildingId = raw.slice(sep + 1);
+      const wasEnabled = btn.dataset.prodEnabled === '1';
+      producerToggleUi.onToggle?.(cityId, buildingId, !wasEnabled);
+      if (afterToggle) afterToggle(); else render();
+    });
+  }
 }
 
 /**
@@ -4035,7 +4120,7 @@ function render(): void {
   // wydzielenie Skarbca w fazie 1. / EN: two independent top-level blocks replacing the shared
   // `econ-miasta` tab; `cityMiastaMiniDetail()` is NOT removed — it still backs the "Miasta" row
   // of the full overview, exactly as `cityEconMiniSkarbiec()` survived the phase-1 Treasury split.
-  const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources);
+  const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources, snap.producers);
   const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources, snap.happiness);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
@@ -4306,6 +4391,7 @@ function render(): void {
   // No double-wiring risk: unlike `wireMiastaColFilter` (note N1) these run once per render.
   wireMiastoScopeButtons();
   wireMiastoResFilter();
+  wireProducerToggles();
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;

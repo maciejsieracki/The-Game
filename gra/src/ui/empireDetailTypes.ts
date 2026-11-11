@@ -3,6 +3,7 @@
  */
 import type { HudState } from './hud';
 import type { ResourceUsageBreakdown } from '../game/resource-usage-breakdown';
+import type { EmpireProducersSnap } from '../game/building-toggle';
 
 /** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
 export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
@@ -735,4 +736,6 @@ export interface EmpireDetailSnap {
   /** P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK — miasta gracza aktualnie budujące jednostkę
    *  (front kolejki produkcji == jednostka); patrz JSDoc EmpireArmiaProductionRow. */
   armiaProdukcja: EmpireArmiaProductionRow[];
+  /** R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: lista miast z budynkami produkcyjnymi + agregaty per surowiec. */
+  producers?: EmpireProducersSnap;
 }

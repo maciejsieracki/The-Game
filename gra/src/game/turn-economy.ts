@@ -99,6 +99,7 @@ import {
   type OwnerStorageParams,
   type BuildingInstanceLike,
 } from './economy-upkeep';
+import { operationalBuiltByCity } from './building-toggle';
 import {
   runConverters,
   loadThroughput,
@@ -1188,6 +1189,12 @@ export interface EconomyTickResult {
    * below, not a second independent calculation).
    */
   resourceUpkeepBuildingsByOwner: Map<number, Record<string, number>>;
+  /**
+   * R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: FAKTYCZNA produkcja konwerterow w TYM ticku (historia
+   * ostatniej tury, nie prognoza): ownerId -> klucz surowca wyjsciowego -> sztuki wyprodukowane
+   * (po ograniczeniach wejsc, przepustowosci i miejsca w magazynie). Wylaczone budynki nie licza sie.
+   */
+  converterProducedByOwner: Map<number, Record<string, number>>;
   /** Analogiczne do `resourceUpkeepBuildingsByOwner`, tylko utrzymanie surowcowe jednostek. */
   resourceUpkeepUnitsByOwner: Map<number, Record<string, number>>;
   /**
@@ -1782,6 +1789,8 @@ function tickEmpireResourcePipeline(
   resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
   /** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params (wg trudności). Wymagane — bez domyślnej wartości. */
   spichlerzDrainParams: SpichlerzDrainParams,
+  /** R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wypelniane faktyczna produkcja konwerterow (historia ticku). */
+  producedOut?: Map<number, Record<string, number>>,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 
@@ -1856,7 +1865,16 @@ function tickEmpireResourcePipeline(
         () => cap,
       );
       pool = convResult.stores;
+      if (producedOut) {
+        const acc = producedOut.get(ownerId) ?? {};
+        for (const recipe of activeRecipes) {
+          const r = convResult.perBuilding[recipe.id];
+          if (r && r.produced > 0) acc[recipe.output] = (acc[recipe.output] ?? 0) + r.produced;
+        }
+        producedOut.set(ownerId, acc);
+      }
     }
+    if (producedOut && !producedOut.has(ownerId)) producedOut.set(ownerId, {});
 
     assignOwnerResourceStockFromPool(cities, ownerId, pool);
   }
@@ -1939,6 +1957,11 @@ export function previewCityEconomy(
   /** One-shot owner-selected Work tax. Distinct from route income. */
   additionalTaxByCity: ReadonlyMap<string, number> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
+  // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
+  // Nadal stoja (prereq, odblokowania techow, zapis -- po stronie main.ts, bez zmian).
+  // Te same reguly dla gracza i AI (zero galezi po ownerId).
+  builtByCity = operationalBuiltByCity(cities, builtByCity);
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
@@ -2317,6 +2340,11 @@ export function previewOwnerUpkeep(
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
 ): UpkeepBalance {
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
+  // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
+  // Nadal stoja (prereq, odblokowania techow, zapis -- po stronie main.ts, bez zmian).
+  // Te same reguly dla gracza i AI (zero galezi po ownerId).
+  builtByCity = operationalBuiltByCity(cities, builtByCity);
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
   const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
@@ -2399,6 +2427,11 @@ export function advanceCityEconomy(
    */
   resolveOwnerUpkeepDifficulty?: (ownerId: number) => Difficulty,
 ): EconomyTickResult {
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
+  // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
+  // Nadal stoja (prereq, odblokowania techow, zapis -- po stronie main.ts, bez zmian).
+  // Te same reguly dla gracza i AI (zero galezi po ownerId).
+  builtByCity = operationalBuiltByCity(cities, builtByCity);
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -2584,6 +2617,7 @@ export function advanceCityEconomy(
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
   }
 
+  const converterProducedByOwner = new Map<number, Record<string, number>>();
   const result: EconomyTickResult = {
     perCity:        [],
     cities:         0,
@@ -2599,6 +2633,7 @@ export function advanceCityEconomy(
     upkeepByOwner:  new Map(),
     resourceUpkeepByOwner: new Map(),
     resourceUpkeepBuildingsByOwner: new Map(),
+    converterProducedByOwner,
     resourceUpkeepUnitsByOwner: new Map(),
     pracaUpkeepByOwner,
   };
@@ -2630,6 +2665,7 @@ export function advanceCityEconomy(
     resolveOwnerActiveLabels,
     resolveOwnerZlotoAccess,
     spichlerzDrainParams,
+    converterProducedByOwner,
   );
 
   const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(

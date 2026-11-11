@@ -47,6 +47,7 @@ const ENTRY = path.resolve(__dirname, '.hud-konwerter-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.hud-konwerter-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export * from '../src/game/converters';
+export { operationalBuiltIds } from '../src/game/building-toggle';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
@@ -56,7 +57,7 @@ esbuild.buildSync({
 });
 const CONV = require(BUNDLE);
 const { DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
-  converterBuildingIdForRecipe, converterThroughputEraParamKey } = CONV;
+  converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds } = CONV;
 
 // ---------------------------------------------------------------------------
 // Wycinanie funkcji po SYGNATURZE (nie po numerze linii — te sie przesuwaja przy
@@ -94,7 +95,7 @@ function zbudujFunkcje(src) {
   const js = esbuild.transformSync(txt, { loader: 'ts', target: 'node18' }).code;
   const fabryka = new Function('deps', `
     const { data, _menuDifficulty, cities, cityBuilt, DEFAULT_CONVERTER_RECIPES,
-            loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra, converterBuildingIdForRecipe, converterThroughputEraParamKey,
+            loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra, converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds,
             empireEpochForOwner } = deps;
     ${js}
     return empireConverterResourceRatesForOwner;
@@ -127,7 +128,7 @@ function wywolajDlaOwnera(fn, ownerId) {
   const F = fn({
     ...dane,
     DEFAULT_CONVERTER_RECIPES, loadThroughput, converterThroughputForEra, converterOutputMultiplierForEra,
-    converterBuildingIdForRecipe, converterThroughputEraParamKey,
+    converterBuildingIdForRecipe, converterThroughputEraParamKey, operationalBuiltIds,
   });
   return F(ownerId);
 }
