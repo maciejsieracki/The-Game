@@ -396,7 +396,7 @@ fn save_and_load_through_web_wire_json_match_web() {
 
         // Odczyt: JSON weba -> SaveSnapshot -> plannedMarchesFromSave.
         let wire = wire_snapshot_json(web_save);
-        let decoded: SaveSnapshot = serde_json::from_str(&wire).expect("decodes");
+        let decoded: SaveSnapshot = decode_snapshot_str(&wire).expect("decodes");
         let units: Vec<RuchJednostka> = c["units"]
             .as_array()
             .unwrap()
@@ -463,7 +463,7 @@ fn rust_save_then_load_round_trip_matches_web_vector() {
             .collect();
         let original = snapshot().with_planned_marches(saved);
         let encoded = serde_json::to_string(&original).expect("serializes");
-        let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("decodes");
+        let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("decodes");
         assert_eq!(decoded, original, "przypadek {i}: round-trip Rust");
         let units: Vec<RuchJednostka> = c["units"]
             .as_array()
@@ -510,7 +510,7 @@ fn object_key_order_matches_js_object_keys() {
     let base = serde_json::to_string(&snapshot()).expect("serializes");
     let head = base.strip_suffix('}').expect("obiekt");
     let wire = format!("{head},\"plannedMarches\":{{{}}}}}", body.join(","));
-    let decoded: SaveSnapshot = serde_json::from_str(&wire).expect("decodes");
+    let decoded: SaveSnapshot = decode_snapshot_str(&wire).expect("decodes");
     let got: Vec<&str> = decoded
         .planned_marches()
         .iter()
@@ -539,7 +539,7 @@ fn non_container_planned_marches_read_as_empty() {
     let head = base.strip_suffix('}').expect("obiekt");
     for raw in ["null", "5", "\"x\"", "true", "1.5", "{}", "[]"] {
         let wire = format!("{head},\"plannedMarches\":{raw}}}");
-        let decoded: SaveSnapshot = serde_json::from_str(&wire).expect("decodes");
+        let decoded: SaveSnapshot = decode_snapshot_str(&wire).expect("decodes");
         assert!(decoded.planned_marches().is_empty(), "{raw}");
     }
 }
@@ -554,7 +554,7 @@ fn duplicate_object_key_keeps_first_position_and_last_value() {
     let wire = format!(
         "{head},\"plannedMarches\":{{\"a\":{{\"destQ\":1,\"destR\":1}},\"b\":{{\"destQ\":2,\"destR\":2}},\"a\":{{\"destQ\":3,\"destR\":3}}}}}}"
     );
-    let decoded: SaveSnapshot = serde_json::from_str(&wire).expect("decodes");
+    let decoded: SaveSnapshot = decode_snapshot_str(&wire).expect("decodes");
     let got: Vec<(&str, f64)> = decoded
         .planned_marches()
         .iter()
@@ -588,4 +588,13 @@ fn march_map_from_entries_behaves_like_js_map_set() {
     );
     assert!(!map.follow_off_clears("missing"));
     assert!(!map.is_general_follow("missing"));
+}
+
+/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
+/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
+fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }

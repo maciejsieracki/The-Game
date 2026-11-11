@@ -97,7 +97,7 @@ fn snapshot(state: GameStateDto, meta: SaveMeta) -> SaveSnapshot {
 }
 
 fn reload(json: &Value) -> SaveSnapshot {
-    serde_json::from_value(json.clone()).expect("snapshot loads")
+    decode_raw_snapshot_value(json.clone()).expect("snapshot loads")
 }
 
 fn to_json(s: &SaveSnapshot) -> Value {
@@ -338,4 +338,11 @@ fn p6_zapis_migracje_epoch_limit_depends_on_owner_era() {
     );
     assert_eq!(generals(&loaded), vec![10, 20, 21, 22]);
     assert_eq!(loaded.state().units().len(), 6, "nikt nie ginie");
+}
+
+/// Surowe wczytanie przez prywatny typ wire `RawSnapshot` BEZ migracji: testy ponizej same wywoluja
+/// `migrate_on_load_with_era_override_for_test` (z epoka wodza) i sprawdzaja stan po migracji.
+fn decode_raw_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
+    Ok(raw.into_snapshot())
 }

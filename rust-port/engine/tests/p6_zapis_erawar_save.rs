@@ -95,7 +95,7 @@ fn zapis_licznikow_w_meta_przechodzi_przez_serde() {
     let encoded = serde_json::to_string(&snap).expect("serialize");
     assert!(encoded.contains(r#""warRulesEraWarCountByCiv":[["1:2",2],["2:3",2]]"#));
 
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("deserialize");
     let raw = decoded.meta().era_war_count_by_civ().expect("pole obecne");
     assert_eq!(raw, &json!([["1:2", 2], ["2:3", 2]]));
     let back = restore_era_war_counts(Some(raw), &pairs(), epoch_of);
@@ -107,7 +107,7 @@ fn stary_zapis_bez_pola_nie_zapisuje_licznika_i_odbudowuje() {
     let encoded = serde_json::to_string(&snapshot()).expect("serialize");
     assert!(!encoded.contains("warRulesEraWarCountByCiv"));
 
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("deserialize");
     assert!(decoded.meta().era_war_count_by_civ().is_none());
     let got = restore_era_war_counts(decoded.meta().era_war_count_by_civ(), &pairs(), epoch_of);
     assert_eq!(
@@ -123,7 +123,7 @@ fn zly_typ_pola_nie_psuje_reszty_meta() {
         "battleModeSettingVersion": 1,
         "warRulesEraWarCountByCiv": "bad"
     });
-    let decoded: SaveSnapshot = serde_json::from_value(wire).expect("zly typ nie blokuje zapisu");
+    let decoded: SaveSnapshot = decode_snapshot_value(wire).expect("zly typ nie blokuje zapisu");
     assert_eq!(decoded.meta().battle_mode_setting_value(), Some(1.0));
     let got = restore_era_war_counts(decoded.meta().era_war_count_by_civ(), &pairs(), epoch_of);
     assert_eq!(
@@ -136,7 +136,7 @@ fn zly_typ_pola_nie_psuje_reszty_meta() {
 fn pusta_tablica_w_zapisie_daje_pusty_licznik() {
     let mut wire: Value = serde_json::to_value(snapshot()).expect("to_value");
     wire["meta"] = json!({ "warRulesEraWarCountByCiv": [] });
-    let decoded: SaveSnapshot = serde_json::from_value(wire).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_value(wire).expect("deserialize");
     let got = restore_era_war_counts(decoded.meta().era_war_count_by_civ(), &pairs(), epoch_of);
     assert!(got.is_empty());
 }
@@ -146,6 +146,23 @@ fn pusta_tablica_zapisywana_jako_pole() {
     let snap = snapshot().with_meta(SaveMeta::default().with_era_war_counts(&[]));
     let encoded = serde_json::to_string(&snap).expect("serialize");
     assert!(encoded.contains("warRulesEraWarCountByCiv"));
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("deserialize");
     assert_eq!(decoded.meta().era_war_count_by_civ(), Some(&json!([])));
+}
+
+/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
+/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
+fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
+}
+
+/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
+fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }

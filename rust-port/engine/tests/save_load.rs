@@ -74,7 +74,7 @@ fn current_snapshot_round_trips_with_state_queue_rng_and_version() {
     let encoded = serde_json::to_string(&snapshot).expect("snapshot serializes");
     assert!(encoded.contains("\"version\":2"));
 
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("snapshot deserializes");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("snapshot deserializes");
 
     assert_eq!(decoded, snapshot);
     assert_eq!(decoded.version(), CURRENT_SNAPSHOT_VERSION);
@@ -90,7 +90,7 @@ fn version_one_snapshot_migrates_by_adding_an_empty_queue() {
     let legacy_json = format!(r#"{{"version":1,"state":{state_json},"rng_state":305419896}}"#);
 
     let migrated: SaveSnapshot =
-        serde_json::from_str(&legacy_json).expect("version one snapshot migrates");
+        decode_snapshot_str(&legacy_json).expect("version one snapshot migrates");
 
     assert_eq!(migrated.version(), CURRENT_SNAPSHOT_VERSION);
     assert_eq!(migrated.state(), &state);
@@ -124,8 +124,8 @@ fn snapshot_parts_can_be_moved_into_a_runtime_restore() {
 fn future_and_incomplete_versions_are_rejected_without_silent_defaults() {
     let state_json = serde_json::to_string(&valid_state()).expect("state serializes");
     let future = format!(r#"{{"version":99,"state":{state_json}}}"#);
-    let future_error = serde_json::from_str::<SaveSnapshot>(&future)
-        .expect_err("future versions must not be loaded");
+    let future_error =
+        decode_snapshot_str(&future).expect_err("future versions must not be loaded");
     assert!(future_error
         .to_string()
         .contains("unsupported snapshot version"));
@@ -134,10 +134,10 @@ fn future_and_incomplete_versions_are_rejected_without_silent_defaults() {
         r#"{{"version":{},"state":{state_json},"event_queue":{{"events":[],"next_sequence":0}}}}"#,
         CURRENT_SNAPSHOT_VERSION
     );
-    assert!(serde_json::from_str::<SaveSnapshot>(&missing_rng).is_err());
+    assert!(decode_snapshot_str(&missing_rng).is_err());
 
     let missing_legacy_rng = format!(r#"{{"version":1,"state":{state_json}}}"#);
-    assert!(serde_json::from_str::<SaveSnapshot>(&missing_legacy_rng).is_err());
+    assert!(decode_snapshot_str(&missing_legacy_rng).is_err());
 }
 
 #[test]
@@ -154,5 +154,14 @@ fn invalid_state_is_rejected_during_snapshot_deserialization() {
         CURRENT_SNAPSHOT_VERSION, invalid_state
     );
 
-    assert!(serde_json::from_str::<SaveSnapshot>(&json).is_err());
+    assert!(decode_snapshot_str(&json).is_err());
+}
+
+/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
+/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
+fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }

@@ -15,6 +15,7 @@ use super::save_migrations::LoadMigrationReport;
 #[cfg(test)]
 use civ_engine::domain::save_migrations::LoadMigrationReport;
 
+use super::save_load::RawSnapshot;
 #[cfg(not(test))]
 pub use super::save_load::SaveSnapshot;
 #[cfg(test)]
@@ -49,7 +50,7 @@ struct ReplayStepWire<I> {
     turn: u32,
     input: I,
     rng_state: u32,
-    snapshot: Option<SaveSnapshot>,
+    snapshot: Option<RawSnapshot>,
 }
 
 /// Snapshot z replayu wchodzi do domeny wylacznie po migracji: surowa deserializacja
@@ -64,7 +65,8 @@ where
         D: Deserializer<'de>,
     {
         let wire = ReplayStepWire::<I>::deserialize(deserializer)?;
-        let snapshot = wire.snapshot.map(|mut snapshot| {
+        let snapshot = wire.snapshot.map(|raw| {
+            let mut snapshot = raw.into_snapshot();
             snapshot.migrate_on_load();
             snapshot
         });
@@ -247,7 +249,8 @@ impl<I> ReplayLog<I> {
         let mut steps = Vec::with_capacity(wire.steps.len());
         for raw in wire.steps {
             let sequence = raw.sequence;
-            let snapshot = raw.snapshot.map(|mut snapshot| {
+            let snapshot = raw.snapshot.map(|raw| {
+                let mut snapshot = raw.into_snapshot();
                 let report = snapshot.migrate_on_load();
                 reports.push(ReplayStepMigration { sequence, report });
                 snapshot

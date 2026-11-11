@@ -97,11 +97,9 @@ fn p6_zapis_loader_migrates_old_save_through_production_path() {
         &excess_generals_specs(),
         json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
     );
-    // Kontrola: surowa deserializacja NIE migruje, wiec wszyscy 4 wodzowie zostaja
-    // (ta kontrola jest jednoczesnie dowodem, ze zapis przed migracja niesie flagi wodzow).
-    let raw_loaded: SaveSnapshot = serde_json::from_str(&text).expect("raw load");
-    assert_eq!(generals(&raw_loaded), vec![10, 11, 12, 20]);
-
+    // Surowy typ wire (`RawSnapshot`) jest prywatny, wiec nie ma publicznej surowej sciezki do porownania.
+    // Dowodem, ze zapis przed migracja niesie 4 wodzow, jest raport produkcyjnego loadera ponizej
+    // (degradacja wodza 12 wymaga 4 flag wodzow w danych zapisu).
     // Produkcyjny loader: epoka 2 z zapisu => limit 2 na wlasciciela; najmlodszy wodz gracza 1 (id 12) traci flage.
     let (loaded, report) = load_save_snapshot(&text).expect("loader");
     assert_eq!(report.demoted_generals, vec![UnitId::new(12)]);
