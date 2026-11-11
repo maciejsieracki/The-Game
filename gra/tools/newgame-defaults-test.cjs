@@ -39,7 +39,7 @@ const EXPECTED_GRID = {
   'Barbarzyńcy': 'Normalny',
   'Wojna epoki': 'Włączona',
   'Chatki z nagrodami': 'Włączone',
-  'Automatyzacja budowy': 'Wyłączona', // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): domyślnie WYŁĄCZONA
+  'Administratorzy': 'Wyłączone', // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (właściciel 2026-11-11): domyślnie WYŁĄCZONE
   'Odkrywanie mapy klawiszem F (tryb testowy)': 'Wyłączone', // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: domyślnie WYŁĄCZONA
 };
 

@@ -24,7 +24,7 @@ const MAIN_GRID_ORDER = [
   'Prędkość gry', 'Wojna epoki',
   'Poziom trudności', 'Barbarzyńcy',
   'Warunki zwycięstwa', 'Chatki z nagrodami',
-  'Automatyzacja budowy', // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: 13. karta (główne ustawienia, nie zaawansowane)
+  'Administratorzy', // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (dawniej Automatyzacja budowy): 13. karta (główne ustawienia, nie zaawansowane)
   'Odkrywanie mapy klawiszem F (tryb testowy)', // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: 14. karta (główne ustawienia)
 ];
 /** Kolejność okna zaawansowanych (13 pozycji, bez duplikatów z siatką). */

@@ -26,7 +26,9 @@
 
 **Brak środków w skarbcu:** administrator **nie pracuje** — brak efektów, brak bonusów i brak automatycznej budowy w jego mieście. Pozostaje przypisany i wraca do pracy, gdy skarbiec znów pokryje utrzymanie. Stan widać w podpowiedzi przycisku i na ikonie (wyszarzona, z czerwonym wykrzyknikiem).
 
-**Autobudowa:** automatyzacja budowy (opcja w ustawieniach) działa w mieście tylko wtedy, gdy ma ono **działającego** administratora. Bez niego miasto buduje ręcznie.
+**Opcja „Administratorzy”:** administratorów (miast i ulepszeń terenu) włączasz pytaniem w kreatorze nowej gry („Administratorzy: włączone / wyłączone”, domyślnie wyłączone). Wybór obowiązuje przez całą grę i nie ma przełącznika w ustawieniach w trakcie rozgrywki. Przy wyłączonej opcji nie ma administratorów ani automatyzacji budowy i ulepszeń — budujesz wszystko ręcznie (automatyczna rekrutacja z generałem działa niezależnie). Zapisy sprzed tej opcji wczytują się z wyłączonymi administratorami; automatyzację odzyskasz w nowej grze z włączoną opcją.
+
+**Autobudowa:** przy włączonej opcji automatyzacja budowy budynków działa w mieście tylko wtedy, gdy ma ono **działającego** administratora. Bez niego miasto buduje ręcznie.
 
 **Utrata:** zburzenie lub utrata budynku administracyjnego oraz zdobycie czy zniszczenie miasta kończą służbę administratora. **Ulepszenie** Domu Starszyzny → Dworu Zarządcy → Pretorium (i Pałacu I → II → III) zachowuje administratora i zwiększa skalę efektów.
 

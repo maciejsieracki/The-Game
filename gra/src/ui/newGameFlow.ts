@@ -180,10 +180,10 @@ export interface NewGameParams {
   /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): „Wojna epoki z udziałem gracza” (domyślnie ON).
    * / EN: whether the player takes part in epoch forced wars (default ON). */
   playerEpochWarEnabled?: boolean;
-  /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (właściciel 2026-11-05): „Automatyzacja budowy” gracza
-   * (auto-ulepszenia terenu + auto-budowa budynków). Domyślnie WYŁĄCZONA; AI bez zmian.
-   * / EN: player build automation (default OFF). */
-  autoBuildEnabled?: boolean;
+  /** R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (właściciel 2026-11-11): „Administratorzy” (włączone/wyłączone).
+   * Zastąpiło przełącznik „Automatyzacja budowy”. Domyślnie WYŁĄCZONE; zapisane w grze na stałe; tylko gracz (AI bez zmian).
+   * / EN: wizard option "Administrators" (default OFF, permanent per game). */
+  administratorsEnabled?: boolean;
   /** R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: „Odkrywanie mapy klawiszem F (tryb testowy)”
    * (domyślnie WYŁĄCZONA). Klawisz F działa tylko przy true; brak pola = wyłączona.
    * / EN: F-key map reveal (test mode), default OFF. */
@@ -679,7 +679,7 @@ const SETTING_GLYPHS: Record<string, string> = {
   cityStateDifficulty: 'TM',
   deals_end_turn_gate: 'Ha',
   player_epoch_war: 'Wo',
-  auto_build_enabled: 'Au',
+  administrators_enabled: 'Ad',
   fog_reveal_key_f: 'Mg',
   barbariansLevel: 'Ba',
   victory_mode: 'Zw',
@@ -2048,7 +2048,7 @@ function renderSettStep(host: HTMLElement): void {
     'game_speed', 'player_epoch_war',
     'difficulty', 'barbariansLevel',
     'victory_mode', 'village_rewards_enabled',
-    'auto_build_enabled', 'fog_reveal_key_f',
+    'administrators_enabled', 'fog_reveal_key_f',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -2190,7 +2190,7 @@ function buildParams(): NewGameParams {
     villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
     dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
     playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',
-    autoBuildEnabled: settingValue('auto_build_enabled') === 'Włączona',
+    administratorsEnabled: settingValue('administrators_enabled') === 'Włączone',
     fogRevealKeyFEnabled: settingValue('fog_reveal_key_f') === 'Włączone',
   };
 }
