@@ -1,0 +1,3011 @@
+{
+  "unitsPerSiegeEngine": 10,
+  "quotaExamples": [
+    {
+      "n": 0,
+      "quota": 0
+    },
+    {
+      "n": 9,
+      "quota": 0
+    },
+    {
+      "n": 10,
+      "quota": 1
+    },
+    {
+      "n": 19,
+      "quota": 1
+    },
+    {
+      "n": 20,
+      "quota": 2
+    },
+    {
+      "n": 21,
+      "quota": 2
+    }
+  ],
+  "cases": [
+    {
+      "name": "non_siege_def_reason_technology_locked",
+      "unit": {
+        "Jednostka": "Miecznik",
+        "Typ": "Infantry",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "-",
+        "Surowiec (ilość)": 0
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {},
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "mount_def_reason_technology_locked",
+      "unit": {
+        "Jednostka": "Rydwan",
+        "Typ": "Mount",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "-",
+        "Surowiec (ilość)": 0
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "kon": 25
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "not_siege",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": false,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "not_siege",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "not_at_war",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": false,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "not_at_war",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "no_army_of_owner",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "empty_army",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 0,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "only_siege_category_units",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 0,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "too_few_units",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 1,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_9",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "too_few_units",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 9,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_10",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_11",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 11,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_19",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 19,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_20",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_21",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 21,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_reached_quota1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 1,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_quota2_built1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_quota2_built2",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 2
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 2,
+        "builtThisTurn": 2,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_state_other_turn_ignored",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 9,
+          "count": 5
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_state_fractional_count",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1.9
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_locked",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_unlocked",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_spaces_trimmed",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": " Inzynieria ",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_em_dash_no_lock",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "—",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_exact",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 50,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_short",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 49.99,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_money",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_exact",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 20
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_short",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 19
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_missing_key",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_multi_resource_short",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "zelazo": 14
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_before_resources",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 0,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_money",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_before_tech",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 1,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_plain",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_quota2",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 25,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_zero_cost",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 0,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 0
+      }
+    }
+  ]
+}

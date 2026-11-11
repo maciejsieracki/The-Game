@@ -69,6 +69,7 @@ pub mod resource_production;
 pub mod rng;
 pub mod roads;
 mod session;
+pub mod siege_engine_build;
 pub mod siege_enter_city;
 pub mod siege_nearby_lock;
 pub mod siege_no_breach;
