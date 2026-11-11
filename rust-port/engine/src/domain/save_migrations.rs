@@ -12,11 +12,13 @@
 //!   Zamiana na `bool` odbywa sie w [`general_flag_from_raw`], nie w planie.
 //! - Epoka wlasciciela jest argumentem (`era_for_owner`). Produkcyjna sciezka
 //!   (`SaveSnapshot::migrate_on_load`) bierze ja z DANYCH ZAPISU (`SaveSnapshot::owner_era`), a nie
-//!   od wywolujacego i nie ze stanu gry. Plan nie zgaduje brakujacych epok.
+//!   od wywolujacego i nie ze stanu gry. Jawne nadpisanie epoki jest wylacznie dla testow:
+//!   `SaveSnapshot::migrate_on_load_with_era_override_for_test`. Plan nie zgaduje brakujacych epok.
 //! - Klucz wlasciciela porownywany jak JS `Map` (SameValueZero): `-0` = `0`, `NaN` = `NaN`.
 //!
 //! Podpiecie do stanu gry: `demote_generals_over_limit` czyta `UnitDto::is_general()` i kolejnosc
-//! `state.units()`; `migrate_on_load` wola ją przy wczytaniu zapisu (`zapis_loader::load_save_snapshot`).
+//! `state.units()`; `SaveSnapshot::migrate_on_load` wola `migrate_loaded_state`, ktora najpierw wola
+//! `demote_generals_over_limit`, a potem `enforce_army_stack_limit` (`zapis_loader::load_save_snapshot`).
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
