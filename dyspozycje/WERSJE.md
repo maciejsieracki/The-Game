@@ -1,3 +1,9 @@
+## ROBOCZA 6f3edba8 -- 2026-11-06 -- FALA 633: Odwrót ocalałych po przegranej bitwie tylko w polu (testowa)
+
+- R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: po przegranej bitwie W POLU ocalałe jednostki przegranej strony wycofują się o 2 heksy; w mieście i przy oblężeniu przegrani giną (decyzja właściciela); mgła odkrywana wzdłuż odwrotu
+- Weryfikacja: tsc czysty; test tematu 44/0, undeployed 37/0, post-battle-map 32/0, siege-defenders 12/0, map-field-battle 24/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; Chromium 3x BROWSER PASS; mutacje czerwone; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: pełna pętla gry przez main.ts w Chromium z odwrotem, wpływ zamkniętych granic na legalność odwrotu; mgla-sciezka-inwariant 41/1 = dług bazowy (main.ts:28778)
+
 ## ROBOCZA b66d2638 -- 2026-11-06 -- FALA 632: Cegielnia: cykle 50/75/100 na epokę (testowa)
 
 - R-WEB-BRICK-CYCLES-75-100-Q1: cykle Cegielni per epoka właściciela 50/75/100 (carry-forward), receptura 2 glina+1 drewno→2 cegły i mnożnik wyjścia 1/1,5/2 bez zmian; pełny Brąz 150/75 → 225 cegieł, pełne Żelazo 200/100 → 400 cegieł
