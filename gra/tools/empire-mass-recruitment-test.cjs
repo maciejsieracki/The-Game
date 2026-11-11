@@ -41,6 +41,8 @@ function eq(actual, expected, name) {
 function sourceGate() {
   const src = fs.readFileSync(PANEL, 'utf8');
   const main = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+  check('hideEmpireDetailPanel (Zamknij/Esc/tło) zeruje szkice Armii',
+    /export function hideEmpireDetailPanel\(\): void \{[^}]*clearArmyRecruitDraftsOnPanelClose\(\);/.test(src));
   check('backend function remains present', /function purchaseRecruitmentUnits\(/.test(main));
   check('single-unit path remains present', /purchaseRecruitmentUnit\(/.test(main));
   check('Army mounts the shared CityPanel recruitment renderer',
@@ -88,9 +90,9 @@ import {
   mountMassRecruitmentControls,
   configureEmpireMassRecruitment,
 } from ${JSON.stringify(PANEL)};
-import { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession } from ${JSON.stringify(CITY_PANEL)};
+import { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession, clearArmyRecruitDraftsOnPanelClose } from ${JSON.stringify(CITY_PANEL)};
 (window).__massRecruitment = { renderMassRecruitmentSection, mountMassRecruitmentControls, configureEmpireMassRecruitment };
-(window).__cityPanel = { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession };
+(window).__cityPanel = { configureCityPanel, mountGeneralRecruitmentCardForArmy, mountCityRecruitmentCardsForArmy, getArmyRecruitDraftTotal, getRecruitQuantityDraft, submitArmyRecruitmentDrafts, resetArmyRecruitDraftsSession, clearArmyRecruitDraftsOnPanelClose };
 `, 'utf8');
 }
 
@@ -374,6 +376,17 @@ async function browserGate() {
   armyState = await page.evaluate(() => JSON.parse(JSON.stringify(window.__armyState)));
   check('per-card Army purchase still uses the selected city/type and quantity',
     JSON.stringify(armyState.purchases) === JSON.stringify([['sparta', 'Łucznik', 8, 1]]), armyState.purchases);
+  // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: otwarty panel trzyma szkice, zamknięcie je zeruje
+  await page.evaluate(() => { window.__cityPanel.mountCityRecruitmentCardsForArmy('athens', document.querySelector('[data-mass-recruitment-cards="athens"]')); });
+  await armyCard('athens', 'Wojownik').locator('.unit-recruit-quantity-input').fill('4');
+  await page.evaluate(() => document.querySelectorAll('[data-mass-recruitment-city]').forEach(c => window.__cityPanel.mountCityRecruitmentCardsForArmy(c.dataset.massRecruitmentCity, c.querySelector('[data-mass-recruitment-cards]'))));
+  check('otwarty panel: szkic 4 przeżywa przebudowę kart', await armyDraft('athens', 'Wojownik') === 4);
+  await page.evaluate(() => window.__cityPanel.clearArmyRecruitDraftsOnPanelClose());
+  await page.evaluate(() => document.querySelectorAll('[data-mass-recruitment-city]').forEach(c => window.__cityPanel.mountCityRecruitmentCardsForArmy(c.dataset.massRecruitmentCity, c.querySelector('[data-mass-recruitment-cards]'))));
+  check('po zamknięciu panelu szkice = 0, przyciski wyłączone, localStorage pusty',
+    await armyDraft('athens', 'Wojownik') === 0 && await armyDraft('sparta', 'Łucznik') === 0
+    && await armyButtons.evaluateAll(b => b.every(x => x.disabled))
+    && await page.evaluate(() => localStorage.getItem('civ-army-recruit-drafts-v1') === null && window.__cityPanel.getArmyRecruitDraftTotal() === 0));
   await page.evaluate(() => window.__cityPanel.resetArmyRecruitDraftsSession());
   check('new/load-game reset clears persisted Army drafts',
     await page.evaluate(() => localStorage.getItem('civ-army-recruit-drafts-v1') === null));

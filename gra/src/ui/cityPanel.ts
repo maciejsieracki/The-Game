@@ -8429,6 +8429,14 @@ function setArmyRecruitDraft(cityId: string, itemId: string, quantity: number): 
 export function getArmyRecruitDraftTotal(): number {
   return Array.from(armyRecruitDrafts.values()).reduce((sum, quantity) => sum + quantity, 0);
 }
+/**
+ * Zamknięcie panelu rekrutacji (Zamknij / Esc / tło): wszystkie szkice liczników Armii -> 0
+ * (pamięć + localStorage). Dopóki panel jest otwarty, szkice są zachowywane przy odświeżeniach.
+ */
+export function clearArmyRecruitDraftsOnPanelClose(): void {
+  if (armyRecruitDrafts.size === 0) return;
+  resetArmyRecruitDraftsSession();
+}
 /** New/load game boundary: do not carry one save's unpublished Army drafts into another. */
 export function resetArmyRecruitDraftsSession(): void {
   armyRecruitDrafts.clear();
