@@ -9406,3 +9406,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · FALA 637 = cbfb12dc5 (Raw MD5 8e2329b6…). FALA 638 WDROŻONA (ROBOCZA): R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1 (FC PASS-WITH-NOTES, 88e8b9bfa; ref `refs/keep/R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1-fc`, wip `web-wip/FALANGA-MODEL`). DO WZROKOWEJ OCENY WŁAŚCICIELA: wygląd falangity w żywej bitwie/na mapie. Dług Rust: REPIN modelu Falangi.
 
 - 2026-11-11 · DECYZJE ABC (właściciel): (1) ENABLE-TOGGLE — wyłączony budynek surowcowy ZERUJE też własne plony (Praca Cegielni, Żywność Garncarni, Praca Stolarni) — wdrożone w FALI 636 zostaje, zero zmian. (2) AIREPL (#185) — BEZ limitu zamian Zastąp AI na turę (jak dotąd; ogranicza tylko skarbiec i rezerwa zakupu) — dług zamknięty, bez zmian w kodzie.
+
+- 2026-11-11 · #192 (ai-major-economy-test, pr141-f04-yields-activation-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 31/0 i 135 checks (computeMajorArchetypeMilitaryFraction usunięty kontraktem testu w d20533090; yields naprawione w 583b33198). FC PASS, zero zmian kodu, deploy N/A.
