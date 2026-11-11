@@ -208,7 +208,7 @@ background:#11161f;color:var(--tg-gold-primary,#e8d88a);cursor:pointer;font:inhe
 .${HOST_CLASS} .civ-adm-panel-warn{margin:10px 0 2px;padding:6px 8px;border-radius:6px;border:1px solid #c0392b;background:rgba(192,57,43,.16);color:#ffb4a8;}
 .${HOST_CLASS} .civ-adm-panel-foot{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px 14px;}
 .${HOST_CLASS} .civ-adm-panel-btn{padding:7px 16px;border-radius:8px;border:1px solid rgba(232,216,138,.45);background:linear-gradient(180deg,#1b2230,#0c1018);
-color:var(--tg-gold-primary,#e8d88a);font:600 13px inherit;cursor:pointer;}
+color:var(--tg-gold-primary,#e8d88a);font-weight:600;font-size:13px;font-family:inherit;cursor:pointer;}
 .${HOST_CLASS} .civ-adm-panel-btn--primary{background:linear-gradient(180deg,#3a5a2c,#223a18);border-color:#7fbf5a;color:#e8f6d8;}
 .${HOST_CLASS} .civ-adm-panel-btn--danger{border-color:#c0392b;color:#ffb4a8;}
 .${HOST_CLASS} .civ-adm-panel-btn:disabled{opacity:.45;cursor:not-allowed;}
@@ -282,6 +282,11 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
       render('[data-adm-panel-dismiss]');
     });
     dlg.querySelector('[data-adm-panel-dismiss]')?.addEventListener('click', () => {
+      const cur = hooks.getModel();
+      if (!cur) return;
+      // Zwolnienie nieodwracalne (koszt nie wraca) — potwierdzenie jak przed wprowadzeniem panelu.
+      const what = cur.kind === 'city' ? 'autobudowa w tym mieście' : 'auto-ulepszenia terenu w tym mieście';
+      if (!window.confirm('Zwolnić administratora? Koszt zatrudnienia nie podlega zwrotowi, a ' + what + ' przestaną działać.')) return;
       hooks.onDismiss();
       render('[data-adm-panel-confirm]');
     });
@@ -308,4 +313,21 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
   current = { host, close };
   render();
   return { el: host, close };
+}
+
+/**
+ * R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1: czysta reguła guardu zmian automatyzacji ulepszeń
+ * (używana przez main.ts, testowalna osobno). Opcja „Administratorzy” OFF -> nigdy nie blokuje.
+ *  - MIASTO: zablokowane, gdy miasto nieznane/nie moje albo bez DZIAŁAJĄCEGO administratora ulepszeń,
+ *  - PAŃSTWO: zablokowane tylko gdy gracz ma miasta i ŻADNE nie ma działającego administratora.
+ */
+export function improvementAutomationBlockedRule(
+  administratorsEnabled: boolean,
+  scope: 'empire' | 'city',
+  city: { mine: boolean; working: boolean } | null,
+  myCitiesWorking: boolean[],
+): boolean {
+  if (!administratorsEnabled) return false;
+  if (scope === 'city') return !city || !city.mine || !city.working;
+  return myCitiesWorking.length > 0 && !myCitiesWorking.some(Boolean);
 }

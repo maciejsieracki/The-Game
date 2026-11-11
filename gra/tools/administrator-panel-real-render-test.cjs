@@ -83,9 +83,9 @@ async function bundle(opts) {
   const entry = path.join(TMP, `entry${id}.ts`);
   const out = path.join(TMP, `bundle${id}.js`);
   fs.writeFileSync(entry, [
-    `import { openAdministratorPanel, administratorPanelInnerHtml } from ${JSON.stringify(GRA + '/src/ui/administratorPanel.ts')};`,
+    `import { openAdministratorPanel, administratorPanelInnerHtml, improvementAutomationBlockedRule } from ${JSON.stringify(GRA + '/src/ui/administratorPanel.ts')};`,
     `import { createBuildModeHud } from ${JSON.stringify(GRA + '/src/ui/buildModeHud.ts')};`,
-    'window.__T = { openAdministratorPanel, administratorPanelInnerHtml, createBuildModeHud };',
+    'window.__T = { openAdministratorPanel, administratorPanelInnerHtml, createBuildModeHud, improvementAutomationBlockedRule };',
   ].join('\n'));
   await esbuild.build({
     entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', target: 'es2020', outfile: out,
@@ -186,6 +186,10 @@ async function runSuite(browser, code, label) {
     const dlg = () => document.querySelector('.civ-adm-panel');
     dlg().querySelector('[data-adm-panel-confirm]').click();
     const afterHire = { hired: dlg().getAttribute('data-adm-hired'), hasDismiss: !!dlg().querySelector('[data-adm-panel-dismiss]'), status: dlg().querySelector('[data-adm-status]').textContent, effects: dlg().querySelector('[data-adm-effects]').textContent };
+    window.confirm = () => false; // odmowa potwierdzenia: bez zwolnienia
+    dlg().querySelector('[data-adm-panel-dismiss]').click();
+    const declined = { dismissCalls: calls.dismiss, hired: dlg().getAttribute('data-adm-hired') };
+    window.confirm = () => true;
     dlg().querySelector('[data-adm-panel-dismiss]').click();
     const afterDismiss = { hired: dlg().getAttribute('data-adm-hired'), hasConfirm: !!dlg().querySelector('[data-adm-panel-confirm]') };
     // Esc zamyka
@@ -199,10 +203,11 @@ async function runSuite(browser, code, label) {
     T.openAdministratorPanel({ getModel: () => model, onHire: () => true, onDismiss: () => true, onClose: () => { calls.close++; } });
     document.querySelector('[data-adm-panel-cancel]:not(.civ-adm-panel-x)').click();
     const cancelClosed = !document.querySelector('.civ-adm-panel-host');
-    return { calls, afterHire, afterDismiss, escClosed, backClosed, cancelClosed };
+    return { calls, afterHire, afterDismiss, declined, escClosed, backClosed, cancelClosed };
   });
   check('A12 po zatrudnieniu ten sam panel: stan, „Zwolnij”, utrzymanie', C.calls.hire === 1 && C.afterHire.hired === '1' && C.afterHire.hasDismiss && /Zatrudniony/.test(C.afterHire.status) && /Utrzymanie/.test(C.afterHire.effects), C);
   check('A13 Zwolnij wywołuje onDismiss i wraca do stanu niezatrudnionego', C.calls.dismiss === 1 && C.afterDismiss.hired === '0' && C.afterDismiss.hasConfirm, C);
+  check('A13b Zwolnij wymaga potwierdzenia: odmowa (confirm=false) nie zwalnia', C.declined.dismissCalls === 0 && C.declined.hired === '1', C.declined);
   check('A14 Esc, klik w tło i Anuluj zamykają panel (onClose x3)', C.escClosed && C.backClosed && C.cancelClosed && C.calls.close === 3, C);
 
   // administrator miasta: bonusy ze skali poziomu
@@ -327,6 +332,23 @@ async function runSuite(browser, code, label) {
   check('D3 klik w panel nie wychodzi z trybu budowy (onExit = 0)', E.exitAfterPanelClick === 0, E);
   check('D4 „Zatrudnij” w panelu wykonuje onHire; panel pokazuje Zwolnij; Esc zamyka; przycisk zmienia się na ✓', E.calls.join() === 'hire' && E.hiredState === true && E.dismissVisible && E.closed && /✓/.test(E.afterLabel || ''), E);
 
+  // G: czysta reguła guardu main.ts (improvementAutomationBlockedRule) — niezależny dowód mutacyjny ścieżki programowej
+  const G = await page.evaluate(() => {
+    const r = window.__T.improvementAutomationBlockedRule;
+    return {
+      offNever: r(false, 'city', null, []) === false && r(false, 'empire', null, [false]) === false,
+      cityNoAdmin: r(true, 'city', { mine: true, working: false }, [false]) === true,
+      cityUnknown: r(true, 'city', null, [true]) === true,
+      cityForeign: r(true, 'city', { mine: false, working: true }, [true]) === true,
+      cityOk: r(true, 'city', { mine: true, working: true }, [true]) === false,
+      empNone: r(true, 'empire', null, [false, false]) === true,
+      empOne: r(true, 'empire', null, [false, true]) === false,
+      empNoCities: r(true, 'empire', null, []) === false,
+    };
+  });
+  check('G1 reguła guardu (main.ts): miasto bez działającego administratora zablokowane, z nim nie; opcja OFF nie blokuje', G.offNever && G.cityNoAdmin && G.cityUnknown && G.cityForeign && G.cityOk, G);
+  check('G2 reguła guardu: państwo zablokowane tylko gdy ŻADNE miasto nie ma administratora', G.empNone && G.empOne && G.empNoCities, G);
+
   check('Z0 brak błędów strony', errors.length === 0, errors);
   await page.close();
   return results;
@@ -387,6 +409,21 @@ async function main() {
     const mutBonus = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: 'html += `<ul class="civ-adm-panel-list" data-adm-bonuses>${bonusRows(m)}</ul>`;', to: '' }] });
     const bnsRes = await mutSuite(browser, mutBonus, 'mut-bonus');
     allResults.push({ name: '[E5 mutacja] usunięcie bonusów z panelu czerwieni test', ok: bnsRes.filter((x) => !x.ok).length >= 1, detail: bnsRes.filter((x) => !x.ok).map((x) => x.name) });
+    const mutRuleCity = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: 'return !city || !city.mine || !city.working;', to: 'return false;' }] });
+    const rcRes = await mutSuite(browser, mutRuleCity, 'mut-rule-city');
+    allResults.push({ name: '[E6 mutacja] usunięcie reguły guardu MIASTA (ścieżka programowa main.ts) czerwieni test (G1)', ok: rcRes.some((x) => !x.ok && /G1/.test(x.name)), detail: rcRes.filter((x) => !x.ok).map((x) => x.name) });
+    const mutRuleEmp = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: 'return myCitiesWorking.length > 0 && !myCitiesWorking.some(Boolean);', to: 'return false;' }] });
+    const reRes = await mutSuite(browser, mutRuleEmp, 'mut-rule-emp');
+    allResults.push({ name: '[E7 mutacja] usunięcie reguły guardu PAŃSTWA czerwieni test (G2)', ok: reRes.some((x) => !x.ok && /G2/.test(x.name)), detail: reRes.filter((x) => !x.ok).map((x) => x.name) });
+    const mutConfirm = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: "if (!window.confirm('Zwolnić administratora?", to: "if (false && !window.confirm('Zwolnić administratora?" }] });
+    const cfRes = await mutSuite(browser, mutConfirm, 'mut-confirm');
+    allResults.push({ name: '[E8 mutacja] usunięcie potwierdzenia zwolnienia czerwieni test (>=1 FAIL)', ok: cfRes.some((x) => !x.ok), detail: cfRes.filter((x) => !x.ok).map((x) => x.name) });
+
+    // (F) statycznie: main.ts — każdy z 7 setterów polityki ulepszeń woła guard, a guard deleguje do reguły
+    const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+    const guardCalls = (mainSrc.match(/if \(improvementAutomationChangeBlocked\('(empire|city)'/g) || []).length;
+    allResults.push({ name: '[F1] main.ts: 7 setterów polityki ulepszeń ma guard improvementAutomationChangeBlocked', ok: guardCalls === 7, detail: guardCalls });
+    allResults.push({ name: '[F2] main.ts: guard deleguje do improvementAutomationBlockedRule', ok: /return improvementAutomationBlockedRule\(/.test(mainSrc), detail: null });
   } finally {
     await browser.close();
   }

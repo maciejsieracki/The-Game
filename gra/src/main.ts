@@ -59,6 +59,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
+import { improvementAutomationBlockedRule } from './ui/administratorPanel';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
 import { showSceneTimingReport } from './ui/sceneTimingReport';
 import { ensurePerfReportChip, type PostSceneStepMs } from './ui/perfReport';
@@ -10357,13 +10358,13 @@ async function boot(): Promise<void> {
      * Zapisane ustawienia NIE są kasowane — po zatrudnieniu administratora wracają. Opcja OFF: bez zmian (UI i tak ukrywa blok).
      */
     function improvementAutomationChangeBlocked(scope: 'empire' | 'city', cityId?: string): boolean {
-      if (!administratorsEnabled) return false;
-      if (scope === 'city') {
-        const city = cities.find(c => c.id === cityId);
-        return !city || !isMe(city.ownerId) || !cityHasWorkingImprovementAdministrator(city);
-      }
-      const mine = cities.filter(c => isMe(c.ownerId));
-      return mine.length > 0 && !mine.some(c => cityHasWorkingImprovementAdministrator(c));
+      const c = scope === 'city' ? cities.find(x => x.id === cityId) : undefined;
+      return improvementAutomationBlockedRule(
+        administratorsEnabled,
+        scope,
+        c ? { mine: isMe(c.ownerId), working: cityHasWorkingImprovementAdministrator(c) } : null,
+        cities.filter(x => isMe(x.ownerId)).map(x => cityHasWorkingImprovementAdministrator(x)),
+      );
     }
     /** Czy opcja „Administratorzy" tej gry jest włączona (UI: aktywność kontrolek automatyzacji gracza). */
     function isPlayerAutoBuildEnabled(): boolean {
@@ -27013,7 +27014,7 @@ async function boot(): Promise<void> {
           // zostaje w swoich dwoch prawowitych miejscach: panel imperium
           // (`empireDetailPanel.ts`) i panel miasta (`cityPanel.ts`) — oba nietkniete.
           onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
-          if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             pol.focus = focus;
             pol.tryb = 'auto';
@@ -27022,7 +27023,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaEmpireTrybChange: (tryb: UlepszeniaTryb) => {
-          if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             pol.tryb = tryb;
             ulepszeniaEmpireByOwner.set(0, pol);
@@ -27033,7 +27034,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
-          if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny suwak automatu (pole (b))
             // ma własny zakres 0–100% — clampUlepszeniaPracaPercent clampuje do
@@ -27049,7 +27050,7 @@ async function boot(): Promise<void> {
             return city?.ulepszeniaOverride === true;
           },
           onUlepszeniaCityOverrideChange: (cityId: string, override: boolean) => {
-          if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = override;
@@ -27075,7 +27076,7 @@ async function boot(): Promise<void> {
             return effectiveUlepszeniaForCity(city);
           },
           onUlepszeniaCityFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
-          if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
@@ -27085,7 +27086,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaCityTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
-          if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
@@ -27099,7 +27100,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaCityPracaPercentChange: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => {
-          if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
