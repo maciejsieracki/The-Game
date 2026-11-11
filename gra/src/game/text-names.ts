@@ -83,10 +83,20 @@ export function nazwaWyswietlana(id: string | null | undefined): string {
 export function nazwyZListyId(lista: string | null | undefined): string {
   const src = String(lista ?? '');
   if (!src.trim()) return '';
-  return src.split(/\s*([,;])\s*/).map((tok, i) => {
-    if (i % 2 === 1) return tok === ',' ? ', ' : '; ';
-    return /^[a-z0-9_]+$/.test(tok) ? nazwaWyswietlana(tok) : tok;
-  }).join('').trim();
+  // `krowa/byk` = ta sama Trzoda co `bydlo` (decyzja właściciela); `(prereq)` to znacznik redakcyjny danych.
+  const seen = new Set<string>();
+  const out: string[] = [];
+  let sep = ', ';
+  src.split(/\s*([,;])\s*/).forEach((raw, i) => {
+    if (i % 2 === 1) { sep = raw === ',' ? ', ' : '; '; return; }
+    const tok = raw.replace(/\s*\(prereq\)/gi, '').trim();
+    if (!tok) return;
+    const nazwa = tok === 'krowa/byk' ? nazwaWyswietlana('bydlo') : (/^[a-z0-9_]+$/.test(tok) ? nazwaWyswietlana(tok) : tok);
+    if (seen.has(nazwa)) return;
+    seen.add(nazwa);
+    out.push(nazwa);
+  });
+  return out.join(sep);
 }
 
 /** Nazwa wyświetlana cywilizacji po jej kluczu (np. `egipt` → nazwa z panstwa). */

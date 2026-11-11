@@ -287,7 +287,7 @@ import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
-import { humanizeId, nazwaWyswietlana } from '../game/text-names';
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
 
 // ---------------------------------------------------------------------------
@@ -7557,12 +7557,12 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
   const wymagaBudynek = filterDeadEffectText(t['wymagany budynek'], techName);
   if (wymagaBudynek) gridDetailRow(grid, 'Wymaga budynek', wymagaBudynek);
   if (t['Dostęp do surowca.'] && !isEmptyDataVal(t['Dostęp do surowca.'])) {
-    gridDetailRow(grid, 'Surowiec (tech)', String(t['Dostęp do surowca.']));
+    gridDetailRow(grid, 'Surowiec (tech)', nazwyZListyId(String(t['Dostęp do surowca.'])));
   }
   const odblokowujeBudynek = filterDeadEffectText(t['Odblokowuje budynek'], techName);
   if (odblokowujeBudynek) gridDetailRow(grid, 'Odblokowuje budynek', odblokowujeBudynek);
   const odblokowujeSurowiec = filterDeadEffectText(t['Odblokowuje surowiec.'], techName);
-  if (odblokowujeSurowiec) gridDetailRow(grid, 'Odblokowuje surowiec', odblokowujeSurowiec);
+  if (odblokowujeSurowiec) gridDetailRow(grid, 'Odblokowuje surowiec', nazwyZListyId(odblokowujeSurowiec));
   const terrainUnlock = (t as unknown as Record<string, unknown>)['Odblokowuje ulepszenie terenu'];
   const odblokowujePole = filterDeadEffectText(terrainUnlock == null ? null : String(terrainUnlock), techName);
   if (odblokowujePole) gridDetailRow(grid, 'Odblokowuje pole', odblokowujePole);

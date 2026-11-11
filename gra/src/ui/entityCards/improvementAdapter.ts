@@ -24,6 +24,7 @@
  * (dokładnie ten sam mechanizm co `buildingAdapter.ts`/`unitAdapter.ts`).
  */
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
+import { ROAD_BRUK_MOVE_SPEED_MULT } from '../../map/road-movement';
 import { scaleTerrainImprovementWorkCost } from '../../game/terrain-improvements';
 import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -138,8 +139,8 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.bonus_ruch)) {
     charRows.push({
       label: 'Ruch',
-      // R-WEB-UI-RAW-IDS-AUDIT: `bonus_ruch_uwaga` to notatka deweloperska (ROAD_BRUK_MOVE_SPEED_MULT, ścieżki plików) — nie dla gracza.
-      value: text(improvement.bonus_ruch),
+      // `bonus_ruch` to martwe pole (silnik go nie czyta); decyzja właściciela: pokaż realny efekt — koszt ruchu ÷ stała.
+      value: `${ROAD_BRUK_MOVE_SPEED_MULT}× szybszy ruch`,
     });
   }
   const characteristicsSection: EntityCardSection = {

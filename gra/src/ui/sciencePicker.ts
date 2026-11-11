@@ -44,7 +44,7 @@ import { buildHubTechEntries } from './scienceHubSnapshotLogic';
 import { IMPROVEMENT_NAME_TO_KEY } from './techDiscoveryNotice';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
-import { humanizeId } from '../game/text-names';
+import { humanizeId, nazwyZListyId } from '../game/text-names';
 
 // ---------------------------------------------------------------------------
 // Typy wewnętrzne (dane z tech.json)
@@ -368,7 +368,7 @@ export function techUnlockItems(slug: string): TechUnlockItem[] {
   }
   const sur = firstLabel(node.odblokujeSurowiec);
   if (!isPlaceholderLabel(sur)) {
-    items.push({ kind: 'surowiec', label: sur, iconKey: RESOURCE_LABEL_ALIAS[sur.toLowerCase()] ?? sur });
+    items.push({ kind: 'surowiec', label: nazwyZListyId(sur), iconKey: RESOURCE_LABEL_ALIAS[sur.toLowerCase()] ?? sur });
   }
   const ter = firstLabel(node.odblokujeUlepszenie);
   if (!isPlaceholderLabel(ter)) {
@@ -1154,7 +1154,7 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
   }
   if (node.odblokujeSurowiec) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje surowce:</div>`;
-    h += `<ul class="tt-items">${node.odblokujeSurowiec.split(',').map(s => `<li>${esc(s.trim())}</li>`).join('')}</ul>`;
+    h += `<ul class="tt-items">${nazwyZListyId(node.odblokujeSurowiec).split(',').map(s => `<li>${esc(s.trim())}</li>`).join('')}</ul>`;
   }
   if (node.odblokujeUlepszenie) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje na mapie:</div>`;

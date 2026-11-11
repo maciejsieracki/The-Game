@@ -82,13 +82,16 @@ for (const u of rd('units.json')) check('jednostka', u.Jednostka, M.unitAdapter(
 for (const w of rd('wonders.json').cuda) check('cud', w.id, M.wonderAdapter(M.resolveWonderRow(w.id), {}));
 
 console.log('2. Resolver');
-ok(M.nazwyZListyId('krowa/byk, owce, bydlo, lama') === 'krowa/byk, Owce, Trzoda, Lama', 'nazwyZListyId: id → nazwa, „krowa/byk" bez zmian');
+ok(M.nazwyZListyId('krowa/byk, owce, bydlo, lama') === 'Trzoda, Owce, Lama', 'nazwyZListyId: id → nazwa, krowa/byk = Trzoda (bez duplikatu)');
 ok(M.nazwyZListyId('ruda_cyny') === 'Ruda cyny' && M.nazwyZListyId('kon') === 'Koń', 'nazwyZListyId: surowce z resources.json');
+ok(M.nazwyZListyId('stal (prereq)') === 'Stal', 'nazwyZListyId: znacznik „(prereq)" nie trafia do gracza');
 ok(M.nazwyZListyId('Dostęp do drewna') === 'Dostęp do drewna', 'nazwyZListyId: zdanie bez zmian');
 ok(!SNAKE.test(M.improvementDisplayName('nieznane_ulepszenie_x')), 'improvementDisplayName: fallback bez snake_case');
 ok(M.improvementDisplayName('farma') === 'Farma', 'improvementDisplayName: farma → Farma');
 const imprDroga = M.improvementAdapter(M.resolveImprovementRow('droga_brukowana') || imp.droga_brukowana, {});
-ok(!JSON.stringify(imprDroga).includes('ROAD_BRUK_MOVE_SPEED_MULT'), 'karta drogi brukowanej bez notatki deweloperskiej (bonus_ruch_uwaga)');
+ok(!JSON.stringify(imprDroga).includes('ROAD_BRUK_MOVE_SPEED_MULT') && JSON.stringify(imprDroga).includes('5× szybszy ruch'), 'karta drogi brukowanej: realny efekt ruchu zamiast martwego bonus_ruch');
+const techRaw = fs.readFileSync(path.join(GRA, 'data', 'tech.json'), 'utf8');
+ok(!/"Dostęp do (glina|kamień|żelazo|krowa\/byk[^"]*)"/.test(techRaw), 'tech.json: „Dostęp do …" w dopełniaczu');
 ok(M.stripEncyMetadata('|---|\n| **id** | `x` |\n| **json_ref** | `a.json` |\n\n---\n\n## Wiki‑S\n\ntekst') === '## Wiki‑S\n\ntekst', 'stripEncyMetadata: usuwa tabelę metadanych');
 ok(M.stripEncyMetadata('## Bez tabeli\n\ntekst\n\n---\n\nreszta') === '## Bez tabeli\n\ntekst\n\n---\n\nreszta', 'stripEncyMetadata: hasło bez tabeli bez zmian');
 

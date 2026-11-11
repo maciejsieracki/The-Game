@@ -38,3 +38,13 @@ Czyste (bez wycieków po audycie): karty budynków, jednostek, cudów, odkryć (
 3. `bonus_ruch` (ulepszenie „Droga brukowana") to MARTWE POLE (`bonus_ruch_uwaga`), a karta nadal pokazuje wiersz „Ruch: <liczba>". Ukryć wiersz całkiem? (decyzja produktowa)
 4. Wiki encyklopedii: ~50 haseł technologii/pojęć odwołuje się w backtickach do nazw plików kodu (`tech-tempo.ts`, `tech.json`, `econ-params.json`, `buildings.json`, `civs.json`, `docs/decyzje/`) — to nie snake_case id, więc poza tym tematem. Usunąć odwołania do plików z tekstu dla gracza (osobny temat R-DOC-WIKI-NO-FILEREFS)?
 5. `tech.json` „Odblokowuje surowiec." używa etykiety „krowa/byk" (surowiec o dwóch nazwach) — zostawione bez zmian; ujednolicić nazwę surowca?
+
+## Decyzje właściciela (ABC) i runda 2
+
+1. `bonus_ruch` drogi brukowanej → B: wiersz „Ruch" pokazuje realny efekt „5× szybszy ruch" (stała `ROAD_BRUK_MOVE_SPEED_MULT`), nie martwą liczbę.
+2. Gramatyka w `tech.json` → A: „Dostęp do gliny/kamienia/żelaza/trzody, owiec" (dane poprawione, bez wpływu na liczby).
+3. Odwołania do plików w wiki → osobny temat R-DOC-WIKI-NO-FILEREFS (NIE zrobiono tutaj).
+4. „krowa/byk" → Trzoda (= `bydlo`); `nazwyZListyId` mapuje i deduplikuje; ikony (alias w sciencePicker) bez zmian.
+
+Dodatkowe wycieki znalezione w rundzie 2 (surowe `kamien`, `sol`, `owce`, `bydlo`, `lama`, `ruda`, „stal (prereq)" z `tech.json` „Odblokowuje surowiec."): `cityPanel.ts:7560/7564`, `techDiscoveryNotice.ts:372`, `techTreeView.ts:693`, `sciencePicker.ts:369/1157` → `nazwyZListyId`. Znacznik „(prereq)" nie trafia do gracza.
+TESTY r2: tsc OK; wonder-text 132/0; ids-leak-audit 1611/0.

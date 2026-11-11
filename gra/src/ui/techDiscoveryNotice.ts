@@ -43,7 +43,7 @@
  *    to poprawne czytanie, czy jednak dodać widoczny, wygaszony przycisk?
  */
 
-import { humanizeId, nazwaWyswietlana } from '../game/text-names';
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import techData from '../../data/tech.json';
 import buildingsData from '../../data/buildings.json';
 import unitsData from '../../data/units.json';
@@ -369,7 +369,7 @@ function buildBody(tech: TechRow): { html: string } {
   const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia)
     && !hidden.has(t.Technologia));
   const improvementNames = list(tech['Odblokowuje ulepszenie terenu']).filter(n => !hidden.has(n));
-  const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
+  const resourceUnlocked = nazwyZListyId(tech['Odblokowuje surowiec.']) || null;
   const requirements = list(tech['Wymaga (prereq)']);
 
   // "Co możesz teraz zrobić" — PIERWSZA sekcja, nad Budynkami: priorytet „co mogę zrobić teraz"
