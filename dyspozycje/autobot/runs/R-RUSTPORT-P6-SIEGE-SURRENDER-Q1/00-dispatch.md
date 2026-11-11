@@ -1,0 +1,9 @@
+# DISPATCH — R-RUSTPORT-P6-SIEGE-SURRENDER-Q1 (W8 podział 3/3: kapitulacja oblężenia i atrycja; runda 1/5, Operator)
+Kontekst: W7 dodał siege_turn.rs::siege_city_turn, który zwraca tylko DECYZJĘ. resolveSiegeSurrender i handleSiegeCapitulationPhase (web) są w Rust tylko w komentarzach (siege_turn.rs:7,39,41). W8 dwukrotnie BLOCK m.in. z tego powodu.
+Baza: origin/rust-port/parity-v2 = 83ac67875. Pin web: 07d2fbd72f758705f8e1d59cc4968027ffbafe75 (tylko odczyt; git archive poza repo; esbuild poza repo).
+GOAL: port do Rust (1) resolveSiegeSurrender (web: gra/src/game, znajdź grepem po pinie) oraz (2) handleSiegeCapitulationPhase (skutki kapitulacji miasta) jako czyste funkcje wołane z wyniku siege_city_turn; wektory z pinu (generator), test behawioralny dla scenariuszy: poddanie przy braku jedzenia, atrycja, kapitulacja z garnizonem i bez, brak zmiany przy braku decyzji. Użyć istniejących modułów siege_starvation.rs, siege_enter_city.rs, siege_sortie.rs; nie duplikować.
+Allowlista: rust-port/engine/src/domain/siege_surrender.rs (nowy); rust-port/engine/src/domain/mod.rs (tylko pub mod); rust-port/engine/tests/p6_siege_surrender.rs (nowy); rust-port/engine/tests/p6_siege_surrender_gen.mjs; rust-port/engine/tests/p6_siege_surrender_vectors/*; dyspozycje/autobot/runs/R-RUSTPORT-P6-SIEGE-SURRENDER-Q1/**. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (nie commitować), istniejące siege_*.rs (poza importem).
+Wymóg: każda funkcja z testem behawioralnym na wektorach z pinu; brak wołającego w Rust dopuszczalny TYLKO z jawną zależnością do W8 r3 (pipeline) w raporcie.
+Limit: plik ≤ 600 LOC, testy dzielone.
+Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_siege_surrender (EXIT zapisany).
+Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach); df -h / ≥ 8 GB przed startem. Raport 01-operator-r1.md.
