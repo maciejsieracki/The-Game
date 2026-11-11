@@ -82,3 +82,162 @@ pub fn load_ai_purchase_reserve_params(params: &AiParams, poziom: u8) -> AiPurch
         min_dochod_netto: min_dochod as f64,
     }
 }
+
+// ---------------------------------------------------------------------------
+// R-RUSTPORT-REPIN-AI-ZAKUP-REALNY-STAN-DROGI-Q1 (runda 3, A): wykonanie zakupu AI na REALNYM stanie.
+//
+// web: gra/src/main.ts:42441-42456 (AI: `shouldAIPurchaseUnit` -> `purchaseRecruitmentUnit`) oraz
+// gra/src/main.ts:4579-4760 (`purchaseRecruitmentUnit`, wspolna sciezka gracz/AI: bramka zlota i Manpower,
+// potem `pickUnitRecruitHint` = `canAffordUnitRecruitStock` na puli panstwa, dopiero potem pobranie
+// Manpower, zlota i surowcow). `canAffordUnitRecruitStock` (economy-upkeep.ts) = `canAffordBuildingStock`
+// na `unitStockCost` (building-stock-cost.ts:402); brakujace ilosci = `missingStockFor` (:101).
+//
+// ZALOZENIA:
+// - funkcja jest CZYSTA na przekazanym stanie panstwa (`AiPurchaseState`): brak globalnego stanu, brak
+//   "magicznych" zasobow - kupno sprawdza i pobiera WYLACZNIE z `state.stock` (pula panstwa, suma po miastach);
+// - Manpower to skalar imperium (`manpower` >= `manpower_cost`); wybor miasta/rozkladu po miastach i kolejka
+//   rekrutacji (enqueue) pozostaja po stronie wywolujacego (WIRE-WAR W4/D7);
+// - bramki poza ekonomia (oblezenie, limit stosu, Super-jednostka, Naval) nie naleza do tej funkcji
+//   (web sprawdza je w `purchaseRecruitmentUnit` przed ekonomia; Rust: wywolujacy);
+// - wiazanie w `ai_turn.rs`: NIE w tej rundzie - brak kroku rekrutacji w petli tury i brak nosiciela stanu
+//   magazynu panstwa w `ai_turn.rs` (jawny dlug do W4/D7, nie BLOCK).
+
+use std::collections::BTreeMap;
+
+use crate::domain::ai_resource_needs::{
+    detect_owner_resource_needs, GoodsEntry, OwnerResourceNeedState, OwnerResourceNeedsInput,
+};
+use crate::domain::recruitment::{
+    spend_recruitment, validate_recruitment, RecruitmentError, ResourceStock, UnitRecruitment,
+};
+
+/// Realny stan ekonomii panstwa uzywany przy zakupie (pula panstwa jak u gracza).
+#[derive(Debug, Clone, PartialEq)]
+pub struct AiPurchaseState {
+    pub treasury: f64,
+    /// Magazyn panstwa (suma po miastach): jedyne zrodlo surowcow kosztu.
+    pub stock: ResourceStock,
+    /// Rekruci (Manpower) imperium.
+    pub manpower: f64,
+}
+
+/// Parametry zakupu poza stanem: koszt Manpower i wejscie rezerwy utrzymania (web `aiPurchaseReserveInputs`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AiPurchaseParams {
+    pub manpower_cost: f64,
+    pub reserve: Option<AiPurchaseReserveParams>,
+    pub net_income_per_turn: Option<f64>,
+    pub upkeep_per_turn: Option<f64>,
+    pub unit_upkeep_per_turn: Option<f64>,
+}
+
+/// Dlaczego AI NIE kupilo (stan niezmieniony).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AiPurchaseDecline {
+    /// `should_ai_purchase_unit` = false: za malo zlota, brak Manpower albo rezerwa utrzymania (10/3/0).
+    Gate,
+    /// Magazyn panstwa nie pokrywa kosztu surowcowego; mapa = web `missingStockFor` (ile brakuje).
+    MissingStock(BTreeMap<String, u32>),
+}
+
+/// Wynik proby zakupu.
+#[derive(Debug, Clone, PartialEq)]
+pub enum AiPurchaseOutcome {
+    Purchased {
+        gold_spent: f64,
+        manpower_spent: f64,
+        stock_spent: ResourceStock,
+    },
+    Declined(AiPurchaseDecline),
+}
+
+/// Web `missingStockFor(pool, cost)`: ile brakuje dla kazdego surowca kosztu (tylko > 0).
+pub fn missing_stock_for(pool: &ResourceStock, unit: &UnitRecruitment) -> BTreeMap<String, u32> {
+    unit.stock_cost
+        .iter()
+        .filter_map(|(k, need)| {
+            let have = pool.get(k).copied().unwrap_or_default();
+            (*need > have).then(|| (k.clone(), need - have))
+        })
+        .collect()
+}
+
+/// Zakup jednostki przez AI na realnym stanie: `should_ai_purchase_unit` (zloto + Manpower + rezerwa) ->
+/// `validate_recruitment` (koszt surowcowy z magazynu panstwa) -> `spend_recruitment` (atomowo). Przy
+/// odmowie `state` pozostaje NIEZMIENIONY (web: sprawdzenie przed jakimkolwiek pobraniem).
+pub fn ai_try_purchase_unit(
+    state: &mut AiPurchaseState,
+    unit: &UnitRecruitment,
+    params: &AiPurchaseParams,
+) -> AiPurchaseOutcome {
+    let gold = f64::from(unit.gold_cost);
+    let gate = AiPurchaseInput {
+        treasury: state.treasury,
+        gold_cost: gold,
+        has_manpower: state.manpower >= params.manpower_cost,
+        reserve: params.reserve,
+        net_income_per_turn: params.net_income_per_turn,
+        upkeep_per_turn: params.upkeep_per_turn,
+        unit_upkeep_per_turn: params.unit_upkeep_per_turn,
+    };
+    if !should_ai_purchase_unit(&gate) {
+        return AiPurchaseOutcome::Declined(AiPurchaseDecline::Gate);
+    }
+    if let Err(RecruitmentError::InsufficientStock { .. }) =
+        validate_recruitment(&state.stock, unit)
+    {
+        return AiPurchaseOutcome::Declined(AiPurchaseDecline::MissingStock(missing_stock_for(
+            &state.stock,
+            unit,
+        )));
+    }
+    let spent = spend_recruitment(&state.stock, unit)
+        .expect("validate_recruitment przeszlo, spend nie padnie");
+    state.stock = spent.remaining_stock;
+    state.treasury -= gold;
+    state.manpower -= params.manpower_cost;
+    AiPurchaseOutcome::Purchased {
+        gold_spent: gold,
+        manpower_spent: params.manpower_cost,
+        stock_spent: unit.stock_cost.clone(),
+    }
+}
+
+/// Potrzeby surowcowe wlasciciela po (nieudanym) zakupie: jednostka traktowana jak oczekujaca w kolejce
+/// (web `queuedUnitTypeIds` + `lookupUnitStockCost`), magazyn = realny stan panstwa. To wejscie dla handlu
+/// (web main.ts:22820), nie dla bramki zakupu.
+pub fn ai_purchase_resource_needs(
+    state: &AiPurchaseState,
+    unit: &UnitRecruitment,
+    priced_keys: &[String],
+    pakiet_wielkosc: f64,
+) -> OwnerResourceNeedState {
+    let goods: Vec<GoodsEntry> = state
+        .stock
+        .iter()
+        .map(|(k, v)| GoodsEntry {
+            key: k.clone(),
+            ilosc: Some(f64::from(*v)),
+        })
+        .collect();
+    let unit_cost: Vec<(String, f64)> = unit
+        .stock_cost
+        .iter()
+        .map(|(k, v)| (k.clone(), f64::from(*v)))
+        .collect();
+    let queued = vec![unit.unit_id.clone()];
+    let no_building = |_: &str| None;
+    let lookup_unit = |_: &str| Some(unit_cost.clone());
+    detect_owner_resource_needs(&OwnerResourceNeedsInput {
+        goods: &goods,
+        priced_keys,
+        pakiet_wielkosc,
+        queued_building_ids: &[],
+        lookup_building_koszt_surowce: &no_building,
+        queued_unit_type_ids: &queued,
+        lookup_unit_stock_cost: &lookup_unit,
+        food_reserve: None,
+        food_urgent_threshold: None,
+        upkeep_demand: &[],
+    })
+}
