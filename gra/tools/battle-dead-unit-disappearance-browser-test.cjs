@@ -108,13 +108,14 @@ async function runScene(browser, siege) {
   return { ...result, errors };
 }
 
+const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium', ...(fs.existsSync('/opt/pw-browsers') ? fs.readdirSync('/opt/pw-browsers').filter(d => d.startsWith('chromium-')).map(d => `/opt/pw-browsers/${d}/chrome-linux/chrome`) : [])].find(p => p && fs.existsSync(p));
 let server;
 let browser;
 (async () => {
   server = await createServer({ root, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error',
     server: { host: '127.0.0.1', port: 0, strictPort: false } });
   await server.listen();
-  browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium',
+  browser = await chromium.launch({ headless: true, executablePath: exe,
     args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const results = [await runScene(browser, false), await runScene(browser, true)];
   const report = { generatedAt: new Date().toISOString(), results };
