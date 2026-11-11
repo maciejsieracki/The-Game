@@ -50,3 +50,12 @@ Deploy tylko ROBOCZA po FC: merge kandydatów FC do main → `dep3.sh` → sidec
 - AI-TRADE: wiring `main.ts` end-to-end, realny tick dostaw, UI/Chromium, stare zapisy.
 - Karty konnicy po zmianie Żelaza w przeglądarce (FC nie uruchomił).
 - Raporty 01/20/50 na gałęzi `codex/recruit-affordability` nieaktualne (dokumentacja).
+
+## 7. Nowe zgłoszenia i decyzje właściciela (2026-11-11 popołudnie)
+- DECYZJE ABC: duchy zabitych = A (zamknięte NIE_ODTWORZONO); garnizon w zdobytym mieście giną; wycofanie ocalałych TYLKO w walce w polu (w mieście giną) — DODATEK 3 SURVIVOR-RETREAT; #201 = „2 b+c” (przycisk centrujący kamerę + zakładka Ważne).
+- `R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1` (#201 wykonanie) — dispatch w runs/.
+- `R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1` — lista budynków w panelu miasta: ikony surowców + liczby zamiast nazw (zrzut właściciela w evidence/).
+- `R-WEB-CITY-ADMINISTRATOR-Q1` (zastępuje ADMINISTRATOR-AUTOBUILD-GATE): administrator miasta (Pałac I–III / Dom Starszyzny / Dwór Zarządcy / Pretorium), 1 na miasto, utrzymanie z budżetu państwa, efekty korupcja −10% / produkcja +3% / podatki +3% ×tier, autobudowa budynków tylko z administratorem, przycisk obok „Ustaw jako stolicę”.
+- `R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1`: administrator ulepszeń rekrutowany w panelu ulepszeń; auto-ulepszenia tylko z nim (po CITY-ADMINISTRATOR).
+- `R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1`: automatyczna rekrutacja tylko z wybranym generałem w panelu Rekrutacja; nowe jednostki idą do niego.
+Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonnet) → IMPROVEMENT-ADMINISTRATOR → ARMY-AUTO-RECRUIT-GENERAL (sekwencyjnie: wspólna automatyzacja/ustawienia).

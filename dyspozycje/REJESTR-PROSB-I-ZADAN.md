@@ -9334,3 +9334,11 @@ R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: FC PASS-WITH-NOTES, kod a7f0800fe (f20b81
 ## 2026-11-11 — FALA 622 wdrożona na ROBOCZĄ (main 546fdf6bf, MD5 ed9a203205c922bf4d277bed985d3ee8)
 R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: FC PASS-WITH-NOTES, kod e06f87d9f (bazowy e758eba8f + poprawki Obrony cfa6dd064: druga kopia panelu miasta, regex testu, test źródłowy followIntent). Raw MD5 i 3 sidecary zgodne. Niezmierzone: Chromium na żywej grze (do obejrzenia na ROBOCZEJ: miasto startuje z OFF, Armia dziedziczy), dług bazowy hexHasRoomFor w harnessie dwóch testów, martwy kod purchaseRecruitmentUnits.
 IRON-STUD-ADJACENCY: FC PASS-WITH-NOTES (1dff44b63) → FALA 623 w toku. SURVIVOR-RETREAT: DODATEK 3 (odwrót tylko w polu, w mieście giną) — runda 2 w toku. Start: BRICK-CYCLES-75-100.
+
+## 2026-11-11 — Decyzje i zgłoszenia właściciela (administratorzy, ikony, #201, wycofanie)
+- Odwrót ocalałych: TYLKO walka w polu (przegrana strona — wszyscy ocalali mogą się wycofać); w mieście giną. Zawężenie wpisane jako DODATEK 3 do R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (runda 2 uruchomiona ponownie).
+- #201 → „2 b+c”: przycisk centrujący kamerę + zakładka Ważne (R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1).
+- R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: właściciel — „zamieniłbym wszystkie te nazwy surowców na symbole surowców i liczby, bo to jest strasznie nieczytelne” (zrzut listy budynków miasta).
+- R-WEB-CITY-ADMINISTRATOR-Q1 (zastępuje R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1): ABC „Umiarkowane”: zatrudnienie 40 Pieniądza, utrzymanie 2/3/4 / turę (tier I/II/III) z BUDŻETU PAŃSTWA; korupcja −10%, produkcja +3%, podatki +3% (×1/×1,5/×2,25); 1 administrator indywidualnie na miasto; brak środków państwa = nie pracuje (bez efektów i bez autobudowy); autobudowa BUDYNKÓW tylko z administratorem. Przycisk w nagłówku obok „Ustaw jako stolicę”.
+- R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń w panelu ulepszeń; auto-ulepszenia tylko z nim; bez niego ręcznie.
+- R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: automatyczna rekrutacja w panelu Rekrutacja tylko z wybranym generałem; nowe jednostki idą do wybranego generała; bez wyboru — dotychczasowe zasady (najbliższy generał); rekrutacja ręczna w panelu Armia bez zmian.
