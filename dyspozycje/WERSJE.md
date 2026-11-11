@@ -1,3 +1,9 @@
+## ROBOCZA 3c75f0a4 -- 2026-11-06 -- FALA 639: Ikony surowców w kartach encji (budynki, ulepszenia, jednostki, technologie) (testowa)
+
+- R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: wiersze kosztu, utrzymania, wymagań, odblokowań i warunków surowców w kartach budynków, ulepszeń terenu, jednostek i technologii pokazują chipy ikona+liczba (kontrakt EntityCardRow.resources i valueParts; kwoty escapowane, tekst jako text node, nazwa surowca w title/aria-label); notatki deweloperskie (TYP 1 / B-SUROW-BUD-03) usunięte z tekstów gracza
+- Weryfikacja: tsc czysty; entity-cards-resource-icons 26/0 (każdy wiersz każdej karty), real-render Chromium 112/0 (w tym XSS), entity-card-contract 75/0, ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, resource-icons-everywhere 10 + render 13, chip-icons 29, improvement-adapter-resource-note 77/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Poza zakresem: bonusy plonów cudów (np. '+2 Praca, +2 Drewno' w osadzie Aschaffenburg) i wiersze plonów (Żywność, Kamień +2) zostają tekstem — oś plonów, wonderAdapter nietknięty; Pieniądz w utrzymaniu budynku tekstem; NIE_ZMIERZONO: wąski ekran, Civpedia/wiki; dług bazowy building-detail-card-entitycard-migration 54/1
+
 ## ROBOCZA d0ea0107 -- 2026-11-06 -- FALA 638: Nowy model Falangi: falangita z sarissą w obu rękach i tarczą (testowa)
 
 - R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1: jednostka Falanga ma model falangity macedońskiego — długa sarissa trzymana obiema rękami, mała tarcza (pelte) na lewym przedramieniu, tors skręcony; wyraźnie inny niż hoplita (Włócznik, Włócznik sumeryjski, Thorakites, Hieros Lochos bez zmian — identyczna liczba meshy i trójkątów); Falanga 29 meshy / 428 trójkątów, geometrie wspólne; scalanie statycznych części działa
