@@ -138,6 +138,21 @@ fn building_from(v: &Value) -> eu::BuildingRecord {
         przyrost_utrzymania: opt(v.get("przyrost")),
         epoka_wejscia: opt(v.get("epoka")),
         koszt_surowce: koszt,
+        utrzymanie_surowce: cell_map(v.get("utrzymanie_surowce")),
+    }
+}
+
+/// Mapa surowcow z wektora (`null`/brak = None; wartosc nie-liczba = None).
+fn cell_map(v: Option<&Value>) -> Option<BTreeMap<String, Option<f64>>> {
+    match v {
+        None | Some(Value::Null) => None,
+        Some(obj) => Some(
+            obj.as_object()
+                .expect("mapa surowcow")
+                .iter()
+                .map(|(k, x)| (k.clone(), try_num(x)))
+                .collect(),
+        ),
     }
 }
 
@@ -328,13 +343,13 @@ fn total_building_upkeep_matches_web() {
 fn building_resource_upkeep_matches_web() {
     let v = vectors();
     assert_same(
-        "BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE",
-        eu::BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE,
-        num(&v["buildingResourceUnits"]),
+        "DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO",
+        eu::DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
+        num(&v["defaultBuildingResourceUpkeepRatio"]),
     );
     for (i, c) in arr(&v, "buildingResourceUpkeep").iter().enumerate() {
         let rec = building_from(&c["rec"]);
-        let got = eu::building_resource_upkeep(Some(&rec));
+        let got = eu::building_resource_upkeep(Some(&rec), num(&c["level"]), num(&c["ratio"]));
         assert_map(
             &format!("buildingResourceUpkeep[{i}] {}", rec.id),
             &got,
@@ -342,7 +357,7 @@ fn building_resource_upkeep_matches_web() {
         );
     }
     for (i, c) in arr(&v, "totalBuildingResourceUpkeep").iter().enumerate() {
-        let got = eu::total_building_resource_upkeep(&instances(&c["inst"]));
+        let got = eu::total_building_resource_upkeep(&instances(&c["inst"]), num(&c["ratio"]));
         assert_map(
             &format!("totalBuildingResourceUpkeep[{i}]"),
             &got,
@@ -360,7 +375,7 @@ fn building_resource_upkeep_matches_web() {
             .iter()
             .map(|x| x.as_str().unwrap().to_string())
             .collect();
-        let got = eu::building_resource_upkeep_for_built_ids(&built, &cat);
+        let got = eu::building_resource_upkeep_for_built_ids(&built, &cat, num(&c["ratio"]));
         assert_map(
             &format!("buildingResourceUpkeepForBuiltIds[{i}]"),
             &got,
@@ -406,6 +421,7 @@ fn preview_and_add_costs_match_web() {
             &cities,
             &cat,
             &built,
+            num(&c["ratio"]),
         );
         assert_map(
             &format!("previewOwnerBuildingResourceUpkeep[{i}]"),
@@ -600,6 +616,7 @@ fn unit_resource_totals_match_web() {
             &cities,
             &cat,
             &built,
+            num(&c["ratio"]),
             &units,
             resolve,
         );
@@ -721,6 +738,24 @@ fn building_upkeep_for_built_ids_matches_web() {
         let got = eu::building_upkeep_for_built_ids(&built, &cat, level_for, opt(c.get("flat")));
         assert_same(
             &format!("buildingUpkeepForBuiltIds[{i}]"),
+            got,
+            num(&c["out"]),
+        );
+    }
+}
+
+#[test]
+fn read_building_resource_upkeep_ratio_matches_web() {
+    let v = vectors();
+    for (i, c) in arr(&v, "readBuildingResourceUpkeepRatio")
+        .iter()
+        .enumerate()
+    {
+        let raw = raw_from(&c["raw"]);
+        let got =
+            eu::read_building_resource_upkeep_ratio(&raw, difficulty(c["diff"].as_str().unwrap()));
+        assert_same(
+            &format!("readBuildingResourceUpkeepRatio[{i}]"),
             got,
             num(&c["out"]),
         );

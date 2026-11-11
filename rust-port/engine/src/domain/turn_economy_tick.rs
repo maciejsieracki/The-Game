@@ -118,6 +118,11 @@ pub fn building_record_of(b: &Building) -> BuildingRecord {
             m.insert("cegla".into(), k.cegla.map(|x| x as f64));
             m
         }),
+        utrzymanie_surowce: b.utrzymanie_surowce.as_ref().map(|u| {
+            let mut m: BTreeMap<String, Option<f64>> = BTreeMap::new();
+            m.insert("ceramika".into(), u.ceramika.map(|x| x as f64));
+            m
+        }),
     }
 }
 
@@ -232,7 +237,8 @@ pub fn compute_owner_upkeep(
         );
         out.upkeep_by_owner.insert(oid, balance);
 
-        let buildings_res = total_building_resource_upkeep(blds);
+        let buildings_res =
+            total_building_resource_upkeep(blds, params.upkeep.building_resource_upkeep_ratio);
         let refs: Vec<UnitTypeRef> = ounits
             .iter()
             .map(|u| UnitTypeRef {

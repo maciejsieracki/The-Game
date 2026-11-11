@@ -1554,6 +1554,8 @@ pub mod economy_upkeep_p1 {
         pub zywnosc_jednostka_oboz: f64,
         pub zywnosc_mnoznik_terytorium: f64,
         pub zywnosc_mnoznik_poza_terytorium: f64,
+        /// Web `readBuildingResourceUpkeepRatio` (`budynki.utrzymanie_surowce_wspolczynnik`).
+        pub building_resource_upkeep_ratio: f64,
     }
 
     /// Web `DEFAULT_UPKEEP_PARAMS`.
@@ -1564,6 +1566,7 @@ pub mod economy_upkeep_p1 {
         zywnosc_jednostka_oboz: 0.5,
         zywnosc_mnoznik_terytorium: 1.0,
         zywnosc_mnoznik_poza_terytorium: 2.0,
+        building_resource_upkeep_ratio: 1.0,
     };
 }
 
@@ -1604,6 +1607,8 @@ pub mod economy_upkeep_p2 {
         pub epoka_wejscia: Option<f64>,
         /// Web `koszt_surowce`: wartosc `None` = nie-liczba.
         pub koszt_surowce: Option<BTreeMap<String, Option<f64>>>,
+        /// Web `utrzymanie_surowce` (stala ilosc surowca na ture per budynek, np. ceramika 2).
+        pub utrzymanie_surowce: Option<BTreeMap<String, Option<f64>>>,
     }
 
     /// Web `BuildingInstanceLike`.
@@ -1638,6 +1643,7 @@ pub mod economy_upkeep_p2 {
                 difficulty,
                 2.0,
             ),
+            building_resource_upkeep_ratio: read_building_resource_upkeep_ratio(raw, difficulty),
         }
     }
 
@@ -1671,8 +1677,37 @@ pub mod economy_upkeep_p2 {
         sum
     }
 
-    /// Web `BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1: 5).
-    pub const BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE: f64 = 5.0;
+    /// Web `DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO` (R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1: 1 = 1:1).
+    pub const DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO: f64 = 1.0;
+
+    /// Web `readBuildingResourceUpkeepRatio`: `budynki.utrzymanie_surowce_wspolczynnik` dla trudnosci
+    /// (brak / zla wartosc => domyslne 1).
+    pub fn read_building_resource_upkeep_ratio(
+        raw: &RawEconParamsForUpkeep,
+        difficulty: Difficulty,
+    ) -> f64 {
+        let v = read_num(
+            raw.budynki.as_ref(),
+            "utrzymanie_surowce_wspolczynnik",
+            difficulty,
+            DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
+        );
+        if v >= 0.0 {
+            v
+        } else {
+            DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO
+        }
+    }
+
+    /// Web `buildingRawGoldUpkeepAtLevel` (bez FALA2 i bez mnoznika epoki).
+    fn building_raw_gold_upkeep_at_level(building: &BuildingRecord, level: f64) -> f64 {
+        let Some(base) = finite(building.utrzymanie) else {
+            return 0.0;
+        };
+        let lvl = if level >= 1.0 { level } else { 1.0 };
+        let wzrost = finite(building.przyrost_utrzymania).unwrap_or(0.0);
+        building_effect_at_level(base, wzrost, lvl).floor()
+    }
 
     /// Web `addResourceCosts`: dodaje tylko skonczone wartosci > 0 (mutuje `acc`).
     pub fn add_resource_costs(acc: &mut BTreeMap<String, f64>, add: &BTreeMap<String, f64>) {
@@ -1683,16 +1718,38 @@ pub mod economy_upkeep_p2 {
         }
     }
 
-    /// Web `buildingResourceUpkeep`: 5 jednostek na KAZDY typ surowca z `koszt_surowce` (wartosc > 0).
-    pub fn building_resource_upkeep(building: Option<&BuildingRecord>) -> BTreeMap<String, f64> {
+    /// Web `buildingResourceUpkeep`: (1) jawne `utrzymanie_surowce` = floor(v x ratio) sztuk (stala
+    /// ilosc, nie na poziom); (2) dla KAZDEGO typu z `koszt_surowce` floor(rawGold(poziom) x ratio).
+    pub fn building_resource_upkeep(
+        building: Option<&BuildingRecord>,
+        level: f64,
+        ratio: f64,
+    ) -> BTreeMap<String, f64> {
         let mut out = BTreeMap::new();
-        let Some(raw) = building.and_then(|b| b.koszt_surowce.as_ref()) else {
+        let Some(b) = building else {
             return out;
         };
+        if let Some(fixed) = &b.utrzymanie_surowce {
+            for (k, v) in fixed {
+                if let Some(x) = finite(*v) {
+                    let units = (x * ratio).floor();
+                    if units > 0.0 {
+                        out.insert(k.clone(), units);
+                    }
+                }
+            }
+        }
+        let Some(raw) = &b.koszt_surowce else {
+            return out;
+        };
+        let amount = (building_raw_gold_upkeep_at_level(b, level) * ratio).floor();
+        if amount.is_nan() || amount <= 0.0 {
+            return out;
+        }
         for (k, v) in raw {
-            if let Some(x) = v {
-                if x.is_finite() && *x > 0.0 {
-                    out.insert(k.clone(), BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE);
+            if let Some(x) = finite(*v) {
+                if x > 0.0 {
+                    *out.entry(k.clone()).or_insert(0.0) += amount;
                 }
             }
         }
@@ -1702,23 +1759,28 @@ pub mod economy_upkeep_p2 {
     /// Web `totalBuildingResourceUpkeep`.
     pub fn total_building_resource_upkeep(
         buildings: &[BuildingInstanceLike],
+        ratio: f64,
     ) -> BTreeMap<String, f64> {
         let mut out = BTreeMap::new();
         for b in buildings {
-            add_resource_costs(&mut out, &building_resource_upkeep(Some(&b.record)));
+            add_resource_costs(
+                &mut out,
+                &building_resource_upkeep(Some(&b.record), b.level, ratio),
+            );
         }
         out
     }
 
-    /// Web `buildingResourceUpkeepForBuiltIds` (pierwszy budynek o danym id w katalogu).
+    /// Web `buildingResourceUpkeepForBuiltIds` (pierwszy budynek o danym id w katalogu; poziom 1).
     pub fn building_resource_upkeep_for_built_ids(
         built_ids: &[String],
         catalog: &[BuildingRecord],
+        ratio: f64,
     ) -> BTreeMap<String, f64> {
         let mut out = BTreeMap::new();
         for bid in built_ids {
             if let Some(bdef) = catalog.iter().find(|b| &b.id == bid) {
-                add_resource_costs(&mut out, &building_resource_upkeep(Some(bdef)));
+                add_resource_costs(&mut out, &building_resource_upkeep(Some(bdef), 1.0, ratio));
             }
         }
         out
@@ -1737,6 +1799,7 @@ pub mod economy_upkeep_p2 {
         cities: &[CityRef],
         catalog: &[BuildingRecord],
         built_by_city: &BTreeMap<String, Vec<String>>,
+        ratio: f64,
     ) -> BTreeMap<String, f64> {
         let mut out = BTreeMap::new();
         for city in cities {
@@ -1746,7 +1809,7 @@ pub mod economy_upkeep_p2 {
             let built: &[String] = built_by_city.get(&city.id).map_or(&[], |v| v.as_slice());
             add_resource_costs(
                 &mut out,
-                &building_resource_upkeep_for_built_ids(built, catalog),
+                &building_resource_upkeep_for_built_ids(built, catalog, ratio),
             );
         }
         out
@@ -1887,11 +1950,12 @@ pub mod economy_upkeep_p2 {
         cities: &[CityRef],
         catalog: &[BuildingRecord],
         built_by_city: &BTreeMap<String, Vec<String>>,
+        ratio: f64,
         units: &[(i64, UnitTypeRef)],
         resolve_unit_def: impl Fn(&str) -> Option<UnitResourceUpkeepSource>,
     ) -> BTreeMap<String, f64> {
         let mut out =
-            preview_owner_building_resource_upkeep(owner_id, cities, catalog, built_by_city);
+            preview_owner_building_resource_upkeep(owner_id, cities, catalog, built_by_city, ratio);
         let owner_units: Vec<UnitTypeRef> = units
             .iter()
             .filter(|(o, _)| *o == owner_id)
