@@ -258,6 +258,8 @@ const KLASYFIKACJA = [
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = input.battleR;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.q = start.q;', nr: 1, klasa: 'POWROT-NA-ODWIEDZONY', uzasadnienie: 'retreatAtkRosterToStart — powrot na atkStart, heks opuszczony w tej samej turze' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = start.r;', nr: 1, klasa: 'POWROT-NA-ODWIEDZONY', uzasadnienie: 'j.w.' },
+  { plik: 'src/game/post-battle-map.ts', tekst: 'u.q = q2;', nr: 1, klasa: 'WIELOHEKS-HAK-ZEWNETRZNY', uzasadnienie: 'tryTwoHexRetreat (R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1): odwrot ocalalych PRZEGRANEJ strony w bitwie w polu o 2 heksy (heks posredni przechodni). Modul bez dostepu do `explored`; odkrycie wzdluz drogi (heks bitwy -> cel) domyka wolajacy: main.ts po applyPostBattleMap woła revealAlongPathForStack dla postBattleRes.retreatedTwoHexIds jednostek gracza. W miescie odwrotu nie ma.' },
+  { plik: 'src/game/post-battle-map.ts', tekst: 'u.r = r2;', nr: 1, klasa: 'WIELOHEKS-HAK-ZEWNETRZNY', uzasadnienie: 'j.w.' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'live.q = city.q;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'wejscie do zdobytego miasta — heks sasiedni i widoczny (oblezenie/atak z sasiedztwa)' },
   { plik: 'src/game/post-battle-map.ts', tekst: 'live.r = city.r;', nr: 1, klasa: 'KROK-1-HEX', uzasadnienie: 'j.w.' },
 
