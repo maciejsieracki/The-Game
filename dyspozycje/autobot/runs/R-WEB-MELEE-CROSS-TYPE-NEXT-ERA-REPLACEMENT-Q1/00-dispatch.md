@@ -17,3 +17,7 @@ Actual grecki Wojownik mykeński→Falanga i inne legalne greckie jednostki wrę
 
 ## Kolejka
 Zarejestrowane do realizacji w limicie czterech aktywnych tematów. Na moment rejestracji operator jeszcze nieuruchomiony; nie jest to wdrożona poprawka.
+
+## Dodatkowa reguła właściciela — wyjątkowe jednostki, 2026-11-11
+Zabronić zamiany zwykłej jednostki na wyjątkową objętą limitem jednej sztuki oraz wyjątkowej na zwykłą. Wyjątkowa→wyjątkowa dopuszczalna jedynie przy spełnieniu wszystkich pozostałych bramek i obowiązującego limitu. Dotyczy listy UI i faktycznego wykonania, również zbiorczego: brak wielokrotnego wytworzenia limitowanej jednostki przez kilkadziesiąt zaznaczonych jednostek, aktualizacja limitu po każdej zaakceptowanej zamianie i atomowa ponowna walidacja.
+Nie mylić narodowego wariantu `Klasa=Specjalna` z limitowaną `Super-jednostka=TAK`; przed edycją zweryfikować rzeczywiste dane i istniejący zakres limitu. Właściciel opisuje limit w armii; istniejący kod może egzekwować go per cywilizacja. Ta poprawka NIE poszerza limitu ani nie zmienia jego zakresu bez decyzji. Zachować obecny limit i wyraźnie opisać wynik audytu. Wojownik mykeński i inne zwykłe narodowe warianty mają nadal móc awansować na zwykłą legalną piechotę wręcz następnej epoki. Testy negatywne obu kierunków normal↔wyjątkowy, legalne wyjątkowy→wyjątkowy, limit istniejącej jednostki oraz zbiorcza próba wielokrotna obowiązkowe.

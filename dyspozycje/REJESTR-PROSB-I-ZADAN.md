@@ -9699,3 +9699,4 @@ Automatyczna budowa ma wymagać Administratora. Powiązanie z Ratuszem było pro
 STATUS: OTWARTE
 DOMAIN: GAME
 „Zastąp”: awans piechoty wręcz do następnej epoki ma dopuszczać miecznika↔włócznika/falangitę, zamiast wymogu identycznego typu. Zgłoszony przykład: Wojownik mykeński→grecka piechota Żelaza. Zachować bramki nacji/badań/budynków/kosztów/limitów i doświadczenie; nie rozszerzać na konnicę, dystans ani machiny. Dispatch `autobot/runs/R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1/00-dispatch.md`. Zarejestrowane w kolejce, operator jeszcze nieuruchomiony.
+- DODATEK2026-11-11 do R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: wyjątkowe jednostki objęte limitem jednej sztuki mogą być zamieniane wyłącznie na wyjątkowe; zwykłe wyłącznie na zwykłe. Zachować istniejący limit, także w zbiorczej zamianie. Odróżnić limitowaną Super-jednostkę od zwykłego narodowego wariantu Klasa=Specjalna; nie zmieniać zakresu limitu per armia/cywilizacja bez ustalenia.
