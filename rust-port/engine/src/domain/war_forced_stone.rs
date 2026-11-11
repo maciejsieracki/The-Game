@@ -13,7 +13,7 @@ use crate::domain::war_forced_common::{
 };
 
 /// Web `WOJNA_KAMIEN_WYMUSZONA_START_TURY` (forced-war-stone.ts:18).
-pub const WOJNA_KAMIEN_WYMUSZONA_START_TURY: f64 = 25.0;
+pub const WOJNA_KAMIEN_WYMUSZONA_START_TURY: f64 = 40.0;
 /// Web `WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE` (forced-war-stone.ts:19).
 pub const WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: i64 = 2;
 /// Web `WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR` (forced-war-stone.ts:20).

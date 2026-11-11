@@ -3104,7 +3104,7 @@
   "in": {
    "name": "WOJNA_KAMIEN_WYMUSZONA_START_TURY"
   },
-  "out": 25
+  "out": 40
  },
  {
   "fn": "constant",
@@ -3215,7 +3215,7 @@
    "currentTurn": 25,
    "isStoneEra": true
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForStoneForcedWar",
@@ -3235,7 +3235,7 @@
    "currentTurn": 26,
    "isStoneEra": true
   },
-  "out": true
+  "out": false
  },
  {
   "fn": "isEligibleForStoneForcedWar",

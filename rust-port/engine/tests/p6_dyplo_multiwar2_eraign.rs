@@ -137,8 +137,8 @@ fn era_delay_n_minus_1_n_n_plus_1_for_bronze_and_iron() {
     assert!(!is_era_forced_war_ignoring_r1(None));
     assert!(is_era_forced_war_ignoring_r1(Some(ForcedEraTag::Bronze)));
     assert!(!is_era_forced_war_ignoring_r1(Some(ForcedEraTag::Stone)));
-    assert_eq!(ERA_FORCED_WAR_START_TURNS_BRONZE, 20.0);
-    assert_eq!(ERA_FORCED_WAR_START_TURNS_IRON, 20.0);
+    assert_eq!(ERA_FORCED_WAR_START_TURNS_BRONZE, 40.0);
+    assert_eq!(ERA_FORCED_WAR_START_TURNS_IRON, 40.0);
 }
 
 #[test]

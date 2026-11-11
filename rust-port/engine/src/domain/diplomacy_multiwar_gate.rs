@@ -55,9 +55,9 @@ impl WarGateReason {
 pub use crate::domain::diplomacy_multiwar::ForcedEraTag;
 
 /// Web `WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze` (R-WEB-ERA-DELAY-Q1).
-pub const ERA_FORCED_WAR_START_TURNS_BRONZE: f64 = 20.0;
+pub const ERA_FORCED_WAR_START_TURNS_BRONZE: f64 = 40.0;
 /// Web `WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron` (R-WEB-ERA-DELAY-Q1).
-pub const ERA_FORCED_WAR_START_TURNS_IRON: f64 = 20.0;
+pub const ERA_FORCED_WAR_START_TURNS_IRON: f64 = 40.0;
 
 /// Web `isEraForcedWarIgnoringR1`: wojna epoki Brazu/Zelaza omija R1 (`eraForcedWarIgnoreR1`
 /// = `["bronze","iron"]`); Kamien -> false (R1 zostaje); `None` (zwykle wypowiedzenie) -> false.

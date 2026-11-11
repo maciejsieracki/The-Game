@@ -659,7 +659,7 @@ fn trade_basket_valuation_multiplies_per_turn_currency_only() {
 fn alliance_sweetener_ease_is_measured_in_points() {
     let mut alliance = proposal(ProposalAction::DefensiveAlliance, 0, 1);
     alliance.payload.give_items = vec![BasketItem::gold(25.0)];
-    let mut ctx = context(relation(89.0, 100.0));
+    let mut ctx = context(relation(88.0, 100.0));
     ctx.responder_willingness_ally = 1.0;
 
     let result = evaluate_proposal(&alliance, &ctx);
