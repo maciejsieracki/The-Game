@@ -4,6 +4,7 @@
  */
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal } from './diplomacy-treaties';
+import { pluralPl } from '../ui/formatPl';
 import {
   hasTreaty,
   normalizeTreatyKind,
@@ -201,10 +202,8 @@ export function voluntaryTreatyBreakPlan(
   };
 }
 
-function turnsPl(n: number): string {
-  if (n === 1) return '1 tura';
-  if (n >= 2 && n <= 4) return `${n} tury`;
-  return `${n} tur`;
+export function turnsPl(n: number): string {
+  return `${n} ${pluralPl(n, 'tura', 'tury', 'tur')}`;
 }
 
 /**

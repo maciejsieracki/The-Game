@@ -1,3 +1,9 @@
+## ROBOCZA 9e9b8a1a -- 2026-11-06 -- FALA 649: Siedem poprawek z testu właściciela: panel Rozdziel armię (plaster miodu), panele miasta pod banerami, surowy kod w panelu rekrutacji, Praca z pustej kolejki, ikony w oknie odkrycia, odmiana liczebników (testowa)
+
+- W11 plaster miodu 6d40a8749; W12 panele miasta 6ebbaf0c; W13 surowy HTML 1b2695644; W10 podział Pracy 058f49303; W7 ikony odkryć de5b64c19; W8+PL-PLURAL-LOCAL testy i odmiana 654c721bc/2ee4f3043
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research ALL GREEN; unit-replace 21/21; combat OK; audio-sidecar PASS; testy tematów: honeycomb 34/0, city-panels 61/0, raw-html 9/0, praca 123/0 + 78/0, ikony 6/0, plural 76/0 + 825/0
+- Limity: NIE_ZMIERZONO: panele miasta tylko na rendererze z fixturą; praca: pusta kolejka nadal kieruje Pracę do puli (decyzja właściciela); lewy baner poza oknem przy 1366/1280 px
+
 ## ROBOCZA 9773ee33 -- 2026-11-06 -- FALA 648: Rekrutuj wszystkich: test na żywo w Chromium (testowa)
 
 - tylko testy: nowy empire-recruit-all-live-test (29/0, mutanty czerwone) i korekta empire-recruit-live-test; kod gry bez zmian

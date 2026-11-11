@@ -115,7 +115,7 @@ import {
   isBuildingSupersededByUpgrade,
 } from '../game/production';
 // R-WEB-MILL-RIVER-ONLY-GATE-Q1: zbiór budynków „tylko rzeka" (młyn) — definicja w production.ts.
-import { RIVER_ONLY_BUILDING_IDS } from '../game/production';
+import { RIVER_ONLY_BUILDING_IDS, effectivePracaRouting } from '../game/production';
 import {
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
@@ -1552,10 +1552,15 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
 } {
   const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
   const split = splitPraca(view.praca, pctB / 100);
+  // R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1: przy pustej kolejce cala Praca miasta
+  // ksiegowana jest w puli imperium (wyjatek silnika `pracaImperialPoolGain`) -- pokazujemy to
+  // samo, zeby baner/chipy nie twierdzily "0 do puli", gdy pula rosnie.
+  const prodNow = getProd(city.id);
+  const routed = effectivePracaRouting(split, frontItem(prodNow) === null, prodNow.wstrzymana === true);
   return {
     total: split.total,
-    doBudynkow: split.doBudynkow,
-    doPuli: split.doPuli,
+    doBudynkow: routed.doBudynkow,
+    doPuli: routed.doPuli,
     pctBudynki: pctB,
     pctPuli: procentPuliImperiumZBudynkow(pctB),
   };

@@ -24,14 +24,15 @@ const FORMS = {
   wplyw: 'Wpływ', wplywu: 'Wpływ',
   drewno: 'Drewno', drewna: 'Drewno',
   kamien: 'Kamień', kamienia: 'Kamień',
-  glina: 'Glina', gliny: 'Glina',
+  glina: 'Glina', gliny: 'Glina', gline: 'Glina',
+  ceramika: 'Ceramika', ceramiki: 'Ceramika', ceramike: 'Ceramika', ceramice: 'Ceramika',
   cegla: 'Cegła', cegle: 'Cegła', cegly: 'Cegła', cegiel: 'Cegła',
   sol: 'Sól', soli: 'Sól',
   braz: 'Brąz', brazu: 'Brąz',
   zelazo: 'Żelazo', zelaza: 'Żelazo',
   zloto: 'Złoto', zlota: 'Złoto',
   kon: 'Koń', koni: 'Koń',
-  ruda: 'Ruda', rudy: 'Ruda',
+  ruda: 'Ruda', rudy: 'Ruda', rude: 'Ruda',
 };
 
 function normalizeText(s) {
