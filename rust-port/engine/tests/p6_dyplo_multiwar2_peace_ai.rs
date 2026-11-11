@@ -352,6 +352,10 @@ fn decide_matches_web() {
 
 // --- tick --------------------------------------------------------------------
 
+// R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1: ten test celowo zostaje na wariancie V1 (`run_ai_ai_peace_tick`):
+// wektory tickow pochodza z webu bez reguly bilansu AI-AI (winner ujemny nie blokuje bramki `too_early`).
+// Przepiecie na V2 zmienia oczekiwany powod (`balance_blocked`) - to decyzja wlasciciela, nie zmiana testu.
+#[allow(deprecated)]
 #[test]
 fn tick_scenarios_match_web() {
     let root: Value = serde_json::from_str(DATA).unwrap();
