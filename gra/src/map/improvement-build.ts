@@ -897,6 +897,40 @@ function hexNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
   ];
 }
 
+/**
+ * R-WEB-IRON-STUD-ADJACENCY-Q1 (Owner 2026-11-11): klucze heksów ze ZBUDOWANĄ stadniną. Heks z
+ * kolejki tury (`pendingUndoKeys`, `hexKey:stadnina`) NIE liczy się jako istniejący.
+ */
+export function builtStudHexKeys(
+  placed: ReadonlyMap<string, string | readonly string[]>,
+  pendingUndoKeys?: ReadonlySet<string>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const [hk, v] of placed) {
+    if (pendingUndoKeys?.has(`${hk}:stadnina`)) continue;
+    if (keysOnPlacedHex(v).some(k => k.toLowerCase().trim() === 'stadnina')) out.add(hk);
+  }
+  return out;
+}
+
+/**
+ * R-WEB-IRON-STUD-ADJACENCY-Q1: czy któryś z 6 BEZPOŚREDNICH sąsiadów heksa (q,r) to zbudowana
+ * stadnina w TERYTORIUM GRACZA (własność: ten sam kanon co budowa — `isHexInPlayerTerritoryForState`;
+ * obca/wroga stadnina nie wlicza się). `builtStuds` = migawka z chwili tworzenia kwalifikatora
+ * (dla AI: przed pętlą wyboru, więc własne kolejki automatu nie liczą się jako istniejące).
+ */
+export function hasBuiltOwnStudNeighbor(
+  state: ImprovementBuildState,
+  q: number,
+  r: number,
+  builtStuds?: ReadonlySet<string>,
+): boolean {
+  const studs = builtStuds
+    ?? builtStudHexKeys(buildPlacedImprovementsMap(state.map, state.placedImprovements), state.pendingUndoKeys);
+  return hexNeighbors(q, r).some(n =>
+    studs.has(`${n.q},${n.r}`) && isHexInPlayerTerritoryForState(state, n.q, n.r));
+}
+
 export function buildRiverHexSet(map: GameMap): Set<string> {
   const set = new Set<string>();
   for (const path of map.riverPaths) {
@@ -1007,6 +1041,9 @@ function createQualifier(state: ImprovementBuildState) {
   // computeEmpireLivestockUnlocks(placedMap) nie jest tu już w ogóle potrzebne.
   const tradeRouteKonUnlocked = !!state.tradeRouteKonUnlocked;
   const horseStockAvailable = state.horseStockAvailable ?? 0;
+  // R-WEB-IRON-STUD-ADJACENCY-Q1: migawka zbudowanych stadnin W CHWILI tworzenia kwalifikatora
+  // (AI: przed pętlą wyboru — jego własne kolejki tej tury nie liczą się jako sąsiad).
+  const builtStudsAtStart = builtStudHexKeys(placedMap, state.pendingUndoKeys);
 
   function inPlayerTerritory(q: number, r: number): boolean {
     if (territoryNodes.length > 0) {
@@ -1108,7 +1145,8 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra,
+            hasBuiltOwnStudNeighbor(state, q, r, builtStudsAtStart));
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
@@ -1561,7 +1599,7 @@ export function getStadninaBuildBlockReason(state: ImprovementBuildState): strin
     return 'Wymagane złoże konia na twoim terytorium. Do epoki Żelaza stadnina stoi wyłącznie na złożu konia (poza złożem dopiero od epoki Żelaza).';
   }
   const stock = Math.floor(state.horseStockAvailable ?? 0);
-  return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}).`;
+  return `Wymagane złoże konia na twoim terytorium (albo ${STADNINA_HORSE_COST} koni w magazynie imperium, masz ${stock}, i stadnina już zbudowana na sąsiednim heksie w twoim terytorium).`;
 }
 
 // ---------------------------------------------------------------------------

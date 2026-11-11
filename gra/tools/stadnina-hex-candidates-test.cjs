@@ -151,7 +151,7 @@ async function main() {
     sc.map.hexes['2,1'] = sc.mkHex(2, 1);
     // D5: bez złoża, ale magazyn >= 50 -> kandydaci są (ścieżka magazynu bez zmian)
     ({ build } = api(good, sc, { horseStockAvailable: 50 }));
-    ok(hasHex(build, 1, 0), 'D5: magazyn 50 koni -> stadnina poza złożem nadal możliwa (bez zmian)');
+    ok(!hasHex(build, 1, 0), '[R-WEB-IRON-STUD-ADJACENCY-Q1] D5: magazyn 50 koni BEZ sąsiedniej stadniny -> poza złożem NIE (dodatni przypadek: stadnina-iron-adjacency-test.cjs)');
   }
 
   console.log('\n--- (E) MUTACJA: usunięcie węzłów terytorium z kandydatów MUSI czerwienić (B) ---');

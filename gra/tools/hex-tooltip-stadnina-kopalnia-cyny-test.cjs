@@ -353,8 +353,8 @@ async function main() {
     });
 
     // Epoka 3 (Żelaza) + Koń odblokowany (magazyn 50) -> silnik pozwala BEZ złoża.
-    assert(qualifiesEra3('stadnina', 10, 0) === true,
-      '[4] epoka 3 + magazyn 50: SILNIK pozwala budować stadninę BEZ lokalnego złoża (odblokowanie imperium od epoki Żelaza)');
+    assert(qualifiesEra3('stadnina', 10, 0) === false,
+      '[4] [R-WEB-IRON-STUD-ADJACENCY-Q1] epoka 3 + magazyn 50 BEZ sąsiedniej zbudowanej stadniny: SILNIK NIE pozwala (sąsiedztwo wymagane; test dodatni: stadnina-iron-adjacency-test.cjs)');
     // Epoka 2 -> silnik NIE pozwala bez złoża, mimo odblokowanego Konia.
     assert(qualifiesEra2('stadnina', 10, 0) === false,
       '[4] epoka 2 + magazyn 50: SILNIK NIE pozwala bez złoża konia na heksie (R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1)');
@@ -364,8 +364,8 @@ async function main() {
       '[4] tooltip bez flagi konImperialUnlocked NIE pokazuje Stadniny na heksie bez złoża');
     // Tooltip Z flagą, epoka 3 -> pokazuje (zgodnie z silnikiem).
     const htmlEra3 = buildHexContextTooltipHtml({ q: 10, r: 0, hex: hexNoDeposit, esc: (x) => x, currentEra: 3, konImperialUnlocked: true });
-    assert(possibleSection(htmlEra3).includes('<b>Stadnina</b>'),
-      '[4] tooltip: epoka 3 + konImperialUnlocked -> Stadnina na heksie bez złoża (zgodnie z silnikiem)');
+    assert(!possibleSection(htmlEra3).includes('<b>Stadnina</b>'),
+      '[4] [R-WEB-IRON-STUD-ADJACENCY-Q1] tooltip: epoka 3 + konImperialUnlocked BEZ sąsiedniej stadniny -> Stadnina NIE (zgodnie z silnikiem)');
     // Tooltip Z flagą, epoka 2 -> NIE pokazuje (zgodnie z silnikiem).
     const htmlEra2 = buildHexContextTooltipHtml({ q: 10, r: 0, hex: hexNoDeposit, esc: (x) => x, currentEra: 2, konImperialUnlocked: true });
     assert(!possibleSection(htmlEra2).includes('<b>Stadnina</b>'),

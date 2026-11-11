@@ -120,14 +120,14 @@ async function main() {
   console.log('\n--- (C) epoka 3 (Żelaza) i wyżej: po imperialnym odblokowaniu -- TAK bez złoża ---');
   {
     const q3 = qual(3, 50, false);
-    ok(q3('stadnina', 1, 0) === true, 'epoka 3: Łąka bez złoża + magazyn 50 -> TAK');
-    ok(q3('stadnina', 2, 0) === true, 'epoka 3: Równina bez złoża + magazyn 50 -> TAK');
-    ok(qual(3, 0, true)('stadnina', 1, 0) === true, 'epoka 3: Łąka bez złoża + trasa handlowa -> TAK');
-    ok(qual(4, 50, false)('stadnina', 1, 0) === true, 'epoka 4: magazyn 50 bez złoża -> TAK (epoki >= 3)');
+    ok(q3('stadnina', 1, 0) === false, '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej zbudowanej stadniny -> NIE] epoka 3: Łąka bez złoża + magazyn 50 -> NIE');
+    ok(q3('stadnina', 2, 0) === false, '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej zbudowanej stadniny -> NIE] epoka 3: Równina bez złoża + magazyn 50 -> NIE');
+    ok(qual(3, 0, true)('stadnina', 1, 0) === false, '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej zbudowanej stadniny -> NIE] epoka 3: Łąka bez złoża + trasa handlowa -> NIE');
+    ok(qual(4, 50, false)('stadnina', 1, 0) === false, '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej zbudowanej stadniny -> NIE] epoka 4: magazyn 50 bez złoża -> NIE');
     ok(qual(3, 0, false)('stadnina', 1, 0) === false, 'epoka 3: bez odblokowania Konia, bez złoża -> NIE');
     ok(qual(3, 49, false)('stadnina', 1, 0) === false, 'epoka 3: magazyn 49 (poniżej progu) -> NIE');
-    ok(M.isLivestockUnlockedForPlacement('stadnina', OPEN_LAKA, false, 50, 3) === true,
-      'epoka 3: isLivestockUnlockedForPlacement bez złoża przy magazynie 50 -> true');
+    ok(M.isLivestockUnlockedForPlacement('stadnina', OPEN_LAKA, false, 50, 3) === false,
+      '[R-WEB-IRON-STUD-ADJACENCY-Q1] epoka 3: isLivestockUnlockedForPlacement bez złoża i BEZ sąsiada przy magazynie 50 -> false');
   }
 
   console.log('\n--- (D) regresja: bydło/owce/lama nie są objęte bramką stadniny ---');
@@ -158,8 +158,8 @@ async function main() {
       'tooltip epoka 1 + odblokowany Koń -> Stadnina NIE na heksie bez złoża (zgodnie z silnikiem)');
     ok(tooltipPossibleHas(open, 'Stadnina', { currentEra: 2, konImperialUnlocked: true }) === false,
       'tooltip epoka 2 + odblokowany Koń -> Stadnina NIE na heksie bez złoża (zgodnie z silnikiem)');
-    ok(tooltipPossibleHas(open, 'Stadnina', { currentEra: 3, konImperialUnlocked: true }) === true,
-      'tooltip epoka 3 + odblokowany Koń -> Stadnina NA heksie bez złoża (zgodnie z silnikiem)');
+    ok(tooltipPossibleHas(open, 'Stadnina', { currentEra: 3, konImperialUnlocked: true }) === false,
+      '[R-WEB-IRON-STUD-ADJACENCY-Q1] tooltip epoka 3 + odblokowany Koń, BEZ sąsiedniej stadniny -> Stadnina NIE (zgodnie z silnikiem)');
     ok(tooltipPossibleHas(open, 'Stadnina', { currentEra: 3, konImperialUnlocked: false }) === false,
       'tooltip epoka 3 bez odblokowania Konia -> Stadnina NIE na heksie bez złoża');
     const deposit = mkHex(8, 0, T.Rownina, N.ZlozeKonia);
@@ -171,7 +171,7 @@ async function main() {
   {
     const fs2 = require('fs');
     const imp = fs2.readFileSync(path.resolve(SRC, 'map', 'improvement-build.ts'), 'utf8');
-    const callCount = (imp.match(/isLivestockUnlockedForPlacement\([^)]*playerEra\)/g) || []).length;
+    const callCount = (imp.match(/isLivestockUnlockedForPlacement\([^)]*playerEra/g) || []).length;
     ok(callCount === 4, `improvement-build.ts: 4 wywołania isLivestockUnlockedForPlacement przekazują playerEra (jest ${callCount})`);
     const auto = fs2.readFileSync(path.resolve(SRC, 'game', 'auto-improvements.ts'), 'utf8');
     ok(/buildImprovementQualifier\(state\)/.test(auto) && /playerEra,/.test(auto),

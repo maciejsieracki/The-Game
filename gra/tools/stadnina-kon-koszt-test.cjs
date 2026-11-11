@@ -125,7 +125,7 @@ console.log('\n--- (b) POZA złożem, magazyn < 50: zablokowana ---');
 // ---------------------------------------------------------------------------------------------
 ok(qual(0, false)('stadnina', 1, 0) === false, 'GOAL (b): magazyn 0/50 — stadnina POZA złożem zablokowana');
 ok(qual(49, false)('stadnina', 1, 0) === false, 'GOAL (b): magazyn 49/50 (o 1 za mało) — nadal zablokowana');
-ok(qual(50, false)('stadnina', 1, 0) === true, 'kontrola granicy: magazyn DOKŁADNIE 50/50 — już dozwolona (próg >=, nie >)');
+ok(qual(50, false)('stadnina', 1, 0) === false, '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] kontrola granicy: magazyn DOKŁADNIE 50/50 bez sąsiada -> NIE (próg >= 50 sprawdzany w tests/stadnina-iron-adjacency-test.cjs z sąsiadem)');
 
 // ---------------------------------------------------------------------------------------------
 console.log('\n--- (c) POZA złożem, magazyn >= 50: budowa się udaje, magazyn spada DOKŁADNIE o 50 ---');
@@ -137,8 +137,8 @@ console.log('\n--- (c) POZA złożem, magazyn >= 50: budowa się udaje, magazyn 
   ];
   const stockBefore = M.ownerResourceStockAll(cities, 0).kon;
   ok(stockBefore === 70, 'setup: magazyn imperium (2 miasta) = 70 kon (>= 50)');
-  ok(qual(stockBefore, false)('stadnina', 1, 0) === true,
-    'GOAL (c): stadnina POZA złożem kwalifikuje się z magazynem 70 >= 50');
+  ok(qual(stockBefore, false)('stadnina', 1, 0) === false,
+    '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] GOAL (c): stadnina POZA złożem bez sąsiada NIE kwalifikuje się mimo magazynu 70 >= 50');
 
   // ŻYWE odjęcie — dokładnie ta funkcja, którą main.ts::commitBuildRequest woła dla kosztów
   // surowcowych (deductBuildingStockCostAcrossCities), z kosztem { kon: 50 } — nie osobna
@@ -164,10 +164,10 @@ ok(M.isLivestockUnlockedForPlacement('lama', PASTURE_HEX, false, 0) === true, 'r
 // ---------------------------------------------------------------------------------------------
 console.log('\n--- regresja: tradeRouteKonUnlocked (Temat #4, osobny mechanizm) bez zmian ---');
 // ---------------------------------------------------------------------------------------------
-ok(qual(0, true)('stadnina', 1, 0) === true,
-  'regresja Temat #4: trasa handlowa nadal odblokowuje stadninę za darmo, magazyn=0');
-ok(M.isLivestockUnlockedForPlacement('stadnina', OPEN_HEX, true, 0) === true,
-  'regresja Temat #4: isLivestockUnlockedForPlacement potwierdza bezpośrednio');
+ok(qual(0, true)('stadnina', 1, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] regresja Temat #4: trasa handlowa bez sąsiada -> NIE');
+ok(M.isLivestockUnlockedForPlacement('stadnina', OPEN_HEX, true, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1] regresja Temat #4: bez sąsiedniej stadniny isLivestockUnlockedForPlacement -> false');
 
 console.log(`\nstadnina-kon-koszt-test: ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

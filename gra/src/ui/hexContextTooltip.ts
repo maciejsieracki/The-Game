@@ -405,6 +405,7 @@ function listTerrainPossibleImprovements(
   map?: GameMap,
   ownerEra?: number,
   konImperialUnlocked = false,
+  adjacentBuiltStudOwn = false,
 ): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
@@ -444,7 +445,8 @@ function listTerrainPossibleImprovements(
     // epoki Żelaza (STADNINA_FREE_FROM_ERA) i tylko przy odblokowanym Koniu imperium (trasa LUB
     // magazyn >= 50) -- ta sama bramka co isLivestockUnlockedForPlacement w silniku.
     if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) {
-      const offDepositOpen = (ownerEra ?? 99) >= STADNINA_FREE_FROM_ERA && konImperialUnlocked;
+      // R-WEB-IRON-STUD-ADJACENCY-Q1: poza złożem tylko przy zbudowanej stadninie na sąsiednim heksie.
+      const offDepositOpen = (ownerEra ?? 99) >= STADNINA_FREE_FROM_ERA && konImperialUnlocked && adjacentBuiltStudOwn;
       if (!offDepositOpen) continue;
     }
     if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
@@ -521,6 +523,8 @@ export interface HexContextTooltipInput {
    * coś tylko od epoki Żelaza; w epokach 1–2 stadnina wymaga złoża konia na heksie.
    */
   konImperialUnlocked?: boolean;
+  /** R-WEB-IRON-STUD-ADJACENCY-Q1: bezpośredni sąsiad heksa to zbudowana stadnina w terytorium gracza. */
+  hasBuiltOwnStudNeighbor?: boolean;
   /**
    * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
    * dla kompatybilności wołających.
@@ -538,7 +542,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra, input.konImperialUnlocked ?? false);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra, input.konImperialUnlocked ?? false, input.hasBuiltOwnStudNeighbor ?? false);
 
   const lines: string[] = [];
 

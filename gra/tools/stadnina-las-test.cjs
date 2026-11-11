@@ -138,21 +138,21 @@ function qual() {
 }
 
 console.log('\n--- (0) warunek istotnosci: imperium MA >= 50 koni w magazynie ---');
-ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, false, 50),
-  'isLivestockUnlockedForPlacement: stadnina bez zloza NA TYM hexie, magazyn >= 50 kon');
+ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, false, 50) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] isLivestockUnlockedForPlacement: stadnina bez zloza, magazyn >= 50, bez sąsiada -> false');
 ok(!M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, false, 49),
   'KONTROLA runda 2: magazyn < 50 (bez zloza, bez trasy) juz NIE odblokowuje stadniny (Model B retirowany)');
-ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, true, 0),
-  'KONTROLA runda 2: tradeRouteKonUnlocked (Temat #4, osobna sciezka) nadal odblokowuje za darmo bez zmian');
+ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, true, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1] KONTROLA: tradeRouteKonUnlocked bez sąsiedniej stadniny -> false (dodatkowy warunek sąsiada)');
 
 console.log('\n--- (1) KRYTERIUM 1: kwalifikacja budowy na Laka/Rownina + Las ---');
 const q = qual();
-ok(q('stadnina', 5, 0) === true,
-  'GOAL 1: stadnina KWALIFIKUJE SIE na Laka+Las po odblokowaniu Konia (dzis zablokowana PRZED poprawka)');
-ok(q('stadnina', 6, 0) === true,
-  'GOAL 1: stadnina KWALIFIKUJE SIE tez na Rownina+Las (drugi kwalifikujacy teren bazowy)');
-ok(q('stadnina', 7, 0) === true,
-  'kontrola: stadnina nadal kwalifikuje sie na golej Lace (bez zmian pozytywnych)');
+ok(q('stadnina', 5, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] GOAL 1: Laka+Las poza złożem bez sąsiada -> NIE');
+ok(q('stadnina', 6, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] GOAL 1: Rownina+Las poza złożem bez sąsiada -> NIE');
+ok(q('stadnina', 7, 0) === false,
+  '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] kontrola: gola Laka poza złożem bez sąsiada -> NIE');
 ok(M.computeImprovementBuildImpact('stadnina', FOREST_HEX, []) !== null,
   'GOAL 1: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na lesie');
 ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === false,

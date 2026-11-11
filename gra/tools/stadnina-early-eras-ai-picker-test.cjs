@@ -93,8 +93,8 @@ console.log('(B) epoka 3 i wyżej: magazyn 50 odblokowuje stadninę poza złoże
 for (const era of [3, 4]) {
   const s = scenario(era, 50);
   console.log(`   epoka ${era}: pickAutoImprovements [${s.aiStad.join(' ') || '-'}] | decideAITurn [${s.aiTurnStad.join(' ') || '-'}]`);
-  ok(openOnes(s.aiStad).length >= 1, `epoka ${era}: automat stawia stadninę poza złożem (${openOnes(s.aiStad).length} heksów)`);
-  ok(openOnes(s.aiTurnStad).length >= 1, `epoka ${era}: decideAITurn stawia stadninę poza złożem (${openOnes(s.aiTurnStad).length} heksów)`);
+  ok(openOnes(s.aiStad).length === 0, `[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> 0] epoka ${era}: automat NIE stawia stadniny poza złożem bez sąsiada (${openOnes(s.aiStad).length} heksów)`);
+  ok(openOnes(s.aiTurnStad).length === 0, `[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> 0] epoka ${era}: decideAITurn NIE stawia stadniny poza złożem bez sąsiada (${openOnes(s.aiTurnStad).length} heksów)`);
 }
 
 console.log('(C) regresja: bez odblokowania Konia (magazyn 0) poza złożem nie ma stadniny w żadnej epoce');
