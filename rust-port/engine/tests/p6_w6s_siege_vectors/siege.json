@@ -1,0 +1,10877 @@
+{
+ "source": "gra/src/game/diplomacy-siege-war-gate.ts@07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "generator": "tests/p6_w6s_siege_gen.mjs",
+ "owners": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  9
+ ],
+ "matrices": [
+  [
+   [
+    true,
+    false,
+    true,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    true,
+    true,
+    true,
+    false,
+    true,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    true,
+    false,
+    false,
+    false,
+    true,
+    false
+   ]
+  ],
+  [
+   [
+    true,
+    true,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  ],
+  [
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    true,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  ],
+  [
+   [
+    false,
+    false,
+    true,
+    false,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    true,
+    false,
+    true,
+    false,
+    true,
+    true
+   ],
+   [
+    true,
+    true,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  ],
+  [
+   [
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    true,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  ],
+  [
+   [
+    true,
+    false,
+    false,
+    false,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    true,
+    true,
+    false,
+    true,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    false
+   ]
+  ]
+ ],
+ "cases": [
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 0,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 1,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 2,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 3,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 4,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 0,
+   "defender": 9,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 1,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 2,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 3,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 4,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 3,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 0,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 1,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 2,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 4,
+   "defender": 9,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 0,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 1,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 2,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 3,
+   "allowed": true
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 4,
+   "allowed": false
+  },
+  {
+   "matrix": 5,
+   "besieger": 9,
+   "defender": 9,
+   "allowed": false
+  }
+ ],
+ "sideMatrices": [
+  [
+   [
+    true,
+    true,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    false,
+    true,
+    false
+   ]
+  ],
+  [
+   [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    true,
+    true,
+    true,
+    false,
+    true,
+    true
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    false,
+    true,
+    false,
+    false,
+    true
+   ]
+  ],
+  [
+   [
+    true,
+    false,
+    false,
+    false,
+    false,
+    true
+   ],
+   [
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+   ]
+  ],
+  [
+   [
+    false,
+    false,
+    false,
+    false,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    false,
+    false,
+    true
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    true,
+    true,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    false
+   ]
+  ],
+  [
+   [
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    false,
+    true,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    true,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+   ]
+  ],
+  [
+   [
+    false,
+    true,
+    true,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    false,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    false,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  ]
+ ],
+ "sideAlliances": [
+  [
+   [
+    true,
+    true,
+    false,
+    false,
+    true,
+    true
+   ],
+   [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  ],
+  [
+   [
+    true,
+    false,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    false,
+    false,
+    true,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    true,
+    true,
+    false,
+    false,
+    false
+   ],
+   [
+    true,
+    true,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    true,
+    false,
+    false,
+    true,
+    true,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  ],
+  [
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    true,
+    false,
+    true,
+    true
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  ],
+  [
+   [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    false,
+    false,
+    true,
+    true,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   [
+    false,
+    true,
+    false,
+    true,
+    false,
+    true
+   ],
+   [
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+   ],
+   [
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+   ]
+  ]
+ ],
+ "sideCases": [
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    4,
+    9
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    0,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1,
+    2,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    0,
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    1,
+    2,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    1,
+    3,
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 0,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0,
+    4,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    2,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3,
+    4
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    2,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    1,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    3,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    0,
+    1,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    0,
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    1,
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 1,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    2,
+    4,
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 2,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0,
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    0,
+    1,
+    3
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2,
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    2,
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    2,
+    4,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    2,
+    4,
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 3,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    0,
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    1,
+    3,
+    4
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    0,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    1,
+    3,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    3,
+    4,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    0,
+    1
+   ],
+   "defender": [
+    4,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    0,
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    1,
+    4,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    4,
+    9
+   ],
+   "defender": [
+    1,
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    1,
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    3
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    1,
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [
+    1,
+    3,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 4,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    0,
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 0,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0,
+    3
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    0,
+    3,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    0,
+    3
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    0,
+    3,
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0,
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 1,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    1,
+    4
+   ],
+   "defender": [
+    3
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    2,
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    2,
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 2,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 1,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 2,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 4,
+   "attacker": [
+    0
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 0,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 0,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 3,
+   "attacker": [
+    1
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 1,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 4,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 2,
+   "city": 9,
+   "attacker": [
+    2
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 1,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    1
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 2,
+   "attacker": [
+    3
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 3,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 0,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    0
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 1,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 2,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 3,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    3,
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 4,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 4,
+   "city": 9,
+   "attacker": [
+    4
+   ],
+   "defender": [
+    9
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 0,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 1,
+   "attacker": [
+    3,
+    9
+   ],
+   "defender": [
+    1,
+    2
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 2,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 3,
+   "attacker": [],
+   "defender": []
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 4,
+   "attacker": [
+    9
+   ],
+   "defender": [
+    4
+   ]
+  },
+  {
+   "enemy": 5,
+   "alliance": 3,
+   "besieger": 9,
+   "city": 9,
+   "attacker": [],
+   "defender": []
+  }
+ ]
+}
