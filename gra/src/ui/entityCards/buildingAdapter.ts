@@ -55,7 +55,7 @@ import {
   type BuildingRecord,
 } from '../../game/economy';
 import { buildingStockCost } from '../../game/building-stock-cost';
-import { proseRowFields, yieldValueFields } from './resourceRows';
+import { proseRowFields, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -338,7 +338,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // Tylko realne pozycje (1–5, bez dopełniania); layout `top3` renderera numeruje dowolną
   // liczbę pozycji. Budynek ukryty (decyzja (4)) nie ma treści — sekcja się nie renderuje. ---
   const top5Rows: EntityCardRow[] = content
-    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, value: item.zdanie })))
+    ? (content.ukryty ? [] : content.top5.slice(0, 5).map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie })))
     : top3Of(building);
   if (top5Rows.length > 0) sections.push({ key: 'top5', title: 'Top 5', rows: top5Rows, layout: 'top3' });
 
@@ -346,7 +346,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // zdania „[CZYNNOŚĆ], aby [KORZYŚĆ].” z danych; ten sam wygląd co sekcja `actions` karty
   // odkrycia (etap 1). Brak wpisu / budynek ukryty ⇒ brak sekcji (zero wymyślonej treści). ---
   const actionRows: EntityCardRow[] = content && !content.ukryty
-    ? content.cmz.slice(0, 3).map((item) => ({ label: '', value: buildingCmzSentence(item) }))
+    ? content.cmz.slice(0, 3).map((item) => ({ label: '', ...yieldSentenceFields(buildingCmzSentence(item)) }))
     : [];
   if (actionRows.length > 0) {
     sections.push({

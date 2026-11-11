@@ -201,6 +201,104 @@ async function main() {
     check('ikony plonów: w kartach występują tytuły Praca i Drewno (lub Żywność/Podatek) z ikoną marki',
       ['Praca', 'Żywność', 'Podatek', 'Kultura', 'Nauka'].some((t) => titlesAll.has(t)), [...titlesAll]);
 
+    // --- Runda 2: Top 5 (tytuły) i „Co możesz teraz zrobić" (zdania) jako chipy — PRAWDZIWE karty ---------------
+    const top5Cases = [['building', 'stolarnia'], ['building', 'kuznia'], ['building', 'targowisko'], ['building', 'biblioteka'],
+      ['technology', 'rolnictwo'], ['technology', 'waluta'], ['technology', 'obrobka-drewna'], ['technology', 'gospodarka-wodna']];
+    const top5Res = await page.evaluate(({ cases, names }) => {
+      const C = window.__C;
+      const out = [];
+      for (const [kind, rawId] of cases) {
+        const id = kind === 'technology' ? (C.technologyIdFromName(rawId.replace(/-/g, ' ')) || rawId) : rawId;
+        const data = C.buildEntityCardData(kind, id, {});
+        if (!data) { out.push({ kind, id: rawId, missing: true }); continue; }
+        const host = document.createElement('div');
+        host.className = 'host';
+        host.setAttribute('data-case', 'top5:' + kind + ':' + rawId);
+        const card = C.renderEntityCard(data);
+        host.appendChild(card);
+        document.body.appendChild(host);
+        const bare = (el) => {
+          const clone = el.cloneNode(true);
+          clone.querySelectorAll('.bld-res-chip-ic').forEach((n) => n.remove());
+          const low = clone.textContent.toLocaleLowerCase('pl');
+          return names.filter((n) => new RegExp('(^|[^\\p{L}])' + n.toLocaleLowerCase('pl') + '($|[^\\p{L}])', 'u').test(low));
+        };
+        const info = (el) => ({
+          chips: el.querySelectorAll('.bld-res-chip').length,
+          svgs: el.querySelectorAll('.bld-res-chip-ic svg').length,
+          textIcons: el.querySelectorAll('.bld-res-chip-ic--text').length,
+          titles: [...el.querySelectorAll('.bld-res-chip-ic')].map((n) => n.getAttribute('title')),
+          aria: [...el.querySelectorAll('.bld-res-chip-ic')].map((n) => n.getAttribute('aria-label')),
+          bare: bare(el),
+          overflow: el.getBoundingClientRect().right > card.getBoundingClientRect().right + 0.5,
+        });
+        out.push({
+          kind, id: rawId,
+          titles: [...card.querySelectorAll('[data-section-key="top5"] .entity-card-top3-title')].map(info),
+          actions: [...card.querySelectorAll('[data-section-key="actions"] .entity-card-prose')].map(info),
+          cardOverflowX: card.scrollWidth > card.clientWidth + 1,
+        });
+      }
+      return out;
+    }, { cases: top5Cases, names: YIELD_NAMES.concat(['Żywności', 'Kultury', 'Nauki', 'Wiary', 'Podatku', 'Drewna', 'Kamienia']) });
+    for (const c of top5Res) {
+      check(`Top5/actions ${c.kind}:${c.id} — karta zbudowana z prawdziwych danych`, !c.missing, c);
+      if (c.missing) continue;
+      const withChips = c.titles.filter((t) => t.chips > 0);
+      check(`Top5 ${c.kind}:${c.id} — co najmniej jeden TYTUŁ z chipem (ikona SVG, nie tekst)`,
+        withChips.length > 0 && withChips.every((t) => t.svgs === t.chips && t.textIcons === 0), c.titles);
+      check(`Top5 ${c.kind}:${c.id} — w tytułach brak gołych nazw plonów/surowców (nazwa tylko w title/aria-label)`,
+        c.titles.every((t) => t.bare.length === 0 && t.titles.every(Boolean) && t.titles.join() === t.aria.join()), c.titles);
+      check(`actions ${c.kind}:${c.id} — zdania „Co możesz teraz zrobić": chipy z ikoną SVG, brak gołych nazw`,
+        c.actions.length > 0 && c.actions.every((t) => t.bare.length === 0 && t.svgs === t.chips && t.textIcons === 0), c.actions);
+      check(`Top5/actions ${c.kind}:${c.id} — brak przepełnienia poziomego`,
+        !c.cardOverflowX && c.titles.every((t) => !t.overflow) && c.actions.every((t) => !t.overflow), c);
+    }
+    check('actions: zdania z chipami występują w prawdziwych kartach (>= 8 zdań w badanych kartach)',
+      top5Res.flatMap((c) => c.actions || []).filter((t) => t.chips > 0).length >= 8,
+      top5Res.map((c) => (c.actions || []).filter((t) => t.chips > 0).length));
+    if (SHOTS_DIR) {
+      fs.mkdirSync(SHOTS_DIR, { recursive: true });
+      for (const c of top5Res.filter((x) => !x.missing)) {
+        const el = await page.$(`[data-case="top5:${c.kind}:${c.id}"]`);
+        if (el) await el.screenshot({ path: path.join(SHOTS_DIR, `karta-top5-${c.kind}-${c.id}.png`) });
+      }
+    }
+    // XSS w tytule Top 5 (labelParts) i w prozie „actions" (valueParts) — kwota/tekst jako zwykły tekst.
+    const xss2 = await page.evaluate(() => {
+      window.__xss2 = 0;
+      const data = {
+        kind: 'building', id: 'xss-top5', title: 'XSS2', medallion: { kind: 'icon', svg: '<svg width="10" height="10"></svg>' },
+        sections: [{
+          key: 'top5', title: 'Top 5', layout: 'top3',
+          rows: [{ label: 'x', value: '<img src=x onerror="window.__xss2=1">zdanie',
+            labelParts: ['<img src=x onerror="window.__xss2=2">', { id: 'praca', amount: '<b onmouseover="window.__xss2=3">+5</b>' }, ' <u>w mieście</u>'] }],
+        }, {
+          key: 'actions', title: 'Co możesz teraz zrobić', layout: 'prose',
+          rows: [{ label: '', value: 'x', valueParts: ['<img src=x onerror="window.__xss2=4">', { id: 'drewno', amount: '<i onclick="window.__xss2=5">10%</i>' }] }],
+        }],
+      };
+      const host = document.createElement('div');
+      host.className = 'host';
+      const card = window.__C.renderEntityCard(data);
+      host.appendChild(card);
+      document.body.appendChild(host);
+      return new Promise((resolve) => setTimeout(() => resolve({
+        imgs: card.querySelectorAll('img').length,
+        injected: card.querySelectorAll('.entity-card-top3-title b, .entity-card-top3-title u, .entity-card-prose i, .entity-card-prose u').length,
+        xss: window.__xss2,
+        title: card.querySelector('.entity-card-top3-title').textContent,
+        prose: card.querySelector('.entity-card-prose').textContent,
+        titleChips: card.querySelectorAll('.entity-card-top3-title .bld-res-chip').length,
+        proseChips: card.querySelectorAll('.entity-card-prose .bld-res-chip').length,
+      }), 150));
+    });
+    check('XSS Top 5/actions: żaden <img>/<b>/<i>/<u> nie powstaje, skrypt się nie wykonał',
+      xss2.imgs === 0 && xss2.injected === 0 && xss2.xss === 0, xss2);
+    check('XSS Top 5/actions: dane z HTML-em widoczne jako zwykły tekst, chipy nadal są',
+      xss2.title.includes('<img') && xss2.title.includes('<b onmouseover') && xss2.title.includes('<u>w mieście</u>')
+        && xss2.prose.includes('<img') && xss2.prose.includes('<i onclick') && xss2.titleChips === 1 && xss2.proseChips === 1, xss2);
+
     // --- Bezpieczeństwo: kwota z HTML-em oraz value z HTML-em ------------------------------------
     const xss = await page.evaluate(() => {
       window.__xss = 0;

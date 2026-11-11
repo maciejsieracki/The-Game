@@ -19,7 +19,7 @@ function fold(s: string): string {
 const ALIASES: Readonly<Record<string, string>> = {
   drewna: 'drewno', kamienia: 'kamien', gliny: 'glina', brazu: 'braz', zelaza: 'zelazo', cegly: 'cegla',
   trzody: 'bydlo', trzoda: 'bydlo', 'krowa/byk': 'bydlo', owiec: 'owce', lamy: 'lama', konia: 'kon', koni: 'kon',
-  ceramiki: 'ceramika', soli: 'sol', zlota: 'zloto', stali: 'stal', rudy: 'ruda', 'rudy zelaza': 'ruda_zelaza', 'rudy cyny': 'ruda_cyny',
+  ceramiki: 'ceramika', soli: 'sol', zlota: 'zloto', stali: 'stal', rudy: 'ruda', 'rudy zelaza': 'ruda_zelaza', 'rudy cyny': 'ruda_cyny', 'rudy miedzi': 'ruda', 'ruda miedzi': 'ruda',
 };
 
 const KNOWN: ReadonlySet<string> = (() => {
@@ -67,6 +67,9 @@ const BUILDING_MODIFIER_PREV: ReadonlySet<string> = new Set([
   'odlewnia', 'odlewni', 'odlewnie', 'kuznia', 'kuzni', 'kuznie', 'kopalnia', 'kopalni', 'kopalnie',
   // nazwy epok („epoki Żelaza", „budynki brązu", „epoka Brązu") — to nie surowiec magazynu
   'epoki', 'epoka', 'epoce', 'epoke', 'budynki', 'wojska',
+  // nazwy technologii/budynków („Hutnictwo żelaza", „Obróbka drewna", „Warzelnia soli") — nie surowiec
+  'hutnictwo', 'hutnictwa', 'hutnictwem', 'hutnictwu', 'obrobka', 'obrobki', 'obrobke', 'obrobce',
+  'warzelnia', 'warzelni', 'warzelnie',
 ].map(fold));
 
 /** Notatki deweloperskie w nawiasach (`(TYP 1 — bez desek, B-SUROW-BUD-03)`, `(hex.zloze=sol)`,
@@ -89,9 +92,13 @@ const YIELD_WORDS: Readonly<Record<string, string>> = {
   pieniadz: 'pieniadz', pieniadze: 'pieniadz', pieniadza: 'pieniadz', pieniedzy: 'pieniadz',
   zywnosci: 'zywnosc', kultura: 'kultura', kultury: 'kultura', nauka: 'nauka', nauki: 'nauka',
   wiara: 'wiara', wiary: 'wiara', wplyw: 'wplyw', wplywu: 'wplyw',
+  // biernik („zwiększyć Naukę miasta", „zyskać Kulturę"): ta sama nazwa plonu
+  nauke: 'nauka', kulture: 'kultura', prace: 'praca', wiare: 'wiara',
 };
 
-export function resourceTextParts(text: string | null | undefined, yields = false): EntityCardValuePart[] | null {
+export function resourceTextParts(
+  text: string | null | undefined, yields = false, eraGuard = false,
+): EntityCardValuePart[] | null {
   const src = String(text ?? '').replace(DEV_NOTE_RE, '');
   const wordRe = /[\p{L}\p{N}]+/gu;
   const words: Array<{ w: string; start: number; end: number }> = [];
@@ -111,6 +118,17 @@ export function resourceTextParts(text: string | null | undefined, yields = fals
     const after = src[cur.end] ?? '';
     if (before === '=' || before === '.' || after === '-' || (after === '.' && /\p{L}/u.test(src[cur.end + 1] ?? ''))) continue;
     if (prev && BUILDING_MODIFIER_PREV.has(fold(prev.w))) { modChain.add(i); continue; }
+    if (eraGuard) {
+      // Top 5 / „Co możesz teraz zrobić": wielka litera w środku zdania = nazwa epoki („Brązu i Żelaza",
+      // „Łucznicy Brązu") albo nazwa własna („Kamień Ha'amonga"), nie surowiec — chyba że stoi tuż po liczbie.
+      const fw = fold(cur.w);
+      const afterNumber = prev != null && /^\s*[+\-−]?\d+(?:[.,]\d+)?%?\s*$/.test(src.slice(prev.start, cur.start));
+      if (['braz', 'brazu', 'zelazo', 'zelaza', 'zelazie', 'kamien', 'kamienia'].includes(fw)
+        && /\p{Lu}/u.test(cur.w[0]!) && i > 0 && !afterNumber) continue;
+      if (fw === 'kamien' && nxt && fold(nxt.w) === 'ha') continue;
+      // „Postaw Owce / Lamy / Trzodę" — nazwa ulepszenia terenu, nie surowiec (wielka litera, bez kwoty).
+      if (['owce', 'lamy', 'lama', 'trzoda', 'trzody'].includes(fw) && /\p{Lu}/u.test(cur.w[0]!) && !afterNumber) continue;
+    }
     // „Odlewnia brązu/żelaza": drugi człon po „/" to nadal nazwa budynku, nie surowiec.
     if (prev && modChain.has(i - 1) && src.slice(prev.end, cur.start).trim() === '/') { modChain.add(i); continue; }
     let id: string | null = null;
@@ -197,4 +215,46 @@ export function yieldEntryParts(
     plain.push(`${amount} ${e.label}`);
   });
   return { value: plain.join(separator), valueParts: parts };
+}
+
+
+/** Liczba (ze znakiem/%) tuż przed chipem bez kwoty → staje się jego kwotą (chip niełamliwy „+5 [ikona]"). */
+const TRAILING_AMOUNT_RE = /^([\s\S]*?)([+\-−]?\d+(?:[.,]\d+)?%?)\s+$/;
+
+/**
+ * Część zdania/tytułu z plonami i surowcami (Top 5, „Co możesz teraz zrobić") → części z chipami:
+ * „+5 Pracy w mieście" → [{praca,+5}, " w mieście"]. Nazwy epok i nazwy własne zostają tekstem
+ * (`eraGuard`). `null`, gdy tekst nie zawiera plonu/surowca.
+ */
+export function yieldProseParts(text: string | null | undefined): EntityCardValuePart[] | null {
+  const raw = resourceTextParts(text, true, true);
+  if (!raw) return null;
+  const out: EntityCardValuePart[] = [];
+  for (const part of raw) {
+    if (typeof part !== 'string' && part.amount === undefined && out.length > 0) {
+      const prev = out[out.length - 1]!;
+      if (typeof prev === 'string') {
+        const m = TRAILING_AMOUNT_RE.exec(prev);
+        if (m) {
+          if (m[1]) out[out.length - 1] = m[1]; else out.pop();
+          out.push({ id: part.id, amount: m[2]! });
+          continue;
+        }
+      }
+    }
+    out.push(part);
+  }
+  return out;
+}
+
+/** `labelParts` tytułu Top 5 albo `{}`, gdy tytuł nie ma plonów/surowców. */
+export function yieldTitleFields(title: string): { labelParts?: EntityCardValuePart[] } {
+  const parts = yieldProseParts(title);
+  return parts ? { labelParts: parts } : {};
+}
+
+/** Pola wiersza prozy „Co możesz teraz zrobić": `value` = tekst rezerwowy, `valueParts` = chipy. */
+export function yieldSentenceFields(text: string): { value: string; valueParts?: EntityCardValuePart[] } {
+  const parts = yieldProseParts(text);
+  return parts ? { value: text, valueParts: parts } : { value: text };
 }

@@ -97,7 +97,7 @@ async function main() {
     "export { improvementAdapter } from '../src/ui/entityCards/improvementAdapter.ts';",
     "export { technologyAdapter } from '../src/ui/entityCards/technologyAdapter.ts';",
     "export { wonderAdapter } from '../src/ui/entityCards/wonderAdapter.ts';",
-    "export { resourceIdFromName, resourcesFromList } from '../src/ui/entityCards/resourceRows.ts';",
+    "export { resourceIdFromName, resourcesFromList, yieldProseParts } from '../src/ui/entityCards/resourceRows.ts';",
     "export { resourceAmountChipHtml, escapeHtmlText } from '../src/ui/resourceAmountChip.ts';",
     "export { STOCK_RESOURCE_LABEL, stockResourceLabel } from '../src/game/building-stock-cost.ts';",
     '',
@@ -117,13 +117,25 @@ async function main() {
 
 
   // --- Nazwy plonów z ikoną marki (YIELD_CHIP) dołączone do nazw surowców ---------------------------
-  const YIELD_NAMES = ['Żywność', 'Praca', 'Pracy', 'Kultura', 'Nauka', 'Wiara', 'Podatek', 'Pieniądz', 'Pieniądze', 'Pieniądza', 'Pieniędzy', 'Żywności', 'Kultury', 'Nauki', 'Wiary', 'Podatku', 'Wpływ', 'Wpływu'];
+  const YIELD_NAMES = ['Żywność', 'Praca', 'Pracy', 'Kultura', 'Nauka', 'Wiara', 'Podatek', 'Pieniądz', 'Pieniądze', 'Pieniądza', 'Pieniędzy', 'Żywności', 'Kultury', 'Nauki', 'Wiary', 'Podatku', 'Wpływ', 'Wpływu', 'Naukę', 'Kulturę', 'Pracę', 'Wiarę'];
   for (const y of YIELD_NAMES) names.add(y);
   const nameRes = [...names].map((n) => new RegExp('(^|[^\\p{L}])' + n.toLocaleLowerCase('pl') + '($|[^\\p{L}])', 'u'));
   const hasBareName = (txt) => {
-    const low = String(txt || '').toLocaleLowerCase('pl');
+    // JAWNY wyjątek W5: nazwa własna cudu „Kamień Ha'amonga" (nie surowiec Kamień).
+    const low = String(txt || '').replace(/Kamień Ha['’]amonga/g, 'Ha-amonga').toLocaleLowerCase('pl');
     return nameRes.some((re) => re.test(low));
   };
+
+  if (process.env.DUMP_PARTS) {
+    const fmt = (ps) => ps.map((p) => (typeof p === 'string' ? p : `{${p.id}${p.amount !== undefined ? ':' + p.amount : ''}}`)).join('');
+    for (const f of ['building-cards-top5.json', 'tech-cards-top5.json']) {
+      for (const [k, v] of Object.entries(readJson(f))) {
+        if (!v || !v.top5) continue;
+        for (const it of v.top5) { const p = M.yieldProseParts(it.tytul); if (p) console.log('T', k, '|', fmt(p)); }
+        for (const c of v.cmz) { const p = M.yieldProseParts(c.czynnosc + ', aby ' + c.korzysc + '.'); if (p) console.log('C', k, '|', fmt(p)); }
+      }
+    }
+  }
 
   // --- Zebranie kart (jak w entity-cards-resource-icons-test) ---------------------------------------
   const cards = [];
@@ -162,18 +174,25 @@ async function main() {
   // Zakres: WSZYSTKIE wiersze WSZYSTKICH kart, w tym cuda. Wyjątki jawne (proza narracyjna, nazwy
   // epok, nazwy własne encji i opisy/rys historyczny). Etykieta wiersza (label) to nagłówek wiersza —
   // zostaje tekstem (założenie raportu); sprawdzana jest wyłącznie treść wartości.
-  // Runda 2 (obrona): wyjątkiem zostaje proza (layout prose) i Top 5/top3 (tytuł+zdanie przypięte
-  // jako zwykły tekst do danych przez building-cards-top5-test/tech-cards-top5-test; konwersja top5
-  // na chipy = DECYZJA orkiestratora, patrz 30-obrona-claude.md zarzut 2). Wyjątek jest jawny.
+  // Runda 2 (FC r1 FAIL, zarzut 2): Top 5 (TYTUŁY) i „Co możesz teraz zrobić" (actions) NIE są już wyjątkami —
+  // tytuły to `labelParts`, zdania akcji to `valueParts`; skan ma dać 0 gołych nazw. JAWNE wyjątki (tylko te):
+  //   (W1) zdanie pod tytułem Top 5 (`value` w layoucie top3) — proza słowna z danych (zdanie opisowe);
+  //   (W2) proza opisowa: sekcje layout 'prose' inne niż `actions` (Opis, Historia);
+  //   (W3) sekcje o tytule opis/top 3/rys historyczny/historia/ciekawostki;
+  //   (W4) etykiety wierszy (`label` w siatce) — nagłówki; „Epoka…", „Nazwa", „Kategoria".
   const isExempt = (section, row, kind) => {
-    if (section.layout === 'prose') return true;
-    if (section.layout === 'top3') return true;
+    if (section.layout === 'prose' && section.key !== 'actions') return true;
     if (/^(opis|top 3|rys historyczny|historia|ciekawostka|ciekawostki)$/i.test(section.title || '')) return true;
     if (/^Epoka/.test(row.label) || row.label === 'Nazwa' || row.label === 'Kategoria') return true;
     return false;
   };
+  const bareIn = (parts, text) => (parts && parts.length > 0
+    ? parts.filter((p) => typeof p === 'string').some((p) => hasBareName(p))
+    : hasBareName(text));
   const offenders = [];
   let yieldChipRows = 0;
+  let top5TitleChipRows = 0;
+  let actionsChipRows = 0;
   const yieldChipsPerKind = {};
   const YIELD_IDS = new Set(['zywnosc', 'praca', 'kultura', 'nauka', 'wiara', 'podatek', 'pieniadz']);
   const usedYieldIds = new Set();
@@ -181,6 +200,13 @@ async function main() {
     for (const section of card.sections || []) {
       for (const row of section.rows || []) {
         if (isExempt(section, row, kind)) continue;
+        if (section.layout === 'top3') {
+          // Top 5: skanujemy TYTUŁ (label/labelParts); zdanie (value) = wyjątek W1.
+          if ((row.labelParts || []).some((p) => typeof p !== 'string' && YIELD_IDS.has(p.id))) { top5TitleChipRows++; }
+          if (bareIn(row.labelParts, row.label)) offenders.push({ kind, id, section: section.key, field: 'labelParts', text: row.label });
+          continue;
+        }
+        if (section.key === 'actions' && (row.valueParts || []).some((p) => typeof p !== 'string')) actionsChipRows++;
         const chips = [...(row.resources || []), ...((row.valueParts || []).filter((p) => typeof p !== 'string'))];
         if (chips.some((c) => YIELD_IDS.has(c.id))) {
           yieldChipRows++;
@@ -217,6 +243,8 @@ async function main() {
       .every((r) => (r.valueParts || []).some((p) => typeof p !== 'string' && p.id === 'nauka' && /^\d+$/.test(String(p.amount)))));
     check('R2-4: „Koszt nauki” każdej technologii = chip nauka z liczbą', techs.length > 0 && kosztOk, techs.length);
   }
+  check('A3: Top 5 — tytuły z chipami plonów (labelParts) > 0 (budynki+technologie)', top5TitleChipRows > 20, top5TitleChipRows);
+  check('A4: „Co możesz teraz zrobić" — zdania z chipami (valueParts) > 0', actionsChipRows > 20, actionsChipRows);
   check('A2: wiersze z chipami plonów > 0', yieldChipRows > 0, yieldChipRows);
   console.log('wiersze z chipami plonów wg rodzaju:', JSON.stringify(yieldChipsPerKind), 'razem', yieldChipRows);
   for (const kind of ['building', 'improvement', 'wonder', 'unit', 'technology']) {

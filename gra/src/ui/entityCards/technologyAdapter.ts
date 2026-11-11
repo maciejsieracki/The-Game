@@ -52,7 +52,7 @@ import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
-import { resourcesFromList, yieldEntryParts, yieldValueFields } from './resourceRows';
+import { resourcesFromList, yieldEntryParts, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
 import type { EntityCardValuePart } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
@@ -233,7 +233,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // właściciela). Format pozycji: tytuł z liczbą + jedno zdanie (Q1), tylko realne pozycje (Q2)
   // — layout `top3` renderera numeruje dowolną liczbę pozycji (1–5).
   const top5Rows: EntityCardRow[] = (content?.top5 ?? []).slice(0, 5)
-    .map((item) => ({ label: item.tytul, value: item.zdanie }));
+    .map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie }));
   const top5Section: EntityCardSection = {
     key: 'top5', title: 'Top 5 korzyści', rows: top5Rows, layout: 'top3',
   };
@@ -243,7 +243,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // odkrycie nie ma wpisu w `tech-cards-top5.json` (test pilnuje, że dziś: 0/32). ---
   const actionRows: EntityCardRow[] = [];
   if (content) {
-    for (const item of content.cmz) actionRows.push({ label: '', value: cmzSentence(item) });
+    for (const item of content.cmz) actionRows.push({ label: '', ...yieldSentenceFields(cmzSentence(item)) });
   } else {
     actionRows.push(...legacyActionRows(resourceUnlocked, buildings, improvementNames, nextTechRows.length));
   }
