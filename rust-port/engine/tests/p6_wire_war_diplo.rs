@@ -286,6 +286,7 @@ fn brake_crisis_step_updates_state_like_web() {
 fn phase_matches_web_transcription_over_turns() {
     let doc = phase();
     let mut scenarios_run = 0;
+    let mut declared_in_five_turns = 0usize;
     for sc in doc["scenarios"].as_array().unwrap() {
         scenarios_run += 1;
         let me = sc["meId"].as_i64().unwrap();
@@ -405,6 +406,29 @@ fn phase_matches_web_transcription_over_turns() {
                 out.declarations.iter().all(|d| d.may_declare),
                 "{label}: may_declare"
             );
+            // Kontrakt pol declarations dla kazdej tury: deklaracja to para roznych
+            // wlascicieli, nalezaca do wejscia tury, po ktorej para jest w `at_war`
+            // i nie ma juz licznika kryzysu. Efekty (traktaty, UI) zostaja u callera.
+            for d in &out.declarations {
+                assert_ne!(d.declarer, d.victim, "{label}: declarer != victim");
+                let key = pair_key(d.declarer, d.victim);
+                assert!(
+                    owners.iter().any(|o| o.id == d.declarer)
+                        && owners.iter().any(|o| o.id == d.victim),
+                    "{label}: deklarujacy i ofiara sa wlascicielami fazy"
+                );
+                assert!(
+                    state.at_war.contains(&key),
+                    "{label}: para po deklaracji w at_war"
+                );
+                assert!(
+                    !state.counters.contains_key(&key),
+                    "{label}: licznik usuniety po deklaracji"
+                );
+            }
+            if sc["name"] == "ai_ai_five_turns_declare" {
+                declared_in_five_turns += out.declarations.len();
+            }
 
             assert_eq!(
                 state.counters,
@@ -426,4 +450,8 @@ fn phase_matches_web_transcription_over_turns() {
         }
     }
     assert_eq!(scenarios_run, 6, "liczba scenariuszy z wektorow");
+    assert!(
+        declared_in_five_turns >= 1,
+        "scenariusz ai_ai_five_turns_declare musi zawierac deklaracje wojny (kontrakt pol declarations)"
+    );
 }
