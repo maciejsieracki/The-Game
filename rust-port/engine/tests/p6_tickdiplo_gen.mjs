@@ -53,7 +53,7 @@ await esbuild.build({
   outfile: bundlePath,
   logLevel: 'error',
 });
-const { tickDiplomacy } = await import(pathToFileURL(bundlePath).href);
+const { tickDiplomacy, sharedBorderPenaltyForEpochs } = await import(pathToFileURL(bundlePath).href);
 
 // PRNG mulberry32 (deterministyczny).
 let seed = 0x3c6ef372;
@@ -86,6 +86,7 @@ const cover = {
   war: 0, peace: 0, warPositiveDelta: 0,
   tier: { sojusz: 0, nap: 0, pokoj: 0, none: 0, deprecatedPakt: 0 },
   credUndef: 0, credSet: 0,
+  border: { default: 0, bronze: 0, iron: 0 },
 };
 
 for (let i = 0; i < ROWS; i++) {
@@ -106,6 +107,13 @@ for (let i = 0; i < ROWS; i++) {
   if (chance(0.5)) ctx.wspolnaReligia = chance(0.5);
   if (chance(0.5)) ctx.odmiennaReligia = chance(0.5);
   if (chance(0.5)) ctx.karaWspolnaGranica = chance(0.5);
+  // Kara graniczna wg epoki pary (web: `karaWspolnaGranicaDelta` = sharedBorderPenaltyForEpochs).
+  // Epoki 0..4 (0/1 -> -2, 2 -> Brąz -3, 3..4 -> Żelazo -4). Część wierszy bez delty (domyślna = epoka 1).
+  if (ctx.karaWspolnaGranica && chance(0.7)) {
+    ctx.epokaA = pick([0, 1, 2, 3, 4]);
+    ctx.epokaB = pick([0, 1, 2, 3, 4]);
+    ctx.karaWspolnaGranicaDelta = sharedBorderPenaltyForEpochs(ctx.epokaA, ctx.epokaB);
+  }
   if (chance(0.6)) ctx.wiarygodnoscSelf = cred();
 
   const out = tickDiplomacy(
@@ -121,6 +129,11 @@ for (let i = 0; i < ROWS; i++) {
   if (ctx.pokojTrustTier === undefined && ctx.aktywnyPakt !== undefined) cover.tier.deprecatedPakt++;
   if (tier === undefined) cover.tier.none++; else cover.tier[tier]++;
   if (ctx.wiarygodnoscSelf === undefined) cover.credUndef++; else cover.credSet++;
+  if (ctx.karaWspolnaGranica) {
+    if (ctx.karaWspolnaGranicaDelta === undefined) cover.border.default++;
+    else if (ctx.karaWspolnaGranicaDelta === -3) cover.border.bronze++;
+    else if (ctx.karaWspolnaGranicaDelta === -4) cover.border.iron++;
+  }
   if (atWar && out.zaufanie > rdip.zaufanie) cover.warPositiveDelta++;
 
   // Liczby ułamkowe jako stringi (JS `String(x)` = najkrótszy zapis round-trip): serde_json
@@ -128,6 +141,7 @@ for (let i = 0; i < ROWS; i++) {
   // jest poprawnie zaokrąglony. Wartość w teście = `"…".parse::<f64>()`.
   const ctxOut = { ...ctx };
   if (ctxOut.wiarygodnoscSelf !== undefined) ctxOut.wiarygodnoscSelf = String(ctx.wiarygodnoscSelf);
+  if (ctxOut.karaWspolnaGranicaDelta !== undefined) ctxOut.karaWspolnaGranicaDelta = String(ctx.karaWspolnaGranicaDelta);
   rows.push({
     rel: { zaufanie: String(rdip.zaufanie), respekt: String(rdip.respekt), status: rdip.status },
     ctx: ctxOut,
