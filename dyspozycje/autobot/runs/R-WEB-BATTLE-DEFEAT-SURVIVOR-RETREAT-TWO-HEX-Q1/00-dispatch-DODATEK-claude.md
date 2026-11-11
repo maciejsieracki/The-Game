@@ -13,3 +13,12 @@ FC r1 NAPRAW (obie blokady):
 2. `battle-defeat-survivor-retreat-browser-test.cjs` jest NIEDETERMINISTYCZNY: run1 FAIL (siege/skip, wynik „remis”, odległości 1–4), run2 PASS; asercja nie obsługuje remisu. Ustal ziarno/wymuś zwycięzcę lub obsłuż remis zgodnie z regułą (remis nie jest przegraną); potwierdź ≥3 kolejnymi przebiegami (surowe wyniki).
 Pozostałe zarzuty (1–7) FC ODDAŁ (wipe garnizonu na centrum miasta = osobny temat/ABC; fallback bez trasy zgodny z dispatchem). NIE ruszać `wipeDefenderOnCityCenter` bez decyzji. Zmiana asercji `battle-undeployed-units-test.cjs` (rezerwa cofa się ze stosem) — założenie do potwierdzenia przez FC; opisz je w raporcie.
 Bramki po poprawce: tsc, test tematu, undeployed 35/0, post-battle-map 32/0, siege-defenders 12/0, oblezenie-lifted 16/0, dead-units, logic 213, tech-tree 20/0, research 33, unit-replace 21, combat 6/6, map-field-battle 24/0, mgla-sciezka-inwariant (= baza).
+
+## DODATEK 3 (runda 2/5, orkiestrator 2026-11-11) — DECYZJA WŁAŚCICIELA zawęża zakres (nadrzędny wobec DODATKU 2 i oryginalnego GOAL)
+Właściciel: „Wycofanie się jednostek dotyczy TYLKO walki w polu: przegrana strona — wszystkie ocalałe jednostki mogą wycofać się. W MIEŚCIE giną.”
+KONSEKWENCJE dla kandydata `c5dd4a21f` (runda 2 startuje od niego; ref `refs/keep/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1-code-r1`):
+1. Odwrót 2 heksy + eksport ocalałych przegranej strony TYLKO dla bitew w polu (bez miasta na heksie bitwy / bez sceny oblężenia).
+2. Bitwy o miasto/oblężenie (szturm, obrona miasta, scena z murami): PRZYWRÓĆ zachowanie z bazy 261e736de — ocalali przegranej strony giną (jak dotąd; `wipeDefenderOnCityCenter` bez zmian). Usuń/zawęź kod odwrotu dla szturmu oblężenia, `retreatNoTwoHexRouteIds` dla oblegających (zarzut 3 r1 staje się bezprzedmiotowy), testy Chromium „szturm oblężenia” zmień na dowód, że w mieście ocalali NIE wracają na mapę (jak baza).
+3. Dwie blokady FC r1 nadal obowiązują (klasyfikacja zapisów pozycji w `mgla-sciezka-inwariant-test` = wynik równy bazie 41/1; deterministyczny test Chromium z obsługą remisu, ≥3 przebiegi). Po zawężeniu zapisy pozycji w `post-battle-map.ts` mogą się zmniejszyć — sklasyfikuj tylko to, co zostaje.
+4. Asercja `battle-undeployed-units-test.cjs` (rezerwa cofa się o 2 heksy) — dotyczy WYŁĄCZNIE bitew w polu; dla bitew w mieście przywróć zachowanie bazy (rezerwa zostaje na hexie startowym) i oryginalną asercję.
+5. Remis nie jest przegraną (bez zmian).
