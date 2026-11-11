@@ -357,7 +357,7 @@
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
+      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę: wiersz ERA 1 (baza, 50/t). Epoka 2 i 3 mają jawne wiersze budynek_cegielnia_epoka2_przepustowosc (75/t) i budynek_cegielnia_epoka3_przepustowosc (100/t) — R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11). Od epoki 3 wzwyż obowiązuje wiersz epoki 3. Mnożnik wyjścia cegły 1/1,5/2 nadal osobno. [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (Maciej 2026-11-05): wartość BEZ zmian (50 cykli); ×2 cegły przez outputAmount 1→2 w recepturze (converters.ts), cykle Cegielni PŁASKIE (50), a epoka właściciela skaluje WYJŚCIE cegły +50% bazy/epokę (mnożnik 1 / 1,5 / 2 / 2,5 / 3; CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE, converterOutputMultiplierForEra) — działa także gdy produkcję ogranicza drewno."
     },
     "budynek_huta_przepustowosc": {
       "easy": 50,
@@ -379,6 +379,20 @@
       "hard": 75,
       "jednostka": "szt/turę",
       "opis": "Jawna przepustowość receptur produkujących Brąz od epoki właściciela 3 (epoka Żelaza): 75/t, utrzymywana dla późniejszych epok. Wartość per era, bez mnożnika foundry. R-WEB-BRONZE-OUTPUT-50-75-Q1 (2026-11-11)."
+    },
+    "budynek_cegielnia_epoka2_przepustowosc": {
+      "easy": 75,
+      "normal": 75,
+      "hard": 75,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość Cegielni (cykle glina+drewno→cegła) w epoce właściciela 2: 75/t. Wartość per era, bez mnożnika epoki (mnożnik WYJŚCIA cegły 1,5 liczony osobno w converters.ts). R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11)."
+    },
+    "budynek_cegielnia_epoka3_przepustowosc": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość Cegielni (cykle glina+drewno→cegła) od epoki właściciela 3 wzwyż: 100/t, utrzymywana dla późniejszych epok. Wartość per era, bez mnożnika epoki (mnożnik WYJŚCIA cegły 2 liczony osobno w converters.ts). R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11)."
     },
     "budynek_odlewnia_zelaza_przepustowosc": {
       "easy": 50,

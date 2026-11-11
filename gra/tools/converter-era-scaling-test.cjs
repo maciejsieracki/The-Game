@@ -298,9 +298,9 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era2, AI era3), jawny
     );
     assert(!!econ, 'advanceCityEconomy nie rzuca wyjatku (2 ownerow, era1 vs era3)');
 
-    eq(cPlayer.surowce.cegla, 150, 'gracz (era2): 150 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 1.5)');
+    eq(cPlayer.surowce.cegla, 225, 'gracz (era2): 225 cegiel/ture (75 cykli x 2 x mnoznik wyjscia 1.5; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 150)');
     eq(cPlayer.surowce.ceramika, 55, 'gracz (era2): 55 ceramiki/ture (+10% bazy)');
-    eq(cAi.surowce.cegla, 200, 'AI (era3): 200 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; bylo 60)');
+    eq(cAi.surowce.cegla, 400, 'AI (era3): 400 cegiel/ture (100 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; R-WEB-BRICK-CYCLES-75-100-Q1, bylo 200)');
     eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
     // Brąz korzysta z jawnych parametrów throughput per-era: owner era2 = 50, era3 = 75.
