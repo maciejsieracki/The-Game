@@ -1,3 +1,87 @@
+# R-WEB-POLISH-LANGUAGE-AUDIT-Q1 — Operator (Claude Sonnet 5.5), runda 2/5 (teksty UI i main.ts)
+
+STATUS: PASS-WITH-NOTES (poprawki pewne wykonane; audyt NADAL CZĘŚCIOWY — lektura liniowa nie objęła wszystkich literałów; lista ABC niżej)
+DOMAIN: GAME (TEKSTY)
+TEMAT: R-WEB-POLISH-LANGUAGE-AUDIT-Q1
+GOAL: Poprawki PEWNYCH błędów polszczyzny w literałach napisów dla gracza w gra/src/ui/** i gra/src/main.ts (bez entityCards/**, resourceAmountChip.ts, administratorIcon.ts, buildModeHud.ts), bez zmian logiki/kluczy/ID/liczb; wątpliwe -> ABC.
+BAZA: origin/main 4ee2aba61 (detached worktree).
+
+## Metoda (uczciwie)
+
+Skrypt wyciągnął 3015 literałów napisów (cudzysłowy/backticki) zawierających polskie znaki lub heurystycznie polskie słowa (cityPanel 861, main 643, empireDetailPanel 351, ...). Zastosowano skany klas błędów: (a) ASCII-fikacja — słowa bez ogonków, dla których w korpusie istnieje wariant z ogonkami (automatyczna lista kandydatów + ręczna selekcja; odrzucono identyfikatory/klucze/logi konsoli), (b) liczebnik + rzeczownik w złej formie (`${n} tur`, `${n} jednostek`, `${n} miast`, `${n} obywateli`, `tur(y)`), (c) niezgodne cudzysłowy polskie („…" zamiast „…”), (d) podwójne spacje/interpunkcja. NIE czytano linia po linii wszystkich 3015 literałów — wyniki skanów (b)/(c) przejrzano w całości, reszta korpusu (składnia, styl, spójność terminów) została tylko częściowo przeczytana przy okazji. To NIE jest poświadczenie lektury całego korpusu UI. Komunikaty console.* / diagnostyczne (ASCII bez ogonków: „[Oblezenie]”, „Blad …”) pominięte — nie są widoczne dla gracza.
+
+## Tabela poprawek (plik:miejsce, przed -> po, kategoria)
+
+| Plik (miejsce) | Przed | Po | Kat. |
+|---|---|---|---|
+| newGameFlow.ts EPOCHS (648-650) | „Epoka Brazu”, „Epoka Zelaza”, „narzedzia”, „potezne”, „cale Kamien + caly Braz juz zbadane”, badge „Dostepna” | „Epoka Brązu”, „Epoka Żelaza”, „narzędzia”, „potężne”, „cały Kamień i cały Brąz już zbadane”, „Dostępna” | pisownia (ogonki), spójność nazw epok |
+| newGameFlow.ts epochTechSummary (1607-1609) | „Brak wczesniejszych”, „Masz juz … Epoke Braz badasz”, „… Kamienia i Brazu. Epoke Zelaza” | „wcześniejszych”, „już”, „Epokę Brązu”, „Kamienia i Brązu. Epokę Żelaza” | pisownia + odmiana |
+| newGameFlow.ts podsumowanie generowania (2229-2299) | „Trudnosc”, „Typ swiata”, „Miasta-panstwa”, „Predkosc”, „Jakosc grafiki”, „Barbarzyncy”, „Zwyciestwo”, „Koszty budynkow”, „Wzrost ludnosci”, „Zasieg ruchu”, „Trudnosc miast-panstw”, „Latwy”, „(jak glowna)” | Trudność, Typ świata, Miasta-państwa, Prędkość, Jakość grafiki, Barbarzyńcy, Zwycięstwo, Koszty budynków, Wzrost ludności, Zasięg ruchu, Trudność miast-państw, Łatwy, (jak główna) | pisownia |
+| newGameFlow.ts (2255-2290) | „Normalny (x2 prog)”, „Niski (x1)” itd. | „Normalny (×2 próg)”, „Niski (×1)”, „Krótki (×1)” … (znak ×, spójnie z opisami; „próg” z ogonkiem) | pisownia/spójność |
+| sciencePicker.ts:1453 | „Nie udalo sie odswiezyc drzewka. Zamknij i otworz ponownie.” | „Nie udało się odświeżyć drzewka. Zamknij je i otwórz ponownie.” | pisownia |
+| cityPanel.ts:6524, 9013 | „Za malo zlota”, „Zaplac zlotem i ukoncz natychmiast” | „Za mało złota”, „Zapłać złotem i ukończ natychmiast” | pisownia |
+| main.ts:44207 | „najedz na pole i nacisnij B” | „najedź na pole i naciśnij B” | pisownia |
+| main.ts:37854,37930,37935,38400 | „Autozapis nieudany (blad zapisu)” | „(błąd zapisu)” | pisownia |
+| main.ts:45583,45833,46057 | „sprobuj inny seed” | „spróbuj innego seeda” | pisownia + odmiana |
+| cityPanel.ts:3504,3514,3594,3650; orderPanel.ts:188 | „N tur”, „N tur(y) na reakcję” | formatTurCount(N): „1 tura / 2 tury / 5 tur”, „… na reakcję” | gramatyka (liczebnik) |
+| techTreeView.ts:716,726 | „N tur do końca”, „≈ N tur przy” | formatTurCount | gramatyka |
+| empireDetailPanel.ts:4239 | „Głód wojska za N tur” | formatTurCountAcc (biernik: „za 1 turę / 2 tury / 5 tur”) | gramatyka |
+| main.ts:21061,21085,21672,23657 | „na N tur”, „przez N tur” | formatTurCountAcc | gramatyka (biernik) |
+| empireDetailPanel.ts:4174 | „N jednostek na mapie” | formatJednostkiCount („1 jednostka”, „2 jednostki”) | gramatyka |
+| cityPanel.ts:10051 | „Odfortyfikuj wszystkie N jednostki” (błędne dla N≥5) | „Odfortyfikuj wszystkie (N jednostek/jednostki)” przez formatJednostkiCount | gramatyka |
+| main.ts:9418,26144 | „N jednostek odfortyfikowano” (N>1) | formatJednostkiCount(N) | gramatyka |
+| main.ts:38853,38855,39384,39387 | „utracono N jednostek”, „u N jednostek” | pluralPl: „utracono 1 jednostkę / 2 jednostki / 5 jednostek”, „u 1 jednostki” | gramatyka |
+| hud.ts:1134, main.ts:19418,20192,47398-47420, saveLoadDialog.ts:48 | „N miast” (także dla N=1) | formatMiastaCount | gramatyka |
+| empireDetailPanel.ts:2314 | „N budynków” | formatBudynkiCount | gramatyka |
+| diplomacyAcceptanceBalance.ts:421 | „(N umów)” | formatUmowyCount („2 umowy”) | gramatyka |
+| manpower.ts formatObywateleLabel; cityPanel.ts:11439; hud.ts:1144 | „2 obywateli”, „3 obywateli” | „2 obywatele”, „5 obywateli”, „22 obywatele” | gramatyka |
+| ~28 literałów (cityPanel, empireDetailPanel, diplomacy*, hud, newGameFlow, perfTestPanel, scienceHubHud) | „Do skarbca", „Indywidualne", „Zobacz szczegóły zużycia", „Umowa wymiany", „Przekaż dar", „Co turę", „Dalej", „Karta", „Uruchom test” … z zamknięciem ASCII `"` | zamknięcie polskie ” (U+201D); komentarze deweloperskie NIE ruszane | interpunkcja |
+
+Nowe pomocniki (formatPl.ts): pluralPl, formatTurCount, formatTurCountAcc, formatBudynkiCount, formatUmowyCount (istniejące formatJednostkiCount/formatMiastaCount reużyte). Zmieniona etykieta w game/manpower.ts (formatObywateleLabel) — czysta funkcja napisu, brak zmiany logiki. Test zsynchronizowany: tools/praca-auto-ulepszenia-koszt-split-test.cjs:268 (oczekiwany tekst „Do puli” z cudzysłowem ” — ta sama asercja, zmieniony tylko znak).
+
+Nie zmieniano: kluczy/ID/liczb, nazw funkcji, entityCards/**, resourceAmountChip.ts, administratorIcon.ts, buildModeHud.ts, data/ui-params.json.
+
+## Lista do ABC (wątpliwe/stylistyczne — NIE zmieniano)
+
+1. Terminologia „złoto” vs „Pieniądz”: „Za mało złota”, „Zapłać złotem” (cityPanel.ts:6524,9013), „Kup natychmiast za N złota”, „Deficyt Złota” (main.ts:39384-39387) — konwencja właściciela to „Pieniądz”; zmiana to decyzja terminologiczna (dotyka testów).
+2. data/ui-params.json: rozmiar mapy „Malenki” (brak ogonka; „Maleńki”) oraz „Super Huge” (anglicyzm) — wartości używane jako klucze w src/map/generator.ts, perf/hardwareProfile.ts, data/e-start-params-loader.ts; zmiana etykiety wymaga rozdzielenia klucza i etykiety.
+3. Żargon deweloperski w tekstach gracza: cityPanel.ts:5088 „rownowaga(W) × pieniądz_miasta”, 5115 „rownowaga(W)”, 10264-10265 „wagi score”, „Posortuj malejąco po score; … klucz „q,r””, „Zrówn.” — do przepisania na język gracza; cityPanel.ts:6521 „Wymaga wpiecia onPurchaseBuilding przez silnik” (tooltip stanu awaryjnego).
+4. „Odfortyfikuj wszystkie (N jednostek)” — wybrano nawias dla zachowania sensu; alternatywa: „Odfortyfikuj wszystkie jednostki (N)”.
+5. „Wybierz czas umowy od 1 do N tur” (diplomacyTradeBasket.ts:1357,1385) — po „do” dopełniacz liczby mnogiej; poprawne dla N≥2, pominięto.
+6. Mieszany zapis „×N” / „xN” / „N×” w UI — decyzja stylu.
+7. Skróty telegraficzne „obyw./turę”, „szt./turę”, „j.” (saveLoadDialog.ts:48) — konwencja skrótów do potwierdzenia.
+8. Komunikaty diagnostyczne w console.* i logach main.ts bez ogonków („[Oblezenie]”, „Blad …”) — niewidoczne dla gracza; ewentualnie osobny temat porządkowy.
+
+## TESTY (surowe wyniki w worktree po poprawkach)
+
+- tsc --noEmit: 0 błędów (jedna korekta typu w trakcie pracy: `?? 0`).
+- logic-test 213/213; tech-tree-test 20 pass/0 fail; research-test 33/33; unit-replace-test 21/21; combat-test 6/6.
+- ids-leak-audit-test: 1648 ok, 0 FAIL. wonder-text-no-raw-ids-test: 132 ok, 0 FAIL. city-administrator-test: 117 passed, 0 failed.
+- terminology-trade-vs-tax-test: 798 pass, 1 fail ([P] Mennica (karta odkrycia): oczekiwane „×1,50” vs dane po FALI 645) — NIE 799/0 jak w DODATKU; przyczyna po stronie main (gra/data/tech-cards-top5.json nietknięty, `git diff -- gra/data` pusty); nie naprawiano.
+- polish-language-audit-q1-guard-test: 4477 ok, 0 fail (1674 z r1 + 2803 runda 2). Dowód mutacyjny: (1) każdy regex ma próbkę błędnego tekstu, którą MUSI złapać; (2) realna mutacja `Za mało złota` -> `Za malo zlota` w cityPanel.ts dała 1 FAIL, po cofnięciu 0 fail; test sprawdza też runtime odmiany helperów (esbuild transform formatPl.ts i formatObywateleLabel).
+- Testy dotykające zmienionych napisów: praca-auto-ulepszenia-koszt-split-test 20/0 (po synchronizacji), autowyzywienie-stan-przycisku-test 90/0, sidepanel-event-tabs-classify-test PASS, load-game-regression-test 34/0, autosave-quota-fail-test 22/0, hud-obywatele-chip-test 20/20, praca-limit-50-test 34/0, praca-miasto-limit-50-cap-test 50/0, diplo-quick-actions-labels-test 38/0, diplomacy-infografiki-tooltipy-test 12/0.
+- Czerwone z przyczyn środowiskowych (baseline NIE_ZMIERZONO na czystym main): panel-kolejka-pasek-postepu-test 80/2 (H2/H3 wymagają artefaktu `dist/` — brak builda, zakaz npm run build), empire-panel-miasto-obywatele-content-test (esbuild: brak loadera .svg przy bundlowaniu brandAssets).
+- wikiBundle odtwarzalny: `node tools/bundle-wiki-for-game.cjs` -> brak zmian w gra/src/data/wikiBundle.json (docs/encyklopedia nie ruszane w tej rundzie).
+- NIE uruchomiono: bramek wymagających builda/Chromium (zakaz npm run build/dev) ani pełnego zestawu testów UI real-render.
+
+## BLOKADY
+
+brak (jedna czerwona asercja terminology [P] i dwa testy środowiskowe opisane wyżej).
+
+## RUNDY
+
+2/5
+
+## NASTĘPNY KROK
+
+Evaluator: weryfikacja diffu (tylko literały + helpery odmiany), uruchomienie guarda i testów powyżej, decyzje ABC z listy.
+
+## DEPLOY-PUSH: NIE WYKONANO
+
+(Uwaga procesowa: zacommitowano pliki kodu zmienione w tej rundzie wraz z raportem, wyłącznie przez `git add <ścieżka>`, bo SHA ma nieść kod do Evaluatora; bez push.)
+
+---
+
 # R-WEB-POLISH-LANGUAGE-AUDIT-Q1 — Operator (Claude Sonnet 5.5), runda 1/5
 
 STATUS: PASS-WITH-NOTES (poprawki pewne wykonane; audyt NADAL CZĘŚCIOWY; lista ABC poniżej)

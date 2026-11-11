@@ -7,6 +7,39 @@ export function formatJednostkiCount(n: number): string {
   return `${n} ${word}`;
 }
 
+/**
+ * Wybór formy rzeczownika po liczebniku (mianownik): 1 / 2–4 (z wyjątkiem 12–14) / 5+.
+ * Dla innych przypadków podaj własne trzy formy (np. biernik: „turę / tury / tur”).
+ */
+export function pluralPl(n: number, one: string, few: string, many: string): string {
+  const v = Math.abs(Math.floor(n));
+  const m10 = v % 10;
+  const m100 = v % 100;
+  if (v === 1) return one;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return few;
+  return many;
+}
+
+/** „1 tura / 2 tury / 5 tur” (mianownik). */
+export function formatTurCount(n: number): string {
+  return `${n} ${pluralPl(n, 'tura', 'tury', 'tur')}`;
+}
+
+/** „za 1 turę / 2 tury / 5 tur” — wersja w bierniku (po „za”, „na”). */
+export function formatTurCountAcc(n: number): string {
+  return `${n} ${pluralPl(n, 'turę', 'tury', 'tur')}`;
+}
+
+/** „1 budynek / 2 budynki / 5 budynków”. */
+export function formatBudynkiCount(n: number): string {
+  return `${n} ${pluralPl(n, 'budynek', 'budynki', 'budynków')}`;
+}
+
+/** „1 umowa / 2 umowy / 5 umów”. */
+export function formatUmowyCount(n: number): string {
+  return `${n} ${pluralPl(n, 'umowa', 'umowy', 'umów')}`;
+}
+
 /** Nagłówek stosu na heksie: „Armia — 2 jednostki". */
 export function formatArmiaLabel(n: number): string {
   return `Armia — ${formatJednostkiCount(n)}`;

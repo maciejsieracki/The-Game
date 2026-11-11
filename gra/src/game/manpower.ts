@@ -520,6 +520,9 @@ export function cityLudnoscAbsolutna(ludki: number, epoka: number): number {
 export function formatObywateleLabel(count: number): string {
   const n = Math.max(0, Math.floor(count));
   if (n === 1) return '1 obywatel';
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return `${n} obywatele`;
   return `${n} obywateli`;
 }
 
