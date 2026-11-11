@@ -1,0 +1,3996 @@
+{
+ "_pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "_zrodla": "gra/src/game/culture-religion.ts (clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion)",
+ "dominant": [
+  {
+   "state": {
+    "counts": {
+     "a": 0
+    }
+   },
+   "prog": 33,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 12.5,
+     "Zeta": 0
+    }
+   },
+   "prog": 50,
+   "expect": {
+    "religion": "Gamma",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": "Infinity",
+     "delta": 3,
+     "beta": 1
+    }
+   },
+   "prog": -10,
+   "expect": {
+    "religion": "delta",
+    "share": 0.75,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": -4
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": "Infinity"
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": 0
+    }
+   },
+   "prog": 50.01,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": "NaN"
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": "Infinity",
+     "Gamma": -4
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 0,
+     "Gamma": 1
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 1,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 10
+    }
+   },
+   "prog": 33,
+   "expect": {
+    "religion": "a",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 12.5,
+     "beta": "-Infinity"
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "Alpha",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": "Infinity"
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": 12.5
+    }
+   },
+   "prog": 50.01,
+   "expect": {
+    "religion": "Zeta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": "-Infinity",
+     "Alpha": "-Infinity"
+    }
+   },
+   "prog": 150,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": "-Infinity",
+     "Alpha": -4
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": "-Infinity",
+     "a": 10,
+     "Gamma": -4
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": "a",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 0
+    }
+   },
+   "prog": 50.01,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": 5,
+     "Alpha": 12.5,
+     "beta": 2
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": "Alpha",
+    "share": 0.6410256410256411,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": "-Infinity"
+    }
+   },
+   "prog": 49.99,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": "NaN",
+     "Gamma": 1,
+     "": "NaN"
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 1,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": 2,
+     "beta": 2,
+     "Gamma": 0
+    }
+   },
+   "prog": -10,
+   "expect": {
+    "religion": "",
+    "share": 0.5,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 0
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 3
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "a",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": 12.5
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": "delta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 0
+    }
+   },
+   "prog": 50,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": 12.5,
+     "Zeta": -4
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": "beta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": 10,
+     "": 0,
+     "Gamma": "-Infinity"
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 1,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 1
+    }
+   },
+   "prog": -10,
+   "expect": {
+    "religion": "a",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 10
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "Gamma",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": -4,
+     "Gamma": 0,
+     "Alpha": 12.5
+    }
+   },
+   "prog": 50,
+   "expect": {
+    "religion": "Alpha",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 2
+    }
+   },
+   "prog": 33,
+   "expect": {
+    "religion": "Gamma",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Gamma": 10,
+     "delta": "NaN",
+     "Alpha": 12.5,
+     "a": 0
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0.5555555555555556,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": 1,
+     "a": 0,
+     "": 5
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "",
+    "share": 0.8333333333333334,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": "-Infinity",
+     "Zeta": 5
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "Zeta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": 3,
+     "Alpha": 2
+    }
+   },
+   "prog": 150,
+   "expect": {
+    "religion": null,
+    "share": 0.6,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 2,
+     "Zeta": 1
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": "a",
+    "share": 0.6666666666666666,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 3
+    }
+   },
+   "prog": 150,
+   "expect": {
+    "religion": null,
+    "share": 1,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 12.5,
+     "Gamma": 1
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": "Alpha",
+    "share": 0.9259259259259259,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": 2,
+     "Alpha": 0
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": "delta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 5,
+     "Gamma": "Infinity"
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": "Alpha",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": "Infinity",
+     "Zeta": 2,
+     "Alpha": "-Infinity"
+    }
+   },
+   "prog": 33,
+   "expect": {
+    "religion": "Zeta",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 12.5,
+     "Gamma": 2
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0.8620689655172413,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": 0
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": 3,
+     "Alpha": -4,
+     "delta": 0
+    }
+   },
+   "prog": 49.99,
+   "expect": {
+    "religion": "",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": "NaN",
+     "delta": 12.5,
+     "": 10
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0.5555555555555556,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": "NaN",
+     "": 1
+    }
+   },
+   "prog": 150,
+   "expect": {
+    "religion": null,
+    "share": 1,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 5
+    }
+   },
+   "prog": 50,
+   "expect": {
+    "religion": "Alpha",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": "Infinity",
+     "Zeta": "NaN"
+    }
+   },
+   "prog": 49.99,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 1,
+     "a": 0
+    }
+   },
+   "prog": 0,
+   "expect": {
+    "religion": "Alpha",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "delta": "NaN"
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 5,
+     "Alpha": 2,
+     "delta": 1,
+     "": 5
+    }
+   },
+   "prog": 150,
+   "expect": {
+    "religion": null,
+    "share": 0.38461538461538464,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 0
+    }
+   },
+   "prog": -10,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": "Infinity",
+     "Gamma": 3
+    }
+   },
+   "prog": 50.01,
+   "expect": {
+    "religion": "Gamma",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": 1,
+     "beta": "NaN",
+     "Gamma": -4,
+     "a": 5
+    }
+   },
+   "prog": 33,
+   "expect": {
+    "religion": "a",
+    "share": 0.8333333333333334,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "beta": "NaN"
+    }
+   },
+   "prog": 50.01,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "a": 12.5,
+     "Alpha": 10
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": null,
+    "share": 0.5555555555555556,
+    "status": "mixed"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "": 0,
+     "Gamma": -4
+    }
+   },
+   "prog": 50,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Zeta": "NaN",
+     "Alpha": "-Infinity",
+     "Gamma": 12.5,
+     "": "NaN"
+    }
+   },
+   "prog": 60,
+   "expect": {
+    "religion": "Gamma",
+    "share": 1,
+    "status": "dominant"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": 0,
+     "Gamma": "NaN",
+     "a": -4
+    }
+   },
+   "prog": 1,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  },
+  {
+   "state": {
+    "counts": {
+     "Alpha": "-Infinity",
+     "a": -4
+    }
+   },
+   "prog": 100,
+   "expect": {
+    "religion": null,
+    "share": 0,
+    "status": "none"
+   }
+  }
+ ],
+ "religia": [
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 2,
+       "Zeta": -4,
+       "delta": 3,
+       "a": 5
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "a",
+   "prog": 49.99,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 12.5,
+       "delta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 1
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 5
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "zzz",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": -4,
+       "beta": "Infinity",
+       "a": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 0,
+       "": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 2,
+       "delta": 5,
+       "Gamma": 12.5
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "delta",
+   "prog": 50,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": 2,
+       "delta": 12.5,
+       "a": 1
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "Zeta",
+   "prog": -10,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 12.5,
+       "a": 2,
+       "": 3,
+       "Gamma": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 2,
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": "NaN",
+       "Alpha": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 5,
+       "delta": 10,
+       "Gamma": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": 2
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "",
+   "prog": 33,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "delta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 5
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "delta",
+   "prog": 33,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 12.5,
+       "a": 1,
+       "Gamma": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity",
+       "delta": 1,
+       "a": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": "NaN",
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 5,
+       "": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 5,
+       "Gamma": "-Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "Zeta",
+   "prog": 33,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 2
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "zzz",
+   "prog": 150,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 1
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 150,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 2,
+       "Gamma": 12.5,
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN",
+       "Alpha": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": -4,
+       "": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "delta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": "NaN",
+       "delta": "Infinity",
+       "": 10,
+       "beta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 12.5,
+       "Alpha": -4,
+       "Gamma": 5
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "delta",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": 10,
+       "a": 3,
+       "Gamma": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 1,
+       "delta": 5,
+       "": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 3,
+       "Zeta": 2,
+       "Alpha": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 10
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "",
+   "prog": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "Gamma": 0,
+       "delta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": -4,
+       "Zeta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity",
+       "a": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 1,
+       "delta": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": null,
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": 12.5,
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 10,
+       "Alpha": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": 5,
+       "Zeta": 3,
+       "beta": 10,
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": "Infinity",
+       "Zeta": 10,
+       "a": 10
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "zzz",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": "Infinity",
+       "beta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": "NaN",
+       "Zeta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 3,
+       "Gamma": "-Infinity",
+       "Alpha": 3
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "a",
+   "prog": 60,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 10,
+       "": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": "-Infinity",
+       "Gamma": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": -4,
+       "Alpha": 10,
+       "": -4
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "delta",
+   "prog": 50.01,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 0,
+       "delta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": -4,
+       "a": 3,
+       "Gamma": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": 10,
+       "Zeta": "Infinity",
+       "": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 12.5,
+       "": 12.5,
+       "a": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 12.5,
+       "Zeta": 12.5,
+       "": "Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "delta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 2,
+       "delta": 5,
+       "": 1
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "Alpha",
+   "prog": 50,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 2,
+       "Zeta": 10,
+       "delta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 10,
+       "Zeta": 10,
+       "Alpha": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": -4,
+       "delta": 12.5,
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 2,
+       "a": 12.5,
+       "beta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": 3
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 1,
+       "Alpha": 3,
+       "delta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": -4,
+       "Alpha": 3,
+       "a": 5
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "delta",
+   "prog": 49.99,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": "Infinity",
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": "Infinity",
+       "": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": "-Infinity",
+       "a": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": "-Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "",
+   "prog": 50.01,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": "Infinity",
+       "": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": "-Infinity",
+       "": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 12.5,
+       "Zeta": 3,
+       "a": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": "Infinity",
+       "Zeta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 5,
+       "a": 10,
+       "Zeta": -4
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Zeta",
+   "prog": 1,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 2,
+       "a": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 5,
+       "delta": "Infinity",
+       "Zeta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 10,
+       "": 1
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": -4,
+       "Gamma": 5
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "Alpha",
+   "prog": 50.01,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 0,
+       "Alpha": 0,
+       "Zeta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": "NaN",
+       "Gamma": 5,
+       "delta": "-Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Zeta",
+   "prog": -10,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "-Infinity",
+       "beta": 10,
+       "Alpha": 12.5,
+       "": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 1
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 5,
+       "a": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 2,
+       "a": 5,
+       "Zeta": 3,
+       "Gamma": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": 3,
+       "beta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "beta": 5
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "Alpha",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": 3
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "delta",
+   "prog": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 3,
+       "Alpha": 0,
+       "": 10
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "zzz",
+   "prog": 49.99,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 12.5,
+       "beta": "Infinity",
+       "": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 0,
+       "delta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 10,
+       "a": 10
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 12.5,
+       "beta": 5,
+       "a": 5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": "Infinity",
+       "delta": -4,
+       "Zeta": 2,
+       "": 5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 5,
+       "Zeta": -4,
+       "beta": "-Infinity",
+       "a": 3
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "a",
+   "prog": 60,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN",
+       "Alpha": 12.5,
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "-Infinity",
+       "Alpha": "-Infinity",
+       "delta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": "Infinity",
+       "a": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 5,
+       "Zeta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 0,
+       "Alpha": "NaN",
+       "Gamma": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity",
+       "beta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": "-Infinity",
+       "a": 10
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 12.5,
+       "a": -4,
+       "Zeta": "Infinity",
+       "beta": 1
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 5,
+       "a": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": "NaN",
+       "Gamma": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": -4,
+       "beta": "-Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Zeta",
+   "prog": 33,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 0,
+       "Gamma": 10,
+       "a": "-Infinity",
+       "Zeta": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 2,
+       "": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": "-Infinity",
+       "Gamma": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": "NaN",
+       "a": 3
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "Gamma": 12.5,
+       "": -4,
+       "a": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "beta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 5,
+       "beta": "NaN",
+       "Zeta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": "-Infinity",
+       "Zeta": 12.5,
+       "delta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": "Infinity",
+       "a": 5,
+       "delta": 5
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "",
+   "prog": 150,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 0,
+       "": 12.5,
+       "a": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": "-Infinity",
+       "delta": 1,
+       "a": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": -4,
+       "Alpha": "Infinity",
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 12.5,
+       "beta": 0,
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 5,
+       "Alpha": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": -4,
+       "Zeta": "Infinity",
+       "Alpha": 10
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "beta",
+   "prog": 0,
+   "expect": 0
+  },
+  {
+   "cities": [],
+   "owner": 0,
+   "state": "Alpha",
+   "prog": 50,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": 10,
+       "": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": "Infinity",
+       "Alpha": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 1,
+       "Gamma": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": 1
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 10
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "zzz",
+   "prog": -10,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 60,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 3,
+       "beta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 12.5,
+       "delta": 10,
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": -4,
+       "Alpha": 5,
+       "beta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 10
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Alpha",
+   "prog": 50.01,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": "Infinity",
+       "delta": -4,
+       "Gamma": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 12.5,
+       "Gamma": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "beta",
+   "prog": 0,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 10,
+       "delta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 1,
+       "": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 0,
+       "beta": 1
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "zzz",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 3,
+       "Zeta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": -4,
+       "": -4,
+       "beta": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "beta",
+   "prog": -10,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "Alpha": 12.5
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": null,
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "": 5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 2,
+       "": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 1,
+       "a": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity",
+       "delta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "Alpha": 3,
+       "delta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": "-Infinity",
+       "Zeta": 2,
+       "": 2,
+       "beta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "beta",
+   "prog": -10,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "Zeta": "Infinity",
+       "": 0,
+       "delta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": 3,
+       "Gamma": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": "NaN",
+       "Gamma": 12.5
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 50,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": 12.5,
+       "": 5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 3,
+       "Zeta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 1,
+       "": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": "NaN",
+       "Zeta": 1,
+       "a": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 3,
+       "Alpha": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": -4,
+       "beta": "NaN",
+       "a": 10,
+       "delta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 33,
+   "expect": 0
+  },
+  {
+   "cities": [],
+   "owner": 1,
+   "state": "Alpha",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 2,
+       "beta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 3,
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 3
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": null,
+   "prog": 33,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": 1,
+       "Gamma": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": "NaN",
+       "Alpha": "-Infinity",
+       "Gamma": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 3,
+       "Zeta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 1,
+       "delta": "NaN",
+       "beta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": -4,
+       "Gamma": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "zzz",
+   "prog": 150,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 10
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 2,
+       "Gamma": 3,
+       "a": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": 10,
+       "beta": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "Gamma",
+   "prog": 33,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 5,
+       "Gamma": 12.5,
+       "Zeta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": "NaN",
+       "a": 2,
+       "Alpha": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 2,
+       "delta": 5,
+       "Gamma": -4,
+       "Alpha": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "delta": -4,
+       "beta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 3
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "delta",
+   "prog": 49.99,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": -4,
+       "Gamma": 5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 1,
+       "a": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    }
+   ],
+   "owner": 0,
+   "state": "beta",
+   "prog": 150,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": -4,
+       "a": 10
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 0
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 2,
+       "delta": 10,
+       "": 1
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 1,
+       "delta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "delta": "Infinity",
+       "a": "Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "delta",
+   "prog": 1,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": "Infinity",
+       "beta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Gamma": 2,
+       "delta": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": -4,
+       "a": 2
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 5,
+       "Gamma": "Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "delta",
+   "prog": 33,
+   "expect": 1
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 0,
+       "Gamma": "NaN",
+       "delta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "Alpha": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": "-Infinity",
+       "beta": 5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": "-Infinity",
+       "Gamma": 5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": 10,
+       "delta": "Infinity",
+       "Zeta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 12.5,
+       "beta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": 2,
+       "Gamma": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 1
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 0,
+       "beta": 1,
+       "Gamma": 5
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "Gamma",
+   "prog": 0,
+   "expect": 2
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 3,
+       "Zeta": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": "-Infinity",
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 0,
+       "": "Infinity",
+       "Zeta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 5,
+       "Alpha": 1
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": 3,
+       "": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Alpha": 10,
+       "beta": "-Infinity",
+       "Gamma": 5,
+       "delta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": "Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "a",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Zeta": "Infinity",
+       "": 2
+      }
+     }
+    }
+   ],
+   "owner": 1,
+   "state": "delta",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 1,
+       "a": 1
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "a": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 3,
+       "delta": "Infinity",
+       "Gamma": 1
+      }
+     }
+    },
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": -4,
+       "delta": 2,
+       "": -4,
+       "Gamma": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": 2
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Alpha",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 5,
+       "Alpha": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 1,
+       "Gamma": 10,
+       "delta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "delta": "NaN",
+       "": 3
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 10,
+       "delta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "a": "-Infinity",
+       "Alpha": "NaN",
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "beta",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": 0,
+       "beta": "NaN"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "a": "-Infinity",
+       "Alpha": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": 5,
+       "delta": "-Infinity",
+       "a": "-Infinity",
+       "Zeta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": "Infinity",
+       "a": "Infinity",
+       "delta": 5,
+       "Zeta": "-Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 3
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": "-Infinity",
+       "Alpha": 0
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "zzz",
+   "prog": 60,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Zeta": 10,
+       "delta": 2
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "delta": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 1,
+       "": 5
+      }
+     }
+    },
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "beta": 1
+      }
+     }
+    },
+    {
+     "ownerId": 2
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "": 5,
+       "Gamma": "-Infinity",
+       "beta": 2,
+       "Zeta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Alpha": 3,
+       "Gamma": 3
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "Zeta",
+   "prog": -10,
+   "expect": 2
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 1,
+     "religionState": {
+      "counts": {
+       "Alpha": 0
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 2,
+       "Alpha": -4
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "a",
+   "prog": 100,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "beta": "Infinity",
+       "Gamma": 12.5
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": 0
+      }
+     }
+    }
+   ],
+   "owner": 2,
+   "state": "delta",
+   "prog": 1,
+   "expect": 0
+  },
+  {
+   "cities": [
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "Zeta": 10
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "beta": 1,
+       "Zeta": 3,
+       "Alpha": "Infinity"
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 0,
+     "religionState": {
+      "counts": {
+       "": -4
+      }
+     }
+    },
+    {
+     "ownerId": 2,
+     "religionState": {
+      "counts": {
+       "Gamma": "NaN",
+       "Alpha": 1,
+       "Zeta": "Infinity"
+      }
+     }
+    }
+   ],
+   "owner": 0,
+   "state": "Gamma",
+   "prog": 0,
+   "expect": 0
+  }
+ ]
+}
