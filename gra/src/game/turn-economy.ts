@@ -64,6 +64,7 @@ import {
   corruptionRate,
   corruptionBuildingReduction,
 } from './economy';
+import { administratorEffectsFor, totalAdministratorUpkeepForOwner } from './city-administrator';
 import {
   improvementKeysForHex,
   territoryResourceYieldForImprovement,
@@ -2075,9 +2076,15 @@ export function previewCityEconomy(
       : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
     const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
     const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
-    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    // R-WEB-CITY-ADMINISTRATOR-Q1: działający administrator miasta — korupcja −10% × skala tieru
+    // (addytywnie z Sądem/Pretorium/Pałacem, wspólny sufit), Praca +3% i ściągalność podatków +3%
+    // (× skala tieru). Ten sam kod w podglądzie HUD i w realnym ticku; PARYTET AI (brak gałęzi po ownerId).
+    const administratorEfekty = administratorEffectsFor(city, builtIds);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds, administratorEfekty.korupcjaRedukcja);
     const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
+      administratorProdukcjaMult: administratorEfekty.produkcjaMult,
+      administratorPodatkiMult: administratorEfekty.podatkiMult,
       wojskoZuzycieZywnosci: 0,
       strataFraction,
       maMlyn: runtimeBuiltIds.includes('mlyn'),
@@ -2259,6 +2266,24 @@ export function previewCityEconomy(
 }
 
 /**
+ * R-WEB-CITY-ADMINISTRATOR-Q1: utrzymanie DZIAŁAJĄCYCH administratorów miast płaci SKARBIEC PAŃSTWA —
+ * wchodzi do `utrzymanieRazem` (a więc do salda/deficytu i do banku skarbca w main.ts) razem
+ * z utrzymaniem budynków i jednostek. Brak administratorów = bilans bez zmian.
+ */
+function withAdministratorUpkeep(balance: UpkeepBalance, adminUpkeep: number): UpkeepBalance {
+  if (!(adminUpkeep > 0)) return balance;
+  const utrzymanieRazem = balance.utrzymanieRazem + adminUpkeep;
+  const saldo = balance.saldo - adminUpkeep;
+  return {
+    ...balance,
+    utrzymanieAdministratorow: adminUpkeep,
+    utrzymanieRazem,
+    saldo,
+    deficyt: saldo < 0,
+  };
+}
+
+/**
  * Live preview of one owner's gold upkeep balance (building + unit maintenance,
  * Spec s.6.4) — same primitives as advanceCityEconomy's real end-of-turn tick
  * (upkeepBalance over buildingsByOwner/econUnits, s.1878-1913 below), but pure
@@ -2319,7 +2344,10 @@ export function previewOwnerUpkeep(
   const ounits = econUnits.filter(u => u.ownerId === ownerId) as unknown as UnitUpkeepLike[];
   // `income` nie jest tu potrzebny (wolacy chce tylko utrzymanieBudynki/Jednostki/Razem,
   // nie salda) -- 0 jest neutralne, wplywa wylacznie na pola saldo/deficyt ponizej.
-  return upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams);
+  return withAdministratorUpkeep(
+    upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams),
+    totalAdministratorUpkeepForOwner(cities, builtByCity, ownerId),
+  );
 }
 
 export function advanceCityEconomy(
@@ -2684,9 +2712,15 @@ export function advanceCityEconomy(
       : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
     const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
     const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
-    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    // R-WEB-CITY-ADMINISTRATOR-Q1: działający administrator miasta — korupcja −10% × skala tieru
+    // (addytywnie z Sądem/Pretorium/Pałacem, wspólny sufit), Praca +3% i ściągalność podatków +3%
+    // (× skala tieru). Ten sam kod w podglądzie HUD i w realnym ticku; PARYTET AI (brak gałęzi po ownerId).
+    const administratorEfekty = administratorEffectsFor(city, builtIds);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds, administratorEfekty.korupcjaRedukcja);
     const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
+      administratorProdukcjaMult: administratorEfekty.produkcjaMult,
+      administratorPodatkiMult: administratorEfekty.podatkiMult,
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
       strataFraction,
       maMlyn:                runtimeBuiltIds.includes('mlyn'),
@@ -2977,7 +3011,10 @@ export function advanceCityEconomy(
   for (const oid of ownerIds) {
     const income  = incomeByOwner.get(oid) ?? 0;
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
-    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid));
+    const balance = withAdministratorUpkeep(
+      upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid)),
+      totalAdministratorUpkeepForOwner(cities, builtByCity, oid),
+    );
     result.upkeepByOwner.set(oid, balance);
     // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: liczone OSOBNO (buildingsResUpkeep / unitsResUpkeep),
     // publikowane OSOBNO do result.resourceUpkeepBuildingsByOwner/UnitsByOwner PONIŻEJ, potem

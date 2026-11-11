@@ -616,6 +616,13 @@ export function cityBuildingEntriesFromBuiltIds(
 
 export interface CityYieldContext {
   /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1: mnożnik Pracy miasta od działającego administratora
+   * (1 + 3% × skala tieru; brak = 1). Liczone w city-administrator.ts, tu tylko aplikowane.
+   */
+  administratorProdukcjaMult?: number;
+  /** R-WEB-CITY-ADMINISTRATOR-Q1: mnożnik ściągalności podatków (Handel brutto) miasta (brak = 1). */
+  administratorPodatkiMult?: number;
+  /**
    * Effective military food consumption this turn for units at this city
    * (normal units = 1 each, camping units = 0.5 each -- caller sums).
    */
@@ -912,7 +919,7 @@ export function cityYieldPerTurn(
   // converts some of the remaining balance. `additionalTax` enters the tax stream
   // through its own context field, after the local Targowisko gross-trade bonus.
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
-  const pracaInt = cityPracaInteger(pracaNetto);
+  const pracaInt = cityPracaInteger(pracaNetto * (ctx.administratorProdukcjaMult ?? 1));
   const pieniadzZPracy = 0;
 
   // City tax excludes route proceeds. Manual Work tax is added after route-only
@@ -940,6 +947,10 @@ export function cityYieldPerTurn(
   // Manual Work tax joins after local and route-only gross modifiers, so it is
   // never multiplied by the Market route bonus or route-building premiums.
   handelBrutto += Math.max(0, ctx.additionalTax ?? 0);
+  // R-WEB-CITY-ADMINISTRATOR-Q1: ściągalność podatków miasta (+3% × skala tieru) — PRZED korupcją.
+  if (ctx.administratorPodatkiMult !== undefined && ctx.administratorPodatkiMult !== 1) {
+    handelBrutto *= ctx.administratorPodatkiMult;
+  }
 
   // --- Step 5: Apply corruption/waste to the complete tax base, including manual
   // Work tax. Unconverted Work still in the empire pool is not affected. ---
@@ -1249,11 +1260,20 @@ const KORUPCJA_REDUKCJA_SUFIT = 0.60;
  * @param builtIds - identyfikatory budynkow zbudowanych W TYM MIEScie (nie w imperium)
  * @returns ulamek redukcji [0, 0.60]
  */
-export function corruptionBuildingReduction(builtIds: readonly string[]): number {
+export function corruptionBuildingReduction(
+  builtIds: readonly string[],
+  /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1: redukcja od DZIAŁAJĄCEGO administratora miasta (10% × skala tieru,
+   * city-administrator.ts) — ADDYTYWNIE z budynkami (Sąd/Pretorium/Pałac), a suma nadal
+   * podlega istniejącemu sufitowi KORUPCJA_REDUKCJA_SUFIT.
+   */
+  administratorRedukcja: number = 0,
+): number {
   let suma = 0;
   for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
     if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
   }
+  suma += Math.max(0, administratorRedukcja);
   return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 

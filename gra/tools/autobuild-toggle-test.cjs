@@ -59,11 +59,12 @@ ok(/autoBuildEnabled = autoBuildFromNewGameParam\(params\.autoBuildEnabled\)/.te
 ok(/autoBuildEnabled = autoBuildFromSaveMeta\(saved\.meta\?\.autoBuildEnabled\)/.test(main), 'main.ts: wczytanie zapisu (brak pola => false)');
 ok(/dealsEndTurnGate: dealsEndTurnGateEnabled,\s*(?:\/\/[^\n]*\n\s*)*autoBuildEnabled,/.test(main), 'main.ts: zapis gry niesie meta.autoBuildEnabled');
 const enq = main.slice(main.indexOf('function tryAutoEnqueueBuild'), main.indexOf('function tryAutoEnqueueBuild') + 500);
-ok(/isAutoBuildAllowedFor\(city\.ownerId\)\) return null/.test(enq), 'tryAutoEnqueueBuild: bramka (kolejkowanie budynków gracza)');
-ok(/isAutoBudowaTryb\(city\.budowaTryb\) && isAutoBuildAllowedFor\(city\.ownerId\)\) return false/.test(main), 'cityHasActionableProduction: tryb auto nieaktywny przy OFF');
-ok(/amDecision\.enqueue !== null && isAutoBuildAllowedFor\(city\.ownerId\)/.test(main), 'Zarządca ⚙: enqueue tylko gdy bramka otwarta');
-ok(/else if \(isAutoBudowaTryb\(city\.budowaTryb\) && isAutoBuildAllowedFor\(city\.ownerId\)\)/.test(main), 'EOT: auto-budowa bez Zarządcy za bramką');
-ok(/isAutoBudowaTryb\(city\.budowaTryb\) && isAutoBuildAllowedFor\(city\.ownerId\) && frontItem\(prodFinal\) === null/.test(main), 'EOT: kolejkowanie po ukończeniu za bramką');
+ok(/isCityAutoBuildActive\(city\)\) return null/.test(enq), 'tryAutoEnqueueBuild: bramka (kolejkowanie budynków gracza)');
+ok(/isAutoBudowaTryb\(city\.budowaTryb\) && isCityAutoBuildActive\(city\)\) return false/.test(main), 'cityHasActionableProduction: tryb auto nieaktywny przy OFF');
+ok(/amDecision\.enqueue !== null && isCityAutoBuildActive\(city\)/.test(main), 'Zarządca ⚙: enqueue tylko gdy bramka otwarta');
+ok(/else if \(isAutoBudowaTryb\(city\.budowaTryb\) && isCityAutoBuildActive\(city\)\)/.test(main), 'EOT: auto-budowa bez Zarządcy za bramką');
+ok(/isAutoBudowaTryb\(city\.budowaTryb\) && isCityAutoBuildActive\(city\) && frontItem\(prodFinal\) === null/.test(main), 'EOT: kolejkowanie po ukończeniu za bramką');
+ok(/function isCityAutoBuildActive\(city: City\): boolean \{\s*return isCityAutoBuildAllowed\(/.test(main), 'main.ts: isCityAutoBuildActive = globalna bramka + administrator (R-WEB-CITY-ADMINISTRATOR-Q1)');
 const impl = main.indexOf('const autoImpCities = cities.filter');
 ok(impl > 0 && /isAutoBuildAllowedFor\(hOid\)/.test(main.slice(impl, impl + 500)), 'EOT: auto-ulepszenia terenu gracza (pickAutoImprovements) za bramką');
 ok(/isAutoBuildEnabled: isPlayerAutoBuildEnabled/.test(main), 'main.ts: UI (panel miasta / budowy) dostaje stan opcji');

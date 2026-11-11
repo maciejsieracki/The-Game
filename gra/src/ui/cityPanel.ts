@@ -290,7 +290,9 @@ import { formatLiczbaPl, signedPl } from './formatPl';
 import { formatCompactNumber, formatFullNumber } from './formatCompactNumber';
 import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana } from '../game/text-names';
-import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
+import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
+import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -383,6 +385,15 @@ export interface CityPanelConfig {
    * / EN: master switch for the player's build automation; absent hook = enabled.
    */
   isAutoBuildEnabled?: () => boolean;
+  /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1: stan administratora miasta (przycisk/chip w nagłówku, bramka autobudowy).
+   * Brak haka = funkcja administratora niedostępna w UI.
+   */
+  getCityAdministratorState?: (cityId: string) => CityAdministratorUiState | null;
+  /** Zatrudnij administratora (koszt ze skarbca państwa); true = zatrudniono. */
+  onHireAdministrator?: (cityId: string) => boolean;
+  /** Zwolnij administratora; true = zwolniono. */
+  onDismissAdministrator?: (cityId: string) => boolean;
   /** Stan kultury miasta -> dynamiczna sekcja Kultura i Religia. */
   getCultureState?: (cityId: string) => {
     kulturaSuma: number;
@@ -677,6 +688,52 @@ export function configureCityPanel(config: CityPanelConfig): void {
 }
 
 /** R-HOTSEAT-ETAP6B-UI-Q1: patrz `CityPanelConfig.isMe` — domyślnie `ownerId === 0`. */
+/** R-WEB-CITY-ADMINISTRATOR-Q1: stan administratora miasta dla UI. */
+export interface CityAdministratorUiState {
+  hired: boolean;
+  working: boolean;
+  tier: number;
+  upkeep: number;
+  hireCost: number;
+  /** Powód zablokowania zatrudnienia (null = można zatrudnić albo już zatrudniony). */
+  blockReasonText: string | null;
+}
+
+/** Tooltip przycisku/chipa administratora: efekty (ze skalą tieru), utrzymanie, stan. */
+function administratorTooltipText(st: CityAdministratorUiState): string {
+  const tier = (st.tier >= 3 ? 3 : st.tier === 2 ? 2 : st.tier === 1 ? 1 : 0) as AdminTier;
+  const skala = administratorTierScale(tier);
+  const base = administratorBaseEffectsPct();
+  const fmt = (v: number): string => String(Math.round(v * skala * 100) / 100).replace('.', ',');
+  const lines = [
+    `Administrator miasta (budynek administracyjny: poziom ${tier}, skala ×${String(skala).replace('.', ',')})`,
+    `Korupcja −${fmt(base.korupcja)}% · Produkcja miasta +${fmt(base.produkcja)}% · Ściągalność podatków +${fmt(base.podatki)}%`,
+    `Utrzymanie: ${st.upkeep} Pieniądza/turę ze skarbca państwa`,
+    'Umożliwia automatyczną budowę budynków w tym mieście',
+  ];
+  if (st.hired) lines.push('Stan: ' + (st.working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa (brak efektów i autobudowy)'));
+  return lines.join('\n');
+}
+
+function administratorHeaderHtml(city: City): string {
+  if (!isMeCity(city.ownerId) || !cfg.getCityAdministratorState || !cfg.onHireAdministrator) return '';
+  const st = cfg.getCityAdministratorState(city.id);
+  if (!st) return '';
+  const esc = (t: string): string => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  if (st.hired) {
+    const icon = administratorIconHtml({ size: 16, state: st.working ? 'ok' : 'idle' });
+    return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn is-hired${st.working ? '' : ' is-idle'}" id="civ-v-administrator" ` +
+      `data-adm-state="${st.working ? 'working' : 'idle'}" title="${esc(administratorTooltipText(st))}">${icon}<span>Administrator ✓</span></button>`;
+  }
+  const blocked = st.blockReasonText !== null;
+  const icon = administratorIconHtml({ size: 16, state: blocked ? 'off' : 'ok' });
+  const title = blocked
+    ? st.blockReasonText!
+    : `Zatrudnij administratora miasta: ${st.hireCost} Pieniądza jednorazowo, utrzymanie ${st.upkeep}/turę ze skarbca państwa`;
+  return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn" id="civ-v-administrator" data-adm-state="${blocked ? 'blocked' : 'available'}" ` +
+    `${blocked ? 'disabled ' : ''}title="${esc(title)}">${icon}<span>Administrator +</span></button>`;
+}
+
 function isMeCity(ownerId: number): boolean {
   return cfg.isMe?.(ownerId) ?? (ownerId === 0);
 }
@@ -1271,7 +1328,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const civKey = cfg.getCivKey?.(city.ownerId);
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
+    // R-WEB-CITY-ADMINISTRATOR-Q1 r2 (zarzut 4): działający administrator miasta — Praca +3% i ściągalność
+    // podatków +3% (× tier) tą samą funkcją co silnik (turn-economy.ts), żeby Bilans plonów zgadzał się z HUD/tickiem.
+    const administratorEfekty = administratorEffectsFor(city, built);
     const base: CityYieldContext = {
+      administratorProdukcjaMult: administratorEfekty.produkcjaMult,
+      administratorPodatkiMult: administratorEfekty.podatkiMult,
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
       maCegielnia: built.includes('cegielnia'),
@@ -2564,6 +2626,12 @@ ${resourceColorClassCss('.civ-cs')}
   white-space:nowrap;flex-shrink:0;cursor:pointer;opacity:0.9;}
 .civ-v-w3-capital-btn:hover:not(:disabled){opacity:1;background:rgba(232,216,138,0.14);}
 .civ-v-w3-capital-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.civ-v-adm-btn{display:inline-flex;align-items:center;gap:0.35em;}
+.civ-v-adm-btn.is-hired{background:rgba(232,216,138,0.12);}
+.civ-v-adm-btn.is-idle{border-color:#c0392b;color:#e8a49b;}
+.civ-v-adm-chip{cursor:default;font-size:0.8em;}
+.civ-v-adm-chip.is-idle{border-color:rgba(192,57,43,0.6);color:#e8a49b;}
+${ADMINISTRATOR_ICON_CSS}
 .civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.35rem 0.55rem;
   padding:0.3rem 0.85rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
@@ -8841,7 +8909,12 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
       appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
-      const autoBuildOn = cfg.isAutoBuildEnabled ? cfg.isAutoBuildEnabled() : true;
+      const globalAutoBuildOn = cfg.isAutoBuildEnabled ? cfg.isAutoBuildEnabled() : true;
+      // R-WEB-CITY-ADMINISTRATOR-Q1: autobudowa w mieście wymaga DZIAŁAJĄCEGO administratora.
+      const admStProd = cfg.getCityAdministratorState?.(city.id) ?? null;
+      const adminMissing = admStProd !== null && !admStProd.working;
+      const autoBuildOn = globalAutoBuildOn && !adminMissing;
+      const autoLockHint = !globalAutoBuildOn ? AUTO_BUILD_DISABLED_HINT : AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT;
       if (!autoBuildOn) {
         // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: wszystkie przyciski AUTO budowy wyszarzone (zostaje „Ręczny”).
         bProfiles.querySelectorAll('button').forEach(btn => {
@@ -8850,11 +8923,11 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
           btn.classList.remove('on');
           btn.classList.add('auto-build-locked');
           btn.style.opacity = '0.4';
-          btn.title = AUTO_BUILD_DISABLED_HINT;
+          btn.title = autoLockHint;
         });
         bProfiles.querySelectorAll('.budowa-prio-badge').forEach(b => b.remove());
         bProfiles.setAttribute('data-auto-build-locked', '1');
-        const note = el('div', 'muted', AUTO_BUILD_DISABLED_HINT);
+        const note = el('div', 'muted', autoLockHint);
         note.style.cssText = 'font-size:0.68em;margin-top:0.1em;';
         note.setAttribute('data-auto-build-hint', '1');
         bToolbar.appendChild(bProfiles);
@@ -9870,6 +9943,15 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   cnt.textContent = units !== undefined ? String(count) : '—';
   label.appendChild(cnt);
   mount.appendChild(label);
+  // R-WEB-CITY-ADMINISTRATOR-Q1: chip „Administrator" pod nazwą miasta (obok Garnizonu).
+  const admSt = isMeCity(city.ownerId) ? cfg.getCityAdministratorState?.(city.id) : null;
+  if (admSt && admSt.hired) {
+    const chip = el('span', 'civ-v-garrison-label civ-v-adm-chip' + (admSt.working ? '' : ' is-idle'));
+    chip.setAttribute('data-adm-chip', admSt.working ? 'working' : 'idle');
+    chip.title = administratorTooltipText(admSt);
+    chip.innerHTML = administratorIconHtml({ size: 18, state: admSt.working ? 'ok' : 'idle' }) + '<span>Administrator</span>';
+    mount.appendChild(chip);
+  }
   attachInteractiveDetail(label, showDetail, {
     delayMs: 220,
     sideHint: 'left',
@@ -11240,6 +11322,7 @@ function renderCivResourceTopBar(
     `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto (→)" aria-label="Następne miasto">›</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
+    administratorHeaderHtml(city) +
     `</div>` +
     `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
     `</div>` +
@@ -11258,6 +11341,17 @@ function renderCivResourceTopBar(
   });
   mount.querySelector('#civ-v-set-capital')?.addEventListener('click', () => {
     cfg.onSetCapital?.(city.id);
+    rerender();
+  });
+  mount.querySelector('#civ-v-administrator')?.addEventListener('click', () => {
+    const st = cfg.getCityAdministratorState?.(city.id);
+    if (!st) return;
+    if (st.hired) {
+      if (!window.confirm('Zwolnić administratora miasta ' + city.name + '? Koszt zatrudnienia nie podlega zwrotowi, a autobudowa w tym mieście przestanie działać.')) return;
+      cfg.onDismissAdministrator?.(city.id);
+    } else {
+      cfg.onHireAdministrator?.(city.id);
+    }
     rerender();
   });
   const garrisonRow = mount.querySelector('#civ-v-garrison-row') as HTMLElement | null;
@@ -12408,10 +12502,14 @@ function rerender(): void {
       manager.classList.remove('active');
       manager.setAttribute('title', 'Zarządca automatyczny — wyłączony');
     }
-    if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) {
+    const mgrAdm = cfg.getCityAdministratorState?.(city.id) ?? null;
+    const mgrAdminMissing = mgrAdm !== null && !mgrAdm.working && !!city && isMeCity(city.ownerId);
+    if ((cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) || mgrAdminMissing) {
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ nie kolejkuje budynków przy wyłączonej automatyzacji budowy.
+      // R-WEB-CITY-ADMINISTRATOR-Q1: ani w mieście bez działającego administratora.
       manager.classList.remove('active');
-      manager.setAttribute('title', 'Zarządca automatyczny — ' + AUTO_BUILD_DISABLED_HINT);
+      manager.setAttribute('title', 'Zarządca automatyczny — ' + (mgrAdminMissing && (!cfg.isAutoBuildEnabled || cfg.isAutoBuildEnabled())
+        ? AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT : AUTO_BUILD_DISABLED_HINT));
       (manager as HTMLButtonElement).style.opacity = '0.4';
       // Obrona zarzutu 2: kontrolka naprawdę nieaktywna (disabled), nie tylko przyciemniona.
       (manager as HTMLButtonElement).disabled = true;
@@ -12419,6 +12517,7 @@ function rerender(): void {
     }
     manager.addEventListener('click', () => {
       if (cfg.isAutoBuildEnabled && !cfg.isAutoBuildEnabled()) return;
+      if (mgrAdminMissing) return;
       cfg.onAutoManage?.(city.id); rerender();
     });
   }
