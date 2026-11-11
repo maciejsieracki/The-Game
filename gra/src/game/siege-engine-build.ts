@@ -93,6 +93,23 @@ export function siegeEngineBuildOption(
   };
 }
 
+/**
+ * R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1 (dodatek właściciela): machina, której
+ * technologii gracz nie zbadał, NIE jest widoczna na liście budowy (ani ukryta-wyszarzona --
+ * w ogóle nieobecna). Blokada `technology_locked` w siegeEngineBuildOption zostaje jako bramka logiki.
+ */
+export function isSiegeEngineTechUnlocked(unit: Pick<UnitDef, 'Tech'>, unlockedTechs: ReadonlySet<string>): boolean {
+  const tech = (unit.Tech ?? '').toString().trim();
+  return tech.length === 0 || tech === '-' || tech === '—' || unlockedTechs.has(tech);
+}
+
+export function visibleSiegeEngineOptions(
+  options: readonly SiegeEngineBuildOption[],
+  unlockedTechs: ReadonlySet<string>,
+): SiegeEngineBuildOption[] {
+  return options.filter(option => isSiegeEngineTechUnlocked(option.unit, unlockedTechs));
+}
+
 export function siegeEngineBuildReasonPl(reason?: SiegeEngineBuildBlock): string | undefined {
   switch (reason) {
     case 'not_siege': return 'Można budować wyłącznie podczas oblężenia.';

@@ -50,7 +50,7 @@ const STYLE_ID = 'civ-empire-recruit-panel-css';
 const MAX_QTY = 999;
 const DEFAULT_QTY = 0;
 
-/** Liczniki per typ jednostki (niezależne; przeżywają odświeżenia i zamknięcie panelu). */
+/** Liczniki per typ jednostki (niezależne; przeżywają odświeżenia, zerowane przy zamknięciu panelu). */
 const drafts = new Map<string, number>();
 let panelCfg: EmpireRecruitPanelCfg | null = null;
 let lastMessage = '';
@@ -404,6 +404,7 @@ export function isEmpireRecruitPanelOpen(): boolean {
 
 export function closeEmpireRecruitPanel(): void {
   document.getElementById(ROOT_ID)?.remove();
+  drafts.clear(); // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: po zamknięciu następne otwarcie = same zera
 }
 
 /** Odświeża listę (np. po zmianie kolejek/zasobów) — nie rusza liczników; pole w trakcie edycji zostaje. */

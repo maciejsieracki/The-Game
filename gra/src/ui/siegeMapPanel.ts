@@ -321,6 +321,8 @@ function render(): void {
   const engineRow = box.querySelector<HTMLElement>('[data-siege-engine-row]');
   const engineQuota = box.querySelector<HTMLElement>('[data-siege-engine-quota]');
   const engineOptions = actions.getSiegeEngineOptions?.(city.id) ?? [];
+  // Brak odblokowanej machiny -> cały blok „Zbuduj machinę w oblężeniu” jest niewidoczny (nie pusty wiersz).
+  if (!engineOptions.length) box.querySelector('[data-siege-engine-build]')?.remove();
   if (engineQuota && engineOptions.length) {
     const first = engineOptions[0]!;
     engineQuota.textContent = `Armia bez machin: ${first.qualifyingArmyCount} · pula na tę turę: ${first.builtThisTurn}/${first.quota}`;

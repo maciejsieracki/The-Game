@@ -551,6 +551,7 @@ import {
 } from './game/siegeMachines';
 import {
   isSiegeEngineDef,
+  visibleSiegeEngineOptions,
   siegeEngineBuildOption,
   siegeEngineBuildReasonPl,
   type SiegeEngineBuildOption,
@@ -18065,7 +18066,9 @@ async function boot(): Promise<void> {
       getSiegeEngineOptions: (cityId: string) => {
         const city = cities.find(item => item.id === cityId);
         const ownerId = city?.oblegajacyOwnerId ?? (city ? siegeBesiegerByCity.get(city.id) : undefined);
-        return city && ownerId !== undefined && isMe(ownerId) ? siegeEngineOptions(city) : [];
+        return city && ownerId !== undefined && isMe(ownerId)
+          ? visibleSiegeEngineOptions(siegeEngineOptions(city), new Set(unlockedTechsForOwner(ownerId)))
+          : [];
       },
       onBuildSiegeEngine: (cityId: string, unitId: string) => {
         const city = cities.find(item => item.id === cityId);

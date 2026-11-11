@@ -56,6 +56,16 @@ check('unresearched card technology blocked', buildOpt('Katapulta', ctx(10, { un
 check('Katapulta is blocked by old Oblężnictwo-only save and available after Sztuka wojenna',
   buildOpt('Katapulta', ctx(10, { unlockedTechs: new Set(['Oblężnictwo']) })).reason === 'technology_locked'
   && buildOpt('Katapulta', ctx(10, { unlockedTechs: new Set(['Sztuka wojenna']) })).allowed);
+// R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1 (dodatek): machiny bez zbadanej technologii są NIEWIDOCZNE (nie wyszarzone)
+{
+  const allOpts = techs => data.units.filter(M.isSiegeEngineDef).map(u => M.siegeEngineBuildOption(u, ctx(10, { unlockedTechs: new Set(techs) }), 1));
+  const names = techs => M.visibleSiegeEngineOptions(allOpts(techs), new Set(techs)).map(o => o.unit.Jednostka).sort();
+  check('bez technologii: żadna machina nie jest widoczna', names([]).length === 0, names([]));
+  check('tylko Obróbka drewna: widoczny wyłącznie Taran', JSON.stringify(names(['Obróbka drewna'])) === JSON.stringify(['Taran']), names(['Obróbka drewna']));
+  check('Brązownictwo dokłada Taran okuty i Wieżę, bez Katapulty', JSON.stringify(names(['Obróbka drewna', 'Brązownictwo'])) === JSON.stringify(['Taran', 'Taran okuty', 'Wieża oblężnicza'].sort()), names(['Obróbka drewna', 'Brązownictwo']));
+  check('Sztuka wojenna pokazuje Katapultę', names(['Sztuka wojenna']).includes('Katapulta'));
+  check('main.ts filtruje listę panelu oblężenia przez visibleSiegeEngineOptions', /visibleSiegeEngineOptions\(siegeEngineOptions\(city\)/.test(mainSource));
+}
 check('all four card tech gates are enforced', siegeDefs.every(unit =>
   M.siegeEngineBuildOption(unit, ctx(10, { unlockedTechs: new Set() }), 1).reason === 'technology_locked'
   && Boolean(unit.Tech)));

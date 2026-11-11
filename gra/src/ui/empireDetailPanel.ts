@@ -55,7 +55,7 @@ import {
 } from './empirePanelSectionMap';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { administratorUpkeepValueHtml } from './icons/administratorIcon';
-import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts } from './cityPanel';
+import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts, clearArmyRecruitDraftsOnPanelClose } from './cityPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -4541,6 +4541,9 @@ export function showEmpireDetailPanel(section?: string): void {
 
 export function hideEmpireDetailPanel(): void {
   popOverlay('empire-detail-panel');
+  // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: każda ścieżka zamknięcia (Zamknij, Esc, tło) zeruje szkice,
+  // ale TYLKO gdy panel był faktycznie otwarty (dismissToolbarSidePanels/closeAll wołają to bezwarunkowo).
+  if (open) clearArmyRecruitDraftsOnPanelClose();
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');
