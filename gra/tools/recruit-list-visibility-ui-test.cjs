@@ -159,8 +159,10 @@ async function main() {
     if (!r) continue;
     check(`U4: ${name} wiersz wyszarzony (is-disabled)`, r.disabledRow === true, r);
     check(`U5: ${name} przycisk Rekrutuj nieaktywny`, r.btnDisabled === true, r);
-    check(`U6: ${name} chip braku ma tekst „N Drewno (brak)"`,
-      !!r.stockChipText && /^\d+ Drewno \(brak\)$/.test(r.stockChipText), r.stockChipText);
+    // R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: chip = liczba + ikona surowca (nazwa w aria-label).
+    // W tym tescie brandAssets jest stubem (bez SVG), wiec komponent wpada w tekstowy fallback „Drewno".
+    check(`U6: ${name} chip braku ma tekst „N [ikona lub Drewno] (brak)"`,
+      !!r.stockChipText && /^\d+\s+(Drewno\s+)?\(brak\)$/.test(r.stockChipText), r.stockChipText);
     check(`U7: ${name} tooltip przycisku podaje przyczyne`,
       /Brakuje w magazynie: \d+ Drewno/.test(r.btnTitle), { btn: r.btnTitle });
   }

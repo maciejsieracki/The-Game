@@ -242,9 +242,10 @@ async function main() {
         && none.statusRequired === String(required)
         && none.statusMissing === String(required),
       none);
-    check('B5: czerwony koszt Drewna pozostaje widoczny przy braku Drewna',
+    // R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: nazwa surowca jest w aria-label ikony, nie w tekście chipa.
+    check('B5: czerwony koszt Drewna pozostaje widoczny przy braku Drewna (liczba + ikona + „(brak)")',
       /stock-missing/.test(none.woodChipClass || '')
-        && none.text.includes(`${expectedWoodCost} Drewno`),
+        && none.text.includes(`${expectedWoodCost}`) && none.text.includes('(brak)'),
       { className: none.woodChipClass, expectedWoodCost, text: none.text });
     check('B6: brak rekrutów i brak Drewna są osobno w tooltipie',
       /Brakuje rekrutów/.test(none.buttonTitle || '') && /Brakuje w magazynie/.test(none.buttonTitle || ''),
