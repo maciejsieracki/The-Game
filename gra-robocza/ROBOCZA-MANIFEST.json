@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4929ba507488aba391ed7b92cb3ad145",
-  "bundleSha256": "e62f1d048f1e01f1747d57d25d08e6001447247867ccd88cea5d751d1315fbdc",
+  "bundleMd5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
+  "bundleSha256": "93ec8696507bb5d509310ffd9d89ac9a4640d89c0604ffdda85593d8b700f636",
   "bundleBytes": 14523288,
   "sourceSnapshot": {
-    "source": "merge FC 300f423de",
+    "source": "W3 148c57b56",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 647: R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 2, UI i main.ts): poprawki pewnych błędów w literałach napisów dla gracza — ogonki (kreator nowej gry: epoki, podsumowanie generowania świata; selektor nauki; 'Za mało złota', 'Zapłać złotem'; autozapis; komunikaty main.ts), odmiana liczebników (tury, jednostki, miasta, obywatele, budynki, umowy; nowe pomocniki w formatPl.ts i formatObywateleLabel w manpower.ts), cudzysłowy polskie w ok. 28 napisach; strażnik polish-language-audit-q1-guard rozszerzony (5064 asercji, mutacje czerwone); bez zmian kluczy, ID, liczb i logiki"
+    "FALA 648: tylko testy: nowy empire-recruit-all-live-test (29/0, mutanty czerwone) i korekta empire-recruit-live-test; kod gry bez zmian"
   ],
   "verification": [
-    "tsc czysty; polish-language-audit-q1-guard 5064/0 (13 FAIL po cofnięciu poprawek), ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, city-administrator 117/0, manpower 71/0, side-list-hud 74/74, load-game-regression 34/0, autosave-quota-fail 22/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; wikiBundle odtwarzalny; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; tech-tree 20/0; research ALL GREEN; unit-replace 21/21; combat OK; recruit-all-live 29/0; audio-sidecar PASS"
   ],
   "limits": [
-    "Audyt nadal CZĘŚCIOWY: 3015 literałów nie czytano linia po linii (skany + przegląd punktowy); jednorazowa akceptacja orkiestratora: zmiana poza allowlistą w gra/src/game/manpower.ts (czysty formater napisu); lista ok. 8 pozycji do ABC właściciela (m.in. 'Malenki'/'Super Huge' w ui-params.json używane jako klucze, żargon 'rownowaga(W)'/'score' w cityPanel, skróty 'obyw./turę'); formatMiastaCount (formatPl.ts) nadal błędnie dla 22–24 — do poprawy; terminology-trade-vs-tax 798/1 ([P] Mennica) = dług po FALI 645"
+    "NIE_ZMIERZONO: zrodzenie 9 jednostek w wielu turach (mapa playtestowa konczy sie dominacja po turze 1)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T20:24:12",
+  "hubGeneratedAt": "2026-11-11T20:47:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4929ba507488aba391ed7b92cb3ad145",
+      "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
       "sizeBytes": 14523288
     }
   ],
-  "md5": "4929ba507488aba391ed7b92cb3ad145",
+  "md5": "9773ee3345e5e8b7e8ffd3058dfe32a4",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

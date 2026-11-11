@@ -1,3 +1,9 @@
+## ROBOCZA 9773ee33 -- 2026-11-06 -- FALA 648: Rekrutuj wszystkich: test na żywo w Chromium (testowa)
+
+- tylko testy: nowy empire-recruit-all-live-test (29/0, mutanty czerwone) i korekta empire-recruit-live-test; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research ALL GREEN; unit-replace 21/21; combat OK; recruit-all-live 29/0; audio-sidecar PASS
+- Limity: NIE_ZMIERZONO: zrodzenie 9 jednostek w wielu turach (mapa playtestowa konczy sie dominacja po turze 1)
+
 ## ROBOCZA 4929ba50 -- 2026-11-06 -- FALA 647: Audyt polszczyzny, runda 2: napisy w interfejsie i komunikatach gry (testowa)
 
 - R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 2, UI i main.ts): poprawki pewnych błędów w literałach napisów dla gracza — ogonki (kreator nowej gry: epoki, podsumowanie generowania świata; selektor nauki; 'Za mało złota', 'Zapłać złotem'; autozapis; komunikaty main.ts), odmiana liczebników (tury, jednostki, miasta, obywatele, budynki, umowy; nowe pomocniki w formatPl.ts i formatObywateleLabel w manpower.ts), cudzysłowy polskie w ok. 28 napisach; strażnik polish-language-audit-q1-guard rozszerzony (5064 asercji, mutacje czerwone); bez zmian kluczy, ID, liczb i logiki
