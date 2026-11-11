@@ -107,6 +107,72 @@ export interface RecruitAffordResult {
   limiter: string | null;
 }
 
+/** One selected row in the empire panel's shared-resource basket preview. */
+export interface RecruitBasketLine {
+  quantity: number;
+  unitGold: number;
+  unitManpower: number;
+  unitStock?: Readonly<Record<string, number>>;
+}
+
+/** Live empire balances supplied by the existing recruitment/resource systems. */
+export interface RecruitBasketBudget {
+  gold: number;
+  manpower: number;
+  stockPool?: Readonly<Record<string, number>>;
+}
+
+export interface RecruitBasketSummary {
+  quantity: number;
+  goldNeeded: number;
+  manpowerNeeded: number;
+  stockNeeded: Record<string, number>;
+  goldShortfall: number;
+  manpowerShortfall: number;
+  stockShortfall: Record<string, number>;
+  affordable: boolean;
+}
+
+/** Sum a planned basket before checking it against each shared empire balance once. */
+export function summarizeEmpireRecruitBasket(
+  lines: readonly RecruitBasketLine[],
+  budget: RecruitBasketBudget,
+): RecruitBasketSummary {
+  let quantity = 0;
+  let goldNeeded = 0;
+  let manpowerNeeded = 0;
+  const stockNeeded: Record<string, number> = {};
+  const safeCost = (n: number): number => Number.isFinite(n) ? Math.max(0, n) : 0;
+  for (const line of lines) {
+    const count = Number.isFinite(line.quantity) ? Math.max(0, Math.floor(line.quantity)) : 0;
+    if (count <= 0) continue;
+    quantity += count;
+    goldNeeded += safeCost(line.unitGold) * count;
+    manpowerNeeded += safeCost(line.unitManpower) * count;
+    for (const [key, perUnit] of Object.entries(line.unitStock ?? {})) {
+      const needed = safeCost(perUnit) * count;
+      if (needed > 0) stockNeeded[key] = (stockNeeded[key] ?? 0) + needed;
+    }
+  }
+  const goldShortfall = Math.max(0, goldNeeded - safeCost(budget.gold));
+  const manpowerShortfall = Math.max(0, manpowerNeeded - safeCost(budget.manpower));
+  const stockShortfall: Record<string, number> = {};
+  for (const [key, needed] of Object.entries(stockNeeded)) {
+    const missing = Math.max(0, needed - safeCost(budget.stockPool?.[key] ?? 0));
+    if (missing > 0) stockShortfall[key] = missing;
+  }
+  return {
+    quantity,
+    goldNeeded,
+    manpowerNeeded,
+    stockNeeded,
+    goldShortfall,
+    manpowerShortfall,
+    stockShortfall,
+    affordable: goldShortfall === 0 && manpowerShortfall === 0 && Object.keys(stockShortfall).length === 0,
+  };
+}
+
 export function maxAffordableEmpireRecruits(a: RecruitAffordInput): RecruitAffordResult {
   let max = Number.POSITIVE_INFINITY;
   let limiter: string | null = null;

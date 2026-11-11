@@ -11,11 +11,16 @@
  * Liczniki to stan UI sesji (poza zapisem gry) — zamówienia są zwykłymi wpisami kolejek miast.
  */
 
+import { summarizeEmpireRecruitBasket, type RecruitBasketBudget, type RecruitBasketSummary } from '../game/empire-recruit-plan';
+import { stockResourceLabel } from '../game/building-stock-cost';
+
 export interface EmpireRecruitUnitRow {
   id: string;
   label: string;
   /** Koszt złota jednej sztuki (jak w panelu miasta). */
   koszt: number;
+  manpowerCost?: number;
+  stockCost?: Readonly<Record<string, number>>;
   /** Ile miast gracza może teraz produkować ten typ / ile miast ma gracz. */
   capableCities: number;
   totalCities: number;
@@ -27,6 +32,7 @@ export interface EmpireRecruitUnitRow {
 
 export interface EmpireRecruitPanelCfg {
   getRows: () => EmpireRecruitUnitRow[];
+  getBudget?: () => RecruitBasketBudget;
   /** Wykonuje zamówienie; zwraca komunikat PL do pokazania w panelu. */
   /** `accepted` = ile sztuk faktycznie przyjęto (do częściowego sukcesu w „Rekrutuj wszystkie”). */
   onOrder: (unitId: string, quantity: number) => { message: string; changed: boolean; accepted?: number };
@@ -74,8 +80,16 @@ function ensureStyles(): void {
 #${ROOT_ID} .erp-name{font-weight:600;white-space:normal;overflow-wrap:anywhere;}
 #${ROOT_ID} .erp-meta{font-size:11px;color:#9aa4b2;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
 #${ROOT_ID} .erp-queued{font-size:11px;color:#9aa4b2;white-space:normal;line-height:1.3;}
+#${ROOT_ID} .erp-selected{font-size:11px;color:#b5bfca;white-space:normal;line-height:1.3;}
 #${ROOT_ID} .erp-meta b,#${ROOT_ID} .erp-queued b{color:#e8d88a;font-weight:700;}
+#${ROOT_ID} .erp-selected b{color:#d7e2f0;font-weight:700;}
 #${ROOT_ID} .erp-row.is-blocked .erp-name{opacity:.55;}
+#${ROOT_ID} .erp-summary{padding:7px 12px;border-top:1px solid rgba(232,216,138,.2);font-size:11px;line-height:1.4;color:#b5bfca;}
+#${ROOT_ID} .erp-summary b{color:#e8d88a;}
+#${ROOT_ID} .erp-shortfall{display:block;color:#ff8d84;font-size:11px;line-height:1.3;margin-top:2px;}
+#${ROOT_ID} .erp-shortfall:empty{display:none;}
+#${ROOT_ID} .erp-go.is-shortfall,#${ROOT_ID} .erp-all button.is-shortfall{border-color:#ed6258;color:#ff8d84;box-shadow:0 0 0 1px rgba(237,98,88,.18) inset;}
+#${ROOT_ID} .erp-all.has-shortfall{background:rgba(237,98,88,.06);}
 #${ROOT_ID} .erp-qty{display:inline-flex;align-items:center;gap:2px;flex:none;}
 #${ROOT_ID} button{font:inherit;cursor:pointer;color:#e8e0c8;background:#1a2230;border:1px solid #49566a;border-radius:5px;padding:3px 8px;}
 #${ROOT_ID} button:hover:not(:disabled){background:#263246;}
@@ -93,6 +107,80 @@ function ensureStyles(): void {
 
 let lastHtml = '';
 
+function fmtAmount(n: number): string {
+  return Number.isInteger(n) ? String(n) : String(Math.ceil(n));
+}
+
+function basketShortfallText(summary: RecruitBasketSummary): string {
+  const parts: string[] = [];
+  if (summary.goldShortfall > 0) parts.push(`brakuje ${fmtAmount(summary.goldShortfall)} ¤`);
+  if (summary.manpowerShortfall > 0) parts.push(`brakuje ${fmtAmount(summary.manpowerShortfall)} rekrutów`);
+  for (const [key, amount] of Object.entries(summary.stockShortfall)) {
+    parts.push(`brakuje ${fmtAmount(amount)} ${stockResourceLabel(key)}`);
+  }
+  return parts.join(' · ');
+}
+
+function syncAffordability(root: HTMLElement): void {
+  if (!panelCfg) return;
+  const rows = panelCfg.getRows();
+  const budget = panelCfg.getBudget?.();
+  const byId = new Map(rows.map(r => [r.id, r]));
+  const basket = budget ? summarizeEmpireRecruitBasket(rows.map(r => ({
+    quantity: getEmpireRecruitDraft(r.id), unitGold: r.koszt,
+    unitManpower: r.manpowerCost ?? 0, unitStock: r.stockCost,
+  })), budget) : null;
+  const queuedTotal = rows.reduce((sum, r) => sum + Math.max(0, Math.floor(r.queued || 0)), 0);
+  const summaryEl = root.querySelector<HTMLElement>('[data-erp-summary]');
+  if (summaryEl) {
+    const selected = basket?.quantity ?? rows.reduce((sum, r) => sum + getEmpireRecruitDraft(r.id), 0);
+    const stockLine = budget && basket
+      ? Object.keys(basket.stockNeeded).sort().map(k =>
+        `${stockResourceLabel(k)} ${basket.stockNeeded[k]} / ${Math.floor(budget.stockPool?.[k] ?? 0)}`,
+      ).join(' · ')
+      : '';
+    const budgetLine = budget && basket
+      ? `Koszyk: ${basket.goldNeeded} ¤ / ${Math.floor(budget.gold)} ¤ · ${basket.manpowerNeeded} rekrutów / ${Math.floor(budget.manpower)} dostępnych${stockLine ? ` · ${stockLine}` : ''}`
+      : '';
+    const shortfall = basket && !basket.affordable ? basketShortfallText(basket) : '';
+    summaryEl.innerHTML = `<span>Już w kolejkach: <b>${queuedTotal}</b> · Wybrane w koszyku: <b>${selected}</b></span>`
+      + (budgetLine ? `<br>${esc(budgetLine)}` : '')
+      + `<span class="erp-shortfall" data-erp-basket-shortfall>${esc(shortfall)}</span>`;
+  }
+  const allWrap = root.querySelector<HTMLElement>('.erp-all');
+  const allButton = root.querySelector<HTMLButtonElement>('[data-erp="go-all"]');
+  const basketShort = basket !== null && basket.quantity > 0 && !basket.affordable;
+  allWrap?.classList.toggle('has-shortfall', basketShort);
+  if (allButton) {
+    allButton.classList.toggle('is-shortfall', basketShort);
+    allButton.setAttribute('aria-label', basketShort
+      ? `Rekrutuj wszystkie; ${basket ? basketShortfallText(basket) : ''}`
+      : 'Rekrutuj wszystkie');
+  }
+  root.querySelectorAll<HTMLElement>('[data-unit]').forEach(rowEl => {
+    const id = rowEl.getAttribute('data-unit') ?? '';
+    const row = byId.get(id);
+    const qty = getEmpireRecruitDraft(id);
+    const shortEl = rowEl.querySelector<HTMLElement>('[data-erp-row-shortfall]');
+    const selectedEl = rowEl.querySelector<HTMLElement>('[data-erp-selected]');
+    const go = rowEl.querySelector<HTMLButtonElement>('[data-erp="go"]');
+    if (selectedEl) selectedEl.textContent = String(qty);
+    if (!row || !budget || qty <= 0) {
+      if (shortEl) shortEl.textContent = '';
+      go?.classList.remove('is-shortfall');
+      if (go) go.setAttribute('aria-label', `Rekrutuj ${row?.label ?? id}`);
+      return;
+    }
+    const rowSummary = summarizeEmpireRecruitBasket([{
+      quantity: qty, unitGold: row.koszt, unitManpower: row.manpowerCost ?? 0, unitStock: row.stockCost,
+    }], budget);
+    const warning = rowSummary.affordable ? '' : basketShortfallText(rowSummary);
+    if (shortEl) shortEl.textContent = warning;
+    go?.classList.toggle('is-shortfall', warning.length > 0);
+    if (go) go.setAttribute('aria-label', warning ? `Rekrutuj ${row.label}; ${warning}` : `Rekrutuj ${row.label}`);
+  });
+}
+
 function render(root: HTMLElement, force = true): void {
   if (!panelCfg) return;
   const rows = panelCfg.getRows();
@@ -108,7 +196,8 @@ function render(root: HTMLElement, force = true): void {
     const queuedLine = `<span class="erp-queued">w kolejkach: <b data-erp-queued>${r.queued}</b></span>`;
     return `<div class="erp-row${blocked ? ' is-blocked' : ''}" data-unit="${esc(r.id)}">`
       + `<div class="erp-info"><span class="erp-name" title="${esc(r.label)}">${esc(r.label)}</span>`
-      + `<span class="erp-meta">${meta}</span>${queuedLine}</div>`
+      + `<span class="erp-meta">${meta}</span>${queuedLine}<span class="erp-selected">wybrane w koszyku: <b data-erp-selected>${q}</b></span>`
+      + `<span class="erp-shortfall" data-erp-row-shortfall></span></div>`
       + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${q <= 0 ? ' disabled' : ''}>−</button>`
       + `<input type="number" min="0" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}">`
       + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
@@ -121,6 +210,7 @@ function render(root: HTMLElement, force = true): void {
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
     + `i zeruje przyjęte pozycje.</div>`
+    + `<div class="erp-summary" data-erp-summary></div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
   if (!force && html === lastHtml) return; // updateHud woła często — bez zbędnej przebudowy DOM
@@ -128,6 +218,7 @@ function render(root: HTMLElement, force = true): void {
   const outerScroll = root.scrollTop; // jedyne przewijanie to zewnętrzne (cały panel)
   root.innerHTML = html;
   root.scrollTop = outerScroll;
+  syncAffordability(root);
 }
 
 function onClick(ev: Event): void {
@@ -143,6 +234,7 @@ function onClick(ev: Event): void {
   if (act === 'inc' || act === 'dec') {
     drafts.set(id, clampQty(getEmpireRecruitDraft(id) + (act === 'inc' ? 1 : -1)));
     syncControls(root, false);
+    syncAffordability(root);
   } else if (act === 'go') {
     const res = panelCfg.onOrder(id, getEmpireRecruitDraft(id));
     lastMessage = res.message;
@@ -210,6 +302,7 @@ function onInput(ev: Event): void {
   if (!id || !root) return;
   drafts.set(id, clampQty(t.valueAsNumber));
   syncControls(root, true); // przyciski reagują od razu, zanim gracz kliknie gdziekolwiek indziej
+  syncAffordability(root);
 }
 
 function onChange(ev: Event): void {
@@ -220,6 +313,7 @@ function onChange(ev: Event): void {
   if (!id || !root) return;
   drafts.set(id, clampQty(t.valueAsNumber)); // np. 999+ lub wartość ujemna → przycięta
   syncControls(root, false);
+  syncAffordability(root);
 }
 
 /** Nowa gra / wczytanie: zamyka panel i czyści stan UI (liczniki, komunikat, domknięcie getRows/onOrder). */
