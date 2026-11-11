@@ -30,7 +30,7 @@
 use std::collections::HashMap;
 
 use super::diplomacy_siege_war_gate::{SiegeCity, SiegeUnit};
-use super::playable::{PlayableCity, PlayableState, PlayableUnit};
+use super::playable::{PlayableCity, PlayableState, PlayableUnit, PlayableUnitKind};
 use super::siege_enter_city::EnterCity;
 use super::war_forced_common::ForcedWarNeighborCandidate;
 use super::war_forced_waves::{WaveCity, WaveUnit};
@@ -63,6 +63,16 @@ fn coord(v: u16) -> i32 {
 
 fn owner(id: super::PlayerId) -> i64 {
     id.get() as i64
+}
+
+/// Z3 jako straznik kompilacji: adaptery jednostek zakladaja, ze `PlayableUnit` to wylacznie `Warrior`
+/// (`is_field`, `embarked = false`, `oblega = None`, `ruch_left = movement`). Dodanie wariantu do
+/// `PlayableUnitKind` zepsuje kompilacje tutaj, wiec autor musi ponownie sprawdzic zalozenia Z3-Z5
+/// dla nowego rodzaju (cywil, zwiadowca, galera) zamiast cicho dostac bledne dane.
+fn assert_z3_warrior_only(u: &PlayableUnit) {
+    match u.kind {
+        PlayableUnitKind::Warrior => {}
+    }
 }
 
 impl<'a> WarWorldView<'a> {
@@ -148,7 +158,10 @@ impl<'a> WarWorldView<'a> {
             .units
             .iter()
             .map(|u| HomeWarUnit {
-                id: u.id.get().to_string(),
+                id: {
+                    assert_z3_warrior_only(u);
+                    u.id.get().to_string()
+                },
                 owner_id: owner(u.owner_id),
                 q: coord(u.position.x()),
                 r: coord(u.position.y()),
@@ -179,7 +192,10 @@ impl<'a> WarWorldView<'a> {
             .units
             .iter()
             .map(|u| WaveUnit {
-                id: u.id.get().to_string(),
+                id: {
+                    assert_z3_warrior_only(u);
+                    u.id.get().to_string()
+                },
                 owner_id: owner(u.owner_id),
                 category: WAVE_UNIT_CATEGORY_LAND.to_owned(),
                 q: f64::from(coord(u.position.x())),
@@ -235,14 +251,21 @@ impl<'a> WarWorldView<'a> {
             .collect()
     }
 
-    /// Z7: jeden kandydat na owner != `self_owner_id`, pozycja = stolica (fallback: pierwsze miasto).
-    pub fn forced_war_neighbors(&self, self_owner_id: i64) -> Vec<ForcedWarNeighborCandidate> {
+    /// Z7: jeden kandydat na owner != `self_owner_id` spelniajacy `include_owner`, pozycja = stolica
+    /// (fallback: pierwsze miasto). `include_owner` koduje wykluczenia webu z `main.ts` (kandydaci
+    /// `assignForcedWarPairings`): barbarzyncy, wyeliminowani, klastry city-state, `typCityCopy`,
+    /// wlasciciel bez epoki (`eraTag === null`) i wlasciciel bez miasta. Filtr jest po stronie wolajacego.
+    pub fn forced_war_neighbors(
+        &self,
+        self_owner_id: i64,
+        include_owner: &dyn Fn(i64) -> bool,
+    ) -> Vec<ForcedWarNeighborCandidate> {
         let mut owners: Vec<i64> = self
             .state
             .cities
             .iter()
             .map(|c| owner(c.owner_id))
-            .filter(|o| *o != self_owner_id)
+            .filter(|o| *o != self_owner_id && include_owner(*o))
             .collect();
         owners.sort_unstable();
         owners.dedup();

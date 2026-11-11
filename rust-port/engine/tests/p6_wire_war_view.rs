@@ -131,7 +131,10 @@ fn adapters_are_deterministic_and_do_not_mutate_state() {
         view.home_war_units(&strength),
         view.home_war_units(&strength)
     );
-    assert_eq!(view.forced_war_neighbors(2), view.forced_war_neighbors(2));
+    assert_eq!(
+        view.forced_war_neighbors(2, &|_| true),
+        view.forced_war_neighbors(2, &|_| true)
+    );
     assert_eq!(state, snapshot);
 }
 
@@ -187,9 +190,25 @@ fn forced_war_neighbors_use_capital_and_skip_self() {
     let state = build_state(&doc["scenarios"][2]);
     let extras = HashMap::new();
     let view = WarWorldView::new(&state, &extras);
-    let n = view.forced_war_neighbors(0);
+    let n = view.forced_war_neighbors(0, &|_| true);
     assert_eq!(n.len(), 2);
     assert_eq!((n[0].owner_id, n[0].q, n[0].r), (1, 5, 4));
     assert_eq!((n[1].owner_id, n[1].q, n[1].r), (2, 6, 1));
-    assert!(view.forced_war_neighbors(1).iter().all(|c| c.owner_id != 1));
+    assert!(view
+        .forced_war_neighbors(1, &|_| true)
+        .iter()
+        .all(|c| c.owner_id != 1));
+}
+
+#[test]
+fn forced_war_neighbors_apply_caller_exclusions() {
+    // Wykluczenia webu (main.ts, kandydaci assignForcedWarPairings) sa po stronie wolajacego:
+    // wykluczenie wlasciciela 2 (np. city-state / wyeliminowany) usuwa go z kandydatow.
+    let doc: Value = serde_json::from_str(VECTORS).unwrap();
+    let state = build_state(&doc["scenarios"][2]);
+    let extras = HashMap::new();
+    let view = WarWorldView::new(&state, &extras);
+    let n = view.forced_war_neighbors(0, &|o| o != 2);
+    assert_eq!(n.len(), 1);
+    assert_eq!((n[0].owner_id, n[0].q, n[0].r), (1, 5, 4));
 }
