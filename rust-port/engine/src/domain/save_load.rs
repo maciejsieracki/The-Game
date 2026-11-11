@@ -10,8 +10,10 @@
 //! * every other version is rejected instead of being silently defaulted.
 //!
 //! This module only defines the serializable domain value.  A Tauri command or
-//! file adapter can use serde's `Serialize`/`Deserialize` implementations at
-//! its JSON boundary without coupling the engine to storage or UI code.
+//! file adapter can use serde's `Serialize` implementation at its JSON boundary
+//! without coupling the engine to storage or UI code.  `SaveSnapshot` has no
+//! public `Deserialize`: loading goes through `zapis_loader::load_save_snapshot`,
+//! the single public load path, which runs the migrations.
 
 use std::{collections::BTreeMap, error::Error, fmt};
 
@@ -520,7 +522,7 @@ fn json_nonempty_string(value: &Value) -> Option<String> {
     }
 }
 
-/// Version-aware input accepted by [`SaveSnapshot`]'s custom deserializer.
+/// Version-aware input accepted by [`RawSnapshot`]'s custom deserializer.
 ///
 /// Optional fields are kept here, rather than on `SaveSnapshot`, so omission is
 /// handled only by the matching legacy migration.  A current snapshot missing
