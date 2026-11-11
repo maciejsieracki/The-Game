@@ -26,6 +26,7 @@ import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { techIconSvg } from './techIcons';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
+import { humanizeId, nazwyZListyId } from '../game/text-names';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -273,7 +274,7 @@ function lockReasons(node: TreeNode, s: TtvState): string[] {
   const out: string[] = [];
   const missing = node.prereqIds
     .filter(pid => !s.researched.has(pid))
-    .map(pid => NODES.get(pid)?.nazwa ?? pid);
+    .map(pid => NODES.get(pid)?.nazwa ?? humanizeId(pid));
   if (missing.length > 0) out.push('brak: ' + missing.join(' · '));
   if (node.wymaganyBudynek !== '' && cfg.isBuildingGateMet
     && !cfg.isBuildingGateMet(activeOwner, node.nazwa)) {
@@ -689,7 +690,7 @@ function unlockChips(node: TreeNode): string {
   const chips: string[] = [];
   for (const b of node.odblokujeBudynki) chips.push(`<span class="ch">${esc(b)}</span>`);
   for (const u of node.odblokujeUlepszenia) chips.push(`<span class="ch">teren: ${esc(u)}</span>`);
-  for (const su of node.odblokujeSurowce) chips.push(`<span class="ch s">surowiec: ${esc(su)}</span>`);
+  for (const su of node.odblokujeSurowce) chips.push(`<span class="ch s">surowiec: ${esc(nazwyZListyId(su))}</span>`);
   for (const j of node.odblokujeJednostki) chips.push(`<span class="ch u">${esc(j)}</span>`);
   return chips.join('');
 }
@@ -731,7 +732,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   // Wymagania AND (techy + budynek + ulepszenie)
   const reqChips: string[] = [];
   for (const pid of node.prereqIds) {
-    const pname = NODES.get(pid)?.nazwa ?? pid;
+    const pname = NODES.get(pid)?.nazwa ?? humanizeId(pid);
     reqChips.push(depChip(s.researched.has(pid), pname, techIconSvg(pname, 12)));
   }
   if (node.wymaganyBudynek !== '') {

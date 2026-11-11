@@ -349,7 +349,7 @@ Automatyczny transfer **¤/turę** ze skarbca płatnika do odbiorcy po zawarciu 
 
 ### 81.2. T2 — dwa typy sojuszu — ✅ WDROŻONE
 
-Sojusz **defensywny** vs **pełny** (wspólna ofensywa) — oba typy realne w silniku (`sojusz_defensywny` / `sojusz_pelny`), różny próg i zakres zobowiązań.
+Sojusz **defensywny** vs **pełny** (wspólna ofensywa) — oba typy realne w silniku (sojusz obronny / sojusz pełny), różny próg i zakres zobowiązań.
 
 ### 81.3. T3A — handel jednorazowy — częściowo (stół negocjacji)
 

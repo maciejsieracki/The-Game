@@ -42,7 +42,8 @@ const IMPROVEMENT_NAMES: Readonly<Record<string, ImprovementRow>> =
 
 /** Nazwy surowcÃ³w z resources.json (kolumna âSurowiecâ), klucz = slug (ASCII, bez diakrytyki): âRuda Å¼elazaâ â ruda_zelaza. */
 function slugSurowca(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  // `\u0142`/`\u0141` nie rozk\u0142adaj\u0105 si\u0119 przez NFD (nie maj\u0105 dekompozycji) \u2014 bez tego \u201eZ\u0142oto\u201d dawa\u0142o `z_oto`, a \u201eCeg\u0142a\u201d `ceg_a`.
+  return s.replace(/\u0142/g, 'l').replace(/\u0141/g, 'L').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 const NAZWY_SUROWCOW: Readonly<Record<string, string>> = (() => {
   const out: Record<string, string> = {};
@@ -76,6 +77,29 @@ export function nazwaWyswietlana(id: string | null | undefined): string {
   return NAZWY_SUROWCOW[key] ?? humanizeId(key);
 }
 
+/**
+ * Lista nazw rozdzielona przecinkami/średnikami, w której część pozycji to surowe id (`bydlo`, `ruda_cyny`):
+ * pozycje wyglądające jak id (`[a-z0-9_]+`) idą przez `nazwaWyswietlana`; pozostałe (np. `krowa/byk`) bez zmian.
+ */
+export function nazwyZListyId(lista: string | null | undefined): string {
+  const src = String(lista ?? '');
+  if (!src.trim()) return '';
+  // `krowa/byk` = ta sama Trzoda co `bydlo` (decyzja właściciela); `(prereq)` to znacznik redakcyjny danych.
+  const seen = new Set<string>();
+  const out: string[] = [];
+  let sep = ', ';
+  src.split(/\s*([,;])\s*/).forEach((raw, i) => {
+    if (i % 2 === 1) { sep = raw === ',' ? ', ' : '; '; return; }
+    const tok = raw.replace(/\s*\(prereq\)/gi, '').trim();
+    if (!tok) return;
+    const nazwa = tok === 'krowa/byk' ? nazwaWyswietlana('bydlo') : (/^[a-z0-9_]+$/.test(tok) ? nazwaWyswietlana(tok) : tok);
+    if (seen.has(nazwa)) return;
+    seen.add(nazwa);
+    out.push(nazwa);
+  });
+  return out.join(sep);
+}
+
 /** Nazwa wyświetlana cywilizacji po jej kluczu (np. `egipt` → nazwa z panstwa). */
 export function nazwaCywilizacji(id: string | null | undefined): string {
   const key = String(id ?? '').trim();
@@ -93,6 +117,20 @@ export function maJawnaNazwe(id: string | null | undefined): boolean {
   if (typeof impNazwa === 'string' && impNazwa.trim() !== '') return true;
   return Object.prototype.hasOwnProperty.call(NAZWY_TERENOW_I_WARUNKOW, key)
     || Object.prototype.hasOwnProperty.call(NAZWY_SUROWCOW, key);
+}
+
+/**
+ * Pełny widok hasła encyklopedii (`full`) zaczyna się tabelą metadanych (`id`, `poradnik_ref`, `json_ref`,
+ * `status_v1`, ścieżki plików) kończoną linią `---` — to dane redakcyjne, nie tekst dla gracza.
+ * Zwraca treść od pierwszej sekcji po tej tabeli; hasło bez takiej tabeli zwraca bez zmian.
+ */
+export function stripEncyMetadata(full: string): string {
+  const src = String(full ?? '');
+  const head = src.slice(0, 1500);
+  if (!/\|\s*\*{0,2}id\*{0,2}\s*\|/.test(head)) return src;
+  const m = /\n---[ \t]*\n/.exec(src);
+  if (!m || m.index > 1500) return src;
+  return src.slice(m.index + m[0].length).replace(/^\s+/, '');
 }
 
 /** Wzorzec surowego identyfikatora snake_case (dla testów strażników). */

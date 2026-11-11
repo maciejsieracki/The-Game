@@ -35,7 +35,7 @@
 
 ### Odległość
 
-**Minimalny dystans: 4 heksy** między centrami miast (`min_dystans_miast` w `miasto-params.json`). Wcześniej było 5 — zmiana FALA 206.
+**Minimalny dystans: 4 heksy** między centrami miast. Wcześniej było 5 — zmiana FALA 206.
 
 ### Warunki terenu
 

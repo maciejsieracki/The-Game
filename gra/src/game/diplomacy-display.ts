@@ -18,6 +18,7 @@ import {
   wiarygodnoscTooltipRozbiciePl,
   type WiarygodnoscRozbicie,
 } from './diplomacy-credibility';
+import { nazwaWyswietlana } from './text-names';
 
 const MATRIX = loadCivMatrix();
 
@@ -507,7 +508,7 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       return `jednorazowo ${szt} ${label}`;
     }
     default:
-      return item.id ?? item.typ;
+      return nazwaWyswietlana(item.id ?? item.typ);
   }
 }
 

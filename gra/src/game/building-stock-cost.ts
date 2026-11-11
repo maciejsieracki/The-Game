@@ -1,4 +1,5 @@
 import { scaleStockCostRecord } from './r-stawki-strojenie';
+import { nazwaWyswietlana } from './text-names';
 
 /**
  * building-stock-cost.ts
@@ -168,7 +169,7 @@ export const EMPIRE_STOCK_RESOURCE_KEYS: readonly string[] = [
 ] as const;
 
 export function stockResourceLabel(key: string): string {
-  return STOCK_RESOURCE_LABEL[key] ?? key;
+  return STOCK_RESOURCE_LABEL[key] ?? nazwaWyswietlana(key);
 }
 
 // ---------------------------------------------------------------------------
