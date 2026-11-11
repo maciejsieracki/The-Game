@@ -124,6 +124,18 @@ pub fn load_ai_unit_replace_max_fraction(value: Option<f64>) -> f64 {
     }
 }
 
+/// Klucz `ai_zamiana_jednostek_limit_udzial` z `data/ai-params.json` (web: `ai-params.json[klucz].wartosc`).
+/// Brak/niepoprawny plik lub wpis -> `None` -> `load_ai_unit_replace_max_fraction` zwraca wartosc domyslna.
+pub fn ai_unit_replace_max_fraction_from_params() -> f64 {
+    static PARAM: std::sync::OnceLock<Option<f64>> = std::sync::OnceLock::new();
+    let raw = *PARAM.get_or_init(|| {
+        crate::data::economy_society_part2::parse_ai_params()
+            .ok()
+            .map(|p| p.ai_zamiana_jednostek_limit_udzial.wartosc)
+    });
+    load_ai_unit_replace_max_fraction(raw)
+}
+
 /// Web `AiReplaceUnitInfo`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AiReplaceUnitInfo {
