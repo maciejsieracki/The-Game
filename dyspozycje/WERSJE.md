@@ -1,3 +1,9 @@
+## ROBOCZA c8198ae5 -- 2026-11-06 -- FALA 643: Audyt polszczyzny, runda 1: poprawki gramatyki, pisowni i spójności w danych, kartach i Civpedii (testowa)
+
+- R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 1, dane i dokumenty): '2 glina'→'2 gliny', dopełniacze w bonusach cudów (Zaufania, Pieniądza), '+8 pojemności surowców', '+3 żywności/t' (13 ulepszeń), 'Wielki dzwon', 'Brama wszystkich narodów', diakrytyki (Giełda, Dwór, Wieżowiec, Świątynia, kamień/kamienia), 'Wypala' zamiast 'Wytapia' ceramikę/cegłę, opisy Teatru i Cegielni; tech-cards-top5 i wikiBundle regenerowane generatorami; test-strażnik polish-language-audit-q1-guard (1674 asercje) z mutacją
+- Weryfikacja: tsc czysty; polish-language-audit-q1-guard 1674/0 (mutacja czerwona), ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, city-administrator 117/0, economy 72/0, tech-cards-top5 595/0, gen-tech-cards-top5 --check OK; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Audyt CZĘŚCIOWY: pola Historia i encyklopedia tylko skany regex (bez lektury linia po linii); teksty w gra/src/ui i main.ts → runda 2; 10 pozycji do ABC właściciela w raporcie (m.in. Dur-Sharrukin/Dur-Szarrukin, żargon 'upgrade' w polu wymagania, opis Emporionu, sprzeczność Wielkiej Kuźni z Kuźnią brązu); ASCII 'kamien' jako nazwa zasobu w tekstach generowanych zostaje
+
 ## ROBOCZA dd13546f -- 2026-11-06 -- FALA 642: Generator kart budynków: korekta Cegielni w wejściach generatora (--check zielony) (testowa)
 
 - R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1: dług gen-building-cards-top5 --check NIEZGODNY z plikiem danych naprawiony — ręczna edycja karty Cegielni (cykle 50/75/100, commit BRICK-CYCLES) przeniesiona do korekt generatora (gen-building-cards-top5.korekty.json, card-text-corrections.cjs); building-cards-top5.json bez zmiany treści (0 bajtów diffu); generator deterministyczny
