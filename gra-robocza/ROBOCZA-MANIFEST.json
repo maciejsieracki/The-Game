@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "11ffdb9ff7ce619713fda2d0d2978222",
-  "bundleSha256": "5944cb78bd258ce1dbb62e2c550942228f5fe2b0b1d2ead73306e825d0d62179",
-  "bundleBytes": 14471482,
+  "bundleMd5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+  "bundleSha256": "c6ac9fad76706b926bcdbbe337165d849e170fe1a6fbf2984dd6225c18a5e03c",
+  "bundleBytes": 14476223,
   "sourceSnapshot": {
-    "source": "merge FC 4c37bab13",
+    "source": "merge FC 65b45f729",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 628: R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: w wojnie armia AI w zasięgu 3 ruchów idzie na główną armię wroga (próg sił 0,8) zanim zajmie miasto; nakładka niezależna od isHomeWarDefenseEnabled (własny przełącznik ai_wojna_armia_szuka_armii_wlaczone); pierwszeństwo obrony domu zachowane"
+    "FALA 629: R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel Rekrutacja ma wybór 'Generał rekrutujący'; bez wybranego generała przyciski Rekrutuj/Rekrutuj wszystkie nieaktywne; zrodzona jednostka idzie do wybranego generała (po jego śmierci do najbliższego); wybór zapisywany w save, czyszczony z powiadomieniem po śmierci generała, jednorazowe powiadomienie przy starym zapisie; rekrutacja ręczna i AI bez zmian"
   ],
   "verification": [
-    "tsc czysty; ai-war-army-seeks-army 22/0 (T10 homeDefense:false, mutacja czerwona), ai-war-defend-home 30/0, ai-war-gate 24/0, ai-test 296/0, general-muster 26/0, scattered-merge 33/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; army-auto-recruit-general 32/0, live-test w realnej grze (Chromium) 17/0, ui-test 11/0, recruit-follow-general-origin 22/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Próg sił 0,8 i zasięg 3 ruchy to założenie balansu (do ABC właściciela); war-allin-capital 96/2 = dług bazowy; NIE_ZMIERZONO: partia AI vs AI na żywo, koszt czasu tury AI; dług Rust: REPIN (nakładka niezależna od flagi obrony domu)"
+    "Wymóg generała dotyczy zbiorczego panelu Rekrutacja (brak osobnego automatu); brak fallbacku do najbliższego bez wyboru; dług bazowy czerwony tak samo na bazie: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18; NIE_ZMIERZONO: wczytanie starego zapisu w realnej grze"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T14:49:39",
+  "hubGeneratedAt": "2026-11-11T14:56:59",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "11ffdb9ff7ce619713fda2d0d2978222",
-      "sizeBytes": 14471482
+      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+      "sizeBytes": 14476223
     }
   ],
-  "md5": "11ffdb9ff7ce619713fda2d0d2978222",
+  "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

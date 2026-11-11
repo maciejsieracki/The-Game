@@ -1,3 +1,9 @@
+## ROBOCZA b0f37e1d -- 2026-11-06 -- FALA 629: Automatyczna rekrutacja: wybór generała w panelu Rekrutacja (testowa)
+
+- R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel Rekrutacja ma wybór 'Generał rekrutujący'; bez wybranego generała przyciski Rekrutuj/Rekrutuj wszystkie nieaktywne; zrodzona jednostka idzie do wybranego generała (po jego śmierci do najbliższego); wybór zapisywany w save, czyszczony z powiadomieniem po śmierci generała, jednorazowe powiadomienie przy starym zapisie; rekrutacja ręczna i AI bez zmian
+- Weryfikacja: tsc czysty; army-auto-recruit-general 32/0, live-test w realnej grze (Chromium) 17/0, ui-test 11/0, recruit-follow-general-origin 22/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Wymóg generała dotyczy zbiorczego panelu Rekrutacja (brak osobnego automatu); brak fallbacku do najbliższego bez wyboru; dług bazowy czerwony tak samo na bazie: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18; NIE_ZMIERZONO: wczytanie starego zapisu w realnej grze
+
 ## ROBOCZA 11ffdb9f -- 2026-11-06 -- FALA 628: AI: armia szuka głównej armii wroga (odsprzęgnięta od obrony domu) (testowa)
 
 - R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: w wojnie armia AI w zasięgu 3 ruchów idzie na główną armię wroga (próg sił 0,8) zanim zajmie miasto; nakładka niezależna od isHomeWarDefenseEnabled (własny przełącznik ai_wojna_armia_szuka_armii_wlaczone); pierwszeństwo obrony domu zachowane
