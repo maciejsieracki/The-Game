@@ -121,7 +121,9 @@ pub struct OwnerQueueSanitize {
 ///
 /// `wonder_gate_ok(item)` = web `wonderGateOk(ownerId, wid)` dla pozycji cudu (`parseWonderProdId` != null);
 /// dla pozycji niebedacych cudem wolajacy zwraca `true`. Druga `sanitizeBuildQueue` w web (na `migrated.prod`)
-/// jest tu powtorzona 1:1 - na kolejce juz oczyszczonej daje `refunded_praca = 0`.
+/// jest tu powtorzona 1:1 (jak w web, ktore wola ja dwa razy: wolajacy `sanitizeBuildQueue` oraz wewnatrz
+/// `sanitizeProductionQueue`). Druga sanityzacja zwraca `refunded_praca = 0` i nie zmienia kolejki - to
+/// zalozenie sprawdza test `sanitize_build_queue_jest_idempotentna`.
 pub fn sanitize_production_queue_for_owner(
     prod: &CityProduction,
     wonder_gate_ok: impl Fn(&ProductionItem) -> bool,
@@ -237,6 +239,20 @@ mod tests {
         assert_eq!(out.prod.kolejka[0].id, "a");
         assert_eq!(out.refunded_praca, 3.0);
         assert_eq!(out.forfeited_postep, 0.0);
+    }
+
+    #[test]
+    fn sanitize_build_queue_jest_idempotentna() {
+        let p = prod(vec![
+            item(ProductionKind::Budynek, "a", Some(2.0)),
+            item(ProductionKind::Jednostka, "u", Some(3.0)),
+            item(ProductionKind::Budynek, "b", Some(1.0)),
+        ]);
+        let first = sanitize_build_queue(&p);
+        assert_eq!(first.refunded_praca, 3.0);
+        let second = sanitize_build_queue(&first.prod);
+        assert_eq!(second.refunded_praca, 0.0);
+        assert_eq!(second.prod, first.prod);
     }
 
     #[test]

@@ -92,6 +92,14 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         ),
     ),
     (
+        "wonderGateOk",
+        EffectStatus::CallerSide("ZALEZNOSC W8 r3: brak odpowiednika w Rust; predykat wonder_gate_ok po stronie wolajacego"),
+    ),
+    (
+        "parseWonderProdId",
+        EffectStatus::CallerSide("ZALEZNOSC W8 r3: brak odpowiednika w Rust; wykorzystywane tylko przez wonderGateOk"),
+    ),
+    (
         "filterQueue",
         EffectStatus::Ported("production_queue::filter_queue"),
     ),
@@ -192,6 +200,8 @@ pub struct TransferOutcome {
     /// Kroki wykonane tutaj, nazwy web (kolejnosc jak w pinie).
     pub performed: Vec<&'static str>,
     /// Wynik `applyCapturePopulationLoss` (`None` = krok nie byl wykonany, tryb legacy [`apply_transfer`]).
+    /// WOLAJACY MUSI zapisac `captured_from_owner_id` i `founded_by` (web `city.capturedFromOwnerId`,
+    /// `city.foundedBy`): `TransferCity` nie ma tych pol.
     pub capture_loss: Option<CapturePopLossOutcome>,
 }
 
@@ -200,7 +210,9 @@ pub struct TransferOutcome {
 pub struct TransferExtras<'a> {
     /// Wejscie `applyCapturePopulationLoss` (`None` = krok pominiety).
     pub pop_loss: Option<CapturePopLossInput>,
-    /// Bramka `wonderGateOk(newOwner, wid)` dla `sanitizeProductionQueue(newOwner)` (`None` = sanityzacja pominieta).
+    /// Bramka `wonderGateOk(newOwner, wid)` dla `sanitizeProductionQueue(newOwner)`. `None` = bramka przepuszczajaca
+    /// (sanityzacja nadal wykonana). ZALEZNOSC: `wonderGateOk`/`parseWonderProdId` nie maja odpowiednika w Rust (W8 r3);
+    /// wolajacy z cudami w kolejce MUSI podac bramke, inaczej wynik rozni sie od weba.
     pub wonder_gate_ok: Option<&'a dyn Fn(&ProductionItem) -> bool>,
 }
 
@@ -210,8 +222,9 @@ pub struct TransferExtras<'a> {
 /// Kolejnosc jak w web: zmiana wlasciciela -> flaga miasta-panstwa -> `foundedByOwner` -> kolejka produkcji
 /// (odzysk Pracy) -> `rebelState` -> podloga populacji -> splice obroncow starego wlasciciela.
 ///
-/// Tryb LEGACY (bez [`TransferExtras`]): NIE wykonuje `applyCapturePopulationLoss` ani `sanitizeProductionQueue`
-/// (wektory z generatora stubuja pierwsze jako no-op). Do produkcji uzywac [`apply_transfer_with_effects`].
+/// Tryb LEGACY (bez [`TransferExtras`]): NIE wykonuje `applyCapturePopulationLoss` (wektory generatora stubuja go
+/// jako no-op); `sanitizeProductionQueue` wykonuje z bramka przepuszczajaca. Do produkcji uzywac
+/// [`apply_transfer_with_effects`] z realna bramka cudow.
 /// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem pozostalych skutkow BRAK z [`TRANSFER_EFFECTS`]
 /// (`applyPostCaptureLawOnCapture`, `triggerRebelProtectionWarConsequence`, `noteCityCapture`, plunder, ...).
 pub fn apply_transfer(
@@ -249,10 +262,17 @@ pub fn apply_transfer_with_effects(
     let old_owner = city.owner_id;
     let mut performed: Vec<&'static str> = Vec::new();
 
-    let capture_loss = extras
-        .pop_loss
-        .as_ref()
-        .map(|input| apply_capture_population_loss(city.population, input));
+    let capture_loss = extras.pop_loss.as_ref().map(|input| {
+        debug_assert_eq!(
+            input.prev_owner, old_owner,
+            "pop_loss.prev_owner != city.owner_id"
+        );
+        debug_assert_eq!(
+            input.new_owner, new_owner,
+            "pop_loss.new_owner != new_owner"
+        );
+        apply_capture_population_loss(city.population, input)
+    });
     if let Some(c) = &capture_loss {
         city.population = c.population;
         performed.push("applyCapturePopulationLoss");
@@ -279,14 +299,14 @@ pub fn apply_transfer_with_effects(
             let migrated = sanitize_build_queue(p.prod);
             // web sanitizeProductionQueue(newOwner, migrated.prod): bramka cudow zdobywcy; zwrot Pracy
             // z jej wewnetrznej sanityzacji jest 0 (kolejka juz oczyszczona), wiec refund = migrated.refunded.
-            let (queue, wonder_forfeit) = match extras.wonder_gate_ok {
-                Some(gate) => {
-                    performed.push("sanitizeProductionQueue");
-                    let s = sanitize_production_queue_for_owner(&migrated.prod, gate);
-                    (s.prod, s.forfeited_postep)
-                }
-                None => (migrated.prod.clone(), 0.0),
-            };
+            // Krok wykonywany ZAWSZE jak w web. Brak bramki (`None`) = bramka przepuszczajaca (brak cudow
+            // w kolejce); sanityzacja (w tym druga sanitizeBuildQueue) nadal sie wykonuje.
+            performed.push("sanitizeProductionQueue");
+            let allow_all = |_: &ProductionItem| true;
+            let gate: &dyn Fn(&ProductionItem) -> bool =
+                extras.wonder_gate_ok.unwrap_or(&allow_all);
+            let sanitized = sanitize_production_queue_for_owner(&migrated.prod, gate);
+            let (queue, wonder_forfeit) = (sanitized.prod, sanitized.forfeited_postep);
             // banked liczony z WYNIKU sanityzacji (web `sanitizedSurrenderProd.kolejka`), nie z migrated.prod.
             let is_cap = p.is_capital_only_building;
             let banked: f64 = if p.is_new_capital {
