@@ -12,8 +12,9 @@
 //! This module only defines the serializable domain value.  A Tauri command or
 //! file adapter can use serde's `Serialize` implementation at its JSON boundary
 //! without coupling the engine to storage or UI code.  `SaveSnapshot` has no
-//! public `Deserialize`: loading goes through `zapis_loader::load_save_snapshot`,
-//! the single public load path, which runs the migrations.
+//! public `Deserialize`: loading goes through a public load path that runs the
+//! migrations, `zapis_loader::load_save_snapshot` (replay logs use
+//! `ReplayLog::load_json_with_migration_reports`).
 
 use std::{collections::BTreeMap, error::Error, fmt};
 
