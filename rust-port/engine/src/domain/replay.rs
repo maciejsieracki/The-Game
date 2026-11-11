@@ -27,16 +27,50 @@ pub const CURRENT_REPLAY_VERSION: u16 = 1;
 pub type ReplaySequence = u64;
 
 /// One input together with the deterministic state at which it was observed.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayStep<I> {
     sequence: ReplaySequence,
     turn: u32,
     input: I,
     rng_state: u32,
-    /// Snapshot zapisany w kroku. Deserializacja tego pola (przez `ReplayLog`) NIE wykonuje
-    /// `migrate_on_load` - to otwarty dlug: migracja po wczytaniu replayu wymaga decyzji o zrodle
-    /// epoki wlasciciela (patrz `zapis_loader::load_save_snapshot`).
+    /// Snapshot zapisany w kroku. Przy deserializacji (`Deserialize` ponizej) jest on zawsze
+    /// przepuszczany przez `SaveSnapshot::migrate_on_load`, tak jak `zapis_loader::load_save_snapshot`.
     snapshot: Option<SaveSnapshot>,
+}
+
+#[derive(Deserialize)]
+struct ReplayStepWire<I> {
+    sequence: ReplaySequence,
+    turn: u32,
+    input: I,
+    rng_state: u32,
+    snapshot: Option<SaveSnapshot>,
+}
+
+/// Snapshot z replayu wchodzi do domeny wylacznie po migracji: surowa deserializacja
+/// `SaveSnapshot` nie migruje (limit wodzow zalezy od epoki z danych zapisu), wiec migracja
+/// jest wykonywana tutaj, a nie u wolajacego.
+impl<'de, I> Deserialize<'de> for ReplayStep<I>
+where
+    I: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let wire = ReplayStepWire::<I>::deserialize(deserializer)?;
+        let snapshot = wire.snapshot.map(|mut snapshot| {
+            snapshot.migrate_on_load();
+            snapshot
+        });
+        Ok(Self {
+            sequence: wire.sequence,
+            turn: wire.turn,
+            input: wire.input,
+            rng_state: wire.rng_state,
+            snapshot,
+        })
+    }
 }
 
 /// Semantic alias for consumers that call a replay item a frame.
