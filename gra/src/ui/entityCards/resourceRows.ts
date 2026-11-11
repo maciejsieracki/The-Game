@@ -7,6 +7,7 @@
  */
 import { STOCK_RESOURCE_LABEL } from '../../game/building-stock-cost';
 import resourcesJson from '../../../data/resources.json';
+import { YIELD_CHIP } from '../resourceAmountChip';
 import type { EntityCardRowResource } from './types';
 
 function fold(s: string): string {
@@ -82,7 +83,13 @@ export type EntityCardValuePart = string | EntityCardRowResource;
  * „Odlewnia brązu”/„Kopalnia złota” zostają tekstem (to budynki). Zwraca `null`, gdy tekst nie
  * zawiera żadnego surowca (wtedy wiersz zostaje zwykłym `value`).
  */
-export function resourceTextParts(text: string | null | undefined): EntityCardValuePart[] | null {
+/** Słowa-plony (po `fold`) rozpoznawane w prozie wierszy bonusów/warunków, gdy `yields = true`. */
+const YIELD_WORDS: Readonly<Record<string, string>> = {
+  zywnosc: 'zywnosc', praca: 'praca', pracy: 'praca', podatek: 'podatek', podatku: 'podatek',
+  pieniadz: 'pieniadz', pieniadze: 'pieniadz', pieniadza: 'pieniadz', pieniedzy: 'pieniadz',
+};
+
+export function resourceTextParts(text: string | null | undefined, yields = false): EntityCardValuePart[] | null {
   const src = String(text ?? '').replace(DEV_NOTE_RE, '');
   const wordRe = /[\p{L}\p{N}]+/gu;
   const words: Array<{ w: string; start: number; end: number }> = [];
@@ -111,6 +118,7 @@ export function resourceTextParts(text: string | null | undefined): EntityCardVa
       if (id) endIdx = i + 1;
     }
     if (!id) id = resourceIdFromName(cur.w);
+    if (!id && yields) id = YIELD_WORDS[fold(cur.w)] ?? null;
     if (!id) continue;
     if (cur.start > cursor) parts.push(src.slice(cursor, cur.start));
     parts.push({ id });
@@ -129,8 +137,61 @@ export function stripDevNotes(text: string): string {
 }
 
 /** Pola wiersza dla prozy z nazwami surowców: `value` = tekst zwykły, `valueParts` = ikony w tekście. */
-export function proseRowFields(text: string): { value: string; valueParts?: EntityCardValuePart[] } {
+export function proseRowFields(text: string, yields = false): { value: string; valueParts?: EntityCardValuePart[] } {
   const clean = stripDevNotes(text);
-  const parts = resourceTextParts(clean);
+  const parts = resourceTextParts(clean, yields);
   return parts ? { value: clean, valueParts: parts } : { value: clean };
+}
+
+// ---------------------------------------------------------------------------------------------
+// R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1 — plony i bonusy (Żywność, Praca, Kultura, Nauka, Wiara,
+// Podatek, Pieniądz + surowce typu Kamień/Drewno) jako DANE wiersza → chip „liczba + ikona".
+// Celowo OSOBNE od `resourceIdFromName`/`resourceTextParts` (proza): „Praca"/„Kultura" w opisach
+// prozą zostają tekstem, ikony dostają tylko wiersze, które adapter wskazuje jako plon/bonus.
+// ---------------------------------------------------------------------------------------------
+
+/** Klucz danych (`zywnosc`, `handel`, `kamien`) lub nazwa → id chipa (plon z ikoną marki albo surowiec) / `null`. */
+export function yieldChipIdFromKey(key: string | null | undefined): string | null {
+  const k = fold(String(key ?? '')).replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+  if (!k) return null;
+  if (k === 'handel') return 'podatek'; // strumień podatku (terminologia C)
+  if (YIELD_CHIP[k]) return k;
+  const res = resourceIdFromName(k);
+  return res ?? null;
+}
+
+/** Liczba ze znakiem na początku tekstu: `+2 pkt/turę (…)` → `{ amount: '+2', rest: ' pkt/turę (…)' }`. */
+const LEADING_AMOUNT_RE = /^\s*([+\-−]?\d+(?:[.,]\d+)?%?)(.*)$/s;
+
+/**
+ * Wiersz „[plon] liczba reszta": `value` zostaje pełnym tekstem rezerwowym, `valueParts` niesie
+ * chip z kwotą i resztę tekstu. Gdy tekst nie zaczyna się liczbą — chip bez kwoty + cały tekst.
+ */
+export function yieldValueFields(id: string, valueText: string): { value: string; valueParts: EntityCardValuePart[] } {
+  const m = LEADING_AMOUNT_RE.exec(valueText);
+  if (m) {
+    const rest = m[2] ?? '';
+    return { value: valueText, valueParts: rest ? [{ id, amount: m[1]! }, rest] : [{ id, amount: m[1]! }] };
+  }
+  return { value: valueText, valueParts: [{ id }, ` ${valueText}`] };
+}
+
+/** Lista wpisów `{ key, amount }` (np. bonusy cudu/efekty technologii) → części „+2 [ikona], +2 [ikona]".
+ * Wpis bez ikony (np. Zadowolenie) zostaje tekstem `Nazwa +N`. `value` = tekst rezerwowy. */
+export function yieldEntryParts(
+  entries: ReadonlyArray<{ key: string; label: string; amount: number }>,
+  separator = ', ',
+): { value: string; valueParts: EntityCardValuePart[] } {
+  const parts: EntityCardValuePart[] = [];
+  const plain: string[] = [];
+  entries.forEach((e, i) => {
+    const sign = e.amount > 0 ? '+' : '';
+    const amount = `${sign}${e.amount}`;
+    if (i > 0) parts.push(separator);
+    const id = yieldChipIdFromKey(e.key);
+    if (id) parts.push({ id, amount });
+    else parts.push(`${amount} ${e.label}`);
+    plain.push(`${amount} ${e.label}`);
+  });
+  return { value: plain.join(separator), valueParts: parts };
 }

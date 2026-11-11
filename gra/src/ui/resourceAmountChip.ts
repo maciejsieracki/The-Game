@@ -6,7 +6,7 @@
  * (`mapResourceIconSvg` → resources-map/). Nazwa surowca żyje wyłącznie w `title` i
  * `aria-label` ikony, nie w widocznym tekście — wiersz zawiera tylko liczbę i symbol.
  */
-import { mapResourceIconSvg } from './icons/brandAssets';
+import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { stockResourceLabel } from '../game/building-stock-cost';
 
 /** Rozmiar ikony surowca w wierszu budynku (px); skalowany do 1,1em w CSS. */
@@ -17,12 +17,30 @@ function escapeAttr(s: string): string {
 }
 
 /**
+ * R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1 — plony (strumienie wartości, nie pozycje magazynu) z ikoną
+ * marki (`res-*` jak w pasku zasobów i panelu miasta). Klucz → etykieta (title/aria-label) + id ikony.
+ * Plony bez ikony w brandAssets (Zadowolenie, Obrona…) nie występują tu — zostają tekstem.
+ */
+export const YIELD_CHIP: Readonly<Record<string, { label: string; icon: string }>> = {
+  zywnosc: { label: 'Żywność', icon: 'res-food' },
+  praca: { label: 'Praca', icon: 'res-work' },
+  kultura: { label: 'Kultura', icon: 'res-culture' },
+  nauka: { label: 'Nauka', icon: 'res-science' },
+  wiara: { label: 'Wiara', icon: 'res-religion' },
+  podatek: { label: 'Podatek', icon: 'res-treasury' },
+  pieniadz: { label: 'Pieniądz', icon: 'res-treasury' },
+};
+
+/**
  * HTML chipa: `<span class="bld-res-chip">{amountText} {ikona}{unitSuffix}</span>`.
  * `amountText` np. "−2" lub "+50" (już ze znakiem); `unitSuffix` np. "/t" lub "".
  */
 export function resourceAmountChipHtml(key: string, amountText: string, unitSuffix = ''): string {
-  const label = stockResourceLabel(key);
-  const svg = mapResourceIconSvg(label, BUILDING_RESOURCE_CHIP_ICON_PX);
+  const yieldDef = YIELD_CHIP[key];
+  const label = yieldDef ? yieldDef.label : stockResourceLabel(key);
+  const svg = yieldDef
+    ? brandIconSvg(yieldDef.icon, BUILDING_RESOURCE_CHIP_ICON_PX)
+    : mapResourceIconSvg(label, BUILDING_RESOURCE_CHIP_ICON_PX);
   const attrs = `title="${escapeAttr(label)}" aria-label="${escapeAttr(label)}"`;
   const icon = svg
     ? `<span class="bld-res-chip-ic" role="img" ${attrs}>${svg}</span>`

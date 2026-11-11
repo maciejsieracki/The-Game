@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1
+GOAL: plony i bonusy cudów w kartach encji jako chipy ikona+liczba (kontrakt resources/valueParts z FALI 639)
+ZMIANY/COMMIT: baza a8b063989. Pliki: gra/src/ui/resourceAmountChip.ts (YIELD_CHIP: zywnosc/praca/kultura/nauka/wiara/podatek/pieniadz -> ikony res-* marki), gra/src/ui/entityCards/resourceRows.ts (yieldChipIdFromKey, yieldValueFields, yieldEntryParts, resourceTextParts/proseRowFields z opcją yields), wonderAdapter.ts (Miasto/Teren/Specjalny), buildingAdapter.ts (plony, koszt Pracy, utrzymanie z chipem Pieniądza, przyrosty), improvementAdapter.ts (charakterystyka, koszt Pracy, Warunek/Odblokowuje/Do czego), unitAdapter.ts (Koszt/Utrzymanie Pieniądza, Żywność/turę), technologyAdapter.ts (efekty budynków, utrzymanie). Nowe testy: gra/tools/entity-cards-yield-icons-test.cjs (22), gra/tools/entity-cards-yield-icons-real-render-test.cjs (137, Chromium, zrzuty, XSS).
+TESTY: tsc --noEmit czysto; entity-cards-resource-icons 26/0; entity-cards-resource-icons-real-render 196/0; entity-card-contract 75/0; entity-card-wonder 134/0; ids-leak-audit 1648 ok/0; wonder-text-no-raw-ids 132 ok/0; resource-icons-everywhere 10/0; resource-icons-everywhere-render 13/0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6. Zrzut (poza repo): /tmp/claude-0/shots/karta-wonder-piramidy.png.
+BLOKADY: brak
+ZAŁOŻENIA/UWAGI: (1) Etykiety wierszy (label: Praca, Podatek, Miasto — Pieniądz) zostają tekstem jako nagłówki; ikony w treści wartości. (2) Bez ikony w chipie, zostają tekstem: Zadowolenie, Obrona, Wpływ ("+3 Wpływu" w Piramidach; res-influence istnieje w brand, nie podpięty), Szczęście. (3) Proza opisów bez zmian; słowa-plony w prozie zamieniane tylko w wierszach Warunek/Odblokowuje/Do czego ulepszeń i Specjalny cudów. (4) "Kategoria" budynku (Nauka/Kultura) to nazwa kategorii, tekst. (5) Utrzymanie budynku: Pieniądz jako chip res-treasury razem z surowcami (wcześniej tekst "2 Pieniądze"). (6) Utrzymanie w karcie technologii: 'X złota na turę' -> 'X [ikona] na turę'. (7) unit.Kultura to nazwa cywilizacji, nie plon.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator
+DEPLOY/PUSH: NIE WYKONANO
