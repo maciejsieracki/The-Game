@@ -1721,6 +1721,7 @@ import {
   converterOutputMultiplierForEra,
   converterBuildingIdForRecipe,
   type RawConverterParamsJson,
+  type ConverterBuildingUtilization,
 } from './game/converters';
 
 // ===========================================================================
@@ -19855,6 +19856,7 @@ async function boot(): Promise<void> {
      */
     function producersForecastArgs(): {
       forecastNext?: Record<string, number>;
+      utilizationByCity?: ReadonlyMap<string, Record<string, ConverterBuildingUtilization>>;
       rawInflowPotential?: { enabled: Record<string, number>; installed: Record<string, number> };
     } {
       try {
@@ -19877,7 +19879,8 @@ async function boot(): Promise<void> {
         };
         const mine = cities.filter(c => c.ownerId === me);
         const hasRaw = mine.some(c => (cityBuilt.get(c.id) ?? []).some(id => id === 'stolarnia' || id === 'kamieniarski'));
-        if (!hasRaw) return { forecastNext };
+        const utilizationByCity = f.utilizationByCity;
+        if (!hasRaw) return { forecastNext, utilizationByCity };
         const pot = forecastNextTurnProduction({ ...base, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
         // wszystkie zainstalowane wlaczone: klon miast bez listy wylaczonych (tylko do tego liczenia)
         const allOn = cities.map(c => {
@@ -19887,7 +19890,7 @@ async function boot(): Promise<void> {
           return copy;
         });
         const potAll = forecastNextTurnProduction({ ...base, cities: allOn, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
-        return { forecastNext, rawInflowPotential: { enabled: { ...pot }, installed: { ...potAll } } };
+        return { forecastNext, utilizationByCity, rawInflowPotential: { enabled: { ...pot }, installed: { ...potAll } } };
       } catch (eForecast) {
         console.error('[Panel imperium] Blad prognozy produkcji:', eForecast);
         return {};

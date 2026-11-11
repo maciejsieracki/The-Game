@@ -246,6 +246,17 @@ export interface ConvertResult {
   consumed: Record<string, number>;
   stores:   Record<string, number>;
   reason:   ConverterReason;
+  /**
+   * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: maksymalna liczba cykli tej receptury w turze
+   * (floor przepustowosci) -- mianownik "wykorzystania mocy". Tylko odczyt, nie zmienia reguly.
+   */
+  maxCykle: number;
+  /** Co ogranicza cykle PONIZEJ maksimum: 'wejscie' (zapas), 'magazyn' (brak miejsca na wyjscie); brak = pelna moc. */
+  limitedBy?: 'wejscie' | 'magazyn';
+  /** Klucze wejsc, ktorych zapas wyznacza limit (tylko gdy limitedBy === 'wejscie'). */
+  limitingInputs?: string[];
+  /** Ile brakuje do PELNEJ mocy per limitujace wejscie (surowiec -> sztuki, zaokraglone w gore). */
+  missing?: Record<string, number>;
 }
 
 export function runConverter(
@@ -296,7 +307,68 @@ export function runConverter(
     else                         reason = 'brak-wejscia';
   }
 
-  return { produced: cykle * outPerCykl, cykle, consumed, stores: nowe, reason };
+  let limitedBy: 'wejscie' | 'magazyn' | undefined;
+  let limitingInputs: string[] | undefined;
+  let missing: Record<string, number> | undefined;
+  if (cykle < tput) {
+    if (cykle === limitWejscia) {
+      limitedBy = 'wejscie';
+      limitingInputs = Object.keys(recipe.inputs).filter(k => {
+        const perCykl = recipe.inputs[k];
+        return perCykl !== undefined && perCykl > 0 && Math.floor(have(k) / perCykl) === limitWejscia;
+      });
+      missing = {};
+      for (const k of limitingInputs) {
+        missing[k] = Math.max(1, Math.ceil((recipe.inputs[k] ?? 0) * tput - have(k)));
+      }
+    } else {
+      limitedBy = 'magazyn';
+    }
+  }
+
+  return { produced: cykle * outPerCykl, cykle, consumed, stores: nowe, reason, maxCykle: tput, limitedBy, limitingInputs, missing };
+}
+
+/**
+ * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: wykorzystanie mocy JEDNEGO budynku w turze
+ * (suma cykli / suma maksymalnych cykli jego receptur), z ConvertResult tego samego `runConverters`,
+ * ktory liczy realna produkcje -- zadnej osobnej formuly.
+ */
+export interface ConverterBuildingUtilization {
+  /** Cykle zrealizowane / maksimum (sumy po recepturach budynku). */
+  cykle: number;
+  maxCykle: number;
+  /** Procent 0..100 (zaokraglony do calkowitych); maxCykle = 0 -> 0. */
+  pct: number;
+  /** Powod, gdy pct < 100: 'wejscie' | 'magazyn' | 'przepustowosc'. */
+  limitedBy?: 'wejscie' | 'magazyn' | 'przepustowosc';
+  /** Brakujace/limitujace wejscia (klucze surowcow), gdy limitedBy === 'wejscie'. */
+  limitingInputs: string[];
+  /** Ile brakuje do pelnej mocy per limitujace wejscie (suma po recepturach budynku). */
+  missing: Record<string, number>;
+}
+
+export function summarizeBuildingUtilization(results: ReadonlyArray<ConvertResult>): ConverterBuildingUtilization {
+  let cykle = 0;
+  let maxCykle = 0;
+  const lim = new Set<string>();
+  const missing: Record<string, number> = {};
+  let limitedBy: ConverterBuildingUtilization['limitedBy'];
+  for (const r of results) {
+    cykle += r.cykle;
+    maxCykle += r.maxCykle;
+    if (r.limitedBy === 'wejscie') {
+      limitedBy = 'wejscie';
+      for (const k of r.limitingInputs ?? []) lim.add(k);
+      for (const [k, v] of Object.entries(r.missing ?? {})) missing[k] = Math.max(missing[k] ?? 0, v);
+    } else if (r.limitedBy === 'magazyn' && limitedBy !== 'wejscie') {
+      limitedBy = 'magazyn';
+    }
+  }
+  const pct = maxCykle > 0 ? Math.round((100 * cykle) / maxCykle) : 0;
+  if (maxCykle <= 0) limitedBy = 'przepustowosc';
+  if (pct >= 100) limitedBy = undefined;
+  return { cykle, maxCykle, pct, limitedBy, limitingInputs: [...lim], missing };
 }
 
 export interface RunConvertersResult {

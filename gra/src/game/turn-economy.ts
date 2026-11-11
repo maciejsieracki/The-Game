@@ -108,6 +108,9 @@ import {
   converterThroughputEraParamKey,
   converterThroughputsForEra,
   computeGarncarniaSurplusBonus,
+  summarizeBuildingUtilization,
+  type ConvertResult,
+  type ConverterBuildingUtilization,
   type RawConverterParamsJson,
 } from './converters';
 import {
@@ -1806,6 +1809,8 @@ function tickEmpireResourcePipeline(
    * PRZED Faza 3 (drain Spichlerza zapisuje stan modulu `_spichlerz*`). Wolacy podaje KLON miast.
    */
   stopAfterProduction?: boolean,
+  /** R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: cityId -> buildingId -> wykorzystanie mocy konwertera w tym ticku. */
+  utilizationOut?: Map<string, Record<string, ConverterBuildingUtilization>>,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 
@@ -1890,6 +1895,20 @@ function tickEmpireResourcePipeline(
         () => cap,
       );
       pool = convResult.stores;
+      if (utilizationOut) {
+        const byBuilding = new Map<string, ConvertResult[]>();
+        for (const recipe of activeRecipes) {
+          const res = convResult.perBuilding[recipe.id];
+          if (!res) continue;
+          const bid = converterBuildingIdForRecipe(recipe);
+          const arr = byBuilding.get(bid) ?? [];
+          arr.push(res);
+          byBuilding.set(bid, arr);
+        }
+        const rec: Record<string, ConverterBuildingUtilization> = {};
+        for (const [bid, arr] of byBuilding) rec[bid] = summarizeBuildingUtilization(arr);
+        utilizationOut.set(city.id, rec);
+      }
       if (producedOut) {
         const acc = producedOut.get(ownerId) ?? {};
         for (const recipe of activeRecipes) {
@@ -2457,7 +2476,11 @@ export function advanceCityEconomy(
    * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: `productionForecastOnly` = tylko faza produkcji surowcow
    * (dopyw z mapy + konwertery) i powrot. Wolacy MUSI podac klon miast (stan jest mutowany).
    */
-  options?: { productionForecastOnly?: boolean },
+  options?: {
+    productionForecastOnly?: boolean;
+    /** R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: wypelniane wykorzystaniem mocy konwerterow per miasto/budynek. */
+    utilizationOut?: Map<string, Record<string, ConverterBuildingUtilization>>;
+  },
 ): EconomyTickResult {
   // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
   // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
@@ -2702,6 +2725,7 @@ export function advanceCityEconomy(
     converterProducedByOwner,
     rawInflowByOwner,
     options?.productionForecastOnly === true,
+    options?.utilizationOut,
   );
   if (options?.productionForecastOnly === true) return result;
 
@@ -3162,6 +3186,8 @@ export interface ProductionForecastResult {
   producedByOwner: Map<number, Record<string, number>>;
   /** ownerId -> drewno/kamien -> faktyczny dopyw z mapy (z bonusem Stolarni / Warsztatu kamieniarskiego). */
   rawInflowByOwner: Map<number, Record<string, number>>;
+  /** cityId -> buildingId -> wykorzystanie mocy konwertera w nastepnej turze (ten sam przebieg co produkcja). */
+  utilizationByCity: Map<string, Record<string, ConverterBuildingUtilization>>;
 }
 
 /**
@@ -3174,6 +3200,7 @@ export interface ProductionForecastResult {
  */
 export function forecastNextTurnProduction(input: ProductionForecastInput): ProductionForecastResult {
   const clone = structuredClone(input.cities) as City[];
+  const utilizationOut = new Map<string, Record<string, ConverterBuildingUtilization>>();
   if (input.ignoreStock) for (const c of clone) c.surowce = {};
   const r = advanceCityEconomy(
     clone, input.map, input.data, input.difficulty, [], new Map(), input.builtByCity,
@@ -3183,7 +3210,7 @@ export function forecastNextTurnProduction(input: ProductionForecastInput): Prod
     input.resolveOwnerZlotoAccess ?? (() => true),
     input.resolveOwnerActiveLabels, input.resolveOwnerEmpireStock,
     new Map(), undefined, new Map(), new Map(), new Map(), undefined,
-    { productionForecastOnly: true },
+    { productionForecastOnly: true, utilizationOut },
   );
-  return { producedByOwner: r.converterProducedByOwner, rawInflowByOwner: r.rawInflowByOwner ?? new Map() };
+  return { producedByOwner: r.converterProducedByOwner, rawInflowByOwner: r.rawInflowByOwner ?? new Map(), utilizationByCity: utilizationOut };
 }
