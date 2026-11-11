@@ -29,6 +29,7 @@ fs.writeFileSync(ENTRY, `
 export { advanceCityEconomy, forecastNextTurnProduction } from '../src/game/turn-economy';
 export { buildEmpireProducersSnap, setProductionBuildingEnabled } from '../src/game/building-toggle';
 export { converterProductionDisplayForBuilding } from '../src/game/converters';
+export { summarizeBuildingUtilization } from '../src/game/converters';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -122,6 +123,15 @@ for (const t of TABLE) {
 }
 
 // ---------------------------------------------------------------------------
+console.log('-- A2. zaokraglenie: niepelne wykorzystanie nie pokazuje 100% (obrona zarzut 3) --');
+{
+  const mkR = (c, m) => ({ cykle: c, maxCykle: m, limitedBy: c < m ? 'wejscie' : undefined, limitingInputs: ['glina'], missing: { glina: 1 } });
+  const a = M.summarizeBuildingUtilization([mkR(199, 200)]);
+  eq(a.pct, 99, '199/200 -> 99%');
+  ok(a.limitedBy === 'wejscie', '199/200: powod zachowany');
+  eq(M.summarizeBuildingUtilization([mkR(200, 200)]).pct, 100, '200/200 -> 100%');
+  eq(M.summarizeBuildingUtilization([mkR(100, 200)]).pct, 50, '100/200 -> 50%');
+}
 console.log('-- B. spojnosc z realna tura (advanceCityEconomy) --');
 {
   // 1 garncarnia: procent z prognozy == realizacja / nominal (+-0 pkt)

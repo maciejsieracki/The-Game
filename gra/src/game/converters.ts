@@ -365,7 +365,9 @@ export function summarizeBuildingUtilization(results: ReadonlyArray<ConvertResul
       limitedBy = 'magazyn';
     }
   }
-  const pct = maxCykle > 0 ? Math.round((100 * cykle) / maxCykle) : 0;
+  let pct = maxCykle > 0 ? Math.round((100 * cykle) / maxCykle) : 0;
+  // Obrona zarzutu 3: niepelne wykorzystanie (cykle < maxCykle) nigdy nie pokazuje 100% (np. 199/200 -> 99%).
+  if (maxCykle > 0 && cykle < maxCykle && pct >= 100) pct = 99;
   if (maxCykle <= 0) limitedBy = 'przepustowosc';
   if (pct >= 100) limitedBy = undefined;
   return { cykle, maxCykle, pct, limitedBy, limitingInputs: [...lim], missing };
