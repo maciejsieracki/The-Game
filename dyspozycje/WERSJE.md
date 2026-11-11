@@ -1,3 +1,9 @@
+## ROBOCZA fb8c7652 -- 2026-11-06 -- FALA 651: FALA 651: administrator ulepszen — blokada automatyzacji bez administratora + panel wyboru administratora (W9) (testowa)
+
+- R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, 6 testow tematu, audio-sidecar PASS, live Chromium LIVE OK
+- Limity: zatrudnienie administratora bez okna potwierdzenia (ABC #262)
+
 ## ROBOCZA 453c476e -- 2026-11-06 -- FALA 650: FALA 650: liczniki panelu rekrutacji zerowane po zamknieciu (W17) (testowa)
 
 - R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1 + R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1 (czesc)
