@@ -62,3 +62,5 @@ Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonn
 
 - Ikona administratora (decyzja/pomysł właściciela): pieczęć/laur z literą „A” — włączona do dispatchów CITY-ADMINISTRATOR i IMPROVEMENT-ADMINISTRATOR.
 - FALA 623 wdrożona: IRON-STUD-ADJACENCY (main 681a0a828, MD5 be5d3e417eae4afa10bdac9141016adc).
+- `R-WEB-TEST-DEBT-BASELINE-Q3` (nowy zbiorczy temat długów testowych bazy: #112, #191, #192, #193 + czerwone na bazie z FC dziś) — start 13:4x, Haiku, bez zmian gra/src.
+- #205 ZAMKNIĘTE (cel w FALI 607; test HTML tooltipu ec28410a2 do następnej fali). FALE 624–626 wdrożone.
