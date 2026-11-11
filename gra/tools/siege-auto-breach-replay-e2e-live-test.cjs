@@ -77,6 +77,15 @@ const MUTS = {
   'restore-terrain-off': [
     { from: 'if (idx >= 0 && idx < tiles.length) tiles[idx] = this.siegeWallInitialTiles[r] as typeof tiles[number];', to: '' },
   ],
+  'restore-visual-off': [
+    { from: 'for (const o of this.siegeHiddenMeshes) o.visible = true;', to: '' },
+  ],
+  'restore-towers-off': [
+    { from: '      t.destroyed = false;\n', to: '' },
+  ],
+  'restore-hp-off': [
+    { from: 'this.wallTileHp.set(r, BattleScene.WALL_TILE_HP);', to: '' },
+  ],
   'ff-tick': [
     { from: 'this.vNow += FF_STEP_MS;\n      this._ffVirtualMs += FF_STEP_MS;', to: 'this.vNow += FF_STEP_MS * 2;\n      this._ffVirtualMs += FF_STEP_MS * 2;' },
   ],
@@ -365,8 +374,10 @@ async function main() {
       const before = {
         finished: bs.finished, breached: bs.wallEverBreached, gateOpen: bs.gateOpen, tilesLeft: bs.wallTileHp.size, init: bs.siegeWallTilesInit,
         tileDiff: diff(Array.from(bs.terrainMap.tiles)),
+        hiddenN: bs.siegeHiddenMeshes.length, rubbleN: bs.siegeRubbleMeshes.length, towersDestroyed: bs.siegeTowers.filter((t) => t.destroyed).length,
       };
       // Prawdziwy przycisk ekranu wyniku, jesli jest w DOM; inaczej ta sama funkcja (onReplay -> _replayBattle).
+      window.__hid = bs.siegeHiddenMeshes.slice();
       window.__reseed(555);
       let via = 'direct';
       const btn = Array.from(document.querySelectorAll('button')).find((b) => /ponownie/i.test(b.textContent || ''));
@@ -380,6 +391,9 @@ async function main() {
         after: {
           finished: bs.finished, started: bs.started, deploy: bs.deployPhase, breached: bs.wallEverBreached, gateOpen: bs.gateOpen,
           gateHp: bs.gateHp, tilesLeft: bs.wallTileHp.size, init: bs.siegeWallTilesInit, towers: bs.towerAtWallRows.size,
+          hpVals: Array.from(bs.wallTileHp.values()), hiddenN: bs.siegeHiddenMeshes.length, rubbleN: bs.siegeRubbleMeshes.length,
+          towersDestroyed: bs.siegeTowers.filter((t) => t.destroyed).length, towersHidden: bs.siegeTowers.filter((t) => t.mesh && !t.mesh.visible).length,
+          hiddenStillInvisible: window.__hid.filter((o) => !o.visible).length, lastAtt: bs.lastAttackedWallRow,
           round: bs.roundNo, atkAlive: bs.atk.filter((u) => !u.dead).length, defAlive: bs.def.filter((u) => !u.dead).length,
           tileDiff: diff(T1),
         },
@@ -417,6 +431,12 @@ async function main() {
     check('R1 po replayu: bitwa od nowa (faza rozstawiania, tura 0, brak konca)', A.finished === false && A.deploy === true && A.started === false && A.round === 0, A);
     check('R2 po replayu: wylom wyzerowany (wallEverBreached=false, brama zamknieta, HP bramy 400, wiezy przy murze 0)', A.breached === false && A.gateOpen === false && A.gateHp === 400 && A.towers === 0, A);
     check('R3 po replayu: HP kafli muru przywrocone (liczba kafli == poczatkowa)', A.tilesLeft === A.init && A.init === rp.before.init, A);
+    // Zarzut 2 Evaluatora: wartosc HP kafli przywrocona przez SAM replay (przed jakimkolwiek nadpisaniem przez test) == 640 (WALL_TILE_HP).
+    check('R3b po replayu: HP KAZDEGO kafla muru == 640 (wartosc z samego replayu, nieprzepisana przez test)', A.hpVals.length > 0 && A.hpVals.every((v) => v === 640), { hpVals: A.hpVals });
+    // Zarzut 3 Evaluatora: wizualia/wiezyczki. Przed replayem musi byc co przywracac (inaczej asercje bylyby puste).
+    check('R3c przed replayem: wylom ukryl segmenty/dodal gruz (co przywracac)', rp.before.hiddenN > 0 && rp.before.rubbleN > 0, rp.before);
+    check('R3d po replayu: ukryte segmenty muru/brama przywrocone, gruz zdjety, lastAttackedWallRow=-1', A.hiddenN === 0 && A.hiddenStillInvisible === 0 && A.rubbleN === 0 && A.lastAtt === -1, A);
+    check('R3e po replayu: wiezyczki odbudowane (destroyed=false, mesh widoczny)', A.towersDestroyed === 0 && A.towersHidden === 0, A);
     check('R4 po replayu: roster wrocil (ten sam sklad zywych: 6+obleznicza vs 6)', A.atkAlive === 17 && A.defAlive === 6, A);
     check('R5 po replayu: TEREN muru/bramy przywrocony (kafle == stan startowy); inaczej wyburzony mur zostaje otwarty mimo wallEverBreached=false (obejscie reguly R1)',
       A.tileDiff === 0, { tileDiffPoReplayu: A.tileDiff, tileDiffPrzed: rp.before.tileDiff });
