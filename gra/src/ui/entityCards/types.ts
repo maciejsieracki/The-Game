@@ -40,6 +40,9 @@ export interface EntityCardRowResource {
 /** Jeden wiersz w sekcji karty (np. "Atak: 6"). */
 export interface EntityCardRow {
   label: string;
+  /** Tytuł z plonami/surowcami jako części (tekst + chipy) — layout `top3` (Top 5) rysuje je zamiast
+   * zwykłego `label`; `label` zostaje pełnym tekstem rezerwowym (R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1). */
+  labelParts?: Array<string | EntityCardRowResource>;
   value: string;
   /** Surowce wiersza jako DANE (nie HTML) — renderer sam buduje chipy z ikonami i escapuje
    * `amount`. Kolejność w komórce wartości: `value` (zwykły tekst, `.textContent`) → ", " →

@@ -42,7 +42,7 @@ import { categoryOf } from '../../units/setup';
 import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
-import { resourcesFromList } from './resourceRows';
+import { resourcesFromList, yieldValueFields } from './resourceRows';
 
 const COUNTERS = countersData as unknown as CounterDef[];
 
@@ -68,6 +68,11 @@ function unitResourceRow(label: string, name: unknown, amount: unknown): EntityC
   const { resources, rest } = resourcesFromList(text(name), qty);
   if (resources.length === 0) return { label, value: `${text(name)} × ${qty}` };
   return { label, value: rest ? `${rest} × ${qty}` : '', resources };
+}
+
+/** Wiersz plonu (Pieniądz/Żywność) jako chip „liczba + ikona"; pusta wartość → zwykły pusty `value` (wiersz odfiltrowany). */
+function yieldRowIfValue(id: string, v: string): Pick<EntityCardRow, 'value' | 'valueParts'> {
+  return hasValue(v) ? yieldValueFields(id, v) : { value: v };
 }
 
 /** 1:1 z `cityPanel.ts::unitExtraField` — odczyt pól spoza typowanego `UnitDef`
@@ -283,16 +288,16 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   // --- 9. KOSZTY — DWIE osobne pod-sekcje: „Koszt rekrutacji" i „Utrzymanie" (dotąd jedna
   // sekcja „Koszty i utrzymanie" mieszała jednorazowy wydatek z co-turowym) -------------------
   const recruitRows: EntityCardRow[] = [
-    { label: 'Koszt Pieniądza', value: text(unit['Pieniądz (koszt)']) },
+    { label: 'Koszt Pieniądza', ...yieldRowIfValue('pieniadz', text(unit['Pieniądz (koszt)'])) },
     unitResourceRow('Koszt surowca', unit.Surowiec, unit['Surowiec (ilość)']),
     { label: 'Ludność', value: text(unit.Ludność) },
   ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-recruit', title: 'Koszt rekrutacji', rows: recruitRows });
 
   const upkeepRows: EntityCardRow[] = [
-    { label: 'Utrzymanie Pieniądza/turę', value: text(unit['Utrzymanie (Pieniądz/turę)']) },
+    { label: 'Utrzymanie Pieniądza/turę', ...yieldRowIfValue('pieniadz', text(unit['Utrzymanie (Pieniądz/turę)'])) },
     unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'], unit['Utrzymanie surowiec (ilość)']),
-    { label: 'Żywność/turę', value: text(unit['żywność/turę']) },
+    { label: 'Żywność/turę', ...yieldRowIfValue('zywnosc', text(unit['żywność/turę'])) },
   ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
 

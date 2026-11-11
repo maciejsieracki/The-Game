@@ -52,7 +52,8 @@ import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
-import { resourcesFromList } from './resourceRows';
+import { resourcesFromList, yieldEntryParts, yieldSentenceFields, yieldTitleFields, yieldValueFields } from './resourceRows';
+import type { EntityCardValuePart } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -119,17 +120,14 @@ function list(raw: string | null | undefined): string[] {
     .filter((x) => x !== '' && x !== '-' && x !== '—');
 }
 
-function buildingEffectText(building: BuildingRow): string {
-  const effects: string[] = [];
-  for (const [key, value] of Object.entries(building.przyrost ?? {})) {
-    if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
-  }
-  if (effects.length === 0) {
-    for (const [key, value] of Object.entries(building.baza ?? {})) {
-      if (value) effects.push(`${nazwaWyswietlana(key)} ${value > 0 ? '+' : ''}${value}`);
-    }
-  }
-  return effects.join(', ');
+function buildingEffectFields(building: BuildingRow): { value: string; valueParts?: EntityCardValuePart[] } {
+  const collect = (src: Record<string, number> | undefined) => Object.entries(src ?? {})
+    .filter(([, value]) => !!value)
+    .map(([key, value]) => ({ key, label: nazwaWyswietlana(key), amount: value as number }));
+  let entries = collect(building.przyrost as Record<string, number> | undefined);
+  if (entries.length === 0) entries = collect(building.baza as Record<string, number> | undefined);
+  if (entries.length === 0) return { value: '' };
+  return yieldEntryParts(entries);
 }
 
 /** Mapa nazwa gracza → `ImprovementKey`, odtworzona z `terrain-improvements.json`
@@ -235,7 +233,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // właściciela). Format pozycji: tytuł z liczbą + jedno zdanie (Q1), tylko realne pozycje (Q2)
   // — layout `top3` renderera numeruje dowolną liczbę pozycji (1–5).
   const top5Rows: EntityCardRow[] = (content?.top5 ?? []).slice(0, 5)
-    .map((item) => ({ label: item.tytul, value: item.zdanie }));
+    .map((item) => ({ label: item.tytul, ...yieldTitleFields(item.tytul), value: item.zdanie }));
   const top5Section: EntityCardSection = {
     key: 'top5', title: 'Top 5 korzyści', rows: top5Rows, layout: 'top3',
   };
@@ -245,7 +243,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // odkrycie nie ma wpisu w `tech-cards-top5.json` (test pilnuje, że dziś: 0/32). ---
   const actionRows: EntityCardRow[] = [];
   if (content) {
-    for (const item of content.cmz) actionRows.push({ label: '', value: cmzSentence(item) });
+    for (const item of content.cmz) actionRows.push({ label: '', ...yieldSentenceFields(cmzSentence(item)) });
   } else {
     actionRows.push(...legacyActionRows(resourceUnlocked, buildings, improvementNames, nextTechRows.length));
   }
@@ -376,10 +374,10 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   for (const b of buildings) {
     const buildingLinkTo = resolveBuildingRow(b.id) != null
       ? ({ kind: 'building', id: b.id } as const) : undefined;
-    const effect = buildingEffectText(b);
-    if (effect) {
+    const effect = buildingEffectFields(b);
+    if (effect.value) {
       econRows.push({
-        label: b.nazwa ?? humanizeId(b.id), value: effect,
+        label: b.nazwa ?? humanizeId(b.id), ...effect,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: pudełko przycisku MUSI trafić na nazwę
@@ -390,7 +388,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     }
     if (b.utrzymanie != null) {
       econRows.push({
-        label: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
+        label: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`, ...yieldValueFields('pieniadz', `${b.utrzymanie} na turę`),
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
         // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: jw. — `value` to kwota utrzymania.
@@ -428,12 +426,12 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // (wymóg badania)" żeby uniknąć wizualnej duplikacji z „Dostęp do surowca" w Zmianach
   // ekonomicznych mimo wspólnego rdzenia słownego. -------------------------------------------
   const resourceAccess = resourceAccessOf(tech);
-  const charRows: EntityCardRow[] = [
-    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
+  const charRows: EntityCardRow[] = ([
+    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}`, valueParts: [{ id: 'nauka', amount: String(tech['Koszt nauki']) }] },
     tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
     tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
     resourceAccess ? { label: 'Surowiec (wymóg badania)', ...resourceFields(resourceAccess) } : null,
-  ].filter((r): r is EntityCardRow => r != null);
+  ] as Array<EntityCardRow | null>).filter((r): r is EntityCardRow => r != null);
   const characteristicsSection: EntityCardSection = {
     key: 'characteristics', title: 'Charakterystyka', rows: charRows,
   };

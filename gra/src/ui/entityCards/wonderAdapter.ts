@@ -13,6 +13,8 @@
  * osobnym dispatchem (17., ostatnim tematem serii R-KARTY-HISTORIA-Q1).
  */
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
+import { proseRowFields, resourceTextParts, yieldChipIdFromKey, yieldEntryParts, yieldValueFields } from './resourceRows';
+import type { EntityCardValuePart } from './resourceRows';
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
 import type { WonderRow, WonderTerrainBonus, WonderSpecialBonus } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
@@ -106,27 +108,38 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
   const miasto = bonusy.miasto ?? {};
   for (const [k, v] of Object.entries(miasto)) {
     if (typeof v === 'number' && v !== 0) {
-      bonusRows.push({ label: `Miasto — ${BONUS_LABEL[k] ?? humanizeId(k)}`, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
+      const yid = yieldChipIdFromKey(k);
+      const vtxt = `${v > 0 ? '+' : ''}${v}`;
+      bonusRows.push({
+        label: `Miasto — ${BONUS_LABEL[k] ?? humanizeId(k)}`,
+        ...(yid ? yieldValueFields(yid, vtxt) : { value: vtxt }),
+        emphasize: true,
+      });
     }
   }
   const teren = Array.isArray(bonusy.teren) ? bonusy.teren : [];
   for (const t of teren as WonderTerrainBonus[]) {
     const typTerenu = text(t.typTerenu);
-    const parts: string[] = [];
+    const entries: Array<{ key: string; label: string; amount: number }> = [];
     for (const [k, v] of Object.entries(t)) {
       if (k === 'typTerenu' || k === 'warunek') continue;
-      if (typeof v === 'number' && v !== 0) parts.push(`${v > 0 ? '+' : ''}${v} ${BONUS_LABEL[k] ?? humanizeId(k)}`);
+      if (typeof v === 'number' && v !== 0) entries.push({ key: k, label: BONUS_LABEL[k] ?? humanizeId(k), amount: v });
     }
-    if (parts.length > 0) {
+    if (entries.length > 0) {
+      // Plony/surowce jako chipy "+N [ikona]" (R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1); warunek = proza.
+      const fields = yieldEntryParts(entries);
+      const warunekTxt = hasValue(t.warunek) ? ` — ${nazwaWyswietlana(text(t.warunek))}` : '';
+      const warunekParts: EntityCardValuePart[] = warunekTxt ? (resourceTextParts(warunekTxt, true) ?? [warunekTxt]) : [];
       bonusRows.push({
         label: `Teren${typTerenu ? ` (${nazwaWyswietlana(typTerenu)})` : ''}`,
-        value: parts.join(', ') + (hasValue(t.warunek) ? ` — ${nazwaWyswietlana(text(t.warunek))}` : ''),
+        value: fields.value + warunekTxt,
+        valueParts: [...fields.valueParts, ...warunekParts],
       });
     }
   }
   const specjalne = Array.isArray(bonusy.specjalne) ? bonusy.specjalne : [];
   for (const s of specjalne as WonderSpecialBonus[]) {
-    if (hasValue(s.opis)) bonusRows.push({ label: 'Specjalny', value: text(s.opis) });
+    if (hasValue(s.opis)) bonusRows.push({ label: 'Specjalny', ...proseRowFields(text(s.opis), true) });
   }
   const bonusSection: EntityCardSection = {
     key: 'bonus', title: 'Bonusy', rows: bonusRows,

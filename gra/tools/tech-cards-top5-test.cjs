@@ -24,6 +24,7 @@
  *
  * Usage (z gra/): node tools/tech-cards-top5-test.cjs [--screens <dir>]
  */
+const { normalizeText: normChip, BROWSER_SRC: CHIP_BROWSER_SRC } = require('./entity-card-chip-text.cjs');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -116,6 +117,7 @@ async function main() {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
   await page.setContent('<html><body style="margin:0;background:#0b0e14;color:#e8e0c8;font-family:Segoe UI,Tahoma,sans-serif"><div id="root" style="width:660px;padding:16px"></div></body></html>');
   await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
+  await page.addScriptTag({ content: CHIP_BROWSER_SRC });
   await page.evaluate(() => {
     const style = document.createElement('style');
     style.textContent = window.__ENTITY_CARD_CSS;
@@ -136,10 +138,11 @@ async function main() {
         return s ? s.textContent : '';
       };
       const top5 = Array.from(card.querySelectorAll('[data-section-key="top5"] .entity-card-top3-item')).map((it) => ({
-        tytul: (it.querySelector('.entity-card-top3-title') || {}).textContent || '',
-        zdanie: (it.querySelector('.entity-card-top3-text') || {}).textContent || '',
+        // chipy plonów/surowców → „<kwota> <Nazwa chipa>" (patrz tools/entity-card-chip-text.cjs)
+        tytul: it.querySelector('.entity-card-top3-title') ? window.__chipText(it.querySelector('.entity-card-top3-title')) : '',
+        zdanie: it.querySelector('.entity-card-top3-text') ? window.__chipText(it.querySelector('.entity-card-top3-text')) : '',
       }));
-      const cmz = Array.from(card.querySelectorAll('[data-section-key="actions"] .entity-card-prose')).map((p) => p.textContent);
+      const cmz = Array.from(card.querySelectorAll('[data-section-key="actions"] .entity-card-prose')).map((p) => window.__chipText(p));
       const actionRowsAll = card.querySelectorAll('[data-section-key="actions"] .entity-card-row, [data-section-key="actions"] .entity-card-prose').length;
       const labels = {};
       for (const key of ['buildings', 'units', 'improvements', 'wonders', 'next', 'econ']) {
@@ -179,7 +182,8 @@ async function main() {
         hi > -1 && r.orderedKeys[hi + 1] === 'top5', r.orderedKeys);
       check(`[B] ${name}: Top 5 ma 1–5 pozycji`, r.top5.length >= 1 && r.top5.length <= 5, r.top5.length);
       check(`[B] ${name}: Top 5 zgodne z danymi (tytuł + zdanie, kolejność)`,
-        JSON.stringify(r.top5) === JSON.stringify(exp.top5.map((i) => ({ tytul: i.tytul, zdanie: i.zdanie }))),
+        JSON.stringify(r.top5.map((i) => ({ tytul: normChip(i.tytul), zdanie: normChip(i.zdanie) })))
+          === JSON.stringify(exp.top5.map((i) => ({ tytul: normChip(i.tytul), zdanie: normChip(i.zdanie) }))),
         { got: r.top5, exp: exp.top5 });
       check(`[B] ${name}: każda pozycja Top 5 ma tytuł i jedno zdanie`,
         r.top5.every((i) => i.tytul.trim() !== '' && i.zdanie.trim() !== ''), r.top5);
@@ -206,7 +210,7 @@ async function main() {
         cmzDataBad.length === 0, cmzDataBad);
       check(`[C] ${name}: każde zdanie CMZ = „<czynność>, aby <korzyść>.” złożone dokładnie z danych`,
         r.cmz.length === exp.cmz.length
-          && r.cmz.every((s, i) => s.trim() === `${exp.cmz[i].czynnosc.trim()}, aby ${exp.cmz[i].korzysc.trim()}.`),
+          && r.cmz.every((s, i) => normChip(s) === normChip(`${exp.cmz[i].czynnosc.trim()}, aby ${exp.cmz[i].korzysc.trim()}.`)),
         { got: r.cmz, exp: exp.cmz });
       check(`[C] ${name}: CMZ tylko z danych (brak dodatkowych wierszy szablonu)`, r.actionRowsAll === exp.cmz.length, r.actionRowsAll);
     }
@@ -230,8 +234,8 @@ async function main() {
   // do nowej terminologii (asercja nie osłabiona: nadal wymaga ×1,50 i nazwanego strumienia).
   check('[E] Waluta: pozycja Mennicy z „×1,38” i „podatek” (bez „handel”)',
     waluta.top5.some((i) => /Mennica/.test(i.tytul) && (i.tytul + ' ' + i.zdanie).includes('×1,38')
-      && /podat/.test(i.tytul + ' ' + i.zdanie) && !/handl|handel/.test(i.tytul + ' ' + i.zdanie)), waluta.top5);
-  check('[E] Waluta: Top1 = Mennica z minimum ×1,38 (per cywilizacja)', /^Mennica: podatek ×1,38/.test(waluta.top5[0].tytul), waluta.top5[0]);
+      && /podat/i.test(i.tytul + ' ' + i.zdanie) && !/handl|handel/.test(i.tytul + ' ' + i.zdanie)), waluta.top5);
+  check('[E] Waluta: Top1 = Mennica z minimum ×1,38 (per cywilizacja)', /^Mennica: podatek ×1,38/i.test(waluta.top5[0].tytul), waluta.top5[0]);
   for (const n of ['Matematyka', 'Obróbka żelaza']) {
     check(`[E] ${n}: Top1 = jawne „Otwiera drogę do …” (Q7 właściciela)`, /^Otwiera drogę do /.test(rendered[n].top5[0].tytul), rendered[n].top5[0]);
   }
