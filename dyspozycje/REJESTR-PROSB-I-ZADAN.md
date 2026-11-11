@@ -9321,3 +9321,6 @@ R-RUSTPORT-REPIN-DYPLOMACJA-DANE-2-Q1: kod 475eb353a (runda 2), FC ed130181d PAS
 
 ## 2026-11-11 — Rust: W5 WIRE-WAR-MARCH-PLAN zintegrowane (parity-v2)
 R-RUSTPORT-P6-WIRE-WAR-MARCH-PLAN-Q1 (runda 4/5, op. Sonnet r3): kod 8bccc4034 FC PASS-WITH-NOTES; bramki po merge: fmt/clippy/9 binarek (lib + march core/adapter/vectors + wire_war_*) 0 failed. Planer `plan_war_march` (kampania → dom → fala → all-in) zwraca komendy, niczego nie wykonuje; 500 wektorów z weba dla planHomeWar/planForcedWarWave. Długi W8: odchylenie Z5 od weba (flankowanie, bramka historii/fal), Z3/Z4, wektory kampanii i all-in, czułość mutantowa kampanii/all-in; kolejne: W6 (dyplomacja tury), W7, W8 — NIE startować do końca kolejki web.
+
+## 2026-11-11 — FALA 621 wdrożona na ROBOCZĄ (main adb5c1653, MD5 0348f31ecae968fea80a506ce5ebdfe0)
+R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: FC PASS-WITH-NOTES, kod a7f0800fe (f20b81654 + poprawki obrony b920196b6: cooldown po końcowych filtrach, testy negatywne, branch-test 10/0). Odczyt Raw MD5 zgodny, sidecary zgodne. Niezmierzone: wiring main.ts end-to-end, realny tick dostaw, UI/Chromium, stare zapisy. Start następnych: IRON-STUD-ADJACENCY, BATTLE-DEFEAT-SURVIVOR-RETREAT (w toku), RECRUIT-FOLLOW-GENERAL-BY-ORIGIN.
