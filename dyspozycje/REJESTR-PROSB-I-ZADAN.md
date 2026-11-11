@@ -9472,3 +9472,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · POLECENIE WŁAŚCICIELA: kończy testy na dziś; nie może prowadzić bitew, bo wojska ciągle uciekają → PRIORYTET 1 = W21 (bitwa trwa do rozstrzygnięcia uciekinierów). Wszystkie zgłoszone błędy/poprawki wprowadzić do tasków i realizować autonomicznie w pętli AutoBot.
 
 - 2026-11-11 DECYZJA (ABC Taran): Taran nadal wymaga „Obróbki drewna"; bez żadnej dostępnej machiny pozostaje samo oblężenie. Zarzut 5 W17 zamknięty jako zgodny z decyzją; W18 zawężony (DODATEK w dispatchu).
+
+- 2026-11-11 DOPRECYZOWANIE (Taran/machiny): bez machin oblężniczych armia musi oblegać (głód/blokada) i nie zdobędzie miasta szturmem; W18 DODATEK 2 — najpierw pomiar, czy kod to dziś egzekwuje (gracz i AI).

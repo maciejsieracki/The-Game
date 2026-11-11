@@ -12,3 +12,12 @@ Właściciel: Taran wymaga technologii „Obróbka drewna" — NIE zmieniamy teg
 pozostaje samo oblężenie (bez machin; lista machin niewidoczna). Zarzut 5 z W17 (Taran od startu) NIE jest defektem.
 Kryteria W18: widoczne wyłącznie machiny dostępne wg technologii; zero dostępnych → brak sekcji machin, samo oblężenie działa.
 Nie dodawać Tarana do startu, nie zmieniać wymagań techów.
+
+## DODATEK 2 (2026-11-11) — doprecyzowanie właściciela
+
+Sens decyzji: bez machin oblężniczych armia MUSI oblegać miasto (blokada/głód → poddanie) i NIE jest w stanie zdobyć go szturmem.
+Kryteria dodatkowe (binarne), do POMIARU w obecnym kodzie przed zmianą:
+1. Czy dziś armia bez żadnej machiny może zdobyć miasto z fortyfikacjami szturmem/bitwą (ręczną i AUTO)? Podać wynik z dowodem (test/uruchomienie).
+2. Jeśli tak — szturm miasta z murem/fortyfikacją bez machiny jest zablokowany (przycisk niedostępny + komunikat 'Potrzebne machiny oblężnicze — pozostaje oblężenie'); oblężenie głodowe działa jak dotąd.
+3. Jeśli miasto nie ma fortyfikacji — NIE zmieniać dotychczasowych zasad (rozstrzygnięcie nie jest w decyzji właściciela; w razie wątpliwości DECISION_REQUIRED z opisem).
+4. Dotyczy też AI (nie zdobywa ufortyfikowanego miasta bez machin) — zmierzyć; zmiana AI tylko jeśli pomiar wykaże rozjazd.
