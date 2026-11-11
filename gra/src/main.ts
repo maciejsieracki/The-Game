@@ -1416,7 +1416,23 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
-import { isAutoBuildAllowedForOwner, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
+import {
+  administratorHireBlockReason,
+  administratorHireBlockText,
+  administratorHireCost,
+  administratorUpkeepForTier,
+  administrativeBuildingTier,
+  administratorEffectsFor,
+  aiShouldHireAdministrator,
+  cityHasAdministrator,
+  cityHasWorkingAdministrator,
+  dismissAdministrator,
+  hireAdministrator,
+  refreshAdministratorState,
+  totalAdministratorUpkeepIfAllWorkForOwner,
+  type AdministratorChange,
+} from './game/city-administrator';
+import { isAutoBuildAllowedForOwner, isCityAutoBuildAllowed, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
 import { fogRevealKeyFFromNewGameParam, fogRevealKeyFFromSaveMeta, isFogRevealKeyFActive, FOG_REVEAL_KEY_F_DEFAULT } from './game/fog-reveal-key-f';
 import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
@@ -8770,6 +8786,10 @@ async function boot(): Promise<void> {
         getAliveUnitTypeNames: (ownerId: number) => reservedUnitTypeNamesForOwner(ownerId),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
         isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
+        // R-WEB-CITY-ADMINISTRATOR-Q1: przycisk/chip administratora w nagłówku miasta + bramka autobudowy.
+        getCityAdministratorState: (cityId: string) => cityAdministratorUiState(cityId),
+        onHireAdministrator: (cityId: string) => hireCityAdministratorForPlayer(cityId),
+        onDismissAdministrator: (cityId: string) => dismissCityAdministratorForPlayer(cityId),
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
         // #17: Bilans plonów w panelu miasta musi mnożyć plony Porządkiem tak samo
         // jak silnik (turn-economy.ts applyOrderYieldMults) — bez tego panel zaniżał
@@ -9830,7 +9850,7 @@ async function boot(): Promise<void> {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isAutoBudowaTryb(city.budowaTryb)) return null;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: gracz bez włączonej automatyzacji budowy — tryb zostaje w danych, nie działa.
-      if (!isAutoBuildAllowedFor(city.ownerId)) return null;
+      if (!isCityAutoBuildActive(city)) return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -10064,6 +10084,105 @@ async function boot(): Promise<void> {
     /** Jedna bramka silnika i UI: czy automatyka budowy może działać dla ownera (AI zawsze tak). */
     function isAutoBuildAllowedFor(ownerId: number): boolean {
       return isAutoBuildAllowedForOwner(ownerId, humanSeats.humanOwnerIds, autoBuildEnabled);
+    }
+    /**
+     * R-WEB-CITY-ADMINISTRATOR-Q1: bramka auto-budowy BUDYNKÓW dla konkretnego miasta — globalna opcja
+     * (gracz) ORAZ działający administrator miasta (gracz). AI bez zmian. Patrz auto-build-gate.ts.
+     */
+    function isCityAutoBuildActive(city: City): boolean {
+      return isCityAutoBuildAllowed(
+        city.ownerId, humanSeats.humanOwnerIds, autoBuildEnabled, cityHasWorkingAdministrator(city),
+      );
+    }
+    /**
+     * R-WEB-CITY-ADMINISTRATOR-Q1: migracja — stare zapisy z włączoną automatyzacją nie mogą po cichu
+     * przestać działać: JEDNORAZOWE powiadomienie (flaga `meta.cityAdministratorNoticeShown`).
+     * Nowa gra startuje z flagą = true (nic do migrowania).
+     */
+    let cityAdministratorNoticeShown = true;
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: wpis w „Ważne” o zmianie stanu administratora (tylko gracz). */
+    function noteAdministratorChange(ch: AdministratorChange): void {
+      if (!isHuman(ch.city.ownerId)) return;
+      const evId = `city-admin-${ch.kind}-${ch.city.id}-${turn}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+      const text: Record<AdministratorChange['kind'], [string, string]> = {
+        ended_no_building: ['Administrator odszedł', `${ch.city.name}: utracono budynek administracyjny — koniec służby administratora.`],
+        ended_owner_changed: ['Administrator odszedł', `${ch.city.name}: miasto zmieniło właściciela — koniec służby administratora.`],
+        stopped_no_funds: ['Administrator nie pracuje', `${ch.city.name}: brak środków w skarbcu państwa na utrzymanie — brak bonusów i autobudowy, dopóki skarbiec nie pokryje utrzymania.`],
+        resumed: ['Administrator wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora.`],
+      };
+      const [title, subtitle] = text[ch.kind];
+      warEventLog.unshift({ id: evId, icon: 'A', title, subtitle, kind: 'enemy', turnCreated: turn });
+      trimWarEventLog();
+    }
+    /**
+     * R-WEB-CITY-ADMINISTRATOR-Q1: odśwież stan administratorów wszystkich właścicieli (koniec służby,
+     * finansowanie ze skarbca państwa). `notify` = wpisy w „Ważne” (tylko realne zmiany tury/akcji gracza).
+     */
+    function refreshCityAdministrators(notify: boolean): void {
+      const changes = refreshAdministratorState(cities, cityBuilt, ownerTreasury);
+      if (notify) for (const ch of changes) noteAdministratorChange(ch);
+    }
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: zatrudnij administratora gracza (koszt ze skarbca państwa). */
+    function hireCityAdministratorForPlayer(cityId: string): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !isHuman(city.ownerId)) return false;
+      const built = cityBuilt.get(city.id) ?? [];
+      const treasury = ownerTreasury(city.ownerId);
+      if (!hireAdministrator(city, built, treasury, turn)) {
+        const reason = administratorHireBlockReason(city, built, treasury);
+        if (reason) showHintMessage(administratorHireBlockText(reason), 3500);
+        return false;
+      }
+      setOwnerTreasury(city.ownerId, treasury - administratorHireCost());
+      refreshCityAdministrators(true);
+      updateHud();
+      showHintMessage(`Zatrudniono administratora: ${city.name} (−${administratorHireCost()} Pieniądza)`, 3000);
+      return true;
+    }
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: zwolnij administratora gracza (bez zwrotu kosztu). */
+    function dismissCityAdministratorForPlayer(cityId: string): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !isHuman(city.ownerId)) return false;
+      if (!dismissAdministrator(city)) return false;
+      updateHud();
+      showHintMessage(`Zwolniono administratora: ${city.name}`, 3000);
+      return true;
+    }
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: stan administratora miasta dla UI panelu miasta. */
+    function cityAdministratorUiState(cityId: string) {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) return null;
+      const built = cityBuilt.get(city.id) ?? [];
+      const tier = administrativeBuildingTier(built);
+      const hired = cityHasAdministrator(city);
+      const working = cityHasWorkingAdministrator(city);
+      const treasury = ownerTreasury(city.ownerId);
+      const effects = administratorEffectsFor(city, built);
+      const reason = hired ? null : administratorHireBlockReason(city, built, treasury);
+      return {
+        hired,
+        working,
+        tier,
+        upkeep: administratorUpkeepForTier(tier),
+        hireCost: administratorHireCost(),
+        blockReasonText: reason ? administratorHireBlockText(reason) : null,
+        effects,
+      };
+    }
+    /** R-WEB-CITY-ADMINISTRATOR-Q1: AI (parytet): zatrudnia, gdy stać i ma budynek administracyjny; płaci ze skarbca państwa. */
+    function aiHireAdministrators(ownerId: number): void {
+      let treasury = aiSkarbiecByOwner.get(ownerId) ?? 0;
+      for (const city of cities) {
+        if (city.ownerId !== ownerId) continue;
+        const built = cityBuilt.get(city.id) ?? [];
+        const upkeepNow = totalAdministratorUpkeepIfAllWorkForOwner(cities, cityBuilt, ownerId);
+        if (!aiShouldHireAdministrator(city, built, treasury, upkeepNow)) continue;
+        if (!hireAdministrator(city, built, treasury, turn)) continue;
+        treasury -= administratorHireCost();
+        aiSkarbiecByOwner.set(ownerId, treasury);
+        break; // max 1 zatrudnienie / właściciel / turę
+      }
     }
     /** Czy opcja „Automatyzacja budowy" gracza jest włączona (UI). */
     function isPlayerAutoBuildEnabled(): boolean {
@@ -18430,7 +18549,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) return false;
+      if (isAutoBudowaTryb(city.budowaTryb) && isCityAutoBuildActive(city)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -21799,6 +21918,7 @@ async function boot(): Promise<void> {
     }
 
     function refreshLiveEmpireRatesUnsafe(): void {
+      refreshCityAdministrators(false); // R-WEB-CITY-ADMINISTRATOR-Q1: podgląd HUD widzi aktualne finansowanie
       const playerCities = cities.filter(c => isMe(c.ownerId));
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
@@ -29255,6 +29375,22 @@ async function boot(): Promise<void> {
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
       setAutoBuildEnabled: v => { autoBuildEnabled = v === true; }, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (tylko ?civTest=1)
+      // R-WEB-CITY-ADMINISTRATOR-Q1 (tylko ?civTest=1): przygotowanie sceny do weryfikacji w Chromium.
+      adminSetup: (cityId, builtIds, treasury, tryb, stock) => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return null;
+        if (builtIds) cityBuilt.set(cityId, builtIds.slice());
+        if (stock) for (const [k, v] of Object.entries(stock)) creditOwnerResourceStock(cities, city.ownerId, k, v, 99999);
+        if (treasury !== null && treasury !== undefined) setOwnerTreasury(city.ownerId, treasury);
+        if (tryb) city.budowaTryb = tryb as typeof city.budowaTryb;
+        refreshCityAdministrators(false);
+        return { ...cityAdministratorUiState(cityId), queueLen: (cityProd.get(cityId)?.kolejka.length ?? 0), treasury: ownerTreasury(city.ownerId) };
+      },
+      adminState: cityId => {
+        const c = cities.find(x => x.id === cityId);
+        return { ...cityAdministratorUiState(cityId), queueLen: (cityProd.get(cityId)?.kolejka.length ?? 0), prod: cityProd.get(cityId) ?? null, tryb: c?.budowaTryb ?? null, treasury: c ? ownerTreasury(c.ownerId) : null, built: cityBuilt.get(cityId) ?? [] };
+      },
+      adminHire: cityId => hireCityAdministratorForPlayer(cityId),
       meEra: () => empireEpochForOwner(ME()),
       setCityWorkers: (cityId, keys) => {
         const city = cities.find(c => c.id === cityId);
@@ -37086,6 +37222,8 @@ async function boot(): Promise<void> {
           dealsEndTurnGate: dealsEndTurnGateEnabled,
           // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: automatyzacja budowy gracza trwa w zapisie.
           autoBuildEnabled,
+          // R-WEB-CITY-ADMINISTRATOR-Q1: jednorazowe powiadomienie migracyjne już pokazane.
+          cityAdministratorNoticeShown,
           // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F trwa w zapisie (brak pola = wyłączona).
           fogRevealKeyFEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
@@ -38106,6 +38244,9 @@ async function boot(): Promise<void> {
             ownerHasZlotoAccessNow,
           );
 
+          // R-WEB-CITY-ADMINISTRATOR-Q1: stan administratorów (koniec służby / finansowanie ze skarbca
+          // państwa wg skarbca z POCZĄTKU ticku) PRZED ekonomią miast — efekty i utrzymanie w tej samej turze.
+          refreshCityAdministrators(true);
           const econ = advanceCityEconomy(
             cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt,
             player.era, player.zbadane, ownerCivMap, orderMultMap,
@@ -38743,6 +38884,14 @@ async function boot(): Promise<void> {
                 runAiResearchForOwner(oid);
               } catch (eAiRes) {
                 console.error(`[AI ${oid}] Blad badania:`, eAiRes);
+              }
+            }
+            // R-WEB-CITY-ADMINISTRATOR-Q1: AI zatrudnia administratorów (parytet z graczem).
+            for (const oid of aiOwnerIds) {
+              try {
+                if (isMajorAiOwner(oid, isCityStateOwner)) aiHireAdministrators(oid);
+              } catch (eAiAdm) {
+                console.error(`[AI ${oid}] Blad zatrudnienia administratora:`, eAiAdm);
               }
             }
 
@@ -39448,7 +39597,7 @@ async function boot(): Promise<void> {
                   );
                   // Apply auto-enqueue suggestion (only when queue is empty)
                   // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: Zarządca ⚙ gracza nie kolejkuje budynków przy wyłączonej opcji.
-                  if (amDecision.enqueue !== null && isAutoBuildAllowedFor(city.ownerId)) {
+                  if (amDecision.enqueue !== null && isCityAutoBuildActive(city)) {
                     // TEMAT #6 / SUROW-CIV-01: pickAutoBuildItem (wewnatrz autoManageCity)
                     // juz odfiltrowal budynki bez pokrycia w puli PANSTWA — tu tylko pobieramy
                     // koszt (start budowy), rozlozony po miastach ownera.
@@ -39465,7 +39614,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId)) {
+              } else if (isAutoBudowaTryb(city.budowaTryb) && isCityAutoBuildActive(city)) {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -39537,7 +39686,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if (isAutoBudowaTryb(city.budowaTryb) && isAutoBuildAllowedFor(city.ownerId) && frontItem(prodFinal) === null) {
+                if (isAutoBudowaTryb(city.budowaTryb) && isCityAutoBuildActive(city) && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }
@@ -44625,6 +44774,7 @@ async function boot(): Promise<void> {
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
       autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
+      cityAdministratorNoticeShown = true; // R-WEB-CITY-ADMINISTRATOR-Q1: nowa gra — nic do migrowania
       // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F (domyślnie WYŁĄCZONA).
       fogRevealKeyFEnabled = fogRevealKeyFFromNewGameParam(params.fogRevealKeyFEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
@@ -46867,6 +47017,26 @@ async function boot(): Promise<void> {
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: stary zapis bez pola = WYŁĄCZONA.
       autoBuildEnabled = autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled);
+      // R-WEB-CITY-ADMINISTRATOR-Q1: stary zapis (bez pola) = powiadomienie migracyjne jeszcze niepokazane.
+      cityAdministratorNoticeShown = saved.meta?.cityAdministratorNoticeShown === true;
+      refreshCityAdministrators(false);
+      if (!cityAdministratorNoticeShown) {
+        cityAdministratorNoticeShown = true;
+        const affected = cities.filter(c => isHuman(c.ownerId)
+          && autoBuildEnabled && isAutoBudowaTryb(c.budowaTryb) && !cityHasWorkingAdministrator(c));
+        if (affected.length > 0) {
+          warEventLog.unshift({
+            id: `city-admin-migration-${turn}`,
+            icon: 'A',
+            title: 'Autobudowa wymaga administratora',
+            subtitle: `Automatyczna budowa budynków działa teraz tylko w miastach z działającym administratorem (${affected.length} miast bez niego). Zatrudnij administratora w nagłówku miasta (koszt ${administratorHireCost()} Pieniądza).`,
+            kind: 'enemy',
+            turnCreated: turn,
+          });
+          trimWarEventLog();
+          showHintMessage(`Autobudowa działa teraz tylko z administratorem miasta — ${affected.length} miast bez administratora (patrz „Ważne”)`, 6000);
+        }
+      }
       // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: stary zapis bez pola = WYŁĄCZONA.
       fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta(saved.meta?.fogRevealKeyFEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2) + R-WEB-ERA-WAR-LIVE-VERIFY-Q1: stary zapis BEZ pola = domyslna

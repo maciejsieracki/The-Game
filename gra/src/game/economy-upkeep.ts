@@ -1177,6 +1177,8 @@ export function militaryFoodConsumption(
 export interface UpkeepBalance {
   utrzymanieBudynki:   number;   // gold spent on buildings this turn
   utrzymanieJednostki: number;   // gold spent on units this turn
+  /** R-WEB-CITY-ADMINISTRATOR-Q1: Pieniądz na działających administratorów miast (wchodzi do `utrzymanieRazem`); brak pola = 0. */
+  utrzymanieAdministratorow?: number;
   utrzymanieRazem:     number;   // total gold upkeep (s.6.4 "Utrzymanie_laczne")
   saldo:               number;   // income - total upkeep (s.6.4 "Saldo_Pieniadza")
   deficyt:             boolean;  // saldo < 0 -> deficit warning (s.6.4)

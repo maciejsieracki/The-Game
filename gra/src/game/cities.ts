@@ -6,6 +6,7 @@
  */
 
 import type { GameMap } from '../types/map';
+import type { CityAdministrator } from './city-administrator';
 import { TerenBazowy } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isWaterTerrain } from '../units/setup';
@@ -996,6 +997,11 @@ export interface City {
   postCaptureLawTurnsRemaining?: number;
   /** true = odbicie po buncie (10 tur); false = świeży podbój (5 tur). */
   wasRebellionReconquest?: boolean;
+  /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1: administrator miasta (max 1). Brak pola (stary zapis) = brak
+   * administratora. Logika: `city-administrator.ts`; tier liczony z budynków, nie zapisywany.
+   */
+  administrator?: CityAdministrator;
   /** Stan Wealth per miasto (D3). */
   wealthState?: WealthState;
   /** Skumulowana kultura miasta (UI / playtest). */
