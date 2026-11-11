@@ -410,14 +410,166 @@ pub struct AiPeaceTickOutcome {
     pub decision: Option<AiPeaceDecision>,
 }
 
-/// Web `runAiAiPeaceTick(d)`. `pay`, `finalize`, `log` = callbacki zapisu (w TS `d.pay`, `d.finalize`, `d.log`).
-pub fn run_ai_ai_peace_tick(
+// ---------------------------------------------------------------------------
+// R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (port, wariant V2): regula nieujemnego bilansu AI<->AI,
+// bramka `peaceAllowed` i `loserBalanceFor`. Wariant V2 jest ADDYTYWNY: `AiPeaceReason`, `AiPeaceDecisionInput`,
+// `AiPeaceTickEnv` i `run_ai_ai_peace_tick` zostaja bez zmian (ich literaly i testy p6_* nadal sie kompiluja).
+// Migracja wywolan (war_turn_ai_ai.rs) to osobna decyzja po integracji.
+// ---------------------------------------------------------------------------
+
+/// Web `AI_AI_PEACE_MIN_BALANCE` = `pokojAiAi.minBilansPW` z `gra/data/diplomacy-war-peace-params.json` (= 0).
+/// Test `p6_aipeace_balans` sprawdza zgodnosc tej stalej z plikiem danych.
+pub const AI_AI_PEACE_MIN_BALANCE: f64 = 0.0;
+
+/// Web `isAiAiPeaceBalanceAllowed(winner, loser|undefined, min)`: bilans zwyciezcy >= min ORAZ (gdy podany)
+/// bilans przegranego >= min. NaN w ktorymkolwiek miejscu = blokada (porownania z NaN sa falszywe).
+pub fn is_ai_ai_peace_balance_allowed(
+    winner_balance_pn: f64,
+    loser_balance_pn: Option<f64>,
+    min_balance_pn: f64,
+) -> bool {
+    if winner_balance_pn
+        .partial_cmp(&min_balance_pn)
+        .is_none_or(|o| o.is_lt())
+    {
+        return false;
+    }
+    match loser_balance_pn {
+        Some(l) => l >= min_balance_pn,
+        None => true,
+    }
+}
+
+/// Web `aiAiPeaceRequiredPn(base, winnerAtZero, min)` = `Math.max(base, Math.ceil(min - winnerAtZero), 0)`.
+pub fn ai_ai_peace_required_pn(
+    base_required_pn: f64,
+    winner_balance_at_zero_pn: f64,
+    min_balance_pn: f64,
+) -> f64 {
+    let to_min = (min_balance_pn - winner_balance_at_zero_pn).ceil();
+    js_max(js_max(base_required_pn, to_min), 0.0)
+}
+
+/// Powod decyzji wariantu V2: `Base` = dotychczasowe powody; `BalanceBlocked` = web
+/// `'ujemny bilans PW jednej z AI (pokoj AI↔AI zablokowany)'` (wait takze po limicie tur).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AiPeaceReasonV2 {
+    Base(AiPeaceReason),
+    BalanceBlocked,
+}
+
+impl AiPeaceReasonV2 {
+    /// Kod powodu jak w wektorach (`balance_blocked` dla blokady bilansem).
+    pub fn code(self) -> String {
+        match self {
+            AiPeaceReasonV2::BalanceBlocked => "balance_blocked".to_string(),
+            AiPeaceReasonV2::Base(r) => match r {
+                AiPeaceReason::LimitReached => "limit".to_string(),
+                AiPeaceReason::GateNotOk(v) => format!("gate:{}", v.name()),
+                AiPeaceReason::BalanceInTolerance => "balance_in_tolerance".to_string(),
+                AiPeaceReason::BalanceBelowTolerance => "balance_below_tolerance".to_string(),
+            },
+        }
+    }
+}
+
+/// Web `AiPeaceDecision` wariantu V2.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AiPeaceDecisionV2 {
+    pub action: AiPeaceAction,
+    pub reason: AiPeaceReasonV2,
+    pub balance_before: f64,
+    pub balance_after: f64,
+    pub turns_since: f64,
+}
+
+/// Wejscie `decideAiPeaceRequest` wariantu V2 (web `AiPeaceDecisionInput` z `loserBalanceAfterPn` i `minBalancePn`).
+pub struct AiPeaceDecisionInputV2<'a> {
+    pub base: AiPeaceDecisionInput<'a>,
+    /// Web `loserBalanceAfterPn`: `None` = nie sprawdzany (web: `undefined`); `Some(NaN)` blokuje.
+    pub loser_balance_after_pn: Option<f64>,
+    /// Web `minBalancePn` (domyslnie `AI_AI_PEACE_MIN_BALANCE`).
+    pub min_balance_pn: f64,
+}
+
+/// Web `decideAiPeaceRequest` (wariant z regula AI<->AI). Kolejnosc jak w TS: najpierw bilans ujemny
+/// (takze po limicie), potem `decide_ai_peace_request` (limit, bramka, tolerancja).
+/// Bilans zwyciezcy w tej bramce jest NIEZAOKRAGLONY (`balanceAfterPn`), jak w TS.
+pub fn decide_ai_peace_request_v2(inp: &AiPeaceDecisionInputV2) -> AiPeaceDecisionV2 {
+    let base = &inp.base;
+    if !is_ai_ai_peace_balance_allowed(
+        base.balance_after_pn,
+        inp.loser_balance_after_pn,
+        inp.min_balance_pn,
+    ) {
+        return AiPeaceDecisionV2 {
+            action: AiPeaceAction::Wait,
+            reason: AiPeaceReasonV2::BalanceBlocked,
+            balance_before: js_round(base.balance_before_pn),
+            balance_after: js_round(base.balance_after_pn),
+            turns_since: turns_since_peace_request(base.req, base.turn),
+        };
+    }
+    let d = decide_ai_peace_request(base);
+    AiPeaceDecisionV2 {
+        action: d.action,
+        reason: AiPeaceReasonV2::Base(d.reason),
+        balance_before: d.balance_before,
+        balance_after: d.balance_after,
+        turns_since: d.turns_since,
+    }
+}
+
+/// Zaleznosci ticka wariantu V2: bazowy `AiPeaceTickEnv` + bramka `peaceAllowed` + `loserBalanceFor`.
+pub struct AiPeaceTickEnvV2<'a> {
+    pub base: AiPeaceTickEnv<'a>,
+    /// Web `peaceAllowed(loser, winner)`; `None` = brak pola w TS (zawsze dozwolone).
+    pub peace_allowed: Option<&'a dyn Fn(i64, i64) -> bool>,
+    /// Web `loserBalanceFor(coveredPn)` z `price(winner, loser, kind)`, z parametrem para (winner, loser, covered).
+    /// Zwraca `None` gdy web zwraca `undefined` (wtedy bilans przegranego nie jest sprawdzany).
+    pub loser_balance_for: Option<&'a dyn Fn(i64, i64, f64) -> Option<f64>>,
+}
+
+/// Wynik ticka wariantu V2 (decyzja V2; `plan`/`decision` puste dla dropow i bramki `peaceAllowed`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct AiPeaceTickOutcomeV2 {
+    pub pair_key: String,
+    pub action: AiPeaceTickAction,
+    pub kind: AiPeaceKind,
+    pub plan: Option<PeacePaymentPlan>,
+    pub decision: Option<AiPeaceDecisionV2>,
+}
+
+/// Flagi wspolnego rdzenia ticka: wariant V1 (bez regul V2) i V2 roznia sie tylko tymi polami.
+struct TickFlags<'a> {
+    peace_allowed: Option<&'a dyn Fn(i64, i64) -> bool>,
+    loser_balance_for: Option<&'a dyn Fn(i64, i64, f64) -> Option<f64>>,
+    balance_rule: bool,
+}
+
+fn decision_v1_of(d: AiPeaceDecisionV2) -> AiPeaceDecision {
+    AiPeaceDecision {
+        action: d.action,
+        reason: match d.reason {
+            AiPeaceReasonV2::Base(r) => r,
+            // Niedostepne w sciezce V1 (`balance_rule` = false); mapowanie jest totalne bez paniki.
+            AiPeaceReasonV2::BalanceBlocked => AiPeaceReason::BalanceBelowTolerance,
+        },
+        balance_before: d.balance_before,
+        balance_after: d.balance_after,
+        turns_since: d.turns_since,
+    }
+}
+
+/// Rdzen web `runAiAiPeaceTick(d)`. `pay`, `finalize`, `log` = callbacki zapisu (w TS `d.pay`, `d.finalize`, `d.log`).
+fn run_tick_core(
     store: &mut AiPeaceRequestStore,
     env: &AiPeaceTickEnv,
+    flags: &TickFlags,
     pay: &mut dyn FnMut(i64, i64, &PeacePaymentPlan),
     finalize: &mut dyn FnMut(i64, i64, AiPeaceKind),
     log: &mut dyn FnMut(&str),
-) -> Vec<AiPeaceTickOutcome> {
+) -> Vec<AiPeaceTickOutcomeV2> {
     let mut out = Vec::new();
     let snapshot: Vec<(String, AiPeaceRequest)> = store.entries().to_vec();
     for (key, req) in snapshot {
@@ -426,7 +578,7 @@ pub fn run_ai_ai_peace_tick(
         let kind = req.kind;
         if !(env.pair_eligible)(loser, winner) {
             store.delete(&key);
-            out.push(AiPeaceTickOutcome {
+            out.push(AiPeaceTickOutcomeV2 {
                 pair_key: key,
                 action: AiPeaceTickAction::DroppedIneligible,
                 kind,
@@ -437,7 +589,7 @@ pub fn run_ai_ai_peace_tick(
         }
         if !is_still_losing((env.requester_share_of)(loser, winner)) {
             store.delete(&key);
-            out.push(AiPeaceTickOutcome {
+            out.push(AiPeaceTickOutcomeV2 {
                 pair_key: key,
                 action: AiPeaceTickAction::DroppedNotLosing,
                 kind,
@@ -445,6 +597,18 @@ pub fn run_ai_ai_peace_tick(
                 decision: None,
             });
             continue;
+        }
+        if let Some(allowed) = flags.peace_allowed {
+            if !allowed(loser, winner) {
+                out.push(AiPeaceTickOutcomeV2 {
+                    pair_key: key,
+                    action: AiPeaceTickAction::Wait,
+                    kind,
+                    plan: None,
+                    decision: None,
+                });
+                continue;
+            }
         }
         let price = (env.price)(winner, loser, kind);
         let mut skip: HashSet<String> = HashSet::new();
@@ -476,7 +640,7 @@ pub fn run_ai_ai_peace_tick(
             skip.insert(city_id);
             plan = plan_for(&skip);
         }
-        let decision = decide_ai_peace_request(&AiPeaceDecisionInput {
+        let input = AiPeaceDecisionInput {
             req: &req,
             turn: env.turn,
             plan: &plan,
@@ -485,9 +649,28 @@ pub fn run_ai_ai_peace_tick(
             tolerance_pn: price.tolerance_pn,
             winner_gate_verdict: (env.gate_verdict)(winner, loser),
             limit: env.limit,
-        });
+        };
+        let decision = if flags.balance_rule {
+            let loser_after = flags
+                .loser_balance_for
+                .and_then(|f| f(winner, loser, plan.covered_pn));
+            decide_ai_peace_request_v2(&AiPeaceDecisionInputV2 {
+                base: input,
+                loser_balance_after_pn: loser_after,
+                min_balance_pn: AI_AI_PEACE_MIN_BALANCE,
+            })
+        } else {
+            let d = decide_ai_peace_request(&input);
+            AiPeaceDecisionV2 {
+                action: d.action,
+                reason: AiPeaceReasonV2::Base(d.reason),
+                balance_before: d.balance_before,
+                balance_after: d.balance_after,
+                turns_since: d.turns_since,
+            }
+        };
         if decision.action == AiPeaceAction::Wait {
-            out.push(AiPeaceTickOutcome {
+            out.push(AiPeaceTickOutcomeV2 {
                 pair_key: key,
                 action: AiPeaceTickAction::Wait,
                 kind,
@@ -519,7 +702,7 @@ pub fn run_ai_ai_peace_tick(
             AiPeaceAction::AcceptPaid => AiPeaceTickAction::AcceptPaid,
             _ => AiPeaceTickAction::Force,
         };
-        out.push(AiPeaceTickOutcome {
+        out.push(AiPeaceTickOutcomeV2 {
             pair_key: key,
             action,
             kind,
@@ -528,4 +711,46 @@ pub fn run_ai_ai_peace_tick(
         });
     }
     out
+}
+
+/// Web `runAiAiPeaceTick(d)` (wariant V1, bez regul bilansu i bramki `peaceAllowed`; zachowane bez zmian).
+/// `pay`, `finalize`, `log` = callbacki zapisu (w TS `d.pay`, `d.finalize`, `d.log`).
+pub fn run_ai_ai_peace_tick(
+    store: &mut AiPeaceRequestStore,
+    env: &AiPeaceTickEnv,
+    pay: &mut dyn FnMut(i64, i64, &PeacePaymentPlan),
+    finalize: &mut dyn FnMut(i64, i64, AiPeaceKind),
+    log: &mut dyn FnMut(&str),
+) -> Vec<AiPeaceTickOutcome> {
+    let flags = TickFlags {
+        peace_allowed: None,
+        loser_balance_for: None,
+        balance_rule: false,
+    };
+    run_tick_core(store, env, &flags, pay, finalize, log)
+        .into_iter()
+        .map(|o| AiPeaceTickOutcome {
+            pair_key: o.pair_key,
+            action: o.action,
+            kind: o.kind,
+            plan: o.plan,
+            decision: o.decision.map(decision_v1_of),
+        })
+        .collect()
+}
+
+/// Web `runAiAiPeaceTick(d)` z regula nieujemnego bilansu AI<->AI, `peaceAllowed` i `loserBalanceFor` (wariant V2).
+pub fn run_ai_ai_peace_tick_v2(
+    store: &mut AiPeaceRequestStore,
+    env: &AiPeaceTickEnvV2,
+    pay: &mut dyn FnMut(i64, i64, &PeacePaymentPlan),
+    finalize: &mut dyn FnMut(i64, i64, AiPeaceKind),
+    log: &mut dyn FnMut(&str),
+) -> Vec<AiPeaceTickOutcomeV2> {
+    let flags = TickFlags {
+        peace_allowed: env.peace_allowed,
+        loser_balance_for: env.loser_balance_for,
+        balance_rule: true,
+    };
+    run_tick_core(store, &env.base, &flags, pay, finalize, log)
 }
