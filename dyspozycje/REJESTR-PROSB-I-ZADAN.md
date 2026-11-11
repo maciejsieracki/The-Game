@@ -9430,3 +9430,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · FALA 642 = d356b626e (Raw MD5 dd13546f…). FALA 643 WDROŻONA (ROBOCZA): R-WEB-POLISH-LANGUAGE-AUDIT-Q1 runda 1 (FC PASS-WITH-NOTES, 664afd593; ref `refs/keep/R-WEB-POLISH-LANGUAGE-AUDIT-Q1-fc-r1`, wip `web-wip/POLISH-LANGUAGE-r1`). Audyt częściowy; runda 2 (gra/src/ui, main.ts) + lista 10 pozycji do ABC (w raporcie runu) — do zadania.
 
 - 2026-11-11 · R-WEB-CURRENCY-MULT-PER-CIV-Q1: kandydat D (a9cc36f43, FC PASS-WITH-NOTES, ref `refs/keep/R-WEB-CURRENCY-MULT-PER-CIV-Q1-fc-D`, wip `web-wip/CURRENCY-MULT-PER-CIV`) GOTOWY, NIE WDROŻONY — właściciel prosił o pełną tabelę wyników przed decyzją (tabela przedstawiona 2026-11-11: A 1:1 / B górny 2,5 / D dolny 1,38 / E zostaw globalne); decyzja otwarta. Integracja wymaga merge z konfliktem w gen-building-cards-top5.korekty.json (zachować oba wpisy: Cegielnia + Targowisko).
+
+- 2026-11-11 · DECYZJA (właściciel, po tabeli): CURRENCY-MULT-PER-CIV — wdrożyć opcję D (dolny limit 1,38) z korektą: Asyria tylko nieznacznie gorsza niż Babilonia (założenie: −0,1: normal 2,3 → 2,2). Runda 3 w toku.
