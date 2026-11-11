@@ -29,7 +29,7 @@ Pretorium to **koniec łańcucha administracji** w mieście regionalnym (zastęp
 - **+3 podatku/t**
 - **+5 Kultury/t**
 
-**Główne źródło Prawa** miasta regionalnego (`prawo_pretorium`). Garnizon liczy się do Prawa osobno — Pretorium **nie** daje mu dodatkowego bonusu.
+**Główne źródło Prawa** miasta regionalnego. Garnizon liczy się do Prawa osobno — Pretorium **nie** daje mu dodatkowego bonusu.
 
 **Brak efektu obronnego** — pole `obrona` w danych = 0; dawny „+2 obrony" i „mnożnik podatkowy" były martwe i nie działają w silniku.
 

@@ -39,7 +39,7 @@
 
 ### Rekrutacja a ludność
 
-Rekrutacja **nie odejmuje** mieszkańców miasta (`jednostka_koszt_ludnosci = 0`). Jedyny „ludzki" koszt werbu to **Manpower**. Wyjątek: **założenie miasta** (panel Budowa) pobiera **1 ludność** z miasta-źródła — to nie jest rekrutacja.
+Rekrutacja **nie odejmuje** mieszkańców miasta. Jedyny „ludzki" koszt werbu to **Manpower**. Wyjątek: **założenie miasta** (panel Budowa) pobiera **1 ludność** z miasta-źródła — to nie jest rekrutacja.
 
 ### Bonusy cywilizacji
 

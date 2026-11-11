@@ -10,6 +10,7 @@ import {
   type BasketItemFormatCtx,
 } from '../game/diplomacy-display';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import { nazwaWyswietlana } from '../game/text-names';
 
 function formatTuryCount(n: number): string {
   const lastDigit = Math.abs(n) % 10;
@@ -88,7 +89,7 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
     case 'zywnosc':
       return `<span class="da-deal-amt">${item.ilosc ?? 0} Żywności${perTurn ? ' na turę' : ' (jednorazowo)'}</span>`;
     default:
-      return `<span class="da-deal-amt">${esc(item.id ?? item.typ)}</span>`;
+      return `<span class="da-deal-amt">${esc(nazwaWyswietlana(item.id ?? item.typ))}</span>`;
   }
 }
 
