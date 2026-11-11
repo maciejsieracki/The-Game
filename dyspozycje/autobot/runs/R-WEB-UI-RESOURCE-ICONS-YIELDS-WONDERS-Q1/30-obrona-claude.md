@@ -26,3 +26,28 @@ BLOKADY: brak (poza dlugiem bazowym z pkt 3)
 RUNDY: obrona rundy 2, 2/5 tematu
 NASTEPNY KROK: Final Control; integracja z origin/main (b4c4b7757), regeneracja wikiBundle jesli potrzebna, potwierdzenie [A] zielonego
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## OBRONA RUNDY 3 (kandydat 481cab31686fd1db48c3ea074d79ccd26aa8cf0b, Evaluator PASS-WITH-NOTES, raport Evaluatora dd78f738d)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1
+GOAL: wiersze plonow i bonusow cudow oraz tytuly Top 5 / zdania actions kart encji jako chipy ikona+liczba, bez zmiany mechaniki
+ZMIANY/COMMIT: kod i testy BEZ zmian wzgledem 481cab316 (zero zarzutow blokujacych, zadna nota nie wymaga poprawki); zmieniony wylacznie ten raport.
+
+Odpowiedzi na zarzuty (wszystkie 4 to NOTY, zadna nie blokuje):
+1. Zdania pod tytulem Top 5 z golymi nazwami plonow (W1): ODRZUCAM jako defekt, notuje jako dopuszczony wyjatek. Dowod: DODATEK 2 pkt 3 jawnie zostawia prose (opis/historia/top3 slowny) tekstem; wyjatek W1 jest wypisany w entity-cards-yield-icons-test.cjs, skan BEZ wyjatkow dla tytulow top5/actions daje 0 (test 27 pass, 0 fail, wlasne uruchomienie). Objecie zdan chipami = osobny temat i decyzja wlasciciela (zmiana prozy, DODATEK mowi "bez zmian").
+2. Etykiety wierszy (W4) obok chipa: ODRZUCAM. Dowod: DODATEK 2 pkt 3 dopuszcza "etykiety wierszy (naglowki)" jako wyjatek; wyjatek jawny w tescie i raporcie. Etykieta to naglowek wiersza, chip niesie kwote; usuniecie etykiet zmienialoby kontrakt EntityCardRow (poza zakresem).
+3. Normalizator entity-card-chip-text.cjs zaslania w top5-testach regresje "chip na gola nazwe": PRZYJMUJE ocene, bez poprawki. Luke pokrywaja yield-icons (Evaluator wykazal mutacyjnie: po wylaczeniu labelParts yield-icons-real-render czerwony, a top5 nadal zielone). Zamierzony podzial: top5 = tresc/liczby/kolejnosc, yield-icons = forma. Wielkosc liter dotyczy tylko nazw plonow (DODATEK 3).
+4. NIE_ZMIERZONO (zywa gra; lista typow bez ikony): PRZYJMUJE uczciwie, bez poprawki. Typy plonow z ikona wg gra/src/ui/resourceAmountChip.ts YIELD_CHIP: Zywnosc, Praca, Kultura, Nauka, Wiara, Podatek, Pieniadz, Wplyw. Plony bez ikony w brandAssets (np. Zadowolenie/Szczescie, Obrona) zostaja tekstem zgodnie z dispatchem.
+
+TESTY (wlasne uruchomienie na 481cab316, gra/ npm ci --ignore-scripts):
+- tsc --noEmit: czysto (exit 0)
+- entity-cards-yield-icons-test: 27 pass, 0 fail
+- tech-cards-top5-test: 595 pass, 0 fail
+- building-cards-top5-test: 1208 pass, 0 fail
+- Pozostale bramki (real-render, 5 referencyjnych, contract, wonder, ids-leak itd.): NIE uruchamiane ponownie w tej rundzie (brak zmian kodu; wyniki Evaluatora: zielone).
+BLOKADY: brak
+RUNDY: obrona rundy 3, 3/5 tematu
+NASTEPNY KROK: Final Control; integracja orkiestratora (merge z aktualnym origin/main, regeneracja wikiBundle jesli potrzebna)
+DEPLOY/PUSH: NIE WYKONANO
