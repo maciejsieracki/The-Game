@@ -63,3 +63,38 @@ RUNDY: 1/5 (Operator, HAIKU).
 NASTĘPNY KROK: Evaluator i Final Control na SHA 2b15ae891 (odtworzyć bramki na wyniku merge, nie na gałęzi autora; mutacja strażnika ids-leak; Chromium: karta ulepszenia, odkrycia, panel odkryć bez surowych id). Integracja i push na main wykonuje orkiestrator po READY_FOR_DEPLOY.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## RUNDA 2/5 (Operator, Haiku) — merge na aktualny origin/main
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-RAW-IDS-AUDIT-Q1
+GOAL: Wprowadzić pracę audytu (kandydat 87604b5ce) na bazę origin/main 494480569 (FALA 627, administrator miasta) bez utraty żadnej ze stron konfliktu.
+ZMIANY/COMMIT:
+- Kandydat: 87604b5ce (detached). Merge: 5c8d8b7c0 (`git merge origin/main` z 87604b5ce). Ancestry: `git merge-base --is-ancestor 87604b5ce 5c8d8b7c0` = TAK; `origin/main` (494480569) = TAK.
+- Diff względem origin/main: 34 pliki, +431 / -68.
+- Tabela konfliktów (2 pliki, oba UU):
+  | Plik | Konflikt | Rozwiązanie |
+  |---|---|---|
+  | gra/src/data/wikiBundle.json | jeden plik generowany | REGENERACJA: `node gra/tools/bundle-wiki-for-game.cjs` (log: "22 rozdz. + 173 haseł (~1187 KB)"). Bez ręcznej edycji. Wynik zawiera poprawki audytu (grep: religia / zalozanie-miasta / manpower-rekruci obecne). |
+  | gra/src/ui/cityPanel.ts | blok importów (linie 292–300) | ZACHOWANO OBIE STRONY: z audytu `nazwyZListyId` (text-names) + `AUTO_BUILD_DISABLED_HINT`; z FALI 627 `AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT`, `administratorIconHtml`/`ADMINISTRATOR_ICON_CSS`, `administratorBaseEffectsPct`/`administratorTierScale`/`administratorEffectsFor`/`AdminTier`. Ciała funkcji: auto-merge bez konfliktu; wiersze „Surowiec (tech)” / „Odblokowuje surowiec” zostają na `nazwyZListyId` (poprawka audytu). |
+- Dodatkowa korekta (nie konflikt git): gra/tools/civpedia-wikihubhud-rys-historyczny-duplikacja-test.cjs — kotwica testu mutacyjnego wskazywała `entry.full.includes(...)`, a commit audytu 46eb8a157 zmienił źródło na `pelna = ... stripEncyMetadata(entry.full)`. Test zgłaszał „kotwica fixu nie znaleziona” (exit 1 na kandydacie). Zaktualizowano kotwicę do nowej formy; zachowanie mutacji bez zmian. Dowód: przed zmianą FAIL (build error), po zmianie `7 pass, 0 fail`.
+- Commit raportu: SHA w polu sha wyniku orkiestratora (czubek).
+TESTY (surowe wyniki, uruchomione na wyniku merge 5c8d8b7c0):
+- `node ./node_modules/typescript/bin/tsc --noEmit` → exit 0, bez błędów.
+- ids-leak-audit-test.cjs → `WYNIK: 1634 ok, 0 FAIL`, exit 0.
+- wonder-text-no-raw-ids-test.cjs → `WYNIK: 132 ok, 0 FAIL`, exit 0.
+- improvement-adapter-resource-note-test.cjs → `77 pass, 0 fail`, exit 0.
+- city-administrator-test.cjs → `117 passed, 0 failed`, exit 0.
+- city-administrator-economy-test.cjs → `72 passed, 0 failed`, exit 0.
+- Pięć bramek referencyjnych: logic-test → `LOGIC OK (213/213)`; tech-tree-test → `20 pass, 0 fail` (dokument podaje 19/19, wynik 20 pass — zgodny z zerem FAIL); research-test → `33 / 33`; unit-replace-test → `21/21`; combat-test → `6/6`. Wszystkie exit 0.
+- Testy panelu miasta / encyklopedii: 13 skryptów (citypanel-*, city-panel-growth-percent-separator-test, civpedia-*) — 13 PASS, a poniższe 6 FAIL. Te same 6 kończy z exit 1 także na origin/main 494480569 (baseline sprawdzony w tymczasowym worktree, usunięty): citypanel-tech-tile-dead-effects-test (Katapulta w „Odblokowuje budynek”, 16/1), civpedia-budynki-historia-test (mury.md, 150/1), civpedia-jednostki-j1-test, civpedia-jednostki-j2-test (Rys historyczny w jezdziec-chinski/katapulta), card-resource-purpose-test (101/1, „utrzymanie w Pieniądzu”). Są to długi sprzed tego tematu — NIE naprawiano (poza zakresem).
+- civpedia-wikihubhud-rys-historyczny-duplikacja-test.cjs → po korekcie kotwicy `7 pass, 0 fail`. (Na origin/main też exit 0.)
+- wiki-sync: w tools/ nie ma osobnego testu zgodności wikiBundle z docs/; zgodność wynika z regeneracji generatorem z docs/ (NIE_ZMIERZONO osobnym testem).
+- Chromium / zrzut nagłówka miasta z przyciskiem „Administrator”: NIE_ZMIERZONO w tej rundzie (wymóg Evaluatora/FC wg dispatchu).
+BLOKADY: brak blokad merge. Długi testowe (6 skryptów wyżej) pre-existing na main — do osobnych tematów.
+RUNDY: 2/5 (po nieudanej r2 → Sonnet nie było potrzebne).
+NASTĘPNY KROK: Evaluator i Final Control odtwarzają bramki na 5c8d8b7c0 (nie na gałęzi autora), sprawdzają tabelę konfliktu cityPanel.ts, mutację strażnika ids-leak (surowe id w tekście → test czerwony) oraz zrzut Chromium nagłówka miasta z przyciskiem Administrator.
+DEPLOY/PUSH: NIE WYKONANO
