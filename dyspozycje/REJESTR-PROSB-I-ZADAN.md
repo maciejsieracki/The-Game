@@ -9671,3 +9671,8 @@ Pilne: przy0%pula/100%budynki panel13295Pracy/t pokazuje0dopuli, alepula58092+98
 STATUS: OTWARTE
 DOMAIN: GAME
 Cegielnia75cykliBrąz/100Żelazo, zużycieproporcjonalne. Przyistniejącejrecepturze oznacza150gliny75drewna→225cegieł i200gliny100drewna→400cegieł. Zarejestrowanedonajbliższegoslotu max4, dispatch `autobot/runs/R-WEB-BRICK-CYCLES-75-100-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Przełącznikwłącz/wyłączmiejskiebudynkiprodukującesurowce. Wyłączeniewstrzymujeprodukcję,zużyciewejśćikosztyutrzymania; stantrwały, starezapisyON. Bezrefundukosztubudowy. Dispatch `autobot/runs/R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1/00-dispatch.md`; kolejkaprzymax4tematach.
