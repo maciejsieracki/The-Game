@@ -319,6 +319,10 @@ pub struct Params {
     pub odmienna_religia_zaufanie_per_tura: f64,
     #[serde(rename = "ekspansjaGranica_zaufanie_perTura")]
     pub ekspansja_granica_zaufanie_per_tura: i64,
+    #[serde(rename = "ekspansjaGranicaBraz_zaufanie_perTura")]
+    pub ekspansja_granica_braz_zaufanie_per_tura: i64,
+    #[serde(rename = "ekspansjaGranicaZelazo_zaufanie_perTura")]
+    pub ekspansja_granica_zelazo_zaufanie_per_tura: i64,
     #[serde(rename = "urazyHistoryczne_zaufanie_perTura")]
     pub urazy_historyczne_zaufanie_per_tura: i64,
     #[serde(rename = "progSojuszZaufanie")]
@@ -355,6 +359,10 @@ pub struct Params {
     pub prog_poboczne_wojna: i64,
     #[serde(rename = "progNapRelacja")]
     pub prog_nap_relacja: i64,
+    #[serde(rename = "progNapZaufanie")]
+    pub prog_nap_zaufanie: i64,
+    #[serde(rename = "progNapBezterminowyRelacja")]
+    pub prog_nap_bezterminowy_relacja: i64,
     #[serde(rename = "progHandelRelacja")]
     pub prog_handel_relacja: i64,
     #[serde(rename = "progSojuszPartnerRwMin")]

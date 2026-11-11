@@ -256,6 +256,9 @@ pub struct DiplomacyParams {
     pub alliance_relation: f64,
     pub treaty_min_relation: f64,
     pub nap_relation: f64,
+    /// Web `progNapBezterminowyRelacja` (diplomacy.json, ai.ts:7064 `napIndefinite`).
+    /// Brak konsumenta po stronie Rust (dług: propozycja NAP bezterminowego AI).
+    pub nap_indefinite_relation: f64,
     pub trade_relation: f64,
     pub trade_willingness_min: f64,
     pub tribute_min_per_turn: f64,
@@ -361,6 +364,7 @@ impl Default for DiplomacyParams {
             alliance_relation: 130.0,
             treaty_min_relation: 130.0,
             nap_relation: 110.0,
+            nap_indefinite_relation: 151.0,
             trade_relation: 0.0,
             trade_willingness_min: 0.5,
             tribute_min_per_turn: 10.0,
@@ -410,7 +414,7 @@ impl Default for DiplomacyParams {
             alliance_strength_respect_step: 0.15,
             alliance_weak_proposer_military_ratio: 0.5,
             alliance_stronger_other_bonus: 0.20,
-            alliance_willingness_min: 0.68,
+            alliance_willingness_min: 0.54,
             alliance_stronger_penalty_max: 0.40,
             alliance_stronger_military_step: 0.15,
             alliance_willingness_penalty_step: 0.18,
