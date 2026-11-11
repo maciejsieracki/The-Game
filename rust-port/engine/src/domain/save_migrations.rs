@@ -10,13 +10,15 @@
 //! ZALOZENIA (ZALOZENIE):
 //! - `isGeneral` jest prawdziwe TYLKO dla JSON `true` (web `unit.isGeneral !== true` -> pominiete).
 //!   Zamiana na `bool` odbywa sie w [`general_flag_from_raw`], nie w planie.
-//! - Epoka wlasciciela jest dostarczana przez wywolujacego (web `empireEpochForOwner`); plan nie
-//!   zgaduje brakujacych epok.
+//! - Epoka wlasciciela jest argumentem (`era_for_owner`). Produkcyjna sciezka
+//!   (`SaveSnapshot::migrate_on_load`) bierze ja z DANYCH ZAPISU (`SaveSnapshot::owner_era`), a nie
+//!   od wywolujacego i nie ze stanu gry. Jawne nadpisanie epoki jest wylacznie dla testow:
+//!   `SaveSnapshot::migrate_on_load_with_era_override_for_test`. Plan nie zgaduje brakujacych epok.
 //! - Klucz wlasciciela porownywany jak JS `Map` (SameValueZero): `-0` = `0`, `NaN` = `NaN`.
 //!
-//! Brak podpiecia do stanu gry: `GameStateDto`/`UnitDto` nie niesie flagi wodza ani kolejnosci
-//! narodzin (patrz `P6-ZAPIS-MIGRACJE-FALA509.md`, wiersz "wodzowie"). Ta funkcja jest gotowa do
-//! wpiecia, gdy model jednostki dostanie pole generala.
+//! Podpiecie do stanu gry: `demote_generals_over_limit` czyta `UnitDto::is_general()` i kolejnosc
+//! `state.units()`; `SaveSnapshot::migrate_on_load` wola `migrate_loaded_state`, ktora najpierw wola
+//! `demote_generals_over_limit`, a potem `enforce_army_stack_limit` (`zapis_loader::load_save_snapshot`).
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
@@ -249,7 +251,8 @@ fn hex_passable(state: &GameStateDto, q: i64, r: i64) -> bool {
 
 /// Web `demoteGeneralsOverLimit` (`main.ts:46566-46571`): najmlodsi wodzowie ponad limit epoki
 /// wlasciciela traca flage. Kolejnosc rosteru = kolejnosc `state.units()`.
-/// ZALOZENIE: epoke wlasciciela dostarcza wywolujacy (web `empireEpochForOwner`; Rust nie niesie jej w stanie).
+/// ZALOZENIE: epoke wlasciciela dostarcza wywolujacy. Produkcyjnie `SaveSnapshot::migrate_on_load` podaje
+/// epoke z danych zapisu (`owner_era`); `GameStateDto` epoki nie niesie.
 pub fn demote_generals_over_limit(
     state: &mut GameStateDto,
     era_for_owner: impl Fn(PlayerId) -> f64,
