@@ -90,6 +90,55 @@
   "probeGive": 90,
   "probeRecv": 10
  },
+ "pricing": {
+  "givePn": 1400,
+  "receivePn": 50,
+  "fairBlock": null,
+  "playerOk": false,
+  "accepted": true,
+  "reason": "Umowa handlowa (surowiec co turę) na 10 tur",
+  "relTotal": 11.5886
+ },
+ "audienceUi": {
+  "buttons": [
+   {
+    "act": "edit",
+    "text": "Edytuj",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "remove",
+    "text": "Usuń",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "edit",
+    "text": "Edytuj",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "remove",
+    "text": "Usuń",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "accept-package",
+    "text": "Przyjmij",
+    "disabled": true,
+    "visible": true
+   },
+   {
+    "act": "reject-package",
+    "text": "Odrzuć",
+    "disabled": false,
+    "visible": true
+   }
+  ]
+ },
  "canEndWithPendingOffer": true,
  "afterLoadPending": {
   "turn": 3,
@@ -130,6 +179,18 @@
   ],
   "tableLen": 1,
   "cyclicDeals": []
+ },
+ "controlNoDeal": {
+  "ctlB": {
+   "plGive": 70,
+   "aiRecv": 10
+  },
+  "ctlA": {
+   "plGive": 10,
+   "aiRecv": 7
+  },
+  "ctlLossGive": 60,
+  "ctlLossRecv": 3
  },
  "previewAccept": {
   "accepted": false,
