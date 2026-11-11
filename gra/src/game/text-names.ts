@@ -42,7 +42,8 @@ const IMPROVEMENT_NAMES: Readonly<Record<string, ImprovementRow>> =
 
 /** Nazwy surowcÃ³w z resources.json (kolumna âSurowiecâ), klucz = slug (ASCII, bez diakrytyki): âRuda Å¼elazaâ â ruda_zelaza. */
 function slugSurowca(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  // `\u0142`/`\u0141` nie rozk\u0142adaj\u0105 si\u0119 przez NFD (nie maj\u0105 dekompozycji) \u2014 bez tego \u201eZ\u0142oto\u201d dawa\u0142o `z_oto`, a \u201eCeg\u0142a\u201d `ceg_a`.
+  return s.replace(/\u0142/g, 'l').replace(/\u0141/g, 'L').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 const NAZWY_SUROWCOW: Readonly<Record<string, string>> = (() => {
   const out: Record<string, string> = {};
