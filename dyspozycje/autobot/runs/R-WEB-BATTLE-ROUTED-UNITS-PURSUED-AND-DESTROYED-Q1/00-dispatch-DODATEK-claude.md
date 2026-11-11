@@ -29,3 +29,18 @@ Dwa zrzuty właściciela tej samej jednostki (Sumerowie, „Wojownik · miecznik
  • Zrzut 2 (automatyczne rozstrzygnięcie): „Po walce: 0 · poległo: 1”, „Wojownik · zniszczona”, HP 18→0/22 (−100%) — ta sama jednostka (startuje z HP 18, czyli z ocalałej wcześniej) została CAŁKOWICIE ZLIKWIDOWANA.
 Wniosek właściciela: przy automatycznym rozstrzygnięciu przegrany jest unicestwiany, w bitwie taktycznej część jednostek jest „ocalana” przez koniec bitwy na morale.
 DO ZROBIENIA W TYM TEMACIE (dopisek do KRYTERIÓW): (i) znajdź ścieżkę „automatyczne rozstrzygnięcie” (rg 'auto-resolve|autoResolve|resolveBattleAuto|Rozstrzygnij automatycznie|bez bitwy' w gra/src/ui, gra/src/game, gra/src/battle — odpowiednik wyniku bitwy bez sceny taktycznej) i opisz DOKŁADNIE, jak liczy straty przegranego (czy całą stronę przegraną unicestwia, czy HP proporcjonalnie) — tabela; (ii) w tabelach pomiaru przed/po dodaj kolumnę „wynik auto-rozstrzygnięcia tej samej bitwy” (te same składy i seedy) i pokaż, że PO zmianie zasad bitwy taktycznej rozkład strat (zabici/uciekli/ocalali) jest spójny z auto-rozstrzygnięciem w granicach tolerancji (zapisz tolerancję pomiarem); (iii) NIE zmieniaj ścieżki auto-rozstrzygnięcia (jest wzorcem właściciela), chyba że pomiar pokaże błąd bezwzględny — wtedy zgłoś jako DECISION_REQUIRED; (iv) wskaż w raporcie, czy rozjazd taktyczna/automatyczna istniał też dla pojedynczych jednostek z HP < max (jak tu: 18/22) i czy ocalała jednostka z ran bitwy taktycznej mogła „odżyć” w kolejnej bitwie.
+
+## DODATEK 4 (2026-11-11) — nierównowaga strat zwycięzcy i uciekającego przeciwnika
+
+Zgłoszenie właściciela (2 zrzuty): wygrana mocno bitwa, ale część jego jednostek całkiem zginęła
+(Wojownicy 15→0/26, 25→0/26; „Po walce: 33 · poległo: 4"), a przeciwnik („Po walce: 13", obrażenia −4…−45%)
+praktycznie nie ucierpiał — uciekł i „przegrał" bitwę. Właściciel: „totalna nierównowaga", bitwa „do poprawy zgodnie z ustaleniami".
+
+KRYTERIA (binarne):
+1. POMIAR (przed zmianą kodu, w raporcie): scenariusz wygranej strony przy ucieczce przeciwnika — straty zwycięzcy
+   (jednostki zniszczone, suma HP) vs straty przegranego, w trybie ręcznym i AUTO; dane liczbowe, nie opis.
+2. Uciekający (routed) po dogonieniu giną zgodnie z DODATKIEM 1–3; zwycięzca nie traci jednostek w tempie
+   większym niż ścigani, o ile nie ma ku temu przyczyny w statach (podać przyczynę, jeśli jest).
+3. ZAKAZ zmiany wartości MORALE_*/statów/progów bez pytania ABC — jeśli pomiar wskazuje na wartości, zwróć DECISION_REQUIRED z liczbami.
+4. Test regresyjny czerwienieje po mutacji; bramki: tsc, 5 referencyjnych, testy tematu.
+BAZA: bieżący FC W21 (bez zmiany).
