@@ -212,6 +212,25 @@ fn malformed_epoch_entries_are_ignored_not_fatal() {
 }
 
 #[test]
+fn human_era_survives_reload_through_gracze_roundtrip() {
+    // Epoka czlowieka siedzi w top-level `gracze`. Ponowny zapis musi ja zachowac, inaczej drugi
+    // odczyt dalby fallback zamiast epoki 3 (P6-ZAPIS-ERA-ZAPISU, zarzut obrony).
+    let text = with_gracze(
+        &save_text(&specs(), json!({})),
+        json!([[OWNER, {"era": 3}]]),
+    );
+    let (loaded, first) = load_save_snapshot(&text).expect("first");
+    assert_eq!(loaded.owner_era(PlayerId::new(OWNER)), 3.0);
+    let again_text = serde_json::to_string(&loaded).expect("ser");
+    let again_wire: Value = serde_json::from_str(&again_text).expect("json");
+    assert_eq!(again_wire["gracze"], json!([[OWNER, {"era": 3}]]));
+    let (again, second) = load_save_snapshot(&again_text).expect("second");
+    assert_eq!(again.owner_era(PlayerId::new(OWNER)), 3.0);
+    assert!(!first.demoted_generals.is_empty());
+    assert!(second.demoted_generals.is_empty(), "drugi odczyt bez zmian");
+}
+
+#[test]
 fn epoch_survives_reload_through_meta_roundtrip() {
     // Epoka AI siedzi w meta (flatten `extra`), wiec ponowny zapis i odczyt daje ta sama epoke.
     let text = save_text(&specs(), json!({"ownerEraByOwner": [[FOREIGN, 2.0]]}));

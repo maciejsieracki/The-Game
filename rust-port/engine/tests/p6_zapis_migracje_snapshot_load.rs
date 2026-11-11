@@ -150,7 +150,7 @@ fn p6_zapis_migracje_old_save_without_general_field_is_unchanged() {
         "stary format bez pola"
     );
     let mut loaded = reload(&wire);
-    let report = loaded.migrate_on_load_with_era_override(|_| 1.0);
+    let report = loaded.migrate_on_load_with_era_override_for_test(|_| 1.0);
     assert!(report.demoted_generals.is_empty());
     assert!(report.moved_units.is_empty());
     assert!(report.unplaced_units.is_empty());
@@ -181,7 +181,7 @@ fn p6_zapis_migracje_excess_generals_are_demoted_in_state() {
     let mut loaded = reload(&wire);
     assert_eq!(generals(&loaded), vec![10, 11, 12, 20]);
     // era 2 => limit 2 na wlasciciela: najmlodszy wodz gracza 1 (id 12) traci flage; obcy nietkniety.
-    let report = loaded.migrate_on_load_with_era_override(|_| 2.0);
+    let report = loaded.migrate_on_load_with_era_override_for_test(|_| 2.0);
     assert_eq!(report.demoted_generals, vec![UnitId::new(12)]);
     assert_eq!(generals(&loaded), vec![10, 11, 20]);
     assert_eq!(loaded.state().units().len(), 4, "nikt nie ginie");
@@ -189,7 +189,7 @@ fn p6_zapis_migracje_excess_generals_are_demoted_in_state() {
     assert_eq!(generals(&again), vec![10, 11, 20]);
     assert!(
         again
-            .migrate_on_load_with_era_override(|_| 2.0)
+            .migrate_on_load_with_era_override_for_test(|_| 2.0)
             .demoted_generals
             .is_empty(),
         "idempotentne"
@@ -222,7 +222,7 @@ fn p6_zapis_migracje_stack_at_limit_stays() {
         SaveMeta::default(),
     );
     let before = positions(&s);
-    let report = s.migrate_on_load_with_era_override(|_| 1.0);
+    let report = s.migrate_on_load_with_era_override_for_test(|_| 1.0);
     assert!(report.moved_units.is_empty());
     assert_eq!(positions(&s), before);
 }
@@ -233,7 +233,7 @@ fn p6_zapis_migracje_oversized_stack_is_split_in_state() {
         state(map(3, 3, &[]), &big_stack(501), &[]),
         SaveMeta::default(),
     )));
-    let report = s.migrate_on_load_with_era_override(|_| 1.0);
+    let report = s.migrate_on_load_with_era_override_for_test(|_| 1.0);
     // Nadwyzka = jednostki po pierwszych 500 w kolejnosci wejsciowej: id 600.
     assert_eq!(report.moved_units, vec![UnitId::new(600)]);
     assert!(report.unplaced_units.is_empty());
@@ -256,7 +256,7 @@ fn p6_zapis_migracje_split_skips_water_and_foreign_city_hexes() {
         ),
         SaveMeta::default(),
     );
-    let report = s.migrate_on_load_with_era_override(|_| 1.0);
+    let report = s.migrate_on_load_with_era_override_for_test(|_| 1.0);
     assert_eq!(report.moved_units, vec![UnitId::new(600)]);
     assert_eq!(pos_of(&s, 600), Some((2, 1)));
 }
@@ -267,7 +267,7 @@ fn p6_zapis_migracje_split_allows_own_city_hex() {
         state(map(3, 3, &[]), &big_stack(501), &[(901, OWNER, 0, 2)]),
         SaveMeta::default(),
     );
-    s.migrate_on_load_with_era_override(|_| 1.0);
+    s.migrate_on_load_with_era_override_for_test(|_| 1.0);
     assert_eq!(pos_of(&s, 600), Some((0, 2)));
 }
 
@@ -329,7 +329,9 @@ fn p6_zapis_migracje_epoch_limit_depends_on_owner_era() {
     );
     let mut loaded = reload(&to_json(&s));
     let report =
-        loaded.migrate_on_load_with_era_override(|o| if o.get() == OWNER { 1.0 } else { 3.0 });
+        loaded.migrate_on_load_with_era_override_for_test(
+            |o| if o.get() == OWNER { 1.0 } else { 3.0 },
+        );
     assert_eq!(
         report.demoted_generals,
         vec![UnitId::new(11), UnitId::new(12)]

@@ -124,6 +124,10 @@ pub struct SaveSnapshot {
     /// Pomijana przy serializacji (zrodla pozostaja w zapisie jak dotad).
     #[serde(skip)]
     owner_eras: BTreeMap<u64, Number>,
+    /// Surowe top-level `gracze` z zapisu (web `playerStateByHuman`). Przepisywane bez zmian przy
+    /// serializacji, zeby epoka ludzi przezyla ponowny zapis i odczyt.
+    #[serde(rename = "gracze", skip_serializing_if = "Option::is_none")]
+    gracze: Option<Value>,
 }
 
 /// Web `AutoMarchSave` (`autoMarch` in the save). Only `leaderId` as non-empty string survives.
@@ -596,6 +600,7 @@ impl SaveSnapshot {
             planned_marches: Vec::new(),
             auto_march: None,
             owner_eras: BTreeMap::new(),
+            gracze: None,
         }
     }
 
@@ -608,6 +613,12 @@ impl SaveSnapshot {
     /// Returns a copy carrying the owner eras read from the save (see `owner_eras_from_save`).
     fn with_owner_eras(mut self, owner_eras: BTreeMap<u64, Number>) -> Self {
         self.owner_eras = owner_eras;
+        self
+    }
+
+    /// Returns a copy carrying the raw top-level `gracze` of the save (re-emitted on serialize).
+    fn with_gracze(mut self, gracze: Option<Value>) -> Self {
+        self.gracze = gracze;
         self
     }
 
@@ -676,7 +687,7 @@ impl SaveSnapshot {
 
     /// Jawne nadpisanie epoki wlascicieli, uzywane WYLACZNIE w testach migracji, ktore celowo
     /// podmieniaja epoke. Produkcyjna sciezka ladowania uzywa [`SaveSnapshot::migrate_on_load`].
-    pub fn migrate_on_load_with_era_override(
+    pub fn migrate_on_load_with_era_override_for_test(
         &mut self,
         era_for_owner: impl Fn(PlayerId) -> f64,
     ) -> LoadMigrationReport {
@@ -813,7 +824,8 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
             .with_meta(meta)
             .with_planned_marches(wire.planned_marches.unwrap_or_default())
             .with_auto_march(wire.auto_march)
-            .with_owner_eras(owner_eras);
+            .with_owner_eras(owner_eras)
+            .with_gracze(wire.gracze);
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(snapshot)
     }
