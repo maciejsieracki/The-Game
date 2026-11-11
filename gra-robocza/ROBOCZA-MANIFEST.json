@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-  "bundleSha256": "92cf44f08ded117c5973968e314482ed835138f54d8207d5b4e515ea6fcb96c1",
-  "bundleBytes": 14494402,
+  "bundleMd5": "dcbdf9f50de426650434c1516ba71a13",
+  "bundleSha256": "3f89f7cc0990fa18035e39ad5202eb38ca3b930a74bd58ba0a98f329c3298dd0",
+  "bundleBytes": 14500899,
   "sourceSnapshot": {
-    "source": "merge FC ed0675270",
+    "source": "merge FC ebddbfe61",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 635: R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: kreator nowej gry ma opcję 'Administratorzy' (Włączone/Wyłączone, domyślnie Wyłączone), zapisaną na stałe w grze (meta.administratorsEnabled); przełącznik automatyzacji w ustawieniach usunięty; przy OFF brak mechaniki administratora i brak automatyzacji budowy/ulepszeń (gracz), przy ON zasady CITY/IMPROVEMENT; stary zapis: administratorzy wyłączeni + jednorazowe powiadomienie w Ważne (także gdy był zatrudniony administrator); AI poza opcją; rekrutacja z generałem niezależna; Civpedia zaktualizowana"
+    "FALA 636: R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: przełącznik per miasto per budynek dla 7 budynków produkujących surowce (cegielnia, garncarnia, odlewnie brązu/żelaza/wielka, stolarnia, kamieniarski); wyłączony: brak produkcji, zużycia wejść i utrzymania (złoto+surowce), brak bonusu +10% dopływu i własnych plonów; budynek stoi, bez zwrotu kosztu, technologie bez zmian; stan w City.wylaczoneBudynki, stare zapisy = włączone; na końcu panelu Miasta lista wszystkich miast z przełącznikami i agregaty per surowiec (produkcja realizowana z ostatniej tury vs możliwa: z budynków włączonych i ze wszystkich zbudowanych); panel miasta liczy utrzymanie bez wyłączonych"
   ],
   "verification": [
-    "tsc czysty; administrators-wizard 58/0, city-administrator 117/0, improvement-administrator 53/0, newgame-defaults 62/0, fog-reveal-key-f-option, auto-manage 45/45; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacje czerwone; Chromium (operator): kreator, menu gry bez przełącznika, panel miasta OFF/ON; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; resource-building-toggle 130/0, UI Chromium 16/0, hud-konwerter 20/0, building-upkeep-resources 48/0, converters 49/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja turn-economy czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE_ZMIERZONO: realne wczytanie starego zapisu, pozostałe testy Playwright kreatora, pełna regresja; powiadomienie migracji może wracać przy kolejnym wczytaniu do czasu ponownego zapisu; AI nadal zatrudnia administratorów miasta niezależnie od opcji (założenie); usunięte: autobuild-toggle-test i 2 live-verify-autobuild-toggle"
+    "Do decyzji właściciela: wyłączenie zeruje też plony z samego budynku (Praca Cegielni, Żywność Garncarni, Praca Stolarni) — szeroka interpretacja; agregat bez Stolarni/Kamieniarskiego; brak prognozy następnej tury (tylko historia i górna granica); NIE_ZMIERZONO: kliknięcie przełącznika w pętli pełnej gry przez Vite; empire-miasta-table-test i empire-panel-miasto-obywatele-content-test padają identycznie na bazie (svg?raw)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T16:14:56",
+  "hubGeneratedAt": "2026-11-11T16:35:36",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
-      "sizeBytes": 14494402
+      "md5": "dcbdf9f50de426650434c1516ba71a13",
+      "sizeBytes": 14500899
     }
   ],
-  "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+  "md5": "dcbdf9f50de426650434c1516ba71a13",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
