@@ -160,6 +160,18 @@ export interface EconParams {
    */
   mennicaMnoznikPoWalucie:          number;
   /**
+   * R-WEB-CURRENCY-MULT-PER-CIV-Q1 (decyzja D): poziom trudności, dla którego zbudowano te
+   * parametry. Razem z macierzą civ (meta_mnoznik_waluta) wyznacza mnożnik Efektu 1 PER
+   * CYWILIZACJĘ (mennicaMnoznikForCiv). Brak pola (stare fixture) = globalna stała jak dawniej.
+   */
+  trudnosc?:                        Difficulty;
+  /**
+   * Dolny limit mnożnika Efektu 1 per cywilizacja (econ-params.json
+   * globalne.mennica_mnoznik_po_walucie_minimum = dawna globalna wartość 'hard' 1,38).
+   * Brak pola = brak dolnego limitu (stare fixture). Bez górnego limitu.
+   */
+  mennicaMnoznikPoWalucieMinimum?:  number;
+  /**
    * NIEUŻYWANE od 2026-07-25 (decyzja Maciej): dawny Efekt 1 "sam tech Waluty
    * daje x2 na cały Handel netto, bez wymogu Mennicy" -- zastąpiony przez
    * mennicaMnoznikPoWalucie (wymaga Mennicy + Waluty, wartość różna per trudność).
@@ -241,7 +253,9 @@ export function loadEconParams(
     budynekAkademiaBonusNauki:      read(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: read(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25
-    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1
+    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // fallback globalny Efektu 1 (gdy brak wartosci civ)
+    trudnosc:                       d,
+    mennicaMnoznikPoWalucieMinimum: read(gl, 'mennica_mnoznik_po_walucie_minimum', 1.38),
     walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
@@ -774,6 +788,24 @@ export function mnoznikHandelPieniadzForCivByDifficulty(
   return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
 
+/**
+ * R-WEB-CURRENCY-MULT-PER-CIV-Q1 (decyzja D): mnożnik Efektu 1 (Waluta + Mennica) dla
+ * cywilizacji = max(minimum, meta_mnoznik_waluta[civ] + delta trudności). Bez górnego limitu.
+ * Fallback na globalne params.mennicaMnoznikPoWalucie, gdy civ nieznana w macierzy albo
+ * params nie niesie poziomu trudności. Jedyne źródło prawdy dla silnika i panelu.
+ */
+export function mennicaMnoznikForCiv(
+  civKey: string | null | undefined,
+  params: Pick<EconParams, 'mennicaMnoznikPoWalucie' | 'trudnosc' | 'mennicaMnoznikPoWalucieMinimum'>,
+): number {
+  if (!civKey || !params.trudnosc) return params.mennicaMnoznikPoWalucie;
+  const value = mnoznikHandelPieniadzForCivByDifficulty(
+    civKey, null, params.trudnosc, params.mennicaMnoznikPoWalucie,
+  );
+  const minimum = params.mennicaMnoznikPoWalucieMinimum;
+  return typeof minimum === 'number' && Number.isFinite(minimum) ? Math.max(minimum, value) : value;
+}
+
 /** Bonusy ekonomii z wiersza cywilizacji (civs.json). */
 export function civBonusyForCivKey(
   civKey: string | null | undefined,
@@ -961,7 +993,7 @@ export function cityYieldPerTurn(
   const handelNettoRaw    = handelBrutto       * (1 - strata);
   // Mint affects the local tax pool only. Separately settled route cash bypasses it.
   const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
-  const walutaMnoznikBase = params.mennicaMnoznikPoWalucie;
+  const walutaMnoznikBase = mennicaMnoznikForCiv(city.civKey, params);
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 

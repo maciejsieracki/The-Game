@@ -21,6 +21,10 @@
     "*": ["Wielka odlewnia", "Wielka Kuźnia", "Teatr"]
   },
   "budynki": {
+    "Targowisko (Rynek)": {
+      "cmz": [ { "czynnosc": "Zbuduj Targowisko", "korzysc": "dać miastu 5 pieniądza" }, { "czynnosc": "Zbuduj w stolicy Mennicę (Waluta)", "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji (min. ×1,38)" } ],
+      "powodCmz": "R-WEB-CURRENCY-MULT-PER-CIV-Q1 (zarzut 1): mnożnik per cywilizacja, nie globalne ×1,5."
+    },
     "Cegielnia": {
       "zmiany": [
         { "z": "Top1_GLOWNA", "tytul": "Wytwarza cegłę: 50 / 75 / 100 cykli × 2 cegły na turę (wg epoki)", "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły; cykle na turę: 50 (epoka 1), 75 (epoka Brązu), 100 (epoka Żelaza); wyjście cegły +50% bazy na epokę od Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.", "powod": "R-WEB-BRICK-CYCLES-75-100-Q1 (decyzja właściciela 2026-11-11): cykle Cegielni per epoka właściciela 50/75/100 (gra/tools/brick-cycles-75-100-test.cjs). Zmiana była wprowadzona ręcznie w building-cards-top5.json (b1656e454) bez korekty w generatorze — przeniesiona tutaj, aby --check był zielony. Dawna korekta J (przeniesienie „od epoki Brązu +50%” w nawias; cegła jako koszt budowy) zachowana w zdaniu; wpis card-text-corrections.cjs (cegielnia top5.0.zdanie) usunięty, bo jego „z” nie pasuje już do bazy CSV." }
@@ -55,8 +59,10 @@
     },
     "Mennica": {
       "zmiany": [
-        { "z": "Top1_GLOWNA", "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus (×1,62 łatwy, ×1,38 trudny); nie obejmuje tras.", "powod": "R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: CSV pisał „podatek z handlu” — podatek z pól i budynków to nie handel (handel = wymiana: trasy, umowy, kosze); trasy Mennica pomija (econ-params.json:590)." }
-      ]
+        { "z": "Top1_GLOWNA", "tytul": "Podatek wszystkich miast ×1,38 lub więcej (zależnie od cywilizacji)", "zdanie": "Mnoży podatek wszystkich miast przed podziałem na naukę, pieniądz i luksus; mnożnik zależy od cywilizacji i trudności, nie spada poniżej ×1,38; nie obejmuje tras.", "powod": "R-WEB-CURRENCY-MULT-PER-CIV-Q1 (zarzut 1): mnożnik per cywilizacja, nie globalne ×1,62/×1,50/×1,38. Wcześniej: R-WEB-TERMINOLOGY-TRADE-VS-TAX-Q1: CSV pisał „podatek z handlu” — podatek z pól i budynków to nie handel (handel = wymiana: trasy, umowy, kosze); trasy Mennica pomija (econ-params.json:590)." }
+      ],
+      "cmz": [ { "czynnosc": "Zbuduj Mennicę w stolicy", "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji (min. ×1,38)" } ],
+      "powodCmz": "R-WEB-CURRENCY-MULT-PER-CIV-Q1 (zarzut 1): mnożnik per cywilizacja, nie globalne ×1,5."
     },
     "Sąd": {
       "zmiany": [

@@ -145,7 +145,7 @@ def render(civ, matrix_row):
 
 ## Wzory
 
-Mnożnik waluty: **{civ.get("mnoznikHandelPieniadz", "—")}** (meta macierzy).
+Mnożnik waluty: **{civ.get("mnoznikHandelPieniadz", "—")}** (meta macierzy). Wartość dotyczy poziomu trudności Normalny; poziom trudności koryguje ją (Łatwy +0,5, Trudny −0,5), a żaden poziom nie schodzi poniżej minimum 1,38. Działa po odkryciu Waluty i zbudowaniu Mennicy.
 
 ---
 
