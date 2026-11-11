@@ -294,6 +294,7 @@ import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
 import { administratorIconHtml, ADMINISTRATOR_ICON_CSS, administratorChipInnerHtml, administratorUpkeepValueHtml } from './icons/administratorIcon';
+import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
 import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
@@ -701,6 +702,26 @@ export interface CityAdministratorUiState {
   hireCost: number;
   /** Powód zablokowania zatrudnienia (null = można zatrudnić albo już zatrudniony). */
   blockReasonText: string | null;
+  /** Rodzaj blokady; `brak_srodkow` NIE blokuje otwarcia panelu wyboru (panel pokazuje, ile brakuje). */
+  blockReason?: 'brak_budynku' | 'ma_administratora' | 'brak_srodkow' | null;
+  /** Skarbiec państwa (Pieniądz) — panel administratora liczy braki do kosztu zatrudnienia. */
+  treasury?: number | null;
+}
+
+/** Model panelu wyboru administratora miasta (liczby z silnika przez stan UI; skala bonusów z poziomu budynku). */
+function cityAdministratorPanelModel(st: CityAdministratorUiState, cityName: string): AdministratorPanelModel {
+  const hard = st.blockReason !== undefined ? (st.blockReason === 'brak_srodkow' ? null : st.blockReasonText) : st.blockReasonText;
+  return {
+    kind: 'city',
+    cityName,
+    hired: st.hired,
+    working: st.working,
+    hireCost: st.hireCost,
+    upkeep: st.upkeep,
+    treasury: st.treasury ?? null,
+    tier: st.tier,
+    blockReasonText: st.hired ? null : hard,
+  };
 }
 
 /** Tooltip przycisku/chipa administratora: efekty (ze skalą tieru), utrzymanie, stan. */
@@ -729,11 +750,11 @@ function administratorHeaderHtml(city: City): string {
     return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn is-hired${st.working ? '' : ' is-idle'}" id="civ-v-administrator" ` +
       `data-adm-state="${st.working ? 'working' : 'idle'}" title="${esc(administratorTooltipText(st))}">${icon}<span>Administrator ✓</span></button>`;
   }
-  const blocked = st.blockReasonText !== null;
+  const blocked = cityAdministratorPanelModel(st, '').blockReasonText !== null;
   const icon = administratorIconHtml({ size: 16, state: blocked ? 'off' : 'ok' });
   const title = blocked
-    ? st.blockReasonText!
-    : `Zatrudnij administratora miasta: ${st.hireCost} Pieniądza jednorazowo, utrzymanie ${st.upkeep}/turę ze skarbca państwa`;
+    ? (st.blockReasonText ?? '')
+    : `Wybierz administratora miasta — koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę`;
   return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn" id="civ-v-administrator" data-adm-state="${blocked ? 'blocked' : 'available'}" ` +
     `${blocked ? 'disabled ' : ''}title="${esc(title)}">${icon}<span>Administrator +</span></button>`;
 }
@@ -11388,14 +11409,17 @@ function renderCivResourceTopBar(
   });
   mount.querySelector('#civ-v-administrator')?.addEventListener('click', () => {
     const st = cfg.getCityAdministratorState?.(city.id);
-    if (!st) return;
-    if (st.hired) {
-      if (!window.confirm('Zwolnić administratora miasta ' + city.name + '? Koszt zatrudnienia nie podlega zwrotowi, a autobudowa w tym mieście przestanie działać.')) return;
-      cfg.onDismissAdministrator?.(city.id);
-    } else {
-      cfg.onHireAdministrator?.(city.id);
-    }
-    rerender();
+    if (!st || isAdministratorPanelOpen()) return;
+    // Przycisk „Administrator +/✓” otwiera mały panel wyboru (opis, bonusy, koszt, utrzymanie, Zatrudnij/Zwolnij).
+    openAdministratorPanel({
+      getModel: () => {
+        const cur = cfg.getCityAdministratorState?.(city.id) ?? null;
+        return cur ? cityAdministratorPanelModel(cur, city.name) : null;
+      },
+      onHire: () => cfg.onHireAdministrator?.(city.id) ?? false,
+      onDismiss: () => cfg.onDismissAdministrator?.(city.id) ?? false,
+      onClose: () => rerender(),
+    });
   });
   const garrisonRow = mount.querySelector('#civ-v-garrison-row') as HTMLElement | null;
   if (garrisonRow) renderTopBarGarrison(garrisonRow, city);
