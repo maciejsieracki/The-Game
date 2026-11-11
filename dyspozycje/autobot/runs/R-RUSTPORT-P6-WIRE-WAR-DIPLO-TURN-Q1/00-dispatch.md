@@ -40,3 +40,13 @@ Nowy plik: `rust-port/engine/src/domain/ai_diplomacy_turn.rs` (plan: ~586 LOC; p
 ## Format raportu
 STATUS / DOMAIN: GAME / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY: 1/5 / NASTĘPNY KROK: Evaluator / DEPLOY-PUSH: NIE WYKONANO
 Zapisz `01-operator-r1.md` w `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIRE-WAR-DIPLO-TURN-Q1/` i zacommituj na gałęzi kodu (nie na `claude/rust-sivvrn`).
+
+## DODATEK r3 (po FC FAIL r2, 2026-11-11)
+Baza r3: `4c92ee0a7` (kod obrony r1; FC ancestry OK, zarzuty 2, 3, 5, 6, 7 ODDANE). Zarzuty do NAPRAW:
+1. GOAL niezrealizowany: w `ai_diplomacy_turn.rs` należy PODPIĄĆ (nie tylko istnieć obok): `resolve_diplomacy_action_lock` (`diplomacy_locks.rs`), bramkę oblężenia (`diplomacy_siege_war_gate.rs`), cooldown odrzuceń `miasto_za_pokoj` (`diplomacy_rejection_cooldown.rs`) i ofertę miasta za pokój (`ai_peace_city_offer.rs`). Grep musi pokazać wywołania w `ai_diplomacy_turn.rs`.
+   Wektory dla tych punktów: jeśli generator nie produkuje wektorów z `gra/` (11115, 19371, 19749, 40413) — dopisz je do generatora z pinu `07d2fbd72` (git archive, esbuild poza repo). NIE pisz ręcznie.
+4. `tick_pair` (`diplomacy.rs`) ma być wołany przez adapter Relation -> relationScore w pliku tematu, a nie tylko wejściem scenariusza.
+
+Zasada: jeśli po wykonaniu 1 i 4 któraś część nadal nie mieści się w 600 LOC lub wymaga wektorów spoza pinu — NIE udawaj: zapisz ją jako jawny BLOCK z przyczyną i propozycją podziału na osobny temat (orkiestrator zdecyduje). Nie zmieniaj zakresu po cichu.
+Allowlista bez zmian. Bramki jak w r1 + ponownie `cargo test --test p6_wire_war_diplo`.
+Raport: `02b-operator-r3.md` w run dir, STATUS, SHA, LOC, lista podpiętych funkcji z numerami linii.
