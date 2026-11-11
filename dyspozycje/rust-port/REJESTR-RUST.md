@@ -59,5 +59,6 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - Pozycja 9: REPIN dryfu po czerwcu (pomiar, docs).
 - Pozycja 10: REPIN-DELTA-7 po FALI 620–626+ na webie.
 
-### Zależności od kolejki web
-- Konflikt priorytetów nadal otwarty w dokumentach; właściciel wskazał start Rusta („Zacznij realizować Rust i plan”).
+### Zakres
+- Ten czat prowadzi WYŁĄCZNIE Rust. Kolejka i wersja web są poza zakresem; web jest tylko źródłem danych (piny `origin/main` do wektorów) i nie jest priorytetem tego planu.
+- Pozycje 8 i 10 zależą od decyzji lub wdrożeń po stronie web: traktowane jako dane wejściowe, nie zadania tego czatu.
