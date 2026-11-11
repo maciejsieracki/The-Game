@@ -30,9 +30,13 @@ co odpowiada kolejności priorytetów S1 → P1 → S3 → atak (atak all-in = o
   `MarchCoreInput` (+ `all_in_targets`, `all_in`), `plan_war_march_core` (kampania -> dom -> fala -> all-in),
   `plan_war_march` (adapter: buduje cele all-in przez `build_war_city_targets`).
 - Atak all-in jest WIRED: wołający podaje `AllInParams { units, nav: WarAllInNav, opts, is_barbarian }`. `None` = etap pominięty.
-- Test `rust-port/engine/tests/p6_wire_war_march.rs`: 14 testów (9 z rundy 1 + 5 nowych pozytywnych: rozkaz domu `Attack u1->e1`,
-  fala z trzech jednostek i miasta wroga, brak fali bez wojny, all-in na rdzeniu z wykluczeniem zablokowanej jednostki i kolejnością
-  ostatniego etapu, adapter z miastem wroga bez jednostek wroga -> all-in dla wolnej jednostki).
+- Testy (runda 3: dawny `p6_wire_war_march.rs` 689 LOC podzielony na trzy pliki):
+  - `p6_wire_war_march_core.rs` (578 LOC, 12 testów): rdzeń na danych syntetycznych, w tym NOWA asercja KOLEJNOŚCI komend
+    `commands_come_in_order_campaign_home_wave_all_in` (kampania -> dom -> fala -> all-in, wszystkie cztery rodzaje obecne).
+  - `p6_wire_war_march_adapter.rs` (301 LOC, 5 testów): adapter na `PlayableState`, w tym NOWE: `waves_from_state_reads_waves_and_history`
+    (niepusty `opaque`) i `adapter_enemy_and_opaque_state_changes_wave_target` (wróg z dwoma miastami + historia fal w `opaque`
+    zmienia cel fali z miasta 2 na 3, czyli adapter realnie czyta `waves_from_state`).
+  - `p6_wire_war_march_vectors.rs` (274 LOC, 1 test, 500 scenariuszy) + `p6_wire_war_march_vectors.json`: WEKTORY Z WEBA, D3 = 1:1.
 - Test `forced_wave_excludes_units_already_ordered_at_home` jest teraz NIEPUSTY: asertuje, że u1 dostaje rozkaz domu ORAZ
   że fala powstaje z dokładnie w1..w3 i pomija u1 (w rundzie 1 przechodził vacuously).
 
@@ -48,22 +52,26 @@ co odpowiada kolejności priorytetów S1 → P1 → S3 → atak (atak all-in = o
   Web: priorytet armii wg `planWarAllInCapital`; zgodność z kolejnością webową nie jest zmierzona wektorem.
 - Z8 `is_barbarian` podaje wołający (`AllInParams::is_barbarian`); `is_human` z `WarWorldView`.
 
-## 4. Dlug / NIE_ZMIERZONO
+## 4. Wektory z weba (runda 3) i dlug
 
-- Wektory z uruchomionego weba dla `planHomeWar`, `planForcedWarWave`, `planWarAllInCapital`: NIE_ZMIERZONO w tej rundzie
-  (nie napisano generatora; to zaniedbanie rundy 1, nie brak narzędzi). Korekta: w rundzie 1 napisano „brak generatora .mjs" --
-  to nieprawda. W repo są harnessy webowe (`gra/tools/forced-war-waves-test.cjs`, `gra/tools/ai-war-defend-home-test.cjs`,
-  `gra/tools/ai-general-war-campaign-test.cjs`) oraz wzorzec generatorów `gen-*-vectors.mjs` w `dyspozycje/autobot/runs/`.
-  Dług na rundę 3 albo osobny temat: generator oparty o te harnessy dla trzech funkcji.
-- Testy sprawdzają inwarianty i jawne scenariusze (np. `Attack u1->e1`, fala z w1..w3), nie zgodność bit-w-bit z webem.
-- Z3 i Z4 odchylają się od weba w wielotur­owym użyciu (histereza, kontakt); brak testu pokazującego skutek odchylenia (dług W8).
+- Generator + przepis: `dyspozycje/autobot/runs/R-RUSTPORT-P6-WIRE-WAR-MARCH-PLAN-Q1/gen-w5-march-vectors.mjs`. Bundluje esbuildem PRAWDZIWE
+  `planHomeWar` (`ai-war-home-defense.ts`) i `planForcedWarWave` (`forced-war-waves.ts`) z `origin/main` (cffe39cb9), seed 5005,
+  500 scenariuszy (472 rozkazy domu: 12 attack / 452 approach / 8 hold; 97 fal, z tego 44 z aktywną falą, 37 z historią, 10 dom+fala).
+  Test Rust porównuje komendy `Home` i `ForcedWave` rdzenia W5 z wynikiem weba 1:1 (kolejność, cele, `unitIds/moveUnitIds/deferredUnitIds`,
+  `originHex`, `rallyPoint`, `approachSector`, `createdTurn`). Przeszedł za pierwszym razem (brak rozbieżności Rust vs web).
+- `planWarAllInCapital` i `buildWarCityTargets`: wektory z weba ISTNIEJĄ już w testach modułów składowych (`p6_repin_wojna_d_vectors.rs`
+  + `p6_repin_wojna_d_nav.rs`/`_engage.rs` dla all-in; `p6_wire_war_view_vectors.json` generowane przez `p6_wire_war_view_gen.mjs`
+  z prawdziwego `buildWarCityTargets`). W5 nie zmienia tych funkcji, tylko je woła; kombinacja z nawigacją (`RuchMapa`, `WarAllInNav`)
+  wymagałaby budowy mapy `GameMap` weba i dałaby duplikat wektorów modułów. Dlatego W5 testuje ich WPIĘCIE (kolejność, wykluczenia
+  jednostek Z7, cele z `build_war_city_targets`), a zgodność 1:1 funkcji składowych polega na ich własnych wektorach.
+- Z3 i Z4 odchylają się od weba w wielotur­owym użyciu (histereza, kontakt); dług W8 (trwała pamięć histerezy między turami).
+  Wektory W5 są jednoturowe ze świeżą histerezą, więc zgodne z Z3 z założenia.
 - Kampania generała: wybór celu zgodny z `chooseAiGeneralWarTarget` (funkcja pure); reconcile i zapis kampanii poza W5.
 
-## 5. Bramki (runda 2)
+## 5. Bramki (runda 3)
 
-- `rustfmt --check` na `ai_war_march_plan.rs` i `p6_wire_war_march.rs`: OK.
-- `cargo clippy --all-targets -- -D warnings`: OK (bez ostrzeżeń).
-- `cargo test --test p6_wire_war_march`: 14 passed, 0 failed.
-- `cargo test --lib`: 28 passed, 0 failed.
+- `rustfmt --check` (cargo fmt --check): OK. `cargo clippy --all-targets -- -D warnings`: OK.
+- `cargo test --lib --test p6_wire_war_march_core --test p6_wire_war_march_adapter --test p6_wire_war_march_vectors --test p6_wire_war_state
+  --test p6_wire_war_state_snapshot --test p6_wire_war_view --test p6_wire_war_forced_step --test p6_wire_war_declare --test p6_wire_war_declare_peace`:
+  lib 28, core 12, adapter 5, vectors 1, state 14, snapshot 8, view 6, forced_step 24, declare 15, declare_peace 7 -- 0 failed.
 - Brak nowych `#[ignore]`.
-- Pozostałe binarki (`p6_wire_war_state/view/forced_step/declare`) nie dotykają zmienionych plików; nie powtarzane w tej rundzie.
