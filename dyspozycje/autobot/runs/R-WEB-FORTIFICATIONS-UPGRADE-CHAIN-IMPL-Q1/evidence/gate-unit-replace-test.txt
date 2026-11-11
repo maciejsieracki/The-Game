@@ -1,0 +1,37 @@
+
+[unit-replace-test] Running tests...
+
+  [OK] cross-type melee matrix passes for all 15 civilizations; no ranged/mount/siege/civilian/naval leak
+  [OK] Distance remains in its own same-Typ path and cannot cross into melee or Slinger
+  [OK] newest same-Typ candidate is selected
+  [OK] cross-Typ named replacement is excluded from automatic mapping
+1. Rzym / Zelazo -- zamienniki dla Hastati (Typ=Swordsman)
+  [OK] lista niepusta
+  [OK] Hastati nie zastepuje samej siebie
+  [OK] zawiera inny miecznik tego samego Typ (Wojownik, uniwersalny)
+  [OK] zawiera Evocati (Rzym, Typ=Swordsman, odblokowany w Zelazie)
+  [OK] NIE zawiera Hieros Lochos (Grecja != Rzym)
+  [OK] każda pozycja ma kind=jednostka i liczbowy koszt
+
+2. "Wojownik tyrreński" (Typ=Offensive) -> dochodzi "Evocati" (Typ=Swordsman)
+  [OK] Evocati obecny mimo innego Typ (pole "Zastąp specjalnie")
+  [OK] nie zastepuje samej siebie
+
+2b. Bez tech "Hutnictwo żelaza" -- Evocati NIE jest jeszcze "dostępny", znika z listy
+  [OK] Evocati zniknal (nieodblokowany w epoce Brazu)
+
+2c. Grecja / Zelazo -- Wojownik mykeński -> Falanga (Falangite) i Thorakites (Spearman)
+  [OK] Falanga (Falangite) dostępna mimo innego Typ
+  [OK] Thorakites (Spearman) dostępny mimo innego Typ
+  [OK] istniejąca ścieżka specjalna/Super pozostała dostępna
+  [OK] nacja pozostaje bramką dla cross-Typ piechoty
+
+3. Nieznana nazwa jednostki -> []
+  [OK] zwraca pusta tablice dla nieznanej jednostki
+
+4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNIT-REPLACE-EVOCATI-Q1)
+  [OK] empireResourceStock z parametrów trafia 1:1 do zwróconego AvailabilityContext
+  [OK] ctx z buildReplaceAvailabilityCtx (empireResourceStock={zelazo:5}) odblokowuje Evocati
+  [OK] ctx z pustym empireResourceStock NIE odblokowuje Evocati (regresja UNIT-REPLACE-EVOCATI-Q1)
+
+[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)

@@ -307,7 +307,8 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   const upgradeFromId = text((building as unknown as Record<string, unknown>).upgradeFrom);
   if (upgradeFromId !== '' && !isEmptyDataVal(upgradeFromId)) {
     const prev = ALL_BUILDINGS.find((b) => b.id === upgradeFromId);
-    const upgradeRow: EntityCardRow = { label: 'Wymagany budynek', value: prev ? prev.nazwa : upgradeFromId };
+    const skipChain = (building as unknown as Record<string, unknown>).upgradeSkip === true;
+    const upgradeRow: EntityCardRow = { label: skipChain ? 'Awans z (opcjonalnie)' : 'Wymagany budynek', value: prev ? prev.nazwa : upgradeFromId };
     if (prev) upgradeRow.linkTo = { kind: 'building', id: prev.id };
     reqRows.push(upgradeRow);
   }

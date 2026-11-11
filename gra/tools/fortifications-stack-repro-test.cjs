@@ -2,29 +2,18 @@
 /**
  * fortifications-stack-repro-test.cjs
  *
- * R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-ANALYSIS-Q1 (2026-11-11) -- test ODTWARZAJACY (read-only wobec
- * kodu gry). Dokumentuje OBECNE zachowanie lancucha fortyfikacji Palisada (palisada) -> Mury kamienne
- * (mury_kamienne) -> Mury ceglane (mury) w SILNIKU (bez UI), na PRAWDZIWYCH funkcjach:
- *   production.ts (applyCompletedBuildingIds, buildableProduction, buildingProductionItem),
- *   building-stock-cost.ts (buildingStockCost), economy-upkeep.ts (buildingUpkeep, buildingResourceUpkeep),
- *   city-defense.ts (cityWallDefenseBonusPercent), city-fortification.ts.
- *
- * OBECNE zachowanie (ten test ma PRZEJSC):
- *   O1 po UKONCZENIU wyzszego etapu nizszy znika z cityBuilt (applyCompletedBuildingIds) -- w stanie
- *      ustalonym stoi NAJWYZEJ JEDNA fortyfikacja z lancucha, utrzymanie jest za jedna.
- *   O2 ALE kazdy etap jest budowany jako NOWY budynek za PELNY koszt (Praca + surowce), bez zwrotu/
- *      odliczenia za zastepowany etap; w buildings.json NIE MA pola upgradeFrom dla palisada/mury_kamienne/
- *      mury, wiec w UI sa pod "Buduj", nie pod "Ulepsz" (sekcja "Ulepsz" = tylko poziomy tego samego id).
- *   O3 w trakcie budowy wyzszego etapu stary stoi nadal i placi utrzymanie (okno nakladania).
- *   O4 z kolejki mozna zamowic naraz palisada + mury_kamienne + mury (blokada dziala tylko "wyzszy blokuje
- *      nizszy", nie odwrotnie) => potrojna oplata za budowe; stare zapisy / kolejki moga miec kilka naraz.
- *   O5 bonus obrony NIE sumuje sie (bierze sie najwyzszy), ale utrzymanie SUMUJE sie dla kazdego id w
- *      cityBuilt (legacy zapis z kilkoma fortyfikacjami).
- *
- * OCZEKIWANE DOCELOWE (decyzja wlasciciela, jeszcze NIEWDROZONE): lancuch przez upgradeFrom + "Ulepsz"
- * (awans zastepuje poprzednika; koszt awansu wg decyzji ABC: pelny / roznica / z czesciowym zwrotem),
- * w miescie najwyzej jedna fortyfikacja takze w kolejce i w migrowanych zapisach.
- * Po wdrozeniu asercje O2/O4/O5 beda wymagaly aktualizacji (patrz raport).
+ * R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1 (2026-11-11) -- test lancucha fortyfikacji
+ * Palisada (palisada) -> Mury kamienne (mury_kamienne) -> Mury ceglane (mury) w SILNIKU, na PRAWDZIWYCH funkcjach.
+ * Wczesniej (temat ANALYSIS-Q1) dokumentowal zachowanie sprzed zmiany; po wdrozeniu opisuje NOWE zachowanie
+ * (czerwony na bazie 4abb6573e, zielony po zmianie):
+ *   N1 awans przez relacje upgradeFrom + upgradeSkip: etap, do ktorego stoi nizszy, jest AWANSEM ("Rozbuduj X -> Y"),
+ *      przeskok (mury ceglane od zera) dozwolony; w miescie i w kolejce najwyzej JEDEN etap lancucha.
+ *   N2 koszt awansu = PELNY koszt nowego etapu (Praca + surowce, decyzja wlasciciela 1), stary znika bez zwrotu.
+ *   N3 blokada kolejki w obie strony (nizszy w kolejce blokuje wyzszy i odwrotnie).
+ *   N4 migracja zapisu (collapseFortificationChain): z kilku fortyfikacji zostaje najwyzsza, utrzymanie 8 zamiast 14.
+ *   N5 UI/AI: pinezki zrodla (sekcja "Ulepsz", parytet AI); AI behawioralnie w tools/fortifications-upgrade-chain-ai-test.cjs;
+ *      zywy Chromium w tools/fortifications-upgrade-chain-live-test.cjs.
+ * Realne potracenie kosztu: deductBuildingStockCostAcrossCities (ta sama funkcja co main.ts/cityPanel.ts).
  *
  * Usage (z gra/): node tools/fortifications-stack-repro-test.cjs
  */
@@ -42,13 +31,18 @@ const OUT = path.join(os.tmpdir(), `fort-stack-${RUN}`);
 fs.mkdirSync(OUT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(OUT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 
+const G = GRA.replace(/\\/g, '/');
 const entry = path.join(OUT, 'entry.ts');
 fs.writeFileSync(entry, `
-export { applyCompletedBuildingIds, buildableProduction, buildingProductionItem, enqueue, buildingLevelForEpoch } from '${GRA.replace(/\\/g, '/')}/src/game/production';
-export { buildingStockCost, deductBuildingStockCostAcrossCities, ownerResourceStockAll } from '${GRA.replace(/\\/g, '/')}/src/game/building-stock-cost';
-export { buildingUpkeep, buildingResourceUpkeep, totalBuildingUpkeep, totalBuildingResourceUpkeep } from '${GRA.replace(/\\/g, '/')}/src/game/economy-upkeep';
-export { cityWallDefenseBonusPercent } from '${GRA.replace(/\\/g, '/')}/src/game/city-defense';
-export { cityFortificationKind } from '${GRA.replace(/\\/g, '/')}/src/game/city-fortification';
+import * as P from '${G}/src/game/production';
+export const applyCompletedBuildingIds = P.applyCompletedBuildingIds;
+export const collapseFortificationChain = (P as any).collapseFortificationChain;
+export const availableProduction = P.availableProduction;
+export const buildableProduction = P.buildableProduction;
+export const buildingProductionItem = P.buildingProductionItem;
+export { buildingStockCost, deductBuildingStockCostAcrossCities } from '${G}/src/game/building-stock-cost';
+export { buildingUpkeep, buildingResourceUpkeep, totalBuildingUpkeep, totalBuildingResourceUpkeep } from '${G}/src/game/economy-upkeep';
+export { cityWallDefenseBonusPercent } from '${G}/src/game/city-defense';
 `);
 const outfile = path.join(OUT, 'bundle.cjs');
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', outfile, logLevel: 'silent', loader: { '.json': 'json' } });
@@ -77,145 +71,136 @@ function snapshot(label, built, queue = []) {
   const res = M.totalBuildingResourceUpkeep(recs, 1);
   const bonus = M.cityWallDefenseBonusPercent(built, dparams);
   const q = queue.map(i => i.id);
-  console.log(`  ${label.padEnd(44)} built=[${built.join(',')}] queue=[${q.join(',')}] upkeepGold=${gold} upkeepRes={${fmt(res)}} defBonus=+${bonus}%`);
+  console.log(`  ${label.padEnd(50)} built=[${built.join(',')}] queue=[${q.join(',')}] upkeepGold=${gold} upkeepRes={${fmt(res)}} defBonus=+${bonus}%`);
   return { gold, res, bonus, built: built.slice() };
 }
-function availableIds(built, queue) {
-  return M.buildableProduction(city, data, TECHS, { epoch: 3, builtBuildingIds: built, productionQueue: queue })
-    .filter(i => CHAIN.includes(i.id)).map(i => i.id);
-}
 function item(id) { return M.buildingProductionItem(id, data, 1); }
+const offered = (built, queue) => M.availableProduction(city, data, TECHS, { epoch: 3, builtBuildingIds: built, productionQueue: queue })
+  .filter(i => CHAIN.includes(i.id));
+const idsOf = (built, queue) => offered(built, queue).map(i => i.id);
+const nameOf = (built, queue, id) => (offered(built, queue).find(i => i.id === id) || {}).nazwa;
+const cities2 = () => [
+  { id: 'a', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
+  { id: 'b', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
+];
+const sumOf = (cs, k) => cs.reduce((a, c) => a + (c.surowce[k] || 0), 0);
+// Realne potracenie (deductBuildingStockCostAcrossCities).
+function pay(cs, id) {
+  const before = { drewno: sumOf(cs, 'drewno'), kamien: sumOf(cs, 'kamien'), cegla: sumOf(cs, 'cegla') };
+  M.deductBuildingStockCostAcrossCities(cs, 0, M.buildingStockCost(def(id)));
+  return { drewno: before.drewno - sumOf(cs, 'drewno'), kamien: before.kamien - sumOf(cs, 'kamien'), cegla: before.cegla - sumOf(cs, 'cegla') };
+}
 
 console.log('\n=== (1) DANE (buildings.json / miasto-params.json) ===');
 for (const id of CHAIN) {
   const d = def(id);
-  const stock = M.buildingStockCost(d);
-  const pr = item(id);
-  console.log(`  ${id.padEnd(14)} epoka=${d.epokaWejscia} tech="${d.techUnlock}" kosztBudowy=${d.kosztBudowy} praca(efekt)=${pr.koszt} surowce={${fmt(stock)}} utrzymanie=${d.utrzymanie}+${d.przyrostUtrzymania}/poz maksPoziom=${d.maksPoziom} upgradeFrom=${JSON.stringify(d.upgradeFrom ?? null)} upkeepGold(L1)=${M.buildingUpkeep(d, 1)} upkeepRes(L1)={${fmt(M.buildingResourceUpkeep(d, 1, 1))}}`);
+  console.log(`  ${id.padEnd(14)} epoka=${d.epokaWejscia} praca(efekt)=${item(id).koszt} surowce={${fmt(M.buildingStockCost(d))}} utrzymanie=${d.utrzymanie}+${d.przyrostUtrzymania}/poz upgradeFrom=${JSON.stringify(d.upgradeFrom ?? null)} upgradeSkip=${JSON.stringify(d.upgradeSkip ?? null)} upkeepGold(L1)=${M.buildingUpkeep(d, 1)}`);
 }
-console.log(`  bonus obrony: palisada=+${dparams.palisada}% mur_kamienny=+${dparams.murKamienny}% mur_ceglany=+${dparams.mur}%`);
 assert(CHAIN.every(id => !!def(id)), 'D1 wszystkie trzy definicje istnieja');
-assert(CHAIN.every(id => !(def(id).upgradeFrom || '').trim()), 'D2 (O2) brak pola upgradeFrom w lancuchu palisada/mury_kamienne/mury');
-assert(def('palisada').utrzymanie === 1 && def('mury_kamienne').utrzymanie === 2 && def('mury').utrzymanie === 2, 'D3 utrzymanie bazowe 1 / 2 / 2');
-assert(dparams.palisada === 100 && dparams.murKamienny === 150 && dparams.mur === 200, 'D4 bonusy +100/+150/+200');
+assert(def('palisada').upgradeFrom === undefined && def('mury_kamienne').upgradeFrom === 'palisada' && def('mury').upgradeFrom === 'mury_kamienne', 'D2 relacja awansu: mury_kamienne <- palisada, mury <- mury_kamienne');
+assert(def('mury_kamienne').upgradeSkip === true && def('mury').upgradeSkip === true, 'D2b przeskok dozwolony (upgradeSkip) dla obu wyzszych etapow');
+assert(def('palisada').utrzymanie === 1 && def('mury_kamienne').utrzymanie === 2 && def('mury').utrzymanie === 2, 'D3 utrzymanie bazowe BEZ ZMIAN 1 / 2 / 2');
+assert(dparams.palisada === 100 && dparams.murKamienny === 150 && dparams.mur === 200, 'D4 bonusy BEZ ZMIAN +100/+150/+200');
+assert(item('palisada').koszt === 22 && item('mury_kamienne').koszt === 35 && item('mury').koszt === 70, 'D5 koszt Pracy BEZ ZMIAN 22 / 35 / 70');
+assert(def('fort').upgradeFrom === undefined, 'D6 Cytadela (fort) poza lancuchem: brak upgradeFrom');
 
-console.log('\n=== (1b) POZIOMY L1/L2 wg epoki (maksPoziom=2; poziom wynika z EPOKI miasta, nie jest zapisany per miasto) ===');
+console.log('\n=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZEZ AWANS (tura -> stan) ===');
 {
-  for (const id of CHAIN) {
-    const d = def(id);
-    for (let ep = 1; ep <= 4; ep++) {
-      const lvl = M.buildingLevelForEpoch(d.epokaWejscia, ep, d.maksPoziom, d.poziomTechGate, TECHS);
-      const it = M.buildingProductionItem(id, data, lvl);
-      console.log(`  ${id.padEnd(14)} epoka=${ep} poziom=${lvl} praca=${it.koszt} upkeepGold=${M.buildingUpkeep(d, lvl)} upkeepRes={${fmt(M.buildingResourceUpkeep(d, lvl, 1))}}`);
-    }
-  }
-  const lv = (id, ep) => M.buildingLevelForEpoch(def(id).epokaWejscia, ep, def(id).maksPoziom, def(id).poziomTechGate, TECHS);
-  assert(lv('mury_kamienne', 1) === 1 && lv('mury_kamienne', 2) === 2, 'Z1 mury_kamienne: L1 w epoce 1, L2 od epoki 2 (poziom z epoki, bez stanu per miasto)');
-  assert(lv('mury', 2) === 1 && lv('mury', 3) === 2, 'Z2 mury: L1 w epoce 2, L2 od epoki 3');
-  assert(lv('palisada', 3) === 1, 'Z3 palisada: zawsze L1');
-  // Wniosek: "Ulepsz" poziomu (ten sam id) i awans lancucha (inny id) to DWA rozne mechanizmy; poziom nie jest
-  // resetowany przy awansie, bo jest wyliczany z epoki -- awans kamienne->ceglane w epoce 3 daje od razu mury L2.
-  const s2 = M.buildingUpkeep(def('mury_kamienne'), 2), m1 = M.buildingUpkeep(def('mury'), 1), m2 = M.buildingUpkeep(def('mury'), 2);
-  console.log(`  utrzymanie zl: kamienne L2=${s2}, ceglane L1=${m1}, ceglane L2=${m2}`);
-  assert(s2 > M.buildingUpkeep(def('mury_kamienne'), 1) && m2 > m1, 'Z4 utrzymanie rosnie z poziomem (L2 > L1) -- tabela A/B/C w raporcie liczy L1; L2 w sekcji 4a raportu');
+  const cs = cities2();
+  let built = []; let queue = [];
+  const rows = [];
+  const snap = (turn, label) => { const s0 = snapshot(`${turn} ${label}`, built, queue); rows.push({ turn, built: built.slice(), gold: s0.gold, bonus: s0.bonus }); return s0; };
+  snap('T0', 'start');
+  assert(CHAIN.every(i => idsOf(built, queue).includes(i)), 'S0 od zera oferowane: palisada, mury kamienne i mury ceglane (przeskok)');
+  const p1 = pay(cs, 'palisada'); queue = [item('palisada')]; snap('T1', 'palisada w kolejce');
+  built = M.applyCompletedBuildingIds(built, 'palisada', buildings); queue = [];
+  const s2 = snap('T2', 'palisada ukonczona');
+  assert(idsOf(built, queue).includes('mury_kamienne') && idsOf(built, queue).includes('mury') && !idsOf(built, queue).includes('palisada'), 'S1 po palisadzie wyzsze etapy oferowane jako awans, palisada nie');
+  assert(nameOf(built, queue, 'mury_kamienne') === 'Rozbuduj Palisada drewniana → Mury kamienne', 'S1b etykieta "Rozbuduj Palisada drewniana -> Mury kamienne" (jest: ' + nameOf(built, queue, 'mury_kamienne') + ')');
+  const p2 = pay(cs, 'mury_kamienne'); queue = [item('mury_kamienne')];
+  snap('T3', 'awans na mury kamienne w kolejce (palisada stoi)');
+  assert(idsOf(built, queue).length === 0, 'S2 gdy awans czeka w kolejce, NIE da sie zamowic innego etapu lancucha (jeden etap naraz)');
+  built = M.applyCompletedBuildingIds(built, 'mury_kamienne', buildings); queue = [];
+  const s4 = snap('T4', 'mury kamienne ukonczone');
+  assert(built.length === 1 && built[0] === 'mury_kamienne', 'S3 awans zastapil palisade: jedna fortyfikacja');
+  assert(idsOf(built, queue).join() === 'mury' && nameOf(built, queue, 'mury') === 'Rozbuduj Mury kamienne → Mury ceglane', 'S3b po kamiennych tylko awans na ceglane z etykieta "Rozbuduj ..."');
+  const p3 = pay(cs, 'mury'); queue = [item('mury')]; snap('T5', 'awans na mury ceglane w kolejce');
+  built = M.applyCompletedBuildingIds(built, 'mury', buildings); queue = [];
+  const s6 = snap('T6', 'mury ceglane ukonczone');
+  assert(built.length === 1 && built[0] === 'mury', 'S4 po ukonczeniu: jedna fortyfikacja (mury)');
+  assert(s6.gold === M.buildingUpkeep(def('mury'), 1) && s4.gold === M.buildingUpkeep(def('mury_kamienne'), 1) && s2.gold === M.buildingUpkeep(def('palisada'), 1), 'S5 utrzymanie w kazdym stanie = tylko za jedna fortyfikacje');
+  assert(s2.bonus === 100 && s4.bonus === 150 && s6.bonus === 200, 'S5b bonus obrony 100 -> 150 -> 200 (bez zmian)');
+  assert(idsOf(built, queue).length === 0, 'S5c gdy stoja mury ceglane, nic z lancucha nie jest oferowane');
+  assert(p1.drewno === 120 && p1.kamien === 0 && p1.cegla === 0, 'F1 palisada: realnie pobrano drewno 120');
+  assert(p2.drewno === 160 && p2.kamien === 160 && p2.cegla === 160, 'F2 awans palisada->kamienne: PELNY koszt nowego 160/160/160 (bez odliczenia, bez zwrotu)');
+  assert(p3.drewno === 320 && p3.kamien === 320 && p3.cegla === 320, 'F3 awans kamienne->ceglane: PELNY koszt nowego 320/320/320');
+  assert(sumOf(cs, 'drewno') === 2000 - 600 && sumOf(cs, 'kamien') === 2000 - 480 && sumOf(cs, 'cegla') === 2000 - 480, 'F4 magazyny po 3 etapach: -600/-480/-480 (stan faktyczny, nie arytmetyka cen)');
+  console.log('  TABELA tura -> (budynki fortyfikacyjne, utrzymanie zl, bonus obrony):');
+  for (const r of rows) console.log(`    ${r.turn}: [${r.built.join(',') || '-'}] utrzymanie=${r.gold} bonus=+${r.bonus}%`);
+  assert(rows.every(r => r.built.length <= 1), 'S6 w zadnej turze wiecej niz jedna fortyfikacja w miescie');
 }
 
-console.log('\n=== (2b) FAKTYCZNE POTRACENIE surowcow (deductBuildingStockCostAcrossCities, ta sama funkcja co main.ts l.4783/4911/9924) ===');
+console.log('\n=== (3) PRZESKOK: mury ceglane od zera za pelny koszt ===');
 {
-  const cities = [
-    { id: 'a', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
-    { id: 'b', ownerId: 0, surowce: { drewno: 1000, kamien: 1000, cegla: 1000 } },
-  ];
-  const sum = k => cities.reduce((a, c) => a + (c.surowce[k] || 0), 0);
-  const before = { drewno: sum('drewno'), kamien: sum('kamien'), cegla: sum('cegla') };
-  for (const id of CHAIN) M.deductBuildingStockCostAcrossCities(cities, 0, M.buildingStockCost(def(id)));
-  const spent = { drewno: before.drewno - sum('drewno'), kamien: before.kamien - sum('kamien'), cegla: before.cegla - sum('cegla') };
-  console.log(`  realnie pobrane z magazynow (3 etapy po kolei): drewno=${spent.drewno} kamien=${spent.kamien} cegla=${spent.cegla}`);
-  assert(spent.drewno === 600 && spent.kamien === 480 && spent.cegla === 480, 'F1 (O2) funkcja potracenia faktycznie pobiera PELNY koszt kazdego z 3 etapow: 600/480/480 (nie tylko arytmetyka cen)');
+  const cs = cities2();
+  assert(nameOf([], [], 'mury') === 'Mury ceglane', 'P1 od zera nazwa bez "Rozbuduj" (to budowa, nie awans)');
+  const pr = item('mury');
+  const spent = pay(cs, 'mury');
+  assert(pr.koszt === 70 && spent.drewno === 320 && spent.kamien === 320 && spent.cegla === 320, 'P2 przeskok kosztuje pelne 70 Pracy + 320/320/320 (realne potracenie)');
+  const b = M.applyCompletedBuildingIds([], 'mury', buildings);
+  assert(b.length === 1 && b[0] === 'mury', 'P3 ukonczenie od zera daje jedno "mury"');
+  const b2 = M.applyCompletedBuildingIds(['palisada'], 'mury', buildings);
+  assert(b2.length === 1 && b2[0] === 'mury', 'P4 przeskok palisada -> mury: palisada znika (nie tylko bezposredni poprzednik)');
+  assert(nameOf(['palisada'], [], 'mury') === 'Rozbuduj Palisada drewniana → Mury ceglane', 'P5 etykieta przeskoku z palisady: "Rozbuduj Palisada -> Mury ceglane"');
+  const bC = M.applyCompletedBuildingIds(['mury_kamienne', 'koszary'], 'mury', buildings);
+  assert(bC.join() === 'koszary,mury', 'P6 inne budynki nietkniete, nizszy etap znika');
 }
 
-console.log('\n=== (2) SCENARIUSZ SEKWENCYJNY: palisada -> mury kamienne -> mury ceglane ===');
-let built = []; let queue = [];
-let tot = { praca: 0, stock: {} };
-const addCost = id => {
-  tot.praca += item(id).koszt;
-  for (const [k, v] of Object.entries(M.buildingStockCost(def(id)))) tot.stock[k] = (tot.stock[k] || 0) + v;
-};
-const rows = [];
-rows.push(snapshot('T0 start (brak fortyfikacji)', built));
-// budowa palisady
-addCost('palisada'); queue = [item('palisada')];
-rows.push(snapshot('T1 palisada w kolejce (koszt pobrany)', built, queue));
-built = M.applyCompletedBuildingIds(built, 'palisada', buildings); queue = [];
-rows.push(snapshot('T2 palisada ukonczona', built));
-const availAfterPal = availableIds(built, queue);
-console.log(`  dostepne do budowy po palisadzie: [${availAfterPal.join(',')}]`);
-assert(availAfterPal.includes('mury_kamienne') && availAfterPal.includes('mury'), 'S1 (O2) po palisadzie "Buduj" oferuje Mury kamienne I Mury ceglane jako NOWE budynki');
-// budowa murow kamiennych
-addCost('mury_kamienne'); queue = [item('mury_kamienne')];
-const sOverlap = snapshot('T3 mury kamienne w kolejce (palisada stoi)', built, queue);
-assert(built.includes('palisada') && sOverlap.gold === M.buildingUpkeep(def('palisada'), 1), 'S2 (O3) w trakcie budowy stoi stara palisada i placi utrzymanie');
-built = M.applyCompletedBuildingIds(built, 'mury_kamienne', buildings); queue = [];
-const sStone = snapshot('T4 mury kamienne ukonczone', built);
-assert(built.length === 1 && built[0] === 'mury_kamienne', 'S3 (O1) po ukonczeniu mury_kamienne palisada ZNIKA (jedna fortyfikacja)');
-// budowa murow ceglanych
-addCost('mury'); queue = [item('mury')];
-snapshot('T5 mury ceglane w kolejce (kamienne stoja)', built, queue);
-built = M.applyCompletedBuildingIds(built, 'mury', buildings); queue = [];
-const sBrick = snapshot('T6 mury ceglane ukonczone', built);
-assert(built.length === 1 && built[0] === 'mury', 'S4 (O1) po ukonczeniu mury kamienne ZNIKAJA (jedna fortyfikacja)');
-assert(sBrick.gold === M.buildingUpkeep(def('mury'), 1) && sStone.gold === M.buildingUpkeep(def('mury_kamienne'), 1), 'S5 utrzymanie w stanie ustalonym = tylko aktualna fortyfikacja');
-const full = ['palisada', 'mury_kamienne', 'mury'].map(id => ({ id, praca: item(id).koszt, stock: M.buildingStockCost(def(id)) }));
-console.log(`  SUMA kosztow zaplaconych za sciezke palisada->kamienne->ceglane: praca=${tot.praca} surowce={${fmt(tot.stock)}}`);
-console.log(`  koszt samych murow ceglanych (gdyby zbudowac od razu): praca=${item('mury').koszt} surowce={${fmt(M.buildingStockCost(def('mury')))}}`);
-assert(tot.praca === full.reduce((s, f) => s + f.praca, 0), 'S6 (O2) lacznie placi sie PELNY koszt Pracy kazdego z trzech etapow (bez odliczenia za zastepowany)');
-assert(tot.stock.drewno === full.reduce((s, f) => s + (f.stock.drewno || 0), 0), 'S7 (O2) lacznie placi sie PELNY koszt surowcow kazdego etapu (drewno z 3 etapow)');
-
-console.log('\n=== (3) KOLEJKA: kilka fortyfikacji zamowionych naraz (O4) ===');
+console.log('\n=== (4) BLOKADA KOLEJKI w obie strony (jeden etap lancucha naraz) ===');
 {
-  const q0 = [item('palisada')];
-  const avail1 = availableIds([], q0);
-  console.log(`  palisada w kolejce -> dostepne: [${avail1.join(',')}]`);
-  assert(avail1.includes('mury_kamienne') && avail1.includes('mury'), 'Q1 (O4) przy palisadzie w kolejce MOZNA zamowic mury kamienne i ceglane (blokada tylko wyzszy->nizszy)');
-  const q1 = [item('palisada'), item('mury_kamienne')];
-  const avail2 = availableIds([], q1);
-  console.log(`  palisada+mury_kamienne w kolejce -> dostepne: [${avail2.join(',')}]`);
-  assert(avail2.includes('mury'), 'Q2 (O4) mozna dolozyc do kolejki jeszcze mury ceglane (trzy oplaty za jedno miasto)');
-  const avail3 = availableIds(['mury'], []);
-  assert(!avail3.includes('palisada') && !avail3.includes('mury_kamienne'), 'Q3 zabezpieczenie: gdy stoja mury ceglane, nizsze etapy nie sa oferowane');
-  // odwrocona kolejnosc ukonczenia (stale kolejki / zapisy)
+  const q = id => [item(id)];
+  assert(idsOf([], q('palisada')).length === 0, 'Q1 palisada w kolejce -> zadnego etapu lancucha (ani kamiennych, ani ceglanych)');
+  assert(idsOf([], q('mury_kamienne')).length === 0, 'Q2 mury kamienne w kolejce -> ani palisada (nizszy), ani mury (wyzszy)');
+  assert(idsOf([], q('mury')).length === 0, 'Q3 mury ceglane w kolejce -> ani palisada, ani kamienne');
+  assert(idsOf(['palisada'], q('mury_kamienne')).length === 0, 'Q4 palisada stoi + awans na kamienne w kolejce -> nie da sie dolozyc murow ceglanych');
+  assert(idsOf(['mury_kamienne'], q('mury')).length === 0, 'Q5 kamienne stoja + awans na ceglane w kolejce -> nic wiecej');
+  assert(idsOf(['mury'], []).length === 0, 'Q6 zabezpieczenie: gdy stoja mury ceglane, nizsze nie sa oferowane');
   let b = M.applyCompletedBuildingIds([], 'mury', buildings);
   b = M.applyCompletedBuildingIds(b, 'palisada', buildings);
   b = M.applyCompletedBuildingIds(b, 'mury_kamienne', buildings);
-  console.log(`  ukonczenie w odwrotnej kolejnosci (mury, palisada, mury_kamienne) -> built=[${b.join(',')}]`);
-  assert(b.length === 1 && b[0] === 'mury', 'Q4 straznik ukonczenia: zawsze zostaje najwyzszy etap, ale ZAPLACONO za wszystkie trzy');
+  assert(b.length === 1 && b[0] === 'mury', 'Q7 straznik ukonczenia: spozniony nizszy etap nie cofa wyzszego');
+  const withFort = M.applyCompletedBuildingIds(['mury'], 'fort', buildings);
+  assert(withFort.includes('mury') && withFort.includes('fort'), 'Q8 Cytadela (fort) NIE zastepuje murow (osobne budynki)');
 }
 
-console.log('\n=== (4) LEGACY ZAPIS: kilka fortyfikacji w cityBuilt naraz (O5) ===');
+console.log('\n=== (5) MIGRACJA ZAPISU: kilka fortyfikacji w cityBuilt ===');
 {
   const legacy = ['palisada', 'mury_kamienne', 'mury'];
-  const s = snapshot('legacy: palisada+kamienne+ceglane', legacy);
-  const expectedGold = legacy.reduce((a, id) => a + M.buildingUpkeep(def(id), 1), 0);
-  assert(s.gold === expectedGold && s.gold > M.buildingUpkeep(def('mury'), 1), 'L1 (O5) utrzymanie Pieniadza SUMUJE sie dla kazdego id w cityBuilt');
-  assert(s.bonus === dparams.mur, 'L2 (O5) bonus obrony NIE sumuje sie -- tylko najwyzszy (+200%)');
-  assert((s.res.drewno || 0) === legacy.reduce((a, id) => a + (M.buildingResourceUpkeep(def(id), 1, 1).drewno || 0), 0), 'L3 (O5) utrzymanie surowcowe tez sie sumuje (drewno)');
-  const one = snapshot('porownanie: tylko mury ceglane', ['mury']);
-  console.log(`  nadplata legacy vs jedna fortyfikacja: zloto +${s.gold - one.gold}/ture, drewno +${(s.res.drewno || 0) - (one.res.drewno || 0)}/ture, kamien +${(s.res.kamien || 0) - (one.res.kamien || 0)}/ture, cegla +${(s.res.cegla || 0) - (one.res.cegla || 0)}/ture`);
-  assert(M.cityFortificationKind(legacy) === 'mur', 'L4 rozpoznanie obwarowania: mur');
+  const before = snapshot('legacy: palisada+kamienne+ceglane', legacy);
+  const migrated = M.collapseFortificationChain(legacy, buildings);
+  const after = snapshot('po migracji', migrated);
+  assert(migrated.length === 1 && migrated[0] === 'mury', 'M1 zostaje NAJWYZSZA (mury)');
+  assert(before.gold === 14 && after.gold === 8, 'M2 utrzymanie zl 14 -> 8 (jest ' + before.gold + ' -> ' + after.gold + ')');
+  assert((before.res.drewno || 0) === 5 && (after.res.drewno || 0) === 2 && (after.res.kamien || 0) === 2 && (after.res.cegla || 0) === 2, 'M3 utrzymanie surowcow drewno 5 -> 2, kamien/cegla 2');
+  assert(before.bonus === 200 && after.bonus === 200, 'M4 bonus obrony bez zmian (+200%)');
+  assert(M.collapseFortificationChain(['palisada', 'mury_kamienne'], buildings).join() === 'mury_kamienne', 'M5 para palisada+kamienne -> kamienne');
+  assert(M.collapseFortificationChain(['koszary', 'mury', 'palisada', 'fort', 'baszta'], buildings).join() === 'koszary,mury,fort,baszta', 'M6 inne budynki (fort, baszta) nietkniete, kolejnosc zachowana');
+  const same = ['koszary', 'mury'];
+  assert(M.collapseFortificationChain(same, buildings) === same, 'M7 brak zmian -> ta sama tablica (zero kosztu dla zwyklych zapisow)');
+  assert(M.collapseFortificationChain(['fort'], buildings).join() === 'fort', 'M8 sama Cytadela nietknieta');
 }
 
-console.log('\n=== (5) PARYTET GRACZ / AI (pinezki zrodla) ===');
+console.log('\n=== (6) UI / AI: pinezki zrodla ===');
 {
   const prod = fs.readFileSync(path.join(GRA, 'src/game/production.ts'), 'utf8');
   const main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
   const ai = fs.readFileSync(path.join(GRA, 'src/game/ai.ts'), 'utf8');
-  const completions = (main.match(/applyCompletedBuildingIds\(/g) || []).length;
-  assert(/isWallTierBlockedByStrongerWall\(b\.id, builtList, queue\)/.test(prod) && (prod.match(/isWallTierBlockedByStrongerWall\(b\.id/g) || []).length === 2, 'P1 blokada "wyzszy blokuje nizszy" jest we wspolnej dostepnosci (availableProduction) dla gracza i AI');
-  assert(completions === 1 && /cityBuilt\.set\(cityId, applyCompletedBuildingIds\(/.test(main), 'P2 jedyna sciezka ukonczenia budynku (gracz i AI, tick produkcji miasta) = applyCompletedBuildingIds');
-  assert(/!built\.includes\('palisada'\) && !built\.includes\('mury'\) && !built\.includes\('mury_kamienne'\)/.test(ai), 'P3 AI (ai.ts) nie forsuje palisady gdy stoi mur -- ta sama funkcja kosztu i ukonczenia co gracz');
-  // AI: wlasna logika kamienne->ceglane (ai.ts ~2018 obrona, ~2058 boost) -- tylko gdy NIE stoi zaden mur; po zbudowaniu
-  // kamiennych AI nie dobiera ceglanych tymi sciezkami (nie wystepuje podwojna oplata), a zwykla dostepnosc (availableProduction) jest wspolna.
-  assert((ai.match(/!built\.includes\('mury'\) && !built\.includes\('mury_kamienne'\)/g) || []).length >= 2, 'P4 AI: obie sciezki wyboru murow (obrona ~l.2018, boost ~l.2058) wymagaja braku mury ORAZ mury_kamienne; ternary kamienne->mury jest tam martwe (parytet: AI nie kupuje drugiego etapu tymi sciezkami)');
+  const ui = fs.readFileSync(path.join(GRA, 'src/ui/cityPanel.ts'), 'utf8');
+  assert((prod.match(/isWallTierBlockedByStrongerWall\(b\.id, builtList, queue, data\.buildings\)/g) || []).length === 2, 'U1 blokada lancucha jest we wspolnej dostepnosci (availableProduction + katalog) dla gracza i AI');
+  assert(main.split('applyCompletedBuildingIds(').length - 1 === 1 && /collapseFortificationChain\(blt as string\[\], data\.buildings\)/.test(main), 'U2 jedna sciezka ukonczenia; migracja zapisu wpieta przy wczytaniu cityBuilt');
+  assert(/skipChainUpgradeSource\(it\.id, built, data\.buildings\)/.test(ui) && /Ulepsz → \$\{def\.nazwa\}/.test(ui), 'U3 UI: etap z poprzednikiem trafia do sekcji "Ulepsz" z etykieta "Ulepsz -> Nazwa"');
+  assert(/b\.upgradeSkip !== true && !built\.includes\(upgradeFrom\)/.test(ai), 'U4 AI: filtr upgradeFrom respektuje przeskok (parytet z graczem)');
+  assert(!/built\.includes\('mury_kamienne'\) \? 'mury' : 'mury_kamienne', score: 320/.test(ai), 'U5 AI: martwa galez ternary w boost-cie 320 usunieta');
 }
 
 console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);

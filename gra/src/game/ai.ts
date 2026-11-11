@@ -1700,7 +1700,8 @@ function collectAvailableBuildingCandidates(
   for (const b of data.buildings) {
     if (built.includes(b.id)) continue;
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
-    if (upgradeFrom.length > 0 && !built.includes(upgradeFrom)) continue;
+    // upgradeSkip (łańcuch fortyfikacji): poprzednik niewymagany -- przeskok od zera dozwolony.
+    if (upgradeFrom.length > 0 && b.upgradeSkip !== true && !built.includes(upgradeFrom)) continue;
     // Generyczny prereq "budynek X wymaga budynku Y w TYM mieście" -- reużywa
     // WSPÓLNĄ tabelę data-driven z production.ts (CITY_BUILDING_PREREQ, ta sama
     // co availableProduction dla gracza), nie osobną listę id w ai.ts. Działa
@@ -2015,7 +2016,9 @@ export function chooseCityProduction(
   if (underThreat) {
     if (opts.defensiveCopy) {
       const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank, true);
-      if (!built.includes('mury') && !built.includes('mury_kamienne') && wallScore !== null) {
+      if (!built.includes('mury') && wallScore !== null) {
+        // Awans zamiast dokładania: kamienne stoją -> kolejny etap to Mury ceglane; inaczej Mury kamienne
+        // (z Palisady to awans). Silnik (applyCompletedBuildingIds) usuwa niższy etap po ukończeniu.
         candidates.push({ id: built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne', score: wallScore });
       }
       candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
@@ -2056,7 +2059,9 @@ export function chooseCityProduction(
     // Palisadzie niżej: inaczej Mury (flat 320+defenseScore) przebijałyby na
     // stałe nawet Studnię z pełnym pokryciem katalogu (ai-test T7D-h).
     if (!csGarrisonMet && !built.includes('mury') && !built.includes('mury_kamienne')) {
-      candidates.push({ id: built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne', score: 320 + defenseScore });
+      // Tu garnizon jest priorytetem: pierwsze Mury kamienne (z Palisady = awans); dalszy awans do
+      // Murów ceglanych idzie zwykłą ścieżką katalogu (collectAvailableBuildingCandidates).
+      candidates.push({ id: 'mury_kamienne', score: 320 + defenseScore });
     }
     // Spichlerz USUNIĘTY stąd (był flat 250, redundantny) -- teraz pochodzi
     // z collectAvailableBuildingCandidates niżej (grupa Żywność), tak jak dla

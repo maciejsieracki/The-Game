@@ -136,6 +136,7 @@ import {
 } from '../game/building-stock-cost';
 import {
   upgradeChainSteps,
+  skipChainUpgradeSource,
   upgradeCompositionLines,
   buildingStructuralDefenseBonusLine,
   buildingStructuralDefenseBonusPercent,
@@ -7080,7 +7081,11 @@ function buildingRequirementChips(
   }
 
   const parentId = def.upgradeFrom?.trim();
-  if (parentId) {
+  if (parentId && def.upgradeSkip === true) {
+    // Łańcuch fortyfikacji z przeskokiem: poprzednik NIE jest wymagany (budowa od zera jest dozwolona).
+    const parentName = parentBuildingName(data, parentId) ?? parentId;
+    chips.push({ label: `Awans z: ${parentName} (opcjonalnie)`, met: true, kind: 'other' });
+  } else if (parentId) {
     const parentName = parentBuildingName(data, parentId) ?? parentId;
     const met = built.includes(parentId)
       || isBuildingSupersededByUpgrade(parentId, built, buildings);
@@ -8237,7 +8242,7 @@ function appendBuildableItemRow(
   city: City,
   item: ProductionItem,
   data: GameData,
-  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean },
+  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean; fromName?: string },
 ): void {
   const def = findBuildingDef(data, item.id);
   if (!def) {
@@ -8256,7 +8261,10 @@ function appendBuildableItemRow(
   fillIconElement(ic, buildingIconHtml(def));
   row.appendChild(ic);
   const name = el('span', 'bld-compact-name');
-  name.textContent = def.nazwa;
+  // Awans w łańcuchu (Palisada -> Mury kamienne): „Ulepsz -> Mury kamienne” z nazwą źródła w tooltipie.
+  // Awans POZIOMU (ten sam id) pokazuje etykiete „Nazwa → poz. N” -- odroznialna od awansu etapu lancucha.
+  name.textContent = opts.fromName ? `Ulepsz → ${def.nazwa}` : (opts.upgrade ? item.nazwa : def.nazwa);
+  if (opts.fromName) name.title = `${opts.fromName} → ${def.nazwa}`;
   row.appendChild(name);
 
   const actions = el('div', 'bld-compact-actions');
@@ -9282,14 +9290,19 @@ export function renderBuildList(
   // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
   // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
   // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
-  const items = sortProductionItemsByBuildability(
+  const allBuildable = sortProductionItemsByBuildability(
     buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
-  const itemIds = new Set(items.map(it => it.id));
+  // Łańcuch fortyfikacji: etap, do którego stoi niższy etap, to AWANS („Ulepsz”), nie „Buduj”.
+  const chainSource = (it: ProductionItem): string | null =>
+    it.kind === 'budynek' ? skipChainUpgradeSource(it.id, built, data.buildings) : null;
+  const items = allBuildable.filter(it => chainSource(it) === null);
+  const chainUps = allBuildable.filter(it => chainSource(it) !== null);
+  const itemIds = new Set(allBuildable.map(it => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -9326,7 +9339,7 @@ export function renderBuildList(
   const fullEraPreview = showEraBuildingPreview;
   const previewEntries = collectEraPreviewEntries(data, techs, prodCtx, fullEraPreview);
 
-  const sortedUps = sortProductionItemsByBuildability(ups, city, data, prodCtx, techs);
+  const sortedUps = sortProductionItemsByBuildability([...chainUps, ...ups], city, data, prodCtx, techs);
 
   if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
@@ -9350,7 +9363,9 @@ export function renderBuildList(
     h.textContent = 'Ulepsz';
     scroll.appendChild(h);
     for (const u of sortedUps) {
-      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
+      const srcId = chainSource(u);
+      const fromName = srcId ? (findBuildingDef(data, srcId)?.nazwa ?? srcId) : undefined;
+      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true, fromName });
     }
   }
   // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze

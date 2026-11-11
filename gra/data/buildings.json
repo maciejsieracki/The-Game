@@ -1015,6 +1015,8 @@
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
     "epokaWejscia": 1,
+    "upgradeFrom": "palisada",
+    "upgradeSkip": true,
     "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
@@ -1065,6 +1067,8 @@
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
     "epokaWejscia": 2,
+    "upgradeFrom": "mury_kamienne",
+    "upgradeSkip": true,
     "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {

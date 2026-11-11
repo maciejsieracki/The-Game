@@ -1004,7 +1004,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, effectivePracaRouting, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
-  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
+  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds, collapseFortificationChain,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   unitRecruitmentCapacityPerTurn,
   type CityProduction, type AvailabilityContext, unitStockShortfallLabel, epochNumber,
@@ -46725,7 +46725,8 @@ async function boot(): Promise<void> {
       }
       cityBuilt.clear();
       if (saved.cityBuilt) {
-        for (const [cid, blt] of Object.entries(saved.cityBuilt)) cityBuilt.set(cid, blt as string[]);
+        // R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1: stary zapis z kilkoma fortyfikacjami łańcucha -> zostaje najwyższa (cicho, bez zwrotu).
+        for (const [cid, blt] of Object.entries(saved.cityBuilt)) cityBuilt.set(cid, collapseFortificationChain(blt as string[], data.buildings).slice());
       }
       completedWorldWonders = Array.isArray(saved.meta?.completedWorldWonders)
         ? (saved.meta.completedWorldWonders as string[]).slice()

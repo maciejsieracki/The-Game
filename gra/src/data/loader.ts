@@ -119,6 +119,8 @@ export interface BuildingDef {
   wielokrotny?: boolean;
   /** id budynku wymaganego w miescie przed upgrade (zastepuje poprzedni w builtIds). */
   upgradeFrom?: string;
+  /** true = przeskok: `upgradeFrom` NIE jest wymagany do budowy (awans gdy poprzednik stoi, inaczej od zera). */
+  upgradeSkip?: boolean;
   /** true = ukryty z listy produkcji (merge w inny budynek). */
   suppressed?: boolean;
   /**
