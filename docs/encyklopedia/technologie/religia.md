@@ -35,7 +35,7 @@
 - **Surowce:** brak
 
 ### Uwagi
-T-TECH-8: upgrade kamienne_kregi → swiatynia (suma bonusów w JSON)
+T-TECH-8: Kręgi kamienne ulepszają się do Świątyni (suma bonusów w danych gry)
 
 **Powiązane:** Drzewko technologii · Nauka · Epoki
 

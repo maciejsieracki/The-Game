@@ -23,6 +23,7 @@
 
 import { getBaseDiplomacyParams } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import { humanizeId } from './text-names';
 
 // ---------------------------------------------------------------------------
 // §1 — Skala i etykiety
@@ -507,11 +508,11 @@ export const CREDIBILITY_STREAM_LABELS_PL: Record<CredibilityStreamEvent, string
 };
 
 export function credibilityEventLabelPl(typ: CredibilityEvent): string {
-  return CREDIBILITY_EVENT_LABELS_PL[typ] ?? typ;
+  return CREDIBILITY_EVENT_LABELS_PL[typ] ?? humanizeId(typ);
 }
 
 export function credibilityStreamLabelPl(typ: CredibilityStreamEvent): string {
-  return CREDIBILITY_STREAM_LABELS_PL[typ] ?? typ;
+  return CREDIBILITY_STREAM_LABELS_PL[typ] ?? humanizeId(typ);
 }
 
 export interface WiarygodnoscFactorRow {

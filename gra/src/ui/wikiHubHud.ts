@@ -11,6 +11,7 @@ import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { slugify } from './entityCards/slug';
 import { setCivpediaEntryOpener, type CivpediaOpenResult } from './entityCards/civpediaOpenGate';
+import { stripEncyMetadata } from '../game/text-names';
 
 export interface WikiHubHudConfig {
   onClose?: () => void;
@@ -410,8 +411,9 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     const historiaBlock = entry.historia ? `\n\n## Rys historyczny\n\n${entry.historia}` : '';
     if (d === 's') return `## ${entry.title}\n\n${entry.wikiS}`;
     if (d === 'm') return `## ${entry.title}\n\n${entry.wikiM}${historiaBlock}`;
-    const fullAlreadyHasHistoria = entry.full.includes('\n## Rys historyczny\n');
-    return `${entry.full}${fullAlreadyHasHistoria ? '' : historiaBlock}`;
+    const pelna = `## ${entry.title}\n\n${stripEncyMetadata(entry.full)}`;
+    const fullAlreadyHasHistoria = pelna.includes('\n## Rys historyczny\n');
+    return `${pelna}${fullAlreadyHasHistoria ? '' : historiaBlock}`;
   }
 
   function renderDetail(): void {

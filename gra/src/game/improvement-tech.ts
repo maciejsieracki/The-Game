@@ -4,6 +4,7 @@
  */
 import terrainJson from '../../data/terrain-improvements.json';
 import { scaleTerrainImprovementWorkCost } from './terrain-improvements';
+import { humanizeId } from './text-names';
 
 export type ImprovementActionTyp = 'wycinka' | 'ulepszenie';
 
@@ -100,7 +101,7 @@ function readMeta(key: string): ImprovementMeta | null {
     : undefined;
   return {
     key,
-    nazwa: row.nazwa ?? key,
+    nazwa: row.nazwa ?? humanizeId(key),
     epoka: row.epoka ?? 1,
     kosztPraca: scaleTerrainImprovementWorkCost(row.koszt_praca ?? 0, row.epoka),
     techId: normalizeTech(row.tech ?? null),

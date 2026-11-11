@@ -21,7 +21,7 @@ Sztuczna inteligencja ocenia każdą turę w czterech wymiarach:
 | **Dyplomacja** | Handel, pakt, sojusz vs izolacja |
 | **Obrona** | Garnizony, mury, kontrataki po stratach |
 
-Parametry per typ są w macierzy cywilizacji (`civ-matrix.json`: `ai_agresywnosc`, `ai_priorytet_militarny`, `dip_prog_wojny` itd.).
+Parametry per typ są w macierzy cywilizacji (agresywność AI, priorytet wojskowy, próg wypowiedzenia wojny itd.).
 
 ### 87.2. Profile per typ — skrót
 
@@ -34,7 +34,7 @@ Parametry per typ są w macierzy cywilizacji (`civ-matrix.json`: `ai_agresywnosc
 | **Chińczycy** | 2 | Nauka i ekonomia, rzadka wojna |
 | **Sumerowie** | 3 | Priorytet nauki (8/9), umiarkowana agresja |
 
-**Chińczycy** — stereotyp „muru i badań": AI rzadziej rozpoczyna wojny (`dip_prog_wojny` niski). **Zulusi** — przeciwnie: wysoki próg wojny i niska skłonność do sojuszy.
+**Chińczycy** — stereotyp „muru i badań": AI rzadziej rozpoczyna wojny (niski próg wypowiedzenia wojny). **Zulusi** — przeciwnie: wysoki próg wojny i niska skłonność do sojuszy.
 
 Miasta-państwa w **klastrze** mają **osobny**, bardziej defensywny profil (§88).
 

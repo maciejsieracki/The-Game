@@ -29,7 +29,7 @@ import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
-import { humanizeId } from '../../game/text-names';
+import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../../game/text-names';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -138,7 +138,8 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.bonus_ruch)) {
     charRows.push({
       label: 'Ruch',
-      value: `${text(improvement.bonus_ruch)}${improvement.bonus_ruch_uwaga ? ` (${text(improvement.bonus_ruch_uwaga)})` : ''}`,
+      // R-WEB-UI-RAW-IDS-AUDIT: `bonus_ruch_uwaga` to notatka deweloperska (ROAD_BRUK_MOVE_SPEED_MULT, ścieżki plików) — nie dla gracza.
+      value: text(improvement.bonus_ruch),
     });
   }
   const characteristicsSection: EntityCardSection = {
@@ -186,7 +187,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
         ? improvement.cywilizacje.join(', ')
         : '',
     },
-    { label: 'Ulepszenie bazowe', value: upgradeFromKey, linkTo: upgradeFromLinkTo },
+    { label: 'Ulepszenie bazowe', value: nazwaWyswietlana(upgradeFromKey), linkTo: upgradeFromLinkTo },
   ].filter((r) => hasValue(r.value));
   const requirementsSection: EntityCardSection = {
     key: 'requirements', title: 'Wymagania', rows: requirementRows,
@@ -197,7 +198,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.surowiecOdblokowany)) {
     resourceRows.push({
       label: 'Odblokowuje surowiec',
-      value: text(improvement.surowiecOdblokowany),
+      value: nazwyZListyId(text(improvement.surowiecOdblokowany)),
     });
   }
   // R-WEB-CARDS-RESOURCE-PURPOSE-Q1 (DODATEK 1): każdy surowiec ulepszenia mówi, do czego służy

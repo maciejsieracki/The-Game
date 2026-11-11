@@ -7,6 +7,7 @@ import improvementsJson from '../../data/terrain-improvements.json';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
 import { scaleImprovementWorkCost } from './r-stawki-strojenie';
+import { humanizeId } from './text-names';
 
 export type ImprovementBonusKey =
   | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina';
@@ -455,7 +456,7 @@ export function hexSuppressesDepositOverlay(
 }
 
 export function improvementDisplayName(key: string): string {
-  return IMPROVEMENTS[key]?.nazwa ?? key;
+  return IMPROVEMENTS[key]?.nazwa ?? humanizeId(key);
 }
 
 /** Surowce zwierzęce — `_meta.klucze_surowcow_ASCII` w terrain-improvements.json. */

@@ -47,7 +47,7 @@ import { terrainUnlockLabelsForTech } from '../../game/improvement-tech';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
 import { naukaCostSuffix } from '../naukaLabel';
-import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from '../../game/text-names';
+import { humanizeId, nazwaCywilizacji, nazwaWyswietlana, nazwyZListyId } from '../../game/text-names';
 import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects';
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
@@ -217,7 +217,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // opisowego pola `tech.json` — dopisuje Kopalnie miedzi/cyny/żelaza i Stadninę.
   const improvementNames = terrainUnlockLabelsForTech(techName).filter((n) => !hidden.has(n));
   const wonders = ALL_WONDERS.filter((w) => (w.techUnlock ?? []).includes(techName) && !hidden.has(w.nazwa ?? w.id));
-  const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
+  const resourceUnlocked = nazwyZListyId(tech['Odblokowuje surowiec.']) || null;
   const requirements = list(tech['Wymaga (prereq)']);
 
   // --- „Top 5 korzyści” (R-WEB-TECH-CARDS-TOP5-IMPLEMENT-Q1) — wstawiana na indeks 2 tablicy
@@ -423,7 +423,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
     tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
     tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
-    resourceAccess ? { label: 'Surowiec (wymóg badania)', value: resourceAccess } : null,
+    resourceAccess ? { label: 'Surowiec (wymóg badania)', value: nazwyZListyId(resourceAccess) } : null,
   ].filter((r): r is EntityCardRow => r != null);
   const characteristicsSection: EntityCardSection = {
     key: 'characteristics', title: 'Charakterystyka', rows: charRows,

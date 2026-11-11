@@ -71,6 +71,7 @@ import {
   terrainIconSvg,
   unitIconSvg,
 } from './icons/brandAssets';
+import { nazwaWyswietlana } from '../game/text-names';
 
 /** Ikona plonu jako inline-SVG (reskin emoji 🍞🔨💰🪵🪨 → brand). */
 function yieldIconSvg(key: YieldKey): string {
@@ -534,7 +535,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const era = input.currentEra ?? 99;
   // R-WEB-IMPROVEMENT-ERA-SCALING-Q1: plony ulepszeń wg aktualnej epoki gracza (brak = Kamień).
   const yieldEra = input.currentEra;
-  const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
+  const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(nazwaWyswietlana(String(hex.terenBazowy)));
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));

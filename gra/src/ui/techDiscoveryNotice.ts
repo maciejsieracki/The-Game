@@ -43,7 +43,7 @@
  *    to poprawne czytanie, czy jednak dodać widoczny, wygaszony przycisk?
  */
 
-import { nazwaWyswietlana } from '../game/text-names';
+import { humanizeId, nazwaWyswietlana } from '../game/text-names';
 import techData from '../../data/tech.json';
 import buildingsData from '../../data/buildings.json';
 import unitsData from '../../data/units.json';
@@ -363,7 +363,7 @@ function buildBody(tech: TechRow): { html: string } {
   const hidden = hiddenTechEffectNames(tech.Technologia);
   const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia
     && !isDeadTechCardBuilding(b as unknown as { suppressed?: unknown; epokaWejscia?: unknown })
-    && !hidden.has(b.nazwa ?? b.id));
+    && !hidden.has(b.nazwa ?? humanizeId(b.id)));
   const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia && !hidden.has(u.Jednostka));
   const allTechs = (techData as unknown as { technologie: TechRow[] }).technologie;
   const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia)
@@ -384,7 +384,7 @@ function buildBody(tech: TechRow): { html: string } {
 
   const actionsHtml = buildActionItems({
     techName: tech.Technologia,
-    buildingNames: buildings.map(b => b.nazwa ?? b.id),
+    buildingNames: buildings.map(b => b.nazwa ?? humanizeId(b.id)),
     improvementNames,
     resourceUnlocked,
     nextTechCount: nextTechRows.length,
@@ -396,7 +396,7 @@ function buildBody(tech: TechRow): { html: string } {
 
   const buildingsBody = buildings.map(b => unlockItemRow({
     icon: buildingIconSvg(undefined, b.id),
-    title: b.nazwa ?? b.id,
+    title: b.nazwa ?? humanizeId(b.id),
     meta: [tech.Epoka ? `Epoka ${tech.Epoka === 'Kamień' ? 'Kamienia' : tech.Epoka}` : null, b.wymagania ?? (buildingEffectText(b) || null)]
       .filter(Boolean).join(' · ') || undefined,
   })).join('');
@@ -450,11 +450,11 @@ function buildBody(tech: TechRow): { html: string } {
   const econRows: string[] = [];
   for (const b of buildings) {
     const effect = buildingEffectText(b);
-    if (effect) econRows.push(unlockItemRow({ icon: buildingIconSvg(undefined, b.id), title: b.nazwa ?? b.id, meta: effect }));
+    if (effect) econRows.push(unlockItemRow({ icon: buildingIconSvg(undefined, b.id), title: b.nazwa ?? humanizeId(b.id), meta: effect }));
     if (b.utrzymanie != null) {
       econRows.push(unlockItemRow({
         icon: buildingIconSvg(undefined, b.id),
-        title: `${b.nazwa ?? b.id} — utrzymanie`,
+        title: `${b.nazwa ?? humanizeId(b.id)} — utrzymanie`,
         meta: `${b.utrzymanie} złota na turę`,
       }));
     }

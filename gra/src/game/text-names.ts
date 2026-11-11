@@ -76,6 +76,19 @@ export function nazwaWyswietlana(id: string | null | undefined): string {
   return NAZWY_SUROWCOW[key] ?? humanizeId(key);
 }
 
+/**
+ * Lista nazw rozdzielona przecinkami/średnikami, w której część pozycji to surowe id (`bydlo`, `ruda_cyny`):
+ * pozycje wyglądające jak id (`[a-z0-9_]+`) idą przez `nazwaWyswietlana`; pozostałe (np. `krowa/byk`) bez zmian.
+ */
+export function nazwyZListyId(lista: string | null | undefined): string {
+  const src = String(lista ?? '');
+  if (!src.trim()) return '';
+  return src.split(/\s*([,;])\s*/).map((tok, i) => {
+    if (i % 2 === 1) return tok === ',' ? ', ' : '; ';
+    return /^[a-z0-9_]+$/.test(tok) ? nazwaWyswietlana(tok) : tok;
+  }).join('').trim();
+}
+
 /** Nazwa wyświetlana cywilizacji po jej kluczu (np. `egipt` → nazwa z panstwa). */
 export function nazwaCywilizacji(id: string | null | undefined): string {
   const key = String(id ?? '').trim();
@@ -93,6 +106,20 @@ export function maJawnaNazwe(id: string | null | undefined): boolean {
   if (typeof impNazwa === 'string' && impNazwa.trim() !== '') return true;
   return Object.prototype.hasOwnProperty.call(NAZWY_TERENOW_I_WARUNKOW, key)
     || Object.prototype.hasOwnProperty.call(NAZWY_SUROWCOW, key);
+}
+
+/**
+ * Pełny widok hasła encyklopedii (`full`) zaczyna się tabelą metadanych (`id`, `poradnik_ref`, `json_ref`,
+ * `status_v1`, ścieżki plików) kończoną linią `---` — to dane redakcyjne, nie tekst dla gracza.
+ * Zwraca treść od pierwszej sekcji po tej tabeli; hasło bez takiej tabeli zwraca bez zmian.
+ */
+export function stripEncyMetadata(full: string): string {
+  const src = String(full ?? '');
+  const head = src.slice(0, 1500);
+  if (!/\|\s*\*{0,2}id\*{0,2}\s*\|/.test(head)) return src;
+  const m = /\n---[ \t]*\n/.exec(src);
+  if (!m || m.index > 1500) return src;
+  return src.slice(m.index + m[0].length).replace(/^\s+/, '');
 }
 
 /** Wzorzec surowego identyfikatora snake_case (dla testów strażników). */

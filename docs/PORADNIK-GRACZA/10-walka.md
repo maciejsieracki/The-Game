@@ -281,7 +281,7 @@ Rzeka na polu bitwy to dziś **ciągłe koryto w kształcie litery S** przez ca�
 | **Kara ataku** walcząc w brodzie | **−25%** |
 | **Bonus obrońcy** stojącego na brzegu (broniącego brodu) | **+15%** obrony |
 
-Tooltip jednostki w brodzie pokazuje aktywny status w wierszu TEREN (kolor czerwony/zielony wg tego, czy to ty atakujesz, czy bronisz). Atak przez/z rzeki poza brodem (starcie światowe, nie taktyczna plansza 3D) — osobna, numerycznie podobna kara ok. **×0,75** obrażeń atakującego (`river_attack_mult`) — dwa niezależne parametry, strojone osobno.
+Tooltip jednostki w brodzie pokazuje aktywny status w wierszu TEREN (kolor czerwony/zielony wg tego, czy to ty atakujesz, czy bronisz). Atak przez/z rzeki poza brodem (starcie światowe, nie taktyczna plansza 3D) — osobna, numerycznie podobna kara ok. **×0,75** obrażeń atakującego — dwa niezależne parametry, strojone osobno.
 
 ### 63.2. Wzgórze i góra
 

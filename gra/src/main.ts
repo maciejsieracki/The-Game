@@ -51,7 +51,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Imports
 
-import { humanizeId, nazwaCywilizacji } from './game/text-names';
+import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -8435,7 +8435,7 @@ async function boot(): Promise<void> {
     }
 
     function selectPlayerResearchSlug(techSlug: string): void {
-      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const techName = techNameFromSlug(techSlug) ?? humanizeId(techSlug);
       const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(0));
       if (ok) {
         console.log('[Nauka] Gracz wybrał cel:', techName);
@@ -8487,7 +8487,7 @@ async function boot(): Promise<void> {
      * aktywnym celem (patrz enqueueResearchTarget w playerState.ts).
      */
     function enqueueOrSetPlayerResearchSlug(techSlug: string): void {
-      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const techName = techNameFromSlug(techSlug) ?? humanizeId(techSlug);
       const ok = enqueueResearchTarget(player, techName, data.tech);
       if (ok) {
         console.log('[Nauka] Gracz dodał do planu badań:', techName);
@@ -8499,7 +8499,7 @@ async function boot(): Promise<void> {
 
     /** Usuwa pozycję z planu badań (aktywny cel lub pozycję w kolejce). */
     function dequeuePlayerResearchSlug(techSlug: string): void {
-      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const techName = techNameFromSlug(techSlug) ?? humanizeId(techSlug);
       const ok = dequeueResearchTarget(player, techName);
       if (ok) {
         console.log('[Nauka] Gracz usunął z planu badań:', techName);
@@ -20351,7 +20351,7 @@ async function boot(): Promise<void> {
           // „Sprzedaż … za X ¤” była myląca dla Kupna i pokazywała „0 ¤” w trybie tech-za-tech.
           const dirLabel = p.techDirection === 'buy' ? 'Kupno' : 'Sprzedaż';
           return p.techPaymentMode === 'tech'
-            ? `${dirLabel} technologii za technologię${p.techOfferId ? ` (${p.techOfferId})` : ''}`
+            ? `${dirLabel} technologii za technologię${p.techOfferId ? ` (${techNameFromSlug(p.techOfferId) ?? humanizeId(p.techOfferId)})` : ''}`
             : `${dirLabel} technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
         }
         case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
@@ -23651,7 +23651,7 @@ async function boot(): Promise<void> {
       return techIdsWithPrereqsMetForRecipient(tradeable, responderKnown, data.tech)
         .map(slug => ({
           id: slug,
-          label: techNameFromSlug(slug) ?? slug,
+          label: techNameFromSlug(slug) ?? humanizeId(slug),
           suggestedPrice: 50 + player.era * 20,
         })).slice(0, 12);
     }
@@ -39155,7 +39155,7 @@ async function boot(): Promise<void> {
                     if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
                     spawnClearingMesh(hexKey);
                     const metaWyrab = getImprovementMeta(pick.key);
-                    toastLines.push(`${metaWyrab?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
+                    toastLines.push(`${metaWyrab?.nazwa ?? nazwaWyswietlana(pick.key)} @ (${pick.q},${pick.r})`);
                     continue;
                   }
                   // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-08, runda 2 — ZARZUT #1
@@ -39194,7 +39194,7 @@ async function boot(): Promise<void> {
                   spawnImprovementMesh(hexKey);
                   syncResourceOverlayAtHex(hexKey);
                   const meta = getImprovementMeta(pick.key);
-                  toastLines.push(`${meta?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
+                  toastLines.push(`${meta?.nazwa ?? nazwaWyswietlana(pick.key)} @ (${pick.q},${pick.r})`);
                 }
                 // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): toast to informacja UI dla
                 // fotela AKTUALNIE OGLĄDANEGO -- pokazujemy WYŁĄCZNIE dla `humanOwnerId`

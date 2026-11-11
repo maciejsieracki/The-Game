@@ -19,6 +19,7 @@ import {
   maxDefinedEra,
 } from './owner-epoch';
 import { getWonderById } from './wonders-data';
+import { humanizeId } from './text-names';
 
 /** Krótkie etykiety epok zgodne z polem `Epoka` w tech.json (jak EPOCH_ORDER w sciencePicker.ts). */
 const ERA_LABELS: readonly string[] = ['Kamień', 'Brąz', 'Żelazo'];
@@ -103,7 +104,7 @@ export function computeEraGateInfo(params: ComputeEraGateInfoParams): EraGateInf
     const built = builtSet.has(id);
     return {
       id,
-      name: getWonderById(id)?.nazwa ?? id,
+      name: getWonderById(id)?.nazwa ?? humanizeId(id),
       built,
       inProgress: !built && inProgressSet.has(id),
     };
