@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-  "bundleSha256": "c6ac9fad76706b926bcdbbe337165d849e170fe1a6fbf2984dd6225c18a5e03c",
-  "bundleBytes": 14476223,
+  "bundleMd5": "a64ac0d6ff03a80e092d654d76c5a72c",
+  "bundleSha256": "3547c0098592a2e1259b0a59a81318e92612fe65ad81868cb23677b5c139ad43",
+  "bundleBytes": 14481353,
   "sourceSnapshot": {
-    "source": "merge FC 65b45f729",
+    "source": "merge FC aa8f6b06b + e16f6f7c0",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 629: R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel Rekrutacja ma wybór 'Generał rekrutujący'; bez wybranego generała przyciski Rekrutuj/Rekrutuj wszystkie nieaktywne; zrodzona jednostka idzie do wybranego generała (po jego śmierci do najbliższego); wybór zapisywany w save, czyszczony z powiadomieniem po śmierci generała, jednorazowe powiadomienie przy starym zapisie; rekrutacja ręczna i AI bez zmian"
+    "FALA 630: R-WEB-UI-RAW-IDS-AUDIT-Q1: teksty dla gracza pokazują nazwy zamiast surowych id (resolver nazw, slug Złoto/Cegła, odkrycia, ulepszenia, panel nauki, hub Civpedii bez tabeli metadanych); strażnik ids-leak-audit rozszerzony o 7 kontroli wiązań UI; R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1: test unit-replace-full-cost zgodny z decyzją 'machiny poza Zastąp'"
   ],
   "verification": [
-    "tsc czysty; army-auto-recruit-general 32/0, live-test w realnej grze (Chromium) 17/0, ui-test 11/0, recruit-follow-general-origin 22/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; ids-leak-audit 1641/0, wonder-text-no-raw-ids 132/0, improvement-adapter-resource-note 77/0, city-administrator 117/0 i economy 72/0, unit-replace-full-cost 40/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacje strażnika czerwone; Chromium: Administrator miasta działa po merge; audio-sidecar PASS; FC PASS-WITH-NOTES / PASS"
   ],
   "limits": [
-    "Wymóg generała dotyczy zbiorczego panelu Rekrutacja (brak osobnego automatu); brak fallbacku do najbliższego bez wyboru; dług bazowy czerwony tak samo na bazie: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18; NIE_ZMIERZONO: wczytanie starego zapisu w realnej grze"
+    "NIE_ZMIERZONO: zrzuty Chromium kart ulepszenia/odkrycia i panelu odkryć (testy real-render Terminated 60 s także na bazie) — zalecana weryfikacja wzrokowa po deployu; 31 testów czerwonych identycznie na bazie (dług bazowy)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T14:56:59",
+  "hubGeneratedAt": "2026-11-11T15:36:25",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
-      "sizeBytes": 14476223
+      "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
+      "sizeBytes": 14481353
     }
   ],
-  "md5": "b0f37e1debaa3c775ec1f6524f1a1f05",
+  "md5": "a64ac0d6ff03a80e092d654d76c5a72c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

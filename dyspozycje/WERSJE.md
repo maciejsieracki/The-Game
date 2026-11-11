@@ -1,3 +1,9 @@
+## ROBOCZA a64ac0d6 -- 2026-11-06 -- FALA 630: Audyt surowych id w tekstach gracza + test Zastąp bez machin (testowa)
+
+- R-WEB-UI-RAW-IDS-AUDIT-Q1: teksty dla gracza pokazują nazwy zamiast surowych id (resolver nazw, slug Złoto/Cegła, odkrycia, ulepszenia, panel nauki, hub Civpedii bez tabeli metadanych); strażnik ids-leak-audit rozszerzony o 7 kontroli wiązań UI; R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1: test unit-replace-full-cost zgodny z decyzją 'machiny poza Zastąp'
+- Weryfikacja: tsc czysty; ids-leak-audit 1641/0, wonder-text-no-raw-ids 132/0, improvement-adapter-resource-note 77/0, city-administrator 117/0 i economy 72/0, unit-replace-full-cost 40/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacje strażnika czerwone; Chromium: Administrator miasta działa po merge; audio-sidecar PASS; FC PASS-WITH-NOTES / PASS
+- Limity: NIE_ZMIERZONO: zrzuty Chromium kart ulepszenia/odkrycia i panelu odkryć (testy real-render Terminated 60 s także na bazie) — zalecana weryfikacja wzrokowa po deployu; 31 testów czerwonych identycznie na bazie (dług bazowy)
+
 ## ROBOCZA b0f37e1d -- 2026-11-06 -- FALA 629: Automatyczna rekrutacja: wybór generała w panelu Rekrutacja (testowa)
 
 - R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel Rekrutacja ma wybór 'Generał rekrutujący'; bez wybranego generała przyciski Rekrutuj/Rekrutuj wszystkie nieaktywne; zrodzona jednostka idzie do wybranego generała (po jego śmierci do najbliższego); wybór zapisywany w save, czyszczony z powiadomieniem po śmierci generała, jednorazowe powiadomienie przy starym zapisie; rekrutacja ręczna i AI bez zmian
