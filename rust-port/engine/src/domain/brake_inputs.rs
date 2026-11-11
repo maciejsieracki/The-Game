@@ -3,14 +3,15 @@
 //! Kazda funkcja jest czysta: dostaje juz wyciagniete fakty (mapy, zbiory, domkniecia) i zwraca
 //! wejscie fazy. Nie czyta `PlayableState` ani `WarTurnState` bezposrednio; wolajacy (W8 r3) buduje
 //! fakty z `WarTurnState` (klucze `rust*`, zrodlo prawdy dla magazynow dyplomacji i wojny).
+//! Moc obiektywna (`computeObjectivePower`) jest w `brake_power.rs`.
 //!
-//! Pokryte (web, pin 07d2fbd72 `gra/src/main.ts`):
+//! Pokryte (web, pin 07d2fbd72 `gra/src/main.ts`; wektory z pinu: tests/p6_brake_inputs_vectors):
 //! - `is_peace_locked_between` / `peace_locked_set`: `isPeaceLockedBetween` (l.11817),
 //! - `crisis_war_gate_blocked` / `gate_blocked_set`: `diploCrisisWarGateBlocked` (l.11632),
 //! - `contacts_for`: `getDiplomaticContacts` (l.22523) bez gracza,
-//! - `phase_owners`: `diploOwnerEligibleForBrake` (l.11590) + `allPowerOwnerIds` (l.19124),
-//! - `power_map`: adapter na `objectivePowerForOwner` (l.2874). NIE_PORTOWANE: `computeObjectivePower`
-//!   (web l.2759) nie ma odpowiednika w Rust; `power_map` przyjmuje gotowa funkcje mocy od wolajacego.
+//! - `all_power_owner_ids` / `phase_owners`: `allPowerOwnerIds` (l.19124) + `diploOwnerEligibleForBrake` (l.11590),
+//! - `OwnerRoles`: jedno zrodlo roli gracza: `is_human` = web `isHuman` (humanSeats), `is_me` = web `isMe` (ME()).
+//! - `power_map`: adapter na `objectivePowerForOwner` (zob. `brake_power::objective_power_for_owner`).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -70,15 +71,50 @@ pub fn peace_locked_set(
         .collect()
 }
 
+/// Role graczy w jednym miejscu. Web uzywa DWOCH roznych zrodel: `isHuman(id)` (czy id jest KTORYMKOLWIEK
+/// fotelem czlowieka, `humanSeats`) dla bramki wojny (`targetIsPlayer`), oraz `isMe(id)` (`id === ME()`,
+/// aktywny fotel) dla kwalifikacji AI-AI. Port trzyma oba jawnie; zgodnosc z webem: wektory `players`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OwnerRoles<'a> {
+    pub me: i64,
+    pub human_ids: &'a [i64],
+}
+
+impl OwnerRoles<'_> {
+    /// Web `isHuman(ownerId)` = `isHumanOwner(humanSeats, ownerId)`.
+    pub fn is_human(&self, owner_id: i64) -> bool {
+        self.human_ids.contains(&owner_id)
+    }
+
+    /// Web `isMe(ownerId)` = `ownerId === ME()`.
+    pub fn is_me(&self, owner_id: i64) -> bool {
+        owner_id == self.me
+    }
+}
+
 /// Fakty wlasciciela potrzebne do bramki R1/R2 (web: `empireEpochForOwner`, `countActiveWarsForOwnerExcludingBarbarians`, `isHuman`).
-/// `era` = wynik `empireEpochForOwner` (web: liczba calkowita; f64 bez utraty dla malych wartosci).
-/// `is_player` = `isHuman(victim)` (web l.11642, `targetIsPlayer`) - OSOBNE zrodlo niz `isMe` w
-/// `OwnerFacts`/`phase_owners`; web uzywa obu funkcji w roznych miejscach, port zachowuje to rozdzielenie.
+/// `era` = wynik `empireEpochForOwner` (web: liczba calkowita, w zakresie 1..10; port: i64, zamiana na f64
+/// dopiero przy wywolaniu `evaluate_inter_civ_war_gate`, ktorego pola epoki sa f64 w sygnaturze).
+/// `is_player` = `isHuman(victim)` (web `targetIsPlayer`), NIE `isMe`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GateFacts {
-    pub era: f64,
+    pub era: i64,
     pub war_count: i64,
     pub is_player: bool,
+}
+
+/// Budowa `GateFacts` z roli `isHuman` (jedno zrodlo: `OwnerRoles`).
+pub fn gate_facts_for(
+    roles: &OwnerRoles<'_>,
+    owner_id: i64,
+    era: i64,
+    war_count: i64,
+) -> GateFacts {
+    GateFacts {
+        era,
+        war_count,
+        is_player: roles.is_human(owner_id),
+    }
 }
 
 /// Web `diploCrisisWarGateBlocked(declarer, victim)`: bramka wylaczona (`isWarRulesMultiwarEnabled` = false)
@@ -94,10 +130,10 @@ pub fn crisis_war_gate_blocked(
     }
     evaluate_inter_civ_war_gate(&InterCivWarGateInput {
         turn,
-        attacker_era: declarer.era,
+        attacker_era: declarer.era as f64,
         attacker_war_count: declarer.war_count,
         target_is_player: victim.is_player,
-        target_era: victim.era,
+        target_era: victim.era as f64,
         target_war_count: victim.war_count,
         era_tag: None,
     }) != WarGateReason::Ok
@@ -148,11 +184,27 @@ pub struct MissingOwnerFacts {
     pub owner_id: i64,
 }
 
+/// Web `allPowerOwnerIds()` (main.ts:19124): `Set` z `0`, potem wlasciciele miast, potem startow AI.
+/// Kolejnosc wstawiania zachowana (jak Set w JS), bez duplikatow.
+pub fn all_power_owner_ids(city_owner_ids: &[i64], ai_start_owner_ids: &[i64]) -> Vec<i64> {
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    for id in std::iter::once(0)
+        .chain(city_owner_ids.iter().copied())
+        .chain(ai_start_owner_ids.iter().copied())
+    {
+        if seen.insert(id) {
+            out.push(id);
+        }
+    }
+    out
+}
+
 /// Web `allPowerOwnerIds` + `diploOwnerEligibleForBrake`: lista wlascicieli w kolejnosci wejscia z
-/// informacja `AiAiOwnerInfo`. `is_player` = `isMe(id)` (`id == me`). Brak faktu dla wlasciciela z
-/// listy zwraca `Err` zamiast cichego pominiecia (polityka jawna: niekompletne wejscie nie przechodzi).
+/// informacja `AiAiOwnerInfo` (`is_player` = `isMe`, zgodnie z webem `diploOwnerEligibleForBrake`).
+/// Brak faktu dla wlasciciela z listy zwraca `Err` zamiast cichego pominiecia (polityka jawna).
 pub fn phase_owners(
-    me: i64,
+    roles: &OwnerRoles<'_>,
     all_owner_ids: &[i64],
     facts: &BTreeMap<i64, OwnerFacts>,
 ) -> Result<Vec<PhaseOwner>, MissingOwnerFacts> {
@@ -163,7 +215,7 @@ pub fn phase_owners(
             Ok(PhaseOwner {
                 id,
                 info: AiAiOwnerInfo {
-                    is_player: id == me,
+                    is_player: roles.is_me(id),
                     is_barbarian: f.is_barbarian,
                     is_city_copy: f.is_city_copy,
                     eliminated: f.eliminated,
@@ -174,7 +226,7 @@ pub fn phase_owners(
         .collect()
 }
 
-/// Adapter `objectivePowerForOwner` per owner: `power(id)` dostarcza wolajacy (brak portu `computeObjectivePower`).
+/// Adapter `objectivePowerForOwner` per owner: `power(id)` dostarcza wolajacy.
 pub fn power_map(owner_ids: &[i64], power: impl Fn(i64) -> f64) -> BTreeMap<i64, f64> {
     owner_ids.iter().map(|&id| (id, power(id))).collect()
 }

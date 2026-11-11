@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use civ_engine::domain::ai_diplomacy_turn::pair_key;
 use civ_engine::domain::brake_inputs::{
     contacts_for, crisis_war_gate_blocked, gate_blocked_set, is_peace_locked_between,
-    peace_locked_set, phase_owners, power_map, ForcedEraLock, GateFacts, OwnerFacts,
+    peace_locked_set, phase_owners, power_map, ForcedEraLock, GateFacts, OwnerFacts, OwnerRoles,
 };
 use civ_engine::domain::diplomacy_truce::PairMetaWeb;
 
@@ -17,7 +17,7 @@ fn meta_with_peace_until(until: f64) -> PairMetaWeb {
     }
 }
 
-fn facts(era: f64, war_count: i64, is_player: bool) -> GateFacts {
+fn facts(era: i64, war_count: i64, is_player: bool) -> GateFacts {
     GateFacts {
         era,
         war_count,
@@ -95,8 +95,8 @@ fn gate_disabled_never_blocks() {
     assert!(!crisis_war_gate_blocked(
         false,
         1.0,
-        facts(0.0, 0, false),
-        facts(0.0, 0, false)
+        facts(0, 0, false),
+        facts(0, 0, false)
     ));
 }
 
@@ -105,22 +105,22 @@ fn gate_r1_blocks_wars_before_turn_40_for_ordinary_declaration() {
     assert!(crisis_war_gate_blocked(
         true,
         1.0,
-        facts(0.0, 0, false),
-        facts(0.0, 0, false)
+        facts(0, 0, false),
+        facts(0, 0, false)
     ));
     assert!(!crisis_war_gate_blocked(
         true,
         100.0,
-        facts(0.0, 0, false),
-        facts(0.0, 0, false)
+        facts(0, 0, false),
+        facts(0, 0, false)
     ));
 }
 
 #[test]
 fn gate_blocked_set_checks_both_declaration_orders() {
     let mut facts_map = BTreeMap::new();
-    facts_map.insert(1, facts(0.0, 0, false));
-    facts_map.insert(2, facts(0.0, 0, false));
+    facts_map.insert(1, facts(0, 0, false));
+    facts_map.insert(2, facts(0, 0, false));
     let blocked = gate_blocked_set(true, 1.0, &[(1, 2)], &facts_map);
     assert_eq!(blocked, BTreeSet::from([(1, 2), (2, 1)]));
     // Pominiete pary bez faktow wlasciciela.
@@ -154,9 +154,25 @@ fn phase_owners_mark_player_and_fail_on_missing_facts() {
         },
     );
     // Owner 3 nie ma faktow -> jawny blad (nie cicha utrata wlasciciela).
-    let err = phase_owners(0, &ids, &f).expect_err("brak faktow musi byc bledem");
+    let err = phase_owners(
+        &OwnerRoles {
+            me: 0,
+            human_ids: &[0],
+        },
+        &ids,
+        &f,
+    )
+    .expect_err("brak faktow musi byc bledem");
     assert_eq!(err.owner_id, 3);
-    let owners = phase_owners(0, &[0, 1, 2], &f).expect("komplet faktow");
+    let owners = phase_owners(
+        &OwnerRoles {
+            me: 0,
+            human_ids: &[0],
+        },
+        &[0, 1, 2],
+        &f,
+    )
+    .expect("komplet faktow");
     let got: Vec<(i64, bool)> = owners.iter().map(|o| (o.id, o.info.is_player)).collect();
     assert_eq!(got, vec![(0, true), (1, false), (2, false)]);
     assert_eq!(owners[2].info.city_count, 0.0);

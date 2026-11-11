@@ -16,6 +16,7 @@ pub mod auto_improvements;
 pub mod barbarians;
 pub mod battle_mode;
 pub mod brake_inputs;
+pub mod brake_power;
 pub mod building_costs;
 pub mod city_growth;
 pub mod city_names;
