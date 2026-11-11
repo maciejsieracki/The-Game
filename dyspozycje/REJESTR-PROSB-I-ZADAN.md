@@ -9410,3 +9410,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · #192 (ai-major-economy-test, pr141-f04-yields-activation-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 31/0 i 135 checks (computeMajorArchetypeMilitaryFraction usunięty kontraktem testu w d20533090; yields naprawione w 583b33198). FC PASS, zero zmian kodu, deploy N/A.
 
 - 2026-11-11 · #191 (battle-loot-test, weterani-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 12/0 i 79/0 (naprawy 6d425e3db, 9fbd2285a z 2026-11-10). FC PASS, zero zmian kodu, deploy N/A.
+
+- 2026-11-11 · FALA 638 = 10141fdcb (Raw MD5 d0ea0107…). FALA 639 WDROŻONA (ROBOCZA): R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1 (FC PASS-WITH-NOTES, 5ec479d27; ref `refs/keep/R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1-fc`, wip `web-wip/ENTITYCARDS`). Luka do decyzji (osobny temat, jeśli właściciel zechce): bonusy plonów cudów (wonderAdapter BONUS_LABEL) i wiersze plonów (Żywność/Kamień) nadal tekstem; Pieniądz w utrzymaniu budynku tekstem.
