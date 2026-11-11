@@ -29,13 +29,36 @@
 //!   nie sprawdza jednoznacznie (NIE_ZMIERZONO), przyjete jako zalozenie i pokryte testem,
 //! - liczby calkowite zapisywane jako JSON integer (jak `JSON.stringify` w webie).
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Value};
 
+use super::ai_diplomacy_turn::BrakePhaseState;
+use super::diplomacy::DiplomacyState;
+use super::diplomacy_ai_forced_peace::{
+    register_ai_peace_request, AiPeaceKind, AiPeaceRequestStore,
+};
+use super::diplomacy_multiwar_peace::{WarWearinessPairState, WarWearinessStore};
 use super::war_forced_pairing::{
     restore_forced_war_state, serialize_forced_war_state, ForcedWarPairState, ForcedWarSavePartial,
     ForcedWarSaveState,
 };
+
+/// P6-WIRE-WAR-STATE-OWNER: klucze Rust (nie web) dla typowanych magazynow dyplomacji i wojny.
+/// Zapisywane tylko gdy magazyn jest niepusty (stary zapis bez nich wczytuje sie jako pusty).
+pub const RUST_DIPLOMACY_KEY: &str = "rustDiplomacyState";
+pub const RUST_BRAKE_PHASE_KEY: &str = "rustBrakePhaseState";
+pub const RUST_AI_PEACE_KEY: &str = "rustAiPeaceRequestStore";
+pub const RUST_WAR_WEARINESS_KEY: &str = "rustWarWearinessStore";
+
+/// Wszystkie klucze Rust magazynow wlasciciela stanu wojny.
+pub const RUST_OWNER_META_KEYS: [&str; 4] = [
+    RUST_DIPLOMACY_KEY,
+    RUST_BRAKE_PHASE_KEY,
+    RUST_AI_PEACE_KEY,
+    RUST_WAR_WEARINESS_KEY,
+];
 
 /// Klucze `meta` wojny, ktore przechodza przez typowany stan (web: nazwy z `main.ts:36881–36911`).
 const ERA_PREFIXES: [&str; 3] = ["stone", "bronze", "iron"];
@@ -101,6 +124,14 @@ pub struct WarTurnState {
     pub iron_era_enter_turn_by_owner: Vec<(i64, f64)>,
     /// Surowe wpisy pol wojennych bez typu (klucz web -> wartosc JSON).
     pub opaque: Map<String, Value>,
+    /// Stan dyplomacji (relacje, transakcje); klucz `RUST_DIPLOMACY_KEY`.
+    pub diplomacy: DiplomacyState,
+    /// Faza hamulca wojny (liczniki kryzysu, pary w wojnie, dobra wola); klucz `RUST_BRAKE_PHASE_KEY`.
+    pub brake_phase: BrakePhaseState,
+    /// Prosby pokoju AI-AI (kolejnosc wstawiania zachowana); klucz `RUST_AI_PEACE_KEY`.
+    pub ai_peace_requests: AiPeaceRequestStore,
+    /// Zmeczenie wojna per para; klucz `RUST_WAR_WEARINESS_KEY`.
+    pub war_weariness: WarWearinessStore,
 }
 
 /// Wszystkie klucze `meta`, ktore modul zapisuje lub czyta (do usuniecia przed ponownym zapisem).
@@ -117,6 +148,7 @@ pub fn managed_meta_keys() -> Vec<String> {
             .chain(DIPLOMACY_RAW_META_KEYS.iter())
             .map(|k| k.to_string()),
     );
+    keys.extend(RUST_OWNER_META_KEYS.iter().map(|k| k.to_string()));
     keys
 }
 
@@ -235,6 +267,171 @@ fn forced_to_meta(state: &ForcedWarSaveState, prefix: &str, out: &mut Map<String
     );
 }
 
+/// Tablica JSON; `&[]` gdy pole brakuje albo nie jest tablica.
+fn slice_of(v: Option<&Value>) -> &[Value] {
+    v.and_then(Value::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or(&[])
+}
+
+/// Klucz pary `[a, b]` (ID graczy).
+fn key_of(a: &[Value]) -> Option<(i64, i64)> {
+    Some((as_i64(a.first()?)?, as_i64(a.get(1)?)?))
+}
+
+fn pair_of(e: &Value) -> Option<(i64, i64)> {
+    key_of(e.as_array()?)
+}
+
+/// Trojka `[a, b, wartosc]`.
+fn triple_of(e: &Value) -> Option<((i64, i64), f64)> {
+    let a = e.as_array()?;
+    Some((key_of(a)?, as_f64(a.get(2)?)?))
+}
+
+fn pair_json(a: i64, b: i64) -> Value {
+    Value::Array(vec![num(a as f64), num(b as f64)])
+}
+
+fn brake_phase_to(b: &BrakePhaseState) -> Value {
+    let mut o = Map::new();
+    o.insert(
+        "counters".into(),
+        Value::Array(
+            b.counters
+                .iter()
+                .map(|(&(x, y), &v)| Value::Array(vec![num(x as f64), num(y as f64), num(v)]))
+                .collect(),
+        ),
+    );
+    o.insert(
+        "atWar".into(),
+        Value::Array(b.at_war.iter().map(|&(x, y)| pair_json(x, y)).collect()),
+    );
+    o.insert(
+        "dobraRemaining".into(),
+        Value::Array(
+            b.dobra_remaining
+                .iter()
+                .map(|(&(x, y), &v)| Value::Array(vec![num(x as f64), num(y as f64), num(v)]))
+                .collect(),
+        ),
+    );
+    Value::Object(o)
+}
+
+fn brake_phase_from(v: &Value) -> BrakePhaseState {
+    let Some(o) = v.as_object() else {
+        return BrakePhaseState::default();
+    };
+    BrakePhaseState {
+        counters: slice_of(o.get("counters"))
+            .iter()
+            .filter_map(triple_of)
+            .collect::<BTreeMap<_, _>>(),
+        at_war: slice_of(o.get("atWar"))
+            .iter()
+            .filter_map(pair_of)
+            .collect::<BTreeSet<_>>(),
+        dobra_remaining: slice_of(o.get("dobraRemaining"))
+            .iter()
+            .filter_map(triple_of)
+            .collect::<BTreeMap<_, _>>(),
+    }
+}
+
+/// Web-like zapis `AiPeaceRequestStore`: lista `[klucz, {requesterId, otherId, sinceTurn, kind}]`.
+fn ai_peace_to(store: &AiPeaceRequestStore) -> Value {
+    Value::Array(
+        store
+            .entries()
+            .iter()
+            .map(|(k, r)| {
+                let mut o = Map::new();
+                o.insert("requesterId".into(), num(r.requester_id as f64));
+                o.insert("otherId".into(), num(r.other_id as f64));
+                o.insert("sinceTurn".into(), num(r.since_turn));
+                o.insert("kind".into(), Value::from(r.kind.name()));
+                Value::Array(vec![Value::from(k.clone()), Value::Object(o)])
+            })
+            .collect(),
+    )
+}
+
+/// Odczyt `AiPeaceRequestStore` przez `register_ai_peace_request` (zachowuje kolejnosc, odrzuca duplikaty).
+/// Zly element (brak pola, nieznany `kind`) jest pomijany.
+fn ai_peace_from(v: &Value) -> AiPeaceRequestStore {
+    let mut store = AiPeaceRequestStore::new();
+    for e in slice_of(Some(v)) {
+        let Some(a) = e.as_array() else { continue };
+        let (Some(k), Some(o)) = (
+            a.first().and_then(Value::as_str),
+            a.get(1).and_then(Value::as_object),
+        ) else {
+            continue;
+        };
+        let kind = match o.get("kind").and_then(Value::as_str) {
+            Some("pokoj") => AiPeaceKind::Pokoj,
+            Some("rozejm") => AiPeaceKind::Rozejm,
+            _ => continue,
+        };
+        let (Some(req), Some(other), Some(since)) = (
+            o.get("requesterId").and_then(as_i64),
+            o.get("otherId").and_then(as_i64),
+            o.get("sinceTurn").and_then(as_f64),
+        ) else {
+            continue;
+        };
+        register_ai_peace_request(&mut store, k, req, other, since, kind);
+    }
+    store
+}
+
+/// Zapis `WarWearinessStore` jako lista `[klucz, {...}]` posortowana po kluczu (determinizm).
+fn war_weariness_to(store: &WarWearinessStore) -> Value {
+    let mut keys: Vec<&String> = store.keys().collect();
+    keys.sort();
+    Value::Array(
+        keys.into_iter()
+            .map(|k| {
+                let s = &store[k];
+                let mut o = Map::new();
+                o.insert("warStart".into(), num(s.war_start));
+                o.insert("peak".into(), num(s.peak));
+                o.insert("stage".into(), num(s.stage as f64));
+                o.insert("rejectedOffers".into(), num(s.rejected_offers as f64));
+                o.insert("lastOfferTurn".into(), num(s.last_offer_turn));
+                Value::Array(vec![Value::from(k.clone()), Value::Object(o)])
+            })
+            .collect(),
+    )
+}
+
+/// Odczyt `WarWearinessStore`. Brakujace pola: 0, a `lastOfferTurn` -1 (web: brak oferty).
+fn war_weariness_from(v: &Value) -> WarWearinessStore {
+    let mut store = WarWearinessStore::new();
+    for e in slice_of(Some(v)) {
+        let Some(a) = e.as_array() else { continue };
+        let (Some(k), Some(o)) = (
+            a.first().and_then(Value::as_str),
+            a.get(1).and_then(Value::as_object),
+        ) else {
+            continue;
+        };
+        store.insert(
+            k.to_string(),
+            WarWearinessPairState {
+                war_start: o.get("warStart").and_then(as_f64).unwrap_or(0.0),
+                peak: o.get("peak").and_then(as_f64).unwrap_or(0.0),
+                stage: o.get("stage").and_then(as_i64).unwrap_or(0),
+                rejected_offers: o.get("rejectedOffers").and_then(as_i64).unwrap_or(0),
+                last_offer_turn: o.get("lastOfferTurn").and_then(as_f64).unwrap_or(-1.0),
+            },
+        );
+    }
+    store
+}
+
 fn turn_map_to(entries: &[(i64, f64)]) -> Value {
     Value::Array(
         entries
@@ -295,6 +492,22 @@ impl WarTurnState {
             iron_era_enter_turn_by_owner: rest_until_of(meta, "ironEraEnterTurnByOwner")
                 .unwrap_or_default(),
             opaque,
+            diplomacy: meta
+                .get(RUST_DIPLOMACY_KEY)
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
+                .unwrap_or_default(),
+            brake_phase: meta
+                .get(RUST_BRAKE_PHASE_KEY)
+                .map(brake_phase_from)
+                .unwrap_or_default(),
+            ai_peace_requests: meta
+                .get(RUST_AI_PEACE_KEY)
+                .map(ai_peace_from)
+                .unwrap_or_default(),
+            war_weariness: meta
+                .get(RUST_WAR_WEARINESS_KEY)
+                .map(war_weariness_from)
+                .unwrap_or_default(),
         }
     }
 
@@ -314,6 +527,31 @@ impl WarTurnState {
         );
         for (k, v) in &self.opaque {
             out.insert(k.clone(), v.clone());
+        }
+        // Magazyny Rust: zapis tylko gdy niepuste (format sprzed zmiany pozostaje bez zmian).
+        if self.diplomacy != DiplomacyState::default() {
+            out.insert(
+                RUST_DIPLOMACY_KEY.into(),
+                serde_json::to_value(&self.diplomacy).unwrap_or(Value::Null),
+            );
+        }
+        if self.brake_phase != BrakePhaseState::default() {
+            out.insert(
+                RUST_BRAKE_PHASE_KEY.into(),
+                brake_phase_to(&self.brake_phase),
+            );
+        }
+        if self.ai_peace_requests != AiPeaceRequestStore::default() {
+            out.insert(
+                RUST_AI_PEACE_KEY.into(),
+                ai_peace_to(&self.ai_peace_requests),
+            );
+        }
+        if !self.war_weariness.is_empty() {
+            out.insert(
+                RUST_WAR_WEARINESS_KEY.into(),
+                war_weariness_to(&self.war_weariness),
+            );
         }
         out
     }
