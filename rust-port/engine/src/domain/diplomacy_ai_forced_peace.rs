@@ -419,7 +419,7 @@ pub struct AiPeaceTickOutcome {
 // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (port, wariant V2): regula nieujemnego bilansu AI<->AI,
 // bramka `peaceAllowed` i `loserBalanceFor`. Wariant V2 jest ADDYTYWNY: `AiPeaceReason`, `AiPeaceDecisionInput`,
 // `AiPeaceTickEnv` i `run_ai_ai_peace_tick` zostaja bez zmian (ich literaly i testy p6_* nadal sie kompiluja).
-// Migracja wywolan (war_turn_ai_ai.rs) to osobna decyzja po integracji.
+// Migracja wywolan (war_turn_ai_ai.rs) wykonana w R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1: produkcja i testy na V2.
 // ---------------------------------------------------------------------------
 
 /// Web `AI_AI_PEACE_MIN_BALANCE` = `pokojAiAi.minBilansPW` z `gra/data/diplomacy-war-peace-params.json` (= 0).
@@ -721,6 +721,11 @@ fn run_tick_core(
 
 /// Web `runAiAiPeaceTick(d)` (wariant V1, bez regul bilansu i bramki `peaceAllowed`; zachowane bez zmian).
 /// `pay`, `finalize`, `log` = callbacki zapisu (w TS `d.pay`, `d.finalize`, `d.log`).
+///
+/// DEPRECATED (R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1): produkcja (`war_turn_ai_ai::run_ai_ai_peace_turn`)
+/// i testy korzystaja wylacznie z [`run_ai_ai_peace_tick_v2`]. Dowod grep: brak innych wolajacych.
+/// Funkcja zostaje wylacznie jako wariant referencyjny; nie uzywac w nowym kodzie.
+#[deprecated(note = "uzyj run_ai_ai_peace_tick_v2 (regula bilansu AI-AI, peaceAllowed)")]
 pub fn run_ai_ai_peace_tick(
     store: &mut AiPeaceRequestStore,
     env: &AiPeaceTickEnv,

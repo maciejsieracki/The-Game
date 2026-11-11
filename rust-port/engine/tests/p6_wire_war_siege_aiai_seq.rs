@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use civ_engine::domain::diplomacy_ai_forced_peace::{
     register_ai_peace_request, AiPeaceAction, AiPeaceKind, AiPeaceRequestStore, AiPeaceTickAction,
-    AiPeaceTickEnv, GateVerdict, PeaceBalanceShape, PeacePriceQuote,
+    AiPeaceTickEnv, AiPeaceTickEnvV2, GateVerdict, PeaceBalanceShape, PeacePriceQuote,
 };
 use civ_engine::domain::diplomacy_multiwar_peace::{PeaceAsset, PeaceAssetKind, PeacePaymentPlan};
 use civ_engine::domain::war_turn_ai_ai::run_ai_ai_peace_turn;
@@ -55,7 +55,7 @@ fn second_entry_gate_sees_payment_of_first_entry() {
     };
     let asf = |_: i64, _: i64, _: &HashSet<String>| -> Vec<PeaceAsset> { vec![zloto("g", 100.0)] };
     let cco = |_: &str, _: i64, _: i64| false;
-    let env = AiPeaceTickEnv {
+    let base = AiPeaceTickEnv {
         turn: 1.0,
         limit: None,
         pair_eligible: &pe,
@@ -67,7 +67,7 @@ fn second_entry_gate_sees_payment_of_first_entry() {
         battle_pending: false,
     };
     let allowed = |_: i64, _: i64| true;
-    let loser_bal = |_: i64, _: i64, _: f64| 1000.0;
+    let loser_bal = |_: i64, _: i64, _: AiPeaceKind, _: f64| Some(1000.0);
     let pay_log: RefCell<Vec<(i64, f64)>> = RefCell::new(Vec::new());
     let mut pay = |loser: i64, _: i64, plan: &PeacePaymentPlan| {
         pay_log.borrow_mut().push((loser, plan.covered_pn));
@@ -76,9 +76,12 @@ fn second_entry_gate_sees_payment_of_first_entry() {
     let mut fin = |_: i64, _: i64, _: AiPeaceKind| {};
     let mut log = |_: &str| {};
 
-    let out = run_ai_ai_peace_turn(
-        &mut store, &env, &allowed, 0.0, &loser_bal, &mut pay, &mut fin, &mut log,
-    );
+    let env = AiPeaceTickEnvV2 {
+        base,
+        peace_allowed: Some(&allowed),
+        loser_balance_for: Some(&loser_bal),
+    };
+    let out = run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log);
 
     assert_eq!(out.len(), 2);
     assert_eq!(out[0].action, AiPeaceTickAction::AcceptPaid);
@@ -120,7 +123,7 @@ fn asset_and_city_callbacks_are_memoized_within_one_entry() {
         cco_calls.set(cco_calls.get() + 1);
         false
     };
-    let env = AiPeaceTickEnv {
+    let base = AiPeaceTickEnv {
         turn: 1.0,
         limit: None,
         pair_eligible: &pe,
@@ -132,15 +135,18 @@ fn asset_and_city_callbacks_are_memoized_within_one_entry() {
         battle_pending: false,
     };
     let allowed = |_: i64, _: i64| true;
-    let loser_bal = |_: i64, _: i64, _: f64| 1000.0;
+    let loser_bal = |_: i64, _: i64, _: AiPeaceKind, _: f64| Some(1000.0);
     let mut pays = 0usize;
     let mut pay = |_: i64, _: i64, _: &PeacePaymentPlan| pays += 1;
     let mut fin = |_: i64, _: i64, _: AiPeaceKind| {};
     let mut log = |_: &str| {};
 
-    let out = run_ai_ai_peace_turn(
-        &mut store, &env, &allowed, 0.0, &loser_bal, &mut pay, &mut fin, &mut log,
-    );
+    let env = AiPeaceTickEnvV2 {
+        base,
+        peace_allowed: Some(&allowed),
+        loser_balance_for: Some(&loser_bal),
+    };
+    let out = run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log);
 
     assert_eq!(out.len(), 1);
     assert_eq!(out[0].action, AiPeaceTickAction::AcceptPaid);
@@ -173,7 +179,7 @@ fn balance_hold_reports_decision_fields_and_keeps_entry_queued() {
     };
     let asf = |_: i64, _: i64, _: &HashSet<String>| -> Vec<PeaceAsset> { vec![zloto("g", 10.0)] };
     let cco = |_: &str, _: i64, _: i64| false;
-    let env = AiPeaceTickEnv {
+    let base = AiPeaceTickEnv {
         turn: 3.0,
         limit: None,
         pair_eligible: &pe,
@@ -185,14 +191,17 @@ fn balance_hold_reports_decision_fields_and_keeps_entry_queued() {
         battle_pending: false,
     };
     let allowed = |_: i64, _: i64| true;
-    let loser_bal = |_: i64, _: i64, _: f64| 1000.0;
+    let loser_bal = |_: i64, _: i64, _: AiPeaceKind, _: f64| Some(1000.0);
     let mut pay = |_: i64, _: i64, _: &PeacePaymentPlan| panic!("zaplata niedozwolona");
     let mut fin = |_: i64, _: i64, _: AiPeaceKind| panic!("finalize niedozwolone");
     let mut log = |_: &str| {};
 
-    let out = run_ai_ai_peace_turn(
-        &mut store, &env, &allowed, 0.0, &loser_bal, &mut pay, &mut fin, &mut log,
-    );
+    let env = AiPeaceTickEnvV2 {
+        base,
+        peace_allowed: Some(&allowed),
+        loser_balance_for: Some(&loser_bal),
+    };
+    let out = run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log);
 
     assert_eq!(out.len(), 1);
     assert_eq!(out[0].action, AiPeaceTickAction::Wait);

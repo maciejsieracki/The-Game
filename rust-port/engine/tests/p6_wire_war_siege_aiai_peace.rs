@@ -7,7 +7,7 @@ use std::collections::{HashMap, HashSet};
 
 use civ_engine::domain::diplomacy_ai_forced_peace::{
     register_ai_peace_request, AiPeaceKind, AiPeaceRequestStore, AiPeaceTickAction, AiPeaceTickEnv,
-    GateVerdict, PeaceBalanceShape, PeacePriceQuote,
+    AiPeaceTickEnvV2, GateVerdict, PeaceBalanceShape, PeacePriceQuote,
 };
 use civ_engine::domain::diplomacy_multiwar_peace::{PeaceAsset, PeaceAssetKind, PeacePaymentPlan};
 use civ_engine::domain::war_turn_ai_ai::{
@@ -192,12 +192,11 @@ fn peace_tick_with_allowed_gate_matches_web_vectors() {
             let (_, _, _, _, lb0, ls) = *price.get(&key(w, l)).expect("price");
             lb0 + ls * covered
         };
-        let min_balance = c["minBalancePn"].as_f64().unwrap();
         let peace_allowed = |loser: i64, winner: i64| -> bool {
             peace_allowed_for_turns(*turns.get(&key(loser, winner)).expect("turnsAtWar"))
         };
 
-        let env = AiPeaceTickEnv {
+        let base = AiPeaceTickEnv {
             turn,
             limit: None,
             pair_eligible: &pe,
@@ -224,16 +223,14 @@ fn peace_tick_with_allowed_gate_matches_web_vectors() {
         };
         let mut log = |_: &str| {};
 
-        let outcomes = run_ai_ai_peace_turn(
-            &mut store,
-            &env,
-            &peace_allowed,
-            min_balance,
-            &loser_bal,
-            &mut pay,
-            &mut fin,
-            &mut log,
-        );
+        let loser_bal_v2 =
+            |w: i64, l: i64, _k: AiPeaceKind, covered: f64| Some(loser_bal(w, l, covered));
+        let env = AiPeaceTickEnvV2 {
+            base,
+            peace_allowed: Some(&peace_allowed),
+            loser_balance_for: Some(&loser_bal_v2),
+        };
+        let outcomes = run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log);
 
         let e = &c["expected"];
         let exp_outcomes = e["outcomes"].as_array().unwrap();
@@ -413,7 +410,7 @@ fn deferred_request_stays_queued_without_payment() {
         panic!("aktywa nie powinny byc liczone")
     };
     let cco = |_: &str, _: i64, _: i64| false;
-    let env = AiPeaceTickEnv {
+    let base = AiPeaceTickEnv {
         turn: 9.0,
         limit: None,
         pair_eligible: &pe,
@@ -429,16 +426,13 @@ fn deferred_request_stays_queued_without_payment() {
     let mut pay = |_: i64, _: i64, _: &PeacePaymentPlan| panic!("zaplata niedozwolona");
     let mut fin = |_: i64, _: i64, _: AiPeaceKind| panic!("finalize niedozwolone");
     let mut log = |_: &str| {};
-    let out = run_ai_ai_peace_turn(
-        &mut store,
-        &env,
-        &never_allowed,
-        0.0,
-        &|_: i64, _: i64, _: f64| 100.0,
-        &mut pay,
-        &mut fin,
-        &mut log,
-    );
+    let loser_bal = |_: i64, _: i64, _: AiPeaceKind, _: f64| Some(100.0);
+    let env = AiPeaceTickEnvV2 {
+        base,
+        peace_allowed: Some(&never_allowed),
+        loser_balance_for: Some(&loser_bal),
+    };
+    let out = run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log);
     assert_eq!(out.len(), 1);
     assert_eq!(out[0].action, AiPeaceTickAction::Wait);
     assert!(store.has("0-1:1"));
@@ -454,7 +448,7 @@ fn peace_tick_gate_is_noop_on_empty_store() {
     let pr = |_: i64, _: i64, _: AiPeaceKind| -> PeacePriceQuote { panic!("nie wolano") };
     let asf = |_: i64, _: i64, _: &HashSet<String>| -> Vec<PeaceAsset> { panic!("nie wolano") };
     let cco = |_: &str, _: i64, _: i64| false;
-    let env = AiPeaceTickEnv {
+    let base = AiPeaceTickEnv {
         turn: 1.0,
         limit: None,
         pair_eligible: &pe,
@@ -469,17 +463,13 @@ fn peace_tick_gate_is_noop_on_empty_store() {
     let mut pay = |_: i64, _: i64, _: &PeacePaymentPlan| {};
     let mut fin = |_: i64, _: i64, _: AiPeaceKind| {};
     let mut log = |_: &str| {};
-    assert!(run_ai_ai_peace_turn(
-        &mut store,
-        &env,
-        &allowed,
-        0.0,
-        &|_: i64, _: i64, _: f64| 0.0,
-        &mut pay,
-        &mut fin,
-        &mut log
-    )
-    .is_empty());
+    let loser_bal = |_: i64, _: i64, _: AiPeaceKind, _: f64| Some(0.0);
+    let env = AiPeaceTickEnvV2 {
+        base,
+        peace_allowed: Some(&allowed),
+        loser_balance_for: Some(&loser_bal),
+    };
+    assert!(run_ai_ai_peace_turn(&mut store, &env, &mut pay, &mut fin, &mut log).is_empty());
 }
 
 // ---------------------------------------------------------------------------
