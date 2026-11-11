@@ -1,0 +1,5341 @@
+{
+ "meta": {
+  "source": "origin/main gra/src/game/unit-replace-*.ts + ai-unit-replace-plan.ts",
+  "generator": "gen-unit-replace-vectors.cjs"
+ },
+ "cost": [
+  {
+   "id": "unit-Wojownik",
+   "def": {
+    "Jednostka": "Wojownik",
+    "Typ": "Swordsman",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 5,
+   "expected": {
+    "money": 5,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Procarz",
+   "def": {
+    "Jednostka": "Procarz",
+    "Typ": "Slinger",
+    "Epoka": "Brąz",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 4,
+   "expected": {
+    "money": 4,
+    "stock": {
+     "drewno": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Oszczepnik",
+   "def": {
+    "Jednostka": "Oszczepnik",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 3,
+   "expected": {
+    "money": 3,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik",
+   "def": {
+    "Jednostka": "Łucznik",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 3,
+   "expected": {
+    "money": 3,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Zwiadowca",
+   "def": {
+    "Jednostka": "Zwiadowca",
+    "Typ": "Civilian",
+    "Epoka": "Kamień",
+    "Surowiec": null,
+    "Surowiec (ilość)": 0
+   },
+   "money": 4,
+   "expected": {
+    "money": 4,
+    "stock": {}
+   }
+  },
+  {
+   "id": "unit-Włócznik",
+   "def": {
+    "Jednostka": "Włócznik",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik z mieczem i tarczą",
+   "def": {
+    "Jednostka": "Wojownik z mieczem i tarczą",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan (woły)",
+   "def": {
+    "Jednostka": "Rydwan (woły)",
+    "Typ": "Mount",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 15,
+   "expected": {
+    "money": 15,
+    "stock": {
+     "drewno": 25
+    }
+   }
+  },
+  {
+   "id": "unit-Konnica",
+   "def": {
+    "Jednostka": "Konnica",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 11,
+   "expected": {
+    "money": 11,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Galera",
+   "def": {
+    "Jednostka": "Galera",
+    "Typ": "Naval",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Falanga",
+   "def": {
+    "Jednostka": "Falanga",
+    "Typ": "Falangite",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Hieros Lochos (Święty Zastęp)",
+   "def": {
+    "Jednostka": "Hieros Lochos (Święty Zastęp)",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "zelazo": 152
+    }
+   }
+  },
+  {
+   "id": "unit-Hastati",
+   "def": {
+    "Jednostka": "Hastati",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Triari",
+   "def": {
+    "Jednostka": "Triari",
+    "Typ": "Spearman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "zelazo": 152
+    }
+   }
+  },
+  {
+   "id": "unit-Jeździec chiński",
+   "def": {
+    "Jednostka": "Jeździec chiński",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 14,
+   "expected": {
+    "money": 14,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Hu Ben Wei (Gwardia Tygrysa)",
+   "def": {
+    "Jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Impi",
+   "def": {
+    "Jednostka": "Impi",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Oszczepnik Zulu (Izijula)",
+   "def": {
+    "Jednostka": "Oszczepnik Zulu (Izijula)",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 10,
+   "expected": {
+    "money": 10,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-uThulwana (Białe Tarcze)",
+   "def": {
+    "Jednostka": "uThulwana (Białe Tarcze)",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik z maczugą (Chaska)",
+   "def": {
+    "Jednostka": "Wojownik z maczugą (Chaska)",
+    "Typ": "Offensive",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 13,
+   "expected": {
+    "money": 13,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik z toporem",
+   "def": {
+    "Jednostka": "Wojownik z toporem",
+    "Typ": "Offensive",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Procarz (Huaracoc)",
+   "def": {
+    "Jednostka": "Procarz (Huaracoc)",
+    "Typ": "Slinger",
+    "Epoka": "Brąz",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 4,
+   "expected": {
+    "money": 4,
+    "stock": {
+     "drewno": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Oszczepnik (Estólica)",
+   "def": {
+    "Jednostka": "Oszczepnik (Estólica)",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 5,
+   "expected": {
+    "money": 5,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Królewska Gwardia",
+   "def": {
+    "Jednostka": "Królewska Gwardia",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan konny",
+   "def": {
+    "Jednostka": "Rydwan konny",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 14,
+   "expected": {
+    "money": 14,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik egipski",
+   "def": {
+    "Jednostka": "Łucznik egipski",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan egipski",
+   "def": {
+    "Jednostka": "Rydwan egipski",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 16,
+   "expected": {
+    "money": 16,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik z khopesh",
+   "def": {
+    "Jednostka": "Wojownik z khopesh",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Medżaj (Gwardia Faraona)",
+   "def": {
+    "Jednostka": "Medżaj (Gwardia Faraona)",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik nubijski",
+   "def": {
+    "Jednostka": "Łucznik nubijski",
+    "Typ": "Distance",
+    "Epoka": "Brąz",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 10,
+   "expected": {
+    "money": 10,
+    "stock": {
+     "drewno": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik sumeryjski",
+   "def": {
+    "Jednostka": "Łucznik sumeryjski",
+    "Typ": "Distance",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 13
+   },
+   "money": 5,
+   "expected": {
+    "money": 5,
+    "stock": {
+     "drewno": 13
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan sumeryjski",
+   "def": {
+    "Jednostka": "Rydwan sumeryjski",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 19,
+   "expected": {
+    "money": 19,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Włócznik sumeryjski",
+   "def": {
+    "Jednostka": "Włócznik sumeryjski",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Gwardia Królewska Sumeru",
+   "def": {
+    "Jednostka": "Gwardia Królewska Sumeru",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik mykeński",
+   "def": {
+    "Jednostka": "Wojownik mykeński",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan mykeński",
+   "def": {
+    "Jednostka": "Rydwan mykeński",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 15,
+   "expected": {
+    "money": 15,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik Sherden",
+   "def": {
+    "Jednostka": "Wojownik Sherden",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Halabardnik Shang",
+   "def": {
+    "Jednostka": "Halabardnik Shang",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan Shang",
+   "def": {
+    "Jednostka": "Rydwan Shang",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 16,
+   "expected": {
+    "money": 16,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik akadyjski",
+   "def": {
+    "Jednostka": "Łucznik akadyjski",
+    "Typ": "Distance",
+    "Epoka": "Brąz",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "drewno": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Gaesatae",
+   "def": {
+    "Jednostka": "Gaesatae",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Soldurii",
+   "def": {
+    "Jednostka": "Soldurii",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan celtycki",
+   "def": {
+    "Jednostka": "Rydwan celtycki",
+    "Typ": "Mount",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 14,
+   "expected": {
+    "money": 14,
+    "stock": {
+     "zelazo": 100,
+     "kon": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik germański",
+   "def": {
+    "Jednostka": "Wojownik germański",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "zelazo": 152
+    }
+   }
+  },
+  {
+   "id": "unit-Berserker germański",
+   "def": {
+    "Jednostka": "Berserker germański",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Taran",
+   "def": {
+    "Jednostka": "Taran",
+    "Typ": "Siege",
+    "Epoka": "Kamień",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 19
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "drewno": 19
+    }
+   }
+  },
+  {
+   "id": "unit-Taran okuty",
+   "def": {
+    "Jednostka": "Taran okuty",
+    "Typ": "Siege",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Katapulta",
+   "def": {
+    "Jednostka": "Katapulta",
+    "Typ": "Siege",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 38
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 152
+    }
+   }
+  },
+  {
+   "id": "unit-Wieża oblężnicza",
+   "def": {
+    "Jednostka": "Wieża oblężnicza",
+    "Typ": "Siege",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 38
+   },
+   "money": 10,
+   "expected": {
+    "money": 10,
+    "stock": {
+     "braz": 76
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik tyrreński",
+   "def": {
+    "Jednostka": "Wojownik tyrreński",
+    "Typ": "Offensive",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik szekelesz",
+   "def": {
+    "Jednostka": "Wojownik szekelesz",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Konnica lancowa asyryjska",
+   "def": {
+    "Jednostka": "Konnica lancowa asyryjska",
+    "Typ": "Mount",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 16,
+   "expected": {
+    "money": 16,
+    "stock": {
+     "zelazo": 100,
+     "kon": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Konnica łucznicza asyryjska",
+   "def": {
+    "Jednostka": "Konnica łucznicza asyryjska",
+    "Typ": "Mount",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 15,
+   "expected": {
+    "money": 15,
+    "stock": {
+     "zelazo": 100,
+     "kon": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Łucznik asyryjski",
+   "def": {
+    "Jednostka": "Łucznik asyryjski",
+    "Typ": "Distance",
+    "Epoka": "Brąz",
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 25
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "drewno": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Drużynnik",
+   "def": {
+    "Jednostka": "Drużynnik",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Jeździec z oszczepami",
+   "def": {
+    "Jednostka": "Jeździec z oszczepami",
+    "Typ": "Mount",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 13,
+   "expected": {
+    "money": 13,
+    "stock": {
+     "zelazo": 100,
+     "kon": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Strażnik bram Harappy",
+   "def": {
+    "Jednostka": "Strażnik bram Harappy",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Piechota induska",
+   "def": {
+    "Jednostka": "Piechota induska",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Garnizon Harappy",
+   "def": {
+    "Jednostka": "Garnizon Harappy",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Rydwan Kapadokijski",
+   "def": {
+    "Jednostka": "Rydwan Kapadokijski",
+    "Typ": "Mount",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 17,
+   "expected": {
+    "money": 17,
+    "stock": {
+     "braz": 50,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Piechota hetycka",
+   "def": {
+    "Jednostka": "Piechota hetycka",
+    "Typ": "Spearman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Gwardia hetycka",
+   "def": {
+    "Jednostka": "Gwardia hetycka",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Gwardia Ishtar",
+   "def": {
+    "Jednostka": "Gwardia Ishtar",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik babiloński",
+   "def": {
+    "Jednostka": "Wojownik babiloński",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Piechota neobabilońska",
+   "def": {
+    "Jednostka": "Piechota neobabilońska",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Tyrski miecznik",
+   "def": {
+    "Jednostka": "Tyrski miecznik",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik fenicki",
+   "def": {
+    "Jednostka": "Wojownik fenicki",
+    "Typ": "Swordsman",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Gwardia Tyreńska",
+   "def": {
+    "Jednostka": "Gwardia Tyreńska",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Thorakites",
+   "def": {
+    "Jednostka": "Thorakites",
+    "Typ": "Spearman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Evocati",
+   "def": {
+    "Jednostka": "Evocati",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 38
+   },
+   "money": 0,
+   "expected": {
+    "money": 0,
+    "stock": {
+     "zelazo": 152
+    }
+   }
+  },
+  {
+   "id": "unit-iButho z iklwa",
+   "def": {
+    "Jednostka": "iButho z iklwa",
+    "Typ": "Spearman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 8,
+   "expected": {
+    "money": 8,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Gwardzista z champi",
+   "def": {
+    "Jednostka": "Gwardzista z champi",
+    "Typ": "Offensive",
+    "Epoka": "Brąz",
+    "Surowiec": "Brąz",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "braz": 50
+    }
+   }
+  },
+  {
+   "id": "unit-Wojownik z żelaznym khopesh",
+   "def": {
+    "Jednostka": "Wojownik z żelaznym khopesh",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Mur tarcz (Sargonid)",
+   "def": {
+    "Jednostka": "Mur tarcz (Sargonid)",
+    "Typ": "Spearman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 9,
+   "expected": {
+    "money": 9,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "unit-Miecznik galijski",
+   "def": {
+    "Jednostka": "Miecznik galijski",
+    "Typ": "Swordsman",
+    "Epoka": "Żelazo",
+    "Surowiec": "Żelazo",
+    "Surowiec (ilość)": 25
+   },
+   "money": 7,
+   "expected": {
+    "money": 7,
+    "stock": {
+     "zelazo": 100
+    }
+   }
+  },
+  {
+   "id": "money-null",
+   "def": null,
+   "money": null,
+   "expected": {
+    "money": 0,
+    "stock": {}
+   }
+  },
+  {
+   "id": "money-nan",
+   "def": null,
+   "money": "NaN",
+   "expected": {
+    "money": 0,
+    "stock": {}
+   }
+  },
+  {
+   "id": "money-neg",
+   "def": null,
+   "money": -5,
+   "expected": {
+    "money": 0,
+    "stock": {}
+   }
+  },
+  {
+   "id": "money-frac",
+   "def": null,
+   "money": 12.5,
+   "expected": {
+    "money": 13,
+    "stock": {}
+   }
+  },
+  {
+   "id": "money-half",
+   "def": null,
+   "money": 2.5,
+   "expected": {
+    "money": 3,
+    "stock": {}
+   }
+  }
+ ],
+ "afford": [
+  {
+   "id": "afford-0",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-1",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-2",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-3",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-4",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-5",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-6",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-7",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-8",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-9",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 1
+    }
+   }
+  },
+  {
+   "id": "afford-10",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 1
+    }
+   }
+  },
+  {
+   "id": "afford-11",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 1
+    }
+   }
+  },
+  {
+   "id": "afford-12",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-13",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-14",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-15",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-16",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-17",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-18",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-19",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-20",
+   "cost": {
+    "money": 40,
+    "stock": {
+     "braz": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "braz": 25
+    }
+   }
+  },
+  {
+   "id": "afford-21",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-22",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-23",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-24",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-25",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-26",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-27",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-28",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-29",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-30",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-31",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-32",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-33",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-34",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-35",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 50
+    }
+   }
+  },
+  {
+   "id": "afford-36",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 1
+    }
+   }
+  },
+  {
+   "id": "afford-37",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 1
+    }
+   }
+  },
+  {
+   "id": "afford-38",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 1
+    }
+   }
+  },
+  {
+   "id": "afford-39",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-40",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-41",
+   "cost": {
+    "money": 30,
+    "stock": {
+     "zelazo": 30,
+     "kon": 50
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "zelazo": 30,
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-42",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": null,
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-43",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": null,
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-44",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": null,
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-45",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {},
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-46",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {},
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-47",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {},
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-48",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-49",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-50",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-51",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-52",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-53",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-54",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-55",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-56",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-57",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-58",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-59",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-60",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 39,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-61",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 40,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-62",
+   "cost": {
+    "money": 0,
+    "stock": {}
+   },
+   "treasury": 100,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-63",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-64",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-65",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": null,
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-66",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-67",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-68",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {},
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-69",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-70",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-71",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 25
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-72",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-73",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-74",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 24
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-75",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-76",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-77",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "braz": 100,
+    "zelazo": 30
+   },
+   "expected": {
+    "canAfford": false,
+    "missing": {
+     "kon": 25
+    }
+   }
+  },
+  {
+   "id": "afford-78",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-79",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-80",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "zelazo": 29,
+    "kon": 50
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-81",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 39,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-82",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 40,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  },
+  {
+   "id": "afford-83",
+   "cost": {
+    "money": 10,
+    "stock": {
+     "kon": 25
+    }
+   },
+   "treasury": 100,
+   "pool": {
+    "kon": 25
+   },
+   "expected": {
+    "canAfford": true,
+    "missing": {}
+   }
+  }
+ ],
+ "merge": [
+  {
+   "id": "merge-0",
+   "previous": null,
+   "added": {
+    "braz": 25
+   },
+   "expected": {
+    "braz": 25
+   }
+  },
+  {
+   "id": "merge-1",
+   "previous": {
+    "braz": 10
+   },
+   "added": {
+    "braz": 25,
+    "kon": 5
+   },
+   "expected": {
+    "braz": 35,
+    "kon": 5
+   }
+  },
+  {
+   "id": "merge-2",
+   "previous": {
+    "kon": 3
+   },
+   "added": {},
+   "expected": {
+    "kon": 3
+   }
+  },
+  {
+   "id": "merge-3",
+   "previous": {
+    "braz": 1
+   },
+   "added": {
+    "braz": 0,
+    "kon": -4,
+    "zelazo": 0
+   },
+   "expected": {
+    "braz": 1
+   }
+  }
+ ],
+ "execute": [
+  {
+   "id": "ok-podstawowy",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-sync-hpmax-ai",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": true
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 14,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-bez-stock",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {},
+    "canPay": false,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {},
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-zero-money",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 0,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 0,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 100,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-money-rounding",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40.5,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 41,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 59,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-money-rounding-down",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40.4,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-hp-null-uses-maxhp",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": null,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 14,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-hp-min1",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 1,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 100,
+    "newMaxHp": 3,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 1,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-oldmaxhp-zero",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 5,
+    "hpMax": 0,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 0,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 14,
+     "hpMax": 0,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "ok-treasury-exact",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 40,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 0,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "used-this-turn",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": true
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "used",
+    "detail": null,
+    "money": 0,
+    "stock": {},
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "gate-super",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": "Limit Super-jednostki",
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "gate",
+    "detail": "Limit Super-jednostki",
+    "money": 0,
+    "stock": {},
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": false
+    }
+   }
+  },
+  {
+   "id": "gate-stock-required",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": "Brak zapasu",
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "gate",
+    "detail": "Brak zapasu",
+    "money": 0,
+    "stock": {},
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": false
+    }
+   }
+  },
+  {
+   "id": "stock-short",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": false,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "stock",
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": false
+    }
+   }
+  },
+  {
+   "id": "stock-short-empty-cost-ok",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {},
+    "canPay": false,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {},
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "money-short",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 200,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "money",
+    "detail": null,
+    "money": 200,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": false
+    }
+   }
+  },
+  {
+   "id": "money-short-stock-first",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 200,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": false,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": false,
+    "reason": "stock",
+    "detail": null,
+    "money": 200,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": null,
+    "treasuryAfter": 100,
+    "paid": [],
+    "unit": {
+     "typeId": "Wojownik",
+     "category": "Standardowa",
+     "hp": 8,
+     "hpMax": 10,
+     "ruchLeft": 2,
+     "replaceUsedThisTurn": false
+    }
+   }
+  },
+  {
+   "id": "money-nan",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": "NaN",
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 0,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 0,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 0,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "money-negative",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": -3,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 0,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 0,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 0,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "stock-zero-amount",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Standardowa",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 2,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 0
+    },
+    "canPay": false,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Standardowa",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 0
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Standardowa",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  },
+  {
+   "id": "keeps-ruch-and-used-reset",
+   "unit": {
+    "typeId": "Wojownik",
+    "category": "Specjalna",
+    "hp": 8,
+    "hpMax": 10,
+    "ruchLeft": 3,
+    "replaceUsedThisTurn": false
+   },
+   "newTypeId": "Włócznik",
+   "deps": {
+    "gate": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "canPay": true,
+    "treasury": 100,
+    "oldMaxHp": 10,
+    "newMaxHp": 14,
+    "category": "Super",
+    "syncHpMax": false
+   },
+   "expected": {
+    "ok": true,
+    "reason": null,
+    "detail": null,
+    "money": 40,
+    "stock": {
+     "braz": 25
+    },
+    "oldTypeId": "Wojownik",
+    "treasuryAfter": 60,
+    "paid": [
+     {
+      "braz": 25
+     }
+    ],
+    "unit": {
+     "typeId": "Włócznik",
+     "category": "Super",
+     "hp": 11,
+     "hpMax": 10,
+     "ruchLeft": 0,
+     "replaceUsedThisTurn": true
+    }
+   }
+  }
+ ],
+ "plan": [
+  {
+   "id": "plan-epoka-first",
+   "units": [
+    {
+     "epoch": 2,
+     "power": 1,
+     "blocked": false
+    },
+    {
+     "epoch": 1,
+     "power": 9,
+     "blocked": false
+    }
+   ],
+   "expectedOrder": [
+    1,
+    0
+   ]
+  },
+  {
+   "id": "plan-power-tie-index",
+   "units": [
+    {
+     "epoch": 1,
+     "power": 5,
+     "blocked": false
+    },
+    {
+     "epoch": 1,
+     "power": 3,
+     "blocked": false
+    },
+    {
+     "epoch": 1,
+     "power": 3,
+     "blocked": false
+    }
+   ],
+   "expectedOrder": [
+    1,
+    2,
+    0
+   ]
+  },
+  {
+   "id": "plan-blocked-removed",
+   "units": [
+    {
+     "epoch": 1,
+     "power": 1,
+     "blocked": true
+    },
+    {
+     "epoch": 3,
+     "power": 2,
+     "blocked": false
+    },
+    {
+     "epoch": 2,
+     "power": 2,
+     "blocked": false
+    }
+   ],
+   "expectedOrder": [
+    2,
+    1
+   ]
+  },
+  {
+   "id": "plan-empty",
+   "units": [],
+   "expectedOrder": []
+  },
+  {
+   "id": "plan-all-blocked",
+   "units": [
+    {
+     "epoch": 1,
+     "power": 1,
+     "blocked": true
+    }
+   ],
+   "expectedOrder": []
+  }
+ ],
+ "cap": [
+  {
+   "id": "cap-0-0.1",
+   "count": 0,
+   "fraction": 0.1,
+   "expected": 0
+  },
+  {
+   "id": "cap--1-0.1",
+   "count": -1,
+   "fraction": 0.1,
+   "expected": 0
+  },
+  {
+   "id": "cap-1-0.1",
+   "count": 1,
+   "fraction": 0.1,
+   "expected": 1
+  },
+  {
+   "id": "cap-9-0.1",
+   "count": 9,
+   "fraction": 0.1,
+   "expected": 1
+  },
+  {
+   "id": "cap-10-0.1",
+   "count": 10,
+   "fraction": 0.1,
+   "expected": 1
+  },
+  {
+   "id": "cap-11-0.1",
+   "count": 11,
+   "fraction": 0.1,
+   "expected": 1
+  },
+  {
+   "id": "cap-25-0.1",
+   "count": 25,
+   "fraction": 0.1,
+   "expected": 2
+  },
+  {
+   "id": "cap-7-0.5",
+   "count": 7,
+   "fraction": 0.5,
+   "expected": 3
+  },
+  {
+   "id": "cap-20-0.25",
+   "count": 20,
+   "fraction": 0.25,
+   "expected": 5
+  },
+  {
+   "id": "cap-5-0",
+   "count": 5,
+   "fraction": 0,
+   "expected": 1
+  }
+ ],
+ "armyKeep": [
+  {
+   "id": "keep-Swordsman-Swordsman",
+   "oldTyp": "Swordsman",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-Spearman",
+   "oldTyp": "Swordsman",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-Falangite",
+   "oldTyp": "Swordsman",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-Offensive",
+   "oldTyp": "Swordsman",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-Distance",
+   "oldTyp": "Swordsman",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep-Swordsman-Slinger",
+   "oldTyp": "Swordsman",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep-Swordsman-Mount",
+   "oldTyp": "Swordsman",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Swordsman-Siege",
+   "oldTyp": "Swordsman",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-Civilian",
+   "oldTyp": "Swordsman",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-null",
+   "oldTyp": "Swordsman",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman-undefined",
+   "oldTyp": "Swordsman",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Swordsman- Mount ",
+   "oldTyp": "Swordsman",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Spearman-Swordsman",
+   "oldTyp": "Spearman",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-Spearman",
+   "oldTyp": "Spearman",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-Falangite",
+   "oldTyp": "Spearman",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-Offensive",
+   "oldTyp": "Spearman",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-Distance",
+   "oldTyp": "Spearman",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep-Spearman-Slinger",
+   "oldTyp": "Spearman",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep-Spearman-Mount",
+   "oldTyp": "Spearman",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Spearman-Siege",
+   "oldTyp": "Spearman",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-Civilian",
+   "oldTyp": "Spearman",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-null",
+   "oldTyp": "Spearman",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman-undefined",
+   "oldTyp": "Spearman",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Spearman- Mount ",
+   "oldTyp": "Spearman",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Falangite-Swordsman",
+   "oldTyp": "Falangite",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-Spearman",
+   "oldTyp": "Falangite",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-Falangite",
+   "oldTyp": "Falangite",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-Offensive",
+   "oldTyp": "Falangite",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-Distance",
+   "oldTyp": "Falangite",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep-Falangite-Slinger",
+   "oldTyp": "Falangite",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep-Falangite-Mount",
+   "oldTyp": "Falangite",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Falangite-Siege",
+   "oldTyp": "Falangite",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-Civilian",
+   "oldTyp": "Falangite",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-null",
+   "oldTyp": "Falangite",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite-undefined",
+   "oldTyp": "Falangite",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Falangite- Mount ",
+   "oldTyp": "Falangite",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Offensive-Swordsman",
+   "oldTyp": "Offensive",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-Spearman",
+   "oldTyp": "Offensive",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-Falangite",
+   "oldTyp": "Offensive",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-Offensive",
+   "oldTyp": "Offensive",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-Distance",
+   "oldTyp": "Offensive",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep-Offensive-Slinger",
+   "oldTyp": "Offensive",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep-Offensive-Mount",
+   "oldTyp": "Offensive",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Offensive-Siege",
+   "oldTyp": "Offensive",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-Civilian",
+   "oldTyp": "Offensive",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-null",
+   "oldTyp": "Offensive",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive-undefined",
+   "oldTyp": "Offensive",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Offensive- Mount ",
+   "oldTyp": "Offensive",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Swordsman",
+   "oldTyp": "Distance",
+   "newTyp": "Swordsman",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Spearman",
+   "oldTyp": "Distance",
+   "newTyp": "Spearman",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Falangite",
+   "oldTyp": "Distance",
+   "newTyp": "Falangite",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Offensive",
+   "oldTyp": "Distance",
+   "newTyp": "Offensive",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Distance",
+   "oldTyp": "Distance",
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-Distance-Slinger",
+   "oldTyp": "Distance",
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-Distance-Mount",
+   "oldTyp": "Distance",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Distance-Siege",
+   "oldTyp": "Distance",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Distance-Civilian",
+   "oldTyp": "Distance",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Distance-null",
+   "oldTyp": "Distance",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Distance-undefined",
+   "oldTyp": "Distance",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Distance- Mount ",
+   "oldTyp": "Distance",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Swordsman",
+   "oldTyp": "Slinger",
+   "newTyp": "Swordsman",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Spearman",
+   "oldTyp": "Slinger",
+   "newTyp": "Spearman",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Falangite",
+   "oldTyp": "Slinger",
+   "newTyp": "Falangite",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Offensive",
+   "oldTyp": "Slinger",
+   "newTyp": "Offensive",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Distance",
+   "oldTyp": "Slinger",
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger-Slinger",
+   "oldTyp": "Slinger",
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger-Mount",
+   "oldTyp": "Slinger",
+   "newTyp": "Mount",
+   "expected": false
+  },
+  {
+   "id": "keep-Slinger-Siege",
+   "oldTyp": "Slinger",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger-Civilian",
+   "oldTyp": "Slinger",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger-null",
+   "oldTyp": "Slinger",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger-undefined",
+   "oldTyp": "Slinger",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Slinger- Mount ",
+   "oldTyp": "Slinger",
+   "newTyp": " Mount ",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Swordsman",
+   "oldTyp": "Mount",
+   "newTyp": "Swordsman",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Spearman",
+   "oldTyp": "Mount",
+   "newTyp": "Spearman",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Falangite",
+   "oldTyp": "Mount",
+   "newTyp": "Falangite",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Offensive",
+   "oldTyp": "Mount",
+   "newTyp": "Offensive",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Distance",
+   "oldTyp": "Mount",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Slinger",
+   "oldTyp": "Mount",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep-Mount-Mount",
+   "oldTyp": "Mount",
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep-Mount-Siege",
+   "oldTyp": "Mount",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Mount-Civilian",
+   "oldTyp": "Mount",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Mount-null",
+   "oldTyp": "Mount",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Mount-undefined",
+   "oldTyp": "Mount",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Mount- Mount ",
+   "oldTyp": "Mount",
+   "newTyp": " Mount ",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Swordsman",
+   "oldTyp": "Siege",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Spearman",
+   "oldTyp": "Siege",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Falangite",
+   "oldTyp": "Siege",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Offensive",
+   "oldTyp": "Siege",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Distance",
+   "oldTyp": "Siege",
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Slinger",
+   "oldTyp": "Siege",
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Mount",
+   "oldTyp": "Siege",
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Siege",
+   "oldTyp": "Siege",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-Civilian",
+   "oldTyp": "Siege",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-null",
+   "oldTyp": "Siege",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Siege-undefined",
+   "oldTyp": "Siege",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Siege- Mount ",
+   "oldTyp": "Siege",
+   "newTyp": " Mount ",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Swordsman",
+   "oldTyp": "Civilian",
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Spearman",
+   "oldTyp": "Civilian",
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Falangite",
+   "oldTyp": "Civilian",
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Offensive",
+   "oldTyp": "Civilian",
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Distance",
+   "oldTyp": "Civilian",
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Slinger",
+   "oldTyp": "Civilian",
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Mount",
+   "oldTyp": "Civilian",
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Siege",
+   "oldTyp": "Civilian",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-Civilian",
+   "oldTyp": "Civilian",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-null",
+   "oldTyp": "Civilian",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian-undefined",
+   "oldTyp": "Civilian",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-Civilian- Mount ",
+   "oldTyp": "Civilian",
+   "newTyp": " Mount ",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Swordsman",
+   "oldTyp": null,
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Spearman",
+   "oldTyp": null,
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Falangite",
+   "oldTyp": null,
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Offensive",
+   "oldTyp": null,
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Distance",
+   "oldTyp": null,
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Slinger",
+   "oldTyp": null,
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Mount",
+   "oldTyp": null,
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Siege",
+   "oldTyp": null,
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-null-Civilian",
+   "oldTyp": null,
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-null-null",
+   "oldTyp": null,
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-null-undefined",
+   "oldTyp": null,
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-null- Mount ",
+   "oldTyp": null,
+   "newTyp": " Mount ",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Swordsman",
+   "oldTyp": null,
+   "newTyp": "Swordsman",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Spearman",
+   "oldTyp": null,
+   "newTyp": "Spearman",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Falangite",
+   "oldTyp": null,
+   "newTyp": "Falangite",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Offensive",
+   "oldTyp": null,
+   "newTyp": "Offensive",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Distance",
+   "oldTyp": null,
+   "newTyp": "Distance",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Slinger",
+   "oldTyp": null,
+   "newTyp": "Slinger",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Mount",
+   "oldTyp": null,
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Siege",
+   "oldTyp": null,
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-Civilian",
+   "oldTyp": null,
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-null",
+   "oldTyp": null,
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-undefined-undefined",
+   "oldTyp": null,
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep-undefined- Mount ",
+   "oldTyp": null,
+   "newTyp": " Mount ",
+   "expected": true
+  },
+  {
+   "id": "keep- Mount -Swordsman",
+   "oldTyp": " Mount ",
+   "newTyp": "Swordsman",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Spearman",
+   "oldTyp": " Mount ",
+   "newTyp": "Spearman",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Falangite",
+   "oldTyp": " Mount ",
+   "newTyp": "Falangite",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Offensive",
+   "oldTyp": " Mount ",
+   "newTyp": "Offensive",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Distance",
+   "oldTyp": " Mount ",
+   "newTyp": "Distance",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Slinger",
+   "oldTyp": " Mount ",
+   "newTyp": "Slinger",
+   "expected": false
+  },
+  {
+   "id": "keep- Mount -Mount",
+   "oldTyp": " Mount ",
+   "newTyp": "Mount",
+   "expected": true
+  },
+  {
+   "id": "keep- Mount -Siege",
+   "oldTyp": " Mount ",
+   "newTyp": "Siege",
+   "expected": true
+  },
+  {
+   "id": "keep- Mount -Civilian",
+   "oldTyp": " Mount ",
+   "newTyp": "Civilian",
+   "expected": true
+  },
+  {
+   "id": "keep- Mount -null",
+   "oldTyp": " Mount ",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep- Mount -undefined",
+   "oldTyp": " Mount ",
+   "newTyp": null,
+   "expected": true
+  },
+  {
+   "id": "keep- Mount - Mount ",
+   "oldTyp": " Mount ",
+   "newTyp": " Mount ",
+   "expected": true
+  }
+ ],
+ "reserve": [
+  {
+   "id": "reserve-L1-0",
+   "level": 1,
+   "input": {
+    "treasury": 109,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L1-1",
+   "level": 1,
+   "input": {
+    "treasury": 110,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L1-2",
+   "level": 1,
+   "input": {
+    "treasury": 111,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L1-3",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L1-4",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 2,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L1-5",
+   "level": 1,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L1-6",
+   "level": 1,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 10,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L1-legacy",
+   "level": 1,
+   "input": {
+    "treasury": 40,
+    "moneyCost": 40
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L1-skarbiec-ponizej",
+   "level": 1,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L2-7",
+   "level": 2,
+   "input": {
+    "treasury": 60,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L2-8",
+   "level": 2,
+   "input": {
+    "treasury": 61,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L2-9",
+   "level": 2,
+   "input": {
+    "treasury": 62,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L2-10",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L2-11",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 2,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L2-12",
+   "level": 2,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 3,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L2-13",
+   "level": 2,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 3,
+     "minDochodNetto": 0
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L2-legacy",
+   "level": 2,
+   "input": {
+    "treasury": 40,
+    "moneyCost": 40
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L2-skarbiec-ponizej",
+   "level": 2,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L3-14",
+   "level": 3,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L3-15",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L3-16",
+   "level": 3,
+   "input": {
+    "treasury": 41,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L3-17",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": -1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L3-18",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 0,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L3-19",
+   "level": 3,
+   "input": {
+    "treasury": 100000,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L3-20",
+   "level": 3,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40,
+    "reserve": {
+     "rezerwaTur": 0,
+     "minDochodNetto": -2
+    },
+    "netIncomePerTurn": 1000,
+    "upkeepPerTurn": 5,
+    "unitUpkeepPerTurn": 2
+   },
+   "expected": false
+  },
+  {
+   "id": "reserve-L3-legacy",
+   "level": 3,
+   "input": {
+    "treasury": 40,
+    "moneyCost": 40
+   },
+   "expected": true
+  },
+  {
+   "id": "reserve-L3-skarbiec-ponizej",
+   "level": 3,
+   "input": {
+    "treasury": 39,
+    "moneyCost": 40
+   },
+   "expected": false
+  }
+ ],
+ "maxFraction": [
+  {
+   "id": "frac-undefined",
+   "value": null,
+   "expected": 0.1
+  },
+  {
+   "id": "frac-null",
+   "value": null,
+   "expected": 0.1
+  },
+  {
+   "id": "frac-0",
+   "value": 0,
+   "expected": 0
+  },
+  {
+   "id": "frac-0.1",
+   "value": 0.1,
+   "expected": 0.1
+  },
+  {
+   "id": "frac-0.25",
+   "value": 0.25,
+   "expected": 0.25
+  },
+  {
+   "id": "frac--0.5",
+   "value": -0.5,
+   "expected": 0.1
+  },
+  {
+   "id": "frac-x",
+   "value": "x",
+   "expected": 0.1
+  },
+  {
+   "id": "frac-NaN",
+   "value": "NaN",
+   "expected": 0.1
+  },
+  {
+   "id": "frac-brak-wpisu",
+   "value": "brak",
+   "expected": 0.1
+  }
+ ],
+ "reserveParams": [
+  {
+   "level": 1,
+   "rezerwaTur": 10,
+   "minDochodNetto": 0
+  },
+  {
+   "level": 2,
+   "rezerwaTur": 3,
+   "minDochodNetto": 0
+  },
+  {
+   "level": 3,
+   "rezerwaTur": 0,
+   "minDochodNetto": -2
+  }
+ ]
+}
