@@ -3653,7 +3653,8 @@ function applyHomeWarPriorities(
  * WIDOCZNA armie przeciwnika (atak gdy sasiaduja, marsz gdy w zasiegu N ruchow i sila >= prog) --
  * przed zdobywaniem miast. Planer: ai-war-army-seeks-army.ts; parametry: ai-params.json.
  * Obrona domu (wrog w pierscieniu zagrozenia wlasnego miasta) ma pierwszenstwo -- wtedy brak ingerencji.
- * Nakladka jest rozszerzeniem obrony domu: wylaczona, gdy obrona domu jest wylaczona (isHomeWarDefenseEnabled).
+ * Nakladka ma wlasny przelacznik (ai_wojna_armia_szuka_armii_wlaczone, setArmySeeksArmyOverride) -- niezalezna od isHomeWarDefenseEnabled;
+ * pierwszenstwo obrony domu zachowuja warunki zagrozenia wlasnych miast i utraconego miasta.
  */
 function applyArmySeeksEnemyArmy(
   commands: AICommand[],
@@ -3665,7 +3666,7 @@ function applyArmySeeksEnemyArmy(
   opts: AITurnOpts,
 ): AICommand[] {
   const enabledParam = getAiParam(data, 'ai_wojna_armia_szuka_armii_wlaczone', ARMY_SEEKS_ARMY_DEFAULTS.enabled);
-  if (!isArmySeeksArmyEnabled(enabledParam) || !isHomeWarDefenseEnabled()) return commands;
+  if (!isArmySeeksArmyEnabled(enabledParam)) return commands;
   const BARB = -1;
   const myCities = cities.filter(c => c.ownerId === playerId);
   const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u) && u.embarked !== true;

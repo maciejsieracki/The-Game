@@ -15,3 +15,14 @@ BLOKADY: brak. Nie uruchamiano build/dev ani przegladarki (zmiana logiki AI, nie
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator -- ocena nowego FAIL 1k w war-allin-capital-test (miernik vs realna bezczynnosc), przeglad zalozen (a) i (e); ewentualnie pomiar na zywo (partia AI vs AI) zajec miast i bitew.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## RUNDA 2/5 (Operator, baza a95d6589)
+
+STATUS: PASS
+ZMIANY/COMMIT: gra/src/game/ai.ts -- applyArmySeeksEnemyArmy odsprzegniete od isHomeWarDefenseEnabled (wlasny przelacznik ai_wojna_armia_szuka_armii_wlaczone / setArmySeeksArmyOverride; pierwszenstwo obrony domu zostaje przez warunki zagrozenia wlasnych miast i utraconego miasta). Wariant (a): test ai-war-defend-home T9 NIETKNIETY. Zalozenie (e) z r1 ("gdy obrona domu wylaczona") jest tym samym uchylone. merge-tree z origin/main 494480569: czysty, bez konfliktow.
+TESTY (surowe): tsc --noEmit exit 0; ai-test 296/0; ai-war-defend-home 30/0 (T9 zielony); ai-war-gate 24/0; ai-war-army-seeks-army 20/0; ai-war-nearest-city-peace-2t PASS (mutacje 16/16); general-muster 26/0; war-allin-capital 96/2 (jak baza); scattered-merge 33/0; ai-target-nearest-city 18/18. NIE ZMIERZONO w tej rundzie: 5 bramek referencyjnych, sprawdzenie 4 zablokowanych ruchow (artefakt harnessu?).
+BLOKADY: brak. Prog 0,8 / zasieg 3 bez zmian (decyzja balansu u wlasciciela).
+RUNDY: 2/5
+NASTEPNY KROK: Evaluator -> Obrona -> Final Control
+DEPLOY/PUSH: NIE WYKONANO
