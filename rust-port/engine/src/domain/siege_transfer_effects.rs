@@ -12,6 +12,8 @@
 //! NIE_ZMIERZONO: `wonderGateOk(ownerId, wid)` i `parseWonderProdId` leza po stronie wolajacego
 //! (predykat `wonder_gate_ok`): w `rust-port/engine/src` nie ma odpowiednika (osobny temat).
 
+use crate::domain::ids::LEGACY_BARBARIAN_OWNER_ID;
+use crate::domain::order_effects_lane::{PostCaptureLawFields, REBEL_FACTION_OWNER_ID};
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem};
 
@@ -136,4 +138,74 @@ pub fn sanitize_production_queue_for_owner(
         refunded_praca: first.refunded_praca + second.refunded_praca,
         forfeited_postep: filtered.forfeited_postep,
     }
+}
+
+/// Web `POST_CAPTURE_FRESH_TURNS` (`post-capture-law.ts`, = 5): bonus Prawa po swiezym podboju.
+pub const POST_CAPTURE_FRESH_TURNS_PIN: f64 = 5.0;
+/// Web `POST_CAPTURE_REBELLION_RECONQUEST_TURNS` (`post-capture-law.ts`, = 10): odbicie po buncie.
+pub const POST_CAPTURE_RECONQUEST_TURNS_PIN: f64 = 10.0;
+
+/// Web `applyPostCaptureLawOnCapture(city, newOwner, prevOwner)` (`game/post-capture-law.ts:62`).
+///
+/// Zwraca `None` gdy `prevOwner === newOwner` (web: wczesny `return`, bez zmian pol), w przeciwnym razie
+/// `Some(reconquest)` (web `city.wasRebellionReconquest`). Kasuje `rebelPreviousOwnerId` i
+/// `rebelProtectionTurnsRemaining` bezwarunkowo (jak web). Pole web `revoltGraceRemaining = null` NIE nalezy do
+/// [`PostCaptureLawFields`] (NIE_ZMIERZONO w tym klocku: wolajacy musi je wyzerowac w module buntu, jesli istnieje).
+pub fn apply_post_capture_law_on_capture(
+    f: &mut PostCaptureLawFields,
+    new_owner: i64,
+    prev_owner: i64,
+) -> Option<bool> {
+    if prev_owner == new_owner {
+        return None;
+    }
+    // web isRebellionReconquest: prevOwner === REBEL_FACTION_OWNER_ID && city.rebelPreviousOwnerId === newOwner.
+    let reconquest =
+        prev_owner == REBEL_FACTION_OWNER_ID && f.rebel_previous_owner_id == Some(new_owner);
+    f.post_capture_law_turns_remaining = Some(if reconquest {
+        POST_CAPTURE_RECONQUEST_TURNS_PIN
+    } else {
+        POST_CAPTURE_FRESH_TURNS_PIN
+    });
+    f.was_rebellion_reconquest = reconquest;
+    f.rebel_previous_owner_id = None;
+    f.rebel_protection_turns_remaining = None;
+    Some(reconquest)
+}
+
+/// Web `wasProtectedRebel` (`main.ts`, galaz `resolveSiegeSurrender`): `city.rebelState === true` &&
+/// `typeof rebelProtectionTurnsRemaining === 'number'` && `> 0`. Odczyt PRZED [`apply_post_capture_law_on_capture`].
+pub fn was_protected_rebel(rebel_state: Option<bool>, f: &PostCaptureLawFields) -> bool {
+    rebel_state == Some(true) && f.rebel_protection_turns_remaining.is_some_and(|n| n > 0.0)
+}
+
+/// Zadanie wojny z `triggerRebelProtectionWarConsequence` (web: `ownerDeclareWarOn(newOwner, rebelPrev, true, 'wymuszona_inna')`).
+/// Sama deklaracja wojny lezy po stronie wolajacego (CallerSide: brak tu modelu dyplomacji).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RebelWarRequest {
+    /// Web `newOwner` (deklarujacy = zdobywca).
+    pub declarer: i64,
+    /// Web `rebelPrevOwnerId` (cel = bylty wlasciciel miasta w oknie ochrony).
+    pub target: i64,
+}
+
+/// Web `triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerId, newOwner)` (main.ts:13253).
+/// Zwraca `Some` dokladnie wtedy, gdy web wywolalby `ownerDeclareWarOn`. Wyjatki web: brak flagi ochrony,
+/// brak `rebelPrevOwnerId`, zdobywca = bylty wlasciciel, zdobywca = barbarzynca (`isBarbarian`, id -1).
+pub fn rebel_protection_war_request(
+    was_protected: bool,
+    rebel_prev_owner: Option<i64>,
+    new_owner: i64,
+) -> Option<RebelWarRequest> {
+    if !was_protected {
+        return None;
+    }
+    let target = rebel_prev_owner?;
+    if new_owner == target || new_owner == LEGACY_BARBARIAN_OWNER_ID {
+        return None;
+    }
+    Some(RebelWarRequest {
+        declarer: new_owner,
+        target,
+    })
 }

@@ -181,6 +181,7 @@ fn transfer_vectors_match_pin_state_calls_and_praca() {
             TransferExtras {
                 pop_loss: Some(pop_input),
                 wonder_gate_ok: Some(&gate),
+                post_capture_law: None,
             },
         );
 
@@ -337,8 +338,6 @@ fn coverage_table_has_no_silent_ported_gaps() {
         missing,
         vec![
             "beginWonderTransferWatch",
-            "applyPostCaptureLawOnCapture",
-            "triggerRebelProtectionWarConsequence",
             "settleWonderTransfer",
             "noteCityCapture",
             "syncCityGarnizon",
