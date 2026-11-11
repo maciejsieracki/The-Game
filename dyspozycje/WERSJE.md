@@ -1,3 +1,9 @@
+## ROBOCZA e1fabc32 -- 2026-11-06 -- FALA 627: Administrator miasta (testowa)
+
+- R-WEB-CITY-ADMINISTRATOR-Q1: administrator miasta (osoba przypisana do miasta, max 1; zatrudnienie w mieście z Pałacem I–III lub Domem Starszyzny/Dwór Zarządcy/Pretorium); zatrudnienie 40 Pieniądza, utrzymanie 2/3/4 Pieniądza/turę ze skarbca państwa (tier budynku); efekty ×1/×1,5/×2,25: korupcja −10% (addytywnie z Sądem/Trybunałem/Pałacem, sufit zachowany), produkcja miasta +3%, ściągalność podatków +3%; brak środków w skarbcu = nie pracuje (bez efektów i bez autobudowy); autobudowa budynków gracza tylko z działającym administratorem; przycisk Administrator obok Ustaw jako stolicę, ikona A, hasło Civpedii; AI zatrudnia na tych samych zasadach; migracja zapisów z jednorazowym powiadomieniem
+- Weryfikacja: tsc czysty; city-administrator 117/0, city-administrator-economy 72/0, autobuild-toggle 40/0, corruption-reduction-palace-tribunal 34/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; 6 zrzutów Chromium + dwa przebiegi realnej tury (operator); audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Bramka autobudowy dotyczy tylko gracza (AI buduje jak dotąd) — założenie; zatrudnienie za ostatnie 40 Pieniądza zaczyna działać w następnej turze; NIE_ZMIERZONO w żywej grze: zapis/wczytanie administratora, powiadomienia w realnej turze, zgodność Bilansu plonów w panelu miasta z HUD; ikona A w powiadomieniach tekstowa, wiersz utrzymania administratora bez ikony
+
 ## ROBOCZA 6911acc9 -- 2026-11-06 -- FALA 626: Epoka Ludów Morza: ×3 barbarzyńców od 20. tury po wejściu w Brąz (testowa)
 
 - R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: od 20. tury od wejścia gracza w Brąz do wejścia w Żelazo liczba jednostek barbarzyńców na każdym aktywnym poziomie ×3 (obozy i rajdy morskie), komunikat raz (zakładka Ważne) z dedupem po zapisie/wczytaniu; istniejący mechanizm Ludów Morza rozszerzony; wyłączeni barbarzyńcy pozostają wyłączeni

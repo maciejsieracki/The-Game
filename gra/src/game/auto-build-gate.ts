@@ -34,6 +34,28 @@ export function isAutoBuildAllowedForOwner(
   return autoBuildEnabled === true;
 }
 
+/**
+ * R-WEB-CITY-ADMINISTRATOR-Q1 (właściciel 2026-11-11): autobudowa budynków GRACZA w mieście działa
+ * WYŁĄCZNIE przy działającym administratorze tego miasta (oprócz globalnej opcji). Bez administratora
+ * (albo gdy nie pracuje — brak środków w skarbcu) automat w tym mieście nie buduje; tryb zostaje w danych.
+ * ZAŁOŻENIE: AI (nie-człowiek) NIE podlega bramce administratora — AI buduje jak dotąd (administrator
+ * AI daje mu tylko efekty ekonomiczne), bo inaczej AI zablokowałoby samo siebie przed budową
+ * budynku administracyjnego (patrz raport rundy 1).
+ */
+export function isCityAutoBuildAllowed(
+  ownerId: number,
+  humanOwnerIds: readonly number[],
+  autoBuildEnabled: boolean,
+  cityHasWorkingAdministrator: boolean,
+): boolean {
+  if (!isAutoBuildAllowedForOwner(ownerId, humanOwnerIds, autoBuildEnabled)) return false;
+  if (!isHumanSeatOwner(ownerId, humanOwnerIds)) return true;
+  return cityHasWorkingAdministrator === true;
+}
+
+/** Podpowiedź UI: autobudowa wymaga działającego administratora miasta. */
+export const AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT = 'Autobudowa w tym mieście wymaga działającego administratora';
+
 /** Odczyt z meta zapisu: brak pola / nie-boolean = wyłączona. */
 export function autoBuildFromSaveMeta(raw: unknown): boolean {
   return raw === true;

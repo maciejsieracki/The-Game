@@ -83,15 +83,16 @@ const viteCompatPlugin = {
 /** MUTACJA (kryterium 4): cofa fix w pickEncyContent na "zawsze dokleja
  * historiaBlock" -- czyli odtwarza dokładnie stan przed tym tematem. */
 function mutateHudSource(src) {
-  const marker = "const fullAlreadyHasHistoria = entry.full.includes('\\n## Rys historyczny\\n');";
+  // R-WEB-UI-RAW-IDS-AUDIT-Q1: źródło liczy sekcję na `pelna` (= tytuł + stripEncyMetadata(entry.full)).
+  const marker = "const fullAlreadyHasHistoria = pelna.includes('\\n## Rys historyczny\\n');";
   if (!src.includes(marker)) {
     throw new Error('MUTACJA: kotwica fixu nie znaleziona w wikiHubHud.ts -- test niezsynchronizowany ze źródłem');
   }
   return src
     .replace(marker, '')
     .replace(
-      "return `${entry.full}${fullAlreadyHasHistoria ? '' : historiaBlock}`;",
-      'return `${entry.full}${historiaBlock}`;',
+      "return `${pelna}${fullAlreadyHasHistoria ? '' : historiaBlock}`;",
+      'return `${pelna}${historiaBlock}`;',
     );
 }
 

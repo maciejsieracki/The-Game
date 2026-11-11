@@ -78,8 +78,8 @@ console.log('\n--- T5: wplyw na przychody (miasto 8 pol od stolicy, 5 miast, 10.
 console.log('\n--- T6: parytet gracz/AI -- oba wywolania w turn-economy.ts uzywaja tej samej funkcji ---');
 {
   const src = fs.readFileSync(path.join(GRA, 'src', 'game', 'turn-economy.ts'), 'utf8');
-  const n = (src.match(/corruptionBuildingReduction\(builtIds\)/g) || []).length;
-  assert(n === 2, 'dokladnie 2 wywolania corruptionBuildingReduction(builtIds) (advance + preview), got ' + n);
+  const n = (src.match(/corruptionBuildingReduction\(builtIds, administratorEfekty\.korupcjaRedukcja\)/g) || []).length;
+  assert(n === 2, 'dokladnie 2 wywolania corruptionBuildingReduction(builtIds, administratorEfekty.korupcjaRedukcja) (advance + preview; pominiecie administratora = FAIL, R-WEB-CITY-ADMINISTRATOR-Q1 r2), got ' + n);
   assert(!/corruptionBuildingReduction\([^)]*(isPlayer|ownerId)/.test(src), 'brak rozgalezienia po graczu/AI w wywolaniu');
 }
 

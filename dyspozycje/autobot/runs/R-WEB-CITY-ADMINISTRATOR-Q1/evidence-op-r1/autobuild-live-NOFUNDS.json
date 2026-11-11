@@ -1,0 +1,112 @@
+{
+  "cities": [
+    {
+      "id": "city0",
+      "name": "Rzym"
+    },
+    {
+      "id": "city9",
+      "name": "Pompeje"
+    }
+  ],
+  "hire": true,
+  "pre": {
+    "A": {
+      "hired": true,
+      "working": false,
+      "tier": 1,
+      "upkeep": 2,
+      "hireCost": 40,
+      "blockReasonText": null,
+      "effects": {
+        "aktywny": false,
+        "tier": 0,
+        "skala": 0,
+        "korupcjaRedukcja": 0,
+        "produkcjaMult": 1,
+        "podatkiMult": 1
+      },
+      "queueLen": 0,
+      "prod": null,
+      "tryb": "zrownowazone",
+      "treasury": 1,
+      "built": [
+        "palac"
+      ]
+    },
+    "B": {
+      "hired": false,
+      "working": false,
+      "tier": 1,
+      "upkeep": 2,
+      "hireCost": 40,
+      "blockReasonText": "Brak środków w skarbcu: zatrudnienie kosztuje 40 Pieniądza",
+      "effects": {
+        "aktywny": false,
+        "tier": 0,
+        "skala": 0,
+        "korupcjaRedukcja": 0,
+        "produkcjaMult": 1,
+        "podatkiMult": 1
+      },
+      "queueLen": 0,
+      "prod": null,
+      "tryb": "zrownowazone",
+      "treasury": 1,
+      "built": [
+        "dom_starszyzny"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "ok": true,
+      "A": {
+        "hired": true,
+        "working": true,
+        "queue": {
+          "kolejka": [],
+          "postep": 0
+        },
+        "treasury": 27
+      },
+      "B": {
+        "hired": false,
+        "working": false,
+        "queue": {
+          "kolejka": [],
+          "postep": 0
+        },
+        "treasury": 27
+      }
+    }
+  ],
+  "logAuto": [],
+  "noFunds": {
+    "hired": true,
+    "working": false,
+    "tier": 1,
+    "upkeep": 2,
+    "hireCost": 40,
+    "blockReasonText": null,
+    "effects": {
+      "aktywny": false,
+      "tier": 0,
+      "skala": 0,
+      "korupcjaRedukcja": 0,
+      "produkcjaMult": 1,
+      "podatkiMult": 1
+    },
+    "queueLen": 0,
+    "prod": {
+      "kolejka": [],
+      "postep": 0
+    },
+    "tryb": "zrownowazone",
+    "treasury": 0,
+    "built": [
+      "palac"
+    ]
+  },
+  "errors": []
+}

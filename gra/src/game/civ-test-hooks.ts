@@ -58,6 +58,16 @@ export interface CivTestDeps {
   setCityLimitBase: (base: number) => void;
   /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: włącza/wyłącza „Automatyzację budowy” gracza (tylko ?civTest=1). */
   setAutoBuildEnabled: (v: boolean) => void;
+  /**
+   * R-WEB-CITY-ADMINISTRATOR-Q1 (tylko ?civTest=1): ustawia budynki miasta (`builtIds`, null = bez zmian),
+   * skarbiec gracza (`treasury`, null = bez zmian) i tryb auto-budowy miasta (`tryb`), po czym odświeża stan
+   * administratorów. Zwraca stan administratora miasta.
+   */
+  adminSetup?: (cityId: string, builtIds: string[] | null, treasury: number | null, tryb?: string | null, stock?: Record<string, number> | null) => unknown;
+  /** Stan administratora miasta (zatrudniony / pracuje / tier / skarbiec) — REALNA logika gry. */
+  adminState?: (cityId: string) => unknown;
+  /** Zatrudnij administratora jak klik w panelu miasta (koszt ze skarbca). */
+  adminHire?: (cityId: string) => boolean;
   /** Biezaca epoka (imperium) gracza — limit = baza + (epoka-1)*5. */
   meEra: () => number;
   /**
@@ -100,6 +110,10 @@ export interface CivTestApi {
   setPraca: (n: number) => void;
   /** R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: włącz/wyłącz automatyzację budowy gracza. */
   setAutoBuild: (v: boolean) => void;
+  /** R-WEB-CITY-ADMINISTRATOR-Q1: patrz CivTestDeps.adminSetup. */
+  adminSetup: (cityId: string, builtIds: string[] | null, treasury: number | null, tryb?: string | null, stock?: Record<string, number> | null) => unknown;
+  adminState: (cityId: string) => unknown;
+  adminHire: (cityId: string) => boolean;
   setPolicy: (ownerId: number, patch: CivTestPolicyPatch) => unknown;
   foundCandidates: (limit: number) => Array<{ q: number; r: number }>;
   foundCity: (q: number, r: number) => boolean;
@@ -158,6 +172,9 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     },
     setPraca: n => deps.setPracaPool(n),
     setAutoBuild: v => deps.setAutoBuildEnabled(v === true),
+    adminSetup: (cityId, builtIds, treasury, tryb, stock) => deps.adminSetup ? deps.adminSetup(cityId, builtIds, treasury, tryb, stock) : null,
+    adminState: cityId => deps.adminState ? deps.adminState(cityId) : null,
+    adminHire: cityId => deps.adminHire ? deps.adminHire(cityId) : false,
     setPolicy: (ownerId, patch) => { deps.setUlepszeniaPolicy(ownerId, patch); return deps.getUlepszeniaPolicy(ownerId); },
     foundCandidates: limit => deps.foundCandidates(limit),
     foundCity: (q, r) => deps.foundPlayerCity(q, r),
