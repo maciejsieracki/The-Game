@@ -19,10 +19,15 @@ pub const AI_REJECTED_OFFER_COOLDOWN_TURNS: f64 = 3.0;
 /// Web `CITY_FOR_PEACE_COOLDOWN_KEY` (osobny klucz oferty miasta za pokoj, CITYCD).
 pub const CITY_FOR_PEACE_COOLDOWN_KEY: &str = "miasto_za_pokoj";
 
-/// Web `rejectCooldownKeyFor(cmdType, actionId)`.
+/// Web `CYCLIC_BARTER_COOLDOWN_KEY` (pin 07d2fbd7): osobny klucz cyklicznej wymiany surowcow.
+pub const CYCLIC_BARTER_COOLDOWN_KEY: &str = "wymiana_cykliczna";
+
+/// Web `rejectCooldownKeyFor(cmdType, actionId)` (pin 07d2fbd7).
 pub fn reject_cooldown_key_for<'a>(cmd_type: &str, action_id: &'a str) -> &'a str {
     if cmd_type == "oferuj_miasto_za_pokoj" || cmd_type == "zada_miasto_za_pokoj" {
         CITY_FOR_PEACE_COOLDOWN_KEY
+    } else if cmd_type == "zaproponuj_wymiane_cykliczna" {
+        CYCLIC_BARTER_COOLDOWN_KEY
     } else {
         action_id
     }
