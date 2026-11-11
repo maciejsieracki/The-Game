@@ -54,9 +54,9 @@ async function main() {
     window.__asp.showArmySplitPanel({ hexLabel: '(10,5)', units: [{ id: 'u1', name: 'Wojownik' }, { id: 'u2', name: 'Łucznik' }],
       neighbors: cells, destHexes: dests, onSplit() {}, onCancel() {} });
   }, { neighbors, dests, subset });
-  const measure = (w) => page.evaluate((w) => {
+  const measure = (w, pg = page) => pg.evaluate((w) => {
     const map = document.querySelector('.civ-asp-map');
-    map.style.width = w + 'px'; // wymuszona szerokość kontenera
+    if (w) map.style.width = w + 'px'; // wymuszona szerokość kontenera (null = naturalna szerokość panelu)
     const R = {};
     for (const el of document.querySelectorAll('.civ-asp-cell')) {
       const key = el.classList.contains('center') ? 'ARMIA' : [...el.classList].find(c => /^(NW|NE|W|E|SW|SE)$/.test(c));
@@ -95,6 +95,23 @@ async function main() {
         await page.locator('.civ-asp-map').screenshot({ path: path.join(SHOTS, `after-map-${w}px-${subset ? 'subset' : 'all'}.png`) });
       }
     }
+  }
+  // realny panel przy viewporcie 280 px, BEZ wymuszania szerokosci mapy (nota Evaluatora nr 2)
+  for (const vw of [280, 320]) {
+    const pv = await browser.newPage({ viewport: { width: vw, height: 900 } });
+    await pv.setContent('<!doctype html><html><head></head><body style="margin:0;background:#080a12"></body></html>');
+    await pv.addScriptTag({ path: OUT });
+    await pv.evaluate(({ neighbors, dests }) => window.__asp.showArmySplitPanel({ hexLabel: '(10,5)',
+      units: [{ id: 'u1', name: 'Wojownik' }, { id: 'u2', name: 'Łucznik' }], neighbors, destHexes: dests, onSplit() {}, onCancel() {} }), { neighbors, dests });
+    const { R, mapW, mapH } = await measure(null, pv);
+    const keys = Object.keys(R), ws = keys.map(k => R[k].w), hs = keys.map(k => R[k].h);
+    const dists = [], gaps = [];
+    for (const [a, b] of PAIRS) { const d = Math.hypot(R[a].cx - R[b].cx, R[a].cy - R[b].cy); dists.push(d); gaps.push(d - R[a].w); }
+    console.log(`--- naturalny viewport ${vw}px: mapa ${mapW.toFixed(2)}x${mapH.toFixed(2)}, w=${ws[0].toFixed(2)} h=${hs[0].toFixed(2)}, zakres dist=${range(dists).toFixed(3)}, zakres szczelin=${range(gaps).toFixed(3)}, szczelina min=${Math.min(...gaps).toFixed(2)}`);
+    const tag = `naturalny viewport ${vw}px`;
+    check(`${tag}: 7 komorek, rozmiary rowne`, keys.length === 7 && range(ws) <= TOL && range(hs) <= TOL);
+    check(`${tag}: odleglosci i szczeliny rowne, dodatnie`, range(dists) <= TOL && range(gaps) <= TOL && Math.min(...gaps) > 0, { dists, gaps });
+    await pv.close();
   }
   // zrzuty calego panelu przy 340 i 280 px szerokosci viewportu
   if (SHOTS && !MUTATE) {
