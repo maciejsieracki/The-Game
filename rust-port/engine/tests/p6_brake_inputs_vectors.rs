@@ -333,3 +333,138 @@ fn gate_facts_era_is_integer_as_in_web() {
     assert!(!ai.is_player);
     assert_eq!(ai.era, 7);
 }
+
+const COMPONENT_KEYS: [&str; 12] = [
+    "armia",
+    "bitwy",
+    "ludki",
+    "rekruci",
+    "miasta",
+    "terytorium",
+    "infra",
+    "tech",
+    "ulepszenia",
+    "kultura",
+    "religia",
+    "zdobycze",
+];
+
+/// serde_json bez feature `float_roundtrip` nie odtwarza kazdego f64 co do bitu (np. 1713.1000000000001
+/// czyta sie jako 1713.1). Porownanie wartosci zmiennoprzecinkowych wektorow wariantow: tolerancja
+/// wzgledna 1e-9 (wynik Rust liczy te same operacje IEEE co pin, roznica to wylacznie parsowanie).
+fn close(got: f64, expected: f64) -> bool {
+    (got - expected).abs() <= 1e-9 * expected.abs().max(1.0)
+}
+
+fn static_component_key(s: &str) -> &'static str {
+    COMPONENT_KEYS
+        .iter()
+        .copied()
+        .find(|k| *k == s)
+        .unwrap_or_else(|| panic!("nieznany klucz skladnika {s}"))
+}
+
+#[test]
+fn objective_power_variants_match_pinned_compute_objective_power() {
+    let root = vec_root();
+    let cases = root["objectiveVariants"].as_array().unwrap();
+    assert!(cases.len() >= 100, "wektory wariantow musza miec pokrycie");
+    let mut saw_flat = false;
+    let mut saw_enemy = false;
+    let mut saw_zdobycze_military = false;
+    let mut saw_half_round = false;
+    for case in cases {
+        let inp = &case["input"];
+        let c = &case["coeff"];
+        let coeff = PowerCoeffs {
+            jednostka_wojskowa: num(&c["jednostkaWojskowa"]),
+            wygrana_bitwa: num(&c["wygranaBitwa"]),
+            ludek: num(&c["ludek"]),
+            rekrut_ekw_jednostki: num(&c["rekrutEkwJednostki"]),
+            miasto: num(&c["miasto"]),
+            heks_terytorium: num(&c["heksTerytorium"]),
+            budynki: num(&c["budynki"]),
+            tech_zbadane: num(&c["techZbadane"]),
+            ulepszenie_terenu: num(&c["ulepszenieTerenu"]),
+            kultura_imperium: num(&c["kulturaImperium"]),
+            religia_jednosc: num(&c["religiaJednosc"]),
+        };
+        let battle = match case["battle"].as_str().unwrap() {
+            "flat_count" => {
+                saw_flat = true;
+                BattlePowerModel::FlatCount
+            }
+            "enemy_m_sum" => {
+                saw_enemy = true;
+                BattlePowerModel::EnemyMSum
+            }
+            other => panic!("nieznany model bitwy {other}"),
+        };
+        let military: BTreeSet<&'static str> = case["militaryKeys"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|k| static_component_key(k.as_str().unwrap()))
+            .collect();
+        if military.contains("zdobycze") {
+            saw_zdobycze_military = true;
+        }
+        let raw = ObjectivePowerRaw {
+            owner_id: inp["ownerId"].as_i64().unwrap(),
+            epoka: num(&inp["epoka"]),
+            jednostki: num(&inp["jednostki"]),
+            wygrane_bitwy: num(&inp["wygraneBitwy"]),
+            bitwy_pkt_sum: inp.get("bitwyPktSum").and_then(opt_num),
+            suma_ludkow: num(&inp["sumaLudkow"]),
+            rekrut_ekw: num(&inp["rekrutEkw"]),
+            miasta: num(&inp["miasta"]),
+            heksy_terytorium: num(&inp["heksyTerytorium"]),
+            budynki: num(&inp["budynki"]),
+            tech_zbadane: num(&inp["techZbadane"]),
+            ulepszenia_terenu: num(&inp["ulepszeniaTerenu"]),
+            kultura_imperium: inp.get("kulturaImperium").and_then(opt_num),
+            miasta_jednosc_religii: inp.get("miastaJednoscReligii").and_then(opt_num),
+            zdobycze_power: inp.get("zdobyczePower").and_then(opt_num),
+        };
+        let got = compute_objective_power(&raw, &coeff, battle, &military);
+        let expected_power = num(&case["power"]);
+        if got.power_base.fract() == 0.5 {
+            saw_half_round = true;
+        }
+        assert_eq!(got.power, expected_power, "power, wejscie {inp}");
+        assert!(
+            close(got.power_base, num(&case["powerBase"])),
+            "powerBase, wejscie {inp}"
+        );
+        assert_eq!(
+            objective_power_for_owner(&raw, &coeff, battle, &military),
+            expected_power,
+            "objective_power_for_owner, wejscie {inp}"
+        );
+        let comps = case["components"].as_array().unwrap();
+        assert_eq!(got.components.len(), comps.len());
+        for (g, e) in got.components.iter().zip(comps) {
+            assert_eq!(g.key, e["key"].as_str().unwrap());
+            assert!(
+                close(g.raw_count, num(&e["rawCount"])),
+                "rawCount {}",
+                g.key
+            );
+            assert!(
+                close(g.coefficient, num(&e["coefficient"])),
+                "coefficient {}",
+                g.key
+            );
+            assert!(close(g.points, num(&e["points"])), "points {}", g.key);
+            assert_eq!(
+                g.military,
+                e["military"].as_bool().unwrap(),
+                "military {}",
+                g.key
+            );
+        }
+    }
+    assert!(saw_flat && saw_enemy, "pokrycie obu modeli bitwy");
+    assert!(saw_zdobycze_military, "pokrycie zdobycze w militaryKeys");
+    assert!(saw_half_round, "pokrycie polowek dla Math.round");
+}
