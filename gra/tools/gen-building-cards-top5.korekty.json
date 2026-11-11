@@ -25,6 +25,11 @@
       "cmz": [ { "czynnosc": "Zbuduj Targowisko", "korzysc": "dać miastu 5 pieniądza" }, { "czynnosc": "Zbuduj w stolicy Mennicę (Waluta)", "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji (min. ×1,38)" } ],
       "powodCmz": "R-WEB-CURRENCY-MULT-PER-CIV-Q1 (zarzut 1): mnożnik per cywilizacja, nie globalne ×1,5."
     },
+    "Cegielnia": {
+      "zmiany": [
+        { "z": "Top1_GLOWNA", "tytul": "Wytwarza cegłę: 50 / 75 / 100 cykli × 2 cegły na turę (wg epoki)", "zdanie": "Zamienia 2 gliny i 1 drewno w 2 cegły; cykle na turę: 50 (epoka 1), 75 (epoka Brązu), 100 (epoka Żelaza); wyjście cegły +50% bazy na epokę od Brązu; cegła jest kosztem budowy Akademii, Sądu, Łaźni publicznej i Kuźni żelaza.", "powod": "R-WEB-BRICK-CYCLES-75-100-Q1 (decyzja właściciela 2026-11-11): cykle Cegielni per epoka właściciela 50/75/100 (gra/tools/brick-cycles-75-100-test.cjs). Zmiana była wprowadzona ręcznie w building-cards-top5.json (b1656e454) bez korekty w generatorze — przeniesiona tutaj, aby --check był zielony. Dawna korekta J (przeniesienie „od epoki Brązu +50%” w nawias; cegła jako koszt budowy) zachowana w zdaniu; wpis card-text-corrections.cjs (cegielnia top5.0.zdanie) usunięty, bo jego „z” nie pasuje już do bazy CSV." }
+      ]
+    },
     "Palisada drewniana": {
       "podzial": { "Top2": ["Miasto trzeba oblegać — wróg nie wejdzie z marszu", "Miasto z umocnieniem przechodzi w tryb oblężenia; pustego miasta nie da się zająć jednym ruchem."] },
       "powodPodzialu": "tytuł zawiera własny myślnik — podział na pierwszym separatorze uciąłby tytuł."

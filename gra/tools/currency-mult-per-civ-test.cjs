@@ -58,11 +58,15 @@ try {
   console.log('civ          easy  normal  hard');
   for (const t of table) console.log(`${t.civ.padEnd(12)} ${String(t.easy).padEnd(5)} ${String(t.normal).padEnd(7)} ${t.hard}`);
 
-  // 2. Dolny limit na hard (Germanie/Asyria/Zulusi/Slowianie) i brak gornego limitu (Fenicjanie easy 3,1).
+  // 2. Dolny limit na hard (Germanie/Zulusi/Slowianie) i brak gornego limitu (Fenicjanie easy 3,1).
   const hard = M.loadEconParams(econ, 'hard');
-  for (const k of ['germanie', 'asyria', 'zulusi', 'slowianie']) {
+  for (const k of ['germanie', 'zulusi', 'slowianie']) {
     assert(near(M.mennicaMnoznikForCiv(k, hard), 1.38), `${k} hard = 1,38 (dolny limit)`);
   }
+  // Asyria = Babilonia - 0,1 (decyzja wlasciciela 2026-11-11): normal 2,2; easy 2,7; hard 1,7 (powyzej limitu 1,38).
+  assert(near(M.mennicaMnoznikForCiv('asyria', M.loadEconParams(econ, 'normal')), 2.2), 'Asyria normal = 2,2 (Babilonia 2,3 - 0,1)');
+  assert(near(M.mennicaMnoznikForCiv('asyria', M.loadEconParams(econ, 'easy')), 2.7), 'Asyria easy = 2,7');
+  assert(near(M.mennicaMnoznikForCiv('asyria', hard), 1.7), 'Asyria hard = 1,7 (bez dolnego limitu)');
   assert(near(M.mennicaMnoznikForCiv('fenicjanie', M.loadEconParams(econ, 'easy')), 3.1), 'Fenicjanie easy = 3,1 (bez gornego limitu)');
   assert(near(M.mennicaMnoznikForCiv('grecy', M.loadEconParams(econ, 'normal')), 2.3), 'Grecy normal = 2,3 (nie globalne 1,5)');
 

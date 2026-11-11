@@ -1,11 +1,11 @@
-# Swiatynia
+# Świątynia
 
 ## Metadane
 
 | Pole | Wartość |
 |------|---------|
 | **id** | `swiatynia` |
-| **tytuł** | Swiatynia |
+| **tytuł** | Świątynia |
 | **kategoria** | Miasto — budowa |
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/45-katalog-budynkow.md` |
 | **json_ref** | `buildings.json` |
@@ -15,14 +15,14 @@
 
 ## Wiki‑S
 
-**Swiatynia** — budynek (Kultura), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Mistycyzm**.
+**Świątynia** — budynek (Kultura), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Mistycyzm**.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Swiatynia wzmacnia miasto w kategorii **Kultura**. Poziom 1: **+2 kultury** (+1 na poziom), **+2 pkt szczęścia** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Świątynia wzmacnia miasto w kategorii **Kultura**. Poziom 1: **+2 kultury** (+1 na poziom), **+2 pkt szczęścia** (+1 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 25 pracy
 - **Każdy kolejny poziom:** +10 pracy

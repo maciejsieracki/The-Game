@@ -17,7 +17,7 @@
       "Hala produkcji",
       "Fabryka mebli",
       "Drewniana korporacja",
-      "Wiezowiec z drewna"
+      "Wieżowiec z drewna"
     ],
     "baza": {
       "praca": 5,
@@ -93,7 +93,7 @@
     "wymagania": "Dostęp do Kamienia w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "historia": "Warsztat kamieniarski to rzemiosło obróbki kamienia sięgające epoki kamienia, kiedy ludzie uczyli się łupać krzemień i formować głazy w narzędzia oraz elementy budowlane. Prawdziwy rozkwit kamieniarstwa nastąpił wraz z budową wielkich cywilizacji — egipskie piramidy, greckie świątynie i rzymskie akwedukty powstawały dzięki precyzyjnej pracy kamieniarzy, którzy potrafili ciąć, gładzić i dopasowywać bloki skalne bez zaprawy. Średniowieczni kamieniarze budujący katedry gotyckie tworzyli własne cechy i tajne znaki masonów, z których część dała początek późniejszemu ruchowi wolnomularskiemu. Praca wymagała nie tylko siły, ale ogromnej precyzji — błąd w cięciu bloku fundamentowego mógł oznaczać katastrofę całej budowli. Warsztaty kamieniarskie dostarczały materiał na mury obronne, place i pomniki, będąc podstawą trwałości każdej większej osady.",
-    "opis": "Warsztat kamieniarski przetwarza wydobyty kamień na obrobione bloki budowlane, wzmacniając produkcję miasta u progu epoki kamienia.",
+    "opis": "Warsztat kamieniarski przetwarza wydobyty kamień na obrobione bloki budowlane, wzmacniając produkcję miasta u progu epoki Kamienia.",
     "top3": [
       { "tytul": "Wzrost Pracy", "tekst": "Dodaje 4 punkty Pracy, rosnące o 2 z każdym kolejnym poziomem rozbudowy warsztatu." },
       { "tytul": "Wymaga dostępu do kamienia", "tekst": "Buduje się i działa wyłącznie tam, gdzie imperium ma aktywne źródło Kamienia albo jego zapas w magazynie." },
@@ -144,7 +144,7 @@
     "opis": "Kuźnia brązu wykuwa uzbrojenie i pancerze z brązu, wzmacniając jednostki odwiedzające to miasto oraz podnosząc jego lokalną produkcję.",
     "top3": [
       { "tytul": "Wzrost Pracy i dochodu", "tekst": "Dodaje 6 punktów Pracy oraz niewielki dochód pieniężny miastu, w którym stanęła." },
-      { "tytul": "Bonus do Pancerza", "tekst": "Daje +15% do Pancerza jednostkom, które odwiedziły miasto — bonus kumuluje się z kuźnią żelaza i Wielką Kuźnią, maksymalnie do +45%." },
+      { "tytul": "Bonus do Pancerza", "tekst": "Daje +15% do Pancerza jednostkom, które odwiedziły miasto — bonus kumuluje się z Kuźnią żelaza i Wielką Kuźnią, maksymalnie do +45%." },
       { "tytul": "Wymaga rudy miedzi", "tekst": "Powstaje wyłącznie przy dostępie do złóż Rudy w imperium i otwiera się wraz z technologią Brązownictwo." }
     ],
     "techUnlock": "Brązownictwo",
@@ -313,13 +313,13 @@
     "nazwyPoziomow": [
       "Targowisko",
       "Rynek",
-      "Gielda",
+      "Giełda",
       "Dom handlowy",
       "Kompania kupiecka",
       "Bank regionalny",
       "Izba handlowa",
       "Dom finansowy",
-      "Gielda papierow wartosciowych",
+      "Giełda papierów wartościowych",
       "Centralny bank"
     ],
     "baza": {
@@ -596,7 +596,7 @@
     "opis": "Garncarnia wypala z gliny ceramikę, otwierając dostęp do surowca potrzebnego przy budowie spichlerzy i innych obiektów.",
     "top3": [
       { "tytul": "Wzrost Pracy", "tekst": "Dodaje 3 punkty Pracy, rosnące o 2 z każdym poziomem rozbudowy." },
-      { "tytul": "Wytapia ceramikę", "tekst": "Przetwarza glinę i drewno w ceramikę, zaopatrując imperium w ten surowiec." },
+      { "tytul": "Wypala ceramikę", "tekst": "Przetwarza glinę i drewno w ceramikę, zaopatrując imperium w ten surowiec." },
       { "tytul": "Wymaga gliny i otwiera Garncarstwo", "tekst": "Buduje się przy dostępie do złóż gliny i staje się dostępna wraz z technologią Garncarstwo." }
     ],
     "techUnlock": "Garncarstwo",
@@ -640,10 +640,10 @@
     "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna i kamienia z magazynu państwa",
     "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1 (2026-11-05): receptura 2 glina + 1 drewno → 2 cegły (×2 produkcji cegły), przepustowość cykli per epoka właściciela: 50 (epoka 1), 75 (epoka 2), 100 (epoka 3 wzwyż) — R-WEB-BRICK-CYCLES-75-100-Q1 (2026-11-11); +50% bazy WYJŚCIA za każdą epokę właściciela (×1 / ×1,5 / ×2 / ×2,5 / ×3); wejścia na cykl płaskie (2 glina + 1 drewno).",
     "historia": "Cegielnia produkuje cegły — formowane i wypalane bloki gliny, które od czasów starożytnej Mezopotamii i doliny Indusu umożliwiły budowę trwałych murów tam, gdzie brakowało naturalnego kamienia. Sumeryjczycy suszyli swoje pierwsze cegły na słońcu, lecz to wypalanie w piecu, znane już starożytnym Rzymianom, nadawało materiałowi twardość i odporność na wilgoć, dzięki czemu rzymskie mury i akwedukty przetrwały do naszych czasów. Produkcja cegieł wymagała dostępu do gliny o odpowiednim składzie oraz dużych ilości opału do wypału, co czyniło cegielnie zależnymi od bliskości złóż surowca i lasów. Ujednolicony rozmiar cegły pozwalał budowniczym planować konstrukcje z matematyczną precyzją i szybciej wznosić mury niż przy nieregularnym kamieniu. Rozwój cegielnictwa w średniowiecznej Europie północnej, gdzie brakowało kamienia budowlanego, dał początek charakterystycznemu stylowi gotyku ceglanego widocznemu do dziś w miastach nadbałtyckich.",
-    "opis": "Cegielnia wypala z gliny cegłę, dostarczając materiał budowlany potrzebny do wznoszenia trwalszych konstrukcji i otwierający drogę do pisma.",
+    "opis": "Cegielnia wypala z gliny cegłę, dostarczając materiał budowlany potrzebny do wznoszenia trwalszych konstrukcji oraz otwierając drogę do Pisma.",
     "top3": [
       { "tytul": "Wzrost Pracy", "tekst": "Dodaje 4 punkty Pracy, rosnące o 2 z każdym poziomem rozbudowy." },
-      { "tytul": "Wytapia cegłę", "tekst": "Zamienia glinę w cegłę, korzystając także z zapasu drewna i kamienia w magazynie państwa." },
+      { "tytul": "Wypala cegłę", "tekst": "Zamienia glinę w cegłę, korzystając także z zapasu drewna i kamienia w magazynie państwa." },
       { "tytul": "Brama do Pisma", "tekst": "Obecność cegielni gdziekolwiek w imperium jest warunkiem zbadania technologii Pismo." }
     ],
     "techUnlock": "Garncarstwo",
@@ -764,8 +764,8 @@
       "Instytut",
       "Laboratorium",
       "Obserwatorium",
-      "Centrum badan",
-      "Wydzial nauki",
+      "Centrum badań",
+      "Wydział nauki",
       "Instytut technologii",
       "Centrum innowacji"
     ],
@@ -1323,7 +1323,7 @@
     "maksPoziom": 1,
     "nazwyPoziomow": [
       "Dom wodza",
-      "Dwor",
+      "Dwór",
       "Pałac zarządcy"
     ],
     "baza": {
@@ -1807,7 +1807,7 @@
       "cegla": 50
     },
     "historia": "Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie.",
-    "opis": "Teatr to budynek kultury i rozrywki mieszkańców, którego efekty zostały włączone do Akademii i nie jest budowany jako osobna konstrukcja.",
+    "opis": "Teatr to budynek kultury i rozrywki mieszkańców; jego efekty zostały włączone do Akademii, więc nie jest budowany jako osobna konstrukcja.",
     "top3": [
       { "tytul": "Kultura miasta", "tekst": "Podnosi poziom kultury w mieście." },
       { "tytul": "Zadowolenie mieszkańców", "tekst": "Dodatkowo zwiększa zadowolenie mieszkańców." },
