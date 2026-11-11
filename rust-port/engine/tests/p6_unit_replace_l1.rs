@@ -10,6 +10,17 @@
 //! 2. Dla kazdej krawedzi awansu piechoty `available_replacements_for` (logika Rust) zwraca cel
 //!    z pinu, gdy wszystkie bramki sa otwarte (epoka 3, koszary, wszystkie technologie z pinu,
 //!    nacja celu jako nacja cywilizacji, zapas imperium nieblokujacy).
+//!
+//! Uwagi o zakresie (zarzuty ewaluatora r2):
+//! - Cele w wektorach `infantry-promotion.json` to ROZBITE pole `Zastąp specjalnie` z pinu
+//!   (`p6_unit_replace_l1_gen.mjs` nie wywoluje webowego `availableReplacementsFor`). Test porownuje
+//!   wiec wynik Rust z wartoscia pinu, a nie z wynikiem funkcji webowej.
+//! - Brama nacji (`unit_allowed_for_civ_nation`) zalezy od `Nacja` celu, wiec w jednym kontekście
+//!   nie da sie otworzyc wszystkich celow naraz. Dlatego sprawdzenie jest per krawedz (`any` w
+//!   kontekscie z nacja tego celu) plus kontrola nadmiarowych wynikow (tylko ten sam `Typ`).
+//! - ZALEZNOSC OD W8: `available_replacements_for` nie ma wolajacego w `src/` (wola go wylacznie
+//!   testy: ten plik i `p6_8b_c2b_vectors.rs`). Podpiecie do petli tury i produkcyjne uzycie awansow
+//!   = W8 (dlug, nieuzgodniony w tym temacie). Do tego czasu dane awansow nie wplywaja na produkcje.
 
 use civ_engine::domain::production_units::{
     available_replacements_for, AvailabilityContext, ReplaceAvailabilityCtx, UnitCostRow,
@@ -164,8 +175,9 @@ fn infantry_promotion_targets_available_in_rust_logic() {
                 got.iter().map(|it| it.id.as_str()).collect::<Vec<_>>()
             );
             // Zbior wynikow piechoty: kazdy nadmiarowy wynik (nie-cel z pinu) musi pochodzic z
-            // galezi A (ten sam Typ co zrodlo, web `availableReplacementsFor`); galezi B (pole
-            // `Zastąp specjalnie`) nie wolno rozszerzac poza liste pinu.
+            // galezi A (ten sam Typ co zrodlo, wg logiki `availableReplacementsFor` z pinu);
+            // galezi B (pole `Zastąp specjalnie`) nie wolno rozszerzac poza liste pinu.
+            // Uwaga: lista celow z pinu to pole `Zastąp specjalnie`, nie wynik webowej funkcji.
             let expected: BTreeSet<&str> = src["targets"]
                 .as_array()
                 .expect("targets")
