@@ -1,0 +1,132 @@
+[
+ {
+  "input": {
+   "Typ": "Slinger",
+   "Jednostka": "Procarz"
+  },
+  "expected": 3
+ },
+ {
+  "input": {
+   "Typ": "Slinger",
+   "Jednostka": "Procarz (Huaracoc)"
+  },
+  "expected": 3
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "Łucznik"
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "Łucznik Lidijski"
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "  Łucznik  "
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "Oszczepnik"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "Procarz"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Mount",
+   "Jednostka": "Łucznik konny"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Mount",
+   "Jednostka": "Strzelec konny"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Melee",
+   "Jednostka": "Łucznik"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Oblężnicza",
+   "Jednostka": "Łucznik"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "łucznik (mały)"
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": "ŁUCZNIK"
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Distance",
+   "Jednostka": ""
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Distance"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Jednostka": "Łucznik"
+  },
+  "expected": 1
+ },
+ {
+  "input": {
+   "Typ": "Slinger "
+  },
+  "expected": 3
+ },
+ {
+  "input": {
+   "Typ": " Distance",
+   "Jednostka": "Łucznik"
+  },
+  "expected": 2
+ },
+ {
+  "input": {
+   "Typ": "Infantry",
+   "Jednostka": "Wojownik"
+  },
+  "expected": 1
+ }
+]

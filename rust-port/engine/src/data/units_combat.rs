@@ -265,6 +265,15 @@ pub struct SiegeAi {
     pub units_per_extra_machine: i64,
 }
 
+/// R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: mnozniki obrazen pocisku wg klasy strzelca.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RangedDamageMultParams {
+    pub _opis: String,
+    pub slinger: i64,
+    pub lucznik_piesi: i64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnitPowerParams {
@@ -291,6 +300,7 @@ pub struct CombatParamsFile {
     pub ss5l_legacy: Ss5lLegacy,
     pub counter_multiplier: f64,
     pub morale_przewaga_mocy: MoralePrzewagaMocy,
+    pub ranged_damage_mult: RangedDamageMultParams,
     pub river_attack_mult: f64,
     pub brod: Brod,
     #[serde(rename = "oblężenie")]
