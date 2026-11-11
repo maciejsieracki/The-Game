@@ -1435,6 +1435,8 @@ import {
   hireAdministrator,
   refreshAdministratorState,
   totalAdministratorUpkeepIfAllWorkForOwner,
+  administratorUpkeepForCity,
+  improvementAdministratorUpkeepForCity,
   type AdministratorChange,
   aiRequiresImprovementAdministrator,
   cityHasImprovementAdministrator,
@@ -8854,6 +8856,8 @@ async function boot(): Promise<void> {
         isAutoBuildEnabled: isPlayerAutoBuildEnabled, // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1
         // R-WEB-CITY-ADMINISTRATOR-Q1: przycisk/chip administratora w nagłówku miasta + bramka autobudowy.
         getCityAdministratorState: (cityId: string) => cityAdministratorUiState(cityId),
+        // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: chip administratora ulepszeń w nagłówku miasta.
+        getImprovementAdministratorState: (cityId: string) => improvementAdministratorUiState(cityId),
         onHireAdministrator: (cityId: string) => hireCityAdministratorForPlayer(cityId),
         onDismissAdministrator: (cityId: string) => dismissCityAdministratorForPlayer(cityId),
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
@@ -9001,6 +9005,7 @@ async function boot(): Promise<void> {
             bogactwoUtrzymanieBudynkow: hs.bogactwoUtrzymanieBudynkow,
             bogactwoUtrzymanieSurowcowBudynkow: hs.bogactwoUtrzymanieSurowcowBudynkow,
             bogactwoUtrzymanieJednostek: hs.bogactwoUtrzymanieJednostek,
+            bogactwoUtrzymanieAdministratorow: hs.bogactwoUtrzymanieAdministratorow,
             bogactwoRate: hs.bogactwoRate,
           };
         },
@@ -9016,6 +9021,12 @@ async function boot(): Promise<void> {
             utrzymanieSurowcowBudynkow: row.utrzymanieSurowcowBudynkow,
             utrzymanieGarnizonu: row.utrzymanieGarnizonu,
             nauka: row.nauka,
+            // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratora miasta + ulepszen (juz w bilansie; tylko wiersz).
+            // OFF (opcja „Administratorzy” wyłączona) -> undefined: brak wiersza w panelu.
+            utrzymanieAdministratora: !administratorsEnabled ? undefined : (() => {
+              const c = cities.find(x => x.id === cityId);
+              return c ? administratorUpkeepForCity(c, cityBuilt.get(c.id) ?? []) + improvementAdministratorUpkeepForCity(c) : 0;
+            })(),
           };
         },
         getOkolicaState: (cityId: string) => {
@@ -10197,7 +10208,7 @@ async function boot(): Promise<void> {
         resumed: ['Administrator ulepszeń wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora ulepszeń.`],
       };
       const [title, subtitle] = (ch.role === 'ulepszenia' ? textImp : text)[ch.kind];
-      warEventLog.unshift({ id: evId, icon: 'A', title, subtitle, kind: 'enemy', turnCreated: turn });
+      warEventLog.unshift({ id: evId, icon: ch.role === 'ulepszenia' ? 'ADM-IMP' : 'ADM', title, subtitle, kind: 'enemy', turnCreated: turn });
       trimWarEventLog();
     }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: zmiany stanu administratorów jeszcze niezgłoszone w „Ważne”. */
@@ -14096,7 +14107,7 @@ async function boot(): Promise<void> {
       _lastPieniadzRate = 0; _lastWealthLevel = 1;
       _lastWealthMnoznik = 1; _lastNaukaRate = 0; _lastLudnoscRate = 0;
       _lastBogactwoRate = 0; _lastBogactwoHandel = 0;
-      _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {}; _lastPlayerCityEcon = [];
       _pracaRateFreshFromEndTurn = false; _liveFoodBrutto = 0; _livePracaForecast = null;
       markCityStateDirty(); // empireEconDirty=true, powerDirty=true, _maxSafeRationCache.clear()
@@ -14382,6 +14393,8 @@ async function boot(): Promise<void> {
     let _lastBogactwoHandel: number = 0;
     let _lastBogactwoUtrzymanieBudynkow: number = 0;
     let _lastBogactwoUtrzymanieJednostek: number = 0;
+    // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1: utrzymanie administratorow (miast + ulepszen) gracza/ture -- tylko do wiersza w panelu imperium.
+    let _lastBogactwoUtrzymanieAdministratorow: number = 0;
     let _lastBogactwoUtrzymanieSurowcow: Record<string, number> = {};
     /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
     let _liveFoodBrutto: number = 0;
@@ -22187,6 +22200,7 @@ async function boot(): Promise<void> {
       _lastBogactwoHandel = playerEcon.pieniadzZTras;
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
       _lastBogactwoUtrzymanieJednostek = bogactwoUpkeepPreview.utrzymanieJednostki;
+      _lastBogactwoUtrzymanieAdministratorow = bogactwoUpkeepPreview.utrzymanieAdministratorow ?? 0;
       _lastBogactwoUtrzymanieSurowcow = previewOwnerTotalResourceUpkeep(
         0, playerCities, data.buildings, operationalBuiltByCity(playerCities, cityBuilt),
         playerEconUnitsForUpkeep,
@@ -22548,6 +22562,8 @@ async function boot(): Promise<void> {
         bogactwoUtrzymanieBudynkow: Math.floor(_lastBogactwoUtrzymanieBudynkow),
         bogactwoUtrzymanieSurowcowBudynkow: { ..._lastBogactwoUtrzymanieSurowcow },
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
+        // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): OFF -> undefined -> panel nie pokazuje wiersza.
+        bogactwoUtrzymanieAdministratorow: administratorsEnabled ? Math.floor(_lastBogactwoUtrzymanieAdministratorow) : undefined,
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
@@ -39074,6 +39090,7 @@ async function boot(): Promise<void> {
                 _lastBogactwoHandel = hEcon.pieniadzZTras;
                 _lastBogactwoUtrzymanieBudynkow = hBalance?.utrzymanieBudynki ?? 0;
                 _lastBogactwoUtrzymanieJednostek = hBalance?.utrzymanieJednostki ?? 0;
+                _lastBogactwoUtrzymanieAdministratorow = hBalance?.utrzymanieAdministratorow ?? 0;
                 _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(hOid) ?? {}) };
                 _lastBogactwoRate = hEcon.pieniadz - (hBalance?.utrzymanieRazem ?? 0);
               }
@@ -45223,7 +45240,7 @@ async function boot(): Promise<void> {
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
-      _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
@@ -47173,7 +47190,7 @@ async function boot(): Promise<void> {
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
-      _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieJednostek = 0; _lastBogactwoUtrzymanieAdministratorow = 0;
       _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
@@ -47326,7 +47343,7 @@ async function boot(): Promise<void> {
         if (show) {
           warEventLog.unshift({
             id: `city-impadmin-migration-${turn}`,
-            icon: 'A',
+            icon: 'ADM-IMP',
             title: 'Auto-ulepszenia terenu wymagają administratora ulepszeń',
             subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${affectedImp.length} miast bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
             kind: 'enemy',
@@ -47343,7 +47360,7 @@ async function boot(): Promise<void> {
         if (affected.length > 0) {
           warEventLog.unshift({
             id: `city-admin-migration-${turn}`,
-            icon: 'A',
+            icon: 'ADM',
             title: 'Autobudowa wymaga administratora',
             subtitle: `Automatyczna budowa budynków działa teraz tylko w miastach z działającym administratorem (${affected.length} miast bez niego). Zatrudnij administratora w nagłówku miasta (koszt ${administratorHireCost()} Pieniądza).`,
             kind: 'enemy',
@@ -47356,7 +47373,7 @@ async function boot(): Promise<void> {
       if (legacyAutomationMigration) {
         warEventLog.unshift({
           id: `administrators-legacy-migration-${turn}`,
-          icon: 'A',
+          icon: 'ADM',
           title: LEGACY_AUTOMATION_NOTICE_TITLE,
           subtitle: LEGACY_AUTOMATION_NOTICE_TEXT,
           kind: 'enemy',
