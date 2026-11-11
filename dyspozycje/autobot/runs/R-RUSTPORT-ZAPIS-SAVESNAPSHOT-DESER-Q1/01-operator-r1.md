@@ -1,0 +1,15 @@
+STATUS: BLOCK
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-ZAPIS-SAVESNAPSHOT-DESER-Q1
+GOAL: usunac publiczny Deserialize z SaveSnapshot; wczytywanie wylacznie przez load_save_snapshot (zapis_loader.rs) i load_replay_log_json; testy przepiete na sciezke z migracja bez oslabiania asercji.
+ZMIANY/COMMIT: brak zmian kodu. Baza: ca25d6fd2 (= origin/rust-port/parity-v2). Jedyna zmiana to ten raport. Probe kompilacji wykonany i wycofany (git checkout), worktree czysty poza raportem; Cargo.lock wygenerowany przez cargo usuniety, nie commitowany.
+TESTY: NIE_ZMIERZONO bramek (fmt/clippy/test) - nie uruchamiano, bo zakres zmiany nie miesci sie w allowliscie. Zmierzono probe: tymczasowe usuniecie `impl<'de> Deserialize<'de> for SaveSnapshot` z rust-port/engine/src/domain/save_load.rs daje `cargo check --lib` z 4 bledami E0277 (`SaveSnapshot: Deserialize` nie spelnione): src/domain/replay.rs:46 (derive Deserialize na ReplayStep), src/domain/replay.rs:52 (pole snapshot), src/domain/zapis_loader.rs:44 (from_str). Testy nie byly kompilowane, bo lib nie przechodzi.
+BLOKADY:
+1. Premisa dispatchu nieprawdziwa: w save_load.rs nie ma `derive(Deserialize)` na SaveSnapshot (derive to Debug, Clone, PartialEq, Eq, Serialize), jest tylko RECZNA `impl<'de> Deserialize<'de> for SaveSnapshot` (okolice linii 759). Kryterium 2 ("brak derive Deserialize") trzeba przeformulowac na "brak impl Deserialize".
+2. Usuniecie impl lamie replay.rs (ReplayStep/ReplayLog deserializuja pole snapshot typu SaveSnapshot). replay.rs jest poza allowlista (ZAKAZ: inne pliki domain/). Bez tego nie da sie wprowadzic load_replay_log_json bez dotkniecia replay.rs.
+3. Poza allowlista sa pliki testow deserializujace SaveSnapshot bez turbofish (`let x: SaveSnapshot = serde_json::from_str/from_value`): rust-port/engine/tests/p6_repin_wojna_2_r4_save.rs, p6_repin_wojna_3_hook.rs, p6_wire_war_state_snapshot.rs, p6_zapis_erawar_save.rs, p6_zapis_loader_migrate.rs, p6_zapis_migracje_snapshot_flags.rs. Lacznie 15 plikow zawiera SaveSnapshot, z czego 6 spoza allowlisty ma wywolania deserializacji.
+4. Kryterium 1 (git grep turbofish) jest czesciowo juz spelnione; samo zdjecie turbofish nie wystarcza, bo kompilacja zalezy od impl.
+5. Testy w tests/save_load.rs (round-trip, migracja v1, odrzucenie wersji przyszlej) uzywaja surowego from_str; przepiecie na load_save_snapshot wymaga dolaczenia zapis_loader.rs do modulow #[path] tego pliku testowego (lub uzycia civ_engine), co zmienia strukture testu.
+RUNDY: 1/5 (Operator r1). Zadna runda nie zuzyta na kod.
+NASTEPNY KROK: decyzja wlasciciela/orkiestratora. Opcje: (a) poszerzyc allowliste o replay.rs, zapis_loader.rs, save_load.rs (wewnetrzny helper pub(crate) do deserializacji wire) oraz pliki testow spoza listy, z wpisem do dispatchu; (b) zawezic GOAL, np. Deserialize tylko przez wewnetrzny helper, z przeformulowaniem kryteriow; (c) odlozyc temat. Zalecenie: (a), bo to jedyna droga spelnienia GOAL.
+DEPLOY/PUSH: NIE WYKONANO (operator nie pushuje; brak push do rust-port/parity-v2 i origin/main).
