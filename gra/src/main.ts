@@ -635,6 +635,7 @@ import {
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
   recomputeCityFoodBalancesInEcon,
+  forecastNextTurnProduction,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -19829,9 +19830,56 @@ async function boot(): Promise<void> {
           rawParams: data.econParams as unknown as RawConverterParamsJson,
           difficulty: _menuDifficulty,
           realizedLastTurn: converterProducedLastTurnByOwner.get(ME()),
+          ...producersForecastArgs(),
           buildingLabel: id => String(data.buildings.find(b => b.id === id)?.nazwa ?? id),
         }),
       };
+    }
+
+    /**
+     * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: prognoza produkcji surowcow na NASTEPNA ture dla panelu
+     * imperium. TEN SAM kod co realny tick (forecastNextTurnProduction -> advanceCityEconomy, faza produkcji)
+     * na klonie miast; nic nie zmienia w grze. Maksimum dopywu drewna/kamienia = ten sam kod bez zapasow
+     * (bez przyciecia do limitu magazynu), przy biezacych i przy wszystkich wlaczonych budynkach.
+     */
+    function producersForecastArgs(): {
+      forecastNext?: Record<string, number>;
+      rawInflowPotential?: { enabled: Record<string, number>; installed: Record<string, number> };
+    } {
+      try {
+        const me = ME();
+        const ownerCivMap = new Map<number, string>();
+        ownerCivMap.set(me, (player.civType as string) || 'grecy');
+        const base = {
+          cities, map, data, difficulty: _menuDifficulty, builtByCity: cityBuilt,
+          playerEra: player.era, playerZbadane: player.zbadane, ownerCivByOwnerId: ownerCivMap,
+          resolveOwnerEra: empireEpochForOwner, resolveOwnerTech: unlockedTechSetForOwner,
+          resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(),
+          resolveOwnerActiveLabels: makeOwnerRuntimeActiveLabelsResolver(),
+          resolveOwnerEmpireStock: makeOwnerEmpireStockResolver(),
+        };
+        const f = forecastNextTurnProduction(base);
+        const forecastNext: Record<string, number> = {
+          ...(f.producedByOwner.get(me) ?? {}),
+          ...(f.rawInflowByOwner.get(me) ?? {}),
+        };
+        const mine = cities.filter(c => c.ownerId === me);
+        const hasRaw = mine.some(c => (cityBuilt.get(c.id) ?? []).some(id => id === 'stolarnia' || id === 'kamieniarski'));
+        if (!hasRaw) return { forecastNext };
+        const pot = forecastNextTurnProduction({ ...base, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
+        // wszystkie zainstalowane wlaczone: klon miast bez listy wylaczonych (tylko do tego liczenia)
+        const allOn = cities.map(c => {
+          if (c.ownerId !== me || !c.wylaczoneBudynki) return c;
+          const copy = { ...c };
+          delete copy.wylaczoneBudynki;
+          return copy;
+        });
+        const potAll = forecastNextTurnProduction({ ...base, cities: allOn, ignoreStock: true }).rawInflowByOwner.get(me) ?? {};
+        return { forecastNext, rawInflowPotential: { enabled: { ...pot }, installed: { ...potAll } } };
+      } catch (eForecast) {
+        console.error('[Panel imperium] Blad prognozy produkcji:', eForecast);
+        return {};
+      }
     }
 
     /**
@@ -39078,7 +39126,7 @@ async function boot(): Promise<void> {
               // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
               // Dla KAŻDEGO fotela człowieka (nie tylko `humanOwnerId`) — parytet z AI niżej.
               buildingResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepBuildingsByOwner.get(hOid) ?? {}) });
-              converterProducedLastTurnByOwner.set(hOid, { ...(econ.converterProducedByOwner.get(hOid) ?? {}) });
+              converterProducedLastTurnByOwner.set(hOid, { ...(econ.converterProducedByOwner.get(hOid) ?? {}), ...(econ.rawInflowByOwner?.get(hOid) ?? {}) });
               unitResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepUnitsByOwner.get(hOid) ?? {}) });
 
               if (hOid === humanOwnerId) {
@@ -39116,7 +39164,7 @@ async function boot(): Promise<void> {
               // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
               // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
               buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });
-              converterProducedLastTurnByOwner.set(oid, { ...(econ.converterProducedByOwner.get(oid) ?? {}) });
+              converterProducedLastTurnByOwner.set(oid, { ...(econ.converterProducedByOwner.get(oid) ?? {}), ...(econ.rawInflowByOwner?.get(oid) ?? {}) });
               unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });
               // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
               // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść

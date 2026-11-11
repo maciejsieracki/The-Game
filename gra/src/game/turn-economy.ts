@@ -1195,6 +1195,12 @@ export interface EconomyTickResult {
    * (po ograniczeniach wejsc, przepustowosci i miejsca w magazynie). Wylaczone budynki nie licza sie.
    */
   converterProducedByOwner: Map<number, Record<string, number>>;
+  /**
+   * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: faktyczny dopływ Drewna/Kamienia z mapy w tym ticku
+   * (po bonusie Stolarni / Warsztatu kamieniarskiego i po przycięciu do limitu magazynu) per owner.
+   * Tylko odczyt dla panelu imperium -- zapas zmienia kod kredytowania, nie to pole.
+   */
+  rawInflowByOwner?: Map<number, Record<string, number>>;
   /** Analogiczne do `resourceUpkeepBuildingsByOwner`, tylko utrzymanie surowcowe jednostek. */
   resourceUpkeepUnitsByOwner: Map<number, Record<string, number>>;
   /**
@@ -1791,6 +1797,13 @@ function tickEmpireResourcePipeline(
   spichlerzDrainParams: SpichlerzDrainParams,
   /** R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wypelniane faktyczna produkcja konwerterow (historia ticku). */
   producedOut?: Map<number, Record<string, number>>,
+  /** R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: wypelniany faktyczny dopyw Drewna/Kamienia z mapy (po cap). */
+  inflowOut?: Map<number, Record<string, number>>,
+  /**
+   * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: tylko prognoza -- konczy po Fazie 2 (produkcja),
+   * PRZED Faza 3 (drain Spichlerza zapisuje stan modulu `_spichlerz*`). Wolacy podaje KLON miast.
+   */
+  stopAfterProduction?: boolean,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 
@@ -1805,7 +1818,12 @@ function tickEmpireResourcePipeline(
 
     const creditTerritory = (key: TerritoryResourceKey, raw: number | undefined, mult = 1): void => {
       if (raw == null || !(raw > 0)) return;
-      creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
+      const got = creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
+      if (inflowOut && key === 'kamien') {
+        const acc = inflowOut.get(ownerId) ?? {};
+        acc.kamien = (acc.kamien ?? 0) + got;
+        inflowOut.set(ownerId, acc);
+      }
     };
 
     // R-HEX-PLONY-MAGAZYN B: ulepszenie (terrYield) + plony terenu z 👤 (worked) addytywnie.
@@ -1816,7 +1834,12 @@ function tickEmpireResourcePipeline(
       stolarniaBonusDrewnaCiv,
     );
     if (drewnoCredit > 0) {
-      creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
+      const got = creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
+      if (inflowOut) {
+        const acc = inflowOut.get(ownerId) ?? {};
+        acc.drewno = (acc.drewno ?? 0) + got;
+        inflowOut.set(ownerId, acc);
+      }
     }
 
     const kamienMapBase = (terrYield?.kamien ?? 0) + worked.kamien;
@@ -1878,6 +1901,8 @@ function tickEmpireResourcePipeline(
 
     assignOwnerResourceStockFromPool(cities, ownerId, pool);
   }
+
+  if (stopAfterProduction) return new Map<string, SpichlerzCityBonusState>();
 
   // Faza 3 (PYTANIE-84 U-5/U-10/U-11): drain Spichlerza ze skarbca po świeżej produkcji/konwersji.
   const spichlerzByCity = new Map<string, SpichlerzCityBonusState>();
@@ -2426,6 +2451,11 @@ export function advanceCityEconomy(
    * reszta -> trudność menu. Tylko WYBÓR poziomu, liczby z econ-params.json bez zmian.
    */
   resolveOwnerUpkeepDifficulty?: (ownerId: number) => Difficulty,
+  /**
+   * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: `productionForecastOnly` = tylko faza produkcji surowcow
+   * (dopyw z mapy + konwertery) i powrot. Wolacy MUSI podac klon miast (stan jest mutowany).
+   */
+  options?: { productionForecastOnly?: boolean },
 ): EconomyTickResult {
   // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
   // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
@@ -2618,6 +2648,7 @@ export function advanceCityEconomy(
   }
 
   const converterProducedByOwner = new Map<number, Record<string, number>>();
+  const rawInflowByOwner = new Map<number, Record<string, number>>();
   const result: EconomyTickResult = {
     perCity:        [],
     cities:         0,
@@ -2634,6 +2665,7 @@ export function advanceCityEconomy(
     resourceUpkeepByOwner: new Map(),
     resourceUpkeepBuildingsByOwner: new Map(),
     converterProducedByOwner,
+    rawInflowByOwner,
     resourceUpkeepUnitsByOwner: new Map(),
     pracaUpkeepByOwner,
   };
@@ -2666,7 +2698,10 @@ export function advanceCityEconomy(
     resolveOwnerZlotoAccess,
     spichlerzDrainParams,
     converterProducedByOwner,
+    rawInflowByOwner,
+    options?.productionForecastOnly === true,
   );
+  if (options?.productionForecastOnly === true) return result;
 
   const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
     cities, builtByCity, true, spichlerzDrainParams,
@@ -3096,4 +3131,57 @@ export function advanceCityEconomy(
   }
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 -- prognoza produkcji surowcow na nastepna ture
+// ---------------------------------------------------------------------------
+
+export interface ProductionForecastInput {
+  cities: ReadonlyArray<City>;
+  map: GameMap;
+  data: GameData;
+  difficulty: Difficulty;
+  builtByCity: ReadonlyMap<string, readonly string[]>;
+  playerEra: number;
+  playerZbadane: ReadonlySet<string>;
+  ownerCivByOwnerId?: ReadonlyMap<number, string>;
+  resolveOwnerEra?: OwnerEraResolver;
+  resolveOwnerTech?: OwnerTechResolver;
+  resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver;
+  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver;
+  resolveOwnerEmpireStock?: OwnerEmpireStockResolver;
+  /** Gdy true: zapasy w klonie = 0 (bez przyciecia do limitu magazynu, bez wejsc konwerterow) -- do "maksimum" dopywu z mapy. */
+  ignoreStock?: boolean;
+}
+
+export interface ProductionForecastResult {
+  /** ownerId -> surowiec -> ile wyprodukuja konwertery w nastepnej turze (te same receptury co realny tick). */
+  producedByOwner: Map<number, Record<string, number>>;
+  /** ownerId -> drewno/kamien -> faktyczny dopyw z mapy (z bonusem Stolarni / Warsztatu kamieniarskiego). */
+  rawInflowByOwner: Map<number, Record<string, number>>;
+}
+
+/**
+ * Prognoza produkcji NASTEPNEJ tury: TEN SAM kod co realny tick (`advanceCityEconomy`, faza produkcji:
+ * `tickEmpireResourcePipeline`) uruchomiony na KLONIE miast -- zadnej osobnej formuly. Uwzglednia wylaczone
+ * budynki (`operationalBuiltByCity` w srodku), biezace zapasy wejsc, konkurencje o wspolne wejscia
+ * (kolejnosc miast/receptur jak w ticku) i limit magazynu. Nie zmienia zadnego stanu gry ani modulu
+ * (tryb `productionForecastOnly` konczy przed zapisem stanu Spichlerza). "Jesli nic sie nie zmieni
+ * do konca tury": nie widzi handlu/zdarzen/zakupow, ktore zajda przed tickiem.
+ */
+export function forecastNextTurnProduction(input: ProductionForecastInput): ProductionForecastResult {
+  const clone = structuredClone(input.cities) as City[];
+  if (input.ignoreStock) for (const c of clone) c.surowce = {};
+  const r = advanceCityEconomy(
+    clone, input.map, input.data, input.difficulty, [], new Map(), input.builtByCity,
+    input.playerEra, input.playerZbadane, input.ownerCivByOwnerId ?? new Map(), new Map(),
+    input.resolveOwnerEra, input.resolveOwnerTech,
+    'wysoki', new Map(), new Map(), new Map(), new Map(),
+    input.resolveOwnerZlotoAccess ?? (() => true),
+    input.resolveOwnerActiveLabels, input.resolveOwnerEmpireStock,
+    new Map(), undefined, new Map(), new Map(), new Map(), undefined,
+    { productionForecastOnly: true },
+  );
+  return { producedByOwner: r.converterProducedByOwner, rawInflowByOwner: r.rawInflowByOwner ?? new Map() };
 }

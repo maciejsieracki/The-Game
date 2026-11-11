@@ -23,7 +23,7 @@ const BUNDLE = path.join(__dirname, '.rbt-live-bundle.js');
 fs.writeFileSync(ENTRY, `
 import { renderProducersSection, configureEmpireProducerToggle, wireProducerToggles, mountEmpireDetailPanel } from '../src/ui/empireDetailPanel';
 import { buildEmpireProducersSnap, setProductionBuildingEnabled, operationalBuiltByCity } from '../src/game/building-toggle';
-import { advanceCityEconomy } from '../src/game/turn-economy';
+import { advanceCityEconomy, forecastNextTurnProduction } from '../src/game/turn-economy';
 import econParams from '../data/econ-params.json';
 import civs from '../data/civs.json';
 import societyParams from '../data/society-params.json';
@@ -42,13 +42,24 @@ const lastRealized: any = { v: undefined };
 
 function runTurn() {
   const econ = advanceCityEconomy(cities, MAP, DATA, 'normal', [], new Map(), builtMap, 2, new Set(), new Map(), new Map(), () => 2, undefined);
-  lastRealized.v = { ...(econ.converterProducedByOwner.get(0) ?? {}) };
+  lastRealized.v = { ...(econ.converterProducedByOwner.get(0) ?? {}), ...(econ.rawInflowByOwner?.get(0) ?? {}) };
   return econ;
 }
+// Prognoza: TEN SAM kod co tick (forecastNextTurnProduction), na kopii miast -- bez zmiany stanu.
+function forecastBase(extra: any = {}) {
+  return { cities, map: MAP, data: DATA, difficulty: 'normal' as const, builtByCity: builtMap, playerEra: 2, playerZbadane: new Set<string>(), resolveOwnerEra: () => 2, ...extra };
+}
+function forecast() {
+  const f = forecastNextTurnProduction(forecastBase());
+  return { ...(f.producedByOwner.get(0) ?? {}), ...(f.rawInflowByOwner.get(0) ?? {}) } as Record<string, number>;
+}
 function snap() {
+  const pot = forecastNextTurnProduction(forecastBase({ ignoreStock: true })).rawInflowByOwner.get(0) ?? {};
+  const allOn = cities.map(c => { const k: any = { ...c }; delete k.wylaczoneBudynki; return k; });
+  const potAll = forecastNextTurnProduction(forecastBase({ cities: allOn, ignoreStock: true })).rawInflowByOwner.get(0) ?? {};
   return buildEmpireProducersSnap({
     cities, ownerId: 0, builtByCity: builtMap, era: 2, rawParams: econParams as any, difficulty: 'normal',
-    realizedLastTurn: lastRealized.v, buildingLabel: (id: string) => String((buildings as any[]).find(b => b.id === id)?.nazwa ?? id),
+    realizedLastTurn: lastRealized.v, forecastNext: forecast(), rawInflowPotential: { enabled: { ...pot }, installed: { ...potAll } }, buildingLabel: (id: string) => String((buildings as any[]).find(b => b.id === id)?.nazwa ?? id),
   });
 }
 function paint() {
@@ -64,6 +75,7 @@ configureEmpireProducerToggle({
   },
 });
 (window as any).__log = [];
+(window as any).__forecast = () => forecast();
 (window as any).__runTurn = () => { runTurn(); paint(); return lastRealized.v; };
 (window as any).__stocks = () => cities.map(c => ({ id: c.id, cegla: c.surowce.cegla ?? 0, glina: c.surowce.glina, off: c.wylaczoneBudynki ?? [] }));
 mountEmpireDetailPanel(() => ({} as any)); // wstrzykuje prawdziwy CSS panelu imperium
@@ -148,6 +160,37 @@ const STUB = {
   const real3 = await page.evaluate(() => (window).__runTurn());
   ok(real3.cegla === real1.cegla, 'tura 3 po wlaczeniu: faktyczna cegla wrocila do ' + real1.cegla + ' (jest ' + real3.cegla + ')');
   await page.screenshot({ path: path.join(OUT, '05-wlaczone-ponownie.png'), fullPage: true });
+
+  // ---- PROGNOZA nastepnej tury (R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1) ----
+  const hdr = await page.textContent('#host .civ-emp-mini');
+  ok(hdr.includes('OSTATNIA TURA (ZREALIZOWANO)') && hdr.includes('PROGNOZA NASTĘPNEJ TURY') && hdr.includes('MAKSIMUM (WŁĄCZONE)'), 'naglowki: ostatnia tura (zrealizowano) / prognoza nastepnej tury / maksimum');
+  const rowText = async (label) => page.$$eval('#host .civ-emp-mini .civ-emp-mini-r', (rows, l) => { const r = rows.find(x => x.textContent.startsWith(l)); return r ? [...r.children].map(c => c.textContent) : null; }, label);
+  const drewnoRow = await rowText('Drewno');
+  ok(drewnoRow !== null, 'agregat zawiera wiersz Drewno (Stolarnia w Ostii): ' + JSON.stringify(drewnoRow));
+  const cell = async (label, idx) => { const r = await rowText(label); return r ? Number(r[idx]) : NaN; };
+  // prognoza == to, co faktycznie wyprodukuje sie po kolejnym endTurn (bez zmiany stanu)
+  const fcOn = await page.evaluate(() => (window).__forecast());
+  const shownCeglaOn = await cell('Cegła', 2);
+  ok(shownCeglaOn === Math.round(fcOn.cegla), 'panel: prognoza cegly = ' + shownCeglaOn + ' (silnik ' + fcOn.cegla + ')');
+  const realN = await page.evaluate(() => (window).__runTurn());
+  ok(realN.cegla === fcOn.cegla && (realN.drewno ?? 0) === (fcOn.drewno ?? 0), 'prognoza == realna tura: cegla ' + fcOn.cegla + '/' + realN.cegla + ', drewno ' + fcOn.drewno + '/' + realN.drewno);
+  await page.screenshot({ path: path.join(OUT, '06-prognoza-wszystko-wlaczone.png'), fullPage: true });
+  // KLIK zmienia prognoze
+  const before = await cell('Cegła', 2);
+  await page.click('[data-prod-toggle="c1|cegielnia"]');
+  const afterOff = await cell('Cegła', 2);
+  ok(afterOff < before, 'klik wylacz Cegielnie (Roma): prognoza cegly spadla ' + before + ' -> ' + afterOff);
+  const stolBefore = await cell('Drewno', 2);
+  await page.click('[data-prod-toggle="c2|stolarnia"]');
+  const stolAfter = await cell('Drewno', 2);
+  ok(stolAfter < stolBefore, 'klik wylacz Stolarnie (Ostia): prognoza drewna spadla ' + stolBefore + ' -> ' + stolAfter);
+  const fcOff = await page.evaluate(() => (window).__forecast());
+  const realOff = await page.evaluate(() => (window).__runTurn());
+  ok(realOff.cegla === fcOff.cegla && (realOff.drewno ?? 0) === (fcOff.drewno ?? 0), 'po wylaczeniu: prognoza == realna tura: cegla ' + fcOff.cegla + '/' + realOff.cegla + ', drewno ' + fcOff.drewno + '/' + realOff.drewno);
+  await page.screenshot({ path: path.join(OUT, '07-prognoza-wylaczone.png'), fullPage: true });
+  await page.click('[data-prod-toggle="c1|cegielnia"]');
+  const afterOn = await cell('Cegła', 2);
+  ok(afterOn > afterOff, 'klik wlacz Cegielnie: prognoza cegly wrocila (' + afterOff + ' -> ' + afterOn + ')');
 
   ok(errors.length === 0, 'brak bledow strony do konca: ' + errors.join(' | '));
   console.log(`\nresource-building-toggle-ui-live: ${pass} passed, ${fail} failed`);
