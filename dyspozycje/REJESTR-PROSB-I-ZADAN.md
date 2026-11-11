@@ -9661,3 +9661,8 @@ Idź do wodza: wspólne ustawienie dziedziczą tylko zamówienia z Armii/Rekruta
 STATUS: OTWARTE
 DOMAIN: GAME
 Stadnina bez surowca Koń w Żelazie wymaga bezpośredniego sąsiedztwa istniejącej stadniny. Istniejących stadnin zapisów nie usuwać. Wspólna reguła gracza/AI/autobudowy oraz podświetlenia i wykonania. Dispatch `autobot/runs/R-WEB-IRON-STUD-ADJACENCY-Q1/00-dispatch.md`; kolejka przy max4 aktywnych tematach.
+
+## 2026-11-11 — R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Pilne: przy0%pula/100%budynki panel13295Pracy/t pokazuje0dopuli, alepula58092+9857. Zbadać bilans tury, ewentualny zwrot niewykorzystanejPracy/forecast i podwójne naliczanie; niezakładaćprzyczynyzezdjęcia. Dispatch `autobot/runs/R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1/00-dispatch.md`; priorytetnajbliższegoslotuporelease618.
