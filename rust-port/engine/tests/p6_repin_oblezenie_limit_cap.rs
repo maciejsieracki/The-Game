@@ -1,17 +1,17 @@
 //! R-RUSTPORT-REPIN-OBLEZENIE-LIMIT-150-BLOKADA-Q1 (a): sufit 150 tur oblezenia bez wylomu.
 //!
-//! Wektory wyprowadzone RECZNIE z kodu webowego `gra/src/battle/battleScene.ts` (638e90bea), nie z uruchomienia weba
-//! (NIE_ZMIERZONO: brak uruchomienia Node na zrodle weba w tej rundzie).
-//! Zrodla: `:1128` (cap), `:9440-9456` (`_roundCapVerdict`).
+//! Przypadki reczne (oczekiwania wyprowadzone z kodu weba `battleScene.ts` :1128, :9440-9456). Wektory generowane
+//! z URUCHOMIONEGO weba sa w `p6_repin_oblezenie_limit_web.rs` (runda 2, ODPOWIEDZ NA ZARZUT 2).
 
 use civ_engine::domain::siege_no_breach::{
-    round_cap_verdict, siege_no_breach_cap, RoundCapVerdict, FF_MAX_ROUNDS,
-    SIEGE_NO_BREACH_MAX_ROUNDS_WEB,
+    round_cap_verdict, siege_no_breach_cap, siege_no_breach_max_rounds_from_data, RoundCapVerdict,
+    FF_MAX_ROUNDS,
 };
 
 #[test]
-fn cap_wartosc_webowa_150() {
-    assert_eq!(SIEGE_NO_BREACH_MAX_ROUNDS_WEB, 150);
+fn cap_wartosc_webowa_150_z_danych() {
+    // ZARZUT 1: wartosc idzie z danych (`Oblezenie.bez_wylomu_max_tur`), nie ze stalej w kodzie.
+    assert_eq!(siege_no_breach_max_rounds_from_data().unwrap(), 150);
     assert_eq!(siege_no_breach_cap(Some(150.0)), 150);
 }
 
@@ -30,8 +30,8 @@ fn cap_zaokraglenie_js_i_granice() {
     assert_eq!(siege_no_breach_cap(Some(149.4)), 149);
     // Math.max(1, ...)
     assert_eq!(siege_no_breach_cap(Some(-7.0)), 1);
-    // Math.min(..., FF)
-    assert_eq!(siege_no_breach_cap(Some(900.0)), FF_MAX_ROUNDS);
+    // web: cap NIE jest tu ograniczany do 400 (ograniczenie = round_cap_verdict)
+    assert_eq!(siege_no_breach_cap(Some(900.0)), 900);
 }
 
 #[test]
@@ -84,7 +84,7 @@ fn bitwa_bez_muru_sufit_ff_400() {
 
 #[test]
 fn cap_podany_ponad_ff_jest_obcinany_do_400() {
-    // web: Math.min(this.siegeNoBreachMaxRounds, FF) -> sufit 400, nie 900
+    // web: Math.min(this.siegeNoBreachMaxRounds, FF) w _roundCapVerdict -> sufit 400, nie 900
     assert_eq!(round_cap_verdict(399, true, false, 900, 1.0, 1.0), None);
     assert_eq!(
         round_cap_verdict(400, true, false, 900, 1.0, 1.0),

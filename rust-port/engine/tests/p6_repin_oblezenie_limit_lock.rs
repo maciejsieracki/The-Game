@@ -1,7 +1,7 @@
 //! R-RUSTPORT-REPIN-OBLEZENIE-LIMIT-150-BLOKADA-Q1 (b): SIEGE-NEARBY -- blokada tylko oblegajacych stosow.
 //!
-//! Wektory wyprowadzone RECZNIE z `gra/src/game/armyMerge.ts` (638e90bea, pin 218d7d5cf), nie z uruchomienia weba
-//! (NIE_ZMIERZONO). Miasto w (0,0); sasiedzi = heksy o odleglosci 1.
+//! Przypadki reczne (zrodlo: gra/src/game/armyMerge.ts, 638e90bea). Wektory z URUCHOMIONEGO weba sa w
+//! p6_repin_oblezenie_limit_web.rs (runda 2). Miasto w (0,0); sasiedzi = heksy o odleglosci 1.
 
 use civ_engine::domain::siege_nearby_lock::{
     besiege_army_groups, besiege_lock_targets, stack_group_id_of, LockUnit,

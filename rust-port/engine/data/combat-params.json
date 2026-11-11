@@ -50,7 +50,9 @@
     "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
     "militia_pop_fraction": 0.2,
     "militia_strength_fraction": 0.5,
-    "siege_max_rounds": 30
+    "siege_max_rounds": 30,
+    "bez_wylomu_max_tur": 150,
+    "_bez_wylomu_max_tur_opis": "R-WEB-BATTLE-SKIP-SIEGE-TRUE-RESULT-Q1 (ABC wlasciciela 2026-11-10): sufit tur taktycznej bitwy OBLEZENIA, w ktorej nikt nie zrobil wylomu (mur/palisada/brama stoi). Po osiagnieciu = REMIS (odparty szturm): atakujacy sie wycofuje, obie strony ponosza straty z przebiegu, miasto zostaje przy obroncy, bez lupu/weteranow/punktow mocy. Ten sam werdykt w AUTO, w recznej i w Pomin do wyniku. Wartosc 150 = ZALOZENIE (wlasciciel nie podal liczby) -- latwo zmienic tutaj. Bitwa z wylomem ma osobny sufit FF_MAX_ROUNDS=400 (rozstrzygniecie po morale)."
   },
   "siege_ai": {
     "t1_assault_ratio": 1.8,

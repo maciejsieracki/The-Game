@@ -251,6 +251,8 @@ pub struct Oblezenie {
     pub militia_pop_fraction: f64,
     pub militia_strength_fraction: f64,
     pub siege_max_rounds: i64,
+    pub _bez_wylomu_max_tur_opis: String,
+    pub bez_wylomu_max_tur: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
