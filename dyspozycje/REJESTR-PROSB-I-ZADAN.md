@@ -9330,3 +9330,7 @@ R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: FC PASS-WITH-NOTES, kod a7f0800fe (f20b81
 - Garnizon w zdobytym mieście (wipeDefenderOnCityCenter): **zostaje obecne zachowanie — giną** (miasto zdobyte). Brak zmian; zamyka uwagę z R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (Evaluator zarzut 1).
 - R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1: właściciel prosi o LISTĘ istniejących budynków administracyjnych (przekazana w czacie: Pałac I/II/III, Sąd, Dom Starszyzny/Dwór Zarządcy/Pretorium, Trybunał, Garnizon) i sam wskaże wybór — temat czeka na tę odpowiedź.
 - #201 („Przydziel obywatela?”): właściciel prosi o dokładniejszy opis opcji — przekazany w czacie; czeka na odpowiedź.
+
+## 2026-11-11 — FALA 622 wdrożona na ROBOCZĄ (main 546fdf6bf, MD5 ed9a203205c922bf4d277bed985d3ee8)
+R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: FC PASS-WITH-NOTES, kod e06f87d9f (bazowy e758eba8f + poprawki Obrony cfa6dd064: druga kopia panelu miasta, regex testu, test źródłowy followIntent). Raw MD5 i 3 sidecary zgodne. Niezmierzone: Chromium na żywej grze (do obejrzenia na ROBOCZEJ: miasto startuje z OFF, Armia dziedziczy), dług bazowy hexHasRoomFor w harnessie dwóch testów, martwy kod purchaseRecruitmentUnits.
+IRON-STUD-ADJACENCY: FC PASS-WITH-NOTES (1dff44b63) → FALA 623 w toku. SURVIVOR-RETREAT: DODATEK 3 (odwrót tylko w polu, w mieście giną) — runda 2 w toku. Start: BRICK-CYCLES-75-100.
