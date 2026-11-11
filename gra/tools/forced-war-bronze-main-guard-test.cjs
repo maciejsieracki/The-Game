@@ -221,7 +221,7 @@ check(
     + 'wojny, np. zwykła oferta pokoju gracza/AI) zostawiałby martwy wpis w '
     + 'bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa '
     + 'błędu co B4 z rundy 1)',
-  /function finalizePeaceTreatyBetween\([\s\S]{0,3000}?const bronzePairKey = diploPairKey\(proposerId, responderId\);\s*\n\s*const bronzeSt = bronzeForceWarActiveByPairKey\.get\(bronzePairKey\);\s*\n\s*if \(bronzeSt\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.delete\(bronzePairKey\);\s*\n\s*forcedWarWavesByPairKey\.delete\(bronzePairKey\);\s*\n\s*bronzeForceWarRestUntilByOwner\.set\(bronzeSt\.attackerId, turn \+ WOJNA_WYMUSZONA_ODPOCZYNEK_TUR\);\s*\n\s*\}\s*\n\s*\}/.test(mainSrc),
+  /function finalizePeaceTreatyBetween\([\s\S]{0,6000}?const bronzePairKey = diploPairKey\(proposerId, responderId\);\s*\n\s*const bronzeSt = bronzeForceWarActiveByPairKey\.get\(bronzePairKey\);\s*\n\s*if \(bronzeSt\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.delete\(bronzePairKey\);\s*\n\s*forcedWarWavesByPairKey\.delete\(bronzePairKey\);\s*\n\s*bronzeForceWarRestUntilByOwner\.set\(bronzeSt\.attackerId, turn \+ WOJNA_WYMUSZONA_ODPOCZYNEK_TUR\);\s*\n\s*\}\s*\n\s*\}/.test(mainSrc),
 );
 
 console.log('');

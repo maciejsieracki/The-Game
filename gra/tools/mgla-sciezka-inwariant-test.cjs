@@ -277,6 +277,7 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'u.q = dest.q;', nr: 2, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'ewakuacja z przejmowanego fortu przy zalozeniu miasta: findEvacuationHexOutsideCity szuka pierscieniami OD 1 i zwraca PIERWSZY wolny — jednostka nie przechodzi przez heksy posrednie, brak sciezki do odkrycia' },
   { plik: MAIN_TS, tekst: 'u.r = dest.r;', nr: 2, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 1, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'hak testowy wojny o Braz — przestawia MIASTO gracza, nie jednostke' },
+  { plik: MAIN_TS, tekst: 'bCities.forEach((city, index) => { city.q = land[index]!.coords.q; city.r = land[index]!.coords.r; });', nr: 1, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'hak testowy moveFixtureAwayForTest — przestawia MIASTA fixture ownera B (nie jednostki), R-WEB-TEST-DEBT-BASELINE-Q3 punkt 5' },
   { plik: MAIN_TS, tekst: 'if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }', nr: 2, klasa: 'NIE-JEDNOSTKA', uzasadnienie: 'lustro dla Zelaza — j.w.' },
   { plik: MAIN_TS, tekst: 'u.q = home.q;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: '`pullPlayerUnitsHome` — hak bramki testowej buntu, nie sciezka rozgrywki' },
   { plik: MAIN_TS, tekst: 'u.r = home.r;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: 'j.w.' },

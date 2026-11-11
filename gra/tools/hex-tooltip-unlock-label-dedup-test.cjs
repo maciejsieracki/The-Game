@@ -106,7 +106,11 @@ async function main() {
     const possible = await domText(render(M, { terenBazowy: 'wzgorza', nakladka: 'brak', ulepszenia: ['kopalnia_cyny'], zloze: 'cyna' }), 'Możliwe ulepszenia');
     ok(possible !== null && /Kamieniołom/.test(possible), 'Kamieniołom na liście możliwych', possible);
     if (possible) {
-      ok(!/odblok\./.test(possible.split('Fort')[0]), 'Kamieniołom: brak "odblok." (surowiec jest w produkcji)', possible);
+      // Zakres: wyłącznie wiersz Kamieniołomu (od jego nazwy do następnej pozycji "Fort").
+      // Wcześniej `split('Fort')[0]` obejmował też wiersz Owiec ("odblok. Owce" -- inny budynek,
+      // legalna etykieta), co dawało fałszywy FAIL (R-WEB-TEST-DEBT-BASELINE-Q3, punkt 5).
+      const kamLine = possible.slice(possible.indexOf('Kamieniołom'), possible.indexOf('Fort'));
+      ok(kamLine.length > 0 && !/odblok\./.test(kamLine), 'Kamieniołom: brak "odblok." (surowiec jest w produkcji)', kamLine);
       ok(/\+\d+ Kamień\/t/.test(possible), 'Kamieniołom: produkcja "+N Kamień/t" zostaje');
     }
 

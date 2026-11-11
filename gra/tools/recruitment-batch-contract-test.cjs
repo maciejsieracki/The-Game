@@ -75,7 +75,15 @@ const ENV_NAMES = [
   'creditOwnerResourceStock',
   'isCityUnderSiege',
   'CITY_SIEGE_RECRUIT_BLOCK_PL',
+  // R-WEB-TEST-DEBT-BASELINE-Q3: purchaseRecruitmentUnit wola hexHasRoomFor (limit stosu) --
+  // prawdziwa funkcja z src/game/army-stack-limit.ts, units + armyStackLimit jako atrapy.
+  'units',
+  'armyStackLimit',
+  'hexHasRoomFor',
 ];
+const STACK_LIMIT_SRC = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'army-stack-limit.ts'), 'utf8');
+const stackLimitJs = esbuild.transformSync(STACK_LIMIT_SRC.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
+const { hexHasRoomFor } = new Function(`${stackLimitJs}\nreturn { hexHasRoomFor };`)();
 
 // eslint-disable-next-line no-new-func
 const makeFunctions = new Function(
@@ -222,6 +230,9 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: nowa bramka oblezenia w purchaseRecruitmentUnit.
     (cs, c) => c.oblegane === true,
     'Miasto jest oblezone',
+    [],
+    () => 120,
+    hexHasRoomFor,
   );
 
   function snapshot() {
