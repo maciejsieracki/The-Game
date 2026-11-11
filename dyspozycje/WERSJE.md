@@ -7009,3 +7009,18 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - Weryfikacja: Independent Evaluator followups and Final Control PASS-WITH-NOTES; prior BLOCK objections closed and preserved; 39/39 logic checks plus typecheck and diff checks PASS; Independent production Chromium/IndexedDB roundtrip: mixed Bronze/Iron−4 before/afterload, Bronze/Bronze−3 bothorders, no row withoutborder; flagfalse/true exposure verified; Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged
 - Ograniczenia: Runtime uses deterministic registered-AI/city fixture, not organic multi-turn campaign; Runtime checks preview/factor values; no screenshot or DOM-text assertion of final diplomacy panel; Final gating-only change reviewed after operator two-state browser run; no extra full rerun by FC; Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance
 - Source 7d5bd499e5cf74b3b35476573a23969bd707b3b6; manifestMD5 2b12c8176ee0b412fcd0b9a5ca392cdf; SHA256 8810f98f2d71f399a05b9c787a69f72db9e4a19ef86989783cae48382664dfcd; push/readback pending.
+
+
+## ROBOCZA 14336eb5 — 2026-11-11T08:40:52.092410+01:00 — FALA 618: AUTO/Skip siege parity and bronze output 50/75
+
+- scope: AUTO and Skip use the same scaled tick and previous-frame callback queue; no duplicate manual in-progress action
+- scope: Bronze converter throughput:50/t in owner Bronze era,75/t from Iron onward across all difficulties; iron/steel and input ratios unchanged
+- verification: Independent evaluator and Final Control PASS for both topics
+- verification: Actual candidate AUTO and Skip at8x siege seed1 match:round400,breach,defender win,losses26/7,HP2651/807; no-breach150 and field/manual regressions PASS
+- verification: Bronze foundry159,owner economy117,HUD20,city panel100,converters49,typecheck PASS
+- verification: Clean archive Vite build; HTTP audio present/absent runtime gate required before publication
+- limits: AUTO/Skip rounded virtual clock differs1ms; combat state identical
+- limits: No full campaign economy or large empire performance run
+- limits: HTTP audio gate is not file protocol acceptance; managed browser file protocol remains unmeasured
+- Source 4d4e10e4f6b2676dc9404d97f82befdb880fbe54; MD5 14336eb5393bb01aef84047308564eb5; SHA256 e8bb03d0b7b05c447405333d4b21333a099a5fe55d0d3d72d7e03acc9a9e2b02; bytes 14424566; push/readback pending.
+- Previous bundle isolated restore MD5 2b12c8176ee0b412fcd0b9a5ca392cdf verified.

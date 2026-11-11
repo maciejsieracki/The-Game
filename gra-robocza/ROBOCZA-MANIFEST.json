@@ -1,33 +1,34 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication554f5d5deaaee252951977316e39f1c2f3e8a1c9; freshGitartifactreadbackPASS",
+  "releaseState": "DEPLOYED LOCALLY; PUSH/READBACK PENDING",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-  "bundleSha256": "8810f98f2d71f399a05b9c787a69f72db9e4a19ef86989783cae48382664dfcd",
-  "bundleBytes": 14424283,
+  "bundleMd5": "14336eb5393bb01aef84047308564eb5",
+  "bundleSha256": "e8bb03d0b7b05c447405333d4b21333a099a5fe55d0d3d72d7e03acc9a9e2b02",
+  "bundleBytes": 14424566,
   "sourceSnapshot": {
-    "source": "7d5bd499e5cf74b3b35476573a23969bd707b3b6",
-    "build": "clean git archive; Vite outside repo; ROBOCZA stamp"
+    "source": "4d4e10e4f6b2676dc9404d97f82befdb880fbe54",
+    "build": "clean git archive; direct Vite; ROBOCZA stamp"
   },
   "scope": [
-    "Existing shared-land-border factor keeps its activation condition: both owners have more than2 cities and share land border",
-    "Trust cost per turn uses higher era in pair: Stone−2, Bronze−3, Iron−4; runtime tick, preview and factor breakdown use one resolver",
-    "Runtime test hook is absent in normal game and available only with civTest=1"
+    "AUTO and Skip use the same scaled tick and previous-frame callback queue; no duplicate manual in-progress action",
+    "Bronze converter throughput:50/t in owner Bronze era,75/t from Iron onward across all difficulties; iron/steel and input ratios unchanged"
   ],
   "verification": [
-    "Independent Evaluator followups and Final Control PASS-WITH-NOTES; prior BLOCK objections closed and preserved",
-    "39/39 logic checks plus typecheck and diff checks PASS",
-    "Independent production Chromium/IndexedDB roundtrip: mixed Bronze/Iron−4 before/afterload, Bronze/Bronze−3 bothorders, no row withoutborder; flagfalse/true exposure verified",
-    "Clean build and HTTP audio runtime present/absent PASS; 3audio MD5 unchanged"
+    "Independent evaluator and Final Control PASS for both topics",
+    "Actual candidate AUTO and Skip at8x siege seed1 match:round400,breach,defender win,losses26/7,HP2651/807; no-breach150 and field/manual regressions PASS",
+    "Bronze foundry159,owner economy117,HUD20,city panel100,converters49,typecheck PASS",
+    "Clean archive Vite build; HTTP audio present/absent runtime gate required before publication"
   ],
   "limits": [
-    "Runtime uses deterministic registered-AI/city fixture, not organic multi-turn campaign",
-    "Runtime checks preview/factor values; no screenshot or DOM-text assertion of final diplomacy panel",
-    "Final gating-only change reviewed after operator two-state browser run; no extra full rerun by FC",
-    "Original file:// audio gate INFRA blocked; HTTP runtime is not file acceptance"
+    "AUTO/Skip rounded virtual clock differs1ms; combat state identical",
+    "No full campaign economy or large empire performance run",
+    "HTTP audio gate is not file protocol acceptance; managed browser file protocol remains unmeasured"
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "border50-final-control.md after20/40BLOCK,41defense,42PASS"
+    "status": "PASS",
+    "reports": [
+      "R-WEB-BATTLE-SKIP-TICK-LOOP-UNIFY-Q1/50-final-control-resume.md",
+      "R-WEB-BRONZE-OUTPUT-50-75-Q1/50-final-control.md"
+    ]
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-11-10T10:51:09",
@@ -36,82 +37,81 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-      "sizeBytes": 14424283
+      "md5": "14336eb5393bb01aef84047308564eb5",
+      "sizeBytes": 14424566
     }
   ],
-  "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
-  "sizeBytes": 14424283,
-  "publisher": "Codex — autoryzowana publikacja Roboczej",
-  "source": "7d5bd499e5cf74b3b35476573a23969bd707b3b6",
+  "md5": "14336eb5393bb01aef84047308564eb5",
+  "sizeBytes": 14424566,
+  "publisher": "Codex AutoBot",
+  "source": "4d4e10e4f6b2676dc9404d97f82befdb880fbe54",
   "immediatePreviousRelease": {
-    "bundleMd5": "6c95bf48a96e610ab152f1ca98f91619",
-    "bundleSha256": "8102397f9584b4ec3fb3fe2b55c4f954a9ea0d1cf1f9570449d133a81a1c0d35",
-    "bundleBytes": 14397875,
-    "wave": 608
+    "wave": 617,
+    "md5": "2b12c8176ee0b412fcd0b9a5ca392cdf",
+    "backupRestoreCheck": "previous bundle restored to isolated file; MD5 verified"
   },
   "rollbackPlan": {
     "method": "Restore wave608 artifacts from ab7507706; revert source8109fb8e9 and98e0ad9e9 ifsource rollbackrequired.",
@@ -1286,12 +1286,11 @@
     }
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at 0e85b43814f503fe34b42c88df4dd07233dbdfb; Robocza only; no KANON/FINALNA promotion.",
+    "status": "PENDING push/readback",
     "target": "origin/main",
-    "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
-    "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
+    "sourceCommit": "4d4e10e4f6b2676dc9404d97f82befdb880fbe54"
   },
-  "publishedAt": "2026-11-10T21:56:53.254002+01:00",
+  "publishedAt": "2026-11-11T08:40:52.092410+01:00",
   "buildStamp": "2026-11-05 23:42",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
@@ -1300,7 +1299,7 @@
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
   },
-  "releaseScope": "FALA617: Shared border diplomacy penalty by higher owner era",
+  "releaseScope": "FALA618: AUTO/Skip siege parity and bronze output 50/75",
   "sidecars": [
     {
       "file": "audio-pack-1.js",
@@ -1318,6 +1317,6 @@
       "sizeBytes": 11556324
     }
   ],
-  "wave": 617,
-  "sha256": "8810f98f2d71f399a05b9c787a69f72db9e4a19ef86989783cae48382664dfcd"
+  "wave": 618,
+  "sha256": "e8bb03d0b7b05c447405333d4b21333a099a5fe55d0d3d72d7e03acc9a9e2b02"
 }
