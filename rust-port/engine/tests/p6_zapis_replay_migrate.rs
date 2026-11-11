@@ -166,3 +166,77 @@ fn p6_zapis_replay_reload_after_migration_is_stable() {
     assert_eq!(generals(&again), vec![10, 11, 20]);
     assert_eq!(again.state(), once.state(), "drugi odczyt bez zmian");
 }
+
+fn demoted(report: &civ_engine::domain::save_migrations::LoadMigrationReport) -> Vec<u64> {
+    report.demoted_generals.iter().map(|u| u.get()).collect()
+}
+
+#[test]
+fn p6_zapis_replay_returns_migration_report() {
+    let text = replay_text(snapshot_wire(
+        &excess_generals_specs(),
+        json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
+    ));
+    let (log, reports) =
+        ReplayLog::<String>::load_json_with_migration_reports(&text).expect("replay loads");
+
+    assert_eq!(reports.len(), 1, "jeden raport na krok z snapshotem");
+    assert_eq!(reports[0].sequence, 0);
+    assert_eq!(
+        demoted(&reports[0].report),
+        vec![12],
+        "wodz 12 zdegradowany"
+    );
+    let snapshot = log.step(0).and_then(|s| s.snapshot()).expect("snapshot");
+    assert_eq!(generals(snapshot), vec![10, 11, 20], "stan po migracji");
+}
+
+#[test]
+fn p6_zapis_replay_migrates_every_snapshot_in_multi_step_log() {
+    // Krok 0: epoka 2 (zostaje wodzowie 10, 11, 20). Krok 1: bez snapshotu.
+    // Krok 2: epoka 1 dla gracza (limit 1) - inny wynik niz w kroku 0.
+    let snapshot_a = snapshot_wire(
+        &excess_generals_specs(),
+        json!([[OWNER, 2.0], [FOREIGN, 2.0]]),
+    );
+    let snapshot_b = snapshot_wire(
+        &excess_generals_specs(),
+        json!([[OWNER, 1.0], [FOREIGN, 3.0]]),
+    );
+    let replay = json!({
+        "version": 1,
+        "seed": 13,
+        "steps": [
+            { "sequence": 0, "turn": 3, "input": "EndTurn", "rng_state": 7, "snapshot": snapshot_a },
+            { "sequence": 1, "turn": 3, "input": "EndTurn", "rng_state": 8, "snapshot": null },
+            { "sequence": 2, "turn": 3, "input": "EndTurn", "rng_state": 9, "snapshot": snapshot_b },
+        ],
+    });
+    let text = serde_json::to_string(&replay).expect("replay text");
+
+    let (log, reports) =
+        ReplayLog::<String>::load_json_with_migration_reports(&text).expect("replay loads");
+    assert_eq!(log.len(), 3);
+    assert_eq!(
+        reports.iter().map(|r| r.sequence).collect::<Vec<_>>(),
+        vec![0, 2],
+        "raporty tylko dla krokow z snapshotem"
+    );
+    assert_eq!(demoted(&reports[0].report), vec![12]);
+    assert_eq!(demoted(&reports[1].report), vec![11, 12]);
+
+    let step0 = log
+        .step(0)
+        .and_then(|s| s.snapshot())
+        .expect("step 0 snapshot");
+    assert_eq!(generals(step0), vec![10, 11, 20]);
+    assert!(log.step(1).expect("step 1").snapshot().is_none());
+    let step2 = log
+        .step(2)
+        .and_then(|s| s.snapshot())
+        .expect("step 2 snapshot");
+    assert_eq!(generals(step2), vec![10, 20]);
+    // Ta sama dana przez zwykly `Deserialize` daje ten sam log.
+    let plain: ReplayLog<String> = serde_json::from_str(&text).expect("plain replay loads");
+    assert_eq!(plain, log);
+}

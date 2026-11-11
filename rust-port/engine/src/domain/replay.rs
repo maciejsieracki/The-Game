@@ -11,6 +11,11 @@ use std::{error::Error, fmt};
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 #[cfg(not(test))]
+use super::save_migrations::LoadMigrationReport;
+#[cfg(test)]
+use civ_engine::domain::save_migrations::LoadMigrationReport;
+
+#[cfg(not(test))]
 pub use super::save_load::SaveSnapshot;
 #[cfg(test)]
 pub use super::save_load::SaveSnapshot;
@@ -205,6 +210,63 @@ where
         };
         replay.validate().map_err(de::Error::custom)?;
         Ok(replay)
+    }
+}
+
+/// Raport migracji snapshotu z jednego kroku replayu. Zwracany przez
+/// [`ReplayLog::load_json_with_migration_reports`] (ten sam ksztalt co raport `zapis_loader`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReplayStepMigration {
+    pub sequence: ReplaySequence,
+    pub report: LoadMigrationReport,
+}
+
+#[derive(Deserialize)]
+struct ReplayRawWire<I> {
+    #[serde(default)]
+    version: Option<u16>,
+    seed: u32,
+    steps: Vec<ReplayStepWire<I>>,
+}
+
+impl<I> ReplayLog<I> {
+    /// Wczytuje replay z tekstu JSON i zwraca raport migracji kazdego kroku z snapshotem.
+    /// Ta sama migracja co w `Deserialize` (`ReplayStep`), ale raport nie ginie: wolajacy
+    /// dostaje go razem z logiem, jak `zapis_loader::load_save_snapshot`.
+    pub fn load_json_with_migration_reports(
+        text: &str,
+    ) -> Result<(Self, Vec<ReplayStepMigration>), serde_json::Error>
+    where
+        I: de::DeserializeOwned,
+    {
+        let wire: ReplayRawWire<I> = serde_json::from_str(text)?;
+        let version = wire
+            .version
+            .ok_or_else(|| de::Error::custom(ReplayError::MissingVersion))?;
+        let mut reports = Vec::new();
+        let mut steps = Vec::with_capacity(wire.steps.len());
+        for raw in wire.steps {
+            let sequence = raw.sequence;
+            let snapshot = raw.snapshot.map(|mut snapshot| {
+                let report = snapshot.migrate_on_load();
+                reports.push(ReplayStepMigration { sequence, report });
+                snapshot
+            });
+            steps.push(ReplayStep {
+                sequence,
+                turn: raw.turn,
+                input: raw.input,
+                rng_state: raw.rng_state,
+                snapshot,
+            });
+        }
+        let replay = Self {
+            version,
+            seed: wire.seed,
+            steps,
+        };
+        replay.validate().map_err(de::Error::custom)?;
+        Ok((replay, reports))
     }
 }
 
