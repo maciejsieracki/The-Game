@@ -27,6 +27,7 @@ import { techIconSvg } from './techIcons';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 import { humanizeId, nazwyZListyId } from '../game/text-names';
+import { formatTurCount } from './formatPl';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -713,7 +714,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   if (st === 'ip') {
     const pct = Math.max(0, Math.min(100, Math.round(s.postepFraction * 100)));
     const etaTxt = s.turnsLeft > 0
-      ? `<b style="color:#8fb6e0">${s.turnsLeft} tur do końca</b>` + (rate > 0 ? ` przy ${rate} PN/turę` : '')
+      ? `<b style="color:#8fb6e0">${formatTurCount(s.turnsLeft)} do końca</b>` + (rate > 0 ? ` przy ${rate} PN/turę` : '')
       : '<b style="color:#8fb6e0">&lt;1 tury do końca</b>';
     h += `<div class="row"><span class="k">Postęp</span><span class="v">`
       + `<b style="color:#8fb6e0">${pct}%</b> · ${Math.round(s.pula)} / ${Math.round(s.kosztCelu)} PN · ${etaTxt}</span></div>`;
@@ -723,7 +724,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
       if (st === 'av') {
       const remaining = Math.max(0, eff - s.pula);
       const czas = rate > 0
-        ? `≈ ${Math.max(1, Math.ceil(remaining / rate))} tur przy ${rate} PN/turę`
+        ? `≈ ${formatTurCount(Math.max(1, Math.ceil(remaining / rate)))} przy ${rate} PN/turę`
         : '— (brak przychodu Nauki)';
       h += `<div class="row"><span class="k">Czas</span><span class="v">${esc(czas)}</span></div>`;
     }

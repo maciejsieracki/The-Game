@@ -320,11 +320,11 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">' + TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '" na stole (bez koszyka).</p>';
+      return sub + '<p class="cdn-sub">' + TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '” na stole (bez koszyka).</p>';
     case '14':
-      return sub + '<p class="cdn-sub">Umowa wymiany PW — zamknij to okno i wybierz „Umowa wymiany" (koszyk).</p>';
+      return sub + '<p class="cdn-sub">Umowa wymiany PW — zamknij to okno i wybierz „Umowa wymiany” (koszyk).</p>';
     case '13':
-      return sub + '<p class="cdn-sub">Dar PW otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar" ponownie.</p>';
+      return sub + '<p class="cdn-sub">Dar PW otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar” ponownie.</p>';
 
     case '6': {
       const techs = ctx.techOptions ?? [];

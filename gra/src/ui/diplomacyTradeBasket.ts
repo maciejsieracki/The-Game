@@ -2428,7 +2428,7 @@ function renderBasket(
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
   const dealSettingsHint = !hasQtyRes && !hasResourceAccess
-    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (sztuki) do koszyka.'
+    ? 'Tryb „Co turę” i czas obowiązują po dodaniu surowca (sztuki) do koszyka.'
     : undefined;
 
   const dealSettings = (blocked || !showReceiveCol)

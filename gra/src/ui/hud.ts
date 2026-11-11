@@ -25,7 +25,8 @@ import {
 } from './minimapHud';
 import { naukaHudWordHtml } from './naukaLabel';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { signedPl } from './formatPl';
+import { signedPl, formatMiastaCount } from './formatPl';
+import { formatObywateleLabel } from '../game/manpower';
 import { exactCompactNote, formatCompactNumber, formatCompactSigned, formatFullNumber } from './formatCompactNumber';
 import {
   createSidePanelHud,
@@ -1097,7 +1098,7 @@ function spichlerzChipTitle(s: HudState): string {
   }
   if (s.uchwalaSolAktywna) {
     const n = s.uchwalaSolSpichlerzIICount ?? 1;
-    title += ` · Uchwała „Solanka zapasowa" (Spichlerz Królewski · Sól): armia poza terytorium 2→1 🍞/turę`
+    title += ` · Uchwała „Solanka zapasowa” (Spichlerz Królewski · Sól): armia poza terytorium 2→1 🍞/turę`
       + (n > 1 ? ` · ${n}× Spichlerz Królewski` : '');
   }
   return `${title} · Kliknij po szczegóły.`;
@@ -1131,7 +1132,7 @@ function armiaChipTitle(s: HudState): string {
 function miastaChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Miasta — osiedla imperium`
-    + ` · Duża liczba: ${s.osiedla} miast`
+    + ` · Duża liczba: ${formatMiastaCount(s.osiedla)}`
     + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (przyrost ludności łącznie)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
@@ -1141,7 +1142,7 @@ function miastaChipTitle(s: HudState): string {
 function obywateleChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Obywatele — łączna populacja imperium`
-    + ` · Duża liczba: ${s.ludnosc} obywateli (suma populacji wszystkich miast gracza)`
+    + ` · Duża liczba: ${formatObywateleLabel(s.ludnosc)} (suma populacji wszystkich miast gracza)`
     + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie rozdziela przyrostu i strat ludności — pokazuje saldo)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
