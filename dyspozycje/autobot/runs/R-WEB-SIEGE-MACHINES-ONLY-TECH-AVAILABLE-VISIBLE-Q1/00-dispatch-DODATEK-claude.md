@@ -5,3 +5,10 @@ GOAL: lista machin do zbudowania w panelu oblężenia (i ewentualnie we wszystki
 KRYTERIA: test jednostkowy (lista machin dla zestawów technologii: start / po Kuźni brązu / po żelazie… zgodnie z danymi) + test Chromium na prawdziwym panelu oblężenia: DOM nie zawiera przycisków ani tekstów niedostępnych machin (textContent i querySelectorAll), zrzuty „start” i „po technologii”; mutacja (usunięcie filtra) czerwieni test; tsc --noEmit; istniejące testy panelu oblężenia/machin zielone (siege-*, siege-engines-*, unit-replace-*), 5 bramek referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test). Nie zmieniaj kosztów ani progów „10 jednostek bez machin”.
 ALLOWLISTA: gra/src/ui/siegeMapPanel.ts i inne miejsca UI wyboru machiny wskazane przez diagnozę, ewentualnie funkcja dostępności machin w gra/src/game/** (tylko odczyt warunku technologii, bez zmiany balansu), gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1/**. Zakaz: WERSJE.md, JSON danych balansu, rust-port.
 ŚRODOWISKO: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ `npm run build`/`dev`; Chromium przez Vite HTTP. Weryfikacja wizualna obowiązkowa. Nie integrujesz, nie pushujesz.
+
+## DODATEK (2026-11-11) — DECYZJA WŁAŚCICIELA: Taran wymaga „Obróbki drewna"
+
+Właściciel: Taran wymaga technologii „Obróbka drewna" — NIE zmieniamy tego. Gdy nie ma żadnej dostępnej machiny,
+pozostaje samo oblężenie (bez machin; lista machin niewidoczna). Zarzut 5 z W17 (Taran od startu) NIE jest defektem.
+Kryteria W18: widoczne wyłącznie machiny dostępne wg technologii; zero dostępnych → brak sekcji machin, samo oblężenie działa.
+Nie dodawać Tarana do startu, nie zmieniać wymagań techów.
