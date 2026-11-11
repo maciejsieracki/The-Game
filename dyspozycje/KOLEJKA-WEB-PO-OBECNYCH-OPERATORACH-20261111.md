@@ -2,6 +2,8 @@
 
 Polecenie właściciela 2026-11-11: najpierw skończyć WSZYSTKIE tematy web; Rust nie startuje nowych tematów, dopóki web nie jest skończony. Źródła: `origin/main` (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `PRZEKAZANIE-AUTOBOT-CODEX-2026-11-11.md`, `autobot/STAN-ZADAN-CODEX-20261110.md`), gałęzie `origin/codex/*`, taski sesji. Skrypt dispatchu: `scratchpad/WEB-FINISH.js` (tryby `fc` / `eval` / `full`); dodatki `00-dispatch-DODATEK-claude.md` na gałęzi docs. Limit: do 4 tematów naraz, web ≥4 GB wolnego, po każdym temacie push + sprzątanie.
 
+> POLECENIE WŁAŚCICIELA 2026-11-11: WSZYSTKIE pozycje §1–§4 są w pętli autonomicznej i realizowane na bieżąco (do 4 tematów naraz, sekwencja wg plików). Audyty (§2) = próba reprodukcji z dowodem, nie „naprawa”; długi testowe (§4) = osobne małe tematy (Haiku); decyzje (§3) zadawane przez AskUserQuestion; tematy zależne od odpowiedzi czekają, reszta idzie dalej.
+
 ## 0. W toku / do wdrożenia (stan 2026-11-11 ~12:00)
 | Temat | Stan | Następny krok |
 |---|---|---|
@@ -41,3 +43,10 @@ Polecenie właściciela 2026-11-11: najpierw skończyć WSZYSTKIE tematy web; Ru
 
 ## 5. Zasady
 Deploy tylko ROBOCZA po FC: merge kandydatów FC do main → `dep3.sh` → sidecar → `finalize2.sh` → rejestr+WERSJE → push → odczyt Raw+MD5 → sprzątanie. Modele: Haiku domyślnie, Sonnet po uzasadnieniu/2 nieudanych rundach, FC/Evaluator Sonnet.
+
+## 6. Nowe z fali 620–621 (dopisane)
+- `wipeDefenderOnCityCenter`: ocalali obrońcy z HP>0 w zdobytym mieście giną zamiast cofać się 2 heksy (ABC, wyszło przy SURVIVOR-RETREAT).
+- e2e: AUTO w oblężeniu (timeout swiftshader), wyłom muru + replay + bitwa ręczna bez Skip, `_skipInstantFallback`.
+- AI-TRADE: wiring `main.ts` end-to-end, realny tick dostaw, UI/Chromium, stare zapisy.
+- Karty konnicy po zmianie Żelaza w przeglądarce (FC nie uruchomił).
+- Raporty 01/20/50 na gałęzi `codex/recruit-affordability` nieaktualne (dokumentacja).
