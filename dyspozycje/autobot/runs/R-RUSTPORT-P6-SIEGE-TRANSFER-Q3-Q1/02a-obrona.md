@@ -1,31 +1,40 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1
-GOAL: obrona Operatora r1 (4a6ebd4cf) wobec zarzutow Evaluatora; poprawki zarzutow 2, 3, 4, 5, 6, 7 z dowodem; zarzut 1 przyjety, poprawka NIE wykonana w tej rundzie.
-ZMIANY/COMMIT: baza 4a6ebd4cf (kod Operatora r1). Commit obrony: patrz SHA w raporcie orkiestratora (lokalna galaz rust-port-wip/SIEGE-TRANSFER-Q3-Q1, NIE wypchnieta). Allowlista: rust-port/engine/src/domain/siege_transfer.rs; rust-port/engine/src/domain/siege_transfer_effects.rs; rust-port/engine/tests/p6_siege_transfer_effects.rs; dyspozycje/autobot/runs/R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1/02a-obrona.md. Cargo.lock (utworzony przez cargo, untracked) NIE commitowany.
+TEMAT: R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1 (obrona r2, odpowiedz na zarzuty Evaluatora r1)
+GOAL: usunac blokujacy zarzut 1 (klucz wektora), domknac zarzuty 2-5 i zapisac commit z kodem Operatora r2.
+BAZA: 7127638d2 (origin rust-port-wip/SIEGE-TRANSFER-Q3-r1-obrona). Kod r2 z worktree wf_716f4767-203-1 (byl niezacommitowany) przeniesiony 1:1 i zacommitowany w worktree wf_716f4767-203-3.
+SHA: commit zawierajacy ten plik - podany w odpowiedzi Operatora (plik nie moze zawierac wlasnego SHA).
 
-ODPOWIEDZI NA ZARZUTY:
-1. PRZYJMUJE (zarzut slusznie). Poprawka NIE wykonana w tej rundzie: generator p6_siege_transfer_gen.mjs nadal stubuje applyCapturePopulationLoss i nie wykonuje realnych sanitizeBuildQueue/filterQueue z pinu 07d2fbd72; vectors.json nie przegenerowany. Wymaga rundy 2 (rozszerzenie generatora o wycinki cities.ts:1177-1251 i production/main.ts:5123-5140). NIE_ZMIERZONO. Zarzut otwarty.
-2. PRZYJMUJE. Zmiana w siege_transfer.rs (apply_transfer_with_effects): sanityzacja sanitizeProductionQueue wykonuje sie ZAWSZE (performed zawiera "sanitizeProductionQueue"); brak bramki (None) = bramka przepuszczajaca (allow_all), wiec druga sanitizeBuildQueue nadal dziala. TransferExtras::default() i apply_transfer (legacy) teraz tez wykonuja sanityzacje. Test bez_bramki_cudu_sanityzacja_pominieta zastapiony przez bez_bramki_sanityzacja_wykonana_bez_odrzucen (asercja performed + brak odrzucen). Odstepstwo od weba pozostaje TYLKO gdy w kolejce sa cuda i wolajacy nie podal bramki (opisane w doc TransferExtras).
-3. PRZYJMUJE. Dopisano do TRANSFER_EFFECTS wpisy wonderGateOk i parseWonderProdId jako CallerSide "ZALEZNOSC W8 r3: brak odpowiednika w Rust" oraz doc TransferExtras::wonder_gate_ok. Potwierdzono grep: w rust-port/engine/src brak wonderGateOk/parseWonderProdId poza komentarzami.
-4. PRZYJMUJE. Dodano test sanitize_build_queue_jest_idempotentna (siege_transfer_effects.rs): druga sanitizeBuildQueue daje refunded_praca 0 i nie zmienia kolejki. Komentarz poprawiony: web wola sanitizeBuildQueue dwa razy (wolajacy + wewnatrz sanitizeProductionQueue), Rust odtwarza to 1:1, a poprawnosc zalezy od testowanej idempotencji.
-5. PRZYJMUJE. Dodano test laczony laczony_front_cud_i_stolicowy_banked_sumuje_trzy_skladniki (p6_siege_transfer_effects.rs): kolejka [cud(front,4), a(2), palac(3)], bramka odrzuca cud. Oczekiwane forfeited_praca_to_new = 4 (wonder, front sanityzacji) + 0 (front filtra) + 3 (banked palac) = 7; kolejka = ["a"]. Test przechodzi.
-6. PRZYJMUJE CZESCIOWO. Dodano debug_assert_eq w apply_transfer_with_effects: pop_loss.prev_owner == city.owner_id oraz pop_loss.new_owner == new_owner, z testem niespojny_pop_loss_jest_wykrywany (should_panic). Dodano doc na TransferOutcome.capture_loss: wolajacy MUSI zapisac captured_from_owner_id i founded_by (TransferCity nie ma tych pol). Nie dodano pol do TransferCity (zmiana struktury lamalaby literaly w p6_siege_transfer*.rs poza allowlista zakresu); zaleznosc zapisana w doc, nie w tabeli.
-7. PRZYJMUJE. Liczby testow (zweryfikowane, wykonanie tej rundy): p6_siege_surrender 10 (nie dotyczy tego tematu jako "transfer"), p6_siege_transfer 2, p6_siege_transfer_prod 5 (raport Operatora podawal 2 - blad), p6_siege_transfer_effects 7 (bylo 5; +2 nowe testy), lib 56 (bylo 55; +1 idempotencja).
+## Odpowiedzi na zarzuty
 
-TESTY (po obronie, CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR poza repo):
-- cargo fmt --check: EXIT 0 (po cargo fmt na zmienionych plikach)
-- cargo clippy --all-targets -- -D warnings: EXIT 0
-- cargo test --lib: 56 passed
-- cargo test --test p6_siege_transfer: 2 passed
-- cargo test --test p6_siege_transfer_prod: 5 passed
-- cargo test --test p6_siege_surrender: 10 passed
-- cargo test --test p6_siege_transfer_effects: 7 passed
+1. BLOKUJACY, klucz `city_owner` vs `cityOwner`: PRZYJMUJE. Poprawka: tests/p6_siege_transfer.rs:123 czyta `inp["cityOwner"]` (zgodnie z generatorem i vectors.json). Dowod: `cargo test --test p6_siege_transfer` - 2 passed. Przy okazji wykryto drugi blad, ujawniony rozszerzonymi wektorami (pkt 4b): bramka cudow w tescie nie odwzorowywala `parseWonderProdId` dla pustego wid (web: `if (!wid) return true`). Poprawiono w obu testach (p6_siege_transfer.rs, p6_siege_transfer_effects.rs): wzorzec `Some("") => true`.
 
-BLOKADY:
-- ZARZUT 1 OTWARTY (NIE_ZMIERZONO): wektory z pinu nie przegenerowane; wymaga rundy 2.
-- Pozostale BRAK w TRANSFER_EFFECTS (bez zmian): applyPostCaptureLawOnCapture, triggerRebelProtectionWarConsequence, beginWonderTransferWatch/settleWonderTransfer, noteCityCapture, syncCityGarnizon, playerEverOwnedCityByOwner.add, runCapitalCapturePlunder, recordCityCaptureEvent, applyLiveSafeRationForCity.
-- Wonder gate: zalezna od W8 r3 (predykat po stronie wolajacego).
-RUNDY: 2/5 (obrona rundy 1 zakonczona; zarzut 1 wymaga rundy 2 Operatora)
-NASTEPNY KROK: Operator r2: przegenerowac wektory generatorem bez stuba applyCapturePopulationLoss i z realnym sanitizeBuildQueue/filterQueue; potem Evaluator r2.
-DEPLOY/PUSH: NIE WYKONANO
+2. BRAK COMMITA I RAPORTU r2: PRZYJMUJE. Kod r2 zacommitowany w tym worktree (SHA w odpowiedzi), ten raport zapisany jako 02a-obrona.md. Cargo.lock (untracked, utworzony przez cargo) nie commitowany i usuniety z worktree po bramkach.
+
+3. DOC-KOMENTARZ apply_transfer (siege_transfer.rs, ~225-227): PRZYJMUJE. Usunieto nieprawdziwe zdanie, ze wektory stubuja applyCapturePopulationLoss. Zostawiono zakaz podpinania wolajacego (W8 r3), bo pozostale skutki maja status BRAK.
+
+4. POKRYCIE WEKTOROW: PRZYJMUJE czesciowo, z dowodem:
+   a) Populacja: POPS w generatorze rozszerzono o 25, 40, 100 (dotad max 12). Wektory popLoss: 120 przypadkow, z tego 29 z niezerowa strata (`expect.loss != 0`, policzone skryptem na wygenerowanym pliku).
+   b) Cuda: ITEM_IDS rozszerzono o `__wonder__:` (pusty wid), `__wonder__:w9` (nieznany wid) i `nieznany` (jednostka). Wektory kolejki zawieraja te ID. Ujawnilo to realna rozbieznosc w tescie (bramka, pkt 1); po poprawce wszystkie wektory przechodza.
+   c) Bramka cudow w tescie Rust nadal jest reczna replika (strip_prefix + obsluga pustego wid), a NIE port parseWonderProdId z pinu. Ryzyko rezydualne: przy W8 r3 (wolajacy) bramka produkcyjna musi odwzorowac parseWonderProdId 1:1. Odnotowane dla FC i W8 r3.
+   d) Wid spoza tabeli z innym prefiksem niz `__wonder__:` nie jest testowany - NIE_ZMIERZONO.
+
+5. DEBUG_ASSERT / should_panic: PRZYJMUJE. W siege_transfer.rs (apply_transfer_with_effects) `debug_assert_eq!` zmieniono na `assert_eq!`, wiec spojnosc pop_loss z city/new_owner dziala takze w --release. Dowod: `cargo test --release --test p6_siege_transfer_effects --test p6_siege_transfer` - 4 passed i 2 passed.
+   Druga czesc zarzutu (usuniete lokalne testy modulu siege_transfer_effects.rs): ODRZUCAM jako wade. Dispatch r2 wprost wymaga zastapienia liczb wpisanych recznie wektorami z pinu bez oslabiania asercji. Testy effects (4/4) i prod (5/5) porownuja Rust z sekcja effects wektorow pochodzacych z pinu.
+
+## Bramki (worktree; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo, usuniety po bramkach)
+- cargo fmt --check: EXIT=0
+- cargo clippy --all-targets -- -D warnings: EXIT=0
+- cargo test --lib: EXIT=0 (48 passed)
+- cargo test --test p6_siege_transfer --test p6_siege_transfer_prod --test p6_siege_transfer_effects --test p6_siege_surrender: EXIT=0 (transfer 2, prod 5, effects 4, surrender 10 passed)
+- cargo test --release --test p6_siege_transfer_effects --test p6_siege_transfer: EXIT=0 (4 i 2 passed)
+- Regeneracja generatora dwoma uruchomieniami na pinie 07d2fbd72 (wyciagniety przez `git archive` do /tmp/claude-0/pin-q3-obrona, poza repo): cmp identyczny. Plik vectors.json = wynik regeneracji (cmp po kopiowaniu: OK).
+- git diff --check: czysty.
+
+## Allowlista
+Zmienione: rust-port/engine/src/domain/siege_transfer.rs, siege_transfer_effects.rs, tests/p6_siege_transfer.rs, tests/p6_siege_transfer_effects.rs, tests/p6_siege_transfer_gen.mjs, tests/p6_siege_transfer_prod.rs, tests/p6_siege_transfer_vectors/vectors.json, oraz ten raport. Brak gra/**, brak Cargo.lock.
+
+BLOKADY: brak blokad technicznych. Rezydualne: pkt 4c-4d (bramka cudow jako replika; wid spoza prefiksu nietestowany) - do FC i W8 r3.
+RUNDY: 2/5 (obrona r2)
+NASTEPNY KROK: Evaluator r2 na commicie z SHA (bramki jak wyzej), potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO (commit lokalny w worktree; bez push do rust-port/parity-v2, bez integracji).

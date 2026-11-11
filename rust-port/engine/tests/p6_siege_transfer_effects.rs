@@ -1,228 +1,215 @@
-//! R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1: testy behawioralne `apply_transfer_with_effects`
-//! (applyCapturePopulationLoss + sanitizeProductionQueue(newOwner)).
+//! R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1 (r2): skutki przejecia miasta porownane z WEKTORAMI Z PINU.
 //!
-//! Oczekiwania wyprowadzone z czytania pinu 07d2fbd72: `gra/src/game/cities.ts:1235-1251` (utrata obywatela),
-//! `gra/src/main.ts:17700-17790` (kolejnosc Transferu), `gra/src/main.ts:5123-5140` (sanityzacja).
-//! NIE_ZMIERZONO wzgledem wykonania pinu: wektory generatora nadal stubuja applyCapturePopulationLoss.
+//! Wektory: `tests/p6_siege_transfer_vectors/vectors.json`, sekcja `effects` (`popLoss`, `queue`), generator
+//! `tests/p6_siege_transfer_gen.mjs`. Generator WYKONUJE na pinie 07d2fbd72 `applyCapturePopulationLoss`,
+//! `sanitizeProductionQueue`, `sanitizeBuildQueue` i `filterQueue` (bez stubow); oczekiwane wartosci to wynik tego
+//! wykonania. Zadna liczba nie jest wpisana recznie w tym pliku.
 
+use civ_engine::domain::production_queue::sanitize_build_queue;
 use civ_engine::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
-use civ_engine::domain::siege_enter_city::EnterUnit;
-use civ_engine::domain::siege_transfer::{
-    apply_transfer, apply_transfer_with_effects, TransferCity, TransferExtras, TransferProduction,
+use civ_engine::domain::siege_transfer_effects::{
+    apply_capture_population_loss, sanitize_production_queue_for_owner, CapturePopLossInput,
+    CAPTURE_POP_LOSS_PIN,
 };
-use civ_engine::domain::siege_transfer_effects::{CapturePopLossInput, CAPTURE_POP_LOSS_PIN};
+use serde_json::Value;
 
-fn city(owner: i64, population: f64) -> TransferCity {
-    TransferCity {
-        owner_id: owner,
-        population,
-        q: 2,
-        r: 2,
-        found_by_owner: Some(true),
-        rebel_state: None,
-        start_city_state: None,
+const DATA: &str = include_str!("p6_siege_transfer_vectors/vectors.json");
+
+fn parse_num(v: &Value) -> f64 {
+    match v {
+        Value::String(s) if s == "NaN" => f64::NAN,
+        other => other.as_f64().expect("liczba"),
     }
 }
 
-fn pop_input(prev: i64, new: i64) -> CapturePopLossInput {
-    CapturePopLossInput {
-        prev_owner: prev,
-        new_owner: new,
-        rebel_prev_owner_snapshot: None,
-        captured_from_owner_id: None,
-        founded_by: None,
-        found_by_owner: Some(true),
-        capture_pop_loss: CAPTURE_POP_LOSS_PIN,
+fn opt_i64(v: &Value) -> Option<i64> {
+    match v {
+        Value::Null => None,
+        other => Some(other.as_i64().expect("calkowita")),
     }
 }
 
-fn item(id: &str, postep: Option<f64>) -> ProductionItem {
-    ProductionItem {
-        kind: ProductionKind::Budynek,
-        id: id.to_owned(),
-        nazwa: id.to_owned(),
-        koszt: 10.0,
-        postep,
-        is_general: None,
+fn opt_bool(v: &Value) -> Option<bool> {
+    match v {
+        Value::Null => None,
+        Value::Bool(b) => Some(*b),
+        other => panic!("nieoczekiwana wartosc flagi {other}"),
     }
 }
 
-fn prod(items: Vec<ProductionItem>) -> CityProduction {
+fn opt_f64(v: &Value) -> Option<f64> {
+    match v {
+        Value::Null => None,
+        other => Some(parse_num(other)),
+    }
+}
+
+fn kind_of(s: &str) -> ProductionKind {
+    match s {
+        "budynek" => ProductionKind::Budynek,
+        "jednostka" => ProductionKind::Jednostka,
+        other => panic!("nieznany rodzaj {other}"),
+    }
+}
+
+fn kind_name(k: &ProductionKind) -> &'static str {
+    match k {
+        ProductionKind::Budynek => "budynek",
+        ProductionKind::Jednostka => "jednostka",
+    }
+}
+
+fn prod_from(v: &Value) -> CityProduction {
+    let kolejka = v["kolejka"]
+        .as_array()
+        .expect("kolejka[]")
+        .iter()
+        .map(|i| ProductionItem {
+            kind: kind_of(i["kind"].as_str().unwrap()),
+            id: i["id"].as_str().unwrap().to_owned(),
+            nazwa: i["id"].as_str().unwrap().to_owned(),
+            koszt: 10.0,
+            postep: opt_f64(&i["postep"]),
+            is_general: None,
+        })
+        .collect();
     CityProduction {
-        kolejka: items,
-        postep: 0.0,
+        kolejka,
+        postep: parse_num(&v["postep"]),
         wstrzymana: None,
         rekrutacja: None,
     }
 }
 
-#[test]
-fn utrata_obywatela_przy_zdobyciu_obcego_miasta() {
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let out = apply_transfer_with_effects(
-        &mut c,
-        2,
-        false,
-        &mut units,
-        None,
-        TransferExtras {
-            pop_loss: Some(pop_input(1, 2)),
-            wonder_gate_ok: None,
-        },
+fn assert_kolejka_eq(got: &CityProduction, exp: &Value, ctx: &str) {
+    let exp_items = exp["kolejka"].as_array().expect("kolejka[]");
+    assert_eq!(got.kolejka.len(), exp_items.len(), "{ctx}: dlugosc kolejki");
+    for (g, e) in got.kolejka.iter().zip(exp_items) {
+        assert_eq!(g.id, e["id"].as_str().unwrap(), "{ctx}: id");
+        assert_eq!(
+            kind_name(&g.kind),
+            e["kind"].as_str().unwrap(),
+            "{ctx}: kind"
+        );
+        assert_eq!(g.postep, opt_f64(&e["postep"]), "{ctx}: postep {}", g.id);
+    }
+    assert_eq!(
+        got.postep,
+        parse_num(&exp["postep"]),
+        "{ctx}: postep kolejki"
     );
-    assert_eq!(c.population, 4.0);
-    assert_eq!(c.owner_id, 2);
-    let loss = out
-        .capture_loss
-        .expect("applyCapturePopulationLoss wykonany");
-    assert_eq!(loss.loss, 1.0);
-    assert_eq!(loss.captured_from_owner_id, 1);
-    assert!(out.performed.contains(&"applyCapturePopulationLoss"));
+}
+
+fn root() -> Value {
+    serde_json::from_str(DATA).expect("wektory JSON")
 }
 
 #[test]
-fn odzyskanie_miasta_nie_traci_obywatela() {
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let mut input = pop_input(1, 2);
-    input.captured_from_owner_id = Some(2);
-    let out = apply_transfer_with_effects(
-        &mut c,
-        2,
-        false,
-        &mut units,
-        None,
-        TransferExtras {
-            pop_loss: Some(input),
-            wonder_gate_ok: None,
-        },
+fn pin_capture_pop_loss_constant_matches_rust() {
+    assert_eq!(
+        root()["capturePopLoss"].as_u64().expect("liczba"),
+        u64::from(CAPTURE_POP_LOSS_PIN),
+        "CAPTURE_POP_LOSS z pinu != CAPTURE_POP_LOSS_PIN"
     );
-    assert_eq!(c.population, 5.0);
-    assert!(out.capture_loss.expect("wykonany").reclaim);
 }
 
 #[test]
-fn tryb_legacy_nie_stosuje_utraty_obywatela() {
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let out = apply_transfer(&mut c, 2, false, &mut units, None);
-    assert_eq!(c.population, 5.0);
-    assert!(out.capture_loss.is_none());
-    assert!(!out.performed.contains(&"applyCapturePopulationLoss"));
+fn effects_pop_loss_vectors_match_pin() {
+    let root = root();
+    let cases = root["effects"]["popLoss"].as_array().expect("popLoss[]");
+    assert!(cases.len() >= 100, "za malo wektorow: {}", cases.len());
+    let mut losses = 0;
+    for (idx, case) in cases.iter().enumerate() {
+        let inp = &case["input"];
+        let exp = &case["expect"];
+        let input = CapturePopLossInput {
+            prev_owner: inp["prevOwner"].as_i64().unwrap(),
+            new_owner: inp["newOwner"].as_i64().unwrap(),
+            rebel_prev_owner_snapshot: opt_i64(&inp["rebelPrevOwnerSnapshot"]),
+            captured_from_owner_id: opt_i64(&inp["capturedFromOwnerId"]),
+            founded_by: opt_i64(&inp["foundedBy"]),
+            found_by_owner: opt_bool(&inp["foundedByOwner"]),
+            capture_pop_loss: CAPTURE_POP_LOSS_PIN,
+        };
+        let out = apply_capture_population_loss(parse_num(&inp["pop"]), &input);
+        assert_eq!(out.loss, parse_num(&exp["loss"]), "popLoss {idx}: loss");
+        let pop_exp = parse_num(&exp["population"]);
+        assert!(
+            (out.population.is_nan() && pop_exp.is_nan()) || out.population == pop_exp,
+            "popLoss {idx}: population {} != {}",
+            out.population,
+            pop_exp
+        );
+        assert_eq!(
+            Some(out.captured_from_owner_id),
+            opt_i64(&exp["capturedFromOwnerId"]),
+            "popLoss {idx}: capturedFromOwnerId"
+        );
+        assert_eq!(
+            out.founded_by,
+            opt_i64(&exp["foundedBy"]),
+            "popLoss {idx}: foundedBy"
+        );
+        if out.loss > 0.0 {
+            losses += 1;
+        }
+    }
+    assert!(losses >= 10, "za malo wektorow z realna strata: {losses}");
 }
 
 #[test]
-fn banked_liczony_z_wyniku_sanityzacji_nie_z_surowej_kolejki() {
-    // Kolejka: front "a" (2 Pracy), stolicowe "palac" (3) i "cud" (4). "cud" odrzuca bramka cudu
-    // zdobywcy, wiec web liczy banked z wyniku sanityzacji = 3, a nie 7 (surowa kolejka).
-    let p = prod(vec![
-        item("a", Some(2.0)),
-        item("palac", Some(3.0)),
-        item("cud", Some(4.0)),
-    ]);
-    let is_cap = |i: &ProductionItem| i.id == "palac" || i.id == "cud";
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let gate = |i: &ProductionItem| i.id != "cud";
-    let out = apply_transfer_with_effects(
-        &mut c,
-        2,
-        false,
-        &mut units,
-        Some(TransferProduction {
-            prod: &p,
-            is_new_capital: false,
-            is_capital_only_building: &is_cap,
-        }),
-        TransferExtras {
-            pop_loss: None,
-            wonder_gate_ok: Some(&gate),
-        },
-    );
-    assert_eq!(out.forfeited_praca_to_new, 3.0);
-    assert_eq!(out.refunded_praca_to_old, 0.0);
-    let kolejka = out.production.expect("kolejka po przejeciu").kolejka;
-    let ids: Vec<&str> = kolejka.iter().map(|i| i.id.as_str()).collect();
-    assert_eq!(ids, vec!["a"]);
-    assert!(out.performed.contains(&"sanitizeProductionQueue"));
-}
-
-#[test]
-fn laczony_front_cud_i_stolicowy_banked_sumuje_trzy_skladniki() {
-    // Kolejka: front "cud" (postep 4 = prod.postep, odrzucony przez bramke cudow zdobywcy),
-    // "a" (postep 2, zwykly), "palac" (postep 3, stolicowy na indeksie 2 = banked).
-    // Oczekiwane (wg semantyki filter_queue/drop_front_item i web: wonder + front + banked):
-    //   sanityzacja: front cud -> forfeit 4; "a" awansuje na front (prod.postep 2), "palac" zostaje na indeksie 1;
-    //   banked = 3 (palac poza frontem); filtr stolicy usuwa palac bez zwrotu frontu.
-    // Lacznie forfeited_praca_to_new = 4 + 0 + 3 = 7; kolejka = ["a"].
-    let mut p = prod(vec![
-        item("cud", Some(4.0)),
-        item("a", Some(2.0)),
-        item("palac", Some(3.0)),
-    ]);
-    p.postep = 4.0;
-    let is_cap = |i: &ProductionItem| i.id == "palac" || i.id == "cud";
-    let gate = |i: &ProductionItem| i.id != "cud";
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let out = apply_transfer_with_effects(
-        &mut c,
-        2,
-        false,
-        &mut units,
-        Some(TransferProduction {
-            prod: &p,
-            is_new_capital: false,
-            is_capital_only_building: &is_cap,
-        }),
-        TransferExtras {
-            pop_loss: None,
-            wonder_gate_ok: Some(&gate),
-        },
-    );
-    assert_eq!(out.forfeited_praca_to_new, 4.0 + 3.0);
-    assert_eq!(out.refunded_praca_to_old, 0.0);
-    let ids: Vec<String> = out
-        .production
-        .expect("kolejka")
-        .kolejka
-        .iter()
-        .map(|i| i.id.clone())
-        .collect();
-    assert_eq!(ids, vec!["a".to_owned()]);
-}
-
-#[test]
-fn bez_bramki_sanityzacja_wykonana_bez_odrzucen() {
-    // Brak bramki (None) = bramka przepuszczajaca: sanitizeProductionQueue nadal sie wykonuje (jak w web),
-    // a cud w kolejce NIE jest odrzucany, bo bez bramki nie ma predykatu. Odstepstwo od weba tylko przy cudach.
-    let p = prod(vec![item("a", Some(2.0)), item("cud", Some(4.0))]);
-    let is_cap = |_: &ProductionItem| false;
-    let mut c = city(1, 5.0);
-    let mut units: Vec<EnterUnit> = Vec::new();
-    let out = apply_transfer_with_effects(
-        &mut c,
-        2,
-        false,
-        &mut units,
-        Some(TransferProduction {
-            prod: &p,
-            is_new_capital: false,
-            is_capital_only_building: &is_cap,
-        }),
-        TransferExtras::default(),
-    );
-    assert!(out.performed.contains(&"sanitizeProductionQueue"));
-    assert_eq!(out.forfeited_praca_to_new, 0.0);
-    let kolejka = out.production.expect("kolejka").kolejka;
-    assert_eq!(kolejka.len(), 2);
+fn effects_queue_vectors_match_pin() {
+    let root = root();
+    let prefix = root["wonderPrefix"].as_str().expect("wonderPrefix");
+    let cases = root["effects"]["queue"].as_array().expect("queue[]");
+    assert!(cases.len() >= 100, "za malo wektorow: {}", cases.len());
+    for (idx, case) in cases.iter().enumerate() {
+        let inp = &case["input"];
+        let exp = &case["expect"];
+        let prod = prod_from(&inp["prod"]);
+        let table = &inp["wonderOk"];
+        // parseWonderProdId + wonderGateOk z tabeli scenariusza (jak w pinie: pozycja spoza prefiksu przechodzi).
+        let gate = |item: &ProductionItem| match item.id.strip_prefix(prefix) {
+            Some("") => true,
+            Some(wid) => table[wid].as_bool() == Some(true),
+            None => true,
+        };
+        let out = sanitize_production_queue_for_owner(&prod, gate);
+        assert_kolejka_eq(&out.prod, exp, &format!("queue {idx}"));
+        let credited = out.refunded_praca + out.forfeited_postep;
+        assert_eq!(
+            credited,
+            parse_num(&exp["praca"]),
+            "queue {idx}: Praca zapisana w puli zdobywcy (zwrot + zbankowany postep)"
+        );
+        // Idempotencja drugiej sanityzacji (web wola sanitizeBuildQueue dwa razy): na wyniku pierwszej
+        // sanityzacji zwrot = 0 i kolejka sie nie zmienia.
+        let once = sanitize_build_queue(&prod);
+        let twice = sanitize_build_queue(&once.prod);
+        assert_eq!(
+            twice.refunded_praca, 0.0,
+            "queue {idx}: idempotencja zwrotu"
+        );
+        assert_eq!(twice.prod, once.prod, "queue {idx}: idempotencja kolejki");
+    }
 }
 
 #[test]
 #[should_panic(expected = "pop_loss.new_owner != new_owner")]
 fn niespojny_pop_loss_jest_wykrywany() {
-    let mut c = city(1, 5.0);
+    use civ_engine::domain::siege_enter_city::EnterUnit;
+    use civ_engine::domain::siege_transfer::{
+        apply_transfer_with_effects, TransferCity, TransferExtras,
+    };
+    let mut c = TransferCity {
+        owner_id: 1,
+        population: 1.0,
+        q: 0,
+        r: 0,
+        found_by_owner: None,
+        rebel_state: None,
+        start_city_state: None,
+    };
     let mut units: Vec<EnterUnit> = Vec::new();
     let _ = apply_transfer_with_effects(
         &mut c,
@@ -231,7 +218,15 @@ fn niespojny_pop_loss_jest_wykrywany() {
         &mut units,
         None,
         TransferExtras {
-            pop_loss: Some(pop_input(1, 3)),
+            pop_loss: Some(CapturePopLossInput {
+                prev_owner: 1,
+                new_owner: 3,
+                rebel_prev_owner_snapshot: None,
+                captured_from_owner_id: None,
+                founded_by: None,
+                found_by_owner: None,
+                capture_pop_loss: CAPTURE_POP_LOSS_PIN,
+            }),
             wonder_gate_ok: None,
         },
     );

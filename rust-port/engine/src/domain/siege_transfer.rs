@@ -222,8 +222,8 @@ pub struct TransferExtras<'a> {
 /// Kolejnosc jak w web: zmiana wlasciciela -> flaga miasta-panstwa -> `foundedByOwner` -> kolejka produkcji
 /// (odzysk Pracy) -> `rebelState` -> podloga populacji -> splice obroncow starego wlasciciela.
 ///
-/// Tryb LEGACY (bez [`TransferExtras`]): NIE wykonuje `applyCapturePopulationLoss` (wektory generatora stubuja go
-/// jako no-op); `sanitizeProductionQueue` wykonuje z bramka przepuszczajaca. Do produkcji uzywac
+/// Tryb LEGACY (bez [`TransferExtras`]): NIE wykonuje `applyCapturePopulationLoss` (ta sciezka nie jest objeta wektorami
+/// generatora); `sanitizeProductionQueue` wykonuje z bramka przepuszczajaca. Do produkcji uzywac
 /// [`apply_transfer_with_effects`] z realna bramka cudow.
 /// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem pozostalych skutkow BRAK z [`TRANSFER_EFFECTS`]
 /// (`applyPostCaptureLawOnCapture`, `triggerRebelProtectionWarConsequence`, `noteCityCapture`, plunder, ...).
@@ -263,11 +263,11 @@ pub fn apply_transfer_with_effects(
     let mut performed: Vec<&'static str> = Vec::new();
 
     let capture_loss = extras.pop_loss.as_ref().map(|input| {
-        debug_assert_eq!(
+        assert_eq!(
             input.prev_owner, old_owner,
             "pop_loss.prev_owner != city.owner_id"
         );
-        debug_assert_eq!(
+        assert_eq!(
             input.new_owner, new_owner,
             "pop_loss.new_owner != new_owner"
         );
