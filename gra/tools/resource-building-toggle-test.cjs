@@ -33,13 +33,16 @@ const ENTRY = path.join(__dirname, '.rbt-entry.ts');
 const BUNDLE = path.join(__dirname, '.rbt-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export {
-  advanceCityEconomy, previewOwnerUpkeep, previewCityEconomy,
+  advanceCityEconomy, previewOwnerUpkeep, previewCityEconomy, forecastNextTurnProduction,
 } from '../src/game/turn-economy';
 export {
   TOGGLEABLE_PRODUCTION_BUILDING_IDS, isToggleableProductionBuilding, isProductionBuildingEnabled,
   setProductionBuildingEnabled, sanitizeDisabledBuildings, operationalBuiltIds, operationalBuiltByCity,
   buildEmpireProducersSnap,
 } from '../src/game/building-toggle';
+export {
+  createMennicaZlotoGraceState, prepareMennicaZlotoGraceForTick, predictMennicaZlotoAccessForNextTick,
+} from '../src/game/mennica-zloto-grace';
 export { ensureCitySaveDefaults } from '../src/game/cities';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
 export { DEFAULT_CONVERTER_RECIPES, converterBuildingIdForRecipe } from '../src/game/converters';
@@ -298,6 +301,95 @@ function snap(cities, built, realized, era = 2) {
   eq(row.label, 'Cegielnia', 'etykieta budynku czytelna (nazwa z danych)');
 }
 
+
+// ---------------------------------------------------------------------------
+console.log('-- G. PROGNOZA nastepnej tury == realna tura (konserwacja ilosciowa) + agregat 7 budynkow --');
+{
+  const mkWorld = (disabledByCity = {}, stockBy = {}) => {
+    const mk = (id, q, bl) => mkCity(id, 0, q, q, {
+      surowce: { ...(stockBy[id] ?? {}) }, ...(disabledByCity[id] ? { wylaczoneBudynki: [...disabledByCity[id]] } : {}),
+    });
+    return [mk('g1', 0), mk('g2', 40), mk('g3', 80)];
+  };
+  const BUILT = {
+    g1: ['cegielnia', 'garncarnia', 'kamieniarski'],
+    g2: ['wielka_odlewnia', 'stolarnia', 'odlewnia_brazu'],
+    g3: ['odlewnia_zelaza', 'cegielnia'],
+  };
+  const RICH = { glina: 800, drewno: 2500, ruda: 600, ruda_cyny: 600, ruda_zelaza: 600, zelazo: 100, kamien: 50 };
+  const era = 3;
+  const builtMap = new Map(Object.entries(BUILT));
+  const forecastOf = (cities) => {
+    const f = M.forecastNextTurnProduction({
+      cities, map: MAP, data: DATA, difficulty: 'normal', builtByCity: builtMap, playerEra: era,
+      playerZbadane: new Set(), resolveOwnerEra: () => era,
+    });
+    return { ...(f.producedByOwner.get(0) ?? {}), ...(f.rawInflowByOwner.get(0) ?? {}) };
+  };
+  const realOf = (cities) => {
+    const { econ } = tick(cities, BUILT, era);
+    return { ...(econ.converterProducedByOwner.get(0) ?? {}), ...(econ.rawInflowByOwner.get(0) ?? {}) };
+  };
+  const scenarios = {
+    'wszystko wlaczone, pelne zapasy': [{}, { g1: RICH, g2: {}, g3: {} }],
+    'wylaczona Cegielnia g1 i Wielka odlewnia g2': [{ g1: ['cegielnia'], g2: ['wielka_odlewnia'] }, { g1: RICH, g2: {}, g3: {} }],
+    'wylaczona Stolarnia i Warsztat kamieniarski': [{ g1: ['kamieniarski'], g2: ['stolarnia'] }, { g1: RICH, g2: {}, g3: {} }],
+    'niedobor wspolnych wejsc (konkurencja odlewni o drewno/rude)': [{}, { g1: { glina: 30, drewno: 40, ruda: 25, ruda_cyny: 25, ruda_zelaza: 25 }, g2: {}, g3: {} }],
+  };
+  for (const [name, [dis, stock]] of Object.entries(scenarios)) {
+    const mkC = () => mkWorld(dis, stock);
+    const before = JSON.stringify(mkC());
+    const live = mkC();
+    const fc = forecastOf(live);
+    eq(JSON.stringify(live), before, `[${name}] prognoza NIE zmienia stanu miast`);
+    const real = realOf(mkC());
+    const keys = new Set([...Object.keys(fc), ...Object.keys(real)]);
+    let compared = 0; let positive = 0;
+    for (const k of keys) {
+      eq(fc[k] ?? 0, real[k] ?? 0, `[${name}] prognoza == realnie wyprodukowane: ${k}`);
+      compared++; if ((real[k] ?? 0) > 0) positive++;
+    }
+    ok(compared >= 1, `[${name}] porownano surowce (${compared}, dodatnich ${positive})`);
+    if (name === 'wszystko wlaczone, pelne zapasy') ok(positive >= 4, `[${name}] co najmniej 4 surowce z dodatnia produkcja (${[...keys].filter(k => (real[k] ?? 0) > 0).join(',')})`);
+    // przyrost magazynu zgodny z prognoza dla surowca bez zuzycia (cegla, ceramika, drewno z mapy tylko +)
+    const afterC = mkC(); tick(afterC, BUILT, era);
+    eq(sum(afterC, 'cegla') - 0, fc.cegla ?? 0, `[${name}] magazyn cegly po realnej turze == prognoza`);
+  }
+  // wlaczony vs wylaczony: prognoza reaguje
+  {
+    const on = forecastOf(mkWorld({}, { g1: RICH, g2: {}, g3: {} }));
+    const off = forecastOf(mkWorld({ g1: ['cegielnia'], g3: ['cegielnia'] }, { g1: RICH, g2: {}, g3: {} }));
+    ok((on.cegla ?? 0) > 0, `prognoza z wlaczona Cegielnia > 0 (${on.cegla})`);
+    eq(off.cegla ?? 0, 0, 'prognoza z wylaczonymi Cegielniami = 0');
+    const sOn = forecastOf(mkWorld({}, { g1: RICH, g2: {}, g3: {} }));
+    const sOff = forecastOf(mkWorld({ g2: ['stolarnia'] }, { g1: RICH, g2: {}, g3: {} }));
+    ok((sOn.drewno ?? 0) > (sOff.drewno ?? 0), `prognoza drewna: Stolarnia wlaczona (${sOn.drewno}) > wylaczona (${sOff.drewno})`);
+  }
+  // migawka: 7 budynkow w agregacie (Drewno + Kamien obok konwerterow), prognoza przekazana bez przeliczania
+  {
+    const cities = mkWorld({ g2: ['stolarnia'] }, { g1: RICH, g2: {}, g3: {} });
+    const s = M.buildEmpireProducersSnap({
+      cities, ownerId: 0, builtByCity: builtMap, era, rawParams: econParams, difficulty: 'normal',
+      realizedLastTurn: { drewno: 90, kamien: 12 }, forecastNext: { drewno: 99, kamien: 13, cegla: 7 },
+      rawInflowPotential: { enabled: { drewno: 99, kamien: 13 }, installed: { drewno: 108, kamien: 13 } },
+      buildingLabel,
+    });
+    const ids = s.cities.flatMap(c => c.buildings.map(b => b.buildingId));
+    for (const id of ['cegielnia', 'garncarnia', 'kamieniarski', 'wielka_odlewnia', 'stolarnia', 'odlewnia_brazu', 'odlewnia_zelaza']) ok(ids.includes(id), `lista miast zawiera ${id}`);
+    const dr = s.resources.find(r => r.id === 'drewno'); const ka = s.resources.find(r => r.id === 'kamien');
+    ok(dr && ka, 'agregat: wiersze Drewno i Kamien (Stolarnia / Warsztat kamieniarski)');
+    eq(dr.forecastNextTurn, 99, 'Drewno: prognoza przekazana'); eq(dr.realizedLastTurn, 90, 'Drewno: ostatnia tura');
+    eq(dr.potentialEnabled, 99, 'Drewno: maksimum (wlaczone)'); eq(dr.potentialInstalled, 108, 'Drewno: maksimum (wszystkie)');
+    eq(s.resources.find(r => r.id === 'cegla').forecastNextTurn, 7, 'Cegla: prognoza przekazana');
+    const sNoRaw = M.buildEmpireProducersSnap({
+      cities: mkWorld(), ownerId: 0, builtByCity: new Map([['g1', ['cegielnia']], ['g2', []], ['g3', []]]), era, rawParams: econParams,
+      difficulty: 'normal', realizedLastTurn: { drewno: 90 }, buildingLabel,
+    });
+    ok(!sNoRaw.resources.some(r => r.id === 'drewno' || r.id === 'kamien'), 'bez Stolarni/Warsztatu: brak wiersza Drewno/Kamien');
+    eq(sNoRaw.resources.find(r => r.id === 'cegla').forecastNextTurn, null, 'bez prognozy w args: forecastNextTurn = null');
+  }
+}
+
 // ---------------------------------------------------------------------------
 async function sectionE() {
   console.log('-- E. UI panelu imperium (esbuild + jsdom, REALNE klikniecia) --');
@@ -341,8 +433,9 @@ async function sectionE() {
       ] },
     ],
     resources: [
-      { id: 'cegla', label: 'Cegła', realizedLastTurn: 120, potentialEnabled: 225, potentialInstalled: 450 },
-      { id: 'braz', label: 'Brąz', realizedLastTurn: null, potentialEnabled: 0, potentialInstalled: 50 },
+      { id: 'cegla', label: 'Cegła', realizedLastTurn: 120, forecastNextTurn: 100, potentialEnabled: 225, potentialInstalled: 450 },
+      { id: 'braz', label: 'Brąz', realizedLastTurn: null, forecastNextTurn: null, potentialEnabled: 0, potentialInstalled: 50 },
+      { id: 'drewno', label: 'Drewno', realizedLastTurn: 40, forecastNextTurn: 44, potentialEnabled: 44, potentialInstalled: 55 },
     ],
   };
   const host = document.createElement('div');
@@ -356,11 +449,12 @@ async function sectionE() {
   ok(host.querySelector('[data-prod-row="m2|cegielnia"]').className.includes('off'), 'UI: wiersz wylaczony wygaszony');
   const mini = host.querySelector('.civ-emp-mini');
   const cells = mini ? mini.textContent : '';
-  ok(cells.includes('OSTATNIA TURA') && cells.includes('MOŻLIWE (WŁĄCZONE)') && cells.includes('MOŻLIWE (WSZYSTKIE)'), 'UI: naglowki agregatu: ostatnia tura / mozliwe (wlaczone) / mozliwe (wszystkie)');
+  ok(cells.includes('OSTATNIA TURA (ZREALIZOWANO)') && cells.includes('PROGNOZA NASTĘPNEJ TURY') && cells.includes('MAKSIMUM (WŁĄCZONE)') && cells.includes('MAKSIMUM (WSZYSTKIE)'), 'UI: naglowki agregatu: ostatnia tura (zrealizowano) / prognoza nastepnej tury / maksimum (wlaczone) / maksimum (wszystkie)');
+  ok(cells.includes('100') && cells.includes('Drewno'), 'UI: prognoza 100 i wiersz Drewno widoczne');
   ok(cells.includes('120') && cells.includes('225') && cells.includes('450'), 'UI: liczby cegly 120 / 225 / 450 widoczne');
   ok(cells.includes('brak danych'), 'UI: brak danych z ostatniej tury pokazany jawnie, nie jako 0');
   const foot = host.querySelector('.civ-emp-foot').textContent;
-  ok(foot.includes('historia, nie prognoza') && foot.includes('górna granica, nie wynik'), 'UI: stopka odroznia historie od prognozy i mozliwosc od wyniku');
+  ok(foot.includes('to historia') && foot.includes('PROGNOZA NASTĘPNEJ TURY = ile wyprodukują') && foot.includes('górna granica, nie wynik'), 'UI: stopka odroznia historie od prognozy i maksimum od wyniku');
   ok(!/\b(runConverter|throughput|recipe|cyklu)\b/i.test(host.textContent), 'UI: brak zargonu implementacyjnego');
   eq(U.renderProducersSection({ cities: [], resources: [] }).includes('Brak zbudowanych'), true, 'UI: pusta lista = komunikat');
 
@@ -398,6 +492,50 @@ function sectionF() {
   ok(/toggledOff\s*\?\s*\{ gold: 0, resources: \{\}/.test(rowFn), 'F: wylaczony budynek pokazuje zerowe utrzymanie');
   ok(/convInactive = toggledOff \|\|/.test(rowFn), 'F: wiersz produkcji wylaczonego budynku wygaszony');
   ok(rowFn.includes("'wyłączony'"), 'F: znacznik "wylaczony" po polsku w wierszu');
+}
+
+// ---------------------------------------------------------------------------
+console.log('-- H. obrona Evaluatora: parytet lask Mennicy (zarzut 2) + pomiar wydajnosci prognozy (zarzut 1) --');
+{
+  // H1: predict (bez mutacji) == prepareMennicaZlotoGraceForTick + resolver dla wszystkich stanow lasko/dostep.
+  let n = 0;
+  for (const now of [true, false]) for (const had of [undefined, true, false]) for (const grace of [0, 1]) {
+    const mkState = () => {
+      const st = M.createMennicaZlotoGraceState();
+      if (had !== undefined) st.hadAccessLastTurn.set(0, had);
+      st.graceTurnsLeft.set(0, grace);
+      return st;
+    };
+    const st1 = mkState();
+    const snap = JSON.stringify([[...st1.graceTurnsLeft], [...st1.hadAccessLastTurn]]);
+    const predicted = M.predictMennicaZlotoAccessForNextTick(st1, () => now)(0);
+    eq(JSON.stringify([[...st1.graceTurnsLeft], [...st1.hadAccessLastTurn]]), snap, `H1 predict nie mutuje stanu (now=${now} had=${had} grace=${grace})`);
+    const st2 = mkState();
+    const real = M.prepareMennicaZlotoGraceForTick(st2, [0], () => now)(0);
+    eq(predicted, real, `H1 predict == realny resolver ticku (now=${now} had=${had} grace=${grace})`);
+    n++;
+  }
+  ok(n === 12, 'H1 sprawdzono 12 kombinacji stanu lasko/dostep');
+
+  // H2: pomiar wydajnosci -- duza cywilizacja (60 miast gracza + 60 AI), prognoza jak w panelu (1 przebieg + 2 potencjaly = 3).
+  const many = [];
+  const builtBig = new Map();
+  for (let i = 0; i < 120; i++) {
+    const id = 'p' + i;
+    many.push(mkCity(id, i < 60 ? 0 : 1, (i % 12) * 6, Math.floor(i / 12) * 6, { surowce: { glina: 500, drewno: 500, ruda: 300, kamien: 100 } }));
+    builtBig.set(id, ['cegielnia', 'garncarnia', 'kamieniarski', 'stolarnia', 'odlewnia_brazu', 'wielka_odlewnia']);
+  }
+  const run = () => M.forecastNextTurnProduction({
+    cities: many, map: MAP, data: DATA, difficulty: 'normal', builtByCity: builtBig, playerEra: 3,
+    playerZbadane: new Set(), resolveOwnerEra: () => 3,
+  });
+  run(); // rozgrzewka
+  const t0 = process.hrtime.bigint();
+  const REP = 9;
+  for (let i = 0; i < REP; i++) run();
+  const msPer = Number(process.hrtime.bigint() - t0) / 1e6 / REP;
+  console.log(`   POMIAR: forecastNextTurnProduction, 120 miast (60 gracza + 60 AI): ${msPer.toFixed(1)} ms / przebieg; panel = do 3 przebiegow ~ ${(3 * msPer).toFixed(0)} ms`);
+  ok(3 * msPer < 600, `H2 prognoza panelu (3 przebiegi, 120 miast) < 600 ms (jest ${(3 * msPer).toFixed(0)} ms)`);
 }
 
 sectionE().then(() => {
