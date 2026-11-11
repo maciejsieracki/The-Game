@@ -64,6 +64,8 @@ fn p6_repin_dystans_petla_matches_web() {
 
         let exp = c["expected"]["shots"].as_array().unwrap();
         assert_eq!(res.shots.len(), exp.len(), "przypadek {n}: liczba strzalow");
+        // HP stron przed kazdym strzalem: (atakujacy, obronca). Miss nie zmienia HP celu.
+        let mut cur_hp = (f(a, "health"), f(d, "health"));
         for (s, e) in res.shots.iter().zip(exp) {
             let ctx = format!("przypadek {n} R{}", s.round);
             assert_eq!(s.round as u64, e["round"].as_u64().unwrap(), "{ctx}");
@@ -75,20 +77,72 @@ fn p6_repin_dystans_petla_matches_web() {
             assert_eq!(s.side, want, "{ctx}");
             assert_eq!(s.hit, e["hit"].as_bool().unwrap(), "{ctx} trafienie");
             assert!((s.hit_pct - f(e, "hitPct")).abs() < 1e-9, "{ctx} hit%");
+            let target_before = match s.side {
+                Side::Attacker => cur_hp.1,
+                Side::Defender => cur_hp.0,
+            };
             if s.hit {
                 assert_eq!(s.damage as f64, f(e, "damage"), "{ctx} obrazenia");
                 assert_eq!(s.target_hp, f(e, "targetHp"), "{ctx} HP celu");
+            } else {
+                assert_eq!(s.damage, 0, "{ctx} chybienie bez obrazen");
+            }
+            // Niezaleznie od web: HP celu po strzale = HP przed - obrazenia (chybienie: bez zmian).
+            assert_eq!(
+                s.target_hp,
+                target_before - s.damage as f64,
+                "{ctx} HP celu = przed - obrazenia"
+            );
+            match s.side {
+                Side::Attacker => cur_hp.1 = s.target_hp,
+                Side::Defender => cur_hp.0 = s.target_hp,
             }
         }
+        assert_eq!(
+            res.hp_attacker, cur_hp.0,
+            "przypadek {n}: HP atakujacego po fazie"
+        );
+        assert_eq!(
+            res.hp_defender, cur_hp.1,
+            "przypadek {n}: HP obroncy po fazie"
+        );
         total_shots += exp.len();
         let hint = c["expected"]["routedHint"].as_bool().unwrap();
-        assert_eq!(
-            !res.routed.is_empty(),
-            hint,
-            "przypadek {n}: rout/zniszczenie"
-        );
+        let note = c["expected"]["note"].as_str().unwrap_or("");
         if hint {
+            // Web: "Atakujacy ucieka..." / "Obronca ucieka..." / "Obronca zniszczony." -- strona routu musi sie zgadzac.
+            let want_routed = if note.starts_with("Atakujacy") {
+                Side::Attacker
+            } else if note.starts_with("Obronca") {
+                Side::Defender
+            } else {
+                panic!("przypadek {n}: nieznana strona w nocie webu: {note}");
+            };
+            assert_eq!(
+                res.routed,
+                vec![want_routed],
+                "przypadek {n}: strona routu ({note})"
+            );
+            // Web podaje HP uciekajacej strony w nocie ("... HP -7 < prog 35.75").
+            if let Some(web_hp) = note
+                .split("HP ")
+                .nth(1)
+                .and_then(|t| t.split_whitespace().next())
+                .and_then(|t| t.parse::<f64>().ok())
+            {
+                let routed_hp = match want_routed {
+                    Side::Attacker => res.hp_attacker,
+                    Side::Defender => res.hp_defender,
+                };
+                assert_eq!(routed_hp, web_hp, "przypadek {n}: HP uciekajacego ({note})");
+            }
             with_rout += 1;
+        } else {
+            assert!(
+                res.routed.is_empty(),
+                "przypadek {n}: brak routu w webie, a Rust: {:?}",
+                res.routed
+            );
         }
         let limit = c["expected"]["limit"].as_bool().unwrap();
         if limit {
