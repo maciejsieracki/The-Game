@@ -136,6 +136,16 @@ pub fn ai_unit_replace_max_fraction_from_params() -> f64 {
     load_ai_unit_replace_max_fraction(raw)
 }
 
+/// Jak `ai_unit_replace_max_fraction_from_params`, ale ze wskazanego zrodla JSON
+/// (testowalne z wartoscia innej niz domyslna, bez zmiany pliku danych).
+/// Niepoprawny JSON lub brak klucza -> wartosc domyslna.
+pub fn ai_unit_replace_max_fraction_from_json(json: &str) -> f64 {
+    let raw = serde_json::from_str::<crate::data::economy_society_part2::AiParams>(json)
+        .ok()
+        .map(|p| p.ai_zamiana_jednostek_limit_udzial.wartosc);
+    load_ai_unit_replace_max_fraction(raw)
+}
+
 /// Web `AiReplaceUnitInfo`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AiReplaceUnitInfo {

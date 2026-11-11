@@ -5,8 +5,9 @@
 
 use civ_engine::data::economy_society_part2::parse_ai_params;
 use civ_engine::domain::unit_replace::{
-    ai_unit_replace_cap, ai_unit_replace_max_fraction_from_params,
-    load_ai_unit_replace_max_fraction, AI_UNIT_REPLACE_MAX_FRACTION,
+    ai_unit_replace_cap, ai_unit_replace_max_fraction_from_json,
+    ai_unit_replace_max_fraction_from_params, load_ai_unit_replace_max_fraction,
+    AI_UNIT_REPLACE_MAX_FRACTION,
 };
 
 const PIN_VALUE: f64 = 0.1;
@@ -42,11 +43,36 @@ fn loader_uzywa_wartosci_z_parametru_zamiast_domyslnej() {
 }
 
 #[test]
-fn parametr_z_danych_steruje_limitem_zamiany() {
+fn limit_zamiany_dla_pinu_0_1_rowny_10_proc() {
+    // Pin 0,1 jest zgodny z domyslna 10% (osobno: test z 0,25 dowodzi, ze dane sa zrodlem).
     let fraction = ai_unit_replace_max_fraction_from_params();
-    // 100 jednostek * 0,1 = 10 (limit z pinu), nie wartosc sprzed poprawki.
     assert_eq!(ai_unit_replace_cap(100.0, fraction), 10.0);
     // Min. 1 gdy armia niepusta, 0 dla pustej.
     assert_eq!(ai_unit_replace_cap(3.0, fraction), 1.0);
     assert_eq!(ai_unit_replace_cap(0.0, fraction), 0.0);
+}
+
+#[test]
+fn wartosc_z_danych_rozna_od_domyslnej_steruje_limitem() {
+    // Podmiana wartosci w realnym pliku danych (pierwszy wpis `wartosc: 0.1` = klucz zamiany).
+    let original = include_str!("../data/ai-params.json");
+    let patched = original.replacen("\"wartosc\": 0.1,", "\"wartosc\": 0.25,", 1);
+    assert_ne!(patched, original, "podmiana musi zmienic dane");
+    let fraction = ai_unit_replace_max_fraction_from_json(&patched);
+    assert_eq!(fraction, 0.25);
+    assert_ne!(fraction, AI_UNIT_REPLACE_MAX_FRACTION);
+    assert_eq!(ai_unit_replace_cap(100.0, fraction), 25.0);
+}
+
+#[test]
+fn blad_parsowania_daje_wartosc_domyslna() {
+    // Sciezka bledu: niepoprawny JSON nie moze cicho dac innej wartosci niz domyslna.
+    assert_eq!(
+        ai_unit_replace_max_fraction_from_json("{ nie json"),
+        AI_UNIT_REPLACE_MAX_FRACTION
+    );
+    assert_eq!(
+        ai_unit_replace_max_fraction_from_json("{}"),
+        AI_UNIT_REPLACE_MAX_FRACTION
+    );
 }
