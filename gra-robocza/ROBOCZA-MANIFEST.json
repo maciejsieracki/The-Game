@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "481fb28cd9aa77066d91e36289c3f658",
-  "bundleSha256": "887ae42c003fb8d6cd1965a2074146a20ce85a9f34d40e7261ddaa8482bfa265",
-  "bundleBytes": 14519088,
+  "bundleMd5": "81b1893aacd6859176d4f2d201f3a83f",
+  "bundleSha256": "75e67957a388ca53c19809cd65f9fdbe0bd763b3295aaa4c4ea4ad326d527f2d",
+  "bundleBytes": 14522194,
   "sourceSnapshot": {
-    "source": "merge FC 800ecf7a1",
+    "source": "merge FC d4f8ccfe2 (FF)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 645: R-WEB-CURRENCY-MULT-PER-CIV-Q1 (decyzja właściciela D + korekta Asyrii): mnożnik Efektu 1 (Waluta+Mennica) = max(1,38; wartość cywilizacji z civ-matrix meta_mnoznik_waluta + korekta trudności łatwy +0,5 / normalny 0 / trudny −0,5), bez górnego limitu; dolny limit z econ-params (mennica_mnoznik_po_walucie_minimum); jedna funkcja mennicaMnoznikForCiv dla gracza, AI i podglądu; fallback globalny gdy brak wartości civ; Asyria 2,2 (Babilonia 2,3 − 0,1; łatwy 2,7 / trudny 1,7); hasła Civpedii, poradnik §49.3b, karty (Waluta, Mennica, Targowisko) i opisy econ-params zgodne z silnikiem"
+    "FALA 646: R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1 (decyzja ABC właściciela): plony i bonusy w kartach encji (budynki, technologie, ulepszenia, cuda, jednostki) pokazują chipy ikona+liczba: tytuły Top 5 budynków i technologii, zdania 'Co możesz teraz zrobić', wiersze Warunek/Odblokowuje/Do czego, Koszt nauki, bonusy cudów (w tym Wpływ), Pieniądz w utrzymaniu; kontrakt resources/valueParts/labelParts, kwoty escapowane, nazwa w title/aria-label; testy Top 5 porównują tekst po normalizacji chip→nazwa (entity-card-chip-text.cjs), żadna asercja nie osłabiona"
   ],
   "verification": [
-    "tsc czysty; currency-mult-per-civ 202/0 (15 civ × 3 trudności, dolny limit, fallback, realny podatek, parytet gracz/AI, wiki == silnik, zapis/wczytanie), mutacja czerwona (192/10); waluta-mennica 61/0, hud-skarbiec 34/0, ids-leak-audit 1648/0, pr141-matrix-only-data-wiki OK; ekonomia/wiki/karty zielone; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; entity-cards-yield-icons 27/0, yield-icons-real-render (Chromium, prawdziwe karty + XSS) 186/0, tech-cards-top5 595/0, building-cards-top5 1208/0 (z [A] --check), entity-card-contract 75/0, entity-card-wonder 134/0, resource-icons real-render 199/0, ids-leak-audit 1648/0, wonder-text 132/0, polish-guard 1674/0, currency-mult 202/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "BALANS NIEZMIERZONY: na łatwym i normalnym podatek z Mennicą rośnie względem dotychczasowego globalnego 1,62/1,50/1,38 (np. Grecy normalny ×2,3, Fenicjanie łatwy ×3,1); Asyria −0,1 to założenie orkiestratora; hasła Civpedii tylko dla 9 z 15 cywilizacji (stan bazowy); dług bazowy pr141-matrix-only-economy-test, mennica-magazyn-test 34/7, culture-religion-test 63/2; NIE_ZMIERZONO: Chromium; dług Rust: REPIN (econ-params + civ-matrix)"
+    "Wyjątki jawne w teście: proza pod tytułem Top 5, etykiety wierszy (nagłówki), 'Kamień Ha'amonga'; bez ikony zostają: Szczęście, Obrona, Pancerz, Prawo, Zaufanie, cyna; osobny temat: okno odkrycia technologii (techDiscoveryNotice.ts) nadal tekstem; NIE_ZMIERZONO: żywa gra na Vite z main.ts (tylko harness Chromium)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T19:37:35",
+  "hubGeneratedAt": "2026-11-11T20:03:01",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "481fb28cd9aa77066d91e36289c3f658",
-      "sizeBytes": 14519088
+      "md5": "81b1893aacd6859176d4f2d201f3a83f",
+      "sizeBytes": 14522194
     }
   ],
-  "md5": "481fb28cd9aa77066d91e36289c3f658",
+  "md5": "81b1893aacd6859176d4f2d201f3a83f",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
