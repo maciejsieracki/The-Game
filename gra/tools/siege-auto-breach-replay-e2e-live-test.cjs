@@ -24,6 +24,7 @@
  * Zmienne srodowiska:
  *   SABR_ONLY      lista scenariuszy po przecinku: p1x1,p1fast,b,r,m,f (domyslnie wszystkie)
  *   SABR_DIST      gotowy build (pomija vite build)     SABR_CHROME  sciezka Chromium
+ *   SABR_SKIP_KNOWN 1 = znany defekt B4b nie zmienia kodu wyjscia
  *   SABR_MUT       nazwa mutacji (patrz MUTS) -- build ze zmodyfikowanym zrodlem sceny; asercje maja byc CZERWONE
  *   SABR_FAST_CAP  sufit tur scenariusza p1fast (domyslnie 180; 240 dalo margines 16 s do limitu 120 s, 180 daje ok. 37 s)
  *   SABR_LIMIT_S   limit czasu per przebieg (domyslnie 120)
@@ -31,6 +32,7 @@
  *
  * Exit: 0 = wszystko PASS; 1 = FAIL; 2 = NIE_ZMIERZONO (brak playwright/Chromium);
  *       4 = czesc scenariuszy NIE_ZMIERZONO (limit czasu) i brak FAIL;
+ *       5 = tylko ZNANY-DEFEKT (B4b; osobny temat); SABR_SKIP_KNOWN=1 => 0
  *       3 = ZNALEZISKO-DEFEKTU gry (tylko wpisy DEFEKT, brak innych FAIL) -- patrz raport, osobny temat.
  * Nie wymaga npm run build/dev (vite build --outDir poza repo).
  */
@@ -49,10 +51,16 @@ const TMP_ROOT = path.join(os.tmpdir(), `civ-sabr-${RUN}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 
-let pass = 0; let fail = 0; let defects = 0; let unmeasured = 0;
+let pass = 0; let fail = 0; let defects = 0; let unmeasured = 0; let knownDefects = 0;
 function check(name, cond, detail) {
   if (cond) { pass++; console.log('PASS: ' + name); }
   else { fail++; console.log('FAIL: ' + name + (detail !== undefined ? ' -- ' + JSON.stringify(detail) : '')); }
+}
+// ZNANY DEFEKT (osobny temat/decyzja wlasciciela): raportowany osobno, nie miesza sie z DEFEKT/FAIL.
+// Exit 5 gdy to jedyny wynik niezerowy; SABR_SKIP_KNOWN=1 => exit 0 (nadal drukuje wpis).
+function known(name, cond, detail) {
+  if (cond) { pass++; console.log('PASS: ' + name); }
+  else { knownDefects++; console.log('ZNANY-DEFEKT: ' + name + (detail !== undefined ? ' -- ' + JSON.stringify(detail) : '')); }
 }
 function defect(name, cond, detail) {
   if (cond) { pass++; console.log('PASS: ' + name); }
@@ -65,6 +73,9 @@ const MUTS = {
   'breach-off': [
     { from: 'this.wallTileHp.delete(wallRow);\n    this.wallEverBreached = true;', to: 'this.wallTileHp.delete(wallRow);' },
     { from: 'this.gateOpen = true;\n    this.wallEverBreached = true;', to: 'this.gateOpen = true;' },
+  ],
+  'restore-terrain-off': [
+    { from: 'if (idx >= 0 && idx < tiles.length) tiles[idx] = this.siegeWallInitialTiles[r] as typeof tiles[number];', to: '' },
   ],
   'ff-tick': [
     { from: 'this.vNow += FF_STEP_MS;\n      this._ffVirtualMs += FF_STEP_MS;', to: 'this.vNow += FF_STEP_MS * 2;\n      this._ffVirtualMs += FF_STEP_MS * 2;' },
@@ -114,6 +125,7 @@ function initDet(seed) {
   window.requestAnimationFrame = (cb) => { window.__rafQ.push(cb); return window.__rafQ.length; };
   window.cancelAnimationFrame = () => {};
   performance.now = () => { window.__fakeNow += 0.01; return window.__fakeNow; };
+  window.__reseed = (n) => { s = n >>> 0; };
   window.__framesRun = 0;
   window.__dt = 16;
   window.__pumpFrames = (n) => {
@@ -334,15 +346,16 @@ async function main() {
     check('B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom)', a.onBreachTile > 0, { onBreachTile: a.onBreachTile, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
     // Zmierzone (AUTO MINI 150 tur, AUTO pelny 128x 180-240 tur, SKIP pelny 400 tur): max q atakujacego <= kolumna muru, nikt nie wchodzi ZA mur.
     // Osobno od B4, bo to nie jest wymaganie z dispatchu, tylko obserwacja zachowania gry -- do decyzji wlasciciela (osobny temat), nie naprawiane tutaj.
-    defect('B4b OBSERWACJA: w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur', a.insideAtk > 0, { inside: a.insideAtk, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
+    known('B4b ZNANY DEFEKT (osobny temat, nie ruszac tutaj): w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur', a.insideAtk > 0, { inside: a.insideAtk, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
     check('B5 brak bledow JS', a.errors.length === 0, a.errors);
   }
 
   // ---------------- R: replay ("Rozegraj ponownie") po oblezeniu z wylomem ----------------
   if (only.has('r')) {
     const { page, errors } = await openScene(browser, base, 1, '');
+    await page.evaluate(() => window.__reseed(555)); // to samo ziarno przed rozstawieniem w pageSetup i w replayu (determinizm porownania R9)
     await page.evaluate(pageSetup, { ...MINI, speedIdx: 4 });
-    await page.evaluate(() => { const bs = window.__lastBattleScene; bs.skip(); });
+    await page.evaluate(() => { const bs = window.__lastBattleScene; window.__reseed(777); bs.skip(); });
     let fin = false; const t0r = Date.now();
     while (!fin && Date.now() - t0r < LIMIT_MS) fin = await page.evaluate(() => window.__pumpFrames(200));
     const rp = await page.evaluate(() => {
@@ -354,12 +367,16 @@ async function main() {
         tileDiff: diff(Array.from(bs.terrainMap.tiles)),
       };
       // Prawdziwy przycisk ekranu wyniku, jesli jest w DOM; inaczej ta sama funkcja (onReplay -> _replayBattle).
+      window.__reseed(555);
       let via = 'direct';
       const btn = Array.from(document.querySelectorAll('button')).find((b) => /ponownie/i.test(b.textContent || ''));
       if (btn) { btn.click(); via = 'button'; } else { bs._replayBattle(); }
       const T1 = Array.from(bs.terrainMap.tiles);
+      const wc = bs.siegeWallCol; const cols = bs.terrainMap.cols;
+      let wallColDiff = 0;
+      for (let r = 0; r < bs.terrainMap.rows; r++) if (T1[r * cols + wc] !== T0[r * cols + wc]) wallColDiff++;
       return {
-        via, before,
+        via, before, wallColDiff,
         after: {
           finished: bs.finished, started: bs.started, deploy: bs.deployPhase, breached: bs.wallEverBreached, gateOpen: bs.gateOpen,
           gateHp: bs.gateHp, tilesLeft: bs.wallTileHp.size, init: bs.siegeWallTilesInit, towers: bs.towerAtWallRows.size,
@@ -369,14 +386,45 @@ async function main() {
       };
     });
     console.log('REPLAY ' + JSON.stringify(rp)); record({ sc: 'r', ...rp });
+    // Determinizm powtorek: przebieg B (po replayu A) i C (po kolejnym replayu B, ktory skonczyl sie wylomem) maja startowac z
+    // identycznego stanu => identyczny wynik. Resztki stanu wylomu z B (teren/HP/brama/wiezyczki) rozjechalyby C.
+    // A (swiezy start) nie sluzy do porownania: replay odtwarza grupy z konca rozstawiania bez ponownej auto-kompaktacji,
+    // wiec rozmieszczenie po replayu jest inne niz przy pierwszym starcie (osobna obserwacja, poza zakresem tego tematu).
+    const REPLAY_CAP = 60;
+    const runAgain = async (viaReplay) => {
+      await page.evaluate(([cfg, cap, viaReplay]) => {
+        const bs = window.__lastBattleScene;
+        window.__reseed(555);
+        if (viaReplay) bs._replayBattle();
+        for (const r of Array.from(bs.wallTileHp.keys())) bs.wallTileHp.set(r, cfg.wallHp); // jak w pageSetup (replay przywraca HP 640)
+        bs._roundCapVerdict = () => (bs.roundNo >= cap ? { winner: 'remis', reason: 'SZTURM ODPARTY (test-cap ' + cap + ' tur)', cap } : null);
+        window.__breachEvents.length = 0; window.__t0 = bs.vNow;
+        window.__reseed(777);
+        if (bs.deployPhase) bs._endDeployPhase();
+        bs.skip();
+      }, [MINI, REPLAY_CAP, viaReplay]);
+      let f = false; const tt = Date.now();
+      while (!f && Date.now() - tt < LIMIT_MS) f = await page.evaluate(() => window.__pumpFrames(200));
+      return { fin: f, m: await page.evaluate(pageMetrics) };
+    };
+    const rB = await runAgain(false); // B: bitwa po replayu A (replay juz wykonany w bloku wyzej)
+    const fin2 = rB.fin; const first = rB.m;
+    const rC = await runAgain(true);
+    const second = rC.m;
+    const finC = rC.fin;
     check('R0 przed replayem: oblezenie z wylomem zakonczone (wylom + zniszczony teren muru/bramy)', rp.before.finished === true && rp.before.breached === true && rp.before.tileDiff > 0, rp.before);
     const A = rp.after;
     check('R1 po replayu: bitwa od nowa (faza rozstawiania, tura 0, brak konca)', A.finished === false && A.deploy === true && A.started === false && A.round === 0, A);
     check('R2 po replayu: wylom wyzerowany (wallEverBreached=false, brama zamknieta, HP bramy 400, wiezy przy murze 0)', A.breached === false && A.gateOpen === false && A.gateHp === 400 && A.towers === 0, A);
     check('R3 po replayu: HP kafli muru przywrocone (liczba kafli == poczatkowa)', A.tilesLeft === A.init && A.init === rp.before.init, A);
     check('R4 po replayu: roster wrocil (ten sam sklad zywych: 6+obleznicza vs 6)', A.atkAlive === 17 && A.defAlive === 6, A);
-    defect('R5 po replayu: TEREN muru/bramy przywrocony (kafle == stan startowy); inaczej wyburzony mur zostaje otwarty mimo wallEverBreached=false (obejscie reguly R1)',
+    check('R5 po replayu: TEREN muru/bramy przywrocony (kafle == stan startowy); inaczej wyburzony mur zostaje otwarty mimo wallEverBreached=false (obejscie reguly R1)',
       A.tileDiff === 0, { tileDiffPoReplayu: A.tileDiff, tileDiffPrzed: rp.before.tileDiff });
+    check('R5b po replayu: teren KAZDEGO kafla kolumny muru == poczatkowy (wallColDiff=0)', rp.wallColDiff === 0, { wallColDiff: rp.wallColDiff });
+    check('R8 przebiegi B i C po replayach skonczone, oba z wylomem (B: wylom padl, wiec C weryfikuje brak resztek)', fin2 && finC && first.finished && second.finished && first.breached === true && second.breached === true, { fin2, finC, b: brief(first), c: brief(second) });
+    check('R9 determinizm replayu: wynik przebiegu C == B (zwyciezca, tura, straty, HP, kafle muru, jednostki)', sameOutcome(first, second), { first: brief(first), second: brief(second) });
+    check('R10 determinizm replayu: zdarzenia wylomu C == B', JSON.stringify(first.breachEvents) === JSON.stringify(second.breachEvents) && first.breachEvents.length > 0, { first: first.breachEvents, second: second.breachEvents });
+    check('R11 po przebiegu C stan muru po wylomie == po B', second.onBreachTile === first.onBreachTile && second.wallTilesLeft === first.wallTilesLeft, { first: first.wallTilesLeft, second: second.wallTilesLeft });
     check('R6 brak bledow JS', errors.length === 0, errors);
     await page.close();
   }
@@ -428,8 +476,8 @@ async function main() {
 
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
-  console.log('--- ' + pass + ' ok, ' + fail + ' fail, ' + defects + ' defekt(y) gry, ' + unmeasured + ' NIE_ZMIERZONO' + (mut ? ' [MUTACJA ' + mut + ']' : ''));
-  process.exit(fail ? 1 : (defects ? 3 : (unmeasured ? 4 : 0)));
+  console.log('--- ' + pass + ' ok, ' + fail + ' fail, ' + defects + ' defekt(y) gry, ' + unmeasured + ' NIE_ZMIERZONO, ' + knownDefects + ' znany(ch) defekt(ow) (B4b)' + (mut ? ' [MUTACJA ' + mut + ']' : ''));
+  process.exit(fail ? 1 : (defects ? 3 : (unmeasured ? 4 : (knownDefects && !process.env.SABR_SKIP_KNOWN ? 5 : 0))));
 }
 
 main().catch((e) => { console.log('FAIL: wyjatek: ' + String((e && e.stack) || e)); process.exit(1); });

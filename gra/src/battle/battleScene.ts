@@ -2505,6 +2505,12 @@ export class BattleScene {
   private siegeNoBreachMaxRounds: number = SIEGE_NO_BREACH_MAX_ROUNDS;
   /** Max HP pojedynczego kafla muru. */
   private static readonly WALL_TILE_HP = 640;
+  /** Replay: kopia terenu kolumny muru/bramy zaraz po wyrzezbieniu (indeks = rzad), do przywrocenia zburzonych kafli. */
+  private siegeWallInitialTiles: number[] = [];
+  /** Replay: gruz z wylomow (mesh-e dodane do sceny w _breachWallTile) -- zdejmowany przy powtorce. */
+  private siegeRubbleMeshes: THREE.Mesh[] = [];
+  /** Replay: elementy muru/bramy ukryte przez wylom -- przywracane przy powtorce. */
+  private siegeHiddenMeshes: THREE.Object3D[] = [];
   /** HUD: pasek HP bramy + kafla muru. */
   private siegeHudDiv: HTMLDivElement | null = null;
   /** Ostatnio atakowany rząd muru (do wyświetlania HP). */
@@ -4061,6 +4067,11 @@ export class BattleScene {
       if (wallCol >= 0 && wallCol < BF_COLS) {
         tiles[idx(wallCol, r)] = isGate ? BTerrain.Gate : BTerrain.Wall;
       }
+    }
+    // Replay: zapamietaj stan poczatkowy kolumny muru (teren kazdego rzedu).
+    this.siegeWallInitialTiles = [];
+    for (let r = 0; r < BF_ROWS; r++) {
+      this.siegeWallInitialTiles[r] = tiles[idx(wallCol, r)] as number;
     }
   }
 
@@ -7654,7 +7665,7 @@ export class BattleScene {
       const wallMeshes = this.siegeWallGroup.userData['rowWallMeshes'] as Map<number, THREE.Mesh[]> | undefined;
       if (wallMeshes) {
         const segs = wallMeshes.get(wallRow);
-        if (segs) segs.forEach(m => { m.visible = false; });
+        if (segs) segs.forEach(m => { if (m.visible) this.siegeHiddenMeshes.push(m); m.visible = false; });
       }
       // Gruz — nieregularna sterta boxów/odłamków skalnych w miejscu wyłomu
       // (world space). Deterministyczny jitter (tileJitter — sam mechanizm co
@@ -7689,6 +7700,7 @@ export class BattleScene {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.scene.add(mesh);
+        this.siegeRubbleMeshes.push(mesh);
         this.ownedGeos.push(geo);
         this.ownedMats.push(mat);
       }
@@ -7777,7 +7789,7 @@ export class BattleScene {
     // Zmiana 3: Ukryj całą strukturę bramy — portkulisa + nadproże + most + filary.
     if (this.siegeWallGroup) {
       const gate: THREE.Group | null = this.siegeWallGroup.userData['gate'] as THREE.Group ?? null;
-      if (gate) gate.visible = false;
+      if (gate) { if (gate.visible) this.siegeHiddenMeshes.push(gate); gate.visible = false; }
 
       // Ukryj też nadproże / most / filary bramy:
       // Są to children wallGroup w lokalnym X bliskim 0 (centrum = gateCenterX),
@@ -7796,6 +7808,7 @@ export class BattleScene {
           // Nadproże (lintel): y ≈ wallH; Most (bridge): y ≈ wallH; Wieże bramne: y > wallH/2
           // Nie chcemy ukrywać ościeży/filarów bocznych muru — ale brama jest w centrum.
           if (ly >= wallH * 0.9 || (Math.abs(lx - gateCX) < gateHalfW * 0.9)) {
+            if (mesh.visible) this.siegeHiddenMeshes.push(mesh);
             mesh.visible = false;
           }
         }
@@ -10529,6 +10542,25 @@ export class BattleScene {
     this.wallEverBreached = false;
     this.towerAtWallRows.clear();
     this.wallTileHp.clear();
+    this.lastAttackedWallRow = -1;
+    // Teren kolumny muru/bramy z kopii zapamietanej przy starcie bitwy (wyłomy zamieniaja kafle na Plains).
+    const tiles = this.terrainMap.tiles;
+    if (tiles) {
+      for (let r = 0; r < this.siegeWallInitialTiles.length; r++) {
+        const idx = r * BF_COLS + this.siegeWallCol;
+        if (idx >= 0 && idx < tiles.length) tiles[idx] = this.siegeWallInitialTiles[r] as typeof tiles[number];
+      }
+    }
+    // Wizualia: gruz z wylomow zdjac, ukryte segmenty muru/brama wracaja, wiezyczki odbudowane.
+    for (const m of this.siegeRubbleMeshes) this.scene.remove(m);
+    this.siegeRubbleMeshes = [];
+    for (const o of this.siegeHiddenMeshes) o.visible = true;
+    this.siegeHiddenMeshes = [];
+    for (const t of this.siegeTowers) {
+      t.destroyed = false;
+      if (t.mesh) t.mesh.visible = true;
+    }
+    this._updateSiegeHud();
     const gateRowLo = this.siegeGateRow - 1;
     const gateRowHi = this.siegeGateRow;
     for (let r = this.siegeWallRowLo; r <= this.siegeWallRowHi; r++) {
