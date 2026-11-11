@@ -136,6 +136,8 @@ export type ProductionItem = {
    * Absent = legacy save -> falls back to the global toggle.
    */
   followGeneral?: boolean;
+  /** R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: id generała wybranego w panelu Rekrutacja (cel marszu po zrodzeniu). */
+  rallyGeneralId?: string;
 };
 
 /**

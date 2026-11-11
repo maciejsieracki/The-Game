@@ -86,6 +86,8 @@ export interface RuntimeUnit {
   autoExplore?: boolean;
   /** Whether this unit should automatically rally to its owner's commander. */
   followGeneral?: boolean;
+  /** R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: generał wybrany w panelu Rekrutacja — cel marszu tej jednostki. */
+  rallyGeneralId?: string;
   /** DYSPOZYCJA Macieja 2026-07-26 ("fortyfikacja w polu"): jednostka ufortyfikowana
    *  POZA hexem własnego miasta (akcja „Ufortyfikuj" gdy cityAtUnit(u) nie zwraca
    *  własnego miasta -- w tym KAŻDA jednostka oblegająca, bo oblegający stoją przy

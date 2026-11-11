@@ -735,6 +735,7 @@ import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession } from './ui/cityPanel';
 import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
+import { livingGeneralsOf, resolveRecruitGeneral, recruitRallyStamp, pickRallyGeneral } from './game/recruit-general';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -2213,6 +2214,8 @@ async function boot(): Promise<void> {
     const units: RuntimeUnit[] = [];
     // Retain the historical automatic rally behavior until the player changes this default.
     let recruitFollowGeneralDefault = true;
+    // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: generał rekrutujący panelu Rekrutacja (brak = panel nie rekrutuje).
+    let recruitGeneralId: string | null = null;
     let unitRenderer = new UnitRenderer(scene, map);
 
     // -----------------------------------------------------------------------
@@ -4592,7 +4595,7 @@ async function boot(): Promise<void> {
       koszt: number,
       ownerId = 0,
       quantity = 1,
-      opts: { isGeneral?: boolean; generalGateChecked?: boolean; origin?: RecruitOrigin } = {},
+      opts: { isGeneral?: boolean; generalGateChecked?: boolean; origin?: RecruitOrigin; rallyGeneralId?: string } = {},
     ): boolean {
       const requestedQuantity = Math.floor(quantity);
       if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1) return false;
@@ -4746,8 +4749,12 @@ async function boot(): Promise<void> {
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja „Idź do wodza” trwa w zamówieniu do zrodzenia.
+      // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: zamówienie z panelu Rekrutacja niesie id wybranego generała
+      // (marsz do NIEGO); bez niego — dotychczasowa reguła (najbliższy generał wg przełącznika).
       const followIntent = city.ownerId === 0
-        ? { followGeneral: recruitFollowGeneralForOrder(opts.origin ?? 'city', recruitFollowGeneralDefault) }
+        ? (opts.rallyGeneralId
+          ? recruitRallyStamp(opts.rallyGeneralId)
+          : { followGeneral: recruitFollowGeneralForOrder(opts.origin ?? 'city', recruitFollowGeneralDefault) })
         : {};
       for (let i = 0; i < requestedQuantity; i++) {
         nextProd = enqueueRecruitment(nextProd, {
@@ -4961,8 +4968,31 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: sprawdza wybór generała rekrutującego. Zginął/zniknął →
+     * wybór czyszczony + powiadomienie (panel przestaje rekrutować, aż gracz wybierze nowego).
+     */
+    function validateRecruitGeneral(): string | null {
+      const res = resolveRecruitGeneral(recruitGeneralId, units, ME());
+      if (res.status === 'lost') {
+        recruitGeneralId = null;
+        markCityStateDirty();
+        showHintMessage('Generał rekrutujący zginął — wybierz nowego w panelu Rekrutacja.', 3600);
+      }
+      return res.status === 'ok' ? recruitGeneralId : null;
+    }
+
+    function recruitGeneralLabel(u: RuntimeUnit): string {
+      const n = units.filter(x => x.ownerId === u.ownerId && x.isGeneral === true).indexOf(u) + 1;
+      return `${armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId))} ${n} — ${humanizeId(u.typeId)} (${u.q},${u.r})`;
+    }
+
     function orderEmpireRecruitment(unitId: string, quantity: number): { message: string; changed: boolean; accepted: number } {
       const ownerId = ME();
+      const rallyId = validateRecruitGeneral();
+      if (!rallyId) {
+        return { message: 'Wybierz generała rekrutującego — bez niego rekrutacja z tego panelu jest wyłączona.', changed: false, accepted: 0 };
+      }
       const firstCity = cities.find(c => c.ownerId === ownerId);
       const label = (firstCity ? recruitPanelPurchasableUnits(firstCity, data).find(it => it.id === unitId)?.nazwa : undefined) ?? unitId;
       const { inputs, koszt } = empireRecruitCityInputs(unitId);
@@ -4984,7 +5014,7 @@ async function boot(): Promise<void> {
         maxTotalReason: SUPER_UNIT_LIMIT_BLOCK_PL,
         miasta: inputs,
         afford,
-        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count, { origin: 'army' }),
+        purchase: (cityId, count) => purchaseRecruitmentUnit(cityId, unitId, empireRecruitCityKoszt(cityId, unitId, koszt), ownerId, count, { origin: 'army', rallyGeneralId: rallyId }),
       });
       refreshEmpireRecruitPanel();
       return { message: out.message, changed: out.changed, accepted: out.accepted };
@@ -5010,6 +5040,15 @@ async function boot(): Promise<void> {
           };
         },
         onOrder: orderEmpireRecruitment,
+        getGenerals: () => {
+          validateRecruitGeneral();
+          return livingGeneralsOf(units, ME()).map(g => ({ id: g.id, label: recruitGeneralLabel(g) }));
+        },
+        getSelectedGeneralId: () => recruitGeneralId,
+        onSelectGeneral: id => {
+          recruitGeneralId = id && resolveRecruitGeneral(id, units, ME()).status === 'ok' ? id : null;
+          markCityStateDirty();
+        },
       });
     }
 
@@ -14792,7 +14831,8 @@ async function boot(): Promise<void> {
       const u = units.find(x => x.id === newUnitId);
       if (!u || u.ownerId !== 0) return false;
       // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy dostepny wodz (trasa), nie pierwszy na liscie.
-      const general = pickNearestLeaderForUnit(u);
+      // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: jednostka z panelu Rekrutacja idzie do WYBRANEGO generała.
+      const general = pickRallyGeneral(u, units, () => pickNearestLeaderForUnit(u));
       const follow = generalFollowDestination(u, general);
       return !!follow && planGeneralFollowMarch(u, follow.point, follow.generalTargetId, false);
     }
@@ -27128,6 +27168,25 @@ async function boot(): Promise<void> {
         return ids;
       },
       toggleViaHud: () => toggleEmpireRecruitFromHud(),
+      // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: stan wyboru generała rekrutującego (tylko test).
+      selectedGeneral: () => recruitGeneralId,
+      generals: () => livingGeneralsOf(units, ME()).map(g => g.id),
+      /** Wybiera istniejącego generała; gdy brak — oznacza pierwszą jednostkę bojową gracza jako generała. */
+      ensureAndSelectGeneral: (nth = 0): string | null => {
+        let gens = livingGeneralsOf(units, ME());
+        if (gens.length <= nth) {
+          const cand = units.find(u => u.ownerId === ME() && u.isGeneral !== true
+            && u.category !== 'osadnik' && u.category !== 'robotnik' && u.category !== 'zwiadowca');
+          if (cand) cand.isGeneral = true;
+          gens = livingGeneralsOf(units, ME());
+        }
+        const g = gens[nth];
+        recruitGeneralId = g ? g.id : null;
+        return recruitGeneralId;
+      },
+      clearGeneralSelection: () => { recruitGeneralId = null; },
+      killGeneral: (id: string) => { const i = units.findIndex(u => u.id === id); if (i >= 0) units.splice(i, 1); },
+      queueIntents: (cityId: string, rallyOnly = true) => (cityProd.get(cityId)?.rekrutacja ?? []).map(q => ({ id: q.id, followGeneral: q.followGeneral, rallyGeneralId: q.rallyGeneralId })).filter(q => !rallyOnly || q.rallyGeneralId),
     };
     if (isCivTestEnabled(window.location.search)) (window as any).__frozenTestDebug = {
       spawn: (q: number, r: number, n: number, flags: { garnizon?: boolean; field?: boolean; ruchLeft?: number; group?: string; oblegaCityId?: string }): string[] => {
@@ -31129,7 +31188,7 @@ async function boot(): Promise<void> {
         unitId => plannedMarches.has(unitId),
         (unit, point, targetId) => {
           // Lista wybiera wodza w linii prostej; marsz kierujemy do najblizszego po trasie.
-          const best = pickNearestLeaderForUnit(unit);
+          const best = pickRallyGeneral(unit, units, () => pickNearestLeaderForUnit(unit));
           return best !== undefined
             ? planGeneralFollowMarch(unit, { q: best.q, r: best.r }, best.id, false)
             : planGeneralFollowMarch(unit, point, targetId, false);
@@ -37019,6 +37078,7 @@ async function boot(): Promise<void> {
         autoMarch: marchSave.autoMarch,
         plannedMarches: marchSave.plannedMarches,
         recruitFollowGeneralDefault,
+        ...(recruitGeneralId ? { recruitGeneralId } : {}),
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -39597,6 +39657,8 @@ async function boot(): Promise<void> {
                   isGeneral: rec.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
                   // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja zapisana przy zamówieniu; stary zapis -> przełącznik.
                   ...(city.ownerId === 0 ? { followGeneral: resolveRecruitFollowGeneral(rec, recruitFollowGeneralDefault) } : {}),
+                  // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: cel marszu = generał wybrany w panelu Rekrutacja.
+                  ...(city.ownerId === 0 && rec.rallyGeneralId ? { rallyGeneralId: rec.rallyGeneralId } : {}),
                   category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
                   r: city.r,
@@ -44668,6 +44730,7 @@ async function boot(): Promise<void> {
       playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: nowa gra = czysty panel zbiorczy
+      recruitGeneralId = null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
       resetArmyRecruitDraftsSession();
       resetEmpireMassRecruitmentMessage();
       playtestWalkaActive = false;
@@ -46011,6 +46074,7 @@ async function boot(): Promise<void> {
       units.length = 0;
       for (const u of saved.units) units.push(u);
       recruitFollowGeneralDefault = saved.recruitFollowGeneralDefault !== false;
+      recruitGeneralId = saved.recruitGeneralId ?? null; // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1
       // Old saves may omit hpMax, while intermediate saves may contain the raw
       // base max. Recompute from the current unit bonuses and clamp current HP
       // before any panel, battle or starvation consumer sees the loaded state.
