@@ -7024,3 +7024,19 @@ ROBOCZAeed8b5c1, publication9f629e957, source8109fb8e9 includesPolish98e0ad9e9. 
 - limits: HTTP audio gate is not file protocol acceptance; managed browser file protocol remains unmeasured
 - Source 4d4e10e4f6b2676dc9404d97f82befdb880fbe54; MD5 14336eb5393bb01aef84047308564eb5; SHA256 e8bb03d0b7b05c447405333d4b21333a099a5fe55d0d3d72d7e03acc9a9e2b02; bytes 14424566; push/readback pending.
 - Previous bundle isolated restore MD5 2b12c8176ee0b412fcd0b9a5ca392cdf verified.
+
+
+## ROBOCZA 722419d0 — 2026-11-11T09:11:27.525193+01:00 — FALA 619: Stone and brick wall tiers and persistent alliance war calls
+
+- scope: Palisade100%,newstone150%afterMurarstwo,brick200%afterBudownictwo; highestwallonly, legacy mury ID preserves200%
+- scope: Brick uses red version of existing stone geometry; research/building cards and Civpedia sources regenerated
+- scope: Alliance calls persist in inbox/history; correct requester/recipient identity, resolution once, replay/hotseat/legacy guards
+- verification: Independent evaluator corrections closed and separate Final Control PASS for each topic
+- verification: Walls actual Chromium render/mutation81, cards1207, progression61/AI45, reallegacy serialization PASS
+- verification: Alliance actualHTTPChromium/IndexedDBreload, accept/refuse replay onceN4,hotseat and legacyrecipientmigration PASS; focused7/14/18 andtypecheckPASS
+- verification: Rootmergedtypecheck+wallprogression+alliancesaveload+Skipregression PASS; cleanarchiveVite; HTTPaudio present/absentPASS, unchanged3audio sidecars
+- limits: No full campaign or large empire test
+- limits: Legacy walls save tested through actual serialization roundtrip; no full interactive legacy wall campaign
+- limits: HTTP audio fallback is not file protocol acceptance
+- Source d2ff370e79451de6411641a199bc554473caeb15; MD5 722419d02dcdf72408dffe4374bb1e73; SHA256 59e0c10852549583a58f4c763145efebc4b450b39b9a6c14afa30fe6ac286f63; bytes 14440421; push/readback pending.
+- Previous bundle isolated restore MD5 14336eb5393bb01aef84047308564eb5 verified.
