@@ -1,3 +1,9 @@
+## ROBOCZA 453c476e -- 2026-11-06 -- FALA 650: FALA 650: liczniki panelu rekrutacji zerowane po zamknieciu (W17) (testowa)
+
+- R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1 + R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1 (czesc)
+- Weryfikacja: tsc, 5 bramek referencyjnych, 4 testy tematu, audio-sidecar PASS
+- Limity: brak
+
 ## ROBOCZA 9e9b8a1a -- 2026-11-06 -- FALA 649: Siedem poprawek z testu właściciela: panel Rozdziel armię (plaster miodu), panele miasta pod banerami, surowy kod w panelu rekrutacji, Praca z pustej kolejki, ikony w oknie odkrycia, odmiana liczebników (testowa)
 
 - W11 plaster miodu 6d40a8749; W12 panele miasta 6ebbaf0c; W13 surowy HTML 1b2695644; W10 podział Pracy 058f49303; W7 ikony odkryć de5b64c19; W8+PL-PLURAL-LOCAL testy i odmiana 654c721bc/2ee4f3043
