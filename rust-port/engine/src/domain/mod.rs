@@ -84,6 +84,7 @@ pub mod siege_nearby_lock;
 pub mod siege_no_breach;
 pub mod siege_sortie;
 pub mod siege_starvation;
+pub mod siege_surrender;
 pub mod siege_turn;
 pub mod society_breakdown;
 pub mod start_position;

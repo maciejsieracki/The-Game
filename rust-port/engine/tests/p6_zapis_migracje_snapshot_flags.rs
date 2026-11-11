@@ -79,7 +79,7 @@ fn old_save_json() -> Value {
 #[test]
 fn p6_zapis_migracje_snapshot_old_save_loads_with_web_defaults() {
     let decoded: SaveSnapshot =
-        serde_json::from_value(old_save_json()).expect("stary zapis wczytuje sie");
+        decode_snapshot_value(old_save_json()).expect("stary zapis wczytuje sie");
     assert!(
         !decoded.meta().auto_build_enabled(),
         "brak pola = auto-budowa wylaczona"
@@ -101,7 +101,7 @@ fn p6_zapis_migracje_snapshot_new_flags_round_trip() {
     assert!(encoded.contains(r#""autoBuildEnabled":true"#));
     assert!(encoded.contains(r#""playerEpochWarEnabled":false"#));
 
-    let decoded: SaveSnapshot = serde_json::from_str(&encoded).expect("deserialize");
+    let decoded: SaveSnapshot = decode_snapshot_str(&encoded).expect("deserialize");
     assert!(decoded.meta().auto_build_enabled());
     assert!(!decoded.meta().player_epoch_war_enabled());
 }
@@ -110,8 +110,7 @@ fn p6_zapis_migracje_snapshot_new_flags_round_trip() {
 fn p6_zapis_migracje_snapshot_wrong_types_fall_back_like_web() {
     let mut wire = old_save_json();
     wire["meta"] = json!({ "autoBuildEnabled": "true", "playerEpochWarEnabled": "false" });
-    let decoded: SaveSnapshot =
-        serde_json::from_value(wire).expect("zly typ nie blokuje wczytania");
+    let decoded: SaveSnapshot = decode_snapshot_value(wire).expect("zly typ nie blokuje wczytania");
     assert!(
         !decoded.meta().auto_build_enabled(),
         "tylko JSON true wlacza"
@@ -120,4 +119,21 @@ fn p6_zapis_migracje_snapshot_wrong_types_fall_back_like_web() {
         decoded.meta().player_epoch_war_enabled(),
         "nie-boolean = jak brak pola"
     );
+}
+
+/// Wczytanie zapisu jak produkcyjny loader (`zapis_loader::load_save_snapshot`): prywatny typ wire
+/// `RawSnapshot` + migracja. `SaveSnapshot` nie ma publicznej deserializacji (zob. `save_load.rs`).
+fn decode_snapshot_str(text: &str) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_str(text)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
+}
+
+/// Wariant dla juz sparsowanego `Value`; semantyka jak `decode_snapshot_str`.
+fn decode_snapshot_value(value: serde_json::Value) -> Result<SaveSnapshot, serde_json::Error> {
+    let raw: save_load::RawSnapshot = serde_json::from_value(value)?;
+    let mut snapshot = raw.into_snapshot();
+    snapshot.migrate_on_load();
+    Ok(snapshot)
 }
