@@ -90,7 +90,9 @@ function runManual({ nAtk, nDef, atkSurvive, defSurvive, winner, useDeployedLog,
 {
   const r = runManual({ nAtk: A, nDef: D, atkSurvive: 10, defSurvive: 90, winner: 'obronca', useDeployedLog: true });
   assert(r.own.length === A - (CAP - 10), `przegrana: A-(CAP-10) (jest ${r.own.length})`);
-  assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.q === 10 && u.r === 10), 'przegrana: rezerwa zostaje na hexie startowym');
+  // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: rezerwa nie ginie i odwraca sie RAZEM ze stosem
+// przegranych (2 heksy od heksu bitwy 11,10 -> 9,10) zamiast zostac sama obok zwyciezcy.
+assert(r.atk.slice(CAP).every(u => r.units.includes(u) && u.q === 9 && u.r === 10 && u.hp === 100), 'przegrana: rezerwa nie ginie, cofa sie ze stosem o 2 heksy');
 }
 // 4) Remis
 {

@@ -9492,7 +9492,7 @@ export class BattleScene {
     const winner = cap.winner;
     this.log.push('=== PAT (przewijanie): ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
     this._endWinner = winner;
-    this._endSurvivors = this._battleUnitsForMapExport(winner === 'atakujacy' ? this.atk : this.def);
+    this._endSurvivors = this._battleUnitsForMapExport([...this.atk, ...this.def]);
     this._showEndScreen(winner);
   }
 
@@ -10221,9 +10221,9 @@ export class BattleScene {
 
     // Rout na polu 3D ustawia dead=true przy _removeUnitFromScene — na mapie świata
     // jednostka rozbita (rout) ma wrócić z HP>0 (post-battle-map.ts wycofanie).
-    const survivors = this._battleUnitsForMapExport(
-      winner === 'atakujacy' ? this.atk : this.def,
-    );
+    // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: ocalali (w tym rozbici/rout, HP>0)
+    // PRZEGRANEJ strony tez wracaja na mape -- applyPostBattleMap cofa ich o 2 heksy.
+    const survivors = this._battleUnitsForMapExport([...this.atk, ...this.def]);
 
     const winMsg = winner === 'atakujacy' ? 'ATAKUJACEGO' : 'OBRONCY';
     this.log.push('=== Koniec bitwy: zwyciestwo ' + winMsg + ' ===');
@@ -20578,15 +20578,17 @@ function computeInstantResult(
   let survivors: BattleUnit[];
 
   if (survivorsA.length > 0 && survivorsD.length === 0) {
-    winner = 'atakujacy'; survivors = survivorsA;
+    winner = 'atakujacy';
   } else if (survivorsD.length > 0 && survivorsA.length === 0) {
-    winner = 'obronca'; survivors = survivorsD;
+    winner = 'obronca';
   } else {
     const hpA = survivorsA.reduce((s, u) => s + u.hp, 0);
     const hpD = survivorsD.reduce((s, u) => s + u.hp, 0);
     winner    = hpA >= hpD ? 'atakujacy' : 'obronca';
-    survivors = winner === 'atakujacy' ? survivorsA : survivorsD;
   }
+  // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: na mape wracaja ocalali OBU stron
+  // (przegrani z HP>0 cofaja sie o 2 heksy w applyPostBattleMap, nie znikaja).
+  survivors = [...survivorsA, ...survivorsD];
 
   log.push('=== Natychmiastowy wynik: ' + (winner === 'atakujacy' ? 'ATAKUJACY' : 'OBRONCA') + ' wygrywa ===');
   return { winner, survivors, log, defBonus };

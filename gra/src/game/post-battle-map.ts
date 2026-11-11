@@ -80,6 +80,13 @@ export function battleReserveNotice(
 
 export interface PostBattleMapResult {
   removedIds: string[];
+  /**
+   * R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: ocalali PRZEGRANEJ strony, ktorzy
+   * cofneli sie o 2 heksy (id), oraz ci, dla ktorych nie bylo legalnej trasy 2 heksow
+   * (zostaje dotychczasowe zachowanie: 1 heks / start / miejsce -- brak kasacji i teleportu).
+   */
+  retreatedTwoHexIds: string[];
+  retreatNoTwoHexRouteIds: string[];
 }
 
 function removeUnitById(units: RuntimeUnit[], id: string | number): void {
@@ -278,20 +285,104 @@ export function applyDefenderPreBattleRetreat(input: DefenderPreBattleRetreatInp
   placeFanOutGroup(pbInput, defAlive, lead, dir, false);
 }
 
+
+/** Odleglosc heksow (axial). */
+function axialDist(aq: number, ar: number, bq: number, br: number): number {
+  const dq = aq - bq;
+  const dr = ar - br;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
+
+/**
+ * R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: czy heks jest legalnym polem odwrotu
+ * dla grupy (stosu) przegranych: przechodni, bez jednostek spoza grupy, bez cudzego miasta.
+ * Jednostki wlasnej grupy nie blokuja (stos cofa sie razem).
+ */
+function retreatHexFreeForGroup(
+  input: PostBattleMapInput,
+  q: number,
+  r: number,
+  group: ReadonlySet<string | number>,
+  ownerId: number,
+  strictEmpty: boolean,
+): boolean {
+  if (!input.isPassableHex(q, r)) return false;
+  for (const x of input.units) {
+    if (x.q !== q || x.r !== r || group.has(x.id)) continue;
+    if (strictEmpty || x.ownerId !== ownerId) return false;
+  }
+  const city = input.cities.find(c => c.q === q && c.r === r);
+  if (city && city.ownerId !== ownerId) return false;
+  return true;
+}
+
+/**
+ * Odwrot przegranych o DOKLADNIE 2 heksy po kierunku (dq,dr) -- grupami wg heksu wyjsciowego
+ * (stos zostaje razem). Pierwszy heks musi byc przechodni i nie zajety przez obcych, drugi
+ * (cel) calkiem wolny. Zwraca id jednostek, ktore sie cofnely; reszta zostaje nietknieta
+ * (wolajacy stosuje dotychczasowe zachowanie -- bez nowej kasacji/teleportu).
+ */
+function tryTwoHexRetreat(
+  input: PostBattleMapInput,
+  members: RuntimeUnit[],
+  dq: number,
+  dr: number,
+  steps: 1 | 2 = 2,
+): Set<string | number> {
+  const done = new Set<string | number>();
+  if (dq === 0 && dr === 0) return done;
+  const groups = new Map<string, RuntimeUnit[]>();
+  for (const u of members) {
+    const k = u.q + ',' + u.r;
+    const g = groups.get(k);
+    if (g) g.push(u); else groups.set(k, [u]);
+  }
+  for (const g of groups.values()) {
+    const head = g[0]!;
+    const ids = new Set<string | number>(g.map(x => x.id));
+    const q1 = head.q + dq;
+    const r1 = head.r + dr;
+    const q2 = head.q + dq * steps;
+    const r2 = head.r + dr * steps;
+    if (steps === 2 && !retreatHexFreeForGroup(input, q1, r1, ids, head.ownerId, false)) continue;
+    if (!retreatHexFreeForGroup(input, q2, r2, ids, head.ownerId, true)) continue;
+    for (const u of g) {
+      u.q = q2;
+      u.r = r2;
+      done.add(u.id);
+    }
+  }
+  return done;
+}
+
 function placeFanOutGroup(
   input: PostBattleMapInput,
   roster: RuntimeUnit[],
   lead: RuntimeUnit,
   direction: { q: number; r: number },
   stayOnCityCenter = false,
+  twoHex?: { retreated: string[]; noRoute: string[] },
 ): void {
   const dq = direction.q - input.battleQ;
   const dr = direction.r - input.battleR;
   const order = [lead, ...roster.filter(u => u.id !== lead.id)];
 
+  let twoHexDone = new Set<string | number>();
+  if (twoHex) {
+    const movable = order
+      .map(ref => liveUnit(input.units, ref.id))
+      .filter((u): u is RuntimeUnit => !!u)
+      .filter(u => !(stayOnCityCenter && input.cityOnBattleHex
+        && u.q === input.cityOnBattleHex.q && u.r === input.cityOnBattleHex.r));
+    twoHexDone = tryTwoHexRetreat(input, movable, dq, dr);
+    for (const id of twoHexDone) twoHex.retreated.push(String(id));
+    for (const u of movable) if (!twoHexDone.has(u.id)) twoHex.noRoute.push(String(u.id));
+  }
+
   for (const ref of order) {
     const u = liveUnit(input.units, ref.id);
     if (!u) continue;
+    if (twoHexDone.has(u.id)) continue;
 
     if (stayOnCityCenter && input.cityOnBattleHex &&
         u.q === input.cityOnBattleHex.q && u.r === input.cityOnBattleHex.r) {
@@ -327,8 +418,11 @@ function pickLiveDefLead(
   return onBattle ?? defAlive[0]!;
 }
 
-/** Ocalali obrońcy fan-out −1 heks (pole i miasto — Maciej B 2026-06-26). Centrum miasta = wipe przed fan-out. */
-function retreatDefendersAfterAtkWin(input: PostBattleMapInput): void {
+/** Ocalali obrońcy odwrót o 2 heksy od zwycięzcy (R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1; bez trasy 2 heksów: dawny fan-out). Pierwotnie −1 heks (pole i miasto — Maciej B 2026-06-26). Centrum miasta = wipe przed fan-out. */
+function retreatDefendersAfterAtkWin(
+  input: PostBattleMapInput,
+  twoHex: { retreated: string[]; noRoute: string[] },
+): void {
   const defAlive = input.defRoster
     .map(r => liveUnit(input.units, r.id))
     .filter((u): u is RuntimeUnit => !!u);
@@ -336,7 +430,7 @@ function retreatDefendersAfterAtkWin(input: PostBattleMapInput): void {
   if (!lead) return;
 
   const dir = pickRetreatTargetAwayFromAttacker(input);
-  placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex);
+  placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex, twoHex);
 }
 
 function retreatDefendersOnTie(input: PostBattleMapInput): void {
@@ -377,7 +471,11 @@ function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
   if (moved.length > 1) syncStackRuchLeft(moved);
 }
 
-function retreatAtkRosterToStart(input: PostBattleMapInput): void {
+function retreatAtkRosterToStart(
+  input: PostBattleMapInput,
+  twoHex: { retreated: string[]; noRoute: string[] },
+): void {
+  const back: RuntimeUnit[] = [];
   for (const ref of input.atkRoster) {
     const u = liveUnit(input.units, ref.id);
     if (!u) continue;
@@ -386,6 +484,27 @@ function retreatAtkRosterToStart(input: PostBattleMapInput): void {
       u.q = start.q;
       u.r = start.r;
     }
+    back.push(u);
+  }
+  // Odwrot o 2 heksy od obroncy: dalej wzdluz kierunku bitwa -> start (tylko gdy start
+  // sasiaduje z heksem bitwy). Oblegajacy (oblegaCityId) zostaja na pozycji blokady --
+  // zachowanie ograniczen oblezenia bez zmian.
+  const groups = new Map<string, RuntimeUnit[]>();
+  for (const u of back) {
+    if (u.oblegaCityId) continue;
+    if (axialDist(u.q, u.r, input.battleQ, input.battleR) !== 1) {
+      twoHex.noRoute.push(String(u.id));
+      continue;
+    }
+    const k = u.q + ',' + u.r;
+    const g = groups.get(k);
+    if (g) g.push(u); else groups.set(k, [u]);
+  }
+  for (const g of groups.values()) {
+    const head = g[0]!;
+    // Start sasiaduje z heksem bitwy: 2 heksy od bitwy = 1 krok dalej od startu.
+    const done = tryTwoHexRetreat(input, g, head.q - input.battleQ, head.r - input.battleR, 1);
+    for (const u of g) (done.has(u.id) ? twoHex.retreated : twoHex.noRoute).push(String(u.id));
   }
 }
 
@@ -430,6 +549,7 @@ function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
 
 export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResult {
   const removedIds: string[] = [];
+  const twoHex = { retreated: [] as string[], noRoute: [] as string[] };
 
   if (input.manualSurvivors !== undefined) {
     applyManualSurvivors(input);
@@ -444,10 +564,10 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
   } else if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    retreatDefendersAfterAtkWin(input);
+    retreatDefendersAfterAtkWin(input, twoHex);
     moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === 'obronca') {
-    retreatAtkRosterToStart(input);
+    retreatAtkRosterToStart(input, twoHex);
     for (const ref of input.defRoster) {
       const u = liveUnit(input.units, ref.id);
       if (u) u.defLossesThisTurn = (u.defLossesThisTurn ?? 0) + 1;
@@ -463,7 +583,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
   }
 
   spendAttackMpOnLive(input.units, input.atkRoster, input.atkAnchor.id);
-  return { removedIds };
+  return { removedIds, retreatedTwoHexIds: twoHex.retreated, retreatNoTwoHexRouteIds: twoHex.noRoute };
 }
 
 export function snapshotRosterPositions(roster: RuntimeUnit[]): Map<string | number, BattleStartPos> {
