@@ -63,7 +63,7 @@ for (const key of civpediaKeys) {
       `${key}: ${label} has no retired civilization-bonus claims`);
     assert.doesNotMatch(content, /Kusznik|bonus \+20% działa dalej przez `bonusy\[\]`/,
       `${key}: ${label} has no obsolete Chinese crossbowman claim`);
-    const formula = content.match(/Mnożnik handlu\/waluty:\s*\*\*([0-9.]+)\*\*/);
+    const formula = content.match(/Mnożnik waluty:\s*\*\*([0-9.]+)\*\*/);
     const matrixRow = matrix.cywilizacje.find(row => row.ikonaId === key);
     assert.ok(formula && matrixRow, `${key}: ${label} retains its matrix-sourced currency parameter`);
     assert.equal(Number(formula[1]), matrixRow.params.meta_mnoznik_waluta,

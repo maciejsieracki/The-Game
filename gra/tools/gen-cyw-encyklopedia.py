@@ -145,7 +145,7 @@ def render(civ, matrix_row):
 
 ## Wzory
 
-Mnożnik handlu/waluty: **{civ.get("mnoznikHandelPieniadz", "—")}** (meta macierzy).
+Mnożnik waluty: **{civ.get("mnoznikHandelPieniadz", "—")}** (meta macierzy).
 
 ---
 

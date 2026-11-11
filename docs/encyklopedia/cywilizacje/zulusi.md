@@ -47,7 +47,7 @@
 
 ## Wzory
 
-Mnożnik handlu/waluty: **1.8** (meta macierzy).
+Mnożnik waluty: **1.8** (meta macierzy).
 
 ---
 
