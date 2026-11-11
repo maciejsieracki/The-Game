@@ -1,5 +1,5 @@
 # R-WEB-CITY-ADMINISTRATOR-Q1 (orkiestrator Claude, 2026-11-11; pełna specyfikacja z decyzji właściciela; ZASTĘPUJE R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1)
-BAZA: aktualny origin/main (po FALI 623). Runda 1/5. MODEL: Operator SONNET 5.5 — UZASADNIENIE: nowa mechanika przekrojowa (dane, ekonomia/korupcja/podatki, zapis, UI, AI, autobudowa), wiele ścieżek.
+BAZA: origin/main 681a0a828 (FALA 623). Runda 1/5. MODEL: Operator SONNET 5.5 — UZASADNIENIE: nowa mechanika przekrojowa (dane, ekonomia/korupcja/podatki, zapis, UI, AI, autobudowa), wiele ścieżek.
 DECYZJE WŁAŚCICIELA:
 - ADMINISTRATOR MIASTA = osoba przypisana indywidualnie do miasta; MAX 1 NA MIASTO. Rekrutowany w mieście, w którym stoi budynek administracyjny: Pałac (każdego poziomu I/II/III — stolica) ALBO Dom Starszyzny / Dwór Zarządcy / Pretorium (miasta regionalne).
 - KOSZTY: zatrudnienie 40 Pieniądza (jednorazowo); utrzymanie 2/3/4 Pieniądza na turę (tier budynku I/II/III); utrzymanie płacone Z BUDŻETU PAŃSTWA, nie z zasobów miasta.
