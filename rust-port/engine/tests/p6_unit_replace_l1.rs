@@ -16,7 +16,7 @@ use civ_engine::domain::production_units::{
     UnitReplaceRow,
 };
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 const VECTORS: &str = include_str!("p6_unit_replace_l1_vectors/infantry-promotion.json");
 const REAL_UNITS: &str = include_str!("../data/units.json");
@@ -55,6 +55,12 @@ fn pin_rows(v: &Value) -> Vec<Value> {
 
 fn is_infantry(typ: Option<&str>) -> bool {
     typ.is_some_and(|t| INFANTRY.contains(&t.trim()))
+}
+
+fn is_infantry_name(by_name: &BTreeMap<&str, &Value>, name: &str) -> bool {
+    by_name
+        .get(name)
+        .is_some_and(|r| is_infantry(r["Typ"].as_str()))
 }
 
 #[test]
@@ -157,6 +163,26 @@ fn infantry_promotion_targets_available_in_rust_logic() {
                 "cel z pinu nieosiagalny w available_replacements_for: {source} -> {target}; wynik={:?}",
                 got.iter().map(|it| it.id.as_str()).collect::<Vec<_>>()
             );
+            // Zbior wynikow piechoty: kazdy nadmiarowy wynik (nie-cel z pinu) musi pochodzic z
+            // galezi A (ten sam Typ co zrodlo, web `availableReplacementsFor`); galezi B (pole
+            // `Zastąp specjalnie`) nie wolno rozszerzac poza liste pinu.
+            let expected: BTreeSet<&str> = src["targets"]
+                .as_array()
+                .expect("targets")
+                .iter()
+                .map(|x| x.as_str().expect("target"))
+                .collect();
+            for it in &got {
+                let id = it.id.as_str();
+                if expected.contains(id) || !is_infantry_name(&by_name, id) {
+                    continue;
+                }
+                assert_eq!(
+                    by_name[id]["Typ"].as_str(),
+                    src_row["Typ"].as_str(),
+                    "nadmiarowy cel {id} dla {source} spoza galezi A (inny Typ)"
+                );
+            }
             checked += 1;
         }
     }
