@@ -22,9 +22,17 @@ use serde_json::{Map, Number, Value};
 // The production branch resolves these types from the sibling domain modules;
 // the test branch resolves them from the same path-loaded dependency module.
 #[cfg(not(test))]
+use super::auto_improvements::auto_build_gate::auto_build_from_save_meta;
+#[cfg(not(test))]
+use super::diplomacy_multiwar::player_epoch_war_enabled;
+#[cfg(not(test))]
 use super::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(not(test))]
 use super::{GameStateDto, Rng};
+#[cfg(test)]
+use civ_engine::domain::auto_improvements::auto_build_gate::auto_build_from_save_meta;
+#[cfg(test)]
+use civ_engine::domain::diplomacy_multiwar::player_epoch_war_enabled;
 #[cfg(test)]
 use civ_engine::domain::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(test)]
@@ -235,6 +243,22 @@ impl SaveMeta {
             .get("advanced")?
             .get("battleAlwaysManual")?
             .as_bool()
+    }
+
+    /// Web `autoBuildFromSaveMeta(saved.meta?.autoBuildEnabled)` (`main.ts:46701`): tylko JSON `true`
+    /// wlacza; brak pola / inny typ = wylaczona (`auto_build_gate::auto_build_from_save_meta`).
+    pub fn auto_build_enabled(&self) -> bool {
+        auto_build_from_save_meta(self.extra.get("autoBuildEnabled"))
+    }
+
+    /// Web `meta.playerEpochWarEnabled` (`main.ts:46706`): boolean z zapisu, brak pola / inny typ = `true`
+    /// (`diplomacy_multiwar::player_epoch_war_enabled`).
+    pub fn player_epoch_war_enabled(&self) -> bool {
+        player_epoch_war_enabled(
+            self.extra
+                .get("playerEpochWarEnabled")
+                .and_then(Value::as_bool),
+        )
     }
 }
 
