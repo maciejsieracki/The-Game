@@ -23,6 +23,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use serde_json::Value;
 
 use super::generals::general_limit_for_era;
+use super::pathfinding::{can_unit_occupy_city_hex, CityHexRef};
+use super::{GameStateDto, PlayerId, PositionDto, TerrainDto, UnitId};
 
 /// Jeden wpis rosteru w kolejnosci narodzin (web: `units` zapisu, pola `id`, `ownerId`, `isGeneral`).
 #[derive(Debug, Clone, PartialEq)]
@@ -210,6 +212,138 @@ pub fn plan_oversized_stack_splits(
             .extend(excess[idx..].iter().map(|u| u.id.clone()));
     }
     plan
+}
+
+/// Limit jednostek w jednym stosie = limit bitwy na strone (web `armyStackLimit()` =
+/// `BATTLE_MAX_PER_SIDE` = `MAX_PER_SIDE`, `gra/src/battle/battleScene.ts:721`).
+pub const ARMY_STACK_LIMIT: i64 = 500;
+
+/// Domyslny promien szukania wolnych heksow (web `planOversizedStackSplits` `opts.maxRadius ?? 6`).
+pub const ARMY_STACK_MAX_RADIUS: i64 = 6;
+
+/// Wynik migracji przy wczytaniu zapisu / starcie tury.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct LoadMigrationReport {
+    /// Wodzowie zdegradowani do zwyklych jednostek (nadmiar ponad limit epoki).
+    pub demoted_generals: Vec<UnitId>,
+    /// Jednostki przeniesione ze stosu ponad limitem.
+    pub moved_units: Vec<UnitId>,
+    /// Jednostki, dla ktorych zabraklo miejsca (stos nadal ponad limitem).
+    pub unplaced_units: Vec<UnitId>,
+}
+
+/// Web `mapHexPassableForUnit` (`main.ts:33392`): heks istnieje i nie jest woda ani gorami.
+/// ZALOZENIE: `TerrainDto` nie ma gor (Plains/Hills/Forest/Water), wiec odpada tylko woda.
+fn hex_passable(state: &GameStateDto, q: i64, r: i64) -> bool {
+    let (Ok(x), Ok(y)) = (u16::try_from(q), u16::try_from(r)) else {
+        return false;
+    };
+    let pos = PositionDto::new(x, y);
+    state
+        .map()
+        .tiles()
+        .iter()
+        .find(|t| t.position() == pos)
+        .is_some_and(|t| t.terrain() != TerrainDto::Water)
+}
+
+/// Web `demoteGeneralsOverLimit` (`main.ts:46566-46571`): najmlodsi wodzowie ponad limit epoki
+/// wlasciciela traca flage. Kolejnosc rosteru = kolejnosc `state.units()`.
+/// ZALOZENIE: epoke wlasciciela dostarcza wywolujacy (web `empireEpochForOwner`; Rust nie niesie jej w stanie).
+pub fn demote_generals_over_limit(
+    state: &mut GameStateDto,
+    era_for_owner: impl Fn(PlayerId) -> f64,
+) -> Vec<UnitId> {
+    let roster: Vec<GeneralRosterEntry> = state
+        .units()
+        .iter()
+        .map(|u| GeneralRosterEntry {
+            id: u.id().get().to_string(),
+            owner_id: u.owner_id().get() as f64,
+            is_general: u.is_general(),
+        })
+        .collect();
+    let ids: Vec<UnitId> =
+        plan_general_limit_demotions(&roster, |o| era_for_owner(PlayerId::new(o as u64)))
+            .iter()
+            .filter_map(|s| s.parse::<u64>().ok().map(UnitId::new))
+            .collect();
+    state.demote_generals(&ids);
+    ids
+}
+
+/// Web `enforceArmyStackLimit` (`main.ts:4339`, wolane z `main.ts:46573` przy wczytaniu i z
+/// `main.ts:37754` na starcie tury): nadwyzka stosu ponad `limit` idzie na najblizsze wolne heksy
+/// (`passable` + `can_unit_occupy_city_hex`), nikt nie jest usuwany.
+/// ZALOZENIE: `PositionDto` (x, y) traktowane jak (q, r) planu; stos = ta sama pozycja i wlasciciel.
+pub fn enforce_army_stack_limit(
+    state: &mut GameStateDto,
+    limit: i64,
+    max_radius: i64,
+) -> (Vec<UnitId>, Vec<UnitId>) {
+    let units: Vec<StackUnit> = state
+        .units()
+        .iter()
+        .map(|u| StackUnit {
+            id: u.id().get().to_string(),
+            owner_id: u.owner_id().get() as i64,
+            q: i64::from(u.position().x()),
+            r: i64::from(u.position().y()),
+        })
+        .collect();
+    let cities: Vec<CityHexRef> = state
+        .cities()
+        .iter()
+        .map(|c| CityHexRef {
+            q: i32::from(c.position().x()),
+            r: i32::from(c.position().y()),
+            owner_id: c.owner_id().get() as i64,
+            ma_mur: None,
+        })
+        .collect();
+    let plan = {
+        let view: &GameStateDto = state;
+        plan_oversized_stack_splits(&units, limit, max_radius, |owner, q, r| {
+            hex_passable(view, q, r)
+                && match (i32::try_from(q), i32::try_from(r)) {
+                    (Ok(q), Ok(r)) => can_unit_occupy_city_hex(owner, q, r, &cities),
+                    _ => false,
+                }
+        })
+    };
+    let moves: Vec<(UnitId, PositionDto)> = plan
+        .moves
+        .iter()
+        .filter_map(|m| {
+            let id = m.unit_id.parse::<u64>().ok()?;
+            let x = u16::try_from(m.to_q).ok()?;
+            let y = u16::try_from(m.to_r).ok()?;
+            Some((UnitId::new(id), PositionDto::new(x, y)))
+        })
+        .collect();
+    state.relocate_units(&moves);
+    let moved = moves.iter().map(|(id, _)| *id).collect();
+    let unplaced = plan
+        .unplaced
+        .iter()
+        .filter_map(|s| s.parse::<u64>().ok().map(UnitId::new))
+        .collect();
+    (moved, unplaced)
+}
+
+/// Migracje przy wczytaniu zapisu w kolejnosci weba: najpierw degradacja wodzow, potem siatka stosu.
+pub fn migrate_loaded_state(
+    state: &mut GameStateDto,
+    era_for_owner: impl Fn(PlayerId) -> f64,
+) -> LoadMigrationReport {
+    let demoted_generals = demote_generals_over_limit(state, era_for_owner);
+    let (moved_units, unplaced_units) =
+        enforce_army_stack_limit(state, ARMY_STACK_LIMIT, ARMY_STACK_MAX_RADIUS);
+    LoadMigrationReport {
+        demoted_generals,
+        moved_units,
+        unplaced_units,
+    }
 }
 
 #[cfg(test)]

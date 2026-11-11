@@ -32,3 +32,19 @@ Oznaczenia: ZMIERZONO = grep/odczyt pliku w tej rundzie; NIE_ZMIERZONO = nie spr
 3. Mapa `canPlaceAt` (przechodniosc terenu, miasta obcych) w stanie gry — warunek wpiecia siatki stosu.
 4. Konsumenci `auto_build_enabled` / `player_epoch_war_enabled` w logice tury.
 5. Format `plannedMarches` vs `planned-march.ts` (wektor).
+
+## 4. Runda 3 (ten sam ID; baza `2ad132a1b` + merge `parity-v2` 1079feb9f jako osobny commit)
+
+Stan luk po r3 (nadpisuje wiersze sekcji 1 dla wodzow, stosu i konsumentow flag):
+
+| Pozycja | Stan r3 | Dowod |
+|---|---|---|
+| Wodzowie ponad limit epoki | PODPIETE do stanu: `UnitDto::is_general` (`#[serde(default, skip_serializing_if)]`, tylko JSON `true` = wodz), `GameStateDto::demote_generals`, `save_migrations::demote_generals_over_limit`, `SaveSnapshot::migrate_on_load`. Kolejnosc narodzin = kolejnosc `state.units()`. | `tests/p6_zapis_migracje_snapshot_load.rs` (stary zapis bez pola bez zmian; nowy zapis: najmlodszy wodz ponad limit traci flage, nikt nie ginie, idempotentne) |
+| Siatka stosu > limit | PODPIETA: `save_migrations::enforce_army_stack_limit` (limit `ARMY_STACK_LIMIT`=500 = web `BATTLE_MAX_PER_SIDE`, `battleScene.ts:721`; promien 6), `GameStateDto::relocate_units`, wolana z `migrate_on_load` (web `main.ts:46573`). Start tury (`main.ts:37754`): ta sama funkcja do wolania przez petle tury; `PlayableState` nie ma wodzow ani modelu stosu (tylko `Warrior`), wiec brak miejsca wpiecia = ZALOZENIE. | testy: stos 500 bez zmian, 501 -> jednostka po 500. na (0,2), pomija wode i obce miasto, dopuszcza wlasne miasto, `unplaced` przy braku miejsca |
+| Przechodniosc / miasto | ZMIERZONO grepem: `can_unit_occupy_city_hex` ISTNIEJE (`pathfinding.rs:592`) i jest uzyte; `map_hex_passable_for_unit` NIE ma odpowiednika — zastapione `hex_passable` w `save_migrations.rs` (heks na mapie i nie `Water`). ZALOZENIE: `TerrainDto` nie ma gor (web odrzuca tez `Gory`). | `p6_zapis_migracje_split_skips_water_and_foreign_city_hexes` |
+| `autoBuildEnabled` | konsument: `SaveSnapshot::auto_build_allowed_for_owner` -> `is_auto_build_allowed_for_owner` (AI zawsze, gracz wg zapisu, brak pola = wyl.) | `..._auto_build_flag_consumer_old_and_new_save` |
+| `playerEpochWarEnabled` | `SaveMeta::player_epoch_war_enabled` (brak pola = true). Konsument w logice tury: ZMIERZONO brak (`diplomacy_multiwar` bierze wartosc od wolajacego) — LUKA do tematu podpiecia tury. | j.w. |
+| `planned_marches_to_save` | ZMIERZONO odczytem `planned-march.ts:466` vs `pathfinding.rs:2250`: ZGODNE semantycznie (puste -> nic; wpis z `destQ/destR`, `attackUnitId`/`generalTargetId` tylko niepuste; `autoMarch` = pierwszy wpis w kolejnosci wstawienia). Format zapisu `SavedPlannedMarch` (`unitId/destQ/destR/...`) zgodny; kolejnosc kluczy liczbowych JS odtwarza `lenient_planned_marches`. Uwaga: wejscie `&[(String, ..)]` dopuszcza duplikaty kluczy (web `Map` nie) — odpowiedzialnosc wolajacego. Osobnego wektora z weba NIE wygenerowano. | odczyt kodu |
+| Pola dyplomacji/oblezenia (W1) | `WarTurnState` w `state.war` jako surowy JSON, round-trip pokryty `p6_wire_war_state_snapshot` (8 ok) | uruchomiony test |
+
+ZALOZENIA r3: epoke wlasciciela dostarcza wywolujacy (`era_for_owner`); `PositionDto` (x, y) = (q, r) planu stosu; zapis w formacie WEB (`wersja/tura/units`) nadal nieczytany przez `SaveSnapshot` — poza zakresem.
