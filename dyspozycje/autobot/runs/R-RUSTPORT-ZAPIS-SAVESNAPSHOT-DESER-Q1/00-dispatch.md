@@ -6,3 +6,13 @@ Kryteria: 1) git grep: brak from_str::<SaveSnapshot> poza testami wymuszającymi
 Allowlista: rust-port/engine/src/domain/save_load.rs; rust-port/engine/tests/save_load.rs (tylko przepięcie); rust-port/engine/src/domain/zapis_loader.rs (tylko jeśli potrzebny helper); dyspozycje/autobot/runs/R-RUSTPORT-ZAPIS-SAVESNAPSHOT-DESER-Q1/**. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (nie commitować), inne pliki domain/.
 Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test save_load --test p6_zapis_loader_migrate --test p6_zapis_migracje_snapshot_load (EXIT zapisany).
 Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach). Raport 01-operator-r1.md.
+
+## DODATEK r2 — wariant A (decyzja orkiestratora, techniczna; 2026-11-11)
+Baza: origin/rust-port/parity-v2 = ca25d6fd2.
+Premisa r1 była błędna: SaveSnapshot ma RĘCZNĄ impl Deserialize (save_load.rs ~759), nie derive. Usunięcie impl psuje ReplayStep/ReplayStepWire (replay.rs) i zapis_loader.rs:44.
+Zakres (wariant A): publiczna impl Deserialize dla SaveSnapshot zostaje zastąpiona prywatnym typem wire (pub(crate)), który deserializuje surowo; PUBLICZNA ścieżka wczytania to load_save_snapshot / load_replay_log_json z migracją.
+Kryterium 2 (zmienione): brak publicznego Deserialize dla SaveSnapshot; prywatny typ wire.
+Allowlista rozszerzona (tylko te pliki, tylko przepięcie na ścieżkę z migracją lub prywatny typ wire): rust-port/engine/src/domain/save_load.rs; rust-port/engine/src/domain/zapis_loader.rs; rust-port/engine/src/domain/replay.rs; rust-port/engine/tests/save_load.rs (zmiana #[path] i przepięcie); rust-port/engine/tests/p6_repin_wojna_2_r4_save.rs; p6_repin_wojna_3_hook.rs; p6_wire_war_state_snapshot.rs; p6_zapis_erawar_save.rs; p6_zapis_loader_migrate.rs (test :102 'surowy Deserialize nie migruje' przeformułować na 'surowy typ wire nie jest publiczny'); p6_zapis_migracje_snapshot_flags.rs; p6_zapis_migracje_snapshot_load.rs; p6_zapis_era_zapisu.rs; p6_zapis_replay_migrate.rs; tests/replay.rs.
+ZAKAZ: wszystko inne, gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (nie commitować).
+Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test save_load --test replay --test p6_zapis_loader_migrate --test p6_zapis_migracje_snapshot_load --test p6_zapis_replay_migrate --test p6_zapis_era_zapisu --test p6_repin_wojna_2_r4_save --test p6_repin_wojna_3_hook --test p6_wire_war_state_snapshot --test p6_zapis_erawar_save --test p6_zapis_migracje_snapshot_flags (EXIT zapisany).
+Przed startem cargo: df -h / musi pokazywać co najmniej 8 GB wolnego (inaczej nie startować, zgłosić w raporcie).
