@@ -9426,3 +9426,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · DECYZJA ABC (właściciel): mnożnik waluty per cywilizacja = wartość z macierzy + korekta trudności, z DOLNYM limitem 1,38 (= dzisiejsze 'hard'), bez górnego (opcja D). Temat R-WEB-CURRENCY-MULT-PER-CIV-Q1 runda 2.
 
 - 2026-11-11 · FALA 641 = a8b063989 (Raw MD5 fbcde734…). FALA 642 WDROŻONA (ROBOCZA): R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1 (FC PASS-WITH-NOTES, 3f9f66034; ref `refs/keep/R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1-fc`, wip `web-wip/BUILDING-CARDS-GENERATOR`). Długi: parametryzacja korekty Cegielni, 2 kopie budynki-top5.csv, aktualizacja punktów odniesienia R-PROC-AUTOBOT §6.
+
+- 2026-11-11 · FALA 642 = d356b626e (Raw MD5 dd13546f…). FALA 643 WDROŻONA (ROBOCZA): R-WEB-POLISH-LANGUAGE-AUDIT-Q1 runda 1 (FC PASS-WITH-NOTES, 664afd593; ref `refs/keep/R-WEB-POLISH-LANGUAGE-AUDIT-Q1-fc-r1`, wip `web-wip/POLISH-LANGUAGE-r1`). Audyt częściowy; runda 2 (gra/src/ui, main.ts) + lista 10 pozycji do ABC (w raporcie runu) — do zadania.
