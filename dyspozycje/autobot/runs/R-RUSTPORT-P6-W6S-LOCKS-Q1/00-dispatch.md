@@ -1,0 +1,8 @@
+# DISPATCH — R-RUSTPORT-P6-W6S-LOCKS-Q1 (W6 wariant A, punkt 1: blokady akcji dyplomacji, runda 1/5, Operator)
+Baza: origin/rust-port/parity-v2 = f207ea6b1. Pin web (odczyt, git archive poza repo): 07d2fbd72f758705f8e1d59cc4968027ffbafe75.
+GOAL: port `resolveDiplomacyActionLock` (web) do istniejącego `rust-port/engine/src/domain/diplomacy_locks.rs` ORAZ dokładnie te wywołania, które web wykonuje w akcjach gracza/AI (grep po pinie: `git grep -n resolveDiplomacyActionLock 07d2fbd72f758705f8e1d59cc4968027ffbafe75 -- gra/src`; znane miejsca: main.ts ~17504–18209, 20272, 20656, 36735). Każda funkcja Rust z testem BEHAWIORALNYM na wektorach z pinu (generator w `tests/p6_w6s_locks_gen.mjs`, esbuild poza repo, nie ręcznie).
+Wymóg: funkcja MUSI mieć co najmniej jednego wołającego w Rust albo jawnie opisaną zależność do W8 (podpięcie do pętli tury) w raporcie.
+Allowlista: `rust-port/engine/src/domain/diplomacy_locks.rs`, `rust-port/engine/src/domain/mod.rs` (tylko `pub mod`), `rust-port/engine/tests/p6_w6s_locks.rs`, `rust-port/engine/tests/p6_w6s_locks_vectors/*`, `rust-port/engine/tests/p6_w6s_locks_gen.mjs`, `dyspozycje/autobot/runs/R-RUSTPORT-P6-W6S-LOCKS-Q1/**`. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (nie commitować).
+Kryteria: 1) każde wywołanie web ma odpowiednik lub jawną zależność W8; 2) testy behawioralne na wektorach pinu; 3) bramki fmt, clippy -D warnings, cargo test --lib, cargo test --test p6_w6s_locks (EXIT zapisany); 4) brak #[ignore]; 5) NIE_ZMIERZONO uczciwie.
+Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo.
+Raport: 01-operator-r1.md, STATUS / TEMAT / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY 1/5 / NASTĘPNY KROK: Evaluator / DEPLOY-PUSH: NIE WYKONANO.
