@@ -71,3 +71,9 @@ Po potwierdzeniu zdalnych SHA kandydatów i ich obecności w main usunięto WYŁ
 
 ## NAJNOWSZA DYSPOZYCJA WŁAŚCICIELA — NIE OTWIERAĆ NOWYCH TEMATÓW
 Dokończyć tylko rozpoczęte cztery: konnica/Żelazo, limity i podsumowanie rekrutacji, globalna zamiana piechoty, znikanie zabitych Q2. Kontynuować ich Operator/Evaluator/Obrona/FC/integracja/Robocza/push, ale po zakończeniu NIE uzupełniać slotów z kolejki. Pozostałe zgłoszenia są zarejestrowane i czekają na ponowne polecenie właściciela. Ta decyzja zastępuje wcześniejszą pętlę automatycznego dobierania kolejnych tematów.
+
+### Bieżące poprawki w zamkniętej puli czterech — kontrola przed końcem limitu
+- Konnica: niezależnyEvaluatorPASS zachowany w run/20 (commit12737d11c), FinalControl jeszcze trwa; nie integrować bez50PASS.
+- Rekrutacja: pierwsze50FC=BLOCK (queued-only/zero-city draft wchodził do kosztu koszyka). Raporty20/50 zachowane w6ce76cb42; operator poprawia tę konkretną lukę UI/testu, potem followupEvaluator/FC. Nie ukrywać pierwszegoBLOCK.
+- Zamiana piechoty: e42266cf1, niezależne21/45/36/typecheckPASS; pełnykoszt39/40identycznyzbazą (stareSiegeF0), raport20committed51e4c022e; FinalControl trwa.
+- Duchy Q2: WIPfixture6301f890b naorigin/codex/dead-unit-regression, bez zmian koduprodukcji. Testy killmelee/missile/multitarget field dotądPASS; nowyfixturemiałbłądkonfiguracjibrakaktora, diagnozowany. NIE potwierdzono źródła zgłoszenia i NIE oznaczono naprawione/11. Dokończyć ograniczone testy/raport, nie wymyślać poprawki.
