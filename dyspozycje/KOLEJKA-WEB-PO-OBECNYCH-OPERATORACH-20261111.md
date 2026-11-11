@@ -64,3 +64,5 @@ Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonn
 - FALA 623 wdrożona: IRON-STUD-ADJACENCY (main 681a0a828, MD5 be5d3e417eae4afa10bdac9141016adc).
 - `R-WEB-TEST-DEBT-BASELINE-Q3` (nowy zbiorczy temat długów testowych bazy: #112, #191, #192, #193 + czerwone na bazie z FC dziś) — start 13:4x, Haiku, bez zmian gra/src.
 - #205 ZAMKNIĘTE (cel w FALI 607; test HTML tooltipu ec28410a2 do następnej fali). FALE 624–626 wdrożone.
+- `R-WEB-UI-RAW-IDS-AUDIT-Q1` — praca osobnej sesji (gałąź `claude/sweet-goodall-3vh4i9`, kandydat 2ca45a090, 30 plików, bez Evaluatora/FC; konflikt tylko w wikiBundle.json → regeneracja). Dodatek w runs/. Start Workflow: WEB-NEW.js, id=R-WEB-UI-RAW-IDS-AUDIT-Q1, cand=2ca45a090, Haiku, gdy zwolni się slot (6/6 zajęte).
+- Rust `R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1` (sesja „Podpiąć mnożnik pocisku do walki Rust”, gałąź `autobot/p6-repin-dystans` NIE wypchnięta) — czeka na push i na koniec kolejki web.
