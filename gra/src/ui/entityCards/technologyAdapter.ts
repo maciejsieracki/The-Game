@@ -52,6 +52,7 @@ import { hiddenTechEffectNames, isDeadTechCardBuilding } from './techDeadEffects
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, resolveWonderRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { resourcesFromList } from './resourceRows';
 
 const PLACEHOLDER_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
@@ -170,6 +171,14 @@ function resourceAccessOf(tech: RawTech): string | undefined {
   const v = (tech as unknown as Record<string, unknown>)['Dostęp do surowca.'];
   const t = typeof v === 'string' ? v.trim() : '';
   return t !== '' ? t : undefined;
+}
+
+/** Lista surowców z danych → pola wiersza: rozpoznane surowce jako chipy (ikona), reszta tekstem. */
+function resourceFields(list: string | null | undefined): Pick<EntityCardRow, 'value' | 'resources'> {
+  const { resources, rest } = resourcesFromList(list);
+  return resources.length > 0
+    ? { value: rest ? nazwyZListyId(rest) : '', resources }
+    : { value: nazwyZListyId(list) };
 }
 
 type WonderRowLite = { id: string; nazwa?: string; dostep?: string; cywilizacje?: string[]; techUnlock?: string[] };
@@ -390,7 +399,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     }
   }
   if (resourceUnlocked) {
-    econRows.push({ label: 'Dostęp do surowca', value: resourceUnlocked });
+    econRows.push({ label: 'Dostęp do surowca', ...resourceFields(tech['Odblokowuje surowiec.']) });
   }
   const econSection: EntityCardSection = {
     key: 'econ', title: 'Zmiany ekonomiczne', rows: econRows, collapsible: true, openDefault: true,
@@ -423,7 +432,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
     tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
     tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
-    resourceAccess ? { label: 'Surowiec (wymóg badania)', value: nazwyZListyId(resourceAccess) } : null,
+    resourceAccess ? { label: 'Surowiec (wymóg badania)', ...resourceFields(resourceAccess) } : null,
   ].filter((r): r is EntityCardRow => r != null);
   const characteristicsSection: EntityCardSection = {
     key: 'characteristics', title: 'Charakterystyka', rows: charRows,

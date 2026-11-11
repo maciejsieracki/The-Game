@@ -1,3 +1,39 @@
+## ROBOCZA 108507b6 -- 2026-11-06 -- FALA 644: Panel produkcji: prognoza następnej tury + agregat wszystkich 7 budynków (testowa)
+
+- R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 (decyzja ABC właściciela): panel imperium — kolumna 'PROGNOZA NASTĘPNEJ TURY' obok 'OSTATNIA TURA (ZREALIZOWANO)' i dwóch kolumn 'MAKSIMUM'; prognoza z tego samego kodu co realny tick (forecastNextTurnProduction na klonie miast, z łaską Mennicy predictMennicaZlotoAccessForNextTick); dodane wiersze Drewno i Kamień (Stolarnia i Warsztat kamieniarski — +10% dopływu z mapy); podpisy po polsku
+- Weryfikacja: tsc czysty; resource-building-toggle 210/0 (prognoza == realna produkcja w 4 scenariuszach), UI Chromium 26/0 (klik zmienia prognozę, prognoza == realna tura), hud-konwerter 20/0, unit-replace-full-cost 40/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; pomiar wydajności: 120 miast = 4,6 ms/przebieg, panel ~14 ms; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Znane ograniczenia: drewno z wycinki lasu (tickHexClearing) poza prognozą (zdarzenie jednorazowe); Stolarnia/Warsztat nie są konwerterami — wiersze to cały dopływ Drewna/Kamienia z mapy (brak 'desek'/'cegły kamiennej' w silniku); NIE_ZMIERZONO: wydajność na realnej mapie w Chromium, parytet ścieżki main.ts tylko tsc; dług bazowy building-upkeep-resources D10 47/1 (asercja nieaktualna po ENTITYCARDS)
+
+## ROBOCZA c8198ae5 -- 2026-11-06 -- FALA 643: Audyt polszczyzny, runda 1: poprawki gramatyki, pisowni i spójności w danych, kartach i Civpedii (testowa)
+
+- R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 1, dane i dokumenty): '2 glina'→'2 gliny', dopełniacze w bonusach cudów (Zaufania, Pieniądza), '+8 pojemności surowców', '+3 żywności/t' (13 ulepszeń), 'Wielki dzwon', 'Brama wszystkich narodów', diakrytyki (Giełda, Dwór, Wieżowiec, Świątynia, kamień/kamienia), 'Wypala' zamiast 'Wytapia' ceramikę/cegłę, opisy Teatru i Cegielni; tech-cards-top5 i wikiBundle regenerowane generatorami; test-strażnik polish-language-audit-q1-guard (1674 asercje) z mutacją
+- Weryfikacja: tsc czysty; polish-language-audit-q1-guard 1674/0 (mutacja czerwona), ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, city-administrator 117/0, economy 72/0, tech-cards-top5 595/0, gen-tech-cards-top5 --check OK; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Audyt CZĘŚCIOWY: pola Historia i encyklopedia tylko skany regex (bez lektury linia po linii); teksty w gra/src/ui i main.ts → runda 2; 10 pozycji do ABC właściciela w raporcie (m.in. Dur-Sharrukin/Dur-Szarrukin, żargon 'upgrade' w polu wymagania, opis Emporionu, sprzeczność Wielkiej Kuźni z Kuźnią brązu); ASCII 'kamien' jako nazwa zasobu w tekstach generowanych zostaje
+
+## ROBOCZA dd13546f -- 2026-11-06 -- FALA 642: Generator kart budynków: korekta Cegielni w wejściach generatora (--check zielony) (testowa)
+
+- R-WEB-TEST-DEBT-BUILDING-CARDS-TOP5-GENERATOR-Q1: dług gen-building-cards-top5 --check NIEZGODNY z plikiem danych naprawiony — ręczna edycja karty Cegielni (cykle 50/75/100, commit BRICK-CYCLES) przeniesiona do korekt generatora (gen-building-cards-top5.korekty.json, card-text-corrections.cjs); building-cards-top5.json bez zmiany treści (0 bajtów diffu); generator deterministyczny
+- Weryfikacja: tsc czysty; --check OK x2 (identyczny sha256); terminology-trade-vs-tax 799/0; building-cards-top5 1207/0; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; brick-cycles 46/0, brick-production-x2 69/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Długi: korekta Cegielni hardkoduje tytuł/zdanie (przyszła zmiana liczb nie zostanie wychwycona), dwie rozbieżne kopie budynki-top5.csv, nieaktualne punkty odniesienia §6 R-PROC-AUTOBOT (tech-tree 19→20, unit-replace 13→21)
+
+## ROBOCZA fbcde734 -- 2026-11-06 -- FALA 641: Wiki: etykieta 'Mnożnik waluty' (bez 'handlu') (testowa)
+
+- R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1: etykieta 'Mnożnik handlu/waluty' → 'Mnożnik waluty' w 9 hasłach cywilizacji (docs/encyklopedia + szablon gen-cyw-encyklopedia.py), wikiBundle regenerowany generatorem; poradnik gracza (SPIS-TRESCI:2352) przepisany neutralnie zgodnie z silnikiem (bez obietnicy 'więcej złota'); komentarz meta_mnoznik_waluta w civ-matrix-semantic.ts poprawiony (bez zmiany kodu wykonywalnego); mechanika bez zmian (decyzja właściciela ABC A)
+- Weryfikacja: tsc czysty; pr141-matrix-only-data-wiki 15 civ + 9 stron; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0, economy 72/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Encyklopedia nadal pokazuje wartość per-civ z macierzy, a silnik używa globalnego mennicaMnoznikPoWalucie (1,5) — rozbieżność wartości poza zakresem (osobny temat/ABC); terminology-trade-vs-tax 795/1 ([G] building-cards-top5 = dług bazowy, osobny temat w toku)
+
+## ROBOCZA adf5fc8c -- 2026-11-06 -- FALA 640: Terminologia: grupa budynków 'Podatek i pieniądz' w panelu imperium (testowa)
+
+- R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1: wyświetlana etykieta grupy budynków w panelu imperium 'Handel i pieniądz' → 'Podatek i pieniądz' (mapa etykiet EMPIRE_BUILDING_GROUP_LABEL; klucz grupy w danych bez zmian); przegląd JSON kart: brak 'handel' w znaczeniu podatku; 'Mnożnik handlu/waluty' NIE zmieniony w tej fali (decyzja ABC → osobny temat CURRENCY-MULT-LABEL)
+- Weryfikacja: tsc czysty; terminology-trade-vs-tax 798/1 (jedyny FAIL [G] building-cards-top5 = dług bazowy, identyczny na bazie), 3 nowe asercje [C-FU] zielone, mutacja czerwona; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: render panelu imperium w Chromium; dług [G] gen-building-cards-top5 --check NIEZGODNY z generatorem (bazowy)
+
+## ROBOCZA 3c75f0a4 -- 2026-11-06 -- FALA 639: Ikony surowców w kartach encji (budynki, ulepszenia, jednostki, technologie) (testowa)
+
+- R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: wiersze kosztu, utrzymania, wymagań, odblokowań i warunków surowców w kartach budynków, ulepszeń terenu, jednostek i technologii pokazują chipy ikona+liczba (kontrakt EntityCardRow.resources i valueParts; kwoty escapowane, tekst jako text node, nazwa surowca w title/aria-label); notatki deweloperskie (TYP 1 / B-SUROW-BUD-03) usunięte z tekstów gracza
+- Weryfikacja: tsc czysty; entity-cards-resource-icons 26/0 (każdy wiersz każdej karty), real-render Chromium 112/0 (w tym XSS), entity-card-contract 75/0, ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, resource-icons-everywhere 10 + render 13, chip-icons 29, improvement-adapter-resource-note 77/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Poza zakresem: bonusy plonów cudów (np. '+2 Praca, +2 Drewno' w osadzie Aschaffenburg) i wiersze plonów (Żywność, Kamień +2) zostają tekstem — oś plonów, wonderAdapter nietknięty; Pieniądz w utrzymaniu budynku tekstem; NIE_ZMIERZONO: wąski ekran, Civpedia/wiki; dług bazowy building-detail-card-entitycard-migration 54/1
+
 ## ROBOCZA d0ea0107 -- 2026-11-06 -- FALA 638: Nowy model Falangi: falangita z sarissą w obu rękach i tarczą (testowa)
 
 - R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1: jednostka Falanga ma model falangity macedońskiego — długa sarissa trzymana obiema rękami, mała tarcza (pelte) na lewym przedramieniu, tors skręcony; wyraźnie inny niż hoplita (Włócznik, Włócznik sumeryjski, Thorakites, Hieros Lochos bez zmian — identyczna liczba meshy i trójkątów); Falanga 29 meshy / 428 trójkątów, geometrie wspólne; scalanie statycznych części działa

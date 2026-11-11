@@ -28,7 +28,7 @@ Teatr wzmacnia miasto w kategorii **Kultura**. Poziom 1: **+4 kultury** (+2 na p
 - **Każdy kolejny poziom:** +12 pracy
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
 - Technologia **Filozofia**.
-- **Uwaga:** Glowne zrodlo kultury i zadowolenia w epoce Zelaza
+- **Uwaga:** Główne źródło kultury i zadowolenia w epoce Żelaza
 ### Strategia gracza
 Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obcego miasta — szczęście podnosi też **porządek**.
 ### Typowe błędy

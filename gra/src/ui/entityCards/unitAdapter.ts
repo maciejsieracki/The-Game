@@ -42,6 +42,7 @@ import { categoryOf } from '../../units/setup';
 import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+import { resourcesFromList } from './resourceRows';
 
 const COUNTERS = countersData as unknown as CounterDef[];
 
@@ -57,6 +58,16 @@ function text(value: unknown): string {
 function hasValue(value: unknown): boolean {
   const t = text(value);
   return t !== '' && t !== '—';
+}
+
+/** Wiersz „surowiec × ilość" jako dane (ikona + liczba w rendererze). Surowiec spoza listy
+ * ikon (nieznana nazwa) wraca do zwykłego tekstu `nazwa × ilość`. */
+function unitResourceRow(label: string, name: unknown, amount: unknown): EntityCardRow {
+  if (!hasValue(name)) return { label, value: '' };
+  const qty = text(amount);
+  const { resources, rest } = resourcesFromList(text(name), qty);
+  if (resources.length === 0) return { label, value: `${text(name)} × ${qty}` };
+  return { label, value: rest ? `${rest} × ${qty}` : '', resources };
 }
 
 /** 1:1 z `cityPanel.ts::unitExtraField` — odczyt pól spoza typowanego `UnitDef`
@@ -273,23 +284,16 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   // sekcja „Koszty i utrzymanie" mieszała jednorazowy wydatek z co-turowym) -------------------
   const recruitRows: EntityCardRow[] = [
     { label: 'Koszt Pieniądza', value: text(unit['Pieniądz (koszt)']) },
-    {
-      label: 'Koszt surowca',
-      value: hasValue(unit.Surowiec) ? `${text(unit.Surowiec)} × ${text(unit['Surowiec (ilość)'])}` : '',
-    },
+    unitResourceRow('Koszt surowca', unit.Surowiec, unit['Surowiec (ilość)']),
     { label: 'Ludność', value: text(unit.Ludność) },
-  ].filter((r) => hasValue(r.value));
+  ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-recruit', title: 'Koszt rekrutacji', rows: recruitRows });
 
   const upkeepRows: EntityCardRow[] = [
     { label: 'Utrzymanie Pieniądza/turę', value: text(unit['Utrzymanie (Pieniądz/turę)']) },
-    {
-      label: 'Utrzymanie surowca/turę',
-      value: hasValue(unit['Utrzymanie surowiec'])
-        ? `${text(unit['Utrzymanie surowiec'])} × ${text(unit['Utrzymanie surowiec (ilość)'])}` : '',
-    },
+    unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'], unit['Utrzymanie surowiec (ilość)']),
     { label: 'Żywność/turę', value: text(unit['żywność/turę']) },
-  ].filter((r) => hasValue(r.value));
+  ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
 
   // --- Statusy — część niezależna od `options.statusLines` (dopełniane w unitInfoCard.ts).

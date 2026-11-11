@@ -197,6 +197,11 @@ check('[C] cityPanel: etykieta grupy — wspólna funkcja użyta w nagłówku li
   /const grupaLabel = buildingGroupDisplayLabel\(grupa\);\s*summary\.textContent = isEmpty \? `\$\{grupaLabel\} —` : `\$\{grupaLabel\} \(\$\{ids\.length\}\)`/.test(cityPanelC));
 check('[C] cityPanel: surowy `${grupa}` nie trafia do nagłówka grupy (brak obejścia helpera)', !/summary\.textContent = isEmpty \? `\$\{grupa\}/.test(cityPanelC) && !/appendDetailSection\(card, grupa\)/.test(cityPanelC));
 check('[C] cityPanel: tekst „Handel i pieniądz” tylko w mapie etykiet (klucz danych)', cityPanelC.split('Handel i pieniądz').length - 1 === 1);
+// R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1 (p.a): panel imperium — grupa „Handel i pieniądz” pokazywana jako „Podatek i pieniądz”.
+const empireDetailC = read('src/ui/empireDetailPanel.ts');
+check('[C-FU] empireDetailPanel: mapa etykiet grupy — „Handel i pieniądz” → „Podatek i pieniądz”', /'Handel i pieniądz':\s*'Podatek i pieniądz'/.test(empireDetailC));
+check('[C-FU] empireDetailPanel: wiersz grupy w panelu imperium używa etykiety wyświetlanej (nie surowego klucza)', /<span class="nm">\$\{esc\(empireBuildingGroupLabel\(grupa\)\)\}<\/span>/.test(empireDetailC) && !/<span class="nm">\$\{esc\(grupa\)\}<\/span>/.test(empireDetailC));
+check('[C-FU] empireDetailPanel: stopka grup podaje „Podatek i pieniądz”, bez „Handel i pieniądz” w tekście dla gracza', /Podatek i pieniądz · Nauka/.test(empireDetailC) && !/Handel i pieniądz/.test(empireDetailC.replace(/'Handel i pieniądz': 'Podatek i pieniądz'/, '')));
 
 // ---------------------------------------------------------------- [D] R-WEB-TERMINOLOGY-C-AND-ONESHOT-LABEL-Q1: podpis trybu wymiany surowców
 const basket = read('src/ui/diplomacyTradeBasket.ts');

@@ -38,7 +38,7 @@ Ulepszenie **Kopalnia** na polu w **twoim terytorium**. Teren: Wzgórza, Góry, 
 
 **Budowa:** **25 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **4 tur**.
 
-**Po ukończeniu:** heks daje +2 praca/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +2 pracy/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+2**/t vs bez ulepszenia → **13 tur** na „odrobienie" 25 pracy (ignorując bazę pola).
 

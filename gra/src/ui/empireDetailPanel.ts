@@ -109,6 +109,17 @@ export function resetEmpireMassRecruitmentMessage(): void {
   lastArmyRecruitMessage = '';
 }
 
+/**
+ * Etykieta WYŚWIETLANA grupy budynków (klucz `grupa` z danych bez zmian).
+ * Taka sama mapa jak w cityPanel.ts (buildingGroupDisplayLabel): grupa o kluczu
+ * z danych z członem „Handel” liczy podatek, nie trasy (R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1).
+ */
+const EMPIRE_BUILDING_GROUP_LABEL: Readonly<Record<string, string>> = {
+  'Handel i pieniądz': 'Podatek i pieniądz',
+};
+const empireBuildingGroupLabel = (grupa: string): string =>
+  EMPIRE_BUILDING_GROUP_LABEL[grupa] ?? grupa;
+
 function renderDefaultHandelSplitSection(): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
@@ -2295,7 +2306,7 @@ export function renderMiastoSection(
       for (const [grupa, count] of groupTotals) {
         if (count === 0) continue;
         h += '<div class="civ-emp-grp-row" style="cursor:default">'
-          + `<span class="nm">${esc(grupa)}</span>`
+          + `<span class="nm">${esc(empireBuildingGroupLabel(grupa))}</span>`
           + `<span class="val">${count}</span></div>`;
       }
       h += '<div class="civ-emp-grp-sum">'
@@ -2304,7 +2315,7 @@ export function renderMiastoSection(
       h += '</div>';
     }
     h += '<div class="civ-emp-foot">Grupy wg `BUILDING_GROUP_ORDER` (building-upgrades.ts): '
-      + 'Prawo i administracja · Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · '
+      + 'Prawo i administracja · Wojsko i obrona · Podatek i pieniądz · Nauka i kultura · Wiara · '
       + 'Zdrowie · Produkcja surowców · Żywność. Szczegóły efektów pojedynczego budynku: panel miasta.</div>';
   }
 
@@ -2491,27 +2502,31 @@ export function renderProducersSection(producers: EmpireDetailSnap['producers'] 
     }
   }
   h += '</div>';
-  h += subHdr('Produkcja surowców przetworzonych — cała cywilizacja');
-  const grid = '1fr 0.9fr 0.9fr 0.9fr';
-  h += `<div class="civ-emp-mini">${miniHeader(['SUROWIEC', 'OSTATNIA TURA', 'MOŻLIWE (WŁĄCZONE)', 'MOŻLIWE (WSZYSTKIE)'], grid)}`;
+  h += subHdr('Produkcja surowców — cała cywilizacja');
+  const grid = '1fr 0.85fr 0.95fr 0.9fr 0.9fr';
+  h += `<div class="civ-emp-mini" id="civ-emp-producers-agg">${miniHeader(['SUROWIEC', 'OSTATNIA TURA (ZREALIZOWANO)', 'PROGNOZA NASTĘPNEJ TURY', 'MAKSIMUM (WŁĄCZONE)', 'MAKSIMUM (WSZYSTKIE)'], grid)}`;
   for (const r of producers.resources) {
     h += miniRow([
       esc(r.label),
       r.realizedLastTurn === null ? '<span style="color:#6f7889">brak danych</span>' : String(Math.round(r.realizedLastTurn)),
+      r.forecastNextTurn === null ? '<span style="color:#6f7889">brak danych</span>' : String(Math.round(r.forecastNextTurn)),
       String(r.potentialEnabled),
       String(r.potentialInstalled),
     ], grid);
   }
   h += '</div>';
-  h += '<div class="civ-emp-foot">OSTATNIA TURA = ile faktycznie wyprodukowano w ostatnio zakończonej turze '
-    + '(to historia, nie prognoza; „brak danych” = jeszcze nie było przeliczonej tury po starcie/wczytaniu gry). '
-    + 'MOŻLIWE (WŁĄCZONE) = ile dałyby tylko włączone budynki, gdyby nigdy nie brakowało surowców '
-    + 'na wejściu ani miejsca w magazynie — to górna granica, nie wynik. '
-    + 'MOŻLIWE (WSZYSTKIE) = to samo ze wszystkich zbudowanych, także wyłączonych, żeby wyłączenie nie '
-    + 'wprowadzało w błąd. Odlewnie i huty biorą te same drewno i rudę, więc rzeczywista produkcja bywa niższa. '
+  h += '<div class="civ-emp-foot">OSTATNIA TURA (ZREALIZOWANO) = ile faktycznie wyprodukowano w ostatnio zakończonej turze '
+    + '(to historia; „brak danych” = jeszcze nie było przeliczonej tury po starcie/wczytaniu gry). '
+    + 'PROGNOZA NASTĘPNEJ TURY = ile wyprodukują budynki na koniec tej tury, jeśli do tego czasu nic się nie zmieni: '
+    + 'liczona tym samym kodem co prawdziwa tura, z uwzględnieniem wyłączonych budynków, tego, co masz teraz w magazynie '
+    + 'na wejściu, i tego, że Odlewnie oraz Huta biorą te same drewno i rudę. '
+    + 'MAKSIMUM (WŁĄCZONE) = ile dałyby tylko włączone budynki przy pełnym zaopatrzeniu, czyli górna granica, nie wynik. '
+    + 'MAKSIMUM (WSZYSTKIE) = to samo ze wszystkich zbudowanych, także wyłączonych. '
     + 'Liczby zależą od epoki państwa i poziomu trudności. Wyłączony budynek nadal stoi (nic nie jest zwracane '
     + 'ani niszczone), ale nie produkuje, nie zużywa surowców i nie kosztuje utrzymania. '
-    + 'Tartak/Stolarnia i Warsztat kamieniarski dodają +10% do dopływu drewna/kamienia — po wyłączeniu tego bonusu nie ma.</div>';
+    + 'Drewno i Kamień: Stolarnia i Warsztat kamieniarski dodają po +10% do dopływu drewna/kamienia z mapy '
+    + '(wszystkie budynki w państwie sumują się); po wyłączeniu tego bonusu nie ma. '
+    + 'Dla nich liczby oznaczają cały dopływ z mapy, a maksimum nie jest przycięte limitem magazynu.</div>';
   return h;
 }
 

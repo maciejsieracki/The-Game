@@ -37,7 +37,7 @@ Ulepszenie **Owce** na polu w **twoim terytorium**. Teren: Wzgórza.
 
 **Budowa:** **20 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +1 żywność/t, +2 praca/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +1 żywności/t, +2 pracy/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+1**/t vs bez ulepszenia → **20 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
 

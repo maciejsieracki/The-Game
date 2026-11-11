@@ -10,7 +10,7 @@
 - [Targowisko (Rynek)](budynki/targowisko.md)
 - [Port handlowy](budynki/port.md)
 - [Spichlerz](budynki/spichlerz.md)
-- [Swiatynia](budynki/swiatynia.md)
+- [Świątynia](budynki/swiatynia.md)
 - [Biblioteka](budynki/biblioteka.md)
 - [Studnia](budynki/studnia.md)
 - [Mury](budynki/mury.md)

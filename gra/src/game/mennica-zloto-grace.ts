@@ -43,6 +43,23 @@ export function ownerZlotoAccessForMennica(
 }
 
 /**
+ * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 (obrona zarzutu 2): dostęp do złota dla Mennicy, jaki będzie
+ * widziała NAJBLIŻSZA tura -- BEZ mutacji stanu łaski. Dokładnie wynik, który zwróciłby
+ * `prepareMennicaZlotoGraceForTick` + resolver: dostęp teraz LUB trwająca łaska LUB utrata dostępu
+ * w tej turze po turze z dostępem (tick ustawiłby wtedy łaskę > 0).
+ */
+export function predictMennicaZlotoAccessForNextTick(
+  state: MennicaZlotoGraceState,
+  hasZlotoAccessNow: (ownerId: number) => boolean,
+): (ownerId: number) => boolean {
+  return (ownerId: number): boolean => {
+    if (hasZlotoAccessNow(ownerId)) return true;
+    if ((state.graceTurnsLeft.get(ownerId) ?? 0) > 0) return true;
+    return state.hadAccessLastTurn.get(ownerId) === true && MENNICA_ZLOTO_GRACE_TURNS > 0;
+  };
+}
+
+/**
  * Przed tickiem ekonomii (po przeliczeniu grantów handlowych): wykryj utratę
  * dostępu i ustaw łaskę. Zwraca resolver do `resolveOwnerZlotoAccess` w
  * turn-economy.ts (memoizacja po stronie wołającego).

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "d0ea01074446f88d26a2147a9f3cbe52",
-  "bundleSha256": "037e6657bd985c598c5006aff17470c1ca61cc224c8f32ad6da591b9f7b633e0",
-  "bundleBytes": 14507030,
+  "bundleMd5": "108507b6a8b191dcf6f19901df2dae7b",
+  "bundleSha256": "dcbe08bc5530dcdd66d75f1b078529062ae3b4ebccfd6cca8ee9bfc77add56a6",
+  "bundleBytes": 14514184,
   "sourceSnapshot": {
-    "source": "merge FC 88e8b9bfa",
+    "source": "merge FC 29b2161d4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 638: R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1: jednostka Falanga ma model falangity macedońskiego — długa sarissa trzymana obiema rękami, mała tarcza (pelte) na lewym przedramieniu, tors skręcony; wyraźnie inny niż hoplita (Włócznik, Włócznik sumeryjski, Thorakites, Hieros Lochos bez zmian — identyczna liczba meshy i trójkątów); Falanga 29 meshy / 428 trójkątów, geometrie wspólne; scalanie statycznych części działa"
+    "FALA 644: R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 (decyzja ABC właściciela): panel imperium — kolumna 'PROGNOZA NASTĘPNEJ TURY' obok 'OSTATNIA TURA (ZREALIZOWANO)' i dwóch kolumn 'MAKSIMUM'; prognoza z tego samego kodu co realny tick (forecastNextTurnProduction na klonie miast, z łaską Mennicy predictMennicaZlotoAccessForNextTick); dodane wiersze Drewno i Kamień (Stolarnia i Warsztat kamieniarski — +10% dopływu z mapy); podpisy po polsku"
   ],
   "verification": [
-    "tsc czysty; zelazo-falanga-real-render 50/0 (mutacje czerwone), zelazo-super-rzym-grecja 92/0, srodziemnomorze 83/0, slowianie-zulusi 75/0, germanie 80/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; resource-building-toggle 210/0 (prognoza == realna produkcja w 4 scenariuszach), UI Chromium 26/0 (klik zmienia prognozę, prognoza == realna tura), hud-konwerter 20/0, unit-replace-full-cost 40/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; pomiar wydajności: 120 miast = 4,6 ms/przebieg, panel ~14 ms; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE_ZMIERZONO: wygląd w żywej scenie bitwy (zrzuty z harnessu buildUnitModel) — do wzrokowej weryfikacji właściciela na ROBOCZEJ; z daleka i z przodu sarissa skrócona perspektywą; dług bazowy celtowie-miecznik-rydwan (0e) 81/1 na bazie; dług Rust: REPIN modelu Falangi"
+    "Znane ograniczenia: drewno z wycinki lasu (tickHexClearing) poza prognozą (zdarzenie jednorazowe); Stolarnia/Warsztat nie są konwerterami — wiersze to cały dopływ Drewna/Kamienia z mapy (brak 'desek'/'cegły kamiennej' w silniku); NIE_ZMIERZONO: wydajność na realnej mapie w Chromium, parytet ścieżki main.ts tylko tsc; dług bazowy building-upkeep-resources D10 47/1 (asercja nieaktualna po ENTITYCARDS)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T17:15:55",
+  "hubGeneratedAt": "2026-11-11T19:22:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "d0ea01074446f88d26a2147a9f3cbe52",
-      "sizeBytes": 14507030
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     }
   ],
-  "md5": "d0ea01074446f88d26a2147a9f3cbe52",
+  "md5": "108507b6a8b191dcf6f19901df2dae7b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

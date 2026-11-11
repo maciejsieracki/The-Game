@@ -2349,7 +2349,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Każda cywilizacja — **3 linie** bonusów (macierz 9×3)
 
 **84.2.** Przykłady bonusów — jak czytać opis
-- **Mnożnik handlu** — więcej złota z suwaka Daniny
+- **Mnożnik waluty** — mnoży podatek miasta przed podziałem suwakiem (działa, gdy Mennica i Waluta są aktywne)
 - **% nauki** — szybsze badania z miast
 - **XP armii** — jednostki szybciej zyskują doświadczenie (jeśli wpięte)
 - **Morale** — bonus w walce przy spełnionym warunku

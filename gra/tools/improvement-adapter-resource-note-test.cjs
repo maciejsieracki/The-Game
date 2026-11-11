@@ -48,6 +48,13 @@ const DEV_JOURNAL_PATTERNS = [
   /\bPYTANIE-?\s?\d+/i,
 ];
 
+// R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: surowce wiersza są DANYMI (`row.resources`), renderer rysuje ikonę;
+// nazwa dla asercji = nazwa wyświetlana id (tę samą pokazuje title/aria-label chipa).
+let NAME_OF = (id) => id;
+function rowName(row) {
+  const fromRes = (row.resources || []).map((r) => NAME_OF(r.id)).join(', ');
+  return [row.value, fromRes].filter(Boolean).join(', ');
+}
 function containsDevJournalText(s) {
   return DEV_JOURNAL_PATTERNS.some((re) => re.test(s));
 }
@@ -81,6 +88,7 @@ async function main() {
 
   delete require.cache[BUNDLE];
   const { improvementAdapter, nazwaWyswietlana } = require(BUNDLE);
+  NAME_OF = nazwaWyswietlana;
 
   // Oczekiwana nazwa wyświetlana wiersza "Odblokowuje surowiec" (surowy id z danych → nazwa z resources.json).
   // Wpisane ręcznie, nie wyliczane resolverem — test ma niezależnie potwierdzać wynik dla gracza.
@@ -120,10 +128,10 @@ async function main() {
     const row = resourceRowFor(key);
     if (!row) continue;
     check(`"${key}": wiersz "Odblokowuje surowiec" NIE zawiera wewnętrznej notatki dziennika balansu`,
-      !containsDevJournalText(row.value), row.value);
+      !containsDevJournalText(rowName(row)), rowName(row));
     check(`"${key}": wiersz "Odblokowuje surowiec" = dokładnie nazwa surowca (bez nawiasu z uwagą)`,
-      row.value === EXPECTED_SUROWIEC_NAZWA[key] && !row.value.includes('('),
-      row.value);
+      rowName(row) === EXPECTED_SUROWIEC_NAZWA[key] && !rowName(row).includes('('),
+      rowName(row));
   }
 
   // --- kontrola specyficzna: "tartak" (fixture cytowany w zgłoszeniu właściciela) ---
@@ -132,11 +140,17 @@ async function main() {
   const tartakResources = tartakCard.sections.find((s) => s.key === 'resources');
   const tartakResourceRow = tartakResources && tartakResources.rows.find((r) => r.label === 'Odblokowuje surowiec');
   check('"tartak": "Odblokowuje surowiec" === "Drewno" (bez notatki)',
-    !!tartakResourceRow && tartakResourceRow.value === 'Drewno', tartakResourceRow && tartakResourceRow.value);
+    !!tartakResourceRow && rowName(tartakResourceRow) === 'Drewno'
+      && tartakResourceRow.resources.length === 1 && tartakResourceRow.resources[0].id === 'drewno',
+    tartakResourceRow && rowName(tartakResourceRow));
   const tartakProdRow = tartakResources && tartakResources.rows.find((r) => r.label === 'Produkcja surowca');
   // R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (2026-10-31): baza 50 (przywrócona z regresu 200)
-  check('"tartak": "Produkcja surowca" nietknięta — "50 / turę" (baza epoki 1)',
-    !!tartakProdRow && tartakProdRow.value === '50 / turę', tartakProdRow && tartakProdRow.value);
+  // R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: „50 / turę" = chip {drewno, 50} + sufiks „/ turę" (ikona zamiast nazwy).
+  check('"tartak": "Produkcja surowca" nietknięta — 50 drewna / turę (baza epoki 1; dane, nie tekst)',
+    !!tartakProdRow && tartakProdRow.value === '' && tartakProdRow.resourcesSuffix === '/ turę'
+      && tartakProdRow.resources.length === 1 && tartakProdRow.resources[0].id === 'drewno'
+      && String(tartakProdRow.resources[0].amount) === '50',
+    tartakProdRow);
 
   const farmCard = improvementAdapter(terrainImprovements.farma, {});
   const farmRequirements = farmCard.sections.find((s) => s.key === 'requirements');
@@ -159,8 +173,8 @@ async function main() {
     const row = resourceRowFor(key);
     if (!row) continue;
     check(`"${key}" (krótka notatka, nie dziennik balansu): wiersz i tak = sama nazwa surowca (bez nawiasu)`,
-      !row.value.includes('(') && row.value === EXPECTED_SUROWIEC_NAZWA[key],
-      row.value);
+      !rowName(row).includes('(') && rowName(row) === EXPECTED_SUROWIEC_NAZWA[key],
+      rowName(row));
   }
 
   // --- regresja slugu surowca: „Złoto” i „Cegła” (ł nie rozkłada się przez NFD) muszą mieć nazwę z tabeli ---
