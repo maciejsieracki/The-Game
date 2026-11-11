@@ -9347,3 +9347,7 @@ IRON-STUD-ADJACENCY: FC PASS-WITH-NOTES (1dff44b63) → FALA 623 w toku. SURVIVO
 R-WEB-IRON-STUD-ADJACENCY-Q1: FC PASS-WITH-NOTES, kod 1dff44b63. Raw MD5 i 3 sidecary zgodne. Niezmierzone: dodatnia ścieżka live (budowa przy sąsiedzie + odjęcie 50 koni), koszt wydajności tooltipu.
 Rust: PICK-STADNINA r3 zintegrowane na parity-v2 (db390d49d): kod cc7bbf00f FC PASS-WITH-NOTES; bramki fmt/clippy/12 binarek (pick shard 0/2, relief, terrain, m16, ceramika, building_costs, W5 core) 0 failed, pełny cargo test wg Operatora 2564 passed; pin jeden cffe39cb9; 4 scenariusze zgodne; M16 `droga` odtworzone z weba. Dług: łodzie rybackie 6/6/6 (data/terrain-improvements.json) — osobny REPIN ekonomii.
 Ikona administratora (pomysł właściciela „A”): pieczęć/laur z „A” w dispatchach administratorów.
+
+## 2026-11-11 — FALA 624 wdrożona na ROBOCZĄ (main cfa5d1e65, MD5 603c7016ed3f92fca02dc6fc1f37c1ca)
+R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1 (#201 „2 b+c”): FC PASS-WITH-NOTES, kod 6a50daeb3. Raw MD5 i sidecary zgodne. Dowód Chromium na wstrzykniętej karcie; realny wpis do obejrzenia na ROBOCZEJ.
+R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: FC PASS-WITH-NOTES (b6a919b96) → FALA 625 w toku. Uwagi FC: zakres kart budowy i jednostek (nazwy tekstem w buildingStockCostChipsHtml, formatResourceUpkeepSummary, unitResourceUpkeepChipsHtml) poza GOAL — możliwy follow-up; czytelność małych ikon na żywej grze NIE_ZMIERZONO. W toku: SURVIVOR-RETREAT r2, BRICK-CYCLES, CITY-ADMINISTRATOR; start SEA-PEOPLES.
