@@ -9384,3 +9384,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 
 - 2026-11-11 · FALA 630 WDROŻONA (ROBOCZA): R-WEB-UI-RAW-IDS-AUDIT-Q1 (FC PASS-WITH-NOTES, aa8f6b06b; ref `refs/keep/R-WEB-UI-RAW-IDS-AUDIT-Q1-fc`, wip `web-wip/RAW-IDS`) + R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1 (e16f6f7c0). Luka: zrzuty Chromium kart ulepszenia/odkrycia (NIE_ZMIERZONO) — wzrokowa weryfikacja właściciela.
 - 2026-11-11 · DECYZJA ABC (właściciel): administrator ulepszeń — AI BEZ administratora (opcja B: AI ulepsza teren jak dotąd, za darmo). Odstępstwo od parytetu jest świadome; FC r1 miał jedyny NAPRAW właśnie na parytecie → temat wraca do FC (tryb fc) na kandydacie 058cc56e9.
+
+- 2026-11-11 · FALA 631 WDROŻONA (ROBOCZA): R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (FC PASS-WITH-NOTES, 058cc56e9; ref `refs/keep/R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1-fc`, wip `web-wip/IMPROVEMENT-ADMINISTRATOR`). AI bez administratora (decyzja ABC B). Nowy dług: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE; REPIN Rust (blok JSON administrator_ulepszen + utrzymanie).
