@@ -14,3 +14,13 @@ Limit: plik ≤ 600 LOC, testy dzielone.
 Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_wire_war_pipeline* (EXIT zapisany). Wyniki jako surowe EXIT.
 Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach). Przed startem cargo: df -h / ≥ 8 GB wolnego.
 Raport: 01-operator-r1.md (plik .md w runs/), tabela różnic B vs web.
+
+## DODATEK r2 (2026-11-11, po BLOCK r1; decyzje techniczne orkiestratora)
+Baza: origin/rust-port/parity-v2 = 83ac67875 (zawiera W7: siege_turn.rs, war_turn_ai_ai.rs; oraz ai_diplomacy_turn.rs z W6, ai_peace_city_offer.rs, cooldown/locks/siege-gate, TICKDIPLO-GEN, BORDER-EPOCH, REPLAY r2, L-2, ERA).
+Zmiany względem r1:
+1) Sygnatura: run_war_turn(ctx: &mut WarTurnContext) — struktura kontekstu (świat, stan wojny WarTurnState, numer tury, źródło epok per owner z player.rs epoch_number, parametry diplomacji). PlayableGame::advance_turn nie wykonuje efektów faz — jedno wywołanie run_war_turn dodać w playable.rs LUB session.rs (jedna linia + import), tam gdzie fazy Diplomacy/Ai są dispatchowane.
+2) Budowa TickContext w pipeline: common_border_delta = shared_border_penalty_for_epochs(epoka obu stron) (diplomacy.rs:724); to zamyka dług BORDER-WIRING (dispatch tamtego tematu miał fałszywą przesłankę).
+3) tick_pairs_relation_scores i run_brake_phase mają tu mieć PRODUKCYJNEGO wołającego (run_war_turn, faza Diplomacy).
+4) run_ai_ai_peace_turn (NIE run_ai_ai_peace_tick) w fazie Ai — wskazanie z raportu W7.
+5) Różnice kolejności względem web (wariant B) zapisać w tabeli w raporcie.
+Allowlista bez zmian + rust-port/engine/src/domain/mod.rs (pub mod). Bramki jak w r1; wektory z pinu dla kroków, które web wykonuje; testy behawioralne 2–3 tur. Przed cargo: df -h / ≥ 8 GB.

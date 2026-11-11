@@ -1,0 +1,7 @@
+# DISPATCH — R-RUSTPORT-P6-UNIT-REPLACE-L1-Q1 (zadanie 20: awanse INFANTRY 21/23; runda 1/5, Operator)
+Baza: origin/rust-port/parity-v2 = 83ac67875. Pin web: 07d2fbd72f758705f8e1d59cc4968027ffbafe75 (tylko odczyt).
+Źródło: dyspozycje/rust-port/p6/P6-REPIN-UNIT-REPLACE.md §3 L-1 (tabela awansów INFANTRY: 21 z 23 wpisów brakuje w rust-port/engine/data/units.json).
+GOAL: uzupełnić brakujące awanse INFANTRY w danych Rust zgodnie z pinem web (źródło: gra/data/units.json lub tabela awansów w pinie; wskaż plik:linię w raporcie), z testem behawioralnym: dla każdej jednostki INFANTRY wynik zamiany/awansu równy wartości z pinu (wektory z generatora z pinu, nie ręcznie).
+Allowlista: rust-port/engine/data/units.json (tylko pola awansu); rust-port/engine/src/domain/ai_era_unit_promotion.rs lub moduł wczytujący awanse (tylko jeśli konieczne; wymień plik); rust-port/engine/tests/p6_unit_replace_l1.rs (nowy); rust-port/engine/tests/p6_unit_replace_l1_vectors/*; rust-port/engine/tests/p6_unit_replace_l1_gen.mjs; dyspozycje/autobot/runs/R-RUSTPORT-P6-UNIT-REPLACE-L1-Q1/**. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock; zmiany nazw/ID jednostek.
+Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_unit_replace_l1; testy danych jednostek (git grep -l units.json -- rust-port/engine/tests) (EXIT zapisany).
+Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach); df -h / ≥ 8 GB przed startem. Raport 01-operator-r1.md.
