@@ -9324,3 +9324,9 @@ R-RUSTPORT-P6-WIRE-WAR-MARCH-PLAN-Q1 (runda 4/5, op. Sonnet r3): kod 8bccc4034 F
 
 ## 2026-11-11 — FALA 621 wdrożona na ROBOCZĄ (main adb5c1653, MD5 0348f31ecae968fea80a506ce5ebdfe0)
 R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: FC PASS-WITH-NOTES, kod a7f0800fe (f20b81654 + poprawki obrony b920196b6: cooldown po końcowych filtrach, testy negatywne, branch-test 10/0). Odczyt Raw MD5 zgodny, sidecary zgodne. Niezmierzone: wiring main.ts end-to-end, realny tick dostaw, UI/Chromium, stare zapisy. Start następnych: IRON-STUD-ADJACENCY, BATTLE-DEFEAT-SURVIVOR-RETREAT (w toku), RECRUIT-FOLLOW-GENERAL-BY-ORIGIN.
+
+## 2026-11-11 — Odpowiedzi właściciela (ABC) po FALI 621
+- R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: **A — zamknięte jako NIE_ODTWORZONO** (kandydat 70da7e6ee wdrożony w FALI 620: tylko test e2e jako bramka regresji). Nowe zgłoszenie z krokami → nowy temat.
+- Garnizon w zdobytym mieście (wipeDefenderOnCityCenter): **zostaje obecne zachowanie — giną** (miasto zdobyte). Brak zmian; zamyka uwagę z R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1 (Evaluator zarzut 1).
+- R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1: właściciel prosi o LISTĘ istniejących budynków administracyjnych (przekazana w czacie: Pałac I/II/III, Sąd, Dom Starszyzny/Dwór Zarządcy/Pretorium, Trybunał, Garnizon) i sam wskaże wybór — temat czeka na tę odpowiedź.
+- #201 („Przydziel obywatela?”): właściciel prosi o dokładniejszy opis opcji — przekazany w czacie; czeka na odpowiedź.
