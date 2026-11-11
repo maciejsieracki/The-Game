@@ -29,6 +29,7 @@ export const YIELD_CHIP: Readonly<Record<string, { label: string; icon: string }
   wiara: { label: 'Wiara', icon: 'res-religion' },
   podatek: { label: 'Podatek', icon: 'res-treasury' },
   pieniadz: { label: 'Pieniądz', icon: 'res-treasury' },
+  wplyw: { label: 'Wpływ', icon: 'res-influence' },
 };
 
 /**

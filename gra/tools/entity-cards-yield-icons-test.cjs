@@ -117,7 +117,7 @@ async function main() {
 
 
   // --- Nazwy plonów z ikoną marki (YIELD_CHIP) dołączone do nazw surowców ---------------------------
-  const YIELD_NAMES = ['Żywność', 'Praca', 'Pracy', 'Kultura', 'Nauka', 'Wiara', 'Podatek', 'Pieniądz', 'Pieniądze', 'Pieniądza', 'Pieniędzy'];
+  const YIELD_NAMES = ['Żywność', 'Praca', 'Pracy', 'Kultura', 'Nauka', 'Wiara', 'Podatek', 'Pieniądz', 'Pieniądze', 'Pieniądza', 'Pieniędzy', 'Żywności', 'Kultury', 'Nauki', 'Wiary', 'Podatku', 'Wpływ', 'Wpływu'];
   for (const y of YIELD_NAMES) names.add(y);
   const nameRes = [...names].map((n) => new RegExp('(^|[^\\p{L}])' + n.toLocaleLowerCase('pl') + '($|[^\\p{L}])', 'u'));
   const hasBareName = (txt) => {
@@ -162,8 +162,12 @@ async function main() {
   // Zakres: WSZYSTKIE wiersze WSZYSTKICH kart, w tym cuda. Wyjątki jawne (proza narracyjna, nazwy
   // epok, nazwy własne encji i opisy/rys historyczny). Etykieta wiersza (label) to nagłówek wiersza —
   // zostaje tekstem (założenie raportu); sprawdzana jest wyłącznie treść wartości.
-  const isExempt = (section, row) => {
-    if (section.layout === 'prose' || section.layout === 'top3') return true;
+  // Runda 2 (obrona): wyjątkiem zostaje proza (layout prose) i Top 5/top3 (tytuł+zdanie przypięte
+  // jako zwykły tekst do danych przez building-cards-top5-test/tech-cards-top5-test; konwersja top5
+  // na chipy = DECYZJA orkiestratora, patrz 30-obrona-claude.md zarzut 2). Wyjątek jest jawny.
+  const isExempt = (section, row, kind) => {
+    if (section.layout === 'prose') return true;
+    if (section.layout === 'top3') return true;
     if (/^(opis|top 3|rys historyczny|historia|ciekawostka|ciekawostki)$/i.test(section.title || '')) return true;
     if (/^Epoka/.test(row.label) || row.label === 'Nazwa' || row.label === 'Kategoria') return true;
     return false;
@@ -176,7 +180,7 @@ async function main() {
   for (const { kind, id, card } of cards) {
     for (const section of card.sections || []) {
       for (const row of section.rows || []) {
-        if (isExempt(section, row)) continue;
+        if (isExempt(section, row, kind)) continue;
         const chips = [...(row.resources || []), ...((row.valueParts || []).filter((p) => typeof p !== 'string'))];
         if (chips.some((c) => YIELD_IDS.has(c.id))) {
           yieldChipRows++;
@@ -201,6 +205,18 @@ async function main() {
   if (process.env.DUMP_OFFENDERS) console.log(JSON.stringify(offenders, null, 1));
   check('A: ZERO gołych nazw surowców/plonów w value/valueParts/resourcesSuffix wierszy WSZYSTKICH kart (z cudami)',
     offenders.length === 0, offenders.slice(0, 60));
+  // Runda 2 (obrona, zarzut 3 + skan): Wpływ (res-influence) i Koszt nauki jako chipy.
+  {
+    const allChips = (card) => (card.sections || []).flatMap((sec) => (sec.rows || []).flatMap((r) =>
+      [...(r.resources || []), ...((r.valueParts || []).filter((p) => typeof p !== 'string'))]));
+    const piramidy = cards.find((c) => c.kind === 'wonder' && c.card.sections.some((sec) => sec.rows.some((r) => /Wpływ/.test(r.value))));
+    check('R2-3: cud z „+N Wpływu” ma chip wplyw (res-influence), nie goły tekst',
+      !!piramidy && allChips(piramidy.card).some((c) => c.id === 'wplyw'), piramidy && piramidy.id);
+    const techs = cards.filter((c) => c.kind === 'technology');
+    const kosztOk = techs.every(({ card }) => card.sections.flatMap((sec) => sec.rows).filter((r) => r.label === 'Koszt nauki')
+      .every((r) => (r.valueParts || []).some((p) => typeof p !== 'string' && p.id === 'nauka' && /^\d+$/.test(String(p.amount)))));
+    check('R2-4: „Koszt nauki” każdej technologii = chip nauka z liczbą', techs.length > 0 && kosztOk, techs.length);
+  }
   check('A2: wiersze z chipami plonów > 0', yieldChipRows > 0, yieldChipRows);
   console.log('wiersze z chipami plonów wg rodzaju:', JSON.stringify(yieldChipsPerKind), 'razem', yieldChipRows);
   for (const kind of ['building', 'improvement', 'wonder', 'unit', 'technology']) {

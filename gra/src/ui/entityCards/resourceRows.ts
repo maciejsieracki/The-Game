@@ -87,6 +87,8 @@ export type EntityCardValuePart = string | EntityCardRowResource;
 const YIELD_WORDS: Readonly<Record<string, string>> = {
   zywnosc: 'zywnosc', praca: 'praca', pracy: 'praca', podatek: 'podatek', podatku: 'podatek',
   pieniadz: 'pieniadz', pieniadze: 'pieniadz', pieniadza: 'pieniadz', pieniedzy: 'pieniadz',
+  zywnosci: 'zywnosc', kultura: 'kultura', kultury: 'kultura', nauka: 'nauka', nauki: 'nauka',
+  wiara: 'wiara', wiary: 'wiara', wplyw: 'wplyw', wplywu: 'wplyw',
 };
 
 export function resourceTextParts(text: string | null | undefined, yields = false): EntityCardValuePart[] | null {
@@ -154,6 +156,7 @@ export function proseRowFields(text: string, yields = false): { value: string; v
 export function yieldChipIdFromKey(key: string | null | undefined): string | null {
   const k = fold(String(key ?? '')).replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
   if (!k) return null;
+  if (k === 'wplyw') return 'wplyw';
   if (k === 'handel') return 'podatek'; // strumień podatku (terminologia C)
   if (YIELD_CHIP[k]) return k;
   const res = resourceIdFromName(k);

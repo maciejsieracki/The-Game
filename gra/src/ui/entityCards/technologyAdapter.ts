@@ -426,12 +426,12 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // (wymóg badania)" żeby uniknąć wizualnej duplikacji z „Dostęp do surowca" w Zmianach
   // ekonomicznych mimo wspólnego rdzenia słownego. -------------------------------------------
   const resourceAccess = resourceAccessOf(tech);
-  const charRows: EntityCardRow[] = [
-    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
+  const charRows: EntityCardRow[] = ([
+    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}`, valueParts: [{ id: 'nauka', amount: String(tech['Koszt nauki']) }] },
     tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
     tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
     resourceAccess ? { label: 'Surowiec (wymóg badania)', ...resourceFields(resourceAccess) } : null,
-  ].filter((r): r is EntityCardRow => r != null);
+  ] as Array<EntityCardRow | null>).filter((r): r is EntityCardRow => r != null);
   const characteristicsSection: EntityCardSection = {
     key: 'characteristics', title: 'Charakterystyka', rows: charRows,
   };
