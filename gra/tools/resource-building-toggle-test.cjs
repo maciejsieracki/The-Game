@@ -40,6 +40,9 @@ export {
   setProductionBuildingEnabled, sanitizeDisabledBuildings, operationalBuiltIds, operationalBuiltByCity,
   buildEmpireProducersSnap,
 } from '../src/game/building-toggle';
+export {
+  createMennicaZlotoGraceState, prepareMennicaZlotoGraceForTick, predictMennicaZlotoAccessForNextTick,
+} from '../src/game/mennica-zloto-grace';
 export { ensureCitySaveDefaults } from '../src/game/cities';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
 export { DEFAULT_CONVERTER_RECIPES, converterBuildingIdForRecipe } from '../src/game/converters';
@@ -489,6 +492,50 @@ function sectionF() {
   ok(/toggledOff\s*\?\s*\{ gold: 0, resources: \{\}/.test(rowFn), 'F: wylaczony budynek pokazuje zerowe utrzymanie');
   ok(/convInactive = toggledOff \|\|/.test(rowFn), 'F: wiersz produkcji wylaczonego budynku wygaszony');
   ok(rowFn.includes("'wyłączony'"), 'F: znacznik "wylaczony" po polsku w wierszu');
+}
+
+// ---------------------------------------------------------------------------
+console.log('-- H. obrona Evaluatora: parytet lask Mennicy (zarzut 2) + pomiar wydajnosci prognozy (zarzut 1) --');
+{
+  // H1: predict (bez mutacji) == prepareMennicaZlotoGraceForTick + resolver dla wszystkich stanow lasko/dostep.
+  let n = 0;
+  for (const now of [true, false]) for (const had of [undefined, true, false]) for (const grace of [0, 1]) {
+    const mkState = () => {
+      const st = M.createMennicaZlotoGraceState();
+      if (had !== undefined) st.hadAccessLastTurn.set(0, had);
+      st.graceTurnsLeft.set(0, grace);
+      return st;
+    };
+    const st1 = mkState();
+    const snap = JSON.stringify([[...st1.graceTurnsLeft], [...st1.hadAccessLastTurn]]);
+    const predicted = M.predictMennicaZlotoAccessForNextTick(st1, () => now)(0);
+    eq(JSON.stringify([[...st1.graceTurnsLeft], [...st1.hadAccessLastTurn]]), snap, `H1 predict nie mutuje stanu (now=${now} had=${had} grace=${grace})`);
+    const st2 = mkState();
+    const real = M.prepareMennicaZlotoGraceForTick(st2, [0], () => now)(0);
+    eq(predicted, real, `H1 predict == realny resolver ticku (now=${now} had=${had} grace=${grace})`);
+    n++;
+  }
+  ok(n === 12, 'H1 sprawdzono 12 kombinacji stanu lasko/dostep');
+
+  // H2: pomiar wydajnosci -- duza cywilizacja (60 miast gracza + 60 AI), prognoza jak w panelu (1 przebieg + 2 potencjaly = 3).
+  const many = [];
+  const builtBig = new Map();
+  for (let i = 0; i < 120; i++) {
+    const id = 'p' + i;
+    many.push(mkCity(id, i < 60 ? 0 : 1, (i % 12) * 6, Math.floor(i / 12) * 6, { surowce: { glina: 500, drewno: 500, ruda: 300, kamien: 100 } }));
+    builtBig.set(id, ['cegielnia', 'garncarnia', 'kamieniarski', 'stolarnia', 'odlewnia_brazu', 'wielka_odlewnia']);
+  }
+  const run = () => M.forecastNextTurnProduction({
+    cities: many, map: MAP, data: DATA, difficulty: 'normal', builtByCity: builtBig, playerEra: 3,
+    playerZbadane: new Set(), resolveOwnerEra: () => 3,
+  });
+  run(); // rozgrzewka
+  const t0 = process.hrtime.bigint();
+  const REP = 9;
+  for (let i = 0; i < REP; i++) run();
+  const msPer = Number(process.hrtime.bigint() - t0) / 1e6 / REP;
+  console.log(`   POMIAR: forecastNextTurnProduction, 120 miast (60 gracza + 60 AI): ${msPer.toFixed(1)} ms / przebieg; panel = do 3 przebiegow ~ ${(3 * msPer).toFixed(0)} ms`);
+  ok(3 * msPer < 600, `H2 prognoza panelu (3 przebiegi, 120 miast) < 600 ms (jest ${(3 * msPer).toFixed(0)} ms)`);
 }
 
 sectionE().then(() => {

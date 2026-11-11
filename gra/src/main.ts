@@ -1015,6 +1015,7 @@ import {
   createMennicaZlotoGraceState,
   clearMennicaZlotoGraceState,
   prepareMennicaZlotoGraceForTick,
+  predictMennicaZlotoAccessForNextTick,
   finalizeMennicaZlotoGraceAfterTick,
   ownerZlotoAccessForMennica,
   serializeMennicaZlotoGrace,
@@ -19854,7 +19855,8 @@ async function boot(): Promise<void> {
           cities, map, data, difficulty: _menuDifficulty, builtByCity: cityBuilt,
           playerEra: player.era, playerZbadane: player.zbadane, ownerCivByOwnerId: ownerCivMap,
           resolveOwnerEra: empireEpochForOwner, resolveOwnerTech: unlockedTechSetForOwner,
-          resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(),
+          resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(
+            predictMennicaZlotoAccessForNextTick(mennicaZlotoGraceState, ownerHasZlotoAccessNow)),
           resolveOwnerActiveLabels: makeOwnerRuntimeActiveLabelsResolver(),
           resolveOwnerEmpireStock: makeOwnerEmpireStockResolver(),
         };

@@ -180,6 +180,11 @@ const STUB = {
   await page.click('[data-prod-toggle="c1|cegielnia"]');
   const afterOff = await cell('Cegła', 2);
   ok(afterOff < before, 'klik wylacz Cegielnie (Roma): prognoza cegly spadla ' + before + ' -> ' + afterOff);
+  // obrona zarzutu 4: wylacz -> wlacz BEZ tury pomiedzy = DOKLADNIE ta sama prognoza co przed (zadnej luzniej asercji)
+  await page.click('[data-prod-toggle="c1|cegielnia"]');
+  const roundTrip = await cell('Cegła', 2);
+  ok(roundTrip === before, 'wylacz -> wlacz bez tury: prognoza cegly wraca DOKLADNIE (' + before + ' -> ' + afterOff + ' -> ' + roundTrip + ')');
+  await page.click('[data-prod-toggle="c1|cegielnia"]');
   const stolBefore = await cell('Drewno', 2);
   await page.click('[data-prod-toggle="c2|stolarnia"]');
   const stolAfter = await cell('Drewno', 2);
@@ -190,7 +195,10 @@ const STUB = {
   await page.screenshot({ path: path.join(OUT, '07-prognoza-wylaczone.png'), fullPage: true });
   await page.click('[data-prod-toggle="c1|cegielnia"]');
   const afterOn = await cell('Cegła', 2);
+  const fcFinal = await page.evaluate(() => (window).__forecast());
   ok(afterOn > afterOff, 'klik wlacz Cegielnie: prognoza cegly wrocila (' + afterOff + ' -> ' + afterOn + ')');
+  // 423 zamiast 450: miedzy pomiarami przebiegla realna tura (wyczerpane zapasy wejsc) -- panel musi rownac sie silnikowi TERAZ
+  ok(afterOn === Math.round(fcFinal.cegla), 'po realnej turze panel = prognoza silnika na biezacym stanie (' + afterOn + ' = ' + Math.round(fcFinal.cegla) + '); roznica wzgledem 450 wynika z zuzycia zapasow wejsc przez ture');
 
   ok(errors.length === 0, 'brak bledow strony do konca: ' + errors.join(' | '));
   console.log(`\nresource-building-toggle-ui-live: ${pass} passed, ${fail} failed`);
