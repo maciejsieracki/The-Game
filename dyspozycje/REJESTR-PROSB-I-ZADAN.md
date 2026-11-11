@@ -9651,3 +9651,8 @@ Właściciel zlecił przeniesienie każdego typu konnicy do Żelaza. Rydwany odd
 STATUS: OTWARTE
 DOMAIN: GAME
 Nowe zlecenie: od20.tury własnej epoki Brązu komunikat Epoki Ludów Morza i3×liczebność najazdów na każdym aktywnym poziomie barbarzyńców, do wejścia nacji w Żelazo. Istniejący mechanizm Ludów Morza wymaga audytu, nie duplikacji. Zarejestrowane w kolejce przy limicie4 aktywnych tematów; dispatch w `autobot/runs/R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Idź do wodza: wspólne ustawienie dziedziczą tylko zamówienia z Armii/Rekrutacji, rekrutacja bezpośrednia w mieście domyślnie wyłączona. Zachować indywidualny przełącznik jednostki. Zarejestrowane w kolejce, max4 tematy. Dispatch w `autobot/runs/R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1/00-dispatch.md`.
