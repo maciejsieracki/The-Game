@@ -71,6 +71,36 @@ export function isCityAutoImprovementAllowed(
   return cityHasWorkingImprovementAdministrator === true;
 }
 
+/**
+ * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 r2 (zarzut 2): czysty filtr miast objętych auto-ulepszeniami terenu
+ * w przebiegu EOT fotela `seatOwnerId` — TA SAMA funkcja jest używana w main.ts i w teście behawioralnym
+ * (ten sam świat z administratorem i bez niego), zamiast sondy regex.
+ */
+export function selectCitiesForAutoImprovement<C extends { ownerId: number }>(
+  cities: readonly C[],
+  seatOwnerId: number,
+  seatAllowed: boolean,
+  isCityActive: (c: C) => boolean,
+  isAutoMode: (c: C) => boolean,
+): C[] {
+  return cities.filter(c => {
+    if (c.ownerId !== seatOwnerId) return false;
+    if (!seatAllowed) return false;
+    if (!isCityActive(c)) return false;
+    return isAutoMode(c);
+  });
+}
+
+/**
+ * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 r2 (zarzut 1): OSOBNA flaga migracji administratora ulepszeń
+ * (`meta.improvementAdministratorNoticeShown`) — niezależna od `cityAdministratorNoticeShown`, bo zapisy
+ * zrobione po wdrożeniu administratora miasta mają tamtą flagę = true i migracja ulepszeń nigdy by nie ruszyła.
+ * Zwraca true, gdy należy pokazać jednorazowe powiadomienie.
+ */
+export function shouldShowImprovementAdminMigration(noticeShown: boolean, affectedCities: number): boolean {
+  return noticeShown !== true && affectedCities > 0;
+}
+
 /** Podpowiedź UI: auto-ulepszenia terenu wymagają działającego administratora ulepszeń. */
 export const AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT = 'Auto-ulepszenia terenu w tym mieście wymagają działającego administratora ulepszeń';
 

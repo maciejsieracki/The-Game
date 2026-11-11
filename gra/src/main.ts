@@ -1444,7 +1444,7 @@ import {
   improvementAdministratorUpkeep,
   improvementAdministratorDescription,
 } from './game/city-administrator';
-import { isCityAutoImprovementAllowed } from './game/auto-build-gate';
+import { isCityAutoImprovementAllowed, selectCitiesForAutoImprovement, shouldShowImprovementAdminMigration } from './game/auto-build-gate';
 import { isAutoBuildAllowedForOwner, isCityAutoBuildAllowed, autoBuildFromSaveMeta, autoBuildFromNewGameParam, AUTO_BUILD_ENABLED_DEFAULT } from './game/auto-build-gate';
 import { fogRevealKeyFFromNewGameParam, fogRevealKeyFFromSaveMeta, isFogRevealKeyFActive, FOG_REVEAL_KEY_F_DEFAULT } from './game/fog-reveal-key-f';
 import {
@@ -10125,6 +10125,8 @@ async function boot(): Promise<void> {
      * Nowa gra startuje z flagą = true (nic do migrowania).
      */
     let cityAdministratorNoticeShown = true;
+    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 r2: OSOBNA flaga migracji administratora ulepszeń (`meta.improvementAdministratorNoticeShown`). */
+    let improvementAdministratorNoticeShown = true;
     /** R-WEB-CITY-ADMINISTRATOR-Q1: wpis w „Ważne” o zmianie stanu administratora (tylko gracz). */
     function noteAdministratorChange(ch: AdministratorChange): void {
       if (!isHuman(ch.city.ownerId)) return;
@@ -37336,6 +37338,7 @@ async function boot(): Promise<void> {
           autoBuildEnabled,
           // R-WEB-CITY-ADMINISTRATOR-Q1: jednorazowe powiadomienie migracyjne już pokazane.
           cityAdministratorNoticeShown,
+          improvementAdministratorNoticeShown,
           // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F trwa w zapisie (brak pola = wyłączona).
           fogRevealKeyFEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
@@ -40086,14 +40089,14 @@ async function boot(): Promise<void> {
               // wydajnościowa zasada co w advanceCityEconomy/collectWorkedHexOwnerMap.
               const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
               for (const hOid of humanSeats.humanOwnerIds) {
-                const autoImpCities = cities.filter(c => {
-                  if (c.ownerId !== hOid) return false;
+                const autoImpCities = selectCitiesForAutoImprovement(
+                  cities, hOid,
                   // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: bramka auto-ulepszeń terenu gracza.
-                  if (!isAutoBuildAllowedFor(hOid)) return false;
+                  isAutoBuildAllowedFor(hOid),
                   // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: tylko miasta z DZIAŁAJĄCYM administratorem ulepszeń.
-                  if (!isCityAutoImprovementActive(c)) return false;
-                  return effectiveUlepszeniaForCity(c).tryb === 'auto';
-                });
+                  isCityAutoImprovementActive,
+                  c => effectiveUlepszeniaForCity(c).tryb === 'auto',
+                );
                 const hOidPracaPool = ownerPracaPool(hOid);
                 // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” liczony od nowa co turę;
                 // gdy picker nie rusza (tryb ręczny / pula <= rezerwa), wskaźnik znika.
@@ -44912,6 +44915,7 @@ async function boot(): Promise<void> {
       // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: opcja z ekranu nowej gry (domyślnie WYŁĄCZONA).
       autoBuildEnabled = autoBuildFromNewGameParam(params.autoBuildEnabled);
       cityAdministratorNoticeShown = true; // R-WEB-CITY-ADMINISTRATOR-Q1: nowa gra — nic do migrowania
+      improvementAdministratorNoticeShown = true;
       // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F (domyślnie WYŁĄCZONA).
       fogRevealKeyFEnabled = fogRevealKeyFFromNewGameParam(params.fogRevealKeyFEnabled);
       // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
@@ -47162,13 +47166,15 @@ async function boot(): Promise<void> {
       pendingAdministratorChanges.clear(); // stan z zapisu jest punktem odniesienia (bez powiadomień o „zmianach” sprzed wczytania)
       refreshCityAdministrators(false);
       pendingAdministratorChanges.clear();
-      if (!cityAdministratorNoticeShown) {
-        cityAdministratorNoticeShown = true;
-        // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stary zapis z włączoną automatyzacją i miastami w auto-ulepszeniach
-        // terenu bez administratora ulepszeń — jednorazowe powiadomienie (nie wolno po cichu wyłączyć).
+      // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 r2 (zarzut 1): OSOBNA flaga — zapis z cityAdministratorNoticeShown=true
+      // (po FALA 627) też dostaje powiadomienie o administratorze ulepszeń.
+      improvementAdministratorNoticeShown = saved.meta?.improvementAdministratorNoticeShown === true;
+      {
         const affectedImp = cities.filter(c => isHuman(c.ownerId)
           && autoBuildEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto' && !cityHasWorkingImprovementAdministrator(c));
-        if (affectedImp.length > 0) {
+        const show = shouldShowImprovementAdminMigration(improvementAdministratorNoticeShown, affectedImp.length);
+        improvementAdministratorNoticeShown = true;
+        if (show) {
           warEventLog.unshift({
             id: `city-impadmin-migration-${turn}`,
             icon: 'A',
@@ -47180,6 +47186,9 @@ async function boot(): Promise<void> {
           trimWarEventLog();
           showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem ulepszeń — ${affectedImp.length} miast bez niego (patrz „Ważne”)`, 6000);
         }
+      }
+      if (!cityAdministratorNoticeShown) {
+        cityAdministratorNoticeShown = true;
         const affected = cities.filter(c => isHuman(c.ownerId)
           && autoBuildEnabled && isAutoBudowaTryb(c.budowaTryb) && !cityHasWorkingAdministrator(c));
         if (affected.length > 0) {

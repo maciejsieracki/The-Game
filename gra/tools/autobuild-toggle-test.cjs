@@ -65,7 +65,7 @@ ok(/amDecision\.enqueue !== null && isCityAutoBuildActive\(city\)/.test(main), '
 ok(/else if \(isAutoBudowaTryb\(city\.budowaTryb\) && isCityAutoBuildActive\(city\)\)/.test(main), 'EOT: auto-budowa bez Zarządcy za bramką');
 ok(/isAutoBudowaTryb\(city\.budowaTryb\) && isCityAutoBuildActive\(city\) && frontItem\(prodFinal\) === null/.test(main), 'EOT: kolejkowanie po ukończeniu za bramką');
 ok(/function isCityAutoBuildActive\(city: City\): boolean \{\s*return isCityAutoBuildAllowed\(/.test(main), 'main.ts: isCityAutoBuildActive = globalna bramka + administrator (R-WEB-CITY-ADMINISTRATOR-Q1)');
-const impl = main.indexOf('const autoImpCities = cities.filter');
+const impl = main.indexOf('const autoImpCities = selectCitiesForAutoImprovement(');
 ok(impl > 0 && /isAutoBuildAllowedFor\(hOid\)/.test(main.slice(impl, impl + 500)), 'EOT: auto-ulepszenia terenu gracza (pickAutoImprovements) za bramką');
 ok(/isAutoBuildEnabled: isPlayerAutoBuildEnabled/.test(main), 'main.ts: UI (panel miasta / budowy) dostaje stan opcji');
 ok(/onAutoBuildToggle/.test(main) && /getAutoBuildEnabled: isPlayerAutoBuildEnabled/.test(main), 'main.ts: przełącznik w menu gry (zmiana w trakcie gry)');

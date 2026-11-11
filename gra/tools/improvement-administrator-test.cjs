@@ -99,10 +99,43 @@ console.log('(D) bramka auto-ulepszeń');
   ok(G(1, [0, 1], true, false) === false, 'hot-seat: drugi fotel człowieka też podlega bramce');
 }
 
+console.log('(F) behawioralnie: ten sam świat z administratorem i bez, brak środków, migracja');
+{
+  const humans = [0];
+  const mkWorld = () => [
+    { id: 'a', ownerId: 0, tryb: 'auto' },
+    { id: 'b', ownerId: 0, tryb: 'auto' },
+    { id: 'm', ownerId: 0, tryb: 'manual' },
+    { id: 'ai', ownerId: 7, tryb: 'auto' },
+  ];
+  const select = (world, seat) => M.selectCitiesForAutoImprovement(
+    world, seat, true,
+    c => M.isCityAutoImprovementAllowed(c.ownerId, humans, true, M.cityHasWorkingImprovementAdministrator(c), false),
+    c => c.tryb === 'auto').map(c => c.id).join(',');
+  const without = mkWorld();
+  ok(select(without, 0) === '', 'BEZ administratora: zero miast gracza w auto-ulepszeniach (wszystko ręcznie)');
+  const withAdm = mkWorld();
+  M.hireImprovementAdministrator(withAdm[0], 40, 1);
+  M.refreshAdministratorState(withAdm, new Map(), () => 100);
+  ok(select(withAdm, 0) === 'a', 'Z administratorem w mieście a: tylko a (b bez, m ręczne)');
+  M.refreshAdministratorState(withAdm, new Map(), () => 0);
+  ok(withAdm[0].administratorUlepszen && withAdm[0].administratorUlepszen.pracuje === false && select(withAdm, 0) === '', 'brak środków: administrator przypisany, ale nie pracuje => automat wyłączony');
+  M.refreshAdministratorState(withAdm, new Map(), () => 100);
+  ok(select(withAdm, 0) === 'a', 'skarbiec wraca => automat wraca');
+  ok(select(withAdm, 7) === 'ai', 'AI bez bramki (flaga false)');
+  ok(M.shouldShowImprovementAdminMigration(false, 2) === true, 'migracja: flaga niepokazana + miasta bez admina => pokaż');
+  ok(M.shouldShowImprovementAdminMigration(true, 2) === false && M.shouldShowImprovementAdminMigration(false, 0) === false, 'migracja: pokazana albo brak miast => nie pokazuj');
+  const metaCityTrue = { cityAdministratorNoticeShown: true };
+  ok(M.shouldShowImprovementAdminMigration(metaCityTrue.improvementAdministratorNoticeShown === true, 1) === true, 'zapis z cityAdministratorNoticeShown=true i bez flagi ulepszeń => powiadomienie pokazane');
+}
+
 console.log('(E) sondy wpięcia');
 const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 const hud = fs.readFileSync(path.join(SRC, 'ui', 'buildModeHud.ts'), 'utf8');
-ok(/if \(!isCityAutoImprovementActive\(c\)\) return false;\s*return effectiveUlepszeniaForCity\(c\)\.tryb === 'auto'/.test(main), 'main.ts: filtr miast auto-ulepszeń EOT wymaga działającego administratora ulepszeń');
+ok(/selectCitiesForAutoImprovement\(\s*cities, hOid,[\s\S]{0,400}isCityAutoImprovementActive,/.test(main), 'main.ts: filtr miast auto-ulepszeń EOT = selectCitiesForAutoImprovement z bramką administratora ulepszeń');
+ok(/improvementAdministratorNoticeShown = saved\.meta\?\.improvementAdministratorNoticeShown === true/.test(main) && /shouldShowImprovementAdminMigration\(improvementAdministratorNoticeShown/.test(main) && /^\s*improvementAdministratorNoticeShown,$/m.test(main), 'main.ts: OSOBNA flaga migracji ulepszeń (zapis/odczyt/użycie)');
+const migBlock = main.slice(main.indexOf('if (!cityAdministratorNoticeShown) {'), main.indexOf("fogRevealKeyFEnabled = fogRevealKeyFFromSaveMeta"));
+ok(!/city-impadmin-migration/.test(migBlock), 'main.ts: migracja ulepszeń NIE siedzi w bloku flagi administratora miasta');
 ok(/isCityAutoImprovementAllowed\(\s*city\.ownerId, humanSeats\.humanOwnerIds, autoBuildEnabled,\s*cityHasWorkingImprovementAdministrator\(city\), aiRequiresImprovementAdministrator\(\)/.test(main), 'main.ts: bramka z flagą AI z JSON');
 ok(/setOwnerTreasury\(city\.ownerId, treasury - improvementAdministratorHireCost\(\)\)/.test(main), 'main.ts: koszt zatrudnienia ze skarbca państwa');
 ok(/getImprovementAdministratorState:/.test(main) && /onHireImprovementAdministrator:/.test(main) && /onDismissImprovementAdministrator:/.test(main), 'main.ts: panel ulepszeń dostaje haki');
