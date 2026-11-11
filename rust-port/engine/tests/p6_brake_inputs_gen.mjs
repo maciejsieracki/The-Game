@@ -337,4 +337,58 @@ for (let i = 0; i < 20; i++) {
   });
 }
 
+// 3g. Warianty computeObjectivePower (P6-BRAKE-VECTORS-Q1): FlatCount, nadpisane wspolczynniki,
+// militaryKeys (w tym 'zdobycze' - pin: zawsze niewojskowe), polowki dla Math.round.
+// Osobny generator (ziarno 20261112), aby sekcje 3a-3f pozostaly bajt-identyczne.
+{
+  const rv = mulberry32(20261112);
+  const rvi = (lo, hi) => lo + Math.floor(rv() * (hi - lo + 1));
+  const rvp = arr => arr[Math.floor(rv() * arr.length)];
+  const COMPONENT_KEYS = ['armia', 'bitwy', 'ludki', 'rekruci', 'miasta', 'terytorium', 'infra', 'tech',
+    'ulepszenia', 'kultura', 'religia', 'zdobycze'];
+  const defaults = powerObj.loadPowerCoefficients();
+  const COEFF_KEYS = Object.keys(defaults).sort();
+  const variants = [];
+  for (let i = 0; i < 120; i++) {
+    const battle = i % 2 === 0 ? 'flat_count' : 'enemy_m_sum';
+    const coeff = { ...defaults };
+    if (rv() < 0.6) {
+      for (const k of COEFF_KEYS) {
+        if (rv() < 0.5) coeff[k] = rvp([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.7, 10, 25, 50]);
+      }
+    }
+    const militaryKeys = COMPONENT_KEYS.filter(() => rv() < 0.4).sort();
+    if (i < 6) militaryKeys.splice(0, militaryKeys.length, ...COMPONENT_KEYS); // wszystkie wojskowe
+    if (i === 7) militaryKeys.length = 0; // brak skladnikow wojskowych
+    const half = rv() < 0.5;
+    const input = {
+      ownerId: rvi(0, 9),
+      epoka: rvi(1, 10),
+      jednostki: half ? rvi(-3, 40) : rvi(0, 400) / 4,
+      wygraneBitwy: rvi(0, 12),
+      sumaLudkow: rvi(0, 300),
+      rekrutEkw: half ? rvi(0, 20) : rvi(0, 80) / 4,
+      miasta: rvi(0, 25),
+      heksyTerytorium: rvi(0, 600),
+      budynki: rvi(0, 200),
+      techZbadane: rvi(0, 80),
+      ulepszeniaTerenu: rvi(0, 150),
+    };
+    if (rv() < 0.7) input.bitwyPktSum = rvi(0, 900) / (rv() < 0.5 ? 2 : 1);
+    if (rv() < 0.7) input.kulturaImperium = rvi(0, 5000);
+    if (rv() < 0.7) input.miastaJednoscReligii = rvi(0, 25);
+    if (rv() < 0.7) input.zdobyczePower = rvi(0, 3000) / (rv() < 0.5 ? 2 : 1);
+    if (i === 1) input.zdobyczePower = 7; // zdobycze + militaryKeys zawierajacy 'zdobycze'
+    const r = powerObj.computeObjectivePower(input, coeff, battle, new Set(militaryKeys));
+    variants.push({
+      battle, coeff, militaryKeys, input,
+      power: r.power,
+      powerBase: r.powerBase,
+      components: r.components.map(x => ({ key: x.key, rawCount: x.rawCount, coefficient: x.coefficient,
+        points: x.points, military: x.military })),
+    });
+  }
+  out.objectiveVariants = variants;
+}
+
 process.stdout.write(JSON.stringify(out, null, 1) + '\n');

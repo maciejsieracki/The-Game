@@ -186,7 +186,18 @@ pub fn compute_objective_power(
             nonneg(input.miasta_jednosc_religii.unwrap_or(0.0)),
             coeff.religia_jednosc,
         ),
-        row("zdobycze", nonneg(input.zdobycze_power.unwrap_or(0.0)), 2.0),
+        // Pin 07d2fbd72 power-objective.ts: row('zdobycze', ..., 2, false) - zawsze niewojskowe,
+        // niezaleznie od militaryKeys (brak wpisu w JSON).
+        {
+            let raw = nonneg(input.zdobycze_power.unwrap_or(0.0));
+            PowerComponent {
+                key: "zdobycze",
+                raw_count: raw,
+                coefficient: 2.0,
+                points: raw * 2.0,
+                military: false,
+            }
+        },
     ];
     let power_base = components.iter().fold(0.0_f64, |s, c| s + c.points);
     ObjectivePowerResult {
