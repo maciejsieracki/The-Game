@@ -9355,3 +9355,7 @@ R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: FC PASS-WITH-NOTES (b6a919b96) → FA
 ## 2026-11-11 — FALA 625 wdrożona na ROBOCZĄ (main 0571c8731, MD5 881b150cf8474c463b2c7f65e12725b9)
 R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: FC PASS-WITH-NOTES, kod b6a919b96. Raw MD5 i 3 sidecary zgodne. Follow-up do decyzji: nazwy tekstem w kartach kosztu budowy i w kosztach utrzymania jednostek (buildingStockCostChipsHtml, formatResourceUpkeepSummary, unitResourceUpkeepChipsHtml); czytelność ikon ~9 px NIE_ZMIERZONO na żywej grze.
 R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: FC PASS-WITH-NOTES, kod a88d05607 → FALA 626 w toku. DO DECYZJI WŁAŚCICIELA (nieblokujące): okno liczone dla gracza (owner 0), a spawn barbarzyńców jest globalny; parity dla nacji AI niewdrożona; próg „20. tura” = elapsed ≥ 20 od wejścia w Brąz; stary zapis z flagą brak może pokazać komunikat raz po wczytaniu; Chromium NIE_ZMIERZONO.
+
+## 2026-11-11 — FALA 626 wdrożona na ROBOCZĄ (main 37bcf8ebb, MD5 6911acc968413f9e7e4089698c874ef0)
+R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1: FC PASS-WITH-NOTES, kod a88d05607. Raw MD5 i sidecary zgodne. Notatki (okno gracza/spawn globalny/AI bez parytetu/próg 20 tur/Chromium NIE_ZMIERZONO) w FALI 625 wpisie.
+R-WEB-UNIT-CARD-RANGED-MULT-Q1 (#205): cel był już wdrożony w FALI 607 (39f8e2ce0); runda dodała tylko test HTML tooltipa (unit-card-ranged-mult-test 32 OK) i zrzut Chromium (harness) — FC PASS-WITH-NOTES (ec28410a2), kandydat testowy do następnej fali; #205 ZAMKNIĘTE.
