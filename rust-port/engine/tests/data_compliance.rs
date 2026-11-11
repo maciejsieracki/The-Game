@@ -67,7 +67,7 @@ fn no_dups(name: &str, ids: &[&str]) {
 const WEB_CIV_COUNT: usize = 15; // civs.json .cywilizacje
 const WEB_START_GRY_COUNT: usize = 11; // civs.json .start_gry
 const WEB_UNITS_COUNT: usize = 75; // units.json (array)
-const WEB_BUILDINGS_COUNT: usize = 42; // buildings.json (array)
+const WEB_BUILDINGS_COUNT: usize = 43; // buildings.json (array), pin 638e90bea (FALA 606; +emporion)
 const WEB_TECH_COUNT: usize = 32; // tech.json .technologie
 const WEB_CUDA_COUNT: usize = 19; // wonders.json .cuda
 const WEB_PARKOWANE_COUNT: usize = 5; // wonders.json .parkowane_epoka4plus
@@ -548,6 +548,7 @@ const WEB_BUILDING_IDS: &[&str] = &[
     "garnizon",
     "laznia_publiczna",
     "akademia_wojskowa",
+    "emporion",
 ];
 const WEB_TECH_NAMES: &[&str] = &[
     "Obróbka drewna",
@@ -831,11 +832,11 @@ fn assert_roundtrip<T: DeserializeOwned + Serialize>(name: &str) {
 }
 
 /// Przypiete liczniki N1/N2 per plik (pomiar P3-15, dowod: P3-15-DATA-ROUNDTRIP.md §4 i §6.3).
-/// Sumy: N1 = 1190, N2 = 120. Literalne `==` Value spelnione dla 22 plikow (N1 = N2 = 0).
+/// Sumy: N1 = 1196 (po REPIN 638e90bea: buildings 294, wonders 236), N2 = 120. Literalne `==` Value spelnione dla 22 plikow (N1 = N2 = 0).
 const RT_PINNED_NORMALIZATIONS: &[(&str, usize, usize)] = &[
     ("ai-params.json", 0, 0),
     ("auto-battle-params.json", 0, 0),
-    ("buildings.json", 277, 0),
+    ("buildings.json", 294, 0),
     ("citizen-resource-upkeep.json", 0, 0),
     ("city-names-pools.json", 0, 0),
     ("civ-ai.json", 0, 0),
@@ -861,7 +862,7 @@ const RT_PINNED_NORMALIZATIONS: &[(&str, usize, usize)] = &[
     ("terrain-yields.json", 0, 0),
     ("ui-params.json", 0, 0),
     ("units.json", 217, 52),
-    ("wonders.json", 247, 38),
+    ("wonders.json", 236, 38),
 ];
 
 #[test]

@@ -1,0 +1,22 @@
+Przepis regeneracji wektorow R4 (q5, q6, empirefood, order_lane).
+Zasada: PIN_REF=f873221ee (= hybrid2, pin poprzednich wektorow) + NAKLADKA tego, co nalezy do zakresu tematu, z 638e90bea:
+  dane buildings/tech/wonders/econ-params (kopie Rust = bajtowo web 638e90bea),
+  economy-upkeep.ts (utrzymanie_surowce, ratio), turn-economy.ts (ratio per owner),
+  converters.ts z przywroconym modelem odlewni brazu (pin poza zakresem; patrz mk-r4-pins.sh).
+Reszta weba (handel kontaktowy, korupcja Palac II/III/Trybunal, odlewnie 25/50, lodzie 6/6/6, jednostki) ZOSTAJE na pinie
+-> ZALOZENIE Z-R4-1 (osobne tematy REPIN; w 01-operator-r1.md lista dlugu).
+
+  SCRATCH=<katalog poza repo> ./mk-r4-pins.sh
+  export SCRATCH NO_SEA_PATCH=1 PIN_REF=f873221ee PIN_DATA=buildings,tech,wonders,econ-params
+  W=$SCRATCH/web638/gra
+  export PIN_SRC="gra/src/game/economy-upkeep.ts=$W/src/game/economy-upkeep.ts;gra/src/game/turn-economy.ts=$W/src/game/turn-economy.ts;gra/src/game/converters.ts=$SCRATCH/converters-pin-foundry-old.ts"
+  ./regen-vectors-r4.sh q5 H            -> $SCRATCH/vec2/H/q5/{q5.json,unit_table_*.json}   -> tests/p6_adv_q5_vectors/
+  ./regen-vectors-r4.sh q6 H            -> $SCRATCH/vec2/H/q6/q6.json                       -> tests/p6_adv_q6_vectors/
+  ./regen-vectors-r4.sh empirefood H    -> $SCRATCH/vec2/H/empirefood/empirefood.json       -> tests/p6_empirefood_vectors/
+  order_lane (dwie fazy):
+    ./regen-vectors-r4.sh orderlane H1 ; cp $SCRATCH/vec2/H1/orderlane/order_lane.json tests/p6_order_lane_vectors/
+    P6_OL_ECON_OUT=$SCRATCH/ol-econ.json cargo test --test p6_order_lane dump_tick1 -- --ignored
+    ECONFILE=$SCRATCH/ol-econ.json ./regen-vectors-r4.sh orderlane H2 ; cp $SCRATCH/vec2/H2/orderlane/order_lane.json tests/p6_order_lane_vectors/
+
+Wektory parytetowe tematu (Garncarstwo, Ha'amonga, utrzymanie surowcowe) - z czystego 638e90bea, bez pinow:
+  node --experimental-transform-types --no-warnings --import ./gen-loader-register.mjs ./gen-repin-ekonomia-ceramika-vectors.mjs $SCRATCH/web638 tests/p6_repin_ekonomia_ceramika_vectors/web.json

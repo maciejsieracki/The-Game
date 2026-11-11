@@ -33,7 +33,7 @@ const KNOWN_STOCK_KEYS: &[&str] = &[
     "kon",
 ];
 
-const CANONICAL_BUILDING_IDS: [&str; 42] = [
+const CANONICAL_BUILDING_IDS: [&str; 43] = [
     "stolarnia",
     "kamieniarski",
     "kuznia",
@@ -56,6 +56,7 @@ const CANONICAL_BUILDING_IDS: [&str; 42] = [
     "palisada",
     "mury",
     "koszary",
+    "emporion",
     "magazyn",
     "stela",
     "palac",
@@ -238,7 +239,7 @@ fn unit_table_keeps_the_units_json_base_as_provenance() {
 }
 
 #[test]
-fn building_table_has_exactly_the_42_canonical_ids_once_each() {
+fn building_table_has_exactly_the_43_canonical_ids_once_each() {
     let table = parse_building_stock_costs().expect("building table parses");
     assert_eq!(table.wiersze.len(), CANONICAL_BUILDING_IDS.len());
 
@@ -350,7 +351,7 @@ fn domain_building_costs_read_the_building_table_values_without_recomputing_them
 // ---------------------------------------------------------------------------
 
 #[test]
-fn work_table_has_exactly_the_42_buildings_once_each_and_positive_values() {
+fn work_table_has_exactly_the_43_buildings_once_each_and_positive_values() {
     use civ_engine::data::derived::parse_building_work_costs;
 
     let table = parse_building_work_costs().expect("work table parses");
@@ -359,7 +360,7 @@ fn work_table_has_exactly_the_42_buildings_once_each_and_positive_values() {
         .iter()
         .map(|row| row.budynek.as_str())
         .collect();
-    assert_eq!(table.wiersze.len(), 42, "one work row per building");
+    assert_eq!(table.wiersze.len(), 43, "one work row per building");
     assert_eq!(ids.len(), table.wiersze.len(), "no duplicate work rows");
     for row in &table.wiersze {
         assert!(
@@ -472,7 +473,8 @@ const TRYB_AXIS: [&str; 5] = [
     "trudny_gracz",
     "trudny_ai",
 ];
-const ZNIZKA_BUDYNKI_AXIS: [f64; 2] = [0.0, 0.2];
+// web 638e90bea: osie.znizka_cywilizacji = [0] (zniżka budynków z cywilizacji usunięta z osi).
+const ZNIZKA_BUDYNKI_AXIS: [f64; 1] = [0.0];
 const ZNIZKA_REKRUT_AXIS: [f64; 2] = [0.0, 0.1];
 const POZIOM_TRUDNOSCI_AXIS: [&str; 3] = ["easy", "normal", "hard"];
 
@@ -498,7 +500,7 @@ fn building_work_states_cover_each_building_level_and_axis_combination_exactly_o
     let table = parse_building_work_states().expect("building work states parse");
 
     let expected_rows: usize = buildings.iter().map(|b| b.maks_poziom as usize).sum();
-    assert_eq!(expected_rows, 65, "42 budynki, poziomy 1..maks");
+    assert_eq!(expected_rows, 66, "43 budynki, poziomy 1..maks (638e90bea)");
     assert_eq!(table.wiersze.len(), expected_rows);
     assert_eq!(table.osie["pace"], serde_json::json!(PACE_AXIS));
     assert_eq!(table.osie["tryb"], serde_json::json!(TRYB_AXIS));
@@ -514,7 +516,11 @@ fn building_work_states_cover_each_building_level_and_axis_combination_exactly_o
             seen.insert((row.budynek.clone(), row.poziom)),
             "duplicate row"
         );
-        assert_eq!(row.wartosci.len(), 30, "3 pace x 5 tryb x 2 zniżki");
+        assert_eq!(
+            row.wartosci.len(),
+            15,
+            "3 pace x 5 tryb x 1 zniżka (638e90bea)"
+        );
         let keys: BTreeSet<(String, String, i64)> = row
             .wartosci
             .iter()

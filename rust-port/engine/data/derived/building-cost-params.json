@@ -93,6 +93,7 @@
       { "budynek": "akademia_wojskowa", "wymaga": "koszary" },
       { "budynek": "swiatynia", "wymaga": "kamienne_kregi" },
       { "budynek": "mennica", "wymaga": "targowisko" },
+      { "budynek": "emporion", "wymaga": "targowisko" },
       { "budynek": "baszta", "wymaga": "mury" },
       { "budynek": "akwedukt", "wymaga": "studnia" }
     ],

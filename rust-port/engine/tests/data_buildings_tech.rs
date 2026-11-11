@@ -10,20 +10,20 @@ use buildings_tech::{parse_buildings, parse_tech, parse_wonders};
 #[test]
 fn buildings_json_parses() {
     let buildings = parse_buildings().expect("buildings.json musi się sparsować");
-    // Niezależnie policzone: 42 rekordy, 41 z `koszt_surowce`.
-    assert_eq!(buildings.len(), 42);
+    // Niezależnie policzone z gra/data/buildings.json @638e90bea: 43 rekordy, 42 z `koszt_surowce`.
+    assert_eq!(buildings.len(), 43);
     assert_eq!(
         buildings
             .iter()
             .filter(|b| b.koszt_surowce.is_some())
             .count(),
-        41
+        42
     );
-    // Suma `kosztBudowy` po wszystkich rekordach = 1736; suma `epokaWejscia` = 89.
+    // Suma `kosztBudowy` po wszystkich rekordach = 1786; suma `epokaWejscia` = 91 (638e90bea).
     let suma_koszt: i64 = buildings.iter().map(|b| b.koszt_budowy).sum();
-    assert_eq!(suma_koszt, 1736);
+    assert_eq!(suma_koszt, 1786);
     let suma_epoka: i64 = buildings.iter().map(|b| b.epoka_wejscia).sum();
-    assert_eq!(suma_epoka, 89);
+    assert_eq!(suma_epoka, 91);
     // Spot-check: pierwszy rekord `stolarnia`.
     let st = &buildings[0];
     assert_eq!(st.id, "stolarnia");
@@ -53,10 +53,10 @@ fn wonders_json_parses() {
 #[test]
 fn tech_json_parses() {
     let t = parse_tech().expect("tech.json musi się sparsować");
-    // Niezależnie policzone: 32 technologie; suma `Koszt nauki` = 9224.
+    // Niezależnie policzone: 32 technologie; suma `Koszt nauki` = 9724 (tech.json @638e90bea).
     assert_eq!(t.technologie.len(), 32);
     let suma: i64 = t.technologie.iter().map(|x| x.koszt_nauki).sum();
-    assert_eq!(suma, 9224);
+    assert_eq!(suma, 9724);
     // Spot-check: pierwsza technologia i tempo gry.
     assert_eq!(t.technologie[0].technologia, "Obróbka drewna");
     assert_eq!(t.technologie[0].koszt_nauki, 5);

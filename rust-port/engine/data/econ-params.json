@@ -414,6 +414,13 @@
       "hard": 2,
       "jednostka": "Pieniądz/turę",
       "opis": "Domyślna stawka utrzymania TYLKO dla budynku bez własnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja właściciela 19=A) silnik czyta utrzymanie z danych każdego budynku (0–5 Pieniądz/turę, zróżnicowane per budynek) — ta wartość NIE nadpisuje ich, jest wyłącznie zabezpieczeniem na wypadek brakującego wpisu. Dziś wszystkie 39 budynków mają własną wartość, więc ta stawka faktycznie się nie stosuje. [PT]"
+    },
+    "utrzymanie_surowce_wspolczynnik": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "szt. surowca / 1 Pieniądz utrzymania / turę",
+      "opis": "R-WEB-BUILDING-UPKEEP-RESOURCES-IMPL-Q1 (decyzja właściciela 2026-11-09): utrzymanie SUROWCOWE budynku jest proporcjonalne do jego utrzymania w Pieniądzu. Dla KAŻDEGO typu surowca z `koszt_surowce` (koszt budowy) budynek zużywa na turę floor(utrzymanie_Pieniądz(poziom) × ta wartość) sztuk; 1 = 1:1 (np. utrzymanie 2 Pieniądze i koszt drewno+kamień+cegła => 2 drewna + 2 kamienia + 2 cegły na turę). Pieniądz utrzymania zostaje bez zmian (surowce są DODATKOWO). Zastępuje dawną stałą 5 szt./typ. Czytane przez configureBuildingResourceUpkeepRatio (economy-upkeep.ts), wspólne dla ticka gracza i AI, podglądów i UI."
     }
   },
   "teren_mapa": {

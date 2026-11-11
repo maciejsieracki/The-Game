@@ -193,6 +193,8 @@ pub struct EconParamsBudynki {
     pub budynek_spichlerz_ii_zuzywa_ceramika: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "utrzymanie_budynek")]
     pub utrzymanie_budynek: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    #[serde(rename = "utrzymanie_surowce_wspolczynnik")]
+    pub utrzymanie_surowce_wspolczynnik: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

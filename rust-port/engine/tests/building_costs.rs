@@ -134,7 +134,7 @@ fn empty_resource_cost_is_affordable_without_a_stock_map() {
 #[test]
 fn canonical_catalog_contains_all_buildings_and_preserves_split_values() {
     let catalog = canonical_building_costs();
-    assert_eq!(catalog.len(), 42);
+    assert_eq!(catalog.len(), 43);
     let ids: BTreeSet<_> = catalog
         .iter()
         .map(|cost| cost.building_id.as_str())
@@ -182,6 +182,8 @@ fn canonical_catalog_contains_all_buildings_and_preserves_split_values() {
         "garnizon",
         "laznia_publiczna",
         "akademia_wojskowa",
+        // web 638e90bea (FALA <= 606): nowy budynek Emporion (epokaWejscia 2)
+        "emporion",
     ]
     .into_iter()
     .collect::<BTreeSet<_>>();
@@ -192,9 +194,10 @@ fn canonical_catalog_contains_all_buildings_and_preserves_split_values() {
     // Dawne 90 / 27 (surowy JSON, bez ery) zastąpione wartościami weba: 90x4 = 360, 27x4 = 108.
     assert_eq!(found.base_work, 360);
     assert_eq!(found.work_increment, 108);
-    // P3-19 derived table: palac_iii koszt_surowce JSON drewno 50 / cegla 70, x2 (FALA2),
-    // then x4 (epokaWejscia 3): drewno 400, cegla 560 (building-stock-cost.ts:84-98).
-    assert_eq!(found.resource_cost("drewno"), Some(400));
+    // P3-19 derived table: palac_iii koszt_surowce JSON (web 638e90bea, BLDCOST) drewno 70 / kamien 70 / cegla 70,
+    // x2 (FALA2), then x4 (epokaWejscia 3): po 560 (building-stock-cost.ts:84-98).
+    assert_eq!(found.resource_cost("drewno"), Some(560));
+    assert_eq!(found.resource_cost("kamien"), Some(560));
     assert_eq!(found.resource_cost("cegla"), Some(560));
     assert_eq!(found.effective_work_cost(1), 360);
 

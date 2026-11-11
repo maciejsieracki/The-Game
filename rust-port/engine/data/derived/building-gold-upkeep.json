@@ -3,7 +3,7 @@
     "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
     "zrodlo": "gra/data/buildings.json",
     "regula_weba": "economy-upkeep.ts:637-657 buildingUpkeep (floor(floor(raw*2)*m_ery)); production.ts:247-251 buildingEffectAtLevel",
-    "pin_web": "edb8fb56",
+    "pin_web": "638e90bea",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
     "uwaga": "Statyczne per poziom; brak zależności od trudności (readNum używany tylko dla fallbacku bez wpisu, którego nie ma w danych)."
   },
@@ -253,6 +253,12 @@
       "poziom": 2,
       "epokaWejscia": 2,
       "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "emporion",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
     },
     {
       "budynek": "magazyn",

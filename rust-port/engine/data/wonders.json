@@ -6,7 +6,7 @@
     "cuda_wyscigowe": ["wyrocznia", "hamonga", "brama_narodow"],
     "cuda_wyscigowe_epoka": {
       "1": { "id": "wyrocznia", "nazwa": "Wyrocznia", "epoka": "Kamień", "profil": "kultura, mistycyzm" },
-      "2": { "id": "hamonga", "nazwa": "Kamień Ha'amonga", "epoka": "Brąz", "profil": "kultura, morze, rybołówstwo" },
+      "2": { "id": "hamonga", "nazwa": "Kamień Ha'amonga", "epoka": "Brąz", "profil": "kultura, morze" },
       "3": { "id": "brama_narodow", "nazwa": "Brama wszystkich narodów", "epoka": "Żelazo", "profil": "wojna, handel imperium" }
     },
     "cuda_wyscigowe_uwaga": "Dokładnie 1 cud R na epokę Antyku; wszyscy 15 graczy widzą i mogą walczyć; max 1 egzemplarz na świat.",
@@ -34,7 +34,7 @@
         "jedyny_efekt": {
           "typ": "handel_turystyka",
           "wartosc": 10,
-          "opis": "+10 do handlu — cud jako atrakcja turystyczna (jedyny yield po absolut)"
+          "opis": "+10 do podatku — cud jako atrakcja turystyczna (jedyny yield po absolut)"
         }
       },
       "silnik": "player.era > absolut → wyłącz bonusy miasto/teren/hex/specjalne; zastosuj po_absolut.jedyny_efekt jeśli aktywny"
@@ -62,7 +62,7 @@
       "wzrost_ludnosci_procent": "Wzrost populacji we wszystkich miastach (%)",
       "jednorazowe": "Złoto przy zdarzeniu, darmowa jednostka, kultura z wydarzeń narracyjnych",
       "fortyfikacja_mapa": "Bonus obrony na heksach fortów (mapa, nie yield miasta)",
-      "handel_turystyka": "Po absolut: jedyny efekt wygasłego cudu — +N do handlu (atrakcja turystyczna)"
+      "handel_turystyka": "Po absolut: jedyny efekt wygasłego cudu — +N do podatku (atrakcja turystyczna)"
     },
     "bonus_zasieg": "hex = tylko pole cudu; teren = heksy danego typu w terytorium (plony → miasto właściciela pola). BEZ dzielnic / sasiad-dzielnica.",
     "bonus_teren": "Modyfikator pól w terytorium (nie × każde miasto — tylko heksy spełniające warunek).",
@@ -261,10 +261,6 @@
       "utrzymanie": 1,
       "bonusy": {
         "miasto": { "kultura": 3, "zywnosc": 3 },
-        "teren": [
-          { "typTerenu": "lowie_rybackie", "kultura": 2, "zywnosc": 2 },
-          { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_plytkie_morze" }
-        ],
         "specjalne": [
           { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }

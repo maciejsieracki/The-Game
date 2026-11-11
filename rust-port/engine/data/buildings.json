@@ -101,7 +101,8 @@
     ],
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
-      "drewno": 30
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -196,7 +197,7 @@
     ],
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "drewno": 30,
+      "drewno": 40,
       "kamien": 40
     }
   },
@@ -245,7 +246,8 @@
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     }
   },
@@ -295,7 +297,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "odlewnia_zelaza",
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     }
   },
@@ -400,8 +403,9 @@
       { "tytul": "Otwiera Żeglugę i dalszy rozwój", "tekst": "Staje się dostępny wraz z technologią Żegluga i można go później rozbudować do Portu wielkiego." }
     ],
     "techUnlock": "Żegluga",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 30,
       "kamien": 30
     }
   },
@@ -450,8 +454,9 @@
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
     "koszt_surowce": {
-      "drewno": 60,
-      "kamien": 50
+      "drewno": 50,
+      "kamien": 50,
+      "cegla": 50
     }
   },
   {
@@ -494,7 +499,7 @@
     "top3": [
       { "tytul": "Żywność i zadowolenie", "tekst": "Dodaje 2 punkty Żywności i aż 4 punkty zadowolenia mieszkańców miasta." },
       { "tytul": "Wymaga ceramiki", "tekst": "Można go wybudować tylko przy dostępie do Ceramiki w imperium — dzięki wybudowanej gdziekolwiek Garncarni albo zapasowi ceramiki w magazynie państwa." },
-      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz II." }
+      { "tytul": "Podnosi limit populacji", "tekst": "Zwiększa górny pułap wielkości miasta, otwierając drogę do dalszej rozbudowy przez Spichlerz Królewski." }
     ],
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
@@ -541,13 +546,15 @@
     "opis": "Spichlerz Królewski to rozbudowana wersja magazynu żywności, pozwalająca miastu utrzymać jeszcze większą populację i armię.",
     "top3": [
       { "tytul": "Więcej żywności i zadowolenia", "tekst": "Dodaje 3 punkty Żywności i 4 punkty zadowolenia, przewyższając bazowy Spichlerz." },
-      { "tytul": "Wymaga soli", "tekst": "Powstaje przez rozbudowę Spichlerza i wymaga dostępu do Soli w imperium, np. z warzelni na złożu lub wybrzeżu." },
+      { "tytul": "Wymaga ceramiki i soli", "tekst": "Powstaje przez rozbudowę Spichlerza, po zbadaniu Pisma (ewidencja zapasów zboża), i wymaga dostępu do Ceramiki oraz Soli w imperium (sól np. z warzelni na złożu lub wybrzeżu)." },
       { "tytul": "Wyższy limit populacji i armii", "tekst": "Podnosi górny pułap wielkości miasta i utrzymywanej armii ponad to, co daje zwykły Spichlerz." }
     ],
     "techUnlock": "Pismo",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
-      "drewno": 40,
-      "kamien": 50
+      "drewno": 50,
+      "kamien": 50,
+      "cegla": 50
     }
   },
   {
@@ -689,6 +696,7 @@
     ],
     "techUnlock": "Mistycyzm",
     "koszt_surowce": {
+      "drewno": 40,
       "kamien": 40
     }
   },
@@ -736,8 +744,9 @@
     ],
     "techUnlock": "Religia",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     }
   },
   {
@@ -799,7 +808,8 @@
     },
     "koszt_surowce": {
       "drewno": 30,
-      "kamien": 30
+      "kamien": 30,
+      "cegla": 30
     }
   },
   {
@@ -846,7 +856,8 @@
     ],
     "techUnlock": "Gospodarka wodna",
     "koszt_surowce": {
-      "drewno": 25
+      "drewno": 25,
+      "kamien": 25
     }
   },
   {
@@ -892,9 +903,11 @@
       { "tytul": "Otwiera Budownictwo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Budownictwo." }
     ],
     "techUnlock": "Budownictwo",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 60
+      "drewno": 60,
+      "kamien": 60,
+      "cegla": 60
     }
   },
   {
@@ -931,7 +944,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Tylko w stolicy. Dostęp do Złota (własna Kopalnia złota gdziekolwiek w imperium ALBO aktywny szlak handlowy z cywilizacją posiadającą złoto) + wybudowane Targowisko w stolicy",
-    "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WYŁĄCZNIE w stolicy, jedna sztuka na cywilizację (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizację). Stare zapisy z Mennicą w mieście regionalnym NIE są cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
+    "uwagi": "T-TECH-6: mnoznik podatku→pieniądz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WYŁĄCZNIE w stolicy, jedna sztuka na cywilizację (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizację). Stare zapisy z Mennicą w mieście regionalnym NIE są cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     "historia": "Mennica to instytucja odpowiedzialna za bicie monet — proces, który zrewolucjonizował handel, zastępując uciążliwą wymianę barterową ujednoliconym środkiem płatniczym o gwarantowanej wartości. Pierwsze monety pojawiły się w Lidii w VII wieku p.n.e., wybijane z elektronu, naturalnego stopu złota i srebra, a ich pieczęć poświadczała wagę i czystość kruszcu bez konieczności każdorazowego ważenia. Kontrola nad mennicą była jednym z najpilniej strzeżonych przywilejów władcy, ponieważ prawo do bicia monety oznaczało realną władzę gospodarczą, a fałszowanie monety karano niekiedy śmiercią. Rzymskie mennice rozsiane po całym imperium pozwalały legionom i urzędnikom otrzymywać żołd w jednolitej walucie akceptowanej od Brytanii po Syrię, spajając gospodarczo rozległe terytorium. Wraz z rozwojem państw mennice stawały się coraz bardziej wyrafinowane technicznie, wprowadzając zabezpieczenia przeciw fałszerstwom i precyzyjne wzory tłoczone w metalu pod ogromnym naciskiem.",
     "opis": "Mennica bije monetę w stolicy, zwiększając dochód pieniężny cywilizacji i pozwalając w pełni wykorzystać dostęp do złota.",
     "top3": [
@@ -942,8 +955,9 @@
     "techUnlock": "Waluta",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     }
   },
   {
@@ -1039,8 +1053,9 @@
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
-      "drewno": 40,
-      "kamien": 80
+      "drewno": 80,
+      "kamien": 80,
+      "cegla": 80
     }
   },
   {
@@ -1092,6 +1107,66 @@
     }
   },
   {
+    "id": "emporion",
+    "dajeSzczescie": false,
+    "nazwa": "Emporion",
+    "kategoria": "Pieniadz",
+    "grupa": "Handel i pieniądz",
+    "epokaWejscia": 2,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [
+      "Emporion"
+    ],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 8,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 4,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 50,
+    "przyrostKosztu": 20,
+    "utrzymanie": 2,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "R-WEB-BUILDING-EMPORION-Q1 (decyzja właściciela 2026-11-05): nowy budynek handlu dalekosiężnego, odpowiednik większego Targowiska. Wymaga badania Handel (techUnlock) i Targowiska w tym samym mieście (CITY_BUILDING_PREREQ w building-resource-gate.ts). Efekt handlowy: +1 slot tras handlowych (TRADE_BUILDING_IDS, licznik tradeRouteLimitForCity), co kwalifikuje o jedną trasę więcej do bonusu 5% handlu (flaga budynekOdblokowany, TRADE_ROUTE_BUILDING_BONUS_RATE). Bonus jest per trasa i NIE kumuluje się per budynek: Emporion nie dodaje drugiego 5% na tej samej trasie. Nie dostaje osobnego bonusu per miasto, który ma Targowisko (budynekTargowiskoBonusHandlu, main.ts). Odstępstwo od pierwotnego GOAL (kumulacja z Targowiskiem) zostaje do zatwierdzenia przez właściciela. Pieniądz baza 8 / przyrost 4 (większy niż Targowisko 5/3). Koszt budowy 50 (+20/poziom, poziom maks 1), utrzymanie 2. Ikona: bld-emporion.svg (kopia ikony Targowiska z niebieską odznaką, rozróżnienie w UI).",
+    "historia": "Emporion to rozległy ośrodek handlu dalekosiężnego, do którego sprowadzano towary z odległych krain. W greckich miastach-portach, takich jak Naukratis w Egipcie, obcy kupcy mieli wyznaczone dzielnice i składy, a wymiana odbywała się pod nadzorem urzędników. Emporion łączył funkcję składu, kantoru i miejsca spotkań kupców z różnych ludów, a jego działalność pozwalała miastu zdobywać surowce i wyroby niedostępne w okolicy. Dzięki sieci takich ośrodków antyczne miasta budowały bogactwo i kontakty sięgające daleko poza własny horyzont.",
+    "opis": "Emporion organizuje dalekosiężną wymianę towarów z obcymi kupcami. Wymaga Targowiska w tym samym mieście i zwiększa liczbę tras handlowych miasta.",
+    "top3": [
+      {
+        "tytul": "Dalekosiężna wymiana",
+        "tekst": "Dodaje 8 monet dochodu miastu. Jest większym odpowiednikiem Targowiska."
+      },
+      {
+        "tytul": "+5% handlu",
+        "tekst": "Dzięki Emporionowi o jedną trasę więcej w mieście otrzymuje premię 5% do dochodu z tej trasy. Premia liczona jest za każdą trasę, a nie za każdy budynek."
+      },
+      {
+        "tytul": "Dodatkowa linia handlowa",
+        "tekst": "Emporion daje miastu dodatkowy slot linii wymiany. Wymaga badania Handel i Targowiska w tym samym mieście."
+      }
+    ],
+    "techUnlock": "Handel",
+    "koszt_surowce": {
+      "drewno": 60,
+      "kamien": 60,
+      "cegla": 60
+    }
+  },
+  {
     "id": "magazyn",
     "dajeSzczescie": false,
     "nazwa": "Magazyn",
@@ -1135,8 +1210,9 @@
     ],
     "techUnlock": "Handel",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 30
+      "drewno": 30,
+      "kamien": 30,
+      "cegla": 30
     }
   },
   {
@@ -1183,6 +1259,7 @@
     ],
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
+      "drewno": 30,
       "kamien": 30
     }
   },
@@ -1270,9 +1347,9 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Pałac I",
-    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. FALA 560: -30% korupcji jak Palac I (economy.ts KORUPCJA_REDUKCJA_BUDYNKI).",
     "historia": "Wraz z rozwojem państw epoki brązu siedziby władców zyskały monumentalny charakter, czego najlepszym świadectwem są pałace mykeńskie i minojskie, jak słynny kompleks w Knossos na Krecie z jego labiryntem korytarzy i freskami przedstawiającymi skoki przez byki. Pałace te pełniły funkcję znacznie szerszą niż dzisiejsza rezydencja — były zarazem centrum administracyjnym, skarbcem, warsztatem rzemieślniczym i archiwum, gdzie na glinianych tabliczkach zapisywano pismem linearnym B szczegółowe rejestry zbiorów i podatków. Mykeński wanaks, władca-król, rządził z takiego kompleksu, kontrolując produkcję rolną i rzemieślniczą całego regionu poprzez rozbudowaną biurokrację pałacową. Grube mury cyklopowe otaczające niektóre z tych rezydencji, jak w Tirynsie czy Mykenach, świadczą o tym, że pałac musiał być jednocześnie twierdzą zdolną wytrzymać najazd w niespokojnych czasach późnej epoki brązu. Nagły upadek tej cywilizacji pałacowej około 1200 roku p.n.e., wciąż nie do końca wyjaśniony przez historyków, pogrążył region na wieki w okresie zwanym greckimi wiekami ciemnymi.",
-    "opis": "Pałac II to rozbudowana siedziba władzy, zastępująca pierwotny Pałac i dająca stały, wyższy wkład w kulturę i zadowolenie stolicy.",
+    "opis": "Pałac II to rozbudowana siedziba władzy, zastępująca pierwotny Pałac i dająca stały, wyższy wkład w kulturę i zadowolenie stolicy; jak Pałac I obniża korupcję stolicy o 30%.",
     "top3": [
       { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 8 punktów Kultury i 3 punkty zadowolenia w stolicy, o 1,5 raza więcej niż Pałac I." },
       { "tytul": "Wymaga awansu z Pałacu I", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu, zastępując go w tym samym mieście." },
@@ -1320,9 +1397,9 @@
     "utrzymanie": 5,
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Pałac II",
-    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
+    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma. FALA 560: -30% korupcji jak Palac I (economy.ts KORUPCJA_REDUKCJA_BUDYNKI).",
     "historia": "Epoka żelaza przyniosła powstanie wielkich imperiów terytorialnych, których władcy wznosili pałace o rozmachu dotąd niespotykanym — jak asyryjski pałac Sargona II w Chorsabadzie strzeżony przez monumentalne rzeźby uskrzydlonych byków lamassu, czy późniejsza rezydencja perskich królów w Persepolis z jej rozległym tarasem audiencyjnym. Takie pałace projektowano tak, by onieśmielać przybyszów i poddanych już od pierwszego kroku — długie procesyjne schody, kolumnowe sale tronowe i reliefy przedstawiające podbite ludy składające dary miały jasno komunikować potęgę władcy każdemu, kto przekraczał ich progi. Rozbudowana biurokracja imperialna, obejmująca satrapów, skrybów i poborców podatkowych, operowała właśnie z takich ośrodków, koordynując zarządzanie terytoriami rozciągającymi się na tysiące kilometrów. Pałace tej epoki łączyły często funkcję świecką z religijną, umieszczając w swych murach kaplice i ołtarze poświęcone bogom opiekującym się dynastią panującą. Zniszczenie Persepolis przez wojska Aleksandra Wielkiego w 330 roku p.n.e. stało się symbolicznym końcem jednej z najpotężniejszych tradycji pałacowych starożytnego świata.",
-    "opis": "Pałac III to szczytowa forma siedziby władzy, dająca stały, najwyższy wkład w kulturę i zadowolenie stolicy w obecnym łańcuchu rozbudowy.",
+    "opis": "Pałac III to szczytowa forma siedziby władzy, dająca stały, najwyższy wkład w kulturę i zadowolenie stolicy w obecnym łańcuchu rozbudowy; jak Pałac I obniża korupcję stolicy o 30%.",
     "top3": [
       { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 11 punktów Kultury i 5 punktów zadowolenia w stolicy, ponad dwukrotnie więcej niż Pałac I." },
       { "tytul": "Wymaga awansu z Pałacu II", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu II, zastępując go w tym samym mieście." },
@@ -1331,7 +1408,8 @@
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 50,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     }
   },
@@ -1381,7 +1459,8 @@
     ],
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     }
   },
@@ -1424,7 +1503,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza",
     "koszt_surowce": {
-      "drewno": 60,
+      "drewno": 80,
+      "kamien": 80,
       "cegla": 80
     },
     "historia": "Wielka kuźnia to warsztat metalurgiczny zdolny do wytopu stali w skali przemysłowej — przełomu, który starożytni hutnicy osiągali dzięki takim technikom jak indyjski tygiel wootz czy chińskie piece dmuchawowe zdolne do osiągania temperatur pozwalających na płynny wytop żelaza. Stal, twardsza i bardziej elastyczna od zwykłego żelaza, wymagała precyzyjnej kontroli zawartości węgla oraz wielokrotnego przekuwania, umiejętności przekazywanej z mistrza na ucznia przez pokolenia w zamkniętych cechach kowalskich. Miecze z damasceńskiej stali, słynące z charakterystycznego falistego wzoru i legendarnej ostrości, budziły grozę krzyżowców spotykających się z nimi na Bliskim Wschodzie. Rozwój takich hut wymagał zorganizowanego zaplecza — stałych dostaw rudy, węgla drzewnego i wykwalifikowanej siły roboczej — co czyniło je jednymi z pierwszych ośrodków protoprzemysłowych w historii. Panowanie nad sekretami produkcji wysokiej jakości stali dawało realną przewagę militarną, zmieniając losy niejednej kampanii wojennej.",
@@ -1473,8 +1553,9 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 100
+      "drewno": 100,
+      "kamien": 100,
+      "cegla": 100
     },
     "historia": "Cytadela to ufortyfikowany rdzeń miasta, odrębna twierdza wzniesiona wewnątrz lub obok murów miejskich, zdolna do samodzielnej obrony nawet po upadku reszty osady. Cytadela w Aleppo, wznosząca się na sztucznym wzgórzu ponad starym miastem, przetrwała oblężenia krzyżowców, Mongołów i licznych późniejszych najeźdźców dzięki potężnym murom i jedynej, starannie bronionej drodze dostępu. Podobną rolę pełniła cytadela kairska wzniesiona przez Saladyna, łącząca funkcje militarne z rezydencją władcy i skarbcem państwowym. Garnizony stacjonujące w cytadelach służyły też jako ostatnia linia kontroli nad zbuntowaną ludnością miejską, co czyniło te budowle równie użytecznymi przeciw wrogom zewnętrznym, co przeciw wewnętrznym niepokojom. Budowa cytadeli wymagała ogromnych nakładów kamienia i pracy, lecz jej istnienie potrafiło odstraszyć najeźdźcę jeszcze przed rozpoczęciem oblężenia.",
     "opis": "Cytadela to niezależna budowla obronna wznoszona obok Murów, wzmacniająca odporność miasta na atak i wymagająca wcześniej ukończonych fortyfikacji miejskich.",
@@ -1522,8 +1603,9 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maBaszta",
     "koszt_surowce": {
-      "drewno": 50,
-      "kamien": 100
+      "drewno": 100,
+      "kamien": 100,
+      "cegla": 100
     },
     "historia": "Baszta to wysunięta wieża obronna wbudowana w linię murów miejskich, pozwalająca obrońcom razić nieprzyjaciela ogniem bocznym wzdłuż całej kurtyny muru, a nie tylko wprost przed sobą. Średniowieczne miasta europejskie otaczały się wieńcami baszt rozmieszczonych w regularnych odstępach, każda zdolna do niezależnej obrony nawet po przełamaniu sąsiednich odcinków muru. Wewnątrz baszt często mieściły się cechy rzemieślnicze odpowiedzialne za ich utrzymanie i obronę w razie ataku, co widać do dziś w nazwach zachowanych wież, takich jak baszta krawiecka czy baszta rzeźnicza. Strzelnice, dostosowane najpierw do łuków, a później do broni palnej, ewoluowały wraz z rozwojem uzbrojenia oblężniczego. Wraz z upowszechnieniem artylerii prochowej wysokie, wąskie baszty straciły przewagę na rzecz niższych, grubszych bastionów zdolnych wchłonąć uderzenie kul armatnich.",
     "opis": "Baszta to trzecia, niezależna budowla obronna miasta, dokładana obok Murów i Cytadeli, dodatkowo wzmacniająca odporność broniących się jednostek.",
@@ -1572,7 +1654,8 @@
     "odblokowuje": "maWarsztatOblezniczy",
     "koszt_surowce": {
       "drewno": 50,
-      "kamien": 50
+      "kamien": 50,
+      "cegla": 50
     },
     "historia": "Warsztat oblężniczy to miejsce, w którym budowano i konserwowano wielkie machiny wojenne służące do zdobywania ufortyfikowanych miast — trebusze, katapulty, tarany oraz ruchome wieże oblężnicze. Asyryjscy inżynierowie już w IX wieku p.n.e. konstruowali okute metalem tarany zdolne kruszyć mury glinianych miast Bliskiego Wschodu, a rzymscy legioniści przy oblężeniu Masady w 73 roku n.e. wznieśli ziemną rampę i wieże oblężnicze o rozmiarach dotąd niespotykanych. Budowa trebusza kontrwagowego, zdolnego miotać kilkusetkilogramowe pociski na setki metrów, wymagała precyzyjnych obliczeń ciesielskich i była zadaniem dla wyspecjalizowanych rzemieślników towarzyszących armii w kampanii. Chińscy inżynierowie wojskowi już w czasach dynastii Song opisywali w traktatach szczegółowe plany budowy takich urządzeń, traktując oblężniczą inżynierię jako odrębną dziedzinę wiedzy. Upowszechnienie artylerii prochowej w XV wieku, symbolicznie przypieczętowane zdobyciem Konstantynopola przez armaty sułtana Mehmeda II, uczyniło tradycyjne machiny oblężnicze przestarzałymi w ciągu jednego pokolenia.",
     "opis": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki stacjonujące w mieście i otwierające dostęp do Katapulty.",
@@ -1619,7 +1702,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     "techUnlock": "Filozofia",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     },
     "historia": "Akademia to nazwa wywodząca się od gaju poświęconego herosowi Akademosowi pod Atenami, gdzie w IV wieku p.n.e. Platon założył szkołę filozoficzną łączącą naukę o etyce, matematyce i polityce z życiem wspólnotowym uczniów. W przeciwieństwie do wcześniejszych, nieformalnych kręgów sofistów, Akademia Platońska posiadała ciągłość instytucjonalną, przetrwawszy pod kierownictwem kolejnych scholarchów niemal dziewięćset lat, aż do zamknięcia przez cesarza Justyniana w 529 roku. Nauczanie odbywało się poprzez dialog i wspólne dociekanie, a nie bierne przyswajanie gotowych twierdzeń, co czyniło Akademię wzorem dla późniejszych uniwersytetów średniowiecznej Europy. Wśród jej uczniów znalazł się Arystoteles, który spędził tam dwadzieścia lat, zanim założył własną szkołę, Liceum. Idea akademii jako miejsca systematycznego kształcenia elit intelektualnych odrodziła się w epoce renesansu we Florencji, gdzie na nowo połączono filozofię grecką z chrześcijańską teologią.",
@@ -1668,7 +1752,8 @@
     "techUnlock": "Filozofia",
     "suppressed": true,
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie.",
@@ -1716,7 +1801,8 @@
     "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     "techUnlock": "Prawo",
     "koszt_surowce": {
-      "drewno": 30,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Instytucja sądu jako miejsca publicznego rozstrzygania sporów sięga starożytnej Mezopotamii, gdzie już Kodeks Hammurabiego z około 1750 roku p.n.e. spisywał precyzyjne kary za konkretne przewinienia, wymagając od sędziów jawnego uzasadnienia wyroków przed zgromadzoną społecznością. W klasycznych Atenach sądy przysięgłych, zwane heliaja, liczyły nawet kilkuset obywateli losowanych spośród mieszkańców miasta, co miało chronić wyroki przed przekupstwem pojedynczego sędziego. Rzymskie prawo cywilne, skodyfikowane później w prawie justyniańskim, wprowadziło rozróżnienie między prawem publicznym a prywatnym, tworząc podstawy terminologii prawniczej używanej w Europie przez kolejne stulecia. Średniowieczne sądy grodzkie łączyły często funkcję wymiaru sprawiedliwości z administracją lokalną, a sędzia bywał jednocześnie poborcą podatków i zarządcą miejskich zapasów. Powstanie stałych budynków sądowych, oddzielonych od siedziby władcy, oznaczało stopniowe wyodrębnianie się władzy sądowniczej jako niezależnej gałęzi rządzenia.",
@@ -1815,7 +1901,8 @@
     "lokalizacja": "region",
     "koszt_surowce": {
       "drewno": 30,
-      "kamien": 30
+      "kamien": 30,
+      "cegla": 30
     },
     "historia": "Dwór zarządcy prowincji stanowił lokalny ośrodek władzy imperialnej, z którego namiestnik nadzorował pobór podatków, wymiar sprawiedliwości oraz utrzymanie porządku na powierzonym mu terytorium w imieniu odległego władcy centralnego. Perscy satrapowie, zarządzający rozległymi prowincjami imperium Achemenidów, dysponowali własnym dworem, skarbem i niekiedy nawet siłami zbrojnymi, co czyniło ich niemal małymi królami podlegającymi jedynie formalnie Wielkiemu Królowi w Persepolis. Chińscy gubernatorzy prowincji za czasów dynastii Han musieli składać cesarzowi regularne raporty ze stanu upraw i nastrojów społecznych w ramach systemu egzaminów urzędniczych poprzedzających objęcie stanowiska. Odległość od stolicy oznaczała w praktyce znaczną swobodę decyzyjną namiestnika, co regularnie prowadziło do napięć między lojalnością wobec centrum a pokusą budowania własnej, niezależnej bazy władzy. Dwory takie stawały się też ośrodkami lokalnej kultury, przyciągając rzemieślników, uczonych i kupców szukających patronatu możnego urzędnika.",
     "opis": "Dwór Zarządcy to drugi szczebel administracji miast regionalnych, zastępujący Dom Starszyzny i dający większy porządek prawny oraz produkcję.",
@@ -1864,7 +1951,8 @@
     "techUnlock": "Prawo",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 50,
+      "kamien": 50,
       "cegla": 50
     },
     "historia": "Pretorium to pierwotnie namiot lub kwatera dowódcy w rzymskim obozie wojskowym, ustawiana zawsze w centralnym punkcie obozu na przecięciu głównych dróg, skąd wódz mógł obserwować całość rozłożonych wokół legionów. Z czasem termin ten zaczął oznaczać także rezydencję namiestnika prowincji rzymskiej, budynek łączący funkcję sądową, administracyjną i reprezentacyjną — to właśnie w pretorium namiestnika Judei w Jerozolimie, według relacji ewangelicznych, odbył się proces Jezusa z Nazaretu. Archeolodzy odkryli pozostałości okazałych pretoriów w takich miastach jak Kartagina czy Trewir, gdzie mozaikowe posadzki i prywatne łaźnie świadczyły o wysokim statusie rezydujących tam urzędników. Pretorium pełniło również funkcję garnizonu, zapewniając namiestnikowi ochronę osobistą, zanim nazwa ta na stałe skojarzyła się ze słynną gwardią cesarską w samym Rzymie. Budynek ten symbolizował fizyczną obecność władzy imperialnej w odległych zakątkach rozległego państwa, przypominając mieszkańcom prowincji, komu podlegają.",
@@ -1909,17 +1997,18 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
+    "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja (Kodeks prawa). FALA 560 (R-WEB-CORRUPTION-REDUCTION-PALACE-TIERS-TRIBUNAL-Q1): -30% korupcji jak Sad/Pretorium (economy.ts KORUPCJA_REDUKCJA_BUDYNKI, addytywnie, sufit 0,60); slabszy niz Sad/Pretorium tylko w Prawie",
     "techUnlock": "Kodeks",
     "koszt_surowce": {
-      "drewno": 30,
-      "kamien": 40
+      "drewno": 40,
+      "kamien": 40,
+      "cegla": 40
     },
     "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej.",
-    "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i ograniczająca korupcję, słabsza jednak niż Sąd czy Pretorium.",
+    "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i obniżająca korupcję w mieście o 30% — tak jak Sąd czy Pretorium, choć z mniejszym zasobem Prawa.",
     "top3": [
       { "tytul": "Dochód i zadowolenie", "tekst": "Zwiększa dochód pieniężny i zadowolenie mieszkańców, a wartość ta rośnie z każdym z dwóch poziomów budynku." },
-      { "tytul": "Wczesny porządek administracyjny", "tekst": "Ogranicza korupcję jeszcze zanim miasto zbuduje Sąd lub Pretorium." },
+      { "tytul": "Wczesny porządek administracyjny", "tekst": "Obniża korupcję w mieście o 30% jeszcze zanim miasto zbuduje Sąd lub Pretorium." },
       { "tytul": "Odblokowany przez Kodeks", "tekst": "Dostępny wcześnie, zaraz po zbadaniu technologii Kodeks." }
     ]
   },
@@ -2007,8 +2096,10 @@
     "wymagania": "Wybudowana Studnia w tym mieście",
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
+    "utrzymanie_surowce": { "ceramika": 2 },
     "koszt_surowce": {
-      "drewno": 40,
+      "drewno": 60,
+      "kamien": 60,
       "cegla": 60
     },
     "historia": "Rzymskie termy publiczne były znacznie więcej niż miejscem higieny osobistej — stanowiły centra życia towarzyskiego, gdzie obywatele niezależnie od majątku spędzali długie godziny, przechodząc kolejno przez zimne, letnie i gorące baseny, korzystając z sal do ćwiczeń, bibliotek oraz ogrodów. Termy Karakalli w Rzymie, mogące jednocześnie pomieścić kilka tysięcy kąpiących się, wykorzystywały zaawansowany system hipokaustów — podłóg podgrzewanych gorącym powietrzem krążącym w podziemnych kanałach, technologię wymagającą stałej obsługi dbającej o piece. Wstęp do term był zazwyczaj bardzo tani lub darmowy, finansowany przez możnych patronów lub samo państwo, co czyniło je jedną z niewielu przestrzeni, gdzie senator i rzemieślnik dzielili tę samą przestrzeń publiczną. Podobną tradycję kąpieli publicznych rozwinęły osmańskie hammamy, łączące rzymskie dziedzictwo term z rytuałami czystości islamu, wciąż aktywnie działające w wielu miastach Bliskiego Wschodu. Upadek zachodniego Cesarstwa Rzymskiego i zerwanie sieci akweduktów doprowadziły do stopniowego zaniku wielkich term publicznych w średniowiecznej Europie na kolejne stulecia.",
@@ -2056,7 +2147,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     "techUnlock": "Sztuka wojenna",
     "koszt_surowce": {
-      "drewno": 50,
+      "drewno": 70,
+      "kamien": 70,
       "cegla": 70
     },
     "historia": "Akademia wojskowa jako sformalizowana instytucja kształcąca oficerów w oderwaniu od praktyki bojowej na polu bitwy powstała stosunkowo późno — pruska Akademia Wojenna założona w 1810 roku z inicjatywy reformatorów takich jak Gerhard von Scharnhorst wprowadziła systematyczne nauczanie strategii, logistyki i taktyki jako odrębnej dyscypliny naukowej. Wcześniej oficerowie zdobywali umiejętności głównie poprzez służbę pod okiem doświadczonych dowódców lub, jak w przypadku janczarskiej szkoły Enderun w Imperium Osmańskim, poprzez wieloletnie, rygorystyczne szkolenie od dzieciństwa łączące musztrę z naukami humanistycznymi. Brytyjska Królewska Akademia Wojskowa w Sandhurst kładła nacisk na charakter przywódczy kadetów równie mocno co na wiedzę techniczną, wychodząc z założenia, że dowódca musi najpierw zyskać zaufanie podwładnych. Programy takich akademii obejmowały matematykę stosowaną do balistyki, inżynierię fortyfikacyjną oraz studia nad kampaniami historycznymi analizowanymi jako studia przypadków. Absolwenci akademii wojskowych, tworząc zawodowy korpus oficerski oddany raczej państwu niż osobie monarchy, odegrali kluczową rolę w kształtowaniu nowoczesnych, scentralizowanych armii narodowych XIX wieku.",

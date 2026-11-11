@@ -61,6 +61,14 @@ pub struct Top3 {
     pub tekst: String,
 }
 
+/// `utrzymanie_surowce` — stała ilość surowca na turę per budynek (R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1:
+/// Spichlerz Królewski, Akwedukt, Łaźnia, Port = ceramika 2).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UtrzymanieSurowce {
+    pub ceramika: Option<i64>,
+}
+
 /// `koszt_surowce` — obecny w 41 z 42 rekordów; każdy surowiec opcjonalny.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -102,6 +110,8 @@ pub struct Building {
     #[serde(rename = "techUnlock")]
     pub tech_unlock: String,
     pub koszt_surowce: Option<KosztSurowce>,
+    #[serde(rename = "utrzymanie_surowce")]
+    pub utrzymanie_surowce: Option<UtrzymanieSurowce>,
     #[serde(rename = "upgradeFrom")]
     pub upgrade_from: Option<String>,
     #[serde(rename = "wymaganySurowiec")]
