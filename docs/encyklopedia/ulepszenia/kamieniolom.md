@@ -24,7 +24,7 @@
 ### Co robi
 Ulepszenie **Kamieniołom** na polu w **twoim terytorium**. Teren: Wzgórza, Góry (kamień).
 **Warunek:** budulec — mury, budynki
-**Surowiec:** odblokowuje **kamien**.
+**Surowiec:** odblokowuje **kamień**.
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
 - Przypisz heks w **Okolica** miasta, które ma nadwyżkę pracy.
@@ -37,7 +37,7 @@ Ulepszenie **Kamieniołom** na polu w **twoim terytorium**. Teren: Wzgórza, Gó
 
 **Budowa:** **22 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +1 pracy/t, +1 kamien/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +1 pracy/t, +1 kamienia/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+1**/t vs bez ulepszenia → **22 tur** na „odrobienie" 22 pracy (ignorując bazę pola).
 
