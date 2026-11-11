@@ -151,17 +151,28 @@ assert(/replaceAvailabilityCtxEmpireWide\(u\.ownerId\)/.test(ctxFn) && !/replace
   assert(garrisonCityOnly === 0 && empireUnion > 0, 'regula dostepnosci: Koszary w DOWOLNYM miescie odblokowuja zamienniki (miasto bez Koszar nie blokuje)');
 }
 
-// --- F0. Taran okuty -> Katapulta (Zelazo) dla wszystkich nacji (audyt Dodatku 2) ----
-console.log('\n== F0. Taran okuty -> Katapulta w Zelazie, 16 nacji ==');
+// --- F0. Machiny oblezocze (Typ Siege) NIE maja zamiennikow w Zastap, 16 nacji ----
+// Decyzja wlasciciela 2026-11-11: machiny obleznicze (Typ: Siege) sa WYKLUCZONE z Zastap --
+// powstaja wylacznie podczas oblezenia (R-WEB-SIEGE-ENGINES-BUILT-ONLY-DURING-SIEGE-Q1).
+// Dawna asercja "Taran okuty -> Katapulta" byla sprzeczna z ta decyzja (Katapulta to tez Siege).
+console.log('\n== F0. Taran okuty (Siege) -> brak zamiennikow w Zastap, 16 nacji ==');
 {
   const nations = [...new Set(units.map(u => u.Nacja).filter(Boolean))];
   const techsIron = [...new Set(units.map(u => u.Tech).filter(t => t && t !== '-' && t !== '—'))];
-  const missing = nations.filter(nat => !M.availableReplacementsFor('Taran okuty', data, techsIron, {
-    epoch: 3, civUnitNacja: nat, civBonusy: [], builtBuildingIds: ['koszary', 'stajnia', 'warsztat', 'cegielnia', 'kuznia'],
-    empireResourceStock: { drewno: 9999, braz: 9999, zelazo: 9999, kon: 9999, kamien: 9999 }, kosztJednostekPace: 'niski',
-    difficulty: 'normal', ownerId: 0, aliveUnitTypeNames: new Set(), cityHasCoastOrRiver: true, cityHasRiver: true,
-  }).some(i => i.id === 'Katapulta'));
-  assert(nations.length === 16 && missing.length === 0, 'Taran okuty ma zamiennik Katapulta w Zelazie u 16/16 nacji' + (missing.length ? ' (brak: ' + missing.join(', ') + ')' : ''));
+  const siegeNames = units.filter(u => (u.Typ ?? '').toString().trim() === 'Siege').map(u => u.Jednostka);
+  // Kontrakt: ZADNA machina Siege (Taran okuty, Katapulta, ...) nie ma zamiennika w Zastap, u zadnej nacji.
+  const leaks = [];
+  for (const nat of nations) for (const sName of siegeNames) {
+    const reps = M.availableReplacementsFor(sName, data, techsIron, {
+      epoch: 3, civUnitNacja: nat, civBonusy: [], builtBuildingIds: ['koszary', 'stajnia', 'warsztat', 'cegielnia', 'kuznia'],
+      empireResourceStock: { drewno: 9999, braz: 9999, zelazo: 9999, kon: 9999, kamien: 9999 }, kosztJednostekPace: 'niski',
+      difficulty: 'normal', ownerId: 0, aliveUnitTypeNames: new Set(), cityHasCoastOrRiver: true, cityHasRiver: true,
+    });
+    if (reps.length) leaks.push(`${nat}:${sName}->${reps.map(r => r.id).join('|')}`);
+  }
+  const taranOk = !!siegeNames.includes('Taran okuty') && siegeNames.includes('Katapulta');
+  assert(nations.length === 16 && taranOk && leaks.length === 0,
+    `Siege nie ma zamiennikow w Zastap: Taran okuty i Katapulta u 16/16 nacji, wszystkie Siege (${siegeNames.length}) bez zamiennikow` + (leaks.length ? ' (wycieki: ' + leaks.slice(0, 5).join(', ') + ')' : ''));
 }
 
 // --- F. D3 = C: awans miedzy typami przez "Zastąp specjalnie" -----------------
