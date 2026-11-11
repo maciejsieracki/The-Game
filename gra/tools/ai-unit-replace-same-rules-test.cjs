@@ -142,6 +142,24 @@ assert(M.loadAiUnitReplaceMaxFraction({ aiParams: {} }) === 0.1 && M.loadAiUnitR
 console.log('\n== G. klasa armii zachowana (wrecz/dystans/konnica) ==');
 assert(M.aiReplaceKeepsArmyClass({ Typ: 'Swordsman' }, { Typ: 'Swordsman' }), 'wrecz -> wrecz dozwolone');
 {
+  const greekIronCtx = {
+    epoch: 3,
+    civUnitNacja: 'Grecja',
+    civBonusy: [],
+    builtBuildingIds: ['koszary'],
+    empireResourceStock: { drewno: 500, braz: 500, zelazo: 500 },
+    kosztJednostekPace: 'niski',
+    difficulty: 'normal',
+    ownerId: 7,
+  };
+  const candidates = M.availableReplacementsFor('Wojownik mykeński', data, ['Brązownictwo', 'Hutnictwo żelaza', 'Sztuka wojenna'], greekIronCtx)
+    .map(item => def(item.id))
+    .filter(Boolean)
+    .filter(candidate => M.aiReplaceKeepsArmyClass(def('Wojownik mykeński'), candidate));
+  const ids = candidates.map(candidate => candidate.Jednostka);
+  assert(ids.includes('Falanga') && ids.includes('Thorakites'), 'AI shared candidate path keeps new melee cross-Typ choices (Falangite + Spearman)');
+}
+{
   const melee = units.find(x => /sword|spear/i.test(String(x.Typ ?? '')));
   const ranged = units.find(x => /archer|ranged|sling|crossbow/i.test(String(x.Typ ?? '')));
   const mount = units.find(x => /mount|cav/i.test(String(x.Typ ?? '')));
