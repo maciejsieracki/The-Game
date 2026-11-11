@@ -39,6 +39,26 @@ let root: HTMLDivElement | null = null;
 
 const STYLE_ID = 'civ-army-split-css-v1';
 
+/**
+ * Plaster miodu: 7 identycznych, regularnych sześciokątów pointy-top (wierzchołki góra/dół),
+ * czyli ten sam układ 6 kierunków (E,NE,NW,W,SW,SE), którego używa mapa gry. Cała geometria
+ * wynika z jednego wzoru, w jednostkach rozstawu P (odległość środków sąsiadów = szerokość
+ * ścisłego heksa): komórka ma szerokość (1-g)·P, więc każda para sąsiadów dzieli krawędź
+ * z identyczną szczeliną g·P. Wysokość komórki = (2/√3)·szerokość => polygon jest regularny.
+ */
+const HEX_GAP = 0.04; // g: szczelina jako ułamek rozstawu P
+const HEX_W_P = 3 - HEX_GAP; // szerokość całej siatki w P
+const HEX_H_P = (3 + 2 * (1 - HEX_GAP)) / Math.sqrt(3); // wysokość siatki w P
+const hexPct = (n: number): string => (Math.round(n * 1e4) / 1e4).toString();
+const HEX_ASPECT = `${hexPct(HEX_W_P * 1e3)}/${hexPct(HEX_H_P * 1e3)}`;
+const HEX_CELL_W = hexPct((1 - HEX_GAP) / HEX_W_P * 100);
+const HEX_CELL_H = hexPct((2 * (1 - HEX_GAP) / Math.sqrt(3)) / HEX_H_P * 100);
+/** Lewy brzeg komórki w kolumnie k (k w połówkach P) jako % szerokości siatki. */
+const HEX_X: Record<number, string> = Object.fromEntries([0, 0.5, 1, 1.5, 2].map(k => [k, hexPct(k / HEX_W_P * 100)]));
+/** Górny brzeg wiersza r (0..2): środki wierszy co 1,5·R, R = P/√3. */
+const HEX_Y: string[] = [0, 1, 2].map(r => hexPct((r * 1.5 / Math.sqrt(3)) / HEX_H_P * 100));
+const HEX_CLIP = 'polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)';
+
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   // Tokeny: brand-book (icons/brand/tokens.css, --tg-*) z fallbackami = wartosci kanonu.
@@ -92,19 +112,19 @@ function ensureStyles(): void {
 .civ-asp-status{font-size:11px;color:var(--sub);margin:0 0 14px;min-height:15px;}
 .civ-asp-status.warn{color:var(--warn);font-weight:700;}
 .civ-asp-dests{display:flex;flex-wrap:wrap;gap:6px;}
-.civ-asp-map{position:relative;width:min(100%,340px);aspect-ratio:340/224;margin:0 auto 12px;}
-.civ-asp-cell{position:absolute;width:29.4%;height:38.4%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;padding:7px 5px;text-align:center;clip-path:polygon(25% 3%,75% 3%,99% 50%,75% 97%,25% 97%,1% 50%);
+.civ-asp-map{position:relative;width:min(100%,340px);aspect-ratio:${HEX_ASPECT};margin:0 auto 12px;}
+.civ-asp-cell{position:absolute;width:${HEX_CELL_W}%;height:${HEX_CELL_H}%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;padding:12px 6px;text-align:center;clip-path:${HEX_CLIP};
   border:0;background:rgba(255,255,255,.08);color:var(--text);font:inherit;cursor:pointer;}
-.civ-asp-cell:before{content:"";position:absolute;inset:3px;background:rgba(13,18,27,.96);clip-path:polygon(25% 3%,75% 3%,99% 50%,75% 97%,25% 97%,1% 50%);z-index:-1;}
+.civ-asp-cell:before{content:"";position:absolute;inset:3px;background:rgba(13,18,27,.96);clip-path:${HEX_CLIP};z-index:-1;}
 .civ-asp-cell b,.civ-asp-cell small,.civ-asp-cell span{position:relative;pointer-events:none;}
 .civ-asp-cell b{font-size:10px;letter-spacing:.05em;color:var(--gold);}
 .civ-asp-cell small{font-size:9px;color:var(--sub);line-height:1.1;}
 .civ-asp-cell span{font-size:11px;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.civ-asp-cell.center{left:35.3%;top:30.8%;z-index:2;border:1px solid rgba(232,216,138,.5);background:rgba(232,216,138,.2);cursor:default;}
+.civ-asp-cell.center{left:${HEX_X[1]}%;top:${HEX_Y[1]}%;z-index:2;border:1px solid rgba(232,216,138,.5);background:rgba(232,216,138,.2);cursor:default;}
 .civ-asp-cell.center[data-dq]{cursor:pointer;}
-.civ-asp-cell.E{left:67.1%;top:30.8%}.civ-asp-cell.NE{left:51.2%;top:3.6%}.civ-asp-cell.NW{left:19.4%;top:3.6%}
-.civ-asp-cell.W{left:3.5%;top:30.8%}.civ-asp-cell.SW{left:19.4%;top:58%}.civ-asp-cell.SE{left:51.2%;top:58%}
+.civ-asp-cell.E{left:${HEX_X[2]}%;top:${HEX_Y[1]}%}.civ-asp-cell.NE{left:${HEX_X[1.5]}%;top:${HEX_Y[0]}%}.civ-asp-cell.NW{left:${HEX_X[0.5]}%;top:${HEX_Y[0]}%}
+.civ-asp-cell.W{left:${HEX_X[0]}%;top:${HEX_Y[1]}%}.civ-asp-cell.SW{left:${HEX_X[0.5]}%;top:${HEX_Y[2]}%}.civ-asp-cell.SE{left:${HEX_X[1.5]}%;top:${HEX_Y[2]}%}
 .civ-asp-cell.on{background:rgba(232,216,138,.44);color:var(--gold);outline:2px solid var(--gold);}
 .civ-asp-cell:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.8);}
 .civ-asp-cell:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}

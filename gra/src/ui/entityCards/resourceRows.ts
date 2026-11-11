@@ -17,6 +17,9 @@ function fold(s: string): string {
 
 /** Odmiany dopełniaczowe i nazwy z danych → id (`Dostęp do drewna`, `trzody`, `krowa/byk`). */
 const ALIASES: Readonly<Record<string, string>> = {
+  // R-WEB-UI-RESOURCE-ICONS-TECH-DISCOVERY-NOTICE-Q1 (dopisek): biernik/miejscownik surowców z opisów
+  // odkryć („ceramikę", „cegłę", „glinę", „rudę", „Trzodę") — bez tego zostawały gołymi nazwami.
+  ceramike: 'ceramika', cegle: 'cegla', gline: 'glina', rude: 'ruda',
   drewna: 'drewno', kamienia: 'kamien', gliny: 'glina', brazu: 'braz', zelaza: 'zelazo', cegly: 'cegla',
   trzody: 'bydlo', trzoda: 'bydlo', 'krowa/byk': 'bydlo', owiec: 'owce', lamy: 'lama', konia: 'kon', koni: 'kon',
   ceramiki: 'ceramika', soli: 'sol', zlota: 'zloto', stali: 'stal', rudy: 'ruda', 'rudy zelaza': 'ruda_zelaza', 'rudy cyny': 'ruda_cyny', 'rudy miedzi': 'ruda', 'ruda miedzi': 'ruda',

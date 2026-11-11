@@ -27,7 +27,7 @@ import {
   powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
 } from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { formatLiczbaPl, signedPl, formatBudynkiCount, formatJednostkiCount, formatTurCountAcc } from './formatPl';
+import { formatLiczbaPl, signedPl, formatBudynkiCount, formatJednostkiCount, formatTurCountAcc, pluralPl } from './formatPl';
 import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
@@ -986,7 +986,7 @@ function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean)
  */
 function cityBonusSplitHtml(premia: number, brakBudynku: number): string {
   if (brakBudynku > 0) {
-    const word = brakBudynku === 1 ? 'trasa' : brakBudynku >= 2 && brakBudynku <= 4 ? 'trasy' : 'tras';
+    const word = pluralPl(brakBudynku, 'trasa', 'trasy', 'tras');
     const tip = `${brakBudynku} ${word} bez budynku handlowego (Targowisko/Port) — dochód dystansowy `
       + 'naliczasz z nich normalnie, ale premia 5% czeka na budynek.';
     // Gdy ŻADNA trasa tego zakresu nie ma budynku, premia jest dokładnie 0 (najmniejsza możliwa
@@ -2952,7 +2952,7 @@ export function renderMassRecruitmentSection(
     + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
-    + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`
+    + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
     + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
     + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
     + `<div data-general-recruitment-card></div></div>`;
@@ -3575,7 +3575,7 @@ function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailS
   const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
     ? Math.round((cap - capBase) / capBonus)
     : 0;
-  const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
+  const magSlowo = pluralPl(magazyny, 'Magazyn', 'Magazyny', 'Magazynów');
   const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
 
   sur += `<div class="civ-emp-res-hdr-row" title="${magTip}">`
