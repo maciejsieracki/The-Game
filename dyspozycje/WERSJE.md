@@ -1,3 +1,9 @@
+## ROBOCZA 89f5a5d6 -- 2026-11-06 -- FALA 631: Administrator ulepszeń (auto-ulepszenia terenu tylko z administratorem) (testowa)
+
+- R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń rekrutowany w panelu ulepszeń (przycisk z ikoną A z kilofem), 40 Pieniądza zatrudnienie + 2/turę ze skarbca państwa, bez bonusów; auto-ulepszenia terenu GRACZA działają w mieście tylko z działającym administratorem (brak środków = nie pracuje); osobna flaga migracji starych zapisów z powiadomieniem; AI BEZ administratora (decyzja właściciela B)
+- Weryfikacja: tsc czysty; improvement-administrator 53/0, city-administrator 117/0, city-administrator-economy 72/0, autobuild-toggle 40/0, auto-improvements 46/0, auto-improve-q3 41/0; 5 bramek referencyjnych zielone; Chromium realny bundle: bez admina 0 warstw, po zatrudnieniu 500→460 skarbiec, 11→19 warstw, zapis niesie administratora; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: AI bez administratora (decyzja właściciela); NIE_ZMIERZONO: migracja starego zapisu w Chromium; dług: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE (nagłówek, wiki, chip, powiadomienia), REPIN Rust; 4 testy czerwone identycznie na bazie
+
 ## ROBOCZA a64ac0d6 -- 2026-11-06 -- FALA 630: Audyt surowych id w tekstach gracza + test Zastąp bez machin (testowa)
 
 - R-WEB-UI-RAW-IDS-AUDIT-Q1: teksty dla gracza pokazują nazwy zamiast surowych id (resolver nazw, slug Złoto/Cegła, odkrycia, ulepszenia, panel nauki, hub Civpedii bez tabeli metadanych); strażnik ids-leak-audit rozszerzony o 7 kontroli wiązań UI; R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1: test unit-replace-full-cost zgodny z decyzją 'machiny poza Zastąp'
