@@ -45741,7 +45741,7 @@ async function boot(): Promise<void> {
         }
         if (c.maMur === undefined) {
           const built = saved.cityBuilt?.[c.id];
-          if (built?.includes('mury') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
+          if (built?.includes('mury') || built?.includes('mury_kamienne') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
         }
         cities.push(c);
       }

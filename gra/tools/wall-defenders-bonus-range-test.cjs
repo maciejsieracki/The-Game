@@ -126,13 +126,16 @@ function partA(D, label, expectGreen) {
     && inside({ siegeWallCol: -1, q: 5, onWallWalkway: true }) === true);
   const mur = D.cityWallDefenseBonusPercent(['mury'], P);
   const pal = D.cityWallDefenseBonusPercent(['palisada'], P);
+  const stone = D.cityWallDefenseBonusPercent(['mury_kamienne'], P);
+  const stonePal = D.cityWallDefenseBonusPercent(['palisada', 'mury_kamienne'], P);
   const palMur = D.cityWallDefenseBonusPercent(['palisada', 'mury'], P);
   const full = D.cityWallDefenseBonusPercent(['mury', 'fort', 'baszta'], P);
-  ok('A9 wartosci z danych: mur=+200, palisada=+100, mur zastepuje palisade, mur+cyt+baszta=400',
-    mur === 200 && pal === 100 && palMur === 200 && full === 400, { mur, pal, palMur, full });
+  ok('A9 fortifications: palisade=100, stone=150, brick=200; only highest tier plus independent buildings',
+    mur === 200 && pal === 100 && stone === 150 && stonePal === 150 && palMur === 200 && full === 400, { mur, pal, stone, stonePal, palMur, full });
   const b = (o, tot) => D.fortificationDefenseBonusForUnit(Object.assign({ side: 'def', onWallWalkway: false, q: W + 3, siegeWallCol: W }, o), tot);
   ok('A10 wewnatrz muru (nie korona): +200% (mur)', b({}, mur) === 200, b({}, mur));
   ok('A11 wewnatrz palisady (nie korona): +100% (palisada)', b({}, pal) === 100, b({}, pal));
+  ok('A11b wewnatrz kamiennych murow: +150%', b({}, stone) === 150, b({}, stone));
   ok('A12 na koronie: bonus bez zmian (+200)', b({ onWallWalkway: true, q: W }, mur) === 200);
   ok('A13 poza murem: 0', b({ q: W - 2 }, mur) === 0);
   ok('A14 atakujacy: 0 (takze na koronie)', b({ side: 'atk', onWallWalkway: true, q: W }, mur) === 0 && b({ side: 'atk' }, mur) === 0);

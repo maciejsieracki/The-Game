@@ -137,7 +137,7 @@ export function cityHasAmfiteatrLine(builtIds: readonly string[]): boolean {
 
 /** Mury, Cytadela (fort) lub wczesna Palisada drewniana. */
 export function cityHasMurLine(builtIds: readonly string[]): boolean {
-  return builtIds.includes('mury') || builtIds.includes('fort') || builtIds.includes('palisada');
+  return builtIds.includes('mury') || builtIds.includes('mury_kamienne') || builtIds.includes('fort') || builtIds.includes('palisada');
 }
 
 /** Bonus procentowy Obrony jednostek w mieście (miasto-params.json), jeśli budynek go daje. */
@@ -156,8 +156,8 @@ export function buildingStructuralDefenseBonusLine(buildingId: string): string |
   if (buildingId === 'palisada') {
     return `Obrona (jednostki broniące miasta) +${proc}% — zastąpione przez Mury kamienne`;
   }
-  if (buildingId === 'mury') {
-    return `Obrona (jednostki broniące miasta) +${proc}% — zastępuje Palisadę drewnianą`;
+  if (buildingId === 'mury' || buildingId === 'mury_kamienne') {
+    return `Obrona (jednostki broniące miasta) +${proc}% — zastępuje słabszą fortyfikację`;
   }
   if (buildingId === 'fort') {
     return `Obrona (jednostki broniące miasta) +${proc}% dodatkowo (wymaga Murów w mieście)`;

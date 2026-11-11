@@ -30,7 +30,7 @@ export function cityFortificationKind(
   builtBuildingIds: readonly string[] | null | undefined,
 ): CityFortificationKind {
   const built = builtBuildingIds ?? [];
-  if (built.includes('mury') || built.includes('fort')) return 'mur';
+  if (built.includes('mury') || built.includes('fort') || built.includes('mury_kamienne')) return 'mur';
   if (built.includes('palisada')) return 'palisada';
   return 'none';
 }

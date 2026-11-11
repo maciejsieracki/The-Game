@@ -28,6 +28,8 @@ export type SiegeWallOpts = {
    * cywilizacji); 'mur' / brak => dotychczasowy mur wg cywilizacji (bez zmian).
    */
   kind?: 'palisada' | 'mur';
+  /** Brick tier: reuse existing stone geometry with brick-red material. */
+  brickRed?: boolean;
 };
 
 const mk = (c: number, side?: boolean) =>
@@ -1193,24 +1195,35 @@ export function buildSiegeWall(civ: BronzeCiv, opts: SiegeWallOpts): THREE.Group
     ownerColor: opts.ownerColor ?? 0xffffff,
     gateWidthTiles: opts.gateWidthTiles ?? 2,
     kind: opts.kind ?? 'mur',
+    brickRed: opts.brickRed ?? false,
   };
 
   // Faza B: palisada = drewniane zaostrzone pale i drewniana brama, bez wzgledu na cywilizacje.
   if (resolved.kind === 'palisada') return buildPalisade(resolved);
 
+  let wall: THREE.Group;
   switch (civ) {
-    case 'grecja':   return buildGrecja(resolved);
-    case 'rzym':     return buildRzym(resolved);
-    case 'sumer':    return buildSumer(resolved);
-    case 'egipt':    return buildEgipt(resolved);
-    case 'inka':     return buildInka(resolved);
-    case 'chiny':    return buildChiny(resolved);
-    case 'zulu':     return buildZulu(resolved);
-    case 'celtowie': return buildCeltowie(resolved);
-    case 'germanie': return buildGermanie(resolved);
-    case 'aztek':    return buildGrecja(resolved); // fallback
-    default:         return buildGrecja(resolved);
+    case 'grecja': wall = buildGrecja(resolved); break;
+    case 'rzym': wall = buildRzym(resolved); break;
+    case 'sumer': wall = buildSumer(resolved); break;
+    case 'egipt': wall = buildEgipt(resolved); break;
+    case 'inka': wall = buildInka(resolved); break;
+    case 'chiny': wall = buildChiny(resolved); break;
+    case 'zulu': wall = buildZulu(resolved); break;
+    case 'celtowie': wall = buildCeltowie(resolved); break;
+    case 'germanie': wall = buildGermanie(resolved); break;
+    case 'aztek': wall = buildGrecja(resolved); break;
+    default: wall = buildGrecja(resolved); break;
   }
+  if (resolved.brickRed) {
+    // Reuse the existing civilization stone geometry; a dedicated brick model is future work.
+    wall.traverse((node) => {
+      if (!(node instanceof THREE.Mesh)) return;
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      for (const material of materials) if ('color' in material) material.color.setHex(0x8b3a2a);
+    });
+  }
+  return wall;
 }
 
 /**

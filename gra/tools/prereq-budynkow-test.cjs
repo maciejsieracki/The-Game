@@ -91,11 +91,11 @@ function buildIds(techs, ctxOverrides) {
     `warsztat_oblezniczy: nietknięty ['koszary','akademia_wojskowa'] (ma: ${JSON.stringify(p.warsztat_oblezniczy)})`);
   ok(p.laznia_publiczna === 'studnia', `laznia_publiczna: nietknięty 'studnia' (ma: ${JSON.stringify(p.laznia_publiczna)})`);
   ok(p.akademia === 'biblioteka', `akademia: 'biblioteka' (ma: ${JSON.stringify(p.akademia)})`);
-  ok(p.fort === 'mury', `fort: 'mury' (ma: ${JSON.stringify(p.fort)})`);
+  ok(Array.isArray(p.fort) && p.fort.includes('mury') && p.fort.includes('mury_kamienne'), `fort: brick or stone wall (ma: ${JSON.stringify(p.fort)})`);
   ok(p.akademia_wojskowa === 'koszary', `akademia_wojskowa: 'koszary' (ma: ${JSON.stringify(p.akademia_wojskowa)})`);
   ok(p.swiatynia === 'kamienne_kregi', `swiatynia: 'kamienne_kregi' (ma: ${JSON.stringify(p.swiatynia)})`);
   ok(p.mennica === 'targowisko', `mennica: 'targowisko' (ma: ${JSON.stringify(p.mennica)})`);
-  ok(p.baszta === 'mury', `baszta: 'mury' (DECYZJA 54a) (ma: ${JSON.stringify(p.baszta)})`);
+  ok(Array.isArray(p.baszta) && p.baszta.includes('mury') && p.baszta.includes('mury_kamienne'), `baszta: brick or stone wall (ma: ${JSON.stringify(p.baszta)})`);
   ok(p.akwedukt === 'studnia', `akwedukt: 'studnia' (DECYZJA 54b) (ma: ${JSON.stringify(p.akwedukt)})`);
   // FALA 516 (R-WEB-BUILDING-EMPORION-Q1, building-resource-gate.ts:123): dziesiąty wpis -- Emporion wymaga Targowiska.
   ok(p.emporion === 'targowisko', `emporion: 'targowisko' (R-WEB-BUILDING-EMPORION-Q1) (ma: ${JSON.stringify(p.emporion)})`);
@@ -243,12 +243,12 @@ function buildIds(techs, ctxOverrides) {
 
   const cases = [
     ['akademia', 3, ['Filozofia'], [], 'biblioteka', 'Biblioteka'],
-    ['fort', 3, ['Inżynieria'], [], 'mury', 'Mury'],
+    ['fort', 3, ['Inżynieria'], [], ['mury', 'mury_kamienne'], 'Mury'],
     ['akademia_wojskowa', 3, ['Sztuka wojenna'], [], 'koszary', 'Koszary'],
     ['swiatynia', 2, ['Religia'], [], 'kamienne_kregi', 'Kamienne kręgi'],
     ['warsztat_oblezniczy', 3, ['Oblężnictwo'], [], null, 'Koszary'],
     ['laznia_publiczna', 3, ['Medycyna'], [], 'studnia', 'Studnia'],
-    ['baszta', 3, ['Inżynieria'], [], 'mury', 'Mury'],
+    ['baszta', 3, ['Inżynieria'], [], ['mury', 'mury_kamienne'], 'Mury'],
     ['akwedukt', 2, ['Budownictwo'], [], 'studnia', 'Studnia'],
   ];
   for (const [id, epoch, techs, built, prereqId, prereqLabel] of cases) {
@@ -259,9 +259,12 @@ function buildIds(techs, ctxOverrides) {
       `${id}: komunikat "wymagania" wymienia poprzednika ${prereqLabel} (ma: "${locked && locked.wymagania}")`);
 
     if (prereqId) {
-      const ready = catalogEntry(id, epoch, techs, [prereqId]);
-      ok(ready && ready.status === 'ready',
-        `${id}: eraBuildingCatalog status='ready' z ${prereqLabel} wybudowaną (ma: ${ready && ready.status})`);
+      const ids = Array.isArray(prereqId) ? prereqId : [prereqId];
+      for (const idBuilt of ids) {
+        const ready = catalogEntry(id, epoch, techs, [idBuilt]);
+        ok(ready && ready.status === 'ready',
+          `${id}: eraBuildingCatalog status='ready' z ${idBuilt} wybudowaną (ma: ${ready && ready.status})`);
+      }
     }
   }
 }

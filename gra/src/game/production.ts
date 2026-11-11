@@ -832,6 +832,11 @@ export function applyCompletedBuildingIds(
   if (!next.includes(completedBuildingId)) next.push(completedBuildingId);
   // Kamienne Mury zastępują wczesną Palisadę drewnianą (nie stack bonusów).
   if (completedBuildingId === 'mury') {
+    for (const replacedId of ['mury_kamienne', 'palisada']) {
+      const idx = next.indexOf(replacedId);
+      if (idx >= 0) next.splice(idx, 1);
+    }
+  } else if (completedBuildingId === 'mury_kamienne') {
     const pi = next.indexOf('palisada');
     if (pi >= 0) next.splice(pi, 1);
   }
@@ -967,7 +972,7 @@ export function availableProduction(
     if (isBuildingSuppressedFromProduction(b)) continue;
 
     // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
-    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
+    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('mury_kamienne') || builtList.includes('fort'))) continue;
 
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
     if (upgradeFrom.length > 0) {
@@ -2476,7 +2481,7 @@ export function eraBuildingCatalog(
     if (b.epokaWejscia !== epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
     // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
-    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
+    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('mury_kamienne') || builtList.includes('fort'))) continue;
 
     const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),

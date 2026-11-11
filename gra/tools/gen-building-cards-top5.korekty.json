@@ -25,7 +25,7 @@
       "podzial": { "Top2": ["Miasto trzeba oblegać — wróg nie wejdzie z marszu", "Miasto z umocnieniem przechodzi w tryb oblężenia; pustego miasta nie da się zająć jednym ruchem."] },
       "powodPodzialu": "tytuł zawiera własny myślnik — podział na pierwszym separatorze uciąłby tytuł."
     },
-    "Mury": {
+    "Mury ceglane": {
       "podzial": { "Top2": ["Miasto trzeba oblegać — wróg nie wejdzie z marszu", "Mury włączają tryb oblężenia (także gdy w mieście nie ma wojska)."] },
       "powodPodzialu": "tytuł zawiera własny myślnik — podział na pierwszym separatorze uciąłby tytuł."
     },

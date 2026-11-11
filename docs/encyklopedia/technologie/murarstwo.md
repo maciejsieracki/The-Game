@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Murarstwo** — epoka **Kamień** (poziom 2), koszt **28** PN (tempo Szybka). Odblokowuje budynki: Warsztat kamieniarski, Stela / Pomnik; ulepszenia terenu: Kamieniołom, Posterunek (Strażnica); surowce: kamien, ruda.
+**Murarstwo** — epoka **Kamień** (poziom 2), koszt **28** PN (tempo Szybka). Odblokowuje budynki: Warsztat kamieniarski, Mury kamienne (+150% Obrony), Stela / Pomnik; ulepszenia terenu: Kamieniołom, Posterunek (Strażnica); surowce: kamien, ruda.
 
 ---
 
@@ -28,7 +28,7 @@
 - **Koszt nauki:** 28 PN (baza, tempo Szybka — mnożnik tempa wg `tech-tempo.ts`)
 
 ### Co odblokowuje
-- **Budynki:** Warsztat kamieniarski, Stela / Pomnik
+- **Budynki:** Warsztat kamieniarski, Mury kamienne (+150% Obrony), Stela / Pomnik
 - **Jednostki:** brak
 - **Ulepszenia terenu:** Kamieniołom, Posterunek (Strażnica)
 - **Surowce:** kamien, ruda

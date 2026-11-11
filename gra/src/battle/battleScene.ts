@@ -2438,6 +2438,7 @@ export class BattleScene {
    */
   private _siegeDefCiv: string | null = null;
   private fortKind: import('../game/city-fortification').CityFortificationKind = 'none';
+  private brickWallRed = false;
   /** R4: wiezyczki strzeleckie na obwodzie muru/palisady (rzad kafla muru = row). */
   private siegeTowers: { row: number; mesh: THREE.Group | null; destroyed: boolean }[] = [];
   /** R4: jednostka dystansowa epoki obroncy, ktorej moca strzela kazda wiezyczka. */
@@ -2736,6 +2737,7 @@ export class BattleScene {
     // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
     this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
     this.fortKind = cityFortificationKind(opts.siege?.builtBuildingIds);
+    this.brickWallRed = opts.siege?.builtBuildingIds?.includes('mury') === true;
     this._siegeDefCiv = (opts.siege?.defCiv ?? opts.siege?.civ ?? null) as string | null;
     // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
     // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
@@ -4082,6 +4084,7 @@ export class BattleScene {
       gateWidthTiles: 2,
       // Faza B: palisada = drewniane pale + drewniana brama; mur = model wg cywilizacji.
       kind: this.fortKind === 'palisada' ? 'palisada' : 'mur',
+      brickRed: this.brickWallRed,
     });
 
     // siegeWall.ts builds the wall along X axis, centred at origin.
