@@ -10,7 +10,7 @@
  *   - Paliwo USUNIĘTE całkowicie (Mielerz usunięty); konwertery biorą DREWNO 1:1.
  *   Cegielnia  | 2 glina + 1 drewno | 2 cegly   | 50/t + 50% bazy/epokę właściciela (R-WEB-BRICK-PRODUCTION-X2-ERA-50PCT-Q1; wcześniej 1 cegła/cykl i +10%/epokę)
  *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
- *   Odlewnia brązu | 1 ruda + 1 drewno + 0.1 cyny | 1 braz | explicit owner-era throughput (era 2: 25, era 3+: 50)
+ *   Odlewnia brązu | 1 ruda + 1 drewno + 0.1 cyny | 1 braz | explicit owner-era throughput (era 2: 50, era 3+: 75)
  *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 50/t × m(e) każdy
  *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 50/t × m(e) każdy (założenie: ta sama rodzina)
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
@@ -111,7 +111,7 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
 // WŁAŚCICIELA budynku (nie globalną epokę gry, nie poziom budynku
 // buildingLevelForEpoch -- to OSOBNY system, patrz buildings.json maksPoziom).
 // Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie nie dostają tego mechanizmu.
-// Żelazo/stal używają m(e), a brąz jawnych parametrów per-era (R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1).
+// Żelazo/stal używają m(e), a brąz jawnych parametrów per-era (R-WEB-BRONZE-OUTPUT-50-75-Q1).
 // / EN: Brickworks/Pottery throughput grows +10% ADDITIVELY from the base for EVERY
 // era of the OWNING civilization (not the global game era, not the building's own
 // level system). Base 10: era1=10, era2=11, era3=12. Foundries are excluded and

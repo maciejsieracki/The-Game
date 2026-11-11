@@ -1,8 +1,8 @@
 'use strict';
 /**
- * foundry-throughput-x2-era-mult-test.cjs -- R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1
- * (decyzja wlasciciela 2026-11-05): przepustowosc bazowa odlewni brazu / zelaza / wielkiej
- * odlewni 25 -> 50 cykli/ture + mnoznik epoki WLASCICIELA m(e) = 1 + 0,5 x (e - 1)
+ * foundry-throughput-x2-era-mult-test.cjs -- bronze explicit owner-era rows 50/75
+ * (R-WEB-BRONZE-OUTPUT-50-75-Q1); iron/steel retain base 50 times owner-era multiplier
+ * m(e) = 1 + 0,5 x (e - 1)
  * (1 / 1,5 / 2 / 2,5 / 3) stosowany do PRZEPUSTOWOSCI (cykli). Receptury i koszty bez zmian.
  * Huta (bez budynku) zostaje plaska. Wzor epoki = `citizenConsumptionEraMultiplier` (jedna definicja).
  * Run from gra/:  node tools/foundry-throughput-x2-era-mult-test.cjs
@@ -32,7 +32,7 @@ const FOUNDRY_IDS = ['odlewnia_zelaza__zelazo', 'wielka_odlewnia__zelazo', 'wiel
 const KEYS = ['budynek_huta_przepustowosc', 'budynek_odlewnia_zelaza_przepustowosc', 'budynek_wielka_odlewnia_przepustowosc'];
 const mult = [1, 1.5, 2, 2.5, 3];
 
-console.log('-- A. dane: baza 25 -> 50 (3 klucze x 3 trudnosci), fallbacki receptur, wejscia/wyjscia bez zmian --');
+console.log('-- A. dane: iron/steel base 50; bronze explicit rows 50/75 (3 trudnosci), recipe inputs/outputs unchanged --');
 for (const k of KEYS) for (const d of ['easy', 'normal', 'hard']) eq(M.loadThroughput(econ, k, d, -1), 50, `econ ${k} ${d} = 50`);
 for (const id of FOUNDRY_IDS) eq(rec(id).throughputFallback, 50, `fallback ${id} = 50`);
 for (const id of BRONZE_IDS) {
@@ -41,8 +41,8 @@ for (const id of BRONZE_IDS) {
   eq(M.converterThroughputEraParamKey(rec(id), 3), 'budynek_huta_braz_epoka3_przepustowosc', `${id} selects era3 row`);
 }
 for (const diff of ['easy', 'normal', 'hard']) {
-  eq(M.loadThroughput(econ, 'budynek_huta_braz_epoka2_przepustowosc', diff, -1), 25, `bronze era2 ${diff}=25`);
-  eq(M.loadThroughput(econ, 'budynek_huta_braz_epoka3_przepustowosc', diff, -1), 50, `bronze era3 ${diff}=50`);
+  eq(M.loadThroughput(econ, 'budynek_huta_braz_epoka2_przepustowosc', diff, -1), 50, `bronze era2 ${diff}=50`);
+  eq(M.loadThroughput(econ, 'budynek_huta_braz_epoka3_przepustowosc', diff, -1), 75, `bronze era3 ${diff}=75`);
 }
 eq(rec('huta').throughputFallback, 50, 'fallback huta = 50 (wspolny klucz, bez budynku)');
 eq(JSON.stringify(rec('odlewnia_brazu').inputs), JSON.stringify({ ruda: 1, drewno: 1, ruda_cyny: 0.1 }), 'odlewnia brazu: wejscia bez zmian');
@@ -65,7 +65,7 @@ for (let e = 1; e <= 5; e++) {
     const key = M.converterThroughputEraParamKey(r, ownerEra);
     return key ? M.loadThroughput(econ, key, 'normal', r.throughputFallback) : 50;
   }, e);
-  for (const id of BRONZE_IDS) eq(bronzeMap[id], e >= 3 ? 50 : 25, `${id} era${e}: explicit throughput`);
+  for (const id of BRONZE_IDS) eq(bronzeMap[id], e >= 3 ? 75 : 50, `${id} era${e}: explicit throughput`);
 }
 eq(M.converterThroughputForEra('odlewnia_zelaza__zelazo', 50, 0), 50, 'iron era 0 -> m=1');
 eq(M.converterThroughputForEra('odlewnia_zelaza__zelazo', 50, NaN), 50, 'iron era NaN -> m=1');
@@ -77,7 +77,7 @@ for (const e of [1, 2, 3, 4, 5]) {
     const key = M.converterThroughputEraParamKey(r, ownerEra);
     return key ? M.loadThroughput(econ, key, 'normal', r.throughputFallback) : (FOUNDRY_IDS.includes(r.id) ? 50 : 25);
   }, e);
-  eq(map['odlewnia_brazu'], e >= 3 ? 50 : 25, `mapa era${e}: bronze explicit row`);
+  eq(map['odlewnia_brazu'], e >= 3 ? 75 : 50, `mapa era${e}: bronze explicit row`);
   near(map['odlewnia_zelaza__zelazo'], 50 * mult[e - 1], `mapa era${e}: zelazo odlewni = 50 x m`);
   near(map['wielka_odlewnia__stal'], 50 * mult[e - 1], `mapa era${e}: stal wielkiej = 50 x m`);
   eq(map['huta'], 25, `mapa era${e}: huta plaska`);
@@ -85,26 +85,26 @@ for (const e of [1, 2, 3, 4, 5]) {
 
 console.log('-- D. runConverter: explicit bronze output, shortages, full capacity and parallel unchanged iron --');
 for (const e of [2, 3, 4]) {
-  const t = e >= 3 ? 50 : 25;
+  const t = e >= 3 ? 75 : 50;
   const r = M.runConverter(rec('odlewnia_brazu'), { ruda: 9000, drewno: 9000, ruda_cyny: 9000 }, t, 50000, 1);
   near(r.produced, t, `era${e}: abundant inputs -> bronze=${t}`);
   near(r.consumed.ruda, t, `era${e}: ore follows explicit throughput`);
   near(r.consumed.drewno, t, `era${e}: wood follows explicit throughput`);
   near(r.consumed.ruda_cyny, 0.1 * t, `era${e}: tin remains 0.1/cycle`);
 }
-const shortage = M.runConverter(rec('odlewnia_brazu'), { ruda: 5, drewno: 4, ruda_cyny: 1 }, 25, 50000);
+const shortage = M.runConverter(rec('odlewnia_brazu'), { ruda: 5, drewno: 4, ruda_cyny: 1 }, 50, 50000);
 eq(shortage.produced, 4, 'input shortage caps bronze output at 4');
 eq(shortage.consumed.ruda_cyny, 0.4, 'tin remains 0.1/cycle when input-limited');
-const noTin = M.runConverter(rec('odlewnia_brazu'), { ruda: 50, drewno: 50, ruda_cyny: 0 }, 25, 50000);
+const noTin = M.runConverter(rec('odlewnia_brazu'), { ruda: 50, drewno: 50, ruda_cyny: 0 }, 50, 50000);
 eq(noTin.produced, 0, 'no tin produces no bronze');
 eq(noTin.reason, 'brak-wejscia', 'no tin reports input shortage');
-const full = M.runConverter(rec('odlewnia_brazu'), { ruda: 50, drewno: 50, ruda_cyny: 5, braz: 50 }, 25, 50);
+const full = M.runConverter(rec('odlewnia_brazu'), { ruda: 50, drewno: 50, ruda_cyny: 5, braz: 50 }, 50, 50);
 eq(full.produced, 0, 'full output stock produces no bronze');
 eq(full.reason, 'pelny-magazyn', 'full output reports full stock');
 const mixed = M.runConverters([rec('odlewnia_brazu'), rec('odlewnia_zelaza__zelazo')],
-  { ruda: 50, drewno: 100, ruda_cyny: 5, ruda_zelaza: 100 },
-  { odlewnia_brazu: 25, odlewnia_zelaza__zelazo: 75 }, () => 50000);
-eq(mixed.perBuilding.odlewnia_brazu.produced, 25, 'parallel bronze remains 25');
+  { ruda: 50, drewno: 125, ruda_cyny: 5, ruda_zelaza: 100 },
+  { odlewnia_brazu: 50, odlewnia_zelaza__zelazo: 75 }, () => 50000);
+eq(mixed.perBuilding.odlewnia_brazu.produced, 50, 'parallel bronze era2 is 50');
 eq(mixed.perBuilding.odlewnia_zelaza__zelazo.produced, 75, 'parallel era2 iron remains 50 x 1.5 = 75');
 {
   // Ograniczenie WEJSCIEM: 30 rudy -> produkcja 30 w kazdej epoce (przepustowosc nie jest waskim gardlem).
@@ -117,7 +117,7 @@ console.log('-- E. wyswietlanie panelu (ta sama funkcja) --');
 for (const [bid, out] of [['odlewnia_brazu', 'braz'], ['odlewnia_zelaza', 'zelazo'], ['wielka_odlewnia', 'stal']]) {
   for (const e of [1, 2, 3]) {
     const disp = M.converterProductionDisplayForBuilding(bid, econ, 'normal', e);
-    const expected = out === 'braz' ? (e === 1 ? 25 : e === 2 ? 25 : 50) : 50 * mult[e - 1];
+    const expected = out === 'braz' ? (e >= 3 ? 75 : 50) : 50 * mult[e - 1];
     near(disp.produced[out] ?? 0, expected, `panel ${bid} era${e}: ${out} = ${expected}`);
   }
 }

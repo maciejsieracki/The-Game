@@ -20,7 +20,7 @@
  *      Cegielni/Garncarni po awansie epoki) na WŁASNYM, minimalnym dowodzie
  *      -- asercja, która PADŁABY na kodzie sprzed tej zmiany.
  *   E. Integracja PEŁNA (esbuild-bundle-real-source, advanceCityEconomy):
- *      PARYTET AI -- gracz (ownerId=0, era 1) i AI (ownerId=7, era 3) w
+ *      PARYTET AI -- gracz (ownerId=0, era 2) i AI (ownerId=7, era 3) w
  *      JEDNYM wywołaniu advanceCityEconomy, Cegielnia/Garncarnia skalują się
  *      per-owner, Odlewnia_brazu skaluje cykle m(e) PER-OWNER dla OBU
  *      (gracz era1 = 50, AI era3 = 100; ta sama funkcja, inny owner-era --
@@ -122,10 +122,10 @@ for (const diff of ['easy', 'normal', 'hard']) {
     `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 50,
     `econ-params.json budynek_huta_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_braz_epoka2_przepustowosc', diff, -1), 25,
-    `bronze explicit era2 ${diff}=25`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_braz_epoka3_przepustowosc', diff, -1), 50,
-    `bronze explicit era3 ${diff}=50`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_braz_epoka2_przepustowosc', diff, -1), 50,
+    `bronze explicit era2 ${diff}=50`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_braz_epoka3_przepustowosc', diff, -1), 75,
+    `bronze explicit era3 ${diff}=75`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_odlewnia_zelaza_przepustowosc', diff, -1), 50,
     `econ-params.json budynek_odlewnia_zelaza_przepustowosc.${diff} = 50 (R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1, bylo 25)`);
   eq(M.loadThroughput(econParamsRaw, 'budynek_wielka_odlewnia_przepustowosc', diff, -1), 50,
@@ -240,8 +240,8 @@ console.log('\n-- D. Regresja: dowod, ze scaling realnie zmienia produkcje wzgle
 }
 
 // ===========================================================================
-// E. Integracja PELNA (advanceCityEconomy): PARYTET AI, gracz era1 vs AI era3,
-//    JEDNO wywolanie, Odlewnia_brazu plaska dla OBU.
+// E. Integracja PELNA (advanceCityEconomy): PARYTET AI, gracz era2 vs AI era3,
+//    JEDNO wywolanie, Brąz 50/75 z jawnych wierszy.
 // ===========================================================================
 console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era2, AI era3), jawny Brąz, skala Cegielni/Garncarni --');
 {
@@ -303,9 +303,9 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era2, AI era3), jawny
     eq(cAi.surowce.cegla, 200, 'AI (era3): 200 cegiel/ture (50 cykli x 2 x mnoznik wyjscia 2 -- MECHANIZM DZIALA DLA AI; bylo 60)');
     eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
-    // Brąz korzysta z jawnych parametrów throughput per-era: owner era2 = 25, era3 = 50.
-    eq(cPlayer.surowce.braz, 25, 'gracz (era2): 25 brazu/ture z jawnego wiersza epoki wlasciciela');
-    eq(cAi.surowce.braz, 50, 'AI (era3): 50 brazu/ture z jawnego wiersza epoki wlasciciela');
+    // Brąz korzysta z jawnych parametrów throughput per-era: owner era2 = 50, era3 = 75.
+    eq(cPlayer.surowce.braz, 50, 'gracz (era2): 50 brazu/ture z jawnego wiersza epoki wlasciciela');
+    eq(cAi.surowce.braz, 75, 'AI (era3): 75 brazu/ture z jawnego wiersza epoki wlasciciela');
   }
 }
 

@@ -364,21 +364,21 @@
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Parametr bazowy/fallback konwersji rudy+drewna+cyny→Brąz. Receptury brązu używają jawnych przepustowości z wierszy budynek_huta_braz_epoka2_przepustowosc (25/t) i budynek_huta_braz_epoka3_przepustowosc (50/t od epoki 3 wzwyż), wg epoki właściciela. [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): 25→50 (×2) cykli/turę; mnożnik epoki właściciela na cykle; Wielka odlewnia w tej samej rodzinie (założenie)."
+      "opis": "Parametr bazowy/fallback konwersji rudy+drewna+cyny→Brąz. Receptury brązu używają jawnych przepustowości z wierszy budynek_huta_braz_epoka2_przepustowosc (50/t) i budynek_huta_braz_epoka3_przepustowosc (75/t od epoki 3 wzwyż), wg epoki właściciela. [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5). R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): baza żelaza/stali 25→50 (×2) cykli/turę; mnożnik epoki właściciela dotyczy wyłącznie żelaza i stali. R-WEB-BRONZE-OUTPUT-50-75-Q1: brąz 50/t w epoce 2 i 75/t od epoki 3, jawnie per-epoka."
     },
     "budynek_huta_braz_epoka2_przepustowosc": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
-      "jednostka": "szt/turę",
-      "opis": "Jawna przepustowość receptur produkujących Brąz w epoce właściciela 2 (epoka Brązu): 25/t. Wartość per era, bez mnożnika foundry; od epoki właściciela 3 obowiązuje osobny wiersz. R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1 (2026-11-10)."
-    },
-    "budynek_huta_braz_epoka3_przepustowosc": {
       "easy": 50,
       "normal": 50,
       "hard": 50,
       "jednostka": "szt/turę",
-      "opis": "Jawna przepustowość receptur produkujących Brąz od epoki właściciela 3 (epoka Żelaza): 50/t, utrzymywana dla późniejszych epok. Wartość per era, bez mnożnika foundry. R-WEB-BRONZE-FOUNDRY-OUTPUT-25-50-Q1 (2026-11-10)."
+      "opis": "Jawna przepustowość receptur produkujących Brąz w epoce właściciela 2 (epoka Brązu): 50/t. Wartość per era, bez mnożnika foundry; od epoki właściciela 3 obowiązuje osobny wiersz. R-WEB-BRONZE-OUTPUT-50-75-Q1 (2026-11-11)."
+    },
+    "budynek_huta_braz_epoka3_przepustowosc": {
+      "easy": 75,
+      "normal": 75,
+      "hard": 75,
+      "jednostka": "szt/turę",
+      "opis": "Jawna przepustowość receptur produkujących Brąz od epoki właściciela 3 (epoka Żelaza): 75/t, utrzymywana dla późniejszych epok. Wartość per era, bez mnożnika foundry. R-WEB-BRONZE-OUTPUT-50-75-Q1 (2026-11-11)."
     },
     "budynek_odlewnia_zelaza_przepustowosc": {
       "easy": 50,
