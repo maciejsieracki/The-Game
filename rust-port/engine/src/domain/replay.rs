@@ -8,7 +8,7 @@
 
 use std::{error::Error, fmt};
 
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{de, Deserialize, Serialize};
 
 #[cfg(not(test))]
 use super::save_migrations::LoadMigrationReport;
@@ -32,17 +32,26 @@ pub const CURRENT_REPLAY_VERSION: u16 = 1;
 pub type ReplaySequence = u64;
 
 /// One input together with the deterministic state at which it was observed.
+///
+/// `ReplayStep` nie implementuje `Deserialize` (patrz doctest przy [`ReplayLog`]).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::replay::ReplayStep<u8>>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayStep<I> {
     sequence: ReplaySequence,
     turn: u32,
     input: I,
     rng_state: u32,
-    /// Snapshot zapisany w kroku. Przy deserializacji (`Deserialize` ponizej) jest on zawsze
-    /// przepuszczany przez `SaveSnapshot::migrate_on_load`, tak jak `zapis_loader::load_save_snapshot`.
+    /// Snapshot zapisany w kroku. Wejscie z JSON idzie wylacznie przez
+    /// [`ReplayLog::load_json_with_migration_reports`], ktore przepuszcza snapshot przez
+    /// `SaveSnapshot::migrate_on_load`; `ReplayStep` nie implementuje `Deserialize`.
     snapshot: Option<SaveSnapshot>,
 }
 
+/// Surowa postac kroku z JSON, wyłącznie do wewnetrznego wczytania z migracja.
 #[derive(Deserialize)]
 struct ReplayStepWire<I> {
     sequence: ReplaySequence,
@@ -50,32 +59,6 @@ struct ReplayStepWire<I> {
     input: I,
     rng_state: u32,
     snapshot: Option<SaveSnapshot>,
-}
-
-/// Snapshot z replayu wchodzi do domeny wylacznie po migracji: surowa deserializacja
-/// `SaveSnapshot` nie migruje (limit wodzow zalezy od epoki z danych zapisu), wiec migracja
-/// jest wykonywana tutaj, a nie u wolajacego.
-impl<'de, I> Deserialize<'de> for ReplayStep<I>
-where
-    I: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let wire = ReplayStepWire::<I>::deserialize(deserializer)?;
-        let snapshot = wire.snapshot.map(|mut snapshot| {
-            snapshot.migrate_on_load();
-            snapshot
-        });
-        Ok(Self {
-            sequence: wire.sequence,
-            turn: wire.turn,
-            input: wire.input,
-            rng_state: wire.rng_state,
-            snapshot,
-        })
-    }
 }
 
 /// Semantic alias for consumers that call a replay item a frame.
@@ -176,41 +159,20 @@ impl fmt::Display for ReplayError {
 impl Error for ReplayError {}
 
 /// A serializable, deterministic input log.
+///
+/// `ReplayLog` nie implementuje `Deserialize`: wczytanie z JSON wymaga migracji snapshotow,
+/// wiec jedyna sciezka to [`ReplayLog::load_json_with_migration_reports`]. Ponizszy doctest
+/// pilnuje tego na poziomie kompilacji (GOAL 4 temat R-RUSTPORT-ZAPIS-REPLAY-DESER-REMOVE-Q1).
+///
+/// ```compile_fail,E0277
+/// fn requires_deserialize<T: serde::de::DeserializeOwned>() {}
+/// requires_deserialize::<civ_engine::domain::replay::ReplayLog<u8>>();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayLog<I> {
     version: u16,
     seed: u32,
     steps: Vec<ReplayStep<I>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ReplayWire<I> {
-    #[serde(default)]
-    version: Option<u16>,
-    seed: u32,
-    steps: Vec<ReplayStep<I>>,
-}
-
-impl<'de, I> Deserialize<'de> for ReplayLog<I>
-where
-    I: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let wire = ReplayWire::<I>::deserialize(deserializer)?;
-        let version = wire
-            .version
-            .ok_or_else(|| de::Error::custom(ReplayError::MissingVersion))?;
-        let replay = Self {
-            version,
-            seed: wire.seed,
-            steps: wire.steps,
-        };
-        replay.validate().map_err(de::Error::custom)?;
-        Ok(replay)
-    }
 }
 
 /// Raport migracji snapshotu z jednego kroku replayu. Zwracany przez
@@ -230,9 +192,9 @@ struct ReplayRawWire<I> {
 }
 
 impl<I> ReplayLog<I> {
-    /// Wczytuje replay z tekstu JSON i zwraca raport migracji kazdego kroku z snapshotem.
-    /// Ta sama migracja co w `Deserialize` (`ReplayStep`), ale raport nie ginie: wolajacy
-    /// dostaje go razem z logiem, jak `zapis_loader::load_save_snapshot`.
+    /// Jedyna sciezka wczytania replayu z JSON (`ReplayLog` nie implementuje `Deserialize`).
+    /// Kazdy snapshot przechodzi `SaveSnapshot::migrate_on_load`, a raport migracji wraca razem
+    /// z logiem, jak `zapis_loader::load_save_snapshot`.
     pub fn load_json_with_migration_reports(
         text: &str,
     ) -> Result<(Self, Vec<ReplayStepMigration>), serde_json::Error>

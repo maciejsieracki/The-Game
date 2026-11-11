@@ -77,6 +77,11 @@ fn checkpoint_snapshot() -> SaveSnapshot {
     )
 }
 
+/// Jedyna sciezka wczytania replayu z JSON: z migracja snapshotow, raport pomijany.
+fn load_replay(text: &str) -> Result<ReplayLog<Input>, serde_json::Error> {
+    ReplayLog::<Input>::load_json_with_migration_reports(text).map(|(log, _)| log)
+}
+
 #[test]
 fn recording_same_inputs_seed_and_rng_checkpoints_is_byte_deterministic() {
     let mut first = ReplayRecorder::new(42);
@@ -109,8 +114,7 @@ fn recording_same_inputs_seed_and_rng_checkpoints_is_byte_deterministic() {
     let second_json = serde_json::to_string(&second).expect("second replay serializes");
     assert_eq!(first_json, second_json);
 
-    let restored: ReplayLog<Input> =
-        serde_json::from_str(&first_json).expect("replay deserializes");
+    let restored: ReplayLog<Input> = load_replay(&first_json).expect("replay deserializes");
     assert_eq!(restored, first);
     assert_eq!(restored.seed(), 42);
     assert_eq!(restored.version(), CURRENT_REPLAY_VERSION);
@@ -247,7 +251,7 @@ fn replay_log_round_trips_some_snapshot_with_all_snapshot_data() {
 
     let encoded = serde_json::to_string(&replay).expect("replay with snapshot serializes");
     let restored: ReplayLog<Input> =
-        serde_json::from_str(&encoded).expect("replay with snapshot deserializes");
+        load_replay(&encoded).expect("replay with snapshot deserializes");
 
     assert_eq!(restored, replay);
     assert_eq!(restored.version(), CURRENT_REPLAY_VERSION);
@@ -267,13 +271,13 @@ fn replay_log_round_trips_some_snapshot_with_all_snapshot_data() {
 #[test]
 fn replay_rejects_missing_or_unsupported_version_and_non_contiguous_steps() {
     let missing_version = r#"{"seed":7,"steps":[]}"#;
-    assert!(serde_json::from_str::<ReplayLog<Input>>(missing_version)
+    assert!(load_replay(missing_version)
         .expect_err("version is required")
         .to_string()
         .contains("replay version is missing"));
 
     let unsupported = r#"{"version":99,"seed":7,"steps":[]}"#;
-    assert!(serde_json::from_str::<ReplayLog<Input>>(unsupported)
+    assert!(load_replay(unsupported)
         .expect_err("unsupported versions are rejected")
         .to_string()
         .contains("unsupported replay version 99"));
@@ -285,7 +289,7 @@ fn replay_rejects_missing_or_unsupported_version_and_non_contiguous_steps() {
             {"sequence":1,"turn":3,"input":"EndTurn","rng_state":7,"snapshot":null}
         ]
     }"#;
-    assert!(serde_json::from_str::<ReplayLog<Input>>(non_contiguous)
+    assert!(load_replay(non_contiguous)
         .expect_err("step sequence must start at zero")
         .to_string()
         .contains("expected replay sequence 0, found 1"));
@@ -305,5 +309,5 @@ fn replay_validation_rejects_invalid_checkpoint_snapshots() {
         invalid_state
     );
 
-    assert!(serde_json::from_str::<ReplayLog<Input>>(&json).is_err());
+    assert!(load_replay(&json).is_err());
 }

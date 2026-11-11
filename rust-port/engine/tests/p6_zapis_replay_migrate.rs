@@ -109,7 +109,9 @@ fn excess_generals_specs() -> Vec<UnitSpec> {
 }
 
 fn replay_snapshot(text: &str) -> SaveSnapshot {
-    let log: ReplayLog<String> = serde_json::from_str(text).expect("replay loads");
+    let log: ReplayLog<String> = ReplayLog::<String>::load_json_with_migration_reports(text)
+        .map(|(log, _)| log)
+        .expect("replay loads");
     log.step(0)
         .expect("step 0 present")
         .snapshot()
@@ -236,7 +238,9 @@ fn p6_zapis_replay_migrates_every_snapshot_in_multi_step_log() {
         .and_then(|s| s.snapshot())
         .expect("step 2 snapshot");
     assert_eq!(generals(step2), vec![10, 20]);
-    // Ta sama dana przez zwykly `Deserialize` daje ten sam log.
-    let plain: ReplayLog<String> = serde_json::from_str(&text).expect("plain replay loads");
+    // Ta sama dana przez load_json_with_migration_reports daje ten sam log.
+    let plain: ReplayLog<String> = ReplayLog::<String>::load_json_with_migration_reports(&text)
+        .expect("plain replay loads")
+        .0;
     assert_eq!(plain, log);
 }
