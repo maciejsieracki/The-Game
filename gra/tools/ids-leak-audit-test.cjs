@@ -125,6 +125,22 @@ const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 ok(!/nazwa \?\? pick\.key/.test(mainSrc), 'main.ts: toast wycinki/budowy bez „nazwa ?? pick.key"');
 ok(!/techOfferId\}\)`/.test(mainSrc), 'main.ts: etykieta wymiany tech-za-tech bez surowego techOfferId');
 
+// Wiązanie z UI (R-WEB-UI-RAW-IDS-AUDIT-Q1 r2, zarzut Evaluatora 1–2): test czystej funkcji nie widzi,
+// czy widok wywołuje ją na właściwym miejscu. Sprawdzamy wywołania w źródle, więc cofnięcie opakowania czerwieni test.
+const WIAZANIA = [
+  ['ui/wikiHubHud.ts', /stripEncyMetadata\(entry\.full\)/, 'wikiHubHud: widok „pełny" po stripEncyMetadata(entry.full)'],
+  ['ui/wikiHubHud.ts', /\$\{entry\.full\}/, 'wikiHubHud: brak surowego ${entry.full} w widoku pełnym', true],
+  ['ui/techDiscoveryNotice.ts', /nazwyZListyId\(tech\['Odblokowuje surowiec\.'\]\)/, 'techDiscoveryNotice: resourceUnlocked przez nazwyZListyId'],
+  ['ui/cityPanel.ts', /nazwyZListyId\(String\(t\['Dostęp do surowca\.'\]\)\)/, 'cityPanel: „Surowiec (tech)” przez nazwyZListyId'],
+  ['ui/cityPanel.ts', /nazwyZListyId\(odblokowujeSurowiec\)/, 'cityPanel: „Odblokowuje surowiec” przez nazwyZListyId'],
+  ['ui/sciencePicker.ts', /label: nazwyZListyId\(sur\)/, 'sciencePicker: etykieta surowca przez nazwyZListyId'],
+  ['ui/sciencePicker.ts', /nazwyZListyId\(node\.odblokujeSurowiec\)/, 'sciencePicker: lista odblokowanych surowców przez nazwyZListyId'],
+];
+for (const [f, re, opis, negacja] of WIAZANIA) {
+  const src = fs.readFileSync(path.join(GRA, 'src', f), 'utf8');
+  ok(negacja ? !re.test(src) : re.test(src), opis);
+}
+
 console.log(`\nWYNIK: ${pass} ok, ${fail} FAIL`);
 try { fs.unlinkSync(entry); } catch (_) { /* ignore */ }
 try { fs.unlinkSync(bundle); } catch (_) { /* ignore */ }
