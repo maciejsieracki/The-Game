@@ -17,7 +17,7 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
   try { execSync(`node ./node_modules/vite/bin/vite.js build --outDir ${outDir} --emptyOutDir`, { cwd: GRA, stdio: 'pipe', timeout: 520000 }); }
   catch (e) { ok(false, 'L0 build bundla', String(e.message).slice(0, 300)); process.exit(1); }
   const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--headless=new', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const errs = [];
@@ -35,6 +35,8 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
     ok(ids.length === 3, 'L2 3 miasta gracza (klon realnego miasta dla rozkładu)', ids);
     await D('clearQueues');
     await D('setResources', 1000000, 1000000);
+    // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel rekrutuje tylko z wybranym generałem.
+    ok(!!(await D('ensureAndSelectGeneral', 0)), 'L2b wybrano generała rekrutującego (wymóg panelu)');
 
     const rows = await D('rows');
     ok(rows.length > 0, 'L3 panel ma wiersze jednostek wojskowych', rows.map(r => r.id));

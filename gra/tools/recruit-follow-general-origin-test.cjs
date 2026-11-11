@@ -53,7 +53,7 @@ assert.equal('followGeneral' in loaded.cityProd.c2.rekrutacja[0], false); ok('le
 const mainSrc = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
 const panelSrc = fs.readFileSync(path.join(root, 'src/ui/cityPanel.ts'), 'utf8');
 assert.match(mainSrc, /recruitFollowGeneralForOrder\(opts\.origin \?\? 'city', recruitFollowGeneralDefault\)/); ok('purchaseRecruitmentUnit stamps intent from origin (default city)');
-assert.match(mainSrc, /purchase: \(cityId, count\) => purchaseRecruitmentUnit\(cityId, unitId, empireRecruitCityKoszt\(cityId, unitId, koszt\), ownerId, count, \{ origin: 'army' \}\)/); ok('empire recruitment panel orders carry origin army');
+assert.match(mainSrc, /purchase: \(cityId, count\) => purchaseRecruitmentUnit\(cityId, unitId, empireRecruitCityKoszt\(cityId, unitId, koszt\), ownerId, count, \{ origin: 'army', rallyGeneralId: rallyId \}\)/); ok('empire recruitment panel orders carry origin army and the chosen rally general');
 // Obie kopie configureCityPanel (pierwsza po starcie, druga po Nowej grze) muszą przekazywać origin.
 const countOf = (src, re) => (src.match(new RegExp(re.source, 'g')) || []).length;
 assert.equal(countOf(mainSrc, /onPurchaseUnit: \(cityId: string, itemId: string, koszt: number, quantity = 1, origin: RecruitOrigin = 'city'\)/), 2); ok('both configureCityPanel copies: onPurchaseUnit forwards origin');
