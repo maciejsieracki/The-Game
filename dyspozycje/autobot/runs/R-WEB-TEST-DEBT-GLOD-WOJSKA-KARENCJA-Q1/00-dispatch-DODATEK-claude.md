@@ -1,0 +1,6 @@
+# R-WEB-TEST-DEBT-GLOD-WOJSKA-KARENCJA-Q1 (orkiestrator, 2026-11-11) — dług testowy #112
+BAZA: origin/main (`ed2fe8490`). MODEL: Operator HAIKU 5.5 (poprawka testu, bez kodu gry); po 2 nieudanych rundach → Sonnet.
+PROBLEM: gra/tools/glod-wojska-karencja-test.cjs ma 29 PASS / 10 FAIL — test zakłada mnożnik stawek głodu/utrzymania x1, a w kodzie obowiązuje R_STAWKI_FALA1_FALA2_MULT x4 (decyzja właściciela, wdrożona wcześniej).
+ZADANIE: ustal NA DOWODZIE (git log -S R_STAWKI_FALA1_FALA2_MULT, grep w gra/src i dyspozycjach/rejestrze), że x4 jest ZAMIERZONYM stanem docelowym; wtedy zsynchronizuj WYŁĄCZNIE oczekiwania w teście (obliczaj z eksportowanej stałej zamiast wpisywać liczby na sztywno). NIE zmieniaj kodu gry ani danych. Jeśli x4 okaże się nieintencjonalny/niejednoznaczny — STOP, status DECISION_REQUIRED z dowodami (to decyzja właściciela).
+KRYTERIA: glod-wojska-karencja-test 0 FAIL; dowód mutacyjny (zmiana stałej w kodzie → test czerwony); żaden inny test nie osłabiony; tsc czysty; 5 bramek referencyjnych zielone; allowlista = tylko ten plik testowy + raport.
+ŚRODOWISKO: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ `npm run build`/`dev`; dozwolone tsc --noEmit, node tools/*-test.cjs.
