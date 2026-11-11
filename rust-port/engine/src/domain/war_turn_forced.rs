@@ -91,6 +91,9 @@ pub struct ForcedWarStepInput<'a> {
     /// Web czesc bramki player-first poza aktywna wojna epoki: `evaluateInterCivWarGate(...) === 'ok'`
     /// oraz (przy `war_rules_multiwar`) `isPlayerEraWarSlotFree(...)`.
     pub player_gate_extra: &'a dyn Fn(i64) -> bool,
+    /// Web `aiOwnerListResumed` (main.ts ~40375): lista zapisana przed animacja bitwy. `Some` = wznowienie
+    /// tury -- kolejnosc ownerLoop jest ta zapisana (bez przebudowy z partnerem gracza); `None` = swieza tura.
+    pub owner_loop_resumed: Option<&'a [i64]>,
 }
 
 /// Wynik kroku. `triggered` i `pairing` odpowiadaja kolejno `triggeredSubjects` i `assignForcedWarPairings`.
@@ -412,14 +415,16 @@ pub fn forced_war_step(
     let pairing = assign_forced_war_pairings(&triggered, &existing, &opts);
 
     // Kolejnosc ownerLoop: partner pary gracza pierwszy (jesli jest w aiOwnerList), reszta bez zmian.
+    // Web: `ownerLoopList = aiOwnerListResumed ?? (...)` -- wznowienie zachowuje zapisana kolejnosc.
     let raw_ids: Vec<i64> = input.owners.iter().map(|o| o.owner_id).collect();
-    let owner_loop_order = match pairing.player_first_partner_id {
-        Some(lead) if raw_ids.contains(&lead) => {
+    let owner_loop_order = match (input.owner_loop_resumed, pairing.player_first_partner_id) {
+        (Some(resumed), _) => resumed.to_vec(),
+        (None, Some(lead)) if raw_ids.contains(&lead) => {
             let mut order = vec![lead];
             order.extend(raw_ids.iter().copied().filter(|x| *x != lead));
             order
         }
-        _ => raw_ids,
+        (None, _) => raw_ids,
     };
 
     ForcedWarStepOutcome {

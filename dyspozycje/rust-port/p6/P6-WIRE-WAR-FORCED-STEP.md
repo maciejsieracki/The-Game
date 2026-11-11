@@ -56,19 +56,45 @@ fal (`forcedWarWavesByPairKey` — zwracane klucze w `sweep.waves_deleted`), coo
   nie typCityCopy, nie barbarzyńca, nie wyeliminowany, nie klaster city-state).
 - ZAŁOŻENIE-W3-3: `owner_loop_order` używa surowej listy `owners` (web `aiOwnerList`), nie listy po filtrze.
 - ZAŁOŻENIE-W3-4: odpoczynek napastnika po sweep = tura + 20 dla każdej epoki (stałe `*_ODPOCZYNEK_TUR` są równe 20).
+- ZAŁOŻENIE-W3-5 (ZNANA ROZBIEŻNOŚĆ, runda 2): predykat wyczerpania licznika wojen epoki. Web
+  `isEraWarExhausted(oid, era)` liczy `eraWarCounterEpochOf(oid, era ?? epoka)` (main.ts:2399, 40338), a
+  `forced-war-common.ts` woła go z `s.era` / `cand.era` / `pair.era` (linie 327, 349, 513). Rust:
+  `ForcedWarStepInput::era_war_counter_ok` jest `Fn(i64)`, a `war_forced_pairing::is_era_war_exhausted`
+  (war_forced_pairing.rs:70, 131) też `Fn(i64)` -- bez epoki. Skutek: dla pary/kandydata, którego `era`
+  różni się od epoki właściciela (np. wojna Kamienia gracza w Brązie), licznik może być oceniony inaczej niż
+  w webie. `ForcedWarStepInput` nie może tego naprawić samodzielnie; poprawka = rozszerzenie sygnatury
+  w `war_forced_pairing.rs` (poza allowlistą tego tematu) -> kolejny temat. Test
+  `pairing_multiwar_refuses_join_into_pair_in_era_war` pinuje zgodne z webem wykluczenie członków pary
+  będących w wojnie epoki (forced-war-common.ts:513 + `isOwnerInActiveEraWar`).
+- ZAŁOŻENIE-W3-6: wznowienie tury (web `aiOwnerListResumed`, main.ts:40375) -- dodane pole
+  `ForcedWarStepInput::owner_loop_resumed` (addytywne). `Some` = zapisana lista zwracana bez przebudowy
+  z partnerem gracza; `None` = świeża tura. Wołający (W8) musi podać listę przy wznowieniu.
+- ZAŁOŻENIE-W3-7 (ZNANA ROZBIEŻNOŚĆ, poza zakresem rundy 2): web `assignForcedWarPairings` deduplikuje
+  podmioty po `ownerId`, zostawiając najstarszą epokę (`oldestByOwner`, forced-war-common.ts ~318-325).
+  `war_forced_pairing::assign_forced_war_pairings` (poza allowlistą) tego nie robi; `triggered` w
+  `forced_war_step` może więc zawierać ten sam `ownerId` dwa razy. Częstość NIE_ZMIERZONO. Kolejny temat.
+- ZAŁOŻENIE-W3-8: `owner_loop_order` przy `Some(partner)` zawsze zawiera partnera, bo kandydaci pary są
+  budowani wyłącznie z `input.owners` (filter_map po `krok_a_eligible`). Gałąź "partner spoza owners" jest
+  więc nieosiągalna przez `forced_war_step`; fallback zostaje tylko dla `None`.
 - D2 (kolejność kroków tury) dotyczy W8; wewnątrz kroku zachowana kolejność weba.
 
 ## 5. Wektory i testy
 
-- Brak wektorów z uruchomionego weba: blok `runAiPhase` jest inline (nieeksportowany), więc nie zbudowano
-  integracyjnego wektora z `gra/`. Zamiast tego `tests/p6_wire_war_forced_step.rs` (12 testów) sprawdza
-  reguły odczytane z kodu weba. Wartości oczekiwane = ZAŁOŻENIE, NIE_ZMIERZONO względem web.
-- Pokryte: sweep + odpoczynek (120 = 100 + 20), Krok A brąz (pending) i kamień (uzbrojenie tej tury),
-  poziom 1 wyłącza, flaga brązu wyłącza tylko brąz, R1, pula gracza blokowana aktywną wojną gracza,
-  wyeliminowany nie liczy się do licznika, kolejność ownerLoop (permutacja; partner pierwszy),
-  deterministyczność, hex stolicy w podmiocie.
+- Brak wektorów z uruchomionego weba. PRÓBA (runda 2): blok Krok A / pula / parowanie to fragment
+  `runAiPhase` (main.ts ~39979-40380), zależny od ~dziesiątek zmiennych modułowych i closure'ów
+  (`aiOwnerList`, `hexDistance`, stan wojny, `eraWarCountByCivKey`, `aiCmdResume`); nie da się go
+  wyciąć jako czystej funkcji bez wykonania całej tury. Nie uruchomiono esbuild/Node na `git archive`
+  (esbuild nie jest w PATH; w tej rundzie nie zainstalowano). Wartości oczekiwane = ZAŁOŻENIE, NIE_ZMIERZONO
+  względem web.
+- Testy `tests/p6_wire_war_forced_step.rs` (24): sweep + odpoczynek (kamień 120, Zelazo ze stałą
+  `WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR`), Krok A brąz/kamień/Zelazo (bez progu poziomu 1), flagi
+  brązu i Zelaza, R1, pula gracza blokowana aktywną wojną, wyeliminowany, kolejność ownerLoop
+  (partner gracza na czele: [3,1,2] -> [1,3,2]; brama zamknięta -> lista surowa; wznowienie zachowuje listę),
+  parowanie (para AI-AI z przydziałami wzajemnymi, dołączenie trzeciego, blokada NAP/sojusz,
+  wyczerpanie licznika w multiwar, owner z aktywną wojną poza pulą), deterministyczność, hex stolicy.
 
 ## 6. Ryzyka
 
 - R-W3-1: pełna zgodność z webem wymaga wektorów z `runAiPhase` (W8 lub osobna partia generatora).
+- R-W3-3: ZAŁOŻENIE-W3-5 i ZAŁOŻENIE-W3-7 wymagają zmiany `war_forced_pairing.rs` (poza allowlistą W3).
 - R-W3-2: `assign_forced_war_pairings` nie dostaje `pair_relation_score` (web też nie przekazuje go w tym bloku).

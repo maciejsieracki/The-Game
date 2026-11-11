@@ -131,6 +131,7 @@ fn run(
         is_pair_blocked: &e.blocked,
         era_war_counter_ok: &e.counter_ok,
         player_gate_extra: &e.gate_extra,
+        owner_loop_resumed: None,
     };
     forced_war_step(&view, state, &input)
 }
@@ -249,21 +250,71 @@ fn player_pool_blocked_by_active_war_of_player() {
 }
 
 #[test]
-fn owner_loop_order_is_permutation_and_leads_with_player_partner() {
+fn owner_loop_order_leads_with_player_partner_forced() {
+    // Gracz (miasto (0,0)) ma najblizszego partnera AI 1 (miasto (3,0)). Lista surowa [3,1,2]:
+    // partner 1 MUSI wyjsc na czolo -> oczekiwane [1,3,2] (nie permutacja tozsamosciowa).
     let mut state = WarTurnState::default();
-    let owners = [owner(1, 1, 2), owner(2, 1, 2), owner(3, 1, 2)];
+    let owners = [owner(3, 1, 2), owner(1, 1, 2), owner(2, 1, 2)];
     let mut flags = base_flags();
     flags.player_first = true;
     flags.player_epoch_war = true;
     let out = run(&owners, &mut state, 1000.0, &flags, &env());
-    let mut sorted = out.owner_loop_order.clone();
-    sorted.sort_unstable();
-    assert_eq!(sorted, vec![1, 2, 3]);
-    if let Some(lead) = out.pairing.player_first_partner_id {
-        assert_eq!(out.owner_loop_order.first().copied(), Some(lead));
-    } else {
-        assert_eq!(out.owner_loop_order, vec![1, 2, 3]);
-    }
+    assert_eq!(out.pairing.player_first_partner_id, Some(1));
+    assert_eq!(out.owner_loop_order, vec![1, 3, 2]);
+    assert!(out
+        .pairing
+        .assignments
+        .iter()
+        .any(|a| a.owner_id == 1 && a.target_id == 0 && a.era == ForcedWarEraTag::Stone));
+}
+
+#[test]
+fn owner_loop_order_player_gate_closed_keeps_list_order() {
+    let mut state = WarTurnState::default();
+    let owners = [owner(3, 1, 2), owner(1, 1, 2), owner(2, 1, 2)];
+    let mut flags = base_flags();
+    flags.player_first = true;
+    flags.player_epoch_war = true;
+    let mut e = env();
+    e.gate_extra = |_| false;
+    let out = run(&owners, &mut state, 1000.0, &flags, &e);
+    assert!(out.pairing.player_first_partner_id.is_none());
+    assert_eq!(out.owner_loop_order, vec![3, 1, 2]);
+}
+
+#[test]
+fn owner_loop_resumed_list_is_kept_verbatim() {
+    // Web: wznowienie po animacji bitwy uzywa zapisanej listy (`aiOwnerListResumed`).
+    let mut state = WarTurnState::default();
+    let owners = [owner(3, 1, 2), owner(1, 1, 2), owner(2, 1, 2)];
+    let mut flags = base_flags();
+    flags.player_first = true;
+    flags.player_epoch_war = true;
+    let pstate = world_state();
+    let extras: HashMap<String, CityWarExtras> = HashMap::new();
+    let view = WarWorldView::new(&pstate, &extras);
+    let e = env();
+    let resumed = [2_i64, 3, 1];
+    let input = ForcedWarStepInput {
+        turn: 1000.0,
+        owners: &owners,
+        player_epoch: flags.player_epoch,
+        bronze_enabled: true,
+        iron_enabled: true,
+        war_rules_multiwar: false,
+        inter_civ_war_open: true,
+        war_epoch_player_first: true,
+        player_epoch_war_enabled: true,
+        is_eliminated: &e.elim,
+        is_at_war: &e.at_war,
+        hex_distance: &e.dist,
+        is_pair_blocked: &e.blocked,
+        era_war_counter_ok: &e.counter_ok,
+        player_gate_extra: &e.gate_extra,
+        owner_loop_resumed: Some(&resumed),
+    };
+    let out = forced_war_step(&view, &mut state, &input);
+    assert_eq!(out.owner_loop_order, vec![2, 3, 1]);
 }
 
 #[test]
@@ -323,4 +374,182 @@ fn pairing_subjects_carry_reference_hex_of_capital() {
         .expect("owner 2 triggered");
     // Stolica AI 2 w (6,0).
     assert_eq!((s.q, s.r), (6, 0));
+}
+
+// ---- Zelazo (Krok A, trzeci mechanizm) ----
+
+#[test]
+fn iron_pending_owner_triggers_iron_subject() {
+    let mut state = WarTurnState::default();
+    state.forced[2].pending_owners = vec![1];
+    state.iron_era_enter_turn_by_owner = vec![(1, 0.0)];
+    let owners = [owner(1, 3, 2)];
+    let mut flags = base_flags();
+    flags.player_epoch = 3;
+    let out = run(&owners, &mut state, 1000.0, &flags, &env());
+    assert!(has_subject(&out.triggered, 1, Some(ForcedWarEraTag::Iron)));
+    assert!(!out.triggered.iter().any(|s| matches!(
+        s.era,
+        Some(ForcedWarEraTag::Bronze | ForcedWarEraTag::Stone)
+    )));
+}
+
+#[test]
+fn iron_disabled_flag_drops_iron_subject() {
+    let mut state = WarTurnState::default();
+    state.forced[2].pending_owners = vec![1];
+    state.iron_era_enter_turn_by_owner = vec![(1, 0.0)];
+    let owners = [owner(1, 3, 2)];
+    let mut flags = base_flags();
+    flags.player_epoch = 3;
+    flags.iron = false;
+    let out = run(&owners, &mut state, 1000.0, &flags, &env());
+    assert!(!out.triggered.iter().any(|s| s.owner_id == 1));
+}
+
+#[test]
+fn iron_ignores_difficulty_one_gate() {
+    // Web: brak progu poziomu trudnosci dla Zelaza (poziom 1 wylacza tylko Braz/Kamien).
+    let mut state = WarTurnState::default();
+    state.forced[2].pending_owners = vec![1];
+    state.iron_era_enter_turn_by_owner = vec![(1, 0.0)];
+    let owners = [owner(1, 3, 1)];
+    let mut flags = base_flags();
+    flags.player_epoch = 3;
+    let out = run(&owners, &mut state, 1000.0, &flags, &env());
+    assert!(has_subject(&out.triggered, 1, Some(ForcedWarEraTag::Iron)));
+}
+
+#[test]
+fn iron_sweep_arms_attacker_rest_with_iron_constant() {
+    use civ_engine::domain::war_forced_iron::WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR;
+    let mut state = WarTurnState::default();
+    state.forced[2].active_by_pair_key = vec![pair(2, 3)];
+    let mut e = env();
+    e.at_war = |_, _| false;
+    let out = run(&[], &mut state, 100.0, &base_flags(), &e);
+    assert_eq!(out.sweep.removed.len(), 1);
+    assert!(state.forced[2].active_by_pair_key.is_empty());
+    assert_eq!(
+        state.forced[2].rest_until_by_owner,
+        vec![(2, 100.0 + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR)]
+    );
+}
+
+// ---- Parowanie (assign_forced_war_pairings przez forced_war_step) ----
+
+fn pairing_flags() -> Flags {
+    // Gracz wypada z puli (player-first ON, opcja wojny epoki z graczem OFF).
+    let mut f = base_flags();
+    f.player_first = true;
+    f.player_epoch_war = false;
+    f
+}
+
+fn stone_owners(ids: &[i64]) -> Vec<ForcedOwnerInput> {
+    ids.iter().map(|id| owner(*id, 1, 2)).collect()
+}
+
+#[test]
+fn pairing_ai_pair_gets_mutual_assignments() {
+    let mut state = WarTurnState::default();
+    let owners = stone_owners(&[1, 2]);
+    let out = run(&owners, &mut state, 1000.0, &pairing_flags(), &env());
+    assert!(out.pairing.player_first_partner_id.is_none());
+    assert!(out.pairing.unresolved_owner_ids.is_empty());
+    let mut got: Vec<(i64, i64)> = out
+        .pairing
+        .assignments
+        .iter()
+        .map(|a| (a.owner_id, a.target_id))
+        .collect();
+    got.sort_unstable();
+    assert_eq!(got, vec![(1, 2), (2, 1)]);
+    assert!(out
+        .pairing
+        .assignments
+        .iter()
+        .all(|a| a.era == ForcedWarEraTag::Stone));
+}
+
+#[test]
+fn pairing_third_owner_joins_existing_pair() {
+    // Trzech wyzwolonych: 1-2 nowa para, 3 dolacza jako trzeci do istniejacej pary 5-6 (strona = min id).
+    let mut state = WarTurnState::default();
+    state.forced[0].active_by_pair_key = vec![pair(5, 6)];
+    let owners = stone_owners(&[1, 2, 3]);
+    let out = run(&owners, &mut state, 1000.0, &pairing_flags(), &env());
+    assert!(out.pairing.unresolved_owner_ids.is_empty());
+    assert!(out
+        .pairing
+        .assignments
+        .iter()
+        .any(|a| a.owner_id == 3 && a.target_id == 5));
+    assert!(out
+        .pairing
+        .assignments
+        .iter()
+        .any(|a| a.owner_id == 1 && a.target_id == 2));
+}
+
+#[test]
+fn pairing_multiwar_refuses_join_into_pair_in_era_war() {
+    // Web: isEraWarExhausted = isOwnerInActiveEraWar || brak miejsca w liczniku; dolaczenie do pary
+    // (forced-war-common.ts:513) pomija osoby zuzyte. Czlonkowie pary 5-6 sa w wojnie epoki -> brak dolaczenia.
+    let mut state = WarTurnState::default();
+    state.forced[0].active_by_pair_key = vec![pair(5, 6)];
+    let owners = stone_owners(&[1, 2, 3]);
+    let mut flags = pairing_flags();
+    flags.multiwar = true;
+    let out = run(&owners, &mut state, 1000.0, &flags, &env());
+    assert_eq!(out.pairing.unresolved_owner_ids, vec![3]);
+    assert!(!out.pairing.assignments.iter().any(|a| a.owner_id == 3));
+}
+
+#[test]
+fn pairing_blocked_pair_yields_no_assignment() {
+    let mut state = WarTurnState::default();
+    let owners = stone_owners(&[1, 2]);
+    let mut e = env();
+    e.blocked = |_, _| true;
+    let out = run(&owners, &mut state, 1000.0, &pairing_flags(), &e);
+    assert!(out.pairing.assignments.is_empty());
+    let mut un = out.pairing.unresolved_owner_ids.clone();
+    un.sort_unstable();
+    assert_eq!(un, vec![1, 2]);
+}
+
+#[test]
+fn pairing_exhausted_counter_removes_owner_from_pool_multiwar() {
+    // Multiwar: licznik wojen epoki wyczerpany u 1 -> 1 wypada z puli, 2 zostaje bez pary.
+    let mut state = WarTurnState::default();
+    let owners = stone_owners(&[1, 2]);
+    let mut flags = pairing_flags();
+    flags.multiwar = true;
+    let mut e = env();
+    e.counter_ok = |id| id != 1;
+    let out = run(&owners, &mut state, 1000.0, &flags, &e);
+    assert!(out.pairing.assignments.is_empty());
+    assert_eq!(out.pairing.unresolved_owner_ids, vec![2]);
+}
+
+#[test]
+fn pairing_owner_with_active_war_is_not_warless_and_joins_as_third() {
+    // Owner 1 ma juz aktywna wojne (napastnik): w parowaniu nie jest warless (total_by_owner != 0).
+    // Owner 2 (wolny) dolacza jako trzeci do pary 1-9 (strona = min id = 1).
+    let mut state = WarTurnState::default();
+    state.forced[0].active_by_pair_key = vec![pair(1, 9)];
+    let owners = stone_owners(&[1, 2]);
+    let out = run(&owners, &mut state, 1000.0, &pairing_flags(), &env());
+    assert!(!out
+        .pairing
+        .assignments
+        .iter()
+        .any(|a| a.owner_id == 1 && a.target_id == 2));
+    assert!(out.pairing.unresolved_owner_ids.is_empty());
+    assert!(out
+        .pairing
+        .assignments
+        .iter()
+        .any(|a| a.owner_id == 2 && a.target_id == 1));
 }
