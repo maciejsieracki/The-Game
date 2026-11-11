@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "6f3edba89d19286607410dfd2776da77",
-  "bundleSha256": "d34a5a46d6571b0b4aa90e1c5ce8443822703899e688084489ddc330f33f85c7",
-  "bundleBytes": 14492457,
+  "bundleMd5": "3af2e8f32d59a25627e77f572e894dd7",
+  "bundleSha256": "c32c2a9ae902dcae3ebc85dbfa86c129225733e6bad6339a6d1d6f92a314605d",
+  "bundleBytes": 14492509,
   "sourceSnapshot": {
-    "source": "merge FC 5df05c456",
+    "source": "merge FC 8930288b5",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 633: R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: po przegranej bitwie W POLU ocalałe jednostki przegranej strony wycofują się o 2 heksy; w mieście i przy oblężeniu przegrani giną (decyzja właściciela); mgła odkrywana wzdłuż odwrotu"
+    "FALA 634: R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: wspólny chip resourceAmountChipHtml (ikona + liczba, nazwa w title/aria) w panelu miasta (stock budowy, utrzymanie, wymagania, koszt karty, utrzymanie i rekrutacja jednostek, bilans utrzymania surowców) i w panelu imperium (utrzymanie, rekrutacja masowa); CSS chipa wspólny"
   ],
   "verification": [
-    "tsc czysty; test tematu 44/0, undeployed 37/0, post-battle-map 32/0, siege-defenders 12/0, map-field-battle 24/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; Chromium 3x BROWSER PASS; mutacje czerwone; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; resource-icons-everywhere 10/0, render-test Chromium 13/0 (45 próbek formatterów), chip-icons-real-render 29/0, recruit-card-manpower 20/0, recruit-list-visibility-ui 15/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat OK; zrzuty 520 px przed/po; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE_ZMIERZONO: pełna pętla gry przez main.ts w Chromium z odwrotem, wpływ zamkniętych granic na legalność odwrotu; mgla-sciezka-inwariant 41/1 = dług bazowy (main.ts:28778)"
+    "Poza zakresem: karty encji (entityCards/buildingAdapter) — temat R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1; NIE_ZMIERZONO: układ siatki bilansu w prawdziwym panelu, render Chromium karty kosztu budowy i rekrutacji masowej; mennica-magazyn 7 FAIL = dług bazowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T16:03:19",
+  "hubGeneratedAt": "2026-11-11T16:08:53",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "6f3edba89d19286607410dfd2776da77",
-      "sizeBytes": 14492457
+      "md5": "3af2e8f32d59a25627e77f572e894dd7",
+      "sizeBytes": 14492509
     }
   ],
-  "md5": "6f3edba89d19286607410dfd2776da77",
+  "md5": "3af2e8f32d59a25627e77f572e894dd7",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

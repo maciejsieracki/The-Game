@@ -1,3 +1,9 @@
+## ROBOCZA 3af2e8f3 -- 2026-11-06 -- FALA 634: Ikony surowców zamiast nazw w kartach kosztu, utrzymania i rekrutacji (testowa)
+
+- R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: wspólny chip resourceAmountChipHtml (ikona + liczba, nazwa w title/aria) w panelu miasta (stock budowy, utrzymanie, wymagania, koszt karty, utrzymanie i rekrutacja jednostek, bilans utrzymania surowców) i w panelu imperium (utrzymanie, rekrutacja masowa); CSS chipa wspólny
+- Weryfikacja: tsc czysty; resource-icons-everywhere 10/0, render-test Chromium 13/0 (45 próbek formatterów), chip-icons-real-render 29/0, recruit-card-manpower 20/0, recruit-list-visibility-ui 15/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat OK; zrzuty 520 px przed/po; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Poza zakresem: karty encji (entityCards/buildingAdapter) — temat R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1; NIE_ZMIERZONO: układ siatki bilansu w prawdziwym panelu, render Chromium karty kosztu budowy i rekrutacji masowej; mennica-magazyn 7 FAIL = dług bazowy
+
 ## ROBOCZA 6f3edba8 -- 2026-11-06 -- FALA 633: Odwrót ocalałych po przegranej bitwie tylko w polu (testowa)
 
 - R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: po przegranej bitwie W POLU ocalałe jednostki przegranej strony wycofują się o 2 heksy; w mieście i przy oblężeniu przegrani giną (decyzja właściciela); mgła odkrywana wzdłuż odwrotu
