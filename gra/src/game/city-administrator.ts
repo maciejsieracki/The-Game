@@ -39,6 +39,12 @@ interface AdminParamsJson {
   };
   budynki_administracyjne_tier: Record<string, number>;
   ai: { rezerwa_tur_utrzymania: number };
+  administrator_ulepszen: {
+    koszt_zatrudnienia_pieniadz: number;
+    utrzymanie_pieniadz_na_ture: number;
+    ai_wymaga_administratora: boolean;
+    opis_gracza: string;
+  };
   opis_gracza: string;
 }
 
@@ -145,6 +151,85 @@ export function cityHasWorkingAdministrator(city: Pick<City, 'ownerId' | 'admini
   return cityHasAdministrator(city) && city.administrator!.pracuje === true;
 }
 
+// ---------------------------------------------------------------------------
+// R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 — ADMINISTRATOR ULEPSZEŃ (decyzja właściciela ABC 2026-11-11):
+// ten sam koszt co administrator miasta, BEZ bonusów i dodatków; jedyny skutek: odblokowuje
+// automatyczne ulepszenia terenu w tym mieście. Stan na `City.administratorUlepszen` (ten sam kształt
+// co administrator miasta), finansowany z tego samego skarbca państwa (`refreshAdministratorState`).
+// ---------------------------------------------------------------------------
+
+/** Koszt jednorazowy zatrudnienia administratora ulepszeń (Pieniądz). */
+export function improvementAdministratorHireCost(): number {
+  return P.administrator_ulepszen.koszt_zatrudnienia_pieniadz;
+}
+
+/** Utrzymanie administratora ulepszeń na turę (stawka tieru I administratora miasta; JSON). */
+export function improvementAdministratorUpkeep(): number {
+  return P.administrator_ulepszen.utrzymanie_pieniadz_na_ture;
+}
+
+/** Opis do UI/Civpedii (z JSON). */
+export function improvementAdministratorDescription(): string {
+  return P.administrator_ulepszen.opis_gracza;
+}
+
+/** Czy AI też podlega bramce administratora ulepszeń (JSON; domyślnie nie — patrz raport). */
+export function aiRequiresImprovementAdministrator(): boolean {
+  return P.administrator_ulepszen.ai_wymaga_administratora === true;
+}
+
+/** Czy miasto ma ZATRUDNIONEGO administratora ulepszeń (niezależnie od tego, czy pracuje). */
+export function cityHasImprovementAdministrator(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): boolean {
+  return !!city.administratorUlepszen && city.administratorUlepszen.ownerId === city.ownerId;
+}
+
+/** Czy miasto ma DZIAŁAJĄCEGO administratora ulepszeń (zatrudniony + pokryte utrzymanie). */
+export function cityHasWorkingImprovementAdministrator(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): boolean {
+  return cityHasImprovementAdministrator(city) && city.administratorUlepszen!.pracuje === true;
+}
+
+/** Utrzymanie administratora ulepszeń tego miasta w tej turze (0, gdy brak/nie pracuje). */
+export function improvementAdministratorUpkeepForCity(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): number {
+  return cityHasWorkingImprovementAdministrator(city) ? improvementAdministratorUpkeep() : 0;
+}
+
+export type ImprovementHireBlockReason = 'ma_administratora' | 'brak_srodkow';
+
+/** Powód, dla którego NIE można zatrudnić administratora ulepszeń (null = można). */
+export function improvementAdministratorHireBlockReason(
+  city: Pick<City, 'ownerId' | 'administratorUlepszen'>,
+  treasury: number,
+): ImprovementHireBlockReason | null {
+  if (cityHasImprovementAdministrator(city)) return 'ma_administratora';
+  if (treasury < improvementAdministratorHireCost()) return 'brak_srodkow';
+  return null;
+}
+
+export function improvementAdministratorHireBlockText(reason: ImprovementHireBlockReason): string {
+  return reason === 'ma_administratora'
+    ? 'Miasto ma już administratora ulepszeń'
+    : `Brak środków w skarbcu: zatrudnienie kosztuje ${improvementAdministratorHireCost()} Pieniądza`;
+}
+
+/** Zatrudnij administratora ulepszeń (BEZ pobrania kosztu — pobiera wołający). false = zablokowane. */
+export function hireImprovementAdministrator(city: City, treasury: number, turn: number): boolean {
+  if (improvementAdministratorHireBlockReason(city, treasury) !== null) return false;
+  city.administratorUlepszen = { ownerId: city.ownerId, hiredTurn: turn, pracuje: true };
+  return true;
+}
+
+/** Zwolnij administratora ulepszeń (bez zwrotu kosztu). */
+export function dismissImprovementAdministrator(city: City): boolean {
+  if (!city.administratorUlepszen) return false;
+  delete city.administratorUlepszen;
+  return true;
+}
+
+/** Tekst stanu administratora ulepszeń do tooltipa/UI. */
+export function improvementAdministratorStatusText(working: boolean): string {
+  return working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa';
+}
+
 /** Utrzymanie administratora tego miasta w tej turze (0, gdy brak/nie pracuje). */
 export function administratorUpkeepForCity(
   city: Pick<City, 'ownerId' | 'administrator'>,
@@ -156,7 +241,7 @@ export function administratorUpkeepForCity(
 
 /** Suma utrzymania DZIAŁAJĄCYCH administratorów ownera (płatna ze skarbca państwa). */
 export function totalAdministratorUpkeepForOwner(
-  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator'>>,
+  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator' | 'administratorUlepszen'>>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   ownerId: number,
 ): number {
@@ -164,20 +249,22 @@ export function totalAdministratorUpkeepForOwner(
   for (const c of cities) {
     if (c.ownerId !== ownerId) continue;
     sum += administratorUpkeepForCity(c, builtByCity.get(c.id) ?? []);
+    sum += improvementAdministratorUpkeepForCity(c);
   }
   return sum;
 }
 
 /** Suma utrzymania WSZYSTKICH zatrudnionych administratorów ownera (także bezczynnych) — do prognozy. */
 export function totalAdministratorUpkeepIfAllWorkForOwner(
-  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator'>>,
+  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator' | 'administratorUlepszen'>>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   ownerId: number,
 ): number {
   let sum = 0;
   for (const c of cities) {
-    if (c.ownerId !== ownerId || !cityHasAdministrator(c)) continue;
-    sum += administratorUpkeepForTier(administrativeBuildingTier(builtByCity.get(c.id) ?? []));
+    if (c.ownerId !== ownerId) continue;
+    if (cityHasAdministrator(c)) sum += administratorUpkeepForTier(administrativeBuildingTier(builtByCity.get(c.id) ?? []));
+    if (cityHasImprovementAdministrator(c)) sum += improvementAdministratorUpkeep();
   }
   return sum;
 }
@@ -230,7 +317,9 @@ export function dismissAdministrator(city: City): boolean {
 }
 
 export type AdministratorChangeKind = 'ended_no_building' | 'ended_owner_changed' | 'stopped_no_funds' | 'resumed';
-export interface AdministratorChange { city: City; kind: AdministratorChangeKind }
+/** `role`: 'miasto' = administrator miasta, 'ulepszenia' = administrator ulepszeń (R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1). */
+export type AdministratorRole = 'miasto' | 'ulepszenia';
+export interface AdministratorChange { city: City; kind: AdministratorChangeKind; role: AdministratorRole }
 
 /**
  * Odśwież stan administratorów (wołać na starcie tury ekonomii, po zatrudnieniu/zwolnieniu,
@@ -255,13 +344,13 @@ export function refreshAdministratorState(
     const builtIds = builtByCity.get(city.id) ?? [];
     if (adm.ownerId !== city.ownerId) {
       delete city.administrator;
-      changes.push({ city, kind: 'ended_owner_changed' });
+      changes.push({ city, kind: 'ended_owner_changed', role: 'miasto' });
       continue;
     }
     const tier = administrativeBuildingTier(builtIds);
     if (tier === 0) {
       delete city.administrator;
-      changes.push({ city, kind: 'ended_no_building' });
+      changes.push({ city, kind: 'ended_no_building', role: 'miasto' });
       continue;
     }
     if (!remaining.has(city.ownerId)) remaining.set(city.ownerId, treasuryOf(city.ownerId));
@@ -271,10 +360,33 @@ export function refreshAdministratorState(
     if (left >= upkeep) {
       remaining.set(city.ownerId, left - upkeep);
       adm.pracuje = true;
-      if (!was) changes.push({ city, kind: 'resumed' });
+      if (!was) changes.push({ city, kind: 'resumed', role: 'miasto' });
     } else {
       adm.pracuje = false;
-      if (was) changes.push({ city, kind: 'stopped_no_funds' });
+      if (was) changes.push({ city, kind: 'stopped_no_funds', role: 'miasto' });
+    }
+  }
+  // Przebieg 2: administratorzy ULEPSZEŃ — ten sam budżet skarbca państwa (po administratorach miast),
+  // bez wymogu budynku (brak tieru => stawka z JSON); koniec służby tylko przy zmianie właściciela.
+  for (const city of cities) {
+    const adm = city.administratorUlepszen;
+    if (!adm) continue;
+    if (adm.ownerId !== city.ownerId) {
+      delete city.administratorUlepszen;
+      changes.push({ city, kind: 'ended_owner_changed', role: 'ulepszenia' });
+      continue;
+    }
+    if (!remaining.has(city.ownerId)) remaining.set(city.ownerId, treasuryOf(city.ownerId));
+    const left = remaining.get(city.ownerId)!;
+    const upkeep = improvementAdministratorUpkeep();
+    const was = adm.pracuje === true;
+    if (left >= upkeep) {
+      remaining.set(city.ownerId, left - upkeep);
+      adm.pracuje = true;
+      if (!was) changes.push({ city, kind: 'resumed', role: 'ulepszenia' });
+    } else {
+      adm.pracuje = false;
+      if (was) changes.push({ city, kind: 'stopped_no_funds', role: 'ulepszenia' });
     }
   }
   return changes;

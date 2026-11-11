@@ -252,7 +252,7 @@ const MAXT = 4;
       entryPoints: [uiEntry], bundle: true, platform: 'browser', format: 'iife', target: 'es2020', outfile: uiOut, absWorkingDir: GRA_ROOT,
       loader: { '.ts': 'ts' }, logLevel: 'silent', nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
       plugins: [{ name: 'stub', setup(b) {
-        b.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: STUB }));
+        b.onResolve({ filter: /(^|\/)brandAssets$/ }, () => ({ path: STUB }));
         b.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: STUB_OWL }));
       } }],
     });

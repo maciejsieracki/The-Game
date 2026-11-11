@@ -1,0 +1,193 @@
+{
+  "turns": 3,
+  "capital": {
+    "id": "city0",
+    "name": "Rzym"
+  },
+  "setup": {
+    "hired": false,
+    "working": false,
+    "tier": 0,
+    "upkeep": 0,
+    "hireCost": 40,
+    "blockReasonText": "Wymaga budynku administracyjnego w mieście (Pałac, Dom Starszyzny, Dwór Zarządcy lub Pretorium)",
+    "effects": {
+      "aktywny": false,
+      "tier": 0,
+      "skala": 0,
+      "korupcjaRedukcja": 0,
+      "produkcjaMult": 1,
+      "podatkiMult": 1
+    },
+    "queueLen": 0,
+    "treasury": 500
+  },
+  "state1": {
+    "hired": false,
+    "working": false,
+    "upkeep": 2,
+    "hireCost": 40,
+    "blockReasonText": null,
+    "description": "Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie.",
+    "treasury": 500,
+    "raw": null
+  },
+  "panel1Open": true,
+  "panel1": {
+    "panel": true,
+    "button": {
+      "text": "Administrator ulepszeń +",
+      "state": "available",
+      "disabled": false,
+      "title": "Zatrudnij administratora ulepszeń: 40 Pieniądza jednorazowo, utrzymanie 2/turę ze skarbca państwa. Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie.",
+      "icon": true,
+      "warn": false
+    },
+    "hint": "Auto-ulepszenia terenu w tym mieście wymagają działającego administratora ulepszeń. Koszt 40 Pieniądza, utrzymanie 2/turę.",
+    "eff": "Efekt w mieście: wstrzymane (brak działającego administratora ulepszeń) (państwo)"
+  },
+  "iconOff": "<span class=\"civ-adm-ic is-off\" data-adm-icon=\"improvements\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"></circle><path d=\"M4.6 14.2c-.9-2.6-.5-5.2 1.1-7.2\"></path><path d=\"M19.4 14.2c.9-2.6.5-5.2-1.1-7.2\"></path><path d=\"M8.4 17.2 12 7l3.6 10.2\"></path><path d=\"M9.8 13.6h4.4\"></path><g class=\"civ-adm-ic-pick\" stroke-width=\"1.6\"><path d=\"M14.5 19.5 20 14\"></path><path d=\"M16.5 13.2c1.6-.4 3.2.2 4.3 1.4\"></path></g></svg>\n</span>",
+  "l0": {
+    "layers": 0,
+    "clearing": 0
+  },
+  "turns1": [
+    {
+      "ok": true,
+      "layers": 0,
+      "clearing": 0
+    },
+    {
+      "ok": true,
+      "layers": 0,
+      "clearing": 0
+    },
+    {
+      "ok": true,
+      "layers": 0,
+      "clearing": 0
+    }
+  ],
+  "l1": {
+    "ok": true,
+    "layers": 0,
+    "clearing": 0
+  },
+  "panel2Open": true,
+  "tBeforeHire": 500,
+  "state2": {
+    "hired": true,
+    "working": true,
+    "upkeep": 2,
+    "hireCost": 40,
+    "blockReasonText": null,
+    "description": "Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie.",
+    "treasury": 460,
+    "raw": {
+      "ownerId": 0,
+      "hiredTurn": 4,
+      "pracuje": true
+    }
+  },
+  "panel2": {
+    "panel": true,
+    "button": {
+      "text": "Administrator ulepszeń ✓",
+      "state": "working",
+      "disabled": false,
+      "title": "Administrator ulepszeń: pracuje. Utrzymanie 2/turę ze skarbca państwa. Kliknij, aby zwolnić (bez zwrotu 40).",
+      "icon": true,
+      "warn": false
+    },
+    "hint": null,
+    "eff": "Efekt w mieście: Zrówn. · 100% Pracy (państwo)"
+  },
+  "iconOk": "<span class=\"civ-adm-ic is-ok\" data-adm-icon=\"improvements\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"></circle><path d=\"M4.6 14.2c-.9-2.6-.5-5.2 1.1-7.2\"></path><path d=\"M19.4 14.2c.9-2.6.5-5.2-1.1-7.2\"></path><path d=\"M8.4 17.2 12 7l3.6 10.2\"></path><path d=\"M9.8 13.6h4.4\"></path><g class=\"civ-adm-ic-pick\" stroke-width=\"1.6\"><path d=\"M14.5 19.5 20 14\"></path><path d=\"M16.5 13.2c1.6-.4 3.2.2 4.3 1.4\"></path></g></svg>\n</span>",
+  "turns2": [
+    {
+      "ok": true,
+      "layers": 11,
+      "clearing": 2,
+      "working": true,
+      "treasury": 458
+    },
+    {
+      "ok": true,
+      "layers": 19,
+      "clearing": 2,
+      "working": true,
+      "treasury": 462
+    },
+    {
+      "ok": true,
+      "layers": 19,
+      "clearing": 2,
+      "working": true,
+      "treasury": 476
+    }
+  ],
+  "l2start": {
+    "layers": 0,
+    "clearing": 0
+  },
+  "state3": {
+    "hired": true,
+    "working": false,
+    "upkeep": 2,
+    "hireCost": 40,
+    "blockReasonText": null,
+    "description": "Administrator ulepszeń pozwala wyłącznie na automatyczne ulepszanie terenu w tym mieście (wycinka, farmy, trzoda, irygacja, drogi itd.). Nie daje żadnych bonusów. Utrzymanie płaci skarbiec państwa; bez środków administrator nie pracuje, a ulepszenia trzeba wykonywać ręcznie.",
+    "treasury": 0,
+    "raw": {
+      "ownerId": 0,
+      "hiredTurn": 4,
+      "pracuje": false
+    }
+  },
+  "panel3": {
+    "panel": true,
+    "button": {
+      "text": "!Administrator ulepszeń ✓",
+      "state": "idle",
+      "disabled": false,
+      "title": "Administrator ulepszeń: nie pracuje — brak środków w skarbcu państwa. Utrzymanie 2/turę ze skarbca państwa. Kliknij, aby zwolnić (bez zwrotu 40).",
+      "icon": true,
+      "warn": true
+    },
+    "hint": "Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — auto-ulepszenia w tym mieście wstrzymane.",
+    "eff": "Efekt w mieście: wstrzymane (brak działającego administratora ulepszeń) (państwo)"
+  },
+  "iconIdle": "<span class=\"civ-adm-ic is-idle\" data-adm-icon=\"improvements\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"></circle><path d=\"M4.6 14.2c-.9-2.6-.5-5.2 1.1-7.2\"></path><path d=\"M19.4 14.2c.9-2.6.5-5.2-1.1-7.2\"></path><path d=\"M8.4 17.2 12 7l3.6 10.2\"></path><path d=\"M9.8 13.6h4.4\"></path><g class=\"civ-adm-ic-pick\" stroke-width=\"1.6\"><path d=\"M14.5 19.5 20 14\"></path><path d=\"M16.5 13.2c1.6-.4 3.2.2 4.3 1.4\"></path></g></svg>\n<span class=\"civ-adm-ic-warn\" aria-hidden=\"true\">!</span></span>",
+  "turn3": {
+    "ok": true,
+    "before": {
+      "layers": 19,
+      "clearing": 2
+    },
+    "after": {
+      "layers": 19,
+      "clearing": 0
+    },
+    "working": true,
+    "treasury": 16
+  },
+  "save": {
+    "administratorUlepszen": {
+      "ownerId": 0,
+      "hiredTurn": 4,
+      "pracuje": true
+    }
+  },
+  "icon": {
+    "cells": 12
+  },
+  "errors": [],
+  "verdict": {
+    "noAdminNoImprovements": true,
+    "hireCost40": true,
+    "withAdminImproves": true,
+    "noFundsStops": true,
+    "saveHasAdmin": true,
+    "iconCells": 12
+  }
+}

@@ -52,7 +52,7 @@ const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const stubPlugin = {
   name: 'stub-icons',
   setup(build) {
-    build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_ASSETS_STUB }));
+    build.onResolve({ filter: /(^|\/)brandAssets$/ }, () => ({ path: BRAND_ASSETS_STUB }));
     build.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: SCIENCE_OWL_STUB }));
   },
 };

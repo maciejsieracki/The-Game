@@ -14,7 +14,8 @@ import {
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
-import { AUTO_BUILD_DISABLED_HINT } from '../game/auto-build-gate';
+import { AUTO_BUILD_DISABLED_HINT, AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
+import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
 // (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
@@ -90,6 +91,13 @@ export interface BuildModeHudConfig {
    * Brak haka = włączona. Wyłączona: blok „Automatyzacja ulepszeń terenu” zastępuje podpowiedź.
    */
   isAutoBuildEnabled?: () => boolean;
+  /**
+   * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń wybranego miasta (zatrudnij/zwolnij).
+   * Auto-ulepszenia terenu w mieście działają tylko przy działającym administratorze. Brak haków = brak sekcji.
+   */
+  getImprovementAdministratorState?: (cityId: string) => ImprovementAdministratorUiState | null;
+  onHireImprovementAdministrator?: (cityId: string) => boolean;
+  onDismissImprovementAdministrator?: (cityId: string) => boolean;
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
@@ -125,6 +133,42 @@ export interface BuildModeHudConfig {
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
   onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
+}
+
+/** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stan administratora ulepszeń miasta dla panelu ulepszeń. */
+export interface ImprovementAdministratorUiState {
+  hired: boolean;
+  working: boolean;
+  upkeep: number;
+  hireCost: number;
+  blockReasonText: string | null;
+  description: string;
+}
+
+/** Wiersz administratora ulepszeń (ikona „A” z kilofem + przycisk zatrudnij/zwolnij + stan). */
+function renderImprovementAdministratorRow(st: ImprovementAdministratorUiState): string {
+  const state = st.hired ? (st.working ? 'ok' : 'idle') : 'off';
+  const icon = administratorIconHtml({ size: 16, state, variant: 'improvements' });
+  const title = st.hired
+    ? `Administrator ulepszeń: ${st.working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa'}. `
+      + `Utrzymanie ${st.upkeep}/turę ze skarbca państwa. Kliknij, aby zwolnić (bez zwrotu ${st.hireCost}).`
+    : (st.blockReasonText ?? `Zatrudnij administratora ulepszeń: ${st.hireCost} Pieniądza jednorazowo, utrzymanie ${st.upkeep}/turę ze skarbca państwa. ${st.description}`);
+  const blocked = !st.hired && st.blockReasonText !== null;
+  const label = st.hired ? 'Administrator ulepszeń ✓' : 'Administrator ulepszeń +';
+  const attr = st.hired ? 'data-imp-admin-dismiss' : 'data-imp-admin-hire';
+  const status = st.hired ? (st.working ? 'working' : 'idle') : (blocked ? 'blocked' : 'available');
+  let html = '<div class="civ-build-imp-admin" data-imp-admin-row>'
+    + `<button type="button" class="civ-build-hbtn civ-build-imp-admin-btn${st.hired ? ' active' : ''}${st.hired && !st.working ? ' idle' : ''}" `
+    + `${attr} data-imp-admin-state="${status}" ${blocked ? 'disabled ' : ''}title="${title.replace(/"/g, '&quot;')}">${icon}<span>${label}</span></button>`;
+  if (!st.hired) {
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint>${AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT}. `
+      + `Koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep}/turę.</div>`;
+  } else if (!st.working) {
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint>Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — `
+      + 'auto-ulepszenia w tym mieście wstrzymane.</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 export interface BuildModeHudApi {
@@ -288,6 +332,10 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-auto-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#9a9070;flex-wrap:wrap;}
 .civ-build-auto-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
 .civ-build-auto-city-wrap{margin-top:4px;}
+${ADMINISTRATOR_ICON_CSS}
+.civ-build-imp-admin{margin:6px 0 2px;}
+.civ-build-imp-admin-btn{display:inline-flex;align-items:center;gap:6px;}
+.civ-build-imp-admin-btn.idle{border-color:#c0392b;color:#e8a49b;}
 .civ-build-auto-eff{font-size:9px;color:#8a8060;line-height:1.35;margin:4px 0 2px;}
 .civ-build-auto-override{font-size:10px;color:#9a9070;margin:4px 0;}
 .civ-build-hbtn{background:rgba(232,216,138,.08);border:1px solid rgba(232,216,138,.22);color:#d4cba0;
@@ -620,12 +668,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const sole = playerCities[0];
           if (sole) html += `<div class="civ-build-wonders-sub">${sole.name}</div>`;
         }
+        const impAdm = uCityId ? (config.getImprovementAdministratorState?.(uCityId) ?? null) : null;
+        if (impAdm) html += renderImprovementAdministratorRow(impAdm);
         if (effState) {
           const effLabel = effState.tryb === 'reczny'
             ? 'Ręczny'
             : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
               ;
-          html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
+          const impOff = impAdm !== null && !impAdm.working;
+          html += `<div class="civ-build-auto-eff">Efekt w mieście: ${impOff ? 'wstrzymane (brak działającego administratora ulepszeń)' : effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
         const onOv = cityOverride ? ' active' : '';
@@ -882,6 +933,19 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         const current = config.getUlepszeniaCityOverride?.(cityId) ?? false;
         config.onUlepszeniaCityOverrideChange?.(cityId, !current);
       }
+      render();
+    });
+
+    el.querySelector('[data-imp-admin-hire]')?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onHireImprovementAdministrator?.(cityId);
+      render();
+    });
+    el.querySelector('[data-imp-admin-dismiss]')?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (!cityId) return;
+      if (!window.confirm('Zwolnić administratora ulepszeń? Koszt zatrudnienia nie podlega zwrotowi, a auto-ulepszenia terenu w tym mieście przestaną działać.')) return;
+      config.onDismissImprovementAdministrator?.(cityId);
       render();
     });
 

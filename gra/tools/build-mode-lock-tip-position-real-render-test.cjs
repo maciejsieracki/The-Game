@@ -126,7 +126,7 @@ async function main() {
     plugins: [{
       name: 'stub-icons',
       setup(build) {
-        build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_STUB }));
+        build.onResolve({ filter: /(^|\/)brandAssets$/ }, () => ({ path: BRAND_STUB }));
         build.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: OWL_STUB }));
       },
     }],
