@@ -66,12 +66,14 @@ pub mod player;
 pub mod production_queue;
 pub mod production_units;
 pub mod recruitment;
+// Wymagane: replay.rs używa `civ_engine::`, a tests/replay.rs włącza go przez #[path]; lib test nie ma tej ścieżki.
 #[cfg(not(test))]
 pub mod replay;
 pub mod resource_access;
 pub mod resource_production;
 pub mod rng;
 pub mod roads;
+// Wymagane: save_load.rs używa `civ_engine::`; tests/*.rs włączają go przez #[path], lib test nie ma tej ścieżki.
 #[cfg(not(test))]
 pub mod save_load;
 pub mod save_migrations;
@@ -138,6 +140,7 @@ pub mod war_turn_state;
 pub mod war_world_view;
 pub mod wonder_placement;
 pub mod work_tax;
+// Wymagane: zapis_loader.rs importuje `super::save_load`, którego brak w buildzie lib test (E0432 w `cargo test --lib`).
 #[cfg(not(test))]
 pub mod zapis_loader;
 
