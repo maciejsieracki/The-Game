@@ -1,0 +1,7 @@
+# DISPATCH — R-RUSTPORT-ZAPIS-REPLAY-DESER-REMOVE-Q1 (poz. 6, wariant B; etap 1/4 Operator)
+Decyzja właściciela (wariant B): usunąć derive Deserialize z ReplayLog i ReplayStep; jedyna ścieżka wczytania replayu to load_replay_log_json (z migracją i raportem).
+Baza: origin/rust-port/parity-v2 = ca25d6fd2 (zawiera REPLAY r2: ReplayLog::load_json_with_migration_reports, flaga migration_pending).
+GOAL: 1) brak derive/impl Deserialize na ReplayLog i ReplayStep (grep po src/ i tests/); 2) wszystkie wejścia replayu z JSON idą przez load_replay_log_json; 3) testy tests/replay.rs i p6_zapis_replay_migrate przechodzą po przepięciu na load_replay_log_json; 4) test behawioralny: wczytanie replayu bez migracji nie jest możliwe (kompilacja lub błąd w runtime), zdefiniowane w raporcie.
+Allowlista: rust-port/engine/src/domain/replay.rs; rust-port/engine/tests/replay.rs (przepięcie wywołań, tylko to); rust-port/engine/tests/p6_zapis_replay_migrate.rs (przepięcie wywołań); dyspozycje/autobot/runs/R-RUSTPORT-ZAPIS-REPLAY-DESER-REMOVE-Q1/**. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (nie commitować), save_load.rs (osobny temat), inne pliki domain/.
+Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test replay --test p6_zapis_replay_migrate --test p6_zapis_loader_migrate (EXIT zapisany).
+Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach). Raport 01-operator-r1.md.
