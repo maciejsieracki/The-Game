@@ -70,7 +70,9 @@ export function resolveAutoBatchPhase(
   const reserved = new Map<string, string>();
 
   for (const unit of units) {
-    if (unit.dead || unit.fadingOut || unit.removed || unit.routed
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: zroutowany (uciekajacy) zyje na polu --
+    // jest CELEM ataku i sam wykonuje ruch ucieczki, wiec zostaje w `live`.
+    if (unit.dead || unit.fadingOut || unit.removed
       || (unit.hp !== undefined && (!Number.isFinite(unit.hp) || unit.hp <= 0))) continue;
     live.set(unit.id, unit);
     if (unit.occupies !== false) reserved.set(cellKey(unit.q, unit.r), unit.id);
@@ -118,7 +120,6 @@ export function resolveAutoBatchPhase(
       || unit.acted
       || unit.dead
       || unit.fadingOut
-      || unit.routed
       || unit.removed
       || (unit.hp !== undefined && (!Number.isFinite(unit.hp) || unit.hp <= 0))
       || !live.has(unit.id)
@@ -136,8 +137,7 @@ export function resolveAutoBatchPhase(
       const target = intent.targetId ? live.get(intent.targetId) : undefined;
       const targetAvailable = Boolean(
         target
-        && target.side !== phase
-        && !target.routed,
+        && target.side !== phase,
       );
       if (!targetAvailable) {
         resolutions.push({
