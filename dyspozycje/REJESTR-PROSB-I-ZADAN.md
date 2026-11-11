@@ -9636,3 +9636,8 @@ STATUS: ZAREJESTROWANE. Palisada50%, kamienny100%poMurarstwie, ceglany200%poBudo
 
 ### Korekta R-WEB-WALL-TIERS-MASONRY-BRICK-Q1 — najnowszeECHO2026-11-10
 Właścicielpoprawiłbonusy: PALISADA100%, KAMIEŃ150%, CEGŁA200%. Zastępujewcześniejsze50/100/200. Karty/Civpedia/tech/modeljakwdispatchu, testytężnajnowszewartości. Operatorpowiadomiony.
+
+## 2026-11-11 — R-WEB-AI-BRONZE-STOCK-EXCESS-Q1
+STATUS: W REALIZACJI
+DOMAIN: GAME
+Zgłoszenie: Inkowie, 24818 brązu w kontrpropozycji. Podejrzenie nadmiernej produkcji lub błędnego licznika; przyczyna niepotwierdzona. Operator audytuje źródło liczby i zachowanie bieżącej produkcji, bez arbitralnego limitu zapasów. Dispatch: `autobot/runs/R-WEB-AI-BRONZE-STOCK-EXCESS-Q1/00-dispatch.md`. Zajmuje slot czasowo odłożonego kandydata barteru f20b81654.
