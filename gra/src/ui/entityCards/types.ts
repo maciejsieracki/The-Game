@@ -46,6 +46,10 @@ export interface EntityCardRow {
    * chipy rozdzielone „ + " → `resourcesSuffix`. `value` NIE może zawierać nazw surowców,
    * które mają ikonę (pilnuje `tools/entity-cards-resource-icons-test.cjs`). */
   resources?: EntityCardRowResource[];
+  /** Proza z surowcami w treści („Dostęp do [ikona] w imperium”): kolejne części to tekst zwykły
+   * (text node) albo `{id}` → ikona-chip bez liczby (nazwa w title/aria-label). Ma pierwszeństwo
+   * przed `value`/`resources` w renderze; `value` zostaje pełnym tekstem rezerwowym. */
+  valueParts?: Array<string | EntityCardRowResource>;
   /** Zwykły tekst po chipach surowców (np. „/ turę", „— z magazynu państwa"). */
   resourcesSuffix?: string;
   emphasize?: boolean;

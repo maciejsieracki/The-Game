@@ -169,7 +169,18 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   }
   const valIsLink = row.linkTo != null && !anchorOnLabel;
   const val = el(valIsLink ? 'button' : 'span', 'entity-card-row-value');
-  if (row.resources && row.resources.length > 0) {
+  if (row.valueParts && row.valueParts.length > 0) {
+    // Proza z surowcami: tekst jako text node, surowiec jako ikona (chip bez liczby).
+    for (const part of row.valueParts) {
+      if (typeof part === 'string') {
+        val.append(document.createTextNode(part));
+      } else {
+        const chip = el('span', 'entity-card-row-res');
+        chip.innerHTML = resourceAmountChipHtml(part.id, escapeHtmlText(part.amount === undefined ? '' : String(part.amount)));
+        val.appendChild(chip);
+      }
+    }
+  } else if (row.resources && row.resources.length > 0) {
     // R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1: surowce jako DANE → chipy (ikona + liczba).
     // `row.value` i `resourcesSuffix` to zwykły tekst (text node); HTML powstaje wyłącznie z
     // `resourceAmountChipHtml`, a kwoty są escapowane — żadnego surowego HTML z adaptera.

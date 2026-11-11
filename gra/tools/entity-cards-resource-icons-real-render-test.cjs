@@ -140,6 +140,8 @@ async function main() {
       const out = [];
       const cases = [
         ['building', buildingId], ['improvement', 'tartak'], ['improvement', 'kopalnia_zelaza'],
+        // obrona r1: proza z surowcami (valueParts) — „Odblokowuje"/„Warunek"/„Dodatkowe warunki"
+        ['building', 'stolarnia'], ['building', 'mennica'], ['improvement', 'stadnina'],
         ['unit', slug(unitName)], ['technology', C.technologyIdFromName(techName)],
       ];
       for (const [kind, id] of cases) {
@@ -204,6 +206,9 @@ async function main() {
             label: 'Surowce', value: '<img src=x onerror="window.__xss=1">tekst',
             resources: [{ id: 'drewno', amount: '<img src=x onerror="window.__xss=2">5' }],
             resourcesSuffix: '<b onmouseover="window.__xss=3">sufiks</b>',
+          }, {
+            label: 'Proza', value: 'x',
+            valueParts: ['<img src=x onerror="window.__xss=4">', { id: 'drewno', amount: '<i onclick="window.__xss=5">1</i>' }, '<u>koniec</u>'],
           }],
         }],
       };
@@ -214,13 +219,16 @@ async function main() {
       document.body.appendChild(host);
       return new Promise((resolve) => setTimeout(() => resolve({
         imgs: card.querySelectorAll('.entity-card-row img').length,
-        bolds: card.querySelectorAll('.entity-card-row b').length,
+        bolds: card.querySelectorAll('.entity-card-row b, .entity-card-row i, .entity-card-row u').length,
+        proseText: [...card.querySelectorAll('.entity-card-row-value')][1]?.textContent || '',
         xss: window.__xss,
         text: card.querySelector('.entity-card-row-value').textContent,
       }), 150));
     });
     check('XSS: żaden <img>/<b> nie powstaje z value/amount/resourcesSuffix', xss.imgs === 0 && xss.bolds === 0, xss);
     check('XSS: skrypt z atrybutu nie wykonał się', xss.xss === 0, xss);
+    check('XSS valueParts: tekst części i kwota jako zwykły tekst (brak <img>/<i>/<u>)',
+      xss.proseText.includes('<img') && xss.proseText.includes('<u>koniec</u>') && xss.proseText.includes('<i onclick'), xss.proseText);
     check('XSS: dane z HTML-em są widoczne jako zwykły tekst', xss.text.includes('<img') && xss.text.includes('<b onmouseover'), xss.text);
 
     if (SHOTS_DIR) {

@@ -162,18 +162,45 @@ async function main() {
   const resourceRowsPerKind = {};
   let emptyIds = 0;
   let chipRows = 0;
+  let proseChipRows = 0;
+  let exemptCount = 0;
+  // Wyjątki (jawne): opisy/proza narracyjna i epoka — to tekst opowieści, nie koszt/wymóg surowca;
+  // karty cudów — bonusy plonów („+2 Praca, +2 Drewno" = oś plonów, osobny adapter, decyzja
+  // udokumentowana w 30-obrona-claude.md, zarzut 4).
+  const isExempt = (kind, section, row) => {
+    if (kind === 'wonder') return true;
+    if (section.layout === 'prose' || section.layout === 'top3') return true;
+    if (/^(opis|top 3|rys historyczny|historia|ciekawostka|ciekawostki)$/i.test(section.title || '')) return true;
+    // „Epoka wejścia: Kamień/Brąz/Żelazo" to nazwa epoki (Epoka Kamienia…), nie surowiec.
+    if (/^Epoka/.test(row.label) || row.label === 'Nazwa') return true;
+    return false;
+  };
   for (const { kind, id, card } of cards) {
     for (const section of card.sections || []) {
       for (const row of section.rows || []) {
-        const isResourceRow = RESOURCE_ROW_LABELS.has(row.label) || (row.resources && row.resources.length > 0);
-        if (!isResourceRow) continue;
+        // ZAKRES PEŁNY (obrona r1, zarzuty 1-3): KAŻDY wiersz każdej karty jest sprawdzany; wyjątki
+        // tylko jawne, z powodem (EXEMPT_*). Dawny filtr RESOURCE_ROW_LABELS był ślepy na wiersze
+        // „Odblokowuje"/„Warunek"/„Dodatkowe warunki".
+        const exempt = isExempt(kind, section, row);
+        if (exempt) { exemptCount++; continue; }
         if (row.resources && row.resources.length > 0) {
           chipRows++;
           resourceRowsPerKind[kind] = (resourceRowsPerKind[kind] || 0) + 1;
           for (const r of row.resources) if (!r.id) emptyIds++;
         }
-        for (const field of ['value', 'resourcesSuffix']) {
-          if (hasBareName(row[field])) offenders.push({ kind, id, section: section.key, label: row.label, field, text: row[field] });
+        if (row.valueParts && row.valueParts.length > 0) {
+          proseChipRows++;
+          if (process.env.DUMP_PARTS) console.log('PARTS', kind, id, '|', row.label, '|', JSON.stringify(row.valueParts));
+          for (const p of row.valueParts) {
+            if (typeof p === 'string') {
+              if (hasBareName(p)) offenders.push({ kind, id, section: section.key, label: row.label, field: 'valueParts', text: p });
+            } else if (!p.id) emptyIds++;
+          }
+        } else if (hasBareName(row.value)) {
+          offenders.push({ kind, id, section: section.key, label: row.label, field: 'value', text: row.value });
+        }
+        if (hasBareName(row.resourcesSuffix)) {
+          offenders.push({ kind, id, section: section.key, label: row.label, field: 'resourcesSuffix', text: row.resourcesSuffix });
         }
         if (row.resources && row.resources.length > 0 && hasBareName(row.label)) {
           offenders.push({ kind, id, section: section.key, label: row.label, field: 'label', text: row.label });
@@ -182,7 +209,7 @@ async function main() {
     }
   }
   check('A: ZERO gołych nazw surowców w value/resourcesSuffix/label wierszy surowcowych (wszystkie karty z danych)',
-    offenders.length === 0, offenders.slice(0, 8));
+    offenders.length === 0, offenders.slice(0, 80));
   check('A2: liczba wierszy z chipami surowców > 0', chipRows > 0, chipRows);
   console.log('wiersze z resources wg rodzaju:', JSON.stringify(resourceRowsPerKind), 'razem', chipRows);
 
@@ -236,6 +263,25 @@ async function main() {
   const withStock = cards.find((c) => c.kind === 'building' && rowOf(c.card, 'Surowce (jednorazowo)'));
   check('budynek z koszt_surowce: „Surowce (jednorazowo)" = chipy + sufiks „— z magazynu państwa"',
     !!withStock && rowOf(withStock.card, 'Surowce (jednorazowo)').resourcesSuffix === '— z magazynu państwa', withStock && withStock.id);
+
+  // --- Proza z surowcami (obrona r1, zarzuty 1-2): „Odblokowuje", „Warunek", „Dodatkowe warunki" ----
+  const partsText = (row) => (row && row.valueParts || []).map((p) => (typeof p === 'string' ? p : `{${p.id}}`)).join('');
+  const tOdbl = rowOf(find('improvement', 'tartak'), 'Odblokowuje');
+  check('tartak: „Odblokowuje" = {drewno} bez notatki deweloperskiej (TYP 1 / B-SUROW-BUD-03)',
+    !!tOdbl && partsText(tOdbl) === '{drewno}' && !/TYP|B-SUROW/.test(tOdbl.value), tOdbl);
+  const sOdbl = rowOf(find('improvement', 'stadnina'), 'Odblokowuje');
+  check('stadnina: „Odblokowuje" = {kon} (jednostki konne)', !!sOdbl && partsText(sOdbl) === '{kon} (jednostki konne)', sOdbl);
+  const stol = rowOf(find('building', 'stolarnia'), 'Dodatkowe warunki');
+  check('stolarnia: „Dodatkowe warunki" niesie ikonę drewna (valueParts)',
+    !!stol && partsText(stol).startsWith('{drewno} w magazynie państwa'), stol);
+  const mennica = rowOf(find('building', 'mennica'), 'Dodatkowe warunki');
+  check('mennica: „Dostęp do {zloto}", a „Kopalnia złota" zostaje tekstem (budynek, nie surowiec)',
+    !!mennica && partsText(mennica).includes('Dostęp do {zloto}') && /Kopalnia złota/.test(partsText(mennica)), partsText(mennica));
+  const kz = rowOf(find('improvement', 'kopalnia_zelaza'), 'Warunek');
+  check('kopalnia żelaza: „Warunek" = {ruda_zelaza} jedną ikoną, „Odlewnia żelaza" zostaje tekstem',
+    !!kz && partsText(kz).startsWith('{ruda_zelaza}') && /Odlewnia żelaza/.test(partsText(kz)), partsText(kz));
+  check('proza: liczba wierszy valueParts > 0 (ikony w treści wymagań/odblokowań)', proseChipRows > 0, proseChipRows);
+  console.log('wiersze z valueParts:', proseChipRows, '| wyjątki jawne (opis/epoka/cuda):', exemptCount);
 
   // --- D. bezpieczeństwo: escapowanie kwoty ----------------------------------------------------------
   const evil = M.resourceAmountChipHtml('drewno', M.escapeHtmlText('<img src=x onerror=alert(1)>&'));

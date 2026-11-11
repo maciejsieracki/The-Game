@@ -55,6 +55,7 @@ import {
   type BuildingRecord,
 } from '../../game/economy';
 import { buildingStockCost } from '../../game/building-stock-cost';
+import { proseRowFields } from './resourceRows';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
 import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
 import { resolveTechnologyRow, technologyIdFromName } from './registry';
@@ -314,7 +315,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
     reqRows.push(upgradeRow);
   }
   if (building.wymagania && !isEmptyDataVal(building.wymagania)) {
-    reqRows.push({ label: 'Dodatkowe warunki', value: text(building.wymagania) });
+    reqRows.push({ label: 'Dodatkowe warunki', ...proseRowFields(text(building.wymagania)) });
   }
   if (reqRows.length === 0) reqRows.push({ label: 'Wymagania', value: 'brak — dostępny od startu' });
   const requirementsSection: EntityCardSection = { key: 'requirements', title: 'Wymagania', rows: reqRows };
