@@ -105,3 +105,11 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 ## DECISION_REQUIRED (gameplay, 2026-11-11 noc) — UNIT-REPLACE-L1 zaparkowany
 - Temat `R-RUSTPORT-P6-UNIT-REPLACE-L1-Q1` (FC FAIL r2, kod `1ae4ab73c`, FC `987c24944`) stoi na bramce `p6_1d_civ_bonuses` (hash FNV `units.json`). Rust `units.json` różni się od pinu 07d2fbd72 w 50 polach balansu (Tech 27, fieldPower 9, Top3 3, Epoka 2, Historia 2, po 1 w Atak/Obrona/Przebicie/Bonus vs Spearman %/meleeAttack/meleeDefence/piercing).
 - PYTANIE DO WŁAŚCICIELA: A) wyrównać 50 pól `units.json` do pinu (rekomendacja; zmienia wartości jednostek w grze Rust), czy B) hash liczyć z danych Rust (słabsza gwarancja parytetu, dług tymczasowy)? Do czasu odpowiedzi temat zaparkowany; commity: `rust-port-wip/UNIT-REPLACE-L1-r2-*`.
+
+## Przebieg 2026-11-11 23:18 UTC (heartbeat)
+- parity-v2 = `ec4e11741` (BRAKE-INPUTS r2; pełny test 379 binarek, 2759 passed, 0 failed). Wcześniej: SIEGE-TRANSFER + SAVELOAD-KOMENTARZ `eba816b4e`, AIPEACE-V2 `88b05d029`, batch STATE-OWNER/SIEGE-SURRENDER/SAVESNAPSHOT `82c57a412`.
+- Operatorzy (Haiku 5.5, 4/4): DLUG-TESTHELPERS (Evaluator), POWER-PRODUCERS, SIEGE-TRANSFER-Q3 r2, BRAKE-VECTORS r2 (poprawka `military=false` dla „zdobycze” w `brake_power.rs`, parytet z pinem).
+- Decyzje techniczne: BRAKE-VECTORS — allowlista poszerzona o `brake_power.rs`; SIEGE-TRANSFER-Q3 r2 — wektory z pinu bez stubów (pin extractowany poza repo).
+- Kolejka: W8 r3 po POWER-PRODUCERS, BRAKE-VECTORS i SIEGE-TRANSFER-Q3; potem L-3 i siege #217.
+- DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6; 50 rozbieżności pól `units.json` vs pin (UNIT-REPLACE-L1 zaparkowany; commity `rust-port-wip/UNIT-REPLACE-L1-r2-*`).
+- Dysk: 14 GB; w trakcie nocy kilka rund operatorów stawało na progu 8 GB — worktree zakończonych przebiegów usuwane po każdym wypchnięciu.
