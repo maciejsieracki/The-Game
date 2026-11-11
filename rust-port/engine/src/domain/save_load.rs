@@ -511,6 +511,26 @@ impl SaveSnapshot {
         self
     }
 
+    /// Stan wojny tury (D1=B: nosnikiem jest `state.war`).
+    pub fn war_turn_state(&self) -> &WarTurnState {
+        self.state.war_turn_state()
+    }
+
+    /// Kopia ze stanem wojny w `state.war`; klucze wojenne w `meta` sa usuwane (jedno zrodlo prawdy).
+    pub fn with_war_turn_state(mut self, war: WarTurnState) -> Self {
+        self.meta = self.meta.with_war_turn_state(&WarTurnState::default());
+        self.state.set_war_turn_state(war);
+        self
+    }
+
+    /// Blok `meta` w formacie weba z kluczami wojny z `state.war` (eksport/interop; zapis wlasny
+    /// niesie wojne w `state.war`, nie w `meta`).
+    pub fn web_meta(&self) -> SaveMeta {
+        self.meta
+            .clone()
+            .with_war_turn_state(self.state.war_turn_state())
+    }
+
     /// Returns the additive save metadata (empty for saves written before R4).
     pub fn meta(&self) -> &SaveMeta {
         &self.meta
@@ -604,8 +624,28 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
             }
         };
 
+        // Migracja W1 (D4): zapis w formacie weba niesie stan wojny w kluczach `meta`; gdy
+        // `state.war` jest pusty, a `meta` ma klucze wojny, przenosimy je do `state.war`.
+        let meta = wire.meta.unwrap_or_default();
+        let snapshot = if snapshot.state.war_turn_state().is_default() {
+            let war = meta.war_turn_state();
+            if war.is_default() {
+                snapshot
+            } else {
+                let mut snapshot = snapshot;
+                snapshot.state.set_war_turn_state(war);
+                snapshot
+            }
+        } else {
+            snapshot
+        };
+        let meta = if snapshot.state.war_turn_state().is_default() {
+            meta
+        } else {
+            meta.with_war_turn_state(&WarTurnState::default())
+        };
         let snapshot = snapshot
-            .with_meta(wire.meta.unwrap_or_default())
+            .with_meta(meta)
             .with_planned_marches(wire.planned_marches.unwrap_or_default())
             .with_auto_march(wire.auto_march);
         snapshot.validate().map_err(de::Error::custom)?;

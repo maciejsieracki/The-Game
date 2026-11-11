@@ -17,8 +17,9 @@
 //!   stan oblezenia (`siegeTurnByCity`, `siegeBesiegerByCity`, `siegeAiStateByKey`) oraz pola
 //!   dyplomacji z meta (lista `DIPLOMACY_RAW_META_KEYS`).
 //!
-//! NIE w tej partii (kolejne partie, NIE_ZMIERZONO): typowany model oblezenia i dyplomacji,
-//! wpiecie do `PlayableState`/`GameStateDto` (D1). Wpiecie do `SaveMeta` jest w `save_load.rs`
+//! Wpiecie D1=B: pole `war` w `GameStateDto` i `PlayableState` (`#[serde(default)]`, pomijane gdy puste);
+//! `SaveSnapshot` migruje klucze web z `meta` do `state.war` przy wczytaniu.
+//! NIE w tej partii (kolejne partie): typowany model oblezenia i dyplomacji. Wpiecie do `SaveMeta` jest w `save_load.rs`
 //! (pole `extra`, flatten) i zapisuje/odczytuje te klucze przez `WarTurnState`.
 //!
 //! Zalozenia (ZALOZENIE, do akceptacji):
@@ -28,6 +29,7 @@
 //!   nie sprawdza jednoznacznie (NIE_ZMIERZONO), przyjete jako zalozenie i pokryte testem,
 //! - liczby calkowite zapisywane jako JSON integer (jak `JSON.stringify` w webie).
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Value};
 
 use super::war_forced_pairing::{
@@ -242,7 +244,34 @@ fn turn_map_to(entries: &[(i64, f64)]) -> Value {
     )
 }
 
+// ZALOZENIE: `WarTurnState` zawiera `f64` tylko z JSON (skonczone), wiec `Eq` jest bezpieczne
+// (potrzebne, bo `GameStateDto`/`PlayableState` derive `Eq`).
+impl Eq for WarTurnState {}
+
+impl Serialize for WarTurnState {
+    /// Wlasny format zapisu (D4): ta sama mapa kluczy co web `meta` (`to_meta_json`).
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.to_meta_json().serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for WarTurnState {
+    /// Lenientny odczyt: obiekt => `from_meta_json`; zly typ calosci => stan pusty.
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Value::deserialize(deserializer)?;
+        Ok(match value {
+            Value::Object(map) => WarTurnState::from_meta_json(&map),
+            _ => WarTurnState::default(),
+        })
+    }
+}
+
 impl WarTurnState {
+    /// True dla stanu domyslnego (pole pomijane przy zapisie => format sprzed W1).
+    pub fn is_default(&self) -> bool {
+        *self == WarTurnState::default()
+    }
+
     /// Odczyt z bloku `meta` zapisu. Brak pola => pusty stan dla pola (zgodnie z `?? []` w webie).
     pub fn from_meta_json(meta: &Map<String, Value>) -> Self {
         let mut opaque = Map::new();
