@@ -900,6 +900,7 @@ import {
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
 import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit, stadninaImperialKonUnlocked } from './game/livestock-unlock';
+import { hasBuiltOwnStudNeighbor } from './map/improvement-build';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
@@ -6757,6 +6758,15 @@ async function boot(): Promise<void> {
           hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
           citySurowceSumForOwner(0).kon ?? 0,
         ),
+        // R-WEB-IRON-STUD-ADJACENCY-Q1: bezpośredni sąsiad = zbudowana stadnina we własnym terytorium (ta sama reguła co silnik).
+        hasBuiltOwnStudNeighbor: hasBuiltOwnStudNeighbor({
+          map,
+          cityNodes: playerCityNodes(),
+          territoryNodes: buildAllTerritoryNodes(),
+          playerOwnerIdNum: 0,
+          placedImprovements,
+          pendingUndoKeys: pendingImprovementsTurn.getUndoKeySet(),
+        }, hexDetailHex.q, hexDetailHex.r),
         playerCivType: String(player.civType || _menuCivId || ''),
         daninaLabel: hexDaninaLabelAt(hexDetailHex.q, hexDetailHex.r),
         esc: hudHtmlEsc,
@@ -16577,6 +16587,18 @@ async function boot(): Promise<void> {
         }
       }
 
+      // R-WEB-IRON-STUD-ADJACENCY-Q1: po bramce kosztu 50 koni (komunikat koni pierwszy); sąsiedztwo drugie.
+      if (stadninaPozaZlozem && !hasBuiltOwnStudNeighbor({
+        map,
+        cityNodes: playerCityNodes(),
+        territoryNodes: buildAllTerritoryNodes(),
+        playerOwnerIdNum: 0,
+        placedImprovements,
+        pendingUndoKeys: pendingImprovementsTurn.getUndoKeySet(),
+      }, hex.coords.q, hex.coords.r)) {
+        showHintMessage('Stadninę poza złożem konia postawisz tylko obok już zbudowanej stadniny w twoim terytorium.', 4500);
+        return;
+      }
       playerPracaPool -= req.kosztPraca;
       _lastPraca = playerPracaPool;
 

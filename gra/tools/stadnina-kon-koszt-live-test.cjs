@@ -171,8 +171,12 @@ async function main() {
         });
       }, { q, r });
       const afterC = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), { q, r });
-      assert('PO próbie C: stadnina POSTAWIONA (magazyn DOKŁADNIE 50 >= 50) — próg >=, nie >',
-        afterC.includes('stadnina'), afterC);
+      // R-WEB-IRON-STUD-ADJACENCY-Q1: poza złożem stadnina wymaga zbudowanej stadniny na BEZPOŚREDNIM
+      // sąsiedzie w terytorium gracza. Ten heks sąsiada nie ma -> budowa ODRZUCONA mimo magazynu 50.
+      // Dodatni przypadek (realne odjęcie 50 przy sąsiedztwie) pokrywa tools/stadnina-iron-adjacency-test.cjs
+      // (warstwa silnika); realne odjęcie w przeglądarce przy sąsiedztwie: NIE_ZMIERZONO w tym temacie.
+      assert('[R-WEB-IRON-STUD-ADJACENCY-Q1] PO próbie C bez sąsiedniej stadniny: stadnina NIE postawiona mimo magazynu 50',
+        !afterC.includes('stadnina'), afterC);
 
       console.log('\n-- D. NOWY heks POZA złożem, magazyn NIETKNIĘTY od kroku C: applyBuildRequest("stadnina") NIE stawia ulepszenia --');
       const freshHex1 = await page.evaluate(() => window.__buildRequestTestDebug.findFreshUnworkedHex());
@@ -186,11 +190,11 @@ async function main() {
           });
         }, freshHex1);
         const afterD = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), freshHex1);
-        assert('PO próbie D: stadnina NIE postawiona na NOWYM heksie (magazyn spadł do 0 po kroku C) — dowód realnego odjęcia',
+        assert('[R-WEB-IRON-STUD-ADJACENCY-Q1] PO próbie D: stadnina NIE postawiona na NOWYM heksie (bez sąsiada; magazyn 50 nietknięty — brak odjęcia)',
           !afterD.includes('stadnina'), afterD);
         const toastD = await page.evaluate(() => window.__buildRequestTestDebug.getToast());
-        assert('toast D czyta AKTUALNY magazyn — "masz 0" (DOKŁADNIE 50 odjęte w kroku C, nie mniej/więcej)',
-          !!toastD && typeof toastD.html === 'string' && toastD.html.includes('masz 0'), toastD);
+        assert('toast D wskazuje brak sąsiada ("obok"); kwota magazynu NIE jest tu weryfikowana bezpośrednio (NIE_ZMIERZONO)',
+          !!toastD && typeof toastD.html === 'string' && toastD.html.includes('obok'), toastD);
       }
 
       console.log('\n-- E. NOWY heks ZE złożem konia (wymuszonym), magazyn=0: applyBuildRequest("stadnina") STAWIA ulepszenie mimo magazynu 0 --');

@@ -53,7 +53,7 @@ function mkMap(withDeposit = true) {
   return { hexes, riverPaths: [], startPositions: [{ q: 0, r: 0 }] };
 }
 // Miasto (0,0) + fort (10,0): kolo fortu zawiera złoże konia (10,1) i wiele otwartych Równin bez złoża.
-function scenario(era, horseStock) {
+function scenario(era, horseStock, placed = new Map()) {
   const map = mkMap();
   const tn = [
     { q: 0, r: 0, ownerId: PID, cityId: 'c0', pop: 1, level: 1 },
@@ -61,7 +61,7 @@ function scenario(era, horseStock) {
   ];
   const city = { id: 'c0', ownerId: PID, q: 0, r: 0, name: 'A', population: 1, surowce: { kon: horseStock } };
   const picks = pickAutoImprovements({
-    cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(), pracaAvailable: 900,
+    cities: [city], ownerId: PID, map, territoryNodes: tn, placedImprovements: placed, pracaAvailable: 900,
     unlockedTechs: TECHS, pracaSurplusThreshold: 0, skipWyrab: false, demandDriven: true, resourceDeficitKeys: ['kon'],
     getOnlyWorked: () => true, getWorkedHexKeys: () => new Set([K(0, 0)]),
     pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'rzymianie', playerEra: era,
@@ -71,7 +71,7 @@ function scenario(era, horseStock) {
   const data = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
   const cmds = decideAITurn(PID, [], [city], map, data, {
     civType: 'rzymianie', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: tn,
-    placedImprovements: new Map(), improvementTechs: TECHS, pracaAvailable: 900, civEra: era, resourceDeficitKeys: ['kon'],
+    placedImprovements: placed, improvementTechs: TECHS, pracaAvailable: 900, civEra: era, resourceDeficitKeys: ['kon'],
     horseStockAvailable: horseStock,
   });
   const aiTurnStad = cmds.filter(c => c.type === 'buildImprovement' && c.key === 'stadnina').map(c => K(c.q, c.r)).sort();
@@ -93,8 +93,20 @@ console.log('(B) epoka 3 i wyżej: magazyn 50 odblokowuje stadninę poza złoże
 for (const era of [3, 4]) {
   const s = scenario(era, 50);
   console.log(`   epoka ${era}: pickAutoImprovements [${s.aiStad.join(' ') || '-'}] | decideAITurn [${s.aiTurnStad.join(' ') || '-'}]`);
-  ok(openOnes(s.aiStad).length >= 1, `epoka ${era}: automat stawia stadninę poza złożem (${openOnes(s.aiStad).length} heksów)`);
-  ok(openOnes(s.aiTurnStad).length >= 1, `epoka ${era}: decideAITurn stawia stadninę poza złożem (${openOnes(s.aiTurnStad).length} heksów)`);
+  ok(openOnes(s.aiStad).length === 0, `[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> 0] epoka ${era}: automat NIE stawia stadniny poza złożem bez sąsiada (${openOnes(s.aiStad).length} heksów)`);
+  ok(openOnes(s.aiTurnStad).length === 0, `[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> 0] epoka ${era}: decideAITurn NIE stawia stadniny poza złożem bez sąsiada (${openOnes(s.aiTurnStad).length} heksów)`);
+}
+
+console.log('(B2) R-WEB-IRON-STUD-ADJACENCY-Q1: zbudowana stadnina (1,0) w promieniu miasta -> AI stawia stadninę TYLKO na sześciu sąsiadach (1,0), bez łańcucha');
+{
+  const STUD = K(1, 0);
+  const NEIGH = new Set([K(2, 0), K(2, -1), K(1, -1), K(0, 1), K(1, 1), K(0, 0)]);
+  const s = scenario(3, 50, new Map([[STUD, ['stadnina']]]));
+  console.log(`   epoka 3 + zbudowana (9,0): pickAutoImprovements [${s.aiStad.join(' ') || '-'}] | decideAITurn [${s.aiTurnStad.join(' ') || '-'}]`);
+  ok(openOnes(s.aiStad).length >= 1, `automat stawia stadninę poza złożem przy zbudowanej sąsiedniej (${openOnes(s.aiStad).length} heksów)`);
+  ok(openOnes(s.aiStad).every(k => NEIGH.has(k) || k === STUD), `automat: każda stadnina poza złożem jest na BEZPOŚREDNIM sąsiedzie (1,0) (brak łańcucha)`);
+  ok(openOnes(s.aiTurnStad).length >= 1, `decideAITurn stawia stadninę poza złożem przy zbudowanej sąsiedniej (${openOnes(s.aiTurnStad).length} heksów)`);
+  ok(openOnes(s.aiTurnStad).every(k => NEIGH.has(k)), `decideAITurn: każda stadnina poza złożem jest na BEZPOŚREDNIM sąsiedzie (1,0) (brak łańcucha)`);
 }
 
 console.log('(C) regresja: bez odblokowania Konia (magazyn 0) poza złożem nie ma stadniny w żadnej epoce');

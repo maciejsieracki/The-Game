@@ -183,11 +183,17 @@ export function isLivestockUnlockedForPlacement(
   tradeRouteKonUnlocked: boolean,
   horseStockAvailable: number,
   era?: number,
+  /**
+   * R-WEB-IRON-STUD-ADJACENCY-Q1: poza złożem stadnina wymaga zbudowanej stadniny (własnego
+   * terytorium) na BEZPOŚREDNIM sąsiednim heksie. Domyślnie false = bez sąsiada nie wolno.
+   */
+  adjacentBuiltStudOwn = false,
 ): boolean {
   const norm = normalizeImprovementKey(improvementKey) ?? improvementKey;
   if (norm === 'stadnina') {
     if (hexHasHorseDeposit(hex)) return true;
     if (era !== undefined && era < STADNINA_FREE_FROM_ERA) return false;
+    if (!adjacentBuiltStudOwn) return false;
     return stadninaImperialKonUnlocked(tradeRouteKonUnlocked, horseStockAvailable);
   }
   return true; // bydlo/owce/lama — bez wymogu złoża

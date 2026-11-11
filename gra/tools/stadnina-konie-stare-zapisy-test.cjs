@@ -99,7 +99,7 @@ export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
     ok(!has(b, 0, 3), 'las bez zloza -> NIE kandydat');
     ok(!has(b, 3, 0), 'zloze owce -> NIE kandydat dla stadniny');
     ok(!has(b, -1, 0), 'brak zloza -> NIE kandydat (magazyn 0)');
-    ok(has(api(M, hx, { horseStockAvailable: 50 }), -1, 0), 'sciezka magazynu 50 koni bez zmian');
+    ok(!has(api(M, hx, { horseStockAvailable: 50 }), -1, 0), '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] sciezka magazynu 50 koni bez sąsiada -> nie kandydat');
     const hxW = base(); hxW['1,0'] = mk(1, 0, T.Wzgorza, N.Las, 'konie');
     ok(!has(api(M, hxW), 1, 0), 'teren Wzgorza + zloze konie -> NIE (reguly terenu bez zmian)');
   }
