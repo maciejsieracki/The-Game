@@ -1,47 +1,56 @@
-STATUS: PASS-WITH-NOTES (obrona r1 zamyka oba zarzuty; werdykt końcowy należy do Evaluatora r2)
+STATUS: PASS-WITH-NOTES (obrona r2 przyjmuje zarzuty 1, 2 i 4 z poprawką i dowodem; zarzut 3 przyjęty jako NIE_ZMIERZONO do dociągnięcia w Final Control; werdykt końcowy należy do Evaluatora/FC)
 DOMAIN: GAME
 TEMAT: R-WEB-UI-RAW-IDS-AUDIT-Q1
-GOAL: usunąć regresję testu (zarzut 1) i defekt widoczny dla gracza „Zloto” zamiast „Złoto” (zarzut 2) na kandydacie 97f66b5df; brak surowych id w tekstach gracza.
+GOAL: odpowiedzieć na zarzuty Evaluatora r2 (raport 20-evaluator-claude.md, commit 749692424) dla kandydata 35644433c: domknąć strażnika wiązań UI, zmierzyć wynik merge z aktualnym origin/main 07d2fbd72 i powtórzyć bramki na wyniku merge.
+BAZA: 35644433c (kandydat Evaluatora r2) → commit guardów 1438861545 → merge origin/main 07d2fbd72.
 ZMIANY/COMMIT:
-- Baza obrony: 97f66b5df03d45cbc29ad1b3587b486521751b52 (kandydat Operatora r1).
-- Commit poprawki: 0dbdd2843 (2 pliki, git add ścieżkami, bez -A):
-  - gra/src/game/text-names.ts (slugSurowca: ł/Ł zamieniane przed NFD).
-  - gra/tools/improvement-adapter-resource-note-test.cjs (oczekiwania wiersza „Odblokowuje surowiec” = nazwa wyświetlana; +2 kontrole slugu).
-- Ten raport: osobny commit (tylko ta ścieżka).
-- Nie zmieniano: tech.json, wikiBundle.json, docs/, WERSJE.md, gra-robocza/, dane JSON, liczby, efekty.
+- 1438861545 (tylko gra/tools/ids-leak-audit-test.cjs): sekcja 4 dostaje 7 kontroli wiązań UI przez źródło:
+  - ui/wikiHubHud.ts: `stripEncyMetadata(entry.full)` obecne oraz brak `${entry.full}`;
+  - ui/techDiscoveryNotice.ts: `nazwyZListyId(tech['Odblokowuje surowiec.'])`;
+  - ui/cityPanel.ts: `nazwyZListyId(String(t['Dostęp do surowca.']))` i `nazwyZListyId(odblokowujeSurowiec)`;
+  - ui/sciencePicker.ts: `label: nazwyZListyId(sur)` i `nazwyZListyId(node.odblokujeSurowiec)`.
+- a2f27ab66 (merge --no-ff origin/main 07d2fbd72, bez konfliktów; `git merge-tree` czysty przed merge). Pliki z main wchodzą bez zmian po mojej stronie (ai.ts, main.ts, save.ts, empireRecruitPanel.ts, gra-robocza/* z main). Allowlista własna tej rundy: wyłącznie gra/tools/ids-leak-audit-test.cjs (+ merge).
+- wikiBundle.json: `node tools/bundle-wiki-for-game.cjs` na wyniku merge → `git status` bez zmian (zmierzone; bundle zgodny z docs/).
+- Ten raport: osobny commit, `git add` ścieżką (bez -A).
+- Nie zmieniano: tech.json, docs/, WERSJE.md, gra-robocza/ (przez tę rundę), liczb, efektów, terminów Danina/Podatek/Handel.
 
 ODPOWIEDZI NA ZARZUTY:
-- Zarzut 1 (regresja improvement-adapter-resource-note-test, 13 FAIL): PRZYJMUJĘ.
-  Przyczyna: test oczekiwał surowego id z danych (`drewno`, `kon`, `bydlo`), a Operator r1 świadomie zmienił adapter na nazwy (`nazwyZListyId`). Test nie został zaktualizowany do zmiany zamierzonej przez audyt.
-  Poprawka: wartości oczekiwane wpisane ręcznie (EXPECTED_SUROWIEC_NAZWA: stadnina→Koń, glinianka→Glina, kamieniolom→Kamień, tartak→Drewno, warzelnia_soli→Sól, kopalnia_miedzi→Ruda, kopalnia_zelaza→Ruda żelaza, kopalnia_cyny→Ruda cyny, kopalnia_zlota→Złoto, bydlo→Trzoda, owce→Owce, lama→Lama); kontrola tartak zmieniona z 'drewno' na 'Drewno'. Kontrole notatki dziennika balansu i brak nawiasu pozostają bez zmian.
-  Dowód: po poprawce `node tools/improvement-adapter-resource-note-test.cjs` → „77 pass, 0 fail” (kandydat 97f66b5df: „62 pass, 13 fail”, wg zarzutu Evaluatora).
-- Zarzut 2 (nazwaWyswietlana('zloto') = „Zloto”): PRZYJMUJĘ, defekt potwierdzony.
-  Przyczyna: NFD nie rozkłada ł (brak dekompozycji), więc „Złoto” → slug `z_oto`, a lookup `zloto` nie trafia do tabeli NAZWY_SUROWCOW i spada na humanizeId → „Zloto”.
-  Zakres: w resources.json tylko dwie nazwy zawierają ł: „Złoto” i „Cegła” (pełna lista: Żywność, Drewno, Kamień, Glina, Ruda, Ruda żelaza, Ruda cyny, Koń, Sól, Złoto, Cegła, Ceramika, Brąz, Żelazo, Stal). Poprawka obejmuje obie.
-  Poprawka: `s.replace(/ł/g,'l').replace(/Ł/g,'L').normalize('NFD')...` w slugSurowca.
-  Dowód: test kontrolny „nazwaWyswietlana("zloto") === "Złoto"” i „nazwaWyswietlana("cegla") === "Cegła"” — obie PASS po poprawce. Wartość „Cegla” przed poprawką nie została zmierzona osobno (NIE_ZMIERZONO); mechanizm jest ten sam co dla „Złoto”.
-  Strażnik ids-leak-audit nadal nie wykrywa tego defektu (1627 ok, 0 FAIL przed i po). Nie dodawałem strażnika w tej rundzie — zakres poprawki to slug i kontrola jednostkowa w teście wiersza.
+- Zarzut 1 (wikiHubHud bez stripEncyMetadata nie czerwieni testów): PRZYJMUJĘ. Poprawka: kontrola wiązania w ids-leak-audit sekcja 4 (commit 1438861545).
+  Dowód mutacyjny (surowe wyjście, kod przywrócony `git checkout --` po każdej mutacji):
+  - M1 `stripEncyMetadata(entry.full)` → `entry.full`: „FAIL wikiHubHud: widok „pełny" po stripEncyMetadata(entry.full)”, „FAIL wikiHubHud: brak surowego ${entry.full} w widoku pełnym”, „WYNIK: 1639 ok, 2 FAIL”.
+- Zarzut 2 (opakowania nazwyZListyId bez dowodu mutacyjnego): PRZYJMUJĘ. Poprawka: kontrole wiązań dla techDiscoveryNotice, cityPanel (2 miejsca), sciencePicker (2 miejsca). Każda mutacja czerwieni test:
+  - M2 techDiscoveryNotice bez wrappera: „FAIL techDiscoveryNotice: resourceUnlocked przez nazwyZListyId”, „WYNIK: 1640 ok, 1 FAIL”.
+  - M3 cityPanel bez wrappera: „FAIL cityPanel: „Surowiec (tech)” przez nazwyZListyId”, „FAIL cityPanel: „Odblokowuje surowiec” przez nazwyZListyId”, „WYNIK: 1639 ok, 2 FAIL”.
+  - M4 sciencePicker bez wrappera: „FAIL sciencePicker: etykieta surowca przez nazwyZListyId”, „FAIL sciencePicker: lista odblokowanych surowców przez nazwyZListyId”, „WYNIK: 1639 ok, 2 FAIL”.
+  - Po przywróceniu: `git status` czysty poza commitem guardów.
+  - Uwaga: to strażnik źródłowy (wiązanie wywołania), nie test renderu; nie dowodzi, że tekst na ekranie jest poprawny. Ten dowód daje wyłącznie Chromium (zarzut 3).
+- Zarzut 3 (brak zrzutu Chromium kart ulepszenia/odkrycia i panelu odkryć): PRZYJMUJĘ JAKO LUKĘ — NIE_ZMIERZONO w tej rundzie. Nie wykonałem zrzutów kart ulepszenia, karty odkrycia ani panelu odkryć; nie uruchamiałem Chromium w tej rundzie (czas i brak gotowego skryptu dla tych kart). Ustalenie do Final Control: dociągnąć zrzuty albo zaakceptować lukę pisemnie. Wcześniejsze potwierdzenie (nagłówek miasta z Administratorem) pochodzi z raportu Evaluatora, nie z mojego pomiaru.
+- Zarzut 4 (kandydat nie zawiera origin/main 07d2fbd72): PRZYJMUJĘ. Poprawka: merge a2f27ab66 (patrz wyżej). Dowody:
+  - `git merge-tree --write-tree HEAD origin/main` przed merge: wynik bez listy konfliktów (tree 81b75fc8b182394529c7748871137cc4f6c7bd79).
+  - `git merge --no-ff origin/main`: „Merge made by the 'ort' strategy.”, 27 plików, 1777 insertions / 585 deletions, bez „CONFLICT”.
+  - `git status --short` po merge: pusty.
+  - Regeneracja wikiBundle na wyniku merge: bez różnic (patrz wyżej).
+  - Bramki na wyniku merge (powtórzone, surowe wyjścia):
+    - `node ./node_modules/typescript/bin/tsc --noEmit`: exit 0.
+    - ids-leak-audit-test.cjs: „WYNIK: 1641 ok, 0 FAIL”.
+    - wonder-text-no-raw-ids-test.cjs: „WYNIK: 132 ok, 0 FAIL”.
+    - improvement-adapter-resource-note-test.cjs: „77 pass, 0 fail”.
+    - city-administrator-test.cjs: „117 passed, 0 failed”.
+    - city-administrator-economy-test.cjs: „72 passed, 0 failed”.
+    - logic-test.cjs: „LOGIC OK (213/213)”.
+    - tech-tree-test.cjs: „tech-tree-test: 20 pass, 0 fail”.
+    - research-test.cjs: „ALL GREEN”.
+    - unit-replace-test.cjs: „WSZYSTKIE TESTY ZIELONE (21/21)”.
+    - combat-test.cjs: „All sanity checks passed.”.
+  - NIE_ZMIERZONO na wyniku merge: szerszy przegląd 186 testów (zarzut 4 wspomina o nim tylko dla bazy). Nie powtarzałem go; zostaje dla Evaluatora/FC.
+  - NIE_ZMIERZONO: zrzuty Chromium na nowym main (ai.ts/main.ts/empireRecruitPanel.ts weszły z main; nie uruchamiałem gry w przeglądarce).
+- Uwaga procesowa (z raportu Evaluatora, nie zarzut): oryginalny `00-dispatch.md` nie istnieje na origin/main; przyjęto DODATEK jako obowiązujący (jak w r1/r2).
 
-UWAGA NIŻSZEJ WAGI (z raportu Evaluatora, nie zarzut): mutacja cofnięcia nazwyZListyId w techDiscoveryNotice.ts przeżywa testy. NIE_ZMIERZONO w tej rundzie — nie dodawałem testu.
+ZARZUTY PRZYJĘTE / ODRZUCONE: przyjęto 1, 2, 4 (z poprawką i dowodem); przyjęto 3 jako NIE_ZMIERZONO; odrzucono 0.
 
-TESTY (surowe wyniki z tej sesji, worktree wf_6f630bf0-eb3-3, HEAD 0dbdd2843 + ten raport):
-- node ./node_modules/typescript/bin/tsc --noEmit: exit 0.
-- improvement-adapter-resource-note-test.cjs: 77 pass, 0 fail.
-- ids-leak-audit-test.cjs: WYNIK: 1627 ok, 0 FAIL.
-- wonder-text-no-raw-ids-test.cjs: WYNIK: 132 ok, 0 FAIL.
-- Bramki referencyjne: logic-test „LOGIC OK (213/213)”; tech-tree-test „20 pass, 0 fail”; research-test „ALL GREEN”; unit-replace-test exit 0 (0 linii FAIL); combat-test „All sanity checks passed.”.
-- Dodatkowe testy dotknięte helperami tekstu (18 plików z nazwaWyswietlana/nazwyZListyId/improvementAdapter/surowiecOdblokowany):
-  - zielone (exit 0): cyna-surowiec-test 78 pass, 0 fail (≈4 min 52 s, przekroczył 200 s w pierwszym przebiegu — to czas, nie błąd); pozostałe 12 — exit 0.
-  - czerwone również NA BAZIE 6f2f1c50e i NA KANDYDACIE 97f66b5df (identyczne liczby; porównanie na wyeksportowanych drzewach git archive), więc dług sprzed tej rundy, nie regresja:
-    - zloto-test: 38 pass, 7 fail (base = cand).
-    - map-improvement-qualify-test: 132 pass, 1 fail (base = cand).
-    - wyrab-wycinka-nazwa-live-test: 48 pass, 1 fail (base = cand; trafienie „Wyrąb” w src/game/farm-assign-hint.ts:51).
-    - hodowla-las-test: 106 passed, 7 failed (base = cand).
-    - card-resource-purpose-test: 99 pass, 3 fail (base = cand; [B] upkeep „utrzymanie budynku w Pieniądzu” i [G] gen-tech-cards-top5 --check, zależny od środowiska). W worktree ten sam test dawał 101 pass, 1 fail (ten sam [B]).
-- Efekt uboczny testu wyrab-wycinka-nazwa-live-test: nadpisał plik dowodu dyspozycje/autobot/runs/P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1/dowody/r5-karta-farma-warunek.png. Przywrócony `git checkout --` i NIE wszedł do commitów.
-- Porządki: katalogi porównawcze (git archive) i ich symlinki node_modules usunięte; node_modules worktree zostaje do czasu sprzątania po integracji.
+TESTY: patrz sekcja „Bramki na wyniku merge” w odpowiedzi na zarzut 4. Liczby z surowego wyjścia tej sesji.
 
-BLOKADY: brak blokad po stronie obrony. Dług sprzed tematu (wymieniony wyżej) nie jest w zakresie tego tematu.
-RUNDY: 1/5 (obrona r1 po FAIL Evaluatora r1).
-NASTĘPNY KROK: Evaluator r2 na commicie 0dbdd2843 (odtworzyć bramki: test wiersza 77/0, slug „Złoto”/„Cegła”, ids-leak 1627/0, wonder 132/0); następnie Final Control. Integracja, deploy i push — wyłącznie orkiestrator.
+BLOKADY: brak blokad technicznych. Otwarte do Final Control: zrzuty Chromium kart ulepszenia/odkrycia i panelu odkryć (zarzut 3); szerszy przegląd 186 testów na wyniku merge (NIE_ZMIERZONO).
+RUNDY: obrona r2 (po zarzutach Evaluatora r2). Obrona r1 (commit 0dbdd2843) zachowana w historii gita.
+NASTĘPNY KROK: Evaluator r3 na commicie tego raportu (odtworzyć: 1641/0 ids-leak, mutacje M1–M4, merge-tree i bramki na wyniku merge); następnie Final Control z dociągnięciem zrzutów Chromium (zarzut 3).
 DEPLOY/PUSH: NIE WYKONANO
