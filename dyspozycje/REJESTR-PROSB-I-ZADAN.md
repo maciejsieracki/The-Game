@@ -9386,3 +9386,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · DECYZJA ABC (właściciel): administrator ulepszeń — AI BEZ administratora (opcja B: AI ulepsza teren jak dotąd, za darmo). Odstępstwo od parytetu jest świadome; FC r1 miał jedyny NAPRAW właśnie na parytecie → temat wraca do FC (tryb fc) na kandydacie 058cc56e9.
 
 - 2026-11-11 · FALA 631 WDROŻONA (ROBOCZA): R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1 (FC PASS-WITH-NOTES, 058cc56e9; ref `refs/keep/R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1-fc`, wip `web-wip/IMPROVEMENT-ADMINISTRATOR`). AI bez administratora (decyzja ABC B). Nowy dług: R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE; REPIN Rust (blok JSON administrator_ulepszen + utrzymanie).
+
+- 2026-11-11 · FALA 631 = 09ddc9345 (Raw MD5 89f5a5d6…). FALA 632 WDROŻONA (ROBOCZA): R-WEB-BRICK-CYCLES-75-100-Q1 (FC PASS-WITH-NOTES, f7fcc9663; ref `refs/keep/R-WEB-BRICK-CYCLES-75-100-Q1-fc`, wip `web-wip/BRICK-CYCLES`). Dług Rust: REPIN cykle cegielni. Odblokowuje RESOURCE-BUILDING-ENABLE-TOGGLE (potrzebny dispatch).
