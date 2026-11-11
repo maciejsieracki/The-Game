@@ -23466,6 +23466,9 @@ async function boot(): Promise<void> {
       for (const ob of obligations) {
         for (const allyId of ob.obligatedAllies) {
           if (joinedWarOwnerIds.includes(allyId)) continue;
+          // Human calls now live in the durable inbox and are resolved later. Do not
+          // misclassify a still-pending decision as a refusal at principal-war commit.
+          if (isMe(allyId)) continue;
           appendWiarygodnoscEvent(allyId, 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
           const betrayedId = ob.mustDeclareWarOn === attackerId ? victimId : attackerId;
           setDiploPairMeta(allyId, betrayedId, {
@@ -29222,6 +29225,30 @@ async function boot(): Promise<void> {
         return (await saveToLocal(dstSlot, { ...s, meta })).ok;
       },
     };
+
+    // R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1 — live IndexedDB/reload test setup.
+    // Installed only on the dedicated test URL; persistence and validation remain production paths.
+    if (new URLSearchParams(location.search).get('test') === 'alliance-war-call') {
+      (window as any).__allianceWarCallSaveLoadTestDebug = {
+        seedAndSave: async (slot: string): Promise<boolean> => {
+          const attackerId = 2;
+          const victimId = 3;
+          diplomaticContactEstablishedSet(ME()).add(attackerId);
+          activeDeals = addTreaty(activeDeals, {
+            id: 'test-alliance-war-call-treaty',
+            rodzaj: RodzajTraktatu.SojuszWojskowy,
+            strony: [ME(), attackerId],
+            wygasaTura: null,
+          });
+          setDiploRelation(attackerId, victimId, { zaufanie: 0, respekt: 0, status: 'wojna' });
+          enqueueAllianceWarCall(ME(), attackerId, victimId, victimId);
+          return (await persistSaveToSlot(slot, 'alliance-war-call-reload-test')).ok;
+        },
+        loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+        pending: (): unknown[] => JSON.parse(JSON.stringify(pendingDiplomacyInbox)),
+        history: (): unknown[] => JSON.parse(JSON.stringify(allianceWarCallHistory)),
+      };
+    }
 
     // R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 — hak testowy WYŁĄCZNIE dla
     // `tools/hotseat-etap5-no-leak-test.cjs`, wzorzec identyczny do

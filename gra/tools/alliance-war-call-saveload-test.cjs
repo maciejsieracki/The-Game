@@ -39,6 +39,11 @@ async function main() {
     assert.match(body, /allianceObligationsForWarDeclaration\(activeDeals, call\.attackerId, call\.victimId\)/);
     assert.match(body, /allianceFormalKindBetween\(activeDeals, ME\(\), call\.targetId\)/);
   });
+  check('ludzka decyzja pozostaje bez kary do czasu odpowiedzi', () => {
+    const start = main.indexOf('function finalizeAllianceObligationRefusals(');
+    const body = main.slice(start, start + 900);
+    assert.match(body, /if \(joinedWarOwnerIds\.includes\(allyId\)\) continue;[\s\S]*?if \(isMe\(allyId\)\) continue;/);
+  });
   check('save restore validates calls only after saved treaties are hydrated', () => {
     const dealsAt = main.indexOf('const savedDeals = saved.meta?.diplomacyDeals');
     const validateAt = main.indexOf('const savedAllianceCallHistory', dealsAt);
