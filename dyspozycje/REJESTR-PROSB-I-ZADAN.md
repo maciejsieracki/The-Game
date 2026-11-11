@@ -9694,3 +9694,8 @@ Automatyczna budowa ma wymagać Administratora. Powiązanie z Ratuszem było pro
 - R-WEB-BRONZE-OUTPUT-50-75-Q1: zamknięte11/11, FALA618/push4919be9dc, receipt90-release-618.json. Zastępuje historyczne25/50.
 - R-WEB-WORK-ALLOCATION-POOL-DOUBLE-CREDIT-Q1: audyt90c485a1c na origin/codex/work-pool, brak potwierdzonego dublowania. Zgodny bilans możliwy przez idle/completion zwroty; potrzebny zapis/stan jednej tury. Operator przeniesiony do limitów rekrutacji; temat nie jest naprawiony ani aktywnie poprawiany.
 - R-WEB-AI-BRONZE-STOCK-EXCESS-Q1: audyt nie potwierdził błędu, 24818 poniżej limitów; brak historii zapasu/zapisu. Nie działa operator poprawki bez reprodukcji.
+
+## 2026-11-11 — R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+„Zastąp”: awans piechoty wręcz do następnej epoki ma dopuszczać miecznika↔włócznika/falangitę, zamiast wymogu identycznego typu. Zgłoszony przykład: Wojownik mykeński→grecka piechota Żelaza. Zachować bramki nacji/badań/budynków/kosztów/limitów i doświadczenie; nie rozszerzać na konnicę, dystans ani machiny. Dispatch `autobot/runs/R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1/00-dispatch.md`. Zarejestrowane w kolejce, operator jeszcze nieuruchomiony.
