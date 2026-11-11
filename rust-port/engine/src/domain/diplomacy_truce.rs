@@ -53,6 +53,18 @@ pub struct N3Window {
     pub charged: Option<bool>,
 }
 
+/// Web: `DiploPairMeta.truceEndOffer` (diplomacy-pn-engine.ts:105): oferta pokoju stalego po rozejmie.
+/// Identyfikatory wlascicieli jako `f64` (jak `N3Window.by_owner_id`, JSON `number`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TruceEndOfferWeb {
+    pub turn: f64,
+    pub from_owner_id: f64,
+    pub to_owner_id: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inbox_id: Option<String>,
+}
+
 /// Web: `DiploPairMeta` (diplomacy-pn-engine.ts:69), pola rozejmu / pokoju / okna N3 + przechodnie reszta.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -71,6 +83,12 @@ pub struct PairMetaWeb {
     pub peace_until_turn: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub truce_until_turn: Option<f64>,
+    /// Web: `truceInitiatorId` (R3: pole jawne; stary zapis bez pola = `None`, bez zmian).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub truce_initiator_id: Option<f64>,
+    /// Web: `truceEndOffer` (R3: pole jawne; stary zapis bez pola = `None`, bez zmian).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub truce_end_offer: Option<TruceEndOfferWeb>,
     /// Pola niewymienione wyzej (np. `ostatniePrzewinienieWobecNas`, `wojnaStartTura`) - bez zmian.
     #[serde(flatten)]
     pub extra: Map<String, Value>,

@@ -30,6 +30,8 @@ pub mod diplomacy_rejection_cooldown;
 pub mod diplomacy_siege_war_gate;
 pub mod diplomacy_tick_war_brake;
 pub mod diplomacy_truce;
+pub mod diplomacy_truce_end;
+pub mod diplomacy_truce_flow;
 pub mod diplomacy_war_gates;
 pub mod diplomacy_war_peace_profile;
 pub mod diplomacy_war_weariness_tick;

@@ -2681,6 +2681,9 @@ pub enum ProposalAction {
     Annexation,
     #[serde(rename = "pokoj", alias = "peace")]
     Peace,
+    /// Web `rozejm` (R-WEB-DIPLO-TRUCE-IMPL-Q1): rozejm 5/10/15 tur, dzieli gałąź pokoju.
+    #[serde(rename = "rozejm", alias = "truce")]
+    Truce,
 }
 
 impl ProposalAction {
@@ -2701,6 +2704,7 @@ impl ProposalAction {
             Self::Vassal => "wasal",
             Self::Annexation => "wchloniecie",
             Self::Peace => "pokoj",
+            Self::Truce => "rozejm",
         }
     }
 }
@@ -2730,7 +2734,10 @@ pub fn is_currency_proposal_forbidden_during_war(
 ) -> bool {
     at_war
         && payload_has_currency_payment(payload)
-        && !matches!(action, ProposalAction::Peace | ProposalAction::TributeOffer)
+        && !matches!(
+            action,
+            ProposalAction::Peace | ProposalAction::Truce | ProposalAction::TributeOffer
+        )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -3066,6 +3073,8 @@ fn treaty_base_pn(action: ProposalAction, params: &DiplomacyParams) -> f64 {
         ProposalAction::DefensiveAlliance => params.defensive_alliance_base_pn,
         ProposalAction::FullAlliance => params.full_alliance_base_pn,
         ProposalAction::Peace => params.peace_base_pn,
+        // Web diplomacy-acceptance-points.json: rozejm 200 PW (pokoj 500). Stała w module rozejmu.
+        ProposalAction::Truce => crate::domain::diplomacy_truce_flow::TRUCE_BASE_PN,
         ProposalAction::Borders => params.march_base_pn,
         ProposalAction::TradeAgreement | ProposalAction::TradeRoute => params.trade_route_base_pn,
         ProposalAction::Vassal => params.vassal_base_pn,
@@ -3145,7 +3154,31 @@ pub fn evaluate_proposal_with_params(
     catalog: ValueCatalog,
 ) -> ProposalEvaluation {
     let params = scale_params_for_difficulty(base_params, context.difficulty);
-    let payload = &proposal.payload;
+    let is_truce = proposal.action == ProposalAction::Truce;
+    // Z9 (web diplomacy-proposals.ts:1299): długość rozejmu spoza 5/10/15 = odrzucenie propozycji.
+    if is_truce
+        && crate::domain::diplomacy_truce::normalize_truce_duration(Some(
+            proposal
+                .payload
+                .turns
+                .unwrap_or(crate::domain::diplomacy_truce::TRUCE_DEFAULT_TURNS),
+        ))
+        .is_none()
+    {
+        return ProposalEvaluation::reject("Rozejm: dozwolone długości to 5, 10 lub 15 tur");
+    }
+    // Rozejm: `turns` = długość rozejmu, nie mnożnik koszyka ani czas traktatu — bramka PW jak pokój bez czasu.
+    let truce_payload;
+    let payload = if is_truce {
+        truce_payload = ProposalPayload {
+            turns: None,
+            treaty_turns: None,
+            ..proposal.payload.clone()
+        };
+        &truce_payload
+    } else {
+        &proposal.payload
+    };
     let at_war = context.at_war || context.relation.status == RelationStatus::War;
     let relation = if at_war {
         clamp_relation_for_war(&context.relation)
@@ -3168,13 +3201,24 @@ pub fn evaluate_proposal_with_params(
     };
     let (give_pn, receive_pn) = resolve_proposal_pn_with_options(payload, &catalog, &pn_options);
 
-    if proposal.action == ProposalAction::Peace && !at_war {
-        return ProposalEvaluation::reject("Pokój — brak trwającej wojny");
+    let peace_like = matches!(
+        proposal.action,
+        ProposalAction::Peace | ProposalAction::Truce
+    );
+    if peace_like && !at_war {
+        return ProposalEvaluation::reject(if is_truce {
+            "Rozejm — brak trwającej wojny"
+        } else {
+            "Pokój — brak trwającej wojny"
+        });
     }
     if at_war
         && !matches!(
             proposal.action,
-            ProposalAction::TributeOffer | ProposalAction::Ultimatum | ProposalAction::Peace
+            ProposalAction::TributeOffer
+                | ProposalAction::Ultimatum
+                | ProposalAction::Peace
+                | ProposalAction::Truce
         )
     {
         return ProposalEvaluation::reject("Trwa wojna — ta akcja jest niedostępna");
@@ -3182,8 +3226,8 @@ pub fn evaluate_proposal_with_params(
     if is_currency_proposal_forbidden_during_war(proposal.action, payload, at_war) {
         return ProposalEvaluation::reject("W wojnie pieniądze tylko w ugodzie pokojowej");
     }
-    if proposal.action == ProposalAction::Peace {
-        let base = treaty_base_pn_for_payload(ProposalAction::Peace, payload, &params);
+    if peace_like {
+        let base = treaty_base_pn_for_payload(proposal.action, payload, &params);
         let author = context
             .author_owner_id
             .unwrap_or(proposal.proposer_owner_id);
@@ -3814,7 +3858,7 @@ pub fn evaluate_proposal_with_params(
             }
             ProposalEvaluation::accept(format!("Wchłonięcie zaakceptowane ({} ¤)", cost))
         }
-        ProposalAction::Peace => unreachable!(),
+        ProposalAction::Peace | ProposalAction::Truce => unreachable!(),
     }
 }
 
