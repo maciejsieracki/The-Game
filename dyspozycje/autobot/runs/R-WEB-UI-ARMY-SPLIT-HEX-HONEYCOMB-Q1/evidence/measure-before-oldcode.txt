@@ -1,0 +1,158 @@
+--- 6 dostepnych, kontener 340px (zmierzony 340.00x224.00)
+komorka  w       h       cx      cy
+ARMIA      99.95   86.02  639.99  494.79
+E          99.95   86.02  748.10  494.79
+NE         99.95   86.02  694.05  433.87
+NW         99.95   86.02  585.93  433.87
+W          99.95   86.02  531.87  494.79
+SW         99.95   86.02  585.93  555.71
+SE         99.95   86.02  694.05  555.71
+ARMIA-NW   dist 81.45 szczelina -18.50
+ARMIA-NE   dist 81.45 szczelina -18.50
+ARMIA-W    dist 108.13 szczelina 8.17
+ARMIA-E    dist 108.11 szczelina 8.16
+ARMIA-SW   dist 81.45 szczelina -18.50
+ARMIA-SE   dist 81.45 szczelina -18.50
+W-NW       dist 81.45 szczelina -18.50
+NW-NE      dist 108.13 szczelina 8.17
+NE-E       dist 81.44 szczelina -18.51
+E-SE       dist 81.44 szczelina -18.51
+SE-SW      dist 108.13 szczelina 8.17
+SW-W       dist 81.45 szczelina -18.50
+PASS: 6 dostepnych @340px: 7 komorek
+PASS: 6 dostepnych @340px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 6 dostepnych @340px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":99.953125,"h":86.015625}
+FAIL: 6 dostepnych @340px: 12 odleglosci srodkow rownych +-0.5px (zakres 26.68) — [81.45077507160767,81.45077507160767,108.125,108.109375,81.45077507160767,81.45077507160767,81.45077507160767,108.125,81.4404049031023,81.4404049031023,108.125,81.45077507160767]
+FAIL: 6 dostepnych @340px: 12 szczelin rownych +-0.5px (zakres 26.68) i dodatnich — [-18.502349928392334,-18.502349928392334,8.171875,8.15625,-18.502349928392334,-18.502349928392334,-18.502349928392334,8.171875,-18.512720096897695,-18.512720096897695,8.171875,-18.502349928392334]
+--- 6 dostepnych, kontener 300px (zmierzony 300.00x197.64)
+komorka  w       h       cx      cy
+ARMIA      88.19   75.89  639.98  494.79
+E          88.19   75.89  735.39  494.79
+NE         88.19   75.89  687.69  441.04
+NW         88.19   75.89  592.28  441.04
+W          88.19   75.89  544.59  494.79
+SW         88.19   75.89  592.28  548.55
+SE         88.19   75.89  687.69  548.55
+ARMIA-NW   dist 71.87 szczelina -16.32
+ARMIA-NE   dist 71.87 szczelina -16.32
+ARMIA-W    dist 95.39 szczelina 7.20
+ARMIA-E    dist 95.41 szczelina 7.22
+ARMIA-SW   dist 71.88 szczelina -16.31
+ARMIA-SE   dist 71.88 szczelina -16.31
+W-NW       dist 71.86 szczelina -16.33
+NW-NE      dist 95.41 szczelina 7.22
+NE-E       dist 71.87 szczelina -16.32
+E-SE       dist 71.88 szczelina -16.31
+SE-SW      dist 95.41 szczelina 7.22
+SW-W       dist 71.87 szczelina -16.32
+PASS: 6 dostepnych @300px: 7 komorek
+PASS: 6 dostepnych @300px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 6 dostepnych @300px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":88.1875,"h":75.890625}
+FAIL: 6 dostepnych @300px: 12 odleglosci srodkow rownych +-0.5px (zakres 23.55) — [71.86550378843542,71.86550378843542,95.390625,95.40625,71.87719086334864,71.87719086334864,71.8551331238764,95.40625,71.86550378843542,71.87719086334864,95.40625,71.86682188528046]
+FAIL: 6 dostepnych @300px: 12 szczelin rownych +-0.5px (zakres 23.55) i dodatnich — [-16.32199621156458,-16.32199621156458,7.203125,7.21875,-16.310309136651355,-16.310309136651355,-16.3323668761236,7.21875,-16.32199621156458,-16.310309136651355,7.21875,-16.32067811471954]
+--- 6 dostepnych, kontener 260px (zmierzony 260.00x171.28)
+komorka  w       h       cx      cy
+ARMIA      76.44   65.77  639.98  494.79
+E          76.44   65.77  722.67  494.79
+NE         76.44   65.77  681.33  448.20
+NW         76.44   65.77  598.66  448.20
+W          76.44   65.77  557.31  494.79
+SW         76.44   65.77  598.66  541.37
+SE         76.44   65.77  681.33  541.37
+ARMIA-NW   dist 62.28 szczelina -14.16
+ARMIA-NE   dist 62.29 szczelina -14.15
+ARMIA-W    dist 82.67 szczelina 6.23
+ARMIA-E    dist 82.69 szczelina 6.25
+ARMIA-SW   dist 62.27 szczelina -14.17
+ARMIA-SE   dist 62.28 szczelina -14.16
+W-NW       dist 62.29 szczelina -14.15
+NW-NE      dist 82.67 szczelina 6.23
+NE-E       dist 62.29 szczelina -14.15
+E-SE       dist 62.28 szczelina -14.16
+SE-SW      dist 82.67 szczelina 6.23
+SW-W       dist 62.28 szczelina -14.16
+PASS: 6 dostepnych @260px: 7 komorek
+PASS: 6 dostepnych @260px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 6 dostepnych @260px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":76.4375,"h":65.765625}
+FAIL: 6 dostepnych @260px: 12 odleglosci srodkow rownych +-0.5px (zakres 20.42) — [62.281549876975006,62.2919192441925,82.671875,82.6875,62.269861446218506,62.28023275950504,62.2919192441925,82.671875,62.2919192441925,62.28023275950504,82.671875,62.28023275950504]
+FAIL: 6 dostepnych @260px: 12 szczelin rownych +-0.5px (zakres 20.42) i dodatnich — [-14.155950123024994,-14.1455807558075,6.234375,6.25,-14.167638553781494,-14.15726724049496,-14.1455807558075,6.234375,-14.1455807558075,-14.15726724049496,6.234375,-14.15726724049496]
+--- 3 dostepne (NW,E,SW), kontener 340px (zmierzony 340.00x224.00)
+komorka  w       h       cx      cy
+ARMIA      99.95   86.02  639.99  494.79
+E          99.95   86.02  748.10  494.79
+NE         99.95   86.02  694.05  433.87
+NW         99.95   86.02  585.93  433.87
+W          99.95   86.02  531.87  494.79
+SW         99.95   86.02  585.93  555.71
+SE         99.95   86.02  694.05  555.71
+ARMIA-NW   dist 81.45 szczelina -18.50
+ARMIA-NE   dist 81.45 szczelina -18.50
+ARMIA-W    dist 108.13 szczelina 8.17
+ARMIA-E    dist 108.11 szczelina 8.16
+ARMIA-SW   dist 81.45 szczelina -18.50
+ARMIA-SE   dist 81.45 szczelina -18.50
+W-NW       dist 81.45 szczelina -18.50
+NW-NE      dist 108.13 szczelina 8.17
+NE-E       dist 81.44 szczelina -18.51
+E-SE       dist 81.44 szczelina -18.51
+SE-SW      dist 108.13 szczelina 8.17
+SW-W       dist 81.45 szczelina -18.50
+PASS: 3 dostepne (NW,E,SW) @340px: 7 komorek
+PASS: 3 dostepne (NW,E,SW) @340px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 3 dostepne (NW,E,SW) @340px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":99.953125,"h":86.015625}
+FAIL: 3 dostepne (NW,E,SW) @340px: 12 odleglosci srodkow rownych +-0.5px (zakres 26.68) — [81.45077507160767,81.45077507160767,108.125,108.109375,81.45077507160767,81.45077507160767,81.45077507160767,108.125,81.4404049031023,81.4404049031023,108.125,81.45077507160767]
+FAIL: 3 dostepne (NW,E,SW) @340px: 12 szczelin rownych +-0.5px (zakres 26.68) i dodatnich — [-18.502349928392334,-18.502349928392334,8.171875,8.15625,-18.502349928392334,-18.502349928392334,-18.502349928392334,8.171875,-18.512720096897695,-18.512720096897695,8.171875,-18.502349928392334]
+--- 3 dostepne (NW,E,SW), kontener 300px (zmierzony 300.00x197.64)
+komorka  w       h       cx      cy
+ARMIA      88.19   75.89  639.98  494.79
+E          88.19   75.89  735.39  494.79
+NE         88.19   75.89  687.69  441.04
+NW         88.19   75.89  592.28  441.04
+W          88.19   75.89  544.59  494.79
+SW         88.19   75.89  592.28  548.55
+SE         88.19   75.89  687.69  548.55
+ARMIA-NW   dist 71.87 szczelina -16.32
+ARMIA-NE   dist 71.87 szczelina -16.32
+ARMIA-W    dist 95.39 szczelina 7.20
+ARMIA-E    dist 95.41 szczelina 7.22
+ARMIA-SW   dist 71.88 szczelina -16.31
+ARMIA-SE   dist 71.88 szczelina -16.31
+W-NW       dist 71.86 szczelina -16.33
+NW-NE      dist 95.41 szczelina 7.22
+NE-E       dist 71.87 szczelina -16.32
+E-SE       dist 71.88 szczelina -16.31
+SE-SW      dist 95.41 szczelina 7.22
+SW-W       dist 71.87 szczelina -16.32
+PASS: 3 dostepne (NW,E,SW) @300px: 7 komorek
+PASS: 3 dostepne (NW,E,SW) @300px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 3 dostepne (NW,E,SW) @300px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":88.1875,"h":75.890625}
+FAIL: 3 dostepne (NW,E,SW) @300px: 12 odleglosci srodkow rownych +-0.5px (zakres 23.55) — [71.86550378843542,71.86550378843542,95.390625,95.40625,71.87719086334864,71.87719086334864,71.8551331238764,95.40625,71.86550378843542,71.87719086334864,95.40625,71.86682188528046]
+FAIL: 3 dostepne (NW,E,SW) @300px: 12 szczelin rownych +-0.5px (zakres 23.55) i dodatnich — [-16.32199621156458,-16.32199621156458,7.203125,7.21875,-16.310309136651355,-16.310309136651355,-16.3323668761236,7.21875,-16.32199621156458,-16.310309136651355,7.21875,-16.32067811471954]
+--- 3 dostepne (NW,E,SW), kontener 260px (zmierzony 260.00x171.28)
+komorka  w       h       cx      cy
+ARMIA      76.44   65.77  639.98  494.79
+E          76.44   65.77  722.67  494.79
+NE         76.44   65.77  681.33  448.20
+NW         76.44   65.77  598.66  448.20
+W          76.44   65.77  557.31  494.79
+SW         76.44   65.77  598.66  541.37
+SE         76.44   65.77  681.33  541.37
+ARMIA-NW   dist 62.28 szczelina -14.16
+ARMIA-NE   dist 62.29 szczelina -14.15
+ARMIA-W    dist 82.67 szczelina 6.23
+ARMIA-E    dist 82.69 szczelina 6.25
+ARMIA-SW   dist 62.27 szczelina -14.17
+ARMIA-SE   dist 62.28 szczelina -14.16
+W-NW       dist 62.29 szczelina -14.15
+NW-NE      dist 82.67 szczelina 6.23
+NE-E       dist 62.29 szczelina -14.15
+E-SE       dist 62.28 szczelina -14.16
+SE-SW      dist 82.67 szczelina 6.23
+SW-W       dist 62.28 szczelina -14.16
+PASS: 3 dostepne (NW,E,SW) @260px: 7 komorek
+PASS: 3 dostepne (NW,E,SW) @260px: rozmiary rowne +-0.5px (zakres w=0.00, h=0.00)
+FAIL: 3 dostepne (NW,E,SW) @260px: proporcja h/w = 2/sqrt3 (regularny polygon) — {"w":76.4375,"h":65.765625}
+FAIL: 3 dostepne (NW,E,SW) @260px: 12 odleglosci srodkow rownych +-0.5px (zakres 20.42) — [62.281549876975006,62.2919192441925,82.671875,82.6875,62.269861446218506,62.28023275950504,62.2919192441925,82.671875,62.2919192441925,62.28023275950504,82.671875,62.28023275950504]
+FAIL: 3 dostepne (NW,E,SW) @260px: 12 szczelin rownych +-0.5px (zakres 20.42) i dodatnich — [-14.155950123024994,-14.1455807558075,6.234375,6.25,-14.167638553781494,-14.15726724049496,-14.1455807558075,6.234375,-14.1455807558075,-14.15726724049496,6.234375,-14.15726724049496]
+
+army-split-hex-honeycomb-test: 12 pass, 18 fail
