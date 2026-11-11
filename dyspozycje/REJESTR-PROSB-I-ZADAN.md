@@ -9702,3 +9702,8 @@ DOMAIN: GAME
 - DODATEK2026-11-11 do R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: wyjątkowe jednostki objęte limitem jednej sztuki mogą być zamieniane wyłącznie na wyjątkowe; zwykłe wyłącznie na zwykłe. Zachować istniejący limit, także w zbiorczej zamianie. Odróżnić limitowaną Super-jednostkę od zwykłego narodowego wariantu Klasa=Specjalna; nie zmieniać zakresu limitu per armia/cywilizacja bez ustalenia.
 - KOREKTAWŁAŚCICIELA2026-11-11 do R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: limit wyjątkowej zadziałał (zamienił tylko jedną), wcześniejszy dopisek normal↔wyjątkowe WYCOFANY. Zachować istniejące limity/ścieżki wyjątkowych. Nadal naprawić Wojownik mykeński→Falanga/Thorakites i inne legalne przejścia między typami piechoty wręcz do następnej epoki. Aktualny dispatch zastępuje wycofany dopisek.
 - ROZSZERZENIE2026-11-11 R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: ogólna reguła dla wszystkich cywilizacji i dostępnej piechoty wręcz, dowolny typ broni→dowolny typ broni przy zachowaniu pozostałych bramek. Nie tylko Grecy/awans do kolejnej epoki. Brąz ma bazowego Włócznika i Wojownika z mieczem i tarczą; obecne Żelazo nie ma uniwersalnego miecznika (piechota narodowa).
+
+## 2026-11-11 — R-BITWA-DEAD-UNIT-DISAPPEARS-Q2
+STATUS: OTWARTE
+DOMAIN: GAME
+[related_to R-BITWA-DEAD-UNIT-DISAPPEARS-Q1] Ponownezgłoszenie: całkowiciezniszczonejednostkinadalwidocznenapolubitwy. Q1wdrożonawcześniej6b7f40b4; sprawdzićregresję/inneścieżki,zegarSkip/fade,nieusuwaćjednostektylkoroutowanych. Dispatch `autobot/runs/R-BITWA-DEAD-UNIT-DISAPPEARS-Q2/00-dispatch.md`. Pilnenajbliższegoslotu,max4.
