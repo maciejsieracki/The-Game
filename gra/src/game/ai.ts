@@ -3685,7 +3685,8 @@ function applyArmySeeksEnemyArmy(
     u => opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r)));
   if (visibleEnemy.length === 0) return commands;
 
-  const toSeek = (u: RuntimeUnit): SeekUnit => ({ id: u.id, q: u.q, r: u.r, ownerId: u.ownerId, ruch: u.ruch ?? 2 });
+  const defaultMove = getAiParam(data, 'ai_wojna_armia_szuka_armii_ruch_domyslny', ARMY_SEEKS_ARMY_DEFAULTS.defaultMove);
+  const toSeek = (u: RuntimeUnit): SeekUnit => ({ id: u.id, q: u.q, r: u.r, ownerId: u.ownerId, ruch: u.ruch ?? defaultMove });
   // Armia = jednostki bojowe poza garnizonem (najslabsza jednostka na heksie wlasnego miasta zostaje).
   const cityHexes = new Set(myCities.map(c => keyOf(c.q, c.r)));
   const mine = units.filter(u => u.ownerId === playerId && isField(u));
@@ -3708,9 +3709,35 @@ function applyArmySeeksEnemyArmy(
     params: {
       reachMoves: getAiParam(data, 'ai_wojna_armia_szuka_armii_zasieg_ruchow', ARMY_SEEKS_ARMY_DEFAULTS.reachMoves),
       minRatio: getAiParam(data, 'ai_wojna_armia_szuka_armii_prog_sil', ARMY_SEEKS_ARMY_DEFAULTS.minRatio),
+      clusterLink: getAiParam(data, 'ai_wojna_armia_szuka_armii_promien_skupiska', ARMY_SEEKS_ARMY_DEFAULTS.clusterLink),
+      reachSlack: getAiParam(data, 'ai_wojna_armia_szuka_armii_zapas_zasiegu', ARMY_SEEKS_ARMY_DEFAULTS.reachSlack),
     },
   });
-  for (const order of plan.orders) {
+  // Zarzut 1 (r2): marsz kolumny -- tylna jednostka nie moze wejsc na heks, z ktorego przednia jeszcze nie ruszyla
+  // (komenda blokowana). Marsz ukladamy od frontu (najblizsi celu pierwsi) i liczymy trasy na KOPII pozycji,
+  // aktualizowanej po kazdym zleconym ruchu; heks zajety w tej kopii nie jest celem kroku.
+  let changed = false;
+  const sim = new Map(units.map(u => [u.id, { ...u } as { -readonly [K in keyof RuntimeUnit]: RuntimeUnit[K] }] as const));
+  const simUnits = [...sim.values()];
+  // Komendy rdzenia stoja PRZED nakladka: jednostki spoza planu (i te, dla ktorych nakladka nie znajdzie trasy)
+  // wykonaja swoj ruch wczesniej -- kopia pozycji uwzglednia cel ich ruchu.
+  const coreMoveDest = new Map<string, { q: number; r: number }>();
+  for (const c of commands) if (c.type === 'move') coreMoveDest.set(c.unitId, { q: c.toQ, r: c.toR });
+  const planned = new Set(plan.orders.map(o => o.unitId));
+  const applyCoreDest = (id: string): void => {
+    const d = coreMoveDest.get(id);
+    const su = sim.get(id);
+    if (d !== undefined && su !== undefined) { su.q = d.q; su.r = d.r; }
+  };
+  for (const id of coreMoveDest.keys()) if (!planned.has(id)) applyCoreDest(id);
+  const orderDist = (o: (typeof plan.orders)[number]): number => {
+    if (o.kind === 'attack') return -1;
+    const u = byId.get(o.unitId);
+    return u === undefined ? Infinity : hexDistance(u.q, u.r, o.toQ, o.toR);
+  };
+  const orderedPlan = [...plan.orders].sort((a, b) =>
+    orderDist(a) - orderDist(b) || (a.unitId < b.unitId ? -1 : a.unitId > b.unitId ? 1 : 0));
+  for (const order of orderedPlan) {
     const unit = byId.get(order.unitId);
     if (unit === undefined) continue;
     let replacement: AICommand | null = null;
@@ -3729,22 +3756,63 @@ function applyArmySeeksEnemyArmy(
         || a.q - b.q || a.r - b.r);
       cands.push(...nb);
       for (const cnd of cands) {
-        const step = firstStep(unit, map, cnd.q, cnd.r, units);
-        if (step !== null && !(step.q === unit.q && step.r === unit.r)) {
-          replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r };
-          break;
-        }
+        const simUnit = sim.get(unit.id)!;
+        const step = firstStep(simUnit, map, cnd.q, cnd.r, simUnits);
+        if (step === null || (step.q === simUnit.q && step.r === simUnit.r)) continue;
+        // Krok na heks zajety (w kopii) przez dowolna jednostke = ruch zablokowany; probuj kolejnego kandydata.
+        if (simUnits.some(x => x.id !== simUnit.id && x.q === step.q && x.r === step.r)) continue;
+        replacement = { type: 'move', unitId: unit.id, toQ: step.q, toR: step.r };
+        simUnit.q = step.q;
+        simUnit.r = step.r;
+        break;
       }
     }
-    if (replacement === null) continue; // brak trasy: zostaje komenda rdzenia
+    if (replacement === null) { applyCoreDest(order.unitId); continue; } // brak trasy: zostaje komenda rdzenia
     for (let i = commands.length - 1; i >= 0; i--) {
       const c = commands[i]!;
       if (c.type === 'move' && c.unitId === unit.id) commands.splice(i, 1);
     }
     const endIdx = commands.findIndex(c => c.type === 'endTurn');
     if (endIdx >= 0) commands.splice(endIdx, 0, replacement); else commands.push(replacement);
+    changed = true;
   }
+  if (changed) orderMovesToUnblock(commands, units);
   return commands;
+}
+
+/**
+ * Nakladki wstawiaja ruchy na koniec listy, wiec komenda rdzenia moze celowac w heks, z ktorego jednostka
+ * (z pozniejsza komenda ruchu) jeszcze nie ruszyla -- wykonanie odrzuca taki ruch. Przestawia pozniejszy ruch
+ * zajmujacego PRZED ruch blokowany (ograniczona liczba przestawien -- cykle wymiany pozostaja jak byly).
+ */
+function orderMovesToUnblock(commands: AICommand[], units: readonly RuntimeUnit[]): void {
+  const pos = new Map(units.map(u => [u.id, { q: u.q, r: u.r } as { q: number; r: number }] as const));
+  let budget = commands.length * 2;
+  let i = 0;
+  while (i < commands.length) {
+    const c = commands[i]!;
+    if (c.type !== 'move') { i++; continue; }
+    let blocker: string | null = null;
+    for (const [id, p] of pos) {
+      if (id !== c.unitId && p.q === c.toQ && p.r === c.toR) { blocker = id; break; }
+    }
+    if (blocker !== null && budget > 0) {
+      let j = -1;
+      for (let k = i + 1; k < commands.length; k++) {
+        const d = commands[k]!;
+        if (d.type === 'move' && d.unitId === blocker) { j = k; break; }
+      }
+      if (j > i) {
+        const [moved] = commands.splice(j, 1);
+        commands.splice(i, 0, moved!);
+        budget--;
+        continue; // ponownie ten sam indeks (teraz ruch zajmujacego)
+      }
+    }
+    const me = pos.get(c.unitId);
+    if (me !== undefined) { me.q = c.toQ; me.r = c.toR; }
+    i++;
+  }
 }
 
 function decideAITurnCore(

@@ -6,6 +6,9 @@
  * Czysty modul (bez DOM/THREE, deterministyczny: sortowanie po id). Parametry w data/ai-params.json:
  *  - ai_wojna_armia_szuka_armii_wlaczone      (1/0, domyslnie 1)
  *  - ai_wojna_armia_szuka_armii_zasieg_ruchow (N tur marszu najwolniejszej jednostki armii, domyslnie 3)
+ *  - ai_wojna_armia_szuka_armii_promien_skupiska (laczenie jednostek w armie, heksy, domyslnie 3)
+ *  - ai_wojna_armia_szuka_armii_zapas_zasiegu    (heksy dodawane do N*ruch w zasiegu, domyslnie 1)
+ *  - ai_wojna_armia_szuka_armii_ruch_domyslny    (ruch jednostki bez pola ruch, domyslnie 2)
  *  - ai_wojna_armia_szuka_armii_prog_sil      (sila wlasna / sila wroga >= prog, domyslnie 0.8 -- ten sam
  *    stosunek 10:8 co atak ostatniej woli i obrona domu, zatwierdzony ABC 2026-11-04)
  *
@@ -14,8 +17,9 @@
  * pierwszenstwo obrony domu: gdy wrog bojowy jest przy wlasnym miescie, nakladka nie dziala (rzadzi obrona).
  */
 
-export const ARMY_SEEKS_ARMY_CLUSTER_LINK = 3;
-export const ARMY_SEEKS_ARMY_DEFAULTS = { enabled: 1, reachMoves: 3, minRatio: 0.8 } as const;
+export const ARMY_SEEKS_ARMY_DEFAULTS = {
+  enabled: 1, reachMoves: 3, minRatio: 0.8, clusterLink: 3, reachSlack: 1, defaultMove: 2,
+} as const;
 
 let overrideValue: boolean | null = null;
 /** Tylko testy: wymusza ON/OFF niezaleznie od parametru; null = parametr. */
@@ -34,7 +38,7 @@ export interface SeekUnit {
   ruch: number;
 }
 
-export interface SeekParams { reachMoves: number; minRatio: number }
+export interface SeekParams { reachMoves: number; minRatio: number; clusterLink: number; reachSlack: number }
 
 export interface SeekInput {
   /** Jednostki bojowe wlasne BEZ garnizonow miast. */
@@ -63,7 +67,7 @@ export interface SeekPlan {
   distance: number;
 }
 
-function clusters(units: readonly SeekUnit[], dist: SeekInput['distance']): SeekUnit[][] {
+function clusters(units: readonly SeekUnit[], dist: SeekInput['distance'], link: number): SeekUnit[][] {
   const sorted = [...units].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const seen = new Set<string>();
   const out: SeekUnit[][] = [];
@@ -76,7 +80,7 @@ function clusters(units: readonly SeekUnit[], dist: SeekInput['distance']): Seek
       const cur = stack.pop()!;
       comp.push(cur);
       for (const o of sorted) {
-        if (!seen.has(o.id) && dist(cur.q, cur.r, o.q, o.r) <= ARMY_SEEKS_ARMY_CLUSTER_LINK) {
+        if (!seen.has(o.id) && dist(cur.q, cur.r, o.q, o.r) <= link) {
           seen.add(o.id);
           stack.push(o);
         }
@@ -104,14 +108,14 @@ function strongest(cl: SeekUnit[][], strengthOf: (u: SeekUnit) => number): { c: 
 export function planArmySeeksArmy(inp: SeekInput): SeekPlan {
   const empty = (reason: SeekPlan['reason'], own = 0, en = 0, d = 0): SeekPlan =>
     ({ orders: [], reason, ownStrength: own, enemyStrength: en, distance: d });
-  const mine = strongest(clusters(inp.myArmyUnits, inp.distance), inp.strengthOf);
+  const mine = strongest(clusters(inp.myArmyUnits, inp.distance, inp.params.clusterLink), inp.strengthOf);
   if (mine === null) return empty('no-own');
-  const foe = strongest(clusters(inp.enemyUnits, inp.distance), inp.strengthOf);
+  const foe = strongest(clusters(inp.enemyUnits, inp.distance, inp.params.clusterLink), inp.strengthOf);
   if (foe === null) return empty('no-enemy', mine.s);
   let dmin = Infinity;
   for (const u of mine.c) for (const e of foe.c) dmin = Math.min(dmin, inp.distance(u.q, u.r, e.q, e.r));
   const slowest = Math.max(1, Math.min(...mine.c.map(u => Math.max(1, u.ruch))));
-  if (dmin > inp.params.reachMoves * slowest + 1) return empty('out-of-reach', mine.s, foe.s, dmin);
+  if (dmin > inp.params.reachMoves * slowest + inp.params.reachSlack) return empty('out-of-reach', mine.s, foe.s, dmin);
   if (foe.s <= 0 || mine.s / foe.s < inp.params.minRatio) return empty('too-weak', mine.s, foe.s, dmin);
 
   const orders: SeekOrder[] = [];

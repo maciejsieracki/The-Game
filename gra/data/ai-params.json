@@ -973,5 +973,20 @@
     "wartosc": 0.8,
     "sekcja": "§9 Armia AI",
     "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: minimalny stosunek sily wlasnej armii do sily armii wroga (0,8 = 10:8, jak atak ostatniej woli i obrona domu); ponizej -- dotychczasowe reguly (bez samobojczego ataku)."
+  },
+  "ai_wojna_armia_szuka_armii_promien_skupiska": {
+    "wartosc": 3,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: promien laczenia jednostek w jedna armie (heksy) przy wyborze najwiekszej armii wlasnej i wroga."
+  },
+  "ai_wojna_armia_szuka_armii_zapas_zasiegu": {
+    "wartosc": 1,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: zapas (heksy) dodawany do N*ruch w warunku zasiegu: odleglosc <= N*ruch + zapas."
+  },
+  "ai_wojna_armia_szuka_armii_ruch_domyslny": {
+    "wartosc": 2,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: ruch zakladany dla jednostki bez pola ruch (heksy na ture) przy liczeniu zasiegu."
   }
 }

@@ -131,6 +131,33 @@ ok(cmds(scFar, true, 1) === cmds(scFar, false, 1), 'komendy poza zasiegiem ident
 section('T6 miasto pod oblezeniem -> obrona domu rzadzi');
 ok(cmds(scSiege, true, 1) === cmds(scSiege, false, 1), 'komendy przy wrogu 2 heksy od miasta identyczne PRZED/PO');
 
+section('T6b pierwszenstwo obrony domu: armie sasiaduja (PO atakowaloby), ale wrog stoi 2 heksy od wlasnego miasta');
+{
+  // Bez galezi pierwszenstwa (mutant M4) nakladka zlecilaby atak na sasiadujaca armie -> komendy PO != PRZED.
+  const scHomeThreat = () => base({
+    units: [...units(1, 'a', six(19, 10)), ...units(2, 'b', six(21, 10)), ...units(2, 'c', [[6, 10]])],
+    cities: CITIES(),
+  });
+  const offC = cmds(scHomeThreat, false, 1);
+  const onC = cmds(scHomeThreat, true, 1);
+  ok(onC === offC, 'wrog przy wlasnym miescie + sasiadujaca armia: komendy PRZED == PO (obrona domu rzadzi)');
+  // Kontrola: ta sama scena BEZ zagrozenia domu -> nakladka dziala (komendy rozne), wiec test jest czuly.
+  ok(cmds(scAdjacent, true, 1) !== cmds(scAdjacent, false, 1), 'kontrola: bez zagrozenia domu nakladka zmienia komendy');
+}
+
+section('T6c pierwszenstwo odbicia utraconego miasta (galaz P1 obrony domu)');
+{
+  const scLost = () => {
+    const sc = base({ units: [...units(1, 'a', six(19, 10)), ...units(2, 'b', six(21, 10))], cities: CITIES() });
+    const lost = sc.cities.find(c => c.id === 'b2');
+    lost.foundedBy = 1; lost.capturedFromOwnerId = 1;
+    return sc;
+  };
+  const offL = cmds(scLost, false, 1);
+  const onL = cmds(scLost, true, 1);
+  ok(onL === offL, 'utracone miasto do odbicia + sasiadujaca armia: komendy PRZED == PO (odbicie ma pierwszenstwo)');
+}
+
 section('T7 mgla wojny');
 {
   const vis = new Set();
@@ -155,14 +182,14 @@ section('T9 planer: wybiera NAJWIEKSZA armie wroga');
     myArmyUnits: [mk('a1', 10, 10, 1), mk('a2', 10, 11, 1), mk('a3', 11, 10, 1)],
     enemyUnits: [mk('e1', 13, 10, 2), mk('e2', 40, 10, 2), mk('e3', 40, 11, 2), mk('e4', 41, 10, 2)],
     lockedUnitIds: new Set(), strengthOf: () => 1, distance: E.hexDistance, inAttackRange: () => false,
-    params: { reachMoves: 3, minRatio: 0.8 },
+    params: { reachMoves: 3, minRatio: 0.8, clusterLink: 3, reachSlack: 1 },
   });
   ok(plan.reason === 'out-of-reach', 'najwieksza armia wroga (3 jedn.) poza zasiegiem -> brak zlecen (reason=' + plan.reason + ')');
   const plan2 = E.planArmySeeksArmy({
     myArmyUnits: [mk('a1', 10, 10, 1), mk('a2', 10, 11, 1), mk('a3', 11, 10, 1)],
     enemyUnits: [mk('e1', 13, 10, 2), mk('e2', 13, 11, 2)],
     lockedUnitIds: new Set(['a2']), strengthOf: () => 1, distance: E.hexDistance, inAttackRange: () => false,
-    params: { reachMoves: 3, minRatio: 0.8 },
+    params: { reachMoves: 3, minRatio: 0.8, clusterLink: 3, reachSlack: 1 },
   });
   ok(plan2.reason === 'ok' && plan2.orders.length === 2 && plan2.orders.every(o => o.kind === 'approach'), 'zblizanie, jednostka zablokowana pominieta');
 }
