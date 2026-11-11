@@ -3,7 +3,7 @@
     "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
     "zrodlo": "gra/data/tech.json",
     "regula_weba": "difficulty-cost.ts:86-101 scaledResearchCost; tech-tempo.ts:22-40; r-stawki-strojenie.ts:20-33 (Brąz/Żelazo x2)",
-    "pin_web": "edb8fb56",
+    "pin_web": "638e90bea",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
     "uwaga": "Oś (b): tempo (szybka/standardowa/dluga) x tryb trudności x gracz/AI."
   },
@@ -101,88 +101,6 @@
           "tempo": "dluga",
           "tryb": "trudny_ai",
           "koszt": 40
-        }
-      ]
-    },
-    {
-      "technologia": "Garncarstwo",
-      "epoka": "Kamień",
-      "koszt_bazowy": 40,
-      "wartosci": [
-        {
-          "tempo": "szybka",
-          "tryb": "normalny",
-          "koszt": 80
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "latwy_gracz",
-          "koszt": 80
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "latwy_ai",
-          "koszt": 160
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "trudny_gracz",
-          "koszt": 160
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "trudny_ai",
-          "koszt": 80
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "normalny",
-          "koszt": 160
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "latwy_gracz",
-          "koszt": 160
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "latwy_ai",
-          "koszt": 320
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "trudny_gracz",
-          "koszt": 320
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "trudny_ai",
-          "koszt": 160
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "normalny",
-          "koszt": 320
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "latwy_gracz",
-          "koszt": 320
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "latwy_ai",
-          "koszt": 640
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "trudny_gracz",
-          "koszt": 640
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "trudny_ai",
-          "koszt": 320
         }
       ]
     },
@@ -597,6 +515,88 @@
       ]
     },
     {
+      "technologia": "Garncarstwo",
+      "epoka": "Kamień",
+      "koszt_bazowy": 40,
+      "wartosci": [
+        {
+          "tempo": "szybka",
+          "tryb": "normalny",
+          "koszt": 80
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "latwy_gracz",
+          "koszt": 80
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "latwy_ai",
+          "koszt": 160
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "trudny_gracz",
+          "koszt": 160
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "trudny_ai",
+          "koszt": 80
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "normalny",
+          "koszt": 160
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "latwy_gracz",
+          "koszt": 160
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "latwy_ai",
+          "koszt": 320
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "trudny_gracz",
+          "koszt": 320
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "trudny_ai",
+          "koszt": 160
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "normalny",
+          "koszt": 320
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "latwy_gracz",
+          "koszt": 320
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "latwy_ai",
+          "koszt": 640
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "trudny_gracz",
+          "koszt": 640
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "trudny_ai",
+          "koszt": 320
+        }
+      ]
+    },
+    {
       "technologia": "Mistycyzm",
       "epoka": "Kamień",
       "koszt_bazowy": 40,
@@ -763,169 +763,87 @@
     {
       "technologia": "Gospodarka wodna",
       "epoka": "Kamień",
-      "koszt_bazowy": 72,
+      "koszt_bazowy": 180,
       "wartosci": [
         {
           "tempo": "szybka",
           "tryb": "normalny",
-          "koszt": 144
+          "koszt": 360
         },
         {
           "tempo": "szybka",
           "tryb": "latwy_gracz",
-          "koszt": 144
+          "koszt": 360
         },
         {
           "tempo": "szybka",
           "tryb": "latwy_ai",
-          "koszt": 288
+          "koszt": 720
         },
         {
           "tempo": "szybka",
           "tryb": "trudny_gracz",
-          "koszt": 288
+          "koszt": 720
         },
         {
           "tempo": "szybka",
           "tryb": "trudny_ai",
-          "koszt": 144
+          "koszt": 360
         },
         {
           "tempo": "standardowa",
           "tryb": "normalny",
-          "koszt": 288
+          "koszt": 720
         },
         {
           "tempo": "standardowa",
           "tryb": "latwy_gracz",
-          "koszt": 288
+          "koszt": 720
         },
         {
           "tempo": "standardowa",
           "tryb": "latwy_ai",
-          "koszt": 576
+          "koszt": 1440
         },
         {
           "tempo": "standardowa",
           "tryb": "trudny_gracz",
-          "koszt": 576
+          "koszt": 1440
         },
         {
           "tempo": "standardowa",
           "tryb": "trudny_ai",
-          "koszt": 288
+          "koszt": 720
         },
         {
           "tempo": "dluga",
           "tryb": "normalny",
-          "koszt": 576
+          "koszt": 1440
         },
         {
           "tempo": "dluga",
           "tryb": "latwy_gracz",
-          "koszt": 576
+          "koszt": 1440
         },
         {
           "tempo": "dluga",
           "tryb": "latwy_ai",
-          "koszt": 1152
+          "koszt": 2880
         },
         {
           "tempo": "dluga",
           "tryb": "trudny_gracz",
-          "koszt": 1152
+          "koszt": 2880
         },
         {
           "tempo": "dluga",
           "tryb": "trudny_ai",
-          "koszt": 576
+          "koszt": 1440
         }
       ]
     },
     {
       "technologia": "Koło",
-      "epoka": "Kamień",
-      "koszt_bazowy": 88,
-      "wartosci": [
-        {
-          "tempo": "szybka",
-          "tryb": "normalny",
-          "koszt": 176
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "latwy_gracz",
-          "koszt": 176
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "latwy_ai",
-          "koszt": 352
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "trudny_gracz",
-          "koszt": 352
-        },
-        {
-          "tempo": "szybka",
-          "tryb": "trudny_ai",
-          "koszt": 176
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "normalny",
-          "koszt": 352
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "latwy_gracz",
-          "koszt": 352
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "latwy_ai",
-          "koszt": 704
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "trudny_gracz",
-          "koszt": 704
-        },
-        {
-          "tempo": "standardowa",
-          "tryb": "trudny_ai",
-          "koszt": 352
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "normalny",
-          "koszt": 704
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "latwy_gracz",
-          "koszt": 704
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "latwy_ai",
-          "koszt": 1408
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "trudny_gracz",
-          "koszt": 1408
-        },
-        {
-          "tempo": "dluga",
-          "tryb": "trudny_ai",
-          "koszt": 704
-        }
-      ]
-    },
-    {
-      "technologia": "Brązownictwo",
       "epoka": "Kamień",
       "koszt_bazowy": 180,
       "wartosci": [
@@ -1003,6 +921,88 @@
           "tempo": "dluga",
           "tryb": "trudny_ai",
           "koszt": 1440
+        }
+      ]
+    },
+    {
+      "technologia": "Brązownictwo",
+      "epoka": "Kamień",
+      "koszt_bazowy": 480,
+      "wartosci": [
+        {
+          "tempo": "szybka",
+          "tryb": "normalny",
+          "koszt": 960
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "latwy_gracz",
+          "koszt": 960
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "latwy_ai",
+          "koszt": 1920
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "trudny_gracz",
+          "koszt": 1920
+        },
+        {
+          "tempo": "szybka",
+          "tryb": "trudny_ai",
+          "koszt": 960
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "normalny",
+          "koszt": 1920
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "latwy_gracz",
+          "koszt": 1920
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "latwy_ai",
+          "koszt": 3840
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "trudny_gracz",
+          "koszt": 3840
+        },
+        {
+          "tempo": "standardowa",
+          "tryb": "trudny_ai",
+          "koszt": 1920
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "normalny",
+          "koszt": 3840
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "latwy_gracz",
+          "koszt": 3840
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "latwy_ai",
+          "koszt": 7680
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "trudny_gracz",
+          "koszt": 7680
+        },
+        {
+          "tempo": "dluga",
+          "tryb": "trudny_ai",
+          "koszt": 3840
         }
       ]
     },

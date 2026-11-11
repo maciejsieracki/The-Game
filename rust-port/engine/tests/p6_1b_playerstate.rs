@@ -146,6 +146,10 @@ fn parity_constants_and_defaults_match_web() {
     // Kontrakt pol: serializacja ma dokladnie te klucze, co obiekt weba (kolejnosc nieistotna).
     let json = serde_json::to_value(&s).unwrap();
     let mut got: Vec<String> = json.as_object().unwrap().keys().cloned().collect();
+    // ZALOZENIE (REPIN-EKONOMIA-CERAMIKA-GARNCARSTWO-Q1 r3): web 638e90bea usunal pole `civBonusy`
+    // z PlayerState (gra/src/game/playerState.ts, brak w defaults). Port trzyma je tylko do
+    // serializacji (player.rs `civ_bonusy`, zawsze pusta lista); usuniecie z formatu zapisu = osobny temat.
+    got.retain(|k| k != "civBonusy");
     let mut want = strings(&web["defaults"]["keys"]);
     got.sort();
     want.sort();

@@ -1,7 +1,7 @@
 {
   "meta": {
     "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
-    "zrodlo": "gra/data/buildings.json @ edb8fb56 (identyczny z rust-port/engine/data/buildings.json)",
+    "zrodlo": "gra/data/buildings.json @ 638e90bea (identyczny z rust-port/engine/data/buildings.json)",
     "regula_weba": "production.ts itemCost budynek (l.322-334) x buildingEraCostMultiplier (building-stock-cost.ts l.74-81); buildingWorkCost stan bazowy (production.ts l.514-529: 0.25x2x2 = 1.0)",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 3, generator: gen-work-gold.mjs",
     "uwaga_stan": "Wartosci dotycza stanu bazowego web: pace niski (x1), trudnosc normal (x1), bez ulgi cywilizacji. Stany (b) NIE sa rozwiniete w tej tabeli (P3-19 sek. 9)."
@@ -246,6 +246,17 @@
       "baza": {
         "kosztBudowy": 25,
         "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "emporion",
+      "epokaWejscia": 2,
+      "praca_bazowa": 100,
+      "praca_przyrost": 40,
+      "baza": {
+        "kosztBudowy": 50,
+        "przyrostKosztu": 20,
         "mnoznik_ery": 2
       }
     },
