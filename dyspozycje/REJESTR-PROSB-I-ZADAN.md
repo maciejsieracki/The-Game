@@ -9377,3 +9377,5 @@ R-WEB-CITY-ADMINISTRATOR-Q1: FC PASS-WITH-NOTES, kod dda3d8c30 (Sonnet r1/5). Ad
 R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai-war-defend-home T9 29/1 — nakładka sprzężona z isHomeWarDefenseEnabled) → runda 2 (DODATEK 2). Do decyzji właściciela: próg sił 0,8 i zasięg 3 ruchów (balans).
 
 - 2026-11-11 · FALA 628 WDROŻONA (ROBOCZA, main afac264c4, MD5 11ffdb9f…, Raw zgodne, 3× audio-pack MD5 zgodne): R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (FC r2 PASS-WITH-NOTES, kod 4c37bab13; ref `refs/keep/R-WEB-AI-WAR-ARMY-SEEKS-Q1-fc`, wip `web-wip/AI-SEEKS`). Nakładka odsprzężona od isHomeWarDefenseEnabled. Do ABC właściciela: próg sił 0,8 i zasięg 3 ruchy. Dług Rust: REPIN (LEDGER). Następne: RAW-IDS r2 (w toku), potem FALA 629+.
+
+- 2026-11-11 · FALA 629 WDROŻONA (ROBOCZA): R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1 (FC PASS-WITH-NOTES, kod 65b45f729; ref `refs/keep/R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1-fc`, wip `web-wip/ARMY-AUTO-RECRUIT-GENERAL`). Długi bazowe: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18 (DEFAULT_QTY=0).
