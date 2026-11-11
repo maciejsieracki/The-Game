@@ -23535,20 +23535,6 @@ async function boot(): Promise<void> {
       });
     }
 
-    /** Tylko diagnostyka hooka ?civTest=1: czy przycisk „Przyjmij” gracza (previewIncomingPlayerAccept, net PW >= 0) przepusci payload. */
-    function aiBarterAcceptableForPlayer(
-      ownerId: number,
-      payload: import('./game/diplomacy-proposals').ProposalPayload,
-      relation: Relation,
-    ): boolean {
-      const r = previewIncomingPlayerAccept('handel', payload, treatyEvalRelationTotal(relation), {
-        difficulty: _menuDifficulty,
-        proposerOwnerId: ownerId,
-        tempoGry: player.tempoGry ?? 'standardowa',
-      });
-      return r == null || r.accepted;
-    }
-
     function pickResourceSurplusForOwnerPair(
       sellerOwnerId: number,
       buyerOwnerId: number,
@@ -29675,6 +29661,20 @@ async function boot(): Promise<void> {
     // (endTurn -> decideAITurn -> enqueueNegotiationFromAiCmd; handleNegotiationAccept/Reject;
     // tickCyclicResourceTradeDeals w endTurn; persistSaveToSlot/loadGameFromSlot). Hak tylko czyta/ustawia stan.
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      /** Tylko diagnostyka hooka ?civTest=1: czy przycisk „Przyjmij” gracza (previewIncomingPlayerAccept, net PW >= 0) przepusci payload. */
+      function aiBarterAcceptableForPlayer(
+        ownerId: number,
+        payload: import('./game/diplomacy-proposals').ProposalPayload,
+        relation: Relation,
+      ): boolean {
+        const r = previewIncomingPlayerAccept('handel', payload, treatyEvalRelationTotal(relation), {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: ownerId,
+          tempoGry: player.tempoGry ?? 'standardowa',
+        });
+        return r == null || r.accepted;
+      }
+
       (window as any).__aiTradeWiringTestDebug = {
         info: () => {
           const ai = aiStartHexes[0]?.ownerId ?? null;
