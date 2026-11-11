@@ -9408,3 +9408,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · DECYZJE ABC (właściciel): (1) ENABLE-TOGGLE — wyłączony budynek surowcowy ZERUJE też własne plony (Praca Cegielni, Żywność Garncarni, Praca Stolarni) — wdrożone w FALI 636 zostaje, zero zmian. (2) AIREPL (#185) — BEZ limitu zamian Zastąp AI na turę (jak dotąd; ogranicza tylko skarbiec i rezerwa zakupu) — dług zamknięty, bez zmian w kodzie.
 
 - 2026-11-11 · #192 (ai-major-economy-test, pr141-f04-yields-activation-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 31/0 i 135 checks (computeMajorArchetypeMilitaryFraction usunięty kontraktem testu w d20533090; yields naprawione w 583b33198). FC PASS, zero zmian kodu, deploy N/A.
+
+- 2026-11-11 · #191 (battle-loot-test, weterani-test): ZAMKNIĘTE jako NIEAKTUALNE — na main 12/0 i 79/0 (naprawy 6d425e3db, 9fbd2285a z 2026-11-10). FC PASS, zero zmian kodu, deploy N/A.
