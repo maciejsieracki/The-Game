@@ -1,0 +1,343 @@
+{
+ "webPin": "origin/main gra/src/game/ai-war-target-select.ts buildWarCityTargets",
+ "scenarios": [
+  {
+   "name": "AI atakuje AI: najblizsze miasto, obrona w miescie",
+   "selfOwnerId": 1,
+   "players": [
+    {
+     "id": 0,
+     "isHuman": true
+    },
+    {
+     "id": 1,
+     "isHuman": false
+    },
+    {
+     "id": 2,
+     "isHuman": false
+    },
+    {
+     "id": 3,
+     "isHuman": false
+    }
+   ],
+   "barbarianOwnerIds": [],
+   "enemyOwnerIds": [
+    2,
+    3
+   ],
+   "engageOwnerIds": [
+    2,
+    3
+   ],
+   "cities": [
+    {
+     "id": "21",
+     "owner": 2,
+     "x": 4,
+     "y": 1,
+     "isCapital": true
+    },
+    {
+     "id": "22",
+     "owner": 2,
+     "x": 0,
+     "y": 3,
+     "isCapital": false
+    },
+    {
+     "id": "31",
+     "owner": 3,
+     "x": 7,
+     "y": 2,
+     "isCapital": true
+    }
+   ],
+   "combatUnits": [
+    {
+     "owner": 2,
+     "x": 0,
+     "y": 3
+    },
+    {
+     "owner": 2,
+     "x": 0,
+     "y": 3
+    },
+    {
+     "owner": 3,
+     "x": 7,
+     "y": 2
+    }
+   ],
+   "expected": [
+    {
+     "ownerId": 2,
+     "cityId": "21",
+     "q": 4,
+     "r": 1,
+     "defenders": 0
+    },
+    {
+     "ownerId": 2,
+     "cityId": "22",
+     "q": 0,
+     "r": 3,
+     "defenders": 2
+    },
+    {
+     "ownerId": 3,
+     "cityId": "31",
+     "q": 7,
+     "r": 2,
+     "defenders": 1
+    }
+   ]
+  },
+  {
+   "name": "AI atakuje gracza: wszystkie miasta gracza; barbarzynca poza zasada",
+   "selfOwnerId": 2,
+   "players": [
+    {
+     "id": 0,
+     "isHuman": true
+    },
+    {
+     "id": 2,
+     "isHuman": false
+    },
+    {
+     "id": 9,
+     "isHuman": false
+    }
+   ],
+   "barbarianOwnerIds": [
+    9
+   ],
+   "enemyOwnerIds": [
+    0,
+    9
+   ],
+   "engageOwnerIds": [
+    0,
+    9
+   ],
+   "cities": [
+    {
+     "id": "101",
+     "owner": 0,
+     "x": 2,
+     "y": 2,
+     "isCapital": true
+    },
+    {
+     "id": "102",
+     "owner": 0,
+     "x": 6,
+     "y": 0,
+     "isCapital": false
+    },
+    {
+     "id": "191",
+     "owner": 9,
+     "x": 3,
+     "y": 3,
+     "isCapital": true
+    }
+   ],
+   "combatUnits": [
+    {
+     "owner": 0,
+     "x": 6,
+     "y": 0
+    },
+    {
+     "owner": 9,
+     "x": 3,
+     "y": 3
+    }
+   ],
+   "expected": [
+    {
+     "ownerId": 0,
+     "cityId": "101",
+     "q": 2,
+     "r": 2,
+     "defenders": 0
+    },
+    {
+     "ownerId": 0,
+     "cityId": "102",
+     "q": 6,
+     "r": 0,
+     "defenders": 1
+    },
+    {
+     "ownerId": 9,
+     "cityId": "191",
+     "q": 3,
+     "r": 3,
+     "defenders": null
+    }
+   ]
+  },
+  {
+   "name": "Gracz jako atakujacy: poza zasada najblizszego miasta, tylko stolica wroga",
+   "selfOwnerId": 0,
+   "players": [
+    {
+     "id": 0,
+     "isHuman": true
+    },
+    {
+     "id": 1,
+     "isHuman": false
+    },
+    {
+     "id": 2,
+     "isHuman": false
+    }
+   ],
+   "barbarianOwnerIds": [],
+   "enemyOwnerIds": [
+    1,
+    2
+   ],
+   "engageOwnerIds": [
+    1,
+    2
+   ],
+   "cities": [
+    {
+     "id": "11",
+     "owner": 1,
+     "x": 1,
+     "y": 1,
+     "isCapital": false
+    },
+    {
+     "id": "12",
+     "owner": 1,
+     "x": 5,
+     "y": 4,
+     "isCapital": true
+    },
+    {
+     "id": "21",
+     "owner": 2,
+     "x": 6,
+     "y": 1,
+     "isCapital": true
+    },
+    {
+     "id": "22",
+     "owner": 2,
+     "x": 2,
+     "y": 4,
+     "isCapital": false
+    }
+   ],
+   "combatUnits": [
+    {
+     "owner": 1,
+     "x": 5,
+     "y": 4
+    }
+   ],
+   "expected": [
+    {
+     "ownerId": 1,
+     "cityId": "12",
+     "q": 5,
+     "r": 4,
+     "defenders": null
+    },
+    {
+     "ownerId": 2,
+     "cityId": "21",
+     "q": 6,
+     "r": 1,
+     "defenders": null
+    }
+   ]
+  },
+  {
+   "name": "Brak engage dla czesci wrogow; obrona tylko z jednostek bojowych",
+   "selfOwnerId": 3,
+   "players": [
+    {
+     "id": 3,
+     "isHuman": false
+    },
+    {
+     "id": 4,
+     "isHuman": false
+    },
+    {
+     "id": 5,
+     "isHuman": false
+    }
+   ],
+   "barbarianOwnerIds": [],
+   "enemyOwnerIds": [
+    4,
+    5
+   ],
+   "engageOwnerIds": [
+    5
+   ],
+   "cities": [
+    {
+     "id": "41",
+     "owner": 4,
+     "x": 3,
+     "y": 0,
+     "isCapital": true
+    },
+    {
+     "id": "51",
+     "owner": 5,
+     "x": 3,
+     "y": 2,
+     "isCapital": true
+    },
+    {
+     "id": "52",
+     "owner": 5,
+     "x": 0,
+     "y": 0,
+     "isCapital": false
+    }
+   ],
+   "combatUnits": [
+    {
+     "owner": 5,
+     "x": 3,
+     "y": 2
+    },
+    {
+     "owner": 5,
+     "x": 3,
+     "y": 2
+    }
+   ],
+   "expected": [
+    {
+     "ownerId": 5,
+     "cityId": "51",
+     "q": 3,
+     "r": 2,
+     "defenders": 2
+    },
+    {
+     "ownerId": 5,
+     "cityId": "52",
+     "q": 0,
+     "r": 0,
+     "defenders": 0
+    }
+   ]
+  }
+ ]
+}

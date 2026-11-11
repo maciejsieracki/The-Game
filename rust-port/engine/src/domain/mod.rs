@@ -4,6 +4,7 @@ pub mod ai_era_unit_promotion;
 pub mod ai_general_war_campaign;
 pub mod ai_move_range;
 pub mod ai_peace_city_offer;
+pub mod ai_resource_needs;
 pub mod ai_zakup_jednostki;
 pub mod alliance_war_obligation;
 pub mod army_consolidation;
@@ -121,6 +122,7 @@ pub mod war_home_defense_plan;
 pub mod war_rules_multiwar;
 pub mod war_target_select;
 pub mod war_turn_state;
+pub mod war_world_view;
 pub mod wonder_placement;
 pub mod work_tax;
 

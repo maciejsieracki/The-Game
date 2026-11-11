@@ -1027,7 +1027,6 @@ pub struct Qualifier<'a> {
     player_era: f64,
     player_owner_id_num: i64,
     territory_nodes: &'a [TerritoryNode],
-    placed_keys: HashSet<&'a str>,
     road_keys: HashSet<&'a str>,
     own_unit_hex_keys: HashSet<&'a str>,
     pending_undo: HashSet<&'a str>,
@@ -1061,7 +1060,6 @@ impl<'a> Qualifier<'a> {
                 .player_owner_id_num
                 .unwrap_or(defaults.wlasciciel_gracza),
             territory_nodes: state.territory_nodes.as_deref().unwrap_or(&[]),
-            placed_keys: as_set(&state.placed_keys),
             road_keys: as_set(&state.road_keys),
             own_unit_hex_keys: as_set(&state.own_unit_hex_keys),
             pending_undo: as_set(&state.pending_undo_keys),
@@ -1169,6 +1167,36 @@ impl<'a> Qualifier<'a> {
         keys
     }
 
+    /// Web: `existing.some(isRoadImprovementKey) || hex.ulepszenie === Droga/DrogaBrukowana`.
+    fn hex_has_road_layer(&self, existing: &[String], hex: &BuildHex) -> bool {
+        let is_road = |s: &str| s == k::DROGA || s == k::DROGA_BRUKOWANA;
+        existing.iter().any(|e| is_road(e)) || hex.ulepszenie.as_deref().is_some_and(is_road)
+    }
+
+    /// Web `roadBuildBlockReason(state, q, r)` (improvement-build.ts, R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1):
+    /// powod, dla ktorego droga NIE moze stac na heksie (`None` = dozwolona). Opis tej samej reguly co
+    /// `qualifies("droga")` (gracz i AI), nie zmienia wyniku.
+    pub fn road_build_block_reason(&self, q: i32, r: i32) -> Option<&'static str> {
+        let hex_key_str = hex_key(q, r);
+        let Some(hex) = self.state.map.hex(&hex_key_str) else {
+            return Some("Poza mapą.");
+        };
+        if !tables().teren_ladu.contains(&hex.terrain) {
+            return Some("Droga stoi tylko na lądzie (nie na wodzie ani morzu).");
+        }
+        if !self.in_player_territory(q, r) {
+            return Some("Droga może powstać tylko na twoim terytorium.");
+        }
+        let existing = self.hex_layers(&hex_key_str, hex);
+        if self.hex_has_road_layer(&existing, hex) {
+            return Some("Tu już jest droga.");
+        }
+        if !self.is_road_qualified(q, r) {
+            return Some("Droga musi łączyć się z miastem lub już istniejącą drogą.");
+        }
+        None
+    }
+
     /// Wewnetrzna `qualifies(key, q, r)` z `createQualifier` (`:972`).
     pub fn qualifies(&self, key: &str, q: i32, r: i32) -> bool {
         let t = tables();
@@ -1205,7 +1233,10 @@ impl<'a> Qualifier<'a> {
         if key != k::DROGA && has_existing(key) {
             return false;
         }
-        if key == k::DROGA && self.placed_keys.contains(hex_key_str.as_str()) {
+        // R-WEB-ROAD-BUILD-PLAYER-PARITY-WITH-AI-Q1 (web FALA 596, improvement-build.ts): droga blokowana TYLKO
+        // gdy heks juz ma droge (warstwa `droga`/`droga_brukowana` albo `ulepszenie`); dawne `placedKeys.has(hex)`
+        // odrzucalo kazdy heks z jakimkolwiek ulepszeniem (farma + droga to dozwolona warstwa).
+        if key == k::DROGA && self.hex_has_road_layer(&existing, hex) {
             return false;
         }
 
