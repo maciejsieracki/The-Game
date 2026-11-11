@@ -961,3 +961,9 @@ Port ERAIGN/ERADELAY (web 5dd53e60f): `is_era_forced_war_ignoring_r1`, `is_war_t
 - Zobowiązanie parytetu: w etapie Rust P3+ odwzorować regułę składu oblężenia dla miasta i sześciu sąsiednich heksów: uczestniczą principalowie obu stron oraz ich formalni aktywni sojusznicy uczestniczący w tej wojnie i wrogo nastawieni do principalnego przeciwnika; sama wojna z przeciwnikiem nie wystarcza do członkostwa. Nie dołączać niezależnych trzecich stron ani neutralnych/barbarzyńców hostile wobec obu stron. Zachować limit 500, rezerwy oraz istniejącą atrybucję jednostek do ich właścicieli.
 - Status Rust: **NIE ROZPOCZĘTO / odroczone do P3+**. Ten wpis jest wyłącznie śledzeniem dokładnego źródła i wymagania parytetu; nie autoryzuje teraz zmian Rust ani pracy poza kolejnością/wstrzymaniem Rust.
 - Korekta procesu z 2026-11-10 po Final Control: ten dokładny wpis LEDGER został dopisany po pierwotnej edycji webowej, zgodnie z autoryzacją orkiestratora; nie był obecny w pierwotnej allowliście Operatora.
+
+## 2026-11-11 — R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1 — wymaga parytetu Rust
+
+- Przywrócony zakres web: wezwania gracza do wypełnienia formalnego obowiązku sojuszniczego są zapisane jako trwałe wpisy `pendingDiplomacyInbox`, z identyfikatorem stabilnym dla wojny; wynik dołączenia/odmowy trafia do `allianceWarCallHistory`.
+- Walidacja odpowiedzi i odczytu wymaga nadal trwającej wojny głównej i aktywnego obowiązku; nieaktualne wezwania wygasają bez kary. Gracz nie może dołączyć do wojny przeciw własnemu formalnemu sojusznikowi. Odmowa zachowuje istniejące −15 Wiarygodności i zrywa wyłącznie traktat tego fotela.
+- Rust: **NIE ROZPOCZĘTO**. To śledzenie źródła webowego dla przyszłego parytetu, nie autoryzuje implementacji Rust poza kolejnością ani nie zmienia stanu wstrzymania.
