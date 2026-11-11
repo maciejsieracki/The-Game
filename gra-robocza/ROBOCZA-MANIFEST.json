@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3af2e8f32d59a25627e77f572e894dd7",
-  "bundleSha256": "c32c2a9ae902dcae3ebc85dbfa86c129225733e6bad6339a6d1d6f92a314605d",
-  "bundleBytes": 14492509,
+  "bundleMd5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+  "bundleSha256": "92cf44f08ded117c5973968e314482ed835138f54d8207d5b4e515ea6fcb96c1",
+  "bundleBytes": 14494402,
   "sourceSnapshot": {
-    "source": "merge FC 8930288b5",
+    "source": "merge FC ed0675270",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 634: R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: wspólny chip resourceAmountChipHtml (ikona + liczba, nazwa w title/aria) w panelu miasta (stock budowy, utrzymanie, wymagania, koszt karty, utrzymanie i rekrutacja jednostek, bilans utrzymania surowców) i w panelu imperium (utrzymanie, rekrutacja masowa); CSS chipa wspólny"
+    "FALA 635: R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: kreator nowej gry ma opcję 'Administratorzy' (Włączone/Wyłączone, domyślnie Wyłączone), zapisaną na stałe w grze (meta.administratorsEnabled); przełącznik automatyzacji w ustawieniach usunięty; przy OFF brak mechaniki administratora i brak automatyzacji budowy/ulepszeń (gracz), przy ON zasady CITY/IMPROVEMENT; stary zapis: administratorzy wyłączeni + jednorazowe powiadomienie w Ważne (także gdy był zatrudniony administrator); AI poza opcją; rekrutacja z generałem niezależna; Civpedia zaktualizowana"
   ],
   "verification": [
-    "tsc czysty; resource-icons-everywhere 10/0, render-test Chromium 13/0 (45 próbek formatterów), chip-icons-real-render 29/0, recruit-card-manpower 20/0, recruit-list-visibility-ui 15/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat OK; zrzuty 520 px przed/po; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; administrators-wizard 58/0, city-administrator 117/0, improvement-administrator 53/0, newgame-defaults 62/0, fog-reveal-key-f-option, auto-manage 45/45; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacje czerwone; Chromium (operator): kreator, menu gry bez przełącznika, panel miasta OFF/ON; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Poza zakresem: karty encji (entityCards/buildingAdapter) — temat R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1; NIE_ZMIERZONO: układ siatki bilansu w prawdziwym panelu, render Chromium karty kosztu budowy i rekrutacji masowej; mennica-magazyn 7 FAIL = dług bazowy"
+    "NIE_ZMIERZONO: realne wczytanie starego zapisu, pozostałe testy Playwright kreatora, pełna regresja; powiadomienie migracji może wracać przy kolejnym wczytaniu do czasu ponownego zapisu; AI nadal zatrudnia administratorów miasta niezależnie od opcji (założenie); usunięte: autobuild-toggle-test i 2 live-verify-autobuild-toggle"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T16:08:53",
+  "hubGeneratedAt": "2026-11-11T16:14:56",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3af2e8f32d59a25627e77f572e894dd7",
-      "sizeBytes": 14492509
+      "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
+      "sizeBytes": 14494402
     }
   ],
-  "md5": "3af2e8f32d59a25627e77f572e894dd7",
+  "md5": "134d6fdcebfbd1a94dbb9d54b872d3af",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

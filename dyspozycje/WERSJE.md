@@ -1,3 +1,9 @@
+## ROBOCZA 134d6fdc -- 2026-11-06 -- FALA 635: Opcja Administratorzy w kreatorze nowej gry (zamiast przełącznika automatyzacji) (testowa)
+
+- R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: kreator nowej gry ma opcję 'Administratorzy' (Włączone/Wyłączone, domyślnie Wyłączone), zapisaną na stałe w grze (meta.administratorsEnabled); przełącznik automatyzacji w ustawieniach usunięty; przy OFF brak mechaniki administratora i brak automatyzacji budowy/ulepszeń (gracz), przy ON zasady CITY/IMPROVEMENT; stary zapis: administratorzy wyłączeni + jednorazowe powiadomienie w Ważne (także gdy był zatrudniony administrator); AI poza opcją; rekrutacja z generałem niezależna; Civpedia zaktualizowana
+- Weryfikacja: tsc czysty; administrators-wizard 58/0, city-administrator 117/0, improvement-administrator 53/0, newgame-defaults 62/0, fog-reveal-key-f-option, auto-manage 45/45; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacje czerwone; Chromium (operator): kreator, menu gry bez przełącznika, panel miasta OFF/ON; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: NIE_ZMIERZONO: realne wczytanie starego zapisu, pozostałe testy Playwright kreatora, pełna regresja; powiadomienie migracji może wracać przy kolejnym wczytaniu do czasu ponownego zapisu; AI nadal zatrudnia administratorów miasta niezależnie od opcji (założenie); usunięte: autobuild-toggle-test i 2 live-verify-autobuild-toggle
+
 ## ROBOCZA 3af2e8f3 -- 2026-11-06 -- FALA 634: Ikony surowców zamiast nazw w kartach kosztu, utrzymania i rekrutacji (testowa)
 
 - R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1: wspólny chip resourceAmountChipHtml (ikona + liczba, nazwa w title/aria) w panelu miasta (stock budowy, utrzymanie, wymagania, koszt karty, utrzymanie i rekrutacja jednostek, bilans utrzymania surowców) i w panelu imperium (utrzymanie, rekrutacja masowa); CSS chipa wspólny
