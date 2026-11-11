@@ -1,0 +1,7 @@
+# DISPATCH — R-RUSTPORT-P6-TICKDIPLO-BORDER-WIRING-Q1 (zadanie 7: wiring karaWspolnaGranicaDelta w produkcji; runda 1/5, Operator)
+Baza: origin/rust-port/parity-v2 = ca33abdd6. Pin web: 07d2fbd72f758705f8e1d59cc4968027ffbafe75 (tylko odczyt, git archive poza repo).
+Problem (Evaluator BORDER-EPOCH): shared_border_penalty_for_epochs nie ma wołającego w produkcji; ai_diplomacy_turn.rs buduje TickContext przez TickContext::default(), czyli common_border_delta = None i stawka -2 dla wszystkich epok. Web: main.ts:22879 i :41356 liczy stawkę wg epoki i przekazuje jako karaWspolnaGranicaDelta (diplomacy.ts:1800).
+GOAL: w produkcyjnym wołającym (ai_diplomacy_turn.rs / miejsce budowy kontekstu tury) wyliczać common_border_delta = shared_border_penalty_for_epochs(epoka obu stron) i przekazywać do TickContext; test behawioralny: para w epoce 1 → -2, epoka 2 → -3, epoka 3 → -4, wynik zgodny z wektorami (generator z pinu).
+Allowlista: rust-port/engine/src/domain/ai_diplomacy_turn.rs; rust-port/engine/src/domain/diplomacy.rs (tylko jeśli konieczne); rust-port/engine/tests/p6_tickdiplo_wiring.rs (nowy); dyspozycje/autobot/runs/R-RUSTPORT-P6-TICKDIPLO-BORDER-WIRING-Q1/**. ZAKAZ: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock.
+Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_tickdiplo --test p6_tickdiplo_wiring; cargo test --test diplomacy (EXIT zapisany).
+Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo. Raport 01-operator-r1.md.
