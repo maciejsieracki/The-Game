@@ -1,16 +1,16 @@
-# Aktualny stan niezakończonych tematów
+# Aktualny stan — 2026-11-11
 
-Odczyt: 2026-11-11, wznowienie w nowym środowisku. Repo `/workspace/The-Game`, baza `638e90bea`; zdalny main zgodny. Poprzednie cztery worktrees i niewypchnięte kandydaty nie są dostępne. Poprzednie wyniki w czacie są historią, nie nowymi zaliczonymi bramkami. Każdy temat jest odtwarzany i ponownie testowany.
+Robocza FALA618, publication4919be9dc, MD5 14336eb5393bb01aef84047308564eb5. Deploy/push/freshGit artifact readback PASS. Zakończone11/11: AUTO/Skip parity oraz brąz50/75 (zastępuje25/50). HTTPaudio runtimepresent/absentPASS; wszystkie3sidecarybez zmian. Pełneimperium/fileprotocolniezmierzone.
 
-| Temat | Potwierdzony etap bieżącego wznowienia | Operator / następny krok |
+|Aktywne4tematy|Etap|Rzeczywistyproces|
 |---|---|---|
-| Mury: palisada100 / kamienny150 / ceglany200, badania/karty/Civpedia | 1/11 | walls_resume; audyt i odtworzenie implementacji |
-| Pomiń/AUTO oblężenia z wyłomem #202 | 1/11 | skip_resume; odtworzenie wspólnego zegara i rzeczywistych testów |
-| Sojusznik: trwałe wezwanie do wojny | 1/11 | alliance_resume; odtworzenie trwałego inbox/history i testów |
-| AI→gracz: cykliczny barter | 1/11 | trade_resume; odtworzenie fairness oraz naprawa wykonalności uczciwego drewno/żelazo |
+|Mury100/150/200+karty/wiki|8/11|FinalControl walls_final_resume; poprzedni downgradenaprawiony iEvaluatorfollowupPASS|
+|Sojusznik wezwanie wojenne|8/11|FinalControl alliance_final_resume; historiadedup irecipientowner poprawione, actualreload/hotseat/legacyEvaluatorPASS|
+|Wszystka konnicaŻelazo iwszystkieIronunitsSztukawojenna|4/11|cavalry_iron_operator audit/implementacja; wtymKatapultaipłatneoblężenie, bezprzywracaniarekrutacjimiejskiej|
+|BilansPracy0/100|2/11|work_pool_operator; dotądpotwierdzonozwrotniewykorzystanejPracyidle/completion, konkretnedublowanieniepotwierdzone; testytrwają|
 
-Max4 tematy; role Operator→Evaluator→warunkowa Obrona→niezależny Final Control sekwencyjnie per temat, Luna high. Brak zadeklarowanego schedulera w tle. Raport nie zatrzymuje prac.
+Kolejkabezoperatora(przed1): LudyMorza20.turaBrązu/3x; Idźdowodzazależnieodźródłarekrutacji; stadninabezKońprzyistniejącej; cegielnia75/100cykli; przełącznikprodukcjibudynków.
 
-Ostatnia opublikowana Robocza: FALA617, commit554f5d5de, MD5 2b12c8176ee0b412fcd0b9a5ca392cdf. Granica−2/−3/−4, brąz25/50, konnica front/flanki/tył, koszty40/180/180/480, machiny oblężnicze, wojny epoki40/nonoverlap i pokój10tur są już opublikowane; nie otwierać ponownie.
+BarterAI→gracz:5/11candidatef20b81654pushed, chwilowoodłożonyprzedEvaluator. ZapasbrązuInkowie24818:auditbezpotwierdzonejprzyczyny, potrzebnyactualsave/turnhistorydoodtworzenia; nietraktowaćjako naprawione.
 
-Audyt PL Q3 chroniony na origin/codex/polish-ui-q3, odłożony dla murów. Dalsza kolejka: temat głównej armii AI wymaga sprawdzenia decyzji; duże imperium/Falanga/REPIN i #201 osobno, nie objęte tym wznowieniem czterech tematów.
+Dalszeodłożone: audytPLQ3, AIcelgłównaarmia/decyzje; końcowedużeimperium/Falanga/REPIN/#201; przyszłyosobnymodelceglanego.
