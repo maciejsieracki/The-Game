@@ -2548,6 +2548,8 @@ export class BattleScene {
   // to each due time so a chain of short gaps catches up fully. Throughput now
   // scales linearly to 16x (verified in a /tmp sim).
   private static readonly SPEED_STEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512] as const;
+  private static readonly BATTLE_FRAME_WALL_MS = 16;
+  private static readonly BATTLE_FRAME_MAX_WALL_DELTA_MS = 100;
   private speedIdx   = 0;            // index into SPEED_STEPS; 0 => 1x default
   private speedMul   = 1;            // current multiplier (SPEED_STEPS[speedIdx])
   private vNow       = 0;            // virtual (speed-scaled) clock in ms
@@ -9407,7 +9409,10 @@ export class BattleScene {
    * czasu (timery + kroki animacji), az bitwa sie skonczy. Ten sam kod walki co zwykla gra.
    */
   private _runFastForward(): void {
-    const FF_STEP_MS = 16;                  // < MOVE_STEP_MS/ACT_GAP_MS: nie gubi kolejnosci akcji
+    // Match one AUTO animation frame at the active speed. Capping and
+    // quantizing the same wall-clock budget here keeps fast-forward gameplay
+    // on the same simulation ticks as AUTO (including when speed changes).
+    const FF_STEP_MS = this._scaledWallDelta(BattleScene.BATTLE_FRAME_WALL_MS);
     // Koniec bitwy wyznacza silnik (_checkEnd) tak jak w walce AUTO. Sufit FF_MAX_ROUNDS
     // (w turach) dotyczy tylko bitew, ktore silnik nie konczy (stan ustalony w oblezeniu).
     const wall0 = performance.now();
@@ -9496,8 +9501,13 @@ export class BattleScene {
     if (dw < 0) dw = 0;
     // Clamp the wall delta so a backgrounded tab (huge dt) can't teleport the
     // whole battle forward in a single frame; pacing stays smooth on resume.
-    if (dw > 100) dw = 100;
-    this.vNow += dw * this.speedMul;
+    this.vNow += this._scaledWallDelta(dw);
+  }
+
+  /** Shared wall-delta clamp and speed quantization for AUTO and fast-forward. */
+  private _scaledWallDelta(wallDelta: number): number {
+    const clamped = Math.max(0, Math.min(wallDelta, BattleScene.BATTLE_FRAME_MAX_WALL_DELTA_MS));
+    return clamped * this.speedMul;
   }
 
   /** Apply a speed step by index into SPEED_STEPS and refresh the button label. */

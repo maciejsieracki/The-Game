@@ -79,5 +79,14 @@ check('S5 skip() uzywa FF (jedna sciezka awaryjna !started)', instantCalls === 1
 check('S6 test zywy battle-skip-siege-parity-live-test.cjs obecny', fs.existsSync(path.join(GRA, 'tools/battle-skip-siege-parity-live-test.cjs')));
 check('S6b battle-skip-equals-auto-resolve-test.cjs obecny', fs.existsSync(path.join(GRA, 'tools/battle-skip-equals-auto-resolve-test.cjs')));
 
+// S7 -- AUTO and fast-forward share the exact speed-scaled frame budget.
+const advanceBody = methodBody('private _advanceVClock(wall: number): void {');
+const scaleBody = methodBody('private _scaledWallDelta(wallDelta: number): number {');
+const ffBodyForTick = methodBody('private _runFastForward(): void {');
+check('S7 AUTO virtual clock uses shared wall-delta scaler', !!advanceBody && advanceBody.includes('this._scaledWallDelta(dw)'));
+check('S7b shared scaler clamps to max wall delta and applies speedMul', !!scaleBody && /Math\.min\(wallDelta, BattleScene\.BATTLE_FRAME_MAX_WALL_DELTA_MS\)/.test(scaleBody) && /clamped\s*\*\s*this\.speedMul/.test(scaleBody));
+check('S7c fast-forward derives its tick from the same scaled wall delta', !!ffBodyForTick && /this\._scaledWallDelta\(BattleScene\.BATTLE_FRAME_WALL_MS\)/.test(ffBodyForTick));
+check('S7d fast-forward snapshots the prior-frame callback queue before running callbacks', !!ffBodyForTick && /const q = this\._ffQueue;\s*this\._ffQueue = \[\];\s*for \(const cb of q\) cb\(\)/.test(ffBodyForTick));
+
 console.log(`RESULT pass=${pass} fail=${fail}`);
 process.exit(fail === 0 ? 0 : 1);
