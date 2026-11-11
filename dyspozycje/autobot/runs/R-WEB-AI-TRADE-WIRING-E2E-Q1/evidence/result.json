@@ -1,0 +1,206 @@
+{
+ "info": {
+  "me": 0,
+  "ai": 1,
+  "turn": 1,
+  "myCities": 1,
+  "aiCities": 1,
+  "aiOwners": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "pricedKeys": [
+   "drewno",
+   "glina",
+   "kamien",
+   "ruda",
+   "ruda_zelaza",
+   "ruda_cyny",
+   "cegla",
+   "sol",
+   "kon",
+   "ceramika",
+   "braz",
+   "zelazo",
+   "stal",
+   "zloto",
+   "wegiel"
+  ],
+  "pack": 10
+ },
+ "stocksSetup": {
+  "aiGive": 400,
+  "aiRecv": 0,
+  "plGive": 0,
+  "plRecv": 400
+ },
+ "probe": {
+  "giveKey": "zelazo",
+  "giveQty": 90,
+  "receiveKey": "cegla",
+  "receiveQty": 10
+ },
+ "afterFirstEot": {
+  "turn": 2,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "proposer": 1,
+    "responder": 0,
+    "actionId": "handel",
+    "payload": {
+     "giveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "zelazo",
+       "ilosc": 75
+      }
+     ],
+     "receiveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "cegla",
+       "ilosc": 10
+      }
+     ],
+     "resourceTradeMode": "per_turn",
+     "turns": 10,
+     "exchangeDurationTurns": 10
+    },
+    "createdTurn": 2
+   }
+  ],
+  "tableLen": 1,
+  "cyclicDeals": []
+ },
+ "offer": {
+  "give": 75,
+  "recv": 10,
+  "probeGive": 90,
+  "probeRecv": 10
+ },
+ "canEndWithPendingOffer": true,
+ "afterLoadPending": {
+  "turn": 3,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "proposer": 1,
+    "responder": 0,
+    "actionId": "handel",
+    "payload": {
+     "giveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "zelazo",
+       "ilosc": 75
+      }
+     ],
+     "receiveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "cegla",
+       "ilosc": 10
+      }
+     ],
+     "resourceTradeMode": "per_turn",
+     "turns": 10,
+     "exchangeDurationTurns": 10
+    },
+    "createdTurn": 2
+   }
+  ],
+  "tableLen": 1,
+  "cyclicDeals": []
+ },
+ "previewAccept": {
+  "accepted": false,
+  "reason": "Przewaga u Ciebie — oferta nieuczciwa dla partnera (1350 PW)",
+  "awaitingMe": true
+ },
+ "forceAccept": {
+  "accepted": true,
+  "reason": "Umowa handlowa (surowiec co turę) na 10 tur"
+ },
+ "afterAccept": {
+  "turn": 3,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [],
+  "tableLen": 0,
+  "cyclicDeals": [
+   {
+    "id": "umowa_wymiany-0-1-t3",
+    "items": [
+     {
+      "surowiecKey": "zelazo",
+      "pakietyPerTura": 70,
+      "sellerOwnerId": 1,
+      "buyerOwnerId": 0
+     },
+     {
+      "surowiecKey": "cegla",
+      "pakietyPerTura": 10,
+      "sellerOwnerId": 0,
+      "buyerOwnerId": 1
+     }
+    ]
+   }
+  ]
+ },
+ "stocksBefore": {
+  "aiGive": 400,
+  "aiRecv": 0,
+  "plGive": 0,
+  "plRecv": 399
+ },
+ "stocksAfterTick1": {
+  "aiGive": 330,
+  "aiRecv": 7,
+  "plGive": 10,
+  "plRecv": 391
+ },
+ "deliveredGive": 10,
+ "deliveredRecv": 7,
+ "postLoadDelivery": {
+  "bL": {
+   "plGive": 10,
+   "aiGive": 330
+  },
+  "aL": {
+   "plGive": 20,
+   "aiGive": 260
+  }
+ },
+ "afterLegacyLoad": {
+  "turn": 3,
+  "barterCooldown": [],
+  "rejectCooldowns": [],
+  "pending": [],
+  "tableLen": 1,
+  "cyclicDeals": []
+ }
+}
