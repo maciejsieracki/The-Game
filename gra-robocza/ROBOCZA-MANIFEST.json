@@ -1,111 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "722419d02dcdf72408dffe4374bb1e73",
-  "bundleSha256": "59e0c10852549583a58f4c763145efebc4b450b39b9a6c14afa30fe6ac286f63",
-  "bundleBytes": 14440421,
+  "bundleMd5": "b9e1f437f34828881bde06584955f9f5",
+  "bundleSha256": "b165d61198ffbf8fd73e1ca98a2f8815a38add80c819b237a0b932765a65cba6",
+  "bundleBytes": 14445977,
   "sourceSnapshot": {
-    "source": "d2ff370e79451de6411641a199bc554473caeb15",
-    "build": "clean git archive; direct Vite; ROBOCZA stamp"
+    "source": "merge main cffe39cb9 + FC melee 5624b11b6, rekrutacja f87985d7c, konnica 12737d11c, duchy 70da7e6ee",
+    "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "Palisade100%,newstone150%afterMurarstwo,brick200%afterBudownictwo; highestwallonly, legacy mury ID preserves200%",
-    "Brick uses red version of existing stone geometry; research/building cards and Civpedia sources regenerated",
-    "Alliance calls persist in inbox/history; correct requester/recipient identity, resolution once, replay/hotseat/legacy guards"
+    "FALA 620: R-WEB-CAVALRY-IRON-ONLY-Q1: wszystkie jednostki Żelaza (w tym Konnica, Jeździec chiński, Katapulta) wymagają Sztuki wojennej, rydwany bez zmian; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1: panel rekrutacji z wspólnym budżetem koszyka i czerwonymi brakami, wiersze zero-capable tylko do odczytu; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: Zastąp piechotę wręcz → dowolna piechota wręcz (wszystkie nacje); R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: NIE_ODTWORZONO, dodano tylko test e2e (bez zmian kodu gry)"
   ],
   "verification": [
-    "Independent evaluator corrections closed and separate Final Control PASS for each topic",
-    "Walls actual Chromium render/mutation81, cards1207, progression61/AI45, reallegacy serialization PASS",
-    "Alliance actualHTTPChromium/IndexedDBreload, accept/refuse replay onceN4,hotseat and legacyrecipientmigration PASS; focused7/14/18 andtypecheckPASS",
-    "Rootmergedtypecheck+wallprogression+alliancesaveload+Skipregression PASS; cleanarchiveVite; HTTPaudio present/absentPASS, unchanged3audio sidecars"
+    "tsc czysty; logic 213/213, tech-tree 20/0, research ALL GREEN, unit-replace 21/21, combat OK, iron-gating 153/0, siege-engines 28/0, recruit-affordability 17/0 (Chromium), unit-replace-ai 45/0, audio-sidecar PASS; FC PASS-WITH-NOTES (konnica, rekrutacja), FC PASS (melee), FC PASS-WITH-NOTES narzędzia (duchy)"
   ],
   "limits": [
-    "No full campaign or large empire test",
-    "Legacy walls save tested through actual serialization roundtrip; no full interactive legacy wall campaign",
-    "HTTP audio fallback is not file protocol acceptance"
+    "tech-cards-top5.json po merge zregenerowany generatorem (--check OK); live-test rekrutacji 20/23 = dług bazowy; karty konnicy w przeglądarce niezmierzone przez FC; duch zabitych nieodtworzony"
   ],
   "finalControl": {
-    "status": "PASS",
-    "reports": [
-      "R-WEB-WALL-TIERS-MASONRY-BRICK-Q1/50-final-control-resume.md",
-      "R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1/50-final-control-resume.md"
-    ]
+    "status": "PASS-WITH-NOTES",
+    "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-10T10:51:09",
+  "hubGeneratedAt": "2026-11-11T11:53:05",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "722419d02dcdf72408dffe4374bb1e73",
-      "sizeBytes": 14440421
+      "md5": "b9e1f437f34828881bde06584955f9f5",
+      "sizeBytes": 14445977
     }
   ],
-  "md5": "722419d02dcdf72408dffe4374bb1e73",
+  "md5": "b9e1f437f34828881bde06584955f9f5",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

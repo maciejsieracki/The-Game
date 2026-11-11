@@ -1,3 +1,9 @@
+## ROBOCZA b9e1f437 -- 2026-11-06 -- FALA 620: konnica Żelazo, rekrutacja koszyk, zamiana piechoty, narzędzia duchów (testowa)
+
+- R-WEB-CAVALRY-IRON-ONLY-Q1: wszystkie jednostki Żelaza (w tym Konnica, Jeździec chiński, Katapulta) wymagają Sztuki wojennej, rydwany bez zmian; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1: panel rekrutacji z wspólnym budżetem koszyka i czerwonymi brakami, wiersze zero-capable tylko do odczytu; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: Zastąp piechotę wręcz → dowolna piechota wręcz (wszystkie nacje); R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: NIE_ODTWORZONO, dodano tylko test e2e (bez zmian kodu gry)
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research ALL GREEN, unit-replace 21/21, combat OK, iron-gating 153/0, siege-engines 28/0, recruit-affordability 17/0 (Chromium), unit-replace-ai 45/0, audio-sidecar PASS; FC PASS-WITH-NOTES (konnica, rekrutacja), FC PASS (melee), FC PASS-WITH-NOTES narzędzia (duchy)
+- Limity: tech-cards-top5.json po merge zregenerowany generatorem (--check OK); live-test rekrutacji 20/23 = dług bazowy; karty konnicy w przeglądarce niezmierzone przez FC; duch zabitych nieodtworzony
+
 ## ROBOCZA f28f212f -- 2026-11-06 -- FALA 606: SIEGE-NEARBY: sąsiedni stos nieoblegający nie jest blokowany; dołączanie do armii oblegającej poza miastem (testowa)
 
 - SIEGELOCK 218d7d5cf (siegeArmyGroupId w cities.ts)
