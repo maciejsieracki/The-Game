@@ -1,3 +1,9 @@
+## ROBOCZA be5d3e41 -- 2026-11-06 -- FALA 623: Stadnina w Żelazie tylko przy istniejącej stadninie (testowa)
+
+- R-WEB-IRON-STUD-ADJACENCY-Q1: stadnina bez złoża Konia w epoce Żelaza+ tylko na bezpośrednim sąsiedzie zbudowanej własnej stadniny (6 kierunków; dystans 2 i brak sąsiada odrzucone; kolejka tury nie liczy się; własność wg terytorium gracza); złoże Konia bez zmian; parytet gracz/AI/autobudowa; stare stadniny zachowane
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, stadnina-iron-adjacency 37/0 (mutacja własności 35/2 czerwona), stadnina-early-eras-ai-picker 23/0, stadnina-kon-koszt-live Chromium 19/0 (FC); audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Niezmierzone: dodatnia ścieżka live (budowa przy sąsiedzie + realne odjęcie 50 koni) w Chromium, koszt wydajności tooltipu; hex-tooltip-unlock-label-dedup 27/1 = dług bazowy; mgla-sciezka-inwariant 41/1 = baza
+
 ## ROBOCZA ed9a2032 -- 2026-11-06 -- FALA 622: Rekrutacja: Idź do wodza wg pochodzenia zamówienia (testowa)
 
 - R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: zamówienie rekrutacji bezpośrednio w mieście domyślnie bez Idź do wodza (OFF), zamówienie z Armii/Rekrutacji dziedziczy wspólny przełącznik, intencja zapisana w kolejce do zrodzenia, stare kolejki bez pola = przełącznik globalny; poprawiona druga kopia panelu miasta (po Nowej grze)
