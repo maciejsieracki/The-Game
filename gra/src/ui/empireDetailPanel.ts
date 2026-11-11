@@ -109,6 +109,17 @@ export function resetEmpireMassRecruitmentMessage(): void {
   lastArmyRecruitMessage = '';
 }
 
+/**
+ * Etykieta WYŚWIETLANA grupy budynków (klucz `grupa` z danych bez zmian).
+ * Taka sama mapa jak w cityPanel.ts (buildingGroupDisplayLabel): grupa o kluczu
+ * z danych z członem „Handel” liczy podatek, nie trasy (R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1).
+ */
+const EMPIRE_BUILDING_GROUP_LABEL: Readonly<Record<string, string>> = {
+  'Handel i pieniądz': 'Podatek i pieniądz',
+};
+const empireBuildingGroupLabel = (grupa: string): string =>
+  EMPIRE_BUILDING_GROUP_LABEL[grupa] ?? grupa;
+
 function renderDefaultHandelSplitSection(): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
@@ -2295,7 +2306,7 @@ export function renderMiastoSection(
       for (const [grupa, count] of groupTotals) {
         if (count === 0) continue;
         h += '<div class="civ-emp-grp-row" style="cursor:default">'
-          + `<span class="nm">${esc(grupa)}</span>`
+          + `<span class="nm">${esc(empireBuildingGroupLabel(grupa))}</span>`
           + `<span class="val">${count}</span></div>`;
       }
       h += '<div class="civ-emp-grp-sum">'
@@ -2304,7 +2315,7 @@ export function renderMiastoSection(
       h += '</div>';
     }
     h += '<div class="civ-emp-foot">Grupy wg `BUILDING_GROUP_ORDER` (building-upgrades.ts): '
-      + 'Prawo i administracja · Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · '
+      + 'Prawo i administracja · Wojsko i obrona · Podatek i pieniądz · Nauka i kultura · Wiara · '
       + 'Zdrowie · Produkcja surowców · Żywność. Szczegóły efektów pojedynczego budynku: panel miasta.</div>';
   }
 
