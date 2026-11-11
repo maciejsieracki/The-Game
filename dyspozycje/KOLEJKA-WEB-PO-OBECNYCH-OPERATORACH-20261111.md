@@ -73,3 +73,6 @@ Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonn
 - Ludy Morza: zostaje okno gracza (bez zmian).
 - Administrator ulepszeń: ten sam koszt co administrator miasta, BEZ bonusów i dodatków; tylko odblokowuje automatyczne ulepszenia terenu (dispatch IMPROVEMENT-ADMINISTRATOR zaktualizowany).
 - Do startu gdy zwolnią się sloty (6/6): ICONS-EVERYWHERE, TEST-DEBT-UNIT-REPLACE-F0.
+
+## 9. Kreator: opcja Administratorzy (decyzje właściciela, 2026-11-11)
+`R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1`: stary przełącznik automatyzacji w ustawieniach → pytanie w kreatorze nowej gry „Administratorzy: włączone/wyłączone” (domyślnie wył., tylko w kreatorze, na stałe); wył. = brak administratorów i brak automatyzacji (wszystko ręcznie); armia (generał rekrutujący) niezależna; stare zapisy: administratorzy wył. + jednorazowe powiadomienie. START PO CITY-ADMINISTRATOR i IMPROVEMENT-ADMINISTRATOR (Sonnet). Dispatch w runs/.

@@ -9368,3 +9368,6 @@ Inna sesja (kontener e9dda8db…) opisała w raporcie przekazania `dyspozycje/ru
 
 ## 2026-11-11 — Odpowiedzi ABC właściciela (po FALI 626)
 Machiny oblężnicze poza Zastąp (F0 → poprawka testu); ikony surowców wszędzie (nowy temat ICONS-EVERYWHERE); Ludy Morza bez zmian (okno gracza); administrator ulepszeń = ten sam koszt, bez bonusów, tylko autobudowa ulepszeń. Dispatche w runs/ (R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1, R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1, R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1).
+
+## 2026-11-11 — R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (zgłoszenie + ABC właściciela)
+Właściciel: przełącznik automatyzacji w ustawieniach zamienić na pytanie w kreatorze nowej gry „Administratorzy: włączone/wyłączone”. ABC: bez administratorów = brak automatyzacji (wszystko ręcznie); domyślnie wył., tylko w kreatorze (na stałe, bez zmiany w trakcie gry); opcja nie obejmuje armii (generał rekrutujący niezależny); stare zapisy: administratorzy wył. + jednorazowe powiadomienie. Dispatch: runs/R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1/ (start po CITY- i IMPROVEMENT-ADMINISTRATOR).
