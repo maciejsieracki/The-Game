@@ -140,11 +140,11 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     ok(spawned.length === 3, 'L20 pierwsza fala: 3 jednostki (po 1 z każdego z 3 miast) zrodziły się w realnym endTurn', spawned.length);
     ok(spawned.every(u => u.rally === chosen.id), 'L21 każda zrodzona jednostka niesie rallyGeneralId wybranego generała', spawned.map(u => u.rally));
     const qAfter = (await queues(ids)).map(q => q.length);
-    ok(qAfter.every((n, i) => n === qBefore[i] - 1), 'L23 z kolejki każdego miasta zeszła dokładnie 1 sztuka (równomiernie)', { qBefore, qAfter });
     // Planowanie marszu jest odroczone do końca animacji tury — czekamy (jak w army-auto-recruit-general-live-test).
     for (let i = 0; i < 40 && !(spawned.length && spawned.every(u => u.march)); i++) { await page.waitForTimeout(500); spawned = await D('rallyUnits'); }
     const marching = spawned.filter(u => u.march);
-    ok(marching.length >= 1 && marching.every(u => u.march.generalTargetId === chosen.id), 'L22 marsz zaplanowany do WYBRANEGO generała, nie najbliższego', { n: marching.length, of: spawned.length, chosen: chosen.id, gens });
+    ok(marching.length === spawned.length && marching.every(u => u.march.generalTargetId === chosen.id), 'L22 marsz zaplanowany do WYBRANEGO generała, nie najbliższego', { n: marching.length, of: spawned.length, chosen: chosen.id, gens });
+    ok(qAfter.every((n, i) => n === qBefore[i] - 1), 'L23 z kolejki każdego miasta zeszła dokładnie 1 sztuka (równomiernie)', { qBefore, qAfter });
     // Atak wrogiej AI z mapy playtestowej może zostawić ekran bitwy — zamykamy go (AUTO -> KONTYNUUJ), by nie zasłaniał panelu.
     for (let i = 0; i < 6; i++) {
       const auto = page.locator('.pb-overlay button', { hasText: /^\s*auto\s*$/i });
