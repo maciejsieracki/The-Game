@@ -1,0 +1,5675 @@
+{
+  "unitsPerSiegeEngine": 10,
+  "quotaExamples": [
+    {
+      "n": 0,
+      "quota": 0
+    },
+    {
+      "n": 9,
+      "quota": 0
+    },
+    {
+      "n": 10,
+      "quota": 1
+    },
+    {
+      "n": 19,
+      "quota": 1
+    },
+    {
+      "n": 20,
+      "quota": 2
+    },
+    {
+      "n": 21,
+      "quota": 2
+    }
+  ],
+  "cases": [
+    {
+      "name": "non_siege_def_reason_technology_locked",
+      "unit": {
+        "Jednostka": "Miecznik",
+        "Typ": "Infantry",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "-",
+        "Surowiec (ilość)": 0
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {},
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "mount_def_reason_technology_locked",
+      "unit": {
+        "Jednostka": "Rydwan",
+        "Typ": "Mount",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "-",
+        "Surowiec (ilość)": 0
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "kon": 25
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "not_siege",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": false,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "not_siege",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "not_at_war",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": false,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "not_at_war",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "no_army_of_owner",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 2,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "empty_army",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 0,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "only_siege_category_units",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "no_qualifying_army",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 0,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "too_few_units",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 1,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_9",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "too_few_units",
+        "quota": 0,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 9,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_10",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_11",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 11,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_19",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 19,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_20",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "units_21",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          },
+          {
+            "ownerId": 1,
+            "category": "obleznicza"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 21,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_reached_quota1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 1,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_quota2_built1",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_quota2_built2",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 2
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 2,
+        "builtThisTurn": 2,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_state_other_turn_ignored",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 9,
+          "count": 5
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_state_fractional_count",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1.9
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_locked",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_unlocked",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_spaces_trimmed",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": " Inzynieria ",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_em_dash_no_lock",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "—",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_dash_with_spaces_locked",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": " - ",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "tech_em_dash_with_spaces_locked",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": " — ",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_exact",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 50,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_short",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 49.99,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_money",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_exact",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 20
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_short",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 19
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_missing_key",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "stock_multi_resource_short",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Inzynieria"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "zelazo": 14
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "money_before_resources",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 0,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_money",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "turn_limit_before_tech",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Typ": "Siege",
+        "Tech": "Inzynieria",
+        "Epoka": 2,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 15
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "turn_limit_reached",
+        "quota": 1,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 30
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_plain",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_quota2",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 25,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "allowed_zero_cost",
+      "unit": {
+        "Jednostka": "Taran",
+        "Typ": "Siege",
+        "Tech": "-",
+        "Epoka": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 20
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 100,
+          "zelazo": 100
+        }
+      },
+      "costMoney": 0,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 20
+        },
+        "costMoney": 0
+      }
+    },
+    {
+      "name": "real0_Taran_allowed",
+      "unit": {
+        "Jednostka": "Taran",
+        "Epoka": "Kamień",
+        "Kultura": null,
+        "Tech": "Obróbka drewna",
+        "Pieniądz (koszt)": 7,
+        "Ludność": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 19,
+        "Utrzymanie (Pieniądz/turę)": 1,
+        "żywność/turę": 1,
+        "Atak": 3,
+        "Uderzenie": 10,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 2800,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje)",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 8,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Battering Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Kamień",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 700,
+        "missileAttack": 0,
+        "wallAttack": 14,
+        "fieldPower": 352.5,
+        "siegePower": 85,
+        "Utrzymanie surowiec": "Drewno",
+        "Utrzymanie surowiec (ilość)": 4,
+        "Historia": "Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze.",
+        "Opis": "Prosta machina oblężnicza budowana pod murami wroga, przeznaczona wyłącznie do wyważania bram i kruszenia murów — bezużyteczna w walce polowej.",
+        "Top3": [
+          {
+            "tytul": "Rola: wyłącznie oblężenie",
+            "tekst": "Budowana w 1 turę podczas oblężenia i przeznaczona do burzenia bram i murów, nie do walki z jednostkami w polu (Rola (linia): Oblężnicza)."
+          },
+          {
+            "tytul": "Wysokie Przebicie 8 i Uderzenie 10 skierowane na fortyfikacje",
+            "tekst": "Te wartości działają przeciw murom i bramom — w starciu polowym Atak wynosi tylko 3, więc jest słaba przeciw zwykłym jednostkom (zgodnie z Uwagami)."
+          },
+          {
+            "tytul": "Niezłomna",
+            "tekst": "Jako machina oblężnicza nie ma progu dezercji i nie ucieka z pola bitwy jak zwykłe jednostki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Obróbka drewna"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 19
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real0_Taran_tech_state",
+      "unit": {
+        "Jednostka": "Taran",
+        "Epoka": "Kamień",
+        "Kultura": null,
+        "Tech": "Obróbka drewna",
+        "Pieniądz (koszt)": 7,
+        "Ludność": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 19,
+        "Utrzymanie (Pieniądz/turę)": 1,
+        "żywność/turę": 1,
+        "Atak": 3,
+        "Uderzenie": 10,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 2800,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje)",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 8,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Battering Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Kamień",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 700,
+        "missileAttack": 0,
+        "wallAttack": 14,
+        "fieldPower": 352.5,
+        "siegePower": 85,
+        "Utrzymanie surowiec": "Drewno",
+        "Utrzymanie surowiec (ilość)": 4,
+        "Historia": "Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze.",
+        "Opis": "Prosta machina oblężnicza budowana pod murami wroga, przeznaczona wyłącznie do wyważania bram i kruszenia murów — bezużyteczna w walce polowej.",
+        "Top3": [
+          {
+            "tytul": "Rola: wyłącznie oblężenie",
+            "tekst": "Budowana w 1 turę podczas oblężenia i przeznaczona do burzenia bram i murów, nie do walki z jednostkami w polu (Rola (linia): Oblężnicza)."
+          },
+          {
+            "tytul": "Wysokie Przebicie 8 i Uderzenie 10 skierowane na fortyfikacje",
+            "tekst": "Te wartości działają przeciw murom i bramom — w starciu polowym Atak wynosi tylko 3, więc jest słaba przeciw zwykłym jednostkom (zgodnie z Uwagami)."
+          },
+          {
+            "tytul": "Niezłomna",
+            "tekst": "Jako machina oblężnicza nie ma progu dezercji i nie ucieka z pola bitwy jak zwykłe jednostki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 19
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real0_Taran_stock_empty",
+      "unit": {
+        "Jednostka": "Taran",
+        "Epoka": "Kamień",
+        "Kultura": null,
+        "Tech": "Obróbka drewna",
+        "Pieniądz (koszt)": 7,
+        "Ludność": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 19,
+        "Utrzymanie (Pieniądz/turę)": 1,
+        "żywność/turę": 1,
+        "Atak": 3,
+        "Uderzenie": 10,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 2800,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje)",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 8,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Battering Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Kamień",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 700,
+        "missileAttack": 0,
+        "wallAttack": 14,
+        "fieldPower": 352.5,
+        "siegePower": 85,
+        "Utrzymanie surowiec": "Drewno",
+        "Utrzymanie surowiec (ilość)": 4,
+        "Historia": "Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze.",
+        "Opis": "Prosta machina oblężnicza budowana pod murami wroga, przeznaczona wyłącznie do wyważania bram i kruszenia murów — bezużyteczna w walce polowej.",
+        "Top3": [
+          {
+            "tytul": "Rola: wyłącznie oblężenie",
+            "tekst": "Budowana w 1 turę podczas oblężenia i przeznaczona do burzenia bram i murów, nie do walki z jednostkami w polu (Rola (linia): Oblężnicza)."
+          },
+          {
+            "tytul": "Wysokie Przebicie 8 i Uderzenie 10 skierowane na fortyfikacje",
+            "tekst": "Te wartości działają przeciw murom i bramom — w starciu polowym Atak wynosi tylko 3, więc jest słaba przeciw zwykłym jednostkom (zgodnie z Uwagami)."
+          },
+          {
+            "tytul": "Niezłomna",
+            "tekst": "Jako machina oblężnicza nie ma progu dezercji i nie ucieka z pola bitwy jak zwykłe jednostki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Obróbka drewna"
+        ],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "drewno": 19
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real0_Taran_quota_20",
+      "unit": {
+        "Jednostka": "Taran",
+        "Epoka": "Kamień",
+        "Kultura": null,
+        "Tech": "Obróbka drewna",
+        "Pieniądz (koszt)": 7,
+        "Ludność": 1,
+        "Surowiec": "Drewno",
+        "Surowiec (ilość)": 19,
+        "Utrzymanie (Pieniądz/turę)": 1,
+        "żywność/turę": 1,
+        "Atak": 3,
+        "Uderzenie": 10,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 2800,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje)",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 8,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Battering Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Kamień",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 700,
+        "missileAttack": 0,
+        "wallAttack": 14,
+        "fieldPower": 352.5,
+        "siegePower": 85,
+        "Utrzymanie surowiec": "Drewno",
+        "Utrzymanie surowiec (ilość)": 4,
+        "Historia": "Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze.",
+        "Opis": "Prosta machina oblężnicza budowana pod murami wroga, przeznaczona wyłącznie do wyważania bram i kruszenia murów — bezużyteczna w walce polowej.",
+        "Top3": [
+          {
+            "tytul": "Rola: wyłącznie oblężenie",
+            "tekst": "Budowana w 1 turę podczas oblężenia i przeznaczona do burzenia bram i murów, nie do walki z jednostkami w polu (Rola (linia): Oblężnicza)."
+          },
+          {
+            "tytul": "Wysokie Przebicie 8 i Uderzenie 10 skierowane na fortyfikacje",
+            "tekst": "Te wartości działają przeciw murom i bramom — w starciu polowym Atak wynosi tylko 3, więc jest słaba przeciw zwykłym jednostkom (zgodnie z Uwagami)."
+          },
+          {
+            "tytul": "Niezłomna",
+            "tekst": "Jako machina oblężnicza nie ma progu dezercji i nie ucieka z pola bitwy jak zwykłe jednostki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [
+          "Obróbka drewna"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "drewno": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "drewno": 19
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real1_Taran_okuty_allowed",
+      "unit": {
+        "Jednostka": "Taran okuty",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 4,
+        "Uderzenie": 12,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza epoki Brązu; następca Taranu (kamiennego) — kłoda na KOŁACH zamiast płóz, głowica OKUTA BRĄZEM, załoga pod przenośnym daszkiem ze skór; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playteście",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 10,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Bronze-Shod Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 750,
+        "missileAttack": 0,
+        "wallAttack": 18,
+        "fieldPower": 377.5,
+        "siegePower": 94,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wraz z rozwojem metalurgii brązu machiny oblężnicze uległy istotnemu udoskonaleniu, a taran okuty stał się bardziej wytrzymałą i skuteczniejszą odmianą swego drewnianego poprzednika. Głowicę pnia wzmacniano teraz odlewaną osłoną z brązu, często formowaną na kształt zwierzęcej głowy, co pozwalało skupić siłę uderzenia oraz chronić drewno przed rozłupaniem przy wielokrotnych uderzeniach w kamienny mur. Machinę osadzano na prostych kołach lub płozach, ułatwiających przesuwanie ciężkiej konstrukcji pod mury oblężonego miasta, a obsługę osłaniał przenośny daszek pokryty skórami, chroniący przed strzałami i płonącymi pociskami obrońców. Tego rodzaju udoskonalone tarany pojawiają się na reliefach i w opisach kampanii oblężniczych władców Bliskiego Wschodu i wschodniej części basenu Morza Śródziemnego z epoki brązu i wczesnej epoki żelaza. Postęp ten odzwierciedlał szerszy trend militarny epoki — łączenie prostych, sprawdzonych rozwiązań z nowymi możliwościami, jakie dawała obróbka metalu.",
+        "Opis": "Ulepszona wersja Taranu z okutą brązem głowicą, jeszcze skuteczniej burząca mury i bramy oblężonych miast.",
+        "Top3": [
+          {
+            "tytul": "Przebicie 10 — najwyższe w całej tej partii",
+            "tekst": "Wartość Przebicie 10 jest najwyższa spośród wszystkich 13 jednostek tej partii (drugie miejsce zajmuje Taran z Przebiciem 8)."
+          },
+          {
+            "tytul": "wallAttack 18 — najwyższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Osiąga wallAttack 18, wyprzedzając Katapultę (16), Taran (14) i Wieżę oblężniczą (6) — najskuteczniejsza w burzeniu murów."
+          },
+          {
+            "tytul": "Rozwinięcie Taranu",
+            "tekst": "To ulepszona wersja Taranu z epoki Brązu — te same zasady użycia (burzenie murów/bram, słaba w polu), ale skuteczniejsza."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real1_Taran_okuty_tech_state",
+      "unit": {
+        "Jednostka": "Taran okuty",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 4,
+        "Uderzenie": 12,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza epoki Brązu; następca Taranu (kamiennego) — kłoda na KOŁACH zamiast płóz, głowica OKUTA BRĄZEM, załoga pod przenośnym daszkiem ze skór; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playteście",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 10,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Bronze-Shod Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 750,
+        "missileAttack": 0,
+        "wallAttack": 18,
+        "fieldPower": 377.5,
+        "siegePower": 94,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wraz z rozwojem metalurgii brązu machiny oblężnicze uległy istotnemu udoskonaleniu, a taran okuty stał się bardziej wytrzymałą i skuteczniejszą odmianą swego drewnianego poprzednika. Głowicę pnia wzmacniano teraz odlewaną osłoną z brązu, często formowaną na kształt zwierzęcej głowy, co pozwalało skupić siłę uderzenia oraz chronić drewno przed rozłupaniem przy wielokrotnych uderzeniach w kamienny mur. Machinę osadzano na prostych kołach lub płozach, ułatwiających przesuwanie ciężkiej konstrukcji pod mury oblężonego miasta, a obsługę osłaniał przenośny daszek pokryty skórami, chroniący przed strzałami i płonącymi pociskami obrońców. Tego rodzaju udoskonalone tarany pojawiają się na reliefach i w opisach kampanii oblężniczych władców Bliskiego Wschodu i wschodniej części basenu Morza Śródziemnego z epoki brązu i wczesnej epoki żelaza. Postęp ten odzwierciedlał szerszy trend militarny epoki — łączenie prostych, sprawdzonych rozwiązań z nowymi możliwościami, jakie dawała obróbka metalu.",
+        "Opis": "Ulepszona wersja Taranu z okutą brązem głowicą, jeszcze skuteczniej burząca mury i bramy oblężonych miast.",
+        "Top3": [
+          {
+            "tytul": "Przebicie 10 — najwyższe w całej tej partii",
+            "tekst": "Wartość Przebicie 10 jest najwyższa spośród wszystkich 13 jednostek tej partii (drugie miejsce zajmuje Taran z Przebiciem 8)."
+          },
+          {
+            "tytul": "wallAttack 18 — najwyższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Osiąga wallAttack 18, wyprzedzając Katapultę (16), Taran (14) i Wieżę oblężniczą (6) — najskuteczniejsza w burzeniu murów."
+          },
+          {
+            "tytul": "Rozwinięcie Taranu",
+            "tekst": "To ulepszona wersja Taranu z epoki Brązu — te same zasady użycia (burzenie murów/bram, słaba w polu), ale skuteczniejsza."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real1_Taran_okuty_stock_empty",
+      "unit": {
+        "Jednostka": "Taran okuty",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 4,
+        "Uderzenie": 12,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza epoki Brązu; następca Taranu (kamiennego) — kłoda na KOŁACH zamiast płóz, głowica OKUTA BRĄZEM, załoga pod przenośnym daszkiem ze skór; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playteście",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 10,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Bronze-Shod Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 750,
+        "missileAttack": 0,
+        "wallAttack": 18,
+        "fieldPower": 377.5,
+        "siegePower": 94,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wraz z rozwojem metalurgii brązu machiny oblężnicze uległy istotnemu udoskonaleniu, a taran okuty stał się bardziej wytrzymałą i skuteczniejszą odmianą swego drewnianego poprzednika. Głowicę pnia wzmacniano teraz odlewaną osłoną z brązu, często formowaną na kształt zwierzęcej głowy, co pozwalało skupić siłę uderzenia oraz chronić drewno przed rozłupaniem przy wielokrotnych uderzeniach w kamienny mur. Machinę osadzano na prostych kołach lub płozach, ułatwiających przesuwanie ciężkiej konstrukcji pod mury oblężonego miasta, a obsługę osłaniał przenośny daszek pokryty skórami, chroniący przed strzałami i płonącymi pociskami obrońców. Tego rodzaju udoskonalone tarany pojawiają się na reliefach i w opisach kampanii oblężniczych władców Bliskiego Wschodu i wschodniej części basenu Morza Śródziemnego z epoki brązu i wczesnej epoki żelaza. Postęp ten odzwierciedlał szerszy trend militarny epoki — łączenie prostych, sprawdzonych rozwiązań z nowymi możliwościami, jakie dawała obróbka metalu.",
+        "Opis": "Ulepszona wersja Taranu z okutą brązem głowicą, jeszcze skuteczniej burząca mury i bramy oblężonych miast.",
+        "Top3": [
+          {
+            "tytul": "Przebicie 10 — najwyższe w całej tej partii",
+            "tekst": "Wartość Przebicie 10 jest najwyższa spośród wszystkich 13 jednostek tej partii (drugie miejsce zajmuje Taran z Przebiciem 8)."
+          },
+          {
+            "tytul": "wallAttack 18 — najwyższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Osiąga wallAttack 18, wyprzedzając Katapultę (16), Taran (14) i Wieżę oblężniczą (6) — najskuteczniejsza w burzeniu murów."
+          },
+          {
+            "tytul": "Rozwinięcie Taranu",
+            "tekst": "To ulepszona wersja Taranu z epoki Brązu — te same zasady użycia (burzenie murów/bram, słaba w polu), ale skuteczniejsza."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real1_Taran_okuty_quota_20",
+      "unit": {
+        "Jednostka": "Taran okuty",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 4,
+        "Uderzenie": 12,
+        "Obrona": 2,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza epoki Brązu; następca Taranu (kamiennego) — kłoda na KOŁACH zamiast płóz, głowica OKUTA BRĄZEM, załoga pod przenośnym daszkiem ze skór; łamie BRAMĘ i mur (wysokie Przebicie/Uderzenie), słaba vs jednostki; budowana podczas oblężenia (1 tura); niezłomny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playteście",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 8,
+        "Przebicie": 10,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Bronze-Shod Ram",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 1,
+        "chargeBonus": 1,
+        "health": 750,
+        "missileAttack": 0,
+        "wallAttack": 18,
+        "fieldPower": 377.5,
+        "siegePower": 94,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wraz z rozwojem metalurgii brązu machiny oblężnicze uległy istotnemu udoskonaleniu, a taran okuty stał się bardziej wytrzymałą i skuteczniejszą odmianą swego drewnianego poprzednika. Głowicę pnia wzmacniano teraz odlewaną osłoną z brązu, często formowaną na kształt zwierzęcej głowy, co pozwalało skupić siłę uderzenia oraz chronić drewno przed rozłupaniem przy wielokrotnych uderzeniach w kamienny mur. Machinę osadzano na prostych kołach lub płozach, ułatwiających przesuwanie ciężkiej konstrukcji pod mury oblężonego miasta, a obsługę osłaniał przenośny daszek pokryty skórami, chroniący przed strzałami i płonącymi pociskami obrońców. Tego rodzaju udoskonalone tarany pojawiają się na reliefach i w opisach kampanii oblężniczych władców Bliskiego Wschodu i wschodniej części basenu Morza Śródziemnego z epoki brązu i wczesnej epoki żelaza. Postęp ten odzwierciedlał szerszy trend militarny epoki — łączenie prostych, sprawdzonych rozwiązań z nowymi możliwościami, jakie dawała obróbka metalu.",
+        "Opis": "Ulepszona wersja Taranu z okutą brązem głowicą, jeszcze skuteczniej burząca mury i bramy oblężonych miast.",
+        "Top3": [
+          {
+            "tytul": "Przebicie 10 — najwyższe w całej tej partii",
+            "tekst": "Wartość Przebicie 10 jest najwyższa spośród wszystkich 13 jednostek tej partii (drugie miejsce zajmuje Taran z Przebiciem 8)."
+          },
+          {
+            "tytul": "wallAttack 18 — najwyższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Osiąga wallAttack 18, wyprzedzając Katapultę (16), Taran (14) i Wieżę oblężniczą (6) — najskuteczniejsza w burzeniu murów."
+          },
+          {
+            "tytul": "Rozwinięcie Taranu",
+            "tekst": "To ulepszona wersja Taranu z epoki Brązu — te same zasady użycia (burzenie murów/bram, słaba w polu), ale skuteczniejsza."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real2_Katapulta_allowed",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Epoka": "Żelazo",
+        "Kultura": null,
+        "Tech": "Oblężnictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 1,
+        "Uderzenie": 0,
+        "Obrona": 1,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 1,
+        "Health": 1000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 8,
+        "Zasięg ataku (hex)": 6,
+        "Ilość pocisków": 10,
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza dystansowa; burzy mur/bramę zza linii (lob nad murem), słaba wytrzymałość i w zwarciu; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 0,
+        "Przebicie": 6,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Catapult",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 0,
+        "chargeBonus": 0,
+        "health": 250,
+        "missileAttack": 4,
+        "wallAttack": 16,
+        "fieldPower": 128,
+        "siegePower": 45,
+        "Utrzymanie surowiec": "Żelazo",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.",
+        "Opis": "Dystansowa machina oblężnicza miotająca pociski ponad murami, rażąca fortyfikacje z bezpiecznej odległości, lecz krucha w zwarciu.",
+        "Top3": [
+          {
+            "tytul": "Zasięg ataku 6 heksów — najdłuższy w tej partii",
+            "tekst": "Atakuje z 6 heksów, więcej niż Łucznik akadyjski (4) i Wojownik germański (2) — może razić mur zza linii wroga."
+          },
+          {
+            "tytul": "Health tylko 1000 — najniższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Ma najmniej punktów zdrowia spośród machin oblężniczych (Taran 2800, Taran okuty 3000, Wieża oblężnicza 3600) — krucha i wymaga osłony."
+          },
+          {
+            "tytul": "Słaba w zwarciu",
+            "tekst": "Pancerz 0 (remis z Berserkerem germańskim, najniższa wartość w tej partii) — burzy mury z dystansu, ale nie nadaje się do bezpośredniej walki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Oblężnictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "zelazo": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 152
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real2_Katapulta_tech_state",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Epoka": "Żelazo",
+        "Kultura": null,
+        "Tech": "Oblężnictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 1,
+        "Uderzenie": 0,
+        "Obrona": 1,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 1,
+        "Health": 1000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 8,
+        "Zasięg ataku (hex)": 6,
+        "Ilość pocisków": 10,
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza dystansowa; burzy mur/bramę zza linii (lob nad murem), słaba wytrzymałość i w zwarciu; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 0,
+        "Przebicie": 6,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Catapult",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 0,
+        "chargeBonus": 0,
+        "health": 250,
+        "missileAttack": 4,
+        "wallAttack": 16,
+        "fieldPower": 128,
+        "siegePower": 45,
+        "Utrzymanie surowiec": "Żelazo",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.",
+        "Opis": "Dystansowa machina oblężnicza miotająca pociski ponad murami, rażąca fortyfikacje z bezpiecznej odległości, lecz krucha w zwarciu.",
+        "Top3": [
+          {
+            "tytul": "Zasięg ataku 6 heksów — najdłuższy w tej partii",
+            "tekst": "Atakuje z 6 heksów, więcej niż Łucznik akadyjski (4) i Wojownik germański (2) — może razić mur zza linii wroga."
+          },
+          {
+            "tytul": "Health tylko 1000 — najniższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Ma najmniej punktów zdrowia spośród machin oblężniczych (Taran 2800, Taran okuty 3000, Wieża oblężnicza 3600) — krucha i wymaga osłony."
+          },
+          {
+            "tytul": "Słaba w zwarciu",
+            "tekst": "Pancerz 0 (remis z Berserkerem germańskim, najniższa wartość w tej partii) — burzy mury z dystansu, ale nie nadaje się do bezpośredniej walki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "zelazo": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 152
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real2_Katapulta_stock_empty",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Epoka": "Żelazo",
+        "Kultura": null,
+        "Tech": "Oblężnictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 1,
+        "Uderzenie": 0,
+        "Obrona": 1,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 1,
+        "Health": 1000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 8,
+        "Zasięg ataku (hex)": 6,
+        "Ilość pocisków": 10,
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza dystansowa; burzy mur/bramę zza linii (lob nad murem), słaba wytrzymałość i w zwarciu; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 0,
+        "Przebicie": 6,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Catapult",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 0,
+        "chargeBonus": 0,
+        "health": 250,
+        "missileAttack": 4,
+        "wallAttack": 16,
+        "fieldPower": 128,
+        "siegePower": 45,
+        "Utrzymanie surowiec": "Żelazo",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.",
+        "Opis": "Dystansowa machina oblężnicza miotająca pociski ponad murami, rażąca fortyfikacje z bezpiecznej odległości, lecz krucha w zwarciu.",
+        "Top3": [
+          {
+            "tytul": "Zasięg ataku 6 heksów — najdłuższy w tej partii",
+            "tekst": "Atakuje z 6 heksów, więcej niż Łucznik akadyjski (4) i Wojownik germański (2) — może razić mur zza linii wroga."
+          },
+          {
+            "tytul": "Health tylko 1000 — najniższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Ma najmniej punktów zdrowia spośród machin oblężniczych (Taran 2800, Taran okuty 3000, Wieża oblężnicza 3600) — krucha i wymaga osłony."
+          },
+          {
+            "tytul": "Słaba w zwarciu",
+            "tekst": "Pancerz 0 (remis z Berserkerem germańskim, najniższa wartość w tej partii) — burzy mury z dystansu, ale nie nadaje się do bezpośredniej walki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Oblężnictwo"
+        ],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "zelazo": 152
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real2_Katapulta_quota_20",
+      "unit": {
+        "Jednostka": "Katapulta",
+        "Epoka": "Żelazo",
+        "Kultura": null,
+        "Tech": "Oblężnictwo",
+        "Pieniądz (koszt)": 9,
+        "Ludność": 1,
+        "Surowiec": "Żelazo",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 1,
+        "Uderzenie": 0,
+        "Obrona": 1,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 1,
+        "Health": 1000,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 8,
+        "Zasięg ataku (hex)": 6,
+        "Ilość pocisków": 10,
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza dystansowa; burzy mur/bramę zza linii (lob nad murem), słaba wytrzymałość i w zwarciu; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 0,
+        "Przebicie": 6,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Catapult",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 1,
+        "armor": 0,
+        "chargeBonus": 0,
+        "health": 250,
+        "missileAttack": 4,
+        "wallAttack": 16,
+        "fieldPower": 128,
+        "siegePower": 45,
+        "Utrzymanie surowiec": "Żelazo",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.",
+        "Opis": "Dystansowa machina oblężnicza miotająca pociski ponad murami, rażąca fortyfikacje z bezpiecznej odległości, lecz krucha w zwarciu.",
+        "Top3": [
+          {
+            "tytul": "Zasięg ataku 6 heksów — najdłuższy w tej partii",
+            "tekst": "Atakuje z 6 heksów, więcej niż Łucznik akadyjski (4) i Wojownik germański (2) — może razić mur zza linii wroga."
+          },
+          {
+            "tytul": "Health tylko 1000 — najniższe wśród 4 jednostek oblężniczych tej partii",
+            "tekst": "Ma najmniej punktów zdrowia spośród machin oblężniczych (Taran 2800, Taran okuty 3000, Wieża oblężnicza 3600) — krucha i wymaga osłony."
+          },
+          {
+            "tytul": "Słaba w zwarciu",
+            "tekst": "Pancerz 0 (remis z Berserkerem germańskim, najniższa wartość w tej partii) — burzy mury z dystansu, ale nie nadaje się do bezpośredniej walki."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [
+          "Oblężnictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "zelazo": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "zelazo": 152
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real3_Wie_a_obl_nicza_allowed",
+      "unit": {
+        "Jednostka": "Wieża oblężnicza",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 10,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 0,
+        "Uderzenie": 0,
+        "Obrona": 4,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3600,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; umożliwia piechocie wejście NA MUR (pomost przez blanki), sama nie atakuje; osłona; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 6,
+        "Przebicie": 0,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Siege Tower",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 0,
+        "armor": 1,
+        "chargeBonus": 0,
+        "health": 900,
+        "missileAttack": 0,
+        "wallAttack": 6,
+        "fieldPower": 451,
+        "siegePower": 97,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu.",
+        "Opis": "Nieuzbrojona machina oblężnicza, która sama nie walczy, lecz umożliwia piechocie wejście na mur po opuszczonym pomoście.",
+        "Top3": [
+          {
+            "tytul": "Health 3600 — najwyższe w całej tej partii",
+            "tekst": "Ma najwięcej punktów zdrowia spośród wszystkich 13 jednostek tej partii, w tym pozostałych machin oblężniczych (Taran okuty 3000, Taran 2800, Katapulta 1000)."
+          },
+          {
+            "tytul": "Nie atakuje",
+            "tekst": "Atak i Uderzenie wynoszą 0 — jej rolą jest podstawienie pomostu pod mur, by piechota mogła wejść na blanki, nie prowadzenie ostrzału."
+          },
+          {
+            "tytul": "Pancerz 6",
+            "tekst": "Solidna osłona zbliżającej się do murów konstrukcji — niżej niż Taran/Taran okuty (Pancerz 8), ale wyżej niż Katapulta (Pancerz 0)."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real3_Wie_a_obl_nicza_tech_state",
+      "unit": {
+        "Jednostka": "Wieża oblężnicza",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 10,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 0,
+        "Uderzenie": 0,
+        "Obrona": 4,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3600,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; umożliwia piechocie wejście NA MUR (pomost przez blanki), sama nie atakuje; osłona; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 6,
+        "Przebicie": 0,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Siege Tower",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 0,
+        "armor": 1,
+        "chargeBonus": 0,
+        "health": 900,
+        "missileAttack": 0,
+        "wallAttack": 6,
+        "fieldPower": 451,
+        "siegePower": 97,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu.",
+        "Opis": "Nieuzbrojona machina oblężnicza, która sama nie walczy, lecz umożliwia piechocie wejście na mur po opuszczonym pomoście.",
+        "Top3": [
+          {
+            "tytul": "Health 3600 — najwyższe w całej tej partii",
+            "tekst": "Ma najwięcej punktów zdrowia spośród wszystkich 13 jednostek tej partii, w tym pozostałych machin oblężniczych (Taran okuty 3000, Taran 2800, Katapulta 1000)."
+          },
+          {
+            "tytul": "Nie atakuje",
+            "tekst": "Atak i Uderzenie wynoszą 0 — jej rolą jest podstawienie pomostu pod mur, by piechota mogła wejść na blanki, nie prowadzenie ostrzału."
+          },
+          {
+            "tytul": "Pancerz 6",
+            "tekst": "Solidna osłona zbliżającej się do murów konstrukcji — niżej niż Taran/Taran okuty (Pancerz 8), ale wyżej niż Katapulta (Pancerz 0)."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "technology_locked",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real3_Wie_a_obl_nicza_stock_empty",
+      "unit": {
+        "Jednostka": "Wieża oblężnicza",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 10,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 0,
+        "Uderzenie": 0,
+        "Obrona": 4,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3600,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; umożliwia piechocie wejście NA MUR (pomost przez blanki), sama nie atakuje; osłona; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 6,
+        "Przebicie": 0,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Siege Tower",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 0,
+        "armor": 1,
+        "chargeBonus": 0,
+        "health": 900,
+        "missileAttack": 0,
+        "wallAttack": 6,
+        "fieldPower": 451,
+        "siegePower": 97,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu.",
+        "Opis": "Nieuzbrojona machina oblężnicza, która sama nie walczy, lecz umożliwia piechocie wejście na mur po opuszczonym pomoście.",
+        "Top3": [
+          {
+            "tytul": "Health 3600 — najwyższe w całej tej partii",
+            "tekst": "Ma najwięcej punktów zdrowia spośród wszystkich 13 jednostek tej partii, w tym pozostałych machin oblężniczych (Taran okuty 3000, Taran 2800, Katapulta 1000)."
+          },
+          {
+            "tytul": "Nie atakuje",
+            "tekst": "Atak i Uderzenie wynoszą 0 — jej rolą jest podstawienie pomostu pod mur, by piechota mogła wejść na blanki, nie prowadzenie ostrzału."
+          },
+          {
+            "tytul": "Pancerz 6",
+            "tekst": "Solidna osłona zbliżającej się do murów konstrukcji — niżej niż Taran/Taran okuty (Pancerz 8), ale wyżej niż Katapulta (Pancerz 0)."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": null,
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {}
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": false,
+        "reason": "insufficient_resources",
+        "quota": 1,
+        "builtThisTurn": 0,
+        "qualifyingArmyCount": 10,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    },
+    {
+      "name": "real3_Wie_a_obl_nicza_quota_20",
+      "unit": {
+        "Jednostka": "Wieża oblężnicza",
+        "Epoka": "Brąz",
+        "Kultura": null,
+        "Tech": "Brązownictwo",
+        "Pieniądz (koszt)": 10,
+        "Ludność": 1,
+        "Surowiec": "Brąz",
+        "Surowiec (ilość)": 38,
+        "Utrzymanie (Pieniądz/turę)": 2,
+        "żywność/turę": 1,
+        "Atak": 0,
+        "Uderzenie": 0,
+        "Obrona": 4,
+        "Ruch": 1,
+        "Ruch w bitwie (heksy)": 2,
+        "Health": 3600,
+        "Próg dezercji (% health)": null,
+        "Widok pola": 1,
+        "Atak dystansowy": 0,
+        "Zasięg ataku (hex)": "—",
+        "Ilość pocisków": "—",
+        "W zamian za": "—",
+        "Super-jednostka": "—",
+        "Uwagi": "Machina oblężnicza; umożliwia piechocie wejście NA MUR (pomost przez blanki), sama nie atakuje; osłona; budowana podczas oblężenia (1 tura); niezłomny",
+        "Rola (linia)": "Oblężnicza",
+        "Pancerz": 6,
+        "Przebicie": 0,
+        "Kara obrony z flanki (%)": "—",
+        "Kara obrony z tyłu (%)": "—",
+        "Morale bazowe": 100,
+        "Morale ucieczki": null,
+        "Nazwa EN": "Siege Tower",
+        "Typ": "Siege",
+        "Klasa": "Specjalna",
+        "Nacja": "",
+        "Bonus vs Swordsman %": 0,
+        "Bonus vs Spearman %": 0,
+        "Bonus vs Falangite %": 0,
+        "Bonus vs Offensive %": 0,
+        "Bonus vs Distance %": 0,
+        "Bonus vs Mount %": 0,
+        "Bonus vs Slinger %": 0,
+        "Zmiana na": "—",
+        "Zastąp specjalnie": "—",
+        "Dostępna w epokach": "Brąz;Żelazo",
+        "meleeAttack": 0,
+        "meleeDefence": 0,
+        "weaponDamage": 0,
+        "piercing": 0,
+        "armor": 1,
+        "chargeBonus": 0,
+        "health": 900,
+        "missileAttack": 0,
+        "wallAttack": 6,
+        "fieldPower": 451,
+        "siegePower": 97,
+        "Utrzymanie surowiec": "Brąz",
+        "Utrzymanie surowiec (ilość)": 8,
+        "Historia": "Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu.",
+        "Opis": "Nieuzbrojona machina oblężnicza, która sama nie walczy, lecz umożliwia piechocie wejście na mur po opuszczonym pomoście.",
+        "Top3": [
+          {
+            "tytul": "Health 3600 — najwyższe w całej tej partii",
+            "tekst": "Ma najwięcej punktów zdrowia spośród wszystkich 13 jednostek tej partii, w tym pozostałych machin oblężniczych (Taran okuty 3000, Taran 2800, Katapulta 1000)."
+          },
+          {
+            "tytul": "Nie atakuje",
+            "tekst": "Atak i Uderzenie wynoszą 0 — jej rolą jest podstawienie pomostu pod mur, by piechota mogła wejść na blanki, nie prowadzenie ostrzału."
+          },
+          {
+            "tytul": "Pancerz 6",
+            "tekst": "Solidna osłona zbliżającej się do murów konstrukcji — niżej niż Taran/Taran okuty (Pancerz 8), ale wyżej niż Katapulta (Pancerz 0)."
+          }
+        ]
+      },
+      "ctx": {
+        "activeSiege": true,
+        "atWar": true,
+        "ownerId": 1,
+        "turn": 10,
+        "army": [
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          },
+          {
+            "ownerId": 1,
+            "category": "zwykla"
+          }
+        ],
+        "turnState": {
+          "turn": 10,
+          "count": 1
+        },
+        "unlockedTechs": [
+          "Brązownictwo"
+        ],
+        "treasury": 1000,
+        "stock": {
+          "braz": 1000
+        }
+      },
+      "costMoney": 50,
+      "expect": {
+        "allowed": true,
+        "reason": null,
+        "quota": 2,
+        "builtThisTurn": 1,
+        "qualifyingArmyCount": 20,
+        "costStock": {
+          "braz": 76
+        },
+        "costMoney": 50
+      }
+    }
+  ]
+}
