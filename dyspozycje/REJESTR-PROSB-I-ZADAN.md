@@ -9466,3 +9466,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · ZGŁOSZENIA I DECYZJA WŁAŚCICIELA (bitwa): uciekający (routed) nie są dziś ścigani i niszczeni, po bitwie wracają jako ocalali i trzeba atakować ponownie → decyzja: routed mają być atakowani i ginąć, uciekać do granicy mapy, a ocalali routed znikają po bitwie; ogólnie więcej zabitych → W21 R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 (Sonnet; kolejka po W19; kolizje battleScene z W16/W19).
 
 - 2026-11-11 · W21 (bitwa trwa do rozstrzygnięcia uciekinierów): właściciel ZATWIERDZIŁ założenia — ocalali nadal pod istniejącym odwrotem na mapie; prędkość ucieczki bez zmian.
+
+- 2026-11-11 · ZGŁOSZENIE WŁAŚCICIELA (zrzut): panel budynków surowcowych (Stolarnia/Garncarnia/Warsztat kamieniarski, Włączony) — brakuje procentu wykorzystania mocy w następnej turze, by wyłączać zbędne (np. nadmiar garncarni); budynki bez przerobu = 100
