@@ -59,3 +59,6 @@ Deploy tylko ROBOCZA po FC: merge kandydatów FC do main → `dep3.sh` → sidec
 - `R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1`: administrator ulepszeń rekrutowany w panelu ulepszeń; auto-ulepszenia tylko z nim (po CITY-ADMINISTRATOR).
 - `R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1`: automatyczna rekrutacja tylko z wybranym generałem w panelu Rekrutacja; nowe jednostki idą do niego.
 Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonnet) → IMPROVEMENT-ADMINISTRATOR → ARMY-AUTO-RECRUIT-GENERAL (sekwencyjnie: wspólna automatyzacja/ustawienia).
+
+- Ikona administratora (decyzja/pomysł właściciela): pieczęć/laur z literą „A” — włączona do dispatchów CITY-ADMINISTRATOR i IMPROVEMENT-ADMINISTRATOR.
+- FALA 623 wdrożona: IRON-STUD-ADJACENCY (main 681a0a828, MD5 be5d3e417eae4afa10bdac9141016adc).

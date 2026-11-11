@@ -9342,3 +9342,8 @@ IRON-STUD-ADJACENCY: FC PASS-WITH-NOTES (1dff44b63) → FALA 623 w toku. SURVIVO
 - R-WEB-CITY-ADMINISTRATOR-Q1 (zastępuje R-WEB-ADMINISTRATOR-AUTOBUILD-GATE-Q1): ABC „Umiarkowane”: zatrudnienie 40 Pieniądza, utrzymanie 2/3/4 / turę (tier I/II/III) z BUDŻETU PAŃSTWA; korupcja −10%, produkcja +3%, podatki +3% (×1/×1,5/×2,25); 1 administrator indywidualnie na miasto; brak środków państwa = nie pracuje (bez efektów i bez autobudowy); autobudowa BUDYNKÓW tylko z administratorem. Przycisk w nagłówku obok „Ustaw jako stolicę”.
 - R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ulepszeń w panelu ulepszeń; auto-ulepszenia tylko z nim; bez niego ręcznie.
 - R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: automatyczna rekrutacja w panelu Rekrutacja tylko z wybranym generałem; nowe jednostki idą do wybranego generała; bez wyboru — dotychczasowe zasady (najbliższy generał); rekrutacja ręczna w panelu Armia bez zmian.
+
+## 2026-11-11 — FALA 623 wdrożona na ROBOCZĄ (main 681a0a828, MD5 be5d3e417eae4afa10bdac9141016adc)
+R-WEB-IRON-STUD-ADJACENCY-Q1: FC PASS-WITH-NOTES, kod 1dff44b63. Raw MD5 i 3 sidecary zgodne. Niezmierzone: dodatnia ścieżka live (budowa przy sąsiedzie + odjęcie 50 koni), koszt wydajności tooltipu.
+Rust: PICK-STADNINA r3 zintegrowane na parity-v2 (db390d49d): kod cc7bbf00f FC PASS-WITH-NOTES; bramki fmt/clippy/12 binarek (pick shard 0/2, relief, terrain, m16, ceramika, building_costs, W5 core) 0 failed, pełny cargo test wg Operatora 2564 passed; pin jeden cffe39cb9; 4 scenariusze zgodne; M16 `droga` odtworzone z weba. Dług: łodzie rybackie 6/6/6 (data/terrain-improvements.json) — osobny REPIN ekonomii.
+Ikona administratora (pomysł właściciela „A”): pieczęć/laur z „A” w dispatchach administratorów.
