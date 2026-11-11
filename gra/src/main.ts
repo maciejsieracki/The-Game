@@ -19810,9 +19810,6 @@ async function boot(): Promise<void> {
       if (enriched.type === 'zaproponuj_handel_surowiec') {
         aiResourceTradeLastProposalTurn.set(ownerId, turn);
       }
-      if (enriched.type === 'zaproponuj_wymiane_cykliczna') {
-        aiResourceBarterLastProposalTurn.set(ownerId, turn);
-      }
       // C-DYP-Q1=A (2026-07-26): PARYTET — reszta komend (sojusz/handel/umowa
       // handlowa/handel surowcem/trybut) idzie PRZEZ TĘ SAMĄ tablicę stołu
       // negocjacyjnego co propozycje gracza (negotiationTable), NIE osobną,
@@ -20030,6 +20027,8 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
         entry.rejectCooldownKey = 'wymiana_cykliczna';
         entry.aiCyclicBarter = true;
+        // Cooldown stamped only once the offer is actually on the table (after all final filters).
+        aiResourceBarterLastProposalTurn.set(ownerId, turn);
       }
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B7): uzasadnienie oferty trafia na stół (pole reason).
       if (workingCmd.type === 'zaproponuj_handel_surowiec' && workingCmd.reasonHandlu) {

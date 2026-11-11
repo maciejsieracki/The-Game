@@ -85,6 +85,41 @@ const rejectKey = rejectCooldownKeyFor('zaproponuj_wymiane_cykliczna', 'handel')
 const rejected = recordRejectedOffer([], 2, rejectKey, 20);
 ok(rejectKey === 'wymiana_cykliczna' && isOfferRejectedOnCooldown(rejected, 2, rejectKey, 21), 'rejection records a separate cyclic barter key');
 ok(!isOfferRejectedOnCooldown(rejected, 2, 'handel', 21), 'barter rejection does not block other handel proposals');
+// --- obrona r1 (zarzuty 1-2): przypadki negatywne i rezerwa zapasu AI ---
+const priceAll = payload => ({
+  givePn: diplomacyPnSurowiecIlosc(payload.giveItems[0].id, payload.giveItems[0].ilosc),
+  receivePn: diplomacyPnSurowiecIlosc(payload.receiveItems[0].id, payload.receiveItems[0].ilosc),
+});
+const baseAi = [
+  { key: 'drewno', stock: 2030, netRate: 0, deficit: false, surplus: true, reserve: 2000 },
+  { key: 'zelazo', stock: 0, netRate: -10, deficit: true, surplus: false, reserve: 0 },
+];
+const basePl = [
+  { key: 'drewno', stock: 0, netRate: -20, deficit: true, surplus: false, reserve: 0 },
+  { key: 'zelazo', stock: 2030, netRate: 0, deficit: false, surplus: true, reserve: 30 },
+];
+function selectWith(aiResources, playerResources) {
+  return selectAiTradeBarter({
+    aiResources, playerResources, turns: 10,
+    resolvePayloadPn: priceAll,
+    fairnessGate: (g, r) => handelFairnessGate(g, r, 110, 1) == null,
+    evaluateExactPayload: () => true,
+  });
+}
+// Rezerwa zapasu AI: zapas 2030 minus rezerwa 2000 = 30 do rozdzielenia na 10 tur -> 3 szt/turę -> krok 10 -> 0.
+// Bez uwzględnienia rezerwy wynik byłby 200 (jak w teście wyżej), więc asercja wyłapuje mutację.
+ok(selectWith(baseAi, basePl) === null, 'AI does not release stock below its own reserve (no offer)');
+// Rezerwa 0 -> ten sam zapas daje realną ofertę (kontrola, że powyższy null wynika z rezerwy).
+ok(selectWith([{ ...baseAi[0], reserve: 0 }, baseAi[1]], basePl)?.giveQty === 200, 'control: same stock with zero reserve yields 200 per turn');
+ok(selectWith(baseAi.map(r => ({ ...r, deficit: false })), basePl) === null, 'no offer when AI has no deficit');
+ok(selectWith([{ ...baseAi[0], reserve: 0 }, baseAi[1]], basePl.map(r => ({ ...r, deficit: false, surplus: r.key === 'zelazo' }))) === null, 'no offer when player has no deficit');
+ok(selectWith([{ ...baseAi[0], reserve: 0 }, baseAi[1]], basePl.map(r => (r.key === 'zelazo' ? { ...r, surplus: false } : r))) === null, 'no offer when player has no surplus of the AI need');
+ok(selectWith([{ ...baseAi[0], reserve: 0 }, { ...baseAi[1], surplus: false }], basePl) !== null, 'control: AI deficit alone with surplus stock still offers');
+
+ok(aiCommandToPendingProposal({ ...cmd, giveQty: 0 }, 2, 0, 20) === null, 'converter guard: zero giveQty is rejected');
+ok(aiCommandToPendingProposal({ ...cmd, receiveQty: 0 }, 2, 0, 20) === null, 'converter guard: zero receiveQty is rejected');
+ok(aiCommandToPendingProposal({ ...cmd, giveKey: cmd.receiveKey }, 2, 0, 20) === null, 'converter guard: same-resource swap is rejected');
+
 console.log(`ai-trade-proposal-to-player-test: ${pass} assertions passed`);
 fs.rmSync(bundle, { force: true });
 fs.rmSync(entry, { force: true });
