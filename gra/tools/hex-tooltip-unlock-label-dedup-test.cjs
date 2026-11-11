@@ -106,7 +106,19 @@ async function main() {
     const possible = await domText(render(M, { terenBazowy: 'wzgorza', nakladka: 'brak', ulepszenia: ['kopalnia_cyny'], zloze: 'cyna' }), 'Możliwe ulepszenia');
     ok(possible !== null && /Kamieniołom/.test(possible), 'Kamieniołom na liście możliwych', possible);
     if (possible) {
-      ok(!/odblok\./.test(possible.split('Fort')[0]), 'Kamieniołom: brak "odblok." (surowiec jest w produkcji)', possible);
+      // Zakres: wyłącznie wiersz Kamieniołomu (od jego nazwy do następnej pozycji "Fort").
+      // Wcześniej `split('Fort')[0]` obejmował też wiersz Owiec ("odblok. Owce" -- inny budynek,
+      // legalna etykieta), co dawało fałszywy FAIL (R-WEB-TEST-DEBT-BASELINE-Q3, punkt 5).
+      // R-WEB-TEST-DEBT-BASELINE-Q3 R2 (zarzut Evaluatora 5): koniec wiersza wyznaczany granica
+      // WIERSZA ("<Nazwa> → "), a nie położeniem "Fort" -- kolejność wierszy nie ma znaczenia.
+      // Granica: pierwsze wystąpienie litery-nazwy + " → " po nazwie Kamieniołomu.
+      const kamStart = possible.indexOf('Kamieniołom');
+      const kamName = 'Kamieniołom';
+      const afterKamName = kamStart < 0 ? '' : possible.slice(kamStart + kamName.length);
+      const nextRowAt = afterKamName.search(/\p{L}[\p{L}\s()\-]*? → /u);
+      const kamLine = kamStart < 0 ? ''
+        : possible.slice(kamStart, kamStart + kamName.length + (nextRowAt < 0 ? afterKamName.length : nextRowAt));
+      ok(kamStart >= 0 && kamLine.length > kamName.length && !/odblok\./.test(kamLine), 'Kamieniołom: brak "odblok." (surowiec jest w produkcji)', kamLine);
       ok(/\+\d+ Kamień\/t/.test(possible), 'Kamieniołom: produkcja "+N Kamień/t" zostaje');
     }
 

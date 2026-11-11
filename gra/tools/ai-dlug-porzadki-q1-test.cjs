@@ -89,6 +89,8 @@ console.log('\n-- (a) eliminateOwner() czyści aiSurplusRedirectedOwners + aiSli
     'stoneForceWarRestUntilByOwner', 'stoneForceWarActiveByPairKey', 'ironForceWarPendingOwners',
     'ironForceWarCycleOwners', 'ironForceWarRestUntilByOwner', 'ironForceWarActiveByPairKey',
     'bronzeEraEnterTurnByOwner', 'ironEraEnterTurnByOwner',
+    // R-WEB-TEST-DEBT-BASELINE-Q3: eliminateOwner (main.ts) czyści też regularWarCapturedByPairKey
+    'regularWarCapturedByPairKey',
   ];
 
   let realExecOk = false;
@@ -115,6 +117,7 @@ console.log('\n-- (a) eliminateOwner() czyści aiSurplusRedirectedOwners + aiSli
       emptySet(), emptySet(), emptyMap(), emptyMap(),
       emptySet(), emptySet(), emptyMap(), emptyMap(),
       emptyMap(), emptyMap(),
+      emptyMap(),
     );
     afterSurplus = surplus;
     afterSlider = sliderMap;

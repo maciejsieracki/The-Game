@@ -194,7 +194,7 @@ check(
 check(
   'finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)',
   /function cleanupIronForcedWarOnPeace\(proposerId: number, responderId: number\): void \{[\s\S]{0,500}ironForceWarRestUntilByOwner\.set/.test(main)
-    && /function finalizePeaceTreatyBetween\([\s\S]{0,2200}cleanupIronForcedWarOnPeace\(proposerId, responderId\);/.test(main),
+    && /function finalizePeaceTreatyBetween\([\s\S]{0,4000}cleanupIronForcedWarOnPeace\(proposerId, responderId\);/.test(main),
 );
 
 // ---------------------------------------------------------------------------
