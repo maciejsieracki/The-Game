@@ -128,9 +128,13 @@ export function administratorsFromNewGameParam(raw: unknown): boolean {
  * Migracja starego zapisu (sprzed opcji „Administratorzy”): zapis BEZ `administratorsEnabled`, ale z włączoną
  * dotąd automatyzacją (`autoBuildEnabled === true`) → administratorzy WYŁĄCZENI + jednorazowe powiadomienie.
  */
-export function shouldShowLegacyAutomationMigration(meta: { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined | null): boolean {
+export function shouldShowLegacyAutomationMigration(
+  meta: { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined | null,
+  hadHiredAdministrator: boolean = false,
+): boolean {
   if (!meta) return false;
-  return typeof meta.administratorsEnabled !== 'boolean' && meta.autoBuildEnabled === true;
+  // Zarzut Evaluatora 1: opłacony administrator ginie przy wczytaniu także przy autoBuildEnabled=false — wtedy też komunikat.
+  return typeof meta.administratorsEnabled !== 'boolean' && (meta.autoBuildEnabled === true || hadHiredAdministrator === true);
 }
 
 /** Treść jednorazowego powiadomienia (zakładka „Ważne”) po wczytaniu starego zapisu z włączoną automatyzacją. */

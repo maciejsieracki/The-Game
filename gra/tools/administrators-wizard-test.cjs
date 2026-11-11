@@ -45,6 +45,8 @@ ok(G.administratorsFromNewGameParam(undefined) === false, 'nowa gra bez parametr
 ok(G.administratorsFromNewGameParam(true) === true && G.administratorsFromNewGameParam(false) === false, 'nowa gra: jawny boolean respektowany');
 ok(G.shouldShowLegacyAutomationMigration({ autoBuildEnabled: true }) === true, 'stary zapis z włączoną automatyzacją (bez nowego pola) => powiadomienie');
 ok(G.shouldShowLegacyAutomationMigration({ autoBuildEnabled: false }) === false, 'stary zapis z wyłączoną automatyzacją => bez powiadomienia');
+ok(G.shouldShowLegacyAutomationMigration({ autoBuildEnabled: false }, true) === true, 'stary zapis z autoBuildEnabled=false, ale z zatrudnionym administratorem => powiadomienie (zarzut 1)');
+ok(G.shouldShowLegacyAutomationMigration({ administratorsEnabled: false }, true) === false, 'zapis z nowym polem + administrator => bez powiadomienia');
 ok(G.shouldShowLegacyAutomationMigration({}) === false && G.shouldShowLegacyAutomationMigration(undefined) === false, 'zapis bez żadnego pola => bez powiadomienia');
 ok(G.shouldShowLegacyAutomationMigration({ administratorsEnabled: false, autoBuildEnabled: true }) === false, 'zapis już z nowym polem => bez powiadomienia (jednorazowość)');
 ok(/nowej gr/.test(G.LEGACY_AUTOMATION_NOTICE_TEXT) && /Administratorzy/.test(G.LEGACY_AUTOMATION_NOTICE_TEXT), 'powiadomienie mówi, jak odzyskać automatyzację (nowa gra z opcją Administratorzy)');
@@ -73,7 +75,7 @@ ok(/administratorsEnabled = administratorsFromNewGameParam\(params\.administrato
 ok(/administratorsEnabled = administratorsFromSaveMeta\(saved\.meta\?\.administratorsEnabled\)/.test(main), 'main.ts: wczytanie zapisu (brak pola => false)');
 ok(/dealsEndTurnGate: dealsEndTurnGateEnabled,\s*(?:\/\/[^\n]*\n\s*)*administratorsEnabled,/.test(main), 'main.ts: zapis gry niesie meta.administratorsEnabled (na stałe)');
 ok(!/^\s*autoBuildEnabled,\s*$/m.test(main) && !/let autoBuildEnabled/.test(main), 'main.ts: stary stan autoBuildEnabled usunięty (zapis go nie niesie)');
-ok(/shouldShowLegacyAutomationMigration\(saved\.meta/.test(main) && /LEGACY_AUTOMATION_NOTICE_TITLE/.test(main) && /administrators-legacy-migration/.test(main), 'main.ts: migracja starego zapisu + jednorazowe powiadomienie w „Ważne”');
+ok(/shouldShowLegacyAutomationMigration\(saved\.meta[\s\S]{0,200}?hadHiredAdministrator\)/.test(main) && /LEGACY_AUTOMATION_NOTICE_TITLE/.test(main) && /administrators-legacy-migration/.test(main), 'main.ts: migracja starego zapisu + jednorazowe powiadomienie w „Ważne”');
 ok(/if \(!administratorsEnabled\) \{[\s\S]{0,400}?delete \(c as \{ administrator\?: unknown \}\)\.administrator;[\s\S]{0,200}?administratorUlepszen/.test(main), 'main.ts: wczytanie przy OFF usuwa administratorów gracza (brak bonusów/utrzymania)');
 ok(/function hireCityAdministratorForPlayer[\s\S]{0,300}?if \(!administratorsEnabled\) return false;/.test(main), 'main.ts: zatrudnienie administratora miasta przy OFF odrzucone');
 ok(/function hireImprovementAdministratorForPlayer[\s\S]{0,300}?if \(!administratorsEnabled\) return false;/.test(main), 'main.ts: zatrudnienie administratora ulepszeń przy OFF odrzucone');

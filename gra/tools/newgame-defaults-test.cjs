@@ -26,7 +26,7 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-defaults-'));
 const PREFS_KEY = 'civ-new-game-prefs-v1';
 const EVIDENCE = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-DEFAULTS-Q1', 'evidence');
 
-// Po scaleniu z R-WEB-NEWGAME-MENU-REORDER-Q1: siatka kroku 4 ma 14 kart (12 + „Automatyzacja budowy”, R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1; + „Odkrywanie mapy klawiszem F (tryb testowy)”, R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1, domyślnie Wyłączone) (warunki zwycięstwa, trudność miast-państw,
+// Po scaleniu z R-WEB-NEWGAME-MENU-REORDER-Q1: siatka kroku 4 ma 14 kart (12 + „Administratorzy” [zamiast „Automatyzacja budowy”], R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1; + „Odkrywanie mapy klawiszem F (tryb testowy)”, R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1, domyślnie Wyłączone) (warunki zwycięstwa, trudność miast-państw,
 // barbarzyńcy, „Wojna epoki”, chatki z nagrodami przeszły z „Zaawansowanych” do siatki).
 const EXPECTED_GRID = {
   'Rozmiar mapy': 'Standardowy',

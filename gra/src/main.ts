@@ -47247,7 +47247,10 @@ async function boot(): Promise<void> {
       // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: stary zapis bez pola = administratorzy WYŁĄCZENI (nic po cichu).
       // Zapis sprzed opcji z włączoną dotąd automatyzacją (`meta.autoBuildEnabled`) → JEDNORAZOWE powiadomienie (niżej).
       administratorsEnabled = administratorsFromSaveMeta(saved.meta?.administratorsEnabled);
-      const legacyAutomationMigration = shouldShowLegacyAutomationMigration(saved.meta as { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined);
+      // Czy gracz miał zatrudnionego administratora (liczone PRZED kasowaniem niżej) — wtedy komunikat także przy autoBuildEnabled=false.
+      const hadHiredAdministrator = cities.some(c => isHuman(c.ownerId)
+        && !!((c as { administrator?: unknown }).administrator || (c as { administratorUlepszen?: unknown }).administratorUlepszen));
+      const legacyAutomationMigration = shouldShowLegacyAutomationMigration(saved.meta as { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined, hadHiredAdministrator);
       if (!administratorsEnabled) {
         // Bez opcji nie istnieje mechanika administratora dla gracza: zatrudnieni administratorzy gracza znikają (bez bonusów i utrzymania).
         for (const c of cities) {

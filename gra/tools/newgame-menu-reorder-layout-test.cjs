@@ -127,7 +127,7 @@ async function main() {
       await page.waitForSelector('.civ-newgame .sett-grid .srow');
 
       const cardsLoc = page.locator('.civ-newgame .sett-grid .srow');
-      assert.strictEqual(await cardsLoc.count(), 14, `${tag}: 14 cards in main grid`); // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: +Automatyzacja budowy; R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: +Odkrywanie klawiszem F
+      assert.strictEqual(await cardsLoc.count(), 14, `${tag}: 14 cards in main grid`); // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1: +Administratorzy (dawniej Automatyzacja budowy); R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: +Odkrywanie klawiszem F
 
       // Stan początkowy: układ kolumn, rozłączność kart, panel „Twój start", etykiety.
       const base = await page.evaluate((rectSrc) => {
