@@ -65,3 +65,6 @@ Dalszystarszybacklog: audytPLQ3 naorigin/codex/polish-ui-q3, AIgłównaarmia/dec
 ## Środowisko i zabezpieczenie
 
 `/usr/bin/chromium` ISTNIEJE. Brak starego `/opt/pw-browsers/...` NIE znaczy brakChromium. Używać explicitexecutablePath iHTTP; file://blokowanyprzezpolitykęprzeglądarki. Maksymalnie2izolowaneChromium jednocześnie, pomiarwydajnościwyłącznie. Shareddeps `/workspace/The-Game/gra/node_modules` (`npm ci` wykonane). BuilddirectVite, nieexportdanych. Repo/main+gałęzieWIPwypychaćregularnie, takżeprzedukończeniemkandydata, wyraźnieoznaczaćniezatwierdzone. Nieczyścićaktywnychworktrees; ukończoneusunąćdopieropocommit/push/readbackipróbieodtworzenia.
+
+## Sprzątanie po publikacji619
+Po potwierdzeniu zdalnych SHA kandydatów i ich obecności w main usunięto WYŁĄCZNIE opublikowane worktrees Skip/brąz50-75/mury/sojusze oraz czyste buildy618/619 z/tmp. Ich kod i dowody są na main i gałęziach GitHub; ponowne wejście wymaga odtworzenia worktree zGit. Aktywne cztery worktrees konnicy/rekrutacji/martwychjednostek/zamianypiechoty zachowano. Lokalne skrypty pomocnicze mogą pozostać, ale nie są źródłem stanu wydania.
