@@ -66,3 +66,10 @@ Kolejność: ICONS i FARM-HINT (małe, Haiku) teraz → CITY-ADMINISTRATOR (Sonn
 - #205 ZAMKNIĘTE (cel w FALI 607; test HTML tooltipu ec28410a2 do następnej fali). FALE 624–626 wdrożone.
 - `R-WEB-UI-RAW-IDS-AUDIT-Q1` — praca osobnej sesji (gałąź `claude/sweet-goodall-3vh4i9`, kandydat 2ca45a090, 30 plików, bez Evaluatora/FC; konflikt tylko w wikiBundle.json → regeneracja). Dodatek w runs/. Start Workflow: WEB-NEW.js, id=R-WEB-UI-RAW-IDS-AUDIT-Q1, cand=2ca45a090, Haiku, gdy zwolni się slot (6/6 zajęte).
 - Rust `R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1` (sesja „Podpiąć mnożnik pocisku do walki Rust”, gałąź `autobot/p6-repin-dystans` NIE wypchnięta) — czeka na push i na koniec kolejki web.
+
+## 8. Odpowiedzi ABC właściciela (2026-11-11, po FALI 626)
+- Machiny oblężnicze POZA Zastąp (zostaje obecne zachowanie) → `R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1` (poprawka testu unit-replace-full-cost F0; Haiku; małe).
+- Ikony surowców „tak, wszędzie” → `R-WEB-UI-RESOURCE-ICONS-EVERYWHERE-Q1` (karty kosztu budowy, utrzymanie jednostek, podsumowania imperium, szczegóły; Haiku).
+- Ludy Morza: zostaje okno gracza (bez zmian).
+- Administrator ulepszeń: ten sam koszt co administrator miasta, BEZ bonusów i dodatków; tylko odblokowuje automatyczne ulepszenia terenu (dispatch IMPROVEMENT-ADMINISTRATOR zaktualizowany).
+- Do startu gdy zwolnią się sloty (6/6): ICONS-EVERYWHERE, TEST-DEBT-UNIT-REPLACE-F0.
