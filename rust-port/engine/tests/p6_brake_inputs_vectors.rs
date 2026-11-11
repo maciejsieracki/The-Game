@@ -333,3 +333,113 @@ fn gate_facts_era_is_integer_as_in_web() {
     assert!(!ai.is_player);
     assert_eq!(ai.era, 7);
 }
+
+// R-RUSTPORT-P6-BRAKE-VECTORS-Q1: warianty computeObjectivePower (tryb flat_count, niestandardowe
+// wspolczynniki, militaryKeys, polowki dla Math.round). Wektory: objective-variants.json, wygenerowane
+// przez p6_brake_inputs_vectors/gen-objective-variants.mjs z WYKONANIA power-objective.ts z pinu.
+const OBJECTIVE_VARIANTS: &str = include_str!("p6_brake_inputs_vectors/objective-variants.json");
+
+/// Wszystkie klucze skladnikow, ktore web moze oznaczyc jako wojskowe (w tym "zdobycze").
+const MILITARY_KEYS_ALL: [&str; 12] = [
+    "armia",
+    "bitwy",
+    "ludki",
+    "rekruci",
+    "miasta",
+    "terytorium",
+    "infra",
+    "tech",
+    "ulepszenia",
+    "kultura",
+    "religia",
+    "zdobycze",
+];
+
+fn raw_from_input(inp: &Value) -> ObjectivePowerRaw {
+    ObjectivePowerRaw {
+        owner_id: inp["ownerId"].as_i64().unwrap(),
+        epoka: num(&inp["epoka"]),
+        jednostki: num(&inp["jednostki"]),
+        wygrane_bitwy: num(&inp["wygraneBitwy"]),
+        bitwy_pkt_sum: inp.get("bitwyPktSum").and_then(opt_num),
+        suma_ludkow: num(&inp["sumaLudkow"]),
+        rekrut_ekw: num(&inp["rekrutEkw"]),
+        miasta: num(&inp["miasta"]),
+        heksy_terytorium: num(&inp["heksyTerytorium"]),
+        budynki: num(&inp["budynki"]),
+        tech_zbadane: num(&inp["techZbadane"]),
+        ulepszenia_terenu: num(&inp["ulepszeniaTerenu"]),
+        kultura_imperium: inp.get("kulturaImperium").and_then(opt_num),
+        miasta_jednosc_religii: inp.get("miastaJednoscReligii").and_then(opt_num),
+        zdobycze_power: inp.get("zdobyczePower").and_then(opt_num),
+    }
+}
+
+#[test]
+fn objective_power_variants_match_pinned_compute_objective_power() {
+    let root: Value = serde_json::from_str(OBJECTIVE_VARIANTS)
+        .expect("objective-variants.json musi sie parsowac");
+    let cases = root["cases"].as_array().unwrap();
+    assert!(cases.len() >= 100, "wektory wariantow musza miec pokrycie");
+    for case in cases {
+        let c = &case["coeff"];
+        let coeff = PowerCoeffs {
+            jednostka_wojskowa: num(&c["jednostkaWojskowa"]),
+            wygrana_bitwa: num(&c["wygranaBitwa"]),
+            ludek: num(&c["ludek"]),
+            rekrut_ekw_jednostki: num(&c["rekrutEkwJednostki"]),
+            miasto: num(&c["miasto"]),
+            heks_terytorium: num(&c["heksTerytorium"]),
+            budynki: num(&c["budynki"]),
+            tech_zbadane: num(&c["techZbadane"]),
+            ulepszenie_terenu: num(&c["ulepszenieTerenu"]),
+            kultura_imperium: num(&c["kulturaImperium"]),
+            religia_jednosc: num(&c["religiaJednosc"]),
+        };
+        let battle = match case["battleModel"].as_str().unwrap() {
+            "enemy_m_sum" => BattlePowerModel::EnemyMSum,
+            "flat_count" => BattlePowerModel::FlatCount,
+            other => panic!("nieznany tryb bitew: {other}"),
+        };
+        let mil_names: Vec<&str> = case["militaryKeys"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap())
+            .collect();
+        let military: BTreeSet<&'static str> = MILITARY_KEYS_ALL
+            .iter()
+            .copied()
+            .filter(|k| mil_names.contains(k))
+            .collect();
+        assert_eq!(military.len(), mil_names.len(), "znane klucze militaryKeys");
+
+        let inp = &case["input"];
+        let got = compute_objective_power(&raw_from_input(inp), &coeff, battle, &military);
+        assert_eq!(got.power, num(&case["power"]), "power, wektor {case}");
+        assert_eq!(
+            got.power_base,
+            num(&case["powerBase"]),
+            "powerBase, wektor {case}"
+        );
+        let comps = case["components"].as_array().unwrap();
+        assert_eq!(got.components.len(), comps.len());
+        for (g, e) in got.components.iter().zip(comps) {
+            assert_eq!(g.key, e["key"].as_str().unwrap());
+            assert_eq!(g.raw_count, num(&e["rawCount"]), "rawCount {}", g.key);
+            assert_eq!(
+                g.coefficient,
+                num(&e["coefficient"]),
+                "coefficient {}",
+                g.key
+            );
+            assert_eq!(g.points, num(&e["points"]), "points {}", g.key);
+            assert_eq!(
+                g.military,
+                e["military"].as_bool().unwrap(),
+                "military {} w wektorze {case}",
+                g.key
+            );
+        }
+    }
+}
