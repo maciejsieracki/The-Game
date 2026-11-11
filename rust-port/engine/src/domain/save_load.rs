@@ -16,13 +16,17 @@
 use std::{error::Error, fmt};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
-use serde_json::{Number, Value};
+use serde_json::{Map, Number, Value};
 
 // The source file is currently exercised as an integration-test path module.
 // The production branch resolves these types from the sibling domain modules;
 // the test branch resolves them from the same path-loaded dependency module.
 #[cfg(not(test))]
+use super::war_turn_state::{managed_meta_keys, WarTurnState};
+#[cfg(not(test))]
 use super::{GameStateDto, Rng};
+#[cfg(test)]
+use civ_engine::domain::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(test)]
 use civ_engine::{GameStateDto, Rng};
 
@@ -153,6 +157,11 @@ pub struct SaveMeta {
         skip_serializing_if = "Option::is_none"
     )]
     era_war_count_by_civ: Option<Value>,
+    /// P6-WIRE-WAR-STATE: pozostale klucze `meta` (web `buildSaveGameSnapshot`, `main.ts:36874-37051`),
+    /// zachowane jako surowy JSON, zeby round-trip nie gubil danych. Stan wojny czyta/pisze
+    /// `war_turn_state::WarTurnState` (`war_turn_state` / `with_war_turn_state`).
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    extra: Map<String, Value>,
 }
 
 impl SaveMeta {
@@ -161,6 +170,23 @@ impl SaveMeta {
         self.battle_mode_setting_version.is_none()
             && self.new_game_params.is_none()
             && self.era_war_count_by_civ.is_none()
+            && self.extra.is_empty()
+    }
+
+    /// Stan wojny tury odczytany z pozostalych kluczy `meta` (brak kluczy => stan pusty).
+    pub fn war_turn_state(&self) -> WarTurnState {
+        WarTurnState::from_meta_json(&self.extra)
+    }
+
+    /// Zapisuje stan wojny do `meta`. Stan domyslny nie zostawia kluczy wojennych (zapis jak przed W1).
+    pub fn with_war_turn_state(mut self, war: &WarTurnState) -> Self {
+        for key in managed_meta_keys() {
+            self.extra.remove(&key);
+        }
+        if *war != WarTurnState::default() {
+            self.extra.extend(war.to_meta_json());
+        }
+        self
     }
 
     /// Sets `warRulesEraWarCountByCiv` from counter entries in insertion order (web

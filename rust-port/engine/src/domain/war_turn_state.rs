@@ -1,22 +1,31 @@
 //! P6-WIRE-WAR-STATE (W1): agregat stanu wojny tury, czesc `meta` zapisu (web `buildSaveGameSnapshot`,
-//! `gra/src/main.ts` pin `origin/main`, bloki `35790–35880`; odczyt `saved.meta?.x`, `46043`, `46108`).
+//! `gra/src/main.ts` pin `origin/main` 638e90bea: literal `meta` = `main.ts:36874-36918`,
+//! pola wojenne i dyplomacji = `main.ts:37020-37051`; odczyt `saved.meta?.x` przy wczytaniu).
+//! Serializatory tablic: `forced-war-common.ts:155-159`, `forced-war-waves.ts:237-245`,
+//! `ai-general-war-campaign.ts:156-170`.
 //!
-//! Zakres partii W1 (ssekcja 6 planu `P6-WIRE-WAR-TURN-PLAN.md`, r3):
+//! Zakres partii W1 (sekcja 6 planu `P6-WIRE-WAR-TURN-PLAN.md`, r3):
 //! - trzy zestawy wymuszonych wojen epokowych (kamien / braz / zelazo): `pendingOwners`,
 //!   `cycleOwners`, `restUntilByOwner`, `activeByPairKey` (typ `ForcedWarSaveState`, serializacja
 //!   `restore_/serialize_forced_war_state` z `war_forced_pairing`),
 //! - `bronzeEraEnterTurnByOwner` i `ironEraEnterTurnByOwner` (mapa wlasciciel -> tura),
-//! - pola wojenne bez typu Rust w tej partii (`regularWarCapturedByPairKey`,
-//!   `aiAiPeaceRequestByPairKey`, `warWearinessByPairKey`, `forcedEraPeaceUntilNextEraByPairKey`,
-//!   `forcedWarWavesByPairKey`, `aiGeneralWarCampaignByOwner`) sa przechowywane jako surowy JSON
-//!   (`opaque`) i zapisywane bez zmian: round-trip zachowuje to, co web zapisal.
+//! - pola bez typu Rust w tej partii sa przechowywane jako surowy JSON (`opaque`) i zapisywane
+//!   bez zmian: round-trip zachowuje to, co web zapisal. Obejmuje: pola wojenne
+//!   (`regularWarCapturedByPairKey`, `aiAiPeaceRequestByPairKey`, `warWearinessByPairKey`,
+//!   `forcedEraPeaceUntilNextEraByPairKey`, `forcedWarWavesByPairKey`, `aiGeneralWarCampaignByOwner`,
+//!   `warRulesForcedEraDeclared`, `aggressorFlagUntilByOwner`, `casusBelliUntilByPair`),
+//!   stan oblezenia (`siegeTurnByCity`, `siegeBesiegerByCity`, `siegeAiStateByKey`) oraz pola
+//!   dyplomacji z meta (lista `DIPLOMACY_RAW_META_KEYS`).
 //!
-//! NIE w tej partii (NIE_ZMIERZONO / kolejne partie): stan oblezenia (`siege*`), pola dyplomacji
-//! (tabela 4 planu), wpiecie do `PlayableState`/`GameStateDto` (D1) i do `SaveMeta` (`save_load.rs`).
+//! NIE w tej partii (kolejne partie, NIE_ZMIERZONO): typowany model oblezenia i dyplomacji,
+//! wpiecie do `PlayableState`/`GameStateDto` (D1). Wpiecie do `SaveMeta` jest w `save_load.rs`
+//! (pole `extra`, flatten) i zapisuje/odczytuje te klucze przez `WarTurnState`.
 //!
 //! Zalozenia (ZALOZENIE, do akceptacji):
 //! - pola `#[serde(default)]`-owe: brak klucza => pusty stan dla pola (stary zapis wczytuje sie bez zmian),
-//! - zly typ pola => pusty stan dla pola (web: `saved?.x ?? []`), nie blad calego bloku,
+//! - zly typ CALEGO pola => pusty stan dla pola (web: `saved?.x ?? []`), nie blad calego bloku,
+//! - zly ELEMENT wewnatrz tablicy jest pomijany (`filter_map`), reszta tablicy zostaje; web tego
+//!   nie sprawdza jednoznacznie (NIE_ZMIERZONO), przyjete jako zalozenie i pokryte testem,
 //! - liczby calkowite zapisywane jako JSON integer (jak `JSON.stringify` w webie).
 
 use serde_json::{Map, Value};
@@ -30,13 +39,53 @@ use super::war_forced_pairing::{
 const ERA_PREFIXES: [&str; 3] = ["stone", "bronze", "iron"];
 
 /// Klucze `meta` bez typu Rust w tej partii; wartosc zachowywana jako surowy JSON.
-pub const OPAQUE_WAR_META_KEYS: [&str; 6] = [
+/// Web: `main.ts:37020-37051` (pola wojenne), `main.ts:36912-36914` (oblezenie).
+pub const OPAQUE_WAR_META_KEYS: [&str; 9] = [
     "regularWarCapturedByPairKey",
     "aiAiPeaceRequestByPairKey",
     "warWearinessByPairKey",
     "forcedEraPeaceUntilNextEraByPairKey",
     "forcedWarWavesByPairKey",
     "aiGeneralWarCampaignByOwner",
+    "warRulesForcedEraDeclared",
+    "aggressorFlagUntilByOwner",
+    "casusBelliUntilByPair",
+];
+
+/// Oblezenie (web `main.ts:36912-36914`): surowe, bez typu w tej partii.
+pub const SIEGE_RAW_META_KEYS: [&str; 3] = [
+    "siegeTurnByCity",
+    "siegeBesiegerByCity",
+    "siegeAiStateByKey",
+];
+
+/// Dyplomacja w `meta` (web `main.ts:36919-37051`, nazwy zweryfikowane grepem): surowe,
+/// bez typu w tej partii (tabela 4 planu typuje je w kolejnej partii).
+pub const DIPLOMACY_RAW_META_KEYS: [&str; 24] = [
+    "pendingDiplomacyInbox",
+    "allianceWarCallHistory",
+    "interHumanDiplomacyInbox",
+    "diplomaticContactEstablished",
+    "diplomaticallyDiscoveredOwners",
+    "diplomaticDiscoveryPopupShown",
+    "diplomacyDeals",
+    "negotiationTable",
+    "dealsEndTurnGate",
+    "rejectedOfferCooldowns",
+    "diplomacyPairMeta",
+    "diplomacyCrisisCounters",
+    "diplomacyTradeStreak",
+    "diplomacyFactorLog",
+    "wiarygodnoscZdarzeniaByOwner",
+    "wiarygodnoscStrumienByOwner",
+    "wiarygodnoscOstatniaWojnaTuraByOwner",
+    "aiOneShotGiftLastTurn",
+    "aiTradeAgreementLastProposalTurn",
+    "aiMarchPassageRequestTurn",
+    "aiAiTradeAgreementLastTurn",
+    "aiResourceTradeLastProposalTurn",
+    "aiAudienceLastRequestTurn",
+    "aiTargetMemoryByOwner",
 ];
 
 /// Stan wojny tury (wycinek W1).
@@ -50,6 +99,23 @@ pub struct WarTurnState {
     pub iron_era_enter_turn_by_owner: Vec<(i64, f64)>,
     /// Surowe wpisy pol wojennych bez typu (klucz web -> wartosc JSON).
     pub opaque: Map<String, Value>,
+}
+
+/// Wszystkie klucze `meta`, ktore modul zapisuje lub czyta (do usuniecia przed ponownym zapisem).
+pub fn managed_meta_keys() -> Vec<String> {
+    let mut keys: Vec<String> = WarTurnState::default()
+        .to_meta_json()
+        .keys()
+        .cloned()
+        .collect();
+    keys.extend(
+        OPAQUE_WAR_META_KEYS
+            .iter()
+            .chain(SIEGE_RAW_META_KEYS.iter())
+            .chain(DIPLOMACY_RAW_META_KEYS.iter())
+            .map(|k| k.to_string()),
+    );
+    keys
 }
 
 /// Liczba w formie JSON jak `JSON.stringify`: calkowite bez czesci ulamkowej.
@@ -180,9 +246,13 @@ impl WarTurnState {
     /// Odczyt z bloku `meta` zapisu. Brak pola => pusty stan dla pola (zgodnie z `?? []` w webie).
     pub fn from_meta_json(meta: &Map<String, Value>) -> Self {
         let mut opaque = Map::new();
-        for key in OPAQUE_WAR_META_KEYS {
-            if let Some(v) = meta.get(key) {
-                opaque.insert(key.to_string(), v.clone());
+        for key in OPAQUE_WAR_META_KEYS
+            .iter()
+            .chain(SIEGE_RAW_META_KEYS.iter())
+            .chain(DIPLOMACY_RAW_META_KEYS.iter())
+        {
+            if let Some(v) = meta.get(*key) {
+                opaque.insert((*key).to_string(), v.clone());
             }
         }
         WarTurnState {
