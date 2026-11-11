@@ -19,7 +19,7 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 
 | # | Pozycja | Priorytet | Stan | Blokada | Pierwszy krok |
 |---|---|---|---|---|---|
-| 1 | DYSTANS-PETLA (`R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1`): integracja do parity-v2 | 1 | ZINTEGROWANE: `parity-v2` = `a4087f332` (kod FC `460f84a05`, FC PASS-WITH-NOTES). Bramki: fmt 0, clippy 0, lib 28/28, DYSTANS 1+8+3 OK. Pełny cargo test: w toku (log: scratchpad/integ-full-test.log) | Pełny cargo test (NIE_ZMIERZONO do końca) | Odczyt logu pełnego testu |
+| 1 | DYSTANS-PETLA (`R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1`): integracja do parity-v2 | 1 | ZINTEGROWANE: `parity-v2` = `a4087f332` (kod FC `460f84a05`, FC PASS-WITH-NOTES). Bramki: fmt 0, clippy 0, lib 28/28, DYSTANS 1+8+3 OK. Pełny cargo test po integracji: 359 binarek, 2609 passed, 0 failed, 1 ignored (istniejący) | Brak | Decyzja ABC: faza zwarcia (pozycja 2) |
 | 2 | DYSTANS-PETLA: podpięcie `ranged_phase` do `resolve_combat` | 2 | Pętla niepodpięta (świadome założenie) | Decyzja ABC: faza zwarcia, zastąpienie modelu siły | AskUserQuestion do właściciela |
 | 3 | Wire-war W6: dyplomacja tury, tick rozejmu, tryb AI, kontroferta L11 | 3 | Nierozpoczęte | Plan `P6-WIRE-WAR-TURN-PLAN.md` | Dispatch po #1 |
 | 4 | Wire-war W7: oblężenie, AI↔AI | 4 | Nierozpoczęte | Zależy od W6 | Dispatch po W6 |
@@ -57,3 +57,11 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 
 ### Zakres
 - Ten czat prowadzi WYŁĄCZNIE Rust. Wszystkie czynności po stronie web (kolejka, wdrożenia, decyzje web) są poza planem; web pozostaje tylko źródłem danych wejściowych (piny `origin/main` do wektorów).
+
+## Zgodność z zasadą AutoBot (sprawdzenie 2026-11-11)
+- Dispatch zapisany i wypchnięty PRZED każdym Workflow (`ab14ef29a`, `5310a164d`).
+- Role sekwencyjnie per temat: Operator → Evaluator → Obrona (tylko po zarzutach) → Final Control; modele wg CLAUDE.md (Operator Haiku, Evaluator/FC Sonnet, Obrona Haiku). Dotyczy DYSTANS i W6.
+- Integracja po FC: ancestry (`merge-base --is-ancestor`), `git diff --stat`, bramki, push FF, sprzątanie worktree.
+- ODCHYLENIE: push `parity-v2` (`a4087f332`) nastąpił PRZED ukończeniem pełnego `cargo test`. Pełny test zakończono później (zielony). Zapisane jako odchylenie kolejności, nie jako brak testu.
+- Odnotowane: R-PROC-AUTOBOT §1 opisuje role Codex (GPT-6-luna); ten projekt działa na Claude, więc obowiązuje CLAUDE.md (Haiku/Sonnet).
+- Wyzwalacz „Check full cargo test log” wskazywał na stary log; odczytany, nie wykonano ponownie z jego polecenia.
