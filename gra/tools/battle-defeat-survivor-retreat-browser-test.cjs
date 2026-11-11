@@ -10,7 +10,9 @@ const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
 const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium', ...(fs.existsSync('/opt/pw-browsers') ? fs.readdirSync('/opt/pw-browsers').filter(d => d.startsWith('chromium-')).map(d => `/opt/pw-browsers/${d}/chrome-linux/chrome`) : [])].find(p => p && fs.existsSync(p));
 const MAX_MS = Number(process.env.E2E_MAX_MS || 240000);
-const cases = [{ siege: false }, { siege: true }];
+// instant (computeInstantResult): przegrany w rachunku natychmiastowym bywa doszczetnie wybity (0 ocalalych) --
+// wtedy wymagana jest tylko spojnosc (nikt polegly na mapie, brak bledow); gdy ocalali sa, musza stac 2 heksy dalej.
+const cases = [{ siege: false, mode: 'skip' }, { siege: true, mode: 'skip' }, { siege: false, mode: 'instant', noLoserSurvivorsOk: true }, { siege: false, mode: 'cap' }];
 
 (async () => {
   const server = await createServer({ root, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error',
@@ -24,15 +26,15 @@ const cases = [{ siege: false }, { siege: true }];
       const page = await browser.newPage({ viewport: { width: 1000, height: 700 } });
       const errors = [];
       page.on('pageerror', e => errors.push(e.message));
-      await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-defeat-survivor-retreat-browser-entry.html?mode=skip${c.siege ? '&siege=1&atkhp=1&defhp=0.04' : ''}`, { waitUntil: 'load', timeout: 60000 });
+      await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-defeat-survivor-retreat-browser-entry.html?mode=${c.mode}${c.siege ? '&siege=1&atkhp=1&defhp=0.04' : ''}`, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
       let timedOut = false;
       try { await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 }); } catch { timedOut = true; }
       const r = await page.evaluate(() => window.__e2e.result);
       await page.close();
-      console.log(JSON.stringify({ case: c.siege ? 'siege' : 'field', timedOut, errors, r }));
+      console.log(JSON.stringify({ case: (c.siege ? 'siege' : 'field') + '/' + c.mode, timedOut, errors, r }));
       const ok = !timedOut && !errors.length && r
-        && r.loserSurvivorsExported > 0
+        && (r.loserSurvivorsExported > 0 || c.noLoserSurvivorsOk)
         && r.loserOnMap === r.loserSurvivorsExported
         && r.loserDeadStillOnMap === 0
         && r.loserRetreatDistances.every(d => d === 2);

@@ -1,6 +1,7 @@
 // R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1: prawdziwa bitwa 3D (pole / oblezenie, Skip)
 // w Chromium; wynik (_endWinner/_endSurvivors) trafia do prawdziwego applyPostBattleMap.
-// Query: ?siege=1 &mode=skip|auto
+// Query: ?siege=1 &mode=skip|auto|instant|cap
+// instant = _skipInstantFallback (computeInstantResult), cap = _ffRoundCapResult (sufit przewijania, wymuszony werdykt).
 import { BattleScene } from '../src/battle/battleScene.ts';
 import { buildTestArmies } from '../src/battle/testBattle.ts';
 import { applyPostBattleMap } from '../src/game/post-battle-map';
@@ -73,6 +74,11 @@ function loop(): void {
 }
 scene.play(() => {});
 scene._setSpeedIdx(9, { clamp: true });
-if (mode === 'skip') scene.skip();
+if (mode === 'instant') scene._skipInstantFallback();
+else if (mode === 'cap') {
+  scene._roundCapVerdict = () => ({ winner: 'atakujacy', reason: 'test', cap: 1 });
+  scene._ffRoundCapResult();
+}
+else if (mode === 'skip') scene.skip();
 else if (scene._manualMode) scene._toggleManualMode();
 requestAnimationFrame(loop);

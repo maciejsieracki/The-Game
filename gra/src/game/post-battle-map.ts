@@ -491,7 +491,7 @@ function retreatAtkRosterToStart(
   // zachowanie ograniczen oblezenia bez zmian.
   const groups = new Map<string, RuntimeUnit[]>();
   for (const u of back) {
-    if (u.oblegaCityId) continue;
+    if (u.oblegaCityId) { twoHex.noRoute.push(String(u.id)); continue; }
     if (axialDist(u.q, u.r, input.battleQ, input.battleR) !== 1) {
       twoHex.noRoute.push(String(u.id));
       continue;
