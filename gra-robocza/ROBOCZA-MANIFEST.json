@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c8198ae56fd174743bdddde51d6bcfd6",
-  "bundleSha256": "2e75e994c00737ffe4d179e3d82f748a687f6766445c66a9c28ac287bf451bed",
-  "bundleBytes": 14511082,
+  "bundleMd5": "108507b6a8b191dcf6f19901df2dae7b",
+  "bundleSha256": "dcbe08bc5530dcdd66d75f1b078529062ae3b4ebccfd6cca8ee9bfc77add56a6",
+  "bundleBytes": 14514184,
   "sourceSnapshot": {
-    "source": "merge FC 664afd593",
+    "source": "merge FC 29b2161d4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 643: R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 1, dane i dokumenty): '2 glina'→'2 gliny', dopełniacze w bonusach cudów (Zaufania, Pieniądza), '+8 pojemności surowców', '+3 żywności/t' (13 ulepszeń), 'Wielki dzwon', 'Brama wszystkich narodów', diakrytyki (Giełda, Dwór, Wieżowiec, Świątynia, kamień/kamienia), 'Wypala' zamiast 'Wytapia' ceramikę/cegłę, opisy Teatru i Cegielni; tech-cards-top5 i wikiBundle regenerowane generatorami; test-strażnik polish-language-audit-q1-guard (1674 asercje) z mutacją"
+    "FALA 644: R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1 (decyzja ABC właściciela): panel imperium — kolumna 'PROGNOZA NASTĘPNEJ TURY' obok 'OSTATNIA TURA (ZREALIZOWANO)' i dwóch kolumn 'MAKSIMUM'; prognoza z tego samego kodu co realny tick (forecastNextTurnProduction na klonie miast, z łaską Mennicy predictMennicaZlotoAccessForNextTick); dodane wiersze Drewno i Kamień (Stolarnia i Warsztat kamieniarski — +10% dopływu z mapy); podpisy po polsku"
   ],
   "verification": [
-    "tsc czysty; polish-language-audit-q1-guard 1674/0 (mutacja czerwona), ids-leak-audit 1648/0, wonder-text-no-raw-ids 132/0, city-administrator 117/0, economy 72/0, tech-cards-top5 595/0, gen-tech-cards-top5 --check OK; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; resource-building-toggle 210/0 (prognoza == realna produkcja w 4 scenariuszach), UI Chromium 26/0 (klik zmienia prognozę, prognoza == realna tura), hud-konwerter 20/0, unit-replace-full-cost 40/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; pomiar wydajności: 120 miast = 4,6 ms/przebieg, panel ~14 ms; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Audyt CZĘŚCIOWY: pola Historia i encyklopedia tylko skany regex (bez lektury linia po linii); teksty w gra/src/ui i main.ts → runda 2; 10 pozycji do ABC właściciela w raporcie (m.in. Dur-Sharrukin/Dur-Szarrukin, żargon 'upgrade' w polu wymagania, opis Emporionu, sprzeczność Wielkiej Kuźni z Kuźnią brązu); ASCII 'kamien' jako nazwa zasobu w tekstach generowanych zostaje"
+    "Znane ograniczenia: drewno z wycinki lasu (tickHexClearing) poza prognozą (zdarzenie jednorazowe); Stolarnia/Warsztat nie są konwerterami — wiersze to cały dopływ Drewna/Kamienia z mapy (brak 'desek'/'cegły kamiennej' w silniku); NIE_ZMIERZONO: wydajność na realnej mapie w Chromium, parytet ścieżki main.ts tylko tsc; dług bazowy building-upkeep-resources D10 47/1 (asercja nieaktualna po ENTITYCARDS)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T19:11:31",
+  "hubGeneratedAt": "2026-11-11T19:22:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c8198ae56fd174743bdddde51d6bcfd6",
-      "sizeBytes": 14511082
+      "md5": "108507b6a8b191dcf6f19901df2dae7b",
+      "sizeBytes": 14514184
     }
   ],
-  "md5": "c8198ae56fd174743bdddde51d6bcfd6",
+  "md5": "108507b6a8b191dcf6f19901df2dae7b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
