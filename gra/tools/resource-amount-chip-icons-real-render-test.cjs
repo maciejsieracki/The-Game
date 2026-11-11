@@ -162,11 +162,12 @@ async function main() {
   fs.writeFileSync(ENTRY, [
     "import { STOCK_RESOURCE_LABEL } from '../src/game/building-stock-cost.ts';",
     "import { loadGameData } from '../src/data/loader.ts';",
+    "import { DEFAULT_CONVERTER_RECIPES } from '../src/game/converters.ts';",
     "import * as CP from '../src/ui/cityPanel.ts';",
     chipImport,
     'const cp = CP as any;',
     'window.__C = {',
-    '  STOCK_RESOURCE_LABEL, loadGameData, ' + chipExport,
+    '  STOCK_RESOURCE_LABEL, loadGameData, DEFAULT_CONVERTER_RECIPES, ' + chipExport,
     '  buildingUpkeepDisplay: cp.__buildingUpkeepDisplay,',
     '  formatBuildingUpkeepRowHtml: cp.__formatBuildingUpkeepRowHtml,',
     '  formatConverterProductionRowHtml: cp.__formatConverterProductionRowHtml,',
@@ -220,6 +221,10 @@ async function main() {
       for (const b of data.buildings) {
         for (const k of Object.keys(b.koszt_surowce ?? {})) keys.add(k);
         for (const k of Object.keys(b.utrzymanie_surowce ?? {})) keys.add(k);
+      }
+      // Every converter recipe in the game (inputs + output), not just the two fixtures above.
+      for (const r of C.DEFAULT_CONVERTER_RECIPES) {
+        for (const k of [...Object.keys(r.inputs), r.output]) keys.add(k);
       }
       const coverage = { total: keys.size, withIcon: 0, missing: [], badLabel: [], htmlSamples: {} };
       if (hasChip) {
