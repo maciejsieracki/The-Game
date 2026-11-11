@@ -6,7 +6,8 @@
  * deterministyczne ziarno Math.random + zegar wirtualny dt=16 ms) dla sciezek oblezenia, ktore mialy NIE_ZMIERZONO:
  *
  *   P1  AUTO w oblezeniu BEZ przeskoku == SKIP (parytet z FALI 618), 1x (skrocony scenariusz) i predkosc >1x (pelny)
- *   B   oblezenie z wylomem: mur pada -> wallEverBreached -> atakujacy wchodza za mur (szturm)
+ *   B   oblezenie z wylomem: mur pada -> wallEverBreached; B4 = atakujacy stoi NA zburzonym kaflu;
+ *       B4b (DEFEKT-kandydat, exit 3) = oryginalne wymaganie szkicu: atakujacy wchodzi ZA mur (w AUTO 0, w trybie recznym >0)
  *   R   "Rozegraj ponownie" po oblezeniu z wylomem: stan wylomu/muru/bramy wraca do poczatku
  *   M   bitwa reczna oblezenicza do konca, BEZ Skip
  *   F   _skipInstantFallback (sciezka awaryjna skip() przed startem) -- wynik, wylom z machiny w skladzie
@@ -24,6 +25,7 @@
  *   SABR_ONLY      lista scenariuszy po przecinku: p1x1,p1fast,b,r,m,f (domyslnie wszystkie)
  *   SABR_DIST      gotowy build (pomija vite build)     SABR_CHROME  sciezka Chromium
  *   SABR_MUT       nazwa mutacji (patrz MUTS) -- build ze zmodyfikowanym zrodlem sceny; asercje maja byc CZERWONE
+ *   SABR_FAST_CAP  sufit tur scenariusza p1fast (domyslnie 180; 240 dalo margines 16 s do limitu 120 s, 180 daje ok. 37 s)
  *   SABR_LIMIT_S   limit czasu per przebieg (domyslnie 120)
  *   SABR_SHOTS     katalog zrzutow (JPEG)               SABR_OUT   plik JSON-lines z wynikami
  *
@@ -212,7 +214,7 @@ async function runBattle(browser, base, mode, cfg, shotPath) {
     if (mode === 'auto') { if (bs._manualMode) bs._toggleManualMode(); return; }
     // manual: gracz zleca atak marszem do bramy dla calej strony atakujacej; reczna petla tur bez Skip.
     const mid = bs.siegeGateRow;
-    window.__manual = { modeAtStart: !!bs._manualMode, awaitingAtStart: !!bs._battleAwaitingOrders, space: 0, ordersIssued: 0, turnsStarted: 0, manualFalseSeen: false, playerSide: bs._deployPlayerSideOpt };
+    window.__manual = { modeAtStart: !!bs._manualMode, awaitingAtStart: !!bs._battleAwaitingOrders, space: 0, ordersIssued: 0, manualFalseSeen: false, playerSide: bs._deployPlayerSideOpt };
     // Rozkazy gracza (ten sam typ co klik 'atak-marsz' w UI: ru.playerOrder) -- wydawane na poczatku KAZDEJ tury recznej.
     window.__issueOrders = () => {
       for (const u of bs.atk) if (!u.dead && u.playerOrder.type === 'none') { u.playerOrder = { type: 'attackMove', col: bs.siegeWallCol + 6, row: mid }; window.__manual.ordersIssued++; }
@@ -291,8 +293,8 @@ async function main() {
   // Skrocony scenariusz (1x): 6 piechurow + obleznicza vs 6 obroncow, kafle muru HP 6, sufit 24 tur.
   const MINI = { k: 6, wallHp: 6, cap: 24, speedIdx: 0, seed: 1 };
   // Pelny scenariusz, predkosc 128x (idx 7).
-  // Sufit 240 tur (instancja, ta sama funkcja w AUTO i SKIP): bez niego AUTO 128x nie konczy 400 tur w 120 s (zmierzone: tura 275 po 120,3 s).
-  const FULL = { speedIdx: 7, seed: 1, cap: 240 };
+  // Sufit 180 tur (instancja, ta sama funkcja w AUTO i SKIP): bez niego AUTO 128x nie konczy 400 tur w 120 s (zmierzone: tura 275 po 120,3 s).
+  const FULL = { speedIdx: 7, seed: 1, cap: parseInt(process.env.SABR_FAST_CAP || '180', 10) }; // SABR_FAST_CAP: sufit tur P1 128x
 
   // ---------------- P1: parytet AUTO == SKIP ----------------
   if (only.has('p1x1')) {
@@ -330,7 +332,7 @@ async function main() {
     check('B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)', a.breached === true, a.breached);
     check('B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca', a.breachEvents.length > 0 && a.breachEvents[0].round <= a.round, { ev: a.breachEvents[0], round: a.round });
     check('B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom)', a.onBreachTile > 0, { onBreachTile: a.onBreachTile, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
-    // Zmierzone (AUTO MINI 150 tur, AUTO pelny 128x 240 tur, SKIP pelny 400 tur): max q atakujacego <= kolumna muru, nikt nie wchodzi ZA mur.
+    // Zmierzone (AUTO MINI 150 tur, AUTO pelny 128x 180-240 tur, SKIP pelny 400 tur): max q atakujacego <= kolumna muru, nikt nie wchodzi ZA mur.
     // Osobno od B4, bo to nie jest wymaganie z dispatchu, tylko obserwacja zachowania gry -- do decyzji wlasciciela (osobny temat), nie naprawiane tutaj.
     defect('B4b OBSERWACJA: w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur', a.insideAtk > 0, { inside: a.insideAtk, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
     check('B5 brak bledow JS', a.errors.length === 0, a.errors);

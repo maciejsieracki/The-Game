@@ -1,0 +1,7 @@
+BUILD ok in 26 s
+RUN {"mode":"auto","winner":"remis","round":180,"breached":true,"wallS":82.4,"atk":{"lost":23,"remaining":16,"hp":2822},"def":{"lost":10,"remaining":18,"hp":777},"ev":27,"inside":0,"onBreachTile":0,"manual":null}
+RUN {"mode":"skip","winner":"remis","round":180,"breached":true,"wallS":1.7,"atk":{"lost":23,"remaining":16,"hp":2822},"def":{"lost":10,"remaining":18,"hp":777},"ev":27,"inside":0,"onBreachTile":0,"manual":null}
+PASS: P1d 128x AUTO (pelny roster): zakonczona w limicie, brak bledow JS
+PASS: P1e 128x pelny roster: wynik AUTO == SKIP (ta sama predkosc)
+PASS: P1f 128x pelny roster: wylom w obu trybach
+--- 3 ok, 0 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO
