@@ -274,7 +274,7 @@ pub struct AiPeaceDecisionInput<'a> {
 /// Uwaga: ta funkcja nie zna minimum bilansu AI<->AI, wiec po limicie zwraca `Force` takze przy ujemnym
 /// bilansie. Wywolujacy, ktory chce regule nieujemnego bilansu, MUSI uzyc `decide_ai_peace_request_v2`
 /// (bilans przed limitem) albo sprawdzic `is_ai_ai_peace_balance_allowed` przed wywolaniem tej funkcji
-/// (tak robi obejscie w `war_turn_ai_ai.rs::run_ai_ai_peace_turn`).
+/// (dawniej robilo to obejscie w `war_turn_ai_ai.rs::run_ai_ai_peace_turn`; usuniete w R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1).
 pub fn decide_ai_peace_request(inp: &AiPeaceDecisionInput) -> AiPeaceDecision {
     let limit = inp.limit.unwrap_or(AI_PEACE_TURNS_AFTER_REQUEST);
     let turns_since = turns_since_peace_request(inp.req, inp.turn);
@@ -417,9 +417,10 @@ pub struct AiPeaceTickOutcome {
 
 // ---------------------------------------------------------------------------
 // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (port, wariant V2): regula nieujemnego bilansu AI<->AI,
-// bramka `peaceAllowed` i `loserBalanceFor`. Wariant V2 jest ADDYTYWNY: `AiPeaceReason`, `AiPeaceDecisionInput`,
-// `AiPeaceTickEnv` i `run_ai_ai_peace_tick` zostaja bez zmian (ich literaly i testy p6_* nadal sie kompiluja).
-// Migracja wywolan (war_turn_ai_ai.rs) wykonana w R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1: produkcja i testy na V2.
+// bramka `peaceAllowed` i `loserBalanceFor`. Wariant V2 jest ADDYTYWNY: `AiPeaceReason`, `AiPeaceDecisionInput`
+// i `AiPeaceTickEnv` zostaja bez zmian. `run_ai_ai_peace_tick` (V1) jest `#[deprecated]` (bez wolajacych w produkcji;
+// testy p6_* z V1 maja `#[allow(deprecated)]`). Migracja wywolan (war_turn_ai_ai.rs) wykonana w
+// R-RUSTPORT-P6-AIPEACE-V2-MIGRACJA-Q1: produkcja na V2.
 // ---------------------------------------------------------------------------
 
 /// Web `AI_AI_PEACE_MIN_BALANCE` = `pokojAiAi.minBilansPW` z `gra/data/diplomacy-war-peace-params.json` (= 0).
