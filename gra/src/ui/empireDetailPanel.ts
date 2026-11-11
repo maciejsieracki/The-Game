@@ -2952,7 +2952,7 @@ export function renderMassRecruitmentSection(
     + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
-    + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`
+    + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
     + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
     + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
     + `<div data-general-recruitment-card></div></div>`;
