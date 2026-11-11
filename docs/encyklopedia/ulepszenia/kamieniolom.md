@@ -37,7 +37,7 @@ Ulepszenie **Kamieniołom** na polu w **twoim terytorium**. Teren: Wzgórza, Gó
 
 **Budowa:** **22 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **3 tur**.
 
-**Po ukończeniu:** heks daje +1 praca/t, +1 kamien/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +1 pracy/t, +1 kamien/t (oprócz plonu bazowego terenu).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+1**/t vs bez ulepszenia → **22 tur** na „odrobienie" 22 pracy (ignorując bazę pola).
 

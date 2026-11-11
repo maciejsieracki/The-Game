@@ -41,7 +41,7 @@
     },
     "budowa": "hex w terytorium (nie slot miasta)",
     "harappa_v1": "Antyk: tylko Stupa w Sanchi (E). Nalanda + Angkor Wat → parkowane (epoka 4+).",
-    "chinczycy_v1": "Antyk: Terakotowa armia + Pałac Weiyang (E). Wielki dzwón → parkowany (epoka 5+).",
+    "chinczycy_v1": "Antyk: Terakotowa armia + Pałac Weiyang (E). Wielki dzwon → parkowany (epoka 5+).",
     "celtowie_v1": "Antyk: Roquepertuse (E, epoka 3). Kopiec grobowy/Monks Mound → parkowany.",
     "koszt_jednostka": "Praca (jak budynki i ulepszenia terenu); budowa z puli Pracy najbliższego miasta / skarbca.",
     "bonus_miasto": "Yield +/turę × KAŻDE miasto (pieniadz, zywnosc, nauka, kultura, zadowolenie, praca, obrona_miejsca). Bez dzielnic Civ7.",
@@ -92,7 +92,7 @@
           { "typTerenu": "rzeka_mala", "pieniadz": 2, "praca": 2 }
         ],
         "specjalne": [
-          { "typ": "kapital_pustynia", "wartosc": 3, "opis": "Stolica na pustyni: +3 Pieniądz/turę (cywilizacja)" },
+          { "typ": "kapital_pustynia", "wartosc": 3, "opis": "Stolica na pustyni: +3 Pieniądza/turę (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu — prestiż faraonów (cywilizacja)" }
         ]
       },
@@ -137,8 +137,8 @@
           { "typTerenu": "farma", "zywnosc": 2, "warunek": "hex_sasiad_rzeka" }
         ],
         "specjalne": [
-          { "typ": "wzrost_ludnosci_procent", "wartosc": 0.15, "opis": "+15% wzrost populacji we wszystkich miastach (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 bazowe Zaufanie wobec sąsiadów (cywilizacja)" }
+          { "typ": "wzrost_ludnosci_procent", "wartosc": 0.15, "opis": "+15% wzrostu populacji we wszystkich miastach (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 bazowego Zaufania wobec sąsiadów (cywilizacja)" }
         ]
       },
       "historia": "Wiszące Ogrody to jeden z najsłynniejszych cudów starożytności, tradycyjnie łączony z Babilonem za panowania Nabuchodonozora II w VI wieku p.n.e., choć do dziś trwają spory badaczy co do ich rzeczywistej lokalizacji, a nawet istnienia. Według opisów starożytnych autorów, takich jak Diodor Sycylijski, ogrody miały składać się z tarasów obsadzonych drzewami i roślinami, wspartych na masywnych sklepieniach, a wodę do nawadniania podnoszono z Eufratu za pomocą systemu urządzeń hydraulicznych. Legenda głosiła, że władca kazał je wznieść dla swojej żony, tęskniącej za zielonymi górami rodzinnej Medii, choć jest to raczej opowieść symboliczna niż udokumentowany fakt. Niektórzy historycy sugerują, że opisywane ogrody mogły w rzeczywistości znajdować się w Niniwie za czasów asyryjskiego króla Sennacheryba, co dodatkowo komplikuje próby ich lokalizacji. Niezależnie od niepewności źródłowej, Wiszące Ogrody na trwałe weszły do kanonu siedmiu cudów świata starożytnego jako symbol inżynieryjnego kunsztu i bogactwa Mezopotamii."
@@ -163,7 +163,7 @@
         "miasto": { "kultura": 3 },
         "specjalne": [
           { "typ": "jednorazowe", "cel": "kultura_wydarzenia", "wartosc": 15, "opis": "+15 Kultury za nagrody z wydarzeń narracyjnych (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie — wyrocznia jako arbiter (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufania — wyrocznia jako arbiter (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu (cywilizacja)" }
         ]
       },
@@ -212,7 +212,7 @@
         "miasto": { "zadowolenie": 6, "kultura": 3 },
         "specjalne": [
           { "typ": "kultura_z_nadwyzka_zadowolenia", "wartosc": 2, "opis": "+2 Kultury/turę na każde 5 nadwyżki Zadowolenia w imperium (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie — dharmiczny spokój (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowego Zaufania — dharmiczny spokój (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu (cywilizacja)" }
         ]
       },
@@ -236,7 +236,7 @@
           { "typTerenu": "pustynia", "pieniadz": 2, "praca": 2 }
         ],
         "specjalne": [
-          { "typ": "magazyn_pojemnosc", "wartosc": 6, "opis": "+6 pojemność handlu/surowców (cywilizacja)" },
+          { "typ": "magazyn_pojemnosc", "wartosc": 6, "opis": "+6 pojemności handlu/surowców (cywilizacja)" },
           { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 5, "opis": "+5 Wpływu — karawany Nabatejczyków (cywilizacja)" }
         ]
@@ -284,7 +284,7 @@
       "bonusy": {
         "miasto": { "pieniadz": 3, "kultura": 3 },
         "specjalne": [
-          { "typ": "magazyn_pojemnosc", "wartosc": 8, "opis": "+8 pojemność surowców / trade capacity (cywilizacja)" },
+          { "typ": "magazyn_pojemnosc", "wartosc": 8, "opis": "+8 pojemności surowców (cywilizacja)" },
           { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.2, "opis": "+20% Handlu — dochodu z tras handlowych morskich, korzystających z portów (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 6, "opis": "+6 Wpływu — Rhodos, węzeł morski (cywilizacja)" }
         ]
@@ -403,7 +403,7 @@
         "miasto": { "kultura": 3, "zadowolenie": 6 },
         "specjalne": [
           { "typ": "produkcja_procent", "cel": "budynki", "wartosc": 0.15, "opis": "−15% kosztu Produkcji budynków (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wewnętrzne — panem et circenses (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufania wewnętrznego — panem et circenses (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — chwała Rzymu (cywilizacja)" }
         ]
       },
@@ -427,7 +427,7 @@
           { "typ": "fortyfikacja_mapa", "cel": "fort", "wartosc": 5, "opis": "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
           { "typ": "walka_procent", "cel": "oblężenie", "wartosc": 0.15, "opis": "+15% skuteczności oblężenia (cywilizacja)" },
           { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": -2, "opis": "−2 Zaufanie u sąsiadów — strach przed Asyrią (cywilizacja)" }
+          { "typ": "relacje_zaufanie", "wartosc": -2, "opis": "−2 Zaufania u sąsiadów — strach przed Asyrią (cywilizacja)" }
         ]
       },
       "historia": "Dur-Szarrukin, czyli „Twierdza Sargona”, to miasto założone jako nowa stolica przez asyryjskiego króla Sargona II w VIII wieku p.n.e., na terenie dzisiejszego Chorsabadu w północnym Iraku. Budowa miasta, otoczonego potężnymi murami obronnymi z licznymi bramami, trwała około dekady i pochłonęła ogromne zasoby administracji imperium asyryjskiego. Centralnym punktem założenia był rozległy pałac królewski zdobiony monumentalnymi rzeźbami skrzydlatych byków z ludzką głową, zwanych lamassu, które strzegły wejść i symbolizowały ochronną moc władcy. Miasto pełniło funkcję stolicy jedynie krótko, gdyż po śmierci Sargona II w boju jego następca Sennacheryb przeniósł siedzibę władzy do Niniwy, co przerwało dalszy rozwój Dur-Szarrukin. Mimo krótkiego okresu świetności, odkryte w XIX wieku ruiny miasta dostarczyły archeologom jednych z najbogatszych źródeł wiedzy o architekturze i sztuce neoasyryjskiej."
@@ -454,7 +454,7 @@
           { "typ": "wojna_wsparcie", "wartosc": 3, "opis": "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
           { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 10, "opis": "+10 Wpływu — satrapie i goście narodów (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie u państw z aktywnym handlem (cywilizacja)" }
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufania u państw z aktywnym handlem (cywilizacja)" }
         ]
       },
       "uwagi": "Persepolis / brama satrapii; jedyny cud wyścigowy epoki Żelaza — odblokowanie po Inżynierii",
@@ -477,7 +477,7 @@
         "specjalne": [
           { "typ": "dyplomacja_wpływ", "wartosc": 12, "opis": "+12 Wpływu — cesarski dwór Chang'an (cywilizacja)" },
           { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
-          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie (cywilizacja)" }
+          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowego Zaufania (cywilizacja)" }
         ]
       },
       "uwagi": "Zachodnia Han, 200 p.n.e.; cesarz Gaozu",
@@ -503,7 +503,7 @@
           { "typ": "fortyfikacja_mapa", "cel": "fort", "wartosc": 5, "opis": "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
           { "typ": "walka_procent", "cel": "rydwany", "wartosc": 0.15, "opis": "+15% ataku rydwanów (cywilizacja)" },
           { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 Zaufanie u sojuszników (cywilizacja)" }
+          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 Zaufania u sojuszników (cywilizacja)" }
         ]
       },
       "uwagi": "Nasyp ziemny + tunel sklepiony + Brama Sfinksów; kompleks obronno-sakralny Hattusy",
@@ -527,7 +527,7 @@
         "specjalne": [
           { "typ": "pobor_regen", "wartosc": 0.15, "opis": "+15% regeneracji Manpower (cywilizacja)" },
           { "typ": "walka_procent", "cel": "piechota_las", "wartosc": 0.15, "opis": "+15% ataku piechoty w lesie (cywilizacja)" },
-          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wśród plemion słowiańskich (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufania wśród plemion słowiańskich (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu — kult Peruna (cywilizacja)" }
         ]
       },
@@ -701,7 +701,7 @@
     },
     {
       "id": "wielki_dzwon",
-      "nazwa": "Wielki dzwón (Yongle / Emile Bell)",
+      "nazwa": "Wielki dzwon (Yongle / Emile Bell)",
       "dostep": "E",
       "cywilizacje": ["chinczycy"],
       "techUnlock": ["Religia"],
