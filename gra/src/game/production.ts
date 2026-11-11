@@ -2448,8 +2448,9 @@ export function pracaImperialPoolGain(
  * R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1: DOKLADNY routing Pracy miasta w tej turze
  * (to, co faktycznie ksiegujemy), do WYSWIETLANIA -- jedno zrodlo prawdy z `pracaImperialPoolGain`:
  *  - kolejka pusta i niewstrzymana -> cala Praca idzie do puli imperium (doBudynkow=0),
+ *  - kolejka wstrzymana -> tick nie ksieguje nic: 0/0 (Praca nie jest przypisywana),
  *  - w pozostalych przypadkach dokladnie podzial suwaka (`split`).
- * Suma doBudynkow + doPuli zawsze == split.doBudynkow + split.doPuli (zero kopii, zero utraty).
+ * Poza wstrzymaniem suma doBudynkow + doPuli == split.doBudynkow + split.doPuli (zero kopii, zero utraty).
  * Nie zmienia silnika: tylko opisuje, dokad poszla Praca, zeby tabela/baner zgadzaly sie z pula.
  */
 export function effectivePracaRouting(
@@ -2457,7 +2458,9 @@ export function effectivePracaRouting(
   queueEmpty: boolean,
   paused = false,
 ): { doBudynkow: number; doPuli: number; kolejkaPustaDoPuli: boolean } {
-  const fallback = queueEmpty && !paused;
+  // Wstrzymana kolejka: tick NIE ksieguje nic (ani do budynkow, ani do puli) -- obrona r1, zarzut 3.
+  if (paused) return { doBudynkow: 0, doPuli: 0, kolejkaPustaDoPuli: false };
+  const fallback = queueEmpty;
   return {
     doBudynkow: fallback ? 0 : split.doBudynkow,
     doPuli: fallback ? pracaImperialPoolGain(split, true) : split.doPuli,
