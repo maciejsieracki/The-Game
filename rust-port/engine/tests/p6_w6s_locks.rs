@@ -127,10 +127,77 @@ fn resolve_diplomacy_action_lock_matches_pinned_web_vectors() {
 
 /// Pokrycie: wektory obejmują każdą akcję 2..15 oraz gałąź `default`, a wynik ma wszystkie stany
 /// (zablokowana z wymaganiem, zablokowana bez wymagania, otwarta, aktywna).
+///
+/// Wzmocnienie (r2, zarzut Evaluatora 3): sprawdzane są KONKRETNE gałęzie web — każda stała notka
+/// (`EXPECTED_NOTES`) i każdy rodzaj wymagania (`REQUIRED_KINDS`) dla danej akcji musi wystąpić w wektorach.
 #[test]
 fn vectors_cover_every_case_and_outcome() {
+    // Stałe notki z `diplomacy-locks.ts` (pin 07d2fbd72), każda gałąź bez liczb.
+    const EXPECTED_NOTES: &[(&str, &str)] = &[
+        ("2", "zablokowany — trwa wojna"),
+        ("2", "już zawarty"),
+        ("2", ""),
+        ("3", "zablokowany — trwa wojna"),
+        ("3", "już zawarty"),
+        ("3", ""),
+        ("4", "zablokowane — trwa wojna"),
+        ("4", "już zawarty"),
+        ("4", "przemarsz wojsk dozwolony"),
+        ("5", "handel niedostępny w wojnie"),
+        ("5", "już zawarta"),
+        ("5", "zablokowana — nie zbadano technologii Wymiana"),
+        ("5", "zablokowana — partner nie zbadał technologii Wymiana"),
+        ("5", "brak możliwego połączenia handlowego (ląd lub porty)"),
+        ("5", "szlaki handlowe, +1 Zaufanie/turę"),
+        ("6", "zablokowana — brak technologii do wymiany"),
+        ("6", ""),
+        ("7", "zablokowana — brak znanych celów wojny"),
+        ("7", ""),
+        ("8", "oferta reparacji za pokój"),
+        ("8", ""),
+        ("9", "zablokowane — wymaga pokoju (trwa wojna)"),
+        ("9", ""),
+        ("10", "niedostępna — nie trwa wojna"),
+        ("10", ""),
+        ("11", "już w stanie wojny"),
+        ("11", "zrywa Sojusz"),
+        ("11", ""),
+        ("12", "zablokowana — trwa wojna"),
+        ("12", ""),
+        ("13", "dar niedostępny w wojnie"),
+        ("13", ""),
+        ("14", "handel niedostępny w wojnie"),
+        ("14", "już zawarta"),
+        ("14", "koszyk towarów jednorazowo / co turę"),
+        ("15", "zablokowana — trwa wojna"),
+        ("15", "zablokowana — tylko miasta-państwa"),
+        ("15", "zablokowana — brak aktywnej wasalizacji"),
+        ("15", "jednorazowa opłata ¤ + zgoda wasala"),
+    ];
+    // Notki z liczbami w szablonie: wystarczy prefiks.
+    const EXPECTED_PREFIXES: &[(&str, &str)] = &[("15", "zablokowana — wasal musi trwać ≥ ")];
+    // Rodzaj wymagania, który web zwraca z bramek danej akcji (dualGate, zaufanieGate, relacjaGate, respektGate).
+    const REQUIRED_KINDS: &[(&str, &str)] = &[
+        ("2", "stan"),
+        ("2", "zaufanie"),
+        ("3", "stan"),
+        ("3", "zaufanie"),
+        ("4", "stan"),
+        ("4", "zaufanie"),
+        ("5", "stan"),
+        ("6", "stan"),
+        ("6", "zaufanie"),
+        ("7", "zaufanie"),
+        ("8", "respekt"),
+        ("12", "respekt"),
+        ("13", "stan"),
+        ("14", "stan"),
+        ("15", "respekt"),
+    ];
+
     let mut per_action: BTreeMap<String, BTreeSet<&'static str>> = BTreeMap::new();
-    let mut kinds: BTreeSet<String> = BTreeSet::new();
+    let mut notes: BTreeSet<(String, String)> = BTreeSet::new();
+    let mut kinds: BTreeSet<(String, String)> = BTreeSet::new();
     for row in rows() {
         let id = row["ctx"]["actionId"].as_str().unwrap().to_string();
         let want = &row["want"];
@@ -146,8 +213,9 @@ fn vectors_cover_every_case_and_outcome() {
             "open"
         };
         if let Some(k) = want["requirement"]["kind"].as_str() {
-            kinds.insert(k.to_string());
+            kinds.insert((id.clone(), k.to_string()));
         }
+        notes.insert((id.clone(), want["note"].as_str().unwrap().to_string()));
         per_action.entry(id).or_default().insert(state);
     }
     for id in [
@@ -171,8 +239,175 @@ fn vectors_cover_every_case_and_outcome() {
     for s in ["open", "locked-req", "locked-plain", "active"] {
         assert!(all.contains(s), "brak stanu {s} w wektorach");
     }
-    for k in ["zaufanie", "respekt", "stan"] {
-        assert!(kinds.contains(k), "brak wymagania typu {k}");
+    for (a, n) in EXPECTED_NOTES {
+        assert!(
+            notes.contains(&(a.to_string(), n.to_string())),
+            "brak wektora dla akcji {a} z notką {n:?}"
+        );
+    }
+    for (a, p) in EXPECTED_PREFIXES {
+        assert!(
+            notes.iter().any(|(id, n)| id == a && n.starts_with(p)),
+            "brak wektora dla akcji {a} z prefiksem {p:?}"
+        );
+    }
+    for (a, k) in REQUIRED_KINDS {
+        assert!(
+            kinds.contains(&(a.to_string(), k.to_string())),
+            "brak wymagania {k} dla akcji {a}"
+        );
+    }
+}
+
+/// Test mutacyjny (zarzut Evaluatora 1): granica `age == minAge` i `respekt == progWchloniecieRespekt`.
+/// Wartości wyprowadzone ręcznie z web `diplomacy-locks.ts:357-369` (`if (age < minAge)`,
+/// `respektGate`: `if (masz >= prog) return null`), nie z wektorów. Mutacja `<` -> `<=` albo `>=` -> `>`
+/// zmienia któryś z poniższych wyników.
+#[test]
+fn action_15_age_and_respekt_boundaries_match_web() {
+    let base = |age: Option<f64>, min: Option<f64>, respekt: f64, wch: Option<f64>| LockCtx {
+        action_id: "15".to_string(),
+        at_war: false,
+        rel_total: 100.0,
+        zaufanie: 100.0,
+        respekt,
+        has_nap: false,
+        has_handel: false,
+        has_trade_connection: true,
+        has_trade_tech_self: None,
+        has_trade_tech_other: None,
+        has_wymiana: false,
+        has_sojusz: false,
+        has_granice: false,
+        breaks_treaty_label: None,
+        sellable_tech_count: 0.0,
+        buyable_tech_count: 0.0,
+        known_rivals_count: 0.0,
+        prog_nap_relacja: 30.0,
+        prog_nap_zaufanie: None,
+        kara_wspolna_granica: false,
+        nap_agresor_aktywny: false,
+        prog_handel_relacja: 50.0,
+        prog_sojusz_relacja: 65.0,
+        prog_sojusz_zaufanie: 70.0,
+        prog_granice_relacja: 45.0,
+        prog_granice_zaufanie: 50.0,
+        prog_wymiana_tech_zaufanie: 50.0,
+        prog_namow_wojne_zaufanie: 60.0,
+        prog_wasalizacja_respekt: 70.0,
+        prog_wchloniecie_respekt: wch,
+        prog_trybut_zadanie_min_respekt: 50.0,
+        prog_dar_relacja: 20.0,
+        is_city_state_partner: true,
+        has_wasal: true,
+        wasal_age_turns: age,
+        gracz_wchloniecie_po_wasalu_tur: min,
+    };
+    // age == minAge (10): przechodzi bramkę wieku; respekt 90 == próg 90 przechodzi.
+    let eq = resolve_diplomacy_action_lock(&base(Some(10.0), Some(10.0), 90.0, Some(90.0)));
+    assert!(!eq.locked, "age == minAge musi przejść: {eq:?}");
+    assert_eq!(eq.note, "jednorazowa opłata ¤ + zgoda wasala");
+    // age == minAge - 1: zablokowana, pozostało 1.
+    let below = resolve_diplomacy_action_lock(&base(Some(9.0), Some(10.0), 100.0, None));
+    assert_eq!(
+        below.note,
+        "zablokowana — wasal musi trwać ≥ 10 tur (pozostało 1)"
+    );
+    // age == minAge + 1: przechodzi.
+    let above = resolve_diplomacy_action_lock(&base(Some(11.0), Some(10.0), 100.0, None));
+    assert!(!above.locked);
+    // respekt == próg - 1 (89): zablokowana z wymaganiem respekt 90 (masz 89).
+    let r89 = resolve_diplomacy_action_lock(&base(Some(10.0), Some(10.0), 89.0, Some(90.0)));
+    assert!(r89.locked);
+    let req = r89.requirement.expect("wymaganie respektu");
+    assert_eq!((req.kind, req.prog, req.masz), ("respekt", 90.0, 89.0));
+    // respekt == próg (90): przechodzi.
+    let r90 = resolve_diplomacy_action_lock(&base(Some(10.0), Some(10.0), 90.0, Some(90.0)));
+    assert!(!r90.locked);
+}
+
+/// Część ułamkowa i formatowanie liczb JS (zarzut Evaluatora 2 i 4): `toFixed(1)` z remisem 89.25 -> "89.3"
+/// (JS zaokrągla remis w górę po wartości bezwzględnej), `${remain}` dla ułamków i notacji wykładniczej.
+#[test]
+fn action_15_fractional_and_exponent_notes_match_js() {
+    let mut ctx = action_15_ctx();
+    // Ułamek w `${remain}`: 10 - 9.5 = 0.5.
+    ctx.wasal_age_turns = Some(9.5);
+    ctx.gracz_wchloniecie_po_wasalu_tur = Some(10.0);
+    assert_eq!(
+        resolve_diplomacy_action_lock(&ctx).note,
+        "zablokowana — wasal musi trwać ≥ 10 tur (pozostało 0.5)"
+    );
+    // Notacja wykładnicza JS dla bardzo małej reszty: 10 - 9.9999999 = 1.0000000027e-7 (JS "1e-7" lub dłuższa).
+    ctx.wasal_age_turns = Some(9.9999999);
+    // Wartość 10 - 9.9999999 w IEEE-754 (sprawdzona w node: 9.99999993922529e-8).
+    assert_eq!(
+        resolve_diplomacy_action_lock(&ctx).note,
+        "zablokowana — wasal musi trwać ≥ 10 tur (pozostało 9.99999993922529e-8)"
+    );
+    // Liczby >= 2^63 w `${n}`: JS `String(1e19)` = "10000000000000000000" (bez nasycenia do i64::MAX).
+    ctx.wasal_age_turns = Some(0.0);
+    ctx.gracz_wchloniecie_po_wasalu_tur = Some(1e19);
+    assert_eq!(
+        resolve_diplomacy_action_lock(&ctx).note,
+        "zablokowana — wasal musi trwać ≥ 10000000000000000000 tur (pozostało 10000000000000000000)"
+    );
+    // Wykładnik dodatni: JS `String(1e21)` = "1e+21".
+    ctx.wasal_age_turns = Some(-1e21);
+    ctx.gracz_wchloniecie_po_wasalu_tur = Some(10.0);
+    assert_eq!(
+        resolve_diplomacy_action_lock(&ctx).note,
+        "zablokowana — wasal musi trwać ≥ 10 tur (pozostało 1e+21)"
+    );
+    // toFixed(1) w notce bramki respektu (fmt_prog_locks -> diplomacy_nap_trust::fmt_prog): 89.25 -> "89.3".
+    let mut r = action_15_ctx();
+    r.wasal_age_turns = Some(10.0);
+    r.gracz_wchloniecie_po_wasalu_tur = Some(10.0);
+    r.respekt = 89.25;
+    r.prog_wchloniecie_respekt = Some(90.0);
+    let res = resolve_diplomacy_action_lock(&r);
+    assert_eq!(res.note, "zablokowana — wymaga Respektu 90 (masz 89.3)");
+}
+
+/// Kontekst bazowy akcji '15' (wasal dojrzały, bramki przepuszczają) do testów brzegowych.
+fn action_15_ctx() -> LockCtx {
+    LockCtx {
+        action_id: "15".to_string(),
+        at_war: false,
+        rel_total: 100.0,
+        zaufanie: 100.0,
+        respekt: 100.0,
+        has_nap: false,
+        has_handel: false,
+        has_trade_connection: true,
+        has_trade_tech_self: None,
+        has_trade_tech_other: None,
+        has_wymiana: false,
+        has_sojusz: false,
+        has_granice: false,
+        breaks_treaty_label: None,
+        sellable_tech_count: 0.0,
+        buyable_tech_count: 0.0,
+        known_rivals_count: 0.0,
+        prog_nap_relacja: 30.0,
+        prog_nap_zaufanie: None,
+        kara_wspolna_granica: false,
+        nap_agresor_aktywny: false,
+        prog_handel_relacja: 50.0,
+        prog_sojusz_relacja: 65.0,
+        prog_sojusz_zaufanie: 70.0,
+        prog_granice_relacja: 45.0,
+        prog_granice_zaufanie: 50.0,
+        prog_wymiana_tech_zaufanie: 50.0,
+        prog_namow_wojne_zaufanie: 60.0,
+        prog_wasalizacja_respekt: 70.0,
+        prog_wchloniecie_respekt: None,
+        prog_trybut_zadanie_min_respekt: 50.0,
+        prog_dar_relacja: 20.0,
+        is_city_state_partner: true,
+        has_wasal: true,
+        wasal_age_turns: None,
+        gracz_wchloniecie_po_wasalu_tur: None,
     }
 }
 

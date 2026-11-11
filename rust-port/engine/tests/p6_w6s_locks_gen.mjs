@@ -80,9 +80,71 @@ function num(near) {
   if (chance(0.01)) return NaN;
   if (chance(0.005)) return chance(0.5) ? Infinity : -Infinity;
   if (near !== undefined && chance(0.35)) {
-    return near + pick([-1, 0, 1]);
+    return near + pick([-1, -0.25, 0, 0.25, 1]);
   }
-  return Math.floor(rnd() * 121);
+  // Część wartości ułamkowa (remisy 0.25/0.75 dla toFixed(1), 0.1 dla długich ułamków).
+  const frac = chance(0.2) ? pick([0.25, 0.5, 0.75, 0.1]) : 0;
+  return Math.floor(rnd() * 121) + frac;
+}
+
+// Wiersze graniczne (R-RUSTPORT-P6-W6S-LOCKS-Q1 r2): deterministyczna siatka wokół każdego progu bramki.
+// Dla '15': wiek wasala ±1 / ±0.25 wokół minAge (równość age == minAge), respekt ±1 / ±0.25 wokół progu,
+// plus wartości ekstremalne (remain < 1e-6, 1e19, -1e21) dla formatowania liczb JS.
+// Dla pozostałych akcji: pole bramki = próg ±1 / ±0.25 (remisy toFixed, granica >=).
+const GATE_FIELDS = [
+  ['relTotal', 'progHandelRelacja'], ['relTotal', 'progSojuszRelacja'], ['relTotal', 'progNapRelacja'],
+  ['relTotal', 'progGraniceRelacja'], ['relTotal', 'progDarRelacja'],
+  ['zaufanie', 'progSojuszZaufanie'], ['zaufanie', 'progGraniceZaufanie'], ['zaufanie', 'progWymianaTechZaufanie'],
+  ['zaufanie', 'progNamowWojneZaufanie'],
+  ['respekt', 'progWasalizacjaRespekt'], ['respekt', 'progTrybutZadanieMinRespekt'],
+];
+const DELTAS = [-1, -0.25, 0, 0.25, 1];
+
+// Pełny kontekst bazowy akcji '15' (wszystkie pola progowe obecne; wasal dojrzały, bramki przepuszczają).
+function case15Base(respekt) {
+  return {
+    actionId: '15', contact: true, atWar: false, relTotal: 100, zaufanie: 100, respekt,
+    hasNap: false, hasHandel: false, hasTradeConnection: true, hasSojusz: false,
+    sellableTechCount: 0, buyableTechCount: 0, knownRivalsCount: 0,
+    progNapRelacja: 30, progHandelRelacja: 50, progSojuszRelacja: 65, progSojuszZaufanie: 70,
+    progGraniceRelacja: 45, progGraniceZaufanie: 50, progWymianaTechZaufanie: 50,
+    progNamowWojneZaufanie: 60, progWasalizacjaRespekt: 70, progTrybutZadanieMinRespekt: 50,
+    progDarRelacja: 20, karaWspolnaGranica: false, napAgresorAktywny: false,
+    isCityStatePartner: true, hasWasal: true,
+  };
+}
+
+function boundaryRows() {
+  const out = [];
+  // Wasal '15': równość i granice wieku oraz respektu.
+  for (const minAge of [5, 10, 12]) {
+    for (const wch of [80, 90]) {
+      for (const age of [minAge - 1, minAge - 0.25, minAge, minAge + 1, 0, minAge - 1e-7]) {
+        for (const respekt of [wch - 1, wch - 0.25, wch, wch + 1]) {
+          out.push({
+            ...case15Base(respekt),
+            wasalAgeTurns: age, graczWchlonieciePoWasaluTur: minAge, progWchloniecieRespekt: wch,
+          });
+        }
+      }
+    }
+  }
+  // Ekstremalne liczby dla '15' (formatowanie JS `${n}`).
+  out.push({ ...case15Base(100), wasalAgeTurns: 0, graczWchlonieciePoWasaluTur: 1e19 });
+  out.push({ ...case15Base(100), wasalAgeTurns: -1e21, graczWchlonieciePoWasaluTur: 10 });
+  out.push({ ...case15Base(100), wasalAgeTurns: 9.9999999, graczWchlonieciePoWasaluTur: 10 });
+  // Progi bramek pozostałych akcji: wartość pola = próg + delta, reszta losowa.
+  for (const actionId of ACTION_IDS) {
+    for (const [field, prog] of GATE_FIELDS) {
+      for (const d of DELTAS) {
+        const base = randomCtx(0);
+        const ctx = { ...base, actionId };
+        ctx[field] = base[prog] + d;
+        out.push(ctx);
+      }
+    }
+  }
+  return out;
 }
 
 function randomCtx(i) {
@@ -119,7 +181,7 @@ function randomCtx(i) {
   if (chance(0.15)) ctx.breaksTreatyLabel = pick(['Paktu o nieagresji', 'Sojusz']);
   if (chance(0.6)) ctx.progNapZaufanie = pick([20, 30, 40]);
   if (chance(0.6)) ctx.progWchloniecieRespekt = pick([80, 90, 95]);
-  if (chance(0.6)) ctx.wasalAgeTurns = pick([0, 5, 9, 10, 11, 25]);
+  if (chance(0.6)) ctx.wasalAgeTurns = pick([0, 5, 9, 9.5, 9.75, 10, 11, 25]);
   if (chance(0.6)) ctx.graczWchlonieciePoWasaluTur = pick([5, 10, 12]);
   // Wartości progowe lekko przesuwane, by trafić w bramki „dokładnie na progu".
   if (ctx.progNapZaufanie === undefined && chance(0.3)) ctx.zaufanie = 30 + pick([-1, 0, 1]);
@@ -147,8 +209,9 @@ function encCtx(ctx) {
 }
 
 const rows = [];
-for (let i = 0; i < ROWS; i++) {
-  const ctx = randomCtx(i);
+const boundary = boundaryRows();
+for (let i = 0; i < Math.max(ROWS, boundary.length); i++) {
+  const ctx = i < boundary.length ? boundary[i] : randomCtx(i);
   const res = resolveDiplomacyActionLock(ctx);
   rows.push({
     ctx: encCtx(ctx),

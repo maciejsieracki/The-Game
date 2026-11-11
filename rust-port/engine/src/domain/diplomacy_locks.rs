@@ -8,14 +8,22 @@
 //!
 //! Współdzielone z istniejącym portem (bez duplikacji):
 //! - case `'2'` = `diplomacy_nap_trust::resolve_nap_lock` (ta sama logika, ten sam wynik),
-//! - `dualGate` = `diplomacy_nap_trust::dual_gate`, `fmtProg` = `diplomacy_nap_trust::fmt_prog`,
+//! - `dualGate` = `diplomacy_nap_trust::dual_gate`, `fmtProg` = `fmt_prog_locks` (liczby całkowite jak
+//!   `String(n)` przez `js_number_to_string`, ułamki przez `diplomacy_nap_trust::fmt_prog`),
 //! - `NAP_ZAUFANIE_FALLBACK` / `NapRequirement` z `diplomacy_nap_trust`.
+//!
+//! ZNANE OGRANICZENIE (poza allowlistą tematu, nie zmieniano): `dual_gate` i `resolve_nap_lock` (case `'2'`,
+//! `'3'`, `'4'`, `'6'`) formatują liczby przez `diplomacy_nap_trust::fmt_prog`, który dla liczb całkowitych
+//! używa `as i64` i nasyca przy |n| >= 2^63 (web: `String(n)`, np. `1e+21`). Wartości progów i relacji/zaufania/
+//! respektu w silniku są rzędu 0..200, więc ta ścieżka jest nieosiągalna; wektory pinu nie zawierają |n| >= 2^53
+//! dla tych akcji. Notki z `js_number_to_string` (case `'15'`, `fmt_prog_locks`) są poprawne dla pełnego zakresu.
 //!
 //! ZAŁOŻENIA:
 //! - Pola web `?:` (undefined) -> `Option<..>` albo `bool` (`false`); `=== false` na `hasTradeTech*` -> `Option<bool>`.
 //! - `active` (web: pole obecne tylko przy `active: true`) -> `bool`, `false` = pole nieobecne.
-//! - Liczby JS `${n}` w notce (case `'15'`) formatowane przez `js_num` (NaN/Infinity/liczby całkowite).
+//! - Liczby JS `${n}` w notce (case `'15'`) formatowane przez `js_number_to_string` (pełny `Number#toString`).
 
+use super::diplomacy_aggressor::js_number_to_string;
 use super::diplomacy_nap_trust::{
     dual_gate, fmt_prog, resolve_nap_lock, NapLockCtx, NapLockOutcome, NapRequirement,
 };
@@ -95,8 +103,8 @@ fn formatted_note(label: &str, prog: f64, masz: f64, powod: &str) -> String {
     };
     format!(
         "zablokowana — wymaga {label} {} (masz {}{extra})",
-        fmt_prog(prog),
-        fmt_prog(masz)
+        fmt_prog_locks(prog),
+        fmt_prog_locks(masz)
     )
 }
 
@@ -168,18 +176,14 @@ fn active(note: &str) -> LockResult {
     }
 }
 
-/// Format liczby jak w szablonie JS `${n}` (NaN, Infinity, liczby całkowite bez `.0`).
-fn js_num(x: f64) -> String {
-    if x.is_nan() {
-        return "NaN".to_string();
+/// Web `fmtProg` (`Number.isInteger(n) ? String(n) : n.toFixed(1)`). Liczby całkowite idą przez
+/// `js_number_to_string` (bez nasycenia `as i64` przy |n| >= 2^63); reszta przez współdzielony `fmt_prog`.
+fn fmt_prog_locks(n: f64) -> String {
+    if n.is_finite() && n.fract() == 0.0 {
+        js_number_to_string(n)
+    } else {
+        fmt_prog(n)
     }
-    if x.is_infinite() {
-        return if x > 0.0 { "Infinity" } else { "-Infinity" }.to_string();
-    }
-    if x.fract() == 0.0 {
-        return format!("{}", x as i64);
-    }
-    format!("{x}")
 }
 
 /// Web `resolveDiplomacyActionLock` (diplomacy-locks.ts:222-380).
@@ -345,8 +349,8 @@ pub fn resolve_diplomacy_action_lock(ctx: &LockCtx) -> LockResult {
                 let remain = min_age - age;
                 return locked(&format!(
                     "zablokowana — wasal musi trwać ≥ {} tur (pozostało {})",
-                    js_num(min_age),
-                    js_num(remain)
+                    js_number_to_string(min_age),
+                    js_number_to_string(remain)
                 ));
             }
             let wch_respekt = ctx.prog_wchloniecie_respekt.unwrap_or(90.0);
