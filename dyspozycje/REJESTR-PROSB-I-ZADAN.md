@@ -9712,3 +9712,6 @@ DOMAIN: GAME
 STATUS: OTWARTE
 DOMAIN: GAME
 Ocalałejednostkiprzegranejarmii mająwycofaćsię2heksyodprzeciwnika, niezniknąć. Auditwynikubitwy→mapa,zabici/rout/żywi/rezerwy,playerAI/manualAUTOskip ioblężenia. Bezniezleconegozabijania/teleportu gdybraklegalnejtrasy; zbadaćdotychczasowyfallback. Dispatch `autobot/runs/R-WEB-BATTLE-DEFEAT-SURVIVOR-RETREAT-TWO-HEX-Q1/00-dispatch.md`, kolejkapilnych,max4.
+
+## Dyspozycja właściciela — 2026-11-11, zamknięcie bieżącej puli
+ZAKAZ rozpoczynania nowych tematów do kolejnej decyzji właściciela. Dokończyć wyłącznie cztery już rozpoczęte: R-WEB-CAVALRY-IRON-ONLY-Q1; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1; R-BITWA-DEAD-UNIT-DISAPPEARS-Q2. Role kolejnych etapów tych samych tematów wolno uruchamiać. Po zwolnieniu slotu NIE dobierać z kolejki. Wszystkie pozostałe zgłoszenia zachować zarejestrowane, bez operatora. Zabezpieczać częściowe wyniki commit/push, nie czekać do końca limitu.

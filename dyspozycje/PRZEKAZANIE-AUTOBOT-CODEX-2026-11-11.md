@@ -68,3 +68,6 @@ Dalszystarszybacklog: audytPLQ3 naorigin/codex/polish-ui-q3, AIgłównaarmia/dec
 
 ## Sprzątanie po publikacji619
 Po potwierdzeniu zdalnych SHA kandydatów i ich obecności w main usunięto WYŁĄCZNIE opublikowane worktrees Skip/brąz50-75/mury/sojusze oraz czyste buildy618/619 z/tmp. Ich kod i dowody są na main i gałęziach GitHub; ponowne wejście wymaga odtworzenia worktree zGit. Aktywne cztery worktrees konnicy/rekrutacji/martwychjednostek/zamianypiechoty zachowano. Lokalne skrypty pomocnicze mogą pozostać, ale nie są źródłem stanu wydania.
+
+## NAJNOWSZA DYSPOZYCJA WŁAŚCICIELA — NIE OTWIERAĆ NOWYCH TEMATÓW
+Dokończyć tylko rozpoczęte cztery: konnica/Żelazo, limity i podsumowanie rekrutacji, globalna zamiana piechoty, znikanie zabitych Q2. Kontynuować ich Operator/Evaluator/Obrona/FC/integracja/Robocza/push, ale po zakończeniu NIE uzupełniać slotów z kolejki. Pozostałe zgłoszenia są zarejestrowane i czekają na ponowne polecenie właściciela. Ta decyzja zastępuje wcześniejszą pętlę automatycznego dobierania kolejnych tematów.
