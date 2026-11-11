@@ -1,8 +1,11 @@
 //! P6-WIRE-WAR-MARCH-PLAN (W5): planer marszu wojennego per wlasciciel.
 //!
 //! Planer ZWRACA komendy (`MarchCommand`), niczego nie wykonuje i nie mutuje stanu. Kolejnosc
-//! priorytetow zgodna z webem: kampania generala (`main.ts:7480`) -> obrona domu, S1 -> P1 -> S3 -> atak
-//! (`planHomeWar`, `ai.ts:3498`) -> fala wymuszonej wojny (`planForcedWarWave`, `ai.ts:3840`).
+//! priorytetow zgodna z webem: kampania generala (wybor celu: `choose_ai_general_war_target`, web
+//! `prepareAiGeneralWarCampaign` `main.ts:40582`) -> obrona domu, S1 -> P1 -> S3 (`planHomeWar`,
+//! `gra/src/game/ai.ts:3580`) -> fala wymuszonej wojny (`planForcedWarWave`, `ai.ts:3927`) -> atak all-in
+//! na stolice / miasta wroga (`planWarAllInCapital`, `ai.ts:4657`; cele z `buildWarCityTargets`).
+//! Numery linii zmierzone 2026-11-11 na `origin/main` (cffe39cb9).
 //!
 //! Dwie warstwy:
 //! - `plan_war_march_core` (czysta, na danych): dostaje juz zbudowane wejscia modulow skladowych,
@@ -18,8 +21,12 @@
 //!   (`current_turn = Some(turn)`); trwala pamiec odtwarzana dopiero w W8 (dlug).
 //! - Z4 kontakt dyplomatyczny (`hasContactWith`) zakladany (`None`), `isRelevantSiege` = `None`.
 //! - Z5 plan wymuszonej fali dostaje jednostki bez tych juz rozdanych obronie domu i bez `locked_unit_ids`.
-//! - Z6 NIE PORTOWANE w W5: `planWarAllInCapital` (`ai.ts:4570`): wymaga `WarAllInNav` z mapy ruchu, a
-//!   `WarWorldView` nie eksponuje `RuchMapa` (dlug na W8).
+//! - Z6 atak all-in (`planWarAllInCapital`, `ai.ts:4657`): `WarWorldView` nie eksponuje `RuchMapa`, wiec
+//!   mape ruchu (`WarAllInNav`) podaje wolajacy w `AllInParams::nav` (jak Z2). `None` = etap pominiety.
+//!   Cele all-in buduje `build_war_city_targets` z `WarWorldView` (`war_target_cities/war_target_units`).
+//! - Z7 all-in dostaje jednostki wlasciciela (`AllInParams::units`) bez `locked_unit_ids`, bez jednostek
+//!   przydzielonych obronie domu i bez jednostek wybranych przez fale (ta sama zasada co Z5).
+//! - Z8 `is_barbarian` podaje wolajacy (`AllInParams::is_barbarian`); `is_human` z `WarWorldView`.
 
 use std::collections::{BTreeSet, HashSet};
 
@@ -27,12 +34,19 @@ use super::ai_general_war_campaign::{
     choose_ai_general_war_target, AiGeneralWarCampaign, WarTargetCandidate,
 };
 use super::playable::PlayableUnit;
+use super::war_all_in_capital::{
+    plan_war_all_in_capital_with_defenders, WarAllInOrder, WarAllInPlanOpts, WarAllInUnit,
+};
+use super::war_all_in_capital_nav::WarAllInNav;
 use super::war_forced_waves::{
     hex_distance_for_forced_war, plan_forced_war_wave, restore_forced_war_waves, ForcedWarWave,
     ForcedWarWaveHistory, ForcedWarWavePlan, WaveCity, WaveUnit,
 };
 use super::war_home_defense::{HomeWarCity, HomeWarMemoryStore, HomeWarOrder, HomeWarUnit};
 use super::war_home_defense_plan::{plan_home_war, HomeWarInput};
+use super::war_target_select::{
+    build_war_city_targets, split_city_targets, BuildWarTargetsInput, WarCityTarget,
+};
 use super::war_turn_state::WarTurnState;
 use super::war_world_view::WarWorldView;
 
@@ -48,9 +62,23 @@ pub enum MarchCommand {
     Home(HomeWarOrder),
     /// Fala wymuszonej wojny (`planForcedWarWave`).
     ForcedWave(ForcedWarWavePlan),
+    /// Rozkaz ataku all-in na stolice / miasto wroga (`planWarAllInCapital`).
+    AllIn(WarAllInOrder),
 }
 
-/// Parametry podawane przez wolajacego (zalozenia Z1, Z2).
+/// Etap all-in (Z6, Z7, Z8): mapa ruchu i jednostki podaje wolajacy.
+pub struct AllInParams<'a> {
+    /// Jednostki wlasciciela do ataku all-in (Z7: przed filtrem locked/obrona/fala).
+    pub units: &'a [WarAllInUnit],
+    /// Mapa ruchu (`RuchMapa`) w `WarAllInNav` (Z6).
+    pub nav: WarAllInNav<'a>,
+    /// Opcje planera (`WarAllInPlanOpts`), domyslnie `WarAllInPlanOpts::default()`.
+    pub opts: WarAllInPlanOpts,
+    /// Web `isBarbarian` (Z8) -- barbarzyncy nie sa celem ani atakujacym.
+    pub is_barbarian: &'a dyn Fn(i64) -> bool,
+}
+
+/// Parametry podawane przez wolajacego (zalozenia Z1, Z2, Z6-Z8).
 pub struct MarchParams<'a> {
     /// Wlasciciele, z ktorymi wlasciciel planu jest w wojnie (Z1).
     pub enemy_owners: &'a BTreeSet<i64>,
@@ -64,6 +92,8 @@ pub struct MarchParams<'a> {
     pub campaign: Option<&'a AiGeneralWarCampaign>,
     /// Kandydaci na cel kampanii (web `{ ownerId, distance, reachable? }`).
     pub campaign_candidates: &'a [WarTargetCandidate],
+    /// Etap all-in; `None` = etap pominiety (brak mapy ruchu).
+    pub all_in: Option<AllInParams<'a>>,
 }
 
 /// Wejscie czystego rdzenia: juz zbudowane dane modulow skladowych.
@@ -83,6 +113,10 @@ pub struct MarchCoreInput<'a> {
     pub wave_history: &'a [ForcedWarWaveHistory],
     pub campaign: Option<&'a AiGeneralWarCampaign>,
     pub campaign_candidates: &'a [WarTargetCandidate],
+    /// Cele miast (`build_war_city_targets`) dla all-in; pusta lista = brak celow.
+    pub all_in_targets: &'a [WarCityTarget],
+    /// Etap all-in (`None` = pominiety).
+    pub all_in: Option<&'a AllInParams<'a>>,
 }
 
 /// Czysty rdzen planera marszu (kolejnosc: kampania -> obrona domu -> fala).
@@ -148,7 +182,27 @@ pub fn plan_war_march_core(inp: &MarchCoreInput<'_>) -> Vec<MarchCommand> {
         inp.turn as f64,
         inp.wave_history,
     ) {
+        excluded.extend(wave.unit_ids.iter().cloned());
         out.push(MarchCommand::ForcedWave(wave));
+    }
+
+    // Atak all-in (planWarAllInCapital) jako ostatni etap (Z7: bez locked, obrony domu i fali).
+    if let Some(ai) = inp.all_in {
+        let all_in_units: Vec<WarAllInUnit> = ai
+            .units
+            .iter()
+            .filter(|u| !excluded.contains(&u.id))
+            .cloned()
+            .collect();
+        let (plain, defenders) = split_city_targets(inp.all_in_targets);
+        let plan = plan_war_all_in_capital_with_defenders(
+            &all_in_units,
+            &plain,
+            &defenders,
+            &ai.nav,
+            ai.opts.clone(),
+        );
+        out.extend(plan.orders.into_iter().map(MarchCommand::AllIn));
     }
     out
 }
@@ -214,6 +268,26 @@ pub fn plan_war_march(
     let wave_cities = world.wave_cities();
     let wave_units = world.wave_units();
     let (active_waves, wave_history) = waves_from_state(state);
+    // Cele all-in: web `buildWarCityTargets` (ai-war-target-select.ts:49) z widoku gry.
+    let enemy_vec: Vec<i64> = params.enemy_owners.iter().copied().collect();
+    let engage = |o: i64| params.enemy_owners.contains(&o);
+    let is_human = |o: i64| world.is_human(o);
+    let (all_in_targets, all_in) = match params.all_in.as_ref() {
+        Some(ai) => {
+            let targets = build_war_city_targets(&BuildWarTargetsInput {
+                self_owner_id: owner,
+                enemy_owner_ids: &enemy_vec,
+                engage: &engage,
+                cities: &world.war_target_cities(),
+                combat_units: &world.war_target_units(),
+                is_human: &is_human,
+                is_barbarian: ai.is_barbarian,
+                capital_city_id_for_owner: &|o| world.capital_city_id(o),
+            });
+            (targets, Some(ai))
+        }
+        None => (Vec::new(), None),
+    };
     plan_war_march_core(&MarchCoreInput {
         owner_id: owner,
         turn,
@@ -228,5 +302,7 @@ pub fn plan_war_march(
         wave_history: &wave_history,
         campaign: params.campaign,
         campaign_candidates: params.campaign_candidates,
+        all_in_targets: &all_in_targets,
+        all_in,
     })
 }

@@ -8,15 +8,19 @@ use std::collections::{BTreeSet, HashSet};
 
 use civ_engine::domain::ai_general_war_campaign::WarTargetCandidate;
 use civ_engine::domain::ai_war_march_plan::{
-    plan_war_march, plan_war_march_core, waves_from_state, MarchCommand, MarchCoreInput,
-    MarchParams,
+    plan_war_march, plan_war_march_core, waves_from_state, AllInParams, MarchCommand,
+    MarchCoreInput, MarchParams,
 };
+use civ_engine::domain::pathfinding::ruch_jednostek::{Klucz, RuchHex, RuchMapa, TerenBazowy};
 use civ_engine::domain::playable::{
     PlayableCity, PlayablePlayer, PlayableState, PlayableUnit, PlayableUnitKind,
 };
 use civ_engine::domain::types::PositionDto;
+use civ_engine::domain::war_all_in_capital::{WarAllInPlanOpts, WarAllInUnit, WarCapitalTarget};
+use civ_engine::domain::war_all_in_capital_nav::WarAllInNav;
 use civ_engine::domain::war_forced_waves::{WaveCity, WaveUnit};
 use civ_engine::domain::war_home_defense::{HomeWarCity, HomeWarOrder, HomeWarUnit};
+use civ_engine::domain::war_target_select::WarCityTarget;
 use civ_engine::domain::war_turn_state::WarTurnState;
 use civ_engine::domain::war_world_view::{CityWarExtras, WarWorldView};
 use civ_engine::domain::{CityId, PlayerId, UnitId};
@@ -57,7 +61,18 @@ fn unit_id_of(cmd: &MarchCommand) -> Vec<String> {
             | HomeWarOrder::Hold { unit_id, .. } => vec![unit_id.clone()],
         },
         MarchCommand::ForcedWave(p) => p.unit_ids.clone(),
+        MarchCommand::AllIn(o) => vec![o.unit_id.clone()],
     }
+}
+
+fn land_map(w: i32, h: i32) -> RuchMapa {
+    let mut map = RuchMapa::new();
+    for q in 0..w {
+        for r in 0..h {
+            map.insert((q, r), RuchHex::new(TerenBazowy::Laka));
+        }
+    }
+    map
 }
 
 fn owners(list: &[i64]) -> BTreeSet<i64> {
@@ -90,6 +105,8 @@ fn core<'a>(
         wave_history: &[],
         campaign: None,
         campaign_candidates: candidates,
+        all_in_targets: &[],
+        all_in: None,
     }
 }
 
@@ -258,18 +275,311 @@ fn forced_wave_excludes_units_already_ordered_at_home() {
         &[],
     );
     let cmds = plan_war_march_core(&inp);
+    // Niepusty test: u1 MUSI dostac rozkaz domu (inaczej wykluczenie nic nie dowodzi) ...
     let home_ids: HashSet<String> = cmds
         .iter()
         .filter(|c| matches!(c, MarchCommand::Home(_)))
         .flat_map(unit_id_of)
         .collect();
+    assert!(
+        home_ids.contains("u1"),
+        "u1 should be home-ordered: {cmds:?}"
+    );
+    // ... a fala MUSI powstac z w1..w3 i pominac u1.
+    let wave = cmds
+        .iter()
+        .find_map(|c| match c {
+            MarchCommand::ForcedWave(p) => Some(p),
+            _ => None,
+        })
+        .unwrap_or_else(|| panic!("forced wave expected: {cmds:?}"));
+    assert_eq!(wave.unit_ids.len(), 3);
+    assert!(!wave.unit_ids.contains(&"u1".to_owned()));
+    for id in &wave.unit_ids {
+        assert!(!home_ids.contains(id), "wave reuses home-ordered unit {id}");
+    }
+}
+
+#[test]
+fn home_defense_orders_attack_adjacent_enemy() {
+    let enemies = owners(&[2]);
+    let locked = HashSet::new();
+    let territory = |_: i32, _: i32| true;
+    let cities = [hc("c1", 1, 0, 0), hc("c2", 2, 6, 0)];
+    let units = [
+        hu("u1", 1, 0, 2, 5.0),
+        hu("u2", 1, 0, 3, 5.0),
+        hu("e1", 2, 1, 1, 9.0),
+    ];
+    let inp = core(
+        1,
+        &enemies,
+        &locked,
+        &territory,
+        &cities,
+        &units,
+        &[],
+        &[],
+        &[],
+    );
+    let cmds = plan_war_march_core(&inp);
+    assert!(
+        cmds.iter().any(|c| matches!(
+            c,
+            MarchCommand::Home(HomeWarOrder::Attack { unit_id, target_unit_id, .. })
+                if unit_id == "u1" && target_unit_id == "e1"
+        )),
+        "expected Attack u1->e1, got {cmds:?}"
+    );
+}
+
+#[test]
+fn forced_wave_is_produced_for_three_units_and_enemy_city() {
+    let enemies = owners(&[2]);
+    let locked = HashSet::new();
+    let territory = |_: i32, _: i32| true;
+    let wave_units: Vec<WaveUnit> = ["w1", "w2", "w3"]
+        .iter()
+        .map(|id| WaveUnit {
+            id: (*id).to_owned(),
+            owner_id: 1,
+            category: "land".to_owned(),
+            q: 0.0,
+            r: 1.0,
+            ruch_left: 2.0,
+            is_civilian: false,
+            in_garnizon: false,
+            oblega_city_id: None,
+            embarked: false,
+            sea_raider: false,
+        })
+        .collect();
+    let wave_cities = [WaveCity {
+        id: "c2".to_owned(),
+        owner_id: 2,
+        q: 2.0,
+        r: 0.0,
+    }];
+    let inp = core(
+        1,
+        &enemies,
+        &locked,
+        &territory,
+        &[],
+        &[],
+        &wave_cities,
+        &wave_units,
+        &[],
+    );
+    let cmds = plan_war_march_core(&inp);
+    let wave = cmds.iter().find_map(|c| match c {
+        MarchCommand::ForcedWave(p) => Some(p),
+        _ => None,
+    });
+    let wave = wave.unwrap_or_else(|| panic!("forced wave expected: {cmds:?}"));
+    assert_eq!(wave.target_city_id, "c2");
+    assert_eq!(wave.unit_ids.len(), 3);
+}
+
+#[test]
+fn forced_wave_needs_enemy_city_and_is_skipped_without_war() {
+    let enemies = owners(&[]);
+    let locked = HashSet::new();
+    let territory = |_: i32, _: i32| true;
+    let wave_units: Vec<WaveUnit> = ["w1", "w2", "w3"]
+        .iter()
+        .map(|id| WaveUnit {
+            id: (*id).to_owned(),
+            owner_id: 1,
+            category: "land".to_owned(),
+            q: 0.0,
+            r: 1.0,
+            ruch_left: 2.0,
+            is_civilian: false,
+            in_garnizon: false,
+            oblega_city_id: None,
+            embarked: false,
+            sea_raider: false,
+        })
+        .collect();
+    let wave_cities = [WaveCity {
+        id: "c2".to_owned(),
+        owner_id: 2,
+        q: 2.0,
+        r: 0.0,
+    }];
+    let inp = core(
+        1,
+        &enemies,
+        &locked,
+        &territory,
+        &[],
+        &[],
+        &wave_cities,
+        &wave_units,
+        &[],
+    );
+    assert!(plan_war_march_core(&inp)
+        .iter()
+        .all(|c| !matches!(c, MarchCommand::ForcedWave(_))));
+}
+
+#[test]
+fn all_in_attack_comes_last_and_skips_locked_units() {
+    let enemies = owners(&[2]);
+    let locked: HashSet<String> = ["x1".to_owned()].into_iter().collect();
+    let territory = |_: i32, _: i32| true;
+    let map = land_map(10, 4);
+    let blocked: HashSet<Klucz> = HashSet::new();
+    let nav = WarAllInNav {
+        map: &map,
+        allow_sea: false,
+        blocked: &blocked,
+        occupied: None,
+    };
+    let all_units = [
+        WarAllInUnit {
+            id: "x1".to_owned(),
+            q: 0,
+            r: 0,
+            ruch_left: None,
+        },
+        WarAllInUnit {
+            id: "x2".to_owned(),
+            q: 0,
+            r: 1,
+            ruch_left: None,
+        },
+    ];
+    let targets = vec![WarCityTarget {
+        target: WarCapitalTarget {
+            owner_id: 2,
+            city_id: "b".to_owned(),
+            q: 4,
+            r: 1,
+        },
+        defenders: None,
+    }];
+    let ai = AllInParams {
+        units: &all_units,
+        nav,
+        opts: WarAllInPlanOpts::default(),
+        is_barbarian: &|_: i64| false,
+    };
+    let cities = [hc("c1", 1, 0, 0)];
+    let units = [hu("x1", 1, 0, 0, 5.0), hu("x2", 1, 0, 1, 5.0)];
+    let mut inp = core(
+        1,
+        &enemies,
+        &locked,
+        &territory,
+        &cities,
+        &units,
+        &[],
+        &[],
+        &[],
+    );
+    inp.all_in_targets = targets.as_slice();
+    inp.all_in = Some(&ai);
+    let cmds = plan_war_march_core(&inp);
+    let allin: Vec<&MarchCommand> = cmds
+        .iter()
+        .filter(|c| matches!(c, MarchCommand::AllIn(_)))
+        .collect();
+    assert!(!allin.is_empty(), "all-in order expected: {cmds:?}");
+    for c in &allin {
+        assert!(
+            !unit_id_of(c).contains(&"x1".to_owned()),
+            "locked x1 in all-in"
+        );
+    }
+    if let MarchCommand::AllIn(o) = allin[0] {
+        assert_eq!(o.unit_id, "x2");
+        assert_eq!(o.target_city_id, "b");
+    }
+    // Atak all-in jest ostatnim etapem.
+    assert!(matches!(cmds.last(), Some(MarchCommand::AllIn(_))));
+}
+
+#[test]
+fn adapter_with_enemy_city_orders_all_in_for_owner_only() {
+    let mut playable = adapter_state();
+    // Bez wrogich jednostek (home nic nie dostaje), miasto wroga zostaje -> cel all-in z build_war_city_targets.
+    playable.units.retain(|u| u.owner_id.get() == 1);
+    // Drugi wlasny wojownik (id 3) -- pierwszy (id 1) zostanie rozkazany obronie domu, wiec all-in
+    // (Z7) dostaje wolna jednostke 3.
+    playable.units.push(PlayableUnit {
+        id: UnitId::new(3),
+        owner_id: PlayerId::new(1),
+        kind: PlayableUnitKind::Warrior,
+        position: PositionDto::new(0, 2),
+        movement: 2,
+        movement_max: 2,
+        selected: false,
+    });
+    let extras: HashMap<String, CityWarExtras> = HashMap::new();
+    let world = WarWorldView::new(&playable, &extras);
+    let enemies = owners(&[2]);
+    let locked = HashSet::new();
+    let territory = |_: i32, _: i32| true;
+    let strength = |_: &PlayableUnit| 5.0;
+    let map = land_map(10, 4);
+    let blocked: HashSet<Klucz> = HashSet::new();
+    let nav = WarAllInNav {
+        map: &map,
+        allow_sea: false,
+        blocked: &blocked,
+        occupied: None,
+    };
+    let all_units = [
+        WarAllInUnit {
+            id: "1".to_owned(),
+            q: 0,
+            r: 1,
+            ruch_left: None,
+        },
+        WarAllInUnit {
+            id: "3".to_owned(),
+            q: 0,
+            r: 2,
+            ruch_left: None,
+        },
+    ];
+    let ai = AllInParams {
+        units: &all_units,
+        nav,
+        opts: WarAllInPlanOpts::default(),
+        is_barbarian: &|_: i64| false,
+    };
+    let params = MarchParams {
+        enemy_owners: &enemies,
+        locked_unit_ids: &locked,
+        is_own_territory: &territory,
+        strength_of: &strength,
+        campaign: None,
+        campaign_candidates: &[],
+        all_in: Some(ai),
+    };
+    let state = WarTurnState::default();
+    let cmds = plan_war_march(&world, &state, 1, 100, &params);
+    assert!(
+        cmds.iter()
+            .any(|c| matches!(c, MarchCommand::AllIn(o) if o.unit_id == "3")),
+        "adapter all-in for owner-1 unit 3 expected: {cmds:?}"
+    );
+    assert!(
+        cmds.iter().all(|c| !matches!(c, MarchCommand::Home(_))),
+        "no enemy units -> no home orders: {cmds:?}"
+    );
     for cmd in &cmds {
-        if let MarchCommand::ForcedWave(p) = cmd {
-            for id in &p.unit_ids {
-                assert!(!home_ids.contains(id), "wave reuses home-ordered unit {id}");
-            }
+        for id in unit_id_of(cmd) {
+            assert!(
+                id == "1" || id == "3",
+                "only owner 1 units may be ordered, got {id}"
+            );
         }
     }
+    assert_eq!(cmds, plan_war_march(&world, &state, 1, 100, &params));
 }
 
 #[test]
@@ -361,6 +671,7 @@ fn adapter_without_enemies_orders_only_own_units() {
         strength_of: &strength,
         campaign: None,
         campaign_candidates: &[],
+        all_in: None,
     };
     let state = WarTurnState::default();
     let cmds = plan_war_march(&world, &state, 1, 100, &params);
