@@ -94,3 +94,10 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - BORDER-WIRING zamknięty jako zależność do W8 (brak produkcyjnej pętli tury).
 - Czeka: SAVESNAPSHOT r2 (FC PASS `c2b52266c`) — kolizja w `replay.rs` z REPLAY-DESER; runda integracyjna po batchu.
 - DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6.
+
+## Przebieg 2026-11-11 22:18 UTC (heartbeat)
+- parity-v2 = `82c57a412` (batch: WAR-STATE-OWNER, SIEGE-SURRENDER, SAVESNAPSHOT-DESER; pełny test 375 binarek, 2733 passed, 0 failed). Wcześniej: AIPEACE-BALANS `fe52d6ba3`, batch REPLAY-DESER/KOMENTARZE/CFGTEST `33cd715cf`, W7 `83ac67875`.
+- W bramkach: AIPEACE-V2-MIGRACJA (kod `7bd333cec`, FC PASS-WITH-NOTES; decyzja techniczna: wariant A, test `tick_scenarios_match_web` zostaje na V1 z `#[allow(deprecated)]`).
+- Operatorzy (Haiku 5.5, 4/4): UNIT-REPLACE-L1 r2, BRAKE-INPUTS (W8 2/3), SIEGE-TRANSFER (Q2), ZAPIS-SAVELOAD-KOMENTARZ.
+- Kolejka: W8 r3 (po BRAKE-INPUTS i SIEGE-TRANSFER), L-3, siege #217.
+- DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6; 50 rozbieżności pól units.json vs pin (zadanie 27).
