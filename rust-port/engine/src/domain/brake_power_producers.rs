@@ -9,7 +9,7 @@
 //! Wektory: tests/p6_power_producers_vectors/vectors.json (generator tests/p6_power_producers_gen.mjs
 //! wykonuje wyciete funkcje z pinu 07d2fbd72).
 
-use super::brake_power::ObjectivePowerRaw;
+use super::brake_power::{Component, ObjectivePowerRaw};
 use super::order_effects_culture::{empire_culture_total, PressureCity};
 use super::recruitment::manpower::{
     empire_pobor_totals, empire_suma_ludkow, rekrut_unit_equivalents, ManpowerCity,
@@ -145,8 +145,8 @@ pub fn produce_for_owner(inputs: &ProducerInputs<'_>, owner_id: i64) -> Produced
 /// Wpisuje wyniki producentow do `ObjectivePowerRaw`. Pola bez producenta (`NoProducer`) zostaja
 /// nietkniete - wolajacy ustawia je jawnie.
 pub fn apply_produced(raw: &mut ObjectivePowerRaw, produced: &ProducedComponents) {
-    raw.suma_ludkow = produced.suma_ludkow;
-    raw.rekrut_ekw = produced.rekrut_ekw;
-    raw.miasta = produced.miasta;
-    raw.kultura_imperium = Some(produced.kultura_imperium);
+    raw.suma_ludkow = Component::Provided(produced.suma_ludkow);
+    raw.rekrut_ekw = Component::Provided(produced.rekrut_ekw);
+    raw.miasta = Component::Provided(produced.miasta);
+    raw.kultura_imperium = Component::Provided(produced.kultura_imperium);
 }

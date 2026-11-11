@@ -2,7 +2,7 @@
 //! web (07d2fbd72f758705f8e1d59cc4968027ffbafe75), generowane przez tests/p6_power_producers_gen.mjs
 //! (wykonanie wycietych funkcji weba, nie reczne asercje).
 
-use civ_engine::domain::brake_power::ObjectivePowerRaw;
+use civ_engine::domain::brake_power::{Component, ObjectivePowerRaw};
 use civ_engine::domain::brake_power_producers::{
     apply_produced, kultura_for_owner, ludki_for_owner, miasta_for_owner, no_producer_keys,
     produce_for_owner, rekruci_ekw_for_owner, ComponentSource, ProducerInputs, COMPONENT_SOURCES,
@@ -216,31 +216,31 @@ fn produce_and_apply_fill_only_rust_producer_fields() {
     let mut raw = ObjectivePowerRaw {
         owner_id: 0,
         epoka: 1.0,
-        jednostki: 7.0,
-        wygrane_bitwy: 0.0,
-        bitwy_pkt_sum: Some(3.0),
-        suma_ludkow: 0.0,
-        rekrut_ekw: 0.0,
-        miasta: 0.0,
-        heksy_terytorium: 5.0,
-        budynki: 6.0,
-        tech_zbadane: 2.0,
-        ulepszenia_terenu: 1.0,
-        kultura_imperium: None,
-        miasta_jednosc_religii: Some(4.0),
-        zdobycze_power: Some(9.0),
+        jednostki: Component::Provided(7.0),
+        wygrane_bitwy: Component::ExplicitZero,
+        bitwy_pkt_sum: Component::Provided(3.0),
+        suma_ludkow: Component::Missing,
+        rekrut_ekw: Component::Missing,
+        miasta: Component::Missing,
+        heksy_terytorium: Component::Provided(5.0),
+        budynki: Component::Provided(6.0),
+        tech_zbadane: Component::Provided(2.0),
+        ulepszenia_terenu: Component::Provided(1.0),
+        kultura_imperium: Component::Missing,
+        miasta_jednosc_religii: Component::Provided(4.0),
+        zdobycze_power: Component::Provided(9.0),
     };
     apply_produced(&mut raw, &produced);
-    assert_eq!(raw.suma_ludkow, 10.0);
-    assert_eq!(raw.miasta, 1.0);
-    assert_eq!(raw.kultura_imperium, Some(12.5));
+    assert_eq!(raw.suma_ludkow, Component::Provided(10.0));
+    assert_eq!(raw.miasta, Component::Provided(1.0));
+    assert_eq!(raw.kultura_imperium, Component::Provided(12.5));
     // Pola bez producenta zostaja jak podane przez wolajacego.
-    assert_eq!(raw.jednostki, 7.0);
-    assert_eq!(raw.bitwy_pkt_sum, Some(3.0));
-    assert_eq!(raw.heksy_terytorium, 5.0);
-    assert_eq!(raw.budynki, 6.0);
-    assert_eq!(raw.miasta_jednosc_religii, Some(4.0));
-    assert_eq!(raw.zdobycze_power, Some(9.0));
+    assert_eq!(raw.jednostki, Component::Provided(7.0));
+    assert_eq!(raw.bitwy_pkt_sum, Component::Provided(3.0));
+    assert_eq!(raw.heksy_terytorium, Component::Provided(5.0));
+    assert_eq!(raw.budynki, Component::Provided(6.0));
+    assert_eq!(raw.miasta_jednosc_religii, Component::Provided(4.0));
+    assert_eq!(raw.zdobycze_power, Component::Provided(9.0));
 }
 
 #[test]

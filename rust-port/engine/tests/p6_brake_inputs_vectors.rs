@@ -12,7 +12,7 @@ use civ_engine::domain::brake_inputs::{
 };
 use civ_engine::domain::brake_power::{
     battle_power_model, compute_objective_power, military_component_keys,
-    objective_power_for_owner, BattlePowerModel, ObjectivePowerRaw, PowerCoeffs,
+    objective_power_for_owner, BattlePowerModel, Component, ObjectivePowerRaw, PowerCoeffs,
 };
 use civ_engine::domain::diplomacy_tick_war_brake::is_ai_ai_eligible_owner;
 use civ_engine::domain::diplomacy_truce::PairMetaWeb;
@@ -33,6 +33,19 @@ fn opt_num(v: &Value) -> Option<f64> {
         None
     } else {
         Some(num(v))
+    }
+}
+
+/// Pole obowiazkowe w wektorze: zawsze podane, wiec `Provided`.
+fn comp(v: &Value) -> Component {
+    Component::Provided(num(v))
+}
+
+/// Pole, ktore web czyta jako `x ?? 0` (brak albo null): jawne zero, nie brak zrodla.
+fn comp_or_zero(v: Option<&Value>) -> Component {
+    match v.and_then(opt_num) {
+        Some(x) => Component::Provided(x),
+        None => Component::ExplicitZero,
     }
 }
 
@@ -100,21 +113,22 @@ fn objective_power_matches_pinned_compute_objective_power() {
         let raw = ObjectivePowerRaw {
             owner_id: inp["ownerId"].as_i64().unwrap(),
             epoka: num(&inp["epoka"]),
-            jednostki: num(&inp["jednostki"]),
-            wygrane_bitwy: num(&inp["wygraneBitwy"]),
-            bitwy_pkt_sum: inp.get("bitwyPktSum").and_then(opt_num),
-            suma_ludkow: num(&inp["sumaLudkow"]),
-            rekrut_ekw: num(&inp["rekrutEkw"]),
-            miasta: num(&inp["miasta"]),
-            heksy_terytorium: num(&inp["heksyTerytorium"]),
-            budynki: num(&inp["budynki"]),
-            tech_zbadane: num(&inp["techZbadane"]),
-            ulepszenia_terenu: num(&inp["ulepszeniaTerenu"]),
-            kultura_imperium: inp.get("kulturaImperium").and_then(opt_num),
-            miasta_jednosc_religii: inp.get("miastaJednoscReligii").and_then(opt_num),
-            zdobycze_power: inp.get("zdobyczePower").and_then(opt_num),
+            jednostki: comp(&inp["jednostki"]),
+            wygrane_bitwy: comp(&inp["wygraneBitwy"]),
+            bitwy_pkt_sum: comp_or_zero(inp.get("bitwyPktSum")),
+            suma_ludkow: comp(&inp["sumaLudkow"]),
+            rekrut_ekw: comp(&inp["rekrutEkw"]),
+            miasta: comp(&inp["miasta"]),
+            heksy_terytorium: comp(&inp["heksyTerytorium"]),
+            budynki: comp(&inp["budynki"]),
+            tech_zbadane: comp(&inp["techZbadane"]),
+            ulepszenia_terenu: comp(&inp["ulepszeniaTerenu"]),
+            kultura_imperium: comp_or_zero(inp.get("kulturaImperium")),
+            miasta_jednosc_religii: comp_or_zero(inp.get("miastaJednoscReligii")),
+            zdobycze_power: comp_or_zero(inp.get("zdobyczePower")),
         };
-        let got = compute_objective_power(&raw, &coeff, battle, &military);
+        let got = compute_objective_power(&raw, &coeff, battle, &military)
+            .expect("pin: kompletne wejscie");
         assert_eq!(got.power, num(&case["power"]), "power, wejscie {inp}");
         assert_eq!(
             got.power_base,
@@ -122,7 +136,8 @@ fn objective_power_matches_pinned_compute_objective_power() {
             "powerBase, wejscie {inp}"
         );
         assert_eq!(
-            objective_power_for_owner(&raw, &coeff, battle, &military),
+            objective_power_for_owner(&raw, &coeff, battle, &military)
+                .expect("pin: kompletne wejscie"),
             num(&case["power"])
         );
         let comps = case["components"].as_array().unwrap();
@@ -412,21 +427,22 @@ fn objective_power_variants_match_pinned_compute_objective_power() {
         let raw = ObjectivePowerRaw {
             owner_id: inp["ownerId"].as_i64().unwrap(),
             epoka: num(&inp["epoka"]),
-            jednostki: num(&inp["jednostki"]),
-            wygrane_bitwy: num(&inp["wygraneBitwy"]),
-            bitwy_pkt_sum: inp.get("bitwyPktSum").and_then(opt_num),
-            suma_ludkow: num(&inp["sumaLudkow"]),
-            rekrut_ekw: num(&inp["rekrutEkw"]),
-            miasta: num(&inp["miasta"]),
-            heksy_terytorium: num(&inp["heksyTerytorium"]),
-            budynki: num(&inp["budynki"]),
-            tech_zbadane: num(&inp["techZbadane"]),
-            ulepszenia_terenu: num(&inp["ulepszeniaTerenu"]),
-            kultura_imperium: inp.get("kulturaImperium").and_then(opt_num),
-            miasta_jednosc_religii: inp.get("miastaJednoscReligii").and_then(opt_num),
-            zdobycze_power: inp.get("zdobyczePower").and_then(opt_num),
+            jednostki: comp(&inp["jednostki"]),
+            wygrane_bitwy: comp(&inp["wygraneBitwy"]),
+            bitwy_pkt_sum: comp_or_zero(inp.get("bitwyPktSum")),
+            suma_ludkow: comp(&inp["sumaLudkow"]),
+            rekrut_ekw: comp(&inp["rekrutEkw"]),
+            miasta: comp(&inp["miasta"]),
+            heksy_terytorium: comp(&inp["heksyTerytorium"]),
+            budynki: comp(&inp["budynki"]),
+            tech_zbadane: comp(&inp["techZbadane"]),
+            ulepszenia_terenu: comp(&inp["ulepszeniaTerenu"]),
+            kultura_imperium: comp_or_zero(inp.get("kulturaImperium")),
+            miasta_jednosc_religii: comp_or_zero(inp.get("miastaJednoscReligii")),
+            zdobycze_power: comp_or_zero(inp.get("zdobyczePower")),
         };
-        let got = compute_objective_power(&raw, &coeff, battle, &military);
+        let got = compute_objective_power(&raw, &coeff, battle, &military)
+            .expect("pin: kompletne wejscie");
         let expected_power = num(&case["power"]);
         if got.power_base.fract() == 0.5 {
             saw_half_round = true;
@@ -437,7 +453,8 @@ fn objective_power_variants_match_pinned_compute_objective_power() {
             "powerBase, wejscie {inp}"
         );
         assert_eq!(
-            objective_power_for_owner(&raw, &coeff, battle, &military),
+            objective_power_for_owner(&raw, &coeff, battle, &military)
+                .expect("pin: kompletne wejscie"),
             expected_power,
             "objective_power_for_owner, wejscie {inp}"
         );
