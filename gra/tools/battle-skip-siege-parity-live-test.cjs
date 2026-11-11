@@ -32,10 +32,11 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const CHROME = '/opt/pw-browsers/chromium';
+const CHROME = process.env.WSKIP_CHROMIUM || '/usr/bin/chromium';
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP_ROOT = path.join(os.tmpdir(), `civ-wsiege-${RUN}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
@@ -105,7 +106,7 @@ async function runOne(browser, distDir, mode, seed) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=oblezenie-duze' + (process.env.WSKIP_QUERY || ''), { waitUntil: 'load', timeout: 120000 });
+  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=oblezenie-duze' + (process.env.WSKIP_QUERY || ''), { waitUntil: 'load', timeout: 120000 });
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
     if (ready) break;
@@ -136,7 +137,20 @@ async function runOne(browser, distDir, mode, seed) {
   const t0w = Date.now();
   let fin = false;
   while (!fin) {
-    fin = await page.evaluate(() => window.__pumpFrames(20000));
+    fin = await page.evaluate(() => window.__pumpFrames(200));
+    const checkpoint = await page.evaluate(() => {
+      const bs = window.__lastBattleScene;
+      if (!bs) return null;
+      const a = bs._sideEndStats('atk'); const d = bs._sideEndStats('def');
+      return { round: bs.roundNo, virtMs: Math.round(bs.vNow - window.__wskipT0), breached: !!bs.wallEverBreached,
+        atk: { lost: a.lost, remaining: a.remaining, hp: Math.round(a.hp) },
+        def: { lost: d.lost, remaining: d.remaining, hp: Math.round(d.hp) } };
+    });
+    if (checkpoint && process.env.WSKIP_CHECKPOINTS) {
+      const row = { checkpoint: true, mode, seed, framesRun: await page.evaluate(() => window.__framesRun), ...checkpoint };
+      fs.appendFileSync(process.env.WSKIP_CHECKPOINTS, JSON.stringify(row) + '\n', 'utf8');
+      if (row.framesRun % 2000 === 0 || fin) console.log('CHECKPOINT ' + JSON.stringify(row));
+    }
     if (!fin && Date.now() - t0w > limitMs) {
       const st = await page.evaluate(() => { const bs = window.__lastBattleScene; return { round: bs.roundNo, vNow: Math.round(bs.vNow - window.__wskipT0) }; });
       await page.close();
@@ -211,6 +225,15 @@ async function main() {
   const t0 = Date.now();
   const distDir = buildVite();
   console.log('BUILD ok in ' + Math.round((Date.now() - t0) / 1000) + ' s: ' + distDir);
+  const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
+  const server = http.createServer((req, res) => {
+    const rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/+/, '') || 'index.html';
+    const file = path.resolve(distDir, rel);
+    if (!file.startsWith(path.resolve(distDir) + path.sep) && file !== path.join(path.resolve(distDir), 'index.html')) { res.writeHead(403).end(); return; }
+    fs.readFile(file, (err, data) => { if (err) { res.writeHead(404).end(); return; } res.writeHead(200, { 'content-type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(data); });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  process.env.WSKIP_BASE_URL = `http://127.0.0.1:${server.address().port}/`;
   for (const seed of seeds) {
     for (const mode of modes) {
       const r = await runOne(browser, distDir, mode, seed);
@@ -225,6 +248,7 @@ async function main() {
     }
   }
   await browser.close();
+  await new Promise((resolve) => server.close(resolve));
   console.log('--- ' + pass + ' ok, ' + fail + ' fail (uruchom z WSKIP_COMPARE=1 WSKIP_OUT=... dla porownania par)');
   process.exit(fail ? 1 : 0);
 }
