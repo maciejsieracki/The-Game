@@ -1,0 +1,32 @@
+
+-- palisada stoi --
+  buduj(lancuch): []  ulepsz: ["Ulepsz → Mury kamienne","Ulepsz → Mury ceglane"]
+PASS: U1: sekcja "Ulepsz" zawiera "Ulepsz → Mury kamienne"
+PASS: U2: sekcja "Ulepsz" zawiera przeskok "Ulepsz → Mury ceglane"
+PASS: U3: w sekcji "Buduj" brak etapow lancucha (ani palisady)
+PASS: U4: przycisk wiersza awansu to "Ulepsz"
+  karta awansu: {"found":true,"hasCard":true,"text":"Mury kamienneEpoka KamieńPoziom L2/2ObronaWymaganeWymagane badaniaMurarstwoWymagane surowce160 Drewno w magazynie (masz 2000)160 Kamień w magazynie (masz 2000)160 Cegła w magazynie (masz 2000)Wymagane warunkiAwans z: Palisada drewniana (opcjonalnie)WymaganiaWymagana technologiaMurarstwoAwans z (opcjonalnie)Palisada drewnianaOpisMury kamienne zapewniają +150% obrony miasta i zastępują Palisadę.Rys historycznyMury obronne z kamienia lub cegły zastępowały drewniane palisady tam, gdzie osada rosła na tyle, by uzasadnić kosztowną, lecz znacznie trwalszą inwestycję w kamienną fortyfikację. Legendarne mury Babilonu, opisywane przez greckich historyków jako jeden z cudów świata, czy potężne mury Kon"}
+PASS: U5: hover na awansie otwiera karte szczegolow
+PASS: U6: karta pokazuje poprzednika (Palisada)
+PASS: U7: karta bez surowych id (mury_kamienne / palisada)
+PASS: U8: koszt jako liczby (160)
+
+-- mury kamienne stoja --
+  buduj(lancuch): []  ulepsz: ["Ulepsz → Mury ceglane","Mury kamienne"]
+PASS: U9: tylko awans na Mury ceglane w "Ulepsz"
+PASS: U10: "Buduj" bez etapow lancucha
+PASS: U10b: awans poziomu zachowuje dotychczasowa etykiete (bez prefiksu lancucha), wiersz lancucha ma prefiks
+
+-- nic z lancucha nie stoi --
+  buduj(lancuch): ["Palisada drewniana","Mury kamienne","Mury ceglane"]  ulepsz: []
+PASS: U11: od zera wszystkie trzy w "Buduj" (przeskok)
+PASS: U12: od zera brak wierszy awansu lancucha w "Ulepsz"
+
+-- awans w kolejce --
+  buduj(lancuch): []  ulepsz: []
+PASS: U13: gdy awans czeka w kolejce, brak kolejnych etapow lancucha
+
+Bledy strony: 0
+PASS: U14: brak bledow strony
+
+15 passed, 0 failed

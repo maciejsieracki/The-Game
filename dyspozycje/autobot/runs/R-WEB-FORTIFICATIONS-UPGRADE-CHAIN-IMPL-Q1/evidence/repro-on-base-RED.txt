@@ -1,0 +1,81 @@
+
+=== (1) DANE (buildings.json / miasto-params.json) ===
+  palisada       epoka=1 praca(efekt)=22 surowce={drewno:120} utrzymanie=1+0/poz upgradeFrom=null upgradeSkip=null upkeepGold(L1)=2
+  mury_kamienne  epoka=1 praca(efekt)=35 surowce={drewno:160,kamien:160,cegla:160} utrzymanie=2+1/poz upgradeFrom=null upgradeSkip=null upkeepGold(L1)=4
+  mury           epoka=2 praca(efekt)=70 surowce={drewno:320,kamien:320,cegla:320} utrzymanie=2+1/poz upgradeFrom=null upgradeSkip=null upkeepGold(L1)=8
+  [OK] D1 wszystkie trzy definicje istnieja
+  [FAIL] D2 relacja awansu: mury_kamienne <- palisada, mury <- mury_kamienne
+  [FAIL] D2b przeskok dozwolony (upgradeSkip) dla obu wyzszych etapow
+  [OK] D3 utrzymanie bazowe BEZ ZMIAN 1 / 2 / 2
+  [OK] D4 bonusy BEZ ZMIAN +100/+150/+200
+  [OK] D5 koszt Pracy BEZ ZMIAN 22 / 35 / 70
+  [OK] D6 Cytadela (fort) poza lancuchem: brak upgradeFrom
+
+=== (2) SCENARIUSZ: Palisada -> Mury kamienne -> Mury ceglane PRZEZ AWANS (tura -> stan) ===
+  T0 start                                           built=[] queue=[] upkeepGold=0 upkeepRes={-} defBonus=+0%
+  [OK] S0 od zera oferowane: palisada, mury kamienne i mury ceglane (przeskok)
+  T1 palisada w kolejce                              built=[] queue=[palisada] upkeepGold=0 upkeepRes={-} defBonus=+0%
+  T2 palisada ukonczona                              built=[palisada] queue=[] upkeepGold=2 upkeepRes={drewno:1} defBonus=+100%
+  [OK] S1 po palisadzie wyzsze etapy oferowane jako awans, palisada nie
+  [FAIL] S1b etykieta "Rozbuduj Palisada drewniana -> Mury kamienne" (jest: Mury kamienne)
+  T3 awans na mury kamienne w kolejce (palisada stoi) built=[palisada] queue=[mury_kamienne] upkeepGold=2 upkeepRes={drewno:1} defBonus=+100%
+  [FAIL] S2 gdy awans czeka w kolejce, NIE da sie zamowic innego etapu lancucha (jeden etap naraz)
+  T4 mury kamienne ukonczone                         built=[mury_kamienne] queue=[] upkeepGold=4 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+150%
+  [OK] S3 awans zastapil palisade: jedna fortyfikacja
+  [FAIL] S3b po kamiennych tylko awans na ceglane z etykieta "Rozbuduj ..."
+  T5 awans na mury ceglane w kolejce                 built=[mury_kamienne] queue=[mury] upkeepGold=4 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+150%
+  T6 mury ceglane ukonczone                          built=[mury] queue=[] upkeepGold=8 upkeepRes={drewno:2,kamien:2,cegla:2} defBonus=+200%
+  [OK] S4 po ukonczeniu: jedna fortyfikacja (mury)
+  [OK] S5 utrzymanie w kazdym stanie = tylko za jedna fortyfikacje
+  [OK] S5b bonus obrony 100 -> 150 -> 200 (bez zmian)
+  [OK] S5c gdy stoja mury ceglane, nic z lancucha nie jest oferowane
+  [OK] F1 palisada: realnie pobrano drewno 120
+  [OK] F2 awans palisada->kamienne: PELNY koszt nowego 160/160/160 (bez odliczenia, bez zwrotu)
+  [OK] F3 awans kamienne->ceglane: PELNY koszt nowego 320/320/320
+  [OK] F4 magazyny po 3 etapach: -600/-480/-480 (stan faktyczny, nie arytmetyka cen)
+  TABELA tura -> (budynki fortyfikacyjne, utrzymanie zl, bonus obrony):
+    T0: [-] utrzymanie=0 bonus=+0%
+    T1: [-] utrzymanie=0 bonus=+0%
+    T2: [palisada] utrzymanie=2 bonus=+100%
+    T3: [palisada] utrzymanie=2 bonus=+100%
+    T4: [mury_kamienne] utrzymanie=4 bonus=+150%
+    T5: [mury_kamienne] utrzymanie=4 bonus=+150%
+    T6: [mury] utrzymanie=8 bonus=+200%
+  [OK] S6 w zadnej turze wiecej niz jedna fortyfikacja w miescie
+
+=== (3) PRZESKOK: mury ceglane od zera za pelny koszt ===
+  [OK] P1 od zera nazwa bez "Rozbuduj" (to budowa, nie awans)
+  [OK] P2 przeskok kosztuje pelne 70 Pracy + 320/320/320 (realne potracenie)
+  [OK] P3 ukonczenie od zera daje jedno "mury"
+  [OK] P4 przeskok palisada -> mury: palisada znika (nie tylko bezposredni poprzednik)
+  [FAIL] P5 etykieta przeskoku z palisady: "Rozbuduj Palisada -> Mury ceglane"
+  [OK] P6 inne budynki nietkniete, nizszy etap znika
+
+=== (4) BLOKADA KOLEJKI w obie strony (jeden etap lancucha naraz) ===
+  [FAIL] Q1 palisada w kolejce -> zadnego etapu lancucha (ani kamiennych, ani ceglanych)
+  [FAIL] Q2 mury kamienne w kolejce -> ani palisada (nizszy), ani mury (wyzszy)
+  [OK] Q3 mury ceglane w kolejce -> ani palisada, ani kamienne
+  [FAIL] Q4 palisada stoi + awans na kamienne w kolejce -> nie da sie dolozyc murow ceglanych
+  [OK] Q5 kamienne stoja + awans na ceglane w kolejce -> nic wiecej
+  [OK] Q6 zabezpieczenie: gdy stoja mury ceglane, nizsze nie sa oferowane
+  [OK] Q7 straznik ukonczenia: spozniony nizszy etap nie cofa wyzszego
+  [OK] Q8 Cytadela (fort) NIE zastepuje murow (osobne budynki)
+
+=== (5) MIGRACJA ZAPISU: kilka fortyfikacji w cityBuilt ===
+  legacy: palisada+kamienne+ceglane                  built=[palisada,mury_kamienne,mury] queue=[] upkeepGold=14 upkeepRes={drewno:5,kamien:4,cegla:4} defBonus=+200%
+/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-1/gra/tools/fortifications-stack-repro-test.cjs:180
+  const migrated = M.collapseFortificationChain(legacy, buildings);
+                     ^
+
+TypeError: M.collapseFortificationChain is not a function
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-1/gra/tools/fortifications-stack-repro-test.cjs:180:22)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0

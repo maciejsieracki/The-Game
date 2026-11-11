@@ -233,12 +233,16 @@ function ok(c, m) {
   ok(wielkaKuzniaLines.length > 0, 'Wielka Kuźnia: upgradeCompositionLines() niepuste (jest następcą)');
 
   // Budynki bez upgradeFrom (w tym cztery pary boczne + nowa Baszta) nie rozwijają nic.
-  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'mury', 'baszta']) {
+  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'baszta']) {
     const chain = M.upgradeChainSteps(id, buildings);
     ok(chain.length === 1, `${id}: łańcuch to tylko on sam (długość 1, brak upgradeFrom)`);
     const lines = M.upgradeCompositionLines(id, buildings);
     ok(lines.length === 0, `${id}: upgradeCompositionLines() puste — nic się nie rozwija`);
   }
+  // R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1 (2026-11-11): Mury ceglane NIE są już bez łańcucha --
+  // palisada -> mury_kamienne -> mury (awans, decyzja właściciela). Cytadela (fort) zostaje osobno (sprawdzona wyżej).
+  const murChain = M.upgradeChainSteps('mury', buildings);
+  ok(murChain.map(c => c.id).join(',') === 'palisada,mury_kamienne,mury', 'mury: łańcuch awansu palisada→mury_kamienne→mury');
 }
 
 console.log(`\ngrupy-budynkow-test: ${pass} pass, ${fail} fail`);
