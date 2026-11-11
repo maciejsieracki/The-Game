@@ -1,0 +1,86 @@
+{
+  "generatedAt": "2026-11-11T11:21:05.237Z",
+  "exe": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  "results": [
+    {
+      "mode": "auto",
+      "siege": false,
+      "done": true,
+      "finished": true,
+      "roundNo": 3,
+      "stats": {
+        "frames": 33,
+        "maxDeadSeen": 16,
+        "orphanMax": 0,
+        "checks": 34,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 16,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        15,
+        25
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10710,
+      "winner": "obronca",
+      "logTail": [
+        "Horseman trafia Horseman za 18 (HP 0/56).",
+        "  -> Horseman wyeliminowany",
+        "Horseman trafia Horseman [FLANKA -25% obrony] za 38 (HP 0/56).",
+        "  -> Horseman wyeliminowany",
+        "=== Morale armii ATAKUJACEGO zalamane (16% < 25%) -- armia w rozsypce! ===",
+        "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+      ],
+      "timedOut": false,
+      "ms": 42912,
+      "errors": []
+    },
+    {
+      "mode": "skip",
+      "siege": false,
+      "done": true,
+      "finished": true,
+      "roundNo": 4,
+      "stats": {
+        "frames": 8,
+        "maxDeadSeen": 24,
+        "orphanMax": 0,
+        "checks": 9,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 24,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        12,
+        20
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10694,
+      "winner": "obronca",
+      "logTail": [
+        "Archer trafia Archer za 4 (HP 0/16).",
+        "  -> Archer wyeliminowany",
+        "  -> Archer ZALAMUJE MORALE i ucieka z pola!",
+        "Archer chybia w Hastati (34>=32.5%).",
+        "=== Morale armii ATAKUJACEGO zalamane (12% < 25%) -- armia w rozsypce! ===",
+        "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+      ],
+      "timedOut": false,
+      "ms": 4516,
+      "errors": []
+    }
+  ]
+}

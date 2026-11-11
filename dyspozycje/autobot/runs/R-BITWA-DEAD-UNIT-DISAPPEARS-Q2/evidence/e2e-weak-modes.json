@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2026-11-11T11:27:23.901Z",
+  "exe": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  "results": [
+    {
+      "mode": "manualskip",
+      "siege": false,
+      "done": true,
+      "finished": true,
+      "roundNo": 3,
+      "stats": {
+        "frames": 8,
+        "maxDeadSeen": 21,
+        "orphanMax": 0,
+        "checks": 9,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 21,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        16,
+        19
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10700,
+      "winner": "obronca",
+      "logTail": [
+        "Horseman trafia Horseman za 18 (HP 0/56).",
+        "  -> Horseman wyeliminowany",
+        "Horseman trafia Horseman [FLANKA -25% obrony] za 38 (HP 0/56).",
+        "Archer chybia w Hastati (53>=32.5%).",
+        "=== Morale armii ATAKUJACEGO zalamane (19% < 25%) -- armia w rozsypce! ===",
+        "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+      ],
+      "timedOut": false,
+      "ms": 3539,
+      "errors": []
+    },
+    {
+      "mode": "midskip",
+      "siege": false,
+      "done": true,
+      "finished": true,
+      "roundNo": 3,
+      "stats": {
+        "frames": 9,
+        "maxDeadSeen": 21,
+        "orphanMax": 0,
+        "checks": 10,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 21,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        15,
+        20
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10700,
+      "winner": "obronca",
+      "logTail": [
+        "Horseman chybia w Horseman (56>=41%).",
+        "Horseman trafia Horseman za 18 (HP 0/56).",
+        "  -> Horseman wyeliminowany",
+        "Horseman chybia w Horseman (76>=64.75%).",
+        "=== Morale armii ATAKUJACEGO zalamane (21% < 25%) -- armia w rozsypce! ===",
+        "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+      ],
+      "timedOut": false,
+      "ms": 7233,
+      "errors": []
+    },
+    {
+      "mode": "skip",
+      "siege": true,
+      "done": true,
+      "finished": true,
+      "roundNo": 150,
+      "stats": {
+        "frames": 53,
+        "maxDeadSeen": 8,
+        "orphanMax": 0,
+        "checks": 54,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 8,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        21,
+        27
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10769,
+      "winner": "remis",
+      "logTail": [
+        "Archer chybia w Phalanx (75>=15%).",
+        "Archer chybia w Phalanx (30>=15%).",
+        "Archer trafia Phalanx za 2 (HP 3/40).",
+        "Archer chybia w Phalanx (38>=15%).",
+        "=== PAT: 150 tur bez rozstrzygniecia -- SZTURM ODPARTY (remis): brak wylomu w murze/palisadzie, atakujacy sie wycofuja, miasto zostaje przy obroncy ===",
+        "=== Koniec bitwy: REMIS ==="
+      ],
+      "timedOut": false,
+      "ms": 69085,
+      "errors": []
+    },
+    {
+      "mode": "auto",
+      "siege": true,
+      "done": false,
+      "finished": false,
+      "roundNo": 2,
+      "stats": {
+        "frames": 147,
+        "maxDeadSeen": 0,
+        "orphanMax": 0,
+        "checks": 147,
+        "hp0Alive": 0,
+        "deadVisible": 0,
+        "deadAttached": 0
+      },
+      "kills": 0,
+      "violations": [],
+      "nViolations": 0,
+      "alive": [
+        28,
+        28
+      ],
+      "roster": [
+        28,
+        28
+      ],
+      "sceneChildren": 10785,
+      "winner": null,
+      "logTail": [],
+      "timedOut": true,
+      "ms": 200426,
+      "errors": []
+    }
+  ]
+}
