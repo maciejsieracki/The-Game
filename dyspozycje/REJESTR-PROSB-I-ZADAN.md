@@ -9641,3 +9641,8 @@ Właścicielpoprawiłbonusy: PALISADA100%, KAMIEŃ150%, CEGŁA200%. Zastępujewc
 STATUS: W REALIZACJI
 DOMAIN: GAME
 Zgłoszenie: Inkowie, 24818 brązu w kontrpropozycji. Podejrzenie nadmiernej produkcji lub błędnego licznika; przyczyna niepotwierdzona. Operator audytuje źródło liczby i zachowanie bieżącej produkcji, bez arbitralnego limitu zapasów. Dispatch: `autobot/runs/R-WEB-AI-BRONZE-STOCK-EXCESS-Q1/00-dispatch.md`. Zajmuje slot czasowo odłożonego kandydata barteru f20b81654.
+
+## 2026-11-11 — R-WEB-CAVALRY-IRON-ONLY-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Właściciel zlecił przeniesienie każdego typu konnicy do Żelaza. Rydwany oddzielnie. Zarejestrowane do najbliższego wolnego slotu, bez zmiany kosztów/statystyk i bez dopisywania niezatwierdzonego wymogu Akademii. Dispatch w `autobot/runs/R-WEB-CAVALRY-IRON-ONLY-Q1/00-dispatch.md`.
