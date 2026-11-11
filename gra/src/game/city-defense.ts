@@ -44,6 +44,8 @@ export interface CityDefenseBonusParams {
   baszta: number;
   /** bonus_obrona_palisada_proc (miasto-params.json) -- wczesna palisada, zwykle 100. */
   palisada?: number;
+  /** bonus_obrona_mur_kamienny_proc (miasto-params.json), usually 150. */
+  murKamienny?: number;
 }
 
 /**
@@ -58,15 +60,22 @@ export function cityWallDefenseBonusPercent(
 ): number {
   const built = builtBuildingIds ?? [];
   const hasMury = built.includes('mury');
+  const hasKamienneMury = built.includes('mury_kamienne');
   const hasFort = built.includes('fort');
   const hasBaszta = built.includes('baszta');
   const hasPalisada = built.includes('palisada');
   const palisadaProc = params.palisada ?? 100;
 
   let total = 0;
-  if (hasMury || hasFort) {
+  if (hasMury) {
     total += params.mur;
     if (hasFort) total += params.cytadela;
+  } else if (hasKamienneMury) {
+    total += params.murKamienny ?? 150;
+    if (hasFort) total += params.cytadela;
+  } else if (hasFort) {
+    // Legacy/save compatibility: older standalone fort records represented the wall tier.
+    total += params.mur + params.cytadela;
   } else if (hasPalisada) {
     total += palisadaProc;
   }

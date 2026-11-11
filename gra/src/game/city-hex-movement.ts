@@ -59,7 +59,7 @@ export function canAiEnterEmptyEnemyCity(
   if (hexDistance(unitQ, unitR, city.q, city.r) !== 1) return false;
   if (hasDefenders) return false;
   if (city.maMur === true) return false;
-  return !cityBuiltIds.some(id => id === 'palisada' || id === 'mury' || id === 'fort' || id === 'baszta');
+  return !cityBuiltIds.some(id => id === 'palisada' || id === 'mury' || id === 'mury_kamienne' || id === 'fort' || id === 'baszta');
 }
 
 /** Heksy miast, których właścicielem NIE jest dana frakcja — do blokady pathfindingu. */

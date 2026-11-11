@@ -32388,12 +32388,13 @@ async function boot(): Promise<void> {
     // w battleScene.ts onWallWalkway, zeby oba tryby liczyly to samo). Zob. tez
     // battleScene.ts (onWallWalkway).
     const MUR_BONUS_PROC = (miastoParams.bonus_obrona_mur_proc?.wartosc as number) ?? 200;
+    const MUR_KAMIENNY_BONUS_PROC = (miastoParams.bonus_obrona_mur_kamienny_proc?.wartosc as number) ?? 150;
     const CYTADELA_BONUS_PROC = (miastoParams.bonus_obrona_cytadela_proc?.wartosc as number) ?? 100;
     const BASZTA_BONUS_PROC = (miastoParams.bonus_obrona_baszta_proc?.wartosc as number) ?? 100;
     const PALISADA_BONUS_PROC = (miastoParams.bonus_obrona_palisada_proc?.wartosc as number) ?? 100;
 
     const cityDefenseBonusParams: CityDefenseBonusParams = {
-      mur: MUR_BONUS_PROC,
+      mur: MUR_BONUS_PROC, murKamienny: MUR_KAMIENNY_BONUS_PROC,
       cytadela: CYTADELA_BONUS_PROC,
       baszta: BASZTA_BONUS_PROC,
       palisada: PALISADA_BONUS_PROC,
@@ -32445,7 +32446,7 @@ async function boot(): Promise<void> {
       if (!cityOnHex) return { isCity: false, hasMur: false };
       const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
       const wallBonus = cityWallDefenseBonusPercent(builtIds, {
-        mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
+        mur: MUR_BONUS_PROC, murKamienny: MUR_KAMIENNY_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
         palisada: PALISADA_BONUS_PROC,
       });
       return { isCity: true, hasMur: wallBonus > 0 };
@@ -32457,7 +32458,7 @@ async function boot(): Promise<void> {
       if (cityOnHex) {
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
         const wallBonus = cityWallDefenseBonusPercent(builtIds, {
-          mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
+          mur: MUR_BONUS_PROC, murKamienny: MUR_KAMIENNY_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
           palisada: PALISADA_BONUS_PROC,
         });
         if (wallBonus > 0) return wallBonus;
@@ -36614,7 +36615,8 @@ async function boot(): Promise<void> {
       if (siege) {
         let fortParam = '';
         try { fortParam = new URLSearchParams(window.location.search).get('fort') ?? ''; } catch { /* brak location */ }
-        bOpts.siege = { defCiv: 'grecja', builtBuildingIds: [fortParam === 'palisada' ? 'palisada' : 'mury'] };
+        const builtFortId = fortParam === 'palisada' ? 'palisada' : fortParam === 'stone' ? 'mury_kamienne' : 'mury';
+        bOpts.siege = { defCiv: 'grecja', builtBuildingIds: [builtFortId] };
         // R4 (obrona r2): ?defera=1..3 -- epoka obroncy w playtescie (pomiar zywy ostrzalu wiezyczek w epokach 2-3).
         try {
           const de = Number(new URLSearchParams(window.location.search).get('defera'));
@@ -45741,7 +45743,7 @@ async function boot(): Promise<void> {
         }
         if (c.maMur === undefined) {
           const built = saved.cityBuilt?.[c.id];
-          if (built?.includes('mury') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
+          if (built?.includes('mury') || built?.includes('mury_kamienne') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
         }
         cities.push(c);
       }

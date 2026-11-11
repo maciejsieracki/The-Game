@@ -775,7 +775,7 @@ function scoreTech(
   }
 
   // Mury (walls): P-AI-008 — major AI pod zagrożeniem nie ciągnie murów (produkcja ani badania).
-  if (unlocks.includes('mury')) {
+  if (unlocks.includes('mury') || unlocks.includes('mury_kamienne')) {
     score += 30;
   }
 
@@ -1716,7 +1716,7 @@ function collectAvailableBuildingCandidates(
 // ---------------------------------------------------------------------------
 
 /** Budynki fortyfikacyjne, których score jest podbijany pod zagrożeniem/na granicy. */
-const MAJOR_FORTIFICATION_IDS = new Set(['mury', 'fort', 'baszta']);
+const MAJOR_FORTIFICATION_IDS = new Set(['mury', 'mury_kamienne', 'fort', 'baszta']);
 
 /** Bonus do score fortyfikacji, gdy miasto major AI jest ZAGROŻONE (underThreat). */
 const AI_MAJOR_WALL_THREAT_BONUS = 180;
@@ -2009,8 +2009,8 @@ export function chooseCityProduction(
   if (underThreat) {
     if (opts.defensiveCopy) {
       const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank, true);
-      if (!built.includes('mury') && wallScore !== null) {
-        candidates.push({ id: 'mury', score: wallScore });
+      if (!built.includes('mury') && !built.includes('mury_kamienne') && wallScore !== null) {
+        candidates.push({ id: built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne', score: wallScore });
       }
       candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
     } else if (isMajorAiOwner(opts)) {
@@ -2049,8 +2049,8 @@ export function chooseCityProduction(
     // garnizon nie jest dopełniony (csGarrisonMet) -- ten sam powód co przy
     // Palisadzie niżej: inaczej Mury (flat 320+defenseScore) przebijałyby na
     // stałe nawet Studnię z pełnym pokryciem katalogu (ai-test T7D-h).
-    if (!csGarrisonMet && !built.includes('mury')) {
-      candidates.push({ id: 'mury', score: 320 + defenseScore });
+    if (!csGarrisonMet && !built.includes('mury') && !built.includes('mury_kamienne')) {
+      candidates.push({ id: built.includes('mury_kamienne') ? 'mury' : 'mury_kamienne', score: 320 + defenseScore });
     }
     // Spichlerz USUNIĘTY stąd (był flat 250, redundantny) -- teraz pochodzi
     // z collectAvailableBuildingCandidates niżej (grupa Żywność), tak jak dla
@@ -2250,7 +2250,7 @@ export function chooseCityProduction(
     // garrisonMet Palisada nadal jest kandydatem (przez
     // collectAvailableBuildingCandidates, grupa Wojsko i obrona), tylko bez
     // sztucznego forsowania ponad ekonomię.
-    if (!garrisonMet && !built.includes('palisada') && !built.includes('mury')) {
+    if (!garrisonMet && !built.includes('palisada') && !built.includes('mury') && !built.includes('mury_kamienne')) {
       candidates.push({ id: 'palisada', score: 340 + defenseScore });
     }
     // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1: dawny `infraOrder` (7 zaszytych

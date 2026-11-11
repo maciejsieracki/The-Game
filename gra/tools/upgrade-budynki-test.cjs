@@ -13,7 +13,7 @@ const BUNDLE = path.resolve(__dirname, '.upgrade-budynki-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
 export {
-  availableProduction, applyCompletedBuildingIds, isBuildingSupersededByUpgrade,
+  availableProduction, buildableProduction, eraBuildingCatalog, applyCompletedBuildingIds, isBuildingSupersededByUpgrade,
 } from '../src/game/production';
 export {
   upgradeProductionDisplayName, isBuildingSuppressedFromProduction,
@@ -94,6 +94,42 @@ function ok(c, m) {
   const after = M.applyCompletedBuildingIds(['mury'], 'fort', buildings);
   ok(after.includes('fort') && after.includes('mury'), 'po ukonczeniu fort: Mury ZOSTAJA na builtIds (nie sa zastepowane)');
   ok(M.cityHasMurLine(after), 'cityHasMurLine z obydwoma budynkami w miescie');
+}
+
+// R-WEB-WALL-TIERS-MASONRY-BRICK-Q1: preserve old brick save ID and replace only lower tiers.
+{
+  const stone = buildings.find(b => b.id === 'mury_kamienne');
+  const brick = buildings.find(b => b.id === 'mury');
+  ok(stone.techUnlock === 'Murarstwo' && brick.techUnlock === 'Budownictwo', 'stone/brick tiers unlock at Murarstwo/Budownictwo');
+  ok(brick.nazwa === 'Mury ceglane', 'legacy mury ID visibly names the brick tier');
+  const afterStone = M.applyCompletedBuildingIds(['palisada'], 'mury_kamienne', buildings);
+  ok(JSON.stringify(afterStone) === JSON.stringify(['mury_kamienne']), 'stone replaces palisade without stacking');
+  const afterBrick = M.applyCompletedBuildingIds(['mury_kamienne', 'fort'], 'mury', buildings);
+  ok(afterBrick.includes('mury') && !afterBrick.includes('mury_kamienne') && afterBrick.includes('fort'), 'brick replaces stone while preserving additive Citadel');
+  const legacy = M.applyCompletedBuildingIds(['mury'], 'mury', buildings);
+  ok(legacy.includes('mury') && legacy.length === 1, 'legacy saved mury record remains intact');
+
+  // Once brick is built, neither player nor AI production may offer the weaker
+  // stone tier. Keep the epoch catalog consistent with the buildable selector.
+  const brickBuilt = { epoch: 2, builtBuildingIds: ['mury'], isCapital: true };
+  const available = M.availableProduction(city, prodData, ['Murarstwo', 'Budownictwo'], brickBuilt);
+  const buildable = M.buildableProduction(city, prodData, ['Murarstwo', 'Budownictwo'], brickBuilt);
+  ok(!available.some(i => i.id === 'mury_kamienne'), 'availableProduction hides stone when legacy brick is already built');
+  ok(!buildable.some(i => i.id === 'mury_kamienne'), 'buildableProduction (shared player/AI selector) hides stone after brick');
+  const catalog = M.eraBuildingCatalog(prodData, ['Murarstwo', 'Budownictwo'], brickBuilt);
+  ok(!catalog.some(i => i.id === 'mury_kamienne'), 'eraBuildingCatalog hides weaker stone tier after brick');
+  const brickQueued = {
+    epoch: 2,
+    builtBuildingIds: [],
+    productionQueue: [{ kind: 'budynek', id: 'mury' }],
+  };
+  ok(!M.buildableProduction(city, prodData, ['Murarstwo', 'Budownictwo'], brickQueued).some(i => i.id === 'mury_kamienne'), 'queued brick suppresses weaker stone from player/AI production');
+  ok(!M.eraBuildingCatalog(prodData, ['Murarstwo', 'Budownictwo'], brickQueued).some(i => i.id === 'mury_kamienne'), 'queued brick suppresses weaker stone from epoch catalog');
+
+  const delayedStone = M.applyCompletedBuildingIds(['mury', 'fort', 'baszta'], 'mury_kamienne', buildings);
+  ok(JSON.stringify(delayedStone) === JSON.stringify(['mury', 'fort', 'baszta']), 'stale stone completion cannot downgrade or stack beside brick; additive defense buildings survive');
+  const delayedPalisade = M.applyCompletedBuildingIds(['mury_kamienne', 'mury', 'fort'], 'palisada', buildings);
+  ok(JSON.stringify(delayedPalisade) === JSON.stringify(['mury', 'fort']), 'stale palisade completion preserves only stronger wall tier and Citadel');
 }
 
 // GRUPY-BUDYNKOW: Biblioteka + Akademia TERAZ niezalezne (upgradeFrom usuniety).

@@ -16,7 +16,7 @@
  *       „<czynność>, aby <korzyść>.” złożone dokładnie z danych; zakazane frazy
  *       („jeśli spełnisz ich wymagania”, „na odpowiednim złożu”, …) nieobecne;
  *   [D] efekty martwe z ANALIZY §8 (`_martweFrazy` w korektach) nieobecne w treści karty
- *       (poza Rysem historycznym); fallback na dawne `top3` użyty 0/43 razy; reszta
+ *       (poza Rysem historycznym); fallback na dawne `top3` użyty 0/44 razy; reszta
  *       kolejności sekcji nietknięta (Charakterystyka → Plony → Koszty → Poziomy);
  *   [E] przypadki szczególne: Mennica Top1 ×1,5 + handel→pieniądz; Koszary — bramka
  *       rekrutacji wojska epoki Brązu i Żelaza (production.ts:1068-1076); Akwedukt — limit
@@ -59,8 +59,8 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'entity-card-contract-brandAsse
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'entity-card-contract-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.building-cards-top5-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.building-cards-top5-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const SCREEN_IDS = ['mennica', 'koszary', 'trybunal', 'akwedukt', 'garnizon', 'warsztat_oblezniczy'];
+const FALLBACK_CHROME = process.env.BUILD_CARDS_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const SCREEN_IDS = ['mennica', 'koszary', 'trybunal', 'akwedukt', 'garnizon', 'warsztat_oblezniczy', 'mury', 'mury_kamienne'];
 const EXPECTED_HIDDEN = ['wielka_odlewnia', 'wielka_kuznia', 'teatr'];
 
 const screensArgIdx = process.argv.indexOf('--screens');
@@ -82,7 +82,7 @@ function check(name, cond, detail) {
 }
 
 async function launchBrowser() {
-  try { return await chromium.launch({ headless: true }); }
+  try { return await chromium.launch({ headless: true, executablePath: process.env.BUILD_CARDS_CHROME || undefined }); }
   catch (e) {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox'] });
   }
@@ -102,9 +102,9 @@ async function main() {
   const korekty = JSON.parse(fs.readFileSync(path.join(__dirname, 'gen-building-cards-top5.korekty.json'), 'utf8'));
   const martwe = korekty._martweFrazy || {};
   const cardKeys = Object.keys(cards).filter((k) => !k.startsWith('_'));
-  check('[A] buildings.json ma 43 budynki', buildings.length === 43, buildings.length);
+  check('[A] buildings.json ma 44 budynki', buildings.length === 44, buildings.length);
   const missing = buildings.map((b) => b.id).filter((id) => !cards[id]);
-  check('[A] każdy budynek ma wpis w building-cards-top5.json (43/43)', missing.length === 0, missing);
+  check('[A] każdy budynek ma wpis w building-cards-top5.json (44/44)', missing.length === 0, missing);
   const orphans = cardKeys.filter((k) => !buildings.some((b) => b.id === k));
   check('[A] brak osieroconych wpisów w building-cards-top5.json', orphans.length === 0, orphans);
   const gen = spawnSync(process.execPath, [path.join(__dirname, 'gen-building-cards-top5.cjs'), '--check'], { encoding: 'utf8' });
@@ -123,7 +123,7 @@ async function main() {
     check(`[A] ${id}: CMZ 1–3 zdania`, c.cmz.length >= 1 && c.cmz.length <= 3, c.cmz.length);
   }
   const top3Kept = buildings.filter((b) => Array.isArray(b.top3)).length;
-  check('[A] pole `top3` w buildings.json zachowane (inne konsumenty: emporion-building-test)', top3Kept === 43, top3Kept);
+  check('[A] pole `top3` w buildings.json zachowane (inne konsumenty: emporion-building-test)', top3Kept === 44, top3Kept);
 
   // ---- [G] kafelek „Technologie” hosta (cityPanel.ts) — ZNANY STAN poza allowlistą ----------
   {
@@ -326,7 +326,7 @@ async function main() {
       JSON.stringify(r.orderedKeys.slice(0, 3)) === JSON.stringify(['requirements', 'description', '__historia__']), r.orderedKeys.slice(0, 4));
     if (!exp.top5 || exp.top5.length === 0) fallbackUsed++;
   }
-  check('[D] fallback na dawne `top3` użyty 0/43 razy', fallbackUsed === 0, fallbackUsed);
+  check('[D] fallback na dawne `top3` użyty 0/44 razy', fallbackUsed === 0, fallbackUsed);
 
   // ---- [E] przypadki szczególne ------------------------------------------------------------
   const R = (id) => rendered[id];

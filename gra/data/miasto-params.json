@@ -81,6 +81,11 @@
     "jednostka": "% Obrony",
     "opis": "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
   },
+  "bonus_obrona_mur_kamienny_proc": {
+    "wartosc": 150,
+    "jednostka": "% Obrony",
+    "opis": "Mury kamienne (building ID mury_kamienne, po Murarstwie) dają +150% Obrony broniącym się jednostkom. Są etapem pośrednim między Palisadą (+100%) a Murami ceglanymi zachowującymi ID mury (+200%); wybierany jest wyłącznie najwyższy z tych bonusów."
+  },
   "bonus_obrona_cytadela_proc": {
     "wartosc": 100,
     "jednostka": "% Obrony (dodatkowo do muru)",

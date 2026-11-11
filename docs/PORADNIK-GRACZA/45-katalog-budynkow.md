@@ -36,7 +36,8 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
 | Studnia | Zdrowie | Kamień | Gospodarka wodna | 15 pracy | 1 ¤/t | +1 szczęście | [Studnia](../encyklopedia/budynki/studnia.md) |
-| Mury | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury](../encyklopedia/budynki/mury.md) |
+| Mury kamienne | Obrona | Kamień | Murarstwo | 35 pracy | 2 ¤/t | +150% Obrony (max 2 poz.) | [Mury kamienne](../encyklopedia/budynki/mury-kamienne.md) |
+| Mury ceglane | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury ceglane](../encyklopedia/budynki/mury.md) |
 | Koszary | Wojsko | Brąz | Wojskowosc | 25 pracy | 2 ¤/t | +2 praca; +20% miękkie (wizyta) | [Koszary](../encyklopedia/budynki/koszary.md) |
 | Magazyn | Produkcja+Podatek | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 podatek | [Magazyn](../encyklopedia/budynki/magazyn.md) |
 | Stela / Pomnik | Kultura | Kamień | Murarstwo | 15 pracy | 0 ¤/t | +1 kultura | [Stela / Pomnik](../encyklopedia/budynki/stela.md) |
@@ -190,12 +191,11 @@ Bonus **+1 szczęście** — przy **4** polach w okolicy suma skalowana liniowo 
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/studnia.md`](../encyklopedia/budynki/studnia.md)
 
-### Mury
+### Mury kamienne i ceglane
 
-**Mury** (Obrona) odblokowuje się w epoce **Brąz** po technologii **Budownictwo**. Koszt od **35** pracy + **8× drewno, 16× kamień**; **maks. 2 poziomy**. Utrzymanie: **2** ¤/t.
+**Mury kamienne** odblokowują się po **Murarstwie** w epoce Kamienia i dają **+150% Obrony**. **Mury ceglane** odblokowują się po **Budownictwie** w epoce Brązu i dają **+200% Obrony**. Ceglane Mury zachowują dawny identyfikator `mury`, więc istniejące zapisy zachowują ten sam poziom obrony. Każdy etap zastępuje słabszą fortyfikację; bonusy się nie sumują. Cytadela i Baszta nadal dodają swoje niezależne bonusy.
 
-Daje **+200% Obrony** broniącym się jednostkom — bonus **procentowy**, nie płaski „+5 obrony". Zastępują bonus **Palisady** (+100%). **Cytadela** i **Baszta** to osobne budynki dokładane obok (każda +100% dodatkowo).
-
+Oba warianty używają dotychczasowego kosztu i utrzymania Murów: **35** pracy + **80** drewna, **80** kamienia i **80** cegły; **maks. 2 poziomy**, +12 pracy i +1 ¤/t na poziom.
 
 ### Przykład liczbowy
 

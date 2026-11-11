@@ -813,6 +813,22 @@ export function isBuildingSupersededByUpgrade(
   return false;
 }
 
+/** A stronger completed wall tier blocks construction of the weaker tier. */
+function isWallTierBlockedByStrongerWall(
+  buildingId: string,
+  builtIds: readonly string[],
+  queue: readonly ProductionItem[],
+): boolean {
+  const existsOrQueued = (id: string) => builtIds.includes(id) || buildingTypeQueued(id, queue);
+  if (buildingId === 'palisada') {
+    return existsOrQueued('mury_kamienne') || existsOrQueued('mury') || existsOrQueued('fort');
+  }
+  if (buildingId === 'mury_kamienne') {
+    return existsOrQueued('mury') || existsOrQueued('fort');
+  }
+  return false;
+}
+
 /**
  * Po ukonczeniu budynku: upgrade zastepuje poprzednika w builtIds (T-TECH-8, ABC-7).
  * Pure — zwraca nowa tablice; caller podmienia stan miasta.
@@ -832,8 +848,19 @@ export function applyCompletedBuildingIds(
   if (!next.includes(completedBuildingId)) next.push(completedBuildingId);
   // Kamienne Mury zastępują wczesną Palisadę drewnianą (nie stack bonusów).
   if (completedBuildingId === 'mury') {
+    for (const replacedId of ['mury_kamienne', 'palisada']) {
+      const idx = next.indexOf(replacedId);
+      if (idx >= 0) next.splice(idx, 1);
+    }
+  } else if (completedBuildingId === 'mury_kamienne') {
+    // A delayed lower-tier queue item must never downgrade an existing brick wall.
+    if (next.includes('mury') || next.includes('fort')) return next.filter(id => id !== 'mury_kamienne' && id !== 'palisada');
     const pi = next.indexOf('palisada');
     if (pi >= 0) next.splice(pi, 1);
+  } else if (completedBuildingId === 'palisada') {
+    // Defensive completion guard for stale queues / saves: keep only the highest tier.
+    if (next.includes('mury') || next.includes('fort')) return next.filter(id => id !== 'palisada' && id !== 'mury_kamienne');
+    if (next.includes('mury_kamienne')) return next.filter(id => id !== 'palisada');
   }
   return next;
 }
@@ -966,8 +993,9 @@ export function availableProduction(
     if (b.epokaWejscia > epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
 
-    // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
-    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
+    // Block weaker tiers when a stronger wall/Citadel already exists. The same
+    // availability function feeds player production and AI city building.
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue)) continue;
 
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
     if (upgradeFrom.length > 0) {
@@ -2475,8 +2503,7 @@ export function eraBuildingCatalog(
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
-    // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
-    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue)) continue;
 
     const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),

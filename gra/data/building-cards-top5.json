@@ -3,7 +3,7 @@
     "temat": "R-WEB-BUILDING-CARDS-TOP5-IMPLEMENT-Q1",
     "generator": "gra/tools/gen-building-cards-top5.cjs (+ gen-building-cards-top5.korekty.json)",
     "zrodloCsv": "budynki-top5.csv (FC c828a978f, docs 1c5009f71)",
-    "csvSha256": "b81c7b6547f6ddb51c35f54dba15bf49ca7452a3626eb12252ad2b75d684e5d0",
+    "csvSha256": "ca618953dd658db67832da4555cc3139430c3a944754f03f018f0db579139cd5",
     "pola": "top5:[{tytul, liczba?, zdanie, rodzaj:'efekt'|'warunek'|'rozbudowa', dowod?}] · cmz:[{czynnosc, korzysc}] · ukryty?:true · opisKarty?"
   },
   "stolarnia": {
@@ -686,6 +686,28 @@
       {
         "czynnosc": "Zbuduj Palisadę drewnianą",
         "korzysc": "podwoić obronę miasta (+100% Obrony)"
+      }
+    ]
+  },
+  "mury_kamienne": {
+    "top5": [
+      {
+        "tytul": "+150% Obrony",
+        "liczba": "+150%",
+        "zdanie": "Podnosi obronę miasta ponad Palisadę.",
+        "rodzaj": "efekt",
+        "dowod": "gra/src/game/city-defense.ts; gra/data/miasto-params.json"
+      },
+      {
+        "tytul": "Brama oblężenia",
+        "zdanie": "Miasto trzeba oblegać zgodnie z zasadą dla fortyfikacji.",
+        "rodzaj": "efekt"
+      }
+    ],
+    "cmz": [
+      {
+        "czynnosc": "Zbuduj Basztę",
+        "korzysc": "dodać jej osobny bonus obrony"
       }
     ]
   },

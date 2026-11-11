@@ -165,7 +165,7 @@ export interface BuildingDef {
    * 'maFort' dla Cytadeli). Odczytywane przez
    * game/production.ts buildingUnlockFlagFor() i stosowane w main.ts w miejscu
    * ukonczenia produkcji budynku -- zamienia dawny hardkod
-   * `id === 'mury' || id === 'fort'`. Opcjonalne — brak = budynek nie
+   * `id === 'mury' || id === 'mury_kamienne' || id === 'fort'`. Opcjonalne — brak = budynek nie
    * odblokowuje zadnej flagi City.
    */
   odblokowuje?: string;
