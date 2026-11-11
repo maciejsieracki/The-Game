@@ -80,6 +80,9 @@ fn transfer_vectors_match_pin_state_and_calls() {
             exp["ownerId"].as_i64().unwrap(),
             "vector {idx}: ownerId"
         );
+        // UWAGA: `population` z pinu to wynik przy STUBIE applyCapturePopulationLoss (undefined, bez utraty
+        // obywatela). Zgodnosc z webem tej wartosci zachodzi tylko przy zalozeniu applyCapturePopulationLoss = no-op.
+        // Pelna utrate obywatela testuje dopiero temat po wdrozeniu BRAK applyCapturePopulationLoss.
         let pop_exp = parse_num(&exp["population"]);
         assert!(
             (city.population.is_nan() && pop_exp.is_nan()) || city.population == pop_exp,

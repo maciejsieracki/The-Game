@@ -6,6 +6,11 @@
 //   * gra/src/game/display-names.ts: clearCityStateFlagOnCapture (wykonywane realnie, nie atrapa).
 // Wycinki funkcji sa wykonywane w `with` na Proxy (jak w p6_siege_surrender_gen.mjs). Kazde wywolanie identyfikatora
 // spoza zestawu `vars`/wycinkow jest zapisywane w `calls` i zwraca undefined - bez cichej atrapy logiki weba.
+// UWAGA (zarzut Evaluatora): `applyCapturePopulationLoss` (i pozostale wolania z tabeli TRANSFER_EFFECTS o statusie
+// Missing) NIE sa wykonywane - atrapa Proxy zwraca undefined i tylko zapisuje wolanie w `calls`. Oczekiwana populacja
+// w wektorach = max(1,pop) BEZ utraty obywatela; zgodnosc z webem tej populacji zachodzi tylko przy zalozeniu, ze
+// applyCapturePopulationLoss = no-op. Naglowek "stan = stan z pinu" dotyczy stanu po wykonanych wycinkach, nie
+// po wszystkich wolaniach weba.
 // Sentinel `Stop` przerywa resolveSiegeSurrender w miejscu enterCityAfterSurrender (po splice obroncow i population),
 // czyli dokladnie na zakresie galezi Transfer zaimplementowanym w src/domain/siege_transfer.rs.
 //

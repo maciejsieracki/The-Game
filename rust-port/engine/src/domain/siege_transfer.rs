@@ -47,6 +47,8 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         EffectStatus::CallerSide("Z-TR-1: parametr was_independent_city_state"),
     ),
     ("beginWonderTransferWatch", EffectStatus::Missing),
+    // Generator pinu stubuje to wolanie (zwraca undefined, bez wykonania web): wektory populacji
+    // zakladaja applyCapturePopulationLoss = no-op, tzn. utrata obywatela przy kapitulacji NIE jest odtworzona.
     ("applyCapturePopulationLoss", EffectStatus::Missing),
     ("applyPostCaptureLawOnCapture", EffectStatus::Missing),
     (
@@ -114,6 +116,15 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
     ("runCapitalCapturePlunder", EffectStatus::Missing),
     ("recordCityCaptureEvent", EffectStatus::Missing),
     ("showHintMessage", EffectStatus::Ui),
+    // Pomocniki raportowe/UI wolane w galezi Transfer (pin main.ts, zakres 17646-17893: setSelectionHex,
+    // mocLabel, buildCityCaptureReportRows, capturePopLossReportRow, captureReportOneLine, civLabelForOwner).
+    // Nie sa czescia stanu domeny; Rust-owa warstwa raportu ich nie implementuje w tym temacie.
+    ("setSelectionHex", EffectStatus::Ui),
+    ("mocLabel", EffectStatus::Ui),
+    ("buildCityCaptureReportRows", EffectStatus::Ui),
+    ("capturePopLossReportRow", EffectStatus::Ui),
+    ("captureReportOneLine", EffectStatus::Ui),
+    ("civLabelForOwner", EffectStatus::Ui),
     (
         "endMapSiege",
         EffectStatus::CallerSide("siege_surrender::end_map_siege_fields (po wejsciu)"),
@@ -175,6 +186,11 @@ pub struct TransferOutcome {
 ///
 /// Kolejnosc jak w web: zmiana wlasciciela -> flaga miasta-panstwa -> `foundedByOwner` -> kolejka produkcji
 /// (odzysk Pracy) -> `rebelState` -> podloga populacji -> splice obroncow starego wlasciciela.
+///
+/// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem skutkow BRAK z [`TRANSFER_EFFECTS`]: przede wszystkim
+/// `applyCapturePopulationLoss` i `sanitizeProductionQueue(newOwner)`. Bez nich wynik rozni sie od weba
+/// (populacja bez utraty obywatela, kolejka bez sanitizacji zdobywcy). Ta funkcja jest bezpieczna tylko jako
+/// modul bez wolajacego.
 pub fn apply_transfer(
     city: &mut TransferCity,
     new_owner: i64,
@@ -205,6 +221,10 @@ pub fn apply_transfer(
             performed.push("sanitizeBuildQueue");
             let migrated = sanitize_build_queue(p.prod);
             // BRAK: sanitizeProductionQueue(newOwner, ...) - pominiety; wolajacy musi to wykonac wczesniej.
+            // ROZBIEZNOSC Z WEBEM (zarzut Evaluatora): web liczy `banked` z wyniku sanitizeProductionQueue
+            // (`sanitizedSurrenderProd.kolejka`), a tutaj z `migrated.prod` (wynik sanitizeBuildQueue).
+            // Zgodnosc zachodzi tylko, gdy sanitizeProductionQueue jest identycznoscia; NIE_ZMIERZONO dla
+            // kolejek, w ktorych ten krok cos zmienia (brak wektorow kolejki z pinu, patrz test p6_siege_transfer).
             let is_cap = p.is_capital_only_building;
             let banked: f64 = if p.is_new_capital {
                 0.0
