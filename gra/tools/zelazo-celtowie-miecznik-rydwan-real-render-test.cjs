@@ -576,7 +576,7 @@ function assertGeometry(m, pix, dist, soft) {
   const nf = byName(m.falanga), nt = byName(m.thorakites);
   armPen.galij = ng['mg-sword-blade'] && ng['mg-arm-right-upper']
     ? +satDepth(obb(ng['mg-sword-blade']), obb(ng['mg-arm-right-upper'])).toFixed(4) : NaN;
-  armPen.falangita = +satDepth(obb(nf['falangita-dory-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
+  armPen.falangita = +satDepth(obb(nf['falangita-sarissa-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
   armPen.thorakites = +satDepth(obb(nt['th-spear-shaft']), obb(nt['th-arm-right-upper'])).toFixed(4);
   fistPen.galij = ng['mg-sword-guard'] && ng['mg-arm-right-fist']
     ? +satDepth(obb(ng['mg-sword-guard']), obb(ng['mg-arm-right-fist'])).toFixed(4) : NaN;
@@ -587,7 +587,7 @@ function assertGeometry(m, pix, dist, soft) {
 
   // H3 — WIDOCZNOSC BRONI z kamery gry (klasa bledu T6/A1). Prog to 0.60
   // widocznosci dory Falangity policzonej W TYM SAMYM renderze.
-  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-dory-shaft', 'falangita-dory-tip']).vis;
+  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-sarissa-shaft', 'falangita-sarissa-tip']).vis;
   const visMG = weaponVisibility(m.galij, MG_CHAIN);
   t('H3', '(H3) miecz widoczny z kamery gry (>=0.60 widocznosci dory Falangity z T3)',
     Number.isFinite(visF) && Number.isFinite(visMG.vis) && visMG.vis >= 0.60 * visF,

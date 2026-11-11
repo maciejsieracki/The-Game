@@ -398,7 +398,7 @@ const WEAPON_CHAIN = {
   kh: ['kh-khopesh-guard', 'kh-khopesh-straight', 'kh-khopesh-seg-0', 'kh-khopesh-seg-1', 'kh-khopesh-seg-2'],
   th: ['th-arm-right-fist', 'th-spear-shaft', 'th-spear-tip'],
 };
-const FALANGA_CHAIN = ['falangita-arm-right-fist', 'falangita-dory-shaft', 'falangita-dory-tip'];
+const FALANGA_CHAIN = ['falangita-arm-right-fist', 'falangita-sarissa-shaft', 'falangita-sarissa-tip'];
 
 /** Asercje ROZSTRZYGAJĄCE dispatch — mają padać na bundlu (D) dla nazw EN. */
 function assertDispatch(m, soft) {

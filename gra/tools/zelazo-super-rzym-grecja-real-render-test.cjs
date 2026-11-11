@@ -231,7 +231,14 @@ const MUTATIONS = [
     from: '  pHead.position.set(0, 0.687 * HEX_R, 0);',
     to:   '  pHead.position.set(0, 0.300 * HEX_R, 0);' },
 
-  { id: 'M16', cel: 'H13', plik: P6_TS,
+  // M16 PRZESTALA ROZSTRZYGAC (R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1): Falanga ma teraz
+  // model falangity macedonskiego, wyraznie rozny od Hieros Lochos, wiec zmiana koloru pierscienia
+  // aspidy Hieros nie obniza pary Hieros/Falanga ponizej progu. Mutacja zostaje w macierzy jako
+  // kontrola (musi byc zielona dla H13), ale NIE jest wymagana jako czerwona w M1.
+  // POKRYCIE H13 PO ZMIANIE (obrona r1, zarzut 2): para Evocati/Hastati w H13 jest rozstrzygana przez M12
+  // (tors Evocatiego czerwony jak Hastatiego) — zmierzone: M12 zapala H12 ORAZ H13 (RED/RED w macierzy).
+  // Para Hieros/Falanga ma teraz duzy zapas z natury (inny model), wiec nie ma dla niej osobnej mutacji.
+  { id: 'M16', cel: 'H13', przestarzala: true, plik: P6_TS,
     opis: 'zloty pierscien aspidy Hieros Lochos w kolorze pola — znika roznica wobec Falangity',
     from: '  const band = new THREE.Mesh(getGS6AspisBand(), mGold);',
     to:   '  const band = new THREE.Mesh(getGS6AspisBand(), mOwner);' },
@@ -531,7 +538,7 @@ function assertGeometry(m, faceVis, dist, soft) {
     armPen[u.key] = (w && up) ? +satDepth(obb(w), obb(up)).toFixed(4) : NaN;
   }
   const nf = byName(m.falanga), nt = byName(m.thorakites);
-  armPen.falangita = +satDepth(obb(nf['falangita-dory-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
+  armPen.falangita = +satDepth(obb(nf['falangita-sarissa-shaft']), obb(nf['falangita-arm-right-upper'])).toFixed(4);
   armPen.thorakites = +satDepth(obb(nt['th-spear-shaft']), obb(nt['th-arm-right-upper'])).toFixed(4);
   t('H2', '(H2) broń NIE przenika ramienia ręki uzbrojonej — 0.0000 jak Falangita (T3) i Thorakites (T6)',
     UNITS.every((u) => armPen[u.key] === 0) && armPen.falangita === 0 && armPen.thorakites === 0, armPen);
@@ -640,7 +647,7 @@ function assertGeometry(m, faceVis, dist, soft) {
 
   // H14 — WIDOCZNOŚĆ BRONI z kamery gry (klasa błędu T6/A1). Próg to 0.60
   // widoczności dory Falangity policzonej W TYM SAMYM renderze.
-  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-dory-shaft', 'falangita-dory-tip']).vis;
+  const visF = weaponVisibility(m.falanga, ['falangita-arm-right-fist', 'falangita-sarissa-shaft', 'falangita-sarissa-tip']).vis;
   const vis = {}, scr = {};
   for (const u of UNITS) {
     const w = weaponVisibility(m[u.key], WEAPON_CHAIN[u.key]);
@@ -732,8 +739,8 @@ function assertRest(m, faceVis, dist, src, unitRows) {
   }
 
   // --- (R) BRAK REGRESJI modeli sąsiednich (T3, T6) --------------------------
-  check('(R1) Falangita (T3, hastati-falangita.ts) nadal 27 mesh, wszystkie nazwane, bez nazw T7',
-    m.falanga.meshCount === 27 && m.falanga.names.length === 27
+  check('(R1) Falangita (T3, hastati-falangita.ts) 29 mesh (27 przed R-WEB-RENDER-FALANGA-UNIT-MODEL-PHALANGITE-Q1), wszystkie nazwane, bez nazw T7',
+    m.falanga.meshCount === 29 && m.falanga.names.length === 29
     && !m.falanga.names.some((n) => /^(ev|tr|hl|ha)-/.test(n)),
     { mesh: m.falanga.meshCount, nazwane: m.falanga.names.length });
   check('(R2) Thorakites (T6) nadal 32 mesh, wszystkie nazwane, bez nazw T7',
@@ -953,7 +960,7 @@ async function main() {
     }
     const nieNosne = [];
     for (const row of matrix) {
-      if (!row.mut) continue;
+      if (!row.mut || row.mut.przestarzala) continue;
       const map = Object.fromEntries(row.res.map((r) => [r.id, r.cond]));
       if (map[row.mut.cel] !== false) nieNosne.push(row.mut.id + '→' + row.mut.cel);
     }
