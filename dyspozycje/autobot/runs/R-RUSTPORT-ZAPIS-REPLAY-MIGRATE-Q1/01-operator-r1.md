@@ -8,7 +8,7 @@ ZMIANY/COMMIT: baza origin/rust-port/parity-v2 = fdd24d04a (tip w chwili startu)
   - rust-port/engine/tests/p6_zapis_replay_migrate.rs (nowy): 4 testy behawioralne.
   - dyspozycje/autobot/runs/R-RUSTPORT-ZAPIS-REPLAY-MIGRATE-Q1/01-operator-r1.md (ten raport).
   Nie zmieniano: gra/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock (wygenerowany lock usunięty, nie commitowany), reszta domain/, tests/replay.rs.
-  SHA kodu: patrz sekcja DEPLOY/PUSH poniżej (commit na gałęzi roboczej).
+  SHA kodu: 052807e06 (gałąź rust-port/zapis-replay-migrate-q1-wip, push do origin wykonany tylko dla gałęzi wip).
 TESTY:
   - cargo fmt --check: EXIT 0 (po cargo fmt zmieniono wyłącznie nowy plik testowy).
   - cargo clippy --all-targets -- -D warnings: EXIT 0 (w trakcie naprawiono type_complexity przez alias ReplayMigrationReports).
