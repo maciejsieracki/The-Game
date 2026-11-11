@@ -65,3 +65,10 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - ODCHYLENIE: push `parity-v2` (`a4087f332`) nastąpił PRZED ukończeniem pełnego `cargo test`. Pełny test zakończono później (zielony). Zapisane jako odchylenie kolejności, nie jako brak testu.
 - Odnotowane: R-PROC-AUTOBOT §1 opisuje role Codex (GPT-6-luna); ten projekt działa na Claude, więc obowiązuje CLAUDE.md (Haiku/Sonnet).
 - Wyzwalacz „Check full cargo test log” wskazywał na stary log; odczytany, nie wykonano ponownie z jego polecenia.
+
+## Przebieg 2026-11-11 (heartbeat 18:18 UTC)
+- parity-v2 = `fdd24d04a` (zintegrowane: ZAPIS-LOADER r2 `3884c41c9`, COOLDOWN `7ebfbe93d`, LOCKS `fdd24d04a`).
+- W trakcie: integracja SIEGE-GATE (kod `d1b44f626`, FC `5a8cea94f`): fmt/clippy 0, testy 156 binarek, 0 failed (do tej pory).
+- W trakcie przebiegów: ZAPIS-REPLAY-MIGRATE, ZAPIS-ERA-Z-ZAPISU (decyzje właściciela), TICKDIPLO-GEN, W6 r4 eval (zawężony zakres brake + tick).
+- Czeka: CITY-PEACE (kod `31cee3102`, FC `cc1a66768`) po SIEGE-GATE. DECISION_REQUIRED: czy usunąć stary test `p6_ai_peace_city_offer.rs` (duplikat); podpięcie `decide_city_offer` w W8.
+- Dysk: 11 GB wolnego po czyszczeniu worktree zakończonych przebiegów.
