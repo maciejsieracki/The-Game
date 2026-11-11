@@ -1001,7 +1001,7 @@ import {
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   recruitFollowGeneralForOrder, resolveRecruitFollowGeneral, type RecruitOrigin,
   enqueueRecruitment, reservedUnitTypeNamesOfOwner, generalSyncTargets, superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, effectivePracaRouting, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
@@ -19557,8 +19557,15 @@ async function boot(): Promise<void> {
           // dotąd nie przekazywane dalej — tylko doczepienie istniejącej liczby do snapa panelu,
           // zero nowego przeliczenia.
           utrzymanieSurowcowBudynkow: tk?.utrzymanieSurowcowBudynkow,
-          pracaPula: tk?.doPuli ?? 0,
-          pracaBudynki: tk?.doBudynkow ?? 0,
+          // R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1: pusta kolejka -> cala Praca
+          // faktycznie idzie do puli (ten sam wyjatek co `pracaImperialPoolGain` w ticku) --
+          // tabela, naglowek i kafelek "PULA IMPERIUM" czytaja jedno zrodlo prawdy.
+          ...(() => {
+            const r = tk
+              ? effectivePracaRouting(tk, frontItem(prod ?? { kolejka: [], postep: 0 }) === null, prod?.wstrzymana === true)
+              : { doPuli: 0, doBudynkow: 0 };
+            return { pracaPula: r.doPuli, pracaBudynki: r.doBudynkow };
+          })(),
           nauka: tk?.nauka ?? 0,
           buildingGroups,
           queue,
@@ -29891,6 +29898,70 @@ async function boot(): Promise<void> {
           return true;
         },
         badgeTexts: (): string[] => siegeHtmlLabelBadgeEls.map(e => e.textContent ?? ''),
+      };
+    }
+
+    // R-WEB-WORK-POOL-ACCUMULATES-DESPITE-100-BUILDINGS-Q1 — hak testowy WYLACZNIE dla
+    // tools/praca-pula-100-budynki-live-test.cjs (tylko ?civTest=1). Scenariusz: podzial Pracy
+    // gracza, kolejka budowy miasta, odczyt puli imperium i tabeli per-miasto (doPuli/doBudynkow).
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__workPoolTestDebug = {
+        setSplit: (procentBudynki: number): void => {
+          ownerDefaultPodzialPracy.set(0, { procentBudynki: clampPodzialPracyBudynkiPercent(procentBudynki) });
+          for (const c of cities) {
+            if (c.ownerId !== 0) continue;
+            delete c.podzialPracy;
+            c.podzialPracyOverride = false;
+          }
+          markCityStateDirty();
+          updateHud();
+        },
+        enqueueBuildings: (cityId: string, ids: string[]): number => {
+          let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          for (const id of ids) {
+            const it = buildingProductionItem(id, data, 1, undefined, undefined, 0, 'normal');
+            if (it) prod = enqueue(prod, it);
+          }
+          cityProd.set(cityId, prod);
+          markCityStateDirty();
+          updateHud();
+          return prod.kolejka.length;
+        },
+        clearQueue: (cityId: string): void => {
+          const prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          cityProd.set(cityId, { ...prod, kolejka: [], postep: 0 });
+          markCityStateDirty();
+          updateHud();
+        },
+        state: () => {
+          const hud = buildHudState(0);
+          return {
+            turn,
+            pool: playerPracaPool,
+            hudPraca: hud.praca ?? 0,
+            hudPracaRate: hud.pracaRate ?? 0,
+            hudPracaUpkeep: hud.pracaUpkeep ?? 0,
+            hudAutoUlepszenia: hud.pracaAutoUlepszeniaKoszt ?? 0,
+            hudCuda: hud.pracaCudaKoszt ?? 0,
+            cities: cities.filter(c => c.ownerId === 0).map(c => {
+              const prod = cityProd.get(c.id) ?? { kolejka: [], postep: 0 };
+              const row = _lastPlayerCityEcon.find(r => r.cityId === c.id);
+              return {
+                id: c.id,
+                procentBudynki: effectivePodzialPracy(c).procentBudynki,
+                queueIds: prod.kolejka.map(i => (i as ProductionItem).id),
+                postep: prod.postep,
+                doBudynkow: row?.doBudynkow ?? null,
+                doPuli: row?.doPuli ?? null,
+              };
+            }),
+            // Realny wiersz panelu imperium (to, co widzi gracz: tabela miast + naglowek).
+            empireRows: buildEmpireDetailSnap().cityEcon.map(r => ({
+              name: r.name, pracaPula: r.pracaPula, pracaBudynki: r.pracaBudynki,
+            })),
+          };
+        },
+        buildingIds: (): string[] => data.buildings.map(b => b.id as string),
       };
     }
 
