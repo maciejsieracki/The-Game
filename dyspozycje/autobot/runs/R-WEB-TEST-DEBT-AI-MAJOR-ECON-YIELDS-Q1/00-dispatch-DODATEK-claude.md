@@ -1,0 +1,6 @@
+# R-WEB-TEST-DEBT-AI-MAJOR-ECON-YIELDS-Q1 (orkiestrator, 2026-11-11) — dług testowy #192
+BAZA: origin/main (`10141fdcb`). MODEL: Operator HAIKU 5.5 (poprawka testu); po 2 nieudanych rundach → Sonnet.
+PROBLEM: pre-istniejące czerwone testy: ai-major-economy-test (brak computeMajorArchetypeMilitaryFraction) i pr141-f04-yields-activation-test (grecy/eko_pieniadz_proc).
+ZADANIE (kolejność obowiązkowa): (1) uruchom je na bazie i zmierz aktualny stan — poprzednie dłużniki bywały NIEAKTUALNE (np. #112 był już zielony); jeśli zielone → raport "nieaktualny dług", zero zmian; (2) dla każdego FAIL ustal NA DOWODZIE (git log -S, rejestr, kod) czy to test przestarzały względem świadomej zmiany kodu/decyzji właściciela (wtedy zsynchronizuj WYŁĄCZNIE oczekiwania testu, liczby wyprowadzaj ze stałych/danych tam gdzie to możliwe) czy realny defekt kodu (wtedy NIE naprawiaj kodu gry: status DECISION_REQUIRED/ARTEFAKT z opisem defektu i reprodukcją — osobny temat); (3) dowód mutacyjny dla każdej zmienionej asercji; żaden test nie osłabiony.
+KRYTERIA: czerwone testy z listy zielone albo uzasadnione jako realny defekt/nieaktualne; allowlista = tylko pliki testowe + raport; tsc czysty; 5 bramek referencyjnych zielone.
+ŚRODOWISKO: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ `npm run build`/`dev`; dozwolone tsc --noEmit, node tools/*-test.cjs.
