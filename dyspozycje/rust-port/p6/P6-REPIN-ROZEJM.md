@@ -1,6 +1,6 @@
 # P6-REPIN-ROZEJM — tabela luk: rozejm 5/10/15 (REPIN web FALA 605)
 
-Temat: R-RUSTPORT-REPIN-DYPLOMACJA-ROZEJM-5-10-15-Q1, runda 2 (poprzednia: runda 1, 29d46c21e).
+Temat: R-RUSTPORT-REPIN-DYPLOMACJA-ROZEJM-5-10-15-Q1, runda 3 (baza kodu: b9af6e5f7 = r2; patrz sekcja 5).
 Baza: `rust-port/parity-v2` = 43f4064b0. Web (wzorzec): `origin/main` = 638e90bea (FALA ≤606, kod e7bf8acc8).
 Sprawdzenie dryfu 2026-11-11: `gra/src/game/diplomacy-peace-lock.ts`, `gra/src/game/diplomacy-war-peace-profile.ts`
 i `gra/data/diplomacy-war-peace-params.json` są BEZ ZMIAN między 638e90bea a origin/main f14894c61.
@@ -17,9 +17,9 @@ Próg siły: `przewagaMilitarna` (prog 0.20, epsilon 1e-9) w JSON weba.
 | L5 | `truceEndOfferTarget` | `diplomacy_truce_end.rs` (`truce_end_offer_target`) | ZGODNE (wektory z webu) | |
 | L6 | `truceEndOfferExpired` (`currentTurn > offerTurn`) | `diplomacy_truce_end.rs` (`truce_end_offer_expired`) | ZGODNE (wektory z webu) | |
 | L7 | `isTruceWindowBreach` | `diplomacy_truce_end.rs` (`is_truce_window_breach`) | ZGODNE (wektory z webu) | `has_end_offer: bool` zamiast obiektu meta (adaptacja typu) |
-| L8 | (C) zawarcie rozejmu = 0 Zaufania, pokój stały +5 | `diplomacy_truce_end.rs` (`peace_finalize_gives_trust_event`) | FUNKCJA ZGODNA (wektory); PODPIĘCIE OTWARTE | `peaceFinalizeTrustEvent` nie jest wywoływane w `diplomacy.rs` (BLOKADA: poza zakresem allowlisty addytywnej) |
-| L9 | Z8 kara w oknie oferty; Z9 zła długość = odrzucenie propozycji; `startTruce` przy akceptacji; tick pary | Tick: `diplomacy_truce_end.rs` (`truce_end_tick_pair` przez trait `TruceEndPorts`) — ZGODNY z web `truceEndTickPair` (7 scenariuszy + tick 2x). Propozycja/accept w `diplomacy.rs`: BRAK | CZĘŚCIOWO | Brak wywołań `truce_end_tick_pair`, `normalize_truce_duration`, `truce_until_turn` w `diplomacy.rs` ani w ścieżce `apply_accepted_proposal`. Port `TruceEndPorts` wymaga implementacji na żywym stanie (pola `truceEndOffer`, `truceInitiatorId` nie są w `PairMetaWeb`, tylko w `extra`) |
-| L10 | (E) `aiTruceOrPeaceMode` (zmęczenie, willingness, zaufanie, słabszy) | `diplomacy_truce_end.rs` (`ai_truce_or_peace_mode`, progi jako stałe ZAŁOŻENIE) | FUNKCJA ZGODNA (wektory 96 przypadków); PODPIĘCIE OTWARTE | brak wywołania w decyzjach AI (ai.ts po stronie Rust = poza tym tematem) |
+| L8 | (C) zawarcie rozejmu = 0 Zaufania, pokój stały +5 | `diplomacy_truce_flow.rs` (`TruceDiplomacy::finalize_peace_between`) + `peace_finalize_gives_trust_event` | PODPIĘTE (R3) | rozejm 5/10/15: tylko status, 0 Zaufania; pokój stały: `apply_diplomatic_event(Peace)` + blokada; test `p6_repin_rozejm_silnik` |
+| L9 | Z8 kara w oknie oferty; Z9 zła długość = odrzucenie; `startTruce`; tick pary | Z9: `diplomacy.rs::evaluate_proposal_with_params` (`ProposalAction::Truce`); startTruce + Z8 + tick + odpowiedź na ofertę: `diplomacy_truce_flow.rs` (`propose`, `tick`, `respond_to_truce_end_offer`, `declare_war`); pola `truceInitiatorId`/`truceEndOffer` jawne w `PairMetaWeb` | PODPIĘTE W ŻYWEJ ŚCIEŻCE PROPOZYCJI I W STANIE PARY (R3); wołanie `tick` z pętli tury świata = dług WIRE-WAR W6 | 18 testów przez silnik |
+| L10 | (E) `aiTruceOrPeaceMode` (zmęczenie, willingness, zaufanie, słabszy) | `diplomacy_truce_end.rs` (`ai_truce_or_peace_mode`, progi jako stałe ZAŁOŻENIE) | FUNKCJA ZGODNA (wektory 96 przypadków); PODPIĘCIE OTWARTE (dług WIRE-WAR W6) | brak wywołania w decyzjach AI (poza zakresem R3) |
 | L11 | (G) kontroferta zmienia długość 5/10/15 | — | OTWARTE | UI/main, poza domeną portu |
 | L12 | Moc wojskowa = `sumArmyMForOwner` (nominalna) | parametr `army_m` w `TruceEndPorts` / argumenty `f64` | ZAŁOŻENIE-R5-A | port nie liczy armii; wejście `f64` bez określonej miary (nominalna vs Effective) |
 
@@ -63,3 +63,25 @@ wartości z 638e90bea (repo `rust-port` nie zawiera `gra/`, więc JSON nie jest 
    oraz pól `truceEndOffer` / `truceInitiatorId` w `PairMetaWeb` (obecnie tylko `extra`).
 2. L10: podpięcie `ai_truce_or_peace_mode` w decyzjach AI (po stronie Rust `ai`).
 3. L11: kontroferta zmienia długość (poza domeną portu — decyzja, czy ujmować w temacie).
+
+## 5. Runda 3 (2026-11-11) — podpięcie w żywej ścieżce
+
+Zakres (zawężenie GOAL wg alternatywy FC): Z8, Z9, startTruce 5/10/15, 0 Zaufania za rozejm, pola meta, test przez silnik.
+
+- `domain/diplomacy.rs` (minimalnie, addytywnie): `ProposalAction::Truce` (`"rozejm"`, alias `"truce"`); Z9 na wejściu
+  `evaluate_proposal_with_params` (długość spoza 5/10/15, domyślnie 10 = odrzucenie, komunikat jak web); rozejm dzieli gałąź
+  pokoju (wymóg wojny, bramka PW, waluta w wojnie dozwolona), baza PW = `TRUCE_BASE_PN` 200 (web `diplomacy-acceptance-points.json`).
+  `turns` rozejmu to długość, nie mnożnik koszyka ani czas traktatu — przed bramką PW czyszczone (ZAŁOŻENIE-R3-E).
+- `domain/diplomacy_truce.rs`: `PairMetaWeb.truce_initiator_id`, `PairMetaWeb.truce_end_offer` (`TruceEndOfferWeb`), serde default
+  i skip_serializing_if; stary zapis bez pól = bez zmian (test `stary_zapis_pary_bez_pol_rozejmu_wczytuje_sie_bez_zmian`).
+- `domain/diplomacy_truce_flow.rs` (nowy): `TruceDiplomacy` (relacje + umowy + meta par + armie + skrzynka) z implementacją
+  `TruceEndPorts<PlayerId>`; `propose` → ewaluacja → `finalize_peace_between` (Z9, (C), startTruce); `tick` (pary raz na turę);
+  `respond_to_truce_end_offer` (zgoda = pokój stały, odmowa = wojna bez kary); `declare_war` (Z8: okno aktywnego rozejmu lub oferty = złamanie,
+  kasowanie oferty i wpisu skrzynki).
+- Testy: `tests/p6_repin_rozejm_silnik.rs` (18): rozejm 5/10/15 → tick po końcu → oferta pokoju → akceptacja wg siły (80/100 przyjęte,
+  80.001/100, 100/100, 150/100 wojna; 0 vs 0 i adresat 0 = wojna), oferta dla gracza (zgoda/odmowa/timeout), Z8, Z9, stary zapis, round-trip.
+- ZAŁOŻENIE-R3-B: kara Z8 jako wpis `zlamanie_paktu_nap` w `credibility_events` (wartość N2 nalicza wołający); alliance/NAP breach z
+  `chargeWarDeclarationCredibility` poza zakresem. ZAŁOŻENIE-R3-C (dług WIRE-WAR W6): `tick` z pętli tury świata, `peace_finalize...`
+  z tury, `ai_truce_or_peace_mode` w decyzji AI, L11 (kontroferta zmienia długość). ZAŁOŻENIE-R3-D: miara armii = wejście `army_m`
+  (web nominalna `sumArmyMForOwner`; panel Effective — rozbieżność odnotowana).
+- ZAŁOŻENIE-R3-F: skrzynka (`InboxOffer`) i oferta kasowane przy zawarciu pokoju stałego (web czyści tylko meta); hygiena, brak wpływu na wynik.
