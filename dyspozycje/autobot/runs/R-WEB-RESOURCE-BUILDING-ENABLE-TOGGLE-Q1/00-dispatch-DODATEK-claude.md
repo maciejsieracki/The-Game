@@ -1,0 +1,6 @@
+# DODATEK orkiestratora (2026-11-11) — R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1
+BAZA: origin/main (`674f9faef`, po FALI 632 BRICK-CYCLES; converters.ts wolny). Oryginalny `00-dispatch.md` z origin/main (GOAL, CONSUMERS, TESTS, rozszerzenie UI właściciela: lista miast na końcu panelu Miasta, agregaty per surowiec — realizowana vs potencjalna produkcja) obowiązuje w całości; ten dodatek niczego nie zmienia w zakresie.
+MODEL: Operator SONNET 5.5 — UZASADNIENIE: temat obiektywnie trudny (wiele ścieżek: tick produkcji/konwertery/utrzymanie/parytet AI/HUD/panel Miasta/zapis; synteza dużego diffu). Evaluator/FC Sonnet.
+ŚRODOWISKO WEB: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ `npm run build`/`dev`; dozwolone `node ./node_modules/typescript/bin/tsc --noEmit`, `node tools/*-test.cjs`, build tylko `npx vite build --outDir <poza repo> --emptyOutDir`; UI realnie w Chromium (/opt/pw-browsers/chromium-1194/chrome-linux/chrome) przez Vite HTTP, zrzuty do evidence/.
+ZAŁOŻENIA gdy dispatch milczy (zapisz w raporcie): domyślnie ON (stare zapisy); wyłączony budynek nie liczy się do utrzymania ani zużycia wejść; AI nie wyłącza budynków samo (stan zapisywany, decyzje AI bez zmian); etykiety po polsku bez żargonu; NIE zmieniaj balansu ani wymagań technologii.
+ALLOWLISTA: ustal PRZED edycją (wylicz realne budynki produkujące surowce) i wpisz do raportu.
