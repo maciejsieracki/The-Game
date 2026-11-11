@@ -1,8 +1,8 @@
 //! R-RUSTPORT-P6-SIEGE-TRANSFER-Q1: testy behawioralne galezi Transfer poza wektorami pinu.
 //!
-//! Kolejka produkcji i odzysk Pracy NIE sa w wektorach z pinu (generator nie stubuje `sanitizeBuildQueue`/`filterQueue`).
-//! Oczekiwania wyprowadzone z czytania kodu web (main.ts:17720-17770) i z semantyki klockow Rust - NIE_ZMIERZONO
-//! wzgledem wykonania pinu dla tej sciezki.
+//! Tryb legacy `apply_transfer` (bez skutkow z `TransferExtras`). Kolejka i odzysk Pracy z wykonania pinu sa w
+//! `p6_siege_transfer.rs` (sekcja `transfer`) i `p6_siege_transfer_effects.rs` (sekcja `effects`).
+//! Oczekiwania tutaj wyprowadzone z czytania kodu web (main.ts:17720-17770) i z semantyki klockow Rust.
 
 use civ_engine::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
 use civ_engine::domain::siege_enter_city::EnterUnit;
