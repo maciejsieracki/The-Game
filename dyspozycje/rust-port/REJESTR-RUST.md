@@ -28,7 +28,6 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 | 7 | Pętla taktyczna oblężenia #217 (L2–L5, SIEGE-NEARBY-STAN L9–L10) | 7 | Do zrobienia | Zależy od #5 | Dispatch po W8 |
 | 8 | UNIT-REPLACE L-1 (awanse INFANTRY 21/23), L-2, L-3 | 8 | Dług | L-1 wymaga ustalenia z webem | Pytanie do właściciela |
 | 9 | REPIN dryfu po czerwcu (Pałac II/III, odlewnie 50/75, handel, łodzie 6/6/6, `civBonusy`) | 9 | Do zrobienia | Brak | Pomiar dryfu, tylko dokumentacja |
-| 10 | REPIN-DELTA-7 po zakończeniu FALI 620–626+ na web (jednostki Żelaza, administrator miasta, generał) | 10 | Czeka na web | Web nie skończony | Po sygnale z kolejki web |
 
 ## Uwagi i konflikty
 - Kolejka web (`dyspozycje/KOLEJKA-WEB-PO-OBECNYCH-OPERATORACH-20261111.md`) mówi, że Rust nie startuje nowych tematów, dopóki web nie jest skończony. Przekazanie zakłada równoległe czaty. Właściciel wskazał integrację DYSTANS-PETLA jako pierwszą pozycję, więc start jest jego decyzją. Konflikt zapisany, nie rozstrzygnięty w dokumentach.
@@ -55,10 +54,8 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - Pozycja 2: podpięcie DYSTANS do `resolve_combat` i faza zwarcia — DECYZJA ABC (właściciel).
 - Pozycja 6: loader zapisu z `migrate_on_load`; `WIRE-EPOCH-WAR-FLAG-Q1`.
 - Pozycja 7: pętla taktyczna oblężenia #217 (L2–L5, SIEGE-NEARBY-STAN L9–L10) — po W8.
-- Pozycja 8: UNIT-REPLACE L-1 (awanse INFANTRY 21/23, zależy od decyzji webu), L-2, L-3.
+- Pozycja 8: UNIT-REPLACE L-2, L-3 (Rust). L-1 pominięte.
 - Pozycja 9: REPIN dryfu po czerwcu (pomiar, docs).
-- Pozycja 10: REPIN-DELTA-7 po FALI 620–626+ na webie.
 
 ### Zakres
-- Ten czat prowadzi WYŁĄCZNIE Rust. Kolejka i wersja web są poza zakresem; web jest tylko źródłem danych (piny `origin/main` do wektorów) i nie jest priorytetem tego planu.
-- Pozycje 8 i 10 zależą od decyzji lub wdrożeń po stronie web: traktowane jako dane wejściowe, nie zadania tego czatu.
+- Ten czat prowadzi WYŁĄCZNIE Rust. Wszystkie czynności po stronie web (kolejka, wdrożenia, decyzje web) są poza planem; web pozostaje tylko źródłem danych wejściowych (piny `origin/main` do wektorów).
