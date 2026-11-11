@@ -6,3 +6,8 @@ Allowlista: rust-port/engine/src/domain/diplomacy.rs; rust-port/engine/tests/p6_
 Wektory: z pinu (generator, esbuild poza repo), nie ręcznie; md5 w raporcie; regeneracja identyczna.
 Bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_tickdiplo (EXIT zapisany).
 Zmienne: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (usuń po bramkach). Raport 01-operator-r1.md.
+
+## DODATEK r2 — poprawka kompilacji (2026-11-11, decyzja techniczna orkiestratora)
+Kod r1: 625a3e9eb (na bazie 8bb118dc7). Evaluator i Operator wykryły: rust-port/engine/tests/diplomacy.rs:70 — literał TickContext bez pola common_border_delta, clippy i `cargo test --test diplomacy` padają (E0063).
+Allowlista rozszerzona o JEDNĄ linię: `rust-port/engine/tests/diplomacy.rs` (wyłącznie dopisanie `common_border_delta: None,` w literale TickContext). Nic więcej w tym pliku.
+Zadanie r2: zastosuj r1 (625a3e9eb) na bazie origin/rust-port/parity-v2 (aktualny tip), dodaj tę linię, uruchom bramki: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; cargo test --test p6_tickdiplo; cargo test --test diplomacy (EXIT zapisany). Raport 02b-operator-r2.md z SHA.
