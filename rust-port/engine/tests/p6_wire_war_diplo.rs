@@ -455,3 +455,44 @@ fn phase_matches_web_transcription_over_turns() {
         "scenariusz ai_ai_five_turns_declare musi zawierac deklaracje wojny (kontrakt pol declarations)"
     );
 }
+
+/// P6-WIRE-WAR-DIPLO-TURN r3 (zarzut 4): adapter `tick_pairs_relation_scores` wola `DiplomacyState::tick_pair`.
+///
+/// UWAGA (jawnie): to NIE jest wektor webowy. Oczekiwana wartosc = `tick_relation` + `relation_score_with_params`
+/// z tego samego modulu Rust. Dowodzi tylko, ze adapter zapisuje tyk do stanu i zwraca wynik z tej samej sciezki.
+/// Zgodnosc `tickDiplomacy` (web, pin 07d2fbd72) z Rust NIE jest zmierzona (NIE_ZMIERZONO, zob. raport r3).
+#[test]
+fn tick_adapter_writes_state_and_returns_score_of_ticked_relation() {
+    use civ_engine::domain::ai_diplomacy_turn::tick_pairs_relation_scores;
+    use civ_engine::domain::diplomacy::{
+        relation_score_with_params, tick_relation, CivilizationPair, DiplomacyParams,
+        DiplomacyState, Relation, RelationStatus, TickContext,
+    };
+    use civ_engine::domain::PlayerId;
+
+    let params = DiplomacyParams::default();
+    let ctx = TickContext {
+        active_trade: true,
+        ..TickContext::default()
+    };
+    let key: PairKey = pair_key(0, 1);
+    let pair = CivilizationPair::new(PlayerId::new(0), PlayerId::new(1));
+    let before = Relation::new(10.0, 10.0, RelationStatus::Peace);
+    let mut state = DiplomacyState::new();
+    state.relations.insert(pair, before.clone());
+    let mut contexts = BTreeMap::new();
+    contexts.insert(key, ctx);
+
+    let scores = tick_pairs_relation_scores(&mut state, &[key], &contexts, &params);
+
+    let expected_rel = tick_relation(&before, &ctx, &params);
+    let expected = relation_score_with_params(&expected_rel, &params);
+    assert!(
+        same(scores[&key], expected),
+        "wynik adaptera != tick_relation"
+    );
+    assert_eq!(
+        state.relations[&pair], expected_rel,
+        "tick_pair nie zapisal stanu"
+    );
+}

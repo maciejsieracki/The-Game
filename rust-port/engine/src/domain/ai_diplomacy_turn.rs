@@ -20,11 +20,13 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use super::diplomacy::{relation_score_with_params, DiplomacyParams, DiplomacyState, TickContext};
 use super::diplomacy_tick_war_brake::{
     ai_ai_pairs, brake_war_outcome, crisis_step_for_pair, dobra_wola_turn_step,
     is_ai_ai_eligible_owner, sort_crisis_queue, AiAiOwnerInfo, BrakeWarOutcome, CrisisQueueEntry,
     CrisisStep, WarBrakeP6Params, WarPower,
 };
+use super::PlayerId;
 
 /// Klucz pary niezalezny od kolejnosci: `(min, max)`. Web: `diploPairKey`.
 pub type PairKey = (i64, i64);
@@ -91,6 +93,33 @@ pub struct BrakePhaseOutput {
     pub dobra_active: BTreeSet<PairKey>,
     /// Deklaracje wojny z progu w kolejnosci kolejki (web: `processDiploCrisisQueue`).
     pub declarations: Vec<BrakeWarOutcome>,
+}
+
+/// Adapter Relation -> relationScore po ticku (web: `tickDiplomacy` per para, potem `relationScore`).
+///
+/// Dla kazdej pary wola `DiplomacyState::tick_pair` (zapis do stanu dyplomacji), a wynik
+/// `relation_score_with_params` trafia do `BrakePhaseInput::relation_after_tick`. Kontekst tyku brany
+/// z `contexts` (brak wpisu = `TickContext::default()`). Id wlascicieli w webie sa nieujemne; `as u64`
+/// jest bezpieczne tylko dla nich (debug_assert pilnuje).
+pub fn tick_pairs_relation_scores(
+    diplomacy: &mut DiplomacyState,
+    pairs: &[PairKey],
+    contexts: &BTreeMap<PairKey, TickContext>,
+    params: &DiplomacyParams,
+) -> BTreeMap<PairKey, f64> {
+    let mut out = BTreeMap::new();
+    for &key in pairs {
+        debug_assert!(key.0 >= 0 && key.1 >= 0, "id wlasciciela ujemne");
+        let ctx = contexts.get(&key).copied().unwrap_or_default();
+        let ticked = diplomacy.tick_pair(
+            PlayerId::new(key.0 as u64),
+            PlayerId::new(key.1 as u64),
+            &ctx,
+            params,
+        );
+        out.insert(key, relation_score_with_params(&ticked, params));
+    }
+    out
 }
 
 /// Web: `diploBrakeCrisisStep(a, b)` — jeden krok histerezy pary; licznik 0 = wpis usuniety.
