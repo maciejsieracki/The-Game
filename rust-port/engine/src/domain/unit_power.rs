@@ -89,3 +89,72 @@ pub fn hit_chance_tw(melee_attack: f64, melee_defence: f64, hit_bonus: f64) -> f
         .min(max)
         .max(min)
 }
+
+/// Wspolczynniki mocy jednostki (`UnitPowerCoeffs` z web, `loadUnitPowerCoeffs`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct UnitPowerCoeffs {
+    pub charge_divisor: f64,
+    pub missile_divisor: f64,
+    pub hp_field_divisor: f64,
+    pub hp_siege_divisor: f64,
+}
+
+impl UnitPowerCoeffs {
+    /// Z `combat-params.json` -> `unit_power`. Web przyjmuje tylko dzielniki > 0, inaczej domyslne
+    /// (2, 2, 2, 10); dane w repo sa dodatnie, wiec tu brak dodatkowej ochrony (ZALOZENIE).
+    pub fn from_params() -> Self {
+        let u = parse_combat_params()
+            .expect("combat-params.json musi sie parsowac")
+            .unit_power;
+        Self {
+            charge_divisor: u.charge_divisor as f64,
+            missile_divisor: u.missile_divisor as f64,
+            hp_field_divisor: u.hp_field_divisor as f64,
+            hp_siege_divisor: u.hp_siege_divisor as f64,
+        }
+    }
+}
+
+/// Statystyki wejsciowe `fieldPower` (web `UnitPowerInput`); brak pola = 0 (web `num()`),
+/// normalizacje `null`/''/'—'/NaN robi wolajacy.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct UnitPowerInput {
+    pub melee_attack: f64,
+    pub melee_defence: f64,
+    pub weapon_damage: f64,
+    pub piercing: f64,
+    pub armor: f64,
+    pub charge_bonus: f64,
+    pub health: f64,
+    pub missile_attack: f64,
+    pub typ: Option<String>,
+    pub jednostka: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PowerBreakdown {
+    pub attack: f64,
+    pub defense: f64,
+    pub total: f64,
+}
+
+fn round1(n: f64) -> f64 {
+    js_round(n * 10.0) / 10.0
+}
+
+/// `fieldPower` z web (`unit-power.ts:122`): moc na polu, skladnik pocisku
+/// `missileAttack * rangedDamageMultFor / missileDivisor`.
+pub fn field_power(u: &UnitPowerInput, c: &UnitPowerCoeffs) -> PowerBreakdown {
+    let attack = u.melee_attack
+        + u.weapon_damage
+        + u.piercing
+        + u.charge_bonus / c.charge_divisor
+        + (u.missile_attack * ranged_damage_mult_for(u.typ.as_deref(), u.jednostka.as_deref()))
+            / c.missile_divisor;
+    let defense = u.melee_defence + u.armor + u.health / c.hp_field_divisor;
+    PowerBreakdown {
+        attack: round1(attack),
+        defense: round1(defense),
+        total: round1(attack + defense),
+    }
+}
