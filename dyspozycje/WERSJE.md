@@ -1,3 +1,9 @@
+## ROBOCZA 881b150c -- 2026-11-06 -- FALA 625: Ikony surowców zamiast nazw w liście budynków miasta (testowa)
+
+- R-WEB-UI-CITY-BUILDINGS-RESOURCE-ICONS-Q1: w wierszach budynków panelu miasta (utrzymanie, produkcja konwerterów, nagłówek Utrzymanie łącznie) nazwy surowców zastąpione ikonami z HUD/Spichlerza + liczby; nazwa surowca w tooltipie; zawijanie wierszy bez nachodzenia przy 520 px; nowy moduł resourceAmountChip.ts
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, test realnego renderu w Chromium 29/0 (brak overflow i nachodzenia 520 px), citypanel-konwerter-produkcja 100/0; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Zakres: karty kosztu budowy, formatResourceUpkeepSummary i koszty utrzymania jednostek nadal tekstem (poza zgłoszeniem ze zrzutu); czytelność małych ikon (~9 px) na żywej grze NIE_ZMIERZONO; nazwa budynku nadal może być obcięta (tooltip)
+
 ## ROBOCZA 603c7016 -- 2026-11-06 -- FALA 624: Podpowiedź Przydziel obywatela: Ważne + przycisk kamery (testowa)
 
 - R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1 (#201, decyzja właściciela 2 b+c): podpowiedź Przydziel obywatela? w zakładce Ważne, przycisk Pokaż centruje kamerę na polu/mieście; ogólna akcja centerCamera w powiadomieniach panelu bocznego
