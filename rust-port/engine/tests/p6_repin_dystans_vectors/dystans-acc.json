@@ -1,0 +1,102 @@
+{
+ "acc": [
+  {
+   "melee": 0,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": 5,
+   "missile": 3,
+   "expected": 5
+  },
+  {
+   "melee": 3,
+   "missile": 5,
+   "expected": 5
+  },
+  {
+   "melee": 7,
+   "missile": 7,
+   "expected": 7
+  },
+  {
+   "melee": 10,
+   "missile": 2,
+   "expected": 10
+  },
+  {
+   "melee": 2,
+   "missile": 10,
+   "expected": 10
+  },
+  {
+   "melee": 0,
+   "missile": 4,
+   "expected": 4
+  },
+  {
+   "melee": 4,
+   "missile": 0,
+   "expected": 4
+  }
+ ],
+ "hits": [
+  {
+   "atk": 10,
+   "def": 5,
+   "expected": 45
+  },
+  {
+   "atk": 5,
+   "def": 10,
+   "expected": 35
+  },
+  {
+   "atk": 60,
+   "def": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 60,
+   "expected": 15
+  },
+  {
+   "atk": 30,
+   "def": 30,
+   "expected": 40
+  },
+  {
+   "atk": 99,
+   "def": 0,
+   "expected": 75
+  }
+ ],
+ "hitsAcc": [
+  {
+   "melee": 3,
+   "missile": 9,
+   "def": 4,
+   "expected": 45
+  },
+  {
+   "melee": 9,
+   "missile": 3,
+   "def": 4,
+   "expected": 45
+  },
+  {
+   "melee": 2,
+   "missile": 2,
+   "def": 40,
+   "expected": 15
+  },
+  {
+   "melee": 1,
+   "missile": 8,
+   "def": 50,
+   "expected": 15
+  }
+ ]
+}
