@@ -1047,3 +1047,217 @@ pub mod unit_building_bonuses {
         mods
     }
 }
+
+/// R-RUSTPORT-REPIN-WALKA-DYSTANS-PETLA-Q1 -- port fazy dystansowej auto-walki
+/// (`gra/src/game/combat.ts` `resolveCombat`, "Phase 0: Ranged", l.1008-1067 na origin/main).
+///
+/// Zakres: CZYSTA petla rund strzalow. Wejscie to statystyki PO modyfikatorach
+/// (civ/budynki/trudnosc/glod/weterani -> `atkMelee0`, `atkMissile0`, ...), HP i amunicja
+/// startowe oraz wspolczynniki wyliczone przed faza (kontra, obrona koncowa, mnoznik rzeki).
+/// Te modyfikatory licza sie poza ta funkcja (patrz zalozenia w
+/// `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA.md`). Faza zwarcia nie jest portowana.
+pub mod ranged_phase {
+    use crate::domain::unit_power::{hit_chance_tw, ranged_shot_accuracy, ranged_shot_damage};
+
+    /// Strona walki w fazie dystansowej (odpowiednik pol `CombatUnit` + wartosci `*0` z web).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct RangedSide {
+        /// `counterTyp` (pole "Typ") -- wybiera mnoznik klasy strzelca.
+        pub counter_typ: Option<String>,
+        /// `typNazwa` (pole "Jednostka").
+        pub typ_nazwa: Option<String>,
+        /// `isRangedUnit`: `missileAttack > 0` (przed modyfikatorami, jak w web).
+        pub is_ranged: bool,
+        /// Amunicja (`resolveAmmo`).
+        pub ammo: i64,
+        /// HP startowe po zaokragleniu (`hpAtk`/`hpDef`).
+        pub hp: f64,
+        /// `atkMelee0`/`defMelee0`.
+        pub melee_attack: f64,
+        /// `atkMissile0`/`defMissile0`.
+        pub missile_attack: f64,
+        /// `atkObrona0` (dla obroncy strzalu: atakujacy; uzywane gdy ta strona jest celem obroncy).
+        pub melee_defence: f64,
+        /// `atkPanc0`/`defPanc0`.
+        pub armor: f64,
+        /// `ctrAtkVsDef`/`ctrDefVsAtk` -- kontra tej strony przeciw wrogowi.
+        pub counter_mult: f64,
+        /// `routThreshold` (0 = brak progu).
+        pub rout_threshold: f64,
+        pub unbreakable: bool,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum Side {
+        Attacker,
+        Defender,
+    }
+
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct RangedShot {
+        pub round: u32,
+        pub side: Side,
+        pub hit_pct: f64,
+        pub hit: bool,
+        /// Obrazenia (0 przy chybieniu).
+        pub damage: i64,
+        /// HP celu po strzale.
+        pub target_hp: f64,
+    }
+
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct RangedPhaseResult {
+        pub hp_attacker: f64,
+        pub hp_defender: f64,
+        pub ammo_attacker: i64,
+        pub ammo_defender: i64,
+        /// `totalRounds` po fazie (wlacznie z rundą, ktora przekroczyla limit).
+        pub rounds: u32,
+        pub routed: Vec<Side>,
+        pub shots: Vec<RangedShot>,
+    }
+
+    /// Wejscie fazy. `def_final_obrona` = `defFinalObrona` (obrona obroncy po flance/terenie/
+    /// strukturach), `river_mult` = `terrRiverMult` (mnoznik celnosci atakujacego).
+    pub struct RangedPhaseInput {
+        pub attacker: RangedSide,
+        pub defender: RangedSide,
+        pub def_final_obrona: f64,
+        pub river_mult: f64,
+        pub max_rounds: u32,
+        /// `totalRounds` przed faza (0 w web).
+        pub start_rounds: u32,
+    }
+
+    /// Port petli `while (...)` z "Phase 0: Ranged". `rng` zwraca [0,1) (jedno losowanie na strzal).
+    pub fn resolve_ranged_phase(
+        input: RangedPhaseInput,
+        mut rng: impl FnMut() -> f64,
+    ) -> RangedPhaseResult {
+        let RangedPhaseInput {
+            mut attacker,
+            mut defender,
+            def_final_obrona,
+            river_mult,
+            max_rounds,
+            start_rounds,
+        } = input;
+        let mut total_rounds = start_rounds;
+        let mut routed: Vec<Side> = Vec::new();
+        let mut shots: Vec<RangedShot> = Vec::new();
+
+        if attacker.is_ranged || defender.is_ranged {
+            while ((attacker.is_ranged && attacker.ammo > 0)
+                || (defender.is_ranged && defender.ammo > 0))
+                && attacker.hp > 0.0
+                && defender.hp > 0.0
+                && routed.is_empty()
+            {
+                total_rounds += 1;
+                if total_rounds > max_rounds {
+                    break;
+                }
+
+                if attacker.is_ranged && attacker.ammo > 0 {
+                    attacker.ammo -= 1;
+                    let hit_pct = hit_chance_tw(
+                        ranged_shot_accuracy(attacker.melee_attack, attacker.missile_attack)
+                            * river_mult,
+                        def_final_obrona,
+                        0.0,
+                    );
+                    let roll = rng() * 100.0;
+                    let hit = roll < hit_pct;
+                    let mut damage = 0;
+                    if hit {
+                        damage = ranged_shot_damage(
+                            attacker.counter_typ.as_deref(),
+                            attacker.typ_nazwa.as_deref(),
+                            attacker.missile_attack,
+                            defender.armor,
+                            attacker.counter_mult,
+                        );
+                        defender.hp -= damage as f64;
+                    }
+                    shots.push(RangedShot {
+                        round: total_rounds,
+                        side: Side::Attacker,
+                        hit_pct,
+                        hit,
+                        damage,
+                        target_hp: defender.hp,
+                    });
+                }
+
+                if defender.is_ranged && defender.ammo > 0 && defender.hp > 0.0 {
+                    defender.ammo -= 1;
+                    let hit_pct = hit_chance_tw(
+                        ranged_shot_accuracy(defender.melee_attack, defender.missile_attack),
+                        attacker.melee_defence,
+                        0.0,
+                    );
+                    let roll = rng() * 100.0;
+                    let hit = roll < hit_pct;
+                    let mut damage = 0;
+                    if hit {
+                        damage = ranged_shot_damage(
+                            defender.counter_typ.as_deref(),
+                            defender.typ_nazwa.as_deref(),
+                            defender.missile_attack,
+                            attacker.armor,
+                            defender.counter_mult,
+                        );
+                        attacker.hp -= damage as f64;
+                    }
+                    shots.push(RangedShot {
+                        round: total_rounds,
+                        side: Side::Defender,
+                        hit_pct,
+                        hit,
+                        damage,
+                        target_hp: attacker.hp,
+                    });
+                }
+
+                if !defender.unbreakable
+                    && defender.rout_threshold > 0.0
+                    && defender.hp < defender.rout_threshold
+                {
+                    routed.push(Side::Defender);
+                    break;
+                }
+                if !attacker.unbreakable
+                    && attacker.rout_threshold > 0.0
+                    && attacker.hp < attacker.rout_threshold
+                {
+                    routed.push(Side::Attacker);
+                    break;
+                }
+                if defender.hp <= 0.0 {
+                    routed.push(Side::Defender);
+                    break;
+                }
+                if attacker.hp <= 0.0 {
+                    routed.push(Side::Attacker);
+                    break;
+                }
+
+                if (!attacker.is_ranged || attacker.ammo <= 0)
+                    && (!defender.is_ranged || defender.ammo <= 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        RangedPhaseResult {
+            hp_attacker: attacker.hp,
+            hp_defender: defender.hp,
+            ammo_attacker: attacker.ammo,
+            ammo_defender: defender.ammo,
+            rounds: total_rounds,
+            routed,
+            shots,
+        }
+    }
+}
