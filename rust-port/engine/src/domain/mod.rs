@@ -107,6 +107,7 @@ pub mod types;
 pub mod unit_epoch;
 pub mod unit_health;
 pub mod unit_power;
+pub mod unit_replace;
 pub mod war_all_in_capital;
 pub mod war_all_in_capital_nav;
 pub mod war_all_in_capital_plan;
