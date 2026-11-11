@@ -1,6 +1,6 @@
 //! Wspolne pomocniki testow P6.M16 (dolaczane przez `#[path]`). Wektory pochodza z URUCHOMIONEGO weba
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1/gen-m16-vectors.mjs`,
-//! pin edb8fb56). Konwencja JSON: `null` = pole nieobecne/undefined albo null.
+//! pin cffe39cb9). Konwencja JSON: `null` = pole nieobecne/undefined albo null.
 #![allow(dead_code)]
 
 use std::collections::{BTreeMap, BTreeSet};

@@ -12,6 +12,10 @@
 //! - Porownania i `Math.max/min` zachowuja semantyke JS dla NaN (`js_max`/`js_min`).
 //! - Brak portu: klucz niedoboru o nazwie wlasciwosci `Object.prototype` (web rzuca `TypeError`).
 
+/// Web `livestock-unlock.ts:STADNINA_FREE_FROM_ERA` (R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1): od tej
+/// epoki (Zelazo = 3) stadnina moze stac POZA zlozem konia (po imperialnym odblokowaniu Konia); wczesniej tylko na zlozu.
+pub const STADNINA_FREE_FROM_ERA: f64 = 3.0;
+
 pub mod auto_build_gate;
 pub mod city_phases;
 pub mod fort_claim;

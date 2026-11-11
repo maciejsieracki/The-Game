@@ -1,5 +1,5 @@
 //! P6.8I partia 8I-P1 - predykat reliefu `preservesHillReliefKey` / `preservesHillRelief`.
-//! Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main 180c08305): `tests/p6_8i_vectors/relief.json`,
+//! Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main cffe39cb9): `tests/p6_8i_vectors/relief.json`,
 //! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/gen-repin-autoimpr-relief-vectors.mjs`.
 
 use civ_engine::domain::auto_improvements::relief_preserving::{
@@ -14,8 +14,8 @@ fn doc() -> Value {
 }
 
 #[test]
-fn vectors_pin_is_web_main_180c08305() {
-    assert_eq!(doc()["pin"].as_str(), Some("180c08305"));
+fn vectors_pin_is_web_main_cffe39cb9() {
+    assert_eq!(doc()["pin"].as_str(), Some("cffe39cb9"));
 }
 
 #[test]

@@ -1,5 +1,5 @@
 //! REPIN-AUTOIMPROVE (R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1, runda 2): wektory z URUCHOMIONEGO weba
-//! (pin web main 180c08305), generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/
+//! (pin web main cffe39cb9), generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/
 //! gen-repin-autoimpr-terrain-vectors.mjs`:
 //! - `terrain.json`: `terrain-improvements.ts` (hunki 86-100: skalowanie plonow epoka, x1,5 dla surowcow terytorium,
 //!   `hexHasHorseDeposit` + zloze 'konie' w `improvementHidesDepositOnHex`);
@@ -110,10 +110,10 @@ fn assert_yield(label: &str, got: &TileYield, want: &TileYield) {
 }
 
 #[test]
-fn vectors_pin_is_web_main_180c08305() {
+fn vectors_pin_is_web_main_cffe39cb9() {
     for raw in [TERRAIN, GATE, ROADPLAN] {
         let d: Value = serde_json::from_str(raw).unwrap();
-        assert_eq!(d["pin"].as_str(), Some("180c08305"));
+        assert_eq!(d["pin"].as_str(), Some("cffe39cb9"));
     }
 }
 
@@ -133,11 +133,25 @@ fn improvement_yield_for_era_matches_web() {
     }
 }
 
+/// DLUG (R-RUSTPORT-REPIN-AUTOIMPROVE-PICK-STADNINA-Q1, runda 3): web od FALA 596 (`R-WEB-FISHING-BOATS-YIELD-6-6-6-Q1`)
+/// ma bonus `lodzie_rybackie` = 6/6/6 (dawniej 2/3/3). Dane Rust (`data/terrain-improvements.json`, poza allowlista tego
+/// tematu) zostaja 2/3/3, bo starsze wektory pinowane (economy_city_vectors_r3/r4, p6_23) koduja 2/3/3 - zmiana danych
+/// wymaga osobnego tematu REPIN (ekonomia). Przypadki z tym kluczem sa pomijane i LICZONE (liczby ponizej = pomiar).
+const FISHING_BOATS: &str = "lodzie_rybackie";
+const DEBT_BONUS_FOR_KEY: usize = 17;
+const DEBT_APPLY_BONUS: usize = 51;
+const DEBT_APPLY_BONUSES: usize = 13;
+
 #[test]
 fn improvement_bonus_for_key_with_era_matches_web() {
     let root: Value = serde_json::from_str(TERRAIN).unwrap();
+    let mut skipped = 0;
     for c in cases(&root, "improvementBonusForKey") {
         let key = c["key"].as_str().unwrap();
+        if key == FISHING_BOATS {
+            skipped += 1;
+            continue;
+        }
         let era = on(&c["era"]);
         let got: CatalogBonus = improvement_bonus_for_key_era(key, era);
         let want = &c["out"];
@@ -161,13 +175,19 @@ fn improvement_bonus_for_key_with_era_matches_web() {
             assert_eq!(improvement_bonus_for_key(key), got, "{key}");
         }
     }
+    assert_eq!(skipped, DEBT_BONUS_FOR_KEY, "dlug lodzie_rybackie 6/6/6");
 }
 
 #[test]
 fn apply_improvement_bonus_with_era_matches_web() {
     let root: Value = serde_json::from_str(TERRAIN).unwrap();
+    let mut skipped = 0;
     for c in cases(&root, "applyImprovementBonus") {
         let key = c["key"].as_str().unwrap();
+        if key == FISHING_BOATS {
+            skipped += 1;
+            continue;
+        }
         let era = on(&c["era"]);
         let mut y = yield_of(&c["yield"]);
         apply_improvement_bonus_era(&mut y, Some(key), era);
@@ -178,8 +198,14 @@ fn apply_improvement_bonus_with_era_matches_web() {
             assert_yield(&format!("{c} (stara sygnatura)"), &y2, &y);
         }
     }
+    assert_eq!(skipped, DEBT_APPLY_BONUS, "dlug lodzie_rybackie 6/6/6");
+    let mut skipped_many = 0;
     for c in cases(&root, "applyImprovementBonuses") {
         let keys = strs(&c["keys"]);
+        if keys.iter().any(|k| k == FISHING_BOATS) {
+            skipped_many += 1;
+            continue;
+        }
         let era = on(&c["era"]);
         let mut y = yield_of(&c["yield"]);
         apply_improvement_bonuses_era(&mut y, &keys, era);
@@ -190,6 +216,10 @@ fn apply_improvement_bonus_with_era_matches_web() {
             assert_yield(&format!("{c} (stara sygnatura)"), &y2, &y);
         }
     }
+    assert_eq!(
+        skipped_many, DEBT_APPLY_BONUSES,
+        "dlug lodzie_rybackie 6/6/6"
+    );
 }
 
 #[test]

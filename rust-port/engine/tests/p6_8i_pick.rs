@@ -1,6 +1,6 @@
-//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main 180c08305):
+//! P6.8I (8I-P1/P2) - picker auto-ulepszen. Wektory z URUCHOMIONEGO weba (REPIN-AUTOIMPROVE, pin web main cffe39cb9):
 //! `tests/p6_8i_vectors/pick.json` (scenariusze `pickAutoImprovements`) i `helpers.json` (helpery P1),
-//! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-ZYWNOSC-RZEKA-Q1/tools/gen-repin-autoimpr-pick-vectors.mjs`.
+//! generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-AUTOIMPROVE-PICK-STADNINA-Q1/tools/gen-pick-vectors-cffe39cb9.mjs`.
 //! Kodowanie liczb: skonczona -> liczba, NaN/Infinity/-Infinity -> napis.
 
 use std::cell::RefCell;
@@ -277,11 +277,11 @@ fn expected_picks(v: &Value) -> Vec<Pick> {
 }
 
 #[test]
-fn vectors_pin_is_web_main_180c08305() {
+fn vectors_pin_is_web_main_cffe39cb9() {
     let d: Value = serde_json::from_str(PICK).unwrap();
-    assert_eq!(d["pin"].as_str(), Some("180c08305"));
+    assert_eq!(d["pin"].as_str(), Some("cffe39cb9"));
     let h: Value = serde_json::from_str(HELPERS).unwrap();
-    assert_eq!(h["pin"].as_str(), Some("180c08305"));
+    assert_eq!(h["pin"].as_str(), Some("cffe39cb9"));
 }
 
 #[test]
@@ -308,7 +308,30 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
     // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3.
     assert_eq!(city_territory_radius(&fort_probe(true)), 5.0);
     assert_eq!(city_territory_radius(&fort_probe(false)), 3.0);
-    for s in scenarios {
+    // `P6_8I_SHARD=k/n` - tylko scenariusze o indeksie i % n == k (podzial pelnego biegu na partie <= 590 s).
+    let shard: Option<(usize, usize)> = std::env::var("P6_8I_SHARD").ok().and_then(|v| {
+        let (k, n) = v.split_once('/')?;
+        Some((k.parse().ok()?, n.parse().ok()?))
+    });
+    // `P6_8I_NAMES=<plik>` - tylko scenariusze o nazwach z pliku (po jednej w linii; narzedzie klasyfikacji dryfu).
+    let names: Option<BTreeSet<String>> = std::env::var("P6_8I_NAMES").ok().map(|f| {
+        std::fs::read_to_string(&f)
+            .unwrap_or_else(|e| panic!("P6_8I_NAMES {f}: {e}"))
+            .lines()
+            .map(str::to_owned)
+            .collect()
+    });
+    for (idx, s) in scenarios.iter().enumerate() {
+        if let Some((k, n)) = shard {
+            if idx % n != k {
+                continue;
+            }
+        }
+        if let Some(set) = &names {
+            if !set.contains(s["name"].as_str().unwrap()) {
+                continue;
+            }
+        }
         if let Some(prefixes) = &only {
             let name = s["name"].as_str().unwrap();
             if !prefixes.iter().any(|p| name.starts_with(p.as_str())) {
@@ -351,11 +374,11 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
     }
     if std::env::var("P6_8I_LIST").is_ok() {
         for b in &bad {
-            eprintln!("BAD {}", b.split(':').next().unwrap());
+            eprintln!("BAD {}", b.split(": rust=").next().unwrap());
         }
     }
     assert!(
-        only.is_some() || nonempty >= 1000,
+        only.is_some() || names.is_some() || shard.is_some() || nonempty >= 1000,
         "za malo niepustych scenariuszy: {nonempty}"
     );
     assert!(

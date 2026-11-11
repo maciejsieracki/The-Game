@@ -1,5 +1,5 @@
 //! P6.M16 - galeria 3D (`improvement-build.ts:1177-1292`): `galleryTerrainEligible`,
-//! `galleryComboEligible`, `galleryComboShowModel`. Wektory z URUCHOMIONEGO weba (pin edb8fb56).
+//! `galleryComboEligible`, `galleryComboShowModel`. Wektory z URUCHOMIONEGO weba (pin cffe39cb9).
 
 #[path = "p6_m16_vectors/common.rs"]
 mod common;
