@@ -8,6 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fmt};
 
+use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
@@ -331,6 +332,9 @@ pub struct PlayableState {
     pub phase: TurnPhase,
     pub last_advanced_phases: Vec<TurnPhase>,
     pub status: String,
+    /// P6-WIRE-WAR-STATE (D1=B): stan wojny tury; pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "WarTurnState::is_default")]
+    pub war: WarTurnState,
 }
 
 impl PlayableState {
@@ -349,6 +353,7 @@ impl PlayableState {
             phase: TurnPhase::PlayerActions,
             last_advanced_phases: Vec::new(),
             status: "Brak aktywnej sesji.".to_owned(),
+            war: WarTurnState::default(),
         }
     }
 }
@@ -454,6 +459,7 @@ impl PlayableGame {
                 phase: TurnPhase::PlayerActions,
                 last_advanced_phases: Vec::new(),
                 status,
+                war: WarTurnState::default(),
             },
             phase_queue: EventQueue::new(),
         };

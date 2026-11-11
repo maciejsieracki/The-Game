@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
+use super::war_turn_state::WarTurnState;
 use super::{CityDto, CivilizationDto, MapDto, TurnDto, UnitDto, ValidationError};
 
 /// Canonical serializable state for the staged engine.
@@ -12,6 +13,10 @@ pub struct GameStateDto {
     cities: Vec<CityDto>,
     units: Vec<UnitDto>,
     turn: TurnDto,
+    /// P6-WIRE-WAR-STATE (D1=B): stan wojny tury. Brak pola w zapisie => stan pusty (zachowanie
+    /// jak przed W1); stan pusty nie jest zapisywany.
+    #[serde(default, skip_serializing_if = "WarTurnState::is_default")]
+    war: WarTurnState,
 }
 
 #[derive(Debug, Deserialize)]
@@ -21,6 +26,8 @@ struct RawGameStateDto {
     cities: Vec<CityDto>,
     units: Vec<UnitDto>,
     turn: TurnDto,
+    #[serde(default)]
+    war: WarTurnState,
 }
 
 impl GameStateDto {
@@ -37,9 +44,26 @@ impl GameStateDto {
             cities,
             units,
             turn,
+            war: WarTurnState::default(),
         };
         state.validate()?;
         Ok(state)
+    }
+
+    /// Stan wojny tury (pusty dla zapisu sprzed W1).
+    pub fn war_turn_state(&self) -> &WarTurnState {
+        &self.war
+    }
+
+    /// Kopia z podmienionym stanem wojny.
+    pub fn with_war_turn_state(mut self, war: WarTurnState) -> Self {
+        self.war = war;
+        self
+    }
+
+    /// Podmienia stan wojny w miejscu.
+    pub fn set_war_turn_state(&mut self, war: WarTurnState) {
+        self.war = war;
     }
 
     pub fn validate(&self) -> Result<(), ValidationError> {
@@ -164,6 +188,7 @@ impl TryFrom<RawGameStateDto> for GameStateDto {
 
     fn try_from(raw: RawGameStateDto) -> Result<Self, Self::Error> {
         Self::new(raw.map, raw.civilizations, raw.cities, raw.units, raw.turn)
+            .map(|state| state.with_war_turn_state(raw.war))
     }
 }
 

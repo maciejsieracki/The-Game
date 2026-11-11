@@ -1,0 +1,95 @@
+{
+  "forcedEraPeaceUntilNextEraByPairKey": [
+    [
+      "1:2",
+      {
+        "ownerId": 1,
+        "era": 2
+      }
+    ],
+    [
+      "0:3",
+      {
+        "ownerId": 3,
+        "era": 1
+      }
+    ]
+  ],
+  "forcedWarWavesByPairKey": [
+    [
+      "1:2",
+      {
+        "nextWaveId": 3,
+        "waves": [
+          {
+            "id": "w1",
+            "targetCityId": "c9",
+            "unitIds": [
+              "u1",
+              "u2"
+            ],
+            "originHex": {
+              "q": 1,
+              "r": -2
+            },
+            "rallyPoint": {
+              "q": 4,
+              "r": 0
+            },
+            "approachSector": 2,
+            "createdTurn": 41
+          }
+        ],
+        "history": [
+          {
+            "targetCityId": "c7",
+            "originHex": {
+              "q": 0,
+              "r": 0
+            },
+            "rallyPoint": {
+              "q": 2,
+              "r": 1
+            },
+            "approachSector": 5,
+            "createdTurn": 30
+          }
+        ]
+      }
+    ],
+    [
+      "0:3",
+      {
+        "nextWaveId": 1,
+        "waves": [],
+        "history": []
+      }
+    ]
+  ],
+  "aiGeneralWarCampaignByOwner": [
+    [
+      2,
+      {
+        "targetOwnerId": 0,
+        "stage": "gathering",
+        "generalUnitId": "g1",
+        "blockedGeneralIds": [
+          "g0"
+        ],
+        "gatherTurnsCompleted": 3,
+        "lastGatherTurn": 50,
+        "reserveGeneralId": "g2",
+        "reserveGatherTurns": 1,
+        "reserveLastTurn": 49
+      }
+    ],
+    [
+      3,
+      {
+        "targetOwnerId": 2,
+        "stage": "recruiting",
+        "gatherTurnsCompleted": 0
+      }
+    ]
+  ]
+}

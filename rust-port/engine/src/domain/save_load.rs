@@ -16,13 +16,17 @@
 use std::{error::Error, fmt};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
-use serde_json::{Number, Value};
+use serde_json::{Map, Number, Value};
 
 // The source file is currently exercised as an integration-test path module.
 // The production branch resolves these types from the sibling domain modules;
 // the test branch resolves them from the same path-loaded dependency module.
 #[cfg(not(test))]
+use super::war_turn_state::{managed_meta_keys, WarTurnState};
+#[cfg(not(test))]
 use super::{GameStateDto, Rng};
+#[cfg(test)]
+use civ_engine::domain::war_turn_state::{managed_meta_keys, WarTurnState};
 #[cfg(test)]
 use civ_engine::{GameStateDto, Rng};
 
@@ -153,6 +157,11 @@ pub struct SaveMeta {
         skip_serializing_if = "Option::is_none"
     )]
     era_war_count_by_civ: Option<Value>,
+    /// P6-WIRE-WAR-STATE: pozostale klucze `meta` (web `buildSaveGameSnapshot`, `main.ts:36874-37051`),
+    /// zachowane jako surowy JSON, zeby round-trip nie gubil danych. Stan wojny czyta/pisze
+    /// `war_turn_state::WarTurnState` (`war_turn_state` / `with_war_turn_state`).
+    #[serde(flatten, default, skip_serializing_if = "Map::is_empty")]
+    extra: Map<String, Value>,
 }
 
 impl SaveMeta {
@@ -161,6 +170,23 @@ impl SaveMeta {
         self.battle_mode_setting_version.is_none()
             && self.new_game_params.is_none()
             && self.era_war_count_by_civ.is_none()
+            && self.extra.is_empty()
+    }
+
+    /// Stan wojny tury odczytany z pozostalych kluczy `meta` (brak kluczy => stan pusty).
+    pub fn war_turn_state(&self) -> WarTurnState {
+        WarTurnState::from_meta_json(&self.extra)
+    }
+
+    /// Zapisuje stan wojny do `meta`. Stan domyslny nie zostawia kluczy wojennych (zapis jak przed W1).
+    pub fn with_war_turn_state(mut self, war: &WarTurnState) -> Self {
+        for key in managed_meta_keys() {
+            self.extra.remove(&key);
+        }
+        if *war != WarTurnState::default() {
+            self.extra.extend(war.to_meta_json());
+        }
+        self
     }
 
     /// Sets `warRulesEraWarCountByCiv` from counter entries in insertion order (web
@@ -485,6 +511,26 @@ impl SaveSnapshot {
         self
     }
 
+    /// Stan wojny tury (D1=B: nosnikiem jest `state.war`).
+    pub fn war_turn_state(&self) -> &WarTurnState {
+        self.state.war_turn_state()
+    }
+
+    /// Kopia ze stanem wojny w `state.war`; klucze wojenne w `meta` sa usuwane (jedno zrodlo prawdy).
+    pub fn with_war_turn_state(mut self, war: WarTurnState) -> Self {
+        self.meta = self.meta.with_war_turn_state(&WarTurnState::default());
+        self.state.set_war_turn_state(war);
+        self
+    }
+
+    /// Blok `meta` w formacie weba z kluczami wojny z `state.war` (eksport/interop; zapis wlasny
+    /// niesie wojne w `state.war`, nie w `meta`).
+    pub fn web_meta(&self) -> SaveMeta {
+        self.meta
+            .clone()
+            .with_war_turn_state(self.state.war_turn_state())
+    }
+
     /// Returns the additive save metadata (empty for saves written before R4).
     pub fn meta(&self) -> &SaveMeta {
         &self.meta
@@ -578,8 +624,28 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
             }
         };
 
+        // Migracja W1 (D4): zapis w formacie weba niesie stan wojny w kluczach `meta`; gdy
+        // `state.war` jest pusty, a `meta` ma klucze wojny, przenosimy je do `state.war`.
+        let meta = wire.meta.unwrap_or_default();
+        let snapshot = if snapshot.state.war_turn_state().is_default() {
+            let war = meta.war_turn_state();
+            if war.is_default() {
+                snapshot
+            } else {
+                let mut snapshot = snapshot;
+                snapshot.state.set_war_turn_state(war);
+                snapshot
+            }
+        } else {
+            snapshot
+        };
+        let meta = if snapshot.state.war_turn_state().is_default() {
+            meta
+        } else {
+            meta.with_war_turn_state(&WarTurnState::default())
+        };
         let snapshot = snapshot
-            .with_meta(wire.meta.unwrap_or_default())
+            .with_meta(meta)
             .with_planned_marches(wire.planned_marches.unwrap_or_default())
             .with_auto_march(wire.auto_march);
         snapshot.validate().map_err(de::Error::custom)?;
