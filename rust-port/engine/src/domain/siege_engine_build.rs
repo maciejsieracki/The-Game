@@ -141,11 +141,15 @@ pub fn siege_engine_build_option(
         _ => 0.0,
     };
     let cost_stock = unit_stock_cost(Some(&unit.stock_source));
-    let tech_required = unit
-        .tech
-        .as_deref()
-        .map(str::trim)
-        .filter(|t| !t.is_empty() && *t != "-" && *t != "—");
+    // Kolejnosc jak web: `unit.Tech?.trim() && unit.Tech !== '-' && unit.Tech !== '—' && !unlocked.has(unit.Tech.trim())`.
+    // Porownanie `-`/`—` idzie na SUROWEJ wartosci (przed trimem), wiec ' - ' blokuje jak w web.
+    let tech_locked = match unit.tech.as_deref() {
+        Some(raw) => {
+            let trimmed = raw.trim();
+            !trimmed.is_empty() && raw != "-" && raw != "—" && !ctx.unlocked_techs.contains(trimmed)
+        }
+        None => false,
+    };
 
     let reason = if !is_siege_engine_def(unit.typ.as_deref()) {
         Some(SiegeEngineBuildBlock::TechnologyLocked)
@@ -159,7 +163,7 @@ pub fn siege_engine_build_option(
         Some(SiegeEngineBuildBlock::TooFewUnits)
     } else if built_this_turn >= quota as f64 {
         Some(SiegeEngineBuildBlock::TurnLimitReached)
-    } else if tech_required.is_some_and(|t| !ctx.unlocked_techs.contains(t)) {
+    } else if tech_locked {
         Some(SiegeEngineBuildBlock::TechnologyLocked)
     } else if ctx.treasury < cost_money {
         Some(SiegeEngineBuildBlock::InsufficientMoney)

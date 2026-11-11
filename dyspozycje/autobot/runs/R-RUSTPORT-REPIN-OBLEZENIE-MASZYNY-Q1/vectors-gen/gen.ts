@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { siegeEngineBuildOption, siegeEngineQuota, SIEGE_ENGINE_UNITS_PER_MACHINE } from '../web/gra/src/game/siege-engine-build';
 import { unitStockCost } from '../web/gra/src/game/building-stock-cost';
 
@@ -55,6 +56,8 @@ add('tech_locked', lockedSiege, base(), 50);
 add('tech_unlocked', lockedSiege, base({ unlockedTechs: new Set(['Inzynieria']) }), 50);
 add('tech_spaces_trimmed', { ...lockedSiege, Tech: ' Inzynieria ' }, base({ unlockedTechs: new Set(['Inzynieria']) }), 50);
 add('tech_em_dash_no_lock', { ...siegeUnit, Tech: '—' }, base(), 50);
+add('tech_dash_with_spaces_locked', { ...siegeUnit, Tech: ' - ' }, base(), 50);
+add('tech_em_dash_with_spaces_locked', { ...siegeUnit, Tech: ' — ' }, base(), 50);
 add('money_exact', siegeUnit, base({ treasury: 50 }), 50);
 add('money_short', siegeUnit, base({ treasury: 49.99 }), 50);
 add('stock_exact', siegeUnit, base({ stock: { drewno: 20 } }), 50);
@@ -66,6 +69,20 @@ add('turn_limit_before_tech', lockedSiege, base({ turnState: { turn: 10, count: 
 add('allowed_plain', siegeUnit, base(), 50);
 add('allowed_quota2', siegeUnit, base({ army: mk(25) }), 50);
 add('allowed_zero_cost', siegeUnit, base(), 0);
+
+// Prawdziwe wpisy units.json z Typ 'Siege' (koszt epokowy, Tech, surowiec) - zamiast/obok syntetycznych.
+const realUnits: any[] = JSON.parse(readFileSync('../web/gra/data/units.json', 'utf8'));
+const realSiege = realUnits.filter((u: any) => String(u.Typ ?? '').trim() === 'Siege');
+if (realSiege.length < 3) throw new Error('units.json: za malo jednostek Siege');
+realSiege.forEach((u: any, i: number) => {
+  const slug = `real${i}_${String(u.Jednostka).replace(/\W+/g, '_')}`;
+  const fullStock = Object.fromEntries(Object.keys(unitStockCost(u)).map(k => [k, 1000]));
+  const techs = u.Tech && String(u.Tech).trim() ? new Set([String(u.Tech).trim()]) : new Set<string>();
+  add(`${slug}_allowed`, u, base({ army: mk(10), unlockedTechs: techs, stock: fullStock }), 50);
+  add(`${slug}_tech_state`, u, base({ army: mk(10), unlockedTechs: new Set<string>(), stock: fullStock }), 50);
+  add(`${slug}_stock_empty`, u, base({ army: mk(10), unlockedTechs: techs, stock: {} }), 50);
+  add(`${slug}_quota_20`, u, base({ army: mk(20), unlockedTechs: techs, stock: fullStock, turnState: { turn: 10, count: 1 } }), 50);
+});
 
 const out = {
   unitsPerSiegeEngine: SIEGE_ENGINE_UNITS_PER_MACHINE,
