@@ -1,3 +1,15 @@
+## ROBOCZA b0f37e1d -- 2026-11-06 -- FALA 629: Automatyczna rekrutacja: wybór generała w panelu Rekrutacja (testowa)
+
+- R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: panel Rekrutacja ma wybór 'Generał rekrutujący'; bez wybranego generała przyciski Rekrutuj/Rekrutuj wszystkie nieaktywne; zrodzona jednostka idzie do wybranego generała (po jego śmierci do najbliższego); wybór zapisywany w save, czyszczony z powiadomieniem po śmierci generała, jednorazowe powiadomienie przy starym zapisie; rekrutacja ręczna i AI bez zmian
+- Weryfikacja: tsc czysty; army-auto-recruit-general 32/0, live-test w realnej grze (Chromium) 17/0, ui-test 11/0, recruit-follow-general-origin 22/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Wymóg generała dotyczy zbiorczego panelu Rekrutacja (brak osobnego automatu); brak fallbacku do najbliższego bez wyboru; dług bazowy czerwony tak samo na bazie: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18; NIE_ZMIERZONO: wczytanie starego zapisu w realnej grze
+
+## ROBOCZA 11ffdb9f -- 2026-11-06 -- FALA 628: AI: armia szuka głównej armii wroga (odsprzęgnięta od obrony domu) (testowa)
+
+- R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: w wojnie armia AI w zasięgu 3 ruchów idzie na główną armię wroga (próg sił 0,8) zanim zajmie miasto; nakładka niezależna od isHomeWarDefenseEnabled (własny przełącznik ai_wojna_armia_szuka_armii_wlaczone); pierwszeństwo obrony domu zachowane
+- Weryfikacja: tsc czysty; ai-war-army-seeks-army 22/0 (T10 homeDefense:false, mutacja czerwona), ai-war-defend-home 30/0, ai-war-gate 24/0, ai-test 296/0, general-muster 26/0, scattered-merge 33/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Próg sił 0,8 i zasięg 3 ruchy to założenie balansu (do ABC właściciela); war-allin-capital 96/2 = dług bazowy; NIE_ZMIERZONO: partia AI vs AI na żywo, koszt czasu tury AI; dług Rust: REPIN (nakładka niezależna od flagi obrony domu)
+
 ## ROBOCZA e1fabc32 -- 2026-11-06 -- FALA 627: Administrator miasta (testowa)
 
 - R-WEB-CITY-ADMINISTRATOR-Q1: administrator miasta (osoba przypisana do miasta, max 1; zatrudnienie w mieście z Pałacem I–III lub Domem Starszyzny/Dwór Zarządcy/Pretorium); zatrudnienie 40 Pieniądza, utrzymanie 2/3/4 Pieniądza/turę ze skarbca państwa (tier budynku); efekty ×1/×1,5/×2,25: korupcja −10% (addytywnie z Sądem/Trybunałem/Pałacem, sufit zachowany), produkcja miasta +3%, ściągalność podatków +3%; brak środków w skarbcu = nie pracuje (bez efektów i bez autobudowy); autobudowa budynków gracza tylko z działającym administratorem; przycisk Administrator obok Ustaw jako stolicę, ikona A, hasło Civpedii; AI zatrudnia na tych samych zasadach; migracja zapisów z jednorazowym powiadomieniem

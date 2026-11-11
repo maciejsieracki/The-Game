@@ -36,6 +36,13 @@ export interface EmpireRecruitPanelCfg {
   /** Wykonuje zamówienie; zwraca komunikat PL do pokazania w panelu. */
   /** `accepted` = ile sztuk faktycznie przyjęto (do częściowego sukcesu w „Rekrutuj wszystkie”). */
   onOrder: (unitId: string, quantity: number) => { message: string; changed: boolean; accepted?: number };
+  /**
+   * R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: własni żywi generałowie do wyboru jako „rekrutujący”.
+   * Bez wybranego generała panel nie rekrutuje (przyciski nieaktywne); nowe jednostki idą do wybranego.
+   */
+  getGenerals?: () => { id: string; label: string }[];
+  getSelectedGeneralId?: () => string | null;
+  onSelectGeneral?: (id: string | null) => void;
 }
 
 const ROOT_ID = 'civ-empire-recruit-panel';
@@ -100,6 +107,12 @@ function ensureStyles(): void {
 #${ROOT_ID} .erp-all{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);}
 #${ROOT_ID} .erp-stick{position:sticky;top:0;z-index:2;background:#161c28;}
 #${ROOT_ID} .erp-all button{width:100%;border-color:rgba(232,216,138,.6);color:#e8d88a;font-weight:700;padding:6px 8px;}
+#${ROOT_ID} .erp-gen{padding:6px 12px;border-top:1px solid rgba(232,216,138,.2);display:flex;flex-direction:column;gap:4px;}
+#${ROOT_ID} .erp-gen-title{font-weight:700;color:#e8d88a;}
+#${ROOT_ID} .erp-gen button{display:flex;align-items:center;gap:6px;text-align:left;width:100%;box-sizing:border-box;}
+#${ROOT_ID} .erp-gen button.is-selected{border-color:rgba(232,216,138,.9);background:rgba(232,216,138,.14);}
+#${ROOT_ID} .erp-gen-badge{margin-left:auto;font-size:11px;color:#e8d88a;white-space:nowrap;}
+#${ROOT_ID} .erp-gen-warn{font-size:12px;color:#e8a08a;}
 #${ROOT_ID} .erp-msg{padding:6px 12px 9px;font-size:12px;color:#e8d88a;min-height:1.2em;border-top:1px solid rgba(232,216,138,.2);}
 `;
   document.head.appendChild(st);
@@ -182,12 +195,35 @@ function syncAffordability(root: HTMLElement): void {
   });
 }
 
+/** Czy panel ma wymóg wyboru generała i żaden nie jest wybrany (rekrutacja wyłączona). */
+function recruitingBlockedByGeneral(): boolean {
+  return !!panelCfg?.getGenerals && !panelCfg.getSelectedGeneralId?.();
+}
+
+function generalsHtml(): string {
+  if (!panelCfg?.getGenerals) return '';
+  const gens = panelCfg.getGenerals();
+  const sel = panelCfg.getSelectedGeneralId?.() ?? null;
+  const items = gens.map(g => {
+    const on = g.id === sel;
+    return `<button type="button" data-erp="gen" data-gen="${esc(g.id)}" class="${on ? 'is-selected' : ''}" aria-pressed="${on}">`
+      + `<span aria-hidden="true">★</span><span>${esc(g.label)}</span>${on ? '<span class="erp-gen-badge">rekrutuje</span>' : ''}</button>`;
+  }).join('');
+  const warn = gens.length === 0
+    ? 'Brak generała — zrekrutuj generała (w stolicy), aby włączyć rekrutację z tego panelu.'
+    : (sel ? '' : 'Wybierz generała rekrutującego — bez niego rekrutacja z tego panelu jest wyłączona.');
+  return `<div class="erp-gen" data-erp-gens><span class="erp-gen-title">Generał rekrutujący</span>${items}`
+    + `${warn ? `<span class="erp-gen-warn" data-erp-gen-warn>${esc(warn)}</span>` : ''}`
+    + `<span class="erp-meta">Nowe jednostki z tego panelu idą do wybranego generała.</span></div>`;
+}
+
 function render(root: HTMLElement, force = true): void {
   if (!panelCfg) return;
+  const blockedGen = recruitingBlockedByGeneral();
   const rows = panelCfg.getRows();
   for (const row of rows) if (row.capableCities <= 0) drafts.set(row.id, 0);
   const total = rows.reduce((sum, r) => sum + (r.capableCities > 0 ? getEmpireRecruitDraft(r.id) : 0), 0);
-  const allBtn = `<button type="button" class="erp-go-all" data-erp="go-all"${total <= 0 ? ' disabled' : ''}>Rekrutuj wszystkie</button>`;
+  const allBtn = `<button type="button" class="erp-go-all" data-erp="go-all"${total <= 0 || blockedGen ? ' disabled' : ''}>Rekrutuj wszystkie</button>`;
   const list = rows.map(r => {
     const orderable = r.capableCities > 0;
     const q = orderable ? getEmpireRecruitDraft(r.id) : 0;
@@ -204,7 +240,7 @@ function render(root: HTMLElement, force = true): void {
       + `<div class="erp-qty"><button type="button" data-erp="dec" aria-label="Zmniejsz liczbę ${esc(r.label)}"${!orderable || q <= 0 ? ' disabled' : ''}>−</button>`
       + `<input type="number" min="0" max="${MAX_QTY}" step="1" value="${q}" data-erp="qty" aria-label="Liczba ${esc(r.label)}"${!orderable ? ' disabled' : ''}>`
       + `<button type="button" data-erp="inc" aria-label="Zwiększ liczbę ${esc(r.label)}"${!orderable || q >= MAX_QTY ? ' disabled' : ''}>+</button></div>`
-      + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 ? ' disabled' : ''}>Rekrutuj</button>`
+      + `<button type="button" class="erp-go" data-erp="go"${blocked || q <= 0 || blockedGen ? ' disabled' : ''}>Rekrutuj</button>`
       + `</div>`;
   }).join('');
   const html = `<div class="erp-stick"><div class="erp-hd"><span class="erp-title">Rekrutacja — cała cywilizacja</span>`
@@ -213,6 +249,7 @@ function render(root: HTMLElement, force = true): void {
     + `<div class="erp-sub">Zamówienie rozkłada się równomiernie na miasta, które mogą produkować dany typ. `
     + `Pojedyncze „Rekrutuj” nie zeruje licznika. „Rekrutuj wszystkie” zamawia każdy typ z licznikiem &gt; 0 `
     + `i zeruje przyjęte pozycje.</div>`
+    + generalsHtml()
     + `<div class="erp-summary" data-erp-summary></div>`
     + `<div class="erp-list">${list || '<div class="erp-meta" style="padding:10px 4px">Brak dostępnych jednostek wojskowych.</div>'}</div>`
     + `<div class="erp-msg" data-erp-msg role="status">${esc(lastMessage)}</div>`;
@@ -231,6 +268,14 @@ function onClick(ev: Event): void {
   const act = t.getAttribute('data-erp');
   if (act === 'close') { closeEmpireRecruitPanel(); return; }
   if (act === 'go-all') { orderAll(root); return; }
+  if (act === 'gen') {
+    const gid = t.getAttribute('data-gen');
+    const cur = panelCfg.getSelectedGeneralId?.() ?? null;
+    panelCfg.onSelectGeneral?.(gid && gid !== cur ? gid : null); // ponowny klik w wybranego = odznacz
+    lastMessage = '';
+    render(root);
+    return;
+  }
   const rowEl = t.closest('[data-unit]') as HTMLElement | null;
   const id = rowEl?.getAttribute('data-unit');
   if (!id) return;
@@ -291,7 +336,8 @@ function syncControls(root: HTMLElement, keepInput: boolean): void {
   const rows = panelCfg.getRows();
   for (const row of rows) if (row.capableCities <= 0) drafts.set(row.id, 0);
   const total = rows.reduce((sum, r) => sum + (r.capableCities > 0 ? getEmpireRecruitDraft(r.id) : 0), 0);
-  root.querySelectorAll<HTMLButtonElement>('[data-erp="go-all"]').forEach(b => { b.disabled = total <= 0; });
+  const blockedGen = recruitingBlockedByGeneral();
+  root.querySelectorAll<HTMLButtonElement>('[data-erp="go-all"]').forEach(b => { b.disabled = total <= 0 || blockedGen; });
   root.querySelectorAll<HTMLElement>('[data-unit]').forEach(rowEl => {
     const id = rowEl.getAttribute('data-unit') ?? '';
     const q = getEmpireRecruitDraft(id);
@@ -302,7 +348,7 @@ function syncControls(root: HTMLElement, keepInput: boolean): void {
     const input = rowEl.querySelector<HTMLInputElement>('[data-erp="qty"]');
     if (dec) dec.disabled = blocked || q <= 0;
     if (inc) inc.disabled = blocked || q >= MAX_QTY;
-    if (go) go.disabled = blocked || q <= 0;
+    if (go) go.disabled = blocked || q <= 0 || blockedGen;
     if (input) input.disabled = blocked;
     if (input && !keepInput) input.value = String(q);
   });
