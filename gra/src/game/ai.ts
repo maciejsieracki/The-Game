@@ -6024,6 +6024,11 @@ import {
   AI_RESOURCE_TRADE_CITYSTATE_URGENT_COOLDOWN_TURNS,
   capAiGoldOffer,
 } from './diplomacy-economy';
+
+/** Owner-tuned AI→player cyclic barter cooldown from ai-params.json. */
+export const AI_TRADE_BARTER_COOLDOWN_TURNS = Math.max(1, Math.floor(
+  Number(aiParamsRaw.propozycja_wymiany_surowcow_cooldown_tur?.wartosc ?? 15),
+));
 import {
   aiAllowsOneSidedGoldGift,
   aiAllowsTradeAgreementSweetener,
@@ -6160,6 +6165,11 @@ export interface RelacjaWejscie {
   };
   /** Czy z partnerem już trwa cykliczna umowa surowcowa (main.ts: activeDeals). */
   hasActiveResourceTradeDeal?: boolean;
+  /** Fair cyclic barter proposed only to a contacted human player. */
+  resourceBarterOffer?: {
+    giveKey: string; giveQty: number; receiveKey: string; receiveQty: number; turns: number;
+  };
+  lastResourceBarterProposalTurn?: number;
   /** Tura ostatniej PROAKTYWNEJ propozycji handlu surowcem (cooldown per para). */
   lastResourceTradeProposalTurn?: number;
   /** Typ cywilizacji partnera (ikonaId / TypCywilizacji) — aiDiplomacyStance per nacja. */
@@ -6409,6 +6419,7 @@ export type AIDiplomacyCommand =
       /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty widoczne dla gracza (niedobór / nadwyżka). */
       reasonHandlu?: string;
     }
+  | { type: 'zaproponuj_wymiane_cykliczna'; targetId: string; powod: string; giveKey: string; giveQty: number; receiveKey: string; receiveQty: number; turns: number }
   | { type: 'zaproponuj_pakt'; targetId: string; powod: string; turns?: number }
   /** R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1: prosba AI o umowe przemarszu wojskowego ('granice' + borderMilitary). */
   | { type: 'zaproponuj_przemarsz'; targetId: string; powod: string }
@@ -6954,6 +6965,23 @@ export function decideAIDiplomacy(
     const tradeRelMin = Math.max(0, p.progHandelRelacjaMin - bias.tradeScoreEase);
 
     const resOffer = rel.resourceTradeOffer;
+    const barter = rel.resourceBarterOffer;
+    if (
+      !rel.stanWojny && rel.partnerId === '0' && rel.contactEstablished === true
+      && barter
+      && canAiProposeResourceTrade(currentTurnForTrade, rel.lastResourceBarterProposalTurn, AI_TRADE_BARTER_COOLDOWN_TURNS)
+    ) {
+      komendy.push({
+        type: 'zaproponuj_wymiane_cykliczna', targetId: rel.partnerId,
+        powod: `Wymiana cykliczna: ${barter.giveKey} ${barter.giveQty} ↔ ${barter.receiveKey} ${barter.receiveQty} szt./turę`,
+        giveKey: barter.giveKey,
+        giveQty: barter.giveQty,
+        receiveKey: barter.receiveKey,
+        receiveQty: barter.receiveQty,
+        turns: barter.turns,
+      });
+      continue;
+    }
     const isDeficitTrade = resOffer?.kierunek === 'zakup' || resOffer?.powod === 'deficyt';
     const tradeCooldownTurns = (() => {
       if (isDeficitTrade && (inp.isMinorCivSelf || rel.isMinorCivPartner)) {

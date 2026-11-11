@@ -18,9 +18,11 @@ export const AI_REJECTED_OFFER_COOLDOWN_TURNS = 3;
  * Decyzja właściciela (2026-11-08, ABC): osobny klucz, długość cooldownu bez zmian.
  */
 export const CITY_FOR_PEACE_COOLDOWN_KEY = 'miasto_za_pokoj' as const;
+/** AI cyclic barter has a separate rejection key from other handel proposals. */
+export const CYCLIC_BARTER_COOLDOWN_KEY = 'wymiana_cykliczna' as const;
 
 /** Klucz cooldownu: typ akcji stołu albo osobny klucz oferty miasta za pokój. */
-export type RejectCooldownKey = ProposalActionId | typeof CITY_FOR_PEACE_COOLDOWN_KEY;
+export type RejectCooldownKey = ProposalActionId | typeof CITY_FOR_PEACE_COOLDOWN_KEY | typeof CYCLIC_BARTER_COOLDOWN_KEY;
 
 /**
  * Wyznacza klucz cooldownu dla komendy AI (typ komendy + actionId z konwertera).
@@ -30,6 +32,7 @@ export function rejectCooldownKeyFor(cmdType: string, actionId: ProposalActionId
   if (cmdType === 'oferuj_miasto_za_pokoj' || cmdType === 'zada_miasto_za_pokoj') {
     return CITY_FOR_PEACE_COOLDOWN_KEY;
   }
+  if (cmdType === 'zaproponuj_wymiane_cykliczna') return CYCLIC_BARTER_COOLDOWN_KEY;
   return actionId;
 }
 

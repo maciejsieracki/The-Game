@@ -1,4 +1,9 @@
 {
+  "propozycja_wymiany_surowcow_cooldown_tur": {
+    "wartosc": 15,
+    "sekcja": "§12 Dyplomacja AI",
+    "opis": "Cooldown AI→gracz dla propozycji cyklicznej wymiany surowców (decyzja właściciela 2026-11-09)."
+  },
   "ai_zamiana_jednostek_limit_udzial": {
     "wartosc": 0.1,
     "sekcja": "§9 Armia AI",
