@@ -1048,7 +1048,7 @@ export function handelRequiredPn(receivePn: number, relTotal: number, multiplier
  * Zwraca wynik odrzucenia lub null = próg spełniony. Wynik odrzucenia niesie `pwBalance`
  * (givePn − requiredPn, ta sama liczba co bramka) — P-DYPLO-BILANS-GATE-NIESPOJNY.
  */
-function handelFairnessGate(
+export function handelFairnessGate(
   givePn: number,
   receivePn: number,
   relTotal: number,
@@ -2010,6 +2010,18 @@ export function aiCommandToPendingProposal(
         payload: { allianceKind },
       };
     }
+    case 'zaproponuj_wymiane_cykliczna':
+      if (cmd.giveQty <= 0 || cmd.receiveQty <= 0 || cmd.giveKey === cmd.receiveKey) return null;
+      return {
+        ...base,
+        id: makeDealId('pending-barter', turn, fromOwnerId, toOwnerId),
+        actionId: 'handel',
+        payload: {
+          giveItems: [{ typ: 'surowiec_ilosc', id: cmd.giveKey, ilosc: cmd.giveQty }],
+          receiveItems: [{ typ: 'surowiec_ilosc', id: cmd.receiveKey, ilosc: cmd.receiveQty }],
+          resourceTradeMode: 'per_turn', turns: cmd.turns, exchangeDurationTurns: cmd.turns,
+        },
+      };
     case 'zaproponuj_pakt':
       return {
         ...base,
@@ -2473,7 +2485,9 @@ export interface PendingNegotiation {
    * (oferta miasta za pokój ma actionId 'pokoj', ale własny klucz 'miasto_za_pokoj').
    * Brak pola = cooldown wg actionId (zachowanie sprzed zmiany; stare zapisy bez pola działają).
    */
-  rejectCooldownKey?: 'miasto_za_pokoj';
+  rejectCooldownKey?: 'miasto_za_pokoj' | 'wymiana_cykliczna';
+  /** Marker for an AI initiated barter sharing actionId='handel'. Optional in old saves. */
+  aiCyclicBarter?: boolean;
 }
 
 function otherPartyOf(

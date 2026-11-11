@@ -1298,7 +1298,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
@@ -1482,7 +1482,7 @@ import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBasket';
 import {
-  evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
+  evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal, handelFairnessGate,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
@@ -1495,6 +1495,7 @@ import {
   treatyEvalRelationTotal, treatyBasePnFromConfig,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
+import { selectAiTradeBarter } from './game/ai-trade-proposal';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';
 import {
   type RejectedOfferCooldown,
@@ -1615,6 +1616,7 @@ import {
   isPlayerBalanceAcceptable,
   isSellerSurplusJustified,
   isSensibleTradeActionId,
+  SENSIBLE_DEALS_THRESHOLDS,
   sensibleBalanceFilterApplies,
   tradeOfferReason,
   type TradeNeed,
@@ -14186,6 +14188,8 @@ async function boot(): Promise<void> {
      * surowcem AI→gracz (cooldown per ownerId — gracz jest zawsze druga strona, 0).
      */
     const aiResourceTradeLastProposalTurn = new Map<number, number>();
+    /** Separate AI→player cyclic barter cooldown (save-compatible optional metadata field). */
+    const aiResourceBarterLastProposalTurn = new Map<number, number>();
     /** R-AI-MP-WASAL-WCHLONIECIE: stan dyplomacji AI major → MP w klastrze (klucz `${aiId}:${csId}`). */
     const aiCsFailCount = new Map<string, number>();
     const aiCsTrybutSince = new Map<string, number>();
@@ -19777,6 +19781,7 @@ async function boot(): Promise<void> {
         case 'zaproponuj_handel': return 'Umowa wymiany';
         case 'zaproponuj_umowe_handlowa': return 'Propozycja umowy handlowej';
         case 'zaproponuj_handel_surowiec': return 'Propozycja handlu surowcem';
+        case 'zaproponuj_wymiane_cykliczna': return 'Propozycja cyklicznej wymiany surowców';
         case 'zadaj_trybut': return 'Żądanie trybutu';
         case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
         case 'oferuj_miasto_za_pokoj': return 'Miasto za pokój';
@@ -19804,6 +19809,9 @@ async function boot(): Promise<void> {
       }
       if (enriched.type === 'zaproponuj_handel_surowiec') {
         aiResourceTradeLastProposalTurn.set(ownerId, turn);
+      }
+      if (enriched.type === 'zaproponuj_wymiane_cykliczna') {
+        aiResourceBarterLastProposalTurn.set(ownerId, turn);
       }
       // C-DYP-Q1=A (2026-07-26): PARYTET — reszta komend (sojusz/handel/umowa
       // handlowa/handel surowcem/trybut) idzie PRZEZ TĘ SAMĄ tablicę stołu
@@ -19840,6 +19848,8 @@ async function boot(): Promise<void> {
         if (!clamped) return;
         workingCmd = clamped;
       }
+      if (cmd.type === 'zaproponuj_wymiane_cykliczna' && negotiationTable.some(n =>
+        n.aiCyclicBarter && n.proposerOwnerId === ownerId && n.responderOwnerId === ME())) return;
 
       const converted = aiCommandToPendingProposal(workingCmd, ownerId, ME(), turn);
       if (!converted) return;
@@ -19995,6 +20005,15 @@ async function boot(): Promise<void> {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
         return;
       }
+      if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
+        const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
+        const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
+        if (handelFairnessGate(givePn, receivePn, relationTotal(exactEvalCtx.relation), 1)) return;
+        const exactPreview = evaluateProposal({
+          actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload: balancedPayload,
+        }, exactEvalCtx);
+        if (!exactPreview.accepted) return;
+      }
       converted.payload = balancedPayload;
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
       if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) return;
@@ -20008,6 +20027,10 @@ async function boot(): Promise<void> {
         turn, 'ai', negotiationSeq,
       );
       if (cooldownKey !== converted.actionId) entry.rejectCooldownKey = 'miasto_za_pokoj';
+      if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
+        entry.rejectCooldownKey = 'wymiana_cykliczna';
+        entry.aiCyclicBarter = true;
+      }
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B7): uzasadnienie oferty trafia na stół (pole reason).
       if (workingCmd.type === 'zaproponuj_handel_surowiec' && workingCmd.reasonHandlu) {
         entry.reason = workingCmd.reasonHandlu;
@@ -22965,6 +22988,60 @@ async function boot(): Promise<void> {
         powod: pick.powod,
         reason: sensibleReason,
       };
+    }
+
+    function pickAiPlayerCyclicBarter(ownerId: number): ReturnType<typeof selectAiTradeBarter> {
+      if (!ownerHasTradeTech(ownerId) || !ownerHasTradeTech(ME())) return null;
+      const turns = AI_RESOURCE_TRADE_DEFAULT_TURNS;
+      const pack = diplomacyHandelSurowcePakietWielkosc();
+      const activeKeys = new Set<string>();
+      for (const deal of activeDeals) {
+        if (!dealInvolvesOwners(deal, ownerId, ME())) continue;
+        for (const item of deal.handelSurowiecCykliczny ?? []) activeKeys.add(item.surowiecKey);
+      }
+      const makeStates = (who: number, deficitKeys: readonly string[]) => {
+        const goods = tradableGoodsForAiDiplo(who);
+        const stock = new Map(goods.map(g => [g.key, g.ilosc ?? 0]));
+        const rates = mergedResourceRatesForOwner(who);
+        const deficitSet = new Set(deficitKeys);
+        return Object.keys(diplomacyHandelSurowceCatalog()).map(key => {
+          const have = stock.get(key) ?? 0;
+          const rate = rates[key] ?? 0;
+          const need = classifyTradeNeedNet(have, rate, pack);
+          return {
+            key,
+            stock: have,
+            netRate: rate,
+            deficit: deficitSet.has(key) || need === 'deficit',
+            surplus: need === 'surplus',
+            reserve: SENSIBLE_DEALS_THRESHOLDS.surplusMultiple * pack,
+          };
+        }).filter(r => !activeKeys.has(r.key));
+      };
+      const aiStates = makeStates(ownerId, resourceDeficitKeysForOwner(ownerId));
+      const playerStates = makeStates(ME(), resourceDeficitKeysForOwner(ME()));
+      const pnOpts = {
+        difficulty: effectiveGameDifficultyForOwner(ownerId),
+        proposerOwnerId: ownerId,
+        playerOwnerId: ME(),
+        actionId: 'handel' as const,
+        tempoGry: player.tempoGry ?? 'standardowa',
+        ...proposalPnTurnsMultiplier({ resourceTradeMode: 'per_turn', turns }),
+      };
+      const evalCtx = buildProposalEvalContext(ownerId, ME());
+      return selectAiTradeBarter({
+        aiResources: aiStates,
+        playerResources: playerStates,
+        turns,
+        resolvePayloadPn: payload => resolveProposalPn(payload, {
+          ...pnOpts,
+          ...proposalPnTurnsMultiplier(payload),
+        }),
+        fairnessGate: (givePn, receivePn) => handelFairnessGate(givePn, receivePn, relationTotal(evalCtx.relation), 1) == null,
+        evaluateExactPayload: payload => evaluateProposal({
+          actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload,
+        }, evalCtx).accepted,
+      });
     }
 
     function pickResourceSurplusForOwnerPair(
@@ -36789,6 +36866,7 @@ async function boot(): Promise<void> {
           aiMarchPassageRequestTurn: Array.from(aiMarchPassageRequestTurn.entries()),
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
           aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
+          aiResourceBarterLastProposalTurn: Array.from(aiResourceBarterLastProposalTurn.entries()),
           aiAudienceLastRequestTurn: Array.from(aiAudienceLastRequestTurn.entries()),
           // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: `Array<[humanOwnerId, ownerId[]]>` --
           // ten sam idiom co `exploredByHumanSave` (main.ts ok. 28903) dla Map<number, Set<number>>.
@@ -40847,6 +40925,20 @@ async function boot(): Promise<void> {
                   && canAiProposeResourceTrade(turn, aiResourceTradeLastProposalTurn.get(ownerId))
                   ? pickResourceTradeRelOffer(ownerId, ME(), aiHandlowosc)
                   : null;
+                const hasPendingBarter = negotiationTable.some(n =>
+                  n.aiCyclicBarter && n.proposerOwnerId === ownerId && n.responderOwnerId === ME());
+                const hasPendingUltimatum = negotiationTable.some(n => n.actionId === 'ultimatum'
+                  && ((n.proposerOwnerId === ownerId && n.responderOwnerId === ME())
+                    || (n.proposerOwnerId === ME() && n.responderOwnerId === ownerId)));
+                const resourceBarterOffer = relStatus !== 'wojna'
+                  && diplomaticContactEstablishedSet().has(ownerId)
+                  && !hasPendingBarter
+                  && !hasPendingUltimatum
+                  && canAiProposeResourceTrade(
+                    turn, aiResourceBarterLastProposalTurn.get(ownerId), AI_TRADE_BARTER_COOLDOWN_TURNS,
+                  )
+                  ? pickAiPlayerCyclicBarter(ownerId)
+                  : null;
                 relacjeDip.push({
                   partnerId: String(ME()),
                   relation: relTicked as unknown as Relation,
@@ -40869,6 +40961,14 @@ async function boot(): Promise<void> {
                       }
                     : undefined,
                   hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ME(), ownerId),
+                  resourceBarterOffer: resourceBarterOffer ? {
+                    giveKey: resourceBarterOffer.giveKey,
+                    giveQty: resourceBarterOffer.giveQty,
+                    receiveKey: resourceBarterOffer.receiveKey,
+                    receiveQty: resourceBarterOffer.receiveQty,
+                    turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+                  } : undefined,
+                  lastResourceBarterProposalTurn: aiResourceBarterLastProposalTurn.get(ownerId),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
                   partnerTypCywilizacji: civKeyForOwnerId(ME()),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: gracz jako partner — flaga agresora (u innych AI).
@@ -44473,6 +44573,7 @@ async function boot(): Promise<void> {
       aiMarchPassageRequestTurn.clear();
       aiAiTradeAgreementLastTurn.clear();
       aiResourceTradeLastProposalTurn.clear();
+      aiResourceBarterLastProposalTurn.clear();
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
@@ -46507,6 +46608,10 @@ async function boot(): Promise<void> {
       const savedResourceTradeCooldown = saved.meta?.aiResourceTradeLastProposalTurn as Array<[number, number]> | undefined;
       if (savedResourceTradeCooldown?.length) {
         for (const [oid, t] of savedResourceTradeCooldown) aiResourceTradeLastProposalTurn.set(oid, t);
+      }
+      const savedResourceBarterCooldown = saved.meta?.aiResourceBarterLastProposalTurn as Array<[number, number]> | undefined;
+      if (savedResourceBarterCooldown?.length) {
+        for (const [oid, t] of savedResourceBarterCooldown) aiResourceBarterLastProposalTurn.set(oid, t);
       }
       aiAudienceLastRequestTurn.clear();
       const savedAudienceCooldown = saved.meta?.aiAudienceLastRequestTurn as Array<[number, number]> | undefined;
