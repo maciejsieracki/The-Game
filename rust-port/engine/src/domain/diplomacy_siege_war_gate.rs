@@ -10,6 +10,12 @@
 //! i zwraca obiekty `MapSiegeContext`. Tu `City` i `RuntimeUnit` są odchudzone do pól używanych przez
 //! te funkcje, a jednostki identyfikowane są indeksem w slice `units` (web: `units.indexOf(...)`).
 //! `hexDistance` = `setup.ts:359` (kopia w `hex_distance`, dla współrzędnych całkowitych).
+//!
+//! `siegeBattleSideOwners` (web @ 07d2fbd72, linie 33-60) portowane tu jako `siege_battle_side_owners`:
+//! czysta funkcja w tym samym module, domknięcia `areEnemies` / `hasFormalAlliance` wstrzykiwane,
+//! zbiory właścicieli jako `BTreeSet<i64>` (deterministyczna kolejność, równość zbiorów jak w JS `Set`).
+
+use std::collections::BTreeSet;
 
 /// Web `City` (pola używane przez bramkę oblężenia).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -67,6 +73,67 @@ pub fn siege_allowed_between(
         return false;
     }
     are_enemies(besieger_owner_id, defender_owner_id)
+}
+
+/// Web `siegeBattleSideOwners`: właściciele po obu stronach dwustronnej bitwy oblężenia.
+/// Strona = główny podmiot + formalni aktywni sojusznicy, którzy są w wojnie z przeciwnym podmiotem.
+/// Trzecia strona będąca w wojnie z miastem NIE trafia do strony oblegającego.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct SiegeBattleSideOwners {
+    pub attacker: BTreeSet<i64>,
+    pub defender: BTreeSet<i64>,
+}
+
+/// Web `siegeBattleSideOwners` (diplomacy-siege-war-gate.ts:33-60), port 1:1.
+pub fn siege_battle_side_owners(
+    besieger_owner_id: i64,
+    city_owner_id: i64,
+    candidate_owner_ids: impl IntoIterator<Item = i64>,
+    are_enemies: impl Fn(i64, i64) -> bool,
+    has_formal_alliance: impl Fn(i64, i64) -> bool,
+) -> SiegeBattleSideOwners {
+    let mut attackers = BTreeSet::new();
+    let mut defenders = BTreeSet::new();
+    if !siege_allowed_between(besieger_owner_id, city_owner_id, &are_enemies) {
+        return SiegeBattleSideOwners {
+            attacker: attackers,
+            defender: defenders,
+        };
+    }
+
+    attackers.insert(besieger_owner_id);
+    defenders.insert(city_owner_id);
+    for owner_id in candidate_owner_ids {
+        if owner_id != besieger_owner_id
+            && has_formal_alliance(owner_id, besieger_owner_id)
+            && siege_allowed_between(owner_id, city_owner_id, &are_enemies)
+        {
+            attackers.insert(owner_id);
+        }
+        if owner_id != city_owner_id
+            && has_formal_alliance(owner_id, city_owner_id)
+            && siege_allowed_between(owner_id, besieger_owner_id, &are_enemies)
+        {
+            defenders.insert(owner_id);
+        }
+    }
+
+    // Sprzeczna/nieaktualna para sojuszy nie może wystawić jednego właściciela po obu stronach
+    // naraz. Zachowaj obu głównych; usuń trzeciego, który zdublowałby się po przeciwnych stronach.
+    let shared: Vec<i64> = attackers
+        .iter()
+        .copied()
+        .filter(|&o| o != besieger_owner_id && o != city_owner_id && defenders.contains(&o))
+        .collect();
+    for owner_id in shared {
+        attackers.remove(&owner_id);
+        defenders.remove(&owner_id);
+    }
+
+    SiegeBattleSideOwners {
+        attacker: attackers,
+        defender: defenders,
+    }
 }
 
 /// Web `enemyUnitsAdjacentToCity`: indeksy jednostek przy murach (dystans 1) wrogich właścicielowi miasta.
