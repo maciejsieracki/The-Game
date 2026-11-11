@@ -72,12 +72,12 @@ const IMPORTANT_RE = re([
 
 /** Przypisuje wpis informacyjny do zakładki. Czysta funkcja (bez DOM, bez stanu). */
 export function eventTabOf(
-  ev: Pick<SidePanelEvent, 'title' | 'subtitle' | 'kind' | 'blocking' | 'origin'>,
+  ev: Pick<SidePanelEvent, 'title' | 'subtitle' | 'kind' | 'blocking' | 'origin' | 'important'>,
 ): SidePanelTab {
   if (ev.kind === 'diplo' || ev.origin === 'other-civs' || ev.title.startsWith('Dyplomacja')) {
     return 'dyplomacja';
   }
-  if (ev.blocking === true || ev.kind === 'enemy') return 'wazne';
+  if (ev.blocking === true || ev.kind === 'enemy' || ev.important === true) return 'wazne';
   const text = normalizeEventText(ev.title + ' ' + (ev.subtitle ?? ''));
   if (DIPLO_PROPOSAL_RE.test(text)) return 'dyplomacja';
   if (SHORTAGE_RE.test(text)) return 'wazne';

@@ -34,6 +34,18 @@ import {
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
+/** R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: ogólna akcja karty wpisu — OGÓLNA, nie
+ * specyficzna dla farmy. `centerCamera` = wycentruj kamerę na heksie (q, r); `cityId` to
+ * opcjonalny kontekst miasta (dziś nieużywany przez renderer). Każde powiadomienie z polem
+ * `action` dostaje skrót „Pokaż" (patrz `getEventLink` w main.ts) i kliknięcie go centruje kamerę.
+ * EN: generic card action; `centerCamera` pans the camera to hex (q, r). Not farm-specific. */
+export type SidePanelEventAction = {
+  kind: 'centerCamera';
+  q: number;
+  r: number;
+  cityId?: string;
+};
+
 export interface SidePanelEvent {
   id: string;
   icon: string;
@@ -66,6 +78,11 @@ export interface SidePanelEvent {
   /** R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1: tura gracza, w ktorej wpis powstal (`game/event-lifetime.ts`).
    * Wpis informacyjny wygasa na granicy tury; brak pola = przeterminowany. */
   turnCreated?: number;
+  /** R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: ogólna akcja karty (skrót „Pokaż" → kamera). */
+  action?: SidePanelEventAction;
+  /** R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: `true` wymusza zakładkę „Ważne" (nadrzędne
+   * wobec reguł tekstowych w `sidePanelEventTabs.ts`). Karty blokujące i tak trafiają do „Ważne". */
+  important?: true;
 }
 
 export type ContextPanelKind = 'hex' | 'unit';
