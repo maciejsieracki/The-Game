@@ -543,6 +543,8 @@ pub struct AiParams {
     pub kupno_jednostki_min_dochod_netto_poziom2: AiParamsTrudnoscPoziom1BonusProdukcja,
     #[serde(rename = "kupno_jednostki_min_dochod_netto_poziom3")]
     pub kupno_jednostki_min_dochod_netto_poziom3: AiParamsTrudnoscPoziom1BonusProdukcja,
+    #[serde(rename = "ai_zamiana_jednostek_limit_udzial")]
+    pub ai_zamiana_jednostek_limit_udzial: AiParamsTrudnoscPoziom1BonusWalka,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
