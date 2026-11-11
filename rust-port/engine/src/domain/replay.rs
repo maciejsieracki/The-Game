@@ -33,6 +33,9 @@ pub struct ReplayStep<I> {
     turn: u32,
     input: I,
     rng_state: u32,
+    /// Snapshot zapisany w kroku. Deserializacja tego pola (przez `ReplayLog`) NIE wykonuje
+    /// `migrate_on_load` - to otwarty dlug: migracja po wczytaniu replayu wymaga decyzji o zrodle
+    /// epoki wlasciciela (patrz `zapis_loader::load_save_snapshot`).
     snapshot: Option<SaveSnapshot>,
 }
 

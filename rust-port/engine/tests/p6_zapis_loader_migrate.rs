@@ -9,7 +9,6 @@ use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayerId, PositionDto, Rng, TerrainDto,
     TileDto, TurnDto, TurnEvent, TurnPhase, UnitDto, UnitId, UnitKindDto,
 };
-use serde_json::Value;
 
 const OWNER: u64 = 1;
 const FOREIGN: u64 = 2;
@@ -91,13 +90,8 @@ fn excess_generals_specs() -> Vec<UnitSpec> {
 #[test]
 fn p6_zapis_loader_migrates_old_save_through_production_path() {
     let text = save_text(&excess_generals_specs());
-    let raw: Value = serde_json::from_str(&text).expect("json");
-    assert!(
-        raw.to_string().contains("is_general"),
-        "zapis przed migracja niesie flagi wodzow"
-    );
-
-    // Kontrola: surowa deserializacja NIE migruje, wiec wszyscy 4 wodzowie zostaja.
+    // Kontrola: surowa deserializacja NIE migruje, wiec wszyscy 4 wodzowie zostaja
+    // (ta kontrola jest jednoczesnie dowodem, ze zapis przed migracja niesie flagi wodzow).
     let raw_loaded: SaveSnapshot = serde_json::from_str(&text).expect("raw load");
     assert_eq!(generals(&raw_loaded), vec![10, 11, 12, 20]);
 
