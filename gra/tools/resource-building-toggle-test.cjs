@@ -384,7 +384,24 @@ async function sectionE() {
   eq(host2.querySelector('[data-prod-toggle]').textContent, 'Wyłączony', 'UI klik: stan wraca do Wyłączony');
 }
 
+// F. panel miasta (cityPanel.ts) -- spojnosc ze stanem wylaczenia (obrona zarzutu 1 Evaluatora).
+function sectionF() {
+  const src = fs.readFileSync(path.join(GRA, 'src', 'ui', 'cityPanel.ts'), 'utf8');
+  ok(/from '\.\.\/game\/building-toggle'/.test(src) && /isProductionBuildingEnabled/.test(src) && /operationalBuiltIds/.test(src),
+    'F: cityPanel importuje stan wylaczenia z building-toggle');
+  const sumFn = src.slice(src.indexOf('function sumOwnedBuildingsUpkeep'), src.indexOf('function sumOwnedBuildingsUpkeep') + 600);
+  ok(/operationalBuiltIds\(city, built\)/.test(sumFn), 'F: suma utrzymania zlota liczy tylko budynki operacyjne');
+  const resFn = src.slice(src.indexOf('function sumOwnedBuildingsResourceUpkeep'), src.indexOf('function sumOwnedBuildingsResourceUpkeep') + 600);
+  ok(/operationalBuiltIds\(city, built\)/.test(resFn), 'F: suma utrzymania surowcow liczy tylko budynki operacyjne');
+  const rowFn = src.slice(src.indexOf('function appendOwnedBuildingRow'));
+  ok(/toggledOff\s*=\s*!!\(def && city && !isProductionBuildingEnabled\(city, def\.id\)\)/.test(rowFn), 'F: wiersz budynku zna stan wylaczenia');
+  ok(/toggledOff\s*\?\s*\{ gold: 0, resources: \{\}/.test(rowFn), 'F: wylaczony budynek pokazuje zerowe utrzymanie');
+  ok(/convInactive = toggledOff \|\|/.test(rowFn), 'F: wiersz produkcji wylaczonego budynku wygaszony');
+  ok(rowFn.includes("'wyłączony'"), 'F: znacznik "wylaczony" po polsku w wierszu');
+}
+
 sectionE().then(() => {
+  sectionF();
   console.log(`\nresource-building-toggle-test: ${passed} passed, ${failed} failed`);
   try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); fs.unlinkSync(path.join(__dirname, '.rbt-ui-entry.ts')); fs.unlinkSync(path.join(__dirname, '.rbt-ui-bundle.cjs')); } catch (e) { /* ignore */ }
   process.exit(failed ? 1 : 0);

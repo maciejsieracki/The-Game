@@ -281,6 +281,7 @@ import {
   converterProductionDisplayForBuilding,
   type RawConverterParamsJson,
 } from '../game/converters';
+import { isProductionBuildingEnabled, operationalBuiltIds } from '../game/building-toggle';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
@@ -6756,7 +6757,8 @@ function buildingOwnedLevel(def: BuildingDef, city: City): number {
 
 function sumOwnedBuildingsUpkeep(built: readonly string[], data: GameData, city: City): number {
   let sum = 0;
-  for (const id of built) {
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wyłączony budynek nie kosztuje utrzymania.
+  for (const id of operationalBuiltIds(city, built)) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
     sum += buildingUpkeep(def as unknown as BuildingRecord, buildingOwnedLevel(def, city));
@@ -6866,7 +6868,7 @@ function sumOwnedBuildingsResourceUpkeep(
   city?: City,
 ): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const id of built) {
+  for (const id of operationalBuiltIds(city, built)) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
     addResourceCosts(out, buildingResourceUpkeep(def, city ? buildingOwnedLevel(def, city) : 1, buildingResourceUpkeepRatioForView()));
@@ -9629,7 +9631,19 @@ function appendOwnedBuildingRow(
   } else if (upgradeChainTitle) {
     bn.title = upgradeChainTitle;
   }
-  hd.appendChild(bn);
+  // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wyłączony budynek produkcyjny (stan z silnika ekonomii).
+  const toggledOff = !!(def && city && !isProductionBuildingEnabled(city, def.id));
+  if (toggledOff) {
+    bn.classList.add('bld-owned-name--inactive');
+    bn.title = 'Wyłączony ręcznie: nie produkuje, nie zużywa surowców i nie kosztuje utrzymania. Włączysz go w panelu Imperium, zakładka Miasta.';
+    const offTag = el('span', 'bld-owned-lvl');
+    offTag.textContent = 'wyłączony';
+    offTag.title = bn.title;
+    hd.appendChild(bn);
+    hd.appendChild(offTag);
+  } else {
+    hd.appendChild(bn);
+  }
   if (def && city) {
     const level = buildingOwnedLevel(def, city);
     if (!compact && (level > 1 || def.maksPoziom > 1)) {
@@ -9655,7 +9669,9 @@ function appendOwnedBuildingRow(
   if (def && city) {
     const level = buildingOwnedLevel(def, city);
     const tail = el('div', 'bld-owned-tail');
-    const upkeepDisplay = buildingUpkeepDisplay(def, level);
+    const upkeepDisplay = toggledOff
+      ? { gold: 0, resources: {} as Record<string, number> }
+      : buildingUpkeepDisplay(def, level);
     const upSpan = el('span', 'bld-owned-upkeep' + (upkeepDisplay.gold === 0 && Object.keys(upkeepDisplay.resources).length === 0 ? ' muted' : ''));
     upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeepDisplay, compact);
     tail.appendChild(upSpan);
@@ -9681,10 +9697,11 @@ function appendOwnedBuildingRow(
         // conversion -- grey out the production row instead of showing it as
         // if the building were active; `inactiveStatus` already computed above
         // (hoisted), not recomputed.
-        const convInactive = inactiveStatus?.inactive === true;
+        const convInactive = toggledOff || inactiveStatus?.inactive === true;
         const convRow = el('div', 'bld-owned-conv-row' + (convInactive ? ' bld-owned-conv-row--inactive' : ''));
         convRow.innerHTML = convHtml;
-        if (convInactive && inactiveStatus?.tooltip) convRow.title = inactiveStatus.tooltip;
+        if (toggledOff) convRow.title = bn.title;
+        else if (convInactive && inactiveStatus?.tooltip) convRow.title = inactiveStatus.tooltip;
         row.appendChild(convRow);
       }
     }
