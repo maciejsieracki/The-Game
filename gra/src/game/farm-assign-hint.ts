@@ -19,8 +19,9 @@
  *    po wczytaniu zapisu pierwsza tura jest linią bazową (bez podpowiedzi).
  *  - miasto, które w danej turze nie jest ręczne, też aktualizuje zbiór bazowy (przełączenie
  *    na tryb ręczny nie nagabuje za pola powstałe w trybie autonomicznym).
- *  - SidePanelEvent nie ma pola akcji/celu, więc podpowiedź nie ma przycisku; wskazuje
- *    teren i ścieżkę „Otwórz miasto → Zarządzanie polami”.
+ *  - R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: wpis ma ogólną akcję `centerCamera`
+ *    (skrót „Pokaż" centruje kamerę na nowym polu) i zawsze trafia do zakładki „Ważne";
+ *    treść nadal wskazuje teren i ścieżkę „Otwórz miasto → Zarządzanie polami”.
  *
  * Czysta logika (bez DOM). Nie zmienia przydziału automatycznego ani AI.
  * EN: manual mode only, owner-only, one event per city per turn, self-expiring.
@@ -73,6 +74,9 @@ export interface FarmAssignHintCity {
 
 export interface FarmAssignHint {
   cityId: string;
+  /** Współrzędne nowego pola (cel skrótu „Pokaż” — centrowanie kamery). */
+  q: number;
+  r: number;
   hexKey: string;
   improvementKey: string;
   improvementLabel: string;
@@ -188,6 +192,8 @@ export function farmAssignHintFor(
   const terrainLabel = hex?.terenBazowy ? (TEREN_LABEL_PL[hex.terenBazowy] ?? '') : '';
   const base = {
     cityId: city.id,
+    q: best.q,
+    r: best.r,
     hexKey: best.key,
     improvementKey: best.imp,
     improvementLabel: FARM_ASSIGN_HINT_KEYS[best.imp]!,
@@ -203,7 +209,10 @@ export function farmAssignHintFor(
   return null;
 }
 
-/** Wpis panelu Wydarzenia („Ważne” lub „Inne” wg reguł `sidePanelEventTabs`). */
+/**
+ * Wpis panelu Wydarzenia. R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: zawsze w zakładce
+ * „Ważne” (`important`) i z ogólną akcją `centerCamera` na nowe pole (skrót „Pokaż" centruje kamerę).
+ */
 export function buildFarmAssignHintSidePanelEvent(
   hint: FarmAssignHint,
   cityName: string,
@@ -221,6 +230,8 @@ export function buildFarmAssignHintSidePanelEvent(
       `${cityName}: nowe pole (${hint.improvementLabel})${where}, ${why}. ` +
       `Tryb ręczny — obywatele nie są przydzielani automatycznie. Otwórz miasto → Zarządzanie polami.`,
     kind: 'city',
+    important: true,
+    action: { kind: 'centerCamera', q: hint.q, r: hint.r, cityId: hint.cityId },
   };
 }
 

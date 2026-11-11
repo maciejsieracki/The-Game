@@ -1128,6 +1128,7 @@ import {
 import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import { applyFarmAssignHints } from './game/farm-assign-hint';
+import { SIDE_PANEL_ACTION_LABEL, sidePanelEventActionOf } from './game/side-panel-event-action';
 import {
   deferredHintsToSidePanelEvents,
   dismissEotOrEraWarLogEntry,
@@ -26846,9 +26847,19 @@ async function boot(): Promise<void> {
         // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
         // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: rodzina `capture-*` doklada sie do tego samego
         // lancucha (prefiksy rozlaczne), z ta sama zasada jednego zrodla dla afordancji i akcji.
+        // R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: ogólna akcja karty (`action`) daje skrót „Pokaż".
         getEventLink: (ev) => ev.blocking === true ? null
-          : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id)),
+          : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id)
+            ?? (ev.action !== undefined ? { label: SIDE_PANEL_ACTION_LABEL } : null)),
         onEventClick: (id) => {
+          // R-WEB-UI-FARM-ASSIGN-HINT-CAMERA-IMPORTANT-Q1: akcja `centerCamera` karty (np. nowe pole
+          // z podpowiedzi „Przydziel obywatela?") centruje kamerę na heksie. Sprawdzane pierwsze.
+          const cardAction = sidePanelEventActionOf(collectTurnEvents(), id);
+          if (cardAction !== null) {
+            const actionPos = axialToWorld(cardAction.q, cardAction.r, HEX_R);
+            camCtrl.focusAt(actionPos.x, actionPos.z, 22);
+            return;
+          }
           // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
           // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
           // afordancją na karcie. Obejmuje dawne, rozsypane tu gałęzie `border-march-`,
