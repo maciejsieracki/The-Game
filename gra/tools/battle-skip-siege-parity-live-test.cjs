@@ -125,12 +125,12 @@ async function runOne(browser, distDir, mode, seed) {
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
     window.__dt = 16;
     window.__wskipT0 = bs.vNow;
+    bs._setSpeedIdx(parseInt(window.__wskipSpeedIdx || '0', 10), { clamp: true }); // ta sama predkosc wejscia AUTO/SKIP
     if (mode === 'skip') {
       bs.skip();
     } else {
       if (bs.deployPhase) bs._endDeployPhase();
       if (bs._manualMode) bs._toggleManualMode();  // R -> AUTO (jak gracz)
-      bs._setSpeedIdx(parseInt(window.__wskipSpeedIdx || '0', 10), { clamp: true }); // domyslnie 1x
     }
   }, [mode, process.env.WSKIP_AUTO_SPEED_IDX || '0', process.env.WSKIP_NOBREACH_CAP || '', process.env.WSKIP_DEF_MORALE || '']);
   const limitMs = parseInt(process.env.WSKIP_TIMEOUT_S || '540', 10) * 1000;

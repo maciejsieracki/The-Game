@@ -20,10 +20,11 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const CHROME = '/opt/pw-browsers/chromium';
+const CHROME = process.env.WSKIP_CHROMIUM || '/usr/bin/chromium';
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP_ROOT = path.join(os.tmpdir(), `civ-wskip-${RUN}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
@@ -110,13 +111,13 @@ function initDet(seed) {
   };
 }
 
-// mode: 'auto' = R -> AUTO po deployu, predkosc 1x, klatki po 16 ms; 'skip' = skip() w fazie rozstawiania.
+// mode: 'auto' = R -> AUTO po deployu; 'skip' = skip() w fazie rozstawiania. Obie sciezki dostaja ten sam speed index.
 async function runOne(browser, distDir, mode, seed) {
   const page = await browser.newPage({ viewport: { width: 1024, height: 768 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
+  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
   // Scena powstaje w petli klatek: pompuj klatki, az pojawi sie __lastBattleScene.
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
@@ -125,26 +126,26 @@ async function runOne(browser, distDir, mode, seed) {
   }
   await page.evaluate(() => { if (!window.__lastBattleScene) throw new Error('brak sceny bitwy po pompowaniu klatek'); });
   await page.evaluate((dt) => { window.__wskipDt = dt; }, process.env.WSKIP_DT || '16');
-  await page.evaluate((mode) => {
+  await page.evaluate(([mode, speedIdx]) => {
     const bs = window.__lastBattleScene;
     bs.renderer.render = () => {};                  // bez rysowania: tylko logika walki
     window.__dt = parseInt(window.__wskipDt || '16', 10);
     window.__wskipT0 = bs.vNow;
     window.__wskipDeploy = !!bs.deployPhase;
+    bs._setSpeedIdx(speedIdx, { clamp: true });
     if (mode === 'skip') {
       bs.skip();
     } else {
       if (bs.deployPhase) bs._endDeployPhase();
       if (bs._manualMode) bs._toggleManualMode();  // R -> AUTO (jak gracz)
-      bs._setSpeedIdx(0, { clamp: true });         // 1x
     }
-  }, mode);
+  }, [mode, parseInt(process.env.WSKIP_AUTO_SPEED_IDX || '0', 10)]);
   const limitMs = parseInt(process.env.WSKIP_TIMEOUT_S || '900', 10) * 1000;
   const t0w = Date.now();
   let fin = false; let frames = 0;
   while (!fin) {
-    fin = await page.evaluate(() => window.__pumpFrames(20000));
-    frames += 20000;
+    fin = await page.evaluate(() => window.__pumpFrames(200));
+    frames += 200;
     if (Date.now() - t0w > limitMs) {
       const st = await page.evaluate(() => { const bs = window.__lastBattleScene; return { round: bs.roundNo, vNow: Math.round(bs.vNow - window.__wskipT0) }; });
       throw new Error('bitwa nie skonczyla sie w limicie: ' + mode + ' ' + JSON.stringify(st));
@@ -178,7 +179,7 @@ async function runManualMid(browser, distDir, mode, seed) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto('file://' + path.join(distDir, 'index.html') + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
+  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
     if (ready) break;
@@ -215,7 +216,7 @@ async function runManualMid(browser, distDir, mode, seed) {
     return st;
   }, mode);
   let fin = false;
-  for (let i = 0; i < 40 && !fin; i++) fin = await page.evaluate(() => window.__pumpFrames(20000));
+  for (let i = 0; i < 200 && !fin; i++) fin = await page.evaluate(() => window.__pumpFrames(200));
   const res = await page.evaluate(([id, r0s]) => {
     const bs = window.__lastBattleScene;
     const r0 = bs.__launches.length ? bs.__launches[0].round : null;
@@ -244,11 +245,21 @@ async function partB() {
   if (!fs.existsSync(CHROME)) { console.log('NIE_ZMIERZONO: brak Chromium (' + CHROME + ')'); return 'NIE_ZMIERZONO'; }
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--headless=new'] });
   const distDir = buildVite();
+  const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
+  const server = http.createServer((req, res) => {
+    const rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/+/, '') || 'index.html';
+    const file = path.resolve(distDir, rel);
+    if (!file.startsWith(path.resolve(distDir) + path.sep) && file !== path.join(path.resolve(distDir), 'index.html')) { res.writeHead(403).end(); return; }
+    fs.readFile(file, (err, data) => { if (err) { res.writeHead(404).end(); return; } res.writeHead(200, { 'content-type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(data); });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  process.env.WSKIP_BASE_URL = `http://127.0.0.1:${server.address().port}/`;
   const seeds = (process.env.WSKIP_SEEDS || '1,2,3,7').split(',').map((x) => parseInt(x, 10));
   const only = process.env.WSKIP_ONLY || '';   // 'auto' | 'skip' -- pojedynczy przebieg (limit czasu narzedzia)
   const rows = [];
   try {
     if (!process.env.WSKIP_ONLY && !process.env.WSKIP_NO_D) await partD(browser, distDir);
+    if (process.env.WSKIP_D_ONLY === '1') return 'DONE';
     for (const seed of seeds) {
       if (only) {
         const r = await runOne(browser, distDir, only, seed);
@@ -260,7 +271,7 @@ async function partB() {
       rows.push({ seed, auto1, skip });
       console.log('RUN ' + JSON.stringify({ seed, auto1, skip }));
     }
-  } finally { await browser.close(); }
+  } finally { await browser.close(); await new Promise((resolve) => server.close(resolve)); }
   if (only) return 'ONLY';
   for (const { seed, auto1, skip } of rows) {
     const key = (r) => JSON.stringify({ w: r.winner, a: r.atk, d: r.def, round: r.round });
