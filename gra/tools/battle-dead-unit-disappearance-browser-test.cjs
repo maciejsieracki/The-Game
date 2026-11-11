@@ -100,7 +100,7 @@ async function runScene(browser, siege) {
           s._singleBlow(replayFresh, target, false)) };
       }
       observations.push(replayObservation);
-      return { siege: isSiege, roster: [s.atk.length, s.def.length], observations };
+      return { siege: isSiege, expectedRoster: [28, isSiege ? 29 : 28], roster: [s.atk.length, s.def.length], observations };
     } finally { Math.random = oldRandom; }
   }, siege);
   await page.screenshot({ path: path.join(evidence, `${kind}-after.png`), timeout: 20000 });
@@ -123,7 +123,8 @@ let browser;
   const failures = results.flatMap(scene => scene.observations.filter(o => {
     if (o.kind === 'living-rout-control') return !o.routed || o.hp !== 40 || !o.bodyAttached || !o.hpBarAttached || !o.bodyVisible || !o.hpBarVisible;
     if (o.kind === 'mutation-no-detach') return !o.detected;
-    if (o.kind === 'replay-recreation') return !o.priorObjectReplaced || !o.live || o.roster[0] !== 28 || o.roster[1] !== 28;
+    if (o.kind === 'siege-wall-collapse-catapult') return !o.dead || !o.removed || !o.bodyDetached || !o.hpBarDetached || !o.tileReleased;
+    if (o.kind === 'replay-recreation') return !o.priorObjectReplaced || !o.live || o.roster[0] !== scene.expectedRoster[0] || o.roster[1] !== scene.expectedRoster[1];
     if (o.kind === 'replay-fresh-unit-kill') return o.damage <= 0 || !o.dead || !o.removed || !o.bodyDetached || !o.hpBarDetached || !o.tileReleased;
     return o.damage <= 0 || !o.dead || !o.removed || !o.bodyDetached || !o.hpBarDetached || !o.bodyHidden || !o.hpBarHidden || !o.tileReleased;
   }));

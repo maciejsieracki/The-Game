@@ -7,6 +7,16 @@ import terrainCombat from '../data/terrain-combat.json';
 const siege = new URLSearchParams(location.search).has('siege');
 const preset = siege ? 'oblezenie_duze' : 'bitwa_duza_pole';
 const armies = buildTestArmies(units, preset);
+const plainWarrior = units.find(row => row['Jednostka'] === 'Wojownik');
+if (!plainWarrior) throw new Error('Production unit data has no plain Wojownik row');
+for (const side of [armies.attacker, armies.defender]) {
+  for (let i = 0; i < Math.min(10, side.length); i++) {
+    side[i] = { ...side[i], nazwa: plainWarrior['Nazwa EN'] ?? plainWarrior['Jednostka'],
+      kategoria: 'domyslny', stats: plainWarrior,
+      hp: Math.max(1, Math.round(Number(plainWarrior.health ?? plainWarrior.Health ?? 10))),
+      maxHp: Math.max(1, Math.round(Number(plainWarrior.health ?? plainWarrior.Health ?? 10))) };
+  }
+}
 if (siege) {
   const catapult = units.find(row => row['Jednostka'] === 'Katapulta');
   if (!catapult) throw new Error('Production unit data has no Katapulta row');
