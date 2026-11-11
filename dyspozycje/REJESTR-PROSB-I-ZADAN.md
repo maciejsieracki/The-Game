@@ -9381,3 +9381,6 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-11 · FALA 629 WDROŻONA (ROBOCZA): R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1 (FC PASS-WITH-NOTES, kod 65b45f729; ref `refs/keep/R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1-fc`, wip `web-wip/ARMY-AUTO-RECRUIT-GENERAL`). Długi bazowe: recruitment-batch-contract, general-capital-recruitment-order, empire-recruit-live L16-18 (DEFAULT_QTY=0).
 
 - 2026-11-11 · FALA 629 = 07d2fbd72 (Raw MD5 b0f37e1d…, audio-pack MD5 zgodne). TEST-DEBT-UNIT-REPLACE-F0: FC PASS (kod e16f6f7c0, tylko test unit-replace-full-cost, ref `refs/keep/R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1-fc`, wip `web-wip/UNIT-REPLACE-F0`) — zmiana wyłącznie testowa, integracja razem z następną FALĄ (630).
+
+- 2026-11-11 · FALA 630 WDROŻONA (ROBOCZA): R-WEB-UI-RAW-IDS-AUDIT-Q1 (FC PASS-WITH-NOTES, aa8f6b06b; ref `refs/keep/R-WEB-UI-RAW-IDS-AUDIT-Q1-fc`, wip `web-wip/RAW-IDS`) + R-WEB-TEST-DEBT-UNIT-REPLACE-F0-Q1 (e16f6f7c0). Luka: zrzuty Chromium kart ulepszenia/odkrycia (NIE_ZMIERZONO) — wzrokowa weryfikacja właściciela.
+- 2026-11-11 · DECYZJA ABC (właściciel): administrator ulepszeń — AI BEZ administratora (opcja B: AI ulepsza teren jak dotąd, za darmo). Odstępstwo od parytetu jest świadome; FC r1 miał jedyny NAPRAW właśnie na parytecie → temat wraca do FC (tryb fc) na kandydacie 058cc56e9.
