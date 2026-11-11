@@ -109,6 +109,24 @@ try {
   assert(M.cityYieldPerTurn(aiCity, tiles, [], pN, ctx(true)).nauka === M.cityYieldPerTurn(plCity, tiles, [], pN, ctx(true)).nauka,
     'parytet player/AI: ten sam mnoznik');
 
+  // 4d. Zapis/wczytanie bez zmian (KROK 3): mnoznik to czysta funkcja (civKey miasta, trudnosc, econ-params);
+  // nic nowego nie trafia do zapisu. Miasto po round-tripie JSON daje identyczny plon i mnoznik.
+  for (const d of ['easy', 'normal', 'hard']) {
+    const params = M.loadEconParams(econ, d);
+    for (const k of ['grecy', 'fenicjanie', 'germanie']) {
+      const city = mkCity(k);
+      const saved = JSON.stringify(city);
+      assert(!/mnoznik|mennica/i.test(saved), `${k} ${d}: zapis miasta nie zawiera pola mnoznika`);
+      const loaded = JSON.parse(saved);
+      assert(JSON.stringify(loaded) === saved, `${k} ${d}: round-trip miasta bez zmian`);
+      const y1 = M.cityYieldPerTurn(city, tiles, [], params, ctx(true));
+      const y2 = M.cityYieldPerTurn(loaded, tiles, [], params, ctx(true));
+      assert(JSON.stringify(y1) === JSON.stringify(y2), `${k} ${d}: plon po wczytaniu == plon przed zapisem`);
+      assert(M.mennicaMnoznikForCiv(loaded.civKey, params) === M.mennicaMnoznikForCiv(city.civKey, params),
+        `${k} ${d}: mnoznik po wczytaniu == przed zapisem`);
+    }
+  }
+
   // 5. Wiki <-> silnik: haslo cywilizacji pokazuje wartosc NORMAL == silnik normal; wspomina trudnosc i minimum.
   const root = path.resolve(GRA, '..');
   const wiki = require('../src/data/wikiBundle.json');

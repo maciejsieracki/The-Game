@@ -929,8 +929,8 @@
   "Waluta": {
     "top5": [
       {
-        "tytul": "Mennica: ×1,50 podatku w każdym mieście",
-        "liczba": "×1,50",
+        "tytul": "Mennica: podatek ×1,38 lub więcej (zależnie od cywilizacji)",
+        "liczba": "×1,38",
         "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus.",
         "dowod": "gra/data/econ-params.json:585-591; gra/src/game/economy.ts:952-955; gra/src/game/economy.ts:962-967; gra/src/game/economy.ts:644-653"
       },
@@ -960,7 +960,7 @@
     "cmz": [
       {
         "czynnosc": "Zbuduj Mennicę w stolicy (z Targowiskiem i dostępem do złota)",
-        "korzysc": "pomnożyć podatek wszystkich miast ×1,50 (a z podatku powstają pieniądz i nauka)"
+        "korzysc": "pomnożyć podatek wszystkich miast mnożnikiem swojej cywilizacji, min. ×1,38 (a z podatku powstają pieniądz i nauka)"
       },
       {
         "czynnosc": "Postaw Kopalnię złota na złożu",

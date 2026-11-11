@@ -191,14 +191,14 @@
   },
   "Waluta": {
     "top5": [
-      { "z": "Top1_GLOWNA", "tytul": "Mennica: ×1,50 podatku w każdym mieście", "powodTytulu": "Dispatch: współczynnik zapisany jako ×1,50 (econ-params.json mennica_mnoznik_po_walucie.normal = 1.5, opis '×1,50').", "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus." },
+      { "z": "Top1_GLOWNA", "tytul": "Mennica: podatek ×1,38 lub więcej (zależnie od cywilizacji)", "powodTytulu": "R-WEB-CURRENCY-MULT-PER-CIV-Q1 (zarzut 1): mnożnik jest per cywilizacja (macierz + korekta trudności, minimum 1,38 z econ-params.json mennica_mnoznik_po_walucie_minimum); globalne ×1,50 jest tylko fallbackiem.", "zdanie": "Jedna Mennica w stolicy (z Targowiskiem i dostępem do złota) mnoży podatek netto każdego miasta, zanim podzielisz go na naukę, pieniądz i luksus." },
       { "z": "Top2", "zdanie": "Ulepszenie na złożu złota — daje podatek i złoto potrzebne Mennicy." },
       { "z": "Top3", "zdanie": "Mennica działa tylko przy dostępie do złota i zużywa 1 sztukę na turę." },
       { "z": "Top4", "zdanie": "Nadwyżkę złota wymienisz w negocjacjach z innymi państwami." },
       { "z": "Top5", "zdanie": "Stały dochód pieniądza rośnie z poziomem Mennicy." }
     ],
     "cmzZamiany": [
-      { "z": "×1,5 (", "na": "×1,50 (", "powod": "Spójność z tytułem Top1 (×1,50, econ-params.json mennica_mnoznik_po_walucie)." }
+      { "z": "×1,5 (", "na": "mnożnikiem swojej cywilizacji, min. ×1,38 (", "powod": "Spójność z tytułem Top1: mnożnik per cywilizacja (R-WEB-CURRENCY-MULT-PER-CIV-Q1), nie globalne ×1,50." }
     ]
   },
   "Astronomia": {

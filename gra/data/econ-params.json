@@ -336,7 +336,7 @@
       "normal": 2,
       "hard": 2,
       "jednostka": "×",
-      "opis": "Parametr legacy, nieużywany przez bieżący kod. Waluta sama nie mnoży dochodu. Obecny mnożnik Mennicy to globalne.mennica_mnoznik_po_walucie (easy ×1,62 / normal ×1,50 / hard ×1,38), stosowany do lokalnego podatku przed podziałem. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
+      "opis": "Parametr legacy, nieużywany przez bieżący kod. Waluta sama nie mnoży dochodu. Obecny mnożnik Mennicy jest liczony per cywilizacja (macierz + korekta trudności, minimum globalne.mennica_mnoznik_po_walucie_minimum); globalne.mennica_mnoznik_po_walucie (easy ×1,62 / normal ×1,50 / hard ×1,38) to już tylko fallback bez wartości cywilizacji. Stosowany do lokalnego podatku przed podziałem. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
     },
     "targowisko_praca_na_podatek_kurs": {
       "easy": 1,
@@ -622,7 +622,7 @@
       "normal": 1.5,
       "hard": 1.38,
       "jednostka": "×",
-      "opis": "Mennica mnoży wyłącznie podatek miejski przed jego podziałem suwakami: easy ×1,62 / normal ×1,50 / hard ×1,38. Jedna Mennica w stolicy aktywuje mnożnik we wszystkich miastach właściciela. Wymagania aktywacji: technologia Waluta oraz dostęp do Złota; brak Złota usypia efekt do czasu odzyskania dostępu. Dochód ze szlaków handlowych nie podlega mnożnikowi Mennicy."
+      "opis": "Mennica mnoży wyłącznie podatek miejski przed jego podziałem suwakami. Wartość globalna (easy ×1,62 / normal ×1,50 / hard ×1,38) jest tylko fallbackiem, gdy brak wartości cywilizacji; właściwy mnożnik jest per cywilizacja (macierz + korekta trudności, minimum 1,38). Jedna Mennica w stolicy aktywuje mnożnik we wszystkich miastach właściciela. Wymagania aktywacji: technologia Waluta oraz dostęp do Złota; brak Złota usypia efekt do czasu odzyskania dostępu. Dochód ze szlaków handlowych nie podlega mnożnikowi Mennicy."
     },
     "mennica_mnoznik_po_walucie_minimum": {
       "easy": 1.38,
