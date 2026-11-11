@@ -168,12 +168,10 @@ fn coverage_table_has_no_silent_ported_gaps() {
         missing,
         vec![
             "beginWonderTransferWatch",
-            "applyCapturePopulationLoss",
             "applyPostCaptureLawOnCapture",
             "triggerRebelProtectionWarConsequence",
             "settleWonderTransfer",
             "noteCityCapture",
-            "sanitizeProductionQueue",
             "syncCityGarnizon",
             "playerEverOwnedCityByOwner.add",
             "runCapitalCapturePlunder",
