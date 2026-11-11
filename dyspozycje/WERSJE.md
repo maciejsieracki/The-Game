@@ -1,3 +1,9 @@
+## ROBOCZA 0348f31e -- 2026-11-06 -- FALA 621: AI proponuje graczowi cykliczną wymianę surowców (testowa)
+
+- R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: AI sama składa graczowi uczciwą cykliczną wymianę surowców (deficyt AI + najbardziej brakujący surowiec gracza), cooldown 15 tur po złożeniu, osobny klucz cooldownu odrzucenia; cooldown stemplowany dopiero po końcowych filtrach
+- Weryfikacja: tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, ai-test 296/0, ai-trade-proposal-to-player 25, ai-trade-proposal-branch 10/0 (+cyclic-trade 53, rejection-cooldown 14, treaties 17 wg FC); audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Niezmierzone: wiring main.ts end-to-end, realny tick dostaw, UI/Chromium, stare zapisy; mutacje: 3 zabite, część przeżyła przed poprawką obrony
+
 ## ROBOCZA b9e1f437 -- 2026-11-06 -- FALA 620: konnica Żelazo, rekrutacja koszyk, zamiana piechoty, narzędzia duchów (testowa)
 
 - R-WEB-CAVALRY-IRON-ONLY-Q1: wszystkie jednostki Żelaza (w tym Konnica, Jeździec chiński, Katapulta) wymagają Sztuki wojennej, rydwany bez zmian; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1: panel rekrutacji z wspólnym budżetem koszyka i czerwonymi brakami, wiersze zero-capable tylko do odczytu; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: Zastąp piechotę wręcz → dowolna piechota wręcz (wszystkie nacje); R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: NIE_ODTWORZONO, dodano tylko test e2e (bez zmian kodu gry)

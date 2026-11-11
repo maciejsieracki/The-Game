@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b9e1f437f34828881bde06584955f9f5",
-  "bundleSha256": "b165d61198ffbf8fd73e1ca98a2f8815a38add80c819b237a0b932765a65cba6",
-  "bundleBytes": 14445977,
+  "bundleMd5": "0348f31ecae968fea80a506ce5ebdfe0",
+  "bundleSha256": "aeab01599115988b0b1ee4bd344e34cbe616d45084fbb3c68f7ca8b50cb02859",
+  "bundleBytes": 14450965,
   "sourceSnapshot": {
-    "source": "merge main cffe39cb9 + FC melee 5624b11b6, rekrutacja f87985d7c, konnica 12737d11c, duchy 70da7e6ee",
+    "source": "merge main 261e736de + FC AI-TRADE a7f0800fe (kod f20b81654 + obrona b920196b6)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 620: R-WEB-CAVALRY-IRON-ONLY-Q1: wszystkie jednostki Żelaza (w tym Konnica, Jeździec chiński, Katapulta) wymagają Sztuki wojennej, rydwany bez zmian; R-WEB-EMPIRE-RECRUIT-AFFORDABILITY-SUMMARY-Q1: panel rekrutacji z wspólnym budżetem koszyka i czerwonymi brakami, wiersze zero-capable tylko do odczytu; R-WEB-MELEE-CROSS-TYPE-NEXT-ERA-REPLACEMENT-Q1: Zastąp piechotę wręcz → dowolna piechota wręcz (wszystkie nacje); R-BITWA-DEAD-UNIT-DISAPPEARS-Q2: NIE_ODTWORZONO, dodano tylko test e2e (bez zmian kodu gry)"
+    "FALA 621: R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1: AI sama składa graczowi uczciwą cykliczną wymianę surowców (deficyt AI + najbardziej brakujący surowiec gracza), cooldown 15 tur po złożeniu, osobny klucz cooldownu odrzucenia; cooldown stemplowany dopiero po końcowych filtrach"
   ],
   "verification": [
-    "tsc czysty; logic 213/213, tech-tree 20/0, research ALL GREEN, unit-replace 21/21, combat OK, iron-gating 153/0, siege-engines 28/0, recruit-affordability 17/0 (Chromium), unit-replace-ai 45/0, audio-sidecar PASS; FC PASS-WITH-NOTES (konnica, rekrutacja), FC PASS (melee), FC PASS-WITH-NOTES narzędzia (duchy)"
+    "tsc czysty; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, ai-test 296/0, ai-trade-proposal-to-player 25, ai-trade-proposal-branch 10/0 (+cyclic-trade 53, rejection-cooldown 14, treaties 17 wg FC); audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "tech-cards-top5.json po merge zregenerowany generatorem (--check OK); live-test rekrutacji 20/23 = dług bazowy; karty konnicy w przeglądarce niezmierzone przez FC; duch zabitych nieodtworzony"
+    "Niezmierzone: wiring main.ts end-to-end, realny tick dostaw, UI/Chromium, stare zapisy; mutacje: 3 zabite, część przeżyła przed poprawką obrony"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T11:53:05",
+  "hubGeneratedAt": "2026-11-11T12:24:10",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b9e1f437f34828881bde06584955f9f5",
-      "sizeBytes": 14445977
+      "md5": "0348f31ecae968fea80a506ce5ebdfe0",
+      "sizeBytes": 14450965
     }
   ],
-  "md5": "b9e1f437f34828881bde06584955f9f5",
+  "md5": "0348f31ecae968fea80a506ce5ebdfe0",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
