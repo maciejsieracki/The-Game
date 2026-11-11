@@ -4899,6 +4899,8 @@ async function boot(): Promise<void> {
     function empireRecruitRows(): EmpireRecruitUnitRow[] {
       const ownerId = ME();
       const mine = cities.filter(c => c.ownerId === ownerId);
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
       const order: string[] = [];
       const labels = new Map<string, string>();
       for (const c of mine) {
@@ -4911,6 +4913,18 @@ async function boot(): Promise<void> {
           order.push(it.id);
         }
       }
+      // Keep already paid recruitment lines visible even if the unit is no longer currently
+      // purchasable in any city; the queued total describes current state, not today's catalogue.
+      for (const c of mine) {
+        for (const queued of cityProd.get(c.id)?.rekrutacja ?? []) {
+          const id = queued.id;
+          if (queued.isGeneral === true || labels.has(id)) continue;
+          const def = data.units.find(u => u.Jednostka === id);
+          if ((def?.Typ ?? '').toString().trim() === 'Civilian' || isCivilianUnit({ typeId: id, category: '' })) continue;
+          labels.set(id, humanizeId(id));
+          order.push(id);
+        }
+      }
       return order.map(id => {
         const { inputs, koszt } = empireRecruitCityInputs(id);
         const capable = inputs.filter(i => i.canRecruit).length;
@@ -4918,6 +4932,8 @@ async function boot(): Promise<void> {
           id,
           label: labels.get(id) ?? humanizeId(id),
           koszt,
+          manpowerCost: unitManpowerCostForType(id, ep, mpMults.maxMult, mpMults.costMult),
+          stockCost: unitStockCost(data.units.find(u => u.Jednostka === id)),
           capableCities: capable,
           totalCities: mine.length,
           queued: inputs.reduce((sum, i) => sum + i.queuedOfType, 0),
@@ -4962,7 +4978,20 @@ async function boot(): Promise<void> {
     }
 
     function toggleEmpireRecruitFromHud(): void {
-      toggleEmpireRecruitPanel({ getRows: empireRecruitRows, onOrder: orderEmpireRecruitment });
+      toggleEmpireRecruitPanel({
+        getRows: empireRecruitRows,
+        getBudget: () => {
+          const ownerId = ME();
+          const ep = empireEpochForOwner(ownerId);
+          const mpMults = civManpowerMultsForOwner(ownerId);
+          return {
+            gold: ownerTreasury(ownerId),
+            manpower: empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult),
+            stockPool: ownerResourceStockAll(cities, ownerId),
+          };
+        },
+        onOrder: orderEmpireRecruitment,
+      });
     }
 
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
