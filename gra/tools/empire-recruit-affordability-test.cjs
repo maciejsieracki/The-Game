@@ -131,6 +131,28 @@ async function main() {
 
     await alphaInput.fill('1000'); await alphaInput.dispatchEvent('input'); await alphaInput.dispatchEvent('change');
     check('manual entry clamps to panel max 999', await qty('alpha') === 999);
+    const boundary = await page.evaluate(() => {
+      const s = window.__api.summarizeEmpireRecruitBasket;
+      const exact = s([{ quantity: 2, unitGold: 10, unitManpower: 3, unitStock: { drewno: 2 } }],
+        { gold: 20, manpower: 6, stockPool: { drewno: 4 } });
+      const over = s([{ quantity: 2, unitGold: 10, unitManpower: 3, unitStock: { drewno: 2 } }],
+        { gold: 19, manpower: 6, stockPool: { drewno: 4 } });
+      const zeroCost = s([{ quantity: 3, unitGold: 0, unitManpower: 0, unitStock: {} }],
+        { gold: 0, manpower: 0, stockPool: {} });
+      const zeroPool = s([{ quantity: 1, unitGold: 5, unitManpower: 0, unitStock: { zelazo: 0 } }],
+        { gold: 5, manpower: 0, stockPool: { zelazo: 0 } });
+      return { exact, over, zeroCost, zeroPool };
+    });
+    check('basket exactly equal to balance is affordable (no shortfall)',
+      boundary.exact.affordable && boundary.exact.goldShortfall === 0 && boundary.exact.manpowerShortfall === 0
+      && Object.keys(boundary.exact.stockShortfall).length === 0, boundary.exact);
+    check('basket one unit over gold balance is short by exactly 1',
+      !boundary.over.affordable && boundary.over.goldShortfall === 1 && Object.keys(boundary.over.stockShortfall).length === 0, boundary.over);
+    check('zero-cost line adds no gold, manpower or stock need and is affordable with empty pools',
+      boundary.zeroCost.affordable && boundary.zeroCost.quantity === 3 && boundary.zeroCost.goldNeeded === 0
+      && boundary.zeroCost.manpowerNeeded === 0 && Object.keys(boundary.zeroCost.stockNeeded).length === 0, boundary.zeroCost);
+    check('zero-stock line with zero resource pool is affordable (no phantom stock shortfall)',
+      boundary.zeroPool.affordable && Object.keys(boundary.zeroPool.stockNeeded).length === 0, boundary.zeroPool);
     check('zero page errors', errors.length === 0, errors);
     await page.evaluate(() => window.__api.resetEmpireRecruitPanelSession());
   } finally {
