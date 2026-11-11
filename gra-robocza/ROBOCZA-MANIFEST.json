@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-  "bundleSha256": "87499bfcb822bff08264c3af17908ba4fa12fbc69f94f1af48f040abee8b3085",
-  "bundleBytes": 14510823,
+  "bundleMd5": "fbcde734cec4363f476373c847eb7f89",
+  "bundleSha256": "818cb00d176b470c280106a9c5b47f66e230932b782da0521333aab7d7af7b18",
+  "bundleBytes": 14510833,
   "sourceSnapshot": {
-    "source": "merge FC 7ce943a24",
+    "source": "merge FC 5e26f2293",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 640: R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1: wyświetlana etykieta grupy budynków w panelu imperium 'Handel i pieniądz' → 'Podatek i pieniądz' (mapa etykiet EMPIRE_BUILDING_GROUP_LABEL; klucz grupy w danych bez zmian); przegląd JSON kart: brak 'handel' w znaczeniu podatku; 'Mnożnik handlu/waluty' NIE zmieniony w tej fali (decyzja ABC → osobny temat CURRENCY-MULT-LABEL)"
+    "FALA 641: R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1: etykieta 'Mnożnik handlu/waluty' → 'Mnożnik waluty' w 9 hasłach cywilizacji (docs/encyklopedia + szablon gen-cyw-encyklopedia.py), wikiBundle regenerowany generatorem; poradnik gracza (SPIS-TRESCI:2352) przepisany neutralnie zgodnie z silnikiem (bez obietnicy 'więcej złota'); komentarz meta_mnoznik_waluta w civ-matrix-semantic.ts poprawiony (bez zmiany kodu wykonywalnego); mechanika bez zmian (decyzja właściciela ABC A)"
   ],
   "verification": [
-    "tsc czysty; terminology-trade-vs-tax 798/1 (jedyny FAIL [G] building-cards-top5 = dług bazowy, identyczny na bazie), 3 nowe asercje [C-FU] zielone, mutacja czerwona; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0; audio-sidecar PASS; FC PASS-WITH-NOTES"
+    "tsc czysty; pr141-matrix-only-data-wiki 15 civ + 9 stron; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0, economy 72/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE_ZMIERZONO: render panelu imperium w Chromium; dług [G] gen-building-cards-top5 --check NIEZGODNY z generatorem (bazowy)"
+    "Encyklopedia nadal pokazuje wartość per-civ z macierzy, a silnik używa globalnego mennicaMnoznikPoWalucie (1,5) — rozbieżność wartości poza zakresem (osobny temat/ABC); terminology-trade-vs-tax 795/1 ([G] building-cards-top5 = dług bazowy, osobny temat w toku)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-11T18:19:44",
+  "hubGeneratedAt": "2026-11-11T18:29:34",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
-      "sizeBytes": 14510823
+      "md5": "fbcde734cec4363f476373c847eb7f89",
+      "sizeBytes": 14510833
     }
   ],
-  "md5": "adf5fc8c4195b5aa2e8d52c42da5ca33",
+  "md5": "fbcde734cec4363f476373c847eb7f89",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

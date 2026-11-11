@@ -1,3 +1,9 @@
+## ROBOCZA fbcde734 -- 2026-11-06 -- FALA 641: Wiki: etykieta 'Mnożnik waluty' (bez 'handlu') (testowa)
+
+- R-WEB-TERMINOLOGY-CURRENCY-MULT-LABEL-Q1: etykieta 'Mnożnik handlu/waluty' → 'Mnożnik waluty' w 9 hasłach cywilizacji (docs/encyklopedia + szablon gen-cyw-encyklopedia.py), wikiBundle regenerowany generatorem; poradnik gracza (SPIS-TRESCI:2352) przepisany neutralnie zgodnie z silnikiem (bez obietnicy 'więcej złota'); komentarz meta_mnoznik_waluta w civ-matrix-semantic.ts poprawiony (bez zmiany kodu wykonywalnego); mechanika bez zmian (decyzja właściciela ABC A)
+- Weryfikacja: tsc czysty; pr141-matrix-only-data-wiki 15 civ + 9 stron; ids-leak-audit 1648/0; wonder-text-no-raw-ids 132/0; city-administrator 117/0, economy 72/0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; mutacja czerwona; audio-sidecar PASS; FC PASS-WITH-NOTES
+- Limity: Encyklopedia nadal pokazuje wartość per-civ z macierzy, a silnik używa globalnego mennicaMnoznikPoWalucie (1,5) — rozbieżność wartości poza zakresem (osobny temat/ABC); terminology-trade-vs-tax 795/1 ([G] building-cards-top5 = dług bazowy, osobny temat w toku)
+
 ## ROBOCZA adf5fc8c -- 2026-11-06 -- FALA 640: Terminologia: grupa budynków 'Podatek i pieniądz' w panelu imperium (testowa)
 
 - R-WEB-TERMINOLOGY-C-FOLLOWUP-Q1: wyświetlana etykieta grupy budynków w panelu imperium 'Handel i pieniądz' → 'Podatek i pieniądz' (mapa etykiet EMPIRE_BUILDING_GROUP_LABEL; klucz grupy w danych bez zmian); przegląd JSON kart: brak 'handel' w znaczeniu podatku; 'Mnożnik handlu/waluty' NIE zmieniony w tej fali (decyzja ABC → osobny temat CURRENCY-MULT-LABEL)
