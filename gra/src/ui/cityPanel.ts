@@ -109,6 +109,7 @@ import {
   unitRecruitmentCapacityPerTurn,
   type CityProduction,
   type ProductionItem,
+  type RecruitOrigin,
   type CivBonusLite,
   type AvailabilityContext,
   isBuildingSupersededByUpgrade,
@@ -564,7 +565,8 @@ export interface CityPanelConfig {
   /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
   onPodzialPracyOverrideToggle?: (cityId: string) => void;
   /** Kup jedną lub atomową partię jednostek za Pieniądz ze skarbca. */
-  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number, quantity?: number) => boolean | void;
+  /** `origin`: 'city' = zamówienie w panelu miasta, 'army' = menu Armia (R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1). */
+  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number, quantity?: number, origin?: RecruitOrigin) => boolean | void;
   /** Current capital-only General offer for the Army panel. */
   getGeneralRecruitmentOffer?: (cityId: string) => {
     item: ProductionItem | null;
@@ -574,7 +576,7 @@ export interface CityPanelConfig {
     title?: 'Wódz' | 'Generał';
     disabledReason?: string;
   } | null;
-  onPurchaseGeneral?: (cityId: string, itemId: string, koszt: number) => boolean | void;
+  onPurchaseGeneral?: (cityId: string, itemId: string, koszt: number, origin?: RecruitOrigin) => boolean | void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
   onCancelRecruitment?: (cityId: string, itemId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
@@ -8355,7 +8357,7 @@ export function submitArmyRecruitmentDrafts(cityIds: string[]): { accepted: numb
     // downward so a budget-limited order can accept its affordable prefix without redirecting it.
     while (remaining > 0) {
       let batch = remaining;
-      while (batch > 0 && !recruitUnit(entry.city, entry.item, batch, false)) batch--;
+      while (batch > 0 && !recruitUnit(entry.city, entry.item, batch, false, 'army')) batch--;
       if (batch === 0) break;
       accepted += batch;
       remaining -= batch;
@@ -8438,7 +8440,7 @@ export function appendUnitRecruitCompactRow(
     },
     onRecruit: (quantity) => opts?.onRecruit
       ? opts.onRecruit(quantity)
-      : recruitUnit(city, item, quantity),
+      : recruitUnit(city, item, quantity, true, opts?.armyBatch ? 'army' : 'city'),
   });
   if (opts?.armyBatch) {
     row.dataset.armyRecruitCity = city.id;
@@ -8493,7 +8495,7 @@ export function mountGeneralRecruitmentCardForArmy(cityId: string, host: HTMLEle
       ? `Brakuje rekrutów: ${formatManpowerCompact(Math.max(0, generalMpCost - generalMpAvailable))}`
       : undefined,
     disabledReason: offer.disabledReason,
-    onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt),
+    onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt, 'army'),
   });
   generalRow.dataset.generalRecruit = 'true';
   host.appendChild(generalRow);
@@ -8525,7 +8527,7 @@ function appendRecruitmentQueueForArmy(host: HTMLElement, city: City): void {
   if (holder.childElementCount > 0) host.appendChild(holder);
 }
 
-function recruitUnit(city: City, item: ProductionItem, quantity = 1, refresh = true): boolean {
+function recruitUnit(city: City, item: ProductionItem, quantity = 1, refresh = true, origin: RecruitOrigin = 'city'): boolean {
   if (isCityUnderSiege([city], city)) return false; // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1
   const requestedQuantity = Number.isFinite(quantity)
     ? Math.max(1, Math.floor(quantity))
@@ -8546,7 +8548,7 @@ function recruitUnit(city: City, item: ProductionItem, quantity = 1, refresh = t
     if (Object.keys(missingStockFor(pool, batchStockCost)).length > 0) return false;
   }
   if (cfg.onPurchaseUnit) {
-    const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity);
+    const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity, origin);
     if (accepted === false) return false;
   }
   if (refresh) rerender();

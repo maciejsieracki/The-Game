@@ -128,7 +128,39 @@ export type ProductionItem = {
   postep?: number;
   /** Purchased unit is a General, while retaining the selected combat unit's type/stats. */
   isGeneral?: boolean;
+  /**
+   * R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja „Idź do wodza” zapisana przy zamówieniu
+   * (tylko zamówienia gracza, ownerId 0), trwa do zrodzenia jednostki. Brak pola = stary zapis
+   * sprzed tej zmiany -> fallback na globalny przełącznik (patrz resolveRecruitFollowGeneral).
+   * / EN: follow-General intent captured at order time (player orders only), kept until spawn.
+   * Absent = legacy save -> falls back to the global toggle.
+   */
+  followGeneral?: boolean;
 };
+
+/**
+ * Skąd pochodzi zamówienie rekrutacji gracza:
+ *  - 'city'  -- zamówione bezpośrednio w mieście (panel miasta) -> „Idź do wodza” domyślnie OFF,
+ *               niezależnie od globalnego przełącznika;
+ *  - 'army'  -- z menu Armia lub z panelu Rekrutacja imperium -> dziedziczy globalny przełącznik.
+ * / EN: origin of a player recruit order: 'city' (direct city order, default OFF) or 'army'
+ * (Army menu / empire recruitment panel, inherits the global toggle).
+ */
+export type RecruitOrigin = 'city' | 'army';
+
+/** Intencja „Idź do wodza” dla nowego zamówienia wg pochodzenia (czysta funkcja). */
+export function recruitFollowGeneralForOrder(origin: RecruitOrigin, globalToggle: boolean): boolean {
+  return origin === 'army' ? globalToggle === true : false;
+}
+
+/**
+ * Wartość `followGeneral` dla jednostki zrodzonej z kolejki: intencja zapisana przy zamówieniu,
+ * a dla starych zapisów bez pola -- globalny przełącznik (zachowanie sprzed zmiany).
+ * / EN: spawn-time value: stored order intent, or the global toggle for legacy items.
+ */
+export function resolveRecruitFollowGeneral(item: Pick<ProductionItem, 'followGeneral'>, globalToggle: boolean): boolean {
+  return typeof item.followGeneral === 'boolean' ? item.followGeneral : globalToggle === true;
+}
 
 /**
  * A city's production state.
