@@ -40,18 +40,66 @@ pub type ReplaySequence = u64;
 pub type ReplayMigrationReports = Vec<(ReplaySequence, LoadMigrationReport)>;
 
 /// One input together with the deterministic state at which it was observed.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ReplayStep<I> {
     sequence: ReplaySequence,
     turn: u32,
     input: I,
     rng_state: u32,
-    /// Snapshot zapisany w kroku. Deserializacja tego pola (przez `ReplayLog`) NIE wykonuje
-    /// `migrate_on_load` (wymaga epoki wlasciciela, ktorej serde nie zna). Dlatego wczytany
-    /// replay z checkpointami jest zablokowany do `ReplayLog::migrate_on_load`: `replay()` /
-    /// `playback()` zwracaja `ReplayError::SnapshotsNotMigrated`. Produkcyjna sciezka:
+    /// Snapshot zapisany w kroku. Deserializacja (`Deserialize` ponizej) NIE wykonuje
+    /// `migrate_on_load` (wymaga epoki wlasciciela, ktorej serde nie zna). Checkpoint wczytany
+    /// z serde ma `migration_pending = true`: nie jest eksponowany przez `snapshot()` /
+    /// `into_parts()`, a `replay()` / `playback()` zwraca `ReplayError::SnapshotsNotMigrated`,
+    /// dopoki `ReplayLog::migrate_on_load` nie wyczysci flagi. Produkcyjna sciezka:
     /// `zapis_loader::load_replay_log_json`.
     snapshot: Option<SaveSnapshot>,
+    /// Runtime-only: `true` gdy checkpoint wczytano z serde i jeszcze nie zmigrowano.
+    /// Nie jest serializowana i nie bierze udzialu w porownaniu.
+    #[serde(skip)]
+    migration_pending: bool,
+}
+
+impl<I: PartialEq> PartialEq for ReplayStep<I> {
+    fn eq(&self, other: &Self) -> bool {
+        self.sequence == other.sequence
+            && self.turn == other.turn
+            && self.input == other.input
+            && self.rng_state == other.rng_state
+            && self.snapshot == other.snapshot
+    }
+}
+
+impl<I: Eq> Eq for ReplayStep<I> {}
+
+#[derive(Deserialize)]
+struct ReplayStepWire<I> {
+    sequence: ReplaySequence,
+    turn: u32,
+    input: I,
+    rng_state: u32,
+    #[serde(default)]
+    snapshot: Option<SaveSnapshot>,
+}
+
+impl<'de, I> Deserialize<'de> for ReplayStep<I>
+where
+    I: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let wire = ReplayStepWire::<I>::deserialize(deserializer)?;
+        let migration_pending = wire.snapshot.is_some();
+        Ok(Self {
+            sequence: wire.sequence,
+            turn: wire.turn,
+            input: wire.input,
+            rng_state: wire.rng_state,
+            snapshot: wire.snapshot,
+            migration_pending,
+        })
+    }
 }
 
 /// Semantic alias for consumers that call a replay item a frame.
@@ -72,7 +120,13 @@ impl<I> ReplayStep<I> {
             input,
             rng_state,
             snapshot,
+            migration_pending: false,
         }
+    }
+
+    /// `true` while this step's checkpoint was loaded from serde and awaits `migrate_on_load`.
+    pub const fn migration_pending(&self) -> bool {
+        self.migration_pending
     }
 
     pub const fn sequence(&self) -> ReplaySequence {
@@ -96,6 +150,9 @@ impl<I> ReplayStep<I> {
     }
 
     /// Returns the checkpoint captured alongside this input, if present.
+    ///
+    /// While [`ReplayStep::migration_pending`] is `true` this is the raw, unmigrated
+    /// checkpoint; playback is what is gated (see [`ReplayLog::replay`]).
     pub fn snapshot(&self) -> Option<&SaveSnapshot> {
         self.snapshot.as_ref()
     }
@@ -158,25 +215,12 @@ impl fmt::Display for ReplayError {
 impl Error for ReplayError {}
 
 /// A serializable, deterministic input log.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ReplayLog<I> {
     version: u16,
     seed: u32,
     steps: Vec<ReplayStep<I>>,
-    /// `true` after deserialization when some step carries a checkpoint that has not yet
-    /// been passed through `migrate_on_load`. Runtime-only state: not serialized, and it
-    /// does not take part in equality.
-    #[serde(skip)]
-    migration_pending: bool,
 }
-
-impl<I: PartialEq> PartialEq for ReplayLog<I> {
-    fn eq(&self, other: &Self) -> bool {
-        self.version == other.version && self.seed == other.seed && self.steps == other.steps
-    }
-}
-
-impl<I: Eq> Eq for ReplayLog<I> {}
 
 #[derive(Debug, Deserialize)]
 struct ReplayWire<I> {
@@ -198,12 +242,10 @@ where
         let version = wire
             .version
             .ok_or_else(|| de::Error::custom(ReplayError::MissingVersion))?;
-        let migration_pending = wire.steps.iter().any(|step| step.snapshot.is_some());
         let replay = Self {
             version,
             seed: wire.seed,
             steps: wire.steps,
-            migration_pending,
         };
         replay.validate().map_err(de::Error::custom)?;
         Ok(replay)
@@ -217,7 +259,6 @@ impl<I> ReplayLog<I> {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps: Vec::new(),
-            migration_pending: false,
         }
     }
 
@@ -227,17 +268,17 @@ impl<I> ReplayLog<I> {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps: Vec::with_capacity(capacity),
-            migration_pending: false,
         }
     }
 
     /// Imports already materialized steps after checking their invariants.
+    /// A step deserialized from serde with a checkpoint keeps its pending flag, so the
+    /// resulting log is blocked from playback until `migrate_on_load` runs.
     pub fn from_steps(seed: u32, steps: Vec<ReplayStep<I>>) -> Result<Self, ReplayError> {
         let replay = Self {
             version: CURRENT_REPLAY_VERSION,
             seed,
             steps,
-            migration_pending: false,
         };
         replay.validate()?;
         Ok(replay)
@@ -245,7 +286,7 @@ impl<I> ReplayLog<I> {
 
     /// Runs `migrate_on_load` on every checkpoint of this log (the same production migration
     /// as `zapis_loader::load_save_snapshot`) and returns one report per migrated step, keyed
-    /// by step sequence. After this call playback is allowed.
+    /// by step sequence. Clears the pending flag of every step; afterwards playback is allowed.
     pub fn migrate_on_load(
         &mut self,
         era_for_owner: impl Fn(PlayerId) -> f64,
@@ -255,9 +296,15 @@ impl<I> ReplayLog<I> {
             if let Some(snapshot) = step.snapshot.as_mut() {
                 reports.push((step.sequence, snapshot.migrate_on_load(&era_for_owner)));
             }
+            step.migration_pending = false;
         }
-        self.migration_pending = false;
         reports
+    }
+
+    /// `true` while any step carries a checkpoint loaded from serde that has not yet been
+    /// passed through `migrate_on_load`.
+    pub fn migration_pending(&self) -> bool {
+        self.steps.iter().any(ReplayStep::migration_pending)
     }
 
     pub const fn version(&self) -> u16 {
@@ -320,7 +367,8 @@ impl<I> ReplayLog<I> {
                     found: step.sequence,
                 });
             }
-            validate_snapshot(step.snapshot())?;
+            // Validate the raw checkpoint, including one still pending migration.
+            validate_snapshot(step.snapshot.as_ref())?;
         }
         Ok(())
     }
@@ -328,7 +376,7 @@ impl<I> ReplayLog<I> {
     /// Starts deterministic playback from the log's initial seed.
     pub fn replay(&self) -> Result<ReplayPlayback<'_, I>, ReplayError> {
         self.validate()?;
-        if self.migration_pending {
+        if self.migration_pending() {
             return Err(ReplayError::SnapshotsNotMigrated);
         }
         Ok(ReplayPlayback {
