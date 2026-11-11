@@ -86,6 +86,11 @@
     "mnoznikCywMax": 1.5,
     "turyBezOgraniczenAi": 20
   },
+  "przewagaMilitarna": {
+    "_opis": "R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1 DODATEK 1 (decyzja WLASCICIELA 2026-11-09, liczba 20% nie do negocjacji): AI vs GRACZ. Stosunek sily AI do sily drugiej strony = rw/(1-rw) (rw = udzial mocy AI, ta sama miara co decyzje pokojowe: objectivePower; panel 'Moc militarna' liczy te sama moc w wariancie Effective - roznica tylko mnoznik walki jednostek, ZALOZENIE do akceptacji). (a) stosunek > 1+prog (AI silniejsza o wiecej niz prog) i brak zmeczenia wojna (poziom < war-weariness-params.json zmeczenie.progChetnosci) -> AI nie proponuje pokoju i odrzuca pokoj gracza. (b) stosunek <= 1-prog (AI slabsza o co najmniej prog) -> AI moze sama proponowac pokoj. (c) przedzial posredni -> reguly dotychczasowe. Rozstrzygnieta granica: dokladnie +20% NIE jest przewaga (>), dokladnie -20% JEST niedoborem (<=).",
+    "prog": 0.20,
+    "epsilon": 1e-9
+  },
   "hamulecRelacji": {
     "_opis": "R7 — hamulec wojny wg lacznej Relacji. Prog kryzysu = progWojnyRelacji(wyzszy z pary) - progKryzysuMinusPunkty; liczba tur N = clamp(round(bazaN - wagaProgWojny*dip_prog_wojny), minN, maxN). Strona gracza bez wiersza macierzy = progWojnyRelacji bazaBrakDanych.",
     "progKryzysuMinusPunkty": 15,
@@ -93,5 +98,9 @@
     "wagaProgWojny": 0.5,
     "minN": 3,
     "maxN": 7
+  },
+  "pokojAiAi": {
+    "_opis": "R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09): pokoj/rozejm miedzy DWIEMA cywilizacjami AI nie moze zostac zawarty, gdy bilans PW ktorejkolwiek z nich (po zaplacie) jest nizszy niz minBilansPW. Wyjatek gracza (pokoj zawsze do przyjecia przez gracza) NIE dotyczy tej sekcji.",
+    "minBilansPW": 0
   }
 }

@@ -1029,6 +1029,19 @@ pub struct Nap {
     pub prog_relacja: i64,
 }
 
+/// Web `diplomacy-acceptance-points.json` -> `traktaty.rozejm` (R-WEB-TRUCE-Q1: 200 PW).
+/// Stala uzywana w kodzie: `diplomacy_truce_flow::TRUCE_BASE_PN` (test pilnuje zgodnosci).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Rozejm {
+    #[serde(rename = "punkty")]
+    pub punkty: i64,
+    #[serde(rename = "jednostka")]
+    pub jednostka: String,
+    #[serde(rename = "uwaga")]
+    pub uwaga: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UmowaSzlakow {
@@ -1161,6 +1174,8 @@ pub struct Traktaty {
     pub sojusz_defensywny: SojuszDefensywny,
     #[serde(rename = "nap")]
     pub nap: Nap,
+    #[serde(rename = "rozejm")]
+    pub rozejm: Rozejm,
     #[serde(rename = "umowa_szlakow")]
     pub umowa_szlakow: UmowaSzlakow,
     #[serde(rename = "umowa_handlowa")]

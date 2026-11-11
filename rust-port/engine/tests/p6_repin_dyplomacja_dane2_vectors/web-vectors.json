@@ -1,0 +1,21 @@
+{
+  "zrodlo": "uruchomiony kod TS weba: gra/src/game/diplomacy.ts (getEffectiveDiplomacyParams, sisterAllianceDiplomacyParams)",
+  "progSojuszWillingnessMin": "0.54",
+  "progNapBezterminowyRelacja": "151",
+  "progNapRelacja": "110",
+  "progNapZaufanie": "30",
+  "sister": {
+    "low": {
+      "progSojuszWillingnessMin": "0.324",
+      "progSojuszRelacja": "78"
+    },
+    "normal": {
+      "progSojuszWillingnessMin": "0.162",
+      "progSojuszRelacja": "39"
+    },
+    "strong": {
+      "progSojuszWillingnessMin": "0.081",
+      "progSojuszRelacja": "30"
+    }
+  }
+}
