@@ -14133,7 +14133,7 @@ async function boot(): Promise<void> {
     const pendingDiplomacyInbox: Array<{
       id: string; ownerId: number; civName: string; cmdType: string; reason: string;
       /** R-WEB-DIPLO-ALLIANCE-JOIN-WAR-CALL-TO-ARMS-Q1: durable obligation snapshot. */
-      allianceWar?: { warId: string; attackerId: number; victimId: number; targetId: number };
+      allianceWar?: { warId: string; attackerId: number; victimId: number; targetId: number; recipientOwnerId?: number };
       goldOnce?: number;
       /** HANDEL-SUROWCE-CYKL (2026-07-24): dane 'zaproponuj_handel_surowiec', do odtworzenia cmd przy akceptacji. */
       surowiecKey?: string;
@@ -18648,6 +18648,7 @@ async function boot(): Promise<void> {
         }
       }
       for (const p of pendingDiplomacyInbox) {
+        if (p.allianceWar && !isMe(p.allianceWar.recipientOwnerId ?? ME())) continue;
         events.push({
           id: p.id,
           icon: '\u{1F91D}',
@@ -18778,6 +18779,7 @@ async function boot(): Promise<void> {
     function collectOpenDiploProposalQueue(): Array<{ id: string; ownerId: number }> {
       const out: Array<{ id: string; ownerId: number }> = [];
       for (const p of pendingDiplomacyInbox) {
+        if (p.allianceWar && !isMe(p.allianceWar.recipientOwnerId ?? ME())) continue;
         if (dismissedSidePanelEventIds.has(p.id)) continue;
         out.push({ id: p.id, ownerId: p.ownerId });
       }
@@ -20923,7 +20925,7 @@ async function boot(): Promise<void> {
         id, ownerId: requesterId, civName: ownerDiploLabel(requesterId),
         cmdType: 'alliance_war_call',
         reason: `Wypowiedz wojnę: ${ownerDiploLabel(targetId)}`,
-        allianceWar: { warId, attackerId, victimId, targetId },
+        allianceWar: { warId, attackerId, victimId, targetId, recipientOwnerId: allyId },
       });
       refreshD1bHud();
     }
@@ -20934,7 +20936,7 @@ async function boot(): Promise<void> {
       outcome: 'joined' | 'refused' | 'expired',
     ): void {
       if (allianceWarCallHistory.some(entry => entry.id === id)) return;
-      allianceWarCallHistory.push({ id, warId: call.warId, allyId: ME(), targetId: call.targetId, outcome });
+      allianceWarCallHistory.push({ id, warId: call.warId, allyId: call.recipientOwnerId ?? ME(), targetId: call.targetId, outcome });
     }
 
     function resolveAllianceWarCall(id: string, accept: boolean): void {
@@ -20942,9 +20944,18 @@ async function boot(): Promise<void> {
       if (idx < 0) return;
       const p = pendingDiplomacyInbox[idx]!;
       const call = p.allianceWar;
+      if (!call) { pendingDiplomacyInbox.splice(idx, 1); refreshD1bHud(); return; }
+      const recipientOwnerId = call.recipientOwnerId ?? ME();
+      if (!isHuman(recipientOwnerId)) {
+        pendingDiplomacyInbox.splice(idx, 1);
+        recordAllianceWarCallOutcome(id, call, 'expired');
+        refreshD1bHud();
+        return;
+      }
+      // Keep the decision pending until its assigned hot-seat seat is active.
+      if (!isMe(recipientOwnerId)) return;
       pendingDiplomacyInbox.splice(idx, 1);
-      if (!call) { refreshD1bHud(); return; }
-      if (!isMe(p.ownerId) || call.targetId === ME()) {
+      if (call.targetId === recipientOwnerId) {
         recordAllianceWarCallOutcome(id, call, 'expired');
         refreshD1bHud();
         return;
@@ -20957,32 +20968,32 @@ async function boot(): Promise<void> {
         return;
       }
       const obligation = allianceObligationsForWarDeclaration(activeDeals, call.attackerId, call.victimId)
-        .find(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(ME()));
+        .find(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(recipientOwnerId));
       if (!obligation) {
         recordAllianceWarCallOutcome(id, call, 'expired');
         refreshD1bHud();
         return;
       }
       // Never honor a call that would make the human fight an existing ally.
-      if (allianceFormalKindBetween(activeDeals, ME(), call.targetId)) {
+      if (allianceFormalKindBetween(activeDeals, recipientOwnerId, call.targetId)) {
         recordAllianceWarCallOutcome(id, call, 'expired');
         refreshD1bHud();
         return;
       }
-      if (getDiploRelation(ME(), call.targetId).status === 'wojna') {
+      if (getDiploRelation(recipientOwnerId, call.targetId).status === 'wojna') {
         recordAllianceWarCallOutcome(id, call, 'joined');
         refreshD1bHud();
         return;
       }
       if (accept) {
-        joinAllyToWar(ME(), call.targetId, call.attackerId);
+        joinAllyToWar(recipientOwnerId, call.targetId, call.attackerId);
         recordAllianceWarCallOutcome(id, call, 'joined');
         showHintMessage('Wypełniasz sojusz — wojna z: ' + ownerDiploLabel(call.targetId), 4500);
       } else {
-        appendWiarygodnoscEvent(ME(), 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
-        const brokenIds = treatiesBrokenByRefusal([{ ...obligation, obligatedAllies: [ME()] }], []);
+        appendWiarygodnoscEvent(recipientOwnerId, 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
+        const brokenIds = treatiesBrokenByRefusal([{ ...obligation, obligatedAllies: [recipientOwnerId] }], []);
         if (brokenIds.length) activeDeals = removeTreatiesById(activeDeals, brokenIds);
-        syncRelationFromDeals(ME(), p.ownerId);
+        syncRelationFromDeals(recipientOwnerId, p.ownerId);
         showHintMessage('Odmówiono wezwania — sojusz zerwany', 4500);
         recordAllianceWarCallOutcome(id, call, 'refused');
       }
@@ -21067,6 +21078,7 @@ async function boot(): Promise<void> {
     function openDiplomacyPendingById(id: string): void {
       const p = pendingDiplomacyInbox.find(x => x.id === id);
       if (!p) return;
+      if (p.allianceWar && !isMe(p.allianceWar.recipientOwnerId ?? ME())) return;
       diplomacyAudienceSourceEventId = id;
       if (p.allianceWar) {
         const call = p.allianceWar;
@@ -21101,7 +21113,7 @@ async function boot(): Promise<void> {
     function getPendingDiplomacyDecisions(): ReadonlyArray<{
       id: string; ownerId: number; civName: string; cmdType: string; reason: string;
     }> {
-      return pendingDiplomacyInbox;
+      return pendingDiplomacyInbox.filter(p => !p.allianceWar || isMe(p.allianceWar.recipientOwnerId ?? ME()));
     }
 
     /**
@@ -46653,9 +46665,11 @@ async function boot(): Promise<void> {
         const p = pendingDiplomacyInbox[pi]!;
         if (!p.allianceWar) continue;
         const call = p.allianceWar;
+        const recipientOwnerId = call.recipientOwnerId ?? ME();
         const liveWar = getDiploRelation(call.attackerId, call.victimId).status === 'wojna';
-        const liveObligation = liveWar && allianceObligationsForWarDeclaration(activeDeals, call.attackerId, call.victimId)
-          .some(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(ME()));
+        const liveObligation = isHuman(recipientOwnerId) && liveWar
+          && allianceObligationsForWarDeclaration(activeDeals, call.attackerId, call.victimId)
+            .some(ob => ob.mustDeclareWarOn === call.targetId && ob.obligatedAllies.includes(recipientOwnerId));
         if (!liveObligation) {
           pendingDiplomacyInbox.splice(pi, 1);
           recordAllianceWarCallOutcome(p.id, call, 'expired');

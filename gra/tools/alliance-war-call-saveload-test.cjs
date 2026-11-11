@@ -37,7 +37,10 @@ async function main() {
     const body = main.slice(start, start + 2600);
     assert.match(body, /getDiploRelation\(call\.attackerId, call\.victimId\)\.status !== 'wojna'/);
     assert.match(body, /allianceObligationsForWarDeclaration\(activeDeals, call\.attackerId, call\.victimId\)/);
-    assert.match(body, /allianceFormalKindBetween\(activeDeals, ME\(\), call\.targetId\)/);
+    assert.match(body, /allianceFormalKindBetween\(activeDeals, recipientOwnerId, call\.targetId\)/);
+    assert.match(body, /if \(!isMe\(recipientOwnerId\)\) return/);
+    assert.match(body, /const recipientOwnerId = call\.recipientOwnerId \?\? ME\(\)/);
+    assert.doesNotMatch(body, /isMe\(p\.ownerId\)/);
   });
   check('ludzka decyzja pozostaje bez kary do czasu odpowiedzi', () => {
     const start = main.indexOf('function finalizeAllianceObligationRefusals(');

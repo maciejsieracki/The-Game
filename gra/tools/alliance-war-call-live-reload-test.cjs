@@ -55,6 +55,14 @@ const slot = `alliance-war-call-live-${Date.now()}`;
     await acceptedPage.waitForFunction(() => !!window.__allianceWarCallSaveLoadTestDebug, { timeout: 15000 });
     assert.equal(await acceptedPage.evaluate(slotName => window.__allianceWarCallSaveLoadTestDebug.seedAndSave(slotName), `${slot}-joined`), true);
     const acceptedCall = (await acceptedPage.evaluate(() => window.__allianceWarCallSaveLoadTestDebug.pending()))[0];
+    await acceptedPage.evaluate(() => {
+      window.__hotSeatTestDebug.seedSecondSeat(7, {});
+      window.__hotSeatTestDebug.switchActiveHuman(7);
+    });
+    await acceptedPage.evaluate(id => window.__allianceWarCallSaveLoadTestDebug.resolve(id, false), acceptedCall.id);
+    assert.equal((await acceptedPage.evaluate(() => window.__allianceWarCallSaveLoadTestDebug.pending())).length, 1, 'wrong active hot-seat recipient leaves call pending');
+    assert.deepEqual(await acceptedPage.evaluate(() => window.__allianceWarCallSaveLoadTestDebug.history()), [], 'wrong seat cannot record an outcome');
+    await acceptedPage.evaluate(() => window.__hotSeatTestDebug.switchActiveHuman(0));
     await acceptedPage.evaluate(id => window.__allianceWarCallSaveLoadTestDebug.resolve(id, true), acceptedCall.id);
     const joinedHistory = await acceptedPage.evaluate(() => window.__allianceWarCallSaveLoadTestDebug.history());
     assert.equal(joinedHistory.length, 1);
