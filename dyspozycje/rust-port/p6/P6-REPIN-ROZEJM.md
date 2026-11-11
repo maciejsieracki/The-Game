@@ -85,3 +85,25 @@ Zakres (zawężenie GOAL wg alternatywy FC): Z8, Z9, startTruce 5/10/15, 0 Zaufa
   z tury, `ai_truce_or_peace_mode` w decyzji AI, L11 (kontroferta zmienia długość). ZAŁOŻENIE-R3-D: miara armii = wejście `army_m`
   (web nominalna `sumArmyMForOwner`; panel Effective — rozbieżność odnotowana).
 - ZAŁOŻENIE-R3-F: skrzynka (`InboxOffer`) i oferta kasowane przy zawarciu pokoju stałego (web czyści tylko meta); hygiena, brak wpływu na wynik.
+
+### 5a. Obrona r3 (2026-11-11, ten sam ID) — odpowiedzi na zarzuty FC
+
+- **Z8 (PRZYJMUJĘ, częściowo):** dodano `TruceDiplomacy::declare_war_opts(..., skip_n2)` i pole `barbarians`.
+  `declare_war` = `declare_war_opts(..., false)`. Zgodnie z webem (`main.ts` ~11941-11950): barbarzyńca po
+  którejkolwiek stronie = wczesny `return false` bez kary i bez zmian stanu; `skip_n2` (odwet albo
+  `skipN2AllianceDefense`) = brak kary, ale okno (truceBreach) nadal kasuje ofertę i zwraca `true`.
+  Testy: `z8_odwet_lub_skip_n2_zwraca_okno_bez_kary`, `z8_barbarzynca_po_ktorejkolwiek_stronie_nie_zmienia_stanu`.
+  **DŁUG W6 (nieodwzorowane):** (a) wyliczenie odwetu `isCredibilityRetaliation` (web: `ostatniePrzewinienieWobecNas`,
+  `wiarygodnoscOdwetOknoTur`) — Rust nie liczy odwetu, wołający przekazuje `skip_n2`; (b) zapis
+  `ostatniePrzewinienieWobecNas` po wypowiedzeniu bez odwetu (web) — Rust nie zapisuje (pole zostaje w `extra` bez zmian);
+  (c) gałęzie sojusz/NAP z `chargeWarDeclarationCredibility` (N2) — poza zakresem R3, jak w ZAŁOŻENIU-R3-B.
+- **Baseline `cargo test` (NIE_ZMIERZONO na starcie):** PRZYJMUJĘ jako uchybienie proceduralne. Obejście dowodowe:
+  po zmianach 0 failed na pełnym przebiegu; diff nie usuwa żadnego `#[test]` (0 linii `-` z `#[test]`, 2 dodane),
+  więc żaden test nie mógł zostać ukryty przez zmianę. Stan `#[ignore]`: 1 pre-existing (`tests/p6_order_lane.rs`).
+- **Martwy kod (brak wołającego w `src` poza modułem i testami) (PRZYJMUJĘ jako znany stan):** `TruceDiplomacy` jest nośnikiem
+  testowym; zgodnie z DODATKIEM 1 podpięcie tick/AI/tury = WIRE-WAR W6 (dług). Żywa ścieżka R3 to
+  `diplomacy.rs::evaluate_proposal_with_params` (`ProposalAction::Truce`).
+- **Z-R3-E `turns` czyszczone przed bramką PW (PRZYJMUJĘ jako ZAŁOŻENIE, bez dowodu parytetu):** web `resolveProposalPn`
+  (`gra/src/game/diplomacy-pn-engine.ts:211`) dostaje oryginalny payload; `turns` wpływa tam tylko przez
+  `turnsMultiplier` przy `per_turn` (`diplomacy-pn-engine.ts` opts). Nie zmierzono, czy dla niepustego koszyka z `turns`
+  wynik PW różni się od Rust. DŁUG W6: wektor z uruchomionego weba dla koszyka z `turns` (NIE_ZMIERZONO w tej rundzie).

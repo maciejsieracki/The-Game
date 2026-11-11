@@ -246,6 +246,31 @@ fn z8_wypowiedzenie_wojny_w_oknie_oferty_kasuje_oferte_i_karze() {
 }
 
 #[test]
+fn z8_odwet_lub_skip_n2_zwraca_okno_bez_kary() {
+    // web: `if (!skipN2)` — przy odwecie (isCredibilityRetaliation) albo skipN2AllianceDefense kary nie ma,
+    // ale okno (truceBreach) nadal zrywa oferte i zwraca true.
+    let mut s = truce_to_expiry_human(10.0);
+    assert!(s.declare_war_opts(HUMAN, AI1, 11.0, true));
+    assert!(s.credibility_events.is_empty());
+    assert!(s.inbox.is_empty());
+    assert_eq!(s.status(AI1, HUMAN), RelationStatus::War);
+}
+
+#[test]
+fn z8_barbarzynca_po_ktorejkolwiek_stronie_nie_zmienia_stanu() {
+    // web: `if (isBarbarian(declarerId) || isBarbarian(targetId)) return false;` — brak kary, brak zmian.
+    let mut s = truce_to_expiry_human(10.0);
+    s.barbarians.insert(AI1);
+    assert!(!s.declare_war(HUMAN, AI1, 11.0));
+    assert!(s.credibility_events.is_empty());
+    assert_eq!(s.offers_for(AI1).len(), 1, "oferta nietknieta");
+    let mut s2 = truce_to_expiry_human(10.0);
+    s2.barbarians.insert(HUMAN);
+    assert!(!s2.declare_war(HUMAN, AI1, 11.0));
+    assert!(s2.credibility_events.is_empty());
+}
+
+#[test]
 fn z8_wypowiedzenie_po_pokoju_stalym_lub_po_rozejmie_nie_jest_zlamaniem_okna() {
     let mut s = at_war(AI1, AI2);
     assert!(s.propose(&peace_proposal(AI1, AI2), 1).accepted);

@@ -58,6 +58,8 @@ pub struct TruceDiplomacy {
     pub pair_meta: BTreeMap<CivilizationPair, PairMetaWeb>,
     pub army_m: BTreeMap<PlayerId, f64>,
     pub humans: BTreeSet<PlayerId>,
+    /// Web `isBarbarian` (R3: gate Z8 — barbarzyncy poza kara i poza wojna).
+    pub barbarians: BTreeSet<PlayerId>,
     pub inbox: Vec<InboxOffer>,
     pub credibility_events: Vec<(PlayerId, &'static str)>,
     /// Biezaca tura (ustawiana przez `tick` / `propose`; uzywana przez `finalize_peace` z portu).
@@ -233,10 +235,28 @@ impl TruceDiplomacy {
     /// Web `chargeWarDeclarationCredibility` (czesc rozejmu): Z8 — wypowiedzenie wojny w oknie aktywnego
     /// rozejmu LUB oferty pokoju po rozejmie = zlamanie (kara). Kasuje oferte, czysci rozejm i inicjatora,
     /// ustawia wojne. Zwraca `true`, gdy bylo zlamanie.
+    /// Web `chargeWarDeclarationCredibility` bez odwetu (`skipN2 = false`): kara Z8 naliczana.
     pub fn declare_war(&mut self, declarer: PlayerId, target: PlayerId, turn: f64) -> bool {
+        self.declare_war_opts(declarer, target, turn, false)
+    }
+
+    /// Web `chargeWarDeclarationCredibility(declarer, target, { skipN2AllianceDefense })`.
+    /// `skip_n2` = odwet (`isCredibilityRetaliation`) albo `skipN2AllianceDefense` — wtedy kara Z8
+    /// NIE jest naliczana (web: blok `if (!skipN2)`). Zwraca okno rozejmu/oferty (web: `truceBreach`).
+    /// Barbarzynca po ktorejkolwiek stronie = brak efektu (web: wczesny `return false`).
+    pub fn declare_war_opts(
+        &mut self,
+        declarer: PlayerId,
+        target: PlayerId,
+        turn: f64,
+        skip_n2: bool,
+    ) -> bool {
+        if self.barbarians.contains(&declarer) || self.barbarians.contains(&target) {
+            return false;
+        }
         let meta = self.pair_meta_of(declarer, target);
         let breach = is_truce_active(meta.truce_until_turn, turn) || meta.truce_end_offer.is_some();
-        if breach {
+        if breach && !skip_n2 {
             self.credibility_events
                 .push((declarer, CREDIBILITY_EVENT_TRUCE_BREACH));
         }
