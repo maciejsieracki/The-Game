@@ -9646,3 +9646,8 @@ Zgłoszenie: Inkowie, 24818 brązu w kontrpropozycji. Podejrzenie nadmiernej pro
 STATUS: OTWARTE
 DOMAIN: GAME
 Właściciel zlecił przeniesienie każdego typu konnicy do Żelaza. Rydwany oddzielnie. Zarejestrowane do najbliższego wolnego slotu, bez zmiany kosztów/statystyk i bez dopisywania niezatwierdzonego wymogu Akademii. Dispatch w `autobot/runs/R-WEB-CAVALRY-IRON-ONLY-Q1/00-dispatch.md`.
+
+## 2026-11-11 — R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1
+STATUS: OTWARTE
+DOMAIN: GAME
+Nowe zlecenie: od20.tury własnej epoki Brązu komunikat Epoki Ludów Morza i3×liczebność najazdów na każdym aktywnym poziomie barbarzyńców, do wejścia nacji w Żelazo. Istniejący mechanizm Ludów Morza wymaga audytu, nie duplikacji. Zarejestrowane w kolejce przy limicie4 aktywnych tematów; dispatch w `autobot/runs/R-WEB-SEA-PEOPLES-BRONZE-TURN20-TRIPLE-Q1/00-dispatch.md`.
