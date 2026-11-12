@@ -7,17 +7,21 @@
 //!
 //! Tabela krok -> funkcja -> status (szczegoly: raport `01-operator-r*.md`):
 //! - D1 `expireTreaties` (:24231) -> `DiplomacyState::expire_deals` (is_active_at = `wygasaTura > turn`): WPIETE.
-//! - D2 finisz wiarygodnosci wygaslych traktatow (:24233-24270) -> `credibility_finish_requests`: WPIETE jako
-//!   LISTA ZLECEN w raporcie. BRAK: sam rejestr wiarygodnosci (`appendCredibilityEvent`) nie ma portu Rust
-//!   (grep `append_credibility|credibility_event` w `engine/src` = tylko `TruceDiplomacy.credibility_events`),
-//!   wiec zlecenia nie sa nigdzie zapisywane. To jawna luka, nie ciche zero.
+//! - D2 finisz wiarygodnosci wygaslych traktatow (:24233-24270) -> `credibility::expiry_finish_events`: WPIETE
+//!   (R-RUSTPORT-P6-WIRE-WAR-CRED-Q1): zdarzenia P1-P3 sa ZAPISYWANE do rejestru wiarygodnosci
+//!   (`credibility::CredibilityRegistry`, klucze `meta.wiarygodnosc*` w `opaque`), a lista zlecen w raporcie
+//!   (`credibility_requests`) zostaje jako dziennik (tak samo kary N6 z D3).
 //! - D3 `tickCyclicResourceTradeDeals` (:24077) -> `tick_cyclic_resource_trade_deals` (uzywa
 //!   `transfer_quantity_resource`, `normalize_resource_quantity`; `build_cyclic_resource_transfers` to BUDOWNICZY
 //!   transferow z koszyka przy zawarciu umowy, NIE tick tury; w tym kroku nie jest wolany): WPIETE.
 //!   Poza zakresem (jawnie): bonus zaufania P7 (`applyDiploP7Bonuses`, brak magazynu `diplomacyTradeStreak`)
 //!   i powiadomienia UI.
-//! - D4 `updateWiarygodnoscStreamsThisTurn` / `tickWiarygodnoscBezWojnyMilestone`: BRAK (jak D2, brak rejestru
-//!   strumieni wiarygodnosci w Rust).
+//! - D4 `updateWiarygodnoscStreamsThisTurn` (:24184) + `tickWiarygodnoscBezWojnyMilestone` (:12058, petla
+//!   `allWiarygodnoscOwnerIds()` :24273): WPIETE w kolejnosci pinu: po D3 (`tickCyclicResourceTradeDeals`), przed D5
+//!   (`tickTruceExpiries`). Trudnosc (`_menuDifficulty`) = `DiplStepsInputs::difficulty` (domyslnie normalna jak
+//!   `default:` w webie); wlasciciele P4 = `owner_ids` bez `credibility_excluded_owners` (barbarzyncy, §1).
+//!   Hak "wojna zeruje licznik P4" (`main.ts:12223`) to `CredibilityRegistry::note_war_entered`: BRAK wywolania
+//!   (deklaracje wojny sa poza tym krokiem), zapis pola `wiarygodnoscOstatniaWojnaTuraByOwner` czytany bez zmian.
 //! - D5 `tickTruceExpiries` (:12122) -> `truce_end_tick_pair` na `TruceDiplomacy` (porty z `diplomacy_truce_flow`):
 //!   WPIETE (`truce_expiry_action` jest wolane wewnatrz `truce_end_tick_pair`).
 //! - D6 `tickDiplomacyPayments` + zerwania za danine (:24275-24298) -> `tick_diplomacy_payments`,
@@ -45,6 +49,10 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{json, Value};
 
+use super::credibility::{
+    expiry_finish_events, stream_active_tuples, stream_kind_of, CredibilityEvent,
+    CredibilityParams, CredibilityRegistry, StreamActive, StreamDeal,
+};
 use super::diplomacy::{
     normalize_resource_quantity, transfer_quantity_resource, ActiveDeal, CityResourceState,
     CivilizationPair, DiplomacyState, DiplomaticEvent, PaymentKind, RelationStatus, TreatyKind,
@@ -54,6 +62,7 @@ use super::diplomacy_truce_end::{truce_end_tick_pair, PairTruceMeta, TruceEndPor
 use super::diplomacy_truce_flow::{InboxOffer, TruceDiplomacy};
 use super::ids::PlayerId;
 use super::turn_war_pipeline::WarTurnError;
+use super::types::Difficulty;
 use super::war_turn_state::WarTurnState;
 
 /// Klucze `opaque` (web `meta`).
@@ -78,9 +87,14 @@ pub struct DiplStepsInputs {
     pub capital_city: BTreeMap<i64, String>,
     /// Moc armii (web `sumArmyMForOwner`) per wlasciciel; wymagana, gdy rozejm AI-AI wygasa.
     pub army_m: BTreeMap<i64, f64>,
+    /// Trudnosc gry (web `_menuDifficulty`): start/wagi strumieni wiarygodnosci. Domyslnie normalna (jak `default:`
+    /// w webie). Uwaga: `StartGameParams.difficulty` nie jest jeszcze zmapowane przez producenta (BRAK).
+    pub difficulty: Difficulty,
+    /// Wlasciciele bez wiarygodnosci (barbarzyncy, web `allWiarygodnoscOwnerIds` ich pomija) - wykluczeni z P4.
+    pub credibility_excluded_owners: BTreeSet<i64>,
 }
 
-/// Zlecenie zdarzenia wiarygodnosci (D2 / N6 z D3). Rejestr wiarygodnosci nie ma portu: tylko raport.
+/// Zlecenie zdarzenia wiarygodnosci (D2 / N6 z D3): dziennik w raporcie; zdarzenie jest tez zapisywane do rejestru.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CredibilityRequest {
     pub owner: i64,
@@ -109,6 +123,8 @@ pub struct PaymentsResult {
 pub struct DiplStepsReport {
     pub expired_deals: Vec<String>,
     pub credibility_requests: Vec<CredibilityRequest>,
+    /// Aktywne zobowiazania strumienia S1-S4 tej tury (D4), w kolejnosci pinu.
+    pub credibility_stream_active: Vec<StreamActive>,
     /// Pary `(a, b)` i tura konca karencji (`recordBarbarianCooperationGrace`), do zastosowania przez wolajacego.
     pub barbarian_grace: Vec<(i64, i64, f64)>,
     pub cyclic: Vec<CyclicOutcome>,
@@ -551,9 +567,7 @@ fn tick_cyclic_resource_trade_deals(
 // ---------------------------------------------------------------------------------------------
 
 fn finish_requests(deal: &ActiveDeal, expired_turn: f64, report: &mut DiplStepsReport) {
-    let p = crate::data::civilizations::parse_diplomacy()
-        .expect("diplomacy.json must parse")
-        .params;
+    let p = CredibilityParams::load();
     let (pa, pb) = (
         deal.parties.first.get() as i64,
         deal.parties.second.get() as i64,
@@ -563,31 +577,82 @@ fn finish_requests(deal: &ActiveDeal, expired_turn: f64, report: &mut DiplStepsR
             .barbarian_grace
             .push((pa, pb, expired_turn + BARBARIAN_COOPERATION_TURNS - 1.0));
     }
-    let mut both = |kind: &'static str, value: f64| {
-        for o in [pa, pb] {
+    for (event, value) in expiry_finish_events(
+        deal.kind,
+        !deal.cyclic_resource_transfers.is_empty(),
+        deal.cyclic_ever_failed,
+        p,
+    ) {
+        for owner in [pa, pb] {
             report.credibility_requests.push(CredibilityRequest {
-                owner: o,
-                kind,
+                owner,
+                kind: event.web_key(),
                 value,
             });
         }
-    };
-    match deal.kind {
-        TreatyKind::DefensiveAlliance | TreatyKind::FullAlliance => {
-            both("dotrwanie_sojuszu", p.wiarygodnosc_p1_finisz_sojusz as f64)
-        }
-        TreatyKind::Nap => both("dotrwanie_nap", p.wiarygodnosc_p2_finisz_nap as f64),
-        TreatyKind::TradeRoute | TreatyKind::Exchange => {
-            both("dotrwanie_handlu", p.wiarygodnosc_p2_finisz_handel as f64);
-            if !deal.cyclic_resource_transfers.is_empty() && !deal.cyclic_ever_failed {
-                both(
-                    "splata_handlu_cyklicznego",
-                    p.wiarygodnosc_p3_finisz_handel_cykliczny as f64,
-                );
-            }
-        }
-        _ => {}
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// D2 (zapis) + D4: rejestr wiarygodnosci.
+// ---------------------------------------------------------------------------------------------
+
+/// Zapisuje zlecenia D2/N6 do rejestru, potem D4: `updateWiarygodnoscStreamsThisTurn` i P4 dla kazdego
+/// wlasciciela (`allWiarygodnoscOwnerIds`). Zapisuje do `opaque` tylko zmienione klucze.
+fn credibility_steps(
+    work: &mut WarTurnState,
+    cx: &DiplStepsContext<'_>,
+    report: &mut DiplStepsReport,
+) -> Result<(), WarTurnError> {
+    let p = CredibilityParams::load();
+    let difficulty = cx.inputs.difficulty;
+    let turn = cx.turn;
+    let before = CredibilityRegistry::from_meta(&work.opaque).map_err(|e| err(e.to_string()))?;
+    let mut reg = before.clone();
+
+    for r in &report.credibility_requests {
+        let event = CredibilityEvent::from_web_key(r.kind)
+            .ok_or_else(|| err(format!("nieznany typ zdarzenia wiarygodnosci '{}'", r.kind)))?;
+        reg.append_event(r.owner, event, r.value, turn);
+    }
+
+    let stream_deals: Vec<StreamDeal> = work
+        .diplomacy
+        .deals
+        .iter()
+        .map(|d| StreamDeal {
+            id: d.id.clone(),
+            kind: stream_kind_of(d.kind),
+            parties: (d.parties.first.get() as i64, d.parties.second.get() as i64),
+            cyclic_len: d.cyclic_resource_transfers.len(),
+        })
+        .collect();
+    let cyclic = &report.cyclic;
+    // Web `wiarygodnoscCyclicDeliveryOkThisTurn.get(...)`: brak wpisu = `undefined` (nie `false`).
+    let delivery_ok = |id: &str, idx: usize| {
+        cyclic
+            .iter()
+            .find(|c| c.deal_id == id && c.index == idx)
+            .map(|c| c.delivered)
+    };
+    let active = stream_active_tuples(&stream_deals, &delivery_ok);
+    reg.update_streams_this_turn(&active, difficulty, p);
+    report.credibility_stream_active = active;
+
+    let mut owners: Vec<i64> = cx
+        .owner_ids
+        .iter()
+        .copied()
+        .filter(|o| !cx.inputs.credibility_excluded_owners.contains(o))
+        .collect();
+    owners.sort_unstable();
+    owners.dedup();
+    for o in owners {
+        reg.tick_no_war_milestone(o, turn, p)
+            .map_err(|e| err(e.to_string()))?;
+    }
+    reg.store_changes(&before, &mut work.opaque);
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -800,7 +865,7 @@ pub struct DiplStepsContext<'a> {
     pub inputs: &'a DiplStepsInputs,
 }
 
-/// D1 -> D2 -> D3 -> (D4 BRAK) -> D5 -> D6 -> D7 (galaz OFF + `syncRelationFromDeals`). Atomowo.
+/// D1 -> D2 -> D3 -> D4 -> D5 -> D6 -> D7 (galaz OFF + `syncRelationFromDeals`). Atomowo.
 pub fn run_dipl_steps(
     war: &mut WarTurnState,
     cx: &DiplStepsContext<'_>,
@@ -830,6 +895,10 @@ pub fn run_dipl_steps(
     let mut deals = std::mem::take(&mut work.diplomacy.deals);
     tick_cyclic_resource_trade_deals(&mut deals, &mut ledger, &mut report)?;
     work.diplomacy.deals = deals;
+
+    // D2/D3 -> rejestr wiarygodnosci (zdarzenia P1-P3 z D2 i N6 z D3, w kolejnosci wywolan pinu), potem D4
+    // (strumienie S1-S4 + kamienie P4) PRZED D5, jak na pinie (:24272-24274).
+    credibility_steps(&mut work, cx, &mut report)?;
 
     // D5: wygasniecia rozejmow.
     truce_step(

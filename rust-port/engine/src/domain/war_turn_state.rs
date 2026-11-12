@@ -86,7 +86,7 @@ pub const SIEGE_RAW_META_KEYS: [&str; 3] = [
 
 /// Dyplomacja w `meta` (web `main.ts:36919-37051`, nazwy zweryfikowane grepem): surowe,
 /// bez typu w tej partii (tabela 4 planu typuje je w kolejnej partii).
-pub const DIPLOMACY_RAW_META_KEYS: [&str; 24] = [
+pub const DIPLOMACY_RAW_META_KEYS: [&str; 25] = [
     "pendingDiplomacyInbox",
     "allianceWarCallHistory",
     "interHumanDiplomacyInbox",
@@ -104,6 +104,7 @@ pub const DIPLOMACY_RAW_META_KEYS: [&str; 24] = [
     "wiarygodnoscZdarzeniaByOwner",
     "wiarygodnoscStrumienByOwner",
     "wiarygodnoscOstatniaWojnaTuraByOwner",
+    "wiarygodnoscP4MilestonesByOwner",
     "aiOneShotGiftLastTurn",
     "aiTradeAgreementLastProposalTurn",
     "aiMarchPassageRequestTurn",

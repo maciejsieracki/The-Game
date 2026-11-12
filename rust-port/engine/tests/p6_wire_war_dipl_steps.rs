@@ -241,6 +241,7 @@ fn world_inputs() -> WarTurnInputs {
         capital_city: BTreeMap::from([(HUMAN, "10".to_owned())]),
         army_m: BTreeMap::from([(AI_A, 3.0), (AI_B, 1.0), (HUMAN, 1.0)]),
         brake_flag_off: false,
+        ..DiplStepsInputs::default()
     };
     inputs
 }

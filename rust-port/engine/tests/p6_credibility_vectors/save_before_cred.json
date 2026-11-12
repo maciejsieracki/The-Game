@@ -1,0 +1,14 @@
+{
+  "rustDiplomacyState": {
+    "relations": {},
+    "deals": [
+      { "id": "nap-12", "rodzaj": "pakt_nieagresji", "strony": [1, 2], "wygasaTura": 3, "zawartaTura": 1, "ekonomia": null },
+      { "id": "sojusz-13", "rodzaj": "sojusz_pelny", "strony": [1, 3], "wygasaTura": null, "zawartaTura": 1, "ekonomia": null },
+      { "id": "szlaki-23", "rodzaj": "umowa_szlakow", "strony": [2, 3], "wygasaTura": null, "zawartaTura": 1, "ekonomia": null }
+    ]
+  },
+  "bronzeEraEnterTurnByOwner": [],
+  "ironEraEnterTurnByOwner": [],
+  "diplomacyPairMeta": [],
+  "pendingDiplomacyInbox": []
+}
