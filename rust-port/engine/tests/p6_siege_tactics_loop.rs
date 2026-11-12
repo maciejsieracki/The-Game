@@ -95,7 +95,7 @@ fn unit_of(u: &Value) -> (SeqUnit, (f64, Eff), f64) {
         hp,
         morale: num(&u["morale"]),
         flee_morale: 0.0,
-        move_left: 0.0,
+        move_left: num(&u["ml"]),
         never_rout: false,
         dead: false,
         fading_out: u["fadingOut"].as_bool().unwrap_or(false),
@@ -344,7 +344,13 @@ fn p6_siege_tactics_loop_vectors_cover_fading_removed_routed_and_zero_mp() {
     assert!(
         seqs.iter()
             .any(|s| any_unit(s, &|u| u["mp"].as_f64().unwrap_or(0.0) > 0.0)),
-        "brak jednostki z moveLeft > 0"
+        "brak jednostki z mp > 0"
+    );
+    // Poczatkowe moveLeft (pole `ml`) > 0: generator nie ustawia juz stalego 0 (K5-LOOP-BODY r3, zarzut C).
+    assert!(
+        seqs.iter()
+            .any(|s| any_unit(s, &|u| u["ml"].as_f64().unwrap_or(0.0) > 0.0)),
+        "brak jednostki z poczatkowym moveLeft > 0"
     );
 }
 

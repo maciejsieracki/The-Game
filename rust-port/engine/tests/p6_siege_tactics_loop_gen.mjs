@@ -208,7 +208,7 @@ function mkUnit(side, idx, u) {
     removed: !!u.removed,
     routed: !!u.routed,
     acted: false,
-    moveLeft: 0,
+    moveLeft: u.ml,
     playerOrder: { type: 'none' },
     __tag: `${side}${idx}`,
     __dur: u.dur,
@@ -270,6 +270,8 @@ function genUnit(i, side) {
     morale: randInt(20, 100),
     moraleMax: 100,
     mp: randInt(0, 4),
+    // Poczatkowe moveLeft > 0 (K5-LOOP-BODY r3, zarzut C): deterministyczne, bez zuzycia strumienia PRNG.
+    ml: (i * 3 + (side === 'atk' ? 1 : 2)) % 4,
     dur: pick(DUR_POOL),
     eff: pick(EFF_POOL),
     // Flagi wejscia _activateNext/_beginTurn (pin: !dead && !fadingOut && !removed). Losowane po starych polach.

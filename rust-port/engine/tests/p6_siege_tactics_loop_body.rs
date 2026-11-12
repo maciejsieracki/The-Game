@@ -1,8 +1,8 @@
 //! P6 SIEGE-TAKTYKA K5-LOOP-BODY (runda 2 Operatora, dispatch R-RUSTPORT-P6-SIEGE-TAKTYKA-K5LOOP-BODY-Q1):
 //! testy produkcyjnego ciała jednostki [`ProdBody`] (K5H `activate_unit` + K5I `single_blow_full`).
 //!
-//! To NIE są wektory zgodności z pinem (`07d2fbd72`): generator wektorów nie został rozszerzony w tej rundzie
-//! (NIE_ZMIERZONO w raporcie). Testy sprawdzają wyłącznie spójność składania: cios w zwarciu daje ten sam wynik co
+//! To NIE są wektory zgodności z pinem (`07d2fbd72`): zgodność z pinem jest w `p6_siege_tactics_loop_body_pin.rs`
+//! (r3). Testy tutaj sprawdzają spójność składania i gałęzie spoza zakresu: cios w zwarciu daje ten sam wynik co
 //! bezpośrednie `single_blow_full` z tym samym rzutem; gałęzie spoza zakresu nie wykonują efektów i są zapisane
 //! w `unported`; jednostka martwa / znikająca nic nie robi.
 

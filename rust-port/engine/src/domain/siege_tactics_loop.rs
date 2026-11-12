@@ -346,7 +346,8 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// K5-LOOP-BODY (runda 2 Operatora): produkcyjne ciało jednostki.
+// K5-LOOP-BODY (r2 + r3 Operatora): produkcyjne ciało jednostki. Zgodność z pinem: wektory `p6_siege_tactics_loop_body_pin`
+// (r3: generator wykonuje tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow`, ślad aktywacji + wynik ciosu + stan + `engaged`).
 //
 // ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje tylko gałąź ciosu w zwarciu
 // dla jednostki AUTO bez oblężenia, bez strzelca i bez doktryny: [`activate_unit`] (K5H) decyduje, a dla zdarzenia
@@ -451,6 +452,20 @@ fn unit_cu_mut(st: &mut TurnSeqState, r: UnitRef) -> &mut CombatUnit {
     }
 }
 
+/// Zapis jednego ciosu wykonanego przez [`ProdBody`] (obserwacja dla testów zgodności z pinem).
+#[derive(Debug, Clone, PartialEq)]
+pub struct BlowRecord {
+    pub attacker: UnitRef,
+    pub target: UnitRef,
+    pub missed: bool,
+    pub hit_pct: f64,
+    pub roll: f64,
+    pub dmg: f64,
+    pub def_hp_after: f64,
+    pub extra_morale: f64,
+    pub is_charge: bool,
+}
+
 /// Produkcyjne ciało jednostki pętli: składa [`activate_unit`] (K5H) i [`single_blow_full`] (K5I).
 pub struct ProdBody<R: RollSource> {
     /// Jednostki stron, `[0]` atakujący, `[1]` obrońca; kolejność jak w `TurnSeqState::atk` / `def`.
@@ -461,6 +476,13 @@ pub struct ProdBody<R: RollSource> {
     pub rolls: R,
     /// Ścieżki nieportowane (NIE_ZMIERZONO): jednostka i etykieta gałęzi. Jednostka z taką ścieżką nic nie robi.
     pub unported: Vec<(UnitRef, &'static str)>,
+    /// Ślad zdarzeń `_activateUnit` (K5H) każdej aktywacji, w kolejności `start`. Wczesne wyjścia: `finished` /
+    /// `dead` / `fadingOut` = `[Done]`, `routed` = `[Flee]` (pin: `done()` / `_fleeStep` przed czymkolwiek innym).
+    pub trace: Vec<(UnitRef, Vec<ActivateEvent>)>,
+    /// Zapis każdego wykonanego ciosu (jeden rzut na cios).
+    pub blows: Vec<BlowRecord>,
+    /// Zbiór `engaged` sceny (`attacker>defender`, `battleScene.ts:8899`): tylko ciosy w zwarciu, także chybione.
+    pub engaged: Vec<(UnitRef, UnitRef)>,
     /// Flaga `surroundApplied` (jednorazowa) trzymana między aktywacjami, bo nie ma jej w [`CombatUnit`].
     surround: [Vec<bool>; 2],
     pending: [Vec<Option<ProdPending>>; 2],
@@ -484,9 +506,17 @@ impl<R: RollSource> ProdBody<R> {
             scene,
             rolls,
             unported: Vec::new(),
+            trace: Vec::new(),
+            blows: Vec::new(),
+            engaged: Vec::new(),
             surround,
             pending,
         }
+    }
+
+    /// Flaga `surroundApplied` jednostki (stan między aktywacjami; nie ma jej w [`CombatUnit`]).
+    pub fn surround_applied(&self, unit: UnitRef) -> bool {
+        self.surround[side_ix(unit.side)][unit.idx]
     }
 
     fn enemies_of(&self, side: BattleSide, st: &TurnSeqState) -> Vec<EnemyRef> {
@@ -519,19 +549,26 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let ix = side_ix(unit.side);
         self.pending[ix][unit.idx] = None;
         let seq = st.unit(unit).c;
-        // Martwa / znikająca jednostka: `_activateUnit` kończy od razu (`done()`), bez zdarzeń spoza zakresu.
-        if seq.dead || seq.fading_out {
+        // Pin (`_activateUnit`, battleScene.ts:6049-6050): `finished` albo martwa / znikająca jednostka kończy od razu
+        // (`done()`), PRZED jakąkolwiek inną gałęzią.
+        if st.finished || seq.dead || seq.fading_out {
+            self.trace.push((unit, vec![ActivateEvent::Done]));
+            return 0.0;
+        }
+        // Uciekająca jednostka (`_fleeStep`, battleScene.ts:6055) nigdy nie atakuje; ruch ucieczki nie jest portowany.
+        if seq.routed {
+            self.trace.push((unit, vec![ActivateEvent::Flee]));
+            self.unported.push((unit, "ucieczka-routed"));
             return 0.0;
         }
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
-        let out_of_scope = if seq.routed {
-            Some("ucieczka-routed")
-        } else if self.scene.manual_mode {
+        let out_of_scope = if self.scene.manual_mode {
             Some("tryb-reczny")
         } else if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
             Some("oblezenie")
-        } else if pu.activate.can_shoot {
+        } else if pu.activate.can_shoot || pu.activate.primary_ranged {
+            // `primary_ranged` niesie stan między aktywacjami (`dryCol`, `heldAfterFallback`), którego ProdBody nie trzyma.
             Some("strzelec")
         } else if pu.activate.doctrine_auto {
             Some("doktryna")
@@ -557,11 +594,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             finished: st.finished,
             ..self.scene.clone()
         };
-        let mut ops = ProdOps {
-            melee_target: pu.melee_target,
-        };
+        // `_targetInRange` czyta `_enemiesOf`: cel martwy / znikający / uciekający nie jest celem (battleScene.ts:8291-8294).
+        let melee_target = pu.melee_target.filter(|t| {
+            enemies
+                .get(*t)
+                .is_some_and(|e| !e.dead && !e.fading_out && !e.routed)
+        });
+        let mut ops = ProdOps { melee_target };
         let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
+        self.trace.push((unit, res.events.clone()));
 
+        // Efekty stanu aktywacji (morale z okrążenia, rout, flaga jednorazowa) zapisują się ZAWSZE, także gdy dalsza
+        // gałąź jest nieportowana: pin stosuje je na początku `_activateUnit`, przed wyborem akcji.
         let mut pend = ProdPending {
             morale: au.morale,
             routed: au.routed,
@@ -587,17 +631,19 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 other => skipped.push(prod_tag(other)),
             }
         }
-        // Jakakolwiek gałąź spoza zakresu = jednostka nic nie robi (żadnych częściowych efektów).
+        // Gałąź spoza zakresu (ucieczka po okrążeniu, marsz, kawaleria, falanga...) = brak akcji po efektach stanu.
         if !skipped.is_empty() {
             for tag in skipped {
                 self.unported.push((unit, tag));
             }
+            pend.attack = None;
+            self.pending[ix][unit.idx] = Some(pend);
             return 0.0;
         }
         if let Some(target) = pend.attack {
             if pu.melee_target != Some(target) || pu.blow.is_none() {
                 self.unported.push((unit, "cios-bez-szablonu"));
-                return 0.0;
+                pend.attack = None;
             }
         }
         let dur = if pend.attack.is_some() {
@@ -633,6 +679,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let Some(mut input) = self.units[ix][unit.idx].blow.clone() else {
             return;
         };
+        // Para jest „pierwsza", dopóki jej klucza nie ma w `engaged` (`firstBlow = !this.engaged.has(key)`, :8896).
+        input.first_blow_of_pair = !self.engaged.contains(&(unit, tref));
         input.defender_state = DefenderState {
             hp: tc.hp,
             max_hp: input.defender_state.max_hp,
@@ -657,9 +705,20 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         if out.blow.outcome != Outcome::None {
             self.unported.push((unit, "resolveBlowOutcome-efekty"));
         }
-        if out.blow.engaged_add {
-            self.unported.push((unit, "engaged-zbior"));
+        if out.blow.engaged_add && !self.engaged.contains(&(unit, tref)) {
+            self.engaged.push((unit, tref));
         }
+        self.blows.push(BlowRecord {
+            attacker: unit,
+            target: tref,
+            missed: out.blow.missed,
+            hit_pct: out.blow.hit_pct,
+            roll: out.blow.roll,
+            dmg: out.blow.dmg,
+            def_hp_after: out.blow.def_hp_after,
+            extra_morale: out.blow.extra_morale,
+            is_charge: out.blow.is_charge,
+        });
         // Kontratak obrońcy (`_doMeleeAttack`, COUNTER-ATTACK w battleScene.ts) nie jest portowany w tym klocku.
         // Jeśli cel przeżył cios, zapisujemy kandydata na nieportowaną gałąź (zamiast cichego pominięcia).
         // Warunek „obrońca jest melee" nie jest tu sprawdzany, więc wpis jest konserwatywny.
