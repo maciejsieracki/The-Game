@@ -10,7 +10,7 @@ use civ_engine::domain::brake_power::{
     Component, MissingComponents, ObjectivePowerRaw, PowerCoeffs,
 };
 use civ_engine::domain::brake_power_producers::{
-    apply_produced, no_producer_keys, produce_for_owner, ProducerInputs,
+    apply_produced, produce_for_owner, ProducerInputs,
 };
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::ManpowerCity;
@@ -126,7 +126,21 @@ fn open_components_without_producer_list_is_exactly_no_producer_keys() {
     }
     let err = compute_objective_power(&raw, &coeff(), BattlePowerModel::EnemyMSum, &military())
         .unwrap_err();
-    assert_eq!(err.0, no_producer_keys());
+    // Brakujace wejscia wolajacego (te same 8 kluczy co przed POWER-SOURCES; producenci armia/terytorium/
+    // infra/tech/religia nie sa wpisywani automatycznie, wiec wolajacy musi je podac jawnie).
+    assert_eq!(
+        err.0,
+        vec![
+            "armia",
+            "bitwy",
+            "terytorium",
+            "infra",
+            "tech",
+            "ulepszenia",
+            "religia",
+            "zdobycze"
+        ]
+    );
 }
 
 #[test]

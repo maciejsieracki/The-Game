@@ -18,7 +18,9 @@
 //!
 //! Wolajacy (W8 r3) musi podac: `count_settlers` (web `liczyOsadnikWArmii`; w power-params.json wartosc
 //! `true`, opcja legacy), liste jednostek z definicja po `unitDefFor` (ten modul nie robi veteran/replace),
-//! miasta i forty stanu. Ten modul NIE jest jeszcze podlaczony do `brake_power_producers::COMPONENT_SOURCES`.
+//! miasta i forty stanu. Producenci `armia` (`armia_for_owner`) i `terytorium` (`terytorium_for_owner`)
+//! sa wpisani jako `RustProducer` w `brake_power_producers::COMPONENT_SOURCES`; wpisanie wartosci do
+//! `ObjectivePowerRaw` pozostaje po stronie wolajacego (`apply_produced` wypelnia tylko 4 pola).
 
 use std::collections::BTreeSet;
 use std::sync::OnceLock;
