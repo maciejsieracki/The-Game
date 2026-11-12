@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0fb9441f023980e17fd2f41f6d832f76",
-  "bundleSha256": "0f68a8f6345973e4debf2cdadd597ea7bcfdb28c1c840fa164665c9bb3e9c73c",
-  "bundleBytes": 14558701,
+  "bundleMd5": "b6490d0bce91076ad4da4ad518d6c29e",
+  "bundleSha256": "8ae8a5f08dbe6519f604d908c00e192727dbba22facb359485dc7670ba626783",
+  "bundleBytes": 14559949,
   "sourceSnapshot": {
-    "source": "d5e5e8635 (FC PASS-WITH-NOTES, wf_92288458) na bazie 81e357dee; integracja a988c3ddc",
+    "source": "6fef8773c (hit-mode, FC PASS-WITH-NOTES) + 54a4a1715 (tooltip, FC PASS-WITH-NOTES); integracja 54b050ac5 na 6c9a36bd5",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 667: fitCitySideTop tworzy jeden ResizeObserver zamiast nowego przy każdym wywołaniu; obserwacja tylko przy zmianie zestawu elementów; przeliczenie przez requestAnimationFrame; filtry w index.html i main.ts ignorują wyłącznie komunikat ResizeObserver loop completed with undelivered notifications"
+    "FALA 668: Ustawienia zaawansowane mapy: Trafienia losowe / pewne (domyślnie w nowej grze PEWNE: 100% trafień, obrona przez pancerz, AUTO bez upsetu; stare zapisy bez pola = LOSOWE). Parytet SKIP=AUTO w trybie pewne. Teksty administratora ulepszeń: krótki komunikat w panelu, pełne wyjaśnienie w tooltipie."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-side-panels 61/0; city-RO boot-error 1/0, expand-click 5/0, live 7/0; audio-sidecar-test EXIT=0 (PASS); live Chromium RO=0 po otwarciu panelu miasta, PASS 7/0. NIE_ZMIERZONO: prawdziwe kliknięcie Więcej szczegółów w pełnej grze z kartą jednostki"
+    "tsc 0; npm ci 0; logic 213/213; hit-mode-test 18/0; improvement-admin-tooltip-real-render-test 14/0; battle-skip-equals-auto-resolve-test 42/0; newgame-settings-layout-reposition-test PASS; vite build 14,559 kB; audio-sidecar-test PASS EXIT=0. NIE_ZMIERZONO: zrzut przełącznika w pełnej grze w Chromium, zapis i wczytanie z trybem pewne w pełnej grze, parytet AUTO=SKIP dla seedów 2, 3, 7 w trybie pewne poza zakresem testu (zmierzono seed 7)."
   ],
   "limits": [
-    "Przyczynowość kliknięcia Więcej szczegółów nie została udowodniona; udowodniona przyczyna to ponowne tworzenie ResizeObserver, którą poprawka usuwa. Live klik w pełnej grze do potwierdzenia przez właściciela"
+    "Nie zmierzono w pełnej grze: przełącznik i zapis/wczytanie trybu pewne; parytet AUTO=SKIP poza seedem 7; zrzut administratora z żywej gry. Do potwierdzenia przez właściciela."
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES (wf_92288458, kandydat d5e5e8635; integracja a988c3ddc)."
+    "notes": "FC PASS-WITH-NOTES: hit-mode 6fef8773c (FC obrony r1) + tooltip administratora 54a4a1715 (FC PASS-WITH-NOTES, wf_57083201); integracja 54b050ac5 na bazie 6c9a36bd5."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-12T18:09:58",
+  "hubGeneratedAt": "2026-11-12T18:40:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0fb9441f023980e17fd2f41f6d832f76",
-      "sizeBytes": 14558701
+      "md5": "b6490d0bce91076ad4da4ad518d6c29e",
+      "sizeBytes": 14559949
     }
   ],
-  "md5": "0fb9441f023980e17fd2f41f6d832f76",
+  "md5": "b6490d0bce91076ad4da4ad518d6c29e",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

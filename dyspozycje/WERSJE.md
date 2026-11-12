@@ -1,3 +1,9 @@
+## ROBOCZA b6490d0b -- 2026-11-12 -- FALA 668: Przełącznik trafień losowe / pewne i tooltip administratora ulepszeń (testowa)
+
+- Ustawienia zaawansowane mapy: Trafienia losowe / pewne (domyślnie w nowej grze PEWNE: 100% trafień, obrona przez pancerz, AUTO bez upsetu; stare zapisy bez pola = LOSOWE). Parytet SKIP=AUTO w trybie pewne. Teksty administratora ulepszeń: krótki komunikat w panelu, pełne wyjaśnienie w tooltipie.
+- Weryfikacja: tsc 0; npm ci 0; logic 213/213; hit-mode-test 18/0; improvement-admin-tooltip-real-render-test 14/0; battle-skip-equals-auto-resolve-test 42/0; newgame-settings-layout-reposition-test PASS; vite build 14,559 kB; audio-sidecar-test PASS EXIT=0. NIE_ZMIERZONO: zrzut przełącznika w pełnej grze w Chromium, zapis i wczytanie z trybem pewne w pełnej grze, parytet AUTO=SKIP dla seedów 2, 3, 7 w trybie pewne poza zakresem testu (zmierzono seed 7).
+- Limity: Nie zmierzono w pełnej grze: przełącznik i zapis/wczytanie trybu pewne; parytet AUTO=SKIP poza seedem 7; zrzut administratora z żywej gry. Do potwierdzenia przez właściciela.
+
 ## ROBOCZA 0fb9441f -- 2026-11-12 -- FALA 667: BOOT ERROR: pętla ResizeObserver przy panelu miasta (testowa)
 
 - fitCitySideTop tworzy jeden ResizeObserver zamiast nowego przy każdym wywołaniu; obserwacja tylko przy zmianie zestawu elementów; przeliczenie przez requestAnimationFrame; filtry w index.html i main.ts ignorują wyłącznie komunikat ResizeObserver loop completed with undelivered notifications
