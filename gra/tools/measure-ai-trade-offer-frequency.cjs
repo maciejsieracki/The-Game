@@ -45,6 +45,15 @@ const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '480', 10) * 1000;
 const RESULT_FILE = process.env.MEAS_RESULT || '';
 // MEAS_GATE=1: bramka ?civTest=1 — bez flagi hak nieobecny i ziarno z ?civSeed= ignorowane (PLAYTEST_MAPA_SEED=271828).
 const GATE = process.env.MEAS_GATE === '1';
+// MEAS_PROFILE (abs): katalog trwalego profilu Chromium (IndexedDB) — wznawianie przebiegu miedzy wywolaniami bash:
+// przy limicie czasu runner robi quickSave do slotu 'meas-cell' i zapisuje stan czastkowy w MEAS_RESULT (stoppedBy='limit czasu');
+// kolejne wywolanie z tym samym MEAS_RESULT i MEAS_PROFILE laduje slot (loadSlot) i kontynuuje od zapisanej tury.
+const PROFILE = process.env.MEAS_PROFILE || '';
+const SAVE_SLOT = 'meas-cell';
+// Zgodne z SENSIBLE_TRADE_ACTION_IDS (src/game/diplomacy-sensible-deals.ts): tylko te actionId to oferty handlowe.
+const TRADE_ACTIONS = new Set(['handel', 'umowa_handlowa', 'umowa_szlakow']);
+// MEAS_FAST (domyslnie 1): tryb przyspieszony = hak setFastMode (pomija renderer.render; tylko ?civTest=1). MEAS_FAST=0 wylacza.
+const FAST = process.env.MEAS_FAST !== '0';
 const PLAYTEST_SEED_DEFAULT = 271828;
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa' + (GATE ? '' : '&civTest=1') + (SEED != null ? '&civSeed=' + SEED : '');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -59,24 +68,38 @@ function buildBundle() {
 
 async function launchBrowser(chromium) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
+  if (PROFILE) {
+    const o = { headless: true, args, viewport: { width: 1280, height: 800 } };
+    try { return await chromium.launchPersistentContext(PROFILE, o); } catch (_) {
+      return await chromium.launchPersistentContext(PROFILE, { ...o, executablePath: FALLBACK_CHROME });
+    }
+  }
   try { return await chromium.launch({ headless: true, args }); } catch (_) {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args });
   }
 }
 
-/** Bitwa otwarta w oknie przedbitewnym (gracz/AI/barbarzyńcy) blokuje koniec tury: rozstrzyga ją przycisk „Auto” (wybór gracza w grze). */
-async function clearBattles(page) {
+/**
+ * Okna bitwy blokuja koniec tury (preBattleOpen: okno otwarte LUB bitwa odlozona w kolejce auto-pre-battle).
+ * Rozstrzygniecie w tescie (jak gracz): flush odlozonej bitwy -> przycisk „Auto” w `.pb-overlay` -> zamkniecie
+ * podsumowania po bitwie; powtarzane az canEnd()===true (max 12 iteracji). Zwraca liczbe rozstrzygnietych bitew.
+ */
+async function clearBattles(page, stats) {
   let n = 0;
-  for (let k = 0; k < 5; k++) {
-    const clicked = await page.evaluate(() => {
+  for (let k = 0; k < 12; k++) {
+    const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
+    if (!bs.preBattleOpen && !bs.pendingAuto && !bs.sceneOpen && !bs.summaryOpen && !bs.resolving) break;
+    const act = await page.evaluate(() => {
+      const h = window.__aiTradeWiringTestDebug;
       const b = document.querySelector('.pb-overlay [data-act="auto"]');
-      if (!b) return false;
-      b.click();
-      return true;
+      if (b) { b.click(); return 'auto'; }
+      if (h.closeBattleSummary()) return 'summary';
+      if (h.flushBattles()) return 'flush';
+      return 'wait';
     });
-    if (!clicked) break;
-    n++;
-    await wait(400);
+    if (act === 'auto') n++;
+    if (stats) stats[act] = (stats[act] || 0) + 1;
+    await wait(act === 'wait' ? 300 : 150);
   }
   return n;
 }
@@ -102,17 +125,20 @@ async function main() {
     arm: ARM,
     seedNote: SEED != null ? 'ziarno z ?civSeed=' + SEED + ' (tylko z civTest=1)' : 'PLAYTEST_MAPA_SEED (domyslne, brak ?civSeed)',
     relationNote: REL != null ? 'przypiete haka setRelationTotal=' + REL + ' przed kazdym endTurn (relacja po turze moze dryfowac; patrz relDrift)' : 'naturalny (brak haka ustawiania relacji)',
-    seed: SEED, relTotalSet: REL, relTotalAfter: null, offersCyclic: 0, offersOneShot: 0,
+    seed: SEED, relTotalSet: REL, relTotalAfter: null, offersCyclic: 0, offersOneShot: 0, offersOneShotAll: 0, otherActions: {},
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
     tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,
-    autoBattles: 0, consoleErrors: 0, offerLog: [], perTurn: [],
+    autoBattles: 0, battleActs: {}, consoleMatches: [], fastMode: FAST, consoleErrors: 0, offerLog: [], perTurn: [],
   };
   const consoleErrors = [];
   const endBlocks = [];
   let page = null;
   try {
-    page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    page = PROFILE ? await browser.newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', e => consoleErrors.push('[pageerror] ' + e.message));
+    // MEAS_LOGRE: regex (diagnostyka) — pasujace linie konsoli trafiaja do rep.consoleMatches (ostatnie 60, bufor kolowy, z numerem tury gry).
+    const LOGRE = process.env.MEAS_LOGRE ? new RegExp(process.env.MEAS_LOGRE, 'i') : null;
+    if (LOGRE) page.on('console', m => { const t = m.text(); if (LOGRE.test(t)) { rep.consoleMatches.push({ turnsRun: rep.turnsRun, text: t.slice(0, 220) }); if (rep.consoleMatches.length > 60) rep.consoleMatches.shift(); } });
     page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()); if (/EndTurn\] blocked/.test(m.text())) endBlocks.push(m.text().slice(0, 160)); });
     if (GATE) {
       // Bramka: bez ?civTest=1 hak musi byc nieobecny, a ziarno z ?civSeed= ignorowane.
@@ -134,27 +160,55 @@ async function main() {
     await page.evaluate(() => window.__truceTestDebug && window.__truceTestDebug.suppressVictoryForTest());
     const info = await page.evaluate(() => window.__aiTradeWiringTestDebug.info());
     rep.aiOwner = info.ai;
-    if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('nie udalo sie zalozyc miasta gracza');
-    if (ARM === 'prepared') await page.evaluate(ai => window.__aiTradeWiringTestDebug.prepare(ai), info.ai);
-    if (REL != null) rep.relTotalAfter = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
-
+    let prior = null;
+    if (PROFILE && RESULT_FILE && fs.existsSync(RESULT_FILE)) {
+      try { prior = JSON.parse(fs.readFileSync(RESULT_FILE, 'utf8')); } catch (_) { prior = null; }
+      if (prior && !(prior.stoppedBy === 'limit czasu' && prior.savedSlot && prior.turnsRun > 0 && prior.seed === SEED && prior.relTotalSet === REL)) prior = null;
+    }
     const seen = new Set();
+    let resumed = false;
+    if (prior) {
+      await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), prior.savedSlot);
+      const tNow = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+      for (const k of Object.keys(prior)) if (!['stoppedBy', 'secs', 'consoleErrors', 'consoleErrorSample', 'endBlocks', 'diag'].includes(k)) rep[k] = prior[k];
+      for (const id of (prior.seen || [])) seen.add(id);
+      rep.resumes = (prior.resumes || 0) + 1;
+      rep.resumeLog = (prior.resumeLog || []).concat([{ turnAtSave: prior.savedGameTurn, turnAfterLoad: tNow, turnsRunAtSave: prior.turnsRun }]);
+      resumed = true;
+      console.log('[meas] WZNOWIENIE od tury gry ' + tNow + ' (turnsRun=' + rep.turnsRun + ', zapis tury ' + prior.savedGameTurn + ')');
+    } else if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('nie udalo sie zalozyc miasta gracza');
+    if (FAST) await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
+    if (ARM === 'prepared' && !resumed) await page.evaluate(ai => window.__aiTradeWiringTestDebug.prepare(ai), info.ai);
+    if (REL != null && !resumed) rep.relTotalAfter = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
+
     const s0 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
-    rep.tableStart = s0.tableLen;
+    if (!resumed) rep.tableStart = s0.tableLen;
     const tStart = Date.now();
-    for (let i = 0; i < TURNS; i++) {
-      if (Date.now() - t00 > MAX_MS) { rep.stoppedBy = 'limit czasu'; break; }
+    for (let i = rep.turnsRun; i < TURNS; i++) {
+      if (Date.now() - t00 > MAX_MS) {
+        rep.stoppedBy = 'limit czasu';
+        if (PROFILE) {
+          // Zapis stanu gry do wznowienia (tylko gdy jest profil trwały); bledy zapisu = przebieg NIEDOKONCZONY bez wznowienia.
+          const ok = await page.evaluate(slot => window.__aiTradeWiringTestDebug.quickSave(slot), SAVE_SLOT);
+          rep.savedSlot = ok ? SAVE_SLOT : null;
+          rep.savedGameTurn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+          rep.seen = [...seen];
+        }
+        break;
+      }
       // Wisząca oferta blokuje koniec tury: odrzuc (zalozenie pomiaru: gracz nie reaguje).
       let st = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
       if (st.pending.length > 0 && !(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
         for (const p of st.pending) { await page.evaluate(id => window.__aiTradeWiringTestDebug.reject(id), p.id); rep.scriptRejected++; }
       }
-      rep.autoBattles += await clearBattles(page);
+      rep.autoBattles += await clearBattles(page, rep.battleActs);
       // Relacja przypinana PRZED kazdym endTurn (smoke r3: bez przypiecia relacja spadala 40→29→9 w 3 turach = dryf naturalny).
       let relBeforeEnd = null;
       if (REL != null) {
         relBeforeEnd = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
       }
+      // Gracz bez miast = koniec sensownego pomiaru (stan gry „awaitingFirstPlayerCity” blokuje koniec tury); wynik terminalny.
+      if (st.playerCities === 0) { rep.stoppedBy = 'gracz bez miast'; rep.playerCitiesLostAtTurn = st.turn; break; }
       await endTurnWait(page);
       st = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
       rep.turnsRun = i + 1;
@@ -164,8 +218,11 @@ async function main() {
       for (const e of fresh) {
         seen.add(e.id);
         if (!e.cyclic) {
-          rep.offersOneShot++; rep.offers++;
-          rep.offerLog.push({ turn: st.turn, type: 'jednorazowa', actionId: e.actionId });
+          // Wpis jednorazowy: oferta HANDLOWA tylko dla actionId z SENSIBLE_TRADE_ACTION_IDS; reszta (rozejm, trybut_oferta, ...) to oferty dyplomatyczne.
+          rep.offersOneShotAll = (rep.offersOneShotAll || 0) + 1;
+          rep.otherActions[e.actionId] = (rep.otherActions[e.actionId] || 0) + 1;
+          if (TRADE_ACTIONS.has(e.actionId)) { rep.offersOneShot++; rep.offers++; }
+          rep.offerLog.push({ turn: st.turn, type: 'jednorazowa', actionId: e.actionId, trade: TRADE_ACTIONS.has(e.actionId) });
           continue;
         }
         const p = st.pending.find(x => x.id === e.id);
@@ -182,7 +239,7 @@ async function main() {
       }
       // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
       rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
-      rep.perTurn.push({ t: st.turn, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi });
+      rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     rep.tableEnd = sEnd.tableLen;
@@ -193,7 +250,7 @@ async function main() {
     rep.relTotalLast = rep.perTurn.length ? rep.perTurn[rep.perTurn.length - 1].relTotalAi : null;
     rep.relDrift = (rep.relTotalSet != null && rep.perTurn.length) ? rep.perTurn.some(x => x.relTotalAi !== rep.relTotalSet) : null;
     rep.relPinnedBeforeEnd = REL != null ? rep.perTurn.every(x => x.relBeforeEnd === REL) : null;
-    if (!rep.stoppedBy) rep.stoppedBy = rep.turnsRun >= TURNS ? 'koniec przebiegu' : 'przerwany';
+    if (!rep.stoppedBy) { rep.stoppedBy = rep.turnsRun >= TURNS ? 'koniec przebiegu' : 'przerwany'; if (rep.stoppedBy === 'koniec przebiegu') { delete rep.seen; delete rep.savedSlot; } }
   } catch (e) {
     rep.stoppedBy = 'blad: ' + e.message;
     if (page) {
@@ -207,7 +264,9 @@ async function main() {
   rep.consoleErrorSample = consoleErrors.slice(0, 5);
   const line = JSON.stringify({ arm: rep.arm, turnsRun: rep.turnsRun, offers: rep.offers, per100: rep.per100, activePrzyjmij: rep.activePrzyjmij, pairs: rep.pairs, cyclicDealsMax: rep.cyclicDealsMax, tableGrowth: rep.tableGrowth, scriptRejected: rep.scriptRejected, rejectCooldownsMax: rep.rejectCooldownsMax, stoppedBy: rep.stoppedBy, consoleErrors: rep.consoleErrors });
   console.log('[meas] RESULT ' + line);
-  if (RESULT_FILE) fs.writeFileSync(RESULT_FILE, JSON.stringify(rep, null, 2));
+  // Blad po wznowieniu NIE nadpisuje punktu kontrolnego (stan czastkowy + zapis gry musza zostac spojne): idzie do pliku .err.
+  const keepCheckpoint = typeof rep.stoppedBy === 'string' && rep.stoppedBy.startsWith('blad') && rep.resumes > 0;
+  if (RESULT_FILE) fs.writeFileSync(keepCheckpoint ? RESULT_FILE + '.err' : RESULT_FILE, JSON.stringify(rep, null, 2));
 }
 
 main().catch(e => { console.error('[meas] FATAL', e); process.exit(1); });

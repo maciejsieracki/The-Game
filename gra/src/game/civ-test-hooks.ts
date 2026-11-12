@@ -114,6 +114,13 @@ export function civTestSeedOverride(search: string | undefined | null): number |
   return Number(raw);
 }
 
+/**
+ * R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony pomiaru — pomija `renderer.render`
+ * w petli renderu. Flaga ustawiana WYLACZNIE z haka `__aiTradeWiringTestDebug.setFastMode`, ktory istnieje
+ * tylko przy `?civTest=1`; domyslnie false, wiec zwykla gra rysuje jak dotad.
+ */
+export const civTestRuntime: { skipRender: boolean } = { skipRender: false };
+
 export interface CivTestApi {
   version: 1;
   state: () => unknown;

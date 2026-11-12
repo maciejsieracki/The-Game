@@ -162,7 +162,7 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride } from './game/civ-test-hooks';
+import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
@@ -29856,6 +29856,23 @@ async function boot(): Promise<void> {
           setDiploRelation(ai, ME(), { ...rel, zaufanie, respekt: t - zaufanie });
           return relationTotal(getDiploRelation(ai, ME()));
         },
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
+        setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        isFastMode: (): boolean => civTestRuntime.skipRender,
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
+        battleState: () => ({
+          preBattleOpen: isPreBattleOpen(), pendingAuto: hasPendingAutoPreBattle(),
+          sceneOpen: isBattleSceneOpen(), summaryOpen: isPostBattleSummaryOpen(), resolving: battleUiResolving,
+        }),
+        /** Wymusza pokazanie odlozonej bitwy z kolejki (ten sam flush co watchdog), gdy nic jej nie blokuje. */
+        flushBattles: (): boolean => {
+          if (isBattleSceneOpen() || isPostBattleSummaryOpen() || isPreBattleOpen()) return false;
+          if (!hasPendingAutoPreBattle()) return false;
+          flushDeferredPreBattleSafely('civTest');
+          return true;
+        },
+        /** Zamyka podsumowanie po bitwie (gdy otwarte). */
+        closeBattleSummary: (): boolean => { if (!isPostBattleSummaryOpen()) return false; hidePostBattleSummary(); return true; },
         /** Odczyt selekcji barteru AI (ta sama funkcja co wiring) — do rozroznienia selekcja vs wiring. */
         probeBarter: (ai: number) => {
           const b = pickAiPlayerCyclicBarter(ai);
@@ -29910,6 +29927,8 @@ async function boot(): Promise<void> {
             payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
           })),
           tableLen: negotiationTable.length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): liczba miast gracza (pomiar nie ma sensu po ich utracie). */
+          playerCities: cities.filter(c => c.ownerId === ME()).length,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
           relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
@@ -44907,7 +44926,8 @@ async function boot(): Promise<void> {
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
       if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
-      renderer.render(scene, camera);
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony pomiaru (flaga tylko z haka ?civTest=1).
+      if (!civTestRuntime.skipRender) renderer.render(scene, camera);
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;
         let instancedCount = 0;

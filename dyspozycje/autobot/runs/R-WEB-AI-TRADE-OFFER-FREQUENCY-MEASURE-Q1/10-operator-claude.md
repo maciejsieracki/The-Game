@@ -1,59 +1,78 @@
-# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — raport Operatora (runda 2/5)
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — raport Operatora (runda 3/5, Sonnet)
 
-STATUS: DECISION_REQUIRED
-DOMAIN: GAME (pomiar; hooki testowe za ?civTest=1; zero zmian reguł handlu i bramek)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (pomiar; hooki testowe wylacznie za ?civTest=1; zero zmian regul handlu, bramek i balansu)
 TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1
-GOAL: zmierzyć, jak często AI składa graczowi ofertę handlową (cykliczną i jednorazową) w pełnej grze: ≥3 ziarna × ≥150 tur × ≥3 relacje, tryb przyspieszony, oferty na 100 tur, „Przyjmij” aktywne, pary surowców.
-BAZA/KANDYDAT: e71cc287d (detached) + merge origin/main b4853c8e6 → HEAD merge 7e43712c0; commit kodu rundy 2 = SHA w polu sha raportu Workflow.
+GOAL: zmierzyc, jak czesto AI sklada graczowi oferte handlowa w pelnej grze (>=3 ziarna x >=150 tur x >=3 relacje, tryb przyspieszony), bez narzucania progu.
+BAZA: 486c4ef2d (detached). Commit z kodem/raportem = pole `sha` wyniku Workflow.
 
-## ZMIANY-COMMIT (allowlista rozszerzona DODATKIEM r2)
-- gra/src/game/civ-test-hooks.ts: nowa funkcja `civTestSeedOverride(search)` — czyta `?civSeed=<liczba>` WYŁĄCZNIE gdy `civTest=1` (inaczej null).
-- gra/src/main.ts:
-  - import `civTestSeedOverride`;
-  - `doStartPlaytestMapaSwiata`: `playtestRunSeed = civTestSeedOverride(location.search) ?? PLAYTEST_MAPA_SEED`; 4 użycia stałej zamienione na `playtestRunSeed` (seed w NewGameParams, overlay, generujSwiatAsync, log). Bez `civTest=1` zachowanie identyczne z dotychczasowym (ziarno 271828).
-  - w bloku `if (civTest=1)` obiektu `__aiTradeWiringTestDebug`: nowy `setRelationTotal(ai, total)` (zaufanie = floor(total/2), respekt = reszta, clamp 0–200, zwraca relationTotal po zapisie) oraz w `state()` pole `entries` (WSZYSTKIE wpisy stolu: id, actionId, cyclic, proposer, responder).
-- gra/tools/measure-ai-trade-offer-frequency.cjs: env `MEAS_SEED`, `MEAS_REL`; URL `&civSeed=`; ustawienie relacji po prepare; liczenie ofert z `entries` — cykliczne (pending + previewAccept + pary) i jednorazowe (`offersOneShot`, bez payloadu); pola `offersCyclic`, `offersOneShot`, `seed`, `relTotalSet`, `relTotalAfter`.
-- dyspozycje/autobot/runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1/evidence/smoke-seed1111-rel40-natural-3t-r2.json (dowód działania haków, patrz TESTY).
-- Nie zmieniano: gra/src poza powyższymi (brak zmian reguł), JSON balansu, WERSJE.md, rust-port. `git diff --check` → czysto.
+## WYNIK (jedno zdanie)
+W grze naturalnej (gracz pasywny, 1 miasto) AI NIE zlozylo ani jednej oferty HANDLOWEJ (cyklicznej ani jednorazowej) w 6 ziarnach x 3 relacjach (18 przebiegow, 3 ziarna po 150 tur); jedyne oferty AI->gracz to DYPLOMATYCZNE (rozejm, trybut_oferta, ~1,3-2,0 na 100 tur). W ramieniu „prepared” (kontakt + technologia Wymiany, tylko ziarno 1111) AI zlozyla 1-2 cykliczne oferty handlowe na ~150 tur (0,67-1,34 / 100 tur), kazda z aktywnym „Przyjmij”.
 
-## TESTY (surowe wyniki z terminala)
-- `npm ci --ignore-scripts` (gra/) → NPM_EXIT=0. Bez `npm run build/dev`.
-- `npx tsc --noEmit -p .` (gra/) → TSC_EXIT=0 (bez wyjścia).
-- Bramki (5, na kodzie z tymi zmianami):
-  - `node tools/logic-test.cjs` → EXIT=0, `LOGIC OK (213/213)`
-  - `node tools/tech-tree-test.cjs` → EXIT=0, `tech-tree-test: 20 pass, 0 fail`
-  - `node tools/research-test.cjs` → EXIT=0, `ALL GREEN`
-  - `node tools/unit-replace-test.cjs` → EXIT=0, `WSZYSTKIE TESTY ZIELONE (21/21)`
-  - `node tools/combat-test.cjs` → EXIT=0, `All sanity checks passed.`
-- Bundle vite zbudowany poza repo (`BUNDLE_DIR` w scratchpadzie), smoke:
-  - `MEAS_TURNS=3 MEAS_ARM=natural MEAS_SEED=1111 MEAS_REL=40` → `RESULT {"arm":"natural","turnsRun":3,"offers":0,...,"consoleErrors":0}`, EXIT=0, secs=21 (≈7 s/turę).
-  - Potwierdzenie haków w JSON: `seed: 1111`, `relTotalSet: 40`, `relTotalAfter: 40` (hak setRelationTotal działa; ziarno przekazane w URL).
-- Mutacja / brak flagi: hak `setRelationTotal` i `entries` są w bloku `if (civTest=1)` (grep: linia wejścia bloku niezmieniona); `civTestSeedOverride` zwraca null bez `civTest=1`. Żywy test „bez flagi hak nieobecny” NIE_ZMIERZONO w tej rundzie (pominięty — czas).
-- Tryb przyspieszony: NIE ZAIMPLEMENTOWANO (patrz BLOKADY 2). NIE_ZMIERZONO.
+## ZMIANY (allowlista DODATKU r2/r3)
+- gra/src/game/civ-test-hooks.ts: `civTestRuntime = { skipRender }` (domyslnie false) — tryb przyspieszony; ustawiany tylko z haka z ?civTest=1.
+- gra/src/main.ts (tylko w bloku `?civTest=1` + 1 linia petli renderu):
+  - `renderer.render` pomijany gdy `civTestRuntime.skipRender` (flaga nieosiagalna bez haka);
+  - nowe haki `__aiTradeWiringTestDebug`: `setFastMode(on)`, `isFastMode()`, `battleState()` (preBattleOpen/pendingAuto/sceneOpen/summaryOpen/resolving), `flushBattles()` (ten sam flush co watchdog, tylko gdy nic nie blokuje), `closeBattleSummary()`; w `state()` pole `playerCities`.
+  - (z r2, bez zmian) `civTestSeedOverride`, `setRelationTotal`, `entries`, `relTotalAi`.
+- gra/tools/measure-ai-trade-offer-frequency.cjs: tryb przyspieszony (MEAS_FAST, domyslnie 1); rozstrzyganie okna bitwy; wznawianie przez trwaly profil Chromium (MEAS_PROFILE) + quickSave/loadSlot; klasyfikacja ofert wg actionId; `playerCities`; MEAS_LOGRE (diagnostyka konsoli).
+- gra/tools/measure-ai-trade-offer-frequency-matrix.cjs (NOWY): wznawialny runner macierzy ziarno x relacja, stan w plikach komorek, tabela zbiorcza summary.md/json.
+- evidence/: matrix-natural-r3/, matrix-prepared-seed1111-r3/, mutation-gate-r3/.
+- Nie zmieniono: reguly gry, JSON balansu, WERSJE.md, rust-port.
 
-## POKRYCIE vs GOAL (stan po rundzie 2)
-- Ziarna: haki gotowe (`?civSeed=`), ale przebiegów ≥3 ziaren NIE wykonano → NIE_ZMIERZONO.
-- Relacje: hak gotowy (`setRelationTotal`, zweryfikowany w smoke: 40 → 40); przebiegów ≥3 poziomów NIE wykonano → NIE_ZMIERZONO.
-- Tury: 150 tur NIE wykonano; jedyne dane to smoke 3 tury (ziarno 1111, relacja 40, ramię natural) — bez wniosku o częstości.
-- Oferty jednorazowe: hak `entries` gotowy; w smoke 0 wpisów (3 tury), brak danych → NIE_ZMIERZONO.
-- „Przyjmij aktywne”, pary surowców: bez danych w tej rundzie → NIE_ZMIERZONO.
-- Powtarzalność (to samo ziarno = ten sam wynik): NIE_ZMIERZONO.
-- Wynik częstości w pełnej grze: NIE_ZMIERZONO.
+## NAPRAWY z FC FAIL r2
+1. Tryb przyspieszony: ~7 s/ture -> ~1,6 s/ture (10 tur: secs=16 z ~70 s startu; pomiar w warunkach obciazonej maszyny, load avg ~16, wiec dalsze tury 2-4 s). Bez flagi hak nieobecny (MEAS_GATE: `{"seedSeen":271828,"hookPresent":false,"pass":true}`, evidence/mutation-gate-r3/gate-noflag-r4.json).
+2. Okno preBattleOpen: przyczyna r2 = bitwa odlozona w kolejce (`pendingAuto`), ktorej `clearBattles` nie widzial (szukal tylko `.pb-overlay`). Teraz petla do 12 iteracji: klik „Auto” w `.pb-overlay` -> `closeBattleSummary` -> `flushBattles` -> czekaj; w przebiegach `battleActs` np. {auto:22, summary:22, flush:3}; zero zawieszen na preBattleOpen.
+3. Runner wznawialny: przy limicie czasu (MEAS_MAX_SEC, w matrixie 400 s) quickSave do slotu `meas-cell` w trwalym profilu + stan czastkowy (liczniki, `seen`, offerLog, perTurn) w pliku komorki; kolejne wywolanie robi loadSlot i kontynuuje (`resumeLog`: turnAtSave == turnAfterLoad w kazdym wznowieniu). Dowod zgodnosci wznowienia: ziarno 1111 (2 wznowienia) daje te same oferty (tury 11 i 17, rozejm) co przebieg bez wznowienia (smoke 20 tur) i co 4444 bez wznowien. Blad po wznowieniu nie nadpisuje punktu kontrolnego (plik .err).
+4. Testy: patrz nizej (bramka bez flagi, mutacje setRelationTotal/entries, powtarzalnosc).
+5. Surowe wyniki: evidence/ (kazda komorka osobny JSON z perTurn i offerLog). UWAGA: w surowych JSON macierzy naturalnej pola `offers`/`offersOneShot` z runnera r3a licza WSZYSTKIE wpisy jednorazowe (takze rozejm/trybut); klasyfikacja handel vs dyplomacja jest w summary.md/json (liczona z offerLog.actionId, handel = handel/umowa_handlowa/umowa_szlakow wg SENSIBLE_TRADE_ACTION_IDS). Runner po zmianie liczy handel osobno (`offersOneShotAll`, `otherActions`).
 
-## WNIOSKI (bez progu)
-- Blokady z rundy 1 są w części zdjęte: ziarno, relacja i typ wpisu (cykliczny/jednorazowy) są dostępne przez haki za `?civTest=1`, bez zmian reguł.
-- Pomiar pełnego zakresu nadal niewykonalny w tej rundzie z powodu czasu: ~7 s/turę × 150 tur ≈ 17–18 min na jedną komórkę (ziarno × relacja), 9 komórek ≈ 2,6 h wall-clock. Limit bash 590 s i zakaz tła wymagają wznawialnego przebiegu, a skrypt nie zapisuje/wczytuje stanu gry.
-- Nie wiadomo, ile z czasu tury to render (swiftshader); bez trybu przyspieszonego nie da się tego ograniczyć po stronie testu.
+## TABELA ZBIORCZA — ramie naturalne (matrix-natural-r3/summary.md)
+Relacja = total 0-200 (20 niska, 80 srednia, 140 wysoka), przypinana przed kazdym endTurn; po endTurn relacja wraca do ~29 (dryf mierzony, `relDrift=true`, `relPinnedBeforeEnd=true`).
 
-## BLOKADY / DECYZJA WYMAGANA
-1. Tryb przyspieszony (pętla tur bez renderu) z GOAL NIE zaimplementowany — wymaga zmiany w endTurn/render, czego ta runda nie obejmowała; decyzja orkiestratora: osobny mały temat hakowy albo zgoda na zawężenie GOAL.
-2. Czas i wznawianie: 9 komórek × 150 tur nie mieści się w jednym wywołaniu bash ani bez tła; potrzebny runner wznawialny (zapis/wczytanie stanu przez istniejące `quickSave`/`loadSlot` haka) albo zmniejszenie zakresu. Decyzja orkiestratora.
-3. Decyzja ABC #274 (częstość ofert) nadal bez danych; wniosek dopiero po przebiegach powyżej.
+| ziarno | relacje | tury | oferty handlowe (cykl./jednor.) | oferty dyplomatyczne | /100 tur (dypl.) | Przyjmij aktywne | pary |
+|---|---|---|---|---|---|---|---|
+| 1111 | 20/80/140 | 150 | 0/0 | rozejm x2 (t11,t17) | 1,33 | 0 | - |
+| 2222 | 20/80/140 | 101 (miasto gracza utracone w t102) | 0/0 | rozejm x2 | 1,98 | 0 | - |
+| 3333 | 20/80/140 | 102 (utracone t103) | 0/0 | rozejm x2 | 1,96 | 0 | - |
+| 4444 | 20/80/140 | 150 | 0/0 | rozejm x2 | 1,33 | 0 | - |
+| 5555 | 20/80/140 | 99 (utracone t100) | 0/0 | trybut_oferta x2 | 2,02 | 0 | - |
+| 6666 | 20/80/140 | 150 | 0/0 | trybut_oferta x1, rozejm x2 | 2,00 | 0 | - |
 
-## NASTĘPNY KROK
-Orkiestrator: decyzja w sprawie blokad 1–2 (tryb przyspieszony i runner wznawialny albo zawężenie GOAL). Po decyzji: przebiegi 3 ziarna × 3 relacje (parametry: MEAS_SEED, MEAS_REL, MEAS_TURNS, MEAS_RESULT), każdy ≤480 s, wyniki w evidence/.
+Wyniki sa identyczne dla trzech relacji w obrebie ziarna (relacja 20/80/140 nie zmienila liczby ofert w tym ramieniu).
+
+## RAMIE „prepared” (evidence/matrix-prepared-seed1111-r3/) — gorna granica, NIE pomiar naturalny
+Tylko ziarno 1111 (reszta NIE_ZMIERZONO: maszyna obciazona, ~25 tur na wywolanie po wznowieniu); prepare(): kontakt + technologia Wymiany + wyciszenie innych klas ofert.
+- relacja 20: 149 tur, 2 oferty cykliczne (sol->glina, drewno->glina), 2 z aktywnym „Przyjmij” (1,34/100 tur) — NIEDOKONCZONE o 1 ture (limit czasu).
+- relacja 80: 150 tur, 1 oferta (drewno->glina), 1 aktywne (0,67/100 tur) — OK.
+- relacja 140: 149 tur, 1 oferta (sol->glina), 1 aktywne (0,67/100 tur) — NIEDOKONCZONE o 1 ture.
+
+## OBSERWACJE / OGRANICZENIA (jawnie)
+- Gracz jest pasywny (1 miasto, bez wojska/technologii handlu). W ziarnach 2222, 3333, 5555 AI zdobywa/usuwa jedyne miasto gracza w turach ~100-103 (nie zbadano mechanizmu; w logu tylko `tier=unrest` Testpolis i `warsztat_oblezniczy` AI w t96), runner konczy wtedy przebieg (`stoppedBy = "gracz bez miast"`) — te ziarna maja 99-102 tury, nie 150. Spelnione >=3 ziarna x 150 tur: 1111, 4444, 6666.
+- Zero ofert handlowych w ramieniu naturalnym oznacza: przy tym profilu gracza (brak kontaktu/technologii handlu jak w grze naturalnej do ~t150) warunki wiringu nie zachodza; nie dowodzi, ze gracz aktywny zobaczylby 0. NIE_ZMIERZONO dla gracza aktywnego.
+- „Jednorazowe oferty” z r2 to w rzeczywistosci oferty dyplomatyczne (rozejm/trybut), nie handel — korekta wniosku r2.
+- Dryf relacji: po kazdym endTurn relacja ~29 (przypinanie przed endTurn); interpretacja „relacja 20/80/140” = wartosc widziana przez AI w turze AI.
+- Powtarzalnosc: ten sam przebieg (ziarno 2222, relacja 20) wykonany dwukrotnie (przebieg macierzy i przebieg diagnostyczny): perTurn (tura, pending, deals, table, relTotalAi, cities) identyczny na 101 turach, offerLog identyczny, autoBattles 1=1. Ponadto 3 relacje x ten sam seed daja ten sam przebieg ofert; smoke r3 repeat-A/B identyczny.
+- Pary surowcow w ramieniu naturalnym: brak (0 ofert); w „prepared”: sol->glina, drewno->glina.
+
+## TESTY (surowe)
+- `npx tsc --noEmit -p .` (gra/): TSC=0.
+- Bramki (EXIT=0 kazda): logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `PASSED: 33 / FAILED: 0 ... ALL GREEN`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `COMBAT TEST: 6/6 pass`.
+- Bez `npm run build/dev`; bundle vite (`vite build`) do katalogu poza repo.
+- Bramka bez flagi (MEAS_GATE=1, civSeed=999): pass:true (hook nieobecny, ziarno 271828) — evidence/mutation-gate-r3/gate-noflag-r4.json; wcześniejszy mutant `civTestSeedOverride` bez isCivTestEnabled wykryty w r2 (gate-MUTANT-seedgate-removed-r3.json).
+- Mutacje (jeden mutant: setRelationTotal = no-op + entries = []; 20 tur, ziarno 1111, relacja 40): oryginal `relTotalAfter=40, offers=2, relBeforeEnd=[40,40,40]`; mutant `relTotalAfter=30, offers=0, relBeforeEnd=[30,29,9]` — oba wykryte (evidence/mutation-gate-r3/mut.json vs orig.json). Mutant zbudowany do katalogu poza repo, zrodlo przywrocone (grep MUTANT = 0).
+- Przebiegi macierzy: 18 komorek natural (6 ziaren x 3 relacje), 3 komorki prepared; wszystkie pliki w evidence/.
+
+## BLOKADY
+Brak blokujacych. Ograniczenia jak wyzej (gracz pasywny; prepared tylko 1 ziarno; 2 komorki prepared o 1 ture krotsze niz 150).
+
+## WNIOSEK O CZESTOSCI (bez progu narzuconego; liczby do decyzji wlasciciela)
+- Naturalna gra, gracz pasywny: 0 ofert handlowych AI->gracz w ~2000 tur-przebiegow laczonych (18 komorek); oferty dyplomatyczne 1,3-2,0/100 tur.
+- Warunki spelnione (prepared, 1 ziarno): 0,67-1,34 cyklicznych ofert handlowych/100 tur, kazda z aktywnym „Przyjmij”, 1-2 pary na 150 tur.
+- Decyzja ABC (zostawic / tolerancja par) wymaga ewentualnie osobnego pomiaru z aktywnym graczem (poza zakresem tego tematu).
 
 ## RUNDY
-2/5 (runda 2, Operator Haiku, po BLOCK r1). Obrona, Evaluator i Final Control poza tym etapem.
+3/5 (Operator Sonnet po 2 nieudanych rundach Haiku; uzasadnienie w DODATKU r3). Obrona, Evaluator i Final Control poza tym etapem.
 
+NASTEPNY KROK: Obrona Operatora (Haiku) -> Evaluator -> Final Control.
 DEPLOY/PUSH: NIE WYKONANO
