@@ -9633,3 +9633,10 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - Temat: R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1. FC PASS-WITH-NOTES (10c4bb0b6). Integracja i deploy na ROBOCZĄ: main 15b4327ba, MD5 1c2cdb70 (raw zgodny), sidecary zgodne.
 - Zakres: po załamaniu morale armii jednostki „walczy do śmierci” nie uciekają i walczą dalej; zwykłe uciekają i są gonione; bitwa kończy się, gdy neverRout zginą, uciekinierzy zejdą albo minie limit tur.
 - Dowód: tsc OK, logic 213/213, battle-neverrout-hold-test 58/0, mutacja 4 FAIL. Chromium NIE_ZMIERZONO — zalecany smoke w bitwie.
+
+## FALA 673 — ROBOCZA 853a8ff7 (2026-11-12) — administrator państwa: silnik
+
+- Temat: R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (silnik #316, runda 5). FC PASS-WITH-NOTES (68ea765ec). Integracja i deploy na ROBOCZĄ: main 34584b4da, MD5 853a8ff7 (raw zgodny), sidecary zgodne.
+- Zakres: administrator ulepszeń jako stan Państwa; jeden koszt utrzymania na Państwo; tryb automatyzacji jeden dla Państwa (Z4 w trzech miejscach main.ts); migracja zapisu z administratora miasta.
+- Dowód: tsc OK, logic 213/213, admin-panstwo-city-gate-test 36/0. Chromium NIE_ZMIERZONO.
+- Długi: panel Państwa i nazwy → #327; handlery UI per miasto (main.ts ~27120–27190, buildModeHud.ts) do przepięcia w #327.
