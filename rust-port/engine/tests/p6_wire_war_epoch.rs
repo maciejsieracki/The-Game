@@ -11,7 +11,7 @@ use civ_engine::domain::turn_war_epoch::{
     owner_era_facts, EpochSource, OwnerEpochError, OwnerEraFacts,
 };
 use civ_engine::domain::turn_war_inputs::{
-    build_war_inputs, epochs_from_state, production_config, shared_border_pairs, WarInputsError,
+    build_war_inputs, epochs_from_state, production_config, shared_border_pairs,
     UNPRODUCED_POWER_COMPONENTS,
 };
 use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext, WarTurnError};
@@ -99,8 +99,29 @@ fn start_era_mapping_is_exact_like_web() {
     assert_eq!(game_start_era("zelazo"), 3.0);
 }
 
+/// Mapa testowa: caly prostokat 30 x 30 to rownina (heksy istnieja; web `map.hexes[key]`).
+fn plains_map() -> civ_engine::domain::playable::PlayableMap {
+    use civ_engine::domain::playable::{PlayableMap, PlayableTerrain, PlayableTile};
+    let mut tiles = Vec::new();
+    for y in 0..30_u16 {
+        for x in 0..30_u16 {
+            tiles.push(PlayableTile {
+                position: PositionDto::new(x, y),
+                terrain: PlayableTerrain::Plains,
+                passable: true,
+            });
+        }
+    }
+    PlayableMap {
+        width: 30,
+        height: 30,
+        tiles,
+    }
+}
+
 fn state_with(epoch_id: &str, cities: &[(u64, u16)]) -> PlayableState {
     let mut state = PlayableState::empty();
+    state.map = plains_map();
     state.params.epoch_id = epoch_id.to_owned();
     state.players = vec![
         PlayablePlayer {
@@ -123,6 +144,8 @@ fn state_with(epoch_id: &str, cities: &[(u64, u16)]) -> PlayableState {
             name: format!("c{n}"),
             position: PositionDto::new(x, 2),
             is_capital: n < 2,
+            population: 1,
+            culture: 0,
         });
     }
     state
@@ -210,7 +233,7 @@ fn build_war_inputs_no_longer_fails_on_the_epoch_producer() {
 
 #[test]
 fn next_blocker_is_power_components_missing_reported_explicitly() {
-    // Po epokach NASTEPNY bloker: populacja/kultura/budynki/tech/religia = Missing (STRICT, nie zera).
+    // Po epokach i populacji NASTEPNY bloker: budynki/tech/religia = Missing (STRICT, nie zera).
     let state = state_with("kamien", &[(1, 2), (2, 5)]);
     let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
     let cfg = production_config(&state).expect("config");
@@ -234,19 +257,15 @@ fn next_blocker_is_power_components_missing_reported_explicitly() {
 }
 
 #[test]
-fn shared_border_producer_is_explicitly_unavailable_above_two_cities() {
-    // Wejscia ownersHaveSharedLandBorder (trade-routes.ts:264): populacja miast (cityTerritoryRadius) i teren
-    // heksow. PlayableCity nie ma populacji => BRAK producenta (nie ciche `false`), blad jawny.
+fn shared_border_producer_computes_above_two_cities() {
+    // W8 r6 klocek 2: ownersHaveSharedLandBorder (trade-routes.ts:264) liczone z populacji miast
+    // (cityTerritoryRadius) i terenu mapy; naprzemienne miasta (x=2,5,8,...) = wspolna granica.
     let state = state_with(
         "kamien",
         &[(1, 2), (2, 5), (1, 8), (2, 11), (1, 14), (2, 17)],
     );
-    assert_eq!(
-        shared_border_pairs(&state),
-        Err(WarInputsError::SharedBorderUnavailable(1, 2))
-    );
-    assert_eq!(
-        build_war_inputs(&state, &WarTurnState::default()),
-        Err(WarInputsError::SharedBorderUnavailable(1, 2))
-    );
+    let want: std::collections::BTreeSet<_> = [(1_i64, 2_i64)].into_iter().collect();
+    assert_eq!(shared_border_pairs(&state), Ok(want.clone()));
+    let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
+    assert_eq!(inputs.shared_border, want);
 }

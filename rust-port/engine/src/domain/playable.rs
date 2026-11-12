@@ -299,6 +299,22 @@ pub struct PlayableCity {
     pub name: String,
     pub position: PositionDto,
     pub is_capital: bool,
+    /// Populacja miasta (web `City.population`). Zapis sprzed W8 r6 klocek 2 nie ma pola: domyslnie
+    /// `FOUNDING_CITY_POPULATION` (1 = populacja zalozonego miasta, dotychczasowe zalozenie producentow).
+    /// `PlayableState` NIE symuluje fazy Economy, wiec wartosc nie rosnie miedzy turami (znana luka).
+    #[serde(default = "default_city_population")]
+    pub population: u32,
+    /// Skumulowana kultura miasta (web `kultura_skumulowana`); domyslnie 0 (zapis sprzed zmiany).
+    /// Nie rosnie miedzy turami (brak symulacji Economy, znana luka).
+    #[serde(default)]
+    pub culture: u32,
+}
+
+/// Populacja nowo zalozonego miasta (web: miasto startuje z `population` 1).
+pub const FOUNDING_CITY_POPULATION: u32 = 1;
+
+fn default_city_population() -> u32 {
+    FOUNDING_CITY_POPULATION
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -435,6 +451,8 @@ impl PlayableGame {
             name: capital_name(&params),
             position: PositionDto::new(1, 1),
             is_capital: true,
+            population: FOUNDING_CITY_POPULATION,
+            culture: 0,
         }];
         let units = vec![PlayableUnit {
             id: UnitId::new(STARTING_UNIT_ID),
@@ -745,6 +763,8 @@ mod war_pipeline_advance_tests {
             name: "AI-city".to_owned(),
             position: PositionDto::new(5, 5),
             is_capital: true,
+            population: FOUNDING_CITY_POPULATION,
+            culture: 0,
         });
         game
     }
@@ -752,7 +772,7 @@ mod war_pipeline_advance_tests {
     #[test]
     fn advance_turn_with_ai_city_fails_explicitly_on_missing_power_components_and_restores_state() {
         // r6: epoka wlasciciela ma producenta (turn_war_epoch); NASTEPNY bloker (KNOWN_GAPS) to skladniki
-        // mocy bez producenta (ludki, rekruci, terytorium, infra, tech, kultura, religia) => jawny blad.
+        // mocy bez producenta (infra, tech, religia; ludki/rekruci/terytorium/kultura maja producentow z populacji miast) => jawny blad.
         let mut game = game_with_ai_city();
         let queue_len = game.pending_phase_count();
         let before = game.state().war.clone();
@@ -760,7 +780,7 @@ mod war_pipeline_advance_tests {
         match &err {
             PlayableError::WarTurn(message) => {
                 assert!(
-                    message.contains("skladniki mocy bez zrodla") && message.contains("ludki"),
+                    message.contains("skladniki mocy bez zrodla") && message.contains("infra"),
                     "{message}"
                 );
                 assert!(!message.contains("epoki wlasciciela"), "{message}");

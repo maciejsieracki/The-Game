@@ -158,6 +158,8 @@ fn adapter_state() -> PlayableState {
             name: "a".into(),
             position: PositionDto::new(0, 0),
             is_capital: true,
+            population: 1,
+            culture: 0,
         },
         PlayableCity {
             id: CityId::new(2),
@@ -165,6 +167,8 @@ fn adapter_state() -> PlayableState {
             name: "b".into(),
             position: PositionDto::new(3, 0),
             is_capital: true,
+            population: 1,
+            culture: 0,
         },
     ];
     let mk = |id: u64, owner: u64, x: u16, y: u16| PlayableUnit {
@@ -270,6 +274,8 @@ fn adapter_enemy_and_opaque_state_changes_wave_target() {
         name: "c".into(),
         position: PositionDto::new(8, 0),
         is_capital: false,
+        population: 1,
+        culture: 0,
     });
     let extras: HashMap<String, CityWarExtras> = HashMap::new();
     let world = WarWorldView::new(&playable, &extras);

@@ -42,6 +42,8 @@ fn build_state(s: &Value) -> PlayableState {
                 c["y"].as_u64().unwrap() as u16,
             ),
             is_capital: c["isCapital"].as_bool().unwrap(),
+            population: 1,
+            culture: 0,
         })
         .collect();
     state.units = s["combatUnits"]

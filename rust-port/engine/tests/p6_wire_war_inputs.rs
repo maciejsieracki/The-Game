@@ -37,9 +37,30 @@ fn vectors() -> Value {
     serde_json::from_str(include_str!("p6_wire_war_inputs_vectors/vectors.json")).expect("vectors")
 }
 
+/// Mapa testowa: caly prostokat `w` x `h` to rownina (heksy istnieja; web `map.hexes[key]`).
+fn plains_map(w: u16, h: u16) -> civ_engine::domain::playable::PlayableMap {
+    use civ_engine::domain::playable::{PlayableMap, PlayableTerrain, PlayableTile};
+    let mut tiles = Vec::new();
+    for y in 0..h {
+        for x in 0..w {
+            tiles.push(PlayableTile {
+                position: PositionDto::new(x, y),
+                terrain: PlayableTerrain::Plains,
+                passable: true,
+            });
+        }
+    }
+    PlayableMap {
+        width: w,
+        height: h,
+        tiles,
+    }
+}
+
 /// Stan: gracz 1 (civ `civ_a`, None = web `undefined`) + AI 2 (`civ_b`), po jednym miescie.
 fn state_with(civ_a: Option<&str>, civ_b: &str, epoch_id: &str) -> PlayableState {
     let mut state = PlayableState::empty();
+    state.map = plains_map(30, 30);
     state.params.epoch_id = epoch_id.to_owned();
     state.players = vec![
         PlayablePlayer {
@@ -62,6 +83,8 @@ fn state_with(civ_a: Option<&str>, civ_b: &str, epoch_id: &str) -> PlayableState
             name: format!("c{owner}"),
             position: PositionDto::new(2 + 3 * i as u16, 2),
             is_capital: true,
+            population: 1,
+            culture: 0,
         });
     }
     state
@@ -225,17 +248,15 @@ fn production_power_inputs_mark_unproduced_components_missing_not_zero() {
     let p = civ_engine::data::units_combat::parse_power_params().expect("params");
     let coeffs = PowerCoeffs::from_params(&p);
     // Skladniki bez producenta: Missing (nie Provided(0), nie stala zalozenia).
-    for c in [
-        raw.suma_ludkow,
-        raw.rekrut_ekw,
-        raw.heksy_terytorium,
-        raw.budynki,
-        raw.tech_zbadane,
-        raw.kultura_imperium,
-        raw.miasta_jednosc_religii,
-    ] {
+    for c in [raw.budynki, raw.tech_zbadane, raw.miasta_jednosc_religii] {
         assert_eq!(c, Component::Missing);
     }
+    // W8 r6 klocek 2 (WIRE-WAR-POP): ludki/rekruci/terytorium/kultura z populacji i kultury miast (stan).
+    // Zamiana oczekiwanego Missing na wartosc: 1 miasto o populacji 1 w epoce 1.
+    assert!(matches!(raw.suma_ludkow, Component::Provided(v) if v == 1.0));
+    assert!(matches!(raw.rekrut_ekw, Component::Provided(_)));
+    assert!(matches!(raw.heksy_terytorium, Component::Provided(v) if v > 0.0));
+    assert!(matches!(raw.kultura_imperium, Component::Provided(v) if v == 0.0));
     // Skladniki z producenta / jawne zera.
     assert!(matches!(raw.miasta, Component::Provided(m) if m == 1.0));
     assert!(matches!(raw.jednostki, Component::Provided(_)));
@@ -281,6 +302,8 @@ fn completed_power_grows_with_city_count_producer() {
         name: "c3".to_owned(),
         position: PositionDto::new(8, 8),
         is_capital: false,
+        population: 1,
+        culture: 0,
     });
     let model = PowerModel::web_params();
     let pw = |s: &PlayableState| {
@@ -358,7 +381,7 @@ fn production_path_fails_with_explicit_blockers_for_ai_with_cities() {
 }
 
 #[test]
-fn shared_border_is_structurally_false_up_to_two_cities_and_an_error_above() {
+fn shared_border_is_structurally_false_up_to_two_cities_and_computed_above() {
     let mut state = state_with(None, "rzymianie", "kamien");
     assert_eq!(shared_border_pairs(&state), Ok(Default::default()));
     // Web main.ts:22876: `cities(a) > 2 && cities(b) > 2 && ownersShareLandBorderLive` - 2 miasta => false.
@@ -369,6 +392,8 @@ fn shared_border_is_structurally_false_up_to_two_cities_and_an_error_above() {
             name: "x".to_owned(),
             position: PositionDto::new(10 + owner as u16, 10),
             is_capital: false,
+            population: 1,
+            culture: 0,
         });
     }
     assert_eq!(
@@ -383,21 +408,21 @@ fn shared_border_is_structurally_false_up_to_two_cities_and_an_error_above() {
             name: "y".to_owned(),
             position: PositionDto::new(20 + owner as u16, 20),
             is_capital: false,
+            population: 1,
+            culture: 0,
         });
     }
-    // Po 3 miasta: potrzebny producent granicy => jawny blad (nie ciche `false`).
-    assert_eq!(
-        shared_border_pairs(&state),
-        Err(WarInputsError::SharedBorderUnavailable(1, 2))
-    );
-    assert_eq!(
-        build_war_inputs_with_epochs(
-            &state,
-            &WarTurnState::default(),
-            &epochs(&[(1, 1.0), (2, 1.0)])
-        ),
-        Err(WarInputsError::SharedBorderUnavailable(1, 2))
-    );
+    // Po 3 miasta: granica liczona producentem (W8 r6 klocek 2). Miasta (11,10)/(12,10) roznych wlascicieli
+    // leza obok siebie (promien 5 z populacji 1), wiec ladowe terytoria sie stykaja.
+    let expected: std::collections::BTreeSet<_> = [(1_i64, 2_i64)].into_iter().collect();
+    assert_eq!(shared_border_pairs(&state), Ok(expected.clone()));
+    let built = build_war_inputs_with_epochs(
+        &state,
+        &WarTurnState::default(),
+        &epochs(&[(1, 1.0), (2, 1.0)]),
+    )
+    .expect("granica z producenta");
+    assert_eq!(built.shared_border, expected);
 }
 
 #[test]
@@ -410,6 +435,8 @@ fn pair_params_for_unknown_city_owner_is_an_error_not_the_player_profile() {
         name: "obcy".to_owned(),
         position: PositionDto::new(12, 12),
         is_capital: false,
+        population: 1,
+        culture: 0,
     });
     assert_eq!(
         pair_params_for(&state),
@@ -461,6 +488,8 @@ fn three_owner_state() -> (PlayableState, InputsFor) {
         name: "c3".to_owned(),
         position: PositionDto::new(9, 9),
         is_capital: true,
+        population: 1,
+        culture: 0,
     });
     let st = state.clone();
     let f: InputsFor = Box::new(move |war| test_inputs(&st, war, &[(1, 1.0), (2, 1.0), (3, 1.0)]));

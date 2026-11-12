@@ -34,6 +34,8 @@ fn world_state() -> PlayableState {
             name: format!("c{id}"),
             position: PositionDto::new(*x, 0),
             is_capital: true,
+            population: 1,
+            culture: 0,
         })
         .collect();
     state
