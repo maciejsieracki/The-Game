@@ -1540,7 +1540,7 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
   ) + '"';
   return (
     '<div class="da-rel-row relacja-total"' + tip + '>'
-    + '<span>Relacja</span>'
+    + '<span>Relacja z perspektywy gracza</span>'
     + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
     + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>' + warCapNoteHtml(st)
     + '</div>'
@@ -2233,7 +2233,7 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
     '<div class="da-relbreak">' +
       '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +
       '<div class="da-relcol neg"><h4>Za co Cię nie lubią</h4>' + negRows + '</div>' +
-      '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja '
+      '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja z perspektywy gracza '
         + (st.relacjaTotal ?? (st.zaufanie + st.respekt)) + ' / 200</b> · '
         + '<b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · '
         + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b>'

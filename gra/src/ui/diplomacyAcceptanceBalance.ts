@@ -67,6 +67,10 @@ export const RELATION_DEAL_TOOLTIP =
   + 'Niska Relacja = niższe PW Twojej strony — trzeba dopłacić do bilansu. '
   + 'Partner zawsze na bazie traktatu.';
 
+/** Dopisek tooltipu: wiersz wpływu liczy Relację z perspektywy AI, audiencja — z perspektywy gracza. */
+export const RELATION_DEAL_PERSPECTIVE_NOTE =
+  'Liczona z perspektywy AI (proponenta); w audiencji Relacja gracza może mieć inną wartość.';
+
 /**
  * 'incomingAccepted' — przychodząca oferta AI→gracz, którą gracz może przyjąć (Przyjmij aktywne).
  * Tekst nie może wtedy mówić „musisz dać więcej", bo werdykt pod spodem mówi „Możesz przyjąć".
@@ -88,6 +92,8 @@ function relationModTone(modPct: number): 'better' | 'worse' | 'neutral' {
 
 function relationDealText(relTotal: number, context: RelationDealContext): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  // Oferta przyjmowalna (Przyjmij aktywne): tekst neutralny, bez „strona słabsza” i bez czerwieni.
+  if (context === 'incomingAccepted') return 'wymiana symetryczna';
   if (context === 'trade') {
     if (relTotal >= 100) return 'parytet 1:1 przy uczciwej wymianie';
     const mult = formatLiczbaPl(100 / Math.max(1, relTotal));
@@ -110,20 +116,28 @@ export function renderRelationDealModRowHtml(
   context: RelationDealContext = 'treaty',
 ): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  const tone = context === 'trade'
-    ? (relTotal >= 100 ? 'neutral' : 'worse')
-    : relationModTone(modPct);
+  const tone = context === 'incomingAccepted'
+    ? 'neutral'
+    : context === 'trade'
+      ? (relTotal >= 100 ? 'neutral' : 'worse')
+      : relationModTone(modPct);
   const dealText = relationDealText(relTotal, context);
+  // Wartość Relacji w tym wierszu jest z perspektywy AI (proponenta) — nie z perspektywy gracza
+  // (audiencja pokazuje „Relacja z perspektywy gracza”, np. 90 / 200).
   const relDisplay = context === 'trade' && relTotal >= 100
-    ? 'Relacja ≥100'
-    : `Relacja ${formatLiczbaPl(relTotal)}`;
+    ? 'Relacja z perspektywy AI ≥100'
+    : `Relacja z perspektywy AI ${formatLiczbaPl(relTotal)}`;
   const pctBadge = modPct !== 0
     ? '<span class="da-pn-rel-mod-pct">' + esc(formatModPctSigned(modPct)) + '</span>'
     : '';
   const balanceNote = context === 'treaty' && modPct !== 0
     ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
     : '';
-  const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + ' ' + formatRelationModLabel(relTotal)) + '"';
+  // Przy 'incomingAccepted' werdykt to „Możesz przyjąć” — tooltip nie może mówić „trzeba dopłacić”.
+  const tipBase = context === 'incomingAccepted' ? '' : RELATION_DEAL_TOOLTIP + ' ';
+  const tip = ' title="' + esc(
+    tipBase + RELATION_DEAL_PERSPECTIVE_NOTE + ' ' + formatRelationModLabel(relTotal),
+  ) + '"';
 
   return (
     '<div class="da-pn-rel-mod ' + tone + '"' + tip + '>'
