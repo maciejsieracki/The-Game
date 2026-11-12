@@ -15,6 +15,7 @@
  * Styl spójny z mapLoadingOverlay.ts (te same tokeny brand).
  */
 import { pluralPl } from './formatPl';
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 import * as THREE from 'three';
 import { UI_PARAMS } from './uiParams';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
@@ -456,7 +457,7 @@ function buildTextReport(
   L.push('');
   L.push('-- Zalecany preset --');
   L.push(`Jakość renderu: ${qualityLabelPl(preset.renderQuality)}`);
-  L.push(`Maks. rozmiar mapy: ${preset.maxMapSizeLabel}`);
+  L.push(`Maks. rozmiar mapy: ${mapSizeDisplayLabel(preset.maxMapSizeLabel)}`);
   L.push(`Limit workerów: ${preset.workerLimit}`);
   return L.join('\n');
 }
@@ -560,7 +561,7 @@ export function showPerfTestPanel(opts: PerfTestPanelOptions = {}): void {
     const clsLabel = cls === 'MOCNY' ? 'MOCNY' : cls === 'SREDNI' ? 'ŚREDNI' : 'SŁABY';
     verdictEl.innerHTML =
       `Klasa sprzętu: <b>${clsLabel}</b>. Zalecane: jakość <b>${escapeHtml(qualityLabelPl(preset.renderQuality))}</b>, ` +
-      `maks. rozmiar mapy <b>${escapeHtml(preset.maxMapSizeLabel)}</b>, limit workerów <b>${preset.workerLimit}</b>.`;
+      `maks. rozmiar mapy <b>${escapeHtml(mapSizeDisplayLabel(preset.maxMapSizeLabel))}</b>, limit workerów <b>${preset.workerLimit}</b>.`;
   };
 
   renderRows(detListEl, detRows);
@@ -650,7 +651,7 @@ export function showPerfTestPanel(opts: PerfTestPanelOptions = {}): void {
   applyBtn.addEventListener('click', () => {
     const preset = currentPreset();
     saveHardwareProfile(det, bench, preset);
-    appliedEl.textContent = `Zapisano: jakość ${qualityLabelPl(preset.renderQuality)}, maks. mapa ${preset.maxMapSizeLabel}, workery ${preset.workerLimit}. Wejdzie w życie w kreatorze nowej gry.`;
+    appliedEl.textContent = `Zapisano: jakość ${qualityLabelPl(preset.renderQuality)}, maks. mapa ${mapSizeDisplayLabel(preset.maxMapSizeLabel)}, workery ${preset.workerLimit}. Wejdzie w życie w kreatorze nowej gry.`;
     opts.onPresetApplied?.(preset);
   });
 

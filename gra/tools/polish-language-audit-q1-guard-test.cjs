@@ -133,12 +133,20 @@ try {
     ['gra/src/ui/newGameFlow.ts', /\['Rozmiar mapy', mapSizeDisplayLabel\(p\.mapSize\)\]/, 'newGameFlow: Rozmiar mapy -> mapSizeDisplayLabel'],
     ['gra/src/ui/saveLoadDialog.ts', /mapSizeDisplayLabel\(f\.mapSize\)\} · /, 'saveLoadDialog: linia kontekstu -> mapSizeDisplayLabel'],
     ['gra/src/game/diplomacy-display.ts', /import \{ formatTurCountAcc \} from '\.\.\/ui\/formatPl';/, 'diplomacy-display: import formatTurCountAcc'],
+    ['gra/src/ui/perfTestPanel.ts', /import \{ mapSizeDisplayLabel \} from '\.\.\/util\/map-size-display';/, 'perfTestPanel: import mapSizeDisplayLabel'],
+    ['gra/src/ui/perfReport.ts', /rozmiar: \$\{mapSizeDisplayLabel\(opts\.rozmiarLabel\)\}/, 'perfReport: rozmiar -> mapSizeDisplayLabel'],
   ];
   for (const [f, re, why] of checks) {
     if (re.test(rd(f))) uiPass++; else { uiFail++; console.log('FAIL', f, why); }
     // mutacja: ten sam regex nie pasuje do wersji sprzed zmiany (surowy klucz / surowy tur)
     if (!re.test('const x = p.mapSize; const y = turns;')) uiPass++; else { uiFail++; console.log('FAIL mutacja', why); }
   }
+  // 5) raw maxMapSizeLabel (klucz rozmiaru) nie może wrócić do tekstu w panelu wydajności
+  const rawPerf = /\$\{(?:escapeHtml\()?preset\.maxMapSizeLabel\)?\}/;
+  for (const f of ['gra/src/ui/perfTestPanel.ts']) {
+    if (rawPerf.test(rd(f))) { uiFail++; console.log('FAIL', f, 'surowy preset.maxMapSizeLabel w tekście dla gracza'); } else uiPass++;
+  }
+  if (rawPerf.test('maks. mapa ${preset.maxMapSizeLabel}')) uiPass++; else { uiFail++; console.log('FAIL mutacja surowego maxMapSizeLabel'); }
 }
 pass += uiPass; fail += uiFail;
 console.log(`polish-language-audit-q1-guard (runda 2, UI): ${uiPass} ok, ${uiFail} fail`);
