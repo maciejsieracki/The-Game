@@ -265,6 +265,50 @@ pub struct PlayableMap {
     pub width: u16,
     pub height: u16,
     pub tiles: Vec<PlayableTile>,
+    /// P6-STAN-ULEPSZENIA: warstwy ulepszen terenu (web `hex.ulepszenie` / `hex.ulepszenia`) dla heksow,
+    /// ktore je maja. Brak wpisu = heks bez pol ulepszen. Pusta lista jest pomijana w zapisie, wiec zapisy
+    /// sprzed zmiany laduja sie i zapisuja bajt w bajt.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub improvements: Vec<PlayableHexImprovement>,
+}
+
+/// P6-STAN-ULEPSZENIA: pola ulepszen jednego heksa (lustro `BuildHex.ulepszenie` / `BuildHex.ulepszenia`).
+/// Lista zamiast mapy: klucz JSON nie moze byc krotka `(q, r)`. `None` = pole nieobecne (jak web undefined/null).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableHexImprovement {
+    pub position: PositionDto,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ulepszenie: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ulepszenia: Option<Vec<String>>,
+}
+
+/// P6-STAN-ULEPSZENIA: rodzaj fortu w stanie (web `FortImprovementType`, `fort-territory.ts:30`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PlayableFortKind {
+    Fort,
+    Posterunek,
+}
+
+/// P6-STAN-ULEPSZENIA: fort lub posterunek (web `FortNode`, `fort-territory.ts`). Wezel zakladajacy terytorium
+/// i wspolna granice; `contested_useless = Some(true)` = wezel bezuzyteczny (web odfiltrowuje go z wezlow).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableFort {
+    pub q: i32,
+    pub r: i32,
+    pub owner_id: PlayerId,
+    pub kind: PlayableFortKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contested_useless: Option<bool>,
+    /// Web `builtAtTurn` (fort-territory.ts `FortNode`): tura budowy; z `seq` tworzy `order` wezla terytorium.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub built_at_turn: Option<i64>,
+    /// Web `seq` (fort-territory.ts `FortNode`): kolejnosc budowy. Brak = wezel bez `order` (rozstrzyga odleglosc).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seq: Option<i64>,
 }
 
 impl PlayableMap {
@@ -285,6 +329,7 @@ impl PlayableMap {
             width: 0,
             height: 0,
             tiles: Vec::new(),
+            improvements: Vec::new(),
         }
     }
 }
@@ -453,6 +498,10 @@ pub struct PlayableState {
     /// P6-UNIT-REPLACE-L3 etap 2: ekonomia zamiany jednostek; pusta => pole pomijane.
     #[serde(default, skip_serializing_if = "PlayableReplaceEconomy::is_default")]
     pub economy: PlayableReplaceEconomy,
+    /// P6-STAN-ULEPSZENIA: forty i posterunki (wezly zakladajace terytorium i wspolna granice); pusta => pole
+    /// pomijane w DTO i zapisie (zapis sprzed zmiany laduje sie przez `#[serde(default)]`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub forts: Vec<PlayableFort>,
 }
 
 /// P6-WIRE-WAR-STORES: minimalne magazyny stanu potrzebne producentom `infra` / `tech` / `religia`
@@ -501,6 +550,7 @@ impl PlayableState {
             war: WarTurnState::default(),
             stores: PlayableStores::default(),
             economy: PlayableReplaceEconomy::default(),
+            forts: Vec::new(),
         }
     }
 }
@@ -649,6 +699,7 @@ impl PlayableGame {
                 war: WarTurnState::default(),
                 stores: PlayableStores::default(),
                 economy: PlayableReplaceEconomy::default(),
+                forts: Vec::new(),
             },
             phase_queue: EventQueue::new(),
         };
@@ -1070,6 +1121,7 @@ fn build_map(params: &StartGameParams) -> PlayableMap {
         width,
         height,
         tiles,
+        improvements: Vec::new(),
     }
 }
 

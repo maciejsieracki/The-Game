@@ -42,6 +42,7 @@ use super::brake_power::{Component, ObjectivePowerRaw};
 use super::brake_power_army::{
     armia_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
 };
+use super::brake_power_improvements::{improvement_count_for_hex, ulepszenia_for_owner};
 use super::brake_power_producers::{apply_produced, produce_for_owner, ProducerInputs};
 use super::brake_power_rest::{
     count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
@@ -52,14 +53,18 @@ use super::diplomacy_truce::PairMetaWeb;
 use super::diplomacy_war_peace_profile::{
     brake_relation_threshold, resolve_war_peace_profile, war_peace_params,
 };
+use super::improvements::HexLike;
 use super::order_effects_culture::PressureCity;
 use super::order_effects_culture::{
     civ_religion_for_key, load_religion_params, resolve_city_religion_state,
 };
-use super::playable::{PlayableMap, PlayableState, PlayableTerrain, PlayableUnitKind};
+use super::playable::{
+    PlayableFortKind, PlayableMap, PlayableState, PlayableTerrain, PlayableUnitKind,
+};
 use super::recruitment::manpower::{civ_manpower_max_mult, civ_manpower_mults, ManpowerCity};
-use super::terrain::city_territory_radius;
-use super::terrain::CityNode;
+use super::terrain::{
+    city_territory_radius, fort_node_as_city_node, CityNode, FortImprovementType, FortNode,
+};
 use super::territory::ReligionState;
 use super::trade::{
     owners_have_shared_land_border, HexCoord, TerrainType as TradeTerrain, TerritoryNode, TradeMap,
@@ -81,7 +86,7 @@ pub use super::war_turn_declare::KEY_ERA_PEACE_LOCK;
 /// Skladniki mocy z jawnym zerem: powod z odwolaniem plik:linia pinu (kontrolowane testem).
 /// P6-POWER-BITWY-ZDOBYCZE: `bitwy` i `zdobycze` maja producentow z akumulatorow `WarTurnState`
 /// (`battle_power_pts_for`, `zdobycze_power_for`; brak wpisu = realne 0 jak `?? 0` w webie), wiec lista
-/// jest PUSTA. Jawne zero `ulepszenia_terenu` w `power_raw_for_owner` pozostaje poza ta lista (patrz nizej).
+/// jest PUSTA. `ulepszenia` ma producenta (P6-STAN-ULEPSZENIA, warstwy `PlayableMap` + forty), wiec tez poza lista.
 pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 0] = [];
 
 /// Skladniki mocy bez producenta w `PlayableState` (klucze web `breakdown.key`); produkcyjne wejscia
@@ -92,7 +97,7 @@ pub const UNPRODUCED_POWER_COMPONENTS: [&str; 0] = [];
 /// Znane luki producentow (NIE_ZMIERZONO wzgledem web) = lista producentow potrzebnych w r6.
 pub const KNOWN_GAPS: [&str; 5] = [
     "epoka wlasciciela: producent turn_war_epoch (web empireEpochForOwner main.ts:2419); brak badan/era per owner w PlayableState => jawny fallback gameStartEra (main.ts:2415) i czlowiek DerivedFromStartEra; LUKA: epoka STATYCZNA miedzy turami (awans badan nie jest odtwarzany: web syncOwnerEraFromResearch / reconcilePlayerEraFromResearch main.ts:2521)",
-    "wspolna granica: producent shared_border_pairs (web karaWspolnaGranica main.ts:22876 -> ownersShareLandBorderLive main.ts:5690 -> ownersHaveSharedLandBorder trade-routes.ts:264) na wezlach miast z populacji (cityTerritoryRadius); LUKA: PlayableState nie ma fortow/posterunkow (brak wezlow forto-terytorium), a pozycja x,y mapy jest czytana jako (q,r) jak w ManpowerCity (NIE_ZMIERZONO zgodnosc siatki z mapa weba)",
+    "wspolna granica: producent shared_border_pairs (web karaWspolnaGranica main.ts:22876 -> ownersShareLandBorderLive main.ts:5690 -> ownersHaveSharedLandBorder trade-routes.ts:264) na wezlach miast z populacji i fortow/posterunkow stanu (cityTerritoryRadius; P6-STAN-ULEPSZENIA zamknal brak fortow); LUKA: pozycja x,y mapy jest czytana jako (q,r) jak w ManpowerCity (NIE_ZMIERZONO zgodnosc siatki z mapa weba)",
     "populacja i kultura miast sa polami stanu (PlayableCity.population/culture), ale NIE ROSNA miedzy turami (brak fazy Economy); ludki, rekruci, terytorium, kultura licza sie z tych wartosci; manpower biezacy miasta nie jest w stanie (web undefined = max)",
     "budynki (infra), tech zbadane, religia: magazyny PlayableStores (buildings_by_city, researched_techs_by_owner, religion_by_city) sa PUSTE w produkcyjnym stanie i nie zmieniaja sie miedzy turami (brak Economy/badan); puste = Provided(0) jako realny stan pusty, nie brak danych. Religia panstwowa = religia cywilizacji (civs.json), trudnosc = Normal (difficulty:NOT_IMPLEMENTED w StartGameParams); stan religii miasta bez wpisu = default z populacji (resolveCityReligionState)",
     "TickContext: handel, religia, dobra wola, wiarygodnosc = domyslne (PlayableState ich nie niesie)",
@@ -266,7 +271,7 @@ pub fn power_raw_for_owner(
     // ludki, rekruci, miasta, kultura: producenci z populacji/kultury w stanie miast.
     apply_produced(&mut raw, &produced);
     // terytorium (web countTerritoryHexes(statsTerritoryNodesForOwner)): wezly = miasta wlasciciela z populacji;
-    // PlayableState nie ma fortow/posterunkow (brak wezlow forto-terytorium - jawna luka, KNOWN_GAPS[1]).
+    // Forty/posterunki: wezly stanu (`PlayableState.forts`, P6-STAN-ULEPSZENIA), jak web foundingNodesForOwner.
     let territory_cities: Vec<TerritoryCityInput> = state
         .cities
         .iter()
@@ -277,9 +282,11 @@ pub fn power_raw_for_owner(
             owner_id: c.owner_id.get() as i64,
         })
         .collect();
+    // P6-STAN-ULEPSZENIA: forty/posterunki stanu (wezly zakladajace terytorium, jak web `foundingNodesForOwner`).
+    let forts = fort_nodes_from_state(state);
     raw.heksy_terytorium = Component::Provided(terytorium_for_owner(
         &territory_cities,
-        &[],
+        &forts,
         owner_id,
         &|q, r| map_has_hex(&state.map, q, r),
     ));
@@ -334,14 +341,21 @@ pub fn power_raw_for_owner(
     // zdobycze (P6-POWER-BITWY-ZDOBYCZE): akumulator zdobyczy Power zdobywcy (web zdobyczePower =
     // zdobyczePowerByOwner.get(ownerId) ?? 0, main.ts:2779) - Provided.
     raw.zdobycze_power = Component::Provided(state.war.zdobycze_power_for(owner_id));
-    // Jawne zero z uzasadnieniem (EXPLICIT_ZERO_REASONS jest pusta): ulepszenia.
-    // ulepszenia: producent istnieje (brake_power_improvements, POWER-ULEPSZENIA-Q1), ale NIE jest podpiety
-    // do power_raw_for_owner (BRAK, POWER-ULEPSZENIA-WIRING-Q1). Zostaje ExplicitZero, bo PlayableState nie niesie
-    // ulepszen terenu: PlayableTile ma tylko position/terrain/passable (playable.rs:256-260), a
-    // PlayableReplaceEconomy (playable.rs:371) to skarbiec/stock/jednostki. Brakujace wejscia: pola
-    // `ulepszenie`/`ulepszenia` heksa (BuildHex, improvement_build.rs:157-160) oraz dyski terytorium wezlow
-    // zalozycielskich. Web countImprovementsForOwner (main.ts:2643) liczy je z heksow.
-    raw.ulepszenia_terenu = Component::ExplicitZero;
+    // ulepszenia terenu (P6-STAN-ULEPSZENIA): producent `countImprovementsForOwner` (web main.ts:2643) na warstwach
+    // `PlayableMap.improvements` i fortach stanu. Heks spoza mapy nie wchodzi do liczby (web `map.hexes[key]`).
+    let impr_counts = improvement_counts_from_state(state);
+    let hex_impr = |q: i32, r: i32| -> Option<usize> {
+        if !map_has_hex(&state.map, q, r) {
+            return None;
+        }
+        Some(impr_counts.get(&(q, r)).copied().unwrap_or(0))
+    };
+    raw.ulepszenia_terenu = Component::Provided(ulepszenia_for_owner(
+        &territory_cities,
+        &forts,
+        owner_id,
+        &hex_impr,
+    ));
     Ok(raw)
 }
 
@@ -570,26 +584,89 @@ fn trade_map_from_state(map: &PlayableMap) -> TradeMap {
     out
 }
 
-/// Wezly terytorium miast (web `buildAllTerritoryNodes`, bez fortow: `PlayableState` ich nie niesie):
-/// promien = `cityTerritoryRadius` z populacji miasta.
-fn territory_nodes_from_state(state: &PlayableState) -> Vec<TerritoryNode> {
+/// P6-STAN-ULEPSZENIA: wezly fortow/posterunkow stanu (`FortNode`, web `fortNodes` z `fort-territory.ts`).
+fn fort_nodes_from_state(state: &PlayableState) -> Vec<FortNode> {
     state
-        .cities
+        .forts
         .iter()
-        .map(|c| {
-            let node = CityNode::city(
-                i32::from(c.position.x()),
-                i32::from(c.position.y()),
-                f64::from(c.population),
-            );
-            TerritoryNode::new(
-                c.owner_id,
-                node.q,
-                node.r,
-                city_territory_radius(&node).floor().max(0.0) as u32,
+        .map(|f| FortNode {
+            q: f.q,
+            r: f.r,
+            owner_id: f.owner_id.get() as i64,
+            kind: match f.kind {
+                PlayableFortKind::Fort => FortImprovementType::Fort,
+                PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
+            },
+            contested_useless: f.contested_useless,
+        })
+        .collect()
+}
+
+/// P6-STAN-ULEPSZENIA: liczba kluczy ulepszen heksa (web `improvementKeysForHex(hex).length`) z warstw stanu,
+/// indeksowana po (q, r). Brak wpisu warstwy = heks bez ulepszen (0). Powtorzony wpis tego samego heksa:
+/// ostatni wygrywa (stan nie niesie duplikatow; zapis wlasciciela ich nie tworzy).
+fn improvement_counts_from_state(state: &PlayableState) -> BTreeMap<(i32, i32), usize> {
+    state
+        .map
+        .improvements
+        .iter()
+        .map(|e| {
+            let hex = HexLike {
+                ulepszenie: e.ulepszenie.clone(),
+                ulepszenia: e.ulepszenia.clone(),
+                ..HexLike::default()
+            };
+            (
+                (i32::from(e.position.x()), i32::from(e.position.y())),
+                improvement_count_for_hex(&hex),
             )
         })
         .collect()
+}
+
+/// Wezly terytorium do wspolnej granicy (`shared_border_pairs`): miasta jak web `buildAllTerritoryNodes`
+/// (main.ts:5667, bez fortow) + forty/posterunki stanu jak web `fortTerritoryNodes` (game/fort-territory.ts:141-146):
+/// flagi `fort`/`outpost` (miasta wygrywaja z fortami w `territoryOwnerAt`), `order` = (builtAtTurn ?? 0, seq)
+/// tylko gdy `seq` jest zapisane, a wezel z `contested_useless = true` pomijany (jak w web `fortTerritoryNodes`).
+/// Promien = `cityTerritoryRadius`.
+fn territory_nodes_from_state(state: &PlayableState) -> Vec<TerritoryNode> {
+    let cities = state.cities.iter().map(|c| {
+        let node = CityNode::city(
+            i32::from(c.position.x()),
+            i32::from(c.position.y()),
+            f64::from(c.population),
+        );
+        TerritoryNode::new(
+            c.owner_id,
+            node.q,
+            node.r,
+            city_territory_radius(&node).floor().max(0.0) as u32,
+        )
+    });
+    // Web fortTerritoryNodes (fort-territory.ts): wezel fortu z flaga fort/outpost (territoryOwnerAt: miasta
+    // wygrywaja z fortami) i `order` = (builtAtTurn ?? 0, seq) tylko gdy `seq` jest zapisane.
+    let forts = state
+        .forts
+        .iter()
+        .filter(|f| f.contested_useless != Some(true))
+        .map(|f| {
+            let fort_kind = match f.kind {
+                PlayableFortKind::Fort => FortImprovementType::Fort,
+                PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
+            };
+            let node = fort_node_as_city_node(f.q, f.r, fort_kind);
+            let mut territory = TerritoryNode::new(
+                f.owner_id,
+                node.q,
+                node.r,
+                city_territory_radius(&node).floor().max(0.0) as u32,
+            );
+            territory.fort = fort_kind == FortImprovementType::Fort;
+            territory.outpost = fort_kind == FortImprovementType::Posterunek;
+            territory.order = f.seq.map(|seq| (f.built_at_turn.unwrap_or(0), seq));
+            territory
+        });
+    cities.chain(forts).collect()
 }
 
 /// Wspolna granica pary (web `karaWspolnaGranica`, main.ts:22876): wymaga >2 miast po obu stronach ORAZ
