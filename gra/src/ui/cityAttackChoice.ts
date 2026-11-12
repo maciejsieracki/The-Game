@@ -22,6 +22,8 @@ export interface CityAttackChoiceActions {
   onSiege: () => void;
   onStorm: () => void;
   onCancel: () => void;
+  /** Obwarowane miasto bez machin w skladzie: Szturm niedostepny (zostaje oblezenie). */
+  isStormBlocked?: () => boolean;
 }
 
 let root: HTMLDivElement | null = null;
@@ -96,7 +98,8 @@ function ensureStyles(): void {
 .civ-cac-act.siege:hover{border-color:rgba(200,120,64,.7);background:rgba(200,120,64,.08);box-shadow:0 0 12px rgba(200,120,64,.2);}
 .civ-cac-act.storm{border-color:rgba(58,106,208,.4);}
 .civ-cac-act.storm .civ-cac-act-lbl{color:#a8c8ff;}
-.civ-cac-act.storm:hover{border-color:rgba(90,155,212,.75);background:rgba(58,106,208,.08);box-shadow:0 0 12px rgba(58,106,208,.25);}
+.civ-cac-act[disabled]{opacity:.5;cursor:not-allowed;}
+.civ-cac-act.storm:not([disabled]):hover{border-color:rgba(90,155,212,.75);background:rgba(58,106,208,.08);box-shadow:0 0 12px rgba(58,106,208,.25);}
 .civ-cac-btns{display:flex;justify-content:center;margin-bottom:8px;}
 .civ-cac-cancel{
   border-radius:9px;padding:8px 15px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
@@ -159,6 +162,7 @@ function attachKeyboard(actions: CityAttackChoiceActions): void {
       pickAction(actions.onSiege);
     } else if (e.key === '2') {
       e.preventDefault();
+      if (actions.isStormBlocked?.() === true) return;
       pickAction(actions.onStorm);
     }
   };
@@ -175,6 +179,7 @@ export function showCityAttackChoice(ctx: MapSiegeContext, actions: CityAttackCh
 
   const city = ctx.city;
   const unit = ctx.atakujacy;
+  const stormBlocked = actions.isStormBlocked?.() === true;
   const hasGarrison = ctx.garnizonUnit !== null || (city.garnizon ?? 0) > 0;
   const garrisonTag = city.garnizon !== undefined && city.garnizon > 0
     ? tagHtml('tb-army', 'Garnizon: ' + String(city.garnizon) + ' oddz.')
@@ -211,10 +216,10 @@ export function showCityAttackChoice(ctx: MapSiegeContext, actions: CityAttackCh
           <span class="civ-cac-act-lbl">${modalIcon('imp-fort', 18)}OBLEGAJ</span>
           <span class="civ-cac-act-desc">Obóz na mapie · głód garnizonu · czas na machiny oblężnicze</span>
         </button>
-        <button type="button" class="civ-cac-act storm" data-act="storm">
+        <button type="button" class="civ-cac-act storm" data-act="storm"${stormBlocked ? ' disabled aria-disabled="true"' : ''}>
           <span class="civ-cac-kb">2</span>
           <span class="civ-cac-act-lbl">${modalIcon('dip-war', 18)}SZTURM</span>
-          <span class="civ-cac-act-desc">Bitwa 3D od razu · mur jako przeszkoda</span>
+          <span class="civ-cac-act-desc">${stormBlocked ? 'Potrzebne machiny oblężnicze — pozostaje oblężenie' : 'Bitwa 3D od razu · mur jako przeszkoda'}</span>
         </button>
       </div>
       <div class="civ-cac-btns">

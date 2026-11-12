@@ -20,6 +20,8 @@ export interface SiegeMapPanelActions {
   onRetreat: (cityId: string) => void;
   getSiegeEngineOptions?: (cityId: string) => readonly SiegeEngineBuildOption[];
   onBuildSiegeEngine?: (cityId: string, unitId: string) => void;
+  /** Szturm obwarowanego miasta bez machin w składzie jest zablokowany (zostaje oblężenie). */
+  isStormBlocked?: (ctx: MapSiegeContext) => boolean;
   /**
    * R-HOTSEAT-ETAP6B-UI-Q1: „czy ten ownerId to Ty (aktywny fotel człowieka)" —
    * wstrzykiwane z main.ts (`isMe(ownerId)`, Etap 6a), wzorzec identyczny do
@@ -231,7 +233,8 @@ function render(): void {
   const milicjaEst = militiaEstimator ? Math.max(0, militiaEstimator(city)) : 0;
   // Okres odnowy po zniszczeniu Milicji (R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1).
   const milicjaRegen = militiaRegenLeft ? Math.max(0, militiaRegenLeft(city)) : 0;
-  const playerCanStorm = oblegajacyOwnerId === 0;
+  const stormBlockedNoMachines = actions.isStormBlocked?.(activeCtx) === true;
+  const playerCanStorm = oblegajacyOwnerId === 0 && !stormBlockedNoMachines;
   const sm: SiegeMachinesState | undefined = city.siegeMachines;
   const qLabel = sm?.queue?.length
     ? sm.queue.map(k => (k === 'taran' ? 'Taran' : 'Wieża')).join(', ')
@@ -304,10 +307,13 @@ function render(): void {
           '<span class="civ-smp-act-desc">Zostaw wojsko · postęp co turę N</span>' +
         '</button>' +
         '<button type="button" class="civ-smp-act storm" data-act="storm"' +
-          (playerCanStorm ? '' : ' disabled') + '>' +
+          (playerCanStorm ? '' : ' disabled') +
+          (stormBlockedNoMachines ? ' title="Potrzebne machiny oblężnicze — pozostaje oblężenie"' : '') + '>' +
           '<span class="civ-smp-act-ic">' + modalIcon('dip-war', 20) + '</span>' +
           '<span class="civ-smp-act-label">Szturm</span>' +
-          '<span class="civ-smp-act-desc">preBattle · bitwa z murem</span>' +
+          '<span class="civ-smp-act-desc">' + (stormBlockedNoMachines
+            ? 'Potrzebne machiny oblężnicze — pozostaje oblężenie'
+            : 'preBattle · bitwa z murem') + '</span>' +
         '</button>' +
         '<button type="button" class="civ-smp-act retreat" data-act="retreat">' +
           '<span class="civ-smp-act-ic">' + modalIcon('cp-order', 20) + '</span>' +

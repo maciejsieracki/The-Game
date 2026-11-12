@@ -88,6 +88,25 @@ export function autoStormBreach(hasSiegeMachine: boolean): boolean {
 }
 
 /**
+ * R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1 (DODATEK 2): szturm obwarowanego
+ * miasta BEZ machin oblezniczych w skladzie jest niedostepny (zostaje oblezenie/glod).
+ * Miasto bez obwarowania -- zasady bez zmian.
+ */
+export const STORM_NEEDS_SIEGE_MACHINES_MSG = 'Potrzebne machiny oblężnicze — pozostaje oblężenie';
+export function stormBlockedWithoutMachines(fortified: boolean, hasSiegeMachine: boolean): boolean {
+  return fortified && !autoStormBreach(hasSiegeMachine);
+}
+
+/** Wariant na sklad armii: machina = dowolna jednostka, dla ktorej `isSiege` zwraca true. */
+export function stormBlockedForRoster<T>(
+  fortified: boolean,
+  roster: readonly T[],
+  isSiege: (u: T) => boolean,
+): boolean {
+  return stormBlockedWithoutMachines(fortified, roster.some(isSiege));
+}
+
+/**
  * R5: wejscie ATAKUJACEGO na korone muru/palisady (wspiecie sie wieza obleznicza
  * w bitwie taktycznej) = wylom dla celow zdobycia miasta i bicia obroncow z muru
  * (R1/R2). Obronca na koronie NIE jest wylomem; atakujacy poza korona tez nie.
