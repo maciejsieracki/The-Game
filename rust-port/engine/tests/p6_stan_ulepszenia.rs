@@ -71,6 +71,8 @@ fn fort(q: i32, r: i32, owner: u64, kind: PlayableFortKind, useless: Option<bool
         owner_id: PlayerId::new(owner),
         kind,
         contested_useless: useless,
+        built_at_turn: None,
+        seq: None,
     }
 }
 
@@ -365,6 +367,8 @@ fn state_from_vector(template: &PlayableState, case: &serde_json::Value) -> Play
             contested_useless: f
                 .get("contested_useless")
                 .and_then(serde_json::Value::as_bool),
+            built_at_turn: f.get("built_at_turn").and_then(serde_json::Value::as_i64),
+            seq: f.get("seq").and_then(serde_json::Value::as_i64),
         })
         .collect();
     state

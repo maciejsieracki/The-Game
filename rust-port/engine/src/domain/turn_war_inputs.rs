@@ -644,25 +644,28 @@ fn territory_nodes_from_state(state: &PlayableState) -> Vec<TerritoryNode> {
             city_territory_radius(&node).floor().max(0.0) as u32,
         )
     });
+    // Web fortTerritoryNodes (fort-territory.ts): wezel fortu z flaga fort/outpost (territoryOwnerAt: miasta
+    // wygrywaja z fortami) i `order` = (builtAtTurn ?? 0, seq) tylko gdy `seq` jest zapisane.
     let forts = state
         .forts
         .iter()
         .filter(|f| f.contested_useless != Some(true))
         .map(|f| {
-            let node = fort_node_as_city_node(
-                f.q,
-                f.r,
-                match f.kind {
-                    PlayableFortKind::Fort => FortImprovementType::Fort,
-                    PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
-                },
-            );
-            TerritoryNode::new(
+            let fort_kind = match f.kind {
+                PlayableFortKind::Fort => FortImprovementType::Fort,
+                PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
+            };
+            let node = fort_node_as_city_node(f.q, f.r, fort_kind);
+            let mut territory = TerritoryNode::new(
                 f.owner_id,
                 node.q,
                 node.r,
                 city_territory_radius(&node).floor().max(0.0) as u32,
-            )
+            );
+            territory.fort = fort_kind == FortImprovementType::Fort;
+            territory.outpost = fort_kind == FortImprovementType::Posterunek;
+            territory.order = f.seq.map(|seq| (f.built_at_turn.unwrap_or(0), seq));
+            territory
         });
     cities.chain(forts).collect()
 }

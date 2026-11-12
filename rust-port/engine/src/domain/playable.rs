@@ -303,6 +303,12 @@ pub struct PlayableFort {
     pub kind: PlayableFortKind,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub contested_useless: Option<bool>,
+    /// Web `builtAtTurn` (fort-territory.ts `FortNode`): tura budowy; z `seq` tworzy `order` wezla terytorium.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub built_at_turn: Option<i64>,
+    /// Web `seq` (fort-territory.ts `FortNode`): kolejnosc budowy. Brak = wezel bez `order` (rozstrzyga odleglosc).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seq: Option<i64>,
 }
 
 impl PlayableMap {
