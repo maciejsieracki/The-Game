@@ -7,15 +7,12 @@
 //! `p6_tickdiplo.rs` i `p6_brake_inputs_vectors.rs`; tu sprawdzamy skladanie w jedna ture i zachowanie
 //! przez kilka tur. Roznice wzgledem web (kolejnosc faz) sa w raporcie, nie w asercjach na wartosciach web.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use civ_engine::domain::ai_diplomacy_turn::{PairKey, PairWarParams};
 use civ_engine::domain::brake_inputs::{ForcedEraLock, OwnerFacts};
 use civ_engine::domain::brake_power::ObjectivePowerRaw;
-use civ_engine::domain::diplomacy::{
-    shared_border_penalty_for_epochs, DiplomacyParams, TickContext,
-};
-use civ_engine::domain::diplomacy_truce::PairMetaWeb;
+use civ_engine::domain::diplomacy::{shared_border_penalty_for_epochs, DiplomacyParams};
 use civ_engine::domain::turn_war_pipeline::{
     run_war_turn, PeaceLockFacts, WarTurnConfig, WarTurnContext, WarTurnError, WarTurnInputs,
     WarTurnReport,
@@ -136,6 +133,8 @@ fn three_turns_bring_the_ai_pair_to_war_and_keep_it_there() {
     let t3 = run_turn(&mut war, 3.0, &inputs, &cfg).expect("turn 3");
     assert!(t3.declarations.is_empty());
     assert!(war.brake_phase.at_war.contains(&(AI_A, AI_B)));
+    // Mapowanie wlascicieli: PlayableState numeruje graczy od 1, wiec owner 0 nie wchodzi w pary.
+    assert!(t1.tick_pairs.iter().all(|&(a, b)| a != 0 && b != 0));
     assert_eq!(
         t3.relation_after_tick.len(),
         t3.tick_pairs.len(),
@@ -234,10 +233,43 @@ fn shared_border_uses_epoch_penalty_in_the_tick() {
 }
 
 #[test]
-fn tick_context_default_has_no_border_without_shared_border() {
-    assert!(!TickContext::default().common_border);
-    let _ = PairMetaWeb::default();
-    let _ = BTreeSet::<PairKey>::new();
+fn border_flag_and_epoch_penalty_are_wired_into_the_tick() {
+    // Bez wspolnej granicy kara wg epoki NIE dziala: ta sama epoka 3, tick z granica obniza zaufanie.
+    let trust_for = |shared: bool, epoch: f64| {
+        let mut inputs = world_inputs();
+        inputs.epochs.insert(AI_A, epoch);
+        inputs.epochs.insert(AI_B, epoch);
+        if shared {
+            inputs.shared_border.insert((AI_A, AI_B));
+        }
+        let cfg = config();
+        let mut war = WarTurnState::default();
+        run_turn(&mut war, 1.0, &inputs, &cfg).expect("turn");
+        war.diplomacy
+            .relation(PlayerId::new(AI_A as u64), PlayerId::new(AI_B as u64))
+            .expect("relacja po ticku")
+            .trust
+    };
+    let params = DiplomacyParams::default();
+    let penalty_iron = shared_border_penalty_for_epochs(3.0, 3.0, &params);
+    let penalty_base = shared_border_penalty_for_epochs(1.0, 1.0, &params);
+    assert_eq!(penalty_iron, params.common_border_trust_per_turn_iron);
+    assert_eq!(penalty_base, params.common_border_trust_per_turn);
+
+    let with_border_iron = trust_for(true, 3.0);
+    let without_border_iron = trust_for(false, 3.0);
+    assert!(
+        with_border_iron < without_border_iron,
+        "granica wlaczona: kara; brak granicy: brak kary ({with_border_iron} vs {without_border_iron})"
+    );
+    // Roznica miedzy epoka 3 a 1 (obie ze wspolna granica) = roznica kar z tabeli, bez innych skladnikow epoki.
+    let with_border_base = trust_for(true, 1.0);
+    let diff_actual = with_border_iron - with_border_base;
+    let diff_expected = penalty_iron - penalty_base;
+    assert!(
+        (diff_actual - diff_expected).abs() < 1e-9,
+        "delta zaufania {diff_actual} != delta kary {diff_expected}"
+    );
 }
 
 #[test]
