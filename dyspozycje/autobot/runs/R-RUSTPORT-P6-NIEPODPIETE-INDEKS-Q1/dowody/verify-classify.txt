@@ -1,0 +1,8 @@
+nazwy z licznikiem > 0: 129
+komentarz                     109   przyklady: add_foreign_city_blocks, advance_v_clock, ai_truce_or_peace_mode, ai_unit_replace_max_fraction_from_params, apply_praca_upkeep_post
+kod+komentarz                  13   przyklady: activate_unit, battle_unit_difficulty_combat_mult, besieger_owner_for_city, blow_env_for, blow_hit_arc
+kod                             5   przyklady: attacker_river_mult_by_name, build_terrain_yields, peace_allowed_for_turns, pending_phase_count, set_capital_stock
+dane                            1   przyklady: is_hex_in_start_reveal
+dane+komentarz                  1   przyklady: reset
+definicje pub fn w domain (git grep, w tym cfg(test)): 3255
+nazwy definiowane > 1 raz: 146, obejmuja definicji: 532

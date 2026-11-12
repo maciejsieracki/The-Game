@@ -195,7 +195,7 @@ def main():
         for rel, lineno, mod, name in rows:
             fh.write("FN\t%s\t%d\t%s\t%s\n" % (rel, lineno, mod, name))
         for rel, stem in mod_rows:
-            fh.write("MOD\t%s\t0\t%s\t\n" % (rel, stem))
+            fh.write("MOD\t%s\t0\t%s\t-\n" % (rel, stem))
 
     print("pliki domain/*.rs: %d" % len(dom_files))
     print("definicje pub fn w domain (bez #[cfg(test)]): %d" % fn_total)

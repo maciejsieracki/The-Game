@@ -885,49 +885,49 @@ FN	rust-port/engine/src/domain/work_tax.rs	86	work_tax	serialize_pending_work_ta
 FN	rust-port/engine/src/domain/work_tax.rs	98	work_tax	restore_pending_work_tax
 FN	rust-port/engine/src/domain/work_tax.rs	170	work_tax	execute_manual_work_tax_conversion
 FN	rust-port/engine/src/domain/zapis_loader.rs	43	zapis_loader	load_save_snapshot
-MOD	rust-port/engine/src/domain/ai_era_unit_promotion.rs	0	ai_era_unit_promotion	
-MOD	rust-port/engine/src/domain/ai_move_range.rs	0	ai_move_range	
-MOD	rust-port/engine/src/domain/ai_peace_city_offer.rs	0	ai_peace_city_offer	
-MOD	rust-port/engine/src/domain/ai_war_march_plan.rs	0	ai_war_march_plan	
-MOD	rust-port/engine/src/domain/army_consolidation.rs	0	army_consolidation	
-MOD	rust-port/engine/src/domain/army_follow_auto_merge.rs	0	army_follow_auto_merge	
-MOD	rust-port/engine/src/domain/auto_improvements/relief_preserving.rs	0	relief_preserving	
-MOD	rust-port/engine/src/domain/battle_mode.rs	0	battle_mode	
-MOD	rust-port/engine/src/domain/diplomacy_locks.rs	0	diplomacy_locks	
-MOD	rust-port/engine/src/domain/diplomacy_rejection_cooldown.rs	0	diplomacy_rejection_cooldown	
-MOD	rust-port/engine/src/domain/diplomacy_war_gates.rs	0	diplomacy_war_gates	
-MOD	rust-port/engine/src/domain/economy_city_terrain.rs	0	economy_city_terrain	
-MOD	rust-port/engine/src/domain/formation_rules.rs	0	formation_rules	
-MOD	rust-port/engine/src/domain/general_quick_follow.rs	0	general_quick_follow	
-MOD	rust-port/engine/src/domain/map_snapshot.rs	0	map_snapshot	
-MOD	rust-port/engine/src/domain/mapgen/cluster_compute.rs	0	cluster_compute	
-MOD	rust-port/engine/src/domain/mapgen/deposits.rs	0	deposits	
-MOD	rust-port/engine/src/domain/mapgen/rivers_b/quotas.rs	0	quotas	
-MOD	rust-port/engine/src/domain/mapgen/rivers_c.rs	0	rivers_c	
-MOD	rust-port/engine/src/domain/mapgen/rivers_d.rs	0	rivers_d	
-MOD	rust-port/engine/src/domain/mapgen/rivers_e1.rs	0	rivers_e1	
-MOD	rust-port/engine/src/domain/mapgen/rivers_e2.rs	0	rivers_e2	
-MOD	rust-port/engine/src/domain/mapgen/villages.rs	0	villages	
-MOD	rust-port/engine/src/domain/replay.rs	0	replay	
-MOD	rust-port/engine/src/domain/roads.rs	0	roads	
-MOD	rust-port/engine/src/domain/siege_city_fortification.rs	0	siege_city_fortification	
-MOD	rust-port/engine/src/domain/siege_engine_build.rs	0	siege_engine_build	
-MOD	rust-port/engine/src/domain/siege_nearby_lock.rs	0	siege_nearby_lock	
-MOD	rust-port/engine/src/domain/siege_sortie.rs	0	siege_sortie	
-MOD	rust-port/engine/src/domain/siege_tactics_autobatch.rs	0	siege_tactics_autobatch	
-MOD	rust-port/engine/src/domain/siege_tactics_blow_env.rs	0	siege_tactics_blow_env	
-MOD	rust-port/engine/src/domain/siege_tactics_breach.rs	0	siege_tactics_breach	
-MOD	rust-port/engine/src/domain/siege_tactics_class_adapters.rs	0	siege_tactics_class_adapters	
-MOD	rust-port/engine/src/domain/siege_tactics_loop.rs	0	siege_tactics_loop	
-MOD	rust-port/engine/src/domain/siege_transfer.rs	0	siege_transfer	
-MOD	rust-port/engine/src/domain/trade_flow_apply.rs	0	trade_flow_apply	
-MOD	rust-port/engine/src/domain/turn_economy_inputs_civ.rs	0	turn_economy_inputs_civ	
-MOD	rust-port/engine/src/domain/turn_economy_inputs_native.rs	0	turn_economy_inputs_native	
-MOD	rust-port/engine/src/domain/turn_economy_post.rs	0	turn_economy_post	
-MOD	rust-port/engine/src/domain/turn_economy_preview.rs	0	turn_economy_preview	
-MOD	rust-port/engine/src/domain/turn_economy_wire.rs	0	turn_economy_wire	
-MOD	rust-port/engine/src/domain/war_turn_ai_ai.rs	0	war_turn_ai_ai	
-MOD	rust-port/engine/src/domain/war_turn_forced.rs	0	war_turn_forced	
-MOD	rust-port/engine/src/domain/wonder_placement.rs	0	wonder_placement	
-MOD	rust-port/engine/src/domain/work_tax.rs	0	work_tax	
-MOD	rust-port/engine/src/domain/zapis_loader.rs	0	zapis_loader	
+MOD	rust-port/engine/src/domain/ai_era_unit_promotion.rs	0	ai_era_unit_promotion	-
+MOD	rust-port/engine/src/domain/ai_move_range.rs	0	ai_move_range	-
+MOD	rust-port/engine/src/domain/ai_peace_city_offer.rs	0	ai_peace_city_offer	-
+MOD	rust-port/engine/src/domain/ai_war_march_plan.rs	0	ai_war_march_plan	-
+MOD	rust-port/engine/src/domain/army_consolidation.rs	0	army_consolidation	-
+MOD	rust-port/engine/src/domain/army_follow_auto_merge.rs	0	army_follow_auto_merge	-
+MOD	rust-port/engine/src/domain/auto_improvements/relief_preserving.rs	0	relief_preserving	-
+MOD	rust-port/engine/src/domain/battle_mode.rs	0	battle_mode	-
+MOD	rust-port/engine/src/domain/diplomacy_locks.rs	0	diplomacy_locks	-
+MOD	rust-port/engine/src/domain/diplomacy_rejection_cooldown.rs	0	diplomacy_rejection_cooldown	-
+MOD	rust-port/engine/src/domain/diplomacy_war_gates.rs	0	diplomacy_war_gates	-
+MOD	rust-port/engine/src/domain/economy_city_terrain.rs	0	economy_city_terrain	-
+MOD	rust-port/engine/src/domain/formation_rules.rs	0	formation_rules	-
+MOD	rust-port/engine/src/domain/general_quick_follow.rs	0	general_quick_follow	-
+MOD	rust-port/engine/src/domain/map_snapshot.rs	0	map_snapshot	-
+MOD	rust-port/engine/src/domain/mapgen/cluster_compute.rs	0	cluster_compute	-
+MOD	rust-port/engine/src/domain/mapgen/deposits.rs	0	deposits	-
+MOD	rust-port/engine/src/domain/mapgen/rivers_b/quotas.rs	0	quotas	-
+MOD	rust-port/engine/src/domain/mapgen/rivers_c.rs	0	rivers_c	-
+MOD	rust-port/engine/src/domain/mapgen/rivers_d.rs	0	rivers_d	-
+MOD	rust-port/engine/src/domain/mapgen/rivers_e1.rs	0	rivers_e1	-
+MOD	rust-port/engine/src/domain/mapgen/rivers_e2.rs	0	rivers_e2	-
+MOD	rust-port/engine/src/domain/mapgen/villages.rs	0	villages	-
+MOD	rust-port/engine/src/domain/replay.rs	0	replay	-
+MOD	rust-port/engine/src/domain/roads.rs	0	roads	-
+MOD	rust-port/engine/src/domain/siege_city_fortification.rs	0	siege_city_fortification	-
+MOD	rust-port/engine/src/domain/siege_engine_build.rs	0	siege_engine_build	-
+MOD	rust-port/engine/src/domain/siege_nearby_lock.rs	0	siege_nearby_lock	-
+MOD	rust-port/engine/src/domain/siege_sortie.rs	0	siege_sortie	-
+MOD	rust-port/engine/src/domain/siege_tactics_autobatch.rs	0	siege_tactics_autobatch	-
+MOD	rust-port/engine/src/domain/siege_tactics_blow_env.rs	0	siege_tactics_blow_env	-
+MOD	rust-port/engine/src/domain/siege_tactics_breach.rs	0	siege_tactics_breach	-
+MOD	rust-port/engine/src/domain/siege_tactics_class_adapters.rs	0	siege_tactics_class_adapters	-
+MOD	rust-port/engine/src/domain/siege_tactics_loop.rs	0	siege_tactics_loop	-
+MOD	rust-port/engine/src/domain/siege_transfer.rs	0	siege_transfer	-
+MOD	rust-port/engine/src/domain/trade_flow_apply.rs	0	trade_flow_apply	-
+MOD	rust-port/engine/src/domain/turn_economy_inputs_civ.rs	0	turn_economy_inputs_civ	-
+MOD	rust-port/engine/src/domain/turn_economy_inputs_native.rs	0	turn_economy_inputs_native	-
+MOD	rust-port/engine/src/domain/turn_economy_post.rs	0	turn_economy_post	-
+MOD	rust-port/engine/src/domain/turn_economy_preview.rs	0	turn_economy_preview	-
+MOD	rust-port/engine/src/domain/turn_economy_wire.rs	0	turn_economy_wire	-
+MOD	rust-port/engine/src/domain/war_turn_ai_ai.rs	0	war_turn_ai_ai	-
+MOD	rust-port/engine/src/domain/war_turn_forced.rs	0	war_turn_forced	-
+MOD	rust-port/engine/src/domain/wonder_placement.rs	0	wonder_placement	-
+MOD	rust-port/engine/src/domain/work_tax.rs	0	work_tax	-
+MOD	rust-port/engine/src/domain/zapis_loader.rs	0	zapis_loader	-
