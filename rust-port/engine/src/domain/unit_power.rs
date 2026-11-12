@@ -87,6 +87,8 @@ pub fn ranged_shot_damage_f64(
 }
 
 /// Wariant calkowity dla wolajacych z wartosciami skonczonymi (testy formul dystansu).
+/// NIE UZYWAC w produkcji: `resolve_ranged_phase` (combat.rs) woła wyłącznie `ranged_shot_damage_f64`.
+/// Ta funkcja jest w produkcji nieużywana (tylko testy p6_repin_dystans_*) i rozjeżdża się z pinem dla NaN.
 /// NaN -> 1 (dawne zachowanie `f64::max`); +/-Infinity i wartosci poza zakresem i64 nasycaja sie `as i64`.
 pub fn ranged_shot_damage(
     typ: Option<&str>,
