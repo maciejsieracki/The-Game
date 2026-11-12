@@ -172,6 +172,8 @@ fn body_with(attacker: ActivateUnit, blow: Option<FullBlowInput>) -> ProdBody<Se
         activate: attacker,
         melee_target: Some(0),
         blow,
+        // Kontratak atakującego (jako obrońcy) na jedynego wroga: szablon na indeks 0.
+        counter_blows: vec![melee_blow()],
         body_ms: 800.0,
         facing: 0.0,
     };
@@ -179,10 +181,16 @@ fn body_with(attacker: ActivateUnit, blow: Option<FullBlowInput>) -> ProdBody<Se
         activate: act(1, 0, false),
         melee_target: None,
         blow: None,
+        counter_blows: vec![melee_blow()],
         body_ms: 0.0,
         facing: 0.0,
     };
-    ProdBody::new([vec![a], vec![d]], scene(), SequenceRolls::new(vec![ROLL]))
+    // Dwa rzuty: cios główny i ewentualny kontratak.
+    ProdBody::new(
+        [vec![a], vec![d]],
+        scene(),
+        SequenceRolls::new(vec![ROLL, ROLL]),
+    )
 }
 
 fn atk0() -> UnitRef {
@@ -210,20 +218,21 @@ fn cios_w_zwarciu_skladanie_z_single_blow_full_okablowanie() {
 
     // Oczekiwany wynik: to samo wejscie i ten sam rzut, bez sterownika (okablowanie, nie pin).
     let expected = single_blow_full(&melee_blow(), &mut SequenceRolls::new(vec![ROLL]));
-    if expected.blow.outcome == Outcome::Kill {
-        assert!(
-            !body
-                .unported
-                .contains(&(atk0(), "kontratak-kandydat-nieportowany")),
-            "zabity obrońca nie ma kandydata na kontratak"
-        );
-    } else {
-        assert!(
-            body.unported
-                .contains(&(atk0(), "kontratak-kandydat-nieportowany")),
-            "przeżywający obrońca: kontratak zapisany jako nieportowany"
-        );
-    }
+    // Kontratak (K5LOOP-KONTRATAK): wykonuje go wyłącznie przeżywający obrońca z szablonem; zabity nie kontratakuje.
+    let survived = expected.blow.outcome != Outcome::Kill;
+    assert_eq!(
+        body.counters.len(),
+        usize::from(survived),
+        "kontratak tylko u przezywajacego obroncy"
+    );
+    assert!(
+        !body
+            .unported
+            .iter()
+            .any(|(_, tag)| tag.starts_with("kontratak-")),
+        "z szablonem i bez strzelca kontratak nie jest nieportowany: {:?}",
+        body.unported
+    );
     assert_eq!(
         st.def[0].c.hp, expected.blow.def_hp_after,
         "HP obroncy = def_hp_after"

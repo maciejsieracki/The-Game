@@ -12,8 +12,10 @@
 //
 // ZASTUBOWANE (WYLACZNIE efekty zewnetrzne / delegaty poza zakresem ProdBody):
 //   RNG: `Math.random` = kolejka rzutow z wektora (jeden rzut na cios).
-//   render/animacja: _doMeleeAttack (znacznik sladu `attack:<i>` + wywolanie PRAWDZIWEGO `_singleBlow`; kontratak,
-//     lunge i BLOW_HIT_T poza zakresem), _sfxMelee, _updateHpBar, _updateMoraleBar, _applyTerrainRange.
+//   KONTRATAK (K5LOOP-KONTRATAK): _defenderCounters (tekst pinu) + _counterBudget (DefenderCounterBudget z combat.ts,
+//     wykonywane) + blok COUNTER-ATTACK z _doMeleeAttack (lustro bez renderu, tekst pod SHA). Kontratak zuzywa drugi rzut.
+//   render/animacja: _doMeleeAttack (znacznik sladu `attack:<i>`, lunge i BLOW_HIT_T poza zakresem), _sfxMelee,
+//     _updateHpBar, _updateMoraleBar, _applyTerrainRange.
 //   STAN FACING (r4, WYKONANE z tekstu pinu): `_updateFacing` + `_nearestEnemy` + `facingToward`/`facingFromTo`/`oppositeDir`/
 //     `relativeHit`/`manhattan` (battleScene.ts:347-400, 1917, 8296-8341) i przypisanie `attacker.facing` w `_doMeleeAttack`
 //     (battleScene.ts:9104). Enum `Dir` (const enum, poza strip-only) = prelude `{N:0,E:1,S:2,W:3}` strzezony liniami 316-319.
@@ -53,6 +55,7 @@ const UNIT_FRAGMENT_SHA256 = 'd1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900
 const UNITS_SHA256 = '7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7';
 const DOATTACK_SHA256 = '592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1';
 const FACING_SHA256 = '6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3';
+const COUNTER_SHA256 = '3913ba4050eaa30429418fade9b1a2b2adc374f1abe1a65f9291c96568e83ce7';
 const N_SEQ = 320;
 const SEED = 2301;
 
@@ -124,6 +127,23 @@ const facingParts = [
 ];
 const facingDigest = createHash('sha256').update(facingParts.join('\n---\n')).digest('hex');
 if (facingDigest !== FACING_SHA256) throw new Error(`SHA fragmentow facing zmieniony: ${facingDigest}`);
+
+// ---- KONTRATAK (K5LOOP-KONTRATAK): pin 07d2fbd72, gra/src/battle/battleScene.ts.
+// (a) TEKST `_defenderCounters` (9079-9092) jest WYKONYWANY (z `_counterBudget.canCounter` i `canShoot`).
+// (b) Blok COUNTER-ATTACK z `_doMeleeAttack` (9134-9143) jest LUSTRZANY w stubie `_doMeleeAttack` (zawiera wywolania
+//     renderu: `dirYaw`, `group.rotation`, `_spawnDamageLabel`), ale jego tekst jest pod strazem SHA.
+// (c) Klasa `DefenderCounterBudget` + stala `COUNTERS_PER_DEFENDER_PER_TURN` z combat.ts (WYKONYWANA, prawdziwa klasa).
+expectLine(SCENE, 9079, 'private _defenderCounters(defender: RuntimeBattleUnit, _attacker: RuntimeBattleUnit): boolean {');
+expectLine(SCENE, 9134, 'if (this._defenderCounters(defender, attacker)) {');
+if (lines[SCENE][9142] !== '        }') throw new Error('pin battleScene.ts:9143 != konczace "        }" bloku kontrataku');
+const counterDefText = L(SCENE, 9079, sceneEnd(9079));
+const counterBlockText = L(SCENE, 9134, 9143);
+const budgetStart = lines[COMBAT].findIndex((l) => l.startsWith('export class DefenderCounterBudget {')) + 1;
+const countersLine = lines[COMBAT].findIndex((l) => l.startsWith('export const COUNTERS_PER_DEFENDER_PER_TURN = 1;')) + 1;
+if (budgetStart < 1 || countersLine < 1) throw new Error('pin combat.ts: brak DefenderCounterBudget/COUNTERS');
+const budgetText = `${L(COMBAT, countersLine, countersLine)}\n${L(COMBAT, budgetStart, fnRange(COMBAT, budgetStart)[1])}`;
+const counterDigest = createHash('sha256').update([counterDefText, counterBlockText, budgetText].join('\n---\n')).digest('hex');
+if (counterDigest !== COUNTER_SHA256) throw new Error(`SHA fragmentow kontrataku zmieniony: ${counterDigest}`);
 
 // ---- fragmenty ciosu: identyczne skladanie jak w p6_siege_tactics_blow_full_gen.mjs ----
 const consts = { MORALE_HIT_LOSS_SCALE: 100, MORALE_FLANK_HIT: 8, MORALE_REAR_HIT: 15, MORALE_CHARGE_HIT: 15, MORALE_KILL_GAIN: 6 };
@@ -284,8 +304,11 @@ const classSrc = [
   // Przechwycenie łuku: OUT.arc jest zerowane przed każdą aktywacją; drugie wywołanie w tej samej aktywacji = błąd
   // (inaczej ostatnie wywołanie po cichu wygrywałoby i instrumentacja nie byłaby jednoznaczna).
   'function relativeHit(df, ac, ar, dc, dr) { const r = relativeHitPin(df, ac, ar, dc, dr); if (getOut().arc !== null) throw new Error("relativeHit wywolany wielokrotnie w aktywacji"); getOut().arc = r; return r; }',
+  // Prawdziwa klasa budzetu kontrataku z combat.ts (pin) + stala limitu.
+  L(COMBAT, countersLine, countersLine).replace(/^export /gm, ''),
+  L(COMBAT, budgetStart, fnRange(COMBAT, budgetStart)[1]).replace(/^export /gm, ''),
   'class Harness {',
-  '  constructor() { this.atk = []; this.def = []; this.finished = false; this._manualMode = false; this.siegeWallCol = -1; this.gateOpen = false;',
+  '  constructor() { this.atk = []; this.def = []; this.finished = false; this._manualMode = false; this.siegeWallCol = -1; this.gateOpen = false; this._counterBudget = new DefenderCounterBudget();',
   '    this.wallTileHp = new Map(); this._autoBatchPlanning = null; this.__trace = []; this.engaged = new Set(); this.log = [];',
   '    this.terrainMap = { combatTerrainName: (q, r) => tileName(q, r) }; this.terrainData = {};',
   '    this.armyHungerStatMult = getS().hunger; this.goldDeficitStatMult = getS().gold; this.isCityDefenseBattle = getS().isCity;',
@@ -320,7 +343,11 @@ const classSrc = [
   '  _advanceCoord(ru) { return 0; }',
   '  _targetInRange(ru) { const t = ru.__target; if (t === null) return null; const e = (ru.side === "atk" ? this.def : this.atk)[t]; return this._enemiesOf(ru).includes(e) ? e : null; }',
   '  _doRangedAttack(a, d, done) { throw new Error("strzal poza zakresem"); }',
-  '  _doMeleeAttack(a, d, done) { this.__trace.push("attack:" + d.__i); a.facing = facingFromTo(a.q, a.r, d.q, d.r, a.facing); this.__lastBlow = this._singleBlow(a, d, false); }',
+  // TEKST pinu _defenderCounters (wykonywany; wywoluje prawdziwe _counterBudget.canCounter).
+  `  ${L(SCENE, 9079, sceneEnd(9079)).replace('private _defenderCounters', '_defenderCounters')}`,
+  // Lustro bloku COUNTER-ATTACK (pin 9134-9143) bez renderu: budzet, engaged, facing obrony, cios obrony na atakujacego.
+  '  _doMeleeAttack(a, d, done) { this.__trace.push("attack:" + d.__i); a.facing = facingFromTo(a.q, a.r, d.q, d.r, a.facing); this._singleBlow(a, d, false); this.__firstObs = takeOut(); this.__firstObs.target = d.__i; this.__firstObs.defHp = d.bu.hp;',
+  '    if (this._defenderCounters(d, a)) { this._counterBudget.consume(d.bu.id); this.engaged.add(d.bu.id + ">" + a.bu.id); d.facing = facingFromTo(d.q, d.r, a.q, a.r, d.facing); this._singleBlow(d, a, false); this.__counterObs = takeOut(); this.__counterObs.target = a.__i; this.__counterObs.defHp = a.bu.hp; } }',
   '  _sfxMelee() {}',
   '  _updateHpBar(u) {}',
   '  _wallBonusProcFor(d) { return d.bu.wallBonus; }',
@@ -335,7 +362,10 @@ const classSrc = [
   '}',
   'export const __r = 1;',
 ].join('\n');
-const Harness = new Function(...stubNames, 'tileName', 'getS', 'getOut',  `${stripTypeScriptTypes(classSrc, { mode: 'strip' }).replace(/export const __r = 1;/, '')}\nreturn Harness;`)(...stubNames.map((n) => stubs[n]), tileName, () => S, () => OUT);
+const freshOut = () => ({ u: null, hitRet: null, outcome: null, bracesCalled: false, arc: null });
+// Obserwacje jednego ciosu: zwraca OUT ciosu i otwiera czysty zapis dla kolejnego (kontratak liczy sie osobno).
+const takeOut = () => { const o = OUT; OUT = freshOut(); return o; };
+const Harness = new Function(...stubNames, 'tileName', 'getS', 'getOut', 'takeOut', `${stripTypeScriptTypes(classSrc, { mode: 'strip' }).replace(/export const __r = 1;/, '')}\nreturn Harness;`)(...stubNames.map((n) => stubs[n]), tileName, () => S, () => OUT, takeOut);
 
 // ---- PRNG ----
 function mulberry32(seed) {
@@ -481,11 +511,15 @@ function genSeq(id) {
   }
   for (const u of atk) u.blow = u.target === null ? null : blowTemplate(u, def[u.target]);
   for (const u of def) u.blow = u.target === null ? null : blowTemplate(u, atk[u.target]);
+  // Szablon kontrataku kazdej jednostki na kazdego wroga (para: u jako atakujacy, wrog jako cel).
+  for (const u of all) u.counterBlows = (u.side === 'atk' ? def : atk).map((e) => blowTemplate(u, e));
   const nAct = int(3, 8);
   const acts = [];
   for (let k = 0; k < nAct; k++) {
     const u = surroundMode && k === 0 ? atk[0] : pick(all);
     acts.push({ side: u.side, idx: u.idx, finished: surroundMode && k === 0 ? false : chance(0.04) });
+    // Dwa rzuty na aktywacje: cios glowny + ewentualny kontratak (zuzywa rzut tylko gdy zachodzi).
+    S.rolls.push(pick([0, 0.9999999999, 0.05, 0.95, rnd(), rnd(), rnd(), rnd()]));
     S.rolls.push(pick([0, 0.9999999999, 0.05, 0.95, rnd(), rnd(), rnd(), rnd()]));
   }
   return { id, atk, def, acts };
@@ -508,28 +542,47 @@ function runSeq(seq) {
     const ru = runtimeOf(a.side, a.idx);
     h.__trace = [];
     h.finished = a.finished;
-    OUT = { u: null, hitRet: null, outcome: null, bracesCalled: false, arc: null };
-    h.__lastBlow = undefined;
+    OUT = freshOut();
+    h.__firstObs = undefined;
+    h.__counterObs = undefined;
     const rollsBefore = S.rollIdx;
     h._activateUnit(ru, () => h.__trace.push('done'));
     let blow = null;
-    if (h.__lastBlow !== undefined) {
-      const tgtIdx = Number(h.__trace.filter((t) => t.startsWith('attack:')).pop().split(':')[1]);
-      const tgt = runtimeOf(a.side === 'atk' ? 'def' : 'atk', tgtIdx);
-      const missed = OUT.outcome === null;
+    const fo = h.__firstObs;
+    if (fo !== undefined) {
+      const tgt = runtimeOf(a.side === 'atk' ? 'def' : 'atk', fo.target);
+      const missed = fo.outcome === null;
       blow = {
-        target: tgtIdx,
+        target: fo.target,
         missed,
-        hitPct: n2s(OUT.hitRet),
-        roll: n2s(OUT.u * 100),
-        dmg: n2s(missed ? 0 : OUT.outcome.dmg),
-        defHpAfter: n2s(tgt.bu.hp),
-        extraMorale: missed ? null : n2s(OUT.outcome.extra),
-        isCharge: OUT.bracesCalled && !tgt.bu.braces,
-        arc: OUT.arc,
+        hitPct: n2s(fo.hitRet),
+        roll: n2s(fo.u * 100),
+        dmg: n2s(missed ? 0 : fo.outcome.dmg),
+        defHpAfter: n2s(fo.defHp),
+        extraMorale: missed ? null : n2s(fo.outcome.extra),
+        isCharge: fo.bracesCalled && !tgt.bu.braces,
+        arc: fo.arc,
       };
-      if (S.rollIdx !== rollsBefore + 1) throw new Error('cios zuzyl != 1 rzut');
-    } else if (S.rollIdx !== rollsBefore) throw new Error('rzut bez ciosu');
+    }
+    // Kontratak: obrona wlasna jednostki po ciosie glownym (cel = atakujacy z tej aktywacji). Brak charge (para juz w engaged).
+    const co = h.__counterObs;
+    let counter = null;
+    if (co !== undefined) {
+      const missed = co.outcome === null;
+      counter = {
+        target: co.target,
+        missed,
+        hitPct: n2s(co.hitRet),
+        roll: n2s(co.u * 100),
+        dmg: n2s(missed ? 0 : co.outcome.dmg),
+        defHpAfter: n2s(co.defHp),
+        extraMorale: missed ? null : n2s(co.outcome.extra),
+        isCharge: co.bracesCalled && !ru.bu.braces,
+        arc: co.arc,
+      };
+    }
+    const rollsUsed = S.rollIdx - rollsBefore;
+    if (rollsUsed !== (blow ? 1 : 0) + (counter ? 1 : 0)) throw new Error(`zuzyte rzuty ${rollsUsed} != cios+kontratak`);
     const state = (r) => ({
       hp: n2s(r.bu.hp), dead: r.dead, fadingOut: r.fadingOut, routed: r.routed, morale: n2s(r.morale),
       surroundApplied: r.surroundApplied, moveLeft: n2s(r.moveLeft), facing: n2s(r.facing),
@@ -537,6 +590,7 @@ function runSeq(seq) {
     expect.push({
       trace: h.__trace.slice(),
       blow,
+      counter,
       units: [...h.atk.map(state), ...h.def.map(state)],
       engaged: [...h.engaged].sort(),
     });
@@ -548,7 +602,7 @@ const encUnit = (u) => ({
   side: u.side, idx: u.idx, q: u.q, r: u.r, hp: n2s(u.hp), maxHp: n2s(u.maxHp), morale: n2s(u.morale), fleeMorale: n2s(u.fleeMorale),
   neverRout: u.neverRout, dead: u.dead, fadingOut: u.fadingOut, routed: u.routed, surroundApplied: u.surroundApplied,
   moveLeft: n2s(u.moveLeft), facing: n2s(u.facing), onWall: u.onWall, mounted: u.mounted, phalanx: u.phalanx,
-  tdmOwn: n2s(tdmOf(tileName(u.q, u.r))), target: u.target, blow: u.blow,
+  tdmOwn: n2s(tdmOf(tileName(u.q, u.r))), target: u.target, blow: u.blow, counters: u.counterBlows,
 });
 
 const sequences = [];
@@ -570,6 +624,9 @@ const cov = {
   sequences: sequences.length,
   activations: sequences.reduce((s, q) => s + q.acts.length, 0),
   blows: sumActs((e) => e.blow),
+  counters: sumActs((e) => e.counter),
+  counterHits: sumActs((e) => e.counter && !e.counter.missed),
+  counterKills: sumActs((e) => e.counter && !e.counter.missed && Number(e.counter.defHpAfter) === 0),
   hits: sumActs((e) => e.blow && !e.blow.missed),
   misses: sumActs((e) => e.blow && e.blow.missed),
   charges: sumActs((e) => e.blow && e.blow.isCharge),
@@ -604,6 +661,6 @@ const outDir = join(here, 'p6_siege_tactics_loop_body_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), `${JSON.stringify({
   pin: PIN, activateSha256: activateDigest, blowSha256: blowDigest, unitFragmentSha256: uDigest, unitsSha256: unitsDigest,
-  doAttackSha256: doAttackDigest, facingSha256: facingDigest, seed: SEED, coverage: cov, sequences,
+  doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, seed: SEED, coverage: cov, sequences,
 })}\n`);
 console.error(JSON.stringify(cov));

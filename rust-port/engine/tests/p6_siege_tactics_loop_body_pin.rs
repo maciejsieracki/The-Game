@@ -233,6 +233,8 @@ struct Cover {
     facing_changes: usize,
     reverse_arc_diff: usize,
     blows: usize,
+    counters: usize,
+    counter_kills: usize,
     hits: usize,
     misses: usize,
     charges: usize,
@@ -309,6 +311,12 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 } else {
                     Some(blow_input(&u["blow"]))
                 },
+                counter_blows: u["counters"]
+                    .as_array()
+                    .expect("counters")
+                    .iter()
+                    .map(blow_input)
+                    .collect(),
                 body_ms: BODY_MS,
                 facing: num(&u["facing"]),
             };
@@ -379,6 +387,7 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
             st.finished = finished;
             let trace_before = body.trace.len();
             let blows_before = body.blows.len();
+            let counters_before = body.counters.len();
             let dur = body.start(unit, &st);
             body.complete(unit, &mut st);
             let who = format!("#{id} act{k} {}", tag(unit));
@@ -516,6 +525,77 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 blows_done.push(key);
             }
 
+            // --- kontratak obrońcy (pin: _defenderCounters + COUNTER-ATTACK po ciosie głównym) ---
+            let new_counters = body.counters.len() - counters_before;
+            if e["counter"].is_null() {
+                if new_counters != 0 {
+                    failures.push(format!("{who}: rust wykonal kontratak, pin nie"));
+                }
+            } else if new_counters != 1 {
+                failures.push(format!(
+                    "{who}: pin kontratak, rust counters={new_counters}"
+                ));
+            } else {
+                let w = &e["counter"];
+                let r = &body.counters[counters_before];
+                cov.counters += 1;
+                // Kontratak: atakuje obrońca z tej aktywacji (defender), celem jest jednostka aktywna (unit).
+                if r.target != unit || r.attacker.side == side {
+                    failures.push(format!(
+                        "{who}: kontratak strony/celu rust={}>{}",
+                        tag(r.attacker),
+                        tag(r.target)
+                    ));
+                }
+                let want_target = w["target"].as_u64().expect("target") as usize;
+                if want_target != unit.idx {
+                    failures.push(format!(
+                        "{who}: counter.target js={want_target} != {}",
+                        unit.idx
+                    ));
+                }
+                if r.missed != b(&w["missed"]) {
+                    failures.push(format!(
+                        "{who}: counter missed rust={} js={}",
+                        r.missed, w["missed"]
+                    ));
+                }
+                for (name, got, want) in [
+                    ("hitPct", r.hit_pct, num(&w["hitPct"])),
+                    ("roll", r.roll, num(&w["roll"])),
+                    ("dmg", r.dmg, num(&w["dmg"])),
+                    ("defHpAfter", r.def_hp_after, num(&w["defHpAfter"])),
+                ] {
+                    if got != want {
+                        failures.push(format!("{who}: counter {name} rust={got} js={want}"));
+                    }
+                }
+                if !r.missed {
+                    let want_extra = num(&w["extraMorale"]);
+                    if r.extra_morale != want_extra {
+                        failures.push(format!(
+                            "{who}: counter extraMorale rust={} js={want_extra}",
+                            r.extra_morale
+                        ));
+                    }
+                    if r.def_hp_after == 0.0 {
+                        cov.counter_kills += 1;
+                    }
+                }
+                if r.is_charge != b(&w["isCharge"]) {
+                    failures.push(format!(
+                        "{who}: counter isCharge rust={} js={}",
+                        r.is_charge, w["isCharge"]
+                    ));
+                }
+                if r.hit_arc != arc(w["arc"].as_str().expect("arc")) {
+                    failures.push(format!(
+                        "{who}: counter hitArc rust={:?} js={}",
+                        r.hit_arc, w["arc"]
+                    ));
+                }
+            }
+
             // --- stan wszystkich jednostek ---
             let want_units = e["units"].as_array().expect("units");
             for (i, wu) in want_units.iter().enumerate() {
@@ -643,6 +723,8 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
         cov.reverse_arc_diff
     );
     assert!(cov.blows >= 500, "ciosy: {}", cov.blows);
+    assert!(cov.counters >= 300, "kontrataki: {}", cov.counters);
+    assert!(cov.counter_kills > 0, "zabicia kontratakiem");
     assert!(cov.hits > 100 && cov.misses > 100, "trafienia/pudla");
     assert!(cov.charges > 0, "szarza");
     assert!(cov.kills > 0, "zabicia");
