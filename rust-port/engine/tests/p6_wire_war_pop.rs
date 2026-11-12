@@ -110,17 +110,15 @@ fn producers_read_population_and_culture_from_city_state() {
     assert_eq!(raw.suma_ludkow, Component::Provided(8.0));
     assert_eq!(raw.kultura_imperium, Component::Provided(11.0));
     assert_eq!(raw.miasta, Component::Provided(2.0));
-    assert!(matches!(raw.rekrut_ekw, Component::Provided(v) if v >= 0.0));
+    // Rekruci: ekwiwalent puli rekrutow z ludkow (epoka 1.0, costMult 1) = 8 ludkow; wartosc z producenta
+    // rekruci_ekw_for_owner (pin: p6_power_producers), nie nierownosc.
+    assert_eq!(raw.rekrut_ekw, Component::Provided(8.0));
     // Wlasciciel 1 widzi tylko swoje miasto.
     let raw1 = power_raw_for_owner(&state, 1, 1.0).expect("raw1");
     assert_eq!(raw1.suma_ludkow, Component::Provided(1.0));
     assert_eq!(raw1.kultura_imperium, Component::Provided(0.0));
-    // Rekruci rosna z populacja (web manpower z ludkow): 8 ludkow >= 1 ludek.
-    let (Component::Provided(r2), Component::Provided(r1)) = (raw.rekrut_ekw, raw1.rekrut_ekw)
-    else {
-        panic!("rekruci Provided");
-    };
-    assert!(r2 >= r1);
+    // Rekruci rosna z populacja (web manpower z ludkow): 8 ludkow -> 8, 1 ludek -> 1.
+    assert_eq!(raw1.rekrut_ekw, Component::Provided(1.0));
 }
 
 #[test]

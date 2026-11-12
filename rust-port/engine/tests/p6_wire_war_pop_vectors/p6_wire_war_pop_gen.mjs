@@ -4,7 +4,7 @@
 // cityRangeForPopulation (game/okolica.ts:46), hexNeighborCoords/keyOf/isWaterTerrain (units/setup.ts).
 // Wejscia (miasta z populacja, teren) sa danymi wektora; oczekiwanie = wynik wykonania weba.
 // Uzycie (WEB_ROOT = wypakowane `gra/src` i `gra/data` z pinu, poza repo; Node 22):
-//   node rust-port/engine/tests/p6_wire_war_pop_gen.mjs <WEB_ROOT> <PIN_SHA> > rust-port/engine/tests/p6_wire_war_pop_vectors/shared_border.json
+//   node rust-port/engine/tests/p6_wire_war_pop_vectors/p6_wire_war_pop_gen.mjs <WEB_ROOT> <PIN_SHA> > rust-port/engine/tests/p6_wire_war_pop_vectors/shared_border.json
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { stripTypeScriptTypes } from 'node:module';

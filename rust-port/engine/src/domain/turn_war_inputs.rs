@@ -184,10 +184,14 @@ fn all_owner_ids(state: &PlayableState) -> BTreeSet<i64> {
         .collect()
 }
 
-/// Czy heks (q, r) istnieje na mapie `PlayableState` (web `map.hexes[key]` truthy). Pozycja x,y mapy jest
+/// Czy heks (q, r) istnieje na mapie `PlayableState` (web `map.hexes[key]` truthy): kafel o tej pozycji
+/// wystepuje w `tiles` (nie tylko w prostokacie width x height). Pozycja x,y mapy jest
 /// czytana jako (q, r) - ta sama konwencja co `ManpowerCity` (NIE_ZMIERZONO zgodnosc siatki z webem).
 fn map_has_hex(map: &PlayableMap, q: i32, r: i32) -> bool {
-    q >= 0 && r >= 0 && q < i32::from(map.width) && r < i32::from(map.height)
+    let (Ok(x), Ok(y)) = (u16::try_from(q), u16::try_from(r)) else {
+        return false;
+    };
+    map.tile(super::types::PositionDto::new(x, y)).is_some()
 }
 
 /// `ObjectivePowerRaw` jednego wlasciciela: producenci z `PlayableState`, reszta jawne zero (patrz naglowek).
