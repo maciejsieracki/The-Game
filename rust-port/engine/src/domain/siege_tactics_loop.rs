@@ -225,6 +225,11 @@ impl<B: LoopBody> SiegeLoop<B> {
         self.resume(clock, max_steps)
     }
 
+    /// Stan pętli przewijania zachowany między [`Self::resume`] (tylko odczyt, do asercji w testach).
+    pub fn ff_state(&self) -> &FfLoopState<()> {
+        &self.ff
+    }
+
     /// Etykieta zwycięzcy (`atk` / `def` / `remis`) albo `None`.
     pub fn winner_label(&self) -> Option<&'static str> {
         self.winner.map(LoopWinner::label)

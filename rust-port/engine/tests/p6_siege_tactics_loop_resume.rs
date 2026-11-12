@@ -189,6 +189,10 @@ struct Fingerprint {
     v_now: f64,
     unsupported: Option<&'static str>,
     units: Vec<(bool, bool, f64, f64)>,
+    /// Stan przewijania zachowany między wywołaniami `resume` (`ffVirtualMs`, `ffPendingAuto`, długość kolejki).
+    ff_virtual_ms: f64,
+    ff_pending_auto: bool,
+    ff_queue_len: usize,
 }
 
 fn fingerprint(b: &Built) -> Fingerprint {
@@ -205,6 +209,9 @@ fn fingerprint(b: &Built) -> Fingerprint {
         v_now: b.clock.v_now,
         unsupported: b.sl.unsupported,
         units,
+        ff_virtual_ms: b.sl.ff_state().ff_virtual_ms,
+        ff_pending_auto: b.sl.ff_state().pending_auto,
+        ff_queue_len: b.sl.ff_state().queue.len(),
     }
 }
 
