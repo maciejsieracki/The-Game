@@ -690,15 +690,27 @@ ok(
 );
 ok(!/niechęć/i.test(r.reason ?? ''), 'AI→gracz handel accept: komunikat bez "niechęć" (multiplier neutralny=1)');
 
+// R-WEB-AI-TRADE-WIRING-E2E-Q1 r4 (zarzuty Evaluatora 1-2; ABC A1 z DODATKU 3): dla ofert AI→gracz
+// bramka uczciwosci AI uzywa wspolczynnika relacji 1 (AI_PROPOSER_FAIRNESS_REL_TOTAL = 100), wiec
+// wymagane givePn >= receivePn (=100), a NIE 200 @ Relacji 50 jak dawniej. Stara asercja "199 < 200 PW
+// odrzucone" opisywala stara regule. Nowa, jawnie opisana regula:
+// (a) bramka AI przepuszcza 199 PW za 100 PW (strona AI),
+// (b) podglad „Przyjmij" GRACZA (niezmieniony, previewIncomingPlayerAccept) ODRZUCA ta sama oferte
+//     (netPw < 0), wiec nadplata AI nie da sie przyjac i gracz nie jest oszukiwany,
+// (c) bramka AI odrzuca oferte ponizej receivePn (99 < 100).
 r = evaluateProposal(prop('handel', 1, 0, { goldOnce: 199, receivePn: 100 }), aiToPlayerCtx);
-ok(!r.accepted, 'AI→gracz handel poniżej progu neutralnego (oferta 199 PW < wymagane 200 PW @ Relacji 50): odrzucenie');
+ok(r.accepted, 'A1 AI→gracz handel (AI 199 PW za 100 PW, rel 1): bramka AI przepuszcza (wymagane ≥ 100 = receivePn, nie 200)');
+// (b) podglad „Przyjmij" gracza (previewIncomingPlayerAccept, netPw) dla ofert koszyka/mieszanych jest
+// pokryty w tools/ai-trade-wiring-e2e-live-test.cjs (previewAccept na zywo) i w ai-trade-proposal-to-player-test.
+r = evaluateProposal(prop('handel', 1, 0, { goldOnce: 99, receivePn: 100 }), aiToPlayerCtx);
+ok(!r.accepted, 'A1 AI→gracz handel poniżej receivePn (oferta 99 PW < wymagane 100 PW @ rel 1): odrzucenie');
 ok(
   !/niechęć/i.test(r.reason ?? ''),
   'AI→gracz handel reject: komunikat NIE przypisuje przyczyny nieistniejącej "niechęci AI" (AI jest proponentem, nie respondentem, w tym kierunku)',
 );
 ok(
-  (r.reason ?? '').includes('200') && (r.reason ?? '').includes('199'),
-  'AI→gracz handel reject: komunikat z realnymi liczbami PW (wymagane ≥ 200 PW, oferta 199 PW)',
+  (r.reason ?? '').includes('100') && (r.reason ?? '').includes('99'),
+  'AI→gracz handel reject: komunikat z realnymi liczbami PW (wymagane ≥ 100 PW, oferta 99 PW)',
 );
 
 // R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C runda 4 (naprawa FAIL rundy 3): PODŁOGA
