@@ -51,8 +51,8 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         "wasIndependentCityStateBeforeCapture",
         EffectStatus::CallerSide("Z-TR-1: parametr was_independent_city_state"),
     ),
-    // BRAK (Q5): brak planera przeniesienia cudow (`planWonderTransfers`/`applyWonderTransfers`) i snapshotu
-    // terytorium cudow w rust-port/engine/src (grep 2026-11-12 pusty); osobny temat (game/wonder-transfer.ts).
+    // BRAK wrappera (Q8): rdzen planera (`snapshotWonderTerritoryOwners`/`planWonderTransfers`/`applyWonderTransfers`)
+    // jest w `siege_wonder_watch` (Q8, czysty); brak wrappera watch z main.ts (stan gry + efekty UI).
     ("beginWonderTransferWatch", EffectStatus::Missing),
     // Wykonane przez apply_transfer_with_effects gdy TransferExtras::pop_loss = Some (tryb legacy apply_transfer: NIE).
     // Generator pinu (p6_siege_transfer_gen.mjs) nadal stubuje to wolanie - wektory NIE zostaly przegenerowane.
@@ -78,7 +78,7 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "ZALEZNOSC W8 r4 (NIE_ZMIERZONO): force=true (omija isPeaceLockedBetween, czysci peaceUntilTurn) i powod 'wymuszona_inna' nie maja odpowiednika w diplomacy_truce_flow::declare_war_opts (tylko skip_n2)",
         ),
     ),
-    // BRAK (Q5): jak beginWonderTransferWatch (ta sama zaleznosc: planer/snapshot cudow nie istnieje w Rust).
+    // BRAK (Q8): wrapper settle z main.ts; rdzen planu w `siege_wonder_watch` (Q8), efekty UI nieportowane.
     ("settleWonderTransfer", EffectStatus::Missing),
     (
         "noteCityCapture",
