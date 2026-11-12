@@ -8,13 +8,16 @@
 //   - enum RodzajTraktatu               (gra/src/types/diplomacy.ts)
 // Zmienne closure (activeDeals, getDiploRelation, setDiploRelation) sa jedynymi atrapami w harnessie.
 // Uzycie: node p6_r7k7b_zloze_sync_gen.mjs <pinDir-z-gra/src> <katalog-wyjsciowy> [sciezka-do-typescript.js]
+//   (albo zmienna TYPESCRIPT_JS zamiast trzeciego argumentu)
 // STRAZNIK: SHA-256 kazdego zrodla musi zgadzac sie z pinem, inaczej generator konczy sie bledem.
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [, , pinDir, outDir, tsPath = '/opt/node22/lib/node_modules/typescript/lib/typescript.js'] = process.argv;
+// Sciezka do typescript.js: argument 3, potem zmienna TYPESCRIPT_JS, na koncu domyslna sciezka srodowiska.
+const [, , pinDir, outDir, tsArg] = process.argv;
+const tsPath = tsArg ?? process.env.TYPESCRIPT_JS ?? '/opt/node22/lib/node_modules/typescript/lib/typescript.js';
 if (!pinDir || !outDir) {
   console.error('uzycie: node p6_r7k7b_zloze_sync_gen.mjs <pinDir> <outDir> [typescript.js]');
   process.exit(2);
@@ -147,6 +150,8 @@ const N_SYNC = 240;
 const KINDS = [
   'pakt_nieagresji', 'sojusz_defensywny', 'sojusz_pelny', 'sojusz_wojskowy',
   'umowa_wymiany', 'umowa_szlakow', 'wasalizacja', 'otwarte_granice', 'wspolna_walka_barbarzyncy',
+  // Rodzaje z pinu (RodzajTraktatu) brakujace wczesniej: przemarsz i legacy umowa_handlowa.
+  'prawo_wojskowe_przemarszu', 'umowa_handlowa',
 ];
 const STATUSES = ['neutralni', 'pokoj', 'sojusz', 'wojna'];
 const sync = [];
@@ -168,6 +173,25 @@ for (let c = 0; c < N_SYNC; c++) {
   }
   const expected = runSync(a, b, deals, status);
   sync.push({ name: 'sync-' + c, a, b, status, deals, expected });
+}
+// Przypadki a==b (wektory pinu obejmuja tez te gałąź; ~20% traktatow dotyczy pary (a,a)).
+const N_SYNC_SAME = 24;
+for (let c = 0; c < N_SYNC_SAME; c++) {
+  const a = int(1, 4);
+  const b = a;
+  const status = pick(STATUSES);
+  const nDeals = int(0, 3);
+  const deals = [];
+  for (let i = 0; i < nDeals; i++) {
+    let x = int(1, 4);
+    let y = int(1, 4);
+    while (y === x) y = int(1, 4);
+    if (rnd() < 0.2) { x = a; y = a; }
+    const strony = x < y ? [x, y] : [y, x];
+    deals.push({ id: 'dsame' + c + '_' + i, rodzaj: pick(KINDS), strony });
+  }
+  const expected = runSync(a, b, deals, status);
+  sync.push({ name: 'sync-same-' + c, a, b, status, deals, expected });
 }
 
 const vectors = {
