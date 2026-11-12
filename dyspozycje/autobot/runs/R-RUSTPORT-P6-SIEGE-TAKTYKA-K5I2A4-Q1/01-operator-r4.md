@@ -4,7 +4,7 @@ TEMAT: R-RUSTPORT-P6-SIEGE-TAKTYKA-K5I2A4-Q1
 GOAL: port 1:1 toCombatUnit (battleScene.ts:1355) z combatUnitFromDef i trzema applyXxxToCombatUnit jako czyste funkcje, wektory z pinu 07d2fbd72
 ZMIANY/COMMIT: baza eee18680c + merge 4b6595876 (K5I2a2; konflikt mod.rs rozwiazany: obie rejestracje, commit e77165829). Nowe pliki w allowliscie:
   rust-port/engine/src/domain/siege_tactics_inputs_unit.rs, mod.rs (rejestracja), rust-port/engine/tests/p6_siege_tactics_inputs_unit.rs,
-  p6_siege_tactics_inputs_unit_gen.mjs, p6_siege_tactics_inputs_unit_vectors/vectors.json (2447 przypadkow, 75 jednostek pinu). SHA kodu: patrz commit na galezi roboczej (git log -1).
+  p6_siege_tactics_inputs_unit_gen.mjs, p6_siege_tactics_inputs_unit_vectors/vectors.json (2447 przypadkow, 75 jednostek pinu). SHA kodu: 2f8b69ccda6496e9315536d47849174633da28d6 (galaz worktree-wf_13f586a2-9ea-1).
   Cargo.lock NIE commitowany.
 TESTY (EXIT zapisany):
   cargo fmt --check EXIT=0; cargo clippy --all-targets -- -D warnings EXIT=0; cargo test --lib EXIT=0 (65 passed);
