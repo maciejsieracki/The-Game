@@ -1,0 +1,741 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "sha256": {
+    "gra/src/game/diplomacy-economy.ts": "3e0c78672e9efcedce38ef06b540e5ba3b13326ca2db1f946c977325908c02e2",
+    "gra/src/game/diplomacy-pn-engine.ts": "ee1b1aabffd4fdf906ce260084f80ad5da055c64912b6eda86306ba261d89257",
+    "gra/src/game/diplomacy-treaties.ts": "9b8e3bd81b65de1bb009a86058d1afa59a48c096b6ed6e91be71606af6cde6cb",
+    "gra/src/game/diplomacy-peace-lock.ts": "ab8e6b08b0baab9ed1ee073cd66929c53494ec61214f797238b76d13ffef4771"
+  },
+  "payments": [
+    {
+      "name": "dwie-dane-starcza",
+      "turn": 5,
+      "deals": [
+        {
+          "id": "d1",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 10
+          }
+        },
+        {
+          "id": "d2",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            2,
+            3
+          ],
+          "wygasaTura": 9,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 2,
+            "receiverOwnerId": 3,
+            "pieniadzePerTura": 5
+          }
+        }
+      ],
+      "treasury": {
+        "1": 30,
+        "2": 0,
+        "3": 0
+      },
+      "payDeals": [
+        {
+          "id": "d1",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 2,
+          "pieniadzePerTura": 10,
+          "doTury": null
+        },
+        {
+          "id": "d2",
+          "kind": "tribute",
+          "payerOwnerId": 2,
+          "receiverOwnerId": 3,
+          "pieniadzePerTura": 5,
+          "doTury": 9
+        }
+      ],
+      "paid": [
+        "d1",
+        "d2"
+      ],
+      "broken": [],
+      "messages": [
+        "Trybut 10 ¤: 1 → 2",
+        "Trybut 5 ¤: 2 → 3"
+      ],
+      "breaks": [],
+      "balances": {
+        "1": 20,
+        "2": 5,
+        "3": 5
+      }
+    },
+    {
+      "name": "brak-srodkow-zrywa",
+      "turn": 5,
+      "deals": [
+        {
+          "id": "d1",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 10
+          }
+        },
+        {
+          "id": "d2",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            3
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 3,
+            "pieniadzePerTura": 25
+          }
+        }
+      ],
+      "treasury": {
+        "1": 30,
+        "2": 0,
+        "3": 0
+      },
+      "payDeals": [
+        {
+          "id": "d1",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 2,
+          "pieniadzePerTura": 10,
+          "doTury": null
+        },
+        {
+          "id": "d2",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 3,
+          "pieniadzePerTura": 25,
+          "doTury": null
+        }
+      ],
+      "paid": [
+        "d1"
+      ],
+      "broken": [
+        "d2"
+      ],
+      "messages": [
+        "Trybut 10 ¤: 1 → 2",
+        "Trybut zerwany (d2): brak 25 ¤ u gracza 1"
+      ],
+      "breaks": [
+        {
+          "dealId": "d2",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 3
+        }
+      ],
+      "balances": {
+        "1": 20,
+        "2": 10,
+        "3": 0
+      }
+    },
+    {
+      "name": "wygasle-pominiete",
+      "turn": 10,
+      "deals": [
+        {
+          "id": "d1",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": 9,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 10
+          }
+        },
+        {
+          "id": "d2",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": 10,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 10
+          }
+        }
+      ],
+      "treasury": {
+        "1": 100,
+        "2": 0
+      },
+      "payDeals": [
+        {
+          "id": "d2",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 2,
+          "pieniadzePerTura": 10,
+          "doTury": 10
+        }
+      ],
+      "paid": [
+        "d2"
+      ],
+      "broken": [],
+      "messages": [
+        "Trybut 10 ¤: 1 → 2"
+      ],
+      "breaks": [],
+      "balances": {
+        "1": 90,
+        "2": 10
+      }
+    },
+    {
+      "name": "jednorazowy-i-zero",
+      "turn": 3,
+      "deals": [
+        {
+          "id": "d1",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 10
+          },
+          "handelJednorazowy": true
+        },
+        {
+          "id": "d2",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 0
+          }
+        },
+        {
+          "id": "d3",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1
+        }
+      ],
+      "treasury": {
+        "1": 100,
+        "2": 0
+      },
+      "payDeals": [],
+      "paid": [],
+      "broken": [],
+      "messages": [],
+      "breaks": [],
+      "balances": {
+        "1": 100,
+        "2": 0
+      }
+    },
+    {
+      "name": "kolejnosc-saldo",
+      "turn": 4,
+      "deals": [
+        {
+          "id": "a",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            2
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 2,
+            "pieniadzePerTura": 20
+          }
+        },
+        {
+          "id": "b",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            1,
+            3
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 1,
+            "receiverOwnerId": 3,
+            "pieniadzePerTura": 20
+          }
+        },
+        {
+          "id": "c",
+          "rodzaj": "wasalizacja",
+          "strony": [
+            2,
+            3
+          ],
+          "wygasaTura": null,
+          "zawartaTura": 1,
+          "ekonomia": {
+            "payerOwnerId": 2,
+            "receiverOwnerId": 3,
+            "pieniadzePerTura": 15
+          }
+        }
+      ],
+      "treasury": {
+        "1": 30,
+        "2": 0,
+        "3": 0
+      },
+      "payDeals": [
+        {
+          "id": "a",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 2,
+          "pieniadzePerTura": 20,
+          "doTury": null
+        },
+        {
+          "id": "b",
+          "kind": "tribute",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 3,
+          "pieniadzePerTura": 20,
+          "doTury": null
+        },
+        {
+          "id": "c",
+          "kind": "tribute",
+          "payerOwnerId": 2,
+          "receiverOwnerId": 3,
+          "pieniadzePerTura": 15,
+          "doTury": null
+        }
+      ],
+      "paid": [
+        "a",
+        "c"
+      ],
+      "broken": [
+        "b"
+      ],
+      "messages": [
+        "Trybut 20 ¤: 1 → 2",
+        "Trybut zerwany (b): brak 20 ¤ u gracza 1",
+        "Trybut 15 ¤: 2 → 3"
+      ],
+      "breaks": [
+        {
+          "dealId": "b",
+          "payerOwnerId": 1,
+          "receiverOwnerId": 3
+        }
+      ],
+      "balances": {
+        "1": 10,
+        "2": 5,
+        "3": 15
+      }
+    }
+  ],
+  "dobra": [
+    {
+      "rem": 0,
+      "zaufanie": 0,
+      "outZaufanie": 0,
+      "outRemaining": 0,
+      "gained": 0
+    },
+    {
+      "rem": 0,
+      "zaufanie": 50,
+      "outZaufanie": 50,
+      "outRemaining": 0,
+      "gained": 0
+    },
+    {
+      "rem": 0,
+      "zaufanie": 100,
+      "outZaufanie": 100,
+      "outRemaining": 0,
+      "gained": 0
+    },
+    {
+      "rem": 1,
+      "zaufanie": 0,
+      "outZaufanie": 1,
+      "outRemaining": 0,
+      "gained": 1
+    },
+    {
+      "rem": 1,
+      "zaufanie": 50,
+      "outZaufanie": 51,
+      "outRemaining": 0,
+      "gained": 1
+    },
+    {
+      "rem": 1,
+      "zaufanie": 100,
+      "outZaufanie": 100,
+      "outRemaining": 0,
+      "gained": 1
+    },
+    {
+      "rem": 3,
+      "zaufanie": 0,
+      "outZaufanie": 1,
+      "outRemaining": 2,
+      "gained": 1
+    },
+    {
+      "rem": 3,
+      "zaufanie": 50,
+      "outZaufanie": 51,
+      "outRemaining": 2,
+      "gained": 1
+    },
+    {
+      "rem": 3,
+      "zaufanie": 100,
+      "outZaufanie": 100,
+      "outRemaining": 2,
+      "gained": 1
+    }
+  ],
+  "expire": [
+    {
+      "turn": 4,
+      "kept": [
+        "n",
+        "e5",
+        "e6"
+      ]
+    },
+    {
+      "turn": 5,
+      "kept": [
+        "n",
+        "e6"
+      ]
+    },
+    {
+      "turn": 6,
+      "kept": [
+        "n"
+      ]
+    }
+  ],
+  "truce": [
+    {
+      "name": "ai-ai-inicjator-silniejszy-wojna",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3,
+        "truceInitiatorId": 2
+      },
+      "army": {
+        "2": 3,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "wojna",
+        "meta": {
+          "truceInitiatorId": 2
+        },
+        "warDeclared": [
+          2,
+          3
+        ],
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-inicjator-slabszy-pokoj",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3,
+        "truceInitiatorId": 3
+      },
+      "army": {
+        "2": 3,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "pokoj",
+        "meta": {
+          "truceInitiatorId": 3
+        },
+        "warDeclared": null,
+        "peaceFinalized": [
+          3,
+          2
+        ],
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-rowna-sila-wojna",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3,
+        "truceInitiatorId": 2
+      },
+      "army": {
+        "2": 1,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "wojna",
+        "meta": {
+          "truceInitiatorId": 2
+        },
+        "warDeclared": [
+          2,
+          3
+        ],
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-adresat-bez-armii-wojna",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3,
+        "truceInitiatorId": 2
+      },
+      "army": {
+        "2": 1,
+        "3": 0
+      },
+      "humans": [],
+      "after": {
+        "status": "wojna",
+        "meta": {
+          "truceInitiatorId": 2
+        },
+        "warDeclared": [
+          2,
+          3
+        ],
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-rozejm-trwa-bez-zmian",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 5,
+        "truceInitiatorId": 2
+      },
+      "army": {
+        "2": 3,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "pokoj",
+        "meta": {
+          "truceUntilTurn": 5,
+          "truceInitiatorId": 2
+        },
+        "warDeclared": null,
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-brak-inicjatora-wojna",
+      "turn": 3,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3
+      },
+      "army": {
+        "2": 3,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "wojna",
+        "meta": {},
+        "warDeclared": [
+          2,
+          3
+        ],
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": []
+      }
+    },
+    {
+      "name": "ai-ai-oferta-po-terminie-wojna",
+      "turn": 4,
+      "pair": [
+        2,
+        3
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceEndOffer": {
+          "turn": 2,
+          "fromOwnerId": 2,
+          "toOwnerId": 3,
+          "inboxId": "old"
+        }
+      },
+      "army": {
+        "2": 3,
+        "3": 1
+      },
+      "humans": [],
+      "after": {
+        "status": "wojna",
+        "meta": {},
+        "warDeclared": [
+          2,
+          3
+        ],
+        "peaceFinalized": null,
+        "enqueued": [],
+        "removedOffers": [
+          "old"
+        ]
+      }
+    },
+    {
+      "name": "gracz-adresat-oferta-w-skrzynce",
+      "turn": 3,
+      "pair": [
+        2,
+        1
+      ],
+      "status": "pokoj",
+      "meta": {
+        "truceUntilTurn": 3,
+        "truceInitiatorId": 2
+      },
+      "army": {
+        "1": 1,
+        "2": 3
+      },
+      "humans": [
+        1
+      ],
+      "after": {
+        "status": "pokoj",
+        "meta": {
+          "truceInitiatorId": 2,
+          "truceEndOffer": {
+            "turn": 3,
+            "fromOwnerId": 2,
+            "toOwnerId": 1,
+            "inboxId": "inbox-1"
+          }
+        },
+        "warDeclared": null,
+        "peaceFinalized": null,
+        "enqueued": [
+          [
+            2,
+            "Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)"
+          ]
+        ],
+        "removedOffers": []
+      }
+    }
+  ]
+}

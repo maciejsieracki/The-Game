@@ -1496,6 +1496,14 @@ pub struct ActiveDeal {
     #[serde(rename = "wspolnaWalkaBarbarzyncy", alias = "barbarian_cooperation")]
     #[serde(default)]
     pub barbarian_cooperation: bool,
+    /// Web `handelCyklicznyKiedykolwiekNiedostarczono` (ustawiane przez tick handlu cyklicznego, K7/D3).
+    #[serde(
+        rename = "handelCyklicznyKiedykolwiekNiedostarczono",
+        alias = "cyclic_ever_failed",
+        default,
+        skip_serializing_if = "std::ops::Not::not"
+    )]
+    pub cyclic_ever_failed: bool,
 }
 
 impl ActiveDeal {
@@ -1523,6 +1531,7 @@ impl ActiveDeal {
             cyclic_resource_transfers: Vec::new(),
             one_shot_trade: false,
             barbarian_cooperation: false,
+            cyclic_ever_failed: false,
         }
     }
 
