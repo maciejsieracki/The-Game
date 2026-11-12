@@ -1,0 +1,446 @@
+rust-port/engine/tests/ai_turn.rs	13	-
+rust-port/engine/tests/assets_manifest.rs	13	-
+rust-port/engine/tests/barbarians.rs	10	-
+rust-port/engine/tests/building_costs.rs	10	-
+rust-port/engine/tests/city_growth.rs	10	-
+rust-port/engine/tests/city_id.rs	6	-
+rust-port/engine/tests/combat.rs	7	-
+rust-port/engine/tests/combat_ai_multipliers.rs	5	-
+rust-port/engine/tests/counter_multipliers.rs	5	-
+rust-port/engine/tests/data_buildings_tech.rs	3	buildings.json=2 keys
+rust-port/engine/tests/data_civilizations.rs	7	-
+rust-port/engine/tests/data_compliance.rs	12	buildings.json=2 keys
+rust-port/engine/tests/data_economy_society.rs	9	-
+rust-port/engine/tests/data_loader.rs	14	-
+rust-port/engine/tests/data_terrain_map.rs	4	-
+rust-port/engine/tests/data_units_combat.rs	6	-
+rust-port/engine/tests/derived_values.rs	25	buildings.json=2 keys
+rust-port/engine/tests/diplomacy.rs	32	-
+rust-port/engine/tests/economy_city_vectors.rs	1	popcap_pinned_inputs.json=vectors=400
+rust-port/engine/tests/economy_city_vectors_r3.rs	12	load_econ_params.json=vectors=400
+rust-port/engine/tests/economy_city_vectors_r4.rs	7	-
+rust-port/engine/tests/events.rs	8	-
+rust-port/engine/tests/hex_terrain.rs	10	-
+rust-port/engine/tests/improvements.rs	13	-
+rust-port/engine/tests/map_generator.rs	6	-
+rust-port/engine/tests/owner_ref.rs	10	-
+rust-port/engine/tests/p6_1_civ_entry_epoch.rs	8	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1_first_player_city.rs	5	first-player-city.json=awaiting=14,awaitingWithOwnerOne=14,reveal=108,validate=16
+rust-port/engine/tests/p6_1_owner_seats.rs	6	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1_rng_mulberry.rs	2	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1b_playerstate.rs	19	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1c_braz_access.rs	7	braz.json=sourceFiles=2,improvementKeys=22,normalize=37,normalizeNullish=2,normalizeProtoOutOfDomain=4,copper=13,piec=7,access=60; cluster-start.json=sourceFiles=4,cases=160,pickSecond=720,displayLabel=3
+rust-port/engine/tests/p6_1c_llama_seed.rs	3	llama.json=hash=210,cases=960; maps.json=3 keys
+rust-port/engine/tests/p6_1c_start_cluster.rs	8	cluster-start.json=sourceFiles=4,cases=160,pickSecond=720,displayLabel=3; maps.json=3 keys
+rust-port/engine/tests/p6_1c_tables.rs	4	-
+rust-port/engine/tests/p6_1d_city_names.rs	13	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1d_civ_bonuses.rs	14	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1d_tables.rs	4	-
+rust-port/engine/tests/p6_1e_civ_gaps.rs	10	-
+rust-port/engine/tests/p6_1e_civ_matrix.rs	21	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1e_civ_names.rs	11	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1e_js_compat.rs	8	web-vectors.json=maps=580
+rust-port/engine/tests/p6_1e_tables.rs	7	-
+rust-port/engine/tests/p6_23_fort.rs	5	fort.json=2 keys
+rust-port/engine/tests/p6_23_hexmove.rs	4	hexmove.json=2 keys
+rust-port/engine/tests/p6_23_improvements.rs	10	improvements.json=json_keys_in_order=24,proto_keys=12
+rust-port/engine/tests/p6_23_order.rs	11	order.json=6 keys
+rust-port/engine/tests/p6_23_tables.rs	3	-
+rust-port/engine/tests/p6_4_core.rs	10	core.json=perms=8,shape_params=8,land_mask_at=7,center_count=44,build_continent_centers=44,five_zone=96,voronoi=5,pangea_land_t=207,pangea_layout=392,pangea_centers=100,island_centers=24,island_cell=6,island_assign=6,isotropic=4
+rust-port/engine/tests/p6_4_embark.rs	4	embark.json=2 keys
+rust-port/engine/tests/p6_4_march.rs	6	march.json=2 keys
+rust-port/engine/tests/p6_4_rally.rs	3	rally.json=2 keys
+rust-port/engine/tests/p6_4_scout.rs	5	scout.json=2 keys
+rust-port/engine/tests/p6_4_tables.rs	4	-
+rust-port/engine/tests/p6_5a_cost.rs	4	cost.json=pace=1978,epochMult=103,scaleCost=2472,eraMult=23,buildingStock=745,stock=1500,labels=35,units=2577,protoQuirk=8
+rust-port/engine/tests/p6_5a_display.rs	7	display.json=format=144,strip=47,technical=48,slot=27,ownerCs=702,clear=3,force=800,mapLabel=900,diplo=300,resolve=1028,sanitize=400,foreign=400
+rust-port/engine/tests/p6_5a_ruch.rs	8	ruch.json=2 keys
+rust-port/engine/tests/p6_5a_stack.rs	10	stack.json=2 keys
+rust-port/engine/tests/p6_5a_tables.rs	2	-
+rust-port/engine/tests/p6_5b_bonuses.rs	8	buildings.json=2 keys
+rust-port/engine/tests/p6_5b_format.rs	5	format.json=3 keys
+rust-port/engine/tests/p6_5b_manpower.rs	14	format.json=3 keys; manpower.json=2 keys
+rust-port/engine/tests/p6_5b_replenish.rs	1	replenish.json=2 keys
+rust-port/engine/tests/p6_5b_tables.rs	6	display.json=format=144,strip=47,technical=48,slot=27,ownerCs=702,clear=3,force=800,mapLabel=900,diplo=300,resolve=1028,sanitize=400,foreign=400; format.json=3 keys
+rust-port/engine/tests/p6_6a_conquest.rs	6	conquest.json=foreign=13,unstable=26,captured=420,buildings=260,tick=420,revolt=130,deprecated=130
+rust-port/engine/tests/p6_6a_founding.rs	10	founding.json=labels=3,subsequent=80,pick=420,evaluate=420,canAfford=272
+rust-port/engine/tests/p6_6a_hexclear.rs	4	hexclear.json=keepKeys=15,keeps=28,clear=384,apply=260
+rust-port/engine/tests/p6_6a_tables.rs	6	-
+rust-port/engine/tests/p6_6a_visibility.rs	11	visibility.json=maps=24,at=260,path=100,fixed=120,resolver=260,explored=80,keys=24,render=80,terrainPredicates=8,player=220,onMap=160,border=9,citySightExport=5
+rust-port/engine/tests/p6_6b_cities_ensure.rs	3	cities.json=podzial=400,save=800
+rust-port/engine/tests/p6_6b_cities_found.rs	5	cities.json=podzial=400,save=800
+rust-port/engine/tests/p6_6b_display.rs	13	display.json=format=144,strip=47,technical=48,slot=27,ownerCs=702,clear=3,force=800,mapLabel=900,diplo=300,resolve=1028,sanitize=400,foreign=400
+rust-port/engine/tests/p6_6b_empire.rs	6	empire.json=4 keys
+rust-port/engine/tests/p6_6b_lists.rs	3	lists.json=sequence=234,defaultNazwa=90,dedupe=80
+rust-port/engine/tests/p6_6b_percent.rs	10	percent.json=clampUlepszenia=32,clampPodzial=32,pulaZBudynkow=32,podzialZPuli=32,snap=38,migratePerTurn=7,resolveRaw=156,effective=500,normalize=230,adjust=6630
+rust-port/engine/tests/p6_6b_tables.rs	5	-
+rust-port/engine/tests/p6_7a_empire.rs	9	edge.json=advance=40,simulate=80,postCentral=40,postCentralSiege=40,matrixSynth=40,raiseFlow=60,planFlow=40,balanceFlow=40; empire.json=4 keys; params.json=WYZYWIENIE_LEVELS=13,WYZYWIENIE_GROWTH_PCT=13,CIV_MATRIX_GROWTH_DIFFICULTY_MULT=3,WZROST_LUDNOSCI_PACE=3,magazynEra=14
+rust-port/engine/tests/p6_7a_growth.rs	15	edge.json=advance=40,simulate=80,postCentral=40,postCentralSiege=40,matrixSynth=40,raiseFlow=60,planFlow=40,balanceFlow=40; growth.json=ration=225,cityLevel=114,cost=400,matrix=59,diffMult=4,popCap=120,popCapCustom=60,percent=700,fractional=900,gain=300,turns=300,hunger=700,ensure=122,build=30; params.json=WYZYWIENIE_LEVELS=13,WYZYWIENIE_GROWTH_PCT=13,CIV_MATRIX_GROWTH_DIFFICULTY_MULT=3,WZROST_LUDNOSCI_PACE=3,magazynEra=14
+rust-port/engine/tests/p6_7a_post_central.rs	2	edge.json=advance=40,simulate=80,postCentral=40,postCentralSiege=40,matrixSynth=40,raiseFlow=60,planFlow=40,balanceFlow=40; manpower.json=2 keys; post_central.json=scenarios=100
+rust-port/engine/tests/p6_7a_tables.rs	10	-
+rust-port/engine/tests/p6_7a_tempo.rs	8	params.json=WYZYWIENIE_LEVELS=13,WYZYWIENIE_GROWTH_PCT=13,CIV_MATRIX_GROWTH_DIFFICULTY_MULT=3,WZROST_LUDNOSCI_PACE=3,magazynEra=14; tempo_stawki.json=tempo=424,happiness=59,era=71,spichlerz=8,spichlerzStates=5
+rust-port/engine/tests/p6_7b_cost.rs	11	buildings.json=2 keys; cost.json=pace=1978,epochMult=103,scaleCost=2472,eraMult=23,buildingStock=745,stock=1500,labels=35,units=2577,protoQuirk=8
+rust-port/engine/tests/p6_7b_gate.rs	12	buildings.json=2 keys; gate.json=required=1100,labelSatisfied=3024,accessOnly=18,resourceGate=2000,hasRuntimeGate=44,runtimeGate=1800,missingLabels=1200,filter=900,prereq=1608,mennica=36,spDrain=1800,spState=32,spBonus=16,spArmy=8,spHas=40,inactive=1800,filterLabels=600
+rust-port/engine/tests/p6_7b_nfd.rs	2	nfd.json=changed=14465,sequences=6000
+rust-port/engine/tests/p6_7b_pool.rs	7	pool.json=ownerAll=500,ownerOne=500,deduct=900,refund=700,credit=1200,assign=600,explicit=2
+rust-port/engine/tests/p6_7b_spichlerz.rs	7	gate.json=required=1100,labelSatisfied=3024,accessOnly=18,resourceGate=2000,hasRuntimeGate=44,runtimeGate=1800,missingLabels=1200,filter=900,prereq=1608,mennica=36,spDrain=1800,spState=32,spBonus=16,spArmy=8,spHas=40,inactive=1800,filterLabels=600
+rust-port/engine/tests/p6_7b_tables.rs	10	buildings.json=2 keys
+rust-port/engine/tests/p6_8a_building_upgrades.rs	14	-
+rust-port/engine/tests/p6_8a_pending_improvements.rs	7	-
+rust-port/engine/tests/p6_8a_production_costs.rs	9	defaults-brak-rol.json=cases=89; defaults-inne-wartosci.json=cases=89; defaults-realny.json=cases=89; production_costs.json=itemCost=960,buildingLevel=1400,buildingItems=313,unitItems=565,location=12,stock=135,strip=265
+rust-port/engine/tests/p6_8a_vectors.rs	12	building_upgrades.json=suppressed=49,chain=240,composition=240,display=238,presence=315,groups=237,structural=8,stats=196,groupOrder=8; pending.json=probes=14,ids=5,scenarios=40; structural-brak.json=cases=8; structural-napis.json=cases=8; structural-null.json=cases=8; structural-realny.json=cases=8; structural-ujemna.json=cases=8; structural-ulamek.json=cases=8; structural-zero.json=cases=8
+rust-port/engine/tests/p6_8b2_p2_gaps.rs	9	-
+rust-port/engine/tests/p6_8b2_p2_vectors.rs	14	buildings.json=2 keys; p2-catalog.json=buildingsProj=42,unitsProj=75,catCases=450; p2-output.json=outCases=360; p2-praca.json=pracaCases=232; p2-recruit.json=prodCases=44,advCases=444,rushCases=36; p2-unit-cost.json=unitCases=158
+rust-port/engine/tests/p6_8b_c2a_vectors.rs	5	p1b-c2a.json=manpowerCostOf=10780,setPaused=14
+rust-port/engine/tests/p6_8b_c2b_vectors.rs	6	buildings.json=2 keys; p1b-c2-icu-names.json=42039; p1b-c2b-nan-sort.json=400; p1b-c2b.json=allTechs=9,halfTechs=5,unitsProj=75,unitsProjSynth=79,buildingsProj=42,ctxDoc=16,cases=2592
+rust-port/engine/tests/p6_8b_c2c_vectors.rs	3	buildings.json=2 keys; p1b-c2c-nan-sort.json=400; p1b-c2c.json=allTechs=27,halfTechs=14,unitsProj=75,unitsProjSynth=76,buildingsProj=42,ctxs=350,cases=700
+rust-port/engine/tests/p6_8b_helpers_vectors.rs	18	helpers.json=priorities=14,hasNonFood=8,deficitKeys=13,cityLimit=480
+rust-port/engine/tests/p6_8b_p1b_vectors.rs	7	p1b.json=stockShortfall=416,stockShortfallProto=2,populationCost=5,stripDiacriticsChanged=12771
+rust-port/engine/tests/p6_8c_vectors.rs	13	p8c.json=cases=2880
+rust-port/engine/tests/p6_8d_citizen_upkeep.rs	11	citizen_upkeep.json=4 keys
+rust-port/engine/tests/p6_8d_gold_deficit.rs	10	gold_deficit.json=params=25,advance=40,statMult=132,hpLoss=120
+rust-port/engine/tests/p6_8d_mennica_grace.rs	5	mennica_zloto_grace.json=cases=10
+rust-port/engine/tests/p6_8d_wealth.rs	6	wealth.json=load=16,fn=1344,advance=43
+rust-port/engine/tests/p6_8e_upkeep_p1.rs	13	economy_upkeep_p1.json=loadStorage=132,foodCap=120,resCap=120,foodBuf=14,clamp=700,applyFood=400,intake=300,globalCap=80,conquer=200,loadOwner=132,ownerCap=4264,ownerEra=492,magazynEra=12,keyCases=24,recon=512
+rust-port/engine/tests/p6_8e_upkeep_p2.rs	13	buildings.json=2 keys; economy_upkeep_p2.json=loadUpkeep=160,buildingUpkeep=6048,totalBuildingUpkeep=300,buildingResourceUpkeep=792,readBuildingResourceUpkeepRatio=60,totalBuildingResourceUpkeep=120,buildingResourceUpkeepForBuiltIds=120,previewOwnerBuildingResourceUpkeep=120,addResourceCosts=200,unitResourceUpkeep=84,unitRecruitUpkeepReserve=504,recruit=501,defaultUnitUpkeepByCategory=17,unitUpkeep=400,totalUnitUpkeep=100,totalUnitResourceUpkeep=120,previewOwnerTotalResourceUpkeep=80,unitFoodPerTurn=400,militaryFoodConsumption=80,upkeepBalance=160,buildingUpkeepForBuiltIds=160,fullCatalog=63,catalogIds=43
+rust-port/engine/tests/p6_8g_hook.rs	4	-
+rust-port/engine/tests/p6_8g_okolica.rs	19	-
+rust-port/engine/tests/p6_8g_web_vectors.rs	10	okolica.json=cityRange=22,surroundingCap=22,score=500,assignScore=2000,wagiFocus=5,keys=72,tiles=144,edge=12,locale=3136,auto=320,rebalance=722,adjust=9504,lost=9,collect=90,resolve=256,nanBig=24
+rust-port/engine/tests/p6_8g_web_vectors_r4.rs	4	okolica.json=cityRange=22,surroundingCap=22,score=500,assignScore=2000,wagiFocus=5,keys=72,tiles=144,edge=12,locale=3136,auto=320,rebalance=722,adjust=9504,lost=9,collect=90,resolve=256,nanBig=24
+rust-port/engine/tests/p6_8h2_active_access.rs	11	cases.json=261; vectors.json=5 keys
+rust-port/engine/tests/p6_8h2_capital_labels.rs	11	-
+rust-port/engine/tests/p6_8h2_society_inputs.rs	5	cases.json=261; vectors.json=5 keys
+rust-port/engine/tests/p6_8h_access.rs	13	cyna.json=2 keys; society.json=2 keys; zelazo.json=2 keys; zloto.json=2 keys
+rust-port/engine/tests/p6_8i_pick.rs	5	helpers.json=priorities=14,hasNonFood=8,deficitKeys=13,cityLimit=480; pick.json=techs=15,maps=64,scenarios=5128
+rust-port/engine/tests/p6_8i_relief.rs	8	relief.json=keyCases=41,layerCases=23
+rust-port/engine/tests/p6_8j_guards.rs	4	-
+rust-port/engine/tests/p6_8j_order.rs	18	society.json=2 keys
+rust-port/engine/tests/p6_8j_society.rs	8	society.json=2 keys
+rust-port/engine/tests/p6_adv_city_econ_heal.rs	2	heal.json=scenarios=400
+rust-port/engine/tests/p6_adv_city_econ_pipeline.rs	4	advance.json=scenarios=519,thrCases=360,happyCases=18
+rust-port/engine/tests/p6_adv_q2a_pipeline.rs	5	q2a.json=maps=8,tileYields=8,scenarios=526,direct=90
+rust-port/engine/tests/p6_adv_q3_pipeline.rs	10	q3.json=maps=18,scenarios=666,directPraca=90,hdirect=900,hparams=128,hfull=700,p5direct=160,unitDirect=120,hriver=80
+rust-port/engine/tests/p6_adv_q4_pipeline.rs	2	buildings.json=2 keys; q4.json=maps=7,scenarios=642; q4c.json=maps=7,scenarios=80
+rust-port/engine/tests/p6_adv_q4_preview.rs	1	q4.json=maps=7,scenarios=642; q4b.json=maps=5,extra=1348
+rust-port/engine/tests/p6_adv_q5_tick.rs	2	buildings.json=2 keys; q5.json=maps=7,buildingCatalogs=4,scenarios=680; unit_table_0.json=36; unit_table_1.json=36; unit_table_2.json=36; unit_table_3.json=36; unit_table_4.json=36; unit_table_5.json=36
+rust-port/engine/tests/p6_adv_q6_wire.rs	2	buildings.json=2 keys; q6.json=maps=7,scenarios=295
+rust-port/engine/tests/p6_ai_peace_city_offer.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_aipeace_balans.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_brake_inputs.rs	10	-
+rust-port/engine/tests/p6_brake_inputs_vectors.rs	9	vectors.json=5 keys
+rust-port/engine/tests/p6_credibility.rs	15	save_before_cred.json=bronzeEraEnterTurnByOwner=0,ironEraEnterTurnByOwner=0,diplomacyPairMeta=0,pendingDiplomacyInbox=0; vectors.json=5 keys
+rust-port/engine/tests/p6_dyplo_multiwar2_balance.rs	5	balance.json=rows=3276
+rust-port/engine/tests/p6_dyplo_multiwar2_eraign.rs	3	eraign.json=183
+rust-port/engine/tests/p6_dyplo_multiwar2_peace_ai.rs	8	peace_ai.json=ticks=15
+rust-port/engine/tests/p6_dyplo_multiwar2_peace_helpers.rs	4	helpers.json=priorities=14,hasNonFood=8,deficitKeys=13,cityLimit=480
+rust-port/engine/tests/p6_dyplo_multiwar2_tick.rs	5	tick.json=rows=2000
+rust-port/engine/tests/p6_dyplo_multiwar_gates.rs	10	era.json=63; nap.json=67; weariness.json=66
+rust-port/engine/tests/p6_dyplo_multiwar_interciv.rs	2	intercivgate.json=23
+rust-port/engine/tests/p6_dyplo_multiwar_peace.rs	3	peace.json=payment=648,stepPairState=3
+rust-port/engine/tests/p6_dyplomacja_multiwar3_d.rs	2	siege.json=enemyPairs=6,cases=1500,aiAllow=25
+rust-port/engine/tests/p6_dyplomacja_multiwar3_e.rs	4	locks.json=4000
+rust-port/engine/tests/p6_dyplomacja_multiwar3_f.rs	3	brake.json=784; march.json=2 keys
+rust-port/engine/tests/p6_dyplomacja_multiwar3_g.rs	3	war-gate.json=12288
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju.rs	10	brake.json=784; gate.json=required=1100,labelSatisfied=3024,accessOnly=18,resourceGate=2000,hasRuntimeGate=44,runtimeGate=1800,missingLabels=1200,filter=900,prereq=1608,mennica=36,spDrain=1800,spState=32,spBonus=16,spArmy=8,spHas=40,inactive=1800,filterLabels=600; main_cores.json=paramsets=10,cases=5543; price.json=paramsets=10,cases=1370; profile.json=aiVariants=10,paramsets=10,synRows=244,cases=5761; record.json=cases=6006; signals.json=paramsets=10,cases=16680; weariness.json=66
+rust-port/engine/tests/p6_dyplomacja_truce_aggressor.rs	14	aggressor.json=3 keys; gates.json=3 keys; honor_treaties.json=honor=6276; truce.json=3 keys
+rust-port/engine/tests/p6_econ_post_e2e.rs	1	post_0.json=scenarios=347
+rust-port/engine/tests/p6_econ_post_unit.rs	5	-
+rust-port/engine/tests/p6_empirefood_e2e.rs	2	buildings.json=2 keys; empirefood.json=maps=7,scenarios=347
+rust-port/engine/tests/p6_empirefood_unit.rs	3	-
+rust-port/engine/tests/p6_forced_war_g1.rs	1	cases.json=261
+rust-port/engine/tests/p6_forced_war_g2.rs	3	cases.json=261
+rust-port/engine/tests/p6_forced_war_g3.rs	2	cases.json=261
+rust-port/engine/tests/p6_forced_war_g3b.rs	6	cases.json=261
+rust-port/engine/tests/p6_heal_maxhp_wire.rs	9	maxhp.json=norm=148,defs=196,emh=1176,vet=22,wins=12,par=14,closure=390,scenarios=400
+rust-port/engine/tests/p6_m00_skeleton.rs	5	-
+rust-port/engine/tests/p6_m01_climate.rs	7	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m01_earth_mask.rs	10	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m01_params_shape.rs	9	-
+rust-port/engine/tests/p6_m01_prims.rs	14	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m02_deposit_river.rs	7	deposit-era.json=hexCases=153,ensureCases=0,hidden=8; river-switch.json=keys=2,cases=2028
+rust-port/engine/tests/p6_m02_float_parse.rs	1	-
+rust-port/engine/tests/p6_m02_generator.rs	4	generator.json=rozmiarKeysOrder=6,menuLabels=6,fromMenuLabel=68; norm.json=68
+rust-port/engine/tests/p6_m02_new_game.rs	11	new-game.json=mapSizeFromDims=216,perLabel=68,rosterCases=816,epochs=16,tiers=3,landFractionPercentOpts=7,densityToLabel=3,clampMiasta=66,presets=9,tierFns=3,riverParams=93,landFraction=4,landFractionOpts=60,worldGenNumbers=10
+rust-port/engine/tests/p6_m02_quality.rs	4	quality.json=menuLabels=3,toLabel=3,presets=3,perLabel=93
+rust-port/engine/tests/p6_m02_tables.rs	7	-
+rust-port/engine/tests/p6_m03_centers.rs	15	core.json=perms=8,shape_params=8,land_mask_at=7,center_count=44,build_continent_centers=44,five_zone=96,voronoi=5,pangea_land_t=207,pangea_layout=392,pangea_centers=100,island_centers=24,island_cell=6,island_assign=6,isotropic=4
+rust-port/engine/tests/p6_m03_earth.rs	5	earth.json=heights=704,widths=704,dims=2601,bits=9512
+rust-port/engine/tests/p6_m03_edges.rs	3	edges.json=layout=972,edge_rect=7
+rust-port/engine/tests/p6_m03_jsmath.rs	9	jsmath.json=pow=15418,atan2=9425,sin=6724,hypot=8725
+rust-port/engine/tests/p6_m03_masks.rs	5	core.json=perms=8,shape_params=8,land_mask_at=7,center_count=44,build_continent_centers=44,five_zone=96,voronoi=5,pangea_land_t=207,pangea_layout=392,pangea_centers=100,island_centers=24,island_cell=6,island_assign=6,isotropic=4; masks.json=cases=100,blob_score=400
+rust-port/engine/tests/p6_m03_strait.rs	1	strait.json=cases=18
+rust-port/engine/tests/p6_m03_tables.rs	6	-
+rust-port/engine/tests/p6_m04_border.rs	12	-
+rust-port/engine/tests/p6_m04_classify.rs	7	-
+rust-port/engine/tests/p6_m04_reapply.rs	4	-
+rust-port/engine/tests/p6_m04_tables.rs	4	-
+rust-port/engine/tests/p6_m05a_cover.rs	6	-
+rust-port/engine/tests/p6_m05a_masses.rs	8	-
+rust-port/engine/tests/p6_m05a_relief.rs	3	-
+rust-port/engine/tests/p6_m05a_tables.rs	10	-
+rust-port/engine/tests/p6_m05b_grow.rs	3	-
+rust-port/engine/tests/p6_m05b_helpers.rs	3	-
+rust-port/engine/tests/p6_m05b_tables.rs	5	-
+rust-port/engine/tests/p6_m06a2_landsea.rs	6	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06a3_climate.rs	7	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06a4_chan.rs	2	chan-vectors.json=3 keys
+rust-port/engine/tests/p6_m06a4_jagged.rs	4	jagged-vectors.json=4 keys
+rust-port/engine/tests/p6_m06a4_landsea.rs	4	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06a4_trim.rs	5	trim-vectors.json=5 keys
+rust-port/engine/tests/p6_m06a5_landfrac.rs	5	landfrac-vectors.json=3 keys
+rust-port/engine/tests/p6_m06a5_landfrac_edge.rs	7	landfrac-edge-vectors.json=3 keys; landfrac-vectors.json=3 keys
+rust-port/engine/tests/p6_m06a6_pangea.rs	13	carve-vectors.json=3 keys; contfrac-vectors.json=3 keys; erode-vectors.json=3 keys
+rust-port/engine/tests/p6_m06a7_annular.rs	4	annular-vectors.json=2 keys; bridge-vectors.json=2 keys
+rust-port/engine/tests/p6_m06a8_landsea.rs	5	ensure-vectors.json=cases=418
+rust-port/engine/tests/p6_m06a8_pomiary.rs	3	pomiary-r1-vectors.json=cases=39
+rust-port/engine/tests/p6_m06a9_edge.rs	3	edge-vectors.json=cases=9
+rust-port/engine/tests/p6_m06a9_landsea.rs	4	fill-vectors.json=cases=120; pangea-vectors.json=cases=60; ratio-vectors.json=cases=101
+rust-port/engine/tests/p6_m06a_landsea.rs	13	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06b1_boundary.rs	3	web-boundary.json=maps=2; web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06b1_cap.rs	3	web-cap.json=maps=13
+rust-port/engine/tests/p6_m06b1_coast.rs	7	-
+rust-port/engine/tests/p6_m06b1_ocean.rs	2	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06b1_overlay.rs	2	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06b1_tables.rs	2	-
+rust-port/engine/tests/p6_m06b2_enforce.rs	7	web-enforce-large.json=maps=8; web-enforce-probe.json=maps=18; web-enforce.json=maps=12
+rust-port/engine/tests/p6_m06b2_finalize.rs	4	web-finalize.json=maps=12
+rust-port/engine/tests/p6_m06b2_specks.rs	3	web-specks.json=maps=20
+rust-port/engine/tests/p6_m06b2_tiny.rs	4	web-tiny.json=maps=32
+rust-port/engine/tests/p6_m07a_cap.rs	1	web-rivers-a-cap.json=8856; web-rivers-a-walk.json=maps=37
+rust-port/engine/tests/p6_m07a_grow.rs	8	web-rivers-a-grow.json=maps=25
+rust-port/engine/tests/p6_m07a_rivers_a.rs	17	web-rivers-a.json=maps=72
+rust-port/engine/tests/p6_m07a_rivers_a_caps.rs	4	web-rivers-a.json=maps=72
+rust-port/engine/tests/p6_m07a_walk.rs	15	web-rivers-a-walk.json=maps=37
+rust-port/engine/tests/p6_m07b2_coast.rs	2	web-rivers-b-coast-grow.json=maps=120,cases=6500
+rust-port/engine/tests/p6_m07b2_edges.rs	3	web-rivers-b-edges.json=terrain_keys=13,maps=150,cases=19092
+rust-port/engine/tests/p6_m07b2_q2r4.rs	2	web-rivers-b-q2r4.json=maps=18,cases=2032
+rust-port/engine/tests/p6_m07b3_q3.rs	3	web-rivers-b-q3-closure.json=maps=15,cases=15; web-rivers-b-q3.json=maps=89,cases=14589
+rust-port/engine/tests/p6_m07b4_q4.rs	2	web-rivers-b-q4.json=maps=156,cases=8728
+rust-port/engine/tests/p6_m07b_turn.rs	2	web-rivers-b-turn.json=vectors=36200
+rust-port/engine/tests/p6_m09_rivals.rs	19	maps.json=3 keys; web-vectors.json=maps=580
+rust-port/engine/tests/p6_m09_tables.rs	3	-
+rust-port/engine/tests/p6_m10_masses.rs	16	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m10_placement.rs	14	-
+rust-port/engine/tests/p6_m10_start_scoring.rs	4	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m10_tables.rs	3	-
+rust-port/engine/tests/p6_m10_v8sort.rs	2	-
+rust-port/engine/tests/p6_m11_gates.rs	11	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m11_integration.rs	4	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m11_layout.rs	10	-
+rust-port/engine/tests/p6_m11_repair.rs	7	-
+rust-port/engine/tests/p6_m11_tables.rs	4	-
+rust-port/engine/tests/p6_m12_compute.rs	12	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m12_integration.rs	4	maps.json=3 keys; web-vectors.json=maps=580
+rust-port/engine/tests/p6_m12_spawn.rs	8	cluster-start.json=sourceFiles=4,cases=160,pickSecond=720,displayLabel=3; maps.json=3 keys; web-vectors.json=maps=580
+rust-port/engine/tests/p6_m12_tables.rs	5	-
+rust-port/engine/tests/p6_m14_range.rs	3	range.json=by_owner=40,culture=60,religion=144,dominant=195,border=18
+rust-port/engine/tests/p6_m14_territory.rs	8	territory.json=radius=160,axial=200,range_for_pop=31,sight=414,owner_at=460,in_territory=400,player_hex=400,border=17
+rust-port/engine/tests/p6_m14_wonder.rs	4	wonder.json=city=80,pick=80,owner=80
+rust-port/engine/tests/p6_m14_work.rs	8	work.json=build=60,owned_by=400,filter=120,center_keys=40,reczne_legal=1680,reconcile_owner=120,reconcile_all=100
+rust-port/engine/tests/p6_m15_roads.rs	8	apply_modifier.json=11410; collect_road_keys.json=121; constants.json=4 keys; has_road.json=326; is_road_key.json=21
+rust-port/engine/tests/p6_m16_divergence.rs	1	qualifier.json=cases=320,keys=33
+rust-port/engine/tests/p6_m16_doc.rs	1	-
+rust-port/engine/tests/p6_m16_gallery.rs	2	gallery.json=terrain=264,combo=3000,show=6000
+rust-port/engine/tests/p6_m16_qualifier.rs	4	qualifier.json=cases=320,keys=33
+rust-port/engine/tests/p6_m16_rules.rs	15	rules.json=strip_forest_removed=200,legacy_farm_layer=272,strip_legacy_farm=1500,plan_legacy=380,remove_legacy=380,farm_base_terrain=64,owce_base_terrain=64,forest_blocked=264,stadnina_blocked=264,forest_hint=33,replaced_by_build=3825,impact=7950,format_impact=200,mine_key=35,mine_keys_set=4,food_layer_keys_set=6,tarasy_civ=23,deposit_hex=600,deposit_allows=2640,animal_deposit=8,food_layer=4576,keys_within_radius=300,has_road=400,meta=34,tech_unlocked=1428,work_cost_scale=8
+rust-port/engine/tests/p6_m16_tables.rs	5	-
+rust-port/engine/tests/p6_m17_rebuild.rs	5	rebuild.json=cases=66; serialize.json=cases=49
+rust-port/engine/tests/p6_m17_serialize.rs	5	serialize.json=cases=49
+rust-port/engine/tests/p6_m17_validate.rs	2	serialize.json=cases=49; validate.json=cases=714
+rust-port/engine/tests/p6_oblezenie_glod.rs	29	-
+rust-port/engine/tests/p6_oblezenie_wejscie.rs	15	-
+rust-port/engine/tests/p6_oblezenie_wypad.rs	27	-
+rust-port/engine/tests/p6_order_lane.rs	11	order_lane.json=scenarios=750,e2e=80,effectsCases=300,postCases=200,rngCases=17,garrCases=120,warCases=150,cultCases=250,relCases=300,pressCases=250,civRelCases=38,probeBits=300
+rust-port/engine/tests/p6_power_acc_wiring.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_power_army.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_power_battle_acc.rs	11	legacy_meta.json=bronzeEraEnterTurnByOwner=2,ironEraEnterTurnByOwner=0; vectors.json=5 keys
+rust-port/engine/tests/p6_power_improvements.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_power_nan.rs	9	-
+rust-port/engine/tests/p6_power_nozeros.rs	9	-
+rust-port/engine/tests/p6_power_producers.rs	9	vectors.json=5 keys
+rust-port/engine/tests/p6_power_rest.rs	9	vectors.json=5 keys
+rust-port/engine/tests/p6_power_sources.rs	4	vectors.json=5 keys
+rust-port/engine/tests/p6_r7k7b_zloze_sync.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_r7k7c_owner_pools.rs	13	payments.json=payments=203
+rust-port/engine/tests/p6_ranged_damage_nan.rs	7	ranged.json=rows=8238
+rust-port/engine/tests/p6_repin4_vectors.rs	5	capsep.json=cases=4860; freshwater.json=cases=93; sight.json=cases=120; topup.json=cases=221; topup_bound.json=cases=99; visibility.json=maps=24,at=260,path=100,fixed=120,resolver=260,explored=80,keys=24,render=80,terrainPredicates=8,player=220,onMap=160,border=9,citySightExport=5
+rust-port/engine/tests/p6_repin_a_costmult.rs	6	-
+rust-port/engine/tests/p6_repin_ai_drogi_qualifier.rs	2	droga-vectors.json=cases=107
+rust-port/engine/tests/p6_repin_ai_founded_by.rs	3	-
+rust-port/engine/tests/p6_repin_ai_home.rs	2	p6_repin_ai_home_vectors.json=scenarios=160
+rust-port/engine/tests/p6_repin_ai_nearest_plan.rs	2	-
+rust-port/engine/tests/p6_repin_ai_war_vectors.rs	4	p6_repin_ai_war_vectors.json=pool=560,slot=84,tag=6,counter=11,nearest=4
+rust-port/engine/tests/p6_repin_ai_zakup_needs.rs	2	needs-vectors.json=cases=248
+rust-port/engine/tests/p6_repin_ai_zakup_purchase.rs	7	purchase-vectors.json=cases=75
+rust-port/engine/tests/p6_repin_ai_zakup_rezerwa.rs	5	zakup-vectors.json=cases=39
+rust-port/engine/tests/p6_repin_armia_follow_auto_merge.rs	6	p6_repin_armia_follow_vectors.json=scenarios=3097
+rust-port/engine/tests/p6_repin_autoimpr_terrain.rs	8	gate.json=required=1100,labelSatisfied=3024,accessOnly=18,resourceGate=2000,hasRuntimeGate=44,runtimeGate=1800,missingLabels=1200,filter=900,prereq=1608,mennica=36,spDrain=1800,spState=32,spBonus=16,spArmy=8,spHas=40,inactive=1800,filterLabels=600; roadplan.json=plans=400; terrain.json=3 keys
+rust-port/engine/tests/p6_repin_b2_production.rs	17	building_work_cost.json=cases=14580; civ_cost_markers.json=cases=51; unit_money_cost.json=cases=21464; unit_newest.json=units=14,epochCases=10,cases=88
+rust-port/engine/tests/p6_repin_b3_route.rs	4	civ_matrix_mod.json=cywilizacje=15; route_cash.json=cases=5200; route_cash_mod.json=cases=5200
+rust-port/engine/tests/p6_repin_b3_wealth.rs	4	civ_matrix_mod.json=cywilizacje=15; wealth_owner.json=capModifierCases=60,multiplierModifierCases=60,ownerCases=312; wealth_owner_mod.json=capModifierCases=60,multiplierModifierCases=60,ownerCases=312
+rust-port/engine/tests/p6_repin_b_ration_era.rs	3	ration_era.json=eraMults=15,cases=1620
+rust-port/engine/tests/p6_repin_b_recompute_era.rs	2	recompute_era.json=recompute=1404
+rust-port/engine/tests/p6_repin_c_construction.rs	4	-
+rust-port/engine/tests/p6_repin_d2_full.rs	14	buildings.json=2 keys; full-main.json=cases=1500
+rust-port/engine/tests/p6_repin_d2_head.rs	11	head-main.json=cases=1200
+rust-port/engine/tests/p6_repin_d2_imp.rs	16	imp-main.json=tiles=2000,cities=400,hap=1900,full=800
+rust-port/engine/tests/p6_repin_d2_tail.rs	18	tail-main.json=cases=2400
+rust-port/engine/tests/p6_repin_d_economy_mnoznik.rs	13	mnoznik-main.json=forCiv=588,byDiff=1029,yieldMult=4; mnoznik-zero.json=forCiv=588,byDiff=1029,yieldMult=4
+rust-port/engine/tests/p6_repin_d_work_tax.rs	13	web-vectors.json=maps=580
+rust-port/engine/tests/p6_repin_d_work_tax_edge.rs	3	web-vectors-edge.json=tax=484,convert=1024,serialize=22; web-vectors.json=maps=580
+rust-port/engine/tests/p6_repin_dyplomacja_dane2_sojusz_nap_ekspansja.rs	8	web-vectors.json=maps=580
+rust-port/engine/tests/p6_repin_dyplomacja_dane_sojusz_era.rs	4	-
+rust-port/engine/tests/p6_repin_dystans_fieldpower.rs	1	dystans-fieldpower.json=400
+rust-port/engine/tests/p6_repin_dystans_formulas.rs	8	dystans-acc.json=acc=8,hits=6,hitsAcc=4; dystans-mult.json=19; dystans-shots.json=shots=2400,halves=80
+rust-port/engine/tests/p6_repin_dystans_petla.rs	3	dystans-petla.json=cases=600
+rust-port/engine/tests/p6_repin_ekon_f_converters.rs	5	pipeline.json=recipes=9,scenarios=461,convCases=6903,eraCases=640,outMultCases=96,inflowCases=144
+rust-port/engine/tests/p6_repin_ekon_f_m_era.rs	9	-
+rust-port/engine/tests/p6_repin_ekon_f_popcap.rs	4	popcap.json=cases=888,loadCases=12
+rust-port/engine/tests/p6_repin_ekon_f_storage.rs	6	economy_upkeep_p1.json=loadStorage=132,foodCap=120,resCap=120,foodBuf=14,clamp=700,applyFood=400,intake=300,globalCap=80,conquer=200,loadOwner=132,ownerCap=4264,ownerEra=492,magazynEra=12,keyCases=24,recon=512
+rust-port/engine/tests/p6_repin_ekon_f_zelazo_mlyn.rs	9	zelazo_mlyn.json=zelazoAccess=84,zelazoNative=168,sumCases=12,mlyn=36
+rust-port/engine/tests/p6_repin_ekonomia_ceramika_data.rs	4	buildings.json=2 keys
+rust-port/engine/tests/p6_repin_ekonomia_ceramika_web.rs	5	buildings.json=2 keys; web.json=ratios=5,levels=4,eras=8,basics=4,upkeep=860,upkeepDefault=43,costs=32,availability=17,wonders=19
+rust-port/engine/tests/p6_repin_ekonomia_e_citizen.rs	7	citizen.json=variants=9,realRates=3,cases=2480,display=360,rateGrid=135
+rust-port/engine/tests/p6_repin_ekonomia_e_spichlerz.rs	7	spichlerz.json=params=92,throughput=144,amount=42,pay=1435
+rust-port/engine/tests/p6_repin_ekonomia_e_terrain_rates.rs	2	terrain_rates.json=2 keys
+rust-port/engine/tests/p6_repin_ekonomii_era.rs	2	era_tile.json=cases=1760
+rust-port/engine/tests/p6_repin_oblezenie_cooldown.rs	7	-
+rust-port/engine/tests/p6_repin_oblezenie_limit_cap.rs	8	-
+rust-port/engine/tests/p6_repin_oblezenie_limit_lock.rs	6	-
+rust-port/engine/tests/p6_repin_oblezenie_limit_web.rs	3	-
+rust-port/engine/tests/p6_repin_oblezenie_maszyny_web_parity.rs	4	p6_repin_oblezenie_maszyny_web_vectors.json=quotaExamples=6,cases=52
+rust-port/engine/tests/p6_repin_oblezenie_obrona.rs	17	-
+rust-port/engine/tests/p6_repin_rozejm_koniec.rs	9	-
+rust-port/engine/tests/p6_repin_rozejm_silnik.rs	20	-
+rust-port/engine/tests/p6_repin_rozejm_wektory_web.rs	15	-
+rust-port/engine/tests/p6_repin_teren_domain.rs	6	teren.json=radiusCases=12,ownerCases=1488,ftnCases=300,foreignCases=500,seqCases=300,captureCases=900
+rust-port/engine/tests/p6_repin_unit_replace_execute.rs	1	unit-replace-vectors.json=cost=80,afford=84,merge=4,execute=21,plan=5,cap=10,armyKeep=144,reserve=27,maxFraction=9,reserveParams=3
+rust-port/engine/tests/p6_repin_unit_replace_pure.rs	7	unit-replace-vectors.json=cost=80,afford=84,merge=4,execute=21,plan=5,cap=10,armyKeep=144,reserve=27,maxFraction=9,reserveParams=3
+rust-port/engine/tests/p6_repin_wojna_2_battle_mode.rs	3	battle-mode.json=cases=64
+rust-port/engine/tests/p6_repin_wojna_2_generals.rs	13	general-quick-follow.json=labels=5,planEnabled=260,issue=260,tracked=220,sync=260; generals.json=limit=20,slots=60,canRecruit=120,stone=2,purchase=600,nearest=260,followDest=160,batch=80
+rust-port/engine/tests/p6_repin_wojna_2_r3_battle_mode.rs	3	battle-mode-restore.json=versions=9,manuals=7,restoreOut=9,rows=126
+rust-port/engine/tests/p6_repin_wojna_2_r3_nearest_nan.rs	1	nearest-nan.json=400
+rust-port/engine/tests/p6_repin_wojna_2_r3_planned_march.rs	3	planned-march-general.json=fromSave=900,toSave=300
+rust-port/engine/tests/p6_repin_wojna_2_r4_save.rs	8	planned-march-general.json=fromSave=900,toSave=300; save-meta.json=cases=576
+rust-port/engine/tests/p6_repin_wojna_3_hook.rs	7	hook.json=mainChecks=7,cases=700
+rust-port/engine/tests/p6_repin_wojna_a_formation.rs	5	formation-rules.json=classifyCases=2031,slotCases=711,compactCases=1872
+rust-port/engine/tests/p6_repin_wojna_a_leadership.rs	5	army-leadership.json=academyCases=207,moraleCases=460,ratioCases=1204,withdrawCases=1204
+rust-port/engine/tests/p6_repin_wojna_a_promotion.rs	2	ai-era-unit-promotion.json=catalog=12,cases=618
+rust-port/engine/tests/p6_repin_wojna_b_ai_general.rs	7	ai-general-war-campaign.json=reachCases=400,chooseCases=700,reconcileCases=1500,recordCases=400,saveCases=300,restoreCases=500,edgeRestore=2
+rust-port/engine/tests/p6_repin_wojna_b_army_consolidation.rs	6	army-consolidation.json=flagCases=3,pickCases=600,candCases=600,assignCases=700,warCases=300,splitCases=700
+rust-port/engine/tests/p6_repin_wojna_c_move_range.rs	12	ai-move-range.json=truncateCases=900,defaultCostCases=500,farthestCases=900,farthestDefaultCases=300,occupancyCases=400,claimCases=700
+rust-port/engine/tests/p6_repin_wojna_c_war_brake.rs	24	diplomacy-tick-war-brake.json=flagCases=3,advanceCases=900,stepCases=500,pairCases=200,krokCases=700,tradeCases=1000,queueCases=500,parseCases=500,declarerCases=400,dobraCases=12,eligCases=300,pairsCases=200
+rust-port/engine/tests/p6_repin_wojna_d_engage.rs	12	web-dc8a3adc-w12.json=scenarios=300
+rust-port/engine/tests/p6_repin_wojna_d_nav.rs	23	-
+rust-port/engine/tests/p6_repin_wojna_d_vectors.rs	1	web-dc8a3adc-w12.json=scenarios=300; web-dc8a3adc.json=scenarios=300
+rust-port/engine/tests/p6_siege_capital_plunder.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_capture_events.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_city_fortification.rs	5	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_surrender.rs	10	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_activate.rs	2	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_approach.rs	5	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_approach_k1.rs	8	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_autobatch.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_autophase.rs	2	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_blow.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_blow_env.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_blow_full.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_breach.rs	15	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_class_adapters.rs	5	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_classify.rs	4	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_end.rs	8	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_endcheck.rs	9	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_fastforward.rs	3	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_inputs_pos.rs	1	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_inputs_terrain.rs	11	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_inputs_unit.rs	2	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_inputs_wall.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_loop.rs	2	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_roundcap.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_siege_tactics_clock.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_siege_tactics_unit.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_tower.rs	12	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_turnseq.rs	1	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_tactics_walk.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_transfer.rs	2	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_transfer_effects.rs	4	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_transfer_effects_q4.rs	12	-
+rust-port/engine/tests/p6_siege_transfer_prod.rs	5	-
+rust-port/engine/tests/p6_siege_transfer_q5.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_wonder_watch.rs	5	vectors.json=5 keys
+rust-port/engine/tests/p6_siege_wonder_wrappers.rs	7	vectors.json=5 keys
+rust-port/engine/tests/p6_stan_ulepszenia.rs	10	vectors.json=5 keys
+rust-port/engine/tests/p6_stan_ulepszenia_border.rs	2	shared_border.json=cases=136
+rust-port/engine/tests/p6_state_src.rs	5	state_src.json=scenarios=278,civCases=120,podzialCases=80
+rust-port/engine/tests/p6_tickdiplo.rs	1	tick.json=rows=2000
+rust-port/engine/tests/p6_trade_pin.rs	2	trade.json=scenarios=62,income_cases=1104,loaders=18,border_cases=260,collation_pairs=2500
+rust-port/engine/tests/p6_turn_econ_res_pipeline.rs	8	pipeline.json=recipes=9,scenarios=461,convCases=6903,eraCases=640,outMultCases=96,inflowCases=144
+rust-port/engine/tests/p6_unit_power_maxnan.rs	2	maxnan.json=acc=225,hits=1125,ranges=225
+rust-port/engine/tests/p6_unit_replace_cost.rs	4	unit-replace-cost-vectors.json=money=22176,hp=525,pinData=75,productionMoney=9504
+rust-port/engine/tests/p6_unit_replace_defs.rs	7	category-discrepancies.json=0; category-vectors-edge.json=32; category-vectors-pin.json=75; category-vectors-rust.json=75
+rust-port/engine/tests/p6_unit_replace_l2.rs	6	-
+rust-port/engine/tests/p6_unit_replace_l3.rs	8	unit-replace-vectors.json=cost=80,afford=84,merge=4,execute=21,plan=5,cap=10,armyKeep=144,reserve=27,maxFraction=9,reserveParams=3
+rust-port/engine/tests/p6_unit_replace_l3_state.rs	13	pre-etap2-state.json=players=1,cities=1,units=1,lastAdvancedPhases=9
+rust-port/engine/tests/p6_unit_replace_progress.rs	5	unit-replace-progress-vectors.json=cases=3525
+rust-port/engine/tests/p6_w6s_cooldown.rs	5	cooldown-vectors.json=keyFor=5,partnerOwner=3,ops=18,cooldownStates=18,finalState=0
+rust-port/engine/tests/p6_w6s_locks.rs	5	locks.json=4000
+rust-port/engine/tests/p6_w6s_peace.rs	6	vectors.json=5 keys
+rust-port/engine/tests/p6_w6s_siege.rs	10	siege.json=enemyPairs=6,cases=1500,aiAllow=25
+rust-port/engine/tests/p6_wire_war_declare.rs	15	-
+rust-port/engine/tests/p6_wire_war_declare_peace.rs	7	-
+rust-port/engine/tests/p6_wire_war_dipl_steps.rs	8	vectors.json=5 keys
+rust-port/engine/tests/p6_wire_war_diplo.rs	13	phase.json=scenarios=6; primitives.json=advanceCrisisCounter=42,crisisStepForPair=8,pickWarDeclarer=3,brakeWarOutcome=9,sortCrisisQueue=1,dobraWolaTurnStep=8,isAiAiEligibleOwner=6,aiAiPairs=4,crisisPairKey=4,parseCrisisCounters=1
+rust-port/engine/tests/p6_wire_war_epoch.rs	9	vectors.json=5 keys
+rust-port/engine/tests/p6_wire_war_forced_step.rs	24	-
+rust-port/engine/tests/p6_wire_war_inputs.rs	16	vectors.json=5 keys
+rust-port/engine/tests/p6_wire_war_march_adapter.rs	5	-
+rust-port/engine/tests/p6_wire_war_march_core.rs	12	-
+rust-port/engine/tests/p6_wire_war_march_vectors.rs	1	p6_wire_war_march_vectors.json=scenarios=500; p6_wire_war_view_vectors.json=scenarios=4
+rust-port/engine/tests/p6_wire_war_pipeline.rs	7	-
+rust-port/engine/tests/p6_wire_war_pop.rs	9	old_state_pre_pop.json=players=2,cities=2,units=1,lastAdvancedPhases=0; shared_border.json=cases=136
+rust-port/engine/tests/p6_wire_war_siege_aiai.rs	5	vectors.json=5 keys
+rust-port/engine/tests/p6_wire_war_siege_aiai_peace.rs	4	vectors.json=5 keys
+rust-port/engine/tests/p6_wire_war_siege_aiai_seq.rs	4	-
+rust-port/engine/tests/p6_wire_war_state.rs	14	-
+rust-port/engine/tests/p6_wire_war_state_owner.rs	9	-
+rust-port/engine/tests/p6_wire_war_state_snapshot.rs	8	opaque-web.json=forcedEraPeaceUntilNextEraByPairKey=2,forcedWarWavesByPairKey=2,aiGeneralWarCampaignByOwner=2
+rust-port/engine/tests/p6_wire_war_stores.rs	7	save_pre_stores.json=cities=2,lastAdvancedPhases=0,players=2,units=1
+rust-port/engine/tests/p6_wire_war_view.rs	6	p6_wire_war_view_vectors.json=scenarios=4
+rust-port/engine/tests/p6_zapis_era_zapisu.rs	8	-
+rust-port/engine/tests/p6_zapis_erawar_counts.rs	11	zapis.json=28
+rust-port/engine/tests/p6_zapis_erawar_save.rs	5	-
+rust-port/engine/tests/p6_zapis_loader_migrate.rs	4	-
+rust-port/engine/tests/p6_zapis_migracje_generals_vectors.rs	1	generals-demotion.json=cases=407
+rust-port/engine/tests/p6_zapis_migracje_meta_flags.rs	5	-
+rust-port/engine/tests/p6_zapis_migracje_planned_dedupe.rs	2	-
+rust-port/engine/tests/p6_zapis_migracje_snapshot_flags.rs	3	-
+rust-port/engine/tests/p6_zapis_migracje_snapshot_load.rs	10	-
+rust-port/engine/tests/p6_zapis_migracje_stack_vectors.rs	1	stack-split.json=cases=303
+rust-port/engine/tests/p6_zapis_replay_migrate.rs	6	-
+rust-port/engine/tests/parity_suite.rs	11	-
+rust-port/engine/tests/pathfinding.rs	8	-
+rust-port/engine/tests/playable_slice.rs	7	-
+rust-port/engine/tests/recruitment.rs	8	-
+rust-port/engine/tests/replay.rs	6	-
+rust-port/engine/tests/resource_production.rs	7	-
+rust-port/engine/tests/rng.rs	4	-
+rust-port/engine/tests/road_movement_multipliers.rs	3	-
+rust-port/engine/tests/save_load.rs	6	-
+rust-port/engine/tests/smoke.rs	2	-
+rust-port/engine/tests/state_dto.rs	10	-
+rust-port/engine/tests/steam_adapter.rs	5	-
+rust-port/engine/tests/structure_defense_max.rs	3	-
+rust-port/engine/tests/terrain_movement_fix.rs	9	-
+rust-port/engine/tests/trade.rs	12	-
+rust-port/engine/tests/turn_economy.rs	7	-
+rust-port/engine/tests/unit_epoch.rs	6	-
+rust-port/engine/tests/p6_4_vectors/common.rs	0	maps.json=3 keys
+rust-port/engine/tests/p6_m12_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m10_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m07a_vectors/common.rs	0	web-rivers-a.json=maps=72
+rust-port/engine/tests/p6_m06b2_vectors/common.rs	0	web-enforce-large.json=maps=8; web-enforce-probe.json=maps=18; web-enforce.json=maps=12; web-finalize.json=maps=12; web-specks.json=maps=20; web-tiny.json=maps=32
+rust-port/engine/tests/p6_m04_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m05a_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m05b_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m11_vectors/common.rs	0	web-vectors.json=maps=580
+rust-port/engine/tests/p6_m06b1_vectors/common.rs	0	web-vectors.json=maps=580

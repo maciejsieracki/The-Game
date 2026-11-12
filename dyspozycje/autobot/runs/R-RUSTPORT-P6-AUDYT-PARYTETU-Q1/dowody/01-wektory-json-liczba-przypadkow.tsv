@@ -1,0 +1,367 @@
+rust-port/engine/tests/p6_repin_ai_home_vectors.json	dict	scenarios=160
+rust-port/engine/tests/p6_repin_ai_war_vectors.json	dict	pool=560,slot=84,tag=6,counter=11,nearest=4
+rust-port/engine/tests/p6_repin_armia_follow_vectors.json	dict	scenarios=3097
+rust-port/engine/tests/p6_repin_oblezenie_maszyny_web_vectors.json	dict	quotaExamples=6,cases=52
+rust-port/engine/tests/p6_wire_war_march_vectors.json	dict	scenarios=500
+rust-port/engine/tests/p6_wire_war_view_vectors.json	dict	scenarios=4
+rust-port/engine/tests/p6_power_battle_acc_vectors/legacy_meta.json	dict	bronzeEraEnterTurnByOwner=2,ironEraEnterTurnByOwner=0
+rust-port/engine/tests/p6_power_battle_acc_vectors/vectors.json	dict	cases=480
+rust-port/engine/tests/p6_wire_war_dipl_steps_vectors/vectors.json	dict	payments=5,dobra=9,expire=3,truce=8
+rust-port/engine/tests/p6_empirefood_vectors/empirefood.json	dict	maps=7,scenarios=347
+rust-port/engine/tests/p6_m15_vectors/apply_modifier.json	list	11410
+rust-port/engine/tests/p6_m15_vectors/collect_road_keys.json	list	121
+rust-port/engine/tests/p6_m15_vectors/constants.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_m15_vectors/has_road.json	list	326
+rust-port/engine/tests/p6_m15_vectors/is_road_key.json	list	21
+rust-port/engine/tests/p6_forced_war_g3b_data/cases.json	dict	cases=360,idcmp=11640
+rust-port/engine/tests/p6_repin_ai_drogi_vectors/droga-vectors.json	dict	cases=107
+rust-port/engine/tests/p6_siege_wonder_watch_vectors/vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_m14_vectors/range.json	dict	by_owner=40,culture=60,religion=144,dominant=195,border=18
+rust-port/engine/tests/p6_m14_vectors/territory.json	dict	radius=160,axial=200,range_for_pop=31,sight=414,owner_at=460,in_territory=400,player_hex=400,border=17
+rust-port/engine/tests/p6_m14_vectors/wonder.json	dict	city=80,pick=80,owner=80
+rust-port/engine/tests/p6_m14_vectors/work.json	dict	build=60,owned_by=400,filter=120,center_keys=40,reczne_legal=1680,reconcile_owner=120,reconcile_all=100
+rust-port/engine/tests/p6_m06a_vectors/web-vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_siege_capital_plunder_vectors/vectors.json	dict	cityFoundOrder=10,cases=123
+rust-port/engine/tests/p6_wire_war_siege_aiai_vectors/vectors.json	dict	siege=400,peace=300,pairs=200
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/brake.json	dict	cases=140
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/gate.json	dict	paramsets=10,cases=13590
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/main_cores.json	dict	paramsets=10,cases=5543
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/price.json	dict	paramsets=10,cases=1370
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/profile.json	dict	aiVariants=10,paramsets=10,synRows=244,cases=5761
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/record.json	dict	cases=6006
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/signals.json	dict	paramsets=10,cases=16680
+rust-port/engine/tests/p6_dyplomacja_profil_wojny_pokoju_vectors/weariness.json	dict	cases=778
+rust-port/engine/tests/p6_repin_ai_zakup_purchase_vectors/purchase-vectors.json	dict	cases=75
+rust-port/engine/tests/p6_siege_tactics_autophase_vectors/vectors.json	dict	cases=2914
+rust-port/engine/tests/p6_siege_tactics_blow_vectors/vectors.json	dict	cases=626
+rust-port/engine/tests/p6_siege_tactics_tower_vectors/vectors.json	dict	cases=1560
+rust-port/engine/tests/p6_aipeace_balans_vectors/vectors.json	dict	decide=414,helpers=18,ticks=9
+rust-port/engine/tests/p6_zapis_migracje_vectors/generals-demotion.json	dict	cases=407
+rust-port/engine/tests/p6_zapis_migracje_vectors/stack-split.json	dict	cases=303
+rust-port/engine/tests/p6_power_acc_wiring_vectors/vectors.json	dict	cases=480
+rust-port/engine/tests/p6_siege_transfer_vectors/vectors.json	dict	capitalBuildings=2,transfer=160
+rust-port/engine/tests/p6_heal_maxhp_vectors/maxhp.json	dict	norm=148,defs=196,emh=1176,vet=22,wins=12,par=14,closure=390,scenarios=400
+rust-port/engine/tests/p6_m06a4_vectors/chan-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_m06a4_vectors/jagged-vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_m06a4_vectors/trim-vectors.json	dict-nolist	5 keys
+rust-port/engine/tests/p6_m06a4_vectors/web-vectors.json	dict-nolist	5 keys
+rust-port/engine/tests/p6_siege_tactics_roundcap_vectors/vectors.json	dict	gate=600,beginTurn=400,ff=500
+rust-port/engine/tests/p6_repin_ai_zakup_vectors/zakup-vectors.json	dict	cases=39
+rust-port/engine/tests/p6_siege_city_fortification_vectors/vectors.json	dict	cityFortificationKind=214,meleeBlockedByWall=324,attackerWallEntryIsBreach=206
+rust-port/engine/tests/p6_repin_dyplomacja_dane2_vectors/web-vectors.json	dict-nolist	6 keys
+rust-port/engine/tests/p6_1b_vectors/web-vectors.json	dict	prereqs=29,researchedSets=9,epochNumbers=26,scenarios=34
+rust-port/engine/tests/p6_dyplo_multiwar2_peace_helpers_data/helpers.json	dict	shares=293,clearly=14,kinked=10
+rust-port/engine/tests/p6_siege_tactics_inputs_wall_vectors/vectors.json	dict	cityWall=588,ctorWall=400,inside=700,fortBonus=700,wallBonusProcFor=700,hasMur=17,cityTerrMult=300,terrDefMult=300,fortify=300
+rust-port/engine/tests/p6_repin_d2_full_vectors/full-main.json	dict	cases=1500
+rust-port/engine/tests/p6_8h2_vectors/cases.json	dict	maps=2,city=8476,hex=1710,unlock=3960,labelKeys=22,labelUniverse=51,religion=560
+rust-port/engine/tests/p6_8h2_vectors/vectors.json	dict	city=8476,hexLabel=1710,unlock=3960,labelsUnlock=22,plPairs=2601,religion=560
+rust-port/engine/tests/p6_adv_q3_vectors/q3.json	dict	maps=18,scenarios=666,directPraca=90,hdirect=900,hparams=128,hfull=700,p5direct=160,unitDirect=120,hriver=80
+rust-port/engine/tests/p6_wire_war_inputs_vectors/vectors.json	dict	pairParams=121,tickBrake=48
+rust-port/engine/tests/p6_repin_ekonomii_vectors/era_tile.json	dict	cases=1760
+rust-port/engine/tests/p6_zapis_erawar_data/zapis.json	list	28
+rust-port/engine/tests/p6_repin_ekonomia_e_vectors/citizen.json	dict	variants=9,realRates=3,cases=2480,display=360,rateGrid=135
+rust-port/engine/tests/p6_repin_ekonomia_e_vectors/spichlerz.json	dict	params=92,throughput=144,amount=42,pay=1435
+rust-port/engine/tests/p6_repin_ekonomia_e_vectors/stats.json	dict-nolist	16 keys
+rust-port/engine/tests/p6_repin_ekonomia_e_vectors/terrain_rates.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_order_lane_vectors/order_lane.json	dict	scenarios=750,e2e=80,effectsCases=300,postCases=200,rngCases=17,garrCases=120,warCases=150,cultCases=250,relCases=300,pressCases=250,civRelCases=38,probeBits=300
+rust-port/engine/tests/p6_7a_vectors/edge.json	dict	advance=40,simulate=80,postCentral=40,postCentralSiege=40,matrixSynth=40,raiseFlow=60,planFlow=40,balanceFlow=40
+rust-port/engine/tests/p6_7a_vectors/empire.json	dict	recompute=60,advance=100,accessors=0,simulate=150,plan=70,balance=70,raise=70,maxSafe=70,solvent=0,afterClear=3
+rust-port/engine/tests/p6_7a_vectors/growth.json	dict	ration=225,cityLevel=114,cost=400,matrix=59,diffMult=4,popCap=120,popCapCustom=60,percent=700,fractional=900,gain=300,turns=300,hunger=700,ensure=122,build=30
+rust-port/engine/tests/p6_7a_vectors/manpower.json	list	300
+rust-port/engine/tests/p6_7a_vectors/params.json	dict	WYZYWIENIE_LEVELS=13,WYZYWIENIE_GROWTH_PCT=13,CIV_MATRIX_GROWTH_DIFFICULTY_MULT=3,WZROST_LUDNOSCI_PACE=3,magazynEra=14
+rust-port/engine/tests/p6_7a_vectors/post_central.json	dict	scenarios=100
+rust-port/engine/tests/p6_7a_vectors/tempo_stawki.json	dict	tempo=424,happiness=59,era=71,spichlerz=8,spichlerzStates=5
+rust-port/engine/tests/p6_r7k7b_vectors/vectors.json	dict	deactivate=200,sync=264
+rust-port/engine/tests/p6_dyplo_multiwar2_balance_data/balance.json	dict	rows=3276
+rust-port/engine/tests/p6_m06a8_vectors/ensure-vectors.json	dict	cases=418
+rust-port/engine/tests/p6_m06a8_vectors/pomiary-r1-vectors.json	dict	cases=39
+rust-port/engine/tests/p6_siege_tactics_approach_vectors/vectors.json	dict	threatSlack=302,shooterThreats=250,approach=2000,moveRefused=1320,safeApproachGoal=706
+rust-port/engine/tests/p6_siege_tactics_activate_vectors/vectors.json	dict	cases=700
+rust-port/engine/tests/p6_adv_q4_vectors/q4.json	dict	maps=7,scenarios=642
+rust-port/engine/tests/p6_adv_q4_vectors/q4b.json	dict	maps=5,extra=1348
+rust-port/engine/tests/p6_adv_q4_vectors/q4c.json	dict	maps=7,scenarios=80
+rust-port/engine/tests/p6_dyplomacja_multiwar3_f_data/brake.json	list	784
+rust-port/engine/tests/p6_dyplomacja_multiwar3_f_data/march.json	list	35
+rust-port/engine/tests/p6_repin_d2_head_vectors/head-main.json	dict	cases=1200
+rust-port/engine/tests/p6_power_rest_vectors/vectors.json	dict	dominant=60,religia=60,infra=60,tech=60,zdobycze=40,bitwy=11
+rust-port/engine/tests/p6_state_src_vectors/state_src.json	dict	scenarios=278,civCases=120,podzialCases=80
+rust-port/engine/tests/p6_m09_vectors/web-vectors.json	dict-nolist	6 keys
+rust-port/engine/tests/p6_repin_wojna_2_r3_vectors/battle-mode-restore.json	dict	versions=9,manuals=7,restoreOut=9,rows=126
+rust-port/engine/tests/p6_repin_wojna_2_r3_vectors/nearest-nan.json	list	400
+rust-port/engine/tests/p6_repin_wojna_2_r3_vectors/planned-march-general.json	dict	fromSave=900,toSave=300
+rust-port/engine/tests/p6_adv_q5_vectors/q5.json	dict	maps=7,buildingCatalogs=4,scenarios=680
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_0.json	list	36
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_1.json	list	36
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_2.json	list	36
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_3.json	list	36
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_4.json	list	36
+rust-port/engine/tests/p6_adv_q5_vectors/unit_table_5.json	list	36
+rust-port/engine/tests/p6_siege_surrender_vectors/vectors.json	dict	phase=120,path=200,removal=80,besieger=40
+rust-port/engine/tests/p6_m06a7_vectors/annular-vectors.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_m06a7_vectors/bridge-vectors.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5a_vectors/cost.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5a_vectors/display.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5a_vectors/ruch.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5a_vectors/stack.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_repin_wojna_c_vectors/ai-move-range.json	dict	truncateCases=900,defaultCostCases=500,farthestCases=900,farthestDefaultCases=300,occupancyCases=400,claimCases=700
+rust-port/engine/tests/p6_repin_wojna_c_vectors/diplomacy-tick-war-brake.json	dict	flagCases=3,advanceCases=900,stepCases=500,pairCases=200,krokCases=700,tradeCases=1000,queueCases=500,parseCases=500,declarerCases=400,dobraCases=12,eligCases=300,pairsCases=200
+rust-port/engine/tests/p6_unit_replace_progress_vectors/unit-replace-progress-vectors.json	dict	cases=3525
+rust-port/engine/tests/p6_dyplomacja_multiwar3_e_data/locks.json	list	2500
+rust-port/engine/tests/p6_siege_tactics_fastforward_vectors/vectors.json	dict	cases=403
+rust-port/engine/tests/p6_forced_war_g2_data/cases.json	list	306
+rust-port/engine/tests/p6_turn_econ_res_vectors/pipeline.json	dict	recipes=9,scenarios=461,convCases=6903,eraCases=640,outMultCases=96,inflowCases=144
+rust-port/engine/tests/p6_ranged_damage_nan_vectors/ranged.json	dict	rows=8238
+rust-port/engine/tests/p6_8d_vectors/citizen_upkeep.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_8d_vectors/gold_deficit.json	dict	params=25,advance=40,statMult=132,hpLoss=120
+rust-port/engine/tests/p6_8d_vectors/mennica_zloto_grace.json	dict	cases=10
+rust-port/engine/tests/p6_8d_vectors/wealth.json	dict	load=16,fn=1344,advance=43
+rust-port/engine/tests/p6_8b_vectors/helpers.json	dict	civKey=31,allowed=143,availability=17,blank=8,specialReplacement=1034,hasReplacement=672,goldCost=31,committed=408,queued=408,superseded=400,applyCompleted=603,unlockFlag=50,tokens=16,matchName=612
+rust-port/engine/tests/p6_8b_vectors/p1b-c2-icu-names.json	list	42039
+rust-port/engine/tests/p6_8b_vectors/p1b-c2a.json	dict	manpowerCostOf=10780,setPaused=14
+rust-port/engine/tests/p6_8b_vectors/p1b-c2b-nan-sort.json	list	400
+rust-port/engine/tests/p6_8b_vectors/p1b-c2b.json	dict	allTechs=9,halfTechs=5,unitsProj=75,unitsProjSynth=79,buildingsProj=42,ctxDoc=16,cases=2592
+rust-port/engine/tests/p6_8b_vectors/p1b-c2c-nan-sort.json	list	400
+rust-port/engine/tests/p6_8b_vectors/p1b-c2c.json	dict	allTechs=27,halfTechs=14,unitsProj=75,unitsProjSynth=76,buildingsProj=42,ctxs=350,cases=700
+rust-port/engine/tests/p6_8b_vectors/p1b.json	dict	stockShortfall=416,stockShortfallProto=2,populationCost=5,stripDiacriticsChanged=12771
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-coast-grow.json	dict	maps=120,cases=6500
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-edges.json	dict	terrain_keys=13,maps=150,cases=19092
+rust-port/engine/tests/p6_m07b2_vectors/web-rivers-b-q2r4.json	dict	maps=18,cases=2032
+rust-port/engine/tests/p6_repin_b3_vectors/civ_matrix_mod.json	dict	cywilizacje=15
+rust-port/engine/tests/p6_repin_b3_vectors/route_cash.json	dict	cases=5200
+rust-port/engine/tests/p6_repin_b3_vectors/route_cash_mod.json	dict	cases=5200
+rust-port/engine/tests/p6_repin_b3_vectors/wealth_owner.json	dict	capModifierCases=60,multiplierModifierCases=60,ownerCases=312
+rust-port/engine/tests/p6_repin_b3_vectors/wealth_owner_mod.json	dict	capModifierCases=60,multiplierModifierCases=60,ownerCases=312
+rust-port/engine/tests/p6_repin_d_economy_vectors/mnoznik-main.json	dict	forCiv=588,byDiff=1029,yieldMult=4
+rust-port/engine/tests/p6_repin_d_economy_vectors/mnoznik-zero.json	dict	forCiv=588,byDiff=1029,yieldMult=4
+rust-port/engine/tests/p6_siege_tactics_inputs_pos_vectors/vectors.json	dict	cases=1542
+rust-port/engine/tests/p6_repin_autoimpr_vectors/gate.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_repin_autoimpr_vectors/roadplan.json	dict	plans=400
+rust-port/engine/tests/p6_repin_autoimpr_vectors/terrain.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_siege_tactics_inputs_unit_vectors/vectors.json	dict	units=75,cases=2447
+rust-port/engine/tests/p6_wire_war_pop_vectors/old_state_pre_pop.json	dict	players=2,cities=2,units=1,lastAdvancedPhases=0
+rust-port/engine/tests/p6_wire_war_pop_vectors/shared_border.json	dict	cases=60
+rust-port/engine/tests/p6_siege_tactics_vectors/vectors.json	dict	repels=4,winner=432
+rust-port/engine/tests/p6_repin_wojna_d_vectors/web-dc8a3adc-w12.json	dict	scenarios=300
+rust-port/engine/tests/p6_repin_wojna_d_vectors/web-dc8a3adc.json	dict	scenarios=300
+rust-port/engine/tests/p6_dyplomacja_truce_aggressor_vectors/aggressor.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_dyplomacja_truce_aggressor_vectors/gates.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_dyplomacja_truce_aggressor_vectors/honor_treaties.json	dict	honor=6276
+rust-port/engine/tests/p6_dyplomacja_truce_aggressor_vectors/truce.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_m07b3_vectors/web-rivers-b-q3-closure.json	dict	maps=15,cases=15
+rust-port/engine/tests/p6_m07b3_vectors/web-rivers-b-q3.json	dict	maps=89,cases=14589
+rust-port/engine/tests/p6_8j_vectors/society.json	dict	scale=18,fns=936,osiedle=270,happiness=48,law=42
+rust-port/engine/tests/p6_8b2_vectors/p2-catalog.json	dict	buildingsProj=42,unitsProj=75,catCases=450
+rust-port/engine/tests/p6_8b2_vectors/p2-output.json	dict	outCases=360
+rust-port/engine/tests/p6_8b2_vectors/p2-praca.json	dict	pracaCases=232
+rust-port/engine/tests/p6_8b2_vectors/p2-recruit.json	dict	prodCases=44,advCases=444,rushCases=36
+rust-port/engine/tests/p6_8b2_vectors/p2-unit-cost.json	dict	unitCases=158
+rust-port/engine/tests/p6_8g_vectors/okolica.json	dict	cityRange=22,surroundingCap=22,score=500,assignScore=2000,wagiFocus=5,keys=72,tiles=144,edge=12,locale=3136,auto=320,rebalance=722,adjust=9504,lost=9,collect=90,resolve=256,nanBig=24
+rust-port/engine/tests/p6_8g_vectors/v8sort.json	dict	cases=138
+rust-port/engine/tests/p6_forced_war_g3_data/cases.json	list	554
+rust-port/engine/tests/p6_1d_vectors/web-vectors.json	dict	sourceFiles=3,units=174,unitCategory=174,repUnits=18,cels=19,matchesCel=174,contexts=160,palette=31,lists=262,apply=1026,applyEntries=273,undefinedMult=6,matrixBonusy=51,mults=1026,discount=29,combatMod=262,applyMul=7,stripCat=49,terrainOut=49
+rust-port/engine/tests/p6_1e_vectors/web-vectors.json	dict	sourceFiles=6,texts=240,scenarios=3
+rust-port/engine/tests/p6_dyplo_multiwar2_peace_ai_data/peace_ai.json	dict	ticks=15
+rust-port/engine/tests/p6_dyplo_multiwar2_tick_data/tick.json	dict	scenarios=30
+rust-port/engine/tests/p6_m06a5_vectors/landfrac-edge-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_m06a5_vectors/landfrac-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_repin_wojna_3_vectors/hook.json	dict	mainChecks=7,cases=700
+rust-port/engine/tests/p6_repin_dystans_vectors/dystans-acc.json	dict	acc=8,hits=6,hitsAcc=4
+rust-port/engine/tests/p6_repin_dystans_vectors/dystans-fieldpower.json	list	400
+rust-port/engine/tests/p6_repin_dystans_vectors/dystans-mult.json	list	19
+rust-port/engine/tests/p6_repin_dystans_vectors/dystans-petla.json	dict	cases=600
+rust-port/engine/tests/p6_repin_dystans_vectors/dystans-shots.json	dict	shots=2400,halves=80
+rust-port/engine/tests/p6_8e_vectors/economy_upkeep_p1.json	dict	loadStorage=132,foodCap=120,resCap=120,foodBuf=14,clamp=700,applyFood=400,intake=300,globalCap=80,conquer=200,loadOwner=132,ownerCap=4264,ownerEra=492,magazynEra=12,keyCases=24,recon=512
+rust-port/engine/tests/p6_8e_vectors/economy_upkeep_p2.json	dict	loadUpkeep=160,buildingUpkeep=6048,totalBuildingUpkeep=300,buildingResourceUpkeep=792,readBuildingResourceUpkeepRatio=60,totalBuildingResourceUpkeep=120,buildingResourceUpkeepForBuiltIds=120,previewOwnerBuildingResourceUpkeep=120,addResourceCosts=200,unitResourceUpkeep=84,unitRecruitUpkeepReserve=504,recruit=501,defaultUnitUpkeepByCategory=17,unitUpkeep=400,totalUnitUpkeep=100,totalUnitResourceUpkeep=120,previewOwnerTotalResourceUpkeep=80,unitFoodPerTurn=400,militaryFoodConsumption=80,upkeepBalance=160,buildingUpkeepForBuiltIds=160,fullCatalog=63,catalogIds=43
+rust-port/engine/tests/p6_econ_post_vectors/post_0.json	dict	scenarios=347
+rust-port/engine/tests/p6_unit_replace_defs_vectors/category-discrepancies.json	list	0
+rust-port/engine/tests/p6_unit_replace_defs_vectors/category-vectors-edge.json	list	32
+rust-port/engine/tests/p6_unit_replace_defs_vectors/category-vectors-pin.json	list	75
+rust-port/engine/tests/p6_unit_replace_defs_vectors/category-vectors-rust.json	list	75
+rust-port/engine/tests/p6_repin_unit_replace_vectors/unit-replace-vectors.json	dict	cost=80,afford=84,merge=4,execute=21,plan=5,cap=10,armyKeep=144,reserve=27,maxFraction=9,reserveParams=3
+rust-port/engine/tests/p6_repin4_vectors/capsep.json	dict	cases=4860
+rust-port/engine/tests/p6_repin4_vectors/freshwater.json	dict	cases=93
+rust-port/engine/tests/p6_repin4_vectors/sight.json	dict	cases=120
+rust-port/engine/tests/p6_repin4_vectors/topup.json	dict	cases=221
+rust-port/engine/tests/p6_repin4_vectors/topup_bound.json	dict	cases=99
+rust-port/engine/tests/p6_repin4_vectors/visibility.json	dict	border=7,cases=160
+rust-port/engine/tests/p6_4_vectors/core.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_4_vectors/embark.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_4_vectors/maps.json	dict	maps=11
+rust-port/engine/tests/p6_4_vectors/march.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_4_vectors/rally.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_4_vectors/scout.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_8a_vectors/building_upgrades.json	dict	suppressed=49,chain=240,composition=240,display=238,presence=315,groups=237,structural=8,stats=196,groupOrder=8
+rust-port/engine/tests/p6_8a_vectors/defaults-brak-rol.json	dict	cases=89
+rust-port/engine/tests/p6_8a_vectors/defaults-inne-wartosci.json	dict	cases=89
+rust-port/engine/tests/p6_8a_vectors/defaults-realny.json	dict	cases=89
+rust-port/engine/tests/p6_8a_vectors/pending.json	dict	probes=14,ids=5,scenarios=40
+rust-port/engine/tests/p6_8a_vectors/production_costs.json	dict	itemCost=960,buildingLevel=1400,buildingItems=313,unitItems=565,location=12,stock=135,strip=265
+rust-port/engine/tests/p6_8a_vectors/structural-brak.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-napis.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-null.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-realny.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-ujemna.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-ulamek.json	dict	cases=8
+rust-port/engine/tests/p6_8a_vectors/structural-zero.json	dict	cases=8
+rust-port/engine/tests/p6_credibility_vectors/save_before_cred.json	dict	bronzeEraEnterTurnByOwner=0,ironEraEnterTurnByOwner=0,diplomacyPairMeta=0,pendingDiplomacyInbox=0
+rust-port/engine/tests/p6_credibility_vectors/vectors.json	dict	pure=250,sequences=48
+rust-port/engine/tests/p6_m02_vectors/deposit-era.json	dict	hexCases=153,ensureCases=0,hidden=8
+rust-port/engine/tests/p6_m02_vectors/generator.json	dict	rozmiarKeysOrder=6,menuLabels=6,fromMenuLabel=68
+rust-port/engine/tests/p6_m02_vectors/new-game.json	dict	mapSizeFromDims=216,perLabel=68,rosterCases=816,epochs=16,tiers=3,landFractionPercentOpts=7,densityToLabel=3,clampMiasta=66,presets=9,tierFns=3,riverParams=93,landFraction=4,landFractionOpts=60,worldGenNumbers=10
+rust-port/engine/tests/p6_m02_vectors/norm.json	list	68
+rust-port/engine/tests/p6_m02_vectors/quality.json	dict	menuLabels=3,toLabel=3,presets=3,perLabel=93
+rust-port/engine/tests/p6_m02_vectors/river-switch.json	dict	keys=2,cases=2028
+rust-port/engine/tests/p6_m06a2_vectors/web-vectors.json	dict-nolist	5 keys
+rust-port/engine/tests/p6_w6s_siege_vectors/siege.json	dict	owners=6,matrices=6,cases=216,sideMatrices=6,sideAlliances=4,sideCases=864
+rust-port/engine/tests/p6_w6s_peace_vectors/vectors.json	dict	decide=2712
+rust-port/engine/tests/p6_repin_d2_imp_vectors/imp-main.json	dict	tiles=2000,cities=400,hap=1900,full=800
+rust-port/engine/tests/p6_8h_vectors/cyna.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_8h_vectors/society.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_8h_vectors/zelazo.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_8h_vectors/zloto.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_trade_pin_vectors/trade.json	dict	scenarios=62,income_cases=1104,loaders=18,border_cases=260,collation_pairs=2500
+rust-port/engine/tests/p6_siege_tactics_inputs_terrain_vectors/vectors.json	dict	cccCps=964,seq=2200,norm=631,bonus=340,def=700,river=700,city=700
+rust-port/engine/tests/p6_repin_b_vectors/ration_era.json	dict	eraMults=15,cases=1620
+rust-port/engine/tests/p6_repin_b_vectors/recompute_era.json	dict	recompute=1404
+rust-port/engine/tests/p6_ai_peace_city_offer_data/vectors.json	dict	decide=2600
+rust-port/engine/tests/p6_5b_vectors/buildings.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5b_vectors/format.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_5b_vectors/manpower.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_5b_vectors/replenish.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_m12_vectors/web-vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_power_producers_vectors/vectors.json	dict	ludki=40,pobor=60,kultura=40
+rust-port/engine/tests/p6_m10_vectors/web-vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_repin_wojna_b_vectors/ai-general-war-campaign.json	dict	reachCases=400,chooseCases=700,reconcileCases=1500,recordCases=400,saveCases=300,restoreCases=500,edgeRestore=2
+rust-port/engine/tests/p6_repin_wojna_b_vectors/army-consolidation.json	dict	flagCases=3,pickCases=600,candCases=600,assignCases=700,warCases=300,splitCases=700
+rust-port/engine/tests/p6_dyplomacja_multiwar3_g_data/war-gate.json	list	12288
+rust-port/engine/tests/p6_siege_tactics_siege_tactics_clock_vectors/vectors.json	dict	cases=422
+rust-port/engine/tests/p6_wire_war_epoch_vectors/vectors.json	dict	cases=44
+rust-port/engine/tests/p6_siege_tactics_classify_vectors/vectors.json	dict	names=872,canShoot=20,normName=240
+rust-port/engine/tests/p6_1_vectors/first-player-city.json	dict	awaiting=14,awaitingWithOwnerOne=14,reveal=108,validate=16
+rust-port/engine/tests/p6_1_vectors/web-vectors.json	dict	sourceFiles=4,civEntry=16,hudLabels=19,rosterIds=5,rng=7,majorAi=7,seats=8
+rust-port/engine/tests/p6_wire_war_stores_vectors/save_pre_stores.json	dict	cities=2,lastAdvancedPhases=0,players=2,units=1
+rust-port/engine/tests/p6_siege_tactics_loop_vectors/vectors.json	dict	sequences=360
+rust-port/engine/tests/p6_siege_tactics_endcheck_vectors/vectors.json	dict	stall=500,pat=300,endCheck=1200
+rust-port/engine/tests/p6_repin_d_work_tax_vectors/web-vectors-edge.json	dict	tax=484,convert=1024,serialize=22
+rust-port/engine/tests/p6_repin_d_work_tax_vectors/web-vectors.json	dict	tax=529,convert=1600,canConvert=90,serialize=9,restore=20,exec=96
+rust-port/engine/tests/p6_repin_teren_vectors/teren.json	dict	radiusCases=12,ownerCases=1488,ftnCases=300,foreignCases=500,seqCases=300,captureCases=900
+rust-port/engine/tests/p6_repin_wojna_a_vectors/ai-era-unit-promotion.json	dict	catalog=12,cases=618
+rust-port/engine/tests/p6_repin_wojna_a_vectors/army-leadership.json	dict	academyCases=207,moraleCases=460,ratioCases=1204,withdrawCases=1204
+rust-port/engine/tests/p6_repin_wojna_a_vectors/formation-rules.json	dict	classifyCases=2031,slotCases=711,compactCases=1872
+rust-port/engine/tests/p6_stan_ulepszenia_vectors/vectors.json	dict	state=164
+rust-port/engine/tests/p6_stan_ulepszenia_border_vectors/shared_border.json	dict	cases=136
+rust-port/engine/tests/p6_w6s_locks_vectors/locks.json	list	4000
+rust-port/engine/tests/p6_7b_vectors/cost.json	dict	pace=1978,epochMult=103,scaleCost=2472,eraMult=23,buildingStock=745,stock=1500,labels=35,units=2577,protoQuirk=8
+rust-port/engine/tests/p6_7b_vectors/gate.json	dict	required=1100,labelSatisfied=3024,accessOnly=18,resourceGate=2000,hasRuntimeGate=44,runtimeGate=1800,missingLabels=1200,filter=900,prereq=1608,mennica=36,spDrain=1800,spState=32,spBonus=16,spArmy=8,spHas=40,inactive=1800,filterLabels=600
+rust-port/engine/tests/p6_7b_vectors/nfd.json	dict	changed=14465,sequences=6000
+rust-port/engine/tests/p6_7b_vectors/pool.json	dict	ownerAll=500,ownerOne=500,deduct=900,refund=700,credit=1200,assign=600,explicit=2
+rust-port/engine/tests/p6_m07a_vectors/web-rivers-a-cap.json	list	8856
+rust-port/engine/tests/p6_m07a_vectors/web-rivers-a-grow.json	dict	maps=25
+rust-port/engine/tests/p6_m07a_vectors/web-rivers-a-walk.json	dict	maps=37
+rust-port/engine/tests/p6_m07a_vectors/web-rivers-a.json	dict	maps=72
+rust-port/engine/tests/p6_siege_tactics_siege_tactics_unit_vectors/vectors.json	dict	alive=600,out=400,sides=400,rout=900
+rust-port/engine/tests/p6_6b_vectors/cities.json	dict	podzial=400,save=800
+rust-port/engine/tests/p6_6b_vectors/display.json	dict	format=144,strip=47,technical=48,slot=27,ownerCs=702,clear=3,force=800,mapLabel=900,diplo=300,resolve=1028,sanitize=400,foreign=400
+rust-port/engine/tests/p6_6b_vectors/empire.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_6b_vectors/lists.json	dict	sequence=234,defaultNazwa=90,dedupe=80
+rust-port/engine/tests/p6_6b_vectors/percent.json	dict	clampUlepszenia=32,clampPodzial=32,pulaZBudynkow=32,podzialZPuli=32,snap=38,migratePerTurn=7,resolveRaw=156,effective=500,normalize=230,adjust=6630
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce-large.json	dict	maps=8
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce-probe.json	dict	maps=18
+rust-port/engine/tests/p6_m06b2_vectors/web-enforce.json	dict	maps=12
+rust-port/engine/tests/p6_m06b2_vectors/web-finalize.json	dict	maps=12
+rust-port/engine/tests/p6_m06b2_vectors/web-specks.json	dict	maps=20
+rust-port/engine/tests/p6_m06b2_vectors/web-tiny.json	dict	maps=32
+rust-port/engine/tests/p6_repin_d2_tail_vectors/tail-main.json	dict	cases=2400
+rust-port/engine/tests/p6_power_improvements_vectors/vectors.json	dict	hex=167,owner=80
+rust-port/engine/tests/p6_repin_b2_vectors/building_work_cost.json	dict	cases=14580
+rust-port/engine/tests/p6_repin_b2_vectors/civ_cost_markers.json	dict	cases=51
+rust-port/engine/tests/p6_repin_b2_vectors/unit_money_cost.json	dict	cases=21464
+rust-port/engine/tests/p6_repin_b2_vectors/unit_newest.json	dict	units=14,epochCases=10,cases=88
+rust-port/engine/tests/p6_r7k7c_vectors/payments.json	dict	payments=203
+rust-port/engine/tests/p6_m17_vectors/rebuild.json	dict	cases=66
+rust-port/engine/tests/p6_m17_vectors/serialize.json	dict	cases=49
+rust-port/engine/tests/p6_m17_vectors/validate.json	dict	cases=714
+rust-port/engine/tests/p6_siege_transfer_q5_vectors/vectors.json	dict	garnizon=7,capture=7,auto=10,ration=7,ever=3
+rust-port/engine/tests/p6_m06a3_vectors/web-vectors.json	dict-nolist	5 keys
+rust-port/engine/tests/p6_siege_tactics_blow_full_vectors/vectors.json	dict	units=75,cases=1200
+rust-port/engine/tests/p6_repin_wojna_2_r4_vectors/save-meta.json	dict	cases=576
+rust-port/engine/tests/p6_adv_q6_vectors/q6.json	dict	maps=7,scenarios=295
+rust-port/engine/tests/p6_6a_vectors/conquest.json	dict	foreign=13,unstable=26,captured=420,buildings=260,tick=420,revolt=130,deprecated=130
+rust-port/engine/tests/p6_6a_vectors/founding.json	dict	labels=3,subsequent=80,pick=420,evaluate=420,canAfford=272
+rust-port/engine/tests/p6_6a_vectors/hexclear.json	dict	keepKeys=15,keeps=28,clear=384,apply=260
+rust-port/engine/tests/p6_6a_vectors/visibility.json	dict	maps=24,at=260,path=100,fixed=120,resolver=260,explored=80,keys=24,render=80,terrainPredicates=8,player=220,onMap=160,border=9,citySightExport=5
+rust-port/engine/tests/p6_repin_ekonomia_ceramika_vectors/web.json	dict	ratios=5,levels=4,eras=8,basics=4,upkeep=860,upkeepDefault=43,costs=32,availability=17,wonders=19
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/era.json	list	63
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/eraign.json	list	183
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/intercivgate.json	list	23
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/nap.json	list	67
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/peace.json	dict	payment=648,stepPairState=3
+rust-port/engine/tests/p6_dyplo_multiwar_gates_data/weariness.json	list	66
+rust-port/engine/tests/p6_tickdiplo_vectors/tick.json	dict	rows=2000
+rust-port/engine/tests/p6_m04_vectors/web-vectors.json	dict	private_exports=20
+rust-port/engine/tests/p6_unit_replace_cost_vectors/unit-replace-cost-vectors.json	dict	money=22176,hp=525,pinData=75,productionMoney=9504
+rust-port/engine/tests/p6_8c_vectors/p8c.json	dict	cases=2880
+rust-port/engine/tests/p6_w6s_cooldown_vectors/cooldown-vectors.json	dict	keyFor=5,partnerOwner=3,ops=18,cooldownStates=18,finalState=0
+rust-port/engine/tests/p6_adv_city_econ_vectors/advance.json	dict	scenarios=519,thrCases=360,happyCases=18
+rust-port/engine/tests/p6_adv_city_econ_vectors/heal.json	dict	scenarios=400
+rust-port/engine/tests/p6_repin_ai_zakup_needs_vectors/needs-vectors.json	dict	cases=248
+rust-port/engine/tests/p6_repin_ekon_f_vectors/load_econ_params.json	dict	vectors=400
+rust-port/engine/tests/p6_repin_ekon_f_vectors/popcap.json	dict	cases=888,loadCases=12
+rust-port/engine/tests/p6_repin_ekon_f_vectors/popcap_pinned_inputs.json	dict	vectors=400
+rust-port/engine/tests/p6_repin_ekon_f_vectors/zelazo_mlyn.json	dict	zelazoAccess=84,zelazoNative=168,sumCases=12,mlyn=36
+rust-port/engine/tests/p6_m16_vectors/gallery.json	dict	terrain=264,combo=3000,show=6000
+rust-port/engine/tests/p6_m16_vectors/qualifier.json	dict	cases=320,keys=33
+rust-port/engine/tests/p6_m16_vectors/rules.json	dict	strip_forest_removed=200,legacy_farm_layer=272,strip_legacy_farm=1500,plan_legacy=380,remove_legacy=380,farm_base_terrain=64,owce_base_terrain=64,forest_blocked=264,stadnina_blocked=264,forest_hint=33,replaced_by_build=3825,impact=7950,format_impact=200,mine_key=35,mine_keys_set=4,food_layer_keys_set=6,tarasy_civ=23,deposit_hex=600,deposit_allows=2640,animal_deposit=8,food_layer=4576,keys_within_radius=300,has_road=400,meta=34,tech_unlocked=1428,work_cost_scale=8
+rust-port/engine/tests/p6_adv_q2a_vectors/q2a.json	dict	maps=8,tileYields=8,scenarios=526,direct=90
+rust-port/engine/tests/p6_siege_tactics_blow_env_vectors/vectors.json	dict	units=75,cases=1200
+rust-port/engine/tests/p6_siege_tactics_walk_vectors/vectors.json	dict	bfsFirstStep=500,siegeWalkTo=910
+rust-port/engine/tests/p6_unit_power_maxnan_vectors/maxnan.json	dict	acc=225,hits=1125,ranges=225
+rust-port/engine/tests/p6_power_army_vectors/vectors.json	dict	armyField=80,armyFieldReal=75,armia=60,terytorium=50
+rust-port/engine/tests/p6_m05a_vectors/web-vectors.json	dict	maps=56
+rust-port/engine/tests/p6_unit_replace_l3_state_vectors/pre-etap2-state.json	dict	players=1,cities=1,units=1,lastAdvancedPhases=9
+rust-port/engine/tests/p6_wire_war_diplo_vectors/phase.json	dict	scenarios=6
+rust-port/engine/tests/p6_wire_war_diplo_vectors/primitives.json	dict	advanceCrisisCounter=42,crisisStepForPair=8,pickWarDeclarer=3,brakeWarOutcome=9,sortCrisisQueue=1,dobraWolaTurnStep=8,isAiAiEligibleOwner=6,aiAiPairs=4,crisisPairKey=4,parseCrisisCounters=1
+rust-port/engine/tests/p6_m05b_vectors/web-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_siege_tactics_autobatch_vectors/vectors.json	dict	sequences=420
+rust-port/engine/tests/p6_1c_vectors/braz.json	dict	sourceFiles=2,improvementKeys=22,normalize=37,normalizeNullish=2,normalizeProtoOutOfDomain=4,copper=13,piec=7,access=60
+rust-port/engine/tests/p6_1c_vectors/cluster-start.json	dict	sourceFiles=4,cases=160,pickSecond=720,displayLabel=3
+rust-port/engine/tests/p6_1c_vectors/llama.json	dict	hash=210,cases=960
+rust-port/engine/tests/p6_1c_vectors/maps.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_23_vectors/fort.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_23_vectors/hexmove.json	dict-nolist	2 keys
+rust-port/engine/tests/p6_23_vectors/improvements.json	dict	json_keys_in_order=24,proto_keys=12
+rust-port/engine/tests/p6_23_vectors/order.json	dict-nolist	6 keys
+rust-port/engine/tests/p6_siege_tactics_turnseq_vectors/vectors.json	dict	sequences=400
+rust-port/engine/tests/p6_siege_tactics_breach_vectors/vectors.json	dict	attackWallTile=200,breachWallTile=120,attackGate=160,towerClimbEnterWall=80,skipInstantFallback=80,approachRestricted=300,repelsAttack=120,winner=120,sequences=90
+rust-port/engine/tests/p6_siege_capture_events_vectors/vectors.json	dict	scenarios=7
+rust-port/engine/tests/p6_repin_wojna_2_vectors/battle-mode.json	dict	cases=64
+rust-port/engine/tests/p6_repin_wojna_2_vectors/general-quick-follow.json	dict	labels=5,planEnabled=260,issue=260,tracked=220,sync=260
+rust-port/engine/tests/p6_repin_wojna_2_vectors/generals.json	dict	limit=20,slots=60,canRecruit=120,stone=2,purchase=600,nearest=260,followDest=160,batch=80
+rust-port/engine/tests/p6_m06a9_vectors/edge-vectors.json	dict	cases=9
+rust-port/engine/tests/p6_m06a9_vectors/fill-vectors.json	dict	cases=120
+rust-port/engine/tests/p6_m06a9_vectors/pangea-vectors.json	dict	cases=60
+rust-port/engine/tests/p6_m06a9_vectors/ratio-vectors.json	dict	cases=101
+rust-port/engine/tests/p6_m07b4_vectors/web-rivers-b-q4.json	dict	maps=156,cases=8728
+rust-port/engine/tests/p6_wire_war_state_vectors/opaque-web.json	dict	forcedEraPeaceUntilNextEraByPairKey=2,forcedWarWavesByPairKey=2,aiGeneralWarCampaignByOwner=2
+rust-port/engine/tests/p6_m07b_vectors/web-rivers-b-turn.json	dict	vectors=36200
+rust-port/engine/tests/p6_forced_war_g1_data/cases.json	list	261
+rust-port/engine/tests/p6_m06a6_vectors/carve-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_m06a6_vectors/contfrac-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_m06a6_vectors/erode-vectors.json	dict-nolist	3 keys
+rust-port/engine/tests/p6_8i_vectors/helpers.json	dict	priorities=14,hasNonFood=8,deficitKeys=13,cityLimit=480
+rust-port/engine/tests/p6_8i_vectors/pick.json	dict	techs=15,maps=64,scenarios=5128
+rust-port/engine/tests/p6_8i_vectors/relief.json	dict	keyCases=41,layerCases=23
+rust-port/engine/tests/p6_dyplomacja_multiwar3_d_data/siege.json	dict	enemyPairs=6,cases=1500,aiAllow=25
+rust-port/engine/tests/p6_brake_inputs_vectors/vectors.json	dict	military=2,objective=61,peace=80,gate=120,eligibility=60,contacts=20,players=20,objectiveVariants=120
+rust-port/engine/tests/p6_m11_vectors/web-vectors.json	dict-nolist	4 keys
+rust-port/engine/tests/p6_m03_vectors/core.json	dict	perms=8,shape_params=8,land_mask_at=7,center_count=44,build_continent_centers=44,five_zone=96,voronoi=5,pangea_land_t=207,pangea_layout=392,pangea_centers=100,island_centers=24,island_cell=6,island_assign=6,isotropic=4
+rust-port/engine/tests/p6_m03_vectors/earth.json	dict	heights=704,widths=704,dims=2601,bits=9512
+rust-port/engine/tests/p6_m03_vectors/edges.json	dict	layout=972,edge_rect=7
+rust-port/engine/tests/p6_m03_vectors/jsmath.json	dict	pow=15418,atan2=9425,sin=6724,hypot=8725
+rust-port/engine/tests/p6_m03_vectors/masks.json	dict	cases=100,blob_score=400
+rust-port/engine/tests/p6_m03_vectors/strait.json	dict	cases=18
+rust-port/engine/tests/p6_siege_wonder_wrappers_vectors/vectors.json	dict-nolist	5 keys
+rust-port/engine/tests/p6_m01_vectors/web-vectors.json	dict	mulberry=40,perm=24,cos_lerp=4506,noise=4,fbm=4,hex_directions=6,hex_distance_extra=2000,hex_key=6,bit_at=408,earth_rows=601,sample_land=4412,dims=24,hex_to_norm_edges=20,climate_bands=7,climate=528,climate_default=2,is_polar=7,forest_threshold=64,can_desert=8,is_water=8,typ_swiata=4,math_cos=11416,math_cos_large=313
+rust-port/engine/tests/p6_m06b1_vectors/web-boundary.json	dict	maps=2
+rust-port/engine/tests/p6_m06b1_vectors/web-cap.json	dict	maps=13
+rust-port/engine/tests/p6_m06b1_vectors/web-vectors.json	dict	maps=580

@@ -1,0 +1,4 @@
+jednostki pin: 75 rust: 75 te same nazwy: True
+klucze pin: 61 rust: 61 tylko pin: [] tylko rust: []
+komorki (jednostka x pole) z inna wartoscia: 71 jednostek z >=1 roznica: 51
+wg pola: [('Tech', 27), ('Zastąp specjalnie', 21), ('fieldPower', 9), ('Top3', 3), ('Epoka', 2), ('Historia', 2), ('piercing', 1), ('Atak', 1), ('Bonus vs Spearman %', 1), ('Przebicie', 1), ('meleeAttack', 1), ('Obrona', 1), ('meleeDefence', 1)]

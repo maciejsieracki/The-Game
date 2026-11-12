@@ -1,0 +1,241 @@
+active_access	2	rust-port/engine/src/domain/resource_access/active_access.rs	rust-port/engine/src/domain/turn_economy_inputs_native.rs rust-port/engine/src/domain/resource_access.rs
+ai_diplomacy_turn	4	rust-port/engine/src/domain/ai_diplomacy_turn.rs	rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/war_turn_state.rs rust-port/engine/src/domain/brake_inputs.rs
+ai_era_unit_promotion	0	rust-port/engine/src/domain/ai_era_unit_promotion.rs
+ai_general_war_campaign	1	rust-port/engine/src/domain/ai_general_war_campaign.rs	rust-port/engine/src/domain/ai_war_march_plan.rs
+ai_move_range	0	rust-port/engine/src/domain/ai_move_range.rs
+ai_peace_city_offer	0	rust-port/engine/src/domain/ai_peace_city_offer.rs
+ai_resource_needs	1	rust-port/engine/src/domain/ai_resource_needs.rs	rust-port/engine/src/domain/ai_zakup_jednostki.rs
+ai_turn	2	rust-port/engine/src/domain/ai_turn.rs	rust-port/engine/src/domain/events.rs rust-port/engine/src/domain/ai_zakup_jednostki.rs
+ai_war_march_plan	0	rust-port/engine/src/domain/ai_war_march_plan.rs
+ai_zakup_jednostki	2	rust-port/engine/src/domain/ai_zakup_jednostki.rs	rust-port/engine/src/domain/war_turn_declare.rs rust-port/engine/src/domain/unit_replace.rs
+alliance_war_obligation	1	rust-port/engine/src/domain/alliance_war_obligation.rs	rust-port/engine/src/domain/diplomacy_truce.rs
+army_consolidation	0	rust-port/engine/src/domain/army_consolidation.rs
+army_follow_auto_merge	0	rust-port/engine/src/domain/army_follow_auto_merge.rs
+army_leadership	1	rust-port/engine/src/domain/army_leadership.rs	rust-port/engine/src/domain/siege_tactics_loop.rs
+astar	2	rust-port/engine/src/domain/mapgen/rivers_b/astar.rs	rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs
+auto	24	rust-port/engine/src/domain/okolica/auto.rs	rust-port/engine/src/data/loader.rs rust-port/engine/src/data/units_combat.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/okolica.rs
+auto_build_gate	2	rust-port/engine/src/domain/auto_improvements/auto_build_gate.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/auto_improvements.rs
+auto_improvements	2	rust-port/engine/src/domain/auto_improvements.rs	rust-port/engine/src/domain/improvement_build.rs rust-port/engine/src/domain/save_load.rs
+barbarians	8	rust-port/engine/src/domain/barbarians.rs	rust-port/engine/src/domain/war_all_in_capital.rs rust-port/engine/src/domain/diplomacy_truce_flow.rs rust-port/engine/src/domain/order_effects_lane.rs rust-port/engine/src/domain/events.rs
+battle_mode	1	rust-port/engine/src/domain/battle_mode.rs	rust-port/engine/src/domain/save_load.rs
+brake_inputs	2	rust-port/engine/src/domain/brake_inputs.rs	rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/turn_war_inputs.rs
+brake_power	5	rust-port/engine/src/domain/brake_power.rs	rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/brake_inputs.rs
+brake_power_army	3	rust-port/engine/src/domain/brake_power_army.rs	rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/brake_power_improvements.rs
+brake_power_improvements	3	rust-port/engine/src/domain/brake_power_improvements.rs	rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs
+brake_power_producers	2	rust-port/engine/src/domain/brake_power_producers.rs	rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/brake_power_army.rs
+brake_power_rest	3	rust-port/engine/src/domain/brake_power_rest.rs	rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/war_turn_state.rs
+breakdown	13	rust-port/engine/src/domain/society_breakdown/breakdown.rs	rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/brake_power.rs rust-port/engine/src/domain/turn_war_pipeline.rs
+building_costs	22	rust-port/engine/src/domain/building_costs.rs	rust-port/engine/src/lib.rs rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/unit_replace_wiring.rs rust-port/engine/src/domain/turn_economy_loop.rs
+capital_labels	3	rust-port/engine/src/domain/resource_access/capital_labels.rs	rust-port/engine/src/domain/order_effects_lane.rs rust-port/engine/src/domain/resource_access.rs rust-port/engine/src/domain/resource_access/active_access.rs
+city_growth	11	rust-port/engine/src/domain/city_growth.rs	rust-port/engine/src/lib.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/recruitment.rs
+city_names	3	rust-port/engine/src/domain/city_names.rs	rust-port/engine/src/domain/civ_names.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs rust-port/engine/src/domain/mapgen/cluster_rivals.rs
+city_phases	3	rust-port/engine/src/domain/auto_improvements/city_phases.rs	rust-port/engine/src/domain/auto_improvements.rs rust-port/engine/src/domain/auto_improvements/hex_phases.rs rust-port/engine/src/domain/auto_improvements/single_pass.rs
+civ_bonuses	4	rust-port/engine/src/domain/civ_bonuses.rs	rust-port/engine/src/domain/pathfinding.rs rust-port/engine/src/domain/siege_tactics_blow_inputs.rs rust-port/engine/src/domain/unit_replace_defs.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs
+civ_matrix	18	rust-port/engine/src/domain/civ_matrix.rs	rust-port/engine/src/data/loader.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/recruitment.rs
+civ_names	4	rust-port/engine/src/domain/civ_names.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/city_names.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs rust-port/engine/src/domain/mapgen/cluster_rivals.rs
+cluster_compute	1	rust-port/engine/src/domain/mapgen/cluster_compute.rs	rust-port/engine/src/data/derived.rs
+cluster_layout	2	rust-port/engine/src/domain/mapgen/cluster_layout.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs
+cluster_mass	6	rust-port/engine/src/domain/mapgen/cluster_mass.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/landsea.rs rust-port/engine/src/domain/mapgen/cluster_layout.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs
+cluster_rivals	4	rust-port/engine/src/domain/mapgen/cluster_rivals.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/cluster_layout.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs rust-port/engine/src/domain/mapgen/cluster_mass.rs
+coast	4	rust-port/engine/src/domain/mapgen/coast.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/landsea.rs rust-port/engine/src/domain/mapgen/rivers_b/coast_grow.rs rust-port/engine/src/domain/mapgen/rivers_b/meander.rs
+coast_grow	2	rust-port/engine/src/domain/mapgen/rivers_b/coast_grow.rs	rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/trace_coast.rs
+combat	18	rust-port/engine/src/domain/combat.rs	rust-port/engine/src/data/loader.rs rust-port/engine/src/data/units_combat.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/unit_power.rs
+credibility	2	rust-port/engine/src/domain/credibility.rs	rust-port/engine/src/domain/turn_war_dipl_steps.rs rust-port/engine/src/domain/diplomacy.rs
+deposits	1	rust-port/engine/src/domain/mapgen/deposits.rs	rust-port/engine/src/domain/terrain.rs
+diplomacy	36	rust-port/engine/src/domain/diplomacy.rs	rust-port/engine/src/data/loader.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/data/civilizations.rs rust-port/engine/src/domain/diplomacy_aggressor.rs
+diplomacy_aggressor	2	rust-port/engine/src/domain/diplomacy_aggressor.rs	rust-port/engine/src/domain/diplomacy_nap_trust.rs rust-port/engine/src/domain/diplomacy_locks.rs
+diplomacy_ai_forced_peace	3	rust-port/engine/src/domain/diplomacy_ai_forced_peace.rs	rust-port/engine/src/domain/war_turn_ai_ai.rs rust-port/engine/src/domain/diplomacy_war_weariness_tick.rs rust-port/engine/src/domain/war_turn_state.rs
+diplomacy_locks	0	rust-port/engine/src/domain/diplomacy_locks.rs
+diplomacy_multiwar	8	rust-port/engine/src/domain/diplomacy_multiwar.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/diplomacy_nap_trust.rs rust-port/engine/src/domain/ai_peace_city_offer.rs rust-port/engine/src/domain/diplomacy_war_weariness_tick.rs
+diplomacy_multiwar_gate	4	rust-port/engine/src/domain/diplomacy_multiwar_gate.rs	rust-port/engine/src/domain/war_forced_bronze.rs rust-port/engine/src/domain/brake_inputs.rs rust-port/engine/src/domain/war_era_pool.rs rust-port/engine/src/domain/war_forced_iron.rs
+diplomacy_multiwar_peace	4	rust-port/engine/src/domain/diplomacy_multiwar_peace.rs	rust-port/engine/src/domain/war_turn_ai_ai.rs rust-port/engine/src/domain/diplomacy_war_weariness_tick.rs rust-port/engine/src/domain/war_turn_state.rs rust-port/engine/src/domain/diplomacy_ai_forced_peace.rs
+diplomacy_nap_trust	1	rust-port/engine/src/domain/diplomacy_nap_trust.rs	rust-port/engine/src/domain/diplomacy_locks.rs
+diplomacy_rejection_cooldown	0	rust-port/engine/src/domain/diplomacy_rejection_cooldown.rs
+diplomacy_siege_war_gate	2	rust-port/engine/src/domain/diplomacy_siege_war_gate.rs	rust-port/engine/src/domain/siege_nearby_lock.rs rust-port/engine/src/domain/war_world_view.rs
+diplomacy_tick_war_brake	4	rust-port/engine/src/domain/diplomacy_tick_war_brake.rs	rust-port/engine/src/domain/diplomacy_aggressor.rs rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/brake_inputs.rs rust-port/engine/src/domain/ai_diplomacy_turn.rs
+diplomacy_truce	8	rust-port/engine/src/domain/diplomacy_truce.rs	rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/diplomacy_truce_flow.rs rust-port/engine/src/domain/turn_war_dipl_steps.rs
+diplomacy_truce_end	2	rust-port/engine/src/domain/diplomacy_truce_end.rs	rust-port/engine/src/domain/diplomacy_truce_flow.rs rust-port/engine/src/domain/turn_war_dipl_steps.rs
+diplomacy_truce_flow	5	rust-port/engine/src/domain/diplomacy_truce_flow.rs	rust-port/engine/src/data/civilizations.rs rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/turn_war_dipl_steps.rs rust-port/engine/src/domain/diplomacy.rs
+diplomacy_war_gates	0	rust-port/engine/src/domain/diplomacy_war_gates.rs
+diplomacy_war_peace_profile	4	rust-port/engine/src/domain/diplomacy_war_peace_profile.rs	rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/ai_peace_city_offer.rs rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+diplomacy_war_weariness_tick	1	rust-port/engine/src/domain/diplomacy_war_weariness_tick.rs	rust-port/engine/src/domain/war_turn_ai_ai.rs
+economy_city_fns	2	rust-port/engine/src/domain/economy_city_fns.rs	rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/order_effects_lane.rs
+economy_city_params	4	rust-port/engine/src/domain/economy_city_params.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/turn_economy_empirefood.rs
+economy_city_terrain	0	rust-port/engine/src/domain/economy_city_terrain.rs
+economy_yield	4	rust-port/engine/src/domain/economy_yield.rs	rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/economy_city_fns.rs rust-port/engine/src/domain/turn_economy_territory.rs rust-port/engine/src/domain/production_units.rs
+edges	3	rust-port/engine/src/domain/mapgen/rivers_b/edges.rs	rust-port/engine/src/domain/auto_improvements/road_network_plan.rs rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/window.rs
+error	27	rust-port/engine/src/domain/error.rs	rust-port/engine/src/logging.rs rust-port/engine/src/bridge.rs rust-port/engine/src/steam_adapter.rs rust-port/engine/src/data/loader.rs
+events	19	rust-port/engine/src/domain/events.rs	rust-port/engine/src/logging.rs rust-port/engine/src/bridge.rs rust-port/engine/src/domain/siege_wonder_wrappers.rs rust-port/engine/src/domain/order_effects_culture.rs
+extend	35	rust-port/engine/src/domain/mapgen/rivers_b/extend.rs	rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/turn_war_pipeline.rs
+fields	8	rust-port/engine/src/domain/mapgen/rivers_a/fields.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/pathfinding.rs rust-port/engine/src/domain/ai_turn.rs rust-port/engine/src/domain/trade.rs
+formation_rules	0	rust-port/engine/src/domain/formation_rules.rs
+fort_claim	2	rust-port/engine/src/domain/auto_improvements/fort_claim.rs	rust-port/engine/src/domain/auto_improvements.rs rust-port/engine/src/domain/auto_improvements/single_pass.rs
+fort_territory	2	rust-port/engine/src/domain/fort_territory.rs	rust-port/engine/src/domain/state.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs
+freshwater	2	rust-port/engine/src/domain/freshwater.rs	rust-port/engine/src/domain/turn_economy_health.rs rust-port/engine/src/domain/auto_improvements/single_pass.rs
+general_quick_follow	0	rust-port/engine/src/domain/general_quick_follow.rs
+generals	2	rust-port/engine/src/domain/generals.rs	rust-port/engine/src/domain/save_migrations.rs rust-port/engine/src/domain/general_quick_follow.rs
+generate	2	rust-port/engine/src/domain/mapgen/generate.rs	rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/mapgen/landsea.rs
+grow	11	rust-port/engine/src/domain/mapgen/rivers_a/grow.rs	rust-port/engine/src/domain/barbarians.rs rust-port/engine/src/domain/mapgen/rivers_a.rs rust-port/engine/src/domain/mapgen/relief.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs
+hex	56	rust-port/engine/src/domain/hex.rs	rust-port/engine/src/lib.rs rust-port/engine/src/data/units_combat.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/data/buildings_tech.rs
+hex_phases	2	rust-port/engine/src/domain/auto_improvements/hex_phases.rs	rust-port/engine/src/domain/auto_improvements.rs rust-port/engine/src/domain/auto_improvements/single_pass.rs
+hook	3	rust-port/engine/src/domain/okolica/hook.rs	rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/pathfinding.rs rust-port/engine/src/domain/diplomacy.rs
+ids	28	rust-port/engine/src/domain/ids.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs
+improvement_build	19	rust-port/engine/src/domain/improvement_build.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs
+improvements	37	rust-port/engine/src/domain/improvements.rs	rust-port/engine/src/data/loader.rs rust-port/engine/src/data/terrain_map.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/okolica.rs
+landsea	9	rust-port/engine/src/domain/mapgen/landsea.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/rivers_a.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs rust-port/engine/src/domain/mapgen/rivers_b/edges.rs
+manual	2	rust-port/engine/src/domain/okolica/manual.rs	rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/siege_tactics_activate.rs
+map_generator	17	rust-port/engine/src/domain/map_generator.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mod.rs rust-port/engine/src/domain/start_position.rs rust-port/engine/src/domain/mapgen/landsea.rs
+map_snapshot	0	rust-port/engine/src/domain/map_snapshot.rs
+masks	2	rust-port/engine/src/domain/mapgen/masks.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/mapgen/landsea.rs
+meander	2	rust-port/engine/src/domain/mapgen/rivers_b/meander.rs	rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/extend.rs
+okolica	18	rust-port/engine/src/domain/okolica.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/improvement_build.rs rust-port/engine/src/domain/state.rs
+opts	34	rust-port/engine/src/domain/auto_improvements/opts.rs	rust-port/engine/src/data/economy_society_part2.rs rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/war_turn_forced.rs
+order	38	rust-port/engine/src/domain/society_breakdown/order.rs	rust-port/engine/src/logging.rs rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/save_load.rs
+order_effects_culture	3	rust-port/engine/src/domain/order_effects_culture.rs	rust-port/engine/src/domain/brake_power_producers.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/order_effects_lane.rs
+order_effects_lane	3	rust-port/engine/src/domain/order_effects_lane.rs	rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs rust-port/engine/src/domain/siege_transfer_effects.rs
+params	100	rust-port/engine/src/domain/mapgen/params.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/data/economy_society.rs rust-port/engine/src/data/loader.rs rust-port/engine/src/data/terrain_map.rs
+pathfinding	11	rust-port/engine/src/domain/pathfinding.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/war_all_in_capital.rs rust-port/engine/src/domain/state.rs rust-port/engine/src/domain/save_migrations.rs
+pick	14	rust-port/engine/src/domain/auto_improvements/pick.rs	rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/recruitment.rs rust-port/engine/src/domain/unit_health.rs rust-port/engine/src/domain/war_world_view.rs
+playable	9	rust-port/engine/src/domain/playable.rs	rust-port/engine/src/lib.rs rust-port/engine/src/bridge.rs rust-port/engine/src/domain/turn_war_epoch.rs rust-port/engine/src/domain/turn_war_pipeline.rs
+player	20	rust-port/engine/src/domain/player.rs	rust-port/engine/src/logging.rs rust-port/engine/src/bridge.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/war_turn_forced.rs
+prims	18	rust-port/engine/src/domain/mapgen/prims.rs	rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/mapgen/landsea.rs rust-port/engine/src/domain/mapgen/rivers_a.rs rust-port/engine/src/domain/mapgen/masks.rs
+production_queue	5	rust-port/engine/src/domain/production_queue.rs	rust-port/engine/src/domain/ai_turn.rs rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs rust-port/engine/src/domain/siege_transfer_effects.rs
+production_units	7	rust-port/engine/src/domain/production_units.rs	rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/economy_city_fns.rs rust-port/engine/src/domain/turn_economy_tick.rs rust-port/engine/src/domain/production_queue.rs
+profile	7	rust-port/engine/src/domain/mapgen/rivers_a/profile.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/ai_turn.rs rust-port/engine/src/domain/civ_matrix.rs rust-port/engine/src/domain/ai_peace_city_offer.rs
+quotas	1	rust-port/engine/src/domain/mapgen/rivers_b/quotas.rs	rust-port/engine/src/domain/mapgen/rivers_b.rs
+recruitment	28	rust-port/engine/src/domain/recruitment.rs	rust-port/engine/src/lib.rs rust-port/engine/src/data/units_combat.rs rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/turn_economy_wire.rs
+relief	11	rust-port/engine/src/domain/mapgen/relief.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/playable.rs rust-port/engine/src/domain/auto_improvements/relief_preserving.rs
+relief_preserving	1	rust-port/engine/src/domain/auto_improvements/relief_preserving.rs	rust-port/engine/src/domain/auto_improvements.rs
+replay	3	rust-port/engine/src/domain/replay.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/events.rs rust-port/engine/src/domain/mod.rs
+resource_access	9	rust-port/engine/src/domain/resource_access.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs
+resource_production	5	rust-port/engine/src/domain/resource_production.rs	rust-port/engine/src/lib.rs rust-port/engine/src/domain/turn_economy_resources.rs rust-port/engine/src/domain/order_effects_lane.rs rust-port/engine/src/domain/city_growth.rs
+rivers_a	13	rust-port/engine/src/domain/mapgen/rivers_a.rs	rust-port/engine/src/domain/mapgen/rivers_b/trace.rs rust-port/engine/src/domain/mapgen/rivers_b/turn.rs rust-port/engine/src/domain/mapgen/rivers_b/coast_grow.rs rust-port/engine/src/domain/mapgen/rivers_b/edges.rs
+rivers_b	4	rust-port/engine/src/domain/mapgen/rivers_b.rs	rust-port/engine/src/domain/mapgen/rivers_b/trace.rs rust-port/engine/src/domain/mapgen/rivers_b/trace_coast.rs rust-port/engine/src/domain/mapgen/rivers_b/window.rs rust-port/engine/src/domain/mapgen/rivers_b/extend.rs
+rivers_c	0	rust-port/engine/src/domain/mapgen/rivers_c.rs
+rivers_d	0	rust-port/engine/src/domain/mapgen/rivers_d.rs
+rivers_e1	0	rust-port/engine/src/domain/mapgen/rivers_e1.rs
+rivers_e2	0	rust-port/engine/src/domain/mapgen/rivers_e2.rs
+rng	12	rust-port/engine/src/domain/rng.rs	rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/pathfinding.rs
+road_network_plan	2	rust-port/engine/src/domain/auto_improvements/road_network_plan.rs	rust-port/engine/src/domain/auto_improvements.rs rust-port/engine/src/domain/auto_improvements/single_pass.rs
+roads	1	rust-port/engine/src/domain/roads.rs	rust-port/engine/src/domain/pathfinding.rs
+sasiedztwo	5	rust-port/engine/src/domain/okolica/sasiedztwo.rs	rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/war_all_in_capital_nav.rs rust-port/engine/src/domain/siege_tactics_inputs_pos.rs rust-port/engine/src/domain/mapgen/cluster_layout.rs
+save_load	5	rust-port/engine/src/domain/save_load.rs	rust-port/engine/src/domain/battle_mode.rs rust-port/engine/src/domain/zapis_loader.rs rust-port/engine/src/domain/mod.rs rust-port/engine/src/domain/war_turn_state.rs
+save_migrations	4	rust-port/engine/src/domain/save_migrations.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/zapis_loader.rs rust-port/engine/src/domain/types.rs rust-port/engine/src/domain/replay.rs
+session	2	rust-port/engine/src/domain/session.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/domain/mod.rs
+siege_capital_plunder	2	rust-port/engine/src/domain/siege_capital_plunder.rs	rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+siege_capture_events	3	rust-port/engine/src/domain/siege_capture_events.rs	rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs rust-port/engine/src/domain/siege_capital_plunder.rs
+siege_city_fortification	0	rust-port/engine/src/domain/siege_city_fortification.rs
+siege_engine_build	0	rust-port/engine/src/domain/siege_engine_build.rs
+siege_enter_city	5	rust-port/engine/src/domain/siege_enter_city.rs	rust-port/engine/src/domain/siege_transfer_q5.rs rust-port/engine/src/domain/siege_turn.rs rust-port/engine/src/domain/war_world_view.rs rust-port/engine/src/domain/siege_transfer.rs
+siege_nearby_lock	0	rust-port/engine/src/domain/siege_nearby_lock.rs
+siege_no_breach	5	rust-port/engine/src/domain/siege_no_breach.rs	rust-port/engine/src/domain/siege_tactics_end.rs rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_fastforward.rs rust-port/engine/src/domain/siege_tactics_roundcap.rs
+siege_sortie	1	rust-port/engine/src/domain/siege_sortie.rs	rust-port/engine/src/domain/siege_turn.rs
+siege_starvation	2	rust-port/engine/src/domain/siege_starvation.rs	rust-port/engine/src/domain/siege_turn.rs rust-port/engine/src/domain/siege_surrender.rs
+siege_surrender	1	rust-port/engine/src/domain/siege_surrender.rs	rust-port/engine/src/domain/siege_transfer.rs
+siege_tactics_activate	1	rust-port/engine/src/domain/siege_tactics_activate.rs	rust-port/engine/src/domain/siege_tactics_class_adapters.rs
+siege_tactics_approach	4	rust-port/engine/src/domain/siege_tactics_approach.rs	rust-port/engine/src/domain/siege_tactics_class_adapters.rs rust-port/engine/src/domain/siege_tactics_tower.rs rust-port/engine/src/domain/siege_tactics_walk.rs rust-port/engine/src/domain/siege_tactics_breach.rs
+siege_tactics_autobatch	0	rust-port/engine/src/domain/siege_tactics_autobatch.rs
+siege_tactics_autophase	1	rust-port/engine/src/domain/siege_tactics_autophase.rs	rust-port/engine/src/domain/siege_tactics_autobatch.rs
+siege_tactics_blow	5	rust-port/engine/src/domain/siege_tactics_blow.rs	rust-port/engine/src/domain/unit_power.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs rust-port/engine/src/domain/siege_tactics_inputs_pos.rs rust-port/engine/src/domain/siege_tactics_blow_env.rs
+siege_tactics_blow_env	0	rust-port/engine/src/domain/siege_tactics_blow_env.rs
+siege_tactics_blow_full	1	rust-port/engine/src/domain/siege_tactics_blow_full.rs	rust-port/engine/src/domain/siege_tactics_blow_env.rs
+siege_tactics_blow_inputs	4	rust-port/engine/src/domain/siege_tactics_blow_inputs.rs	rust-port/engine/src/domain/siege_tactics_inputs_wall.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs rust-port/engine/src/domain/siege_tactics_inputs_pos.rs rust-port/engine/src/domain/siege_tactics_blow_env.rs
+siege_tactics_breach	0	rust-port/engine/src/domain/siege_tactics_breach.rs
+siege_tactics_class_adapters	0	rust-port/engine/src/domain/siege_tactics_class_adapters.rs
+siege_tactics_classify	1	rust-port/engine/src/domain/siege_tactics_classify.rs	rust-port/engine/src/domain/siege_tactics_class_adapters.rs
+siege_tactics_clock	3	rust-port/engine/src/domain/siege_tactics_clock.rs	rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_fastforward.rs rust-port/engine/src/domain/siege_tactics_autobatch.rs
+siege_tactics_end	3	rust-port/engine/src/domain/siege_tactics_end.rs	rust-port/engine/src/domain/siege_tactics_turnseq.rs rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_endcheck.rs
+siege_tactics_endcheck	3	rust-port/engine/src/domain/siege_tactics_endcheck.rs	rust-port/engine/src/domain/siege_tactics_turnseq.rs rust-port/engine/src/domain/siege_tactics_unit.rs rust-port/engine/src/domain/siege_tactics_loop.rs
+siege_tactics_fastforward	1	rust-port/engine/src/domain/siege_tactics_fastforward.rs	rust-port/engine/src/domain/siege_tactics_loop.rs
+siege_tactics_inputs_pos	4	rust-port/engine/src/domain/siege_tactics_inputs_pos.rs	rust-port/engine/src/domain/siege_tactics_blow_inputs.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs rust-port/engine/src/domain/siege_tactics_blow_env.rs rust-port/engine/src/domain/siege_tactics_inputs_unit.rs
+siege_tactics_inputs_terrain	2	rust-port/engine/src/domain/siege_tactics_inputs_terrain.rs	rust-port/engine/src/domain/siege_tactics_blow_env.rs rust-port/engine/src/domain/siege_tactics_inputs_unit.rs
+siege_tactics_inputs_unit	1	rust-port/engine/src/domain/siege_tactics_inputs_unit.rs	rust-port/engine/src/domain/siege_tactics_blow_full.rs
+siege_tactics_inputs_wall	3	rust-port/engine/src/domain/siege_tactics_inputs_wall.rs	rust-port/engine/src/domain/siege_tactics_blow_inputs.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs rust-port/engine/src/domain/siege_tactics_blow_env.rs
+siege_tactics_loop	0	rust-port/engine/src/domain/siege_tactics_loop.rs
+siege_tactics_roundcap	2	rust-port/engine/src/domain/siege_tactics_roundcap.rs	rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_fastforward.rs
+siege_tactics_tower	2	rust-port/engine/src/domain/siege_tactics_tower.rs	rust-port/engine/src/domain/siege_tactics_class_adapters.rs rust-port/engine/src/domain/siege_tactics_activate.rs
+siege_tactics_turnseq	2	rust-port/engine/src/domain/siege_tactics_turnseq.rs	rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_autobatch.rs
+siege_tactics_unit	4	rust-port/engine/src/domain/siege_tactics_unit.rs	rust-port/engine/src/domain/siege_tactics_turnseq.rs rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/siege_tactics_autobatch.rs rust-port/engine/src/domain/siege_tactics_activate.rs
+siege_tactics_walk	3	rust-port/engine/src/domain/siege_tactics_walk.rs	rust-port/engine/src/domain/siege_tactics_class_adapters.rs rust-port/engine/src/domain/siege_tactics_approach.rs rust-port/engine/src/domain/siege_tactics_tower.rs
+siege_transfer	4	rust-port/engine/src/domain/siege_transfer.rs	rust-port/engine/src/domain/siege_wonder_watch.rs rust-port/engine/src/domain/siege_transfer_q5.rs rust-port/engine/src/domain/siege_surrender.rs rust-port/engine/src/domain/siege_transfer_effects.rs
+siege_transfer_effects	2	rust-port/engine/src/domain/siege_transfer_effects.rs	rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+siege_transfer_q5	2	rust-port/engine/src/domain/siege_transfer_q5.rs	rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+siege_turn	1	rust-port/engine/src/domain/siege_turn.rs	rust-port/engine/src/domain/siege_surrender.rs
+siege_wonder_watch	2	rust-port/engine/src/domain/siege_wonder_watch.rs	rust-port/engine/src/domain/siege_wonder_wrappers.rs rust-port/engine/src/domain/siege_surrender.rs
+siege_wonder_wrappers	1	rust-port/engine/src/domain/siege_wonder_wrappers.rs	rust-port/engine/src/domain/siege_transfer.rs
+single_pass	5	rust-port/engine/src/domain/auto_improvements/single_pass.rs	rust-port/engine/src/domain/auto_improvements.rs rust-port/engine/src/domain/auto_improvements/pick.rs rust-port/engine/src/domain/auto_improvements/fort_claim.rs rust-port/engine/src/domain/auto_improvements/hex_phases.rs
+society_breakdown	4	rust-port/engine/src/domain/society_breakdown.rs	rust-port/engine/src/domain/unit_health.rs rust-port/engine/src/domain/turn_economy_health.rs rust-port/engine/src/domain/order_effects_lane.rs rust-port/engine/src/domain/turn_economy_upkeep.rs
+society_inputs	5	rust-port/engine/src/domain/resource_access/society_inputs.rs	rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/order_effects_lane.rs rust-port/engine/src/domain/resource_access.rs
+sort	32	rust-port/engine/src/domain/okolica/sort.rs	rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/recruitment.rs rust-port/engine/src/domain/trade.rs
+sources	3	rust-port/engine/src/domain/mapgen/rivers_b/sources.rs	rust-port/engine/src/domain/map_generator.rs rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/relief.rs
+start_position	12	rust-port/engine/src/domain/start_position.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/improvement_build.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs rust-port/engine/src/domain/turn_economy_health.rs
+starts	3	rust-port/engine/src/domain/mapgen/starts.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/domain/trade.rs rust-port/engine/src/domain/turn_economy.rs
+state	75	rust-port/engine/src/domain/state.rs	rust-port/engine/src/logging.rs rust-port/engine/src/bridge.rs rust-port/engine/src/steam_adapter.rs rust-port/engine/src/data/derived.rs
+terrain	71	rust-port/engine/src/domain/terrain.rs	rust-port/engine/src/lib.rs rust-port/engine/src/data/loader.rs rust-port/engine/src/data/terrain_map.rs rust-port/engine/src/data/units_combat.rs
+terrain_class	15	rust-port/engine/src/domain/mapgen/terrain_class.rs	rust-port/engine/src/domain/mapgen/landsea.rs rust-port/engine/src/domain/mapgen/rivers_a.rs rust-port/engine/src/domain/mapgen/relief.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs
+territory	30	rust-port/engine/src/domain/territory.rs	rust-port/engine/src/domain/okolica.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/turn_economy_loop.rs
+tests	82	rust-port/engine/src/domain/okolica/sort/tests.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/steam_adapter.rs rust-port/engine/src/data/economy_society.rs rust-port/engine/src/data/derived.rs
+trace	3	rust-port/engine/src/domain/mapgen/rivers_b/trace.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/domain/siege_tactics_loop.rs rust-port/engine/src/domain/mapgen/rivers_b.rs
+trace_coast	2	rust-port/engine/src/domain/mapgen/rivers_b/trace_coast.rs	rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs
+trade	13	rust-port/engine/src/domain/trade.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/ai_turn.rs
+trade_flow_apply	0	rust-port/engine/src/domain/trade_flow_apply.rs
+turn	62	rust-port/engine/src/domain/mapgen/rivers_b/turn.rs	rust-port/engine/src/bridge.rs rust-port/engine/src/domain/siege_wonder_wrappers.rs rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/war_turn_forced.rs
+turn_economy	12	rust-port/engine/src/domain/turn_economy.rs	rust-port/engine/src/lib.rs rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_loop.rs
+turn_economy_advance	7	rust-port/engine/src/domain/turn_economy_advance.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/turn_economy_tick.rs rust-port/engine/src/domain/turn_economy_upkeep.rs
+turn_economy_attrition	4	rust-port/engine/src/domain/turn_economy_attrition.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/siege_starvation.rs rust-port/engine/src/domain/turn_economy_empirefood.rs
+turn_economy_empirefood	2	rust-port/engine/src/domain/turn_economy_empirefood.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs
+turn_economy_health	1	rust-port/engine/src/domain/turn_economy_health.rs	rust-port/engine/src/domain/turn_economy_advance.rs
+turn_economy_inputs_civ	0	rust-port/engine/src/domain/turn_economy_inputs_civ.rs
+turn_economy_inputs_native	0	rust-port/engine/src/domain/turn_economy_inputs_native.rs
+turn_economy_inputs_podzial	2	rust-port/engine/src/domain/turn_economy_inputs_podzial.rs	rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+turn_economy_inputs_state	2	rust-port/engine/src/domain/turn_economy_inputs_state.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/order_effects_lane.rs
+turn_economy_inputs_trade	2	rust-port/engine/src/domain/turn_economy_inputs_trade.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/trade.rs
+turn_economy_inputs_wonders	1	rust-port/engine/src/domain/turn_economy_inputs_wonders.rs	rust-port/engine/src/domain/turn_economy_wire.rs
+turn_economy_loop	7	rust-port/engine/src/domain/turn_economy_loop.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_tick.rs rust-port/engine/src/domain/turn_economy_inputs_native.rs
+turn_economy_post	0	rust-port/engine/src/domain/turn_economy_post.rs
+turn_economy_preview	0	rust-port/engine/src/domain/turn_economy_preview.rs
+turn_economy_resources	4	rust-port/engine/src/domain/turn_economy_resources.rs	rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/turn_economy_preview.rs rust-port/engine/src/domain/turn_economy_advance.rs rust-port/engine/src/domain/turn_economy_territory.rs
+turn_economy_territory	6	rust-port/engine/src/domain/turn_economy_territory.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/turn_economy_tick.rs rust-port/engine/src/domain/turn_economy_upkeep.rs
+turn_economy_tick	3	rust-port/engine/src/domain/turn_economy_tick.rs	rust-port/engine/src/domain/turn_economy_wire.rs rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_empirefood.rs
+turn_economy_upkeep	3	rust-port/engine/src/domain/turn_economy_upkeep.rs	rust-port/engine/src/domain/turn_economy_tick.rs rust-port/engine/src/domain/turn_economy_empirefood.rs rust-port/engine/src/domain/turn_economy_advance.rs
+turn_economy_wire	2	rust-port/engine/src/domain/turn_economy_wire.rs	rust-port/engine/src/domain/turn_economy_post.rs rust-port/engine/src/domain/turn_economy_inputs_trade.rs
+turn_war_dipl_steps	2	rust-port/engine/src/domain/turn_war_dipl_steps.rs	rust-port/engine/src/domain/turn_war_pipeline.rs rust-port/engine/src/domain/turn_war_inputs.rs
+turn_war_epoch	1	rust-port/engine/src/domain/turn_war_epoch.rs	rust-port/engine/src/domain/turn_war_inputs.rs
+turn_war_inputs	2	rust-port/engine/src/domain/turn_war_inputs.rs	rust-port/engine/src/domain/turn_war_epoch.rs rust-port/engine/src/domain/playable.rs
+turn_war_pipeline	3	rust-port/engine/src/domain/turn_war_pipeline.rs	rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/turn_war_dipl_steps.rs rust-port/engine/src/domain/playable.rs
+types	33	rust-port/engine/src/domain/mapgen/types.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/save_load.rs
+types	34	rust-port/engine/src/domain/types.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/order_effects_culture.rs rust-port/engine/src/domain/turn_economy_loop.rs rust-port/engine/src/domain/save_load.rs
+unit_epoch	5	rust-port/engine/src/domain/unit_epoch.rs	rust-port/engine/src/domain/civ_names.rs rust-port/engine/src/domain/production_units.rs rust-port/engine/src/domain/mapgen/cluster_compute.rs rust-port/engine/src/domain/mapgen/cluster_mass.rs
+unit_health	5	rust-port/engine/src/domain/unit_health.rs	rust-port/engine/src/domain/turn_economy_advance.rs rust-port/engine/src/domain/unit_replace_cost.rs rust-port/engine/src/domain/siege_tactics_inputs_pos.rs rust-port/engine/src/domain/turn_economy_attrition.rs
+unit_power	5	rust-port/engine/src/domain/unit_power.rs	rust-port/engine/src/data/units_combat.rs rust-port/engine/src/domain/siege_tactics_blow_inputs.rs rust-port/engine/src/domain/combat.rs rust-port/engine/src/domain/siege_tactics_blow_full.rs
+unit_replace	2	rust-port/engine/src/domain/unit_replace.rs	rust-port/engine/src/domain/unit_replace_wiring.rs rust-port/engine/src/domain/playable.rs
+unit_replace_cost	3	rust-port/engine/src/domain/unit_replace_cost.rs	rust-port/engine/src/domain/unit_replace_wiring.rs rust-port/engine/src/domain/unit_replace_defs.rs rust-port/engine/src/domain/playable.rs
+unit_replace_defs	1	rust-port/engine/src/domain/unit_replace_defs.rs	rust-port/engine/src/domain/playable.rs
+unit_replace_wiring	2	rust-port/engine/src/domain/unit_replace_wiring.rs	rust-port/engine/src/domain/unit_replace_defs.rs rust-port/engine/src/domain/playable.rs
+villages	1	rust-port/engine/src/domain/mapgen/villages.rs	rust-port/engine/src/domain/ai_turn.rs
+walk	14	rust-port/engine/src/domain/mapgen/rivers_a/walk.rs	rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/siege_tactics_class_adapters.rs rust-port/engine/src/domain/siege_tactics_tower.rs rust-port/engine/src/domain/war_all_in_capital_nav.rs
+war_all_in_capital	5	rust-port/engine/src/domain/war_all_in_capital.rs	rust-port/engine/src/data/derived.rs rust-port/engine/src/domain/war_target_select.rs rust-port/engine/src/domain/war_all_in_capital_nav.rs rust-port/engine/src/domain/ai_war_march_plan.rs
+war_all_in_capital_nav	3	rust-port/engine/src/domain/war_all_in_capital_nav.rs	rust-port/engine/src/domain/war_all_in_capital.rs rust-port/engine/src/domain/ai_war_march_plan.rs rust-port/engine/src/domain/war_all_in_capital_plan.rs
+war_all_in_capital_plan	2	rust-port/engine/src/domain/war_all_in_capital_plan.rs	rust-port/engine/src/domain/war_all_in_capital.rs rust-port/engine/src/domain/war_target_select.rs
+war_city_founder	1	rust-port/engine/src/domain/war_city_founder.rs	rust-port/engine/src/domain/war_home_defense.rs
+war_era_pool	1	rust-port/engine/src/domain/war_era_pool.rs	rust-port/engine/src/domain/war_turn_forced.rs
+war_forced_bronze	3	rust-port/engine/src/domain/war_forced_bronze.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_forced_trigger.rs rust-port/engine/src/domain/war_turn_declare.rs
+war_forced_common	8	rust-port/engine/src/domain/war_forced_common.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_forced_pairing.rs rust-port/engine/src/domain/war_world_view.rs rust-port/engine/src/domain/war_forced_bronze.rs
+war_forced_iron	3	rust-port/engine/src/domain/war_forced_iron.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_forced_trigger.rs rust-port/engine/src/domain/war_turn_declare.rs
+war_forced_pairing	6	rust-port/engine/src/domain/war_forced_pairing.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_forced_trigger.rs rust-port/engine/src/domain/war_turn_state.rs rust-port/engine/src/domain/war_forced_bronze.rs
+war_forced_stone	3	rust-port/engine/src/domain/war_forced_stone.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_forced_trigger.rs rust-port/engine/src/domain/war_turn_declare.rs
+war_forced_trigger	2	rust-port/engine/src/domain/war_forced_trigger.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_turn_declare.rs
+war_forced_waves	2	rust-port/engine/src/domain/war_forced_waves.rs	rust-port/engine/src/domain/war_world_view.rs rust-port/engine/src/domain/ai_war_march_plan.rs
+war_home_defense	3	rust-port/engine/src/domain/war_home_defense.rs	rust-port/engine/src/domain/war_world_view.rs rust-port/engine/src/domain/ai_war_march_plan.rs rust-port/engine/src/domain/war_home_defense_plan.rs
+war_home_defense_plan	1	rust-port/engine/src/domain/war_home_defense_plan.rs	rust-port/engine/src/domain/ai_war_march_plan.rs
+war_rules_multiwar	3	rust-port/engine/src/domain/war_rules_multiwar.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_all_in_capital.rs rust-port/engine/src/domain/war_all_in_capital_plan.rs
+war_target_select	3	rust-port/engine/src/domain/war_target_select.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/war_world_view.rs rust-port/engine/src/domain/ai_war_march_plan.rs
+war_turn_ai_ai	1	rust-port/engine/src/domain/war_turn_ai_ai.rs	rust-port/engine/src/domain/diplomacy_ai_forced_peace.rs
+war_turn_declare	3	rust-port/engine/src/domain/war_turn_declare.rs	rust-port/engine/src/domain/turn_war_inputs.rs rust-port/engine/src/domain/siege_transfer.rs rust-port/engine/src/domain/siege_surrender.rs
+war_turn_forced	0	rust-port/engine/src/domain/war_turn_forced.rs
+war_turn_state	11	rust-port/engine/src/domain/war_turn_state.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/brake_power_rest.rs rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/turn_war_pipeline.rs
+war_world_view	2	rust-port/engine/src/domain/war_world_view.rs	rust-port/engine/src/domain/war_turn_forced.rs rust-port/engine/src/domain/ai_war_march_plan.rs
+window	3	rust-port/engine/src/domain/mapgen/rivers_b/window.rs	rust-port/engine/src/domain/credibility.rs rust-port/engine/src/domain/mapgen/rivers_b.rs rust-port/engine/src/domain/mapgen/rivers_b/trace.rs
+wonder_placement	0	rust-port/engine/src/domain/wonder_placement.rs
+work_tax	0	rust-port/engine/src/domain/work_tax.rs
+zapis_loader	4	rust-port/engine/src/domain/zapis_loader.rs	rust-port/engine/src/domain/save_load.rs rust-port/engine/src/domain/save_migrations.rs rust-port/engine/src/domain/mod.rs rust-port/engine/src/domain/replay.rs
