@@ -38,6 +38,13 @@ fn sum_hp_clamped(hps: &[f64]) -> f64 {
 ///
 /// * `is_siege` = web `isSiege` (`this.siegeWallCol >= 0`, `battleScene.ts:10176`).
 /// * `wall_ever_breached` = web `this.wallEverBreached`.
+///
+/// UWAGA (zarzut 3 audytu R1): w webie ten warunek jest ZAGNIEZDZONY w bloku
+/// `if (this._stalled && aliveA && aliveD) { ... }` (`battleScene.ts:10172-10186`).
+/// Ta funkcja zwraca sam predykat `isSiege && !wallEverBreached`; wywolujacy MUSI
+/// zastosowac go tylko wtedy, gdy stall jest aktywny i obie strony zyja (`stalled && alive_a && alive_d`).
+/// Bez tego strazy wywolanie zmienia wynik bitwy (np. szturm w toku bez patu).
+/// Strazy nie wbudowano tutaj, bo zalezy od stanu sceny (`_stalled`); K3 (`P6-SIEGE-TAKTYKA.md` §4) ma ja zawierac.
 pub fn siege_no_breach_repels_attack(is_siege: bool, wall_ever_breached: bool) -> bool {
     is_siege && !wall_ever_breached
 }

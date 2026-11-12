@@ -119,3 +119,21 @@ fn mutual_elimination_pusta_strona() {
         Some(BattleSide::Defender)
     );
 }
+
+/// Galaz NaN (zarzut 6 audytu R1). Oczekiwania wyprowadzone z semantyki JS (sprawdzone w node 22):
+/// `Math.max(0, NaN)` = NaN, suma NaN, `NaN >= x` = false -> 'obronca' (takze gdy strona atakujacego ma NaN, a obrona pusta).
+#[test]
+fn mutual_elimination_nan_hp_jak_web() {
+    assert_eq!(
+        battle_winner(false, false, &[f64::NAN], &[1.0]),
+        Some(BattleSide::Defender)
+    );
+    assert_eq!(
+        battle_winner(false, false, &[1.0], &[f64::NAN]),
+        Some(BattleSide::Defender)
+    );
+    assert_eq!(
+        battle_winner(false, false, &[f64::NAN], &[]),
+        Some(BattleSide::Defender)
+    );
+}

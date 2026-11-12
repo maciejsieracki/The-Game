@@ -6,6 +6,28 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+
+// Straznik zrodla (R1 audyt, zarzut 4): wyciete fragmenty musza byc BAJT W BAJT tekstem z pinu.
+// Pin czytany przez `git show` z repo (bez checkoutu); hash SHA-256 fragmentow (10184-10186 + "\n---\n" + 10208-10220).
+// Zmiana pinu lub przepisania fragmentu -> generator konczy sie bledem zamiast po cichu generowac wektory.
+const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
+const PIN_PATH = 'gra/src/battle/battleScene.ts';
+const FRAGMENT_SHA256 = 'e6a808a19a8bad2f662d08073b239789a3ee84656939727fca45b2cf2e060037';
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const pinLines = execFileSync('git', ['show', `${PIN}:${PIN_PATH}`], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  maxBuffer: 64 * 1024 * 1024,
+}).split('\n');
+const pinRange = (a, b) => pinLines.slice(a - 1, b).join('\n');
+const fragmentDigest = createHash('sha256')
+  .update(pinRange(10184, 10186) + '\n---\n' + pinRange(10208, 10220))
+  .digest('hex');
+if (fragmentDigest !== FRAGMENT_SHA256) {
+  throw new Error(`fragmenty pinu 10184-10186/10208-10220 nie zgadzaja sie z hashem: ${fragmentDigest}`);
+}
 
 // --- wycieta z battleScene.ts:10184-10186 ---
 function repelsAttack(isSiege, wallEverBreached) {
