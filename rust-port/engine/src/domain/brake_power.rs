@@ -139,6 +139,8 @@ pub enum PowerInputError {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObjectivePowerRaw {
     pub owner_id: i64,
+    /// Nie jest skladnikiem mocy: NIE walidowane (NaN/Inf przechodzi), NIE wchodzi do
+    /// `power_base` ani `power` - jest tylko kopiowane do `ObjectivePowerResult::epoka` (echo).
     pub epoka: f64,
     /// Skladnik `armia`.
     pub jednostki: Component,

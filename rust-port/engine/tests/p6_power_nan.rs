@@ -91,6 +91,20 @@ fn finite_complete_input_unchanged_by_nan_policy() {
     // Wartosci jak w `complete()`: armia 3*jw, bitwy 1*coef (FlatCount) / 4*2 (EnemyMSum).
     assert_eq!(flat.components.len(), 12);
     assert_eq!(enemy.components.len(), 12);
+    // Wartosci konkretne (wspolczynniki z data/power-params.json, pkt: jw 2.5, wygrana 25,
+    // ludek 5, rekruci 10, miasto 50, terytorium 1.0, infra 5, tech 80, ulepszenia 5,
+    // kultura 0.5, religia 25, zdobycze x2). Suma EnemyMSum: 7.5+8+25+20+100+6+15+160+5+3.5+50+2 = 402.
+    // FlatCount: bitwy 1*25 zamiast 4*2, czyli 402 - 8 + 25 = 419.
+    assert_eq!(enemy.power_base, 402.0);
+    assert_eq!(enemy.power, 402.0);
+    assert_eq!(flat.power_base, 419.0);
+    assert_eq!(flat.power, 419.0);
+    let bitwy_enemy = enemy
+        .components
+        .iter()
+        .find(|c| c.key == "bitwy")
+        .expect("skladnik bitwy");
+    assert_eq!(bitwy_enemy.points, 8.0);
     assert_eq!(
         objective_power_for_owner(&raw, &c, BattlePowerModel::EnemyMSum, &m),
         Ok(enemy.power)
