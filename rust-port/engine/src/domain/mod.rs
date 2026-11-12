@@ -101,6 +101,8 @@ pub mod siege_tactics_breach;
 pub mod siege_tactics_clock;
 pub mod siege_tactics_end;
 pub mod siege_tactics_endcheck;
+pub mod siege_tactics_fastforward;
+pub mod siege_tactics_roundcap;
 pub mod siege_tactics_tower;
 pub mod siege_tactics_turnseq;
 pub mod siege_tactics_unit;
