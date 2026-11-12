@@ -1,0 +1,330 @@
+{
+  "arm": "prepared",
+  "seedNote": "PLAYTEST_MAPA_SEED (stale, 1 ziarno)",
+  "relationNote": "naturalny (brak haka ustawiania relacji)",
+  "turnsRequested": 150,
+  "turnsRun": 49,
+  "offers": 1,
+  "activePrzyjmij": 1,
+  "pairs": {
+    "sol->glina": 1
+  },
+  "cyclicDealsMax": 0,
+  "tableStart": 0,
+  "tableEnd": 0,
+  "tableGrowth": 0,
+  "scriptRejected": 0,
+  "per100": 2.04,
+  "aiOwner": 1,
+  "stoppedBy": "limit czasu",
+  "autoBattles": 6,
+  "consoleErrors": 0,
+  "offerLog": [
+    {
+      "turn": 30,
+      "give": "sol",
+      "giveQty": 10,
+      "recv": "glina",
+      "recvQty": 10,
+      "przyjmijAktywne": true
+    }
+  ],
+  "perTurn": [
+    {
+      "t": 2,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 3,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 4,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 5,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 6,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 7,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 8,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 9,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 10,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 11,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 12,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 13,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 14,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 15,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 16,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 17,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 18,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 19,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 20,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 21,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 22,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 23,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 24,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 25,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 26,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 27,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 28,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 29,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 30,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 31,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 32,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 33,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 34,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 35,
+      "pending": 1,
+      "deals": 0,
+      "table": 1
+    },
+    {
+      "t": 36,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 37,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 38,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 39,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 40,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 41,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 42,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 43,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 44,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 45,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 46,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 47,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 48,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 49,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    },
+    {
+      "t": 50,
+      "pending": 0,
+      "deals": 0,
+      "table": 0
+    }
+  ],
+  "secs": 374,
+  "consoleErrorSample": []
+}
