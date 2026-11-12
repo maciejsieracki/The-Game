@@ -1,3 +1,84 @@
+STATUS: DECISION_REQUIRED (runda 3/5, obrona na zarzuty Evaluatora r3; zarzuty 1, 2, 8 naprawione i zmierzone; zarzuty 3, 4, 5 wymagaja decyzji ABC wlasciciela; 6 i 7 rozstrzygniete pomiarem z NIE_ZMIERZONO w opisanych miejscach)
+DOMAIN: GAME
+TEMAT: R-WEB-AI-TRADE-WIRING-E2E-Q1
+GOAL: odpowiedz na kazdy z 8 zarzutow Evaluatora (kandydat a0e724268): PRZYJMUJE (poprawka + dowod + commit) albo ODRZUCAM (dowod). Wg DODATKU 3 (A1): bramka AI->gracz ze wspolczynnikiem relacji 1, podglad „Przyjmij" gracza bez zmian, bez zmian reguly gracz->AI.
+ZMIANY/COMMIT:
+- start: a0e724268c047167c3d8087981c54832ed03986e; galaz robocza wip/R-WEB-AI-TRADE-WIRING-E2E-Q1-r4.
+- fa59afde7: merge origin/main (b0b0e3f86, FALA 658) do a0e724268 — bez konfliktow (zarzut 8). Zmiany gra/src z main pochodza z FALI 649–658, nie z tej rundy.
+- d1eadcceb: tylko testy, `git diff --stat fa59afde7 d1eadcceb` = gra/tools/diplomacy-proposal-test.cjs (18 zmian wierszy) i gra/tools/dyplo-handel-oferta-ai-blokowana-test.cjs (10 zmian wierszy); ZERO zmian w gra/src w tej rundzie (mutacje M1–M3 cofniete `git checkout -- gra/src/main.ts`, potwierdzone git status).
+- raport: 30-obrona-claude.md (ta sekcja nad starszymi rundami).
+TESTY (surowe wyniki z tej sesji; srodowisko: npm ci --ignore-scripts w gra/, tsc --noEmit, node tools/*.cjs, live Chromium z bundlem vite poza repo):
+- tsc --noEmit (fa59afde7): exit 0
+- logic-test (fa59afde7): LOGIC OK (213/213)
+- tech-tree-test (fa59afde7): 20 pass, 0 fail
+- research-test (fa59afde7): PASSED: 33 / FAILED: 0 / TOTAL: 33
+- unit-replace-test (fa59afde7): WSZYSTKIE TESTY ZIELONE (21/21)
+- combat-test (fa59afde7): COMBAT TEST: 6/6 pass
+- ai-trade-proposal-branch-test (fa59afde7): 10 passed, 0 failed
+- ai-trade-proposal-to-player-test (fa59afde7): 25 assertions passed
+- diplomacy-proposal-test: fa59afde7 197/199 FAIL (exit 1, regresja z zarzutu 1) -> d1eadcceb 200/200 PASS (exit 0)
+- dyplo-handel-oferta-ai-blokowana-test: fa59afde7 19 OK/1 FAIL (regresja z zarzutu 2) -> d1eadcceb 20 OK/0 FAIL (exit 0)
+- ai-trade-wiring-e2e-live-test (d1eadcceb, Chromium, realny endTurn, bez forceAccept): 44 pass / 0 fail (exit 0); log /tmp/claude-0/r4/live.log; wynik /tmp/claude-0/r4/live-result.json; zrzuty /tmp/claude-0/r4/ev/
+  Kontrola bez umowy w tym przebiegu: ctlB.plGive=40 -> ctlA.plGive=19, ctlLossGive=21 (patrz zarzut 6).
+
+ODPOWIEDZI NA ZARZUTY EVALUATORA (r3)
+
+ZARZUT 1 (regresja diplomacy-proposal-test, asercje przy liniach 694/701) — PRZYJMUJE.
+Regresje potwierdzone: baza 199/199, kandydat 197/199 (`199 PW < 200 PW @ Relacji 50`). Przyczyna: stara asercja opisywala relTotal 50 (mnoznik 2); A1 celowo liczy bramke AI->gracz ze wspolczynnikiem 1 (AI_PROPOSER_FAIRNESS_REL_TOTAL = 100, diplomacy-proposals.ts). Zmiana jest zamierzona (DODATEK 3), wiec test byl nieaktualny, nie kod.
+Poprawka (d1eadcceb): asercje zastapione nowa, jawnie opisana regula: AI 199 PW za 100 PW przechodzi bramke AI (wymagane 100 = receivePn); AI 99 za 100 odrzucone, powod zawiera „100" i „99", bez „niechec". Probowalem tez asercji podgladu gracza przez previewIncomingPlayerAccept na payloadzie goldOnce/receivePn — zwraca null (payload nie jest w trybie basket/mixed, computeIncomingPlayerAcceptNetPw), wiec asercje usunieto; podglad gracza pokrywa test live (previewAccept na zywo).
+Dowod: diplomacy-proposal-test 200/200, exit 0 (po poprawce).
+
+ZARZUT 2 (regresja dyplo-handel-oferta-ai-blokowana-test, KRYTERIUM 4: pwBalance 16 zamiast 0) — PRZYJMUJE.
+Zmierzone: sprzedaz AI->gracz 20 zelaza (= 40 PW) za 24 zlota, relTotal 60 -> po A1 bramka z relTotal 100: givePn 40, required = max(24, ceil(fair(24,100)*1)) = 24, pwBalance = 40 - 24 = 16. Asercja „dokladnie 0" opisywala stary relTotal 60 i zostala zastapiona wartoscia 16 z komentarzem; accepted===true zostaje. Asercje kierunku generatora (linie 141–146: targetResourceTradePaymentPn, adjustZaplataPerTuraForZeroBalance) nie zmienione i zielone.
+Dowod: dyplo-handel 20 OK / 0 FAIL, exit 0. Uwaga: 16 PW to nadplata AI w handlu jednorazowym — patrz zarzut 3.
+
+ZARZUT 3 (zakres A1: jednorazowy handel AI->gracz bez gornego limitu nadplaty) — PRZYJMUJE FAKT; ROZSTRZYGNIECIE = DECISION_REQUIRED.
+Zweryfikowane w kodzie (fa59afde7):
+- diplomacy-proposals.ts evaluateProposal (~l.1569–1620): fairnessRelTotal = AI_PROPOSER_FAIRNESS_REL_TOTAL dla responderIsPlayer. Dotyczy zarowno sciezki cyklicznej (per_turn), jak i jednorazowej (hasPnPath). Bramka sprawdza tylko givePn >= required(receivePn); nie ma gornego limitu.
+- Gorny limit givePn <= receivePn istnieje tylko w selekcji cyklicznej (main.ts:20481, `if (givePn > receivePn) return;`) i w filtrze enqueue cyklicznym (main.ts:23633) oraz w podgladzie gracza uzytym w selekcji (main.ts:20487) i w evaluateExactPayload.
+- Jednorazowa oferta AI->gracz nie przechodzi tej selekcji. Przycisk „Przyjmij" blokuje ja podgladem gracza (netPw<0), ale oferta trafia na stol bez limitu po stronie generatora i bramki AI. Pomiar: AI sprzedaje 40 PW za 24 PW i bramka AI przepuszcza (pwBalance 16; patrz zarzut 2).
+Dlaczego nie naprawiam sam: dodanie limitu do jednorazowej sciezki zmienia reguly handlu jednorazowego (prog/balans) — to decyzja liczbowa/produktowa wlasciciela (CLAUDE.md, zasada 3). Opcje do decyzji ABC:
+  A) ten sam limit (givePn <= receivePn, ewentualnie z tolerancja z zarzutu 4) dla obu sciezek evaluateProposal przy responderIsPlayer (spojna regula; rekomendacja operatora);
+  B) zawezic A1 do sciezki cyklicznej (dla hasPnPath przywrocic relTotal) — jednorazowe bez zmian, ale odchodzi od litery DODATKU 3 (ktory wymienia evaluateProposal dla respondenta-gracza);
+  C) zostawic, udokumentowac jako znany stan (oferta nieprzyjmowalna przez podglad gracza).
+
+ZARZUT 4 (zbyt scisla rownosc PW: „zblizona wartosc" vs givePn == receivePn) — PRZYJMUJE FAKT; ROZSTRZYGNIECIE = DECISION_REQUIRED.
+Implementacja: bramka AI (givePn >= receivePn) + limit (givePn <= receivePn) + podglad gracza (netPw >= 0, czyli receivePn >= givePn) = przeciecie to dokladna rownosc PW. DODATEK 3 mowil o „zblizonej wartosci" (np. 200 PW vs 200 PW). Tolerancja jest liczba progowa -> pytanie ABC: jaka tolerancja (np. +/-X% PW) i czy w obu kierunkach.
+Czestosc ofert w pelnej rozgrywce: NIE_ZMIERZONO w tej rundzie. Liczby siatki (1–6 na pare z 400 punktow) sa z zarzutu i z pliku evidence/r3-live-result-grid.json z kandydata; nie przeliczone ponownie.
+
+ZARZUT 5 (sprzeczny komunikat w oknie: „musisz dac wiecej (x8,6 PW)" przy aktywnym „Przyjmij") — PRZYJMUJE FAKT; ROZSTRZYGNIECIE = DECISION_REQUIRED.
+Zrodlo zlokalizowane: gra/src/ui/diplomacyAcceptanceBalance.ts, funkcja relationDealText (kontekst 'trade'): `musisz dać więcej (×${100/relTotal} PW)` — przelicznik relacyjny gracza (dla relTotal 11,6 -> x8,6). Podglad „Przyjmij" (netPw) i A1 uzywaja innych regul, stad sprzecznosc. Zmiana tekstu panelu dotyczy komunikatu gracza o regulach podgladu, a DODATEK 3 zakazuje zmian podgladu gracza — wiec nie zmieniam sam. Pytanie ABC: ktory przelicznik ma byc pokazany graczowi (relacyjny panel, czy A1/netPw) i czy usunac/ukryc wiersz „musisz dac wiecej" w kontekscie handlu AI->gracz. Zrzutu nie odtwarzalem w tej rundzie (NIE_ZMIERZONO).
+
+ZARZUT 6 (kryterium 5 DODATKU 3: „60 zelaza znika ze stanu 70") — PRZYJMUJE POMIAR, ODRZUCAM ATRYBUCJE DO HANDLU; mechanizm = NIE_ZMIERZONO.
+Dowod: test live mierzy ctlLossGive = plGive(przed EOT) - plGive(po EOT) w KONTROLI BEZ UMOWY (live-test l.337–343).
+- r3 (evidence/result.json, kandydat): ctlB.plGive=70 -> ctlA.plGive=10, ctlLossGive=60.
+- ta runda (d1eadcceb, /tmp/claude-0/r4/live-result.json): ctlB.plGive=40 -> ctlA.plGive=19, ctlLossGive=21 (to jest liczba z zarzutu 6; ten sam test, inny przebieg).
+Strata wystepuje bez zadnej umowy, wiec nie jest skutkiem handlu (atrybucja do handlu = 0). Wielkosc zmienia sie miedzy przebiegami (21 vs 60) — przyczyna (zuzycie, utrzymanie, limit magazynu) NIE_ZMIERZONO; nie badano w tej rundzie. Kryterium 5 spelnione tylko w czesci: wykluczone, ze to handel; mechanizm nieznany.
+
+ZARZUT 7 (mutacja zdejmuje 4 klauzule naraz) — PRZYJMUJE; POMIAR CZESCIOWY (live, d1eadcceb):
+- M1: usunieta selekcja `if (givePn > receivePn) return;` (main.ts:20481) -> exit 0, 44 pass / 0 fail. Klauzula nie jest wymagana przez test live (redundancja).
+- M2: usuniety podglad gracza w selekcji `if (playerPreview && !playerPreview.accepted) return;` (main.ts:20487) -> exit 1, timeout 180 s w waitForFunction (linia 161, krok ladowania gry, nie asercja). Wynik czerwony; przyczyny nie zdiagnozowano (NIE_ZMIERZONO co do mechanizmu, do powtorki).
+- M3: usuniety warunek `&& givePn <= receivePn` w filtrze enqueue (main.ts:23633) -> exit 0, 44 pass / 0 fail. Redundancja.
+- M4: podglad gracza w evaluateExactPayload (main.ts ~23637) — NIE_ZMIERZONO (nie wykonano w tej rundzie).
+Wniosek: w testach live wiazaca jest tylko czesc podgladu gracza (M2), a limit givePn <= receivePn w selekcji i filtrze enqueue jest zbedny wobec podgladu. Usuniecie zbednych klauzul nie zrobione (to refaktor poza zakresem tej obrony; mozna w poprawce z zarzutu 3).
+Mutacje wrocone: `git checkout -- gra/src/main.ts` (git status czysty przed commitem).
+
+ZARZUT 8 (baza integracji: bramki na biezacym czubku main) — PRZYJMUJE; WYKONANE.
+`git merge origin/main` (b0b0e3f86) do a0e724268 = fa59afde7, bez konfliktow. Bramki na scalonym czubku: patrz sekcja TESTY (tsc, 5 referencyjnych, ai-trade-branch 10/0, ai-trade-to-player 25, dyplo i diplomacy po poprawce, live 44/0). Zdanie zadania o „93fb1bc21 jako origin/main" jest bledne (to kandydat r2); baza merge to b0b0e3f86.
+
+BLOKADY:
+- Decyzje ABC wlasciciela (wstrzymuja integracje): Z3 (zakres limitu dla jednorazowego handlu AI->gracz: A/B/C), Z4 (tolerancja „zblizonej wartosci PW" + kierunek), Z5 (ktory przelicznik pokazac w panelu „Wpływ relacji na deal").
+- NIE_ZMIERZONO: czestosc realnych ofert w pelnej rozgrywce (Z4); mechanizm utraty zelaza/cegly w kontroli bez umowy (Z6, 60 vs 21 w roznych przebiegach); M4 (Z7); przyczyna czerwonego M2 (Z7); zrzut panelu (Z5).
+- Nie wprowadzono zadnych zmian reguly A1 ani podgladu gracza.
+
+RUNDY: 3/5 (obrona na zarzuty Evaluatora r3). Ostatni werdykt: FAIL (r3). Decyzja wymagana: Z3, Z4, Z5 (ABC).
+
+NASTEPNY KROK: decyzja ABC wlasciciela na Z3 (A/B/C), Z4 (tolerancja), Z5 (przelicznik w panelu). Po decyzji: osobna poprawka (limit/tolerancja w evaluateProposal + testy, zmiana tekstu panelu jesli wybrane) -> Evaluator -> Final Control -> integracja orkiestratora. Nie integrowac przed decyzja.
+
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+
 STATUS: DECISION_REQUIRED (bez zmian kodu w tej rundzie; kod = baza kandydata + merge czubka main; zarzuty rozstrzygniete ponizej; brak ABC A1/A2/B/C blokuje dalsza implementacje)
 DOMAIN: GAME
 TEMAT: R-WEB-AI-TRADE-WIRING-E2E-Q1
