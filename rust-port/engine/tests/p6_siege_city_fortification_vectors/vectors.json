@@ -1,6 +1,6 @@
 {
  "source": "gra/src/game/city-fortification.ts @ 07d2fbd72f758705f8e1d59cc4968027ffbafe75, linie 29-36, 61-70, 76-79, 96-98",
- "generator": "rust-port/engine/tests/p6_siege_city_fortification_gen.mjs (node v22.23.4, seed 217)",
+ "generator": "rust-port/engine/tests/p6_siege_city_fortification_gen.mjs (node v22.23.4, seed 217; expect = wykonanie pinu)",
  "cityFortificationKind": [
   {
    "builtBuildingIds": null,
