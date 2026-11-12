@@ -21,8 +21,8 @@
 //! czesc decyzyjna `_siegeSafeApproach` (wiersz 30, PARTIAL: petla `_siegeWalkTo`/`_bfsFirstStep`/`_doMove` nie
 //! jest portowana). Zagrozenia i przechodniosc sa wejsciami jawnymi.
 //!
-//! Nie portowano (BRAK, poza tym modulem): `_applyTerrainRange` (sam zasieg terenu), `canShoot`, `isSiegeUnit`,
-//! `_siegeWalkTo` / `_bfsFirstStep` (efekty marszu sceny).
+//! Nie portowano (BRAK, poza tym modulem): `_applyTerrainRange` (sam zasieg terenu), `canShoot`, `isSiegeUnit`.
+//! Marsz `_siegeWalkTo` / `_bfsFirstStep` jest w `siege_tactics_walk.rs` (K1b).
 //! Patrz `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`.
 
 /// Zrodlo ostrzalu `{q, r, range}` (web `Array<{ q: number; r: number; range: number }>`).
@@ -237,8 +237,7 @@ pub const SAFE_APPROACH_MAX_VISITED: usize = 6000;
 /// * `passable(c, r)` = web `!this.occByKey.has(k) && this._passableForUnit(ru, c, r)` (wejscie jawne),
 /// * bezpieczenstwo kafla = `threat_slack(threats, c, r) > 0` (jak `safe` w webie).
 ///
-/// CZESC NIEPORTOWANA (wiersz 30 w `P6-SIEGE-TAKTYKA.md` = PARTIAL): `this._siegeWalkTo(ru, goal, done, safe)` --
-/// petla marszu z `_bfsFirstStep`, `_doMove` i `_schedule`; to efekty sceny, bez odpowiednika w tym module.
+/// Dalsza czesc (`this._siegeWalkTo(ru, goal, done, safe)`) jest portowana w `siege_tactics_walk.rs` (K1b).
 pub fn siege_safe_approach_goal<P>(
     start: (i64, i64),
     target: (f64, f64),
