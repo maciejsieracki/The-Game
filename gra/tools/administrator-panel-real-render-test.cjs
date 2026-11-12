@@ -108,6 +108,8 @@ async function runSuite(browser, code, label) {
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.setContent('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="background:#0b0f16;color:#eee;margin:0"></body></html>');
   await page.addScriptTag({ content: code });
+  // R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1: zatrudnienie też pyta window.confirm — domyślnie potwierdzamy i zapisujemy treść pytań.
+  await page.evaluate(() => { window.__confirms = []; window.__confirmAnswer = true; window.confirm = (m) => { window.__confirms.push(String(m)); return window.__confirmAnswer; }; });
   const shot = async (n) => { if (SHOTS_DIR && label === 'base') { fs.mkdirSync(SHOTS_DIR, { recursive: true }); await page.screenshot({ path: path.join(SHOTS_DIR, n) }); } };
 
   // ---------- (A) panel administratora ulepszeń ----------
@@ -171,6 +173,36 @@ async function runSuite(browser, code, label) {
   });
   await shot('panel-ulepszen-brak-srodkow.png');
   check('A11 brak środków: Zatrudnij nieaktywne, klik nie zatrudnia, komunikat ile brakuje (28)', B.disabled && B.hire === 0 && B.shortfall && B.shortfall.includes('28') && /Brakuje/.test(B.shortfall), B);
+
+  // okno potwierdzenia zatrudnienia (koszt + bonusy): anuluj = bez zmian, potwierdź = zatrudniony
+  const H = await page.evaluate(() => {
+    document.querySelector('.civ-adm-panel-host')?.remove();
+    const T = window.__T; const calls = { hire: 0 };
+    const mk = (kind) => ({ kind, cityName: 'Teby', hired: false, working: false, hireCost: 40, upkeep: 2, treasury: 100, tier: 2, blockReasonText: null });
+    const out = {};
+    for (const kind of ['improvements', 'city']) {
+      let model = mk(kind);
+      T.openAdministratorPanel({ getModel: () => model, onHire: () => { calls.hire++; model = { ...model, hired: true, working: true }; return true; }, onDismiss: () => false });
+      const dlg = () => document.querySelector('.civ-adm-panel');
+      window.__confirms.length = 0;
+      window.__confirmAnswer = false;
+      dlg().querySelector('[data-adm-panel-confirm]').click();
+      const declined = { hire: calls.hire, hired: dlg().getAttribute('data-adm-hired'), asked: window.__confirms.length, text: window.__confirms[0] || '' };
+      window.__confirmAnswer = true;
+      const cb = dlg().querySelector('[data-adm-panel-confirm]'); if (cb) cb.click();
+      const accepted = { hire: calls.hire, hired: dlg().getAttribute('data-adm-hired'), asked: window.__confirms.length };
+      out[kind] = { declined, accepted };
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      calls.hire = 0;
+    }
+    window.__confirmAnswer = true;
+    return out;
+  });
+  check('A11b zatrudnienie pyta o potwierdzenie z kosztem (40) i bonusami; Anuluj = bez zatrudnienia i bez zmian stanu (ulepszenia)',
+    H.improvements.declined.asked === 1 && H.improvements.declined.hire === 0 && H.improvements.declined.hired === '0' && /40/.test(H.improvements.declined.text) && /Bonusy/.test(H.improvements.declined.text), H.improvements);
+  check('A11c Potwierdz zatrudnia dokladnie raz (ulepszenia)', H.improvements.accepted.hire === 1 && H.improvements.accepted.hired === '1', H.improvements);
+  check('A11d administrator miasta: okno z kosztem i procentami bonusow; Anuluj bez zmian; Potwierdz zatrudnia',
+    H.city.declined.hire === 0 && H.city.declined.hired === '0' && /40/.test(H.city.declined.text) && /korupcja/.test(H.city.declined.text) && /%/.test(H.city.declined.text) && H.city.accepted.hire === 1 && H.city.accepted.hired === '1', H.city);
 
   // zatrudnienie, Zwolnij, zamykanie
   const C = await page.evaluate(() => {
@@ -417,6 +449,9 @@ async function main() {
     allResults.push({ name: '[E7 mutacja] usunięcie reguły guardu PAŃSTWA czerwieni test (G2)', ok: reRes.some((x) => !x.ok && /G2/.test(x.name)), detail: reRes.filter((x) => !x.ok).map((x) => x.name) });
     const mutConfirm = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: "if (!window.confirm('Zwolnić administratora?", to: "if (false && !window.confirm('Zwolnić administratora?" }] });
     const cfRes = await mutSuite(browser, mutConfirm, 'mut-confirm');
+    const mutHire = await bundle({ mutations: [{ file: 'administratorPanel.ts', from: 'if (!window.confirm(administratorHireConfirmText(cur))) return;', to: '' }] });
+    const mhRes = await mutSuite(browser, mutHire, 'mut-hire');
+    allResults.push({ name: '[E9 mutacja] usuniecie potwierdzenia zatrudnienia czerwieni test (A11b)', ok: mhRes.some((x) => !x.ok && /A11b/.test(x.name)), detail: mhRes.filter((x) => !x.ok).map((x) => x.name) });
     allResults.push({ name: '[E8 mutacja] usunięcie potwierdzenia zwolnienia czerwieni test (>=1 FAIL)', ok: cfRes.some((x) => !x.ok), detail: cfRes.filter((x) => !x.ok).map((x) => x.name) });
 
     // (F) statycznie: main.ts — każdy z 7 setterów polityki ulepszeń woła guard, a guard deleguje do reguły
