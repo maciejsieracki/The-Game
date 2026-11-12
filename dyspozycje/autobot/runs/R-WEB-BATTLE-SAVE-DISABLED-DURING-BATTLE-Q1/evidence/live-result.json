@@ -1,0 +1,144 @@
+{
+  "mode": "real",
+  "steps": [
+    {
+      "step": "baseline-map",
+      "writes": 3,
+      "toast": true
+    },
+    {
+      "step": "ctrl-s-in-battle",
+      "writes": 0,
+      "keys": [],
+      "toast": true
+    },
+    {
+      "step": "ctrl-s-after-battle",
+      "writes": 3,
+      "toast": true
+    },
+    {
+      "step": "summary-button",
+      "label": "Powrót na mapę"
+    }
+  ],
+  "bundle": {
+    "path": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/civ-save-build/real/index.html",
+    "sha256": "35d6c387585c3962d79ec7e2f736d6820889284b9bb7ccf517ac595157a306bd",
+    "bytes": 14552568
+  },
+  "errors": [
+    "pageerror: Unexpected token '<'",
+    "pageerror: Unexpected token '<'",
+    "pageerror: Unexpected token '<'"
+  ],
+  "checks": [
+    {
+      "label": "1 baseline: poza bitwa Ctrl+S zapisuje (liczniki zapisu rosna)",
+      "ok": true,
+      "detail": {
+        "writes": 3,
+        "toast": true
+      }
+    },
+    {
+      "label": "2 bitwa otwarta (isBattleSceneOpen = true, bitwa nie zakonczona)",
+      "ok": true,
+      "detail": {
+        "inBattle": true
+      }
+    },
+    {
+      "label": "3a doQuickSave w bitwie: zwraca false i zero zapisow (IDB/localStorage/FSA)",
+      "ok": true,
+      "detail": {
+        "ret": false,
+        "writes": 0,
+        "keys": [],
+        "toastDirect": true,
+        "notifyAfterDirect": 1,
+        "blockedDisplay": {
+          "display": "block",
+          "rect": [
+            608.46875,
+            840.609375,
+            223.0625,
+            35.390625
+          ],
+          "vis": "visible",
+          "op": "1",
+          "z": "10030",
+          "pos": "fixed",
+          "chain": [
+            "DIV#civ-hint-toast. d=block v=visible o=1",
+            "HTML#. d=block v=visible o=1"
+          ]
+        }
+      }
+    },
+    {
+      "label": "3c Ctrl+S w bitwie: zero zapisow (klawisz)",
+      "ok": true,
+      "detail": {
+        "writes": 0,
+        "keys": [],
+        "keysSeen": [
+          "cap:Control:true:0",
+          "bub:Control:true:0",
+          "cap:s:true:0",
+          "bub:s:true:0"
+        ]
+      }
+    },
+    {
+      "label": "3b Ctrl+S w bitwie: komunikat „Zapis niedostępny w trakcie bitwy” widoczny",
+      "ok": true,
+      "detail": {
+        "toastInBattle": true,
+        "toastDiag": [
+          {
+            "text": "Zapis niedostępny w trakcie bitwy",
+            "display": "none",
+            "z": "10030",
+            "rect": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "4 menu pauzy „Zapisz” nie znaleziono w DOM przy Esc (sciezka niezmierzona na zywo; bramka strukturalna w kodzie)",
+      "info": true,
+      "detail": {
+        "saveBtnCount": 0
+      }
+    },
+    {
+      "label": "5 zakonczenie bitwy: podsumowanie zamkniete przyciskiem",
+      "ok": true,
+      "detail": {
+        "button": "Powrót na mapę"
+      }
+    },
+    {
+      "label": "5b po bitwie: isBattleSceneOpen = false (powrot na mape)",
+      "ok": true,
+      "detail": {
+        "backOnMap": true
+      }
+    },
+    {
+      "label": "6 po bitwie: Ctrl+S znowu zapisuje",
+      "ok": true,
+      "detail": {
+        "writes": 3,
+        "toast": true
+      }
+    }
+  ],
+  "durationMs": 236412
+}

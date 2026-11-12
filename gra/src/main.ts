@@ -26395,6 +26395,11 @@ async function boot(): Promise<void> {
     }
 
     function openSaveGameDialog(): void {
+      // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: menu pauzy / przycisk zapisu w bitwie.
+      if (isSaveBlockedByBattle()) {
+        notifySaveBlockedByBattle();
+        return;
+      }
       void showSaveGameDialog({
         defaultLabel: currentSaveLabel('manual'),
         turn,
@@ -26407,6 +26412,11 @@ async function boot(): Promise<void> {
             // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
             await refreshHasAnySaveSlotCache();
             refreshGamePauseMenuLoadState();
+          } else if (isSaveBlockedByBattle()) {
+            // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: dialog otwarty przed bitwą, zapis
+            // kliknięty w trakcie bitwy -- komunikat o bitwie, nie „brak localStorage”.
+            // / EN: dialog opened before the battle, save clicked during it -- battle message.
+            notifySaveBlockedByBattle();
           } else {
             // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
             // prawdziwą przyczynę (brak MIEJSCA, nie brak API) -- ten sam ton
@@ -37997,6 +38007,19 @@ async function boot(): Promise<void> {
       };
     }
 
+    // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: zapis (ręczny, Ctrl+S, autozapis,
+    // menu pauzy) jest niedostępny w trakcie bitwy: scena bitwy (ręczna, oblężenie,
+    // bitwa taktyczna) albo ekran podsumowania bitwy. Poza bitwą zapis bez zmian.
+    // / EN: saving (manual, Ctrl+S, autosave, pause menu) is disabled while a battle
+    // is on screen (battle scene incl. siege / tactical, or the post-battle summary).
+    // Outside battles saving is unchanged.
+    function isSaveBlockedByBattle(): boolean {
+      return isBattleSceneOpen() || isPostBattleSummaryOpen();
+    }
+    function notifySaveBlockedByBattle(): void {
+      showHintMessage('Zapis niedostępny w trakcie bitwy', 3000, undefined, true);
+    }
+
     // Zwraca pełny wynik zapisu (ok + reason), nie goły boolean -- wołający musi
     // znać powód niepowodzenia (np. 'quota'), żeby pokazać trafny komunikat
     // zamiast mylącego ogólnika (P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT).
@@ -38005,6 +38028,12 @@ async function boot(): Promise<void> {
     // message instead of a misleading generic one.
     // MIGRACJA IDB: async -- saveToLocal() zapisuje teraz do IndexedDB (Promise).
     async function persistSaveToSlot(slotId: string, label: string): Promise<SaveToLocalResult> {
+      // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: twarda bramka -- żadna ścieżka
+      // zapisu nie zapisze stanu bitwy (także test-hooki i dialog zapisu).
+      if (isSaveBlockedByBattle()) {
+        notifySaveBlockedByBattle();
+        return { ok: false, reason: 'other' };
+      }
       try {
         const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
         if (result.ok) {
@@ -38023,6 +38052,11 @@ async function boot(): Promise<void> {
      * MIGRACJA IDB: async (persistSaveToSlot -> saveToLocal -> IndexedDB).
      */
     async function doQuickSave(showHintOnSuccess = true): Promise<boolean> {
+      // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: Ctrl+S w bitwie -- komunikat, bez zapisu.
+      if (isSaveBlockedByBattle()) {
+        notifySaveBlockedByBattle();
+        return false;
+      }
       const { ok, reason } = await persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
       if (ok) {
         if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
@@ -38135,6 +38169,12 @@ async function boot(): Promise<void> {
      * write failure) fall back to the pre-existing localStorage path.
      */
     async function doRotatingAutosave(): Promise<void> {
+      // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: autozapis nie zapisuje stanu bitwy
+      // ani pośredniego (tura kończy się poza bitwą, ta gałąź to siatka bezpieczeństwa).
+      if (isSaveBlockedByBattle()) {
+        console.warn('[Autosave] pomijam -- bitwa na ekranie, tura=' + turn);
+        return;
+      }
       // N3: pomiń tę turę, jeśli poprzedni zapis (na dysk, potencjalnie wolny)
       // wciąż trwa -- zamiast nakładać dwa równoległe createWritable() na ten
       // sam plik. Patrz komentarz przy deklaracji autosaveInFlight.

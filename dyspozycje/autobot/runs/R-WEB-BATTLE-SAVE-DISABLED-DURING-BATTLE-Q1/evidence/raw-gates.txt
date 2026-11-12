@@ -1,0 +1,31 @@
+Surowe wyniki bramek (obrona, runda po zarzutach Evaluatora). Komendy z gra/ (node_modules: npm ci --ignore-scripts).
+
+tsc (node ./node_modules/typescript/bin/tsc --noEmit): TSC_EXIT=0 (brak wyjścia)
+node tools/logic-test.cjs: LOGIC_EXIT=0 | "LOGIC OK (213/213)"
+node tools/tech-tree-test.cjs: TECH_EXIT=0 | "tech-tree-test: 20 pass, 0 fail"
+node tools/research-test.cjs: RESEARCH_EXIT=0 | "PASSED: 33 / FAILED: 0 / TOTAL: 33" | "ALL GREEN"
+node tools/unit-replace-test.cjs: UNITREP_EXIT=0 | "[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)"
+node tools/combat-test.cjs: COMBAT_EXIT=0 | "COMBAT TEST: 6/6 pass" | "All sanity checks passed."
+node tools/battle-save-disabled-test.cjs (strukturalny, po ostatniej edycji komentarza): STRUCT_EXIT=0 | "Wynik: 8 PASS / 0 FAIL"
+
+node tools/battle-save-disabled-live-test.cjs (Chromium, build produkcyjny poza repo, wynik końcowy, plik live-result.json):
+  PASS 1 baseline: poza bitwą Ctrl+S zapisuje (writes 3)
+  PASS 2 bitwa otwarta (isBattleSceneOpen = true)
+  PASS 3a doQuickSave w bitwie: ret=false, writes=0, toastDirect=true
+  PASS 3c Ctrl+S (klawisz) w bitwie: writes=0; keysSeen: cap/bub Control i s, defaultPrevented=0
+  PASS 3b komunikat "Zapis niedostępny w trakcie bitwy" pokazany (MutationObserver)
+  INFO 4 menu pauzy "Zapisz" nie znaleziono w DOM po Esc (saveBtnCount=0)
+  PASS 5 zakończenie bitwy (skip) + przycisk "Powrót na mapę"
+  PASS 5b isBattleSceneOpen = false po bitwie
+  PASS 6 po bitwie Ctrl+S zapisuje (writes 2)
+  Wynik: 8 PASS / 0 FAIL, exit 0
+
+node tools/battle-save-disabled-live-test.cjs --mutant (guard isSaveBlockedByBattle() -> false w kopii bundla, mutant-live-result.json):
+  PASS 1, PASS 2
+  FAIL 3a doQuickSave w bitwie: ret=true, writes=3 (idb.put:kv:thegame.save.autosave, idb.put:kv:thegame.savemeta.autosave, ls.setItem:thegame.save._lastPlayed)
+  FAIL 3c Ctrl+S w bitwie: writes=3
+  FAIL 3b komunikat nie pokazany
+  PASS 5, PASS 5b, PASS 6
+  Wynik (MUTANT): 5 PASS / 3 FAIL, exit 1
+
+git diff --check: brak wyjścia (bez błędów białych znaków)
