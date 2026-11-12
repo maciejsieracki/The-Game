@@ -113,3 +113,10 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - Kolejka: W8 r3 po POWER-PRODUCERS, BRAKE-VECTORS i SIEGE-TRANSFER-Q3; potem L-3 i siege #217.
 - DECISION_REQUIRED (gameplay): faza zwarcia DYSTANS; REPIN-DRYFT 1–6; 50 rozbieżności pól `units.json` vs pin (UNIT-REPLACE-L1 zaparkowany; commity `rust-port-wip/UNIT-REPLACE-L1-r2-*`).
 - Dysk: 14 GB; w trakcie nocy kilka rund operatorów stawało na progu 8 GB — worktree zakończonych przebiegów usuwane po każdym wypchnięciu.
+
+## Przebieg 2026-11-12 01:2x UTC (orkiestrator Rust)
+- parity-v2 = 258afaf8f (batch 6: POWER-ARMIA-TERYTORIUM + POWER-NOZEROS; 2789 passed, fmt/clippy 0).
+- FC PASS-WITH-NOTES, jeszcze nie na parity-v2 (refs rust-port-wip/*): POWER-REST 5e58876fb, POWER-NAN-STRICT 568e3fe18 (kod 36983ebb6), W8 r3 95bbf99d7, SIEGE-TRANSFER Q4 f1b4b2188 → Q5 70d7a231d → Q6 fc45c4797, SIEGE-TAKTYKA-AUDYT 4f16b5a1f, UNIT-REPLACE-L3 etap 1 ab116e492.
+- BATCH7-tip (W8 r3 + POWER-REST + Q4) NIE KOMPILUJE: konflikt semantyczny W8 r3 × POWER-NOZEROS (objective_power_for_owner zwraca Result). Naprawa wchodzi w W8 r5 (Operator); NAN-STRICT po W8. Batch 8 (BATCH8-tip ceb688b0d = parity-v2 + Q4–Q6 + POWER-REST) w bramkach.
+- Decyzje techniczne: NaN/Inf w Provided = błąd (wariant A); L-3 etap 2 (stan ekonomii w PlayableState) jako osobny temat; W8 r4 zawężone do fazy Diplomacy, oblężenie/AI w r6+.
+- W toku (4): W8 r5 (wf_5a21b06a-821), L3-STAN (wf_9e427dfb-a13), SIEGE-TRANSFER-Q7 (wf_8154cf44-ed3), SIEGE-TAKTYKA-K0B (wf_5d829ec6-b80).
