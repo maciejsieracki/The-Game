@@ -9608,3 +9608,9 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 
 ### Z-7 Zgłoszenia z 2026-11-12 do późniejszego rozpisania
 - Inne natywne okna gry (window.confirm): main.ts:9367, main.ts:25930, saveLoadDialog.ts:346, empireDetailPanel.ts:1529, cityPanel.ts:12135. Poza zakresem Z-2; do decyzji właściciela.
+
+## FALA 669 — ROBOCZA eb4ecfaa (2026-11-12) — rozdzielanie armii pod miastem wroga (zgłoszenie właściciela)
+
+- Temat: R-WEB-ARMY-SPLIT-ENEMY-CITY-BLOCK-Q1. FC PASS-WITH-NOTES (d8a0666d1), integracja i deploy na ROBOCZĄ: main 6a0cbba28, MD5 eb4ecfaa (raw zgodny), sidecary audio-pack-1/2/3 zgodne.
+- Zakres: rozdzielenie armii i ruch pod-stosu nie wchodzą na obce miasto ani heks z obcą jednostką.
+- Dowód: tsc OK, logic 213/213, test 14/0, mutacja wpięcia wykryta. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
