@@ -994,6 +994,8 @@ fn owner_key(owner: i64) -> Result<u64, WarTurnError> {
 /// PRZED zapisem, wiec blad = zadnej zmiany (atomowosc).
 /// Skarbiec gracza ludzkiego idzie do `economy.treasury`; pozostali wlasciciele do `ai_treasury_by_owner`.
 /// Brak wpisu wlasciciela, ktorego delta dotyczy, daje `WarTurnError::DiplStep` (nigdy nie tworzy zera).
+/// Odchylenie swiadome i OTWARTE (DECISION_REQUIRED, nie zmieniane tu): pin czyta brak wpisu jako 0
+/// (`aiSkarbiecByOwner.get(id) ?? 0`), Rust zwraca blad. Patrz 02a-obrona.md, zarzut 1.
 pub fn apply_dipl_deltas_to_state(
     state: &mut PlayableState,
     treasury_deltas: &BTreeMap<i64, f64>,
@@ -1051,6 +1053,9 @@ pub fn apply_dipl_deltas_to_state(
         if !value.is_finite() {
             return Err(err(format!("pula Pracy wlasciciela {owner} nieskonczona")));
         }
+        // Pin: setOwnerPracaPool zapisuje `Math.max(0, value)` -- pula Pracy nie schodzi ponizej zera.
+        // (Skarbce NIE maja podlogi: pin ich nie podlogowuje, patrz komentarz przy aiSkarbiecByOwner.set.)
+        let value = if value > 0.0 { value } else { 0.0 };
         new_praca.insert(key, value);
     }
     // Zatwierdzenie dopiero po walidacji wszystkich pozycji.

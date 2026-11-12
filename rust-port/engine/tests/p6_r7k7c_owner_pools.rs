@@ -305,3 +305,69 @@ fn apply_deltas_rejects_non_finite_values() {
     assert!(apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new()).is_err());
     assert_eq!(st, before);
 }
+
+// --- Poprawki po zarzutach 2, 6, 8 (runda obrony Operatora, 02a-obrona.md) ---
+
+#[test]
+fn apply_praca_pool_is_floored_at_zero_like_pin() {
+    // Pin: setOwnerPracaPool(id, v) zapisuje Math.max(0, v). Strata wieksza niz pula -> 0, nie ujemna.
+    let base = with_ai(fresh_game().state().clone());
+    let human = human_id(&base) as i64;
+    let ai = ai_id(&base);
+    let mut st = base.clone();
+    st.economy.praca_pool_by_owner.insert(ai, 4.0);
+    st.economy.praca_pool_by_owner.insert(human as u64, 1.0);
+
+    let praca = BTreeMap::from([(ai as i64, -10.0), (human, -1.0)]);
+    apply_dipl_deltas_to_state(&mut st, &BTreeMap::new(), &praca).expect("apply");
+    assert_eq!(st.economy.praca_pool_by_owner.get(&ai), Some(&0.0));
+    assert_eq!(
+        st.economy.praca_pool_by_owner.get(&(human as u64)),
+        Some(&0.0)
+    );
+}
+
+#[test]
+fn apply_ai_treasury_has_no_floor_like_pin() {
+    // Pin: skarbiec AI NIE jest podlogowany (dlug trwa, jak u gracza). Ujemny wynik zostaje.
+    let base = with_ai(fresh_game().state().clone());
+    let ai = ai_id(&base);
+    let mut st = base.clone();
+    st.economy.ai_treasury_by_owner.insert(ai, -5.0);
+    let treasury = BTreeMap::from([(ai as i64, 2.0)]);
+    apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new()).expect("apply");
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&ai), Some(&-3.0));
+}
+
+#[test]
+fn apply_fractional_and_large_balances_are_exact_sums() {
+    // Zarzut 8: brzegi zaokragleń f64 (ulamki, duze wartosci). Sumy dokladnie reprezentowalne.
+    let base = with_ai(fresh_game().state().clone());
+    let ai = ai_id(&base);
+    let mut st = base.clone();
+    st.economy.ai_treasury_by_owner.insert(ai, 1e12);
+    st.economy.praca_pool_by_owner.insert(ai, 0.5);
+    let treasury = BTreeMap::from([(ai as i64, 0.25)]);
+    let praca = BTreeMap::from([(ai as i64, 0.25)]);
+    apply_dipl_deltas_to_state(&mut st, &treasury, &praca).expect("apply");
+    assert_eq!(
+        st.economy.ai_treasury_by_owner.get(&ai),
+        Some(&(1e12 + 0.25))
+    );
+    assert_eq!(st.economy.praca_pool_by_owner.get(&ai), Some(&0.75));
+}
+
+#[test]
+fn producer_rejects_human_entry_in_ai_treasury() {
+    // Zarzut 6: wpis gracza ludzkiego w mapie AI (zapis omijajacy setter) nie moze byc cicho ignorowany.
+    let base = with_ai(fresh_game().state().clone());
+    let human = human_id(&base);
+    let mut st = base.clone();
+    st.economy.ai_treasury_by_owner.insert(human, 99.0);
+    let err = dipl_steps_inputs(&st).expect_err("niespojny stan");
+    assert!(matches!(
+        err,
+        civ_engine::domain::turn_war_inputs::WarInputsError::HumanOwnerInAiTreasury(id)
+            if id == human as i64
+    ));
+}
