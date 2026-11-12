@@ -1,3 +1,9 @@
+## ROBOCZA 847ff30b -- 2026-11-06 -- FALA 660: FALA 660: handel AI do gracza — wyrównane oferty, Przyjmij aktywne (W4) (testowa)
+
+- R-WEB-AI-TRADE-WIRING-E2E-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, ai-trade-proposal-branch 10/0, ai-trade-proposal-to-player 25, diplomacy-proposal 200/200, dyplo-handel 20/0, live Chromium 44/0 (FC), audio-sidecar PASS
+- Limity: oferty AI rzadkie przy sciskej rownosci PW (czestosc w pelnej grze NIE_ZMIERZONO); panel Wplyw relacji sprzeczny tekst; jednorazowy handel AI bez gornego limitu
+
 ## ROBOCZA 49c38b9a -- 2026-11-06 -- FALA 659: FALA 659: poprawki polszczyzny w grze (W28) (testowa)
 
 - R-WEB-POLISH-LANGUAGE-AUDIT-Q1
