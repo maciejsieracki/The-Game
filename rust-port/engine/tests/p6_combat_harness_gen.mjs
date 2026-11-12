@@ -264,11 +264,23 @@ const applyBoundary = (c, i) => {
   }
 };
 
+// Zdarzenie z zerem w targetHp (R2): HP obroncy ustawione tak, by pierwszy strzal ATK (trafienie wymuszone
+// rzutem 0) doprowadzil HP dokladnie do zera (`hpDef - dmg === 0`, wynik +0 w IEEE). Obrazenia strzalu nie
+// zaleza od HP celu, wiec pierwszy przebieg z rng=0 podaje wartosc, ktora przypadek potem uzywa.
+const applyZeroHp = (c, i) => {
+  const probe = parseShots(runLoop(mkInput(c), () => 0, TW, params.ranged_damage_mult).log, i);
+  const first = probe[0];
+  if (!first || first.side !== 'attacker' || !first.hit || !(first.damage > 0) || !Number.isFinite(first.damage)) return;
+  c.hpDef = first.damage;
+  c.draws[0] = 0;
+};
+
 const cases = [];
 const N = 700;
 for (let i = 0; i < N; i++) {
   const c = genCase(i);
   if (i % 7 === 3) applyBoundary(c, i);
+  else if (i % 6 === 5) applyZeroHp(c, i);
   const draws = c.draws;
   let di = 0;
   const rng = () => {
@@ -326,6 +338,13 @@ const counts = {
   // roll*100 === hitPct (granica `<` vs `<=`; pin: trafienie tylko przy roll < hitPct).
   shotsRollEq: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
     .filter(([s, d]) => d * 100 === parseNum(s.hitPct)).length,
+  // R2: sasiedzi ULP wokol granicy (roll*100 tuz ponizej / tuz powyzej hitPct) oraz zero w targetHp (+0).
+  shotsRollJustBelow: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
+    .filter(([s, d]) => Number.isFinite(parseNum(s.hitPct)) && d * 100 < parseNum(s.hitPct) && d * 100 >= parseNum(s.hitPct) - 1e-9).length,
+  shotsRollJustAbove: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
+    .filter(([s, d]) => Number.isFinite(parseNum(s.hitPct)) && d * 100 > parseNum(s.hitPct) && d * 100 <= parseNum(s.hitPct) + 1e-9).length,
+  shotsTargetHpZero: allShots.filter((s) => s.targetHp === 0).length,
+  shotsNegZeroAnyField: allShots.filter((s) => [s.hitPct, s.damage, s.targetHp].includes('-0')).length,
 };
 const out = {
   source: { pin: PIN, files: [COMBAT, UNIT_POWER], fragmentSha256: fragmentSha, paramsFile: PARAMS, paramsSha256: paramsSha },

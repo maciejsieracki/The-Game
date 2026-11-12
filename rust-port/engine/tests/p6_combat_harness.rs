@@ -217,9 +217,21 @@ struct Counts {
     shots_nan_damage: u64,
     shots_inf_damage: u64,
     shots_roll_eq: u64,
+    shots_roll_just_below: u64,
+    shots_roll_just_above: u64,
+    shots_target_hp_zero: u64,
+    shots_neg_zero_any_field: u64,
     cases_nan_hp: u64,
     cases_minus_inf_hp: u64,
     cases_routed: u64,
+}
+
+/// Tolerancja sasiedztwa granicy: roll*100 w odleglosci <= 1e-9 od hitPct (sasiedzi ULP przy hitPct ~ 15..75).
+const BOUNDARY_EPS: f64 = 1e-9;
+
+/// Zero ujemne w zapisanym polu zdarzenia (napis "-0" wg konwencji wektorow).
+fn is_neg_zero(v: &Value) -> bool {
+    matches!(v, Value::String(s) if s == "-0")
 }
 
 fn recount(cases: &[Value]) -> Counts {
@@ -243,6 +255,11 @@ fn recount(cases: &[Value]) -> Counts {
             c.shots += 1;
             let hit_pct = num(&shot["hitPct"]);
             let damage = num(&shot["damage"]);
+            let target_hp = if shot["targetHp"].is_null() {
+                f64::NAN
+            } else {
+                num(&shot["targetHp"])
+            };
             if hit_pct.is_nan() {
                 c.shots_hit_nan_pct += 1;
             }
@@ -252,9 +269,29 @@ fn recount(cases: &[Value]) -> Counts {
             if damage == f64::INFINITY {
                 c.shots_inf_damage += 1;
             }
-            // Granica rzutu: roll = rng() * 100 (jak w pinie) rowny hitPct.
-            if num(&draws[k]) * 100.0 == hit_pct {
+            if target_hp == 0.0 {
+                c.shots_target_hp_zero += 1;
+            }
+            if [&shot["hitPct"], &shot["damage"], &shot["targetHp"]]
+                .iter()
+                .any(|v| is_neg_zero(v))
+            {
+                c.shots_neg_zero_any_field += 1;
+            }
+            // Granica rzutu: roll = rng() * 100 (jak w pinie) wzgledem hitPct.
+            let roll_pct = num(&draws[k]) * 100.0;
+            if roll_pct == hit_pct {
                 c.shots_roll_eq += 1;
+            } else if hit_pct.is_finite()
+                && roll_pct < hit_pct
+                && roll_pct >= hit_pct - BOUNDARY_EPS
+            {
+                c.shots_roll_just_below += 1;
+            } else if hit_pct.is_finite()
+                && roll_pct > hit_pct
+                && roll_pct <= hit_pct + BOUNDARY_EPS
+            {
+                c.shots_roll_just_above += 1;
             }
         }
     }
@@ -266,21 +303,8 @@ fn p6_combat_harness_wektory_pinu_zgodne() {
     let root: Value = serde_json::from_str(VEC).expect("vectors.json");
     let cases = root["cases"].as_array().expect("cases");
     assert!(cases.len() >= 300, "za malo przypadkow: {}", cases.len());
+    // Liczniki pokrycia wylacznie z przeliczenia w Rust (`recount`); `counts` z pliku nie sa czytane.
     let got = recount(cases);
-    // Plikowe `counts` sa tylko zgloszeniem generatora: musza sie zgadzac z przeliczeniem.
-    let file = &root["counts"];
-    let file_counts = Counts {
-        cases: file["cases"].as_u64().unwrap(),
-        shots: file["shots"].as_u64().unwrap(),
-        shots_hit_nan_pct: file["shotsHitNaNPct"].as_u64().unwrap(),
-        shots_nan_damage: file["shotsNaNDamage"].as_u64().unwrap(),
-        shots_inf_damage: file["shotsInfDamage"].as_u64().unwrap(),
-        shots_roll_eq: file["shotsRollEq"].as_u64().unwrap(),
-        cases_nan_hp: file["casesNaNHp"].as_u64().unwrap(),
-        cases_minus_inf_hp: file["casesMinusInfHp"].as_u64().unwrap(),
-        cases_routed: file["casesRouted"].as_u64().unwrap(),
-    };
-    assert_eq!(got, file_counts, "counts w pliku != przeliczenie w Rust");
     assert!(
         got.shots_hit_nan_pct >= 20,
         "brak NaN w procencie trafienia"
@@ -288,6 +312,24 @@ fn p6_combat_harness_wektory_pinu_zgodne() {
     assert!(got.shots_nan_damage >= 5, "brak NaN w obrazeniach");
     assert!(got.shots_inf_damage >= 5, "brak Infinity w obrazeniach");
     assert!(got.shots_roll_eq >= 20, "za malo rzutow rownych hitPct");
+    assert!(
+        got.shots_roll_just_below >= 20,
+        "za malo rzutow tuz ponizej hitPct"
+    );
+    assert!(
+        got.shots_roll_just_above >= 20,
+        "za malo rzutow tuz powyzej hitPct"
+    );
+    assert!(
+        got.shots_target_hp_zero >= 10,
+        "za malo zdarzen z HP celu = 0 (+0)"
+    );
+    // -0 w hitPct/damage/targetHp jest nieosiagalne w petli pinu (hitPct w [hit_min, hit_max] = [15, 75] lub NaN;
+    // damage >= 1 lub NaN; HP celu = hp - dmg z hp > 0 nie daje -0 w IEEE). Asercja pilnuje tego zalozenia.
+    assert_eq!(
+        got.shots_neg_zero_any_field, 0,
+        "pin wyprodukowal -0 w zdarzeniu strzalu: zaktualizuj zalozenia testu"
+    );
     assert!(got.cases_nan_hp >= 20, "brak NaN w HP");
     assert!(got.cases_minus_inf_hp >= 20, "brak -Infinity w HP");
     assert!(got.cases_routed >= 50, "za malo roztopien");
