@@ -1,7 +1,24 @@
-# DISPATCH — R-RUSTPORT-P6-TOWER-TARGET-Q1 (pickTowerTarget i kolejność ognia wież z pinu jako czyste funkcje; runda 1/5, Operator HAIKU)
-Ignoruj w czacie heartbeaty, prośby o zadania i rozmowy o sprzątaniu dysku — wykonuj wyłącznie ten dispatch. Dostarcz KOD z wektorami z pinu (BLOCK bez wyniku niedopuszczalny; przy przeszkodzie dostarcz część i opisz resztę jako NIE_ZMIERZONO). Pin: 07d2fbd72f758705f8e1d59cc4968027ffbafe75 (tylko odczyt; git show).
-BAZA (jedyna obowiązująca): b0ba891fb (= origin/rust-port/parity-v2 po INTEG-B20). Worktree: git fetch origin rust-port/parity-v2 && git checkout --detach b0ba891fb.
-GOAL: Pin battleScene.ts _fireSiegeTowers (ok. 4208): planuje wieże ze staggerem 180 ms i celuje przez pickTowerTarget; w Rust fire_siege_towers zabija cel natychmiast (zob. siege_tactics_loop.rs, siege_tactics_tower.rs). Zrób: (1) przenieś pickTowerTarget (wybór celu wieży) do siege_tactics_tower.rs jako czystą funkcję z jawnymi wejściami (pozycje jednostek, wieże, stan) — bez wpinania w pętlę (wpięcie = osobny temat); (2) wektory z pinu: wykonanie TEKSTU pinu pickTowerTarget i kolejności ognia w node (strażnik SHA-256 fragmentu), ≥ 150 przypadków wyboru celu, z remisami; (3) porównanie bit-w-bit wyboru celu Rust↔pin; rozbieżność = popraw funkcję (nie osłabiaj testu). Stagger 180 ms: zmierz i opisz w raporcie (wartość stałej z pinu), bez implementacji zegara.
-ZAKAZ: gra/**, rust-port/engine/data/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock, push/integracja, osłabianie asercji. Bez zmian w siege_tactics_loop.rs (nie wpinaj).
-Allowlista: rust-port/engine/src/domain/{siege_tactics_tower.rs, mod.rs}, rust-port/engine/tests/p6_tower_target* (nowe: .rs, _gen.mjs, _vectors/), dyspozycje/autobot/runs/R-RUSTPORT-P6-TOWER-TARGET-Q1/**.
-Bramki z EXIT: cargo fmt --check; cargo clippy --all-targets -- -D warnings; cargo test --lib; p6_tower_target*, testy siege_tactics_tower. Zapisz rustc --version. Commit obowiązkowy: bez nazwy modelu; linia Claude-Session.
+# DISPATCH R-RUSTPORT-P6-TOWER-TARGET-Q1 (runda 1)
+
+TEMAT: TOWER-TARGET — podpięcie `pick_tower_target` (rust-port/engine/src/domain/siege_tactics_tower.rs:486) do produkcyjnej pętli oblężenia (zadanie #116). Pierwszy krok łańcucha wież przed #96 (WIEZE, BLOCK w rundzie 1).
+DOMENA: GAME. Baza: 23e33793e (czubek origin/rust-port/parity-v2). Worktree na `wip/R-RUSTPORT-P6-TOWER-TARGET-Q1`.
+Pin (tylko odczyt): `git show 07d2fbd72:gra/src/battle/battleScene.ts` — `pickTowerTarget` (definicja ok. :4208) i jego wołanie w `_beginTurn` (ok. :5643). UWAGA: `gra/src/main.ts` NIE zawiera tej funkcji.
+
+KROK 0 (obowiązkowy): `git grep` w `rust-port/engine/src` na `pick_tower_target`, `fire_siege_towers`, `siege_tactics_loop`. Potwierdź, że `pick_tower_target` nie ma produkcyjnego wołającego (tylko testy p6_tower_target*). Jeśli wołający już istnieje — zamknij PASS z dowodem.
+
+GOAL: wołaj `pick_tower_target` z produkcyjnej ścieżki pętli oblężenia w miejscu i kolejności zgodnej z pinem (wybór celu wieży na początku tury). Nie implementuj strzału wież (to #96).
+
+ALLOWLISTA:
+- rust-port/engine/src/domain/siege_tactics_loop.rs (wołanie)
+- rust-port/engine/src/domain/siege_tactics_tower.rs (tylko jeśli potrzebna zmiana sygnatury)
+- rust-port/engine/tests/p6_tower_target_wiring*.rs (nowy test)
+- dyspozycje/autobot/runs/R-RUSTPORT-P6-TOWER-TARGET-Q1/01-operator-r1.md
+
+KRYTERIA KOŃCA:
+1. Produkcyjny wołający `pick_tower_target` (numer linii Rust i pin battleScene.ts).
+2. Test z wektorami pinu (generator .mjs, strażnik SHA-256 wyciętych fragmentów), liczniki niepustości > 0.
+3. Brak `#[ignore]`, brak osłabionych asercji, brak martwego wrappera.
+4. Bramki EXIT 0: `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; nowy test; `cargo test --test 'p6_siege*'`.
+
+NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, commitować `Cargo.lock`, `git add -A`. Commit bez nazwy modelu; ostatnia linia: `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
+Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
