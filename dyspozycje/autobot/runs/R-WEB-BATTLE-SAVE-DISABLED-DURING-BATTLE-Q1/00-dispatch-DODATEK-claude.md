@@ -1,0 +1,7 @@
+# R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1 — DODATEK (orkiestrator, 2026-11-12, runda 1/5)
+BAZA: origin/main (b0b0e3f86, po FALI 658). MODEL: Operator HAIKU 5.5, Obrona HAIKU, Evaluator/FC SONNET. Dispatch bazowy: 00-dispatch.md (na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0).
+DECYZJA WŁAŚCICIELA: zapis tylko poza bitwą; w trakcie bitwy zapis wyłączony z komunikatem „Zapis niedostępny w trakcie bitwy". Poza bitwą bez zmian. Format zapisu BEZ zmian.
+ZADANIE: (1) zinwentaryzuj wszystkie ścieżki zapisu (przycisk w menu, skrót klawiszowy, autozapis przy końcu tury/zamknięciu) i sprawdź, które mogą zadziałać w scenie bitwy (ręcznej, oblężenia, bitwy taktycznej); (2) zablokuj każdą; autozapis nie może zapisać stanu bitwy ani stanu pośredniego; (3) komunikat dla gracza po polsku; (4) po zakończeniu bitwy zapis działa normalnie.
+KRYTERIA: test Chromium (Vite HTTP) — w bitwie zapis zablokowany + komunikat na każdej ścieżce, po bitwie działa; mutacja czerwieni; tsc + 5 bramek referencyjnych; surowe wyniki w evidence/.
+ALLOWLISTA: gra/src/main.ts (ścieżki zapisu), UI zapisu/menu, gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1/**. Zakaz: WERSJE.md, JSON balansu, format zapisu, rust-port.
+ŚRODOWISKO: izolowany worktree; w gra/ `npm ci --ignore-scripts`; ZAKAZ npm run build/dev; Chromium przez Vite HTTP (build poza repo). Nie integrujesz, nie pushujesz.
