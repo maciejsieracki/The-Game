@@ -24,9 +24,11 @@
 
 use crate::domain::civ_bonuses::apply_multiplier;
 use crate::domain::siege_tactics_blow::{
-    js_max, single_blow, BlowInput, BlowOutput, DefenderState, HitArc, Outcome, RollSource,
+    single_blow, BlowInput, BlowOutput, DefenderState, HitArc, Outcome, RollSource,
 };
+// Znak zera jak w JS (Math.max(-0,+0)=+0): wersja ze znakiem zamiast js_max z siege_tactics_blow.
 use crate::domain::siege_tactics_blow_inputs::terrain_river_attack_multiplier;
+use crate::domain::siege_tactics_inputs_pos::js_max_sign as js_max;
 use crate::domain::siege_tactics_inputs_pos::{flank_rear_defense_penalty, JsVal};
 use crate::domain::siege_tactics_inputs_unit::CombatUnitModel;
 use crate::domain::siege_tactics_inputs_wall::{

@@ -55,7 +55,7 @@ const SEED = 2201;
 const GRID = 6; // siatka kafli (K5I2b2): OOB -> Plains (jak BattleTerrainMap.at w battle-terrain.ts:781-784)
 const BTERR = 'gra/src/battle/battle-terrain.ts';
 const TERRAIN_DATA = 'gra/data/terrain-combat.json';
-const ENV_FRAGMENT_SHA256 = 'c2ef94c501ea2f04e7f13e3350d7a7ff53de42db7be1afe7dcbbcdbd090c716b';
+const ENV_FRAGMENT_SHA256 = '8a9afb5582c2edad3e6f8e1500f679c63223d37285b579b7ac7fd226041cc7e1';
 const TERRAIN_SHA256 = 'b5f0f9c5c25a65273bc674d1ae1121ab09d93141085eb0c1a9b1bc911798f9bf';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -184,11 +184,21 @@ const terrainDigest = createHash('sha256').update(TERRAIN_TEXT).digest('hex');
 if (TERRAIN_SHA256 !== 'PLACEHOLDER' && terrainDigest !== TERRAIN_SHA256) throw new Error(`SHA-256 terrain-combat.json pinu zmieniony: ${terrainDigest}`);
 console.error(`terrain-combat.json sha256 = ${terrainDigest}`);
 const NAME_POOL = [...TERRAIN_ROWS.map((r) => r.Teren), 'Plaskie (rownina/laka)'];
+// --- K5I2b2 DLUG: combatTerrainName wykonywany z TEKSTU pinu (battle-terrain.ts:150-158 COMBAT_NAME oraz
+// battle-terrain.ts:802-806 combatTerrainName), zamiast testowej mapy nazw. Wejscia: kody kafli (BTerrain), isMountain. ---
+expectLine(BTERR, 150, 'const COMBAT_NAME: Record<number, string> = {');
+expectLine(BTERR, 802, 'combatTerrainName: (c, r) => {');
+const CTN_SRC = blockTo(BTERR, 150, '};');
+const CTN_BODY = blockTo(BTERR, 802, '    },');
+const ctnFactory = new Function('BTerrain', 'preset', 'at', `${stripTypeScriptTypes(`${CTN_SRC}\nconst __o = { ${CTN_BODY} };`)}\nreturn __o.combatTerrainName;`);
+// Zwraca funkcje (c, r) => nazwa kafla z pinu dla siatki `codes` (GRID x GRID, OOB -> Plains jak BattleTerrainMap.at).
+const pinCombatTerrainName = (codes, isMountain) => ctnFactory(BT_OBJ, { isMountain }, (c, r) => (c < 0 || c >= GRID || r < 0 || r >= GRID ? 0 : codes[r * GRID + c]));
 const ENV_PIECES = [frag.dirDelta, frag.facing, frag.opposite, frag.relative, frag.fordTile, frag.shore,
   frag.defInside, frag.fortBonus, frag.normT, frag.parseBonus, frag.terrDef, frag.terrRiver, frag.cityGated];
 const envDigest = createHash('sha256')
   .update([...ENV_PIECES, frag.wallMethod, frag.dirEnum, frag.btEnum].join('\n---\n'))
   .update(`\ndir\n${JSON.stringify(DIR_OBJ)}\nbt\n${JSON.stringify(BT_OBJ)}\nriver\n${RIVER_MULT}`)
+  .update(`\nctnSrc\n${CTN_SRC}\nctnBody\n${CTN_BODY}`)
   .digest('hex');
 if (ENV_FRAGMENT_SHA256 !== 'PLACEHOLDER' && envDigest !== ENV_FRAGMENT_SHA256) throw new Error(`SHA-256 fragmentow srodowiska zmieniony: ${envDigest}`);
 console.error(`env fragment sha256 = ${envDigest}`);
@@ -358,7 +368,8 @@ function makeScene() {
     goldDeficitStatMult: C.gold,
     terrainMap: {
       at: (c, r) => (c < 0 || c >= GRID || r < 0 || r >= GRID ? 0 : C.map.codes[r * GRID + c]),
-      combatTerrainName: (q, r) => C.map.names[r * GRID + q],
+      // Wykonanie combatTerrainName z pinu (battle-terrain.ts:802), nie testowa mapa nazw.
+      combatTerrainName: (q, r) => C.ctn(q, r),
     },
     terrainData: C.terrain,
     terrain: C.cityTerrain,
@@ -418,6 +429,7 @@ function encodeNum(v) {
     if (Number.isNaN(v)) return 'NaN';
     if (v === Infinity) return 'Infinity';
     if (v === -Infinity) return '-Infinity';
+    if (Object.is(v, -0)) return '-0'; // String(-0) === '0' gubi znak; -0 zachowane jawnie (js_max/js_min)
     return String(v);
   }
   return v;
@@ -441,9 +453,13 @@ const KATEGORIE = ['Piechota', 'Lucznik', 'Kawaleria', 'Oblezenie'];
 const OVR_FIELDS = ['meleeAttack', 'missileAttack', 'weaponDamage', 'meleeDefence', 'armor', 'piercing', 'chargeBonus'];
 
 // Losowanie jednostki: wiersz z PINU + wejscia wywolania toCombatUnit (weteran, glod, deficyt) + rzadkie nadpisanie NaN/Inf.
-function unitDraw() {
-  const idx = int(0, UNIT_ROWS.length - 1);
-  const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity]) } : {};
+// Wiersze procarzy (Typ 'Slinger' w units.json PINU): tylko 2 z 75, wiec przy losowaniu jednorodnym pokrycie bylo 5 przypadkow.
+const SLINGER_IDX = UNIT_ROWS.map((u, i) => [u, i]).filter(([u]) => u.Typ === 'Slinger').map(([, i]) => i);
+if (SLINGER_IDX.length < 1) throw new Error('units.json pinu: brak wierszy Typ=Slinger');
+function unitDraw(ranged = false) {
+  // Atakujacy w ciosie dystansowym: 75% losowany z procarzy (K5I2b2: >= 100 przypadkow Slinger; 50% dawalo 98).
+  const idx = ranged && chance(0.75) ? pick(SLINGER_IDX) : int(0, UNIT_ROWS.length - 1);
+  const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity, -0]) } : {};
   return {
     idx,
     ovr,
@@ -462,25 +478,26 @@ function makeCase(i) {
   let dr = int(0, GRID - 1);
   if (dq === aq && dr === ar) dq = (dq + 1) % GRID;
   const codes = [];
-  const names = [];
   for (let k = 0; k < GRID * GRID; k += 1) {
-    const code = pick([0, 0, 1, 2, 3, 4, 4, 5]);
-    codes.push(code);
-    // Pusta nazwa kafla (`''`) celowo w puli: pin combatTerrainName moze dac '' przy niepustym terrainData (flagi rzeki).
-    names.push(code === 4 && chance(0.6) ? 'Rzeka' : pick([...NAME_POOL, '']));
+    codes.push(pick([0, 0, 1, 2, 3, 4, 4, 5, 6, 7]));
   }
+  // Nazwy kafli = WYKONANIE combatTerrainName z pinu (nie testowa mapa nazw). Pin nigdy nie daje ''.
+  const isMountain = chance(0.25);
+  const ctnPin = pinCombatTerrainName(codes, isMountain);
+  const names = codes.map((_, k) => ctnPin(k % GRID, Math.floor(k / GRID)));
   const terrain = chance(0.2) ? TERRAIN_ROWS.filter((r) => r.Teren !== 'Rzeka') : TERRAIN_ROWS;
   const onWall = chance(0.2);
   const isCity = chance(0.3);
-  const wallTotal = chance(0.5) ? uni(0, 500) : 0;
-  const unitA = unitDraw();
-  const unitD = unitDraw();
+  // Mur: NaN/Inf/-0 w sumie obrony muru (wall_defense_totals) - rzadko, zeby zachowac bazowe wektory.
+  const wallTotal = special(chance(0.5) ? uni(0, 500) : 0);
+  const unitA = unitDraw(ranged);
+  const unitD = unitDraw(false);
   const mods = () => ({
     atk: pick([0, 0.1, -0.25, 0.5, 1]),
-    rangedAtk: pick([0, 0.2, -0.1, 0.5]),
+    rangedAtk: pick([0, 0.2, -0.1, 0.5, -0]),
     uderzenie: pick([0, 0.3, 1]),
-    obrona: pick([0, 0.15, -0.5, 1]),
-    pancerz: pick([0, 0.2, -0.3]),
+    obrona: pick([0, 0.15, -0.5, 1, -0]),
+    pancerz: pick([0, 0.2, -0.3, -0]),
   });
   const atkMods = mods();
   const defMods = mods();
@@ -509,6 +526,8 @@ function makeCase(i) {
     ranged,
     u: pick([0, 0.9999999999, rnd(), rnd(), rnd()]),
     map: { codes, names },
+    ctn: ctnPin,
+    isMountain,
     terrain,
     siegeWallCol: int(-1, GRID - 1),
     cityTerrain: pick(NAME_POOL),
@@ -517,8 +536,8 @@ function makeCase(i) {
     braces: chance(0.3),
     engagedPre: chance(0.4),
     diffA: pick([1, 1.2, 0.8, 1.5, special(1)]),
-    diffD: pick([1, 1.2, 0.8, 1.5]),
-    wallCiv: pick([1, 1.2, 1.5]),
+    diffD: pick([1, 1.2, 0.8, 1.5, special(-0)]),
+    wallCiv: pick([1, 1.2, 1.5, special(1), -0]),
     ctr: pick([0.5, 0.75, 1, 1.25, 1.5, 2, special(1)]),
     hunger: pick([0.75, 0.5, 1]),
     gold: pick([0.75, 0.5, 1]),
@@ -565,7 +584,7 @@ function runCase(c) {
       tdm: encodeNum(OUT.tdm),
       atkName: c.map.names[c.attacker.r * GRID + c.attacker.q],
       defNameAt: c.map.names[c.defender.r * GRID + c.defender.q],
-      map: { cols: GRID, rows: GRID, codes: c.map.codes, names: c.map.names },
+      map: { cols: GRID, rows: GRID, codes: c.map.codes, names: c.map.names, isMountain: c.isMountain },
       terrain: c.terrain.map((r) => [r.Teren, r['Bonus Obrona']]),
       siegeWallCol: encodeNum(c.siegeWallCol),
       cityTerrain: c.cityTerrain,

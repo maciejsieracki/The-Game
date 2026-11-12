@@ -849,8 +849,9 @@ impl CredibilityRegistry {
         Ok(())
     }
 
-    /// Hak P4 (`main.ts:12223-12224`): KAZDA wojna zeruje licznik "bez wojny" OBU stron. Wolajacy (deklaracja wojny)
-    /// jest poza zakresem tego klocka; metoda jest gotowa do wpiecia.
+    /// Hak P4 (`main.ts:12223-12224`): KAZDA wojna zeruje licznik "bez wojny" OBU stron. Wolajacy w produkcji:
+    /// `turn_war_dipl_steps::note_war_declarations` (wojna z hamulca, D8/pipeline) oraz
+    /// `war_turn_declare::declare_forced_wars` (wojna wymuszona, zob. `p6_cred_wojna_forced.rs`).
     pub fn note_war_entered(&mut self, a: i64, b: i64, turn: f64) {
         upsert(&mut self.last_war_turn, a, turn);
         upsert(&mut self.last_war_turn, b, turn);

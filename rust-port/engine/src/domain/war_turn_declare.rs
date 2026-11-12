@@ -38,6 +38,8 @@ use super::ai_zakup_jednostki::{
     ai_try_purchase_unit, AiPurchaseOutcome, AiPurchaseParams, AiPurchaseState,
 };
 use super::recruitment::UnitRecruitment;
+use super::turn_war_dipl_steps::note_war_declarations;
+use super::turn_war_pipeline::WarTurnError;
 use super::war_forced_bronze::{
     WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE, WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
 };
@@ -102,11 +104,16 @@ fn upsert<K: PartialEq, V>(v: &mut Vec<(K, V)>, key: K, val: V) {
 
 /// Deklaracja wojny wymuszonej (web: `*ForceWarActiveByPairKey.set` + `CycleOwners.add` + `PendingOwners.delete`).
 /// `declared` = wypowiedziane pary `(epoka, napastnik, cel)` w kolejnosci wykonania. Zwraca liczbe wpisow.
+/// Hak P4 (R-RUSTPORT-P6-CRED-WOJNA-Q1 r2, web `chargeWarDeclarationCredibility` przy wojnie wymuszonej, main.ts
+/// ok. 41931): kazda zadeklarowana para zeruje licznik "bez wojny" obu stron. Hak wykonany PRZED mutacja stanu
+/// wymuszen, wiec blad odczytu rejestru nie zostawia czesciowego zapisu.
 pub fn declare_forced_wars(
     state: &mut WarTurnState,
     declared: &[(ForcedEra, i64, i64)],
     turn: f64,
-) -> usize {
+) -> Result<usize, WarTurnError> {
+    let pairs: Vec<(i64, i64)> = declared.iter().map(|&(_, a, t)| (a, t)).collect();
+    note_war_declarations(state, &pairs, turn)?;
     for &(era, attacker, target) in declared {
         let slot = &mut state.forced[era_idx(era)];
         let pair = ForcedWarPairState {
@@ -126,7 +133,7 @@ pub fn declare_forced_wars(
         }
         slot.pending_owners.retain(|o| *o != attacker);
     }
-    declared.len()
+    Ok(declared.len())
 }
 
 /// Wariant wygodny dla wyniku kroku W3: przelicza `ForcedWarPairingAssignment` na deklaracje. Wypowiedziane sa
@@ -136,7 +143,7 @@ pub fn declare_from_assignments(
     assignments: &[ForcedWarPairingAssignment],
     turn: f64,
     declared: &dyn Fn(i64, i64) -> bool,
-) -> usize {
+) -> Result<usize, WarTurnError> {
     let list: Vec<(ForcedEra, i64, i64)> = assignments
         .iter()
         .filter(|a| declared(a.owner_id, a.target_id))
