@@ -77,3 +77,38 @@ fn p6_js_max0_rest_przypadki_jawne() {
     check_bits(js_floor_nonneg(2.7), 2.0, "floor_max0(2.7)");
     check_bits(js_floor_nonneg(-3.0), 0.0, "floor_max0(-3)");
 }
+
+/// Test strukturalny: na tej platformie `f64::max(-0.0, 0.0)` zwraca +0 (sprawdzone), wiec powrót
+/// do `f.max(0.0)` nie daje różnicy wartości i test wektorowy go nie wykryje. Ten test pilnuje
+/// źródła: `js_floor_nonneg` musi wołać `siege_tactics_blow::js_max`, a produkcyjna ścieżka
+/// `population` w `turn_economy_loop` musi iść przez `js_floor_nonneg`.
+#[test]
+fn p6_js_max0_rest_brak_f64_max_w_sciezce_znaku_zera() {
+    let okolica = include_str!("../src/domain/okolica.rs");
+    let after = okolica
+        .split("pub fn js_floor_nonneg")
+        .nth(1)
+        .expect("okolica.rs: brak js_floor_nonneg");
+    let body = after
+        .split('}')
+        .next()
+        .expect("okolica.rs: ciało js_floor_nonneg");
+    assert!(
+        body.contains("siege_tactics_blow::js_max(0.0, x.floor())"),
+        "js_floor_nonneg nie deleguje do js_max ze znakiem zera: {body}"
+    );
+    assert!(
+        !body.contains(".max("),
+        "js_floor_nonneg zawiera f64::max (regresja znaku zera): {body}"
+    );
+
+    let loop_src = include_str!("../src/domain/turn_economy_loop.rs");
+    assert!(
+        loop_src.contains("js_floor_nonneg(city.population)"),
+        "turn_economy_loop: population miasta nie idzie przez js_floor_nonneg"
+    );
+    assert!(
+        !loop_src.contains("f.max(0.0)"),
+        "turn_economy_loop: wrócił lokalny f.max(0.0) dla population"
+    );
+}
