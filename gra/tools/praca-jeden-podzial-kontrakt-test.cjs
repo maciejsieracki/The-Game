@@ -371,6 +371,16 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
   eq(sym.wplywRazem, sym.wydane + sym.pula,
     'księga puli domyka się: wpływ = suma wydatków wszystkich konsumentów + saldo końcowe');
 
+  // Najtańsze ulepszenie kupowalne przez automat: skipWyrab:true wyklucza 'wyrab' (Wycinka 2,5),
+  // więc minimum liczymy z terrain-improvements.json po pozostałych pozycjach (bez _meta i wyrab).
+  const MIN_KOSZT_ULEPSZENIA_AUTO = (() => {
+    const dane = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'terrain-improvements.json'), 'utf8'));
+    const koszty = Object.entries(dane)
+      .filter(([k, v]) => k !== '_meta' && k !== 'wyrab' && v && typeof v.koszt_praca === 'number')
+      .map(([, v]) => v.koszt_praca);
+    return Math.min(...koszty);
+  })();
+
   // --- 7b. F1: budżet automatu liczony od SKUMULOWANEJ puli, nie od przyrostu tury. ---
   // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (decyzja właściciela): „% budżetu Pracy liczonym od
   // SKUMULOWANEJ puli Pracy na WEJŚCIU do wywołania (nie od przyrostu)". Runda 1 podała
@@ -388,9 +398,13 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
     ok(saldo.wydatki.ulepszeniaAuto > 0,
       `wpływ ${wplyw} Pracy/turę: automat ulepszeń DZIAŁA (wydał ${saldo.wydatki.ulepszeniaAuto} Pracy, `
       + `pierwsze ulepszenie w turze ${saldo.pierwszeUlepszenieWTurze})`);
-    if (wplyw < 40) {
+    if (wplyw < MIN_KOSZT_ULEPSZENIA_AUTO) {
+      // Kontrola negatywna (runda 1, asercja BEZ zmian): przy budżecie z PRZYROSTU wpływ tury, który
+      // nie sięga kosztu najtańszego ulepszenia kupowalnego przez automat, daje zero zakupów. Próg jest
+      // liczony z danych (nie ze stałej 40), bo koszty ulepszeń w terrain-improvements.json się zmieniły.
       eq(przyrost.wydatki.ulepszeniaAuto, 0,
-        `kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ ${wplyw}/turę daje 0 Pracy na ulepszenia`);
+        `kontrola negatywna: budżet z PRZYROSTU (runda 1) ten sam wpływ ${wplyw}/turę daje 0 Pracy na ulepszenia `
+        + `(próg: najtańsze kupowalne ${MIN_KOSZT_ULEPSZENIA_AUTO} Pracy)`);
     }
   }
   // Skumulowana pula nie jest „martwym zapasem": im większa, tym większy pułap jednej tury.
