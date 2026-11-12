@@ -127,7 +127,7 @@ function assertRender(res, label) {
     }
   }
   const t = res['1280/small'].titles;
-  for (const [act, unit] of [['kultura', 'Kultury'], ['religia', 'wiernych'], ['ludnosc', 'obyw.'], ['miasta', 'obyw.']]) {
+  for (const [act, unit] of [['kultura', 'Kultury'], ['religia', 'wiernych'], ['ludnosc', 'obywateli na turę'], ['miasta', 'obywateli na turę']]) {
     const x = t[act] || '';
     ok(/BRUTTO [+−-]?\d+ → NETTO [+−-]?\d+/.test(x) && x.includes(unit), `${label}: tooltip "${act}" ma zapis BRUTTO -> NETTO (${unit})`, x.slice(0, 160));
   }
@@ -171,7 +171,7 @@ async function mutants(chromium) {
     ['prawy baner: klaster w jednym rzedzie z przyciskami (nachodzi na Moc)', (s) => s.replace('.civ-hud .hud-right-cluster{flex-direction:column-reverse;align-items:flex-end;gap:6px;}', '.civ-hud .hud-right-cluster{flex-direction:row;align-items:center;gap:6px;}')],
     ['Kultura bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'pkt Kultury/turę')}", 'Zielone ${signed(rate)}')],
     ['Religia bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'wiernych/turę')}", 'Zielone ${signed(rate)}')],
-    ['Obywatele bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie", 'Zielone ${signed(rate)} (HUD nie')],
+    ['Obywatele bez BRUTTO -> NETTO', (s) => s.replace("${formatGrossNet(rate, rate, 'obywateli na turę')} (HUD nie", 'Zielone ${signed(rate)} (HUD nie')],
   ];
   for (const [name, fn] of HM) {
     const m = fn(hud);

@@ -20,6 +20,9 @@ const BAD = [
   [/\+15% wzrost populacji/, 'wzrost -> wzrostu'],
   [/\+2 bazowe Zaufanie/, 'bazowe Zaufanie -> bazowego Zaufania'],
   [/Brama narodów/, 'Brama narodów -> Brama wszystkich narodów'],
+  [/dodatkowy slot linii/, 'slot -> dodatkową linię wymiany (anglicyzm)', 'dodatkowy slot linii wymiany'],
+  [/kamiennych Murów/, 'kamiennych Murów -> Murów kamiennych', 'Po wybudowaniu kamiennych Murów w tym mieście'],
+  [/\$\{f\.unitsCount\} j\. \//, 'j. -> formatJednostkiCount (jednostki)', '${f.unitsCount} j. / ${formatMiastaCount(f.citiesCount)}'],
 ];
 const files = [
   ...walk('docs/encyklopedia').filter((f) => f.endsWith('.md')),
@@ -69,6 +72,11 @@ const UI_BAD = [
   [/za \$\{[^}]+\} tur[<`'" .,]/, 'za N tur -> formatTurCountAcc (biernik)', '`<b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b>`'],
   [/max HP u \$\{[^}]+\} jednostek/, 'u N jednostek -> pluralPl (dopełniacz)', '`max HP u ${playerDamagedCount} jednostek`'],
   [/\$\{totalBuildings\} budynków/, 'N budynków -> formatBudynkiCount', '`<span class="val">${totalBuildings} budynków</span>`'],
+  [/rownowaga\(W\)/, 'rownowaga(W) -> Równowaga(W) (żargon w tekście dla gracza)', "'Utrzymanie = rownowaga(W) × pieniądz_miasta'"],
+  [/po score;|wagi score/, 'score -> wynik (żargon)', "'Posortuj malejąco po score; remis'"],
+  [/wpiecia onPurchaseBuilding/, 'żargon deweloperski w tooltipie', "'Wymaga wpiecia onPurchaseBuilding przez silnik'"],
+  [/obyw\.\/tur/, 'obyw./turę -> obywateli na turę', "'obyw./turę'"],
+  [/szt\.\/tur/, 'szt./turę -> sztuk na turę', "'szt./turę</span>'"],
 ];
 const UI_FILES = walk('gra/src/ui').filter((f) => f.endsWith('.ts') && !/entityCards|resourceAmountChip|administratorIcon|buildModeHud/.test(f))
   .concat(['gra/src/main.ts']);

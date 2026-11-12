@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Emporion** — budynek (Podatek), epoka Brąz. Koszt budowy **50** pracy, utrzymanie **2** ¤/t. Technologia **Handel**. Wymaga **Targowiska w tym samym mieście**. Maks. 1 poziom. Daje **8 ¤** na turę, daje dodatkowy slot linii handlowej i kwalifikuje trasę do premii **5%** handlu.
+**Emporion** — budynek (Podatek), epoka Brąz. Koszt budowy **50** pracy, utrzymanie **2** ¤/t. Technologia **Handel**. Wymaga **Targowiska w tym samym mieście**. Maks. 1 poziom. Daje **8 ¤** na turę, daje dodatkową linię handlową i kwalifikuje trasę do premii **5%** handlu.
 
 ---
 
