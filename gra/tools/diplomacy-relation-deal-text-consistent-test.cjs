@@ -14,6 +14,16 @@ const SRC = path.resolve(__dirname, '..', 'src');
 const ENTRY = path.resolve(SRC, '.dip-rel-deal-text-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.dip-rel-deal-text-bundle.cjs');
 
+// Pliki tymczasowe sprzatane takze przy przerwaniu (SIGINT/SIGTERM) i przy bledzie esbuild.
+function cleanupTemp() {
+  try { fs.unlinkSync(ENTRY); } catch (e) { /* ignore */ }
+  try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
+}
+process.on('exit', cleanupTemp);
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => process.exit(128));
+}
+
 fs.writeFileSync(ENTRY, `
 export { renderPnBalancePanelHtml } from './ui/diplomacyAcceptanceBalance';
 `);
@@ -86,6 +96,4 @@ const incomingBlocked = mod.renderPnBalancePanelHtml(panel('incoming', false, 60
 ok(incomingBlocked.includes(REL_TEXT_BAD), 'incoming bez accept: wariant „trade" bez zmian');
 
 console.log(`diplomacy-relation-deal-text-consistent-test: ${pass} pass / ${fail} fail`);
-try { fs.unlinkSync(ENTRY); } catch (e) { /* ignore */ }
-try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
 process.exit(fail === 0 ? 0 : 1);
