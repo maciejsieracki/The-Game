@@ -136,6 +136,9 @@ const maybeSpecial = (v) => {
 function runCase(input) {
   const events = [];
   const log = [];
+  // Obserwowane wartosci z tekstu pinu (K5I-2): hitPct z hitChanceTw, roll = Math.random()*100, extraMorale z wywolania
+  // _resolveBlowOutcome (na pudle nie wolane -> 0 jak w pinie: `let extraMorale = 0` jest po return pudla).
+  const seen = { hitPct: null, roll: null, extraMorale: 0 };
   const attacker = { bu: { id: 'A1', nazwa: 'A', hp: 0, maxHp: 0 }, mounted: input.mounted };
   const defender = {
     bu: { id: 'D1', nazwa: 'D', hp: input.defHp, maxHp: input.defMaxHp },
@@ -160,6 +163,7 @@ function runCase(input) {
     _shakeAlliesOnLoss() { events.push({ e: 'ShakeAllies' }); },
     _boostEnemiesOnBreak() { events.push({ e: 'BoostEnemies' }); },
     _resolveBlowOutcome(a, d, dmg, extraMorale) {
+      seen.extraMorale = extraMorale;
       return outcomeFn.call(this, a, d, dmg, extraMorale, ...Object.values(MORALE));
     },
   };
@@ -168,13 +172,21 @@ function runCase(input) {
   const isCharge = isChargeFn.call(scene, ranged, attacker, defender, () => input.braces, engaged);
   // Losowanie: jeden rzut na cios (Math.random), zwracany jako wejscie.
   const MathStub = Object.create(Math);
-  MathStub.random = () => input.r01;
+  MathStub.random = () => {
+    seen.roll = input.r01 * 100; // ten sam wyraz co `Math.random() * 100` w pinie (roll = u * 100)
+    return input.r01;
+  };
+  const hitChanceSpy = (...args) => {
+    const v = hitChanceTw(...args);
+    seen.hitPct = v;
+    return v;
+  };
   const cuA = { weaponDamage: input.weaponDamage, piercing: input.piercing, typNazwa: '', counterTyp: '' };
   const rangedDamageMultFor = () => input.rangedClassMult;
   const ret = bladeCoreFn.call(
     scene, ranged, isCharge, input.roundAtkCharge, input.atkMelee, input.atkShootAcc, input.defFinalObrona,
     input.defArmor, input.atkMissile, input.ctrAtkVsDef, cuA, attacker, defender, input.hitArc, input.defPenaltyFrac,
-    rangedDamageMultFor, hitChanceTw, rangeDamage, baseDamage, MathStub, ...Object.values(MORALE),
+    rangedDamageMultFor, hitChanceSpy, rangeDamage, baseDamage, MathStub, ...Object.values(MORALE),
   );
   const missed = events.length === 0 && log.length > 0 && log[0].includes('chybia');
   return {
@@ -182,6 +194,11 @@ function runCase(input) {
     missed,
     returned: ret,
     defHpAfter: defender.bu.hp,
+    hitPct: seen.hitPct,
+    roll: seen.roll,
+    extraMorale: seen.extraMorale,
+    // `this.engaged.add(key)` (battleScene.ts:8899) wykonane tylko dla ciosu wrecz; klucz obecny po wywolaniu.
+    engagedKeyAfter: engaged.has('A1>D1'),
     events,
   };
 }
@@ -221,7 +238,15 @@ function randomInput() {
 }
 
 // Kodowanie liczb: JSON nie ma NaN/Infinity -> tekst (jak w K4).
-const enc = (x) => (typeof x === 'number' && !Number.isFinite(x) ? (Number.isNaN(x) ? 'NaN' : x > 0 ? 'Infinity' : '-Infinity') : x);
+// Liczby koduja sie jako tekst String(x) (najkrotsza forma round-trip JS): serde_json bez float_roundtrip
+// nie parsuje wszystkich liczb z bitowa dokladnoscia, a Rust `str::parse::<f64>` tak. NaN/Infinity jak wczesniej.
+const enc = (x) => {
+  if (typeof x !== 'number') return x;
+  if (Number.isNaN(x)) return 'NaN';
+  if (x === Infinity) return 'Infinity';
+  if (x === -Infinity) return '-Infinity';
+  return String(x);
+};
 const encDeep = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Array.isArray(v) ? v.map(encDeep) : typeof v === 'object' && v !== null ? encDeep(v) : enc(v)]));
 
 const cases = [];
