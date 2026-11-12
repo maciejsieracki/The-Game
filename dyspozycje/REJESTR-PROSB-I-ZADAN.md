@@ -9527,3 +9527,8 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - W37 R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1: etykiety „Relacja z perspektywy AI / gracza", neutralny ton przy symetrycznej wymianie.
 - W39 R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1: tylko narzędzie pomiarowe (decyzja: udokumentować, bez zmian w grze).
 - W34 r2 R-WEB-LIVE-VERIFY-WAVE-650-664-Q1 pkt 4: FC PASS-WITH-NOTES (komunikat kolejki fortyfikacji raz na wczytanie; powtarzalność N>=3 i widoczność przy otwartym menu NIE_ZMIERZONO) — tylko skrypt/evidence, bez deployu kodu.
+
+### Decyzje ABC właściciela 2026-11-12 (wieczór)
+- mgla-sciezka-inwariant: odpowiedź A (rozszerz whitelistę) — POMIAR: test dziś 42 pass / 0 fail, więc dług już nieaktualny, bez tematu.
+- Tempo mieszanej armii: TAK — temp R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1 (równe tempo do wzwarcia wręcz; potem konnica wg trybu ataku, strzelcy w maksymalnym dystansie w zasięgu strzału).
+- BRONZE-STOCK: zamknij jako nieodtworzone (wznowienie po nowej reprodukcji).
