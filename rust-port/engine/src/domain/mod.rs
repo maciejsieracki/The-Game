@@ -96,6 +96,7 @@ pub mod siege_surrender;
 pub mod siege_tactics_approach;
 pub mod siege_tactics_autobatch;
 pub mod siege_tactics_autophase;
+pub mod siege_tactics_blow;
 pub mod siege_tactics_breach;
 pub mod siege_tactics_clock;
 pub mod siege_tactics_end;
