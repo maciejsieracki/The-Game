@@ -95,6 +95,7 @@ pub mod siege_starvation;
 pub mod siege_surrender;
 pub mod siege_tactics_approach;
 pub mod siege_tactics_end;
+pub mod siege_tactics_endcheck;
 pub mod siege_tactics_walk;
 pub mod siege_transfer;
 pub mod siege_transfer_effects;
