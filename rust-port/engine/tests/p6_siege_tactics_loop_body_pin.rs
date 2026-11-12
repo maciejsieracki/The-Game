@@ -4,8 +4,9 @@
 //! Wektory: `p6_siege_tactics_loop_body_vectors/vectors.json` z `p6_siege_tactics_loop_body_gen.mjs`. Generator
 //! WYKONUJE tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow` (z prawdziwymi helperami ciosu: `toCombatUnit`,
 //! `hitChanceTw`, `baseDamage`, `flankRearDefensePenalty` itd.) na sekwencjach aktywacji wielu jednostek. Zastubowane są
-//! WYŁĄCZNIE efekty zewnętrzne (RNG = kolejka rzutów, render/animacja, ruch/doktryna/wieże, wybór celu, dane sceny,
-//! skutki `_resolveBlowOutcome` poza zabiciem) — patrz nagłówek generatora.
+//! efekty zewnętrzne (RNG = kolejka rzutów, render/animacja, ruch/doktryna/wieże, wybór celu, dane sceny, skutki
+//! `_resolveBlowOutcome` poza zabiciem) ORAZ (NIE_ZMIERZONO) stan facing + `relativeHit` (łuk = hasz współrzędnych, facing
+//! nigdy się nie zmienia) — patrz nagłówek generatora. Wektory NIE dowodzą zgodności łuków z pinem.
 //!
 //! Porównanie po KAŻDEJ aktywacji: ślad zdarzeń `_activateUnit` (`done`/`flee`/`terrainRange`/`moraleBar`/`startRout`/
 //! `facing`/`attack:i`/`advanceStep`/...), wynik ciosu (trafienie, `hitPct`, `roll`, `dmg`, HP obrońcy, `extraMorale`,

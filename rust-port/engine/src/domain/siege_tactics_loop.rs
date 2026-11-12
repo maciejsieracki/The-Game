@@ -349,6 +349,11 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // K5-LOOP-BODY (r2 + r3 Operatora): produkcyjne ciało jednostki. Zgodność z pinem: wektory `p6_siege_tactics_loop_body_pin`
 // (r3: generator wykonuje tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow`, ślad aktywacji + wynik ciosu + stan + `engaged`).
 //
+// NIE WPINAĆ do [`SiegeLoop`] przed osobnymi tematami: skutki `_resolveBlowOutcome` (morale/rout po ciosie), kontratak
+// (`_defenderCounters`) i timing `BLOW_HIT_T` NIE są tu zaimplementowane, więc stan produkcyjny rozjechałby się z pinem.
+// FACING (NIE_ZMIERZONO, obrona r3): ciało nie ma stanu `facing` (`_updateFacing`/`_nearestEnemy`, przypisanie
+// `attacker.facing` w `_doMeleeAttack`) ani `relativeHit`; łuk ciosu (`hit_arc`) jest wejściem szablonu [`ProdUnit::blow`],
+// a nie wynikiem zmiany kierunku jednostek. Zgodność łuków z pinem NIE jest dowiedziona.
 // ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje tylko gałąź ciosu w zwarciu
 // dla jednostki AUTO bez oblężenia, bez strzelca i bez doktryny: [`activate_unit`] (K5H) decyduje, a dla zdarzenia
 // `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. Każda inna gałąź `_activateUnit`

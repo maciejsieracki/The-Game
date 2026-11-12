@@ -13,13 +13,17 @@
 // ZASTUBOWANE (WYLACZNIE efekty zewnetrzne / delegaty poza zakresem ProdBody):
 //   RNG: `Math.random` = kolejka rzutow z wektora (jeden rzut na cios).
 //   render/animacja: _doMeleeAttack (znacznik sladu `attack:<i>` + wywolanie PRAWDZIWEGO `_singleBlow`; kontratak,
-//     lunge i BLOW_HIT_T poza zakresem), _sfxMelee, _updateHpBar, _updateMoraleBar, _updateFacing, _applyTerrainRange.
+//     lunge i BLOW_HIT_T poza zakresem), _sfxMelee, _updateHpBar, _updateMoraleBar, _applyTerrainRange.
+//   STAN FACING (NIE_ZMIERZONO, osobny temat R-...-FACING; NIE jest to render): `_updateFacing` = no-op (`_nearestEnemy`
+//     zwraca null), wiec `facing` jednostek NIGDY sie nie zmienia w wektorach; przypisanie `attacker.facing` z `_doMeleeAttack`
+//     pominiete; `relativeHit` (battleScene.ts:385) zastapione `arcOf` (hasz wspolrzednych, ignoruje facing). Konsekwencja:
+//     `arc`/`hitArc` w wektorach NIE sa funkcja facing z pinu; zgodnosc lukow z pinem NIE jest dowiedziona.
 //   ruch/doktryna/wieze: _fleeStep, _advanceStep, _cavalryAction, _phalanxAction, _fallBackStep, _rangedAction,
 //     _trySiegeTowerClimb, _siegeInfantryToTowerStep, _executeGroupDoctrineStep, _siegeRamTowerStep (slad + false).
 //   wybor celu: _targetInRange = wskazany przez wektor wrog, o ile `_enemiesOf` (zywy, nie znikajacy, nie uciekajacy) go zawiera.
 //   _resolveBlowOutcome: zapisuje (dmg, extraMorale) i stosuje TYLKO zabicie (hp <= 0 -> dead); morale/rout po ciosie
 //     poza zakresem ProdBody (NIE_ZMIERZONO, osobny temat).
-//   dane sceny: relativeHit, counterMultiplier, bracesAgainstCharge, isFordTile, isShoreAdjacentToFord,
+//   dane sceny: counterMultiplier, bracesAgainstCharge, isFordTile, isShoreAdjacentToFord,
 //     terrainMap.combatTerrainName, terrainDefenseMultiplier (tabela po nazwie kafla), terrainRiverAttackMultiplier,
 //     cityGatedTerrainMultiplier, _wallBonusProcFor, civ* (mnozniki), battleUnitDifficultyCombatMult, canShoot/isSiege*.
 // Zakres sekwencji: AUTO, bez oblezenia (siegeWallCol = -1), cios w zwarciu, bez strzelca, bez doktryny.
@@ -46,7 +50,7 @@ const ACTIVATE_SHA256 = '3be85ac2fba725bf618b61c817c891c1d994d2b7df3615d01552c6c
 const BLOW_SHA256 = 'b2f9e19f1e35644e0e2ea636a9d50a02dd10d729355de5eb3eb35668910e5526';
 const UNIT_FRAGMENT_SHA256 = 'd1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c';
 const UNITS_SHA256 = '7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7';
-const DOATTACK_SHA256 = 'PLACEHOLDER';
+const DOATTACK_SHA256 = '592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1';
 const N_SEQ = 320;
 const SEED = 2301;
 
@@ -86,7 +90,7 @@ const activateDigest = createHash('sha256').update(activateParts.join('\n---\n')
 if (activateDigest !== ACTIVATE_SHA256) throw new Error(`SHA fragmentow aktywacji zmieniony: ${activateDigest}`);
 const doAttackText = L(SCENE, 8787, 8797);
 const doAttackDigest = createHash('sha256').update(doAttackText).digest('hex');
-if (DOATTACK_SHA256 !== 'PLACEHOLDER' && doAttackDigest !== DOATTACK_SHA256) throw new Error(`SHA _doAttack zmieniony: ${doAttackDigest}`);
+if (doAttackDigest !== DOATTACK_SHA256) throw new Error(`SHA _doAttack zmieniony: ${doAttackDigest}`);
 console.error(`activate sha256 = ${activateDigest}\ndoAttack sha256 = ${doAttackDigest}`);
 
 // ---- fragmenty ciosu: identyczne skladanie jak w p6_siege_tactics_blow_full_gen.mjs ----
@@ -201,6 +205,7 @@ const stubs = {
     cuOwner.set(cu, bu.id);
     return cu;
   },
+  // NIE_ZMIERZONO: relativeHit z pinu (battleScene.ts:385) NIE wykonane; arc = hasz wspolrzednych, facing ignorowany.
   relativeHit: (facing, aq, ar, dq, dr) => arcOf(aq, ar, dq, dr),
   battleUnitCivBonusy: (bu, list) => list,
   civCombatStatMultipliers: (bonusy, cu) => S.byId[cuOwner.get(cu)].mods,
