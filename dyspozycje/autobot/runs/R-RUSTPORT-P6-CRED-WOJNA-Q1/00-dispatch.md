@@ -1,14 +1,27 @@
-# DISPATCH — R-RUSTPORT-P6-CRED-WOJNA-Q1 (CRED: hak wojny P4 note_war_entered + test S3; runda 1/5, Operator HAIKU)
-Ignoruj w czacie heartbeaty i rozmowy o sprzątaniu dysku — wykonuj wyłącznie ten dispatch. Dostarcz KOD z wektorami z pinu (BLOCK bez kodu niedopuszczalny; przy przeszkodzie dostarcz część i opisz resztę jako NIE_ZMIERZONO).
-BAZA (jedyna obowiązująca): 237e54526 (= origin/rust-port/parity-v2 po INTEG-B17). Worktree: git fetch origin rust-port/parity-v2 && git checkout --detach 237e54526. Pin: 07d2fbd72f758705f8e1d59cc4968027ffbafe75 (tylko odczyt; git show).
-GOAL: Rejestr wiarygodności CRED (zob. runs/R-RUSTPORT-P6-CRED-Q1/ lub runs/*CRED*/03-final-control.md oraz rust-port/engine/src/domain/*credib*.rs; spec dyspozycje/PROJEKT-WIARYGODNOSC-CYWILIZACJI.md tabela P1–P5): (1) hak wojny P4 note_war_entered nie jest wołany w produkcji — zmierz na pinie, gdzie web wywołuje odpowiednik (wypowiedzenie/wejście w wojnę) i podepnij wołanie w odpowiednim miejscu pipeline'u wojny Rust (turn_war_pipeline.rs / turn_war_dipl_steps.rs), zachowując dotychczasowe wyniki (istniejące testy bez zmiany asercji); (2) domyślne difficulty=Normal i puste credibility_excluded_owners — wstrzyknij realne wejścia z PlayableState/WarTurnState jeśli istnieją; jeśli nie — jawnie opisz i zostaw domyślne; (3) test 3 tur S3 dla aliasu umowa_handlowa (scenariusz z pinu); (4) wektory z pinu (wykonanie TEKSTU, strażnik SHA-256), ≥ 150 przypadków dla ścieżki hak wojny → rejestr. Rozbieżność Rust↔pin = popraw (nie osłabiaj testu) lub opisz. Decyzja gameplay → STOP dla tego elementu z opisem, reszta dostarczona.
-ZAKAZ: gra/**, rust-port/engine/data/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock, push/integracja, osłabianie asercji. Nowe pola stanu WYŁĄCZNIE z #[serde(default)] + test zgodności wstecznej.
-Bramki (EXIT zapisany): cargo fmt --check (rust-port/engine); cargo clippy --all-targets -- -D warnings; cargo test --lib; testy dotkniętych modułów + nowe. df < 8 GB → czyść tylko własny target, kompiluj mimo to. Env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR poza repo. Commit obowiązkowy (SHA w raporcie). Raport 01-operator-r1.md.
-Allowlista: rust-port/engine/src/domain/{moduły wiarygodności (wskaż w raporcie), turn_war_pipeline.rs, turn_war_dipl_steps.rs, war_turn_state.rs, mod.rs}, rust-port/engine/tests/{p6_*cred*, p6_wire_war_*.rs (tylko literały/oczekiwania wynikające z haka — wymień), nowe p6_cred_wojna* z vectors/gen}, dyspozycje/autobot/runs/R-RUSTPORT-P6-CRED-WOJNA-Q1/**.
+# DISPATCH R-RUSTPORT-P6-CRED-WOJNA-Q1 (runda 1)
 
----
-# DODATEK r2 (Operator HAIKU; runda 2/5) — r1 FC = FAIL (brak wektorów pinu ≥150, brak testu S3, hak tylko w D8)
-BAZA (jedyna obowiązująca): 654d1e4ab (= kod beefdec4e + obrona 15d85c2ee + raporty r1; ancestry TAK). Worktree: git fetch origin rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1 && git checkout --detach 654d1e4ab. df < 6 GB → czyść tylko własny target, kompiluj mimo to.
-DECYZJE TECHNICZNE ORKIESTRATORA (zastępują pytania Obrony): (a) alias umowa_handlowa→LegacyTradeAgreement: NIE wprowadzaj aliasu w stream_kind_of; test S3 napisz bezpośrednio na StreamDealKind::LegacyTradeAgreement (3 tury) i opisz w raporcie; (b) wpięcie haka P4 dla wypowiedzenia wojny przez gracza (main.ts:13168, 13205) — W ZAKRESIE r2: allowlista rozszerzona o rust-port/engine/src/domain/war_turn_declare.rs (wymień zmiany); sojusz (23806) i klaster (40441) — jeśli odpowiednia ścieżka istnieje w Rust, wpiąć, w przeciwnym razie jawny opis braku ścieżki (nie twórz nowej).
-WYMAGANE (bez tego FAIL): (1) generator wykonujący TEKST pinu chargeWarDeclarationCredibility (main.ts:12176-12225) wraz z guardem isBarbarian, strażnik SHA-256 wyciętego kodu; ≥ 150 przypadków (sekwencje deklaracji: gracz/AI/hamulec, barbarzyńca, wiele par w turze, wpływ na odczyt P4 w kolejnych turach) i test wektorowy porównujący zapis rejestru wiarygodności; (2) test S3 wg (a); (3) kolejność względem odczytu P4 w D4 potwierdzona wektorem lub opisana jako NIE_ZMIERZONO z powodem; (4) test zgodności wstecznej starego zapisu bez klucza last-war.
-Raport 01-operator-r2.md. Reszta allowlisty/ZAKAZÓW jak w r1.
+TEMAT: CRED-WOJNA — hak `note_war_entered` (P4) w pipeline wojny + test 3 tur S3 dla `umowa_handlowa` (zadanie #103).
+DOMENA: GAME. Baza: 23e33793e (czubek origin/rust-port/parity-v2). Worktree na `wip/R-RUSTPORT-P6-CRED-WOJNA-Q1`.
+Pin (tylko odczyt): `git show 07d2fbd72:gra/src/...` — wywołanie hooka wejścia w wojnę i obsługa umowy handlowej po wypowiedzeniu.
+
+KROK 0 (obowiązkowy, przed kodem): sprawdź, co już jest. W `rust-port/engine/src/domain/turn_war_dipl_steps.rs:895` hak `reg.note_war_entered(a, b, turn)` JEST wołany. Ustal `git grep` z numerami linii, czy wołanie jest w pipeline wojny produkcyjnie i czy pokrywa wszystkie ścieżki wejścia w wojnę, które pin wywołuje. Brakującą ścieżkę dodaj; jeśli wszystkie są pokryte — nie zmieniaj kodu, dołóż tylko test.
+
+GOAL: (a) pełne pokrycie ścieżek wejścia w wojnę hakiem P4 zgodnie z pinem; (b) test 3 tur S3 dla `umowa_handlowa` porównany z wektorami pinu.
+
+ALLOWLISTA:
+- rust-port/engine/src/domain/turn_war_dipl_steps.rs
+- rust-port/engine/src/domain/credibility.rs (tylko jeśli potrzebna zmiana)
+- rust-port/engine/tests/p6_cred_wojna*.rs (nowy test)
+- dyspozycje/autobot/runs/R-RUSTPORT-P6-CRED-WOJNA-Q1/01-operator-r1.md
+
+NIE ROBIĆ: wiring zlozeGrants (osobny temat, poza zakresem), zmian formatu zapisu.
+
+KRYTERIA KOŃCA:
+1. Wykaz ścieżek wejścia w wojnę: pin vs Rust, z numerami linii, każda pokryta hakiem.
+2. Test 3 tur S3 z wektorami z pinu (generator .mjs + strażnik SHA-256), liczniki niepustości > 0.
+3. Brak `#[ignore]`, brak osłabionych asercji.
+4. Bramki EXIT 0: `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; `cargo test --lib`; nowy test.
+5. Jeśli BLOCK — raport z dowodem, bez zmian kodu.
+
+NIE WOLNO: pushować do parity, integrować, dotykać `gra/`/`origin/main`, commitować `Cargo.lock`, `git add -A`. Commit bez nazwy modelu; `Claude-Session: https://claude.ai/code/session_01Eq7NKGj1PasjUCd7VCtYbZ`.
+Raport: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
