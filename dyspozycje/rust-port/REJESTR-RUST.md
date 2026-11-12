@@ -173,3 +173,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 
 - DŁUG (07:3x UTC): NFD-CCC — normTerrain w K5I2a1 (siege_tactics_inputs_terrain.rs) implementuje NFD tabelą z Node bez kanonicznego przestawiania znaków łączących spoza U+0300..U+036F (np. U+0F71/U+0F72); wpływ ograniczony do nazw terenów z danych; do zlecenia jako mały temat (rozszerzenie tabeli + wektory) przy okazji integracji K5I2a. Zgłoszone przez Obronę K5I2a1 (próba spawn_task nie przeszła — nie zakładam kart „Suggested task”, zgodnie z zasadą sesji).
 - K5I2a1 FC PASS-WITH-NOTES eee18680c (kod e5fd83368; 5 funkcji terenowych, wektory 631+340+700+700+700 i pełne 1 112 064 punkty kodowe NFD). Nazwa kolidująca terrain_river_attack_multiplier (nowy moduł vs siege_tactics_blow_inputs.rs) — w a2–a4 importować ścieżką kwalifikowaną.
+
+## Przebieg 2026-11-12 08:2x UTC (orkiestrator Rust)
+- parity-v2 = 513e1a56c (INTEG-B14A: L3-DEFS, L3-KOSZT, POWER-ULEPSZENIA producent [niewpięty], R7-AUDYT; pełne testy 3022/0/1).
+- W toku: INTEG-B14B (Final Control; łańcuch K5 + R7K7 + K5I2a1) [Haiku Op.], K5I2b (Evaluator; kompletny cios) [Haiku Op.].
+- FC PASS-WITH-NOTES poza parity-v2: CRED 9d4a2c17b, K5I2a2 4b6595876, K5I2a3 fe3264a39, K5I2a4 a2bcdbdc6 (zawiera a1+a2; konflikt mod.rs z a3), UNIT-REPLACE-PROGRESS b9a0844cd (pola w PlayableReplaceUnit zamiast PlayableUnit — zaakceptowane technicznie), POWER-ULEPSZENIA-WIRING 9105be231 (BRAK: stan nie niesie ulepszeń → zadanie #95 STAN-ULEPSZENIA).
+- DECYZJA TECHNICZNA: dodanie warstw ulepszeń terenu i fortów/posterunków do PlayableState to decyzja techniczna orkiestratora (nie pytanie ABC).
+- ZASADA MODELI (właściciel): zapisana w CLAUDE.md i KOLEJKA-RUST.md; skrypt Sonnet-op zablokowany (.disabled); mkwf.sh generuje czytelne nazwy z podziałem modeli. Raporty: tabela (temat | etap | model | czas).
+- Pytania gameplay do rana: SZTURM ODPARTY; W8 r7 Q1–Q4; units.json vs pin (71 różnic pól w 51/75 jednostek: falanga, Horseman/Chinese Cavalry Epoka, fieldPower); DYSTANS; REPIN-DRYFT 1–6.
