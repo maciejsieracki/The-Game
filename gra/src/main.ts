@@ -588,6 +588,7 @@ import {
   unitAtRepresentative,
   findAdjacentEmptyHexes,
   findSplitDestHexes,
+  splitTargetPassable,
   computeSeparateReturn,
   resolveSeparateReturnHex,
   pickStackRepresentative,
@@ -15169,7 +15170,7 @@ async function boot(): Promise<void> {
         units,
         active.q,
         active.r,
-        isHexPassableForUnit,
+        splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
         cityAtUnit(active) !== undefined,
       ).filter(d => (d.q === active.q && d.r === active.r)
         || stackFreeSlots(units, active.ownerId, d.q, d.r, armyStackLimit()) > 0);
@@ -15200,6 +15201,7 @@ async function boot(): Promise<void> {
         let reason = '';
         if (!hex) reason = 'Poza mapą';
         else if (!isHexPassableForUnit(q, r)) reason = 'Teren nieprzejezdny';
+        else if (!canUnitOccupyCityHex(active.ownerId, q, r, cities)) reason = 'Miasto przeciwnika';
         else if (units.some(u => u.q === q && u.r === r && u.inGarnizon !== true)) reason = 'Heks zajęty';
         else if (stackFreeSlots(units, active.ownerId, q, r, armyStackLimit()) < 1) reason = 'Limit stosu osiągnięty';
         const terrain = !hex ? 'Poza mapą' : !visible ? 'Nieodkryty heks' : (terrainNames[String(hex.terenBazowy)] ?? String(hex.terenBazowy));
@@ -15222,6 +15224,12 @@ async function boot(): Promise<void> {
         })),
         neighbors: splitNeighbors,
         onSplit: (ids, destQ, destR) => {
+          // Obce miasto (także puste) nigdy nie jest celem rozdzielenia — obrona
+          // przed wywołaniem z panelu z nieaktualnym celem.
+          if (!canUnitOccupyCityHex(active.ownerId, destQ, destR, cities)) {
+            showHintMessage('Nie można rozdzielić armii na obce miasto.', 3500);
+            return;
+          }
           const splitArrivals = ids
             .map(id => units.find(x => x.id === id))
             .filter((su): su is RuntimeUnit => su != null);
@@ -26109,7 +26117,7 @@ async function boot(): Promise<void> {
         units,
         active.q,
         active.r,
-        isHexPassableForUnit,
+        splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
         cityAtUnit(active) !== undefined,
       );
       for (const a of stackHudMergeSplitActions(
@@ -27202,7 +27210,7 @@ async function boot(): Promise<void> {
               units,
               u.q,
               u.r,
-              isHexPassableForUnit,
+              splitTargetPassable(isHexPassableForUnit, u.ownerId, cities),
               cityAtUnit(u) !== undefined,
             ).length > 0;
           },
