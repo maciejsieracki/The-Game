@@ -191,10 +191,10 @@ function renderImprovementAdministratorRow(st: ImprovementAdministratorUiState):
   if (!st.hired) {
     const full = `${AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT}. Kliknij przycisk, aby zobaczyć, czym jest administrator i co daje. `
       + `Koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę.`;
-    html += `<div class="civ-build-city-split-note" data-imp-admin-hint title="${full.replace(/"/g, '&quot;')}">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint data-lock-hint="${full.replace(/"/g, '&quot;')}">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
   } else if (!st.working) {
     const full = 'Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — auto-ulepszenia w tym mieście wstrzymane.';
-    html += `<div class="civ-build-city-split-note" data-imp-admin-hint title="${full}">Administrator nie pracuje — brak środków</div>`;
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint data-lock-hint="${full}">Administrator nie pracuje — brak środków</div>`;
   }
   html += '</div>';
   return html;
@@ -898,7 +898,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       });
     });
 
-    el.querySelectorAll('[data-found-city][data-lock-hint]').forEach(item => {
+    el.querySelectorAll('[data-found-city][data-lock-hint], [data-imp-admin-hint][data-lock-hint]').forEach(item => {
       const elItem = item as HTMLElement;
       const hint = elItem.getAttribute('data-lock-hint');
       if (!hint) return;
