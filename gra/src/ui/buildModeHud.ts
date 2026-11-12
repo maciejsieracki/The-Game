@@ -16,7 +16,6 @@ import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
 import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
-import { resourceAmountChipHtml } from './resourceAmountChip';
 import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
@@ -187,13 +186,15 @@ function renderImprovementAdministratorRow(st: ImprovementAdministratorUiState):
   let html = '<div class="civ-build-imp-admin" data-imp-admin-row>'
     + `<button type="button" class="civ-build-hbtn civ-build-imp-admin-btn${st.hired ? ' active' : ''}${st.hired && !st.working ? ' idle' : ''}" `
     + `${attr} data-imp-admin-open aria-haspopup="dialog" data-imp-admin-state="${status}" ${hardBlock ? 'disabled ' : ''}title="${title.replace(/"/g, '&quot;')}">${icon}<span>${label}</span></button>`;
+  // R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1: w treści panelu krótki komunikat; pełne wyjaśnienie, koszt i utrzymanie
+  // są w tooltipie (atrybut title) tego samego elementu — najechanie myszą pokazuje pełny tekst.
   if (!st.hired) {
-    html += `<div class="civ-build-city-split-note" data-imp-admin-hint>${AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT}. `
-      + `Kliknij przycisk, aby zobaczyć, czym jest administrator i co daje. Koszt ${resourceAmountChipHtml('pieniadz', String(st.hireCost))}, `
-      + `utrzymanie ${resourceAmountChipHtml('pieniadz', String(st.upkeep))} na turę.</div>`;
+    const full = `${AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT}. Kliknij przycisk, aby zobaczyć, czym jest administrator i co daje. `
+      + `Koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę.`;
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint title="${full.replace(/"/g, '&quot;')}">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
   } else if (!st.working) {
-    html += `<div class="civ-build-city-split-note" data-imp-admin-hint>Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — `
-      + 'auto-ulepszenia w tym mieście wstrzymane.</div>';
+    const full = 'Administrator ulepszeń nie pracuje (brak środków w skarbcu państwa) — auto-ulepszenia w tym mieście wstrzymane.';
+    html += `<div class="civ-build-city-split-note" data-imp-admin-hint title="${full}">Administrator nie pracuje — brak środków</div>`;
   }
   html += '</div>';
   return html;
@@ -680,7 +681,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         const empireLocked = empireImprovementAutomationLocked();
         const cityLocked = cityImprovementAutomationLocked(uCityId);
         if (empireLocked) {
-          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="empire">${AUTO_IMPROVE_LOCKED_NOTE} — żadne miasto nie ma działającego administratora, więc profil państwa nigdzie nie zadziała.</div>`;
+          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="empire" title="Żadne miasto nie ma działającego administratora ulepszeń, więc profil państwa nigdzie nie zadziała.">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
         }
         html += renderUlepszeniaProfileRow(
           empireState.focus,
@@ -740,7 +741,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         const impAdm = uCityId ? (config.getImprovementAdministratorState?.(uCityId) ?? null) : null;
         if (impAdm) html += renderImprovementAdministratorRow(impAdm);
         if (cityLocked) {
-          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="city">${AUTO_IMPROVE_LOCKED_NOTE} — ustawienia tego miasta są nieaktywne; zapisany wybór wróci po zatrudnieniu administratora.</div>`;
+          html += `<div class="civ-build-lock-note" data-ulepszenia-locked-note="city" title="Ustawienia tego miasta są nieaktywne; zapisany wybór wróci po zatrudnieniu administratora ulepszeń.">${AUTO_IMPROVE_LOCKED_NOTE}</div>`;
         }
         if (effState) {
           const effLabel = effState.tryb === 'reczny'
@@ -748,7 +749,9 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
               ;
           const impOff = impAdm !== null && !impAdm.working;
-          html += `<div class="civ-build-auto-eff">Efekt w mieście: ${impOff ? 'wstrzymane (brak działającego administratora ulepszeń)' : effLabel}`
+          // R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1: przyczyna „wstrzymane” w tooltipie, w treści krótko.
+          const effTitle = impOff ? ' title="Brak działającego administratora ulepszeń — auto-ulepszenia w tym mieście wstrzymane."' : '';
+          html += `<div class="civ-build-auto-eff"${effTitle}>Efekt w mieście: ${impOff ? 'wstrzymane' : effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
         const onOv = cityOverride ? ' active' : '';
