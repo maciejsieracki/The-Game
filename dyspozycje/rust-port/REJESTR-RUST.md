@@ -186,3 +186,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - parity-v2 = 64d6e22ce (INTEG-B14B: łańcuch K5, R7K7, K5I2a1; pełne testy 3089/0/1).
 - W toku (1): INTEG-B14C (CRED + UNIT-REPLACE-PROGRESS + POWER-ULEPSZENIA-WIRING + K5I2b[a2–a4]) — etap Final Control (Sonnet), Operator Haiku.
 - Nowych tematów nie startuję (oszczędzanie limitu wg właściciela): reszta kolejki zależy od B14C albo od pytań gameplay; do zlecenia po B14C: STAN-ULEPSZENIA (#95), POWER-BITWY-ZDOBYCZE (#86), R7K7-B/C (#89–90), K5-LOOP (#91), KLASY-WIRE (#92), NFD-CCC (#88), K5I2b2 (adapter pozycja+mapa+mur → BlowEnv), unit_power::ranged_shot_accuracy (f64::max vs Math.max).
+
+## Przebieg 2026-11-12 11:2x UTC (orkiestrator Rust)
+- parity-v2 = 465e9dd95 (INTEG-B14C; pełne testy 3128/0/1).
+- FC PASS poza parity-v2: NFD-CCC c25fd6edf (e6a815d53), KLASY-WIRE cb9db56ba/0a86341d5 (3d7ed90f7) → INTEG-B15 (Haiku; pełny cargo test) w toku.
+- Kolejka techniczna (do zlecenia na Haiku po B15, tylko realna praca): STAN-ULEPSZENIA (#95), POWER-BITWY-ZDOBYCZE (#86), R7K7-B/C (#89–90), K5-LOOP (#91), K5I2b2 (adapter pozycja+mapa+mur → BlowEnv), unit_power::ranged_shot_accuracy (f64::max vs Math.max), dokumentacja wierszy planu K5I2a2–b/CRED.
+- Pytania gameplay do rana: bez zmian (SZTURM ODPARTY; W8 r7 Q1–Q4; units.json vs pin [71 różnic pól/51 jedn.]; DYSTANS; REPIN-DRYFT 1–6).
