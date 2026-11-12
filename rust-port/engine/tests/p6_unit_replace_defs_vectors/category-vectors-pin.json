@@ -1,0 +1,527 @@
+[
+  {
+    "name": "Wojownik",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Procarz",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Slinger",
+    "expected": "procarz"
+  },
+  {
+    "name": "Oszczepnik",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "oszczepnik"
+  },
+  {
+    "name": "Łucznik",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Zwiadowca",
+    "role": "Wsparcie",
+    "is_super": false,
+    "typ": "Civilian",
+    "expected": "zwiadowca"
+  },
+  {
+    "name": "Włócznik",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Wojownik z mieczem i tarczą",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Rydwan (woły)",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Konnica",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Galera",
+    "role": "Morska",
+    "is_super": false,
+    "typ": "Naval",
+    "expected": "galera"
+  },
+  {
+    "name": "Falanga",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Falangite",
+    "expected": "falanga"
+  },
+  {
+    "name": "Hieros Lochos (Święty Zastęp)",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Hastati",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "legionista"
+  },
+  {
+    "name": "Triari",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Spearman",
+    "expected": "super"
+  },
+  {
+    "name": "Jeździec chiński",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Hu Ben Wei (Gwardia Tygrysa)",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Impi",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Oszczepnik Zulu (Izijula)",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "oszczepnik"
+  },
+  {
+    "name": "uThulwana (Białe Tarcze)",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Wojownik z maczugą (Chaska)",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "maczuga"
+  },
+  {
+    "name": "Wojownik z toporem",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "topor"
+  },
+  {
+    "name": "Procarz (Huaracoc)",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Slinger",
+    "expected": "procarz"
+  },
+  {
+    "name": "Oszczepnik (Estólica)",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "oszczepnik"
+  },
+  {
+    "name": "Królewska Gwardia",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Rydwan konny",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Łucznik egipski",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Rydwan egipski",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Wojownik z khopesh",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Medżaj (Gwardia Faraona)",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Łucznik nubijski",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Łucznik sumeryjski",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Rydwan sumeryjski",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Włócznik sumeryjski",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Gwardia Królewska Sumeru",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Wojownik mykeński",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Rydwan mykeński",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Wojownik Sherden",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Halabardnik Shang",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Rydwan Shang",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Łucznik akadyjski",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Gaesatae",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Soldurii",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Rydwan celtycki",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Wojownik germański",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Berserker germański",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Taran",
+    "role": "Oblężnicza",
+    "is_super": false,
+    "typ": "Siege",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Taran okuty",
+    "role": "Oblężnicza",
+    "is_super": false,
+    "typ": "Siege",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Katapulta",
+    "role": "Oblężnicza",
+    "is_super": false,
+    "typ": "Siege",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Wieża oblężnicza",
+    "role": "Oblężnicza",
+    "is_super": false,
+    "typ": "Siege",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Wojownik tyrreński",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "topor"
+  },
+  {
+    "name": "Wojownik szekelesz",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Konnica lancowa asyryjska",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Konnica łucznicza asyryjska",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Łucznik asyryjski",
+    "role": "Dystans",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Drużynnik",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Jeździec z oszczepami",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Strażnik bram Harappy",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Piechota induska",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Garnizon Harappy",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Rydwan Kapadokijski",
+    "role": "Flanka",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Piechota hetycka",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Gwardia hetycka",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Gwardia Ishtar",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Wojownik babiloński",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Piechota neobabilońska",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Tyrski miecznik",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Wojownik fenicki",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Gwardia Tyreńska",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Thorakites",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Evocati",
+    "role": "Wręcz",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "iButho z iklwa",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Gwardzista z champi",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "maczuga"
+  },
+  {
+    "name": "Wojownik z żelaznym khopesh",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Mur tarcz (Sargonid)",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Miecznik galijski",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  }
+]
