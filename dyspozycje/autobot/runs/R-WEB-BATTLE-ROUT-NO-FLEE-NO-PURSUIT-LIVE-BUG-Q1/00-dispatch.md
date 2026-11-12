@@ -22,3 +22,16 @@ K6. tsc --noEmit; bramki logic-test, tech-tree-test, research-test, unit-replace
 ALLOWLISTA: gra/src/battle/battleScene.ts (sekcje _checkEnd, _pursuitPending, _resolveRemainingRouted, _fleeStep, _routWholeArmy — tylko te), gra/tools/battle-routed-*-test.cjs (istniejące) oraz nowy gra/tools/battle-rout-pursuit-live-test.cjs, dyspozycje/autobot/runs/R-WEB-BATTLE-ROUT-NO-FLEE-NO-PURSUIT-LIVE-BUG-Q1/**.
 ZAKAZ: WERSJE.md, JSON balansu, rust-port, push, deploy, npm run build/dev.
 BAZA: origin/main aeb52465e. MODEL: Operator HAIKU 5.5, round 1/5. Zmiana zachowania bitwy — jeśli wymaga nowego progu lub zmiany reguły (np. czas pościgu), DECISION_REQUIRED (ABC).
+
+## DODATEK 2026-11-12 — dowody właściciela i fakty z kodu (przed rundą 2)
+
+Zgłoszenie właściciela: w jednej bitwie armia po utracie morale uciekła i była gonią; w innej bitwa zakończyła się zaraz po utracie morale, bez ucieczki. Właściciel nie wie, od czego to zależy. Hipoteza właściciela (konnica/rydwan jako warunek pościgu) NIE wynika wprost z kodu — do potwierdzenia lub obalenia dowodem.
+
+Baza: origin/main zawiera pościg (FALA 653, commit 7f58632ed) i jest przodkiem ROBOCZEJ aeb52465e. Miejsca do zbadania w gra/src/battle/battleScene.ts:
+- _checkEnd: po zalamaniu morale _routWholeArmy; koniec odraczany tylko gdy _pursuitPending = przegrany ma uciekinierów NA POLU ORAZ zwycięzca ma niezroutowaną żywą jednostkę ORAZ roundNo − _pursuitStartRound < PURSUIT_MAX_ROUNDS (30).
+- forcedVerdict (PAT / szturm odparty / sufit tur) omija pościg.
+- _fleeStep: uciekinier bez ruchu do krawędzi przez 2 tury (fleeStuck ≥ 2) jest USUWANY z pola. Jeśli wszyscy uciekinierzy zostaną tak usunięci lub zejdą w tej samej turze, _pursuitPending jest fałszem i bitwa kończy się od razu — to może być objaw „zaraz po utracie morale".
+- neverRout: jednostki z tą flagą nie pękają; armia z takimi jednostkami może nie zostać zalamana albo zostawić niezroutowanych.
+- _pursuitPending nie sprawdza klasy jednostki. Konnica/rydwan wpływa dopiero na _resolveRemainingRouted (zasięg dogonienia), czyli przy końcu bitwy.
+
+Zadanie rundy 2: porównać przebieg dwóch bitew (ta sama konfiguracja: „kończy się od razu" vs „ucieka i goni") i wskazać, który z warunków powyżej rozstrzygnął. Dowód: log bitwy (linie „ZALAMUJE MORALE", „POSCIG", „uciekl z pola bitwy", „dogoniony") oraz liczba uciekinierów na polu w kolejnych turach. Bez dowodu nie zmieniaj reguł. Jeśli przyczyną jest usuwanie fleeStuck, zgłoś DECISION_REQUIRED (pytanie ABC do właściciela).
