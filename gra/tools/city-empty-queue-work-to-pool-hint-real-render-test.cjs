@@ -4,7 +4,7 @@
  * Scenariusz ze zrzutu wlasciciela: 1 miasto, suwak Budynki 100% / Ulepszenia (pula) 0%, N tur.
  * Mierzy tura -> (pula imperium, przyrost, kolejka, doBudynkow, doPuli) dla wariantow:
  *   kolejka PUSTA vs kolejka NIEPUSTA x podzial 100/90/50.
- * Usage (z gra/): node tools/praca-pula-100-budynki-live-test.cjs [--measure]
+ * Usage (z gra/): node tools/city-empty-queue-work-to-pool-hint-real-render-test.cjs
  */
 const path = require('path');
 const fs = require('fs');
@@ -90,6 +90,12 @@ async function main() {
     r = await probe();
     assert(`ponownie pusta ${pct}%: komunikat wraca`, r.visible === 1, r);
   }
+  // Obrona r1, zarzut 1: podzial 0% Budynki + pusta kolejka -> doBudynkow=0 -> komunikatu NIE ma (production.ts: kolejkaPustaDoPuli wymaga split.doBudynkow > 0).
+  await D(() => window.__workPoolTestDebug.setSplit(0));
+  await D((id) => window.__workPoolTestDebug.clearQueue(id), cityId);
+  await reopen();
+  const r0 = await probe();
+  assert('pusta kolejka 0% Budynki: komunikat nieobecny', r0.n === 0 && r0.panelOpen, r0);
   assert('brak pageerror', errors.length === 0, errors.slice(0, 3));
   await browser.close();
   try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (e) { /* ignore */ }
