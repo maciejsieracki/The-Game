@@ -1,74 +1,49 @@
-# Obrona (runda 3) — odpowiedzi na zarzuty Evaluatora
+# 30 — Obrona (runda 4) — R-WEB-POLISH-LANGUAGE-AUDIT-Q1
 
-STATUS: PASS-WITH-NOTES
+STATUS: PASS-WITH-NOTES (obrona zarzutów Evaluatora z raportu eca5ab979, kandydat 9673f4661)
 DOMAIN: GAME (TEKSTY / PROCES JAKOŚCI)
 TEMAT: R-WEB-POLISH-LANGUAGE-AUDIT-Q1
-GOAL: Domknąć zarzuty `20-evaluator` z 2026-11-12 (kandydat 8e790adae) i wykonać decyzję właściciela „popraw wszystkie pozycje audytu językowego, bez pytania o każdą”, bez zmiany znaczenia, kluczy, ID i wartości liczbowych.
-BAZA: 8e790adaed109e8c071011dd3a0e0a3a8f594a7b (kandydat rundy 3, detached w worktree).
-ZMIANY/COMMIT: patrz commit na gałęzi detached (`git rev-parse HEAD` po commicie); commit obejmuje tylko poniższą allowlistę. Bez push.
+GOAL: odpowiedzieć na każdy zarzut Evaluatora: PRZYJMUJĘ (poprawka + dowód + commit) albo ODRZUCAM (dowód).
+BAZA: 9673f4661a841e75945f0ae54e81adb65b194299 (kandydat startowy, detached HEAD w worktree)
+SHA KODU OBRONY: d248650e970304326c4a470a9b28cbc5f7d7aa32
 
 ## Odpowiedzi na zarzuty
 
-### Zarzut 1 — rozmiary mapy „Malenki” / „Super Huge” — PRZYJMUJĘ
-- Problem: klucze („Malenki”, „Super Huge”) są jednocześnie etykietami w `gra/data/ui-params.json` i kluczami w `e-start-params`, `generator.ts`, `normMenuLabel`, zapisach i testach (`live-verify-*`, `map-capacity-matrix`). Zmiana etykiety w JSON złamałaby wyszukiwania i zapisy.
-- Rozwiązanie: rozdzielenie klucza od etykiety wyświetlanej. Klucze bez zmian; nowy moduł `gra/src/util/map-size-display.ts` (`mapSizeDisplayLabel`) mapuje tylko tekst dla gracza.
-  - `Malenki` → `Maleńki`
-  - `Super Huge` → `Bardzo ogromny`
-  - ZAŁOŻENIE (luka w decyzji właściciela, której nazwy docelowe nie podano): powyższe polskie nazwy. Do potwierdzenia przez ABC.
-- Zastosowane w: `ui/mainMenu.ts` (wartość ustawienia), `ui/newGameFlow.ts` (dwa miejsca `sv.textContent`), `ui/mapLoadingOverlay.ts` (`sizePart`), `ui/perfTestPanel.ts` (teksty podpowiedzi, dodatkowo „do Ogromny” → „Ogromny”, „wątki/wątków CPU” → `pluralPl`).
-- Docs: `docs/PORADNIK-GRACZA/01-pierwsze-kroki.md:92` (`Maleńki`), `docs/PORADNIK-GRACZA/13-cywilizacje.md:49` (`Ogromny / Bardzo ogromny`), regeneracja `gra/src/data/wikiBundle.json` przez `gra/tools/bundle-wiki-for-game.cjs` (diff: 1 linia, 1 plik; powtórne uruchomienie daje ten sam wynik).
-- Nie zmieniono: `ui-params.json`, `e-start-params.json`, `generator.ts`, `normMenuLabel`, zapisy, `live-verify-*` (klucze).
+### Zarzut 1 (niska waga) — „Super Huge" w panelu wydajności i w raporcie — PRZYJMUJĘ
+- Poprawka (commit d248650e9): `gra/src/ui/perfTestPanel.ts` (3 miejsca: wpis raportu ok. linii 459, wynik klasyfikacji ok. linii 563, komunikat „Zapisano" ok. linii 653) oraz `gra/src/ui/perfReport.ts` (linia `rozmiar:` w tekście raportu). Etykieta przechodzi przez `mapSizeDisplayLabel()` z `gra/src/util/map-size-display.ts`; import dodany w obu plikach.
+- Klucze i dane bez zmian: `RECOMMENDED_MAX_MAP_SIZE` w `hardwareProfile.ts` nadal zwraca klucz „Super Huge" (klucz zapisu/menu). Slug nazwy pliku raportu (`buildPerfReportFilename`, z `rozmiarLabel`) celowo nietknięty, żeby nie zmieniać nazwy pliku.
+- Dowód po zmianie: `grep -n "Super Huge\|Malenki" gra/src/ui/perfTestPanel.ts gra/src/ui/perfReport.ts` daje pusty wynik.
+- Strażnik rozszerzony (`gra/tools/polish-language-audit-q1-guard-test.cjs`, sekcje 4 i 5): sprawdzenie importu i użycia `mapSizeDisplayLabel` w obu plikach (z mutacją na próbce surowego tekstu) oraz negatywne sprawdzenie, że surowy `${preset.maxMapSizeLabel}` / `${escapeHtml(preset.maxMapSizeLabel)}` nie wraca w `perfTestPanel.ts` (mutacja: próbka `maks. mapa ${preset.maxMapSizeLabel}` jest łapana).
 
-### Zarzut 2 — „szt./turę”, zapis „zuzycie/ponizej”, odmiana „przez N tur” — PRZYJMUJĘ
-- `szt./turę` → `sztuk na turę` w `game/ai.ts` (2 miejsca), `game/diplomacy-proposals.ts` (2 miejsca), `game/diplomacy-sensible-deals.ts` (1 miejsce, + „zapas N szt.” → „zapas N sztuk”). Zgodne z `main.ts` („sztuk na turę”).
-- Diakrytyki: `zuzycie` → `zużycie`, `ponizej` → `poniżej` (`diplomacy-sensible-deals.ts:167`).
-- Odmiana: `przez ${n} tur` → `przez ${formatTurCountAcc(n)}` (3 miejsca: `diplomacy-proposals.ts:1977,1980`, `ai.ts:7226`); `na ${n} tur` → `formatTurCountAcc` (`diplomacy-proposals.ts:505,1600,1957,2348`). `formatTurCountAcc` z `gra/src/ui/formatPl.ts` (już testowany w strażniku: 1 turę / 3 tury / 15 tur). Dodany import w `ai.ts` i `diplomacy-proposals.ts`.
-- Nie zmieniono (ODRZUCAM jako poprawkę pewną, do ABC): `diplomacy-sensible-deals.ts:167` „(poniżej N tur)” — dla N=1 odmiana wymagałaby „tury/turę”, a `deficitTurns` nie jest tu sprawdzane pod kątem wartości 1; `diplomacy-proposals.ts:1873` „≥ N tur” (dopełniacz) i „Umowa handlowa … co turę”. Tekst dla gracza, ale zmiana wymaga decyzji o zakresie wartości.
+### Zarzut 2 (informacyjny) — import `formatTurCountAcc` z `../ui/formatPl` w `game/diplomacy-display.ts` — ODRZUCAM (brak żądania zmiany)
+- Zarzut sam stwierdza, że nie wymaga zmiany. Zależność game→ui nie jest nowa: w `gra/src/game` jest 11 plików importujących `../ui/`, również przed tą rundą. `formatPl` to czysty moduł formatowania PL bez DOM. Bez zmian.
 
-### Zarzut 3 — strażnik nie chroni `saveLoadDialog` (`j. /`) — PRZYJMUJĘ
-- Przyczyna: wpis trafiał do listy `BAD` (pliki danych/docs), a nie do `UI_BAD` skanowanej po `gra/src/ui`.
-- Naprawa w `gra/tools/polish-language-audit-q1-guard-test.cjs`: wpis przeniesiony do `UI_BAD` z próbką mutacyjną; dodano zakres `GAME_TEXT_FILES` (`ai.ts`, `diplomacy-proposals.ts`, `diplomacy-sensible-deals.ts`) do skanu literałów; dodano wpisy `zuzycie netto`, `(ponizej `, `Super Huge`, `Malenki` (z próbkami).
-- Dowód mutacyjny (wykonany na działającym drzewie, po każdej mutacji przywrócono plik):
-  - `saveLoadDialog.ts`: `formatJednostkiCount(f.unitsCount)` → `${f.unitsCount} j.` → `FAIL gra/src/ui/saveLoadDialog.ts j. -> formatJednostkiCount (zapis/wczytaj)` (wynik: `6751 ok, 1 fail`).
-  - `diplomacy-proposals.ts`: `sztuk na turę` → `szt./turę` (replace_all) → `FAIL gra/src/game/diplomacy-proposals.ts szt./turę -> sztuk na turę`.
-  - `perfTestPanel.ts`: `Mapa „Bardzo ogromny”` → `Mapa Super Huge` → `FAIL gra/src/ui/perfTestPanel.ts Super Huge -> etykieta „Bardzo ogromny”`.
-  - Wszystkie mutacje przywrócone; po przywróceniu wynik bazowy: `6752 ok, 0 fail`.
+### Zarzut 3 (informacyjny) — przeredagowanie zdania o zużyciu w `empireDetailPanel.ts` — ODRZUCAM (brak poprawki kategorii 1–3)
+- Przeredagowanie było celowe w rundzie 3 (pełne zdanie zamiast skrótu). Liczby bez zmian: ta sama zmienna `zuzyciePerTyp = Math.floor(sumObyw * citizenRate)` i `citizenResCount` (linie 2662 i 2679 w `gra/src/ui/empireDetailPanel.ts`). Zmieniono tylko składnię zdania („zużycie na turę: X sztuk każdego z N surowców epoki"). Zostaje jak w kandydacie.
 
-## Zakres zmian (allowlista rozszerzona względem kandydata — uzasadnienie: decyzja właściciela wymaga zmiany etykiet w UI i dokumentacji)
+## ZMIANY-COMMIT
+- d248650e9 — `gra/src/ui/perfTestPanel.ts` (import + 4 wywołania), `gra/src/ui/perfReport.ts` (import + 1 wywołanie), `gra/tools/polish-language-audit-q1-guard-test.cjs` (+8 linii sprawdzeń). Allowlista: pliki UI i strażnik tematu.
+- `git diff --check` — czysto. `git diff --stat` od 9673f4661: 3 pliki, 14 insercji, 4 usunięcia.
+- Brak zmian w wikiBundle: poprawka dotyczy tylko kodu UI, nie docs/encyklopedii. Regeneracja niewymagana; NIE_ZMIERZONO ponowna regeneracja w tej rundzie.
 
-Zmienione pliki (15 + 1 nowy):
-- `gra/src/game/ai.ts`, `gra/src/game/diplomacy-proposals.ts`, `gra/src/game/diplomacy-sensible-deals.ts`
-- `gra/src/ui/mainMenu.ts`, `gra/src/ui/newGameFlow.ts`, `gra/src/ui/mapLoadingOverlay.ts`, `gra/src/ui/perfTestPanel.ts`, `gra/src/ui/saveLoadDialog.ts`
-- `gra/src/util/map-size-display.ts` (nowy)
-- `gra/tools/polish-language-audit-q1-guard-test.cjs`
-- `docs/PORADNIK-GRACZA/01-pierwsze-kroki.md`, `docs/PORADNIK-GRACZA/13-cywilizacje.md`
-- `gra/src/data/wikiBundle.json` (regeneracja generatorem)
-
-Nie zmieniono: wartości liczbowe, klucze, ID, nazwy funkcji, `ui-params.json`, `e-start-params.json`, `generator.ts`, `entityCards/**`, `resourceAmountChip.ts`, `administratorIcon.ts`, `buildModeHud.ts`, `gra/data/**`, `dyspozycje/analizy/**`.
-
-## TESTY (surowe wyniki)
-
-- `cd gra && npx tsc --noEmit -p .` → exit 0, bez komunikatów.
-- `node gra/tools/polish-language-audit-q1-guard-test.cjs` → `polish-language-audit-q1-guard (runda 2, UI): 4706 ok, 0 fail` / `polish-language-audit-q1-guard: 6752 ok, 0 fail`.
+## TESTY (surowe wyniki z tej rundy, na d248650e9)
+- `cd gra && npx tsc --noEmit -p .` → exit 0, log pusty.
+- `node gra/tools/polish-language-audit-q1-guard-test.cjs` → `polish-language-audit-q1-guard (runda 2, UI): 5120 ok, 0 fail` / `polish-language-audit-q1-guard: 7166 ok, 0 fail` (przed poprawką: 7160 ok; dołożone 6 sprawdzeń).
 - `node gra/tools/ids-leak-audit-test.cjs` → `WYNIK: 1648 ok, 0 FAIL`.
 - `node gra/tools/wonder-text-no-raw-ids-test.cjs` → `WYNIK: 132 ok, 0 FAIL`.
-- `node gra/tools/terminology-trade-vs-tax-test.cjs` → `798 pass, 1 fail` (`FAIL: [P] Mennica (karta odkrycia)`) — identyczne z bazą (dług bazowy, nie regresja).
-- `node gra/tools/city-administrator-test.cjs` → `119 passed, 0 failed`.
+- `node gra/tools/terminology-trade-vs-tax-test.cjs` → `799 pass, 0 fail`.
 - `node gra/tools/hud-gross-net-rest-test.cjs` → `OK: hud-gross-net-rest-test (808 ok, 0 fail)`.
-- `git diff --check` → exit 0.
-- Mutacje strażnika: patrz zarzut 3.
-- NIE_ZMIERZONO: 5 bramek referencyjnych (uruchamiane przez Final Control wg dispatchu) — nie uruchamiałem w tej rundzie; `npm run build`/`dev` zakazane, nie wykonano.
-- NIE_ZMIERZONO: weryfikacja w przeglądarce (zmiana etykiety menu i podpowiedzi perf) — tekst zmieniony w kodzie, bez zrzutu ekranu.
+- `node gra/tools/city-administrator-test.cjs` → `119 passed, 0 failed`.
+- 5 bramek referencyjnych: NIE_ZMIERZONO w tej rundzie (nie uruchamiane przeze mnie; Evaluator raportuje je zielone na 9673f4661).
+- Testy live i przeglądarkowe: NIE_ZMIERZONO. Panel wydajności nie był sprawdzony wizualnie.
 
 ## BLOKADY
 - Brak blokad technicznych.
-- Do ABC właściciela: (a) potwierdzenie nazw „Maleńki” / „Bardzo ogromny” (ZAŁOŻENIE); (b) „(poniżej N tur)” w `diplomacy-sensible-deals.ts:167` i „≥ N tur” w `diplomacy-proposals.ts:1873` — odmiana dla N=1 i dopełniacz.
-- Zapisy z zapisanym starym napisem rozmiaru mapy: klucz zapisu nie zmienia się, więc wczytywanie nie jest zagrożone.
 
 ## RUNDY
-1/5 (runda obrony 3 tematu R-WEB-POLISH-LANGUAGE-AUDIT-Q1; Operator/Obrona Haiku).
+- 4/5 (obrona zarzutów z eca5ab979).
 
 ## NASTĘPNY KROK
-Evaluator (Sonnet) — weryfikacja zarzutów 1–3 w tym commicie; następnie Final Control (Sonnet) z 5 bramkami referencyjnymi.
+- Evaluator r4: ponowna ocena SHA d248650e9. Zarzut 1 zamknięty dowodem, zarzuty 2–3 odrzucone z dowodem.
 
 ## DEPLOY/PUSH: NIE WYKONANO
