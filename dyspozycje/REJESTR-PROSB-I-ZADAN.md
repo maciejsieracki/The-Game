@@ -9487,3 +9487,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-12 FALA 654 WDROŻONA na ROBOCZĄ (FC af12bab71): W18 — bez machin oblężniczych przycisk Szturm wyłączony (panel oblężenia i menu ataku) z komunikatem „Potrzebne machiny oblężnicze — pozostaje oblężenie"; widoczność machin wg technologii była już w main; AI bez zmian (już nie szturmuje bez machin). Otwarte: opcjonalny temat LIVE-VERIFY (pełny przebieg w Chromium). Decyzja właściciela: Taran nadal wymaga Obróbki drewna.
 
 - 2026-11-12 FALA 655 WDROŻONA na ROBOCZĄ (FC b4490c596): W24 — pas banerów widoku miasta zawija się i mieści w oknie 1366/1280/1024 px (CSS cityPanel.ts + cityUxFrame.ts, allowlista rozszerzona); baner mapy (hud.ts) mieścił się już wcześniej. Do potwierdzenia przez właściciela: czy to ten baner. W23 (kolejka pusta) FC PASS e04d66317 — czeka na deploy.
+
+- 2026-11-12 FALA 656 WDROŻONA na ROBOCZĄ (FC e04d66317): W23 — panel miasta (Podział pracy) pokazuje „Kolejka pusta — Praca idzie do puli imperium", gdy kolejka pusta i niewstrzymana; silnik bez zmian. Runda 2 poprawiła tylko błędną asercję testu (minimum podziału 50%).
