@@ -1,3 +1,9 @@
+## ROBOCZA 9797f628 -- 2026-11-06 -- FALA 662: FALA 662: spójny tekst panelu Wpływ relacji przy aktywnym Przyjmij (W31) (testowa)
+
+- R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, test tematu 6/0, live Chromium 10/0 (FC), mutacja czerwieni, audio-sidecar PASS
+- Limity: kierunek gracz->AI w zywej grze NIE_ZMIERZONO; ton czerwony wiersza do ABC; rozjazd Relacja 11,6 vs 90/200 osobny temat
+
 ## ROBOCZA 3cea76c2 -- 2026-11-06 -- FALA 661: FALA 661: zapis gry zablokowany w trakcie bitwy (W27) + poprawione testy B4b (W26) i fallbacku (W29) (testowa)
 
 - R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1 (kod) + R-WEB-SIEGE-AUTO-BREACH-ATTACKERS-ENTER-BEHIND-WALL-Q1 i R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1 (tylko testy)
