@@ -1,83 +1,67 @@
-# R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 — raport Obrony (Operator, Haiku), odpowiedź na zarzuty Evaluatora (report_sha 63c26bad2)
+# R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 — raport Obrony r5 (Operator, Haiku), odpowiedź na zarzuty Evaluatora r5 (report_sha 10f8b3728)
 
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (SILNIK #316)
-GOAL: administrator Państwa (ulepszenia terenu) jako stan na właścicielu: jeden koszt utrzymania na Państwo, auto-ulepszenia w miastach gracza wg JEDNEGO trybu Państwa (Z4), administrator miasta buduje tylko w swoim mieście, migracja zapisu, bramka auto-ulepszeń, tsc zielone, bramki referencyjne zielone.
+GOAL: administrator Państwa jako stan na właścicielu: jeden koszt na Państwo, auto-ulepszenia w miastach gracza wg jednego trybu Państwa (Z4), migracja zapisu, tsc zielone, bramki zielone.
 
 ## Wejście
 
-- Baza startowa: e67601e93 (kandydat r4). Worktree: gałąź `obrona-r4-two-types`.
-- DODATEK orkiestratora: nie ma osobnego pliku `00-dispatch-DODATEK-claude.md`. Sekcja „## DODATEK orkiestratora — runda 2” oraz „## DECYZJA WŁAŚCICIELA (2026-11-12, ABC) — korekta Z4 i podział tematu” są na końcu `00-dispatch.md` na gałęzi `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Na `origin/main` katalogu runu nie ma. Zakres rozstrzygnięty z tych sekcji (Z4 = jeden tryb Państwa; SILNIK #316; PANEL/NAZWY #327 poza tym tematem).
-- Allowlista rundy: `gra/src/game/city-administrator.ts`, `gra/src/game/auto-build-gate.ts`, `gra/src/main.ts`, `gra/src/ui/` (panel), `gra/data/city-administrator-params.json` (opisy), `gra/src/game/turn-economy.ts`, `gra/src/game/cities.ts`, nowe testy w `gra/tools/`.
+- Baza kandydata: e731bdf64fa27f034c94d5f4e8edd579211bcc96 (r5). Worktree: detached HEAD na e731bdf64, potem commit obrony.
+- Dispatch: pliki `00-dispatch.md` ani `00-dispatch-DODATEK-claude.md` NIE istnieją na `origin/main` ani na `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` pod wskazanymi ścieżkami (sprawdzone `git show`, wynik fatal). Zakres rundy odczytano z treści zadania (zarzuty Evaluatora r5, plik 20-evaluator-claude.md z commitu 10f8b3728). NIE_ZMIERZONO: pełny tekst DODATKU r5 i decyzji ABC.
+- Worktree nie miał `gra/node_modules`. Wykonano `npm ci --ignore-scripts` w `gra/` (tylko do testów, bez `build`/`dev`).
 
 ## ZMIANY/COMMIT
 
-- Kod: `1003bdc98be44dee02f3fe97ef7f2d330982c544` (nad e67601e93).
-  - `gra/src/main.ts`: auto-ulepszenia (EOT gracza, ok. linia 40684) i migracja przy wczytaniu (ok. linia 47824) biorą tryb z polityki Państwa właściciela: `ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto'`. Wcześniej: `effectiveUlepszeniaForCity(c).tryb`, czyli tryb per miasto (override). Dodatkowo w gałęzi „OFF” przy wczytaniu przywrócono `delete ... administratorUlepszen` (stary kod, potrzebny do testu kreatora).
-  - `gra/tools/administrators-wizard-test.cjs`: cofnięto do wersji bazowej `15b4327ba` (zmiana r4 była poza allowlistą; test zielony 58/0 także bez niej).
-  - `gra/tools/admin-panstwo-city-gate-test.cjs`: dopisano sekcje (7) granica administratora miasta, (8) migracja zapisu, (9) wpięcie w main.ts (test statyczny), w tym Z4.
-- Raport: ten plik, osobny commit.
+- `gra/tools/admin-panstwo-city-gate-test.cjs`: sekcja (10) przepisana w nagłówku i komentarzu jako test KONTRAKTU `selectCitiesForAutoImprovement`. Asercja pozostała (wymóg dispatchu), ale jest oznaczona jako tautologiczna i nie dowodzi Z4. Nie zmieniono żadnej asercji ani kodu gry.
+- `dyspozycje/autobot/runs/R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1/30-obrona-claude.md`: ten raport.
+- Kod gry (`gra/src/`) NIE zmieniony w tej rundzie. Allowlista zachowana.
 
-## TESTY (surowe wyniki z tej rundy)
+## TESTY (surowe wyniki tej rundy)
 
-- `npm install --ignore-scripts` (gra/): już zainstalowane, `node_modules` obecne.
-- `npx tsc --noEmit`: TSC_EXIT=0.
-- `node tools/admin-panstwo-city-gate-test.cjs`: RESULT: 30 passed, 0 failed (było 10; +20: sekcje 7–9).
-- `node tools/administrators-wizard-test.cjs`: 58 passed, 0 failed.
-- `node tools/improvement-administrator-test.cjs`: 59 passed, 0 failed.
-- `node tools/city-administrator-test.cjs`: 119 passed, 0 failed.
-- `node tools/city-administrator-economy-test.cjs`: 72 passed, 0 failed.
-- `node tools/upkeep-test.cjs`: 91 passed, 0 failed.
-- `node tools/owner-economy-test.cjs`: 20 passed, 0 failed.
-- Bramki referencyjne (nazwy z pierwszej rundy):
-  - `logic-test.cjs`: PASS [213], 0 FAIL, exit 0.
-  - `tech-tree-test.cjs`: 20 pass, 0 fail, exit 0.
-  - `research-test.cjs`: PASSED 33 / FAILED 0 / TOTAL 33, exit 0.
-  - `unit-replace-test.cjs`: 21 × [OK], 0 × [FAIL], exit 0.
-  - `combat-test.cjs`: "All sanity checks passed.", exit 0.
-- `git diff --check`: bez wyjścia (czysto).
-- Mutacje: NIE_ZMIERZONO w tej rundzie (nie uruchomiono mutacji nowych asercji; regexy sprawdzono na aktualnym `main.ts`).
-- Dowód w Chromium / w realnej grze: NIE_ZMIERZONO (patrz BLOKADY).
+- `cd gra && node tools/admin-panstwo-city-gate-test.cjs`: `RESULT: 36 passed, 0 failed`, exit 0.
+- `npx tsc --noEmit`: TSC_EXIT=0 (bez wyjścia).
+- `node tools/improvement-administrator-test.cjs`: `59 passed, 0 failed`.
+- `node tools/administrators-wizard-test.cjs`: `58 passed, 0 failed`.
+- Mutacja w tej rundzie: NIE_ZMIERZONO (zmiana dotyczy tylko komentarza i nagłówka sekcji (10); asercje (9) nietknięte). Mutację r5 (main.ts z c0e54a7 + test) zmierzył Evaluator: 4 FAIL.
+- Dowód w Chromium / realnej grze: NIE_ZMIERZONO.
 
-## ODPOWIEDZI NA ZARZUTY EVALUATORA (report_sha 63c26bad2)
+## ODPOWIEDZI NA ZARZUTY EVALUATORA r5
 
-1. Z4 (tryb auto jeden na Państwo): PRZYJMUJĘ. Poprawka w commicie 1003bdc98: dwa miejsca w `main.ts` przełączone na politykę Państwa. Dowód: test (9) „Z4: w main.ts nie ma odczytu trybu automatyzacji per miasto” (grep `effectiveUlepszeniaForCity(c).tryb` = brak) i „Z4: tryb auto z polityki Państwa właściciela” — oba PASS. Zakres: Z4 dotyczy TRYBU. Pola `focus` i `pracaAutoPercent` nadal czytane per miasto (`effectiveUlepszeniaForCity` w `getFocus`, `getPracaBudgetPercent`, `foodImprovementStages`). Zostawiono świadomie; w dispatchu Z4 mowi tylko o trybie. Do potwierdzenia przez właściciela.
-2. Kryterium 4 (administrator miasta buduje tylko w swoim mieście): PRZYJMUJĘ. Dodano sekcję (7) w `admin-panstwo-city-gate-test.cjs`: miasto A z administratorem miasta → autobudowa dozwolona; miasto B bez → zablokowana (ta sama funkcja `isCityAutoBuildAllowed` z argumentem `cityHasWorkingAdministrator(city)`, jak `main.ts` ok. linia 10187). Administrator Państwa też nie otwiera budowy budynków w B. PASS.
-3. Wpięcie `stateAdmByOwner` w main.ts bez asercji: PRZYJMUJĘ CZĘŚCIOWO. Dodano sekcję (9) — 10 asercji statycznych (regex na źródle `main.ts`): deklaracja mapy, bramka `isCityAutoImprovementActive`, `refreshAdministratorState(..., stateAdmByOwner)`, zatrudnienie `hireOwnerImprovementAdministrator`, zapis `stateImprovementAdministrators`, gałęzie wczytania, kasowanie `administratorUlepszen`, usunięcie przy OFF. Ograniczenie: to nie jest wykonanie tury. Closure `boot()` w `main.ts` nie da się zaimportować w teście; test wykrywa usunięcie wpięcia, nie błędy logiki w wpięciu. Runtime: NIE_ZMIERZONO.
-4. Migracja przy wczytaniu (ścieżka main.ts, kasowanie pól, OFF): PRZYJMUJĘ CZĘŚCIOWO. Sekcja (8) testuje funkcję `migrateCityImprovementAdministratorsToState` (jeden administrator na właściciela, 2 miasta → 1 utrzymanie, pola X,Y do czyszczenia, brak migracji bez pola). Ścieżka wczytania w `main.ts` ma asercje statyczne (sekcja 9). Runtime wczytania: NIE_ZMIERZONO.
-5. Teksty UI niespójne („w tym mieście wstrzymane”, brak „Administrator państwa” w `src/ui`): ODRZUCAM jako zarzut tego tematu. Dispatch (DECYZJA WŁAŚCICIELA 2026-11-12): „PANEL I NAZWY (nowy temat, #327): zatrudnianie/zwalnianie administratora Państwa w panelu Państwa; nazwy … w tekstach dla gracza”. Kryteria 1 i 6 należą do #327. W tym temacie `gra/src/ui/` nie było w zakresie zmian silnika. Dług dla #327: `buildModeHud.ts:196` („w tym mieście wstrzymane”) i `buildModeHud.ts:183`.
-6. Zmiana poza allowlistą (`administrators-wizard-test.cjs`): PRZYJMUJĘ. Cofnięto do `15b4327ba` (commit 1003bdc98). Test pozostaje zielony (58/0), bo r4 zachowało w gałęzi OFF linię `delete ... administratorUlepszen` (przywrócona w `main.ts`). Plik nie jest już poza allowlistą.
-7. Powiadomienia o zmianach administratora Państwa trafiają do `firstCity`; przy braku miast cicho pomijane: ODRZUCAM jako blokujące, ZOSTAWIAM DŁUG. Dowód: zatrudnienie Państwa wymaga `cityId` istniejącego miasta (`hireImprovementAdministratorForPlayer`), więc stan powstaje, gdy właściciel ma miasto. Pominięcie dotyczy tylko zmiany właściciela albo utraty wszystkich miast. Naprawa wymagałaby zmiany typu `AdministratorChange.city` (opcjonalne) i konsumenta w `main.ts` (~linia 10242), czyli zakresu poza tym tematem. Do #327 lub osobnego tematu.
-8. Dowód w Chromium: NIE_ZMIERZONO. W tej rundzie nie uruchomiono gry w przeglądarce. Powód: kryterium 1 (zatrudnianie Państwa z panelu Państwa) nie jest zrobione, a wpięcie testuje się w grze tylko przez przycisk w panelu miasta (zmiana UI #327). DODATEK orkiestratora istnieje jako sekcja w `00-dispatch.md`, nie jako osobny plik (patrz Wejście).
+1. (niska waga) Asercja (10) tautologiczna, Z4 chroni tylko regex: PRZYJMUJĘ. Potwierdzam, że asercja (10) przechodzi niezależnie od main.ts (predykat trybu jest zdefiniowany w teście, linie 129-134). Zmiana: sekcja (10) oznaczona w nagłówku i komentarzu jako kontrakt, nie dowód Z4. Ochronę Z4 wskazuję jako sekcję (9): asercje „Z4: …” (main.ts:40686, linia predykatu `c => ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto'`) i „Z4 r5: …” (getFocus, getPracaBudgetPercent, foodImprovementStages). Ograniczenie uznaję: to test statyczny, nie behawioralny. Behawioralny test wymagałby wyciągnięcia `ulepszeniaEmpireForOwner` z closure `boot()` — poza zakresem tego tematu.
+2. (informacyjny) Chromium NIE_ZMIERZONO: ODRZUCAM jako blokadę zamknięcia silnika. Dowód w przeglądarce nie był wymagany dla tej rundy, a runtime tury jest pokryty wyłącznie testami funkcji i asercjami statycznymi. Nie uruchamiałem Chromium. Do ustalenia przez orkiestratora, czy FC wymaga dowodu runtime przed READY_FOR_DEPLOY.
+3. (informacyjny, zakres #327) Per-miasto handlery UI w main.ts: PRZYJMUJĘ jako dług, ODRZUCAM jako poprawkę w tym temacie. Dowód: `main.ts:27127` (`ulepszeniaOverride`), `:27133`, `:27150-27153` (`getUlepszeniaEffectiveState` woła `effectiveUlepszeniaForCity`), `:27155-27183` (`onUlepszeniaCityFocusChange`, `onUlepszeniaCityTrybChange` ustawiają `ulepszeniaOverride = true`). Silnik (`main.ts:40686`, `:40726`, `:40735`, `:40750`, `:47827`) już nie czyta trybu/focusu per miasto, więc override jest martwy dla automatu. UI w `gra/src/ui/buildModeHud.ts:196` i `:753` nadal mówi o wstrzymaniu w tym mieście. Naprawa UI należy do #327 (panel i teksty), zgodnie z podziałem z poprzedniej rundy. Dług zapisany poniżej.
 
 ## KRYTERIA KOŃCA (stan po tej rundzie)
 
-1. Zatrudnienie administratora Państwa w panelu Państwa: NIESPEŁNIONE w tym temacie (przeniesione do #327, zgodnie z podziałem właściciela).
-2. Koszt utrzymania raz na Państwo: SPEŁNIONE (testy improvement-administrator/economy/upkeep, zielone).
-3. Miasto B bez administratora w trybie auto dostaje ulepszenia przy administratorze Państwa: SPEŁNIONE testem silnikowym bramki (sekcja 1 gate-test, 3/3 miasta objęte; bez Państwa 0).
+1. Zatrudnienie administratora Państwa w panelu Państwa: NIESPEŁNIONE w tym temacie (#327).
+2. Koszt utrzymania raz na Państwo: SPEŁNIONE (testy improvement-administrator 59/0, economy/upkeep wg poprzednich rund).
+3. Miasto bez własnego administratora w trybie auto objęte przez administratora Państwa: SPEŁNIONE testem silnikowym (sekcja 1, 3/3 miast; bez Państwa 0).
 4. Administrator miasta buduje tylko w swoim mieście: SPEŁNIONE testem (sekcja 7).
-5. Migracja zapisu z administratorem miasta: SPEŁNIONE funkcją (sekcja 8) i asercjami wczytania (sekcja 9); runtime NIE_ZMIERZONO.
+5. Migracja zapisu: SPEŁNIONE funkcją (sekcja 8) i asercjami wczytania (sekcja 9); runtime NIE_ZMIERZONO.
 6. Nazwy w tekstach dla gracza: NIESPEŁNIONE w tym temacie (#327).
-7. tsc zielone; bramki referencyjne zielone: SPEŁNIONE (TSC_EXIT=0; 5 bramek OK). Dowód w Chromium: NIE_ZMIERZONO.
-8. Z4 (jeden tryb Państwa): SPEŁNIONE dla trybu auto (poprawka 1003bdc98); pola focus/pracaAutoPercent per miasto zostają (zakres do potwierdzenia).
+7. tsc zielone, bramki zielone: SPEŁNIONE (tsc 0; gate 36/0, improvement 59/0, wizard 58/0 w tej rundzie). Chromium NIE_ZMIERZONO.
+8. Z4 (jeden tryb Państwa): SPEŁNIONE dla trybu auto (`main.ts:40686`, `:47827`) i dla focus/pracaAutoPercent (`:40726`, `:40735`, `:40750`) wg asercji statycznych (sekcja 9). Dowód behawioralny: NIE_ZMIERZONO.
 
 ## BLOKADY
 
-- Chromium / gra w przeglądarce: NIE_ZMIERZONO (patrz odpowiedź 8).
-- Runtime (wykonanie tury i wczytania zapisu w `boot()`): NIE_ZMIERZONO; pokryte tylko testami funkcji i asercjami statycznymi.
-- UI trybu automatyzacji nadal per miasto (`buildModeHud.ts`, `cityPanel`): po poprawce silnik ignoruje tryb miasta, a UI go pokazuje. Mylące dla gracza — do #327.
-- Teksty UI (#327), panel Państwa (#327), powiadomienia bez miast (dług, odp. 7).
-- Poza allowlistą: brak (wizard-test cofnięto).
+- Chromium / gra w przeglądarce: NIE_ZMIERZONO.
+- Runtime (tura, wczytanie zapisu w `boot()`): NIE_ZMIERZONO; pokryte testami funkcji i asercjami statycznymi.
+- Dispatch i DODATEK r5 nieosiągalne pod wskazanymi ścieżkami (patrz Wejście); zakres z treści zadania.
+
+## DŁUGI DLA #327 (nie w tym temacie)
+
+- Per-miasto UI trybu automatyzacji: `main.ts:27127-27183`, `buildModeHud.ts:196`, `:753`.
+- Powiadomienia o administratorze Państwa przy braku miast trafiają do `firstCity` lub są pomijane (poprzednia runda, zarzut 7, zostaje dług).
 
 ## RUNDY
 
-Obrona r1 (ta runda) — odpowiedź na zarzuty FAIL z FC r4 (report 63c26bad2 na gałęzi eval-r4-two-types). Kolejna runda Evaluatora rozstrzyga; limit 5/5 nie wyczerpany w tym temacie na tym etapie.
+Obrona r5 (ta runda) — odpowiedź na zarzuty Evaluatora r5. Limit tematu 5/5 wyczerpany przez Evaluatora; decyzję o dalszym ciągu podejmuje orkiestrator.
 
 ## NASTĘPNY KROK
 
-1. Evaluator: zweryfikować commit 1003bdc98 (diff: `git diff e67601e93 1003bdc98`) i nowe sekcje testu.
-2. Orkiestrator: decyzja o zakresie Z4 (tylko tryb czy też focus/pracaAutoPercent) i o długach 5 i 7 (przeniesienie do #327).
-3. Temat #327 (panel Państwa i nazwy) i dowód w Chromium po #327.
+1. Final Control: zweryfikować commit obrony (diff: `git diff e731bdf64 <SHA>`) i sekcję (10) testu.
+2. Orkiestrator: decyzja, czy FC wymaga dowodu runtime (Chromium) przed READY_FOR_DEPLOY; decyzja o zakresie Z4 (tryb vs focus/pracaAutoPercent).
+3. Temat #327 (panel Państwa, nazwy, martwy per-miasto UI).
 
 DEPLOY/PUSH: NIE WYKONANO

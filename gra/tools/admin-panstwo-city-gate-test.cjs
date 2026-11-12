@@ -123,8 +123,12 @@ ok(/getFocus: c => ulepszeniaEmpireForOwner\(\(c as City\)\.ownerId\)\.focus/.te
 ok(/getPracaBudgetPercent: c => ulepszeniaEmpireForOwner\(\(c as City\)\.ownerId\)\.pracaAutoPercent/.test(mainSrc), 'Z4 r5: getPracaBudgetPercent z polityki Państwa');
 ok(/const policy = ulepszeniaEmpireForOwner\(\(city as City\)\.ownerId\);\s*return policy\.focus === 'zywnosc'/.test(mainSrc), 'Z4 r5: foodImprovementStages z polityki Państwa');
 
-console.log('(10) override miasta nie zmienia wyboru automatu (tryb auto wg Państwa)');
+console.log('(10) KONTRAKT selectCitiesForAutoImprovement (tautologia z założenia: predykat trybu podaje test; NIE dowodzi Z4)');
 {
+  // Ta asercja sprawdza tylko, że selectCitiesForAutoImprovement przepuszcza miasto, dla którego wstrzyknięty
+  // predykat trybu zwraca true, także przy ustawionym override. Predykat jest zdefiniowany w tym teście,
+  // więc asercja przejdzie niezależnie od main.ts. Realną ochronę Z4 dają asercje (9) na źródle main.ts
+  // (linie „Z4: …” oraz „Z4 r5: …”), które czerwienieją po mutacji (patrz raport 30-obrona-claude.md).
   // Miasto z lokalnym override „ręczny” nadal jest objęte automatem, gdy tryb Państwa = auto.
   const overridden = { id: 'O', ownerId: HUMAN, mode: 'manual', ulepszeniaOverride: true, ulepszeniaTryb: 'reczny' };
   const empireTryb = 'auto';
