@@ -184,9 +184,18 @@ async function main() {
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
     });
     mark('browser:launched');
+    // Statyczny serwer dystrybucji: chunki JS/CSS/audio (Vite) z własnych plików. Poprzednia wersja
+    // zwracała index.html na KAŻDY URL, więc żądanie modułu dostawało HTML („Unexpected token '<'").
+    const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.wasm': 'application/wasm' };
     server = http.createServer((req, res) => {
-      res.setHeader('content-type', 'text/html; charset=utf-8');
-      fs.createReadStream(path.join(out, 'index.html')).pipe(res);
+      const rel = decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname).replace(/^\/+/, '') || 'index.html';
+      const file = path.resolve(out, rel);
+      if (!file.startsWith(path.resolve(out) + path.sep)) { res.writeHead(403).end(); return; }
+      fs.readFile(file, (err, data) => {
+        if (err) { res.writeHead(404).end(); return; }
+        res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
+        res.end(data);
+      });
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const url = `http://127.0.0.1:${server.address().port}/?playtest=mapa`;
