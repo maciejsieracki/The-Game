@@ -1,3 +1,9 @@
+## ROBOCZA 3385dd9b -- 2026-11-06 -- FALA 656: FALA 656: komunikat 'kolejka pusta — Praca idzie do puli imperium' w panelu miasta (W23) (testowa)
+
+- R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, test Chromium 17/0, audio-sidecar PASS
+- Limity: kolejka wstrzymana i zwiniety podzial pracy NIE_ZMIERZONO
+
 ## ROBOCZA 1b873b87 -- 2026-11-06 -- FALA 655: FALA 655: lewy baner widoku miasta mieści się w oknie 1366/1280/1024 px (W24) (testowa)
 
 - R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1
