@@ -5,8 +5,10 @@
 use std::collections::BTreeMap;
 
 use civ_engine::domain::brake_power_rest::{
-    count_cities_with_dominant_state_religion, dominant_status_web, rest_no_producer_keys,
-    ReligionCity, RestSource, REST_COMPONENT_SOURCES,
+    barbarian_captured_power_gain, battle_power_points_from_defeated_enemy,
+    count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
+    dominant_status_web, has_pin_file_line_ref, rest_no_producer_keys, set_size, ReligionCity,
+    RestSource, REST_COMPONENT_SOURCES,
 };
 use civ_engine::domain::resource_access::society_inputs::dominant_religion;
 use civ_engine::domain::territory::ReligionState;
@@ -36,6 +38,11 @@ fn f(v: &Value) -> f64 {
         },
         _ => v.as_f64().expect("liczba w wektorze"),
     }
+}
+
+/// Porownanie z wektorem: NaN == NaN, reszta zwykla równość.
+fn same(got: f64, exp: f64) -> bool {
+    (got.is_nan() && exp.is_nan()) || got == exp
 }
 
 fn i(v: &Value) -> i64 {
@@ -138,6 +145,98 @@ fn religia_without_state_religion_is_zero() {
 }
 
 #[test]
+fn infra_count_matches_web_vectors() {
+    let cs = cases("infra");
+    assert_eq!(cs.len(), 60);
+    let mut nonzero = 0;
+    for (idx, c) in cs.iter().enumerate() {
+        let built: Vec<(i64, usize)> = c["cityBuilt"]
+            .as_array()
+            .expect("cityBuilt")
+            .iter()
+            .map(|e| (i(&e[0]), i(&e[1]) as usize))
+            .collect();
+        let cities: Vec<(i64, i64)> = c["cities"]
+            .as_array()
+            .expect("cities")
+            .iter()
+            .map(|e| (i(&e[0]), i(&e[1])))
+            .collect();
+        let got = count_buildings_for_owner(&built, &cities, i(&c["owner"]));
+        let exp = i(&c["expect"]) as usize;
+        if exp != 0 {
+            nonzero += 1;
+        }
+        assert_eq!(got, exp, "infra[{idx}]");
+    }
+    assert!(
+        nonzero >= 5,
+        "za malo niezerowych przypadkow infra: {nonzero}"
+    );
+}
+
+#[test]
+fn tech_count_matches_web_vectors() {
+    let cs = cases("tech");
+    assert_eq!(cs.len(), 60);
+    let mut nonzero = 0;
+    for (idx, c) in cs.iter().enumerate() {
+        // Wektor trzyma surowe listy (z duplikatami): web liczy Set.size, czyli unikaty.
+        let human_len = set_size(
+            c["humanTechs"]
+                .as_array()
+                .expect("humanTechs")
+                .iter()
+                .map(|v| v.as_str().expect("tech")),
+        );
+        let ai_len = match &c["aiTechs"] {
+            Value::Null => None,
+            v => Some(set_size(
+                v.as_array()
+                    .expect("aiTechs")
+                    .iter()
+                    .map(|x| x.as_str().expect("tech")),
+            )),
+        };
+        let is_human = c["isHuman"].as_bool().expect("isHuman");
+        let got = count_tech_for_owner(is_human, human_len, ai_len);
+        let exp = i(&c["expect"]) as usize;
+        if exp != 0 {
+            nonzero += 1;
+        }
+        assert_eq!(got, exp, "tech[{idx}]");
+    }
+    assert!(
+        nonzero >= 5,
+        "za malo niezerowych przypadkow tech: {nonzero}"
+    );
+    // Duplikaty nie zwiekszaja Set.size (ten sam kontrakt co `new Set(...)` w webie).
+    assert_eq!(set_size(["t1", "t1", "t2"]), 2);
+}
+
+#[test]
+fn zdobycze_gain_matches_web_vectors() {
+    let cs = cases("zdobycze");
+    assert_eq!(cs.len(), 40);
+    for (idx, c) in cs.iter().enumerate() {
+        let got = barbarian_captured_power_gain(f(&c["lost"]), c["barb"].as_bool().expect("barb"));
+        let exp = f(&c["expect"]);
+        assert!(same(got, exp), "zdobycze[{idx}]: {got} != {exp}");
+    }
+}
+
+#[test]
+fn bitwy_points_match_web_vectors() {
+    let cs = cases("bitwy");
+    assert_eq!(cs.len(), 11);
+    for (idx, c) in cs.iter().enumerate() {
+        let got = battle_power_points_from_defeated_enemy(f(&c["m"]));
+        let exp = f(&c["expect"]);
+        assert!(same(got, exp), "bitwy[{idx}]: {got} != {exp}");
+    }
+}
+
+#[test]
 fn rest_table_covers_six_components_with_explicit_sources() {
     let keys: Vec<&str> = REST_COMPONENT_SOURCES.iter().map(|(k, _)| *k).collect();
     assert_eq!(
@@ -151,20 +250,35 @@ fn rest_table_covers_six_components_with_explicit_sources() {
             "zdobycze"
         ]
     );
-    let religia = REST_COMPONENT_SOURCES
-        .iter()
-        .find(|(k, _)| *k == "religia")
-        .map(|(_, s)| *s)
-        .expect("religia");
-    assert!(matches!(religia, RestSource::RustProducer(_)));
+    for key in ["infra", "tech", "religia"] {
+        let src = REST_COMPONENT_SOURCES
+            .iter()
+            .find(|(k, _)| *k == key)
+            .map(|(_, s)| *s)
+            .expect("skladnik");
+        assert!(matches!(src, RestSource::RustProducer(_)), "{key}");
+    }
     assert_eq!(
         rest_no_producer_keys(),
-        vec!["bitwy", "infra", "tech", "ulepszenia", "zdobycze"]
+        vec!["bitwy", "ulepszenia", "zdobycze"]
     );
-    // Kazdy NoProducer ma niepusty dowod (plik:linia pinu / brak danych w Rust).
+    // Kazdy wpis (producent i brak) ma uzasadnienie z odwolaniem plik.ts:linia do pinu.
     for (k, s) in REST_COMPONENT_SOURCES.iter() {
-        if let RestSource::NoProducer(reason) = s {
-            assert!(!reason.is_empty(), "brak uzasadnienia dla {k}");
-        }
+        let reason = match s {
+            RestSource::RustProducer(r) | RestSource::NoProducer(r) => *r,
+        };
+        assert!(!reason.is_empty(), "brak uzasadnienia dla {k}");
+        assert!(
+            has_pin_file_line_ref(reason),
+            "brak odwolania plik.ts:linia dla {k}: {reason}"
+        );
     }
+}
+
+#[test]
+fn pin_file_line_ref_detector_rejects_plain_text() {
+    assert!(has_pin_file_line_ref("web x (main.ts:2629)"));
+    assert!(has_pin_file_line_ref("culture-religion.ts:1383"));
+    assert!(!has_pin_file_line_ref("main.ts bez numeru"));
+    assert!(!has_pin_file_line_ref("ts:12 bez nazwy pliku"));
 }

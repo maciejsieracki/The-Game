@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-POWER-REST-Q1
 GOAL: dla każdego z 6 składników (bitwy, infrastruktura, tech, ulepszenia, religia, zdobycze) ustalić w pinie 07d2fbd72 źródło w computeObjectivePower i albo (a) zportować producenta jako czystą funkcję z wektorami z wycięcia i wykonania kodu weba, albo (b) zapisać jawny BRAK z dowodem (plik:linia pinu + czego brakuje w Rust).
 ZMIANY/COMMIT: feb5101f9 (gałąź lokalna rust-port-wip/P6-POWER-REST-Q1, baza 94cba6667; bez push, bez integracji, bez zmian w rust-port/parity-v2, gra/, origin/main). Cargo.lock wygenerowany przez build, NIE commitowany (usunięty z worktree po bramkach).
-  - rust-port/engine/src/domain/brake_power_rest.rs (nowy, ~130 LOC): REST_COMPONENT_SOURCES (6 składników, RustProducer/NoProducer z uzasadnieniem), rest_no_producer_keys, count_cities_with_dominant_state_religion, dominant_status_web.
+  - rust-port/engine/src/domain/brake_power_rest.rs (nowy, 104 LOC w feb5101f9 - korekta z ~130 w obronie 02a; po obronie 181 LOC): REST_COMPONENT_SOURCES (6 składników, RustProducer/NoProducer z uzasadnieniem), rest_no_producer_keys, count_cities_with_dominant_state_religion, dominant_status_web.
   - rust-port/engine/src/domain/mod.rs (tylko `pub mod brake_power_rest;`).
   - rust-port/engine/tests/p6_power_rest.rs (nowy, 4 testy).
   - rust-port/engine/tests/p6_power_rest_gen.mjs (nowy): wycina z pinu clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion i je wykonuje; brak atrap (brak zmiennej spoza wycinka = błąd; progDominacjiPct podawany jawnie).

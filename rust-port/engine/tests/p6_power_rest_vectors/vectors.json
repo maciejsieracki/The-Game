@@ -1,6 +1,6 @@
 {
  "_pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
- "_zrodla": "gra/src/game/culture-religion.ts (clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion)",
+ "_zrodla": "gra/src/game/culture-religion.ts (clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion); gra/src/main.ts (countBuildingsForOwner, countTechForOwner); gra/src/game/capital-capture.ts (barbarianCapturedPowerGain); gra/src/game/power-objective.ts (battlePowerPointsFromDefeatedEnemy)",
  "dominant": [
   {
    "state": {
@@ -3991,6 +3991,2767 @@
    "state": "Gamma",
    "prog": 0,
    "expect": 0
+  }
+ ],
+ "infra": [
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     1,
+     1
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "cities": [],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     3,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     4
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "cities": [],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     1,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "owner": 0,
+   "expect": 2
+  },
+  {
+   "cityBuilt": [
+    [
+     6,
+     3
+    ],
+    [
+     5,
+     3
+    ]
+   ],
+   "cities": [],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     4
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     1
+    ]
+   ],
+   "owner": 1,
+   "expect": 4
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     1
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     5,
+     2
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     2
+    ],
+    [
+     6,
+     3
+    ]
+   ],
+   "cities": [],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     3
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     3
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     1
+    ],
+    [
+     6,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     3
+    ]
+   ],
+   "cities": [
+    [
+     3,
+     0
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     3,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "owner": 0,
+   "expect": 4
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     4
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     1
+    ],
+    [
+     5,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     6,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 2
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     3
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     1
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     6,
+     2
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     3,
+     3
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     1
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ],
+    [
+     6,
+     2
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     3
+    ],
+    [
+     3,
+     3
+    ],
+    [
+     6,
+     1
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     5,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ],
+    [
+     4,
+     2
+    ],
+    [
+     4,
+     2
+    ]
+   ],
+   "owner": 1,
+   "expect": 3
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     6,
+     2
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     4
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     5,
+     0
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     1
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 0,
+   "expect": 1
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     4,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     5,
+     1
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "cities": [],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     5,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     2,
+     2
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     6,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     1
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     6,
+     1
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     5,
+     2
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     0
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     6,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     2
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     2
+    ]
+   ],
+   "owner": 2,
+   "expect": 4
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     1
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     3
+    ]
+   ],
+   "cities": [
+    [
+     3,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     0
+    ],
+    [
+     6,
+     1
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     5,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     0
+    ],
+    [
+     4,
+     2
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     2
+    ],
+    [
+     6,
+     2
+    ]
+   ],
+   "cities": [],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     6,
+     2
+    ],
+    [
+     5,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     4
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     2
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     0
+    ],
+    [
+     5,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     5,
+     1
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     6,
+     2
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     4,
+     2
+    ]
+   ],
+   "cities": [
+    [
+     5,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     6,
+     2
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     6,
+     0
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     2
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     1,
+     3
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     1
+    ],
+    [
+     6,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     4,
+     0
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     2,
+     1
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [],
+   "cities": [
+    [
+     4,
+     0
+    ],
+    [
+     4,
+     2
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     6,
+     2
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     3
+    ],
+    [
+     6,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     2
+    ],
+    [
+     5,
+     3
+    ]
+   ],
+   "cities": [
+    [
+     3,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     4,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "owner": 0,
+   "expect": 2
+  },
+  {
+   "cityBuilt": [
+    [
+     6,
+     1
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     5,
+     1
+    ],
+    [
+     3,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     4,
+     2
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     4,
+     0
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     2
+    ]
+   ],
+   "owner": 0,
+   "expect": 2
+  },
+  {
+   "cityBuilt": [
+    [
+     5,
+     2
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     6,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     5,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 0,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     4
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     6,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     1,
+     1
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  },
+  {
+   "cityBuilt": [
+    [
+     2,
+     4
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     4,
+     1
+    ]
+   ],
+   "owner": 2,
+   "expect": 4
+  },
+  {
+   "cityBuilt": [
+    [
+     3,
+     1
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     5,
+     2
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ],
+    [
+     6,
+     2
+    ],
+    [
+     5,
+     0
+    ]
+   ],
+   "owner": 2,
+   "expect": 3
+  },
+  {
+   "cityBuilt": [
+    [
+     6,
+     0
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     4,
+     4
+    ]
+   ],
+   "cities": [
+    [
+     2,
+     0
+    ]
+   ],
+   "owner": 1,
+   "expect": 0
+  }
+ ],
+ "tech": [
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t1",
+    "t2",
+    "t2",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3",
+    "t4",
+    "t3",
+    "t1",
+    "t3"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2"
+   ],
+   "aiTechs": [
+    "t2",
+    "t3",
+    "t3"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4",
+    "t3",
+    "t1",
+    "t1",
+    "t3"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t1"
+   ],
+   "aiTechs": [
+    "t1",
+    "t2",
+    "t3",
+    "t4",
+    "t3"
+   ],
+   "expect": 4
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t4",
+    "t3"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t1"
+   ],
+   "aiTechs": [],
+   "expect": 0
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t3",
+    "t4",
+    "t1",
+    "t2"
+   ],
+   "aiTechs": [
+    "t1"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t2",
+    "t3",
+    "t3"
+   ],
+   "aiTechs": [
+    "t2",
+    "t2",
+    "t1",
+    "t3",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t2",
+    "t3",
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 3
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t1",
+    "t1"
+   ],
+   "aiTechs": null,
+   "expect": 1
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": [
+    "t2"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t1",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3",
+    "t3",
+    "t3",
+    "t2",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t3",
+    "t3",
+    "t3"
+   ],
+   "aiTechs": [
+    "t2"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t1",
+    "t4"
+   ],
+   "aiTechs": [
+    "t2"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t2",
+    "t3",
+    "t4",
+    "t4"
+   ],
+   "aiTechs": [
+    "t4",
+    "t4",
+    "t3",
+    "t4"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t1",
+    "t4"
+   ],
+   "aiTechs": [
+    "t3"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t2",
+    "t1",
+    "t4"
+   ],
+   "aiTechs": [
+    "t2",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t2",
+    "t2",
+    "t2"
+   ],
+   "aiTechs": [
+    "t4",
+    "t1",
+    "t4",
+    "t2",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t1"
+   ],
+   "aiTechs": [
+    "t4",
+    "t3",
+    "t2",
+    "t3",
+    "t4"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t4"
+   ],
+   "aiTechs": [
+    "t2",
+    "t2",
+    "t4",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t3"
+   ],
+   "aiTechs": [],
+   "expect": 1
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": [
+    "t4",
+    "t4",
+    "t3",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t3"
+   ],
+   "aiTechs": [
+    "t3"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t4",
+    "t2"
+   ],
+   "aiTechs": [
+    "t4",
+    "t1",
+    "t2",
+    "t3"
+   ],
+   "expect": 4
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": [
+    "t1",
+    "t3",
+    "t4",
+    "t4",
+    "t3"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t4",
+    "t4",
+    "t1",
+    "t4",
+    "t1"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4",
+    "t2"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t2"
+   ],
+   "aiTechs": [
+    "t4",
+    "t3",
+    "t1",
+    "t1"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": [
+    "t2",
+    "t3",
+    "t3",
+    "t4",
+    "t2"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t1",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3",
+    "t2",
+    "t1",
+    "t3",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t3"
+   ],
+   "aiTechs": [
+    "t3",
+    "t4"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t2",
+    "t3",
+    "t2",
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t1",
+    "t3",
+    "t4"
+   ],
+   "aiTechs": [
+    "t1",
+    "t3"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": [],
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t1",
+    "t2",
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t1",
+    "t2",
+    "t3",
+    "t2"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t3",
+    "t1",
+    "t3",
+    "t3",
+    "t2"
+   ],
+   "aiTechs": null,
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": [
+    "t1",
+    "t1",
+    "t3",
+    "t3"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t3",
+    "t4"
+   ],
+   "aiTechs": [
+    "t1",
+    "t4",
+    "t4",
+    "t1"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t1",
+    "t3",
+    "t4"
+   ],
+   "aiTechs": [
+    "t1",
+    "t1",
+    "t2",
+    "t4",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t2",
+    "t4",
+    "t4",
+    "t1",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3",
+    "t4",
+    "t2",
+    "t1"
+   ],
+   "expect": 4
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": [],
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t2",
+    "t2",
+    "t3",
+    "t2"
+   ],
+   "aiTechs": [
+    "t3",
+    "t2",
+    "t1"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t1",
+    "t4",
+    "t4",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3",
+    "t1"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t2",
+    "t1",
+    "t1",
+    "t2"
+   ],
+   "aiTechs": [],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [],
+   "aiTechs": [
+    "t4",
+    "t1",
+    "t4",
+    "t3"
+   ],
+   "expect": 0
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [],
+   "aiTechs": [
+    "t3",
+    "t1",
+    "t3",
+    "t1",
+    "t1"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t2",
+    "t3",
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 0
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4"
+   ],
+   "aiTechs": null,
+   "expect": 1
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t1"
+   ],
+   "aiTechs": [
+    "t2",
+    "t2",
+    "t2",
+    "t4",
+    "t4"
+   ],
+   "expect": 2
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t1",
+    "t1",
+    "t4",
+    "t1",
+    "t2"
+   ],
+   "aiTechs": [
+    "t3",
+    "t1",
+    "t4",
+    "t1"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t4",
+    "t1",
+    "t4"
+   ],
+   "aiTechs": [],
+   "expect": 2
+  },
+  {
+   "owner": 1,
+   "isHuman": false,
+   "humanTechs": [
+    "t3",
+    "t1",
+    "t4",
+    "t4",
+    "t3"
+   ],
+   "aiTechs": [
+    "t4",
+    "t1",
+    "t4",
+    "t2",
+    "t2"
+   ],
+   "expect": 3
+  },
+  {
+   "owner": 2,
+   "isHuman": false,
+   "humanTechs": [
+    "t4",
+    "t4",
+    "t4",
+    "t4"
+   ],
+   "aiTechs": [
+    "t3"
+   ],
+   "expect": 1
+  },
+  {
+   "owner": 0,
+   "isHuman": true,
+   "humanTechs": [
+    "t2",
+    "t3",
+    "t2",
+    "t1"
+   ],
+   "aiTechs": [
+    "t3"
+   ],
+   "expect": 3
+  }
+ ],
+ "zdobycze": [
+  {
+   "lost": 0,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": -3,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": "NaN",
+   "barb": false,
+   "expect": "NaN"
+  },
+  {
+   "lost": -3,
+   "barb": false,
+   "expect": -3
+  },
+  {
+   "lost": 0,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": "NaN",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 12,
+   "barb": false,
+   "expect": 12
+  },
+  {
+   "lost": 2.5,
+   "barb": false,
+   "expect": 2.5
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": 2.5,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": 12,
+   "barb": false,
+   "expect": 12
+  },
+  {
+   "lost": "NaN",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": "-Infinity",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 2.5,
+   "barb": false,
+   "expect": 2.5
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": 2.5,
+   "barb": false,
+   "expect": 2.5
+  },
+  {
+   "lost": -3,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": -3,
+   "barb": false,
+   "expect": -3
+  },
+  {
+   "lost": "-Infinity",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": -3,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": -3,
+   "barb": false,
+   "expect": -3
+  },
+  {
+   "lost": "NaN",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": "-Infinity",
+   "barb": false,
+   "expect": "-Infinity"
+  },
+  {
+   "lost": 2.5,
+   "barb": false,
+   "expect": 2.5
+  },
+  {
+   "lost": "Infinity",
+   "barb": false,
+   "expect": "Infinity"
+  },
+  {
+   "lost": 12,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 100.75,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 100.75,
+   "barb": false,
+   "expect": 100.75
+  },
+  {
+   "lost": "Infinity",
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": "NaN",
+   "barb": false,
+   "expect": "NaN"
+  },
+  {
+   "lost": 100.75,
+   "barb": true,
+   "expect": 0
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": "-Infinity",
+   "barb": false,
+   "expect": "-Infinity"
+  },
+  {
+   "lost": 0,
+   "barb": false,
+   "expect": 0
+  },
+  {
+   "lost": "NaN",
+   "barb": true,
+   "expect": 0
+  }
+ ],
+ "bitwy": [
+  {
+   "m": 0,
+   "expect": 0
+  },
+  {
+   "m": 0.4,
+   "expect": 0
+  },
+  {
+   "m": 1,
+   "expect": 1
+  },
+  {
+   "m": 3.7,
+   "expect": 3
+  },
+  {
+   "m": 12,
+   "expect": 12
+  },
+  {
+   "m": 99.99,
+   "expect": 99
+  },
+  {
+   "m": -3,
+   "expect": 0
+  },
+  {
+   "m": "NaN",
+   "expect": 0
+  },
+  {
+   "m": "Infinity",
+   "expect": 0
+  },
+  {
+   "m": "-Infinity",
+   "expect": 0
+  },
+  {
+   "m": 1000000,
+   "expect": 1000000
   }
  ]
 }

@@ -3,8 +3,13 @@
 // Zrodla (pin 07d2fbd72f758705f8e1d59cc4968027ffbafe75, tylko odczyt, poza repo):
 //   * gra/src/game/culture-religion.ts -> clamp, totalAdherents, leadingReligion, dominantReligion,
 //                                         countCitiesWithDominantStateReligion (wyciete po nazwie, wykonane).
-// Zadnych atrap: wszystkie zmienne potrzebne wycietym funkcjom sa parametrami (params jawnie podane,
-// FALLBACK_RELIGION_PARAMS nie jest uzywane - brak wartosci domyslnej w wywolaniu).
+//   * gra/src/main.ts -> countBuildingsForOwner, countTechForOwner (domkniete: wolne zmienne cityBuilt,
+//                        cities, isHuman, ownerResearchedTechs, aiResearchDone podawane jako DANE wejsciowe).
+//   * gra/src/game/capital-capture.ts -> barbarianCapturedPowerGain; gra/src/game/power-objective.ts ->
+//                        battlePowerPointsFromDefeatedEnemy (czyste, wykonane bez zmiennych zewnetrznych).
+// Zadnych atrap logiki: wszystkie zmienne potrzebne wycietym funkcjom sa parametrami (params jawnie podane,
+// FALLBACK_RELIGION_PARAMS nie jest uzywane - brak wartosci domyslnej w wywolaniu). Wyjatek swiadomy:
+// wolne zmienne domkniec main.ts sa danymi wektora, a ich wynik liczy wycieta funkcja weba.
 // Wejscia wektorow sa generowane deterministycznie (LCG z ustalonym ziarnem); oczekiwania = wynik wykonania weba.
 //
 // Uzycie (WEB_ROOT = wynik `git archive <pin> gra/src gra/data | tar -x -C <katalog>`, poza repo; Node 22):
@@ -92,11 +97,70 @@ for (let i = 0; i < 60; i++) {
   });
 }
 
+// --- infra / tech (main.ts, funkcje domkniete) ---
+// Wycinek z main.ts wykonywany z WOLNYMI ZMIENNYMI przekazanymi jako parametry (dane wejsciowe, nie reimplementacja):
+// countBuildingsForOwner: cityBuilt (Map), cities; countTechForOwner: isHuman, ownerResearchedTechs, aiResearchDone.
+const mainLines = readFileSync(path.join(SRC, 'main.ts'), 'utf8').split('\n');
+function execClosure(lines, name, freeNames, freeValues) {
+  const fn = extractFn(lines, name);
+  const body = stripTypeScriptTypes(`function __w() {\n${fn}\nreturn ${name};\n}`, { mode: 'strip' });
+  return new Function(...freeNames, `${body}\nreturn __w();`)(...freeValues);
+}
+
+const infraCases = [];
+for (let i = 0; i < 60; i++) {
+  const cities = Array.from({ length: Math.floor(rnd() * 6) }, () => [1 + Math.floor(rnd() * 6), pick(OWNERS)]);
+  const cityBuilt = new Map();
+  for (let k = Math.floor(rnd() * 7); k > 0; k--) {
+    cityBuilt.set(1 + Math.floor(rnd() * 6), Array.from({ length: Math.floor(rnd() * 5) }, (_, j) => 'b' + j));
+  }
+  const owner = pick(OWNERS);
+  const fn = execClosure(mainLines, 'countBuildingsForOwner', ['cityBuilt', 'cities'],
+    [cityBuilt, cities.map(([id, ownerId]) => ({ id, ownerId }))]);
+  infraCases.push({
+    cityBuilt: [...cityBuilt.entries()].map(([cid, blt]) => [cid, blt.length]),
+    cities, owner,
+    expect: fn(owner),
+  });
+}
+
+const techCases = [];
+for (let i = 0; i < 60; i++) {
+  const owner = pick(OWNERS);
+  const isHuman = owner === 0; // stub isHuman: dane wejsciowe, zapisywane w wektorze
+  const humanTechs = Array.from({ length: Math.floor(rnd() * 6) }, () => pick(['t1', 't2', 't3', 't4']));
+  const aiTechs = rnd() < 0.3 ? null : Array.from({ length: Math.floor(rnd() * 6) }, () => pick(['t1', 't2', 't3', 't4']));
+  const aiResearchDone = new Map();
+  if (aiTechs !== null) aiResearchDone.set(owner, new Set(aiTechs));
+  const fn = execClosure(mainLines, 'countTechForOwner', ['isHuman', 'ownerResearchedTechs', 'aiResearchDone'],
+    [oid => oid === 0, () => new Set(humanTechs), aiResearchDone]);
+  techCases.push({ owner, isHuman, humanTechs, aiTechs, expect: fn(owner) });
+}
+
+// --- zdobycze / bitwy: czyste kroki (capital-capture.ts, power-objective.ts) ---
+const captureLines = readFileSync(path.join(SRC, 'game', 'capital-capture.ts'), 'utf8').split('\n');
+const powerLines = readFileSync(path.join(SRC, 'game', 'power-objective.ts'), 'utf8').split('\n');
+const captureFn = execClosure(captureLines, 'barbarianCapturedPowerGain', [], []);
+const battleFn = execClosure(powerLines, 'battlePowerPointsFromDefeatedEnemy', [], []);
+const LOSTS = [0, 1, 2.5, 12, 100.75, -3, NaN, Infinity, -Infinity];
+const ENEMY_M = [0, 0.4, 1, 3.7, 12, 99.99, -3, NaN, Infinity, -Infinity, 1e6];
+const zdobyczeCases = [];
+for (let i = 0; i < 40; i++) {
+  const lost = pick(LOSTS);
+  const barb = rnd() < 0.5;
+  zdobyczeCases.push({ lost, barb, expect: captureFn(lost, barb) });
+}
+const bitwyCases = ENEMY_M.map(m => ({ m, expect: battleFn(m) }));
+
 const out = {
   _pin: PIN,
-  _zrodla: 'gra/src/game/culture-religion.ts (clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion)',
+  _zrodla: 'gra/src/game/culture-religion.ts (clamp, totalAdherents, leadingReligion, dominantReligion, countCitiesWithDominantStateReligion); gra/src/main.ts (countBuildingsForOwner, countTechForOwner); gra/src/game/capital-capture.ts (barbarianCapturedPowerGain); gra/src/game/power-objective.ts (battlePowerPointsFromDefeatedEnemy)',
   dominant: dominantCases,
   religia: countCases,
+  infra: infraCases,
+  tech: techCases,
+  zdobycze: zdobyczeCases,
+  bitwy: bitwyCases,
 };
 // Niefinityczne liczby (NaN, +-Infinity) nie maja zapisu JSON: kodowane jako napisy, ktore testy Rust parsuja.
 const nonFinite = (_k, v) => {
