@@ -308,3 +308,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zostawione:** `/home/user/reg-wt` (worktree rejestru), `.claude/worktrees/tgt-eval2` (348 MB, nieznany właściciel), pozostałe pliki scratchpada.
 - **Dysk:** 505 MB → 17 GB wolnego.
 - **Stan:** 0 aktywnych Workflow. Tematy #96, #97, #98 padły na braku miejsca i czekają na wznowienie. Kolejny krok: start 4 slotów z kolejki (#96–#98 + decyzja o driverze W8) po zgodzie właściciela na decyzje ABC.
+
+## Przebieg (heartbeat 22:48): wznowienie trzech tematów po sprzątaniu
+- **Dysk:** 17 GB wolnego. Baza: parity-v2 = `23e33793e` (bez zmian).
+- **Start (ponowny, bo padły na braku miejsca):**
+  1. K5LOOP-WIEZE-Q1 (#96) — `wf_5d260e29-0ed`, Operator HAIKU, teraz
+  2. K5LOOP-AUTO-Q1 (#97) — `wf_8b025734-f2e`, Operator HAIKU, teraz
+  3. K5-LOOP-WYLOM-Q1 (#98) — `wf_577e24b7-908`, Operator HAIKU, teraz
+- **Aktywne Workflow (3):** powyższe. Czwarty slot wolny: brak tematu bez decyzji właściciela (driver W8 czeka na ABC; R7K7C-WIRING-Q2 czeka na decyzje A/B/C).
+- **Otwarte decyzje właściciela:** ABC (driver W8, alias `umowa_handlowa`, komenda wypowiedzenia, `zlozeGrants`); R7K7C kryteria 2–3 i polityka braku producenta salda; gameplay: #60, #63, #27, #10, #14–#19.
