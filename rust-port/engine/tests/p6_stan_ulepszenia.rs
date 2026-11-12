@@ -267,3 +267,179 @@ fn new_fields_roundtrip_and_default_is_omitted() {
     let loaded: PlayableState = serde_json::from_str(&text).expect("roundtrip");
     assert_eq!(loaded, full);
 }
+
+// ---------------------------------------------------------------------------------------------------------
+// P6-STAN-ULEPSZENIA (obrona r2): wektory z pinu na PlayableState.
+// Zrodlo: tests/p6_stan_ulepszenia_gen.mjs wykonuje w node wyciete funkcje weba (countImprovementsForOwner,
+// foundingNodesForOwner, countImprovementsForNodes) z pinu 07d2fbd72. Oczekiwana wartosc pochodzi z weba, NIE z
+// producenta Rusta. Mapa w wektorach jest prostokatna (bez dziur), wiec kazda pozycja ma heks jak w PlayableMap.
+// ---------------------------------------------------------------------------------------------------------
+
+const STATE_VECTORS: &str = include_str!("p6_stan_ulepszenia_vectors/vectors.json");
+const STATE_PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
+/// SHA-256 wycietego kodu weba (ten sam zestaw funkcji co `p6_power_improvements_gen.mjs`).
+const STATE_EXTRACTED_SHA256: &str =
+    "3cb3f155986d7c9d141ff171640977328218c5f3a44c325210fd7501fc510b93";
+const STATE_MIN_CASES: usize = 150;
+
+fn json_u16(v: &serde_json::Value, key: &str) -> u16 {
+    v[key].as_u64().unwrap_or_else(|| panic!("pole {key}")) as u16
+}
+
+fn json_layer(v: &serde_json::Value) -> PlayableHexImprovement {
+    PlayableHexImprovement {
+        position: PositionDto::new(json_u16(v, "x"), json_u16(v, "y")),
+        ulepszenie: v
+            .get("ulepszenie")
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_owned),
+        ulepszenia: v
+            .get("ulepszenia")
+            .and_then(serde_json::Value::as_array)
+            .map(|a| {
+                a.iter()
+                    .filter_map(|x| x.as_str().map(str::to_owned))
+                    .collect()
+            }),
+    }
+}
+
+fn dense_map(w: u16, h: u16) -> PlayableMap {
+    let mut tiles = Vec::new();
+    for y in 0..h {
+        for x in 0..w {
+            tiles.push(PlayableTile {
+                position: PositionDto::new(x, y),
+                terrain: PlayableTerrain::Plains,
+                passable: true,
+            });
+        }
+    }
+    PlayableMap {
+        width: w,
+        height: h,
+        tiles,
+        improvements: Vec::new(),
+    }
+}
+
+fn state_from_vector(template: &PlayableState, case: &serde_json::Value) -> PlayableState {
+    let mut state = template.clone();
+    let arr = |key: &str| -> Vec<serde_json::Value> {
+        case[key]
+            .as_array()
+            .unwrap_or_else(|| panic!("tablica {key}"))
+            .clone()
+    };
+    let mut map = dense_map(json_u16(case, "w"), json_u16(case, "h"));
+    map.improvements = arr("layers")
+        .iter()
+        .chain(arr("off_map").iter())
+        .map(json_layer)
+        .collect();
+    state.map = map;
+    state.cities = arr("cities")
+        .iter()
+        .enumerate()
+        .map(|(i, c)| {
+            city(
+                i as u64 + 1,
+                c["owner"].as_u64().expect("owner"),
+                json_u16(c, "q"),
+                json_u16(c, "r"),
+                c["pop"].as_u64().expect("pop") as u32,
+            )
+        })
+        .collect();
+    state.forts = arr("forts")
+        .iter()
+        .map(|f| PlayableFort {
+            q: f["q"].as_i64().expect("q") as i32,
+            r: f["r"].as_i64().expect("r") as i32,
+            owner_id: PlayerId::new(f["owner"].as_u64().expect("owner")),
+            kind: match f["kind"].as_str().expect("kind") {
+                "fort" => PlayableFortKind::Fort,
+                "posterunek" => PlayableFortKind::Posterunek,
+                other => panic!("rodzaj fortu {other}"),
+            },
+            contested_useless: f
+                .get("contested_useless")
+                .and_then(serde_json::Value::as_bool),
+        })
+        .collect();
+    state
+}
+
+#[test]
+fn state_vectors_from_pin_match_wiring() {
+    let root: serde_json::Value = serde_json::from_str(STATE_VECTORS).expect("vectors.json");
+    assert_eq!(root["pin"].as_str(), Some(STATE_PIN), "pin wektorow");
+    assert_eq!(
+        root["extracted_sha256"].as_str(),
+        Some(STATE_EXTRACTED_SHA256),
+        "SHA-256 wycietego kodu weba"
+    );
+    let cases = root["state"].as_array().expect("state");
+    assert!(
+        cases.len() >= STATE_MIN_CASES,
+        "wymagane >= {STATE_MIN_CASES} przypadkow, jest {}",
+        cases.len()
+    );
+    let template = base_state();
+    let mut nonzero = 0usize;
+    for (i, case) in cases.iter().enumerate() {
+        let state = state_from_vector(&template, case);
+        let owner = case["owner"].as_i64().expect("owner");
+        let expect = case["expect"].as_f64().expect("expect");
+        if expect > 0.0 {
+            nonzero += 1;
+        }
+        match ulepszenia_of(&state, owner) {
+            Component::Provided(v) => assert!(
+                (v - expect).abs() < 1e-9,
+                "przypadek {i} (wlasciciel {owner}): wiring {v}, pin {expect}"
+            ),
+            other => panic!("przypadek {i}: ulepszenia musi byc Provided, jest {other:?}"),
+        }
+    }
+    assert!(
+        nonzero >= 50,
+        "zbyt malo przypadkow niezerowych ({nonzero}); wektory nie testuja liczenia"
+    );
+}
+
+#[test]
+fn fort_changes_shared_border_pairs() {
+    // Dwa panstwa po >2 miasta, rozdzielone pusta przerwa (x = 7..8): bez fortu brak wspolnej granicy.
+    let mut state = base_state();
+    state.map = dense_map(16, 16);
+    state.cities = vec![
+        city(1, 1, 1, 2, 5),
+        city(2, 1, 1, 4, 5),
+        city(3, 1, 1, 6, 5),
+        city(4, 2, 14, 2, 5),
+        city(5, 2, 14, 4, 5),
+        city(6, 2, 14, 6, 5),
+    ];
+    state.forts = Vec::new();
+    let without = shared_border_pairs(&state).expect("pairs bez fortu");
+    assert!(without.is_empty(), "bez fortu: {without:?}");
+    // Fort wlasciciela 1 w przerwie rozszerza jego terytorium do strefy wlasciciela 2.
+    state.forts = vec![fort(9, 4, 1, PlayableFortKind::Fort, None)];
+    let with = shared_border_pairs(&state).expect("pairs z fortem");
+    assert_eq!(with.len(), 1, "fort musi dac wspolna granice: {with:?}");
+    // Fort oznaczony jako bezuzyteczny nie zmienia wyniku.
+    state.forts = vec![fort(9, 4, 1, PlayableFortKind::Fort, Some(true))];
+    assert!(shared_border_pairs(&state)
+        .expect("pairs useless")
+        .is_empty());
+}
+
+#[test]
+fn off_map_layer_contributes_nothing() {
+    // Warstwa poza mapa (web nie ma takiego heksa) nie wnosi ulepszen.
+    let mut state = base_state();
+    let plain = ulepszenia_of(&state, 1);
+    state.map.improvements = vec![layer(40, 40, Some("farma"), Some(&["tarasy"]))];
+    assert_eq!(ulepszenia_of(&state, 1), plain);
+}
