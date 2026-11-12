@@ -188,7 +188,9 @@ async function main() {
     // zwracała index.html na KAŻDY URL, więc żądanie modułu dostawało HTML („Unexpected token '<'").
     const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.wasm': 'application/wasm' };
     server = http.createServer((req, res) => {
-      const rel = decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname).replace(/^\/+/, '') || 'index.html';
+      // Przeglądarka pyta o /favicon.ico; brak ikony nie jest błędem strony gry (204, bez treści).
+      if ((req.url || '').split('?')[0] === '/favicon.ico') { res.writeHead(204).end(); return; }
+      const rel =decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname).replace(/^\/+/, '') || 'index.html';
       const file = path.resolve(out, rel);
       if (!file.startsWith(path.resolve(out) + path.sep)) { res.writeHead(403).end(); return; }
       fs.readFile(file, (err, data) => {
