@@ -242,15 +242,17 @@ fn tick_then_brake_matches_web_for_border_pairs_by_epoch() {
 }
 
 #[test]
-fn production_power_inputs_mark_unproduced_components_missing_not_zero() {
+fn production_power_inputs_have_producers_for_all_stored_components() {
     let state = state_with(None, "rzymianie", "kamien");
     let raw = power_raw_for_owner(&state, 2, 1.0).expect("raw");
     let p = civ_engine::data::units_combat::parse_power_params().expect("params");
     let coeffs = PowerCoeffs::from_params(&p);
-    // Skladniki bez producenta: Missing (nie Provided(0), nie stala zalozenia).
-    for c in [raw.budynki, raw.tech_zbadane, raw.miasta_jednosc_religii] {
-        assert_eq!(c, Component::Missing);
-    }
+    // W8 r6 klocek 3 (WIRE-WAR-STORES): zamiana oczekiwanego Missing na wartosci z magazynow.
+    // Puste magazyny budynkow i badan = Provided(0) (realny stan pusty); religia: 1 miasto o populacji 1
+    // z domyslnym stanem religii cywilizacji wlasciciela (resolveCityReligionState) = dominuje => 1.
+    assert_eq!(raw.budynki, Component::Provided(0.0));
+    assert_eq!(raw.tech_zbadane, Component::Provided(0.0));
+    assert_eq!(raw.miasta_jednosc_religii, Component::Provided(1.0));
     // W8 r6 klocek 2 (WIRE-WAR-POP): ludki/rekruci/terytorium/kultura z populacji i kultury miast (stan).
     // Zamiana oczekiwanego Missing na wartosc: 1 miasto o populacji 1 w epoce 1.
     assert!(matches!(raw.suma_ludkow, Component::Provided(v) if v == 1.0));
@@ -264,15 +266,10 @@ fn production_power_inputs_mark_unproduced_components_missing_not_zero() {
     assert_eq!(raw.bitwy_pkt_sum, Component::ExplicitZero);
     assert_eq!(raw.ulepszenia_terenu, Component::ExplicitZero);
     assert_eq!(raw.zdobycze_power, Component::ExplicitZero);
+    assert!(UNPRODUCED_POWER_COMPONENTS.is_empty());
     for model in [BattlePowerModel::FlatCount, BattlePowerModel::EnemyMSum] {
-        let err = objective_power_for_owner(&raw, &coeffs, model, &Default::default())
-            .expect_err("STRICT: Missing => blad");
-        // Egzekwowanie KNOWN_GAPS: lista kluczy = dokladnie to, czego brakuje w produkcji.
-        let mut got = err.0.clone();
-        let mut want: Vec<&str> = UNPRODUCED_POWER_COMPONENTS.to_vec();
-        got.sort_unstable();
-        want.sort_unstable();
-        assert_eq!(got, want, "{model:?}");
+        objective_power_for_owner(&raw, &coeffs, model, &Default::default())
+            .expect("wszystkie skladniki Provided/ExplicitZero => brak bledu STRICT");
     }
     for (key, reason) in EXPLICIT_ZERO_REASONS {
         assert!(has_pin_file_line_ref(reason), "{key}: brak plik:linia pinu");
@@ -354,9 +351,9 @@ fn production_owner_epochs_come_from_the_epoch_producer_not_ad_hoc() {
 }
 
 #[test]
-fn production_path_fails_with_explicit_blockers_for_ai_with_cities() {
-    // W8 r6: build_war_inputs przechodzi (epoki z producenta); NASTEPNY bloker to brakujace skladniki mocy
-    // (STRICT w run_war_turn) zamiast cichych zer.
+fn production_path_passes_for_ai_with_cities_after_stores() {
+    // W8 r6 klocek 3: build_war_inputs i run_war_turn (STRICT) przechodza dla AI z miastami;
+    // zamiana oczekiwanego `PowerComponentsMissing` na Ok.
     let state = state_with(None, "rzymianie", "kamien");
     let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
     let cfg = production_config(&state).expect("config");
@@ -367,17 +364,7 @@ fn production_path_fails_with_explicit_blockers_for_ai_with_cities() {
         inputs: &inputs,
         config: &cfg,
     };
-    match run_war_turn(&mut ctx) {
-        Err(WarTurnError::PowerComponentsMissing(owner, keys)) => {
-            assert_eq!(owner, 1);
-            let mut want: Vec<&str> = UNPRODUCED_POWER_COMPONENTS.to_vec();
-            let mut got = keys;
-            want.sort_unstable();
-            got.sort_unstable();
-            assert_eq!(got, want);
-        }
-        other => panic!("oczekiwano PowerComponentsMissing, jest {other:?}"),
-    }
+    run_war_turn(&mut ctx).expect("faza wojny bez blokerow");
 }
 
 #[test]

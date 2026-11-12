@@ -168,7 +168,7 @@ pub use map_generator::{
 };
 pub use playable::{
     PlayableAdvancedParams, PlayableCity, PlayableError, PlayableGame, PlayableMap, PlayablePlayer,
-    PlayableState, PlayableTerrain, PlayableTile, PlayableUnit, PlayableUnitKind,
+    PlayableState, PlayableStores, PlayableTerrain, PlayableTile, PlayableUnit, PlayableUnitKind,
     PlayableWorldDensity, StartGameParams, PLAYABLE_STATE_VERSION,
 };
 pub use player::Player;

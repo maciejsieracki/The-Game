@@ -41,11 +41,18 @@ use super::brake_power_army::{
     armia_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
 };
 use super::brake_power_producers::{apply_produced, produce_for_owner, ProducerInputs};
+use super::brake_power_rest::{
+    count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
+    ReligionCity,
+};
 use super::diplomacy_truce::PairMetaWeb;
 use super::diplomacy_war_peace_profile::{
     brake_relation_threshold, resolve_war_peace_profile, war_peace_params,
 };
 use super::order_effects_culture::PressureCity;
+use super::order_effects_culture::{
+    civ_religion_for_key, load_religion_params, resolve_city_religion_state,
+};
 use super::playable::{PlayableMap, PlayableState, PlayableTerrain, PlayableUnitKind};
 use super::recruitment::manpower::{civ_manpower_max_mult, civ_manpower_mults, ManpowerCity};
 use super::terrain::city_territory_radius;
@@ -56,6 +63,7 @@ use super::trade::{
 };
 use super::turn_war_epoch::{epochs_with_sources, OwnerEpochError};
 use super::turn_war_pipeline::{PeaceLockFacts, WarTurnConfig, WarTurnInputs};
+use super::types::{porzadek::society_params, Difficulty};
 use super::war_turn_state::WarTurnState;
 
 /// Web `WAR_RULES_MULTIWAR_ENABLED` (war-rules-multiwar.ts:50, pin 07d2fbd72) = `true`.
@@ -83,15 +91,16 @@ pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 3] = [
 ];
 
 /// Skladniki mocy bez producenta w `PlayableState` (klucze web `breakdown.key`); produkcyjne wejscia
-/// ustawiaja je na `Component::Missing` (test egzekwuje zgodnosc z `run_war_turn`).
-pub const UNPRODUCED_POWER_COMPONENTS: [&str; 3] = ["infra", "tech", "religia"];
+/// ustawiaja je na `Component::Missing` (test egzekwuje zgodnosc z `run_war_turn`). Od r6 klocek 3
+/// (WIRE-WAR-STORES) lista jest PUSTA: infra, tech i religia maja producentow z `PlayableStores`.
+pub const UNPRODUCED_POWER_COMPONENTS: [&str; 0] = [];
 
 /// Znane luki producentow (NIE_ZMIERZONO wzgledem web) = lista producentow potrzebnych w r6.
 pub const KNOWN_GAPS: [&str; 5] = [
     "epoka wlasciciela: producent turn_war_epoch (web empireEpochForOwner main.ts:2419); brak badan/era per owner w PlayableState => jawny fallback gameStartEra (main.ts:2415) i czlowiek DerivedFromStartEra; LUKA: epoka STATYCZNA miedzy turami (awans badan nie jest odtwarzany: web syncOwnerEraFromResearch / reconcilePlayerEraFromResearch main.ts:2521)",
     "wspolna granica: producent shared_border_pairs (web karaWspolnaGranica main.ts:22876 -> ownersShareLandBorderLive main.ts:5690 -> ownersHaveSharedLandBorder trade-routes.ts:264) na wezlach miast z populacji (cityTerritoryRadius); LUKA: PlayableState nie ma fortow/posterunkow (brak wezlow forto-terytorium), a pozycja x,y mapy jest czytana jako (q,r) jak w ManpowerCity (NIE_ZMIERZONO zgodnosc siatki z mapa weba)",
     "populacja i kultura miast sa polami stanu (PlayableCity.population/culture), ale NIE ROSNA miedzy turami (brak fazy Economy); ludki, rekruci, terytorium, kultura licza sie z tych wartosci; manpower biezacy miasta nie jest w stanie (web undefined = max)",
-    "budynki (infra), tech zbadane, religia panstwowa: brak magazynow => infra, tech, religia = Missing",
+    "budynki (infra), tech zbadane, religia: magazyny PlayableStores (buildings_by_city, researched_techs_by_owner, religion_by_city) sa PUSTE w produkcyjnym stanie i nie zmieniaja sie miedzy turami (brak Economy/badan); puste = Provided(0) jako realny stan pusty, nie brak danych. Religia panstwowa = religia cywilizacji (civs.json), trudnosc = Normal (difficulty:NOT_IMPLEMENTED w StartGameParams); stan religii miasta bez wpisu = default z populacji (resolveCityReligionState)",
     "TickContext: handel, religia, dobra wola, wiarygodnosc = domyslne (PlayableState ich nie niesie)",
 ];
 
@@ -280,10 +289,34 @@ pub fn power_raw_for_owner(
         owner_id,
         &|q, r| map_has_hex(&state.map, q, r),
     ));
-    // infra / tech / religia: brak magazynow w PlayableState => brak producenta (nie Provided(0)).
-    raw.budynki = Component::Missing;
-    raw.tech_zbadane = Component::Missing;
-    raw.miasta_jednosc_religii = Component::Missing;
+    // infra / tech / religia: producenci POWER-REST na magazynach `PlayableStores`. Pusty magazyn to realny
+    // stan pusty (stan nie symuluje budowy ani badan), wiec `Provided(0)` nie jest brakiem danych.
+    let stores = &state.stores;
+    let city_built: Vec<(u64, usize)> = stores
+        .buildings_by_city
+        .iter()
+        .map(|(id, blt)| (*id, blt.len()))
+        .collect();
+    let city_owners: Vec<(u64, i64)> = state
+        .cities
+        .iter()
+        .map(|c| (c.id.get(), c.owner_id.get() as i64))
+        .collect();
+    raw.budynki =
+        Component::Provided(count_buildings_for_owner(&city_built, &city_owners, owner_id) as f64);
+    let is_human = state
+        .players
+        .iter()
+        .any(|p| p.is_human && p.id.get() as i64 == owner_id);
+    let owner_key = u64::try_from(owner_id).ok();
+    let techs_len = owner_key
+        .and_then(|k| stores.researched_techs_by_owner.get(&k))
+        .map(|t| t.len());
+    raw.tech_zbadane =
+        Component::Provided(
+            count_tech_for_owner(is_human, techs_len.unwrap_or(0), techs_len) as f64,
+        );
+    raw.miasta_jednosc_religii = Component::Provided(religion_unity_for_owner(state, owner_id)?);
 
     // armia: Wojownik z units.json (jedyny rodzaj jednostki w PlayableState).
     let def = warrior_def()?;
@@ -305,6 +338,81 @@ pub fn power_raw_for_owner(
     raw.ulepszenia_terenu = Component::ExplicitZero;
     raw.zdobycze_power = Component::ExplicitZero;
     Ok(raw)
+}
+
+/// Web `civs.json` jako `Value` (wejscie `civReligionForKey`).
+fn civs_value() -> &'static Value {
+    static CIVS: OnceLock<Value> = OnceLock::new();
+    CIVS.get_or_init(|| {
+        serde_json::from_str(crate::data::civilizations::CIVS_JSON).expect("civs.json must parse")
+    })
+}
+
+/// Producent `religia` (web `countCitiesWithDominantStateReligion`, main.ts:2773): religia panstwowa =
+/// religia cywilizacji wlasciciela (`ownerReligionForOwnerId`, main.ts:5535), stan miasta =
+/// `resolveCityReligionState(cityRelig.get(id), population, religia wlasciciela)` (main.ts:5539),
+/// prog dominacji z `loadReligionParams(societyParams, trudnosc)`; trudnosc = Normal (luka KNOWN_GAPS).
+fn religion_unity_for_owner(state: &PlayableState, owner_id: i64) -> Result<f64, WarInputsError> {
+    let society = society_params();
+    let civs = civs_value();
+    let religion_of = |oid: i64| -> Result<Option<String>, WarInputsError> {
+        let player = state
+            .players
+            .iter()
+            .find(|p| p.id.get() as i64 == oid)
+            .ok_or(WarInputsError::UnknownOwner(oid))?;
+        Ok(civ_religion_for_key(
+            Some(player.civilization.as_str()),
+            Some(society),
+            Some(civs),
+        ))
+    };
+    // Wlasciciel bez miast: web liczy 0 miast z dominujaca religia (religia panstwowa nieistotna);
+    // brak wpisu w `players` blokuje dopiero wlasciciela Z miastami (jak `pair_params_for`).
+    if !state
+        .cities
+        .iter()
+        .any(|c| c.owner_id.get() as i64 == owner_id)
+    {
+        return Ok(0.0);
+    }
+    let own_religion = religion_of(owner_id)?;
+    let params = load_religion_params(Some(society), Difficulty::Normal);
+    let mut states: Vec<(i64, ReligionState)> = Vec::new();
+    for c in state
+        .cities
+        .iter()
+        .filter(|c| c.owner_id.get() as i64 == owner_id)
+    {
+        let stored = state
+            .stores
+            .religion_by_city
+            .get(&c.id.get())
+            .map(|m| ReligionState {
+                counts: m.iter().map(|(k, v)| (k.clone(), f64::from(*v))).collect(),
+            });
+        states.push((
+            owner_id,
+            resolve_city_religion_state(
+                stored.as_ref(),
+                f64::from(c.population),
+                own_religion.as_deref(),
+            ),
+        ));
+    }
+    let cities: Vec<ReligionCity<'_>> = states
+        .iter()
+        .map(|(o, s)| ReligionCity {
+            owner_id: *o,
+            religion_state: Some(s),
+        })
+        .collect();
+    Ok(count_cities_with_dominant_state_religion(
+        &cities,
+        owner_id,
+        own_religion.as_deref(),
+        params.prog_dominacji_pct,
+    ))
 }
 
 fn parse_pair_key(key: &str) -> Result<PairKey, WarInputsError> {

@@ -10,7 +10,7 @@ use civ_engine::domain::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, shared_border_pairs,
     UNPRODUCED_POWER_COMPONENTS,
 };
-use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext, WarTurnError};
+use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use civ_engine::domain::war_turn_state::WarTurnState;
 use civ_engine::domain::{CityId, PlayerId, PositionDto};
 use serde_json::Value;
@@ -145,24 +145,21 @@ fn territory_counts_hexes_in_union_of_city_discs_clipped_to_the_map() {
 }
 
 #[test]
-fn components_without_state_data_stay_missing_not_zero() {
+fn stored_components_are_provided_after_stores() {
+    // W8 r6 klocek 3 (WIRE-WAR-STORES): zamiana oczekiwanego Missing (infra/tech/religia) na Provided
+    // z magazynow; szczegoly w tests/p6_wire_war_stores.rs.
     let state = state_with(vec![city(1, 1, 5, 5, 1, 0), city(2, 2, 20, 20, 1, 0)]);
     let raw = power_raw_for_owner(&state, 2, 1.0).expect("raw");
-    assert_eq!(raw.budynki, Component::Missing);
-    assert_eq!(raw.tech_zbadane, Component::Missing);
-    assert_eq!(raw.miasta_jednosc_religii, Component::Missing);
-    let mut missing = vec!["infra", "tech", "religia"];
-    missing.sort_unstable();
-    let mut want = UNPRODUCED_POWER_COMPONENTS.to_vec();
-    want.sort_unstable();
-    assert_eq!(missing, want);
+    assert_eq!(raw.budynki, Component::Provided(0.0));
+    assert_eq!(raw.tech_zbadane, Component::Provided(0.0));
+    assert!(matches!(raw.miasta_jednosc_religii, Component::Provided(_)));
+    assert!(UNPRODUCED_POWER_COMPONENTS.is_empty());
 }
 
 #[test]
-fn war_turn_with_ai_cities_is_blocked_only_by_infra_tech_religia() {
-    // (3) Po klocku 2 run_war_turn (STRICT) blokuja WYLACZNIE infra/tech/religia (brak magazynow w stanie);
-    // ludki, rekruci, terytorium i kultura nie. Wspolna granica nie jest blokerem (build_war_inputs przechodzi).
-    // `advance_turn` produkcyjny: patrz test w `playable.rs` (komunikat zawiera "infra").
+fn war_turn_with_ai_cities_passes_strict_after_stores() {
+    // Po klocku 3 run_war_turn (STRICT) nie ma blokerow skladnikow mocy; zamiana oczekiwanego
+    // `PowerComponentsMissing` na Ok.
     let state = state_with(vec![
         city(1, 1, 10, 10, 1, 0),
         city(2, 1, 12, 10, 1, 0),
@@ -180,15 +177,7 @@ fn war_turn_with_ai_cities_is_blocked_only_by_infra_tech_religia() {
         inputs: &inputs,
         config: &cfg,
     };
-    match run_war_turn(&mut ctx) {
-        Err(WarTurnError::PowerComponentsMissing(_, mut keys)) => {
-            keys.sort_unstable();
-            let mut want = UNPRODUCED_POWER_COMPONENTS.to_vec();
-            want.sort_unstable();
-            assert_eq!(keys, want);
-        }
-        other => panic!("oczekiwano PowerComponentsMissing, jest {other:?}"),
-    }
+    run_war_turn(&mut ctx).expect("faza wojny bez blokerow");
 }
 
 // --- (4) wspolna granica: wektory z pinu --------------------------------------------------------------------

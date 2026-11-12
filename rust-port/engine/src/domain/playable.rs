@@ -6,6 +6,7 @@
 //! separate domains and are not pulled into this vertical slice.
 
 use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
 use std::{error::Error, fmt};
 
 use super::turn_war_inputs::{build_war_inputs, production_config};
@@ -353,6 +354,37 @@ pub struct PlayableState {
     /// P6-WIRE-WAR-STATE (D1=B): stan wojny tury; pusty => pole pomijane w DTO i zapisie.
     #[serde(default, skip_serializing_if = "WarTurnState::is_default")]
     pub war: WarTurnState,
+    /// P6-WIRE-WAR-STORES (W8 r6 klocek 3): magazyny budynkow, badan i religii miast; pusty => pole
+    /// pomijane w DTO i zapisie (zapis sprzed zmiany ladowany przez `#[serde(default)]`).
+    #[serde(default, skip_serializing_if = "PlayableStores::is_default")]
+    pub stores: PlayableStores,
+}
+
+/// P6-WIRE-WAR-STORES: minimalne magazyny stanu potrzebne producentom `infra` / `tech` / `religia`
+/// skladnikow mocy. Klucze to surowe id (`CityId` / `PlayerId` jako `u64`). `PlayableState` NIE symuluje
+/// ekonomii ani badan, wiec magazyny zmieniaja sie wylacznie przez zapis / budowe stanu (znana luka):
+/// PUSTY magazyn to REALNY stan pusty (miasto bez budynkow, wlasciciel bez zbadanych technologii), nie
+/// brak danych. Dane juz wyprowadzalne ze stanu NIE sa duplikowane: religia panstwowa wlasciciela to
+/// religia jego cywilizacji (web `ownerReligionForOwnerId`, main.ts:5535), liczona z `players`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableStores {
+    /// Web `cityBuilt` (id miasta -> `blt`, lista id budynkow; `blt.length` zasila `infra`).
+    #[serde(default)]
+    pub buildings_by_city: BTreeMap<u64, Vec<String>>,
+    /// Web `ownerResearchedTechs(owner)` (czlowiek) / `aiResearchDone.get(owner)` (AI): zbior zbadanych technologii.
+    #[serde(default)]
+    pub researched_techs_by_owner: BTreeMap<u64, BTreeSet<String>>,
+    /// Web `cityRelig` (id miasta -> religia -> wyznawcy). Brak wpisu = web `cityRelig.get` undefined:
+    /// stan miasta wyprowadza `resolveCityReligionState` (religia cywilizacji wlasciciela x populacja).
+    #[serde(default)]
+    pub religion_by_city: BTreeMap<u64, BTreeMap<String, u32>>,
+}
+
+impl PlayableStores {
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
 }
 
 impl PlayableState {
@@ -372,6 +404,7 @@ impl PlayableState {
             last_advanced_phases: Vec::new(),
             status: "Brak aktywnej sesji.".to_owned(),
             war: WarTurnState::default(),
+            stores: PlayableStores::default(),
         }
     }
 }
@@ -482,6 +515,7 @@ impl PlayableGame {
                 last_advanced_phases: Vec::new(),
                 status,
                 war: WarTurnState::default(),
+                stores: PlayableStores::default(),
             },
             phase_queue: EventQueue::new(),
         };
@@ -770,26 +804,15 @@ mod war_pipeline_advance_tests {
     }
 
     #[test]
-    fn advance_turn_with_ai_city_fails_explicitly_on_missing_power_components_and_restores_state() {
-        // r6: epoka wlasciciela ma producenta (turn_war_epoch); NASTEPNY bloker (KNOWN_GAPS) to skladniki
-        // mocy bez producenta (infra, tech, religia; ludki/rekruci/terytorium/kultura maja producentow z populacji miast) => jawny blad.
+    fn advance_turn_with_ai_city_passes_three_turns_after_stores() {
+        // r6 klocek 3 (WIRE-WAR-STORES): infra/tech/religia maja producentow z `PlayableStores` (puste
+        // magazyny = realny stan pusty), wiec ostatnie blokery `advance_turn` z AI z miastami znikaja.
+        // Zamiana oczekiwania z r6 klocek 2 (`PowerComponentsMissing` z "infra") na przejscie 3 tur.
         let mut game = game_with_ai_city();
-        let queue_len = game.pending_phase_count();
-        let before = game.state().war.clone();
-        let err = game.advance_turn().expect_err("brak skladnikow mocy");
-        match &err {
-            PlayableError::WarTurn(message) => {
-                assert!(
-                    message.contains("skladniki mocy bez zrodla") && message.contains("infra"),
-                    "{message}"
-                );
-                assert!(!message.contains("epoki wlasciciela"), "{message}");
-            }
-            other => panic!("oczekiwano WarTurn, jest {other:?}"),
+        for expected in 2..=4 {
+            game.advance_turn().expect("advance_turn z AI z miastami");
+            assert_eq!(game.state().turn, expected);
         }
-        assert_eq!(game.state().turn, 1, "tura sie nie zwieksza");
-        assert_eq!(game.pending_phase_count(), queue_len, "kolejka cofnieta");
-        assert_eq!(game.state().war, before, "stan wojny bez zmian");
     }
 
     #[test]

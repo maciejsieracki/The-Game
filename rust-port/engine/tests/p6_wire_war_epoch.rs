@@ -14,7 +14,7 @@ use civ_engine::domain::turn_war_inputs::{
     build_war_inputs, epochs_from_state, production_config, shared_border_pairs,
     UNPRODUCED_POWER_COMPONENTS,
 };
-use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext, WarTurnError};
+use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use civ_engine::domain::war_turn_state::WarTurnState;
 use civ_engine::domain::{CityId, PlayerId, PositionDto};
 use serde_json::Value;
@@ -232,8 +232,10 @@ fn build_war_inputs_no_longer_fails_on_the_epoch_producer() {
 }
 
 #[test]
-fn next_blocker_is_power_components_missing_reported_explicitly() {
-    // Po epokach i populacji NASTEPNY bloker: budynki/tech/religia = Missing (STRICT, nie zera).
+fn power_components_no_longer_block_after_stores() {
+    // W8 r6 klocek 3 (WIRE-WAR-STORES): zamiana oczekiwanego `PowerComponentsMissing` (infra/tech/religia)
+    // na przejscie fazy; UNPRODUCED_POWER_COMPONENTS jest puste.
+    assert!(UNPRODUCED_POWER_COMPONENTS.is_empty());
     let state = state_with("kamien", &[(1, 2), (2, 5)]);
     let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
     let cfg = production_config(&state).expect("config");
@@ -244,16 +246,7 @@ fn next_blocker_is_power_components_missing_reported_explicitly() {
         inputs: &inputs,
         config: &cfg,
     };
-    match run_war_turn(&mut ctx) {
-        Err(WarTurnError::PowerComponentsMissing(owner, mut keys)) => {
-            assert_eq!(owner, 1);
-            let mut want: Vec<&str> = UNPRODUCED_POWER_COMPONENTS.to_vec();
-            want.sort_unstable();
-            keys.sort_unstable();
-            assert_eq!(keys, want);
-        }
-        other => panic!("oczekiwano PowerComponentsMissing, jest {other:?}"),
-    }
+    run_war_turn(&mut ctx).expect("faza bez blokerow skladnikow mocy");
 }
 
 #[test]
