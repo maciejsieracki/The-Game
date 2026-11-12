@@ -456,9 +456,17 @@ const OVR_FIELDS = ['meleeAttack', 'missileAttack', 'weaponDamage', 'meleeDefenc
 // Wiersze procarzy (Typ 'Slinger' w units.json PINU): tylko 2 z 75, wiec przy losowaniu jednorodnym pokrycie bylo 5 przypadkow.
 const SLINGER_IDX = UNIT_ROWS.map((u, i) => [u, i]).filter(([u]) => u.Typ === 'Slinger').map(([, i]) => i);
 if (SLINGER_IDX.length < 1) throw new Error('units.json pinu: brak wierszy Typ=Slinger');
+// Lucznicy (Typ Distance, Jednostka zaczyna sie od "Łucznik", units.json PINU): 5 z 75 wierszy. Przy losowaniu
+// jednorodnym dla ciosu dystansowego licznik lucznikRanged spadl do 2 (K5I2B2-POKRYCIE), wiec osobna gałąź.
+const LUCZNIK_IDX = UNIT_ROWS.map((u, i) => [u, i]).filter(([u]) => u.Typ === 'Distance' && /^łucznik/i.test(String(u.Jednostka).trim())).map(([, i]) => i);
+if (LUCZNIK_IDX.length < 1) throw new Error('units.json pinu: brak wierszy Distance Łucznik');
 function unitDraw(ranged = false) {
-  // Atakujacy w ciosie dystansowym: 75% losowany z procarzy (K5I2b2: >= 100 przypadkow Slinger; 50% dawalo 98).
-  const idx = ranged && chance(0.75) ? pick(SLINGER_IDX) : int(0, UNIT_ROWS.length - 1);
+  // Atakujacy w ciosie dystansowym: 70% procarze (K5I2b2: >= 100 przypadkow Slinger), z reszty 50% lucznicy
+  // (>= 14 przypadkow lucznikRanged), reszta jednorodnie.
+  let idx;
+  if (ranged && chance(0.7)) idx = pick(SLINGER_IDX);
+  else if (ranged && chance(0.5)) idx = pick(LUCZNIK_IDX);
+  else idx = int(0, UNIT_ROWS.length - 1);
   const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity, -0]) } : {};
   return {
     idx,
@@ -675,6 +683,8 @@ const cov = {
   unitRowsUsed: new Set(cases.flatMap((c) => [c.in.unitA.idx, c.in.unitD.idx])).size,
   unitRowsTotal: UNIT_ROWS.length,
   unitOverride: cases.filter((c) => Object.keys(c.in.unitA.ovr).length + Object.keys(c.in.unitD.ovr).length > 0).length,
+  wallNanInf: cases.filter((c) => ['NaN', 'Infinity', '-Infinity'].includes(c.in.wallTotal)).length,
+  wallNegZeroBonus: cases.filter((c) => c.in.wallBonus === '-0').length,
   hungerOrGoldDeficit: cases.filter((c) => c.in.unitA.hungry || c.in.unitD.hungry || c.in.unitA.gold || c.in.unitD.gold).length,
 };
 
