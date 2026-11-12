@@ -310,3 +310,127 @@ fn doktryna_i_mur_sa_poza_zakresem_i_zapisane() {
     assert_eq!(st.def[0].c.hp, 50.0);
     assert_eq!(body.unported, vec![(atk0(), "oblezenie")]);
 }
+
+// --- K5LOOP-KONTRATAK, obrona r1 (zarzuty 1 i 3 z 02-evaluator.md) ---
+// Każdy warunek `_defenderCounters` (battleScene.ts:9079-9081) jest sprawdzany osobno: obrońca w danym stanie
+// NIE kontratakuje. Usunięcie któregokolwiek warunku w `counter_strike` musi dać FAIL (mutacje w raporcie obrony).
+
+fn counter_guard_case(def: CombatUnit) -> ProdBody<SequenceRolls> {
+    let mut body = body_with(act(0, 0, true), Some(melee_blow()));
+    let mut st = state(cu(100.0, 100.0), def);
+    let dur = body.start(atk0(), &st);
+    assert_eq!(dur, 800.0, "unported={:?}", body.unported);
+    body.complete(atk0(), &mut st);
+    body
+}
+
+/// Obronca routed / fadingOut NIE jest celem zwarcia: `start` odrzuca cel (filtr `melee_target`, jak
+/// `_targetInRange`, battleScene.ts:8291-8294), więc cios i kontratak się nie wykonują. Warunki `routed` /
+/// `fading_out` w `counter_strike` są w tym porcie nieosiągalne (stan obrońcy nie zmienia się między `start`
+/// a `complete`), zostają dla wierności pinowi. Ten test pilnuje obserwowalnego zachowania: zero ciosów i kontrataków.
+fn cel_wyeliminowany_odrzucony(def: CombatUnit) {
+    let mut body = body_with(act(0, 0, true), Some(melee_blow()));
+    let st = state(cu(100.0, 100.0), def);
+    assert_eq!(
+        body.start(atk0(), &st),
+        0.0,
+        "cel routed/fadingOut odrzucony w start"
+    );
+    assert!(
+        body.counters.is_empty(),
+        "brak kontrataku: {:?}",
+        body.counters
+    );
+    assert!(body.blows.is_empty(), "brak ciosu: {:?}", body.blows);
+}
+
+#[test]
+fn kontratak_routed_obronca_nie_jest_celem() {
+    let mut def = cu(50.0, 100.0);
+    def.routed = true;
+    cel_wyeliminowany_odrzucony(def);
+}
+
+#[test]
+fn kontratak_fading_out_obronca_nie_jest_celem() {
+    let mut def = cu(50.0, 100.0);
+    def.fading_out = true;
+    cel_wyeliminowany_odrzucony(def);
+}
+
+#[test]
+fn kontratak_pomijany_gdy_obronca_hp_zero() {
+    // Stan spoza `dead`: hp <= 0 bez flagi zabicia (warunek `defender.bu.hp <= 0` z pinu).
+    let def = cu(0.0, 100.0);
+    let body = counter_guard_case(def);
+    assert!(
+        body.counters.is_empty(),
+        "obronca z hp<=0 nie kontratakuje: {:?}",
+        body.counters
+    );
+    assert!(!body
+        .unported
+        .iter()
+        .any(|(_, t)| t.starts_with("kontratak-")));
+}
+
+/// Budżet `DefenderCounterBudget` (pin: `beginTurn`; tu wzrost `round_no` jak w `begin_turn`, turnseq:235):
+/// w tej samej turze drugi cios w obrońcę nie daje drugiego kontrataku; w następnej turze budżet jest odnawiany.
+/// Pięć rzutów: cios 1, kontratak 1, cios 2, cios 3, kontratak 3.
+#[test]
+fn kontratak_budzet_odnawia_sie_miedzy_turami() {
+    let a = ProdUnit {
+        activate: act(0, 0, true),
+        melee_target: Some(0),
+        blow: Some(melee_blow()),
+        counter_blows: vec![melee_blow()],
+        body_ms: 800.0,
+        facing: 0.0,
+    };
+    let d = ProdUnit {
+        activate: act(1, 0, false),
+        melee_target: None,
+        blow: None,
+        counter_blows: vec![melee_blow()],
+        body_ms: 0.0,
+        facing: 0.0,
+    };
+    let rolls = SequenceRolls::new(vec![ROLL; 5]);
+    let mut body = ProdBody::new([vec![a], vec![d]], scene(), rolls);
+    let mut st = state(cu(100.0, 100.0), cu(50.0, 100.0));
+
+    // Tura 1: pierwszy cios -> kontratak; drugi cios tej samej tury -> bez kontrataku.
+    body.start(atk0(), &st);
+    body.complete(atk0(), &mut st);
+    assert_eq!(
+        body.counters.len(),
+        1,
+        "pierwszy cios w turze daje kontratak: {:?}",
+        body.counters
+    );
+    assert!(
+        st.def[0].c.hp > 0.0 && !st.def[0].c.dead,
+        "obronca przezywa do drugiego ciosu"
+    );
+    body.start(atk0(), &st);
+    body.complete(atk0(), &mut st);
+    assert_eq!(
+        body.counters.len(),
+        1,
+        "drugi cios w tej samej turze nie daje kontrataku"
+    );
+
+    // Tura 2: budżet odnowiony, kontratak znów dozwolony.
+    st.round_no += 1;
+    assert!(
+        st.def[0].c.hp > 0.0 && !st.def[0].c.dead,
+        "obronca przezywa do tury 2"
+    );
+    body.start(atk0(), &st);
+    body.complete(atk0(), &mut st);
+    assert_eq!(
+        body.counters.len(),
+        2,
+        "po odnowieniu budżetu w turze 2 jest kontratak"
+    );
+}
