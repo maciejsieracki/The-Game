@@ -93,5 +93,50 @@
   },
   "pokazuje11_6": true,
   "pokazuje90_200": true,
+  "pokazujeRespekt89": true,
+  "pokazujeMasz50": true,
+  "okno_wojna": {
+    "buttons": [],
+    "relRowsRaw": [],
+    "linieRelacja": [
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)",
+      "RELACJE Z TOBĄ",
+      "Relacja",
+      "RELACJE Z INNYMI"
+    ],
+    "linieZaufanie": [
+      "zablokowana — wymaga Zaufania 70 (masz 0.6)",
+      "zablokowana — wymaga Zaufania 50 (masz 0.6)",
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)",
+      "Zaufanie",
+      "(Zaufanie + Respekt)"
+    ],
+    "linieRespekt": [
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)",
+      "Respekt",
+      "(Zaufanie + Respekt)"
+    ],
+    "linieWojna": [
+      "WOJNA",
+      "Potencjał sojuszniczy",
+      "Propozycja pokoju / zawieszenia broni",
+      "Pakt o nieagresji",
+      "zablokowany — trwa wojna",
+      "Sojusz (pełny lub defensywny)",
+      "zablokowany — trwa wojna",
+      "zablokowane — trwa wojna",
+      "handel niedostępny w wojnie",
+      "handel niedostępny w wojnie",
+      "Wspólny wróg / namowa do wojny",
+      "zablokowane — wymaga pokoju (trwa wojna)"
+    ],
+    "linieMoc": [
+      "MOC",
+      "Moc militarna",
+      "Moc militarna"
+    ]
+  },
+  "pokazuje11_6_wojna": false,
+  "pokazuje90_200_wojna": true,
   "consoleErrors": []
 }

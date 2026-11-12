@@ -172,15 +172,39 @@ async function main() {
     console.log('  [raw] linie Zaufanie:', JSON.stringify(ui.linieZaufanie));
     console.log('  [raw] linie Respekt:', JSON.stringify(ui.linieRespekt));
     console.log('  [raw] linie wojna/pokoj:', JSON.stringify(ui.linieWojna));
+    // Asercje na OBIE wartosci w tym samym oknie (zarzut 4 Evaluatora): 11,6 w wierszu PW i 90 / 200 w audiencji.
     const has116 = ui.relRowsRaw.some(t => /11,6/.test(t));
     const has90 = ui.linieRelacja.some(t => /90\s*\/\s*200/.test(t));
-    assert('wiersz „Wpływ Relacji na deal” pokazuje wartosc z przecinkiem (zapisana)', ui.relRowsRaw.length >= 1, ui.relRowsRaw);
-    assert('okno pokazuje tez „Relacja X / 200” (audiencja)', ui.linieRelacja.some(t => /\/\s*200/.test(t)), ui.linieRelacja);
+    const hasRespekt89 = [...ui.linieRespekt, ...ui.linieZaufanie].some(t => /Respekt\s*89\s*\/\s*100/.test(t));
+    const hasMasz50 = ui.linieRespekt.some(t => /masz 50\b/.test(t));
+    assert('wiersz „Wpływ Relacji na deal” pokazuje 11,6 (wartość PW)', has116, ui.relRowsRaw);
+    assert('okno pokazuje „Relacja 90 / 200” (audiencja) w TYM SAMYM oknie', has90, ui.linieRelacja);
+    assert('okno pokazuje „Respekt 89 / 100” (efektywny, prawy panel)', hasRespekt89, ui.linieRespekt);
+    assert('blokady pokazują „masz 50” (zapisany Respekt, trzecia wielkość)', hasMasz50, ui.linieRespekt);
     result.pokazuje11_6 = has116;
     result.pokazuje90_200 = has90;
+    result.pokazujeRespekt89 = hasRespekt89;
+    result.pokazujeMasz50 = hasMasz50;
     result.measured = true;
     await shot(page, 'drvm-01-okno-relacja.png');
     await closeAudience(page);
+
+    // FAZA WOJNY (zarzut 3 Evaluatora): ta sama para, status wymuszony na 'wojna' (__civTest.setWar, tylko status),
+    // ponowne otwarcie okna z HUD. Mierzy, czy clampRelationForWar zmienia wiersz PW i audiencje.
+    await ev(page, a => window.__civTest.setWar(a, 0), ai);
+    const uiWar = await openAudienceFromHud(page);
+    result.okno_wojna = uiWar;
+    if (uiWar) {
+      console.log('  [raw-war] wiersze .da-pn-rel-mod:', JSON.stringify(uiWar.relRowsRaw));
+      console.log('  [raw-war] linie Relacja:', JSON.stringify(uiWar.linieRelacja));
+      console.log('  [raw-war] linie Respekt:', JSON.stringify(uiWar.linieRespekt));
+      console.log('  [raw-war] linie wojna/pokoj:', JSON.stringify(uiWar.linieWojna));
+      result.pokazuje11_6_wojna = uiWar.relRowsRaw.some(t => /11,6/.test(t));
+      result.pokazuje90_200_wojna = uiWar.linieRelacja.some(t => /90\s*\/\s*200/.test(t));
+      await shot(page, 'drvm-02-okno-wojna.png');
+      await closeAudience(page);
+    }
+    assert('faza wojny: okno dyplomacji otwarte (pomiar wykonany)', !!uiWar, uiWar);
 
     const realErrors = consoleErrors.filter(e => !/favicon|Failed to load resource/i.test(e));
     assert('zero console.error / pageerror', realErrors.length === 0, realErrors.slice(0, 3));

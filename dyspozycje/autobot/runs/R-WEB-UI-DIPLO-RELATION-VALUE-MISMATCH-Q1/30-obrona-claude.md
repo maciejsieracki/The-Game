@@ -1,89 +1,90 @@
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1
-GOAL: obrona operatora po zarzutach Evaluatora (kandydat 6a621223d, baza 44af89169). Odpowiedź na każdy zarzut: PRZYJMUJĘ albo ODRZUCAM z dowodem. Zmiany kodu gra/: BRAK.
-BAZA/KANDYDAT: 44af89169 (origin/main) -> 6a621223d (raport operatora r1). Worktree fast-forward do 6a621223d przed pracą.
+GOAL: obrona operatora r3 po zarzutach Evaluatora (raport 4df7394bd, kandydat 31113b324). Odpowiedź na każdy zarzut: PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód). Zmiany kodu gra/src: BRAK (rozstrzygnięcie nazw etykiet = decyzja ABC właściciela).
+BAZA/KANDYDAT: kandydat 31113b3243dd0b47b917ab804f9da5e014d53f77 (zawiera origin/main 44af89169; merge: już zawarte). Gałąź robocza: web-wip/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1-obrona-r3.
+ZMIANY: gra/tools/diplomacy-relation-value-mismatch-live-test.cjs (asercje na obie wartości + faza wojny), dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1/** (raport, evidence). gra/src: nietknięte.
 
-## Odpowiedzi na zarzuty Evaluatora (raport 20-evaluator-claude.md, SHA 10c95cf4f)
+## Korekta definicji (zarzut 1, PRZYJMUJĘ)
 
-### Zarzut 1 — brak testu Chromium na realnym oknie dyplomacji: PRZYJMUJĘ
-Uzasadnienie operatora r1 („pomiar wymaga decyzji o etykietach”) było NIETRAFNE: pomiar AKTUALNEGO kodu nie wymaga zmiany etykiet. Test Chromium NIE został wykonany w tej rundzie (NIE_ZMIERZONO). Wniosek „11,6 = zapisana relacja, 90 = power-based” jest hipotezą z czytania kodu, bez dowodu dla jednej pary. Otwarte do R2 (wymaga Vite poza repo i stanu gry z parą W31).
+Raport r2 (10-operator-claude.md) nazwał 11,6 „zapisaną” relacją. To błąd. Kod:
+- main.ts:24632-24650 `buildProposalEvalContext`: `rel = { ...relRaw, respekt: proposerRespekt }`, gdzie `proposerRespekt = computeRespekt(potProposer, potResponder)` (diplomacy.ts:1681, = round(100·P_self/(P_self+P_partner))). Respekt zapisany jest NADPISYWANY udziałem mocy proponenta.
+- main.ts:21161 i :21212: wiersz „Wpływ Relacji na deal” bierze `entry.proposerOwnerId`. Dla propozycji AI proponentem jest AI (id 1). Stąd 11,6 = Zaufanie 0,6 + udział mocy AI (≈11).
+- Liczba 89 w prawym panelu (main.ts:25354-25358 `audienceRelTotalEffective` / `objectiveRespektPctTowardEffective`) to udział mocy GRACZA (strona przeciwna, wersja efektywna). 11 + 89 = 100: to dwa kierunki tej samej proporcji mocy, a nie dwie różne zapisane wartości.
+- Wartość ZAPISANA (stored) dla pary: `rel = getDiploRelation(ME(), ownerId)` (main.ts:25444), przekazana do `buildDiplomacyLockContextBase` (main.ts:25451, respekt: rel.respekt w :25386). Zmierzona w oknie jako „masz 50” (Respekt) i „masz 0.6” (Zaufanie). Zapisana suma = 0,6 + 50 = **50,6** (nie jest wyświetlana jako jedna liczba).
 
-### Zarzut 2 — tabela „UI → źródło” niekompletna: PRZYJMUJĘ
-Potwierdzone czytaniem kodu:
-- gra/src/main.ts:21164 i :21213 — `relTotal = treatyEvalRelationTotal(...)` (okno propozycji na stole, zapisana relacja) -> `computePlayerAcceptanceSides` (main.ts:21277) -> `relCurrent` -> wiersz „Wpływ Relacji na deal” (gra/src/ui/diplomacyAcceptanceBalance.ts:107-130, `relTotal = side.relCurrent` w :145, `their.relCurrent` w :638). To jest JEDYNE okno, w którym pojawia się wartość zapisana „11,6”.
-- gra/src/ui/diplomacyTradeBasket.ts:1129 i :2065 — `rel = ctx.relacjaTotal` (koszyk audiencji, panel PW tej sekcji) dostaje wartość z main.ts:25762 = `audienceRelTotal(...)` (NOMINALNA power-based), NIE zapisaną relację. Ten wiersz NIE pokazuje „11,6”.
-Tabela w sekcji „Tabela” poniżej uzupełniona o te wiersze.
+Poprawna definicja trzech wielkości (ta sama para, ten sam scenariusz, 2026-11-12, pokój):
+| Wielkość | Wzór / źródło | Wartość w pomiarze | Gdzie widoczna |
+|---|---|---|---|
+| A. Zapisana (stored, perspektywa gracza) | Zaufanie 0,6 + rel.respekt zapisany (main.ts:25444, :25386) | 0,6 + 50 = 50,6 | tylko jako „masz 50” / „masz 0.6” w liniach blokad |
+| B. Nominalna power-based, perspektywa gracza | round(Zaufanie + objectiveRespektPctToward) (main.ts:25349-25352, audienceRelTotal) | 90 | „masz 90” w liniach blokad „wymaga Relacji 110 (masz 90)”; progi handlu/daru (main.ts:25762) |
+| C. Efektywna power-based, perspektywa gracza | round(Zaufanie + objectiveRespektPctTowardEffective) (main.ts:25354-25358) | 90 / 200, Respekt 89 / 100 | „Stan bieżący: Relacja 90 / 200 · … Respekt 89 / 100” (audiencja, prawy panel) |
+| D. Perspektywa proponenta (AI), nadpisany respekt | treatyEvalRelationTotal(buildProposalEvalContext) (main.ts:24632-24650, :21212) | 0,6 + 11 = 11,6 | „Wpływ Relacji na deal … Relacja 11,6” (wiersz PW, modyfikator −88,4%) |
 
-### Zarzut 3 — trzy wielkości, nie dwie; błędne przypisanie 90/200 do getNegotiationContext: PRZYJMUJĘ
-Potwierdzone:
-- zapisana: `treatyEvalRelationTotal` = `relationTotal` = clamp(zaufanie + respekt, 0, 200) (gra/src/game/diplomacy-pn-engine.ts:147-148), z clampRelationForWar gdy status „wojna” (gra/src/game/diplomacy-proposals.ts:712-715).
-- nominalna power-based: `audienceRelTotal` = round(clamp(zaufanie + objectiveRespektPctToward)) (gra/src/main.ts:25306-25308). Steruje bramkami handlu/daru i koszykiem: gra/src/main.ts:25762 (`relacjaTotal: audienceRelTotal(ownerId, rel)`, komentarz w 25636-25638 potwierdza „nominalna zostaje jako gate w buildAudienceActions/getNegotiationContext”).
-- efektywna power-based: `audienceRelTotalEffective` = round(clamp(zaufanie + objectiveRespektPctTowardEffective)) (gra/src/main.ts:25354-25358), wyświetlana jako „90/200” w prawym panelu audiencji: gra/src/main.ts:25639 (`relacjaTotal: audienceRelTotalEffective(ownerId, rel)`).
-Błąd operatora r1: zdanie „90/200 steruje ... progiem handlu (getNegotiationContext.relacjaTotal)” jest NIEPRAWDZIWE. Próg handlu używa wersji NOMINALNEJ. Wariant B etykiet musi rozróżniać efektywną od nominalnej (dwie różne liczby z tego samego zaufania i respektu).
+Uwaga: B i C dają w tym scenariuszu tę samą wartość 90, bo nie ma bonusów (weteran/fortyfikacja/trudność). Rozdział B od C przy aktywnych bonusach NIE_ZMIERZONO (zarzut 6, patrz niżej).
 
-### Zarzut 4 — czynnik wojny (clampRelationForWar) nierozpatrzony: PRZYJMUJĘ jako lukę; NIE_ZMIERZONO status pary
-Mechanizm istnieje: diplomacy-proposals.ts:712-715 stosuje clampRelationForWar gdy `rel.status === 'wojna'`; clampRelationForWar (gra/src/game/diplomacy.ts:1121-1133) obniża Zaufanie, potem Respekt, gdy `relationScore` (ważony mnożnikami DIPLOMACY_PARAMS, diplomacy.ts:839-843) przekracza WAR_RELATION_SCORE_CAP. Uwaga: skala cap (29) jest w wadze `relationScore`, a nie w surowej sumie, więc nie da się wykluczyć przycięcia wojennego analizą samego kodu. Status pary W31 w chwili pomiaru NIE został ustalony (NIE_ZMIERZONO). Wniosek „11,6 = zapisana” wymaga sprawdzenia, czy para nie była w „wojnie”.
+## Odpowiedzi na zarzuty Evaluatora
 
-### Zarzut 5 — diplomacyAudience.ts poza allowlistą: PRZYJMUJĘ
-Wariant B z raportu r1 zmienia etykiety w diplomacyAudience.ts (prawy panel audiencji, linia „Relacja X / 200”). Allowlista DODATKU (diplomacyAcceptanceBalance.ts + „okno dyplomacji, tylko wyświetlanie”) tego pliku NIE wymienia wprost. Nie zmieniam allowlisty samodzielnie. Decyzja dla orkiestratora przed R2: (a) rozszerzyć allowlistę o gra/src/ui/diplomacyAudience.ts (tylko etykiety), albo (b) ograniczyć R2 do diplomacyAcceptanceBalance.ts (etykieta „Wpływ Relacji na deal” i nagłówek PW), a rozdział etykiet audiencji przenieść do osobnego tematu.
+### Zarzut 1 — definicja „zapisana” dla 11,6 jest fałszywa: PRZYJMUJĘ
+Dowód: main.ts:24632-24650 (nadpisanie `respekt: proposerRespekt`), main.ts:21161/21212 (proponent = AI), main.ts:25444/25386 (zapisany respekt „masz 50”), wiersz z drvm-result.json: `Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza`. Poprawiona definicja w tabeli powyżej. Etykieta wariantu B musi opisywać perspektywę proponenta, nie „zapisaną” wartość.
 
-### Zarzut 6 — bramki tsc i 5 referencyjnych NIE_ZMIERZONO: PRZYJMUJĘ, zmierzone w tej rundzie
-Worktree: `npm ci --ignore-scripts` w gra/ (exit 0). Surowe wyjścia (kandydat 6a621223d = kod 44af89169, bez zmian gra/):
-- `npx tsc --noEmit` — exit 0 (bez błędów w wyjściu).
-- `node tools/logic-test.cjs` — exit 0; ostatnia linia: „LOGIC OK (213/213)”.
-- `node tools/tech-tree-test.cjs` — exit 0; „tech-tree-test: 20 pass, 0 fail”.
-- `node tools/research-test.cjs` — exit 0; „PASSED: 33 / FAILED: 0 / TOTAL: 33”.
-- `node tools/unit-replace-test.cjs` — exit 0; „WSZYSTKIE TESTY ZIELONE (21/21)”; 21 linii [OK], 0 FAIL.
-- `node tools/combat-test.cjs` — exit 0; „COMBAT TEST: 6/6 pass”; „All sanity checks passed.”
-Logi: /tmp/claude-0/tsc-R1.log, /tmp/claude-0/logic-test-R1.log, /tmp/claude-0/tech-tree-test-R1.log, /tmp/claude-0/research-test-R1.log, /tmp/claude-0/unit-replace-test-R1.log, /tmp/claude-0/combat-test-R1.log.
+### Zarzut 2 — tabela UI → źródło pomija trzecią wartość Respektu („masz 50”): PRZYJMUJĘ
+Dowód: evidence/drvm-result.json, `linieRespekt`: `zablokowana — wymaga Respektu 70 (masz 50)`. Nowa asercja w teście: `blokady pokazują „masz 50”` (PASS). Tabela wielkości A–D zawiera wartość z tej linii (A). Tabela UI → źródło (ten sam ekran, pomiar Chromium):
+| Miejsce w UI | Tekst (surowy, z pomiaru) | Źródło | Wielkość |
+|---|---|---|---|
+| Wiersz „Wpływ Relacji na deal” (okno propozycji AI) | `Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza` | main.ts:21161/21212 → buildProposalEvalContext → computePlayerAcceptanceSides (main.ts:21277) → diplomacyAcceptanceBalance.ts (`relTotal = side.relCurrent`) | D |
+| Audiencja „Stan bieżący” | `Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100` | main.ts:25639 (audienceRelTotalEffective), respekt z objectiveRespektPctTowardEffective (main.ts:25354-25358) | C |
+| Blokady pakt/sojusz/przemarsz | `wymaga Zaufania 30 (masz 0.6) i Relacji 110 (masz 90)` | buildDiplomacyLockContextBase (main.ts:25451), relTotal nominalny (main.ts:25349-25352) | B (relacja), A (zaufanie) |
+| Blokady respektu | `wymaga Respektu 70 (masz 50)` | rel.respekt zapisany (main.ts:25386) | A |
 
-## Tabela: miejsce w UI -> źródło -> znaczenie (uzupełniona)
+### Zarzut 3 — brak pomiaru stanu wojny i clampRelationForWar: PRZYJMUJĘ (pomiar wykonany, wynik częściowy)
+Dowód: faza wojny w teście (`__civTest.setWar(ai, 0)`, ponowne otwarcie okna z HUD), evidence/drvm-result.json pole `okno_wojna`, zrzut evidence/drvm-02-okno-wojna.png, log evidence/drvm-test.log:
+- Status po wymuszeniu: `WOJNA` (linieWojna). Wiersz „Wpływ Relacji na deal” NIE JEST RENDEROWANY (`relRowsRaw: []`); linieWojna: `handel niedostępny w wojnie`. Propozycja AI (pakiet handlowy) jest w wojnie nieważna, więc nie ma w UI liczby PW w stanie wojny.
+- Audiencja nadal pokazuje: `Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)`. Dopisek „limit wojenny 29” pochodzi z diplomacyAudience.ts:1273-1279 i diplomacy-display.ts:344: przycinana jest etykieta nastawienia, a liczba 90/200 pozostaje surowa.
+- Wniosek o clampRelationForWar dla 11,6 (wyprowadzony z kodu, NIE zmierzony w UI, bo wiersz nie istnieje w wojnie): buildProposalEvalContext nadpisuje respekt PRZED treatyEvalRelationTotal (diplomacy-proposals.ts:712-715 clamp tylko dla status 'wojna'). relationScore = zaufanie·1 + respekt·1 (diplomacy.ts:839, DIPLOMACY_PARAMS mnożniki 1, diplomacy.ts:193-194) = 0,6 + 11 = 11,6 ≤ WAR_RELATION_SCORE_CAP 29 → clampRelationForWar zwraca rel bez zmian (diplomacy.ts:1121-1123). Czyli dla tej propozycji clamp nie zmienia 11,6. Liczby w wojnie dla wiersza PW: NIE_ZMIERZONO (wiersz nieobecny). Clamp działa realnie na zapisany rel (50,6 > 29), co widać w etykiecie nastawienia „limit wojenny 29”.
 
-| Miejsce w UI | Źródło (kod) | Znaczenie |
-|---|---|---|
-| Okno propozycji na stole, wiersz „Wpływ Relacji na deal” (ten sam panel PW) | main.ts:21164/21213 `treatyEvalRelationTotal(rel)` -> main.ts:21277 `computePlayerAcceptanceSides` -> diplomacyAcceptanceBalance.ts:145, :638 `relCurrent` | ZAPISANA relacja (clamp(zaufanie+respekt,0,200); z clampRelationForWar przy wojnie). Steruje modyfikatorem PW i bramką pwBalance. Jedyne miejsce z „11,6”. |
-| Koszyk audiencji / panel PW w koszyku, „Wpływ Relacji na deal” w koszyku | diplomacyTradeBasket.ts:1129, :2065 `ctx.relacjaTotal` <- main.ts:25762 `audienceRelTotal` | NOMINALNA power-based (zaufanie + respekt z mocy, zaokr.). Bramki handlu/daru. NIE pokazuje zapisanej wartości. |
-| Prawy panel audiencji „Relacja 90 / 200”, linia „Stan bieżący” | main.ts:25639 `audienceRelTotalEffective` (main.ts:25354-25358) | EFEKTYWNA power-based (z bonusami weterana/fortyfikacji/trudności), zaokr. Wyświetlana wartość. NIE steruje progiem handlu. |
-| Bramki handlu / daru / diplomacyFairGivePn | main.ts:25762 `audienceRelTotal` (nominalna) | Mechanika progów; nominalna, nie efektywna i nie zapisana. |
+### Zarzut 4 — test nie asertuje obu wartości: PRZYJMUJĘ
+Dowód: gra/tools/diplomacy-relation-value-mismatch-live-test.cjs. Dodane asercje (wszystkie PASS w drvm-test.log):
+- `wiersz „Wpływ Relacji na deal” pokazuje 11,6 (wartość PW)` — has116
+- `okno pokazuje „Relacja 90 / 200” (audiencja) w TYM SAMYM oknie` — has90
+- `okno pokazuje „Respekt 89 / 100” (efektywny, prawy panel)`
+- `blokady pokazują „masz 50” (zapisany Respekt, trzecia wielkość)`
+Stary test asertował tylko `length >= 1` i `/\/\s*200/`. Wynik: `diplomacy-relation-value-mismatch-live-test: 10 pass, 0 fail`. Ograniczenie zaakceptowane: pomiar dotyczy jednej pary i jednej skali mocy (asercje są dla tego scenariusza; test nie jest ogólnym dowodem).
 
-## Wniosek (poprawiony względem r1)
+### Zarzut 5 — logi bramek nie trafiły do commita: PRZYJMUJĘ
+Dowód: evidence/bram-tsc.log (rc=0), evidence/bram-logic-test.log (`LOGIC OK (213/213)`), evidence/bram-tech-tree-test.log (`tech-tree-test: 20 pass, 0 fail`), evidence/bram-research-test.log (`PASSED: 33 / FAILED: 0 / TOTAL: 33`), evidence/bram-unit-replace-test.log (`WSZYSTKIE TESTY ZIELONE (21/21)`), evidence/bram-combat-test.log (`All sanity checks passed.`), evidence/drvm-test.log (`10 pass, 0 fail`). Wszystkie w commicie.
 
-Trzy wielkości, nie dwie:
-1. zapisana (11,6 w oknie PW) — silnik,
-2. nominalna power-based — bramki handlu i koszyk,
-3. efektywna power-based (90/200) — wyświetlana na audiencji.
+### Zarzut 6 — rozdział nominalnej od efektywnej przy aktywnych bonusach: NIE_ZMIERZONO (przyjmuję brak pomiaru)
+Scenariusz nie ma bonusów (weteran/fortyfikacja/trudność), więc B = C = 90. Pomiar wymagałby innego stanu gry; poza zakresem tej rundy. Wniosek z kodu (nie z pomiaru): B i C różnią się tylko, gdy obiektywna moc efektywna różni się od nominalnej (main.ts:2897-2930).
 
-Hipoteza „11,6 = zapisana, 90 = efektywna power-based” pozostaje NIEZWERYFIKOWANA na żywo (zarzut 1), a status wojny pary (zarzut 4) jest nieustalony. Rozjazd progów (zapisana vs nominalna dla handlu) jest decyzją produktową/silnikową poza allowlistą tego tematu.
+## Bramki i testy (surowe wyjścia w evidence/, pliki zacommitowane)
+- `npx tsc --noEmit` (gra/): rc=0, bez wyjścia błędów (bram-tsc.log: `rc=0`)
+- `node tools/logic-test.cjs`: rc=0, `LOGIC OK (213/213)`
+- `node tools/tech-tree-test.cjs`: rc=0, `tech-tree-test: 20 pass, 0 fail`
+- `node tools/research-test.cjs`: rc=0, `PASSED: 33 / FAILED: 0 / TOTAL: 33`
+- `node tools/unit-replace-test.cjs`: rc=0, `WSZYSTKIE TESTY ZIELONE (21/21)`
+- `node tools/combat-test.cjs`: rc=0, `All sanity checks passed.`
+- `node --check tools/diplomacy-relation-value-mismatch-live-test.cjs`: OK (po edycji)
+- Chromium (vite bundle zbudowany poza repo, `vite build --outDir` w scratchpad, zero zmian w gra/src): `diplomacy-relation-value-mismatch-live-test: 10 pass, 0 fail`, zero console.error/pageerror.
+- Mutacja: NIE DOTYCZY (brak zmiany kodu gra/src; test pomiarowy, asercje sprawdzone przez PASS na realnych liniach).
 
-## Testy / bramki (ta runda, kandydat = kod 44af89169)
+## Surowe liczby pomiaru (drvm-result.json, pokój, AI id=1)
+- statusPrzedEndTurn: `pokoj`
+- PW: `Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza`
+- Audiencja: `Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy`
+- Blokady: `masz 0.6`, `masz 90`, `masz 50`
+- Wojna (po setWar): `WOJNA`, PW nieobecny, `Relacja 90 / 200 … nastawienie: Wrogi (etykieta Wrogi: limit wojenny 29)`
 
-- tsc: exit 0.
-- logic-test: LOGIC OK (213/213).
-- tech-tree-test: 20 pass, 0 fail.
-- research-test: 33/33.
-- unit-replace-test: 21/21.
-- combat-test: 6/6.
-- Test Chromium (okno dyplomacji, para W31): NIE_ZMIERZONO w tej rundzie.
-- Mutacja: nie dotyczy (brak poprawki kodu).
-
-## ZMIANY/COMMIT
-
-- Kod gra/: BRAK zmian.
-- Plik raportu: dyspozycje/autobot/runs/R-WEB-UI-DIPLO-RELATION-VALUE-MISMATCH-Q1/30-obrona-claude.md (jedyny zacommitowany plik tej rundy).
-
-## BLOKADY
-
-- Decyzja właściciela (ABC): wariant A/B/C oraz nazwy etykiet (jak r1).
-- Decyzja orkiestratora (zarzut 5): allowlista dla diplomacyAudience.ts.
-- Otwarte pomiary: test Chromium (zarzut 1) i status wojny pary W31 (zarzut 4) — NIE_ZMIERZONO.
+## Status ABC (nie zmieniam kodu sam)
+Pomiar pokazuje dwie różne perspektywy i dwie skale (D = proponent AI, C = gracz efektywny), plus zapisaną wartość A (50,6), którą UI pokazuje tylko jako „masz 50”. Nazwy etykiet i wybór wariantu (A ujednolicić / B etykiety / C zostawić) są decyzją właściciela. Proponowane etykiety (wariant B, poprawione o perspektywę):
+- PW: „Relacja z perspektywy proponenta: 11,6 (zaufanie + udział mocy proponenta)”
+- Audiencja: „Relacja 90 / 200 (zaufanie + udział mocy gracza, efektywnie)”
+- Blokady: „zapisany Respekt 50 (historia)” obok nominalnej 90
 
 ## RUNDY
-
-2/5 (runda obrony po r1 operatora; orkiestrator decyduje o R2).
+3/5 (runda obrony operatora po FC FAIL r1 i Evaluator r2). Evaluator r2 wystawił 6 zarzutów; wszystkie rozstrzygnięte (5 PRZYJMUJĘ, 1 NIE_ZMIERZONO z uzasadnieniem).
 
 ## NASTĘPNY KROK
-
-Orkiestrator: (1) ABC właściciela wariant A/B/C; (2) rozstrzygnięcie allowlisty dla diplomacyAudience.ts; (3) po wyborze — Operator R2: pomiar Chromium (para z W31, zapisana vs nominalna vs efektywna, z ustaleniem statusu wojny) i etykiety, potem mutacja, tsc i 5 bramek.
+Orkiestrator: (1) ABC właściciela: wariant A/B/C i nazwy etykiet powyżej; (2) po wyborze B: Operator R4 — etykiety w diplomacyAcceptanceBalance.ts i diplomacyAudience.ts, mutacja testu, tsc + 5 bramek; (3) bramka wojny w UI: PW nieobecny w wojnie, więc liczba D w wojnie nie istnieje, dopóki propozycja nie jest ważna — zdecydować, czy to ma być opisane w etykiecie.
 
 DEPLOY/PUSH: NIE WYKONANO
