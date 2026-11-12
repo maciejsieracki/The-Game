@@ -3,25 +3,29 @@
 // z pinu webu.
 //
 // Zrodlo (pin 07d2fbd72f758705f8e1d59cc4968027ffbafe75, plik tylko do odczytu, poza repo):
-//   * gra/src/game/wonder-transfer.ts (caly plik; `export ` zdejmowane, typy zdejmowane przez node).
+//   * gra/src/game/wonder-transfer.ts (caly plik; `export ` zdejmowane, typy zdejmowane przez esbuild transformSync).
 //
 // Wykonywane REALNIE w node. Trzy rodzaje przypadkow:
 //   * "plan"    - wyczerpujaco: 1 cud, owner x before x after (rowniez brak klucza = undefined w TS);
 //   * "apply"   - plan (w tym niespojny fromOwnerId, duplikaty wpisow, duplikaty wonderId) na liscie cudow;
 //   * "chain"   - deterministyczny (LCG) pelny przebieg: migawka PRZED, migawka PO, plan, apply.
 //
-// Uzycie:
-//   node tests/p6_siege_wonder_watch_gen.mjs <wonder-transfer.ts@pin> \
+// Uzycie (katalog z node_modules/esbuild POZA repo, esbuild 0.25.0 jak p6_aipeace_balans_gen.mjs):
+//   node tests/p6_siege_wonder_watch_gen.mjs <wonder-transfer.ts@pin> <katalog z node_modules/esbuild> \
 //     > tests/p6_siege_wonder_watch_vectors/vectors.json
 
 import { readFileSync } from 'node:fs';
-import { stripTypeScriptTypes } from 'node:module';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 
-const [srcPath] = process.argv.slice(2);
-if (!srcPath) throw new Error('uzycie: gen.mjs <wonder-transfer.ts>');
+const [srcPath, esbuildDir] = process.argv.slice(2);
+if (!srcPath || !esbuildDir) throw new Error('uzycie: gen.mjs <wonder-transfer.ts> <katalog z esbuild>');
+
+const require = createRequire(path.join(esbuildDir, 'package.json'));
+const { transformSync } = require('esbuild');
 
 const src = readFileSync(srcPath, 'utf8').replace(/^export /gm, '');
-const js = stripTypeScriptTypes(src, { mode: 'transform' });
+const js = transformSync(src, { loader: 'ts', format: 'esm', target: 'es2022' }).code;
 // eslint-disable-next-line no-new-func
 const W = new Function(
   js + '\nreturn { isCivilizationOwnerId, snapshotWonderTerritoryOwners, planWonderTransfers, applyWonderTransfers };',
