@@ -82,6 +82,7 @@ pub mod roads;
 pub mod save_load;
 pub mod save_migrations;
 mod session;
+pub mod siege_city_fortification;
 pub mod siege_engine_build;
 pub mod siege_enter_city;
 pub mod siege_nearby_lock;
