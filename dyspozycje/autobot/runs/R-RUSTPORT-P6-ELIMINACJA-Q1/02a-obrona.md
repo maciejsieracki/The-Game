@@ -62,3 +62,37 @@ BRAMKI (rustc 1.97.0, clippy 0.1.97, EXIT z tego worktree):
 Mutacja kontrolna: NIE_ZMIERZONO (poza zakresem dodatku).
 RUNDY: 2/5. NASTEPNY KROK: Evaluator r2 + FC na nowym SHA.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+# DODATEK r2 — OBRONA Operatora (runda 2/5, HAIKU) — R-RUSTPORT-P6-ELIMINACJA-Q1
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-ELIMINACJA-Q1
+GOAL: odpowiedz na zarzuty Evaluatora r2 (02-evaluator.md, commit dce886a70): kazdy zarzut przyjety (poprawka + dowod + commit) albo odrzucony (dowod).
+ZMIANY/COMMIT: w tej rundzie zmiana kodu NIE byla potrzebna — zadnego zarzutu blokujacego. Kod do oceny: SHA 5ad5d363c (Operator r2, jedyna zmiana: pusta linia `//!` w `rust-port/engine/src/domain/eliminacja.rs`, diff zweryfikowany: `git show 5ad5d363c -- rust-port/engine/src/domain/eliminacja.rs`). Ten dopisek obrony jest jedyna zmiana tego commita.
+BAZA: 5ad5d363c (detached HEAD). Brak push, brak zmian w gra/, origin/main, Cargo.toml, Cargo.lock.
+
+## Odpowiedzi na zarzuty Evaluatora r2
+
+### Zarzut 0 (brak zarzutow blokujacych): ZGODNE
+Evaluator odtworzyl bramki (fmt 0, clippy -D warnings 0, cargo test --lib 94, p6_eliminacja 3, p6_power_battle_acc 11, p6_power_acc_wiring 3) i regeneracje wektorow (180 przypadkow, bajt w bajt). Ta obrona NIE uruchamiala cargo ponownie: bramki w tej rundzie = NIE_ZMIERZONO przez Operatora, dowod to wynik Evaluatora i EXIT zapisany w 01-operator-r2.md.
+
+### Zarzut 1 (informacyjny, Q2): regularWarCapturedByPairKey i diplomacyPairMeta nie sa wymienione w naglowku — PRZYJMUJE (jako wpis do Q2, bez zmiany kodu)
+Dowod: naglowek `eliminacja.rs` (linie 12-18 w SHA 5ad5d363c) wymienia `diplomacyPairMeta` i `diplomacyFactorLog` tylko ogolnikowo w jednej pozycji NIE_ZMIERZONO; `regularWarCapturedByPairKey` nie wystepuje w module. Zarzut zgodny z plikiem.
+Decyzja: zmiana kodu/komentarza poza zakresem dodatku r2 (dyspozycja: jedyna poprawka = clippy). Wpis do zakresu Q2 (`ELIMINACJA-GRACZA-DEALS-WOJNY-Q2`): dopisac `regularWarCapturedByPairKey` oraz `diplomacyPairMeta` jako osobne pozycje z liniami pinu. Rekomendacja dla orkiestratora przy rejestracji Q2.
+
+### Zarzut 2 (informacyjny): galaz oblezen bez wektorow — ODRZUCAM jako defekt tematu
+Dowod: `eliminacja.rs` (naglowek) deklaruje oblezenia jako NIE_ZMIERZONO z powodem: brak struktury oblezen wlasciciela w Rust. Generator stubuje galaz oblezen (rzuca), wiec wektorow dla niej nie ma i nie moga byc, dopoki Rust tej struktury nie ma. Zakres ujety w Q2. Zgodne z pkt 2 zarzutow r1, bez zmiany.
+
+### Zarzut 3 (informacyjny): brak wolajacego w produkcji — ODRZUCAM jako defekt
+Dowod: dyspozycja r1 wyraznie wyklucza wpiecie w tury/walke ("Brak wpiecia w turn_war_* i combat.rs (osobne tematy)"; "wolajacy = osobny temat"). Brak wolajacego jest zamierzony. Pola serde nie dodano, wiec test zgodnosci wstecznej (pkt 4 dyspozycji) nie dotyczy.
+
+## Stan po rundzie 2
+- Kod: bez zmian poza 5ad5d363c (komentarz clippy).
+- Otwarte do decyzji orkiestratora: rejestracja ELIMINACJA-GRACZA-DEALS-WOJNY-Q2 z pozycjami z Zarzutu 1 (regularWarCapturedByPairKey, diplomacyPairMeta) oraz deals/forced/era-enter/oblezenia.
+- Mutacja kontrolna w tej obronie: NIE_ZMIERZONO (wykonana przez Evaluatora r1, nie powtarzana).
+
+RUNDY: 2/5 (obrona Operatora HAIKU)
+NASTEPNY KROK: Final Control r2 na SHA 5ad5d363c + dopisek tej obrony; decyzja orkiestratora o rejestracji Q2.
+DEPLOY/PUSH: NIE WYKONANO
