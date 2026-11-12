@@ -1,3 +1,9 @@
+## ROBOCZA 08f4b791 -- 2026-11-06 -- FALA 657: FALA 657: równe natarcie linii piechoty w bitwie (W19) (testowa)
+
+- R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, battle-line-advance-uniform 17/0, battle-cap-500 59 PASS, audio-sidecar PASS; FC: battle-skip-equals-auto 42/0
+- Limity: zywa scena 3D: poprawa dopiero w rundach 9-10; strzelcy, konnica i machiny poza sufitem; 500v500 54 tury zamiast 42; ABC prog 10 rund
+
 ## ROBOCZA 3385dd9b -- 2026-11-06 -- FALA 656: FALA 656: komunikat 'kolejka pusta — Praca idzie do puli imperium' w panelu miasta (W23) (testowa)
 
 - R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1
