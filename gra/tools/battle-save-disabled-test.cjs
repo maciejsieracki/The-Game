@@ -13,8 +13,8 @@
  * `isBattleSceneOpen()` i `isPostBattleSummaryOpen()`. Dodatkowo MUTACJA: usunięcie bramki
  * z `persistSaveToSlot` w kopii źródła MUSI czerwienić test.
  *
- * Uwaga (NIE_ZMIERZONO): żywy test w Chromium (wejście do bitwy w pełnej grze i próba
- * zapisu) NIE jest jeszcze w tym pliku -- patrz raport operatora.
+ * Żywy test w Chromium (wejście do bitwy, próba zapisu, mutant zachowania) jest w
+ * tools/battle-save-disabled-live-test.cjs; ten plik pozostaje warstwą strukturalną.
  *
  * Uruchomienie (z gra/): node tools/battle-save-disabled-test.cjs
  * Wyjście: kod 0 = wszystkie asercje OK; != 0 = co najmniej jedna porażka.

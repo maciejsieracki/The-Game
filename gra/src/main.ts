@@ -26393,6 +26393,11 @@ async function boot(): Promise<void> {
             // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
             await refreshHasAnySaveSlotCache();
             refreshGamePauseMenuLoadState();
+          } else if (isSaveBlockedByBattle()) {
+            // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: dialog otwarty przed bitwą, zapis
+            // kliknięty w trakcie bitwy -- komunikat o bitwie, nie „brak localStorage”.
+            // / EN: dialog opened before the battle, save clicked during it -- battle message.
+            notifySaveBlockedByBattle();
           } else {
             // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
             // prawdziwą przyczynę (brak MIEJSCA, nie brak API) -- ten sam ton
