@@ -276,7 +276,8 @@ fn production_power_inputs_have_producers_for_all_stored_components() {
         assert!(has_pin_file_line_ref(reason), "{key}: brak plik:linia pinu");
     }
     let keys: Vec<&str> = EXPLICIT_ZERO_REASONS.iter().map(|(k, _)| *k).collect();
-    assert_eq!(keys, ["bitwy", "ulepszenia", "zdobycze"]);
+    // P6-POWER-ULEPSZENIA: "ulepszenia" ma producenta w COMPONENT_SOURCES, wiec zniknelo z EXPLICIT_ZERO_REASONS.
+    assert_eq!(keys, ["bitwy", "zdobycze"]);
     // KNOWN_GAPS: kazdy brakujacy skladnik jest nazwany w liscie luk; luki epoki i granicy maja pin.
     assert_eq!(KNOWN_GAPS.len(), 5);
     for key in UNPRODUCED_POWER_COMPONENTS {

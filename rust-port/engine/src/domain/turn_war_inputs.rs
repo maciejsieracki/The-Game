@@ -77,14 +77,13 @@ pub const KEY_PAIR_META: &str = "diplomacyPairMeta";
 pub use super::war_turn_declare::KEY_ERA_PEACE_LOCK;
 
 /// Skladniki mocy z jawnym zerem: powod z odwolaniem plik:linia pinu (kontrolowane testem).
-pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 3] = [
+/// P6-POWER-ULEPSZENIA: `ulepszenia` ma teraz producenta w `COMPONENT_SOURCES` (`brake_power_improvements`),
+/// wiec NIE jest tu wymieniane (test spojnosci wymaga ExplicitZero == NoProducer). Jego zero w
+/// `power_raw_for_owner` pozostaje jawnym `ExplicitZero` z uzasadnieniem przy ustawieniu (nizej).
+pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 2] = [
     (
         "bitwy",
         "web battlePowerPtsByOwner (main.ts:2254) startuje pusty, zapis dopiero po wygranej bitwie (main.ts:34490); PlayableState nie zapisuje walk",
-    ),
-    (
-        "ulepszenia",
-        "web countImprovementsForOwner (main.ts:2643) liczy ulepszenia heksow; PlayableState nie ma ulepszen terenu",
     ),
     (
         "zdobycze",
@@ -334,7 +333,10 @@ pub fn power_raw_for_owner(
         .collect();
     raw.jednostki = Component::Provided(armia_for_owner(&units, owner_id, count_settlers()));
 
-    // Jawne zera z uzasadnieniem (EXPLICIT_ZERO_REASONS): bitwy (oba modele), ulepszenia, zdobycze.
+    // Jawne zera z uzasadnieniem (EXPLICIT_ZERO_REASONS): bitwy (oba modele), zdobycze.
+    // ulepszenia: producent istnieje (brake_power_improvements, POWER-ULEPSZENIA-Q1), ale NIE jest podpiety
+    // do power_raw_for_owner w tym etapie (osobny temat). Zostaje ExplicitZero, bo PlayableState nie niesie
+    // ulepszen terenu w tej sciezce; web countImprovementsForOwner (main.ts:2643) liczy je z heksow.
     raw.wygrane_bitwy = Component::ExplicitZero;
     raw.bitwy_pkt_sum = Component::ExplicitZero;
     raw.ulepszenia_terenu = Component::ExplicitZero;
