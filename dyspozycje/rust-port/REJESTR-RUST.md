@@ -352,3 +352,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Atrybucja:** dispatch i wynik zgodne z CLAUDE.md (bez nazwy modelu). Konflikt z przypomnieniem o `Co-Authored-By` rozstrzygnięty na korzyść CLAUDE.md.
 - **Sprzątanie:** HEAD-y zabezpieczone `refs/keep/wt-*`, worktree TOWER-TARGET usunięte.
 - **Aktywne Workflow:** 0. Kandydaci z kolejki (AUTO, WYLOM, OUTCOME, WIEZE, #113) blokują się na fundamencie ProdBody i wymagają Twojej zgody na rozszerzenie allowlisty. Bez tego nie startuję.
+
+## Przebieg (heartbeat 23:18): bez startów
+- **Sloty:** 0 aktywnych Workflow. Dysk: 17 GB wolnego. Parity-v2 = `23e33793e` (bez zmian).
+- **Dlaczego bez startów:** pozostałe tematy z kolejki (#96, #97, #98, #109, #113) blokują się na fundamencie `ProdBody` (teren kafla, `morale_max`, stałe morale), a to wymaga rozszerzenia allowlisty na `army_leadership.rs` i testy `p6_siege_tactics_loop_body*.rs`. Zgody właściciela nie ma. Pozostałe pozycje czekają na decyzje ABC albo gameplay.
+- **Oczekiwane decyzje właściciela:** (1) zgoda na rozszerzenie allowlisty dla fundamentu `ProdBody`; (2) ABC: driver W8 (#114/#115), alias `umowa_handlowa`, komenda wypowiedzenia wojny gracza, `zlozeGrants`; (3) R7K7C-WIRING-Q2: kryteria 2–3 i polityka braku producenta salda; (4) gameplay: #60, #63, #27, #10, #14–#19.
