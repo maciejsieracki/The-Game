@@ -189,8 +189,12 @@ fn atk0() -> UnitRef {
     }
 }
 
+/// UWAGA (zarzut obrony r2, pkt 2): ten test sprawdza WYŁĄCZNIE okablowanie `ProdBody` -> `single_blow_full`
+/// (wejście stanu obrońcy, zapis HP/zabicia, wpisy `unported`). Oczekiwany wynik liczy ta sama funkcja z tym samym
+/// wejściem, więc NIE dowodzi zgodności numerycznej z pinem `_singleBlow`. Ta zgodność to NIE_ZMIERZONO
+/// (wektory pinu dla ciała, osobny temat).
 #[test]
-fn cios_w_zwarciu_daje_wynik_single_blow_full() {
+fn cios_w_zwarciu_skladanie_z_single_blow_full_okablowanie() {
     let mut body = body_with(act(0, 0, true), Some(melee_blow()));
     let mut st = state(cu(100.0, 100.0), cu(50.0, 100.0));
     let dur = body.start(atk0(), &st);
@@ -201,8 +205,22 @@ fn cios_w_zwarciu_daje_wynik_single_blow_full() {
     );
     body.complete(atk0(), &mut st);
 
-    // Oczekiwany wynik: to samo wejscie i ten sam rzut, bez sterownika.
+    // Oczekiwany wynik: to samo wejscie i ten sam rzut, bez sterownika (okablowanie, nie pin).
     let expected = single_blow_full(&melee_blow(), &mut SequenceRolls::new(vec![ROLL]));
+    if expected.blow.outcome == Outcome::Kill {
+        assert!(
+            !body
+                .unported
+                .contains(&(atk0(), "kontratak-kandydat-nieportowany")),
+            "zabity obrońca nie ma kandydata na kontratak"
+        );
+    } else {
+        assert!(
+            body.unported
+                .contains(&(atk0(), "kontratak-kandydat-nieportowany")),
+            "przeżywający obrońca: kontratak zapisany jako nieportowany"
+        );
+    }
     assert_eq!(
         st.def[0].c.hp, expected.blow.def_hp_after,
         "HP obroncy = def_hp_after"

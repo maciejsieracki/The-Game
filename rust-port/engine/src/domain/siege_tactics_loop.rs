@@ -660,5 +660,12 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         if out.blow.engaged_add {
             self.unported.push((unit, "engaged-zbior"));
         }
+        // Kontratak obrońcy (`_doMeleeAttack`, COUNTER-ATTACK w battleScene.ts) nie jest portowany w tym klocku.
+        // Jeśli cel przeżył cios, zapisujemy kandydata na nieportowaną gałąź (zamiast cichego pominięcia).
+        // Warunek „obrońca jest melee" nie jest tu sprawdzany, więc wpis jest konserwatywny.
+        if !st.unit(tref).c.dead {
+            self.unported
+                .push((unit, "kontratak-kandydat-nieportowany"));
+        }
     }
 }
