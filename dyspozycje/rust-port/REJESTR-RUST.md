@@ -223,3 +223,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - COMBAT-HARNESS: FC PASS-WITH-NOTES (3efeecfa6). Port zakresu ranged_phase; combat::resolve bez pętli dystansu → zadanie #136; zera w zdarzeniach → #133.
 - Incydent: FC R7K7C-WIRING usunął /tmp/claude-0/fc-target (współdzielony katalog, nie jego). Nie do odzyskania; nie powtarzać — FC/Operatorzy mają używać własnych CARGO_TARGET_DIR.
 - Dysk: 9,8 GB wolnego po sprzątaniu worktree.
+
+## Przebieg — 16:18 UTC (heartbeat slotów)
+- AUDYT-PARYTETU: FC PASS-WITH-NOTES (1027c2aa1, dokumentacja). FF na parity-v2 = 1027c2aa1 (z 358cb6cf6). Zanotowane: REJESTR-RUST.md nie istniał w repo (od teraz ten plik); ancestry B14B NIE_ZMIERZONO; pytania gameplay (SZTURM, W8 r7 Q1–Q4, units.json 51/71, DYSTANS, REPIN-DRYFT 1–6) czekają na właściciela.
+- KONTRAKTEK (K5LOOP-KONTRATAK): pierwszy start padł na zapełnionym dysku (~0,5 GB) przy przygotowaniu worktree; usunięto własne worktree zakończonych tematów (FACING, nieudany start KONTRATAK); ponowny start 16:2x.
+- Trwają: INTEG-B19 (Operator), COMBAT-HARNESS r2 (Operator), KOTRAKTEK (Operator). Sloty: 3 z 4 + KONTRAKTEK ponownie = 4.
+- Uwaga środowiskowa: scratchpad/tgt (2,4 GB, 16:13) — cudzy cel kompilacji, nie usuwany.
