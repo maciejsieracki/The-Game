@@ -115,40 +115,53 @@ expectLine(SCENE, 8334, 'private _updateFacing(ru: RuntimeBattleUnit)');
 expectLine(SCENE, 9104, 'attacker.facing = facingFromTo(attacker.q, attacker.r, defender.q, defender.r, attacker.facing);');
 // ---- DIR (r5): const enum Dir jest WYKONYWANY z pinu (battleScene.ts:315-320), a nie z reczne wpisanego preludium.
 // Wycinek pinu -> strip-transform TS->JS dla samego enum (node:module, tryb transform) -> wykonanie; strażnik SHA-256
-// wycinka i wartosci N/E/S/W. Skrot wektorow (facingSha256) nadal liczony z DIR_LEGACY_PRELUDE, zeby vectors.json
-// zostal bajt-w-bajt identyczny przy zmianie zrodla definicji (wartosci sa te same, sprawdzane ponizej).
+// wycinka i wartosci N/E/S/W. Skrot wektorow (facingSha256) liczony z tekstu preludium WYPROWADZONEGO z wykonanego Dir
+// (DIR_FROM_EXEC), ktory musi byc rowny DIR_LEGACY_PRELUDE (historyczny zapis, zeby vectors.json pozostal bajt-w-bajt
+// identyczny). Zmiana wartosci w pinie zatrzymuje generator, nie tylko zmienia skrot.
 const DIR_FIRST = 315;
 const DIR_LAST = 320;
 const DIR_SLICE_SHA256 = '782aa85e7b85a520cdbcbc0dbcd5740e85fffd5ba7f3fc1fe9f9f0f3d07103d7';
 const DIR_LEGACY_PRELUDE = 'const Dir = { N: 0, E: 1, S: 2, W: 3 };';
 expectLine(SCENE, DIR_FIRST, 'export const enum Dir {');
 expectLine(SCENE, DIR_LAST, '}');
-const dirSliceOf = (sliceText) => {
-  const digest = createHash('sha256').update(sliceText).digest('hex');
-  if (digest !== DIR_SLICE_SHA256) throw new Error(`SHA wycinka const enum Dir zmieniony: ${digest}`);
-  const js = stripTypeScriptTypes(sliceText.replace(/^export /gm, ''), { mode: 'transform' });
+const dirJsOf = (sliceText) => stripTypeScriptTypes(sliceText.replace(/^export /gm, ''), { mode: 'transform' });
+const assertDirValues = (js) => {
   const values = new Function(`${js}\nreturn Dir;`)();
   for (const [k, v] of Object.entries({ N: 0, E: 1, S: 2, W: 3 })) {
     if (values[k] !== v) throw new Error(`Dir.${k} = ${values[k]} != ${v}`);
   }
   if (Object.keys(values).filter((k) => !/^\d+$/.test(k)).length !== 4) throw new Error('Dir ma inne klucze niz N/E/S/W');
-  return js;
+  return values;
 };
-// Samotest mutacji (P6_DIR_MUTANT_SELFTEST=1): zamiana kierunkow E<->S w wycinku musi dac FAIL (wyjscie 0 = FAIL wykryty).
-if (process.env.P6_DIR_MUTANT_SELFTEST === '1') {
+const dirSliceOf = (sliceText) => {
+  const digest = createHash('sha256').update(sliceText).digest('hex');
+  if (digest !== DIR_SLICE_SHA256) throw new Error(`SHA wycinka const enum Dir zmieniony: ${digest}`);
+  const js = dirJsOf(sliceText);
+  const values = assertDirValues(js);
+  // Tekst preludium wyprowadzony WYKONANYM Dir (nie z tekstu): musi byc bajt-w-bajt rowny historycznemu zapisowi.
+  const fromExec = `const Dir = { ${['N', 'E', 'S', 'W'].map((k) => `${k}: ${values[k]}`).join(', ')} };`;
+  if (fromExec !== DIR_LEGACY_PRELUDE) throw new Error(`wykonany Dir != preludium: "${fromExec}"`);
+  return { js, fromExec };
+};
+// Samotesty mutacji (zamiana kierunkow E<->S w wycinku; wyjscie 0 = FAIL wykryty, 1 = mutant przeszedl):
+//   P6_DIR_MUTANT_SELFTEST=1 -> pelna sciezka dirSliceOf (lapie strazbnik SHA wycinka);
+//   P6_DIR_MUTANT_SELFTEST=2 -> sama asercja wartosci N/E/S/W (SHA pominiete tylko w tym samotescie).
+if (process.env.P6_DIR_MUTANT_SELFTEST === '1' || process.env.P6_DIR_MUTANT_SELFTEST === '2') {
   const mutant = L(SCENE, DIR_FIRST, DIR_LAST).replace('E = 1', 'E = 2').replace('S = 2', 'S = 1');
+  const mode = process.env.P6_DIR_MUTANT_SELFTEST;
   try {
-    dirSliceOf(mutant);
+    if (mode === '1') dirSliceOf(mutant);
+    else assertDirValues(dirJsOf(mutant));
   } catch (e) {
-    console.error(`selftest Dir: mutant odrzucony (FAIL): ${e.message}`);
+    console.error(`selftest Dir (tryb ${mode}): mutant odrzucony (FAIL): ${e.message}`);
     process.exit(0);
   }
-  console.error('selftest Dir: mutant PRZESZEDL (brak FAIL)');
+  console.error(`selftest Dir (tryb ${mode}): mutant PRZESZEDL (brak FAIL)`);
   process.exit(1);
 }
-const DIR_JS = dirSliceOf(L(SCENE, DIR_FIRST, DIR_LAST));
+const { js: DIR_JS, fromExec: DIR_FROM_EXEC } = dirSliceOf(L(SCENE, DIR_FIRST, DIR_LAST));
 const facingParts = [
-  DIR_LEGACY_PRELUDE,
+  DIR_FROM_EXEC,
   L(SCENE, 347, fnRange(SCENE, 347)[1]),
   L(SCENE, 359, fnRange(SCENE, 359)[1]),
   L(SCENE, 370, fnRange(SCENE, 370)[1]),
