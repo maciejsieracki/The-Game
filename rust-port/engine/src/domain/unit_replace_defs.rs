@@ -2,7 +2,8 @@
 //!
 //! Zakres tego modulu:
 //! - `category_of`: 1:1 port web `categoryOf(name, role, isSuper, typ)` z
-//!   `gra/src/units/setup.ts` (pin 07d2fbd72, linie 239-311: `normalizeForMatch` + `categoryOf`).
+//!   `gra/src/units/setup.ts` (pin 07d2fbd72, linie 239-311: `normalizeForMatch` od linii 239,
+//!   `categoryOf` linie 246-311).
 //!   Funkcja czysta; wektory z pinu: `tests/p6_unit_replace_defs_vectors/`.
 //! - `production_replace_defs`: tabela `ReplaceUnitDef` zbudowana z osadzonego
 //!   `rust-port/engine/data/units.json` (kategoria, `Health`, `Epoka`, `Surowiec`, `Surowiec (ilość)`,
