@@ -35,6 +35,7 @@ use crate::domain::siege_tactics_fastforward::{
 };
 use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
 use crate::domain::siege_tactics_roundcap::RoundCapState;
+use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
 use crate::domain::siege_tactics_turnseq::{
     activate_next, activation_done, begin_turn, CheckSite, EndCheckSnapshot, SeqEvent, SeqStep,
     TurnSeqEnv, TurnSeqState, UnitRef,
@@ -73,6 +74,45 @@ impl LoopWinner {
             LoopWinner::Draw => "remis",
         }
     }
+}
+
+/// Wejście wyboru celu wieży (web `_fireOneTower` -> `pickTowerTarget`, pin `battleScene.ts:4226-4234`):
+/// pozycja wieży (`wallCol`, `row`), zasięg i pozycje jednostek atakujących (`atk_pos[i]` dla `st.atk[i]`).
+/// Pozycje są statyczne w tej warstwie, tak jak `move_points` i `morale_max`; hp i stan są czytane z [`TurnSeqState`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct TowerTargeting {
+    pub tower_q: i64,
+    pub tower_r: i64,
+    pub range: f64,
+    pub atk_pos: Vec<(i64, i64)>,
+}
+
+/// Wybór celu wieży w produkcyjnej pętli: filtr pinu `!dead && !fadingOut && !routed && !removed`, potem
+/// [`pick_tower_target`]. Zwraca indeks w `atk` (nie w przefiltrowanej liście), albo `None` (pin: `idx < 0`).
+/// Panika, gdy `atk_pos` nie ma wpisu dla jednostki (błąd wywołującego, nie stan gry).
+pub fn tower_target_index(atk: &[CombatUnit], t: &TowerTargeting) -> Option<usize> {
+    let live: Vec<usize> = (0..atk.len())
+        .filter(|&i| {
+            let u = &atk[i];
+            !u.dead && !u.fading_out && !u.routed && !u.removed
+        })
+        .collect();
+    let enemies: Vec<TowerTarget> = live
+        .iter()
+        .map(|&i| {
+            let (q, r) = *t
+                .atk_pos
+                .get(i)
+                .expect("atk_pos musi mieć wpis dla każdej jednostki atakującej");
+            TowerTarget {
+                q,
+                r,
+                hp: atk[i].hp,
+                dead: false,
+            }
+        })
+        .collect();
+    pick_tower_target(t.tower_q, t.tower_r, t.range, &enemies).map(|k| live[k])
 }
 
 /// Efekty i dane statyczne sceny potrzebne sekwencji: ciało, wieża, pole sufitu, mnożniki.
@@ -187,6 +227,11 @@ pub struct SiegeLoop<B: LoopBody> {
     pub unsupported: Option<&'static str>,
     /// Stan pętli przewijania (`ffVirtualMs`, `ffPendingAuto`, kolejka) zachowany między wywołaniami [`Self::resume`].
     ff: FfLoopState<()>,
+    /// Wejście wyboru celu wieży; `None` = wieże nie są celowane (zachowanie sprzed podpięcia).
+    pub tower_targeting: Option<TowerTargeting>,
+    /// Wynik wyboru celu per początek tury z wieżą (indeks w `st.atk` albo `None`), w kolejności wystąpień.
+    /// Sam strzał (obrażenia, #96) nie jest tu zaimplementowany.
+    pub tower_log: Vec<Option<usize>>,
 }
 
 impl<B: LoopBody> SiegeLoop<B> {
@@ -198,6 +243,8 @@ impl<B: LoopBody> SiegeLoop<B> {
             winner: None,
             unsupported: None,
             ff: FfLoopState::<()>::new(),
+            tower_targeting: None,
+            tower_log: Vec::new(),
         }
     }
 
@@ -256,6 +303,10 @@ impl<B: LoopBody> SiegeLoop<B> {
                 | SeqEvent::RefreshQueuedVisuals => {}
                 SeqEvent::FireSiegeTowers => {
                     self.trace.push(format!("turn:{}", self.st.round_no));
+                    if let Some(t) = &self.tower_targeting {
+                        let atk: Vec<CombatUnit> = self.st.atk.iter().map(|u| u.c).collect();
+                        self.tower_log.push(tower_target_index(&atk, t));
+                    }
                 }
                 SeqEvent::BeginAutoBatchPhase { .. } => {
                     self.halt_unsupported(
