@@ -192,3 +192,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - FC PASS poza parity-v2: NFD-CCC c25fd6edf (e6a815d53), KLASY-WIRE cb9db56ba/0a86341d5 (3d7ed90f7) → INTEG-B15 (Haiku; pełny cargo test) w toku.
 - Kolejka techniczna (do zlecenia na Haiku po B15, tylko realna praca): STAN-ULEPSZENIA (#95), POWER-BITWY-ZDOBYCZE (#86), R7K7-B/C (#89–90), K5-LOOP (#91), K5I2b2 (adapter pozycja+mapa+mur → BlowEnv), unit_power::ranged_shot_accuracy (f64::max vs Math.max), dokumentacja wierszy planu K5I2a2–b/CRED.
 - Pytania gameplay do rana: bez zmian (SZTURM ODPARTY; W8 r7 Q1–Q4; units.json vs pin [71 różnic pól/51 jedn.]; DYSTANS; REPIN-DRYFT 1–6).
+
+## Przebieg — 12:5x UTC (batch 16/17 w toku)
+- FC PASS-WITH-NOTES: UNIT-POWER-MAXNAN d842b9866; POWER-BITWY-ZDOBYCZE 73c92bb04 (kod 83a030cd6); SIEGE-TAKTYKA-K5I2B2 0c90e2bf1 (kod 7bd75cf2c); STAN-ULEPSZENIA r2 4d348e9ac; R7K7-B da070d099 (kod e2bf70095); K5-LOOP ec7a0ff78. Wszystkie na gałęziach rust-port-wip/*.
+- INTEG-B16 (MAXNAN+BITWY+K5I2B2): pełny cargo test 3162 passed/0 failed/1 ignored; Evaluator w toku. Potem FF na parity-v2.
+- INTEG-B17 (po B16): STAN-ULEPSZENIA (konflikt z BITWY w turn_war_inputs.rs i p6_wire_war_inputs.rs — rozwiązuje runda Operatora), R7K7-B, K5-LOOP.
+- Decyzja techniczna: "P7" z dispatchu R7K7-B nie istnieje jako reguła wiarygodności (pin: P7 = bonus Zaufania za wymianę, applyDiploP7Bonuses) — nie portować jako wiarygodność; wpis zamknięty.
+- Długi: ranged_shot_damage NaN/Inf (zwrot i64; combat.rs); STAN-ULEPSZENIA-TERYTORIUM-VEC (wektor pinu heksy_terytorium z fortami); D3 tickCyclicResourceTradeDeals bez wektorów pinu; wpięcie deactivate_zloze_grants/sync_relation (stan zlozeGrants, R7K7-C); wpięcie akumulatorów bitew/zdobyczy w walkę/zdobywanie/eliminację; K5-LOOP #91 OTWARTE: ciało jednostki (K5H/K5I single_blow_full) niepodpięte, port wież (_schedule 180 ms, pickTowerTarget), wektory flee/rout/moveLeft/wyłom w trakcie bitwy/tryb ręczny/AUTO bez oblężenia, test niezależności od podziału kroków przewijania, test halt_unsupported; vectors.json 7,1 MB.
