@@ -361,6 +361,14 @@ pub struct PlayableReplaceUnit {
     /// Zamiana uzyta w biezacej turze (web: `replaceUsedThisTurn`).
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub replace_used_this_turn: bool,
+    /// Postep jednostki: web `battlesSurvived` (wejscie bonusu weterana do HP zamiany). Pomijane,
+    /// gdy brak lub 0, wiec zapisy sprzed zmiany nie zmieniaja sie.
+    #[serde(skip_serializing_if = "is_zero_opt_f64")]
+    pub battles_survived: Option<f64>,
+    /// Postep jednostki: web `parametryBonusProc` (wejscie bonusu parametrow do HP zamiany). Pomijane,
+    /// gdy brak lub 0.
+    #[serde(skip_serializing_if = "is_zero_opt_f64")]
+    pub parametry_bonus_proc: Option<f64>,
 }
 
 /// P6-UNIT-REPLACE-L3 etap 2: ekonomia potrzebna do zamiany jednostek (web: skarbiec gracza,
@@ -395,15 +403,10 @@ fn is_zero_f64(value: &f64) -> bool {
     *value == 0.0
 }
 
-/// Postep jednostki dla HP zamiany. Stan Rust nie niesie jeszcze web `battlesSurvived` ani
-/// `parametryBonusProc` (brak zrodla w `PlayableUnit`/`PlayableReplaceUnit`), wiec wejscie jest
-/// JAWNIE zerowe: bonus weterana i parametrow = 0, a HP = bazowe `health`. Gdy stan dostanie te pola,
-/// zamien te stala na odczyt z jednostki. Skutek do tego czasu: HP po zamianie zranionej lub
-/// doswiadczonej jednostki NIE jest parytetowe z web (brak pol `battlesSurvived`/`parametryBonusProc`).
-const PLAYABLE_UNIT_PROGRESS: ReplaceUnitProgress = ReplaceUnitProgress {
-    parametry_bonus_proc: None,
-    battles_survived: None,
-};
+/// Pole postepu pomijane w zapisie, gdy brak (`None`) albo zerowe (liczone jak brak w web).
+fn is_zero_opt_f64(value: &Option<f64>) -> bool {
+    value.is_none_or(|v| v == 0.0)
+}
 
 /// Etykieta trudnosci stanu (`StartGameParams.difficulty`, domyslnie "Normalny") -> `Difficulty`.
 /// Mapa 1:1 z web `main.ts:44372-44374` (`'Łatwy': 'easy'`, `'Normalny': 'normal'`, `'Trudny': 'hard'`)
@@ -771,6 +774,33 @@ impl PlayableGame {
         Ok(())
     }
 
+    /// Ustawia stan zamiany jednostki (HP, typ, postep `battlesSurvived`/`parametryBonusProc`) dla
+    /// scenariusza startowego/testowego, jak `set_human_treasury`. Jednostka musi istniec; wartosci
+    /// NaN i nieskonczone sa odrzucane. Nie jest to zapis z bitwy: stan postepu ustawia wywolujacy.
+    pub fn set_replace_unit_state(
+        &mut self,
+        unit_id: u64,
+        state: PlayableReplaceUnit,
+    ) -> Result<(), PlayableError> {
+        if !self.state.units.iter().any(|unit| unit.id.get() == unit_id) {
+            return Err(PlayableError::UnitNotFound(unit_id));
+        }
+        let finite = [
+            state.hp,
+            state.hp_max,
+            state.battles_survived,
+            state.parametry_bonus_proc,
+        ]
+        .into_iter()
+        .flatten()
+        .all(f64::is_finite);
+        if !finite {
+            return Err(PlayableError::NonFiniteEconomy);
+        }
+        self.state.economy.units.insert(unit_id, state);
+        Ok(())
+    }
+
     fn capital_id_of_human(&self) -> Option<u64> {
         self.state
             .cities
@@ -858,6 +888,12 @@ impl PlayableGame {
                 .cloned()
                 .unwrap_or_default(),
         };
+        // Postep zamienianej jednostki (web `u.battlesSurvived`, `u.parametryBonusProc`) wchodzi do HP
+        // (`newMaxHp` i `oldMaxHp` z tej samej jednostki). Brak pola = 0, jak w web.
+        let progress = ReplaceUnitProgress {
+            parametry_bonus_proc: replace_state.parametry_bonus_proc,
+            battles_survived: replace_state.battles_survived,
+        };
         // Tryb gracza: bez synchronizacji hpMax (ta galaz nalezy do AI w web).
         match replace_unit_wired(
             &mut target,
@@ -866,7 +902,7 @@ impl PlayableGame {
             &mut city,
             gate,
             false,
-            PLAYABLE_UNIT_PROGRESS,
+            progress,
         ) {
             UnitReplaceResult::Ok { .. } => {
                 self.state.economy.treasury = city.treasury;
@@ -879,6 +915,9 @@ impl PlayableGame {
                         hp: target.hp,
                         hp_max: target.hp_max,
                         replace_used_this_turn: target.replace_used_this_turn,
+                        // Postep nie zmienia sie przy zamianie (tylko model i odczyt; zapis = inne tematy).
+                        battles_survived: replace_state.battles_survived,
+                        parametry_bonus_proc: replace_state.parametry_bonus_proc,
                     },
                 );
                 // Adapter zeruje ruch_left (web: zamiana zuzywa ruch).

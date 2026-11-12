@@ -125,7 +125,7 @@ fn produkcyjna_zamiana_ustawia_kategorie_hp_i_koszt_z_pinu() {
         assert_eq!(
             state.hp,
             Some(16.0),
-            "{label}: HP po zamianie = newMaxHp z pinu (bez bonusow stanu, patrz PLAYABLE_UNIT_PROGRESS)"
+            "{label}: HP po zamianie = newMaxHp z pinu (postep z jednostki, patrz DLUG-UNIT-REPLACE-PROGRESS)"
         );
     }
 }
