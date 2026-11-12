@@ -1,8 +1,7 @@
 //! P6-WIRE-WAR-R7K7-C (R7K7C-WIRING): `apply_dipl_deltas_to_state` w `advance_turn` (parytet "brak wpisu = 0").
 //!
 //! - Brak wpisu wlasciciela w mapie DELT = zadna zmiana jego skarbca/puli Pracy (jak pin: przyrost 0).
-//!   Dotyczy to wlascicieli z producentem w stanie; producent nieobecny przy wpisie delty pozostaje bledem
-//!   (`WarTurnError::DiplStep`), zgodnie z OTWARTYM odchyleniem opisanym w `turn_war_dipl_steps.rs`.
+//! - Brak producenta (wpisu w mapie stanu) przy wpisie delty = saldo 0 (jak pin: `?? 0`), nie blad.
 //! - Bez umow i bez delt `advance_turn` nie rusza skarbcow (brak regresji produkcyjnej sciezki).
 //! - Test end-to-end daniny AI -> gracz przez `advance_turn` znajduje sie w `src/domain/playable.rs`
 //!   (`advance_turn_moves_tribute_from_ai_treasury_to_human_treasury`), bo wymaga dostepu do stanu gry.
@@ -11,7 +10,6 @@ use std::collections::BTreeMap;
 
 use civ_engine::domain::playable::{PlayableGame, PlayableState, StartGameParams};
 use civ_engine::domain::turn_war_dipl_steps::apply_dipl_deltas_to_state;
-use civ_engine::domain::turn_war_pipeline::WarTurnError;
 
 fn fresh_game() -> PlayableGame {
     PlayableGame::new(StartGameParams {
@@ -76,16 +74,19 @@ fn empty_delta_maps_leave_state_identical() {
 }
 
 #[test]
-fn delta_for_owner_without_producer_is_explicit_error_not_zero() {
-    // Wpis delty bez producenta NIE jest traktowany jak zero (BRAK CICHYCH ZER); stan bez zmian.
-    let base = with_ai(fresh_game().state().clone());
-    let mut st = base.clone();
-    let before = st.clone();
-    let praca = BTreeMap::from([(2_i64, 1.0)]);
-    let err = apply_dipl_deltas_to_state(&mut st, &BTreeMap::new(), &praca)
-        .expect_err("brak puli Pracy przy wpisie delty");
-    assert!(matches!(err, WarTurnError::DiplStep(_)));
-    assert_eq!(st, before);
+fn delta_for_owner_without_producer_starts_from_zero_like_pin() {
+    // Pin: `ownerTreasury`/`ownerPracaPool` = `?? 0`, a `add` zapisuje `(get ?? 0) + delta`;
+    // pula Pracy jest podlogowana do zera (`setOwnerPracaPool` = `Math.max(0, v)`).
+    let mut st = with_ai(fresh_game().state().clone());
+    st.economy.ai_treasury_by_owner.clear();
+    st.economy.praca_pool_by_owner.clear();
+    let treasury = BTreeMap::from([(2_i64, 12.5)]);
+    let praca = BTreeMap::from([(2_i64, 3.0), (5_i64, -4.0)]);
+    apply_dipl_deltas_to_state(&mut st, &treasury, &praca)
+        .expect("brak producenta = saldo 0, nie blad");
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&2), Some(&12.5));
+    assert_eq!(st.economy.praca_pool_by_owner.get(&2), Some(&3.0));
+    assert_eq!(st.economy.praca_pool_by_owner.get(&5), Some(&0.0));
 }
 
 #[test]

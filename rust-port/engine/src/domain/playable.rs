@@ -1309,6 +1309,39 @@ mod war_pipeline_advance_tests {
     }
 
     #[test]
+    fn advance_turn_moves_tribute_from_human_treasury_to_ai_treasury() {
+        // R7K7C-WIRING, przypadek odwrotny: danina gracz -> AI (odbiorca AI z producentem). Przyrost
+        // skarbca AI idzie przez `apply_dipl_deltas_to_state`, a skarbiec gracza maleje o te sama kwote.
+        use crate::domain::diplomacy::{ActiveDeal, TreatyEconomy, TreatyKind};
+        let mut game = game_with_ai_city();
+        let human = game
+            .state
+            .players
+            .iter()
+            .find(|p| p.is_human)
+            .expect("gracz ludzki")
+            .id;
+        game.state.economy.treasury = 100.0;
+        game.state.economy.ai_treasury_by_owner.insert(2, 500.0);
+        let mut deal = ActiveDeal::new(TreatyKind::Vassalization, human, PlayerId::new(2), 1, None);
+        deal.id = "danina-wiring-odwrotna".to_owned();
+        deal.economy = Some(TreatyEconomy {
+            payer_owner_id: human,
+            receiver_owner_id: PlayerId::new(2),
+            money_per_turn: 40.0,
+        });
+        game.state.war.diplomacy.add_deal(deal);
+
+        game.advance_turn().expect("advance_turn z danina gracza");
+
+        assert_eq!(game.state().economy.treasury, 60.0);
+        assert_eq!(
+            game.state().economy.ai_treasury_by_owner.get(&2),
+            Some(&540.0)
+        );
+    }
+
+    #[test]
     fn failing_war_phase_restores_queue_turn_and_war_state() {
         // Zepsuty zapis blokad pokoju (nie tablica) = jawny blad producenta, stan wraca.
         let mut game = game_with_ai_city();
