@@ -28,6 +28,7 @@ pub mod civ_bonuses;
 pub mod civ_matrix;
 pub mod civ_names;
 pub mod combat;
+pub mod credibility;
 pub mod diplomacy;
 pub mod diplomacy_aggressor;
 pub mod diplomacy_ai_forced_peace;
