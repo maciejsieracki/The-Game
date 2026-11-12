@@ -22,6 +22,11 @@
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::siege_no_breach::RoundCapVerdict;
+use crate::domain::siege_tactics_activate::{
+    activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
+};
+use crate::domain::siege_tactics_blow::{DefenderState, Outcome, RollSource};
+use crate::domain::siege_tactics_blow_full::{single_blow_full, FullBlowInput};
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
@@ -336,6 +341,324 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
                 );
             }
             FfEvent::TickProjectiles(_) | FfEvent::TickFades(_) | FfEvent::RunQueued(()) => {}
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// K5-LOOP-BODY (runda 2 Operatora): produkcyjne ciało jednostki.
+//
+// ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje tylko gałąź ciosu w zwarciu
+// dla jednostki AUTO bez oblężenia, bez strzelca i bez doktryny: [`activate_unit`] (K5H) decyduje, a dla zdarzenia
+// `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. Każda inna gałąź `_activateUnit`
+// (ucieczka, doktryna, wieże, machiny, strzelec, marsz, tryb ręczny) NIE jest wykonywana: jednostka nic nie robi,
+// a ścieżka trafia do [`ProdBody::unported`]. Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
+// których ten klocek nie niesie, więc cel jest wejściem adaptera ([`ProdUnit::melee_target`]).
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Statyczna konfiguracja jednostki dla [`ProdBody`]: pola `ru` spoza [`CombatUnit`] oraz wejścia adapterów.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProdUnit {
+    /// Pola `ru` czytane przez maszynę K5H. Pola stanu (`dead`, `fading_out`, `routed`, `morale`, `flee_morale`,
+    /// `never_rout`) są nadpisywane z [`TurnSeqState`] przy `start`.
+    pub activate: ActivateUnit,
+    /// Indeks wroga w liście strony przeciwnej wybrany przez adapter `_targetInRange` (wejście, nieportowane).
+    pub melee_target: Option<usize>,
+    /// Szablon ciosu na `melee_target`. Stan obrońcy jest nadpisywany z [`TurnSeqState`] przy `complete`.
+    pub blow: Option<FullBlowInput>,
+    /// Czas animacji ciosu (ms) zwracany przez `start` (wejście adaptera; timing `_doAttack` nieportowany).
+    pub body_ms: f64,
+}
+
+/// Wynik `start` przekazywany do `complete`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct ProdPending {
+    morale: f64,
+    routed: bool,
+    surround_applied: bool,
+    attack: Option<usize>,
+}
+
+/// Zapytania maszyny K5H dla [`ProdBody`] (bez skutków ubocznych).
+struct ProdOps {
+    melee_target: Option<usize>,
+}
+
+impl ActivateOps for ProdOps {
+    fn apply_terrain_range(&mut self, current: f64) -> f64 {
+        // Przeliczenie zasięgu terenu jest wejściem adaptera (`ProdUnit::activate.range`).
+        current
+    }
+    fn perform_player_order(&mut self) -> bool {
+        false
+    }
+    fn doctrine_step(&mut self) -> bool {
+        false
+    }
+    fn tower_climb(&mut self) -> bool {
+        false
+    }
+    fn infantry_to_tower(&mut self) -> bool {
+        false
+    }
+    fn ram_tower_step(&mut self) -> bool {
+        false
+    }
+    fn ranged_target_in_range(&mut self) -> Option<usize> {
+        None
+    }
+    fn target_in_range(&mut self) -> Option<usize> {
+        self.melee_target
+    }
+    fn advance_coord(&mut self) -> f64 {
+        0.0
+    }
+    fn nearest_enemy_pos(&mut self) -> Option<(i64, i64)> {
+        None
+    }
+}
+
+/// Etykieta gałęzi nieportowanej (zdarzenia spoza zakresu [`ProdBody`]).
+fn prod_tag(ev: ActivateEvent) -> &'static str {
+    match ev {
+        ActivateEvent::Flee => "ucieczka-routed",
+        ActivateEvent::DoctrineStep => "doktryna",
+        ActivateEvent::TowerClimb => "wieza-wejscie",
+        ActivateEvent::InfantryToTower => "piechota-do-wiezy",
+        ActivateEvent::RamTowerStep => "taran-wieza",
+        ActivateEvent::AttackWallTile { .. } => "atak-muru",
+        ActivateEvent::AdvanceToward { .. } => "marsz",
+        ActivateEvent::RangedAction => "strzelec",
+        ActivateEvent::FallBackStep => "odwrot",
+        ActivateEvent::CavalryAction => "kawaleria",
+        ActivateEvent::PhalanxAction => "falanga",
+        ActivateEvent::AdvanceStep => "krok-naprzod",
+        _ => "inne",
+    }
+}
+
+fn opposite(side: BattleSide) -> BattleSide {
+    match side {
+        BattleSide::Attacker => BattleSide::Defender,
+        BattleSide::Defender => BattleSide::Attacker,
+    }
+}
+
+fn unit_cu_mut(st: &mut TurnSeqState, r: UnitRef) -> &mut CombatUnit {
+    match r.side {
+        BattleSide::Attacker => &mut st.atk[r.idx].c,
+        BattleSide::Defender => &mut st.def[r.idx].c,
+    }
+}
+
+/// Produkcyjne ciało jednostki pętli: składa [`activate_unit`] (K5H) i [`single_blow_full`] (K5I).
+pub struct ProdBody<R: RollSource> {
+    /// Jednostki stron, `[0]` atakujący, `[1]` obrońca; kolejność jak w `TurnSeqState::atk` / `def`.
+    pub units: [Vec<ProdUnit>; 2],
+    /// Wejścia sceny `this` dla `_activateUnit` (`finished` brane z `TurnSeqState` przy `start`).
+    pub scene: ActivateScene,
+    /// Deterministyczne rzuty (wstrzyknięte zamiast `Math.random`).
+    pub rolls: R,
+    /// Ścieżki nieportowane (NIE_ZMIERZONO): jednostka i etykieta gałęzi. Jednostka z taką ścieżką nic nie robi.
+    pub unported: Vec<(UnitRef, &'static str)>,
+    /// Flaga `surroundApplied` (jednorazowa) trzymana między aktywacjami, bo nie ma jej w [`CombatUnit`].
+    surround: [Vec<bool>; 2],
+    pending: [Vec<Option<ProdPending>>; 2],
+}
+
+impl<R: RollSource> ProdBody<R> {
+    pub fn new(units: [Vec<ProdUnit>; 2], scene: ActivateScene, rolls: R) -> Self {
+        let surround = [
+            units[0]
+                .iter()
+                .map(|u| u.activate.surround_applied)
+                .collect(),
+            units[1]
+                .iter()
+                .map(|u| u.activate.surround_applied)
+                .collect(),
+        ];
+        let pending = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        Self {
+            units,
+            scene,
+            rolls,
+            unported: Vec::new(),
+            surround,
+            pending,
+        }
+    }
+
+    fn enemies_of(&self, side: BattleSide, st: &TurnSeqState) -> Vec<EnemyRef> {
+        let other = opposite(side);
+        self.units[side_ix(other)]
+            .iter()
+            .enumerate()
+            .map(|(i, pu)| {
+                let c = st
+                    .unit(UnitRef {
+                        side: other,
+                        idx: i,
+                    })
+                    .c;
+                EnemyRef {
+                    q: pu.activate.q,
+                    r: pu.activate.r,
+                    dead: c.dead,
+                    fading_out: c.fading_out,
+                    routed: c.routed,
+                    is_catapult: pu.activate.is_catapult,
+                }
+            })
+            .collect()
+    }
+}
+
+impl<R: RollSource> LoopBody for ProdBody<R> {
+    fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
+        let ix = side_ix(unit.side);
+        self.pending[ix][unit.idx] = None;
+        let seq = st.unit(unit).c;
+        // Martwa / znikająca jednostka: `_activateUnit` kończy od razu (`done()`), bez zdarzeń spoza zakresu.
+        if seq.dead || seq.fading_out {
+            return 0.0;
+        }
+        let pu = self.units[ix][unit.idx].clone();
+        // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
+        let out_of_scope = if seq.routed {
+            Some("ucieczka-routed")
+        } else if self.scene.manual_mode {
+            Some("tryb-reczny")
+        } else if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
+            Some("oblezenie")
+        } else if pu.activate.can_shoot {
+            Some("strzelec")
+        } else if pu.activate.doctrine_auto {
+            Some("doktryna")
+        } else {
+            None
+        };
+        if let Some(tag) = out_of_scope {
+            self.unported.push((unit, tag));
+            return 0.0;
+        }
+
+        let mut au = pu.activate.clone();
+        au.dead = seq.dead;
+        au.fading_out = seq.fading_out;
+        au.routed = seq.routed;
+        au.morale = seq.morale;
+        au.flee_morale = seq.flee_morale;
+        au.never_rout = seq.never_rout;
+        au.surround_applied = self.surround[ix][unit.idx];
+
+        let enemies = self.enemies_of(unit.side, st);
+        let scene = ActivateScene {
+            finished: st.finished,
+            ..self.scene.clone()
+        };
+        let mut ops = ProdOps {
+            melee_target: pu.melee_target,
+        };
+        let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
+
+        let mut pend = ProdPending {
+            morale: au.morale,
+            routed: au.routed,
+            surround_applied: au.surround_applied,
+            attack: None,
+        };
+        let mut skipped: Vec<&'static str> = Vec::new();
+        for ev in res.events.iter().copied() {
+            match ev {
+                ActivateEvent::Done
+                | ActivateEvent::ApplyTerrainRange
+                | ActivateEvent::PerformPlayerOrder
+                | ActivateEvent::ResetPlayerOrder
+                | ActivateEvent::UpdateMoraleBar
+                | ActivateEvent::StartRout
+                | ActivateEvent::UpdateFacing => {}
+                // Wywołania wież i taranu są w pinie bezczynne bez muru (`siegeWallCol < 0` -> `return false`,
+                // battleScene.ts:8023, :8057, :8088); strażnik `oblezenie` wyżej wyklucza mur.
+                ActivateEvent::TowerClimb
+                | ActivateEvent::InfantryToTower
+                | ActivateEvent::RamTowerStep => {}
+                ActivateEvent::Attack { target } => pend.attack = Some(target),
+                other => skipped.push(prod_tag(other)),
+            }
+        }
+        // Jakakolwiek gałąź spoza zakresu = jednostka nic nie robi (żadnych częściowych efektów).
+        if !skipped.is_empty() {
+            for tag in skipped {
+                self.unported.push((unit, tag));
+            }
+            return 0.0;
+        }
+        if let Some(target) = pend.attack {
+            if pu.melee_target != Some(target) || pu.blow.is_none() {
+                self.unported.push((unit, "cios-bez-szablonu"));
+                return 0.0;
+            }
+        }
+        let dur = if pend.attack.is_some() {
+            pu.body_ms
+        } else {
+            0.0
+        };
+        self.pending[ix][unit.idx] = Some(pend);
+        dur
+    }
+
+    fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
+        let ix = side_ix(unit.side);
+        let Some(pend) = self.pending[ix][unit.idx].take() else {
+            return;
+        };
+        self.surround[ix][unit.idx] = pend.surround_applied;
+        {
+            let c = unit_cu_mut(st, unit);
+            c.morale = pend.morale;
+            if pend.routed {
+                c.routed = true;
+            }
+        }
+        let Some(target) = pend.attack else {
+            return;
+        };
+        let tref = UnitRef {
+            side: opposite(unit.side),
+            idx: target,
+        };
+        let tc = st.unit(tref).c;
+        let Some(mut input) = self.units[ix][unit.idx].blow.clone() else {
+            return;
+        };
+        input.defender_state = DefenderState {
+            hp: tc.hp,
+            max_hp: input.defender_state.max_hp,
+            morale: tc.morale,
+            flee_morale: tc.flee_morale,
+            dead: tc.dead,
+            fading_out: tc.fading_out,
+            routed: tc.routed,
+            never_rout: tc.never_rout,
+            removed: tc.removed,
+        };
+        let out = single_blow_full(&input, &mut self.rolls);
+        {
+            let dc = unit_cu_mut(st, tref);
+            dc.hp = out.blow.def_hp_after;
+            if out.blow.outcome == Outcome::Kill {
+                dc.dead = true;
+            }
+        }
+        // Efekty `_resolveBlowOutcome` (morale, ucieczka po ciosie, efekty sceny) i zbiór `engaged` nie są
+        // portowane w tym klocku: zapis ścieżki zamiast cichego pominięcia.
+        if out.blow.outcome != Outcome::None {
+            self.unported.push((unit, "resolveBlowOutcome-efekty"));
+        }
+        if out.blow.engaged_add {
+            self.unported.push((unit, "engaged-zbior"));
         }
     }
 }
