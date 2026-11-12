@@ -46,5 +46,15 @@
     }
   ],
   "secs": 27,
-  "consoleErrorSample": []
+  "consoleErrorSample": [],
+  "labelsBeforeRelabel": {
+    "offers": 0,
+    "offersOneShotAll": null,
+    "otherActions": null
+  },
+  "offersCyclic": 0,
+  "offersOneShot": 0,
+  "offersOneShotAll": 0,
+  "otherActions": {},
+  "relabelNote": "etykiety przeliczone z offerLog (klasyfikacja jak w measure-ai-trade-offer-frequency-matrix.cjs); pierwotne w labelsBeforeRelabel"
 }

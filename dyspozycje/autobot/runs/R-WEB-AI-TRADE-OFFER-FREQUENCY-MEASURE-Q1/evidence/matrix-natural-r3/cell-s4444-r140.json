@@ -6,10 +6,10 @@
   "relTotalSet": 140,
   "relTotalAfter": 140,
   "offersCyclic": 0,
-  "offersOneShot": 2,
+  "offersOneShot": 0,
   "turnsRequested": 150,
   "turnsRun": 150,
-  "offers": 2,
+  "offers": 0,
   "activePrzyjmij": 0,
   "pairs": {},
   "cyclicDealsMax": 0,
@@ -18,7 +18,7 @@
   "tableGrowth": 0,
   "scriptRejected": 0,
   "rejectCooldownsMax": 0,
-  "per100": 1.33,
+  "per100": 0,
   "aiOwner": 1,
   "stoppedBy": "koniec przebiegu",
   "autoBattles": 5,
@@ -1698,5 +1698,16 @@
   "relTotalLast": 29,
   "relDrift": true,
   "relPinnedBeforeEnd": true,
-  "consoleErrorSample": []
+  "consoleErrorSample": [],
+  "labelsBeforeRelabel": {
+    "offers": 2,
+    "offersOneShot": 2,
+    "offersOneShotAll": null,
+    "otherActions": null
+  },
+  "offersOneShotAll": 2,
+  "otherActions": {
+    "rozejm": 2
+  },
+  "relabelNote": "etykiety przeliczone z offerLog (klasyfikacja jak w measure-ai-trade-offer-frequency-matrix.cjs); pierwotne w labelsBeforeRelabel"
 }

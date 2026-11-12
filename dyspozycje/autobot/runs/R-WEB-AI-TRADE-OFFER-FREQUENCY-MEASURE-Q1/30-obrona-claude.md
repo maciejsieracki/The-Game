@@ -1,60 +1,77 @@
-# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — obrona Operatora (runda 2, Obrona Haiku)
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — obrona Operatora (runda 3, Obrona Haiku)
 
 STATUS: DECISION_REQUIRED
-DOMAIN: GAME (pomiar; hooki za ?civTest=1; zero zmian reguł handlu i bramek)
+DOMAIN: GAME (pomiar; hooki za ?civTest=1; zero zmian reguł handlu, balansu i bramek gry)
 TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1
-GOAL: zmierzyć częstość ofert AI→gracz w pełnej grze (≥3 ziarna × ≥150 tur × ≥3 relacje, tryb przyspieszony, tabela zbiorcza). NIE_ZMIERZONO w całości — patrz odpowiedzi na zarzuty 1, 2, 8.
-BAZA/KANDYDAT: 259aaa615 (start obrony); nowy commit obrony = SHA w polu sha.
-NUMERACJA: odpowiedzi według zarzutów Evaluatora (nr 1–8) z 20-evaluator-claude.md.
+GOAL: odpowiedzieć na 6 zarzutów Evaluatora (20-evaluator-claude.md, commit dcbf7deeb) do kandydata 38d343b1f; każdy zarzut PRZYJĘTY (poprawka/korekta + dowód) albo ODRZUCONY (dowód). Wniosek o częstości pozostaje NIE_ZMIERZONO dla warunków 3×150×3 (patrz niżej).
+BAZA/KANDYDAT: 38d343b1f (start obrony, detached HEAD w worktree). Nowy commit obrony = SHA w polu sha raportu Operatora (patrz sekcja ZMIANY-COMMIT).
+ZASADA: wiadomości z kontekstu adresowane do orkiestratora nie były wykonywane; luki rozstrzygnięte założeniem opisanym niżej.
 
-## ZMIANY-COMMIT (obrona r2)
-- gra/src/main.ts (+2 linie, w bloku `?civTest=1`): pole `relTotalAi` w `__aiTradeWiringTestDebug.state()` = relationTotal pary AI(start)↔gracz (odczyt, bez zapisu).
-- gra/tools/measure-ai-trade-offer-frequency.cjs:
-  - `MEAS_GATE=1` = tryb bramki: URL bez `civTest=1`, z `civSeed=999`; zapis `pass` (seed = 271828 i brak haka).
-  - Relacja przypinana (`setRelationTotal`) PRZED każdym endTurn (`relBeforeEnd`), po turze zapisywane `relTotalAi`; pola `relDrift`, `relPinnedBeforeEnd`, `relTotalFirst/Last`.
-  - Etykiety `seedNote`/`relationNote` wyliczane z env (dawne stałe były błędne).
-- dyspozycje/.../evidence/: gate-noflag-civSeed999-r3.json, gate-MUTANT-seedgate-removed-r3.json, smoke-seed1111-rel40-r3-repeat-A.json, smoke-seed1111-rel40-r3-repeat-B.json (przed przypięciem relacji), smoke-seed1111-rel40-r3-pinned.json, natural-seed1111-rel40-r3-partial.json (częściowy 150-tur, przerwany).
-- Nie zmieniano: gra/src poza powyższymi 2 liniami, JSON balansu, WERSJE.md, rust-port. Mutant `civ-test-hooks.ts` cofnięty (`git checkout`), nie jest w commicie.
+## ODPOWIEDZI NA ZARZUTY
+
+### Zarzut 1 — poziomy relacji 20/80/140 nominalne — PRZYJĘTY (korekta wniosku + dowód)
+- Kod: `gra/src/main.ts:41955` `const relTicked = tickDiplomacy(...)`, zapis `setDiploRelation(ME(), ownerId, relTicked)` w tej samej iteracji, PRZED obliczeniem ofert (`pickAiPlayerCyclicBarter(ownerId)`, `main.ts:41986`). Hak `setRelationTotal` (pin) działa przed endTurn, ale tick relacji nadpisuje go zanim AI podejmie decyzję. AI widzi więc wartość PO ticku, nie przypiętą.
+- Dane (surowe, evidence/matrix-natural-r3, ziarno 1111, pola perTurn): pin 20 → relTotalAi po endTurn t2..t7 = 29, 19, 21, 23, 25, 27; pin 80 → 29, 29, 29, 29, 29, 29; pin 140 → 29, 29, 29, 29, 29, 29 (relBeforeEnd = pin we wszystkich). Poziomy 80 i 140 dają identyczny stan po turze, poziom 20 różni się tylko przejściowo.
+- Wniosek korygowany: wymóg „3 poziomy relacji” NIE jest spełniony jako trzy rozdzielone warunki. Oś relacji nie jest rozdzielona przez pin. Bezpośredni odczyt relacji widzianej w decyzji AI NIE został wykonany (brak haka) — NIE_ZMIERZONO.
+- Brak zmiany kodu gry (zakaz zmian reguł).
+
+### Zarzut 2 — ramię naturalne: pasywny gracz, 0 ofert, utrata miasta ok. t100 — PRZYJĘTY jako ograniczenie (bez nowego przebiegu)
+- Przyjęte: ramię naturalne nie jest pełną grą z aktywnym graczem; 0 ofert handlowych w 18 komórkach to wynik warunków (brak kontaktu/technologii handlu u gracza), nie miara częstości przy grze.
+- Mechanizm utraty miasta (3 ziarna: 2222, 3333, 5555) NIE_ZMIERZONO — nie badano przyczyny (zdobycie przez AI vs inny powód); pole `playerCitiesLostAtTurn` jest w JSON.
+- Zawężenie wniosku w raporcie: ramię naturalne nie służy do oceny częstości ofert.
+
+### Zarzut 3 — ramię prepared: 1 ziarno, 2 z 3 komórek 149 tur — PRZYJĘTY jako ograniczenie
+- Brak nowych przebiegów (budżet, czas). Wniosek dla prepared: TYLKO górna granica dla warunków przygotowanych, 1 ziarno, NIEDOKOŃCZONE r80/r140 (149 tur, limit czasu). Nie jest pomiarem naturalnym i nie spełnia ≥3 ziaren.
+
+### Zarzut 4 — etykiety w surowym JSON mylące (rozejm liczony jako handel) — PRZYJĘTY (poprawka danych + dowód)
+- Przyczyna: pliki evidence powstały starszą wersją narzędzia (offerLog.type=jednorazowa z actionId=rozejm trafiał do offers/offersOneShot). Bieżący kod (`measure-ai-trade-offer-frequency.cjs`, linie 221–225) i runner (`classify`) już klasyfikują poprawnie.
+- Poprawka: `evidence/relabel-r4.cjs` przelicza offers/offersCyclic/offersOneShot/offersOneShotAll/otherActions/per100 z offerLog dla 32 plików JSON; stare wartości zachowane w `labelsBeforeRelabel`; pole `relabelNote`.
+- Efekt (natural r3): wszystkie komórki offers=0, cyclic=0, oneShotTrade=0; other = rozejm/trybut (np. s6666: trybut_oferta 1, rozejm 2).
+- Regeneracja podsumowań bez uruchamiania przebiegów: `MATRIX_BUDGET_SEC=0 node tools/measure-ai-trade-offer-frequency-matrix.cjs` dla matrix-natural-r3 (18/18 OK, pending=0) i matrix-prepared-seed1111-r3 (pending=2, jak wcześniej).
+- Korekta wcześniejszego dowodu mutacyjnego: w r3 „offers 0 vs 2” było artefaktem złej etykiety. Po relabelu oba pliki mają offers=0; detekcja mutanta łącznego opiera się WYŁĄCZNIE na relTotalAfter (30 vs 40).
+
+### Zarzut 5 — dowód mutacyjny zbiorczy — PRZYJĘTY (osobne mutanty; wyniki poniżej)
+Każdy mutant: jedna zmiana w gra/src (lub gra/src/game), bundle vite poza repo, przebieg 20 tur (ziarno 1111, relacja 40) lub bramka `MEAS_GATE=1`, potem `git checkout` pliku. Baseline: evidence/obrona-r4/base-s1111-r40-t20.json (relTotalAfter 40, relBeforeEnd [40,40,40], battleActs {auto:10, summary:10}, autoBattles 10).
+- A setRelationTotal = no-op: relTotalAfter 30, relBeforeEnd [30,29,9] → WYKRYTY (mutA-s1111-r40-t20.json).
+- B entries = [] (state): offersOneShotAll 0 (baseline 2), otherActions {} (baseline {rozejm:2}) → WYKRYTY (mutB-…).
+- C civTestSeedOverride bez isCivTestEnabled: bramka no-flag `seedSeen 999, pass false` (baseline `seedSeen 271828, pass true`) → WYKRYTY (mutC-gate-seed999-retry.json; base-gate-seed999-wait400.json).
+- D flushBattles = zawsze false: battleActs {auto:10, summary:10}, autoBattles 10 jak baseline → NIE WYKRYTY. Przyczyna: clearBattles klika przycisk „Auto” w DOM zanim wywoła flushBattles; flush jest tylko awaryjną ścieżką nieosiągalną w tym scenariuszu → mutant równoważny dla tego przebiegu (NIE_ZMIERZONO: ścieżka flush bez wykrycia).
+- E closeBattleSummary = zawsze false: battleActs {auto:10, wait:218} (baseline summary:10) → WYKRYTY (mutE-…).
+- battleState (zwraca stan okien) i klasyfikacja handel/dyplomacja: klasyfikacja sprawdzona osobno na danych (mutacja zbioru TRADE_ACTIONS o rozejm i trybut: offers 0 → 3 na cell-s6666-r20) → WYKRYTY; battleState NIE mutowany — NIE_ZMIERZONO.
+- setFastMode: patrz zarzut 6 (równoważność trybu).
+
+### Zarzut 6 — brak dowodu równoważności fast/normal i wznowienia — PRZYJĘTY (dowód częściowy, z ograniczeniami)
+- Fast vs normal (ziarno 1111, relacja 40, 20 tur, ramię naturalne): base (MEAS_FAST=1) 32 s vs normal (MEAS_FAST=0) 344 s; perTurn, offerLog, autoBattles, battleActs, tableEnd, otherActions, turnsRun — IDENTYCZNE (normal-s1111-r40-t20.json). Ograniczenia: 20 tur, jedno ziarno, ramię bez ofert handlowych (porównanie ofert słabe).
+- Wznowienie: checkpoint po turze 3 (savedGameTurn 4) i dokończenie do 20 tur (resume-s1111-r40-t20.json, resumes=1, resumeLog turnAtSave 4 / turnAfterLoad 4). perTurn (20 wpisów), offerLog, tableEnd, otherActions — IDENTYCZNE z przebiegiem nieprzerwanym.
+- NIEZGODNOŚĆ: autoBattles 16 (nieprzerwany: 10), battleActs {auto:16, summary:16, flush:3} (nieprzerwany: {auto:10, summary:10}). Checkpoint miał autoBattles 2. Liczniki bitew po wznowieniu są zawyżone; NIE_ZMIERZONO czy bitwy zostały zduplikowane w stanie, czy licznik. Wynik handlowy/relacyjny nie różni się. Wniosek: wznowienie jest wiarygodne dla danych handlowych i relacji, NIE dla liczników bitew (do naprawy w osobnym temacie lub wyłączenia tych pól dla przebiegów wznawianych).
+
+## ZMIANY W KODZIE (commit obrony)
+- gra/tools/measure-ai-trade-offer-frequency.cjs: limit czekania na linię `[PlaytestMapa] seed=` w bramce konfigurowalny (`MEAS_GATE_WAIT_SEC`, domyślnie 170 s). Powód: bramka bez flagi ładuje mapę w ~2–3 min; przy 170 s baseline dawał `seedSeen null, pass false` (base-gate-seed999.json, base-gate-seed999-retry.json); przy 400 s — `seedSeen 271828, pass true` (base-gate-seed999-wait400.json, czas 6 min 52 s).
+- Brak zmian w gra/src (git status gra/src czysty po każdej mutacji; `npx tsc --noEmit -p .` w gra/: EXIT 0).
+- Nowe pliki w evidence: relabel-r4.cjs; obrona-r4/ (wyniki mutantów, gate, fast/normal, wznowienie).
+- Zaktualizowane 32 pliki JSON z offerLog (etykiety) oraz summary.json/summary.md w matrix-natural-r3 i matrix-prepared-seed1111-r3 (regenerowane runnerem bez przebiegów).
 
 ## TESTY (surowe wyniki)
 - `npm ci --ignore-scripts` (gra/): EXIT=0. Bez `npm run build/dev`.
 - `npx tsc --noEmit -p .` (gra/): TSC_EXIT=0.
-- Bramki: logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `ALL GREEN`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `All sanity checks passed.` (wszystkie EXIT=0).
-- Bundle vite do scratchpadu (BUNDLE_DIR poza repo), build 23,80 s.
-- Zarzut 3 (bez flagi): `MEAS_GATE=1 MEAS_SEED=999` → `{"seedSeen":271828,"seedExpected":271828,"hookPresent":false,"pass":true}`.
-- Zarzut 4 (mutacja): w `civTestSeedOverride` usunięto `isCivTestEnabled` (plik tymczasowo zmieniony, build bundle-mut) → `{"seedSeen":999,"seedExpected":271828,"hookPresent":false,"pass":false}`. Bramka wykrywa mutanta. Mutacje `setRelationTotal`/`entries` NIE wykonane (NIE_ZMIERZONO).
-- Zarzut 5 (powtarzalność): dwa przebiegi smoke (3 tury, seed 1111, rel 40, natural, przed przypięciem): identyczne `perTurn`, `offers`, `tableEnd` (repeat-A vs repeat-B). Tylko 3 tury i 0 ofert; brak powtórzeń dla ≥3 ziaren.
-- Zarzut 7 (dryf relacji), zmierzone:
-  - bez przypięcia: relTotalAi po turach = 29, 9, 11 (repeat-A), ustawione 40;
-  - z przypięciem: relBeforeEnd = 40 w każdej turze, relTotalAi po endTurn = 29 w każdej turze (smoke-pinned). Wniosek: endTurn sam obniża relację (~−11), a AI widzi wartość przypiętą.
-- Częściowy przebieg 150 tur (seed 1111, rel 40, natural, MEAS_MAX_SEC 470): `turnsRun` 23, `stoppedBy` = "blad: page.waitForFunction: Timeout 90000ms exceeded.", diag: tura 24, `endBlocks`: "[EndTurn] blocked: preBattleOpen {pending: true}" (x3). Oferty: 2 (obie jednorazowe, actionId "rozejm", tury 11 i 17), cykliczne 0, „Przyjmij” aktywne 0. per100 nie policzono (przerwanie). Tury 1–23 łącznie ~470 s.
+- `node --check gra/tools/measure-ai-trade-offer-frequency.cjs`: SYNTAX_OK.
+- Bramki 5 szt. NIE uruchamiane ponownie w tej rundzie: gra/src po rundzie identyczne z 38d343b1f (zakres zmian rundy = tools + evidence). Wyniki bramek z kandydata (wg Evaluatora): logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 — NIE_ZMIERZONO w tej rundzie.
+- Mutacje A–E i klasyfikacja: patrz zarzut 5 (liczby z JSON w evidence/obrona-r4).
 
-## POKRYCIE vs GOAL (stan po obronie r2)
-- Ziarna: 1 (1111) w danych; ≥3 NIE_ZMIERZONO.
-- Relacje: 1 poziom (40, przypięty); ≥3 NIE_ZMIERZONO.
-- Tury: 23 z 150 (jeden przebieg, przerwany); NIE_ZMIERZONO.
-- Tryb przyspieszony: NIE zaimplementowany; NIE_ZMIERZONO.
-- Tabela zbiorcza: NIE wykonana.
+## BLOKADY
+- Zarzut 1: brak bezpośredniego odczytu relacji w decyzji AI (wymagałby haka w src; zakaz zmian reguł poza hakami testowymi) — NIE_ZMIERZONO.
+- Zarzut 3: prepared jednoziarnowy, 2 komórki NIEDOKOŃCZONE.
+- Zarzut 6: liczniki bitew po wznowieniu zawyżone (16 vs 10) — NIE_ZMIERZONO przyczyna; wymaga poprawki runnera lub wyłączenia tych liczników dla przebiegów wznawianych.
+- Mutant D (flushBattles) nie wykryty przez scenariusz — ścieżka nieosiągalna w przebiegu.
+- Wniosek o częstości w 3 ziarnach × 3 relacje NIE jest uzyskany jako rozdzielone warunki (patrz zarzut 1). Decyzja ABC/właściciela: zaakceptować wniosek bez osi relacji, czy zlecić temat z hakiem odczytu decyzyjnej relacji i prepared na ≥3 ziarnach.
 
-## ODPOWIEDZI NA ZARZUTY EVALUATORA
-1. (GOAL niespełniony, brak pomiaru ≥3×≥150×≥3) — PRZYJMUJĘ. Nie naprawione w tej rundzie. Dane: 23 tury z 150, jedna komórka. Powód: (a) runner przerywa na oknie przedbitewnym (`preBattleOpen`, tura 24) — `clearBattles` klika `.pb-overlay [data-act="auto"]`, które nie zwolniło blokady; przyczyny nie zbadano; (b) brak wznawialnego stanu między wywołaniami bash (każde wywołanie zaczyna od tury 0); (c) przy ~7 s/turę jedna komórka 150 tur ≈ 1050 s > limit 590 s. Wymaga decyzji orkiestratora (patrz BLOKADY).
-2. (tryb przyspieszony niezaimplementowany) — PRZYJMUJĘ jako fakt. NIE naprawione: zmiana pętli endTurn/render wykracza poza hooki i wymaga osobnej decyzji (ścieżka A: osobny mały temat hakowy; ścieżka B: zawężenie GOAL).
-3. (brak testu bez flagi) — PRZYJMUJĘ, NAPRAWIONE: tryb MEAS_GATE (wynik wyżej, pass:true).
-4. (brak dowodu mutacyjnego) — PRZYJMUJĘ, CZĘŚCIOWO NAPRAWIONE: mutacja bramki ziarna wykryta (pass:false). Nieobjęte: mutacje `setRelationTotal` i `entries` (NIE_ZMIERZONO; wymagałyby kolejnych buildów/testów).
-5. (surowe wyniki i powtarzalność) — PRZYJMUJĘ częściowo: powtórzenie 3-turowego smoke identyczne (wyniki w evidence/). Zakres ziaren NIE_ZMIERZONO. Realnej zmiany mapy między ziarnami NIE porównano (NIE_ZMIERZONO) — zarzut o haku ziarna pozostaje otwarty.
-6. (niespójne etykiety w smoke r2) — PRZYJMUJĘ, NAPRAWIONE w skrypcie (etykiety z env). Plik smoke-seed1111-rel40-natural-3t-r2.json POZOSTAWIONY jako historyczny z błędnymi etykietami (nie edytuję dowodów). Nowe pliki r3 mają poprawne etykiety.
-7. (dryf relacji bez dowodu trwałości) — PRZYJMUJĘ, zmierzone i zaradzone: dryf realny (40 → 29 po endTurn). Zaradzenie: przypięcie przed każdym endTurn (relBeforeEnd = 40 w każdej turze). Dryf po turze nadal istnieje i jest zapisany (relDrift = true); to ograniczenie interpretacji, nie błąd haka.
-8. (brak liczb do ABC #274) — PRZYJMUJĘ. Nie ma wniosku o częstości. Jedyna liczba: 2 oferty w 23 turach (obie jednorazowe „rozejm”); nie jest podstawą decyzji ABC (jedna komórka, przerwany przebieg).
-
-## BLOKADY / DECYZJA WYMAGANA
-1. Pomiar GOAL niewykonany (zarzut 1). Potrzebna decyzja: (A) osobny temat hakowy: tryb przyspieszony + obsługa okna przedbitewnego w runnerze + zapis/wczytanie stanu (quickSave/loadSlot) do wznowienia; albo (B) zawężenie GOAL do pomiaru z mniejszą liczbą tur/komórek i jawnym NIE_ZMIERZONO reszty.
-2. Okno przedbitewne (`preBattleOpen`) blokuje endTurn w teście (tura 24) — przyczyna nieznana; potrzebna diagnoza przed kolejnym przebiegiem.
-3. Decyzja ABC #274 bez danych.
-
-## NASTĘPNY KROK
-Orkiestrator: decyzja A/B z blokady 1 oraz zlecenie diagnozy okna przedbitewnego (blokada 2). Dopiero potem przebiegi 3 ziarna × 3 relacje z wynikiem zbiorczym.
+## WNIOSEK O CZĘSTOŚCI (bez progu narzuconego; liczby do decyzji właściciela)
+- Ramię naturalne (gracz pasywny, 18 komórek): 0 ofert handlowych AI→gracz na 150 turach (lub do utraty miasta); oferty dyplomatyczne (rozejm/trybut) 1,3–2,0/100 tur.
+- Ramię prepared (1 ziarno, 3 komórki, 2 NIEDOKOŃCZONE): cykliczne oferty handlowe 1–2 na 150 tur (0,67–1,34/100 tur), każda z aktywnym „Przyjmij” wg poprzednich danych.
+- Trzy poziomy relacji nie dają rozdzielonych warunków (zarzut 1), więc nie ma zależności częstości od relacji do raportowania.
 
 ## RUNDY
-2/5 (obrona). Evaluator i Final Control poza tym etapem.
+Runda obrony 3 (Operator Sonnet po 2 nieudanych rundach Haiku — uzasadnienie w DODATKU r3, nie zmieniane). Ta odpowiedź: Obrona Haiku.
 
+NASTĘPNY KROK: Evaluator (ponowna weryfikacja dowodów w evidence/obrona-r4 i relabel) -> Final Control. Otwarte do decyzji: liczniki bitew po wznowieniu (zarzut 6), hak odczytu relacji decyzyjnej (zarzut 1).
 DEPLOY/PUSH: NIE WYKONANO

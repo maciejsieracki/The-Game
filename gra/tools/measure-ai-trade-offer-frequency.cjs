@@ -45,6 +45,7 @@ const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '480', 10) * 1000;
 const RESULT_FILE = process.env.MEAS_RESULT || '';
 // MEAS_GATE=1: bramka ?civTest=1 — bez flagi hak nieobecny i ziarno z ?civSeed= ignorowane (PLAYTEST_MAPA_SEED=271828).
 const GATE = process.env.MEAS_GATE === '1';
+const GATE_WAIT_MS = parseInt(process.env.MEAS_GATE_WAIT_SEC || '170', 10) * 1000;
 // MEAS_PROFILE (abs): katalog trwalego profilu Chromium (IndexedDB) — wznawianie przebiegu miedzy wywolaniami bash:
 // przy limicie czasu runner robi quickSave do slotu 'meas-cell' i zapisuje stan czastkowy w MEAS_RESULT (stoppedBy='limit czasu');
 // kolejne wywolanie z tym samym MEAS_RESULT i MEAS_PROFILE laduje slot (loadSlot) i kontynuuje od zapisanej tury.
@@ -144,7 +145,8 @@ async function main() {
       // Bramka: bez ?civTest=1 hak musi byc nieobecny, a ziarno z ?civSeed= ignorowane.
       const seedLine = new Promise(res => { page.on('console', m => { const x = /\[PlaytestMapa\] seed=(\d+)/.exec(m.text()); if (x) res(Number(x[1])); }); });
       await page.goto(URL_HTML, { waitUntil: 'load', timeout: 180000 });
-      const seedSeen = await Promise.race([seedLine, wait(170000).then(() => null)]);
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (obrona r4): limit czekania na linie seed (bez flagi mapa laduje sie ~2-3 min w swiftshader; r4 zmierzone: 170 s za krotko).
+      const seedSeen = await Promise.race([seedLine, wait(GATE_WAIT_MS).then(() => null)]);
       const hookPresent = await page.evaluate(() => typeof window.__aiTradeWiringTestDebug !== 'undefined');
       const gate = { gate: true, civSeedRequested: SEED, seedSeen, seedExpected: PLAYTEST_SEED_DEFAULT, hookPresent, pass: seedSeen === PLAYTEST_SEED_DEFAULT && hookPresent === false };
       console.log('[meas] GATE ' + JSON.stringify(gate));

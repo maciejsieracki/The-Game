@@ -257,5 +257,14 @@
   "relTotalLast": 29,
   "relDrift": true,
   "relPinnedBeforeEnd": false,
-  "consoleErrorSample": []
+  "consoleErrorSample": [],
+  "labelsBeforeRelabel": {
+    "offers": 0,
+    "offersOneShot": 0,
+    "offersOneShotAll": null,
+    "otherActions": null
+  },
+  "offersOneShotAll": 0,
+  "otherActions": {},
+  "relabelNote": "etykiety przeliczone z offerLog (klasyfikacja jak w measure-ai-trade-offer-frequency-matrix.cjs); pierwotne w labelsBeforeRelabel"
 }
