@@ -1,3 +1,9 @@
+## ROBOCZA 1309c7c6 -- 2026-11-06 -- FALA 665: FALA 665: górny limit nadpłaty w jednorazowych ofertach handlowych AI do gracza (W38) + odświeżona tabela bramek w R-PROC-AUTOBOT (W36) (testowa)
+
+- R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1 + R-PROC-GATE-REFERENCE-REFRESH-Q2 (dokumentacja)
+- Weryfikacja: tsc, 5 bramek referencyjnych, oneshot-overpay 10/10, branch 10/0, to-player 25, diplomacy-proposal 200/200, dyplo-handel 20/0, audio-sidecar PASS; FC: mutacje czerwienia
+- Limity: oferta odrzucana zamiast przycinana; czestosc ofert po filtrze NIE_ZMIERZONO (W35); live e2e 44/0 tylko z raportu Obrony
+
 ## ROBOCZA 731dcdc1 -- 2026-11-06 -- FALA 664: FALA 664: czyszczenie kolejki fortyfikacji w starych zapisach (W32) (testowa)
 
 - R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1
