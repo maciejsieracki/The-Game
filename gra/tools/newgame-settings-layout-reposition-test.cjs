@@ -27,9 +27,9 @@ const MAIN_GRID_ORDER = [
   'Administratorzy', // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (dawniej Automatyzacja budowy): 13. karta (główne ustawienia, nie zaawansowane)
   'Odkrywanie mapy klawiszem F (tryb testowy)', // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: 14. karta (główne ustawienia)
 ];
-/** Kolejność okna zaawansowanych (13 pozycji, bez duplikatów z siatką). */
+/** Kolejność okna zaawansowanych (14 pozycji, bez duplikatów z siatką; R-WEB-BATTLE-HIT-MODE-SETTING-Q1 dodał „Trafienia”). */
 const ADV_ORDER = [
-  'Zasięg ruchu', 'Limit miast zakładanych (baza)', 'Bitwy',
+  'Zasięg ruchu', 'Limit miast zakładanych (baza)', 'Bitwy', 'Trafienia',
   'Wymagaj rozpatrzenia ofert handlowych przed końcem tury', 'Wzrost ludności',
   'Koszty budynków', 'Koszty jednostek', 'Jakość grafiki mapy', 'Surowce na mapie',
   'Rzeki', 'Pustynie', 'Las', 'Góry i wzgórza',
@@ -117,7 +117,7 @@ window.__openWizard();
     await page.locator('.civ-newgame .btn-adv').click();
     await page.waitForSelector('.civ-newgame .adv-overlay.open');
     const advLabels = (await page.locator('.civ-newgame .adv-modal .adv-lbl').allTextContents()).map(x => x.trim());
-    assert.deepStrictEqual(advLabels, ADV_ORDER, 'advanced window lists 13 options in the agreed order');
+    assert.deepStrictEqual(advLabels, ADV_ORDER, 'advanced window lists 14 options in the agreed order');
     for (const l of advLabels) assert(!MAIN_GRID_ORDER.includes(l), `no duplicate "${l}" between grid and advanced`);
     await page.locator('.civ-newgame .adv-close').click();
 

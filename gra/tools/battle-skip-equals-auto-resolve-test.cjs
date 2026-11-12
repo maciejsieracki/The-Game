@@ -117,7 +117,7 @@ async function runOne(browser, distDir, mode, seed) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
+  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza') + (process.env.WSKIP_HITMODE ? '&civTest=1' : ''), { waitUntil: 'load', timeout: 120000 });
   // Scena powstaje w petli klatek: pompuj klatki, az pojawi sie __lastBattleScene.
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
@@ -125,6 +125,8 @@ async function runOne(browser, distDir, mode, seed) {
     await page.waitForTimeout(50);
   }
   await page.evaluate(() => { if (!window.__lastBattleScene) throw new Error('brak sceny bitwy po pompowaniu klatek'); });
+  // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb trafień (WSKIP_HITMODE=pewne|losowe) ustawiany po utworzeniu sceny.
+  if (process.env.WSKIP_HITMODE) await page.evaluate((m) => { window.__civSetHitMode(m); }, process.env.WSKIP_HITMODE);
   await page.evaluate((dt) => { window.__wskipDt = dt; }, process.env.WSKIP_DT || '16');
   await page.evaluate(([mode, speedIdx]) => {
     const bs = window.__lastBattleScene;
@@ -169,6 +171,7 @@ async function runOne(browser, distDir, mode, seed) {
       atk: { total: sa.total, lost: sa.lost, remaining: sa.remaining, hp: Math.round(sa.hp) },
       def: { total: sd.total, lost: sd.lost, remaining: sd.remaining, hp: Math.round(sd.hp) },
       pursuit: window.__pur,
+      misses: bs.log.filter((l) => /chybia/.test(l)).length, hits: bs.log.filter((l) => /trafia/.test(l)).length,
       logLines: bs.log.length, endText: (document.body.innerText.match(/Koniec bitwy|Zwyci[ęe]stwo|Pora[żz]ka/g) || []).slice(0, 3),
     };
   });
@@ -188,7 +191,7 @@ async function runManualMid(browser, distDir, mode, seed) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, seed);
-  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza'), { waitUntil: 'load', timeout: 120000 });
+  await page.goto(process.env.WSKIP_BASE_URL + '?playtest=' + (process.env.WSKIP_PT || 'bitwa-duza') + (process.env.WSKIP_HITMODE ? '&civTest=1' : ''), { waitUntil: 'load', timeout: 120000 });
   for (let i = 0; i < 400; i++) {
     const ready = await page.evaluate(() => { window.__pumpFrames(5); return !!window.__lastBattleScene; });
     if (ready) break;
@@ -296,6 +299,9 @@ async function partB() {
       skip.pursuit.atkOnRouted > 0 && JSON.stringify(skip.pursuit) === JSON.stringify(auto1.pursuit),
       { auto: auto1.pursuit, skip: skip.pursuit });
     check('B5 seed ' + seed + ': czas bitwy skip ~ auto (roznica <= 200 ms wirt., nie 3,5x)', Math.abs(skip.virtMs - auto1.virtMs) <= 200, { auto: auto1.virtMs, skip: skip.virtMs });
+    const hm = process.env.WSKIP_HITMODE || 'losowe';
+    if (hm === 'pewne') check('B7 seed ' + seed + ': tryb pewne -> zero "chybia" w logu bitwy (SKIP i AUTO; pokrycie gałęzi certainHit w battleScene)', skip.misses === 0 && auto1.misses === 0, { auto: auto1.misses, skip: skip.misses });
+    console.log('INFO seed ' + seed + ' tryb=' + hm + ' trafienia/chybienia w logu: auto=' + auto1.hits + '/' + auto1.misses + ', skip=' + skip.hits + '/' + skip.misses);
     console.log('INFO seed ' + seed + ' czas wirtualny: auto=' + auto1.virtMs + ' ms (tura ' + auto1.round + '), skip=' + skip.virtMs + ' ms (tura ' + skip.round + ')');
   }
   return rows.length ? 'DONE' : 'NIE_ZMIERZONO';

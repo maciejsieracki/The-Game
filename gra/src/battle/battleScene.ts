@@ -65,6 +65,7 @@ import {
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
+import { isCertainHitMode } from '../game/hit-mode';
 import { buildBattleEventLog } from '../units/battleRoster';
 import type { BattleEventLog } from '../units/battleRoster';
 // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 -- GOAL 1 (jeden kontratak na ture obroncy)
@@ -9081,8 +9082,10 @@ export class BattleScene {
     const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
 
     const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
-    const hitPct = hitChanceTw(ranged ? atkShootAcc : atkMelee, defFinalObrona, chargeHitBonus);
-    const roll   = Math.random() * 100;
+    // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = uderzenie zawsze trafia (bez rzutu).
+    const certainHit = isCertainHitMode();
+    const hitPct = certainHit ? 100 : hitChanceTw(ranged ? atkShootAcc : atkMelee, defFinalObrona, chargeHitBonus);
+    const roll   = certainHit ? 0 : Math.random() * 100;
     if (roll >= hitPct) {
       this.log.push(attacker.bu.nazwa + ' chybia w ' + defender.bu.nazwa + ' (' + roll.toFixed(0) + '>=' + hitPct + '%).');
       return 0;

@@ -436,6 +436,7 @@ import {
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
+import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
 import {
   applyPostCaptureLawOnCapture,
@@ -27511,6 +27512,10 @@ async function boot(): Promise<void> {
     // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: hak live-testu (tylko ?civTest=1). Wejścia testowe:
     // zakup rekrutacji / trasa / osiągalność idą REALNYMI funkcjami gry (purchaseRecruitmentUnit,
     // computePath, reachableWithMergeTargets); hak tylko je woła i zwraca wynik.
+    // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: hak testowy (tylko ?civTest=1) -- ustawia tryb trafień
+    // w trakcie sceny playtestu (playtest nie przechodzi przez kreator; applyMenuParams ustawia
+    // 'losowe' przy starcie). Produkcja: window.__civSetHitMode === undefined.
+    if (isCivTestEnabled(window.location.search)) (window as any).__civSetHitMode = setActiveHitMode;
     if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
       tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
         const c = cities.find(x => x.id === cityId);
@@ -44932,6 +44937,8 @@ async function boot(): Promise<void> {
     // -----------------------------------------------------------------------
 
     function applyMenuParams(params: NewGameParams): void {
+      // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb trafień z parametrów gry (brak pola = losowe).
+      setActiveHitMode(normalizeHitMode(params.advanced?.hitMode));
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -46810,6 +46817,10 @@ async function boot(): Promise<void> {
       _battleModeSettingVersion = savedBattleModeVersion === BATTLE_MODE_SETTING_VERSION
         ? BATTLE_MODE_SETTING_VERSION
         : undefined;
+      // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: stary zapis bez pola hitMode -> 'losowe' (zachowanie bez zmian).
+      setActiveHitMode(normalizeHitMode(
+        (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.hitMode,
+      ));
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }
