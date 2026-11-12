@@ -26,3 +26,13 @@ ALLOWLISTA: gra/src/ui/hud.ts (sekcje HUD topbar i fitHudTopbar), gra/src/ui/sid
 ZAKAZ: WERSJE.md, JSON balansu, rust-port, push, deploy, npm run build/dev.
 BAZA: origin/main 5bbb1fffff66 → praktycznie aeb52465e (kod HUD bez zmian od FALI 668; sprawdzić przed startem). MODEL: Operator HAIKU 5.5 (wizualne, ale zakres wąski; w razie 2 porażek — Sonnet z uzasadnieniem), round 1/5.
 WERYFIKACJA WIZUALNA OBOWIĄZKOWA: zrzuty w Chromium (palette: /usr/bin/chromium, --no-sandbox) przed i po, dla 1920×1080 i 1366×768; bez tego temat nie dostaje PASS.
+
+## DODATEK orkiestratora — runda 2 (po FC FAIL r1, 2026-11-12)
+
+Baza rundy 2: 8c447758e (origin/main po FALA 671). Kandydat r1: 57473d9ed (do wzięcia jako punkt wyjścia).
+Regresje do naprawy (FC r1):
+1. hud-topbar-grid-gross-net: 1142 ok / 1 fail (baza 1189/0) — przywrócić zgodność z bazą.
+2. hud-topbar-no-labels: 93/1 (baza 94/0) — pionowy skok monet o 3,6 px przy 1280 i huge — usunąć skok.
+3. bigger-numbers (B1/B3): 60/4 (baza 62/0) — przywrócić.
+Układ jednego rzędu surowców na górze i obniżone boczne bloki pozostają wymogiem właściciela (#308). Nie zmieniać reguł gry, tylko HUD.
+Dowód w Chromium: NIE_ZMIERZONO jeśli niewykonalny. Dysk ≥ 6 GB przed npm ci.
