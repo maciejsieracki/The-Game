@@ -19,8 +19,13 @@
 //! * Z-TR-3 pule Pracy (`setOwnerPracaPool`) nie sa modyfikowane tutaj: funkcja zwraca kwoty
 //!   (`refunded_praca_to_old`, `forfeited_praca_to_new`), a wolajacy dodaje je do puli.
 
+use crate::domain::playable::PlayableState;
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem};
+use crate::domain::siege_capital_plunder::{
+    is_barbarian, run_capital_capture_plunder, EliminationDetails, OwnerResourceAccess,
+    PlunderCity, PlunderInput, PlunderLabels, PlunderState,
+};
 use crate::domain::siege_enter_city::EnterUnit;
 use crate::domain::siege_surrender::surrender_population_after;
 use crate::domain::siege_transfer_effects::{
@@ -479,4 +484,140 @@ fn transfer_removed_ids_in_place(
         !hit
     });
     removed
+}
+
+/// Kontekst plądrowania stolicy dla [`apply_capital_capture_with_plunder`] (R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1).
+/// Odpowiada zmiennym closure web `runCapitalCapturePlunder` (main.ts:35558): akcesory ekonomii, etykiety,
+/// stan `capitalCityIdByOwner`/`capitalCaptureReportSlot`, lista miast i liczba budynków zdobytego miasta.
+pub struct CapitalPlunderCtx<'a, A: OwnerResourceAccess + ?Sized, L: PlunderLabels> {
+    pub access: &'a mut A,
+    pub labels: &'a L,
+    pub plunder_state: &'a mut PlunderState,
+    /// Migawki miast PRZED przejęciem (web `cities`); wpis `city_index` jest aktualizowany o nowego właściciela i populację.
+    pub cities: &'a mut Vec<PlunderCity>,
+    pub city_index: usize,
+    /// Web `(cityBuilt.get(city.id) ?? []).length`.
+    pub building_count: usize,
+    /// Web `shouldShowPlayerTriumphCityStateUnification(...)` (wolane tylko gdy zdobywca = gracz).
+    pub triumph_unification: bool,
+}
+
+/// Wynik [`apply_capital_capture_with_plunder`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct CapitalCaptureResult {
+    pub transfer: TransferOutcome,
+    /// Zwrot `runCapitalCapturePlunder` (`Some` tylko przy eliminacji z zapisanym wierszem ELIMINACJA).
+    pub elimination: Option<EliminationDetails>,
+    /// Wywolania UI/efektow ubocznych w kolejnosci web (zob. [`run_capital_capture_plunder`]).
+    pub ui_calls: Vec<serde_json::Value>,
+    /// Wartosc `lostPower` podana do plundrowania (Power ofiary PO transferze, PRZED eliminacja).
+    pub lost_power: f64,
+    /// `true` gdy akumulator `zdobyczePowerByOwner` zdobywcy zostal zwiekszony w stanie gry ([`PlayableState`]).
+    pub zdobycze_recorded: bool,
+}
+
+/// Argumenty galezi Transfer dla [`apply_capital_capture_with_plunder`] (ten sam kontrakt co [`apply_transfer_with_effects`]).
+pub struct CapitalTransferArgs<'a> {
+    pub new_owner: i64,
+    pub was_independent_city_state: bool,
+    pub units: &'a mut Vec<EnterUnit>,
+    pub production: Option<TransferProduction<'a>>,
+    pub extras: TransferExtras<'a>,
+}
+
+/// Produkcyjna sciezka zdobycia stolicy: Transfer ([`apply_transfer_with_effects`]) -> `lostPower` -> plundrowanie
+/// ([`run_capital_capture_plunder`]) -> zapis akumulatora zdobyczy Power do stanu gry.
+///
+/// Kolejnosc jak w pinie 07d2fbd72 (main.ts:17700-17828 i 35558-35680):
+/// 1. skutki Transferu (zmiana wlasciciela, populacja, obroncy, ...),
+/// 2. `lost_power()` liczone PO transferze, a PRZED `eliminateOwner` (wolajacy dostarcza `buildObjectivePowerForOwner(oldOwner)`),
+/// 3. plundrowanie `runCapitalCapturePlunder`,
+/// 4. akumulacja zdobyczy: tylko gdy plundrowanie zapisalo zdobycz (galaz eliminacji; zdobywca != barbarzynca),
+///    przez [`PlayableState::power_record_city_capture`].
+///
+/// Granica jawna: wejscie garnizonu (`enterCityAfterSurrender`) i `sync_city_garnizon` NIE sa wolane tutaj;
+/// nie wplywaja na wynik plundrowania (plundrowanie nie czyta jednostek), a wolajacy wykonuje je po zwrocie.
+pub fn apply_capital_capture_with_plunder<A, L, G>(
+    city: &mut TransferCity,
+    args: CapitalTransferArgs<'_>,
+    ctx: CapitalPlunderCtx<'_, A, L>,
+    playable: &mut PlayableState,
+    lost_power: G,
+) -> CapitalCaptureResult
+where
+    A: OwnerResourceAccess + ?Sized,
+    L: PlunderLabels,
+    G: FnOnce() -> f64,
+{
+    let CapitalTransferArgs {
+        new_owner,
+        was_independent_city_state,
+        units,
+        production,
+        extras,
+    } = args;
+    let CapitalPlunderCtx {
+        access,
+        labels,
+        plunder_state,
+        cities,
+        city_index,
+        building_count,
+        triumph_unification,
+    } = ctx;
+
+    let transfer = apply_transfer_with_effects(
+        city,
+        new_owner,
+        was_independent_city_state,
+        units,
+        production,
+        extras,
+    );
+
+    // Migawka zdobytego miasta PO transferze (wlasciciel i populacja zmienione przez Transfer).
+    {
+        let entry = &mut cities[city_index];
+        entry.owner_id = city.owner_id;
+        entry.population = city.population;
+    }
+    let snapshot = cities[city_index].clone();
+
+    let lost = lost_power();
+
+    // Akumulator zdobyczy zdobywcy przed plundrowaniem (web `zdobyczePowerByOwner.get(newOwner) ?? 0`).
+    let seed = playable.war.zdobycze_power_for(new_owner);
+    plunder_state
+        .zdobycze_power_by_owner
+        .insert(new_owner, seed);
+
+    let input = PlunderInput {
+        city: &snapshot,
+        old_owner: transfer.old_owner,
+        new_owner,
+        cities: cities.as_slice(),
+        building_count,
+        lost_power: lost,
+        triumph_unification,
+    };
+    let (elimination, ui_calls) =
+        run_capital_capture_plunder(&input, plunder_state, access, labels);
+
+    let after = plunder_state
+        .zdobycze_power_by_owner
+        .get(&new_owner)
+        .copied()
+        .unwrap_or(seed);
+    let zdobycze_recorded = after != seed;
+    if zdobycze_recorded {
+        playable.power_record_city_capture(new_owner, lost, is_barbarian(new_owner));
+    }
+
+    CapitalCaptureResult {
+        transfer,
+        elimination,
+        ui_calls,
+        lost_power: lost,
+        zdobycze_recorded,
+    }
 }
