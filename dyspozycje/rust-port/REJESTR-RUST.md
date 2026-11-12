@@ -336,3 +336,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Wznowienie:** R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1 (#109) — `wf_f174bc7f-ec5`, baza `23e33793e`.
 - **Aktywne Workflow (2):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`), K5LOOP-OUTCOME-Q1 (#109, `wf_f174bc7f-ec5`).
 - **Uwaga procesowa:** kolejne starty zużywają ~1,2 GB na worktree. Przy 4 tematach równolegle trzeba sprzątać po każdym BLOCK/FAIL od razu.
+
+## Przebieg (po 23:4x): OUTCOME-Q1 (#109) BLOCK, decyzja o atrybucji
+- **R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1 (#109): BLOCK (FC PASS-WITH-NOTES), bez kodu.** Brakuje w `ProdBody`: teren kafla i `terrainData` (potrzebne w `_checkRout`, pin `battleScene.ts:9783`), `morale_max` (tylko w `SiegeEnv`), stałe `MORALE_DEATH_RADIUS`, `MORALE_ALLY_DEATH_LOSS`, `MORALE_ENEMY_BREAK_GAIN`, `ROUT_MORALE_THRESHOLD` oraz `_targetInRange` i `BLOW_HIT_T`. `_startRout` i `_checkMeleeScreenLost` zależą od `is_army_commander` (`army_leadership.rs:26`). Asercja `unported` w `p6_siege_tactics_loop_body.rs:248` wymaga zmiany poza allowlistą.
+  - **Decyzja techniczna (moja):** temat OUTCOME, AUTO i WYLOM mają tę samą blokadę. Zamiast trzech osobnych prób zlecam najpierw **podział fundamentu**: (a) wejścia terenu i `morale_max` do `ProdBody` przez builder z błędem przy braku (bez cichych wartości domyślnych), (b) stałe morale z testem względem pinu, (c) dopiero potem OUTCOME, AUTO, WYLOM. Rozszerzenie allowlisty na `army_leadership.rs` i testy `p6_siege_tactics_loop_body*.rs` uznaję za konieczne do (a) — zatwierdzenie właściciela wymagane przed startem, bo dotyczy zakresu zmian.
+- **Atrybucja commitów (decyzja):** nazwa modelu NIE w commitach. CLAUDE.md ma pierwszeństwo przed przypomnieniem o atrybucji; Operator i FC dodali `Co-Authored-By` z nazwą modelu — to do poprawy w kolejnych dispatchach (dispatch już mówi „bez nazwy modelu”).
+- **Sprzątanie:** HEAD-y worktree OUTCOME zabezpieczone `refs/keep/wt-*`, worktree usunięte.
+- **Aktywne Workflow (1):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`). Trzy sloty wolne, bo pozostałe kandydaty czekają na zatwierdzenie zakresu (fundament ProdBody) lub na decyzje właściciela.
