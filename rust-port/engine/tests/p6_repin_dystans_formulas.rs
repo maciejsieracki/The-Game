@@ -9,7 +9,7 @@
 
 use civ_engine::domain::unit_power::{
     hit_chance_tw, range_damage_tw, ranged_damage_mult_for, ranged_shot_accuracy,
-    ranged_shot_damage,
+    ranged_shot_damage_f64,
 };
 use serde_json::Value;
 
@@ -51,14 +51,14 @@ fn p6_repin_dystans_shot_damage_vectors_match_web() {
         let rows = root[group].as_array().expect("tablica wektorow");
         for row in rows {
             let shooter = &row["shooter"];
-            let got = ranged_shot_damage(
+            let got = ranged_shot_damage_f64(
                 text(shooter, "counterTyp"),
                 text(shooter, "typNazwa"),
                 num(row, "missile"),
                 num(row, "armor"),
                 num(row, "counterMult"),
             );
-            let exp = row["expected"].as_i64().expect("expected int");
+            let exp = row["expected"].as_i64().expect("expected int") as f64;
             assert_eq!(got, exp, "{group}: {row}");
             checked += 1;
         }
@@ -88,12 +88,12 @@ fn p6_repin_dystans_accuracy_and_hit_vectors_match_web() {
 fn p6_repin_dystans_procarz_x3_after_armor_and_counter() {
     // web: rangeDamageTw(5,3)=2; *1.5 = 3; *3 (Slinger) = 9
     assert_eq!(
-        ranged_shot_damage(Some("Slinger"), Some("Procarz"), 5.0, 3.0, 1.5),
-        9
+        ranged_shot_damage_f64(Some("Slinger"), Some("Procarz"), 5.0, 3.0, 1.5),
+        9.0
     );
     assert_eq!(
-        ranged_shot_damage(Some("Slinger"), Some("Procarz (Huaracoc)"), 5.0, 3.0, 1.5),
-        9
+        ranged_shot_damage_f64(Some("Slinger"), Some("Procarz (Huaracoc)"), 5.0, 3.0, 1.5),
+        9.0
     );
 }
 
@@ -112,8 +112,8 @@ fn p6_repin_dystans_lucznik_x2_and_oszczepnik_unchanged() {
         1.0
     );
     assert_eq!(
-        ranged_shot_damage(Some("Distance"), Some("Oszczepnik"), 7.0, 2.0, 1.0),
-        5
+        ranged_shot_damage_f64(Some("Distance"), Some("Oszczepnik"), 7.0, 2.0, 1.0),
+        5.0
     );
 }
 
@@ -122,23 +122,23 @@ fn p6_repin_dystans_minimum_damage_is_one() {
     // web: max(1, missile - armor) = 1; mnoznik x1 -> 1 (podloga po mnozeniu)
     assert_eq!(range_damage_tw(3.0, 40.0), 1.0);
     assert_eq!(
-        ranged_shot_damage(Some("Distance"), Some("Oszczepnik"), 3.0, 40.0, 0.5),
-        1
+        ranged_shot_damage_f64(Some("Distance"), Some("Oszczepnik"), 3.0, 40.0, 0.5),
+        1.0
     );
-    assert_eq!(ranged_shot_damage(None, None, 0.0, 0.0, 0.0), 1);
+    assert_eq!(ranged_shot_damage_f64(None, None, 0.0, 0.0, 0.0), 1.0);
 }
 
 #[test]
 fn p6_repin_dystans_multiplier_applies_before_rounding() {
     // web: rangeDamageTw(2,0)=2; *0.75 = 1.5 -> round 2 (polowka w gore); bez mnoznika klasy
     assert_eq!(
-        ranged_shot_damage(Some("Distance"), Some("Oszczepnik"), 2.0, 0.0, 0.75),
-        2
+        ranged_shot_damage_f64(Some("Distance"), Some("Oszczepnik"), 2.0, 0.0, 0.75),
+        2.0
     );
     // Lucznik x2: rangeDamageTw(3,1)=2; *1.25 = 2.5; *2 = 5.0 -> 5
     assert_eq!(
-        ranged_shot_damage(Some("Distance"), Some("Łucznik"), 3.0, 1.0, 1.25),
-        5
+        ranged_shot_damage_f64(Some("Distance"), Some("Łucznik"), 3.0, 1.0, 1.25),
+        5.0
     );
 }
 

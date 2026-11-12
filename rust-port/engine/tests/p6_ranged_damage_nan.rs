@@ -11,7 +11,7 @@
 use civ_engine::domain::combat::ranged_phase::{
     resolve_ranged_phase, RangedPhaseInput, RangedSide, Side,
 };
-use civ_engine::domain::unit_power::{ranged_shot_damage, ranged_shot_damage_f64};
+use civ_engine::domain::unit_power::ranged_shot_damage_f64;
 use serde_json::Value;
 
 const VEC: &str = include_str!("p6_ranged_damage_nan_vectors/ranged.json");
@@ -92,11 +92,6 @@ fn p6_ranged_damage_nan_wektory_z_pinu_zgodne() {
         } else {
             assert_eq!(got, exp, "{ctx}");
         }
-        // Wariant calkowity (dla testow formul dystansu) zgodny dla wartosci skonczonych w zakresie i64.
-        if exp.is_finite() && exp.abs() < 9.0e18 {
-            let got_i = ranged_shot_damage(typ.as_deref(), jed.as_deref(), missile, armor, counter);
-            assert_eq!(got_i as f64, exp, "wariant i64: {ctx}");
-        }
     }
 }
 
@@ -121,12 +116,6 @@ fn p6_ranged_damage_nan_jawne_przypadki_js() {
     assert_eq!(
         ranged_shot_damage_f64(Some("Slinger"), Some("Procarz"), 20.0, 5.0, 1.0),
         45.0
-    );
-    // Wariant i64: NaN -> 1 (dawne zachowanie), Infinity nasycone.
-    assert_eq!(ranged_shot_damage(None, None, f64::NAN, 0.0, 1.0), 1);
-    assert_eq!(
-        ranged_shot_damage(None, None, f64::INFINITY, 0.0, 1.0),
-        i64::MAX
     );
 }
 
@@ -161,8 +150,7 @@ fn p6_ranged_damage_nan_roll_mniejsze_od_nan_to_pudlo() {
     for s in &res.shots {
         assert!(s.hit_pct.is_nan(), "hit_pct NaN");
         assert!(!s.hit, "roll < NaN jest false");
-        assert_eq!(s.damage, 0);
-        assert_eq!(s.damage_exact, 0.0);
+        assert_eq!(s.damage, 0.0);
     }
     assert_eq!(res.hp_defender, 100.0);
     assert!(res.routed.is_empty());
@@ -198,8 +186,7 @@ fn p6_ranged_damage_nan_obrazenia_nan_zeruja_hp_jak_na_pinie() {
     assert_eq!(res.shots.len(), 1);
     let s = &res.shots[0];
     assert!(s.hit, "roll 0 < hit_pct 60 -> trafienie");
-    assert!(s.damage_exact.is_nan(), "obrazenia NaN");
-    assert_eq!(s.damage, 0, "pole calkowite: NaN -> 0 (informacyjne)");
+    assert!(s.damage.is_nan(), "obrazenia NaN");
     assert!(s.target_hp.is_nan());
     assert!(res.hp_defender.is_nan());
     assert!(
@@ -237,7 +224,7 @@ fn p6_ranged_damage_nan_kontra_nan_zeruje_hp_jak_na_pinie() {
     );
     assert_eq!(res.shots.len(), 1);
     assert!(res.shots[0].hit);
-    assert!(res.shots[0].damage_exact.is_nan());
+    assert!(res.shots[0].damage.is_nan());
     assert!(res.hp_defender.is_nan());
 }
 
@@ -273,7 +260,7 @@ fn p6_ranged_damage_nan_infinity_rozbija_jednostke() {
     let s = &res.shots[0];
     assert!(s.hit);
     assert_eq!(s.hit_pct, 75.0);
-    assert_eq!(s.damage_exact, f64::INFINITY);
+    assert_eq!(s.damage, f64::INFINITY);
     assert_eq!(res.hp_defender, f64::NEG_INFINITY);
     assert_eq!(res.routed, vec![Side::Defender]);
 }
@@ -305,7 +292,6 @@ fn p6_ranged_damage_nan_skonczone_bez_zmian() {
         },
         || 0.0,
     );
-    assert_eq!(res.shots[0].damage, 45);
-    assert_eq!(res.shots[0].damage_exact, 45.0);
+    assert_eq!(res.shots[0].damage, 45.0);
     assert_eq!(res.hp_defender, 55.0);
 }

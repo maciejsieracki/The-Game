@@ -1059,15 +1059,6 @@ pub mod unit_building_bonuses {
 pub mod ranged_phase {
     use crate::domain::unit_power::{hit_chance_tw, ranged_shot_accuracy, ranged_shot_damage_f64};
 
-    /// Pole `RangedShot::damage` (i64, informacyjne): NaN -> 0, reszta nasycana `as i64`.
-    fn damage_exact_to_i64(v: f64) -> i64 {
-        if v.is_nan() {
-            0
-        } else {
-            v as i64
-        }
-    }
-
     /// Strona walki w fazie dystansowej (odpowiednik pol `CombatUnit` + wartosci `*0` z web).
     #[derive(Debug, Clone, PartialEq)]
     pub struct RangedSide {
@@ -1108,12 +1099,9 @@ pub mod ranged_phase {
         pub side: Side,
         pub hit_pct: f64,
         pub hit: bool,
-        /// Obrazenia (0 przy chybieniu), calkowite: wartosci NaN/Infinity nie maja tu reprezentacji
-        /// (NaN -> 0, Infinity -> i64::MAX). Dokladna wartosc jak na pinie jest w [`Self::damage_exact`].
-        pub damage: i64,
-        /// Obrazenia dokladnie jak `rangedShotDamage` z pinu (f64; NaN/Infinity zachowane). To ta wartosc
-        /// zmniejsza HP celu, zgodnie z `hpDef -= dmg` w pinie.
-        pub damage_exact: f64,
+        /// Obrazenia (0 przy chybieniu) dokladnie jak `rangedShotDamage` z pinu (f64; NaN/Infinity
+        /// zachowane). To ta wartosc zmniejsza HP celu, zgodnie z `hpDef -= dmg` w pinie.
+        pub damage: f64,
         /// HP celu po strzale.
         pub target_hp: f64,
     }
@@ -1199,8 +1187,7 @@ pub mod ranged_phase {
                         side: Side::Attacker,
                         hit_pct,
                         hit,
-                        damage: damage_exact_to_i64(damage_exact),
-                        damage_exact,
+                        damage: damage_exact,
                         target_hp: defender.hp,
                     });
                 }
@@ -1232,8 +1219,7 @@ pub mod ranged_phase {
                         side: Side::Defender,
                         hit_pct,
                         hit,
-                        damage: damage_exact_to_i64(damage_exact),
-                        damage_exact,
+                        damage: damage_exact,
                         target_hp: attacker.hp,
                     });
                 }
