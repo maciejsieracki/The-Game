@@ -110,6 +110,30 @@ function bonusRows(m: AdministratorPanelModel): string {
     + ` (skala ×${String(scale).replace('.', ',')}); wyższy poziom wzmacnia bonusy.</li>`;
 }
 
+/**
+ * R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1: czysty tekst okna potwierdzenia zatrudnienia (koszt + bonusy, te same liczby co panel).
+ * Zero nowych reguł — tylko odczyt z modelu i JSON (administratorBaseEffectsPct × skala poziomu).
+ */
+export function administratorHireConfirmText(m: AdministratorPanelModel): string {
+  const what = m.kind === 'city' ? 'automatyczna budowa budynków' : 'automatyczne ulepszanie terenu';
+  const lines: string[] = [
+    'Zatrudnić administratora (' + (m.kind === 'city' ? 'miasta' : 'ulepszeń') + ') w mieście ' + m.cityName + '?',
+    'Opłata jednorazowa: ' + m.hireCost + ' Pieniądza. Utrzymanie: ' + m.upkeep + ' Pieniądza na turę ze skarbca państwa.',
+    'Bonusy:',
+  ];
+  if (m.kind === 'improvements') {
+    lines.push('- ' + what + ' w tym mieście wg wybranego profilu', '- bez dodatkowych bonusów do produkcji, podatków ani korupcji');
+  } else {
+    const tier = (m.tier !== undefined && m.tier >= 1 ? Math.min(3, Math.round(m.tier)) : 1) as AdminTier;
+    const scale = administratorTierScale(tier);
+    const base = administratorBaseEffectsPct();
+    const f = (v: number): string => fmtPct(v * scale);
+    lines.push('- korupcja w mieście: -' + f(base.korupcja) + '%', '- produkcja miasta: +' + f(base.produkcja) + '%',
+      '- ściągalność podatków miasta: +' + f(base.podatki) + '%', '- ' + what + ' w tym mieście');
+  }
+  return lines.join('\n');
+}
+
 /** Skutki: co się dzieje bez administratora i po zatrudnieniu. */
 function effectRows(m: AdministratorPanelModel): string {
   // Rodzaj gramatyczny: „budowa” (ż.) vs „ulepszanie” (n.) — zgodność orzecznika.
@@ -278,6 +302,8 @@ export function openAdministratorPanel(hooks: AdministratorPanelHooks): Administ
     dlg.querySelector('[data-adm-panel-confirm]')?.addEventListener('click', () => {
       const cur = hooks.getModel();
       if (!cur || cur.hired || administratorHireDisabled(cur)) return; // guard: bez środków/blokady — bez zatrudnienia
+      // Zatrudnienie kosztuje (nieodwracalnie) — potwierdzenie z kosztem i bonusami, symetrycznie do zwolnienia.
+      if (!window.confirm(administratorHireConfirmText(cur))) return;
       hooks.onHire();
       render('[data-adm-panel-dismiss]');
     });

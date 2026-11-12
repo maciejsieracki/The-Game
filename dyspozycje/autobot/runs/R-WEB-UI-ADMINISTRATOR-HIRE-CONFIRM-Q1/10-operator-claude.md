@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1
+GOAL: potwierdzenie z kosztem i bonusami przed zatrudnieniem administratora (miasta/ulepszeń); Anuluj nic nie zmienia; Potwierdź zatrudnia jak dotąd; bez zmian kosztów/bonusów/zasad.
+ZMIANY/COMMIT: baza origin/main 0ea16cad8. Pliki: gra/src/ui/administratorPanel.ts (nowa czysta funkcja administratorHireConfirmText + window.confirm w handlerze „Zatrudnij”, wzorzec identyczny jak potwierdzenie „Zwolnij” z FALA 651), gra/tools/administrator-panel-real-render-test.cjs (stub window.confirm, A11b/A11c/A11d, mutacja E9), gra/tools/live-verify-administrator-panel.cjs (obsługa dialogu: Anuluj bez zmian, potem Potwierdź; miasto i ulepszenia), ten raport.
+TESTY (surowe wyjście): tsc --noEmit: 0 błędów. administrator-panel-real-render-test: 48 PASS / 0 FAIL (w tym A11b-d i mutacja E9 czerwieni A11b). logic-test 213/213; tech-tree-test 20/0; research-test 33/0; unit-replace-test 21/21; combat-test 6/6; city-administrator-test 119/0; improvement-administrator-test 53/0; administrators-wizard-test 58/0; administrator-icon-everywhere-render-test 24/0.
+BLOKADY: (1) NIE_ZMIERZONO: live-verify-administrator-panel.cjs nie uruchomiony — wymaga buildu vite (ROBOCZA_HTML), a build w gra/ jest zakazany dla Operatora; skrypt zmieniony, do uruchomienia przez orkiestratora/Evaluatora po buildzie poza repo. (2) Plik DODATEK-claude z dispatchu nie istnieje na wskazanej gałęzi; oryginalny 00-dispatch.md był tylko na origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (nie na main) — rozstrzygnięto założeniem. ZAŁOŻENIE: „okno potwierdzenia" = natywne window.confirm (jak zwolnienie), bo to wzorzec wskazany w dispatchu i testowalny dialogiem Playwright; przy preferencji własnego modalu — runda 2. Pozostałe bramki z §6 (mgla, map-field-battle, entity-card) nie uruchomione (zmiana tylko w administratorPanel.ts).
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator — build poza repo + live-verify-administrator-panel.cjs, ocena tekstu okna (PL) i ewentualnego własnego modalu.
+DEPLOY/PUSH: NIE WYKONANO
