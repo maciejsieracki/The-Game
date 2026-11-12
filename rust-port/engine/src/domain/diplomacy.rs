@@ -4162,3 +4162,76 @@ pub fn apply_accepted_proposal(
     next.push(deal.clone());
     next
 }
+
+// ---------------------------------------------------------------------------------------------
+// R-RUSTPORT-P6-WIRE-WAR-R7K7B: czyste funkcje zlozeGrants i synchronizacji relacji z traktatow.
+// Port 1:1 z pinu `07d2fbd72f758705f8e1d59cc4968027ffbafe75`:
+// - `deactivateZlozeGrantsForDeal` (`gra/src/game/diplomacy-pn-engine.ts:346`),
+// - `syncRelationFromDeals` (`gra/src/main.ts:22832`) z helperami `dealInvolvesOwners`
+//   (`gra/src/game/diplomacy-penalty-preview.ts:72`), `isAllianceDealKind` (`main.ts:22653`),
+//   `hasTreaty` (`gra/src/game/diplomacy-treaties.ts:300`).
+// Stan jest JAWNY (wejscie/wyjscie). Bez migracji: zadnych nowych pol w stanie gry.
+// ---------------------------------------------------------------------------------------------
+
+/// Grant zlozeGrant (web `ZlozeGrant`, `diplomacy-pn-engine.ts:115`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ZlozeGrant {
+    pub granter_owner_id: PlayerId,
+    pub grantee_owner_id: PlayerId,
+    pub partner_id: PlayerId,
+    pub zloze_id: String,
+    pub hex_key: String,
+    pub active: bool,
+    /// Powiazanie z `ActiveDeal` (web `dealId?`); `None` = brak powiazania (`undefined` na pinie).
+    pub deal_id: Option<String>,
+}
+
+/// Web `deactivateZlozeGrantsForDeal`: wygasza aktywne granty powiazane z `deal_id`; reszta bez zmian.
+pub fn deactivate_zloze_grants_for_deal(grants: &[ZlozeGrant], deal_id: &str) -> Vec<ZlozeGrant> {
+    grants
+        .iter()
+        .map(|grant| {
+            let mut next = grant.clone();
+            if next.active && next.deal_id.as_deref() == Some(deal_id) {
+                next.active = false;
+            }
+            next
+        })
+        .collect()
+}
+
+/// Web `dealInvolvesOwners` (`diplomacy-penalty-preview.ts:72`): strony traktatu = para (min, max).
+fn deal_involves_owners(deal: &ActiveDeal, a: PlayerId, b: PlayerId) -> bool {
+    deal.parties == CivilizationPair::new(a, b)
+}
+
+/// Web `hasTreaty(state, a, b, PaktNieagresji)` z `normalizeTreatyKind` (NAP ma kanoniczny kod `Nap`).
+fn has_nap_between(deals: &[ActiveDeal], a: PlayerId, b: PlayerId) -> bool {
+    deals
+        .iter()
+        .any(|deal| deal_involves_owners(deal, a, b) && deal.kind == TreatyKind::Nap)
+}
+
+/// Web `syncRelationFromDeals(a, b)` (`main.ts:22832`) jako czysta funkcja na jawnym stanie.
+/// Zwraca `Some(nowy status)` gdy web wywolalby `setDiploRelation`, albo `None` gdy status zostaje.
+/// Wojna nie jest nadpisywana. Sojusz ma pierwszenstwo przed paktem; neutralnosc nie jest ustawiana.
+pub fn sync_relation_status_from_deals(
+    current: RelationStatus,
+    deals: &[ActiveDeal],
+    a: PlayerId,
+    b: PlayerId,
+) -> Option<RelationStatus> {
+    if current == RelationStatus::War {
+        return None;
+    }
+    let has_alliance = deals
+        .iter()
+        .any(|deal| deal_involves_owners(deal, a, b) && deal.kind.is_alliance());
+    if has_alliance {
+        Some(RelationStatus::Alliance)
+    } else if has_nap_between(deals, a, b) {
+        Some(RelationStatus::Peace)
+    } else {
+        None
+    }
+}
