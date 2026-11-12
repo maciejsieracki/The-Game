@@ -21,7 +21,12 @@ use crate::domain::siege_tactics_blow::HitArc;
 /// `flankRearDefensePenalty` (combat.ts:589-605): kara obrony z flanki/tylu jako ulamek.
 ///
 /// `kara_flanka_proc` / `kara_tyl_proc` to pola jednostki "Kara obrony z flanki (%)" / "z tylu (%)" w procentach
-/// calkowitych (np. 50 = 50%). `None` (pole brakujace lub `'---'` w pinie) daje 0. NaN daje 0 (pin: `isNaN(val)`).
+/// calkowitych (np. 50 = 50%). `None` daje 0. NaN daje 0 (pin: `isNaN(val)`).
+///
+/// UWAGA (zarzut 4 Evaluatora K5I2): pin (`combat.ts:589-605`) przyjmuje tez tekst (`parseFloat`, np. "50"),
+/// pusty string `''` i `'---'` jako brak wartosci. Ta normalizacja surowego pola nalezy do `toCombatUnit`
+/// (`battleScene.ts:1355`), ktore NIE jest jeszcze zportowane (kryterium 1 niespelnione). Helper zaklada
+/// wejscie juz znormalizowane do `Option<f64>`; nie modeluje tekstu i nie jest tu dowodzona zgodnosc z `parseFloat`.
 pub fn flank_rear_defense_penalty(
     kara_flanka_proc: Option<f64>,
     kara_tyl_proc: Option<f64>,
