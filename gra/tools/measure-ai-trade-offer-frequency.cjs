@@ -25,7 +25,7 @@
  *
  * Usage (z gra/):
  *   MEAS_TURNS=150 MEAS_ARM=natural MEAS_RESULT=<abs.json> BUNDLE_DIR=<abs> node tools/measure-ai-trade-offer-frequency.cjs
- *   MEAS_ARM: natural | prepared (domyslnie natural). MEAS_MAX_SEC: limit czasu przebiegu (domyslnie 540 s);
+ *   MEAS_ARM: natural | prepared (domyslnie natural). MEAS_MAX_SEC: limit czasu przebiegu (domyslnie 480 s);
  *   po limicie zapisuje raport czesciowy z `turnsRun`. Bundle: BUNDLE_DIR (budowany osobno poza repo; SKIP_BUILD=1 pomija build).
  */
 const fs = require('fs');
@@ -37,7 +37,8 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'measure-ai-trade-dist');
 const TURNS = parseInt(process.env.MEAS_TURNS || '150', 10);
 const ARM = process.env.MEAS_ARM === 'prepared' ? 'prepared' : 'natural';
-const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '540', 10) * 1000;
+// 480 s (nie 540): start + build + pętla muszą mieścić się w limicie 590 s pojedynczego wywołania bash (Evaluator r1, zarzut 10).
+const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '480', 10) * 1000;
 const RESULT_FILE = process.env.MEAS_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -94,7 +95,7 @@ async function main() {
   const rep = {
     arm: ARM, seedNote: 'PLAYTEST_MAPA_SEED (stale, 1 ziarno)', relationNote: 'naturalny (brak haka ustawiania relacji)',
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
-    tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, per100: 0, aiOwner: null, stoppedBy: null,
+    tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,
     autoBattles: 0, consoleErrors: 0, offerLog: [], perTurn: [],
   };
   const consoleErrors = [];
@@ -144,7 +145,9 @@ async function main() {
         if (pa && pa.accepted) rep.activePrzyjmij++;
         rep.offerLog.push({ turn: st.turn, give: gi, giveQty: p.payload.giveItems?.[0]?.ilosc, recv: ri, recvQty: p.payload.receiveItems?.[0]?.ilosc, przyjmijAktywne: !!(pa && pa.accepted) });
       }
-      rep.perTurn.push({ t: st.turn, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen });
+      // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
+      rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
+      rep.perTurn.push({ t: st.turn, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     rep.tableEnd = sEnd.tableLen;
@@ -163,7 +166,7 @@ async function main() {
   }
   rep.consoleErrors = consoleErrors.length;
   rep.consoleErrorSample = consoleErrors.slice(0, 5);
-  const line = JSON.stringify({ arm: rep.arm, turnsRun: rep.turnsRun, offers: rep.offers, per100: rep.per100, activePrzyjmij: rep.activePrzyjmij, pairs: rep.pairs, cyclicDealsMax: rep.cyclicDealsMax, tableGrowth: rep.tableGrowth, scriptRejected: rep.scriptRejected, stoppedBy: rep.stoppedBy, consoleErrors: rep.consoleErrors });
+  const line = JSON.stringify({ arm: rep.arm, turnsRun: rep.turnsRun, offers: rep.offers, per100: rep.per100, activePrzyjmij: rep.activePrzyjmij, pairs: rep.pairs, cyclicDealsMax: rep.cyclicDealsMax, tableGrowth: rep.tableGrowth, scriptRejected: rep.scriptRejected, rejectCooldownsMax: rep.rejectCooldownsMax, stoppedBy: rep.stoppedBy, consoleErrors: rep.consoleErrors });
   console.log('[meas] RESULT ' + line);
   if (RESULT_FILE) fs.writeFileSync(RESULT_FILE, JSON.stringify(rep, null, 2));
 }
