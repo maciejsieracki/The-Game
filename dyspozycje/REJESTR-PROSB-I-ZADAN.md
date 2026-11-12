@@ -9479,3 +9479,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 
 - 2026-11-11 FALA 651 WDROŻONA na ROBOCZĄ (main fb0f7ad95, MD5 index fb8c7652, audio-pack zgodne z Raw): W9 — administrator ulepszeń: blokada automatyzacji bez administratora + panel wyboru administratora (FC 85e26f708). Otwarte: zatrudnienie administratora bez okna potwierdzenia (ABC #262).
 - 2026-11-11 W4 r2 (R-WEB-AI-TRADE-WIRING-E2E-Q1): DECISION_REQUIRED — bramka uczciwości AI i podgląd „Przyjmij" gracza wykluczają się przy Relacji <100 (pomiar potwierdzony przez Evaluatora). Opcje A1/A2/B/C — pytanie ABC do właściciela.
+
+- 2026-11-12 FALA 652 WDROŻONA na ROBOCZĄ (main ca2bbd683, MD5 index 3d624885, audio-pack zgodne z Raw): W14 — zoom/minimapa/ikony mapy pod panelami rozwijanymi (Z_MAP_CONTROLS=309); W20 — fortyfikacje jako łańcuch awansu Palisada→Mur kamienny→Mur ceglany (pełny koszt, niższe etapy znikają, migracja zapisów). FC ba664b124 + 49380189e. Otwarte: Cytadela blokuje mury (reguła sprzed zmiany) — ewentualne ABC; dług Rust REPIN.
