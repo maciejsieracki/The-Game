@@ -69,6 +69,87 @@ fn replace_view(game: &PlayableGame) -> (Option<String>, bool) {
     )
 }
 
+/// Stan startowy z cywilizacja, tempem kosztu i etykieta trudnosci (pola `StartGameParams`).
+fn game_with(civ: &str, pace: &str, difficulty: &str) -> PlayableGame {
+    let mut params = StartGameParams {
+        seed: 7,
+        ..StartGameParams::default()
+    };
+    params.civ_id = civ.to_owned();
+    params.difficulty = difficulty.to_owned();
+    params.advanced.unit_cost_pace = pace.to_owned();
+    PlayableGame::new(params).expect("scenariusz startowy")
+}
+
+/// P6-UNIT-REPLACE-L3-KOSZT (kryteria 2 i 3): e2e komendy gracza na PRODUKCYJNEJ tabeli. Wartosci
+/// LITERALNE z wektorow pinu 07d2fbd72 (`productionMoney`, `pinData`), nie z funkcji produkcyjnej:
+/// Procarz, baza 8, cywilizacja `zulusi` (rabat), tempo `normalny`: Normal = 14, Hard = 28
+/// (`Łatwy` = Easy = 14 jak w pinie). Kategoria `procarz` (categoryOf), HP = health 16 (`pinData`).
+#[test]
+fn produkcyjna_zamiana_ustawia_kategorie_hp_i_koszt_z_pinu() {
+    for (label, expected_cost) in [
+        ("Normalny", 14.0),
+        ("Łatwy", 14.0),
+        ("Trudny", 28.0),
+        ("normal", 14.0),
+        ("easy", 14.0),
+        ("hard", 28.0),
+    ] {
+        let mut game = game_with("zulusi", "normalny", label);
+        game.set_human_treasury(1_000.0).expect("skarbiec");
+        game.set_capital_stock(drewno_pool(1_000.0))
+            .expect("stolica");
+        let treasury_before = game.state().economy.treasury;
+
+        game.replace_unit(HUMAN_UNIT, "Procarz", None)
+            .unwrap_or_else(|err| panic!("{label}: zamiana ma sie udac: {err:?}"));
+
+        let economy = &game.state().economy;
+        assert_eq!(
+            treasury_before - economy.treasury,
+            expected_cost,
+            "{label}: Pieniadz = koszt z wektorow pinu"
+        );
+        let state = &economy.units[&HUMAN_UNIT];
+        assert_eq!(
+            state.category.as_deref(),
+            Some("procarz"),
+            "{label}: kategoria po zamianie"
+        );
+        // Web: syncHpMax = !humanTreasury, wiec gracz NIE dostaje hpMax z zamiany (pole zostaje jak bylo).
+        assert_eq!(
+            state.hp_max, None,
+            "{label}: gracz: hpMax nie jest synchronizowany (web syncHpMax=false)"
+        );
+        // Stare HP = maks. starego typu (Wojownik), ratio 1 -> HP = newMaxHp = health 16 z pinu.
+        assert_eq!(
+            state.hp,
+            Some(16.0),
+            "{label}: HP po zamianie = newMaxHp z pinu (bez bonusow stanu, patrz PLAYABLE_UNIT_PROGRESS)"
+        );
+    }
+}
+
+/// Nieznana etykieta trudnosci nie jest zgadywana: komenda zwraca blad, bez zmian w skarbcu.
+#[test]
+fn nieznana_etykieta_trudnosci_odrzuca_zamiane() {
+    let mut game = game_with("zulusi", "normalny", "Koszmar");
+    game.set_human_treasury(1_000.0).expect("skarbiec");
+    game.set_capital_stock(drewno_pool(1_000.0))
+        .expect("stolica");
+    let treasury_before = game.state().economy.treasury;
+
+    let err = game
+        .replace_unit(HUMAN_UNIT, "Procarz", None)
+        .expect_err("nieznana trudnosc musi byc bledem");
+
+    assert_eq!(
+        err,
+        PlayableError::ReplaceDifficultyUnknown("Koszmar".to_owned())
+    );
+    assert_eq!(game.state().economy.treasury, treasury_before);
+}
+
 #[test]
 fn stan_domyslny_nie_pojawia_sie_w_dto() {
     let game = game();

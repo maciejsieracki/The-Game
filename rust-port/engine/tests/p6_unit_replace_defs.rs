@@ -6,7 +6,7 @@
 
 use civ_engine::domain::building_costs::p6_7b::{unit_stock_cost, StockRecord};
 use civ_engine::domain::playable::{PlayableGame, StartGameParams};
-use civ_engine::domain::unit_replace_defs::{category_of, production_replace_defs};
+use civ_engine::domain::unit_replace_defs::{category_of, production_replace_defs_for_civ};
 use serde::Deserialize;
 
 const PIN_VECTORS: &str = include_str!("p6_unit_replace_defs_vectors/category-vectors-pin.json");
@@ -85,7 +85,11 @@ fn raport_rozbieznosci_danych_nie_zawiera_roznic_kategorii() {
 
 #[test]
 fn tabela_produkcyjna_ma_kategorie_z_wektorow_rust() {
-    let defs = production_replace_defs();
+    let defs = production_replace_defs_for_civ(
+        "rzymianie",
+        "niski",
+        civ_engine::domain::types::Difficulty::Normal,
+    );
     assert_eq!(defs.len(), 75, "jeden wpis na rekord units.json");
     for row in parse(RUST_VECTORS) {
         let def = defs
@@ -99,7 +103,11 @@ fn tabela_produkcyjna_ma_kategorie_z_wektorow_rust() {
 
 #[test]
 fn zamiana_produkcyjna_pobiera_koszt_z_tabeli() {
-    let defs = production_replace_defs();
+    let defs = production_replace_defs_for_civ(
+        "rzymianie",
+        "niski",
+        civ_engine::domain::types::Difficulty::Normal,
+    );
     let procarz = defs.get("Procarz").expect("Procarz w units.json");
     let cost: StockRecord = unit_stock_cost(procarz.stock_source.as_ref());
     let money = procarz.money_cost;

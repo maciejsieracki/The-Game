@@ -12,8 +12,10 @@ use std::{error::Error, fmt};
 use super::building_costs::p6_7b::StockRecord;
 use super::turn_war_inputs::{build_war_inputs, production_config};
 use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
+use super::types::Difficulty;
 use super::unit_replace::{UnitReplaceFail, UnitReplaceResult, UnitReplaceTarget};
-use super::unit_replace_defs::production_replace_defs;
+use super::unit_replace_cost::ReplaceUnitProgress;
+use super::unit_replace_defs::production_replace_defs_for_civ;
 use super::unit_replace_wiring::{replace_unit_wired, ReplaceCity, ReplaceUnitDef};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
@@ -393,6 +395,27 @@ fn is_zero_f64(value: &f64) -> bool {
     *value == 0.0
 }
 
+/// Postep jednostki dla HP zamiany. Stan Rust nie niesie jeszcze web `battlesSurvived` ani
+/// `parametryBonusProc` (brak zrodla w `PlayableUnit`/`PlayableReplaceUnit`), wiec wejscie jest
+/// JAWNIE zerowe: bonus weterana i parametrow = 0, a HP = bazowe `health`. Gdy stan dostanie te pola,
+/// zamien te stala na odczyt z jednostki.
+const PLAYABLE_UNIT_PROGRESS: ReplaceUnitProgress = ReplaceUnitProgress {
+    parametry_bonus_proc: None,
+    battles_survived: None,
+};
+
+/// Etykieta trudnosci stanu (`StartGameParams.difficulty`, domyslnie "Normalny") -> `Difficulty`.
+/// Mapa 1:1 z web `main.ts:44372-44374` (`'Łatwy': 'easy'`, `'Normalny': 'normal'`, `'Trudny': 'hard'`)
+/// oraz klucze `_menuDifficulty` (`easy` / `normal` / `hard`). Nieznana etykieta = blad.
+fn replace_difficulty_of(label: &str) -> Result<Difficulty, PlayableError> {
+    match label {
+        "Normalny" | "normal" => Ok(Difficulty::Normal),
+        "Łatwy" | "easy" => Ok(Difficulty::Easy),
+        "Trudny" | "hard" => Ok(Difficulty::Hard),
+        other => Err(PlayableError::ReplaceDifficultyUnknown(other.to_owned())),
+    }
+}
+
 /// Typ startowy jednostki (units.json) dla `PlayableUnitKind`.
 const fn base_type_id(kind: PlayableUnitKind) -> &'static str {
     match kind {
@@ -501,6 +524,8 @@ pub enum PlayableError {
     NoCityForReplace,
     /// P6-UNIT-REPLACE-L3: skarbiec/pula z wartoscia NaN lub nieskonczona (odrzucane).
     NonFiniteEconomy,
+    /// P6-UNIT-REPLACE-L3-KOSZT: etykieta trudnosci stanu bez odpowiednika `Difficulty` (odrzucane, nie zgadywane).
+    ReplaceDifficultyUnknown(String),
     /// P6-UNIT-REPLACE-L3: zamiana odrzucona przez reguly pinu (koszt, magazyn, blokada, uzycie).
     UnitReplaceRejected {
         reason: UnitReplaceFail,
@@ -543,6 +568,12 @@ impl fmt::Display for PlayableError {
             }
             Self::NoCityForReplace => {
                 formatter.write_str("unit replacement needs a city owned by the human player")
+            }
+            Self::ReplaceDifficultyUnknown(label) => {
+                write!(
+                    formatter,
+                    "unit replacement: unknown difficulty label {label:?}"
+                )
             }
             Self::UnitReplaceRejected { reason, detail } => match detail {
                 Some(detail) => write!(
@@ -759,7 +790,21 @@ impl PlayableGame {
         new_type_id: &str,
         gate: Option<String>,
     ) -> Result<(), PlayableError> {
-        self.replace_unit_with_defs(unit_id, new_type_id, production_replace_defs(), gate)
+        let defs = self.replace_defs()?;
+        self.replace_unit_with_defs(unit_id, new_type_id, &defs, gate)
+    }
+
+    /// Produkcyjna tabela definicji dla stanu gracza (P6-UNIT-REPLACE-L3-KOSZT). Zalozenia stanu
+    /// jawnie: wlasciciel gracza = `params.civ_id` (macierz cywilizacji), tempo kosztu =
+    /// `params.advanced.unit_cost_pace` (web `kosztJednostekPace`), trudnosc = etykieta
+    /// `params.difficulty` (web `_menuDifficulty`; nieznana etykieta = blad, nie domyslna).
+    fn replace_defs(&self) -> Result<BTreeMap<String, ReplaceUnitDef>, PlayableError> {
+        let difficulty = replace_difficulty_of(&self.state.params.difficulty)?;
+        Ok(production_replace_defs_for_civ(
+            &self.state.params.civ_id,
+            &self.state.params.advanced.unit_cost_pace,
+            difficulty,
+        ))
     }
 
     /// Wariant z jawnie podana tabela `defs` (wstrzykniecie w testach i scenariuszach L3).
@@ -813,7 +858,15 @@ impl PlayableGame {
                 .unwrap_or_default(),
         };
         // Tryb gracza: bez synchronizacji hpMax (ta galaz nalezy do AI w web).
-        match replace_unit_wired(&mut target, new_type_id, defs, &mut city, gate, false) {
+        match replace_unit_wired(
+            &mut target,
+            new_type_id,
+            defs,
+            &mut city,
+            gate,
+            false,
+            PLAYABLE_UNIT_PROGRESS,
+        ) {
             UnitReplaceResult::Ok { .. } => {
                 self.state.economy.treasury = city.treasury;
                 self.state.economy.city_stock.insert(city_id, city.pool);
@@ -1076,6 +1129,32 @@ mod war_pipeline_advance_tests {
             second,
             PlayableError::TurnPhaseQueueIncomplete { .. }
         ));
+    }
+}
+
+#[cfg(test)]
+mod replace_difficulty_label_tests {
+    use super::*;
+
+    /// Kazda etykieta stanu z web (`main.ts:44372-44374`) i klucz `_menuDifficulty` ma wlasne mapowanie.
+    #[test]
+    fn kazda_etykieta_trudnosci_ma_mapowanie() {
+        assert_eq!(replace_difficulty_of("Normalny"), Ok(Difficulty::Normal));
+        assert_eq!(replace_difficulty_of("normal"), Ok(Difficulty::Normal));
+        assert_eq!(replace_difficulty_of("Łatwy"), Ok(Difficulty::Easy));
+        assert_eq!(replace_difficulty_of("easy"), Ok(Difficulty::Easy));
+        assert_eq!(replace_difficulty_of("Trudny"), Ok(Difficulty::Hard));
+        assert_eq!(replace_difficulty_of("hard"), Ok(Difficulty::Hard));
+    }
+
+    #[test]
+    fn nieznana_etykieta_trudnosci_jest_bledem() {
+        assert_eq!(
+            replace_difficulty_of("Koszmar"),
+            Err(PlayableError::ReplaceDifficultyUnknown(
+                "Koszmar".to_owned()
+            ))
+        );
     }
 }
 

@@ -132,7 +132,15 @@ fn koszt_adaptera_zgodny_z_wektorami_weba() {
             pool: pool.clone(),
         };
         let mut unit = wounded_warrior();
-        let res = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, false);
+        let res = replace_unit_wired(
+            &mut unit,
+            "Nowy",
+            &defs,
+            &mut city,
+            None,
+            false,
+            Default::default(),
+        );
         match res {
             UnitReplaceResult::Ok {
                 money: got_money,
@@ -155,7 +163,15 @@ fn sukces_zmienia_typ_zasoby_skarbiec_i_hp() {
     let defs = table();
     let mut city = city_with_drewno(200.0, 100.0);
     let mut unit = wounded_warrior();
-    let res = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, false);
+    let res = replace_unit_wired(
+        &mut unit,
+        "Nowy",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
     assert!(matches!(res, UnitReplaceResult::Ok { .. }), "{res:?}");
     assert_eq!(unit.type_id, "Nowy");
     assert_eq!(unit.category.as_deref(), Some("Dystans"));
@@ -173,7 +189,15 @@ fn sync_hp_max_dla_ai_aktualizuje_hp_max() {
     let defs = table();
     let mut city = city_with_drewno(200.0, 100.0);
     let mut unit = wounded_warrior();
-    let _ = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, true);
+    let _ = replace_unit_wired(
+        &mut unit,
+        "Nowy",
+        &defs,
+        &mut city,
+        None,
+        true,
+        Default::default(),
+    );
     assert_eq!(unit.hp_max, Some(20.0));
 }
 
@@ -183,7 +207,15 @@ fn brak_pieniedzy_odrzuca_bez_mutacji() {
     let mut city = city_with_drewno(200.0, 3.0);
     let mut unit = wounded_warrior();
     let before = unit.clone();
-    let res = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, false);
+    let res = replace_unit_wired(
+        &mut unit,
+        "Nowy",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
     match res {
         UnitReplaceResult::Fail { reason, money, .. } => {
             assert_eq!(reason, UnitReplaceFail::Money);
@@ -202,7 +234,15 @@ fn brak_surowca_odrzuca_bez_mutacji() {
     let mut city = city_with_drewno(10.0, 100.0);
     let mut unit = wounded_warrior();
     let before = unit.clone();
-    let res = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, false);
+    let res = replace_unit_wired(
+        &mut unit,
+        "Nowy",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
     match res {
         UnitReplaceResult::Fail { reason, stock, .. } => {
             assert_eq!(reason, UnitReplaceFail::Stock);
@@ -227,6 +267,7 @@ fn blokada_pinu_odrzuca_z_powodem() {
         &mut city,
         Some("Limit Super-jednostki".to_owned()),
         false,
+        Default::default(),
     );
     match res {
         UnitReplaceResult::Fail { reason, detail, .. } => {
@@ -243,7 +284,15 @@ fn nieznany_typ_docelowy_jest_blokada() {
     let defs = table();
     let mut city = city_with_drewno(200.0, 100.0);
     let mut unit = wounded_warrior();
-    let res = replace_unit_wired(&mut unit, "Brak", &defs, &mut city, None, false);
+    let res = replace_unit_wired(
+        &mut unit,
+        "Brak",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
     match res {
         UnitReplaceResult::Fail { reason, detail, .. } => {
             assert_eq!(reason, UnitReplaceFail::Gate);
@@ -259,8 +308,24 @@ fn drugie_uzycie_w_turze_odrzucone() {
     let defs = table();
     let mut city = city_with_drewno(200.0, 100.0);
     let mut unit = wounded_warrior();
-    let _ = replace_unit_wired(&mut unit, "Nowy", &defs, &mut city, None, false);
-    let res = replace_unit_wired(&mut unit, "Stary", &defs, &mut city, None, false);
+    let _ = replace_unit_wired(
+        &mut unit,
+        "Nowy",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
+    let res = replace_unit_wired(
+        &mut unit,
+        "Stary",
+        &defs,
+        &mut city,
+        None,
+        false,
+        Default::default(),
+    );
     match res {
         UnitReplaceResult::Fail { reason, .. } => assert_eq!(reason, UnitReplaceFail::Used),
         other => panic!("oczekiwano Used, jest {other:?}"),
