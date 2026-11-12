@@ -434,12 +434,9 @@ fn coverage_table_has_no_silent_ported_gaps() {
     // R-RUSTPORT-P6-SIEGE-TRANSFER-Q5-Q1: noteCityCapture, syncCityGarnizon, playerEverOwnedCityByOwner.add,
     // applyLiveSafeRationForCity przeszly na Ported (wektory: tests/p6_siege_transfer_q5.rs).
     // R-RUSTPORT-P6-SIEGE-TRANSFER-Q6-Q1: runCapitalCapturePlunder przeszedl na Ported (wektory: tests/p6_siege_capital_plunder.rs).
+    // R-RUSTPORT-P6-SIEGE-TRANSFER-Q7-Q1: recordCityCaptureEvent przeszedl na Ported (wektory: tests/p6_siege_capture_events.rs).
     assert_eq!(
         missing,
-        vec![
-            "beginWonderTransferWatch",
-            "settleWonderTransfer",
-            "recordCityCaptureEvent",
-        ]
+        vec!["beginWonderTransferWatch", "settleWonderTransfer",]
     );
 }
