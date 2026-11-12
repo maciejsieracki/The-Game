@@ -145,14 +145,24 @@ pub const POST_CAPTURE_FRESH_TURNS_PIN: f64 = 5.0;
 /// Web `POST_CAPTURE_REBELLION_RECONQUEST_TURNS` (`post-capture-law.ts`, = 10): odbicie po buncie.
 pub const POST_CAPTURE_RECONQUEST_TURNS_PIN: f64 = 10.0;
 
+/// Pola miasta zmieniane przez web `applyPostCaptureLawOnCapture`: pola Prawa/buntu ([`PostCaptureLawFields`])
+/// oraz `city.revoltGraceRemaining` (web: ustawiane na `null` przy kazdym realnym przejeciu, `post-capture-law.ts:74`).
+/// Oba pola sa wymagane razem: brak ktoregokolwiek = niepelne wykonanie skutku (zob. `TransferExtras::post_capture_law`).
+pub struct PostCaptureCityFields<'a> {
+    pub law: &'a mut PostCaptureLawFields,
+    /// Web `city.revoltGraceRemaining` (`Option<f64>`; `None` = `null`/brak).
+    pub revolt_grace_remaining: &'a mut Option<f64>,
+}
+
 /// Web `applyPostCaptureLawOnCapture(city, newOwner, prevOwner)` (`game/post-capture-law.ts:62`).
 ///
 /// Zwraca `None` gdy `prevOwner === newOwner` (web: wczesny `return`, bez zmian pol), w przeciwnym razie
 /// `Some(reconquest)` (web `city.wasRebellionReconquest`). Kasuje `rebelPreviousOwnerId` i
-/// `rebelProtectionTurnsRemaining` bezwarunkowo (jak web). Pole web `revoltGraceRemaining = null` NIE nalezy do
-/// [`PostCaptureLawFields`] (NIE_ZMIERZONO w tym klocku: wolajacy musi je wyzerowac w module buntu, jesli istnieje).
+/// `rebelProtectionTurnsRemaining` bezwarunkowo (jak web) oraz ustawia `revoltGraceRemaining = null` (jak web,
+/// `post-capture-law.ts:74`). Wszystkie trzy zapisy sa pominiete przy no-op (`prevOwner === newOwner`).
 pub fn apply_post_capture_law_on_capture(
     f: &mut PostCaptureLawFields,
+    revolt_grace_remaining: &mut Option<f64>,
     new_owner: i64,
     prev_owner: i64,
 ) -> Option<bool> {
@@ -168,6 +178,7 @@ pub fn apply_post_capture_law_on_capture(
         POST_CAPTURE_FRESH_TURNS_PIN
     });
     f.was_rebellion_reconquest = reconquest;
+    *revolt_grace_remaining = None;
     f.rebel_previous_owner_id = None;
     f.rebel_protection_turns_remaining = None;
     Some(reconquest)
@@ -181,17 +192,22 @@ pub fn was_protected_rebel(rebel_state: Option<bool>, f: &PostCaptureLawFields) 
 
 /// Zadanie wojny z `triggerRebelProtectionWarConsequence` (web: `ownerDeclareWarOn(newOwner, rebelPrev, true, 'wymuszona_inna')`).
 /// Sama deklaracja wojny lezy po stronie wolajacego (CallerSide: brak tu modelu dyplomacji).
+///
+/// ZALEZNOSC W8 r4 (jawna, NIE_ZMIERZONO po stronie Rust): web wola `ownerDeclareWarOn` z `force = true`, co
+/// (a) omija guard `isPeaceLockedBetween` i (b) czysci `peaceUntilTurn` pary (main.ts:13197-13203). Rust
+/// `diplomacy_truce_flow::declare_war_opts` ma tylko `skip_n2` i NIE ma odpowiednika `force` ani powodu
+/// `'wymuszona_inna'`. Wolajacy (W8 r4) MUSI dodac ten parytet; bez niego wojna z tego zadania nie jest rownowazna z webem.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RebelWarRequest {
     /// Web `newOwner` (deklarujacy = zdobywca).
     pub declarer: i64,
-    /// Web `rebelPrevOwnerId` (cel = bylty wlasciciel miasta w oknie ochrony).
+    /// Web `rebelPrevOwnerId` (cel = byly wlasciciel miasta w oknie ochrony).
     pub target: i64,
 }
 
 /// Web `triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerId, newOwner)` (main.ts:13253).
 /// Zwraca `Some` dokladnie wtedy, gdy web wywolalby `ownerDeclareWarOn`. Wyjatki web: brak flagi ochrony,
-/// brak `rebelPrevOwnerId`, zdobywca = bylty wlasciciel, zdobywca = barbarzynca (`isBarbarian`, id -1).
+/// brak `rebelPrevOwnerId`, zdobywca = byly wlasciciel, zdobywca = barbarzynca (`isBarbarian`, id -1).
 pub fn rebel_protection_war_request(
     was_protected: bool,
     rebel_prev_owner: Option<i64>,

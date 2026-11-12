@@ -18,7 +18,6 @@
 //! * Z-TR-3 pule Pracy (`setOwnerPracaPool`) nie sa modyfikowane tutaj: funkcja zwraca kwoty
 //!   (`refunded_praca_to_old`, `forfeited_praca_to_new`), a wolajacy dodaje je do puli.
 
-use crate::domain::order_effects_lane::PostCaptureLawFields;
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem};
 use crate::domain::siege_enter_city::EnterUnit;
@@ -26,7 +25,7 @@ use crate::domain::siege_surrender::surrender_population_after;
 use crate::domain::siege_transfer_effects::{
     apply_capture_population_loss, apply_post_capture_law_on_capture, rebel_protection_war_request,
     sanitize_production_queue_for_owner, was_protected_rebel, CapturePopLossInput,
-    CapturePopLossOutcome, RebelWarRequest,
+    CapturePopLossOutcome, PostCaptureCityFields, RebelWarRequest,
 };
 use crate::domain::state::p6_6b::display_names::clear_city_state_flag_on_capture;
 
@@ -62,13 +61,19 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
     (
         "applyPostCaptureLawOnCapture",
         EffectStatus::Ported(
-            "siege_transfer_effects::apply_post_capture_law_on_capture (TransferExtras::post_capture_law; wykonywane tylko z polami Prawa)",
+            "siege_transfer_effects::apply_post_capture_law_on_capture (TransferExtras::post_capture_law = Some; pola Prawa + revoltGraceRemaining=null; None = pominiete)",
         ),
     ),
     (
         "triggerRebelProtectionWarConsequence",
         EffectStatus::CallerSide(
-            "siege_transfer_effects::rebel_protection_war_request zwraca RebelWarRequest; ownerDeclareWarOn (force=true) po stronie wolajacego",
+            "siege_transfer_effects::rebel_protection_war_request zwraca RebelWarRequest (warunki web zgodne z wektorami); deklaracja wojny po stronie wolajacego",
+        ),
+    ),
+    (
+        "ownerDeclareWarOn",
+        EffectStatus::CallerSide(
+            "ZALEZNOSC W8 r4 (NIE_ZMIERZONO): force=true (omija isPeaceLockedBetween, czysci peaceUntilTurn) i powod 'wymuszona_inna' nie maja odpowiednika w diplomacy_truce_flow::declare_war_opts (tylko skip_n2)",
         ),
     ),
     ("settleWonderTransfer", EffectStatus::Missing),
@@ -227,10 +232,13 @@ pub struct TransferExtras<'a> {
     /// (sanityzacja nadal wykonana). ZALEZNOSC: `wonderGateOk`/`parseWonderProdId` nie maja odpowiednika w Rust (W8 r3);
     /// wolajacy z cudami w kolejce MUSI podac bramke, inaczej wynik rozni sie od weba.
     pub wonder_gate_ok: Option<&'a dyn Fn(&ProductionItem) -> bool>,
-    /// Pola Prawa po zdobyciu miasta (`rebelPreviousOwnerId`, `rebelProtectionTurnsRemaining`, bonus Prawa).
-    /// `Some` = wykonac `applyPostCaptureLawOnCapture` + `triggerRebelProtectionWarConsequence` (sekwencja web:
-    /// odczyt ochrony PRZED kasowaniem). `None` = krok pominiety.
-    pub post_capture_law: Option<&'a mut PostCaptureLawFields>,
+    /// Pola Prawa po zdobyciu miasta (`rebelPreviousOwnerId`, `rebelProtectionTurnsRemaining`, bonus Prawa) oraz
+    /// `revoltGraceRemaining`. `Some` = wykonac `applyPostCaptureLawOnCapture` + `triggerRebelProtectionWarConsequence`
+    /// (sekwencja web main.ts:17693-17703: odczyt ochrony PRZED kasowaniem).
+    /// `None` = krok POMINIETY po cichu (tylko tryb legacy). Web wykonuje oba skutki ZAWSZE w galezi Transfer,
+    /// wiec wolajacy produkcyjny (W8 r4) MUSI podac `Some`; `None` daje wynik rozny od weba (test
+    /// `p6_siege_transfer_effects_q4::none_pomija_prawo_i_wojne_jawnie` to dokumentuje).
+    pub post_capture_law: Option<PostCaptureCityFields<'a>>,
 }
 
 /// Galaz Transfer. Wywolac po warunku wstepnym (zob. naglowek). `was_independent_city_state` = web
@@ -301,10 +309,15 @@ pub fn apply_transfer_with_effects(
     // potem applyPostCaptureLawOnCapture, triggerRebelProtectionWarConsequence (main.ts:17700-17720).
     let mut post_capture_law_reconquest = None;
     let mut rebel_war_request = None;
-    if let Some(f) = extras.post_capture_law.as_deref_mut() {
-        let was_protected = was_protected_rebel(city.rebel_state, f);
-        let rebel_prev = f.rebel_previous_owner_id;
-        post_capture_law_reconquest = apply_post_capture_law_on_capture(f, new_owner, old_owner);
+    if let Some(f) = extras.post_capture_law.as_mut() {
+        let was_protected = was_protected_rebel(city.rebel_state, f.law);
+        let rebel_prev = f.law.rebel_previous_owner_id;
+        post_capture_law_reconquest = apply_post_capture_law_on_capture(
+            f.law,
+            f.revolt_grace_remaining,
+            new_owner,
+            old_owner,
+        );
         performed.push("applyPostCaptureLawOnCapture");
         rebel_war_request = rebel_protection_war_request(was_protected, rebel_prev, new_owner);
         performed.push("triggerRebelProtectionWarConsequence");
