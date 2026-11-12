@@ -24,6 +24,7 @@
 //! Nie portowano (BRAK, poza tym modulem): `_applyTerrainRange` (sam zasieg terenu), `canShoot`, `isSiegeUnit`.
 //! Marsz `_siegeWalkTo` / `_bfsFirstStep` jest w `siege_tactics_walk.rs` (K1b).
 //! Patrz `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`.
+use crate::domain::siege_tactics_blow::js_min;
 
 /// Zrodlo ostrzalu `{q, r, range}` (web `Array<{ q: number; r: number; range: number }>`).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -85,17 +86,6 @@ pub struct ApproachUnit {
     /// Web `ru.shootingEnabled === false` (wartosc `undefined` to NIE jest wylaczenie: `!== false` jest prawdziwe).
     pub shooting_disabled: bool,
     pub mounted: bool,
-}
-
-/// Web `Math.min(a, b)` dla dwoch liczb: NaN propaguje sie (w przeciwienstwie do `f64::min`).
-fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a <= b {
-        a
-    } else {
-        b
-    }
 }
 
 /// Web `battleScene.ts:7939-7943` `_threatSlack(threats, col, row)`.

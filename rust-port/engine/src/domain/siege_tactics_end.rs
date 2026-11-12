@@ -13,6 +13,8 @@
 //! `wallEverBreached` (ustawiane w `battleScene.ts:3721, 7647, 7759, 8072`), oraz blok PAT dla bitew bez oblezenia
 //! (`battleScene.ts:10178-10182`, morale). Patrz `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`.
 
+use super::siege_tactics_blow::js_max;
+
 /// Strona bitwy zwyciezajaca w web `winner: 'atakujacy' | 'obronca'` (bez `remis`: remis oblezenia jest w `siege_no_breach::round_cap_verdict`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BattleSide {
@@ -22,11 +24,7 @@ pub enum BattleSide {
 
 /// Web `Math.max(0, hp)` dla pojedynczej jednostki. `NaN` zostaje `NaN` (JS: `Math.max(0, NaN) === NaN`).
 fn js_max0(hp: f64) -> f64 {
-    if hp.is_nan() {
-        hp
-    } else {
-        hp.max(0.0)
-    }
+    js_max(0.0, hp)
 }
 
 /// Web `units.reduce((s, u) => s + Math.max(0, u.bu.hp), 0)`, sumowane od lewej.
@@ -75,5 +73,20 @@ pub fn battle_winner(
         Some(BattleSide::Attacker)
     } else {
         Some(BattleSide::Defender)
+    }
+}
+
+#[cfg(test)]
+mod js_max0_zero_sign_tests {
+    use super::js_max0;
+
+    /// Zachowanie `Math.max(0, x)` na tym module: `-0` -> `+0`, NaN zachowany, skonczone bez zmian.
+    #[test]
+    fn js_max0_zero_sign_jak_math_max() {
+        assert_eq!(js_max0(-0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(-3.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(f64::NEG_INFINITY).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(2.5), 2.5);
+        assert!(js_max0(f64::NAN).is_nan());
     }
 }

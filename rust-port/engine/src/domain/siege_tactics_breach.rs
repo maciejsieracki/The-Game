@@ -31,6 +31,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::siege_tactics_approach::ApproachWallState;
+use super::siege_tactics_blow::js_max;
 
 /// Stan muru/bramy/wiez potrzebny do automatu wylomu (pola sceny web).
 #[derive(Debug, Clone, PartialEq)]
@@ -74,11 +75,7 @@ impl WallState {
 
 /// Web `Math.max(0, hp)`: NaN zostaje NaN (w Rust `f64::max` zwrocilby 0).
 fn js_max0(x: f64) -> f64 {
-    if x.is_nan() || x > 0.0 {
-        x
-    } else {
-        0.0
-    }
+    js_max(0.0, x)
 }
 
 /// Web `_breachWallTile(wallRow)` (`battleScene.ts:7638-7647`), skutki na stan wylomu.
@@ -169,4 +166,19 @@ pub fn skip_instant_fallback(s: &WallState, atk_has_alive_siege_unit: bool) -> W
         n.wall_ever_breached = true;
     }
     n
+}
+
+#[cfg(test)]
+mod js_max0_zero_sign_tests {
+    use super::js_max0;
+
+    /// Zachowanie `Math.max(0, x)` na tym module: `-0` -> `+0`, NaN zachowany, skonczone bez zmian.
+    #[test]
+    fn js_max0_zero_sign_jak_math_max() {
+        assert_eq!(js_max0(-0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(-3.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(f64::NEG_INFINITY).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(2.5), 2.5);
+        assert!(js_max0(f64::NAN).is_nan());
+    }
 }

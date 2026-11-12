@@ -19,6 +19,7 @@
 //! `_armyMoraleRatio` i `_battleUnitsForMapExport` (wejscia liczbowe), `if (this.finished) return true` (wywolujacy).
 
 use crate::domain::siege_no_breach::{round_cap_verdict, RoundCapVerdict};
+use crate::domain::siege_tactics_blow::js_max;
 use crate::domain::siege_tactics_end::{battle_winner, siege_no_breach_repels_attack, BattleSide};
 
 /// Web `STALL_TURN_LIMIT` (`battleScene.ts:1119`): tury bez zmiany HP/morale/strat -> stan `stalled`.
@@ -56,11 +57,7 @@ pub struct StallUnit {
 
 /// Web `Math.max(0, x)` dla jednej wartosci. `NaN` zostaje `NaN`.
 fn js_max0(x: f64) -> f64 {
-    if x.is_nan() {
-        x
-    } else {
-        x.max(0.0)
-    }
+    js_max(0.0, x)
 }
 
 /// Web `Math.round` dla liczb (`+inf` przy polowce; `NaN`/`Inf` bez zmian).
@@ -270,5 +267,20 @@ mod tests {
         assert_eq!(js_number_string(-0.0), "0");
         assert_eq!(js_number_string(0.5), "0.5");
         assert_eq!(js_number_string(1e21), "1e+21");
+    }
+}
+
+#[cfg(test)]
+mod js_max0_zero_sign_tests {
+    use super::js_max0;
+
+    /// Zachowanie `Math.max(0, x)` na tym module: `-0` -> `+0`, NaN zachowany, skonczone bez zmian.
+    #[test]
+    fn js_max0_zero_sign_jak_math_max() {
+        assert_eq!(js_max0(-0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(-3.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(f64::NEG_INFINITY).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(2.5), 2.5);
+        assert!(js_max0(f64::NAN).is_nan());
     }
 }
