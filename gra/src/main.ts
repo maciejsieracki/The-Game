@@ -40723,7 +40723,7 @@ async function boot(): Promise<void> {
                   // R-WEB-AUTO-FORT-CLAIM-Q1: forty/posterunki z automatu dopiero po wyczerpaniu limitu miast.
                   cityLimitExhausted: isCityLimitExhausted(cities.filter(c => c.ownerId === hOid), _menuCityLimitBase, empireEpochForOwner(hOid)),
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
-                  getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
+                  getFocus: c => ulepszeniaEmpireForOwner((c as City).ownerId).focus,
                   // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): silnik NIE podaje juz
                   // `improvementBudgetCap`. Picker liczy pulap sam — `pracaBudgetPercent`
                   // (polityka imperium) x SKUMULOWANA pula na wejsciu (`pracaAvailable`
@@ -40732,7 +40732,7 @@ async function boot(): Promise<void> {
                   // przebija w gore). Podanie tu 100% + absolutnego capu z przyrostu tury
                   // bylo zrodlem progu opisanego przy `playerUlepszeniaPolicy` wyzej.
                   pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent,
-                  getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
+                  getPracaBudgetPercent: c => ulepszeniaEmpireForOwner((c as City).ownerId).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
                       city as City, map, territoryNodesAuto,
@@ -40747,7 +40747,7 @@ async function boot(): Promise<void> {
                   // idzie NA PRZOD, po zaspokojeniu automat wraca do zywnosci. K1 nie odwoluje sie
                   // do niedoborow (picker pomija `resourceDeficitKeys` dla profilu zywnosc).
                   foodImprovementStages: city => {
-                    const policy = effectiveUlepszeniaForCity(city as City);
+                    const policy = ulepszeniaEmpireForOwner((city as City).ownerId);
                     return policy.focus === 'zywnosc' || policy.focus === 'zrownowazone';
                   },
                   // Wycinka w toku (wieloturowa) - picker nie moze jej emitowac drugi raz (exec-wycinka-in-progress).

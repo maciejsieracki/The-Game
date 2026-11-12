@@ -117,6 +117,24 @@ ok(/for \(const c of cities\) delete \(c as \{ administratorUlepszen\?: unknown 
 ok(/if \(!administratorsEnabled\) \{[\s\S]{0,600}?stateAdmByOwner\.delete\(o\)/.test(mainSrc), 'wczytanie przy OFF usuwa administratora Państwa gracza');
 ok(!/effectiveUlepszeniaForCity\(c\)\.tryb/.test(mainSrc), 'Z4: w main.ts nie ma odczytu trybu automatyzacji per miasto');
 ok(/c => ulepszeniaEmpireForOwner\(c\.ownerId\)\.tryb === 'auto'/.test(mainSrc), 'Z4: tryb auto z polityki Państwa właściciela (selectCitiesForAutoImprovement)');
+ok(!/effectiveUlepszeniaForCity\(c as City\)\.(focus|pracaAutoPercent)/.test(mainSrc), 'Z4 r5: getFocus/getPracaBudgetPercent nie czytają override miasta');
+ok(!/effectiveUlepszeniaForCity\(city as City\)\.(focus|pracaAutoPercent)/.test(mainSrc), 'Z4 r5: foodImprovementStages nie czyta override miasta');
+ok(/getFocus: c => ulepszeniaEmpireForOwner\(\(c as City\)\.ownerId\)\.focus/.test(mainSrc), 'Z4 r5: getFocus z polityki Państwa');
+ok(/getPracaBudgetPercent: c => ulepszeniaEmpireForOwner\(\(c as City\)\.ownerId\)\.pracaAutoPercent/.test(mainSrc), 'Z4 r5: getPracaBudgetPercent z polityki Państwa');
+ok(/const policy = ulepszeniaEmpireForOwner\(\(city as City\)\.ownerId\);\s*return policy\.focus === 'zywnosc'/.test(mainSrc), 'Z4 r5: foodImprovementStages z polityki Państwa');
+
+console.log('(10) override miasta nie zmienia wyboru automatu (tryb auto wg Państwa)');
+{
+  // Miasto z lokalnym override „ręczny” nadal jest objęte automatem, gdy tryb Państwa = auto.
+  const overridden = { id: 'O', ownerId: HUMAN, mode: 'manual', ulepszeniaOverride: true, ulepszeniaTryb: 'reczny' };
+  const empireTryb = 'auto';
+  const picked = M.selectCitiesForAutoImprovement(
+    [overridden], HUMAN, true,
+    () => true,
+    () => empireTryb === 'auto',
+  ).map(c => c.id);
+  ok(picked.includes('O'), 'miasto z override „ręczny” objęte automatem przy trybie Państwa auto');
+}
 
 console.log('');
 console.log('RESULT: ' + passed + ' passed, ' + failed + ' failed');
