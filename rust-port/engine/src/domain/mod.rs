@@ -94,6 +94,7 @@ pub mod siege_sortie;
 pub mod siege_starvation;
 pub mod siege_surrender;
 pub mod siege_tactics_approach;
+pub mod siege_tactics_autophase;
 pub mod siege_tactics_breach;
 pub mod siege_tactics_clock;
 pub mod siege_tactics_end;
