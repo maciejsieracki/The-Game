@@ -24,6 +24,13 @@
 //! `_advanceToward`) NIE sa portowane tutaj: maszyna emituje zamiar (zdarzenie), jego tresc to osobne klocki.
 //! `_checkRout` uzywa K5A ([`should_rout`], [`effective_flee_threshold`]).
 //!
+//! Wolajacy i zaleznosci (NIE zamkniete w tym klocku): w Rust `activate_unit` nie ma wolajacego poza testem
+//! i rejestracja w `mod.rs`. Petla tury (kolejnosc aktywacji, `done()`, K5F/K5G) oraz tresc delegatow musza byc
+//! dopisane przy integracji. Przypisanie tresci delegatow w pinie (`gra/src/battle/battleScene.ts`, pin 07d2fbd72):
+//! `_advanceToward` (:7892) -> K1/K1b (`_siegeMoveRefused` :7963, `_siegeWalkTo` :8006, `_siegeSafeApproach` :8107);
+//! `_doAttack` (:8787) -> `_singleBlow` (:8809, K5I; wejscie BlowInput w K5I-2); `wallEverBreached` (:7647, :7759,
+//! :8073) -> K4; wieze -> K3 przez [`tower_ops`]. Maszyna tego klocka nie wola tych funkcji bezposrednio.
+//!
 //! Predykaty klas (`canShoot`, `isSiegeUnit`, `isSiegeTower`, `_isRam`, `_isCatapult`) sa jawnymi flagami
 //! (KLASY nie ma na bazie K5h). Przywrocenie `ru.range = origRange` w galezi muru jest no-op (nic w galezi nie
 //! zmienia `range`), wiec nie ma zdarzenia.
@@ -62,6 +69,10 @@ pub struct ActivateUnit {
     /// Web `ru.playerOrder.type === 'none'`.
     pub player_order_none: bool,
     /// Wyniki `canShoot(ru)`, `isSiegeUnit(ru.bu)`, `isSiegeTower(ru.bu)`, `_isRam`, `_isCatapult` (wejscia).
+    /// Kontrakt wolajacego: `can_shoot` = `rangedBase && ammoLeft > 0` (pin :1457). Predykat NIE czyta `range`,
+    /// wiec nie zalezy od `_applyTerrainRange`. Zmienia sie tylko przez zdarzenie ataku, po ktorym aktywacja
+    /// konczy sie `return`, wiec flaga jest stala w jednej aktywacji i liczy sie ja PRZED wywolaniem.
+    /// Flagi `is_siege_*`, `is_ram`, `is_catapult` wynikaja z `ru.bu` (statyczne).
     pub can_shoot: bool,
     pub is_siege_unit: bool,
     pub is_siege_tower: bool,
@@ -109,9 +120,11 @@ pub trait ActivateOps {
     fn tower_climb(&mut self) -> bool;
     fn infantry_to_tower(&mut self) -> bool;
     fn ram_tower_step(&mut self) -> bool;
-    /// `_rangedTargetInRange(ru)`: indeks w liscie wrogow.
+    /// `_rangedTargetInRange(ru)`: indeks w liscie wrogow. Czyta `ru.range` (pin :7041), wiec implementacja
+    /// musi widziec `range` PO `apply_terrain_range` z tej samej aktywacji.
     fn ranged_target_in_range(&mut self) -> Option<usize>;
-    /// `_targetInRange(ru)`: indeks w liscie wrogow.
+    /// `_targetInRange(ru)`: indeks w liscie wrogow. Dla `canShoot(ru)` czyta `ru.range` (pin :8373-8377),
+    /// tak samo jak wyzej: kontrakt kolejnosci jak dla `ranged_target_in_range`.
     fn target_in_range(&mut self) -> Option<usize>;
     fn advance_coord(&mut self) -> f64;
     /// `_nearestEnemy(ru)`: pozycja najblizszego wroga.
