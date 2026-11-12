@@ -1,0 +1,8993 @@
+{
+ "meta": {
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "generator": "rust-port/engine/tests/p6_siege_tactics_classify_gen.mts",
+  "fragmentSha256": "10c0ec94d60eb96440d396b114e81c81936374684f1f11648c7775fce9453c41",
+  "seed": 217,
+  "unitsSource": "gra/data/units.json",
+  "unitCount": 75,
+  "unitNames": [
+   "Wojownik",
+   "Procarz",
+   "Oszczepnik",
+   "Łucznik",
+   "Zwiadowca",
+   "Włócznik",
+   "Wojownik z mieczem i tarczą",
+   "Rydwan (woły)",
+   "Konnica",
+   "Galera",
+   "Falanga",
+   "Hieros Lochos (Święty Zastęp)",
+   "Hastati",
+   "Triari",
+   "Jeździec chiński",
+   "Hu Ben Wei (Gwardia Tygrysa)",
+   "Impi",
+   "Oszczepnik Zulu (Izijula)",
+   "uThulwana (Białe Tarcze)",
+   "Wojownik z maczugą (Chaska)",
+   "Wojownik z toporem",
+   "Procarz (Huaracoc)",
+   "Oszczepnik (Estólica)",
+   "Królewska Gwardia",
+   "Rydwan konny",
+   "Łucznik egipski",
+   "Rydwan egipski",
+   "Wojownik z khopesh",
+   "Medżaj (Gwardia Faraona)",
+   "Łucznik nubijski",
+   "Łucznik sumeryjski",
+   "Rydwan sumeryjski",
+   "Włócznik sumeryjski",
+   "Gwardia Królewska Sumeru",
+   "Wojownik mykeński",
+   "Rydwan mykeński",
+   "Wojownik Sherden",
+   "Halabardnik Shang",
+   "Rydwan Shang",
+   "Łucznik akadyjski",
+   "Gaesatae",
+   "Soldurii",
+   "Rydwan celtycki",
+   "Wojownik germański",
+   "Berserker germański",
+   "Taran",
+   "Taran okuty",
+   "Katapulta",
+   "Wieża oblężnicza",
+   "Wojownik tyrreński",
+   "Wojownik szekelesz",
+   "Konnica lancowa asyryjska",
+   "Konnica łucznicza asyryjska",
+   "Łucznik asyryjski",
+   "Drużynnik",
+   "Jeździec z oszczepami",
+   "Strażnik bram Harappy",
+   "Piechota induska",
+   "Garnizon Harappy",
+   "Rydwan Kapadokijski",
+   "Piechota hetycka",
+   "Gwardia hetycka",
+   "Gwardia Ishtar",
+   "Wojownik babiloński",
+   "Piechota neobabilońska",
+   "Tyrski miecznik",
+   "Wojownik fenicki",
+   "Gwardia Tyreńska",
+   "Thorakites",
+   "Evocati",
+   "iButho z iklwa",
+   "Gwardzista z champi",
+   "Wojownik z żelaznym khopesh",
+   "Mur tarcz (Sargonid)",
+   "Miecznik galijski"
+  ],
+  "nameCases": 856,
+  "cases": 922,
+  "note": "Wyjscia = wykonanie doslownych linii pinu (canShoot, isSiegeUnit, isSiegeTower, normName, _isRam) w harnessie. Wejscie w widoku Rust (null = null/undefined/brak stats, inaczej String(v)).",
+  "categories": {
+   "isSiegeUnit:false": 492,
+   "isSiegeTower:false": 752,
+   "isRam:false": 718,
+   "isSiegeUnit:typ": 136,
+   "isRam:true": 138,
+   "isSiegeTower:true": 104,
+   "isSiegeUnit:name": 228,
+   "canShoot:false": 15,
+   "canShoot:true": 5,
+   "normName:plain": 22,
+   "normName:changed": 24
+  }
+ },
+ "names": [
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik",
+    "nazwa": "Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik",
+    "nazwa": "Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": "Procarz",
+    "nazwa": "Slinger"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": null,
+    "nazwa": "Procarz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": null,
+    "nazwa": "Procarz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Slinger ",
+    "jednostka": "Procarz",
+    "nazwa": "Slinger"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Oszczepnik",
+    "nazwa": "Javelineer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Oszczepnik",
+    "nazwa": "Javelineer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik",
+    "nazwa": "Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik",
+    "nazwa": "Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Civilian",
+    "jednostka": "Zwiadowca",
+    "nazwa": "Scout"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Civilian",
+    "jednostka": null,
+    "nazwa": "Zwiadowca"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Civilian",
+    "jednostka": null,
+    "nazwa": "Zwiadowca"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Civilian ",
+    "jednostka": "Zwiadowca",
+    "nazwa": "Scout"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Włócznik",
+    "nazwa": "Spearman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Włócznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Włócznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Włócznik",
+    "nazwa": "Spearman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik z mieczem i tarczą",
+    "nazwa": "Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z mieczem i tarczą"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z mieczem i tarczą"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik z mieczem i tarczą",
+    "nazwa": "Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan (woły)",
+    "nazwa": "Ox Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan (woły)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan (woły)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan (woły)",
+    "nazwa": "Ox Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Konnica",
+    "nazwa": "Horseman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Konnica",
+    "nazwa": "Horseman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Naval",
+    "jednostka": "Galera",
+    "nazwa": "Galley"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Naval",
+    "jednostka": null,
+    "nazwa": "Galera"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Naval",
+    "jednostka": null,
+    "nazwa": "Galera"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Naval ",
+    "jednostka": "Galera",
+    "nazwa": "Galley"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Falangite",
+    "jednostka": "Falanga",
+    "nazwa": "Phalanx"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Falangite",
+    "jednostka": null,
+    "nazwa": "Falanga"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Falangite",
+    "jednostka": null,
+    "nazwa": "Falanga"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Falangite ",
+    "jednostka": "Falanga",
+    "nazwa": "Phalanx"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Hieros Lochos (Święty Zastęp)",
+    "nazwa": "Hieros Lochos (Sacred Band)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hieros Lochos (Święty Zastęp)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hieros Lochos (Święty Zastęp)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Hieros Lochos (Święty Zastęp)",
+    "nazwa": "Hieros Lochos (Sacred Band)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Hastati",
+    "nazwa": "Hastati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hastati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hastati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Hastati",
+    "nazwa": "Hastati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Triari",
+    "nazwa": "Triari"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Triari"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Triari"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Triari",
+    "nazwa": "Triari"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Jeździec chiński",
+    "nazwa": "Chinese Cavalry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Jeździec chiński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Jeździec chiński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Jeździec chiński",
+    "nazwa": "Chinese Cavalry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+    "nazwa": "Hu Ben Wei (Tiger Guard)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hu Ben Wei (Gwardia Tygrysa)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Hu Ben Wei (Gwardia Tygrysa)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+    "nazwa": "Hu Ben Wei (Tiger Guard)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Impi",
+    "nazwa": "Impi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Impi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Impi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Impi",
+    "nazwa": "Impi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Oszczepnik Zulu (Izijula)",
+    "nazwa": "Zulu Javelineer (Isijula)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik Zulu (Izijula)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik Zulu (Izijula)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Oszczepnik Zulu (Izijula)",
+    "nazwa": "Zulu Javelineer (Isijula)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "uThulwana (Białe Tarcze)",
+    "nazwa": "uThulwana (White Shields)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "uThulwana (Białe Tarcze)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "uThulwana (Białe Tarcze)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "uThulwana (Białe Tarcze)",
+    "nazwa": "uThulwana (White Shields)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": "Wojownik z maczugą (Chaska)",
+    "nazwa": "Mace Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik z maczugą (Chaska)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik z maczugą (Chaska)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Offensive ",
+    "jednostka": "Wojownik z maczugą (Chaska)",
+    "nazwa": "Mace Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": "Wojownik z toporem",
+    "nazwa": "Axe Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik z toporem"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik z toporem"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Offensive ",
+    "jednostka": "Wojownik z toporem",
+    "nazwa": "Axe Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": "Procarz (Huaracoc)",
+    "nazwa": "Slinger (Huaraca)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": null,
+    "nazwa": "Procarz (Huaracoc)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Slinger",
+    "jednostka": null,
+    "nazwa": "Procarz (Huaracoc)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Slinger ",
+    "jednostka": "Procarz (Huaracoc)",
+    "nazwa": "Slinger (Huaraca)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Oszczepnik (Estólica)",
+    "nazwa": "Javelineer (Estolica)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik (Estólica)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Oszczepnik (Estólica)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Oszczepnik (Estólica)",
+    "nazwa": "Javelineer (Estolica)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Królewska Gwardia",
+    "nazwa": "Royal Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Królewska Gwardia"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Królewska Gwardia"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Królewska Gwardia",
+    "nazwa": "Royal Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan konny",
+    "nazwa": "War Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan konny"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan konny"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan konny",
+    "nazwa": "War Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik egipski",
+    "nazwa": "Egyptian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik egipski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik egipski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik egipski",
+    "nazwa": "Egyptian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan egipski",
+    "nazwa": "Egyptian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan egipski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan egipski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan egipski",
+    "nazwa": "Egyptian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik z khopesh",
+    "nazwa": "Khopesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z khopesh"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z khopesh"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik z khopesh",
+    "nazwa": "Khopesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Medżaj (Gwardia Faraona)",
+    "nazwa": "Medjay (Pharaoh's Guard)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Medżaj (Gwardia Faraona)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Medżaj (Gwardia Faraona)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Medżaj (Gwardia Faraona)",
+    "nazwa": "Medjay (Pharaoh's Guard)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik nubijski",
+    "nazwa": "Nubian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik nubijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik nubijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik nubijski",
+    "nazwa": "Nubian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik sumeryjski",
+    "nazwa": "Sumerian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik sumeryjski",
+    "nazwa": "Sumerian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan sumeryjski",
+    "nazwa": "Sumerian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan sumeryjski",
+    "nazwa": "Sumerian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Włócznik sumeryjski",
+    "nazwa": "Sumerian Spearman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Włócznik sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Włócznik sumeryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Włócznik sumeryjski",
+    "nazwa": "Sumerian Spearman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Gwardia Królewska Sumeru",
+    "nazwa": "Sumerian Royal Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Królewska Sumeru"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Królewska Sumeru"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Gwardia Królewska Sumeru",
+    "nazwa": "Sumerian Royal Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik mykeński",
+    "nazwa": "Mycenaean Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik mykeński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik mykeński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik mykeński",
+    "nazwa": "Mycenaean Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan mykeński",
+    "nazwa": "Mycenaean Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan mykeński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan mykeński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan mykeński",
+    "nazwa": "Mycenaean Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik Sherden",
+    "nazwa": "Sherden Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik Sherden"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik Sherden"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik Sherden",
+    "nazwa": "Sherden Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Halabardnik Shang",
+    "nazwa": "Shang Halberdier"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Halabardnik Shang"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Halabardnik Shang"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Halabardnik Shang",
+    "nazwa": "Shang Halberdier"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan Shang",
+    "nazwa": "Shang Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan Shang"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan Shang"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan Shang",
+    "nazwa": "Shang Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik akadyjski",
+    "nazwa": "Akkadian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik akadyjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik akadyjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik akadyjski",
+    "nazwa": "Akkadian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Gaesatae",
+    "nazwa": "Gaesatae"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gaesatae"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gaesatae"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Gaesatae",
+    "nazwa": "Gaesatae"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Soldurii",
+    "nazwa": "Soldurii"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Soldurii"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Soldurii"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Soldurii",
+    "nazwa": "Soldurii"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan celtycki",
+    "nazwa": "Celtic Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan celtycki"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan celtycki"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan celtycki",
+    "nazwa": "Celtic Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik germański",
+    "nazwa": "Germanic Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik germański"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik germański"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik germański",
+    "nazwa": "Germanic Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Berserker germański",
+    "nazwa": "Germanic Berserker"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Berserker germański"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Berserker germański"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Berserker germański",
+    "nazwa": "Germanic Berserker"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran okuty",
+    "nazwa": "Bronze-Shod Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran okuty",
+    "nazwa": "Bronze-Shod Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Katapulta",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Katapulta",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": "Wojownik tyrreński",
+    "nazwa": "Tyrrhenian Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik tyrreński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Wojownik tyrreński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Offensive ",
+    "jednostka": "Wojownik tyrreński",
+    "nazwa": "Tyrrhenian Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Wojownik szekelesz",
+    "nazwa": "Shekelesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Wojownik szekelesz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Wojownik szekelesz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Wojownik szekelesz",
+    "nazwa": "Shekelesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Konnica lancowa asyryjska",
+    "nazwa": "Assyrian Lancer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica lancowa asyryjska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica lancowa asyryjska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Konnica lancowa asyryjska",
+    "nazwa": "Assyrian Lancer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Konnica łucznicza asyryjska",
+    "nazwa": "Assyrian Horse Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica łucznicza asyryjska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Konnica łucznicza asyryjska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Konnica łucznicza asyryjska",
+    "nazwa": "Assyrian Horse Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": "Łucznik asyryjski",
+    "nazwa": "Assyrian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik asyryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Distance",
+    "jednostka": null,
+    "nazwa": "Łucznik asyryjski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Distance ",
+    "jednostka": "Łucznik asyryjski",
+    "nazwa": "Assyrian Archer"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Drużynnik",
+    "nazwa": "Druzhinnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Drużynnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Drużynnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Drużynnik",
+    "nazwa": "Druzhinnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Jeździec z oszczepami",
+    "nazwa": "Slavic Javelin Cavalry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Jeździec z oszczepami"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Jeździec z oszczepami"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Jeździec z oszczepami",
+    "nazwa": "Slavic Javelin Cavalry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Harappan Gate Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Harappan Gate Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Piechota induska",
+    "nazwa": "Indus Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Piechota induska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Piechota induska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Piechota induska",
+    "nazwa": "Indus Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Garnizon Harappy",
+    "nazwa": "Harappan Garrison"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Garnizon Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Garnizon Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Garnizon Harappy",
+    "nazwa": "Harappan Garrison"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": "Rydwan Kapadokijski",
+    "nazwa": "Cappadocian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan Kapadokijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Mount",
+    "jednostka": null,
+    "nazwa": "Rydwan Kapadokijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Mount ",
+    "jednostka": "Rydwan Kapadokijski",
+    "nazwa": "Cappadocian Chariot"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Piechota hetycka",
+    "nazwa": "Hittite Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Piechota hetycka"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Piechota hetycka"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Piechota hetycka",
+    "nazwa": "Hittite Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Gwardia hetycka",
+    "nazwa": "Hittite Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia hetycka"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia hetycka"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Gwardia hetycka",
+    "nazwa": "Hittite Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Gwardia Ishtar",
+    "nazwa": "Ishtar Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Ishtar"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Ishtar"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Gwardia Ishtar",
+    "nazwa": "Ishtar Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik babiloński",
+    "nazwa": "Babylonian Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik babiloński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik babiloński"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik babiloński",
+    "nazwa": "Babylonian Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Piechota neobabilońska",
+    "nazwa": "Neo-Babylonian Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Piechota neobabilońska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Piechota neobabilońska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Piechota neobabilońska",
+    "nazwa": "Neo-Babylonian Infantry"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Tyrski miecznik",
+    "nazwa": "Tyrian Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Tyrski miecznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Tyrski miecznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Tyrski miecznik",
+    "nazwa": "Tyrian Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik fenicki",
+    "nazwa": "Phoenician Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik fenicki"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik fenicki"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik fenicki",
+    "nazwa": "Phoenician Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Gwardia Tyreńska",
+    "nazwa": "Tyre Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Tyreńska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Gwardia Tyreńska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Gwardia Tyreńska",
+    "nazwa": "Tyre Guard"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Thorakites",
+    "nazwa": "Thorakites"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Thorakites"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Thorakites"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Thorakites",
+    "nazwa": "Thorakites"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Evocati",
+    "nazwa": "Evocati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Evocati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Evocati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Evocati",
+    "nazwa": "Evocati"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "iButho z iklwa",
+    "nazwa": "iButho with iklwa"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "iButho z iklwa"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "iButho z iklwa"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "iButho z iklwa",
+    "nazwa": "iButho with iklwa"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": "Gwardzista z champi",
+    "nazwa": "Champi Guardsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Gwardzista z champi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Offensive",
+    "jednostka": null,
+    "nazwa": "Gwardzista z champi"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Offensive ",
+    "jednostka": "Gwardzista z champi",
+    "nazwa": "Champi Guardsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wojownik z żelaznym khopesh",
+    "nazwa": "Iron Khopesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z żelaznym khopesh"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wojownik z żelaznym khopesh"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Wojownik z żelaznym khopesh",
+    "nazwa": "Iron Khopesh Warrior"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": "Mur tarcz (Sargonid)",
+    "nazwa": "Shield Wall (Sargonid)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Mur tarcz (Sargonid)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Spearman",
+    "jednostka": null,
+    "nazwa": "Mur tarcz (Sargonid)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Spearman ",
+    "jednostka": "Mur tarcz (Sargonid)",
+    "nazwa": "Shield Wall (Sargonid)"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Miecznik galijski",
+    "nazwa": "Gallic Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Miecznik galijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Miecznik galijski"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Swordsman ",
+    "jednostka": "Miecznik galijski",
+    "nazwa": "Gallic Swordsman"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran okuty",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran okuty",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "TARAN",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "TARAN",
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "taran",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Tarańska",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Tarańska",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "wieza oblezna",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "wieza oblezna",
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża obl.",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Katapulta",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Katapulta",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "katapulta",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "katapulta",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Łucznik",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Łucznik",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ławnik",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ławnik",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Battering Ram",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Battering Ram",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "battering ram",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "battering ram",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Siege Tower",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Siege Tower",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "siege tower",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "siege tower",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Catapult",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Catapult",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "catapult",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "catapult",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ballista",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ballista",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ramię",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ramię",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ćma",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ćma",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Żołnierz z ŁÓDZI",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Żołnierz z ŁÓDZI",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Piechota",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Piechota",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Jeździec",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Jeździec",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Rycerz",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Rycerz",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "wieża",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "wieża",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ram",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ram",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Mur",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Mur",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": " ",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": " ",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "  Taran  ",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "  Taran  ",
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran\tokuty",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Catapult",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Catapult",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ławnik",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": " ",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "  Taran  ",
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Jeździec",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ballista",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "taran",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Taran okuty",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "siege tower",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": null,
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Catapult",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "TARAN",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Jeździec",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "wieża",
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Tarańska",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran\tokuty",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "siege tower",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "  Taran  ",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "battering ram",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "wieża",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Ćma",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "wieża",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Mur",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "katapulta",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "wieża",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Tarańska",
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Battering Ram",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Katapulta",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Jeździec",
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Taran okuty",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ławnik",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża obl.",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "wieża",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Rycerz",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Katapulta",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "wieża",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "catapult",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "siege tower",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Taran",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": null,
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "",
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "TARAN",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Ławnik",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Jeździec",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": null,
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Catapult",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ćma",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Taran",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Ławnik",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Catapult",
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Tarańska",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "battering ram",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "TARAN",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Jeździec",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ballista",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "taran",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "TARAN",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "  Taran  ",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "taran",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "siege tower",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Katapulta",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Tarańska",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "TARAN",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Siege Tower",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ławnik",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Łucznik",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ram",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Tarańska",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": null,
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Mur",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Piechota",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Tarańska",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Katapulta",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "wieża",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "TARAN",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ballista",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Taran okuty",
+    "nazwa": "  Taran  "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Żołnierz z ŁÓDZI",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Battering Ram",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Piechota",
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "",
+    "nazwa": null
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "katapulta",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "battering ram",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ćma",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "battering ram",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ballista",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Piechota",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ram",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Taran",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Catapult",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "siege tower",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "wieża",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Siege Tower",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Łucznik",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "  Taran  ",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Rycerz",
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża obl.",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Catapult",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Katapulta",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Catapult",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Ram",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": " ",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "katapulta",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "  Taran  ",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Catapult",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Tarańska",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Tarańska",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ławnik",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "catapult",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Ballista",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "WIEŻA OBLĘŻNICZA",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": " ",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ramię",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Katapulta",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran okuty",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ramię",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Katapulta",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Siege Tower",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "catapult",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ramię",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ram",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "katapulta",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": null,
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "catapult",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Mur",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Łucznik",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Wieża obl.",
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ballista",
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": null,
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ramię",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran okuty",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "battering ram",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ballista",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Katapulta",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "catapult",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Wieża obl.",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Taran",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Ballista",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": " ",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Mur",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "",
+    "nazwa": "catapult"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Jeździec",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Żołnierz z ŁÓDZI",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Łucznik",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Taran\tokuty",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Ballista",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "catapult",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "  Taran  ",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ballista",
+    "nazwa": "wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Taran",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "catapult",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Ramię",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": " ",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": null
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Mur",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Ćma",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": null,
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "taran",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Piechota",
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Battering Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran okuty",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Taran",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Mur",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "katapulta",
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "siege tower",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Machina oblężnicza",
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ćma",
+    "nazwa": ""
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "TARAN",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran okuty",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Jeździec",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": " ",
+    "nazwa": "Catapult"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Catapult",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Piechota",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ąęśćżźńó",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Ramię",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": null,
+    "nazwa": " "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": null,
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": null,
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Taran",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "siege tower",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Jeździec",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Taran okuty",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "catapult",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Taran okuty",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Catapult",
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "catapult",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "wieza oblezna",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Katapulta",
+    "nazwa": " "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "TARAN"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Jeździec"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "taran",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "catapult",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Siege Tower",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Tarańska",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Ćma",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Żołnierz z ŁÓDZI",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Ławnik",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Battering Ram",
+    "nazwa": "WIEŻA OBLĘŻNICZA"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "catapult",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Ballista",
+    "nazwa": "Wieża obl."
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Battering Ram",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Battering Ram",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": " ",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "  Taran  ",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "  Taran  ",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": null,
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Battering Ram",
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "katapulta",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Rycerz",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "catapult",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Siege Tower",
+    "nazwa": "battering ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran okuty",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Siege Tower",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Mur",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ram",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "",
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża Oblężnicza",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Ram",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "TARAN",
+    "nazwa": "Rycerz"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Piechota",
+    "nazwa": "Katapulta"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": null,
+    "nazwa": "Strażnik bram Harappy"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Piechota",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "SIEGE",
+    "jednostka": "Ballista",
+    "nazwa": "Ławnik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ramię",
+    "nazwa": "Taran\tokuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Katapulta",
+    "nazwa": "Żołnierz z ŁÓDZI"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "TARAN",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Taran",
+    "nazwa": "Wieża Oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "katapulta",
+    "nazwa": "katapulta"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ballista",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "  Taran  ",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Ramię",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "",
+    "jednostka": "Battering Ram",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege\t",
+    "jednostka": "Łucznik",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Battering Ram",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "siege tower"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": null,
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Tarańska",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "taran"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Tarańska",
+    "nazwa": "wieza oblezna"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": null,
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Wieża oblężnicza",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Taran okuty",
+    "nazwa": ""
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": " ",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Ramię",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "wieza oblezna",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Siege Tower",
+    "nazwa": "Wieża oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Oblężnicza wieża",
+    "nazwa": "Taran okuty"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Wieża obl.",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": " ",
+    "nazwa": "Ąęśćżźńó"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Strażnik bram Harappy",
+    "nazwa": "Siege Tower"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Katapulta",
+    "nazwa": "Ballista"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Machina oblężnicza",
+    "nazwa": "Łucznik"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "Katapulta",
+    "nazwa": "Machina oblężnicza"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "1",
+    "jednostka": "catapult",
+    "nazwa": "Ram"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " ",
+    "jednostka": "Wieża obl.",
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Katapulta",
+    "nazwa": "Wieża oblężnicza "
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "taran",
+    "nazwa": null
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "siege",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Tarańska"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Ballista",
+    "nazwa": "Mur"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": null,
+    "nazwa": "Ramię"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "0",
+    "jednostka": "Wieża oblężnicza ",
+    "nazwa": "Piechota"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": true,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Swordsman",
+    "jednostka": "Ławnik",
+    "nazwa": "Ćma"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": null,
+    "jednostka": "Łucznik",
+    "nazwa": "Oblężnicza wieża"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  }
+ ],
+ "canShoot": [
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 0
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": -1
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 0.5
+   },
+   "canShoot": true
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 1
+   },
+   "canShoot": true
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 3
+   },
+   "canShoot": true
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 1000000000
+   },
+   "canShoot": true
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": "NaN"
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": "Infinity"
+   },
+   "canShoot": true
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": "-Infinity"
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": true,
+    "ammoLeft": 0
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 0
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": -1
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 0.5
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 1
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 3
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 1000000000
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": "NaN"
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": "Infinity"
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": "-Infinity"
+   },
+   "canShoot": false
+  },
+  {
+   "in": {
+    "rangedBase": false,
+    "ammoLeft": 0
+   },
+   "canShoot": false
+  }
+ ],
+ "normName": [
+  {
+   "in": "Taran",
+   "out": "taran"
+  },
+  {
+   "in": "Taran okuty",
+   "out": "taran okuty"
+  },
+  {
+   "in": "TARAN",
+   "out": "taran"
+  },
+  {
+   "in": "taran",
+   "out": "taran"
+  },
+  {
+   "in": "Tarańska",
+   "out": "taranska"
+  },
+  {
+   "in": "Wieża oblężnicza",
+   "out": "wieza obleznicza"
+  },
+  {
+   "in": "WIEŻA OBLĘŻNICZA",
+   "out": "wieza obleznicza"
+  },
+  {
+   "in": "Wieża Oblężnicza",
+   "out": "wieza obleznicza"
+  },
+  {
+   "in": "wieza oblezna",
+   "out": "wieza oblezna"
+  },
+  {
+   "in": "Wieża obl.",
+   "out": "wieza obl."
+  },
+  {
+   "in": "Katapulta",
+   "out": "katapulta"
+  },
+  {
+   "in": "katapulta",
+   "out": "katapulta"
+  },
+  {
+   "in": "Łucznik",
+   "out": "lucznik"
+  },
+  {
+   "in": "Ławnik",
+   "out": "lawnik"
+  },
+  {
+   "in": "Battering Ram",
+   "out": "battering ram"
+  },
+  {
+   "in": "battering ram",
+   "out": "battering ram"
+  },
+  {
+   "in": "Siege Tower",
+   "out": "siege tower"
+  },
+  {
+   "in": "siege tower",
+   "out": "siege tower"
+  },
+  {
+   "in": "Catapult",
+   "out": "catapult"
+  },
+  {
+   "in": "catapult",
+   "out": "catapult"
+  },
+  {
+   "in": "Ballista",
+   "out": "ballista"
+  },
+  {
+   "in": "Strażnik bram Harappy",
+   "out": "straznik bram harappy"
+  },
+  {
+   "in": "Ramię",
+   "out": "ramie"
+  },
+  {
+   "in": "Ćma",
+   "out": "cma"
+  },
+  {
+   "in": "Ąęśćżźńó",
+   "out": "aesczzno"
+  },
+  {
+   "in": "Żołnierz z ŁÓDZI",
+   "out": "zolnierz z lodzi"
+  },
+  {
+   "in": "Piechota",
+   "out": "piechota"
+  },
+  {
+   "in": "Jeździec",
+   "out": "jezdziec"
+  },
+  {
+   "in": "Rycerz",
+   "out": "rycerz"
+  },
+  {
+   "in": "Machina oblężnicza",
+   "out": "machina obleznicza"
+  },
+  {
+   "in": "wieża",
+   "out": "wieza"
+  },
+  {
+   "in": "Oblężnicza wieża",
+   "out": "obleznicza wieza"
+  },
+  {
+   "in": "Ram",
+   "out": "ram"
+  },
+  {
+   "in": "Mur",
+   "out": "mur"
+  },
+  {
+   "in": "",
+   "out": ""
+  },
+  {
+   "in": " ",
+   "out": " "
+  },
+  {
+   "in": "  Taran  ",
+   "out": "  taran  "
+  },
+  {
+   "in": "Taran\tokuty",
+   "out": "taran\tokuty"
+  },
+  {
+   "in": "Wieża oblężnicza ",
+   "out": "wieza obleznicza "
+  },
+  {
+   "in": "Łódź",
+   "out": "lodz"
+  },
+  {
+   "in": "ŁÓDŹ",
+   "out": "lodz"
+  },
+  {
+   "in": "Ąęśćżźńó",
+   "out": "aesczzno"
+  },
+  {
+   "in": "Zażółć gęślą jaźń",
+   "out": "zazolc gesla jazn"
+  },
+  {
+   "in": "Ŗ ŗ",
+   "out": "r r"
+  },
+  {
+   "in": "É é È è Ü ü Ö ö",
+   "out": "e e e e u u o o"
+  },
+  {
+   "in": "Ñ ñ Ç ç",
+   "out": "n n c c"
+  }
+ ]
+}

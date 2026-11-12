@@ -90,6 +90,7 @@ pub mod siege_sortie;
 pub mod siege_starvation;
 pub mod siege_surrender;
 pub mod siege_tactics_approach;
+pub mod siege_tactics_classify;
 pub mod siege_tactics_end;
 pub mod siege_tactics_tower;
 pub mod siege_tactics_walk;
