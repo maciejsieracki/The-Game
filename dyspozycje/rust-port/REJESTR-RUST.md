@@ -264,3 +264,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - Osobny temat sprzątania: duplikat `sync_relation_status_from_deals` (diplomacy.rs:4225) do usunięcia lub `#[cfg(test)]`.
 - **R-RUSTPORT-P6-CRED-WOJNA-Q1 (#103): start**, baza `23e33793e`, dispatch `fe6a87711`, workflow `wf_0c57af11-d37`. Operator najpierw weryfikuje, czy hak P4 (`turn_war_dipl_steps.rs:895`) pokrywa wszystkie ścieżki wejścia w wojnę.
 - Pozostałe w toku: R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), ELIMINACJA-WIRING-Q1 (`wf_2ace4e9c-1d5`), ZDOBYCIE-WIRING-Q1 (`wf_99c4f54b-b1d`).
+
+## Przebieg (po 20:45): CRED-WOJNA-Q1 BLOCK, dysk, sloty
+- **R-RUSTPORT-P6-CRED-WOJNA-Q1 (#103): BLOCK operatora, FC PASS-WITH-NOTES, bez zmian w kodzie.** Hak P4 jest pokryty w pipeline wojny (`turn_war_pipeline.rs:422`) i w wojnie wymuszonej (`war_turn_declare.rs:116`). Nie pokryte: wypowiedzenie przez gracza (pin `main.ts:13168/:13205`), sojusz (`:23806`), klaster (`:40441`) — brak produkcyjnych wołań; plik `diplomacy_truce_flow.rs` jest poza allowlistą. Wariant `LegacyTradeAgreement` jest martwy w produkcji (serde mapuje `umowa_handlowa` na `TradeRoute`).
+  - **Otwarte decyzje właściciela:** (a) alias `umowa_handlowa` w adapterze `stream_kind_of` albo usunięcie martwego wariantu; (b) zakres #120 (hooki wypowiedzenia/sojuszu/klastra, poszerzenie allowlisty o `diplomacy_truce_flow.rs`).
+  - **Kolizja nazw:** na zdalnym `rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1` jest starsza historia r2 (`44c409fdc`, nie ancestor FC `6a4fc2d51`). Nie nadpisywano; FC wypchnięty jako `rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-fc`.
+- **ZLOZE-WIRING-Q1 (#104):** zamknięte jako poza zakresem (wariant B, decyzja orkiestratora). Gałąź `rust-port-wip/R-RUSTPORT-P6-ZLOZE-WIRING-Q1` = `35084c569`.
+- **Dysk:** 2,1 GB przy starcie tiku, po sprzątaniu worktree ZLOZE i CRED: 7,5 GB. Próg startów Rust kodu: 8 GB → **brak nowych startów** w tym ticku.
+- **Sprzątanie:** usunięte 7 worktree (`wf_90998bc1-f29-2..4`, `wf_0c57af11-d37-1..4`); HEAD-y w `refs/keep/wt-*`.
+- **Aktywne Workflow (3):** R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), ELIMINACJA-WIRING-Q1 (`wf_2ace4e9c-1d5`), ZDOBYCIE-WIRING-Q1 (`wf_99c4f54b-b1d`). Slot po #103/#104 wolny do czasu progu dysku.
+- **Pojedynczy plik** `.claude/pin-main.ts.txt` (kopia `gra/src/main.ts`) przeniesiony do scratchpada, nie commitowany.
