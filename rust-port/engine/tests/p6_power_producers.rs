@@ -163,9 +163,9 @@ fn ludki_equal_pobor_suma_ludkow_on_same_inputs() {
 }
 
 #[test]
-fn no_producer_keys_are_exactly_the_two_components_without_rust_producer() {
-    // Stan po P6-POWER-ULEPSZENIA: armia, terytorium, infra, tech, ulepszenia, religia maja producenta (RustProducer).
-    assert_eq!(no_producer_keys(), vec!["bitwy", "zdobycze"]);
+fn no_producer_keys_are_empty_after_power_bitwy_zdobycze() {
+    // Stan po P6-POWER-BITWY-ZDOBYCZE: wszystkie 12 skladnikow ma producenta (akumulatory dla bitwy i zdobyczy).
+    assert!(no_producer_keys().is_empty());
 }
 
 #[test]
@@ -246,6 +246,7 @@ fn coverage_table_lists_all_twelve_components_with_explicit_status() {
         producers,
         vec![
             "armia",
+            "bitwy",
             "ludki",
             "rekruci",
             "miasta",
@@ -254,7 +255,8 @@ fn coverage_table_lists_all_twelve_components_with_explicit_status() {
             "tech",
             "ulepszenia",
             "kultura",
-            "religia"
+            "religia",
+            "zdobycze"
         ]
     );
     for (key, source) in COMPONENT_SOURCES.iter() {

@@ -1,0 +1,5 @@
+{
+  "bronzeEraEnterTurnByOwner": [[1, 5], [2, 17]],
+  "ironEraEnterTurnByOwner": [],
+  "zdobyczeWojenne": "pole sprzed akumulatorow, nieznane dla WarTurnState"
+}

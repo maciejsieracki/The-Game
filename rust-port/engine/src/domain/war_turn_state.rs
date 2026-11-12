@@ -35,6 +35,9 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Value};
 
 use super::ai_diplomacy_turn::BrakePhaseState;
+use super::brake_power_rest::{
+    barbarian_captured_power_gain, battle_power_points_from_defeated_enemy,
+};
 use super::diplomacy::DiplomacyState;
 use super::diplomacy_ai_forced_peace::{
     register_ai_peace_request, AiPeaceKind, AiPeaceRequestStore,
@@ -133,7 +136,20 @@ pub struct WarTurnState {
     pub ai_peace_requests: AiPeaceRequestStore,
     /// Zmeczenie wojna per para; klucz `RUST_WAR_WEARINESS_KEY`.
     pub war_weariness: WarWearinessStore,
+    /// Web `battlePowerPtsByOwner` (main.ts:2254): akumulator punktow wygranych bitew per zwyciezca
+    /// (klucz = wlasciciel w przestrzeni Rust, kolejnosc wstawiania = kolejnosc `Map` weba).
+    /// Zapis w `meta` jako pary `[wlasciciel, pkt]`; brak klucza = pusta mapa (start weba: `new Map()`).
+    pub battle_power_pts_by_owner: Vec<(i64, f64)>,
+    /// Web `zdobyczePowerByOwner` (main.ts:2264): akumulator Power przejetego od pokonanych
+    /// (klucz = zdobywca). Zapis w `meta` jako pary `[wlasciciel, pkt]`; brak klucza = pusta mapa.
+    pub zdobycze_power_by_owner: Vec<(i64, f64)>,
 }
+
+/// Klucze `meta` akumulatorow mocy (web `battlePowerPtsByOwner`, `zdobyczePowerByOwner`); zarzadzane przez `WarTurnState`.
+///
+/// STAN WDROZENIA (nie-ukryty): producenci tych akumulatorow NIE sa jeszcze wolani z kodu bitwy, zdobywania
+/// ani eliminacji (osobne tematy). Do tego czasu akumulatory w produkcji pozostaja puste, wklad mocy = 0.
+pub const POWER_ACC_META_KEYS: [&str; 2] = ["battlePowerPtsByOwner", "zdobyczePowerByOwner"];
 
 /// Wszystkie klucze `meta`, ktore modul zapisuje lub czyta (do usuniecia przed ponownym zapisem).
 pub fn managed_meta_keys() -> Vec<String> {
@@ -150,6 +166,7 @@ pub fn managed_meta_keys() -> Vec<String> {
             .map(|k| k.to_string()),
     );
     keys.extend(RUST_OWNER_META_KEYS.iter().map(|k| k.to_string()));
+    keys.extend(POWER_ACC_META_KEYS.iter().map(|k| k.to_string()));
     keys
 }
 
@@ -442,7 +459,10 @@ fn turn_map_to(entries: &[(i64, f64)]) -> Value {
     )
 }
 
-// ZALOZENIE: `WarTurnState` zawiera `f64` tylko z JSON (skonczone), wiec `Eq` jest bezpieczne
+// ZALOZENIE: `WarTurnState` nie zawiera NaN, wiec zwrotnosc `==` zachodzi. Zrodla pol f64:
+// JSON (bez NaN/Infinity), `record_battle_win` (pts = 0 dla niefinitycznego pola), `record_capture_power_gain`
+// (przepuszcza tylko `gain > 0`, NaN odpada). `+Infinity` moze wejsc przez zdobycie z nieskonczona moca
+// ofiary (jak w webie); `Infinity == Infinity` jest prawdziwe, wiec `Eq` pozostaje poprawne
 // (potrzebne, bo `GameStateDto`/`PlayableState` derive `Eq`).
 impl Eq for WarTurnState {}
 
@@ -509,6 +529,8 @@ impl WarTurnState {
                 .get(RUST_WAR_WEARINESS_KEY)
                 .map(war_weariness_from)
                 .unwrap_or_default(),
+            battle_power_pts_by_owner: power_acc_of(meta, "battlePowerPtsByOwner"),
+            zdobycze_power_by_owner: power_acc_of(meta, "zdobyczePowerByOwner"),
         }
     }
 
@@ -554,6 +576,96 @@ impl WarTurnState {
                 war_weariness_to(&self.war_weariness),
             );
         }
+        // Akumulatory mocy: zapis tylko gdy niepuste (stary zapis bez kluczy pozostaje bez zmian).
+        if !self.battle_power_pts_by_owner.is_empty() {
+            out.insert(
+                "battlePowerPtsByOwner".into(),
+                turn_map_to(&self.battle_power_pts_by_owner),
+            );
+        }
+        if !self.zdobycze_power_by_owner.is_empty() {
+            out.insert(
+                "zdobyczePowerByOwner".into(),
+                turn_map_to(&self.zdobycze_power_by_owner),
+            );
+        }
         out
+    }
+
+    /// Suma punktow wygranych bitew wlasciciela (web `battlePowerPtsByOwner.get(ownerId) ?? 0`, main.ts:2763).
+    pub fn battle_power_pts_for(&self, owner_id: i64) -> f64 {
+        acc_get(&self.battle_power_pts_by_owner, owner_id)
+    }
+
+    /// Suma zdobyczy Power wlasciciela (web `zdobyczePowerByOwner.get(ownerId) ?? 0`, main.ts:2779).
+    pub fn zdobycze_power_for(&self, owner_id: i64) -> f64 {
+        acc_get(&self.zdobycze_power_by_owner, owner_id)
+    }
+
+    /// Krok zdarzenia "wygrana bitwa" (web main.ts:34487-34490): `pts = battlePowerPointsFromDefeatedEnemy(
+    /// sumRosterFieldM(przegrany))`, akumulator zwyciezcy += pts. Wolajacy podaje zwyciezce (gdy web
+    /// `winOid !== undefined`) i sume pola przegranego (`enemy_field_m`, niefinityczna = 0 w kroku).
+    /// Sama bitwa (walka, wybor zwyciezcy) NIE jest tu portowana - to osobny temat (wolajacy).
+    pub fn record_battle_win(&mut self, winner_owner_id: i64, enemy_field_m: f64) {
+        let pts = battle_power_points_from_defeated_enemy(enemy_field_m);
+        acc_add(&mut self.battle_power_pts_by_owner, winner_owner_id, pts);
+    }
+
+    /// Krok zdarzenia "zdobycie stolicy / obozu barbarzyncow" (web main.ts:35669-35675):
+    /// `gain = barbarianCapturedPowerGain(lostPower, barbCaptor)`; gdy `gain > 0`, akumulator zdobywcy += gain.
+    /// `lost_power` = PELNA moc ofiary (`buildObjectivePowerForOwner(oldOwner).power`) - liczy ja wolajacy.
+    pub fn record_capture_power_gain(
+        &mut self,
+        new_owner_id: i64,
+        lost_power: f64,
+        barb_captor: bool,
+    ) {
+        let gain = barbarian_captured_power_gain(lost_power, barb_captor);
+        if gain > 0.0 {
+            acc_add(&mut self.zdobycze_power_by_owner, new_owner_id, gain);
+        }
+    }
+
+    /// Usuniecie akumulatorow wlasciciela po eliminacji (web main.ts:35399 `battlePowerPtsByOwner.delete`,
+    /// main.ts:35410 `zdobyczePowerByOwner.delete`).
+    pub fn clear_power_accumulators_for_owner(&mut self, owner_id: i64) {
+        self.battle_power_pts_by_owner
+            .retain(|(k, _)| *k != owner_id);
+        self.zdobycze_power_by_owner.retain(|(k, _)| *k != owner_id);
+    }
+}
+
+/// Odczyt akumulatora z `meta` z semantyka webowej petli `for (k, n) of saved: map.set(k, n)`:
+/// duplikat klucza nadpisuje wartosc (pozycja pierwszego wpisu zostaje). Para z polem nie-liczbowym
+/// (`null` z `JSON.stringify(Infinity)`) jest pomijana, czyli wklad 0. Znany brzeg: duplikat, w ktorym
+/// drugi wpis ma `null`, web zapisze jako `null`, a Rust zostawi poprzednia wartosc. Wejscie niemozliwe
+/// z zapisu webowego (`Array.from(Map.entries())` daje unikalne klucze).
+fn power_acc_of(meta: &Map<String, Value>, key: &str) -> Vec<(i64, f64)> {
+    let mut out: Vec<(i64, f64)> = Vec::new();
+    for (k, v) in rest_until_of(meta, key).unwrap_or_default() {
+        if let Some(slot) = out.iter_mut().find(|(e, _)| *e == k) {
+            slot.1 = v;
+        } else {
+            out.push((k, v));
+        }
+    }
+    out
+}
+
+/// Odczyt akumulatora (brak wpisu = 0, jak `?? 0` w webie).
+fn acc_get(entries: &[(i64, f64)], owner_id: i64) -> f64 {
+    entries
+        .iter()
+        .find(|(k, _)| *k == owner_id)
+        .map(|(_, v)| *v)
+        .unwrap_or(0.0)
+}
+
+/// Dodanie do akumulatora (web `m.set(k, (m.get(k) ?? 0) + x)`): wpis w miejscu, nowy na koncu.
+fn acc_add(entries: &mut Vec<(i64, f64)>, owner_id: i64, add: f64) {
+    if let Some(slot) = entries.iter_mut().find(|(k, _)| *k == owner_id) {
+        slot.1 += add;
+    } else {
+        entries.push((owner_id, add));
     }
 }

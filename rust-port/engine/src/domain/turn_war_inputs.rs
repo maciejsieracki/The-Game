@@ -79,19 +79,10 @@ pub const KEY_PAIR_META: &str = "diplomacyPairMeta";
 pub use super::war_turn_declare::KEY_ERA_PEACE_LOCK;
 
 /// Skladniki mocy z jawnym zerem: powod z odwolaniem plik:linia pinu (kontrolowane testem).
-/// P6-POWER-ULEPSZENIA: `ulepszenia` ma teraz producenta w `COMPONENT_SOURCES` (`brake_power_improvements`),
-/// wiec NIE jest tu wymieniane (test spojnosci wymaga ExplicitZero == NoProducer). Jego zero w
-/// `power_raw_for_owner` pozostaje jawnym `ExplicitZero` z uzasadnieniem przy ustawieniu (nizej).
-pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 2] = [
-    (
-        "bitwy",
-        "web battlePowerPtsByOwner (main.ts:2254) startuje pusty, zapis dopiero po wygranej bitwie (main.ts:34490); PlayableState nie zapisuje walk",
-    ),
-    (
-        "zdobycze",
-        "web zdobyczePowerByOwner (main.ts:35673) zasilane eliminacja wlasciciela; PlayableState nie ma eliminacji ani zdobyczy",
-    ),
-];
+/// P6-POWER-BITWY-ZDOBYCZE: `bitwy` i `zdobycze` maja producentow z akumulatorow `WarTurnState`
+/// (`battle_power_pts_for`, `zdobycze_power_for`; brak wpisu = realne 0 jak `?? 0` w webie), wiec lista
+/// jest PUSTA. Jawne zero `ulepszenia_terenu` w `power_raw_for_owner` pozostaje poza ta lista (patrz nizej).
+pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 0] = [];
 
 /// Skladniki mocy bez producenta w `PlayableState` (klucze web `breakdown.key`); produkcyjne wejscia
 /// ustawiaja je na `Component::Missing` (test egzekwuje zgodnosc z `run_war_turn`). Od r6 klocek 3
@@ -335,17 +326,22 @@ pub fn power_raw_for_owner(
         .collect();
     raw.jednostki = Component::Provided(armia_for_owner(&units, owner_id, count_settlers()));
 
-    // Jawne zera z uzasadnieniem (EXPLICIT_ZERO_REASONS): bitwy (oba modele), zdobycze.
+    // bitwy (P6-POWER-BITWY-ZDOBYCZE): akumulator punktow wygranych bitew zwyciezcy (web bitwyPktSum =
+    // battlePowerPtsByOwner.get(ownerId) ?? 0, main.ts:2763) - Provided, takze 0 bez wygranej (realny stan).
+    // wygrane_bitwy (model FlatCount): web podaje literal 0 (main.ts:2764, :2819) - Provided(0), nie brak danych.
+    raw.bitwy_pkt_sum = Component::Provided(state.war.battle_power_pts_for(owner_id));
+    raw.wygrane_bitwy = Component::Provided(0.0);
+    // zdobycze (P6-POWER-BITWY-ZDOBYCZE): akumulator zdobyczy Power zdobywcy (web zdobyczePower =
+    // zdobyczePowerByOwner.get(ownerId) ?? 0, main.ts:2779) - Provided.
+    raw.zdobycze_power = Component::Provided(state.war.zdobycze_power_for(owner_id));
+    // Jawne zero z uzasadnieniem (EXPLICIT_ZERO_REASONS jest pusta): ulepszenia.
     // ulepszenia: producent istnieje (brake_power_improvements, POWER-ULEPSZENIA-Q1), ale NIE jest podpiety
     // do power_raw_for_owner (BRAK, POWER-ULEPSZENIA-WIRING-Q1). Zostaje ExplicitZero, bo PlayableState nie niesie
     // ulepszen terenu: PlayableTile ma tylko position/terrain/passable (playable.rs:256-260), a
     // PlayableReplaceEconomy (playable.rs:371) to skarbiec/stock/jednostki. Brakujace wejscia: pola
     // `ulepszenie`/`ulepszenia` heksa (BuildHex, improvement_build.rs:157-160) oraz dyski terytorium wezlow
     // zalozycielskich. Web countImprovementsForOwner (main.ts:2643) liczy je z heksow.
-    raw.wygrane_bitwy = Component::ExplicitZero;
-    raw.bitwy_pkt_sum = Component::ExplicitZero;
     raw.ulepszenia_terenu = Component::ExplicitZero;
-    raw.zdobycze_power = Component::ExplicitZero;
     Ok(raw)
 }
 
