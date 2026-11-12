@@ -933,6 +933,49 @@ export function collapseFortificationChain(
 }
 
 /**
+ * R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1 (W32, uwaga FC W20): stare zapisy mogą mieć w KOLEJCE
+ * produkcji kilka etapów łańcucha fortyfikacji (Palisada -> Mur kamienny -> Mur ceglany). Zostaje najwyższy
+ * etap (w kolejce albo w mieście), niższe pozycje kolejki są usuwane BEZ zwrotu kosztu (decyzja właściciela
+ * z W20: „usuń niższe bez zwrotu"). Pure; zwraca `removed` (usunięte pozycje, do komunikatu dla gracza).
+ * Koszty, bonusy i reguły łańcucha bez zmian; inne budynki i jednostki nietknięte.
+ */
+export function collapseFortificationQueue(
+  prod: CityProduction,
+  builtIds: readonly string[],
+  buildings: readonly UpgradeChainNode[],
+): { prod: CityProduction; removed: ProductionItem[] } {
+  const queueIds = prod.kolejka.filter(it => it.kind === 'budynek').map(it => it.id);
+  const removed = prod.kolejka.filter(it => {
+    if (it.kind !== 'budynek') return false;
+    const higher = skipChainHigherIds(it.id, buildings);
+    return higher.some(h => builtIds.includes(h) || queueIds.includes(h));
+  });
+  if (removed.length === 0) return { prod, removed };
+  const result = filterQueue(prod, it => !removed.includes(it));
+  return { prod: result.prod, removed };
+}
+
+/**
+ * R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: wczytanie zapisu dla wszystkich miast (pętla z restoreGameFromSave).
+ * Podmienia wpisy `cityProd` tam, gdzie coś usunięto; zwraca łączną liczbę usuniętych pozycji (0 = brak komunikatu).
+ */
+export function collapseFortificationQueuesInCities(
+  cityProd: Map<string, CityProduction>,
+  cityBuilt: ReadonlyMap<string, readonly string[]>,
+  buildings: readonly UpgradeChainNode[],
+): number {
+  let total = 0;
+  for (const [cid, prod] of cityProd) {
+    const cleaned = collapseFortificationQueue(prod, cityBuilt.get(cid) ?? [], buildings);
+    if (cleaned.removed.length > 0) {
+      cityProd.set(cid, cleaned.prod);
+      total += cleaned.removed.length;
+    }
+  }
+  return total;
+}
+
+/**
  * Decyzja 55B (Maciej 2026-07-25, "odblokowuje ozywic"): po ukonczeniu budynku
  * zwraca nazwe flagi City do ustawienia na true (np. 'maMur' dla Murow), odczytana
  * z buildings.json pola `odblokowuje` -- zamiast hardkodu `id === 'mury'`.

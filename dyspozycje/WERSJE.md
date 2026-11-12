@@ -1,3 +1,9 @@
+## ROBOCZA 731dcdc1 -- 2026-11-06 -- FALA 664: FALA 664: czyszczenie kolejki fortyfikacji w starych zapisach (W32) (testowa)
+
+- R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, fortifications-queue-cleanup 10/0, stack-repro 49/0, chain-ai 13/0, chain-ui 15/0, audio-sidecar PASS
+- Limity: komunikat w zywej grze NIE_ZMIERZONO (W34); postep zbankowany na usunietym froncie przepada
+
 ## ROBOCZA b7cf61d0 -- 2026-11-06 -- FALA 663: FALA 663: dług testowy testów bitew, HUD i pracy (W30) — tylko testy (testowa)
 
 - R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3
