@@ -1,15 +1,25 @@
-# R-WEB-CHARIOT-MOVE-6-DATA-Q1 — dispatch (decyzja właściciela „dwójka”, 2026-11-12)
+# R-WEB-CHARIOT-MOVE-6-DATA-Q1 — dispatch (decyzja właściciela, 2026-11-12: tylko bitwa)
 
 GAME. Baza: aeb52465e845d29acb5f7b628370789af399d673 (origin/main).
 
-DECYZJA WŁAŚCICIELA: rydwany mają ruch w bitwie 6 (2× zwykła piechota: oszczepnik 3, włócznik 3, wojownik 4 → rydwan 6).
+DECYZJA WŁAŚCICIELA (zamyka temat ruchu): w bitwie rydwany mają ruch 6, konnica ruch 7. Zmiana TYLKO w bitwie (pole „Ruch w bitwie (heksy)” w gra/data/units.json), bez zmian na mapie świata („Ruch”). Właściciel sprawdzi na polu bitwy, jak to przekłada się na uciekające wojska; zmierzenie zachowania to osobny temat.
 
-STAN (z gra/data/units.json): wszystkie rydwany i konnica mają „Ruch w bitwie (heksy)” = 6, z wyjątkiem „Rydwan (woły)” = 5. Jedyna zmiana danych: Rydwan (woły) 5 → 6. Ta zmiana NIE usuwa problemu ucieczek — to jest osobny temat (mechanika, nie dane).
+STAN WYJŚCIOWY (units.json): rydwany = 6 z wyjątkiem „Rydwan (woły)” = 5; konnica („Konnica”, „Konnica lancowa asyryjska”, „Konnica łucznicza asyryjska”, „Jeździec z oszczepami”, „Jeździec chiński”) = 6.
 
-GOAL: każdy rydwan w gra/data/units.json ma „Ruch w bitwie (heksy)” = 6.
+GOAL: w gra/data/units.json, pole „Ruch w bitwie (heksy)”:
+- wszystkie rydwany (typ Mount, nazwa zawiera „Rydwan”) = 6 (w tym „Rydwan (woły)”: 5 → 6);
+- wszystkie konnice (nazwa zaczyna się od „Konnica” lub „Jeździec”) = 7.
+Pole „Ruch” (mapa świata) NIE zmieniać.
 
-KRYTERIA KOŃCA: (1) Rydwan (woły) = 6; (2) żaden inny wpis rydwanu/konnicy nie zmieniony; (3) test: odczyt units.json — wszystkie wpisy typu rydwan mają 6; (4) tsc zielone; (5) bramki referencyjne zielone.
+KRYTERIA KOŃCA (binarne):
+1. Każdy wpis rydwanu ma „Ruch w bitwie (heksy)” = 6.
+2. Każdy wpis konnicy/jeźdźca ma „Ruch w bitwie (heksy)” = 7.
+3. Pole „Ruch” (mapa) nie zmienione w żadnym wpisie.
+4. Test gra/tools/chariot-move-6-data-test.cjs sprawdza 1–3 i czerwieni się przy zmianie wartości.
+5. tsc --noEmit zielone; bramki referencyjne zielone.
 
-ALLOWLISTA: gra/data/units.json (tylko pole „Ruch w bitwie (heksy)” wpisu „Rydwan (woły)”), nowy gra/tools/chariot-move-6-data-test.cjs. ZAKAZ: wszystko inne.
+ALLOWLISTA: gra/data/units.json (wyłącznie pole „Ruch w bitwie (heksy)” wymienionych wpisów), nowy gra/tools/chariot-move-6-data-test.cjs. ZAKAZ: wszystko inne, git add -A.
+
+IZOLACJA: worktree na izolowanej gałęzi, baza aeb52465e845d29acb5f7b628370789af399d673.
 
 ZAKAZ BEZWZGLĘDNY: npm run build / npm run dev w gra/. Dozwolone: tsc --noEmit; node tools/*-test.cjs.
