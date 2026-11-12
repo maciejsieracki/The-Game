@@ -3,8 +3,11 @@
 //! Web (pin 07d2fbd72, `gra/src/main.ts` `buildObjectivePowerForOwner`) buduje `EmpirePowerRaw` z
 //! miast i stanu imperium. Ten modul porta tylko te skladniki, dla ktorych istnieje semantycznie
 //! zgodny producent w Rust (funkcje czyste na `ManpowerCity` / `PressureCity`), i wpisuje je do
-//! `ObjectivePowerRaw`. Pozostale skladniki NIE maja producenta w tej rundzie - patrz
-//! `COMPONENT_SOURCES` (jawny brak, zadnych cichych zer ani domyslnych wartosci).
+//! `ObjectivePowerRaw` (`apply_produced`). Tabela `COMPONENT_SOURCES` opisuje stan WSZYSTKICH 12
+//! skladnikow: `RustProducer` = funkcja czysta istnieje w Rust i jest sprawdzona wektorami z pinu;
+//! `NoProducer` = brak producenta (jawny powod, zadnych cichych zer ani domyslnych wartosci).
+//! Uwaga: `RustProducer` spoza `produce_for_owner` (armia, terytorium, infra, tech, religia) NIE jest
+//! wpisywane przez `apply_produced` - wolajacy podaje je w `ObjectivePowerRaw` z tej funkcji (W8).
 //!
 //! Wektory: tests/p6_power_producers_vectors/vectors.json (generator tests/p6_power_producers_gen.mjs
 //! wykonuje wyciete funkcje z pinu 07d2fbd72).
@@ -25,14 +28,16 @@ pub enum ComponentSource {
 }
 
 /// Tabela pokrycia 12 skladnikow web `computeObjectivePower` (NIE_ZMIERZONO tam, gdzie brak producenta).
+/// Kolejnosc = kolejnosc tabeli w testach; kazdy `RustProducer` nazywa funkcje, ktora test
+/// `tests/p6_power_sources.rs` wola i porownuje z wektorami.
 pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     (
         "armia",
-        ComponentSource::NoProducer("web sumArmyMForOwner (suma M_pole); armyFieldPower nieportowane (unit_power.rs); Rust army_m (diplomacy_truce_flow.rs) to pole stubu trait, NIE producent"),
+        ComponentSource::RustProducer("brake_power_army::armia_for_owner (web sumArmyMForOwner, main.ts:2672; armyFieldPower = army_field_power, unit-power.ts)"),
     ),
     (
         "bitwy",
-        ComponentSource::NoProducer("web battlePowerPtsByOwner (akumulator z walk); brak producenta z PlayableState"),
+        ComponentSource::NoProducer("web battlePowerPtsByOwner (akumulator walk, main.ts:2254, zapis main.ts:34490); battle_power_points_from_defeated_enemy to tylko krok, brak akumulatora stanu walk w Rust (jak brake_power_rest)"),
     ),
     ("ludki", ComponentSource::RustProducer("recruitment::manpower::empire_suma_ludkow")),
     (
@@ -42,28 +47,28 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ("miasta", ComponentSource::RustProducer("liczba miast wlasciciela (owner_city_ids)")),
     (
         "terytorium",
-        ComponentSource::NoProducer("web countTerritoryHexes(statsTerritoryNodesForOwner) = foundingNodesForOwner + cityTerritoryRadius; kandydat territory.rs::collect_territory_hex_keys_by_owner NIE zweryfikowany semantycznie"),
+        ComponentSource::RustProducer("brake_power_army::terytorium_for_owner (web countTerritoryHexes(statsTerritoryNodesForOwner), main.ts:6135 + statsTerritoryNodesForOwner main.ts:5657; kandydat territory.rs::collect_territory_hex_keys_by_owner nie jest tym skladnikiem)"),
     ),
     (
         "infra",
-        ComponentSource::NoProducer("web countBuildingsForOwner (cityBuilt); brak producenta z PlayableState"),
+        ComponentSource::RustProducer("brake_power_rest::count_buildings_for_owner (web countBuildingsForOwner, main.ts:2629)"),
     ),
     (
         "tech",
-        ComponentSource::NoProducer("web countTechForOwner (ownerResearchedTechs / aiResearchDone); brak producenta"),
+        ComponentSource::RustProducer("brake_power_rest::count_tech_for_owner (web countTechForOwner, main.ts:2638)"),
     ),
     (
         "ulepszenia",
-        ComponentSource::NoProducer("web countImprovementsForOwner (territory nodes + hex improvements); brak producenta"),
+        ComponentSource::NoProducer("web countImprovementsForOwner (main.ts:2643) z domknieciem statsTerritoryNodesForOwner (main.ts:5657) i hex improvements; brak portu tej sumy w Rust (placed_improvements_for_owner to tylko wejscie, niezweryfikowane)"),
     ),
     ("kultura", ComponentSource::RustProducer("order_effects_culture::empire_culture_total")),
     (
         "religia",
-        ComponentSource::NoProducer("web countCitiesWithDominantStateReligion; Rust ma dominant_religion, bez zweryfikowanej rownowaznosci"),
+        ComponentSource::RustProducer("brake_power_rest::count_cities_with_dominant_state_religion (web countCitiesWithDominantStateReligion, culture-religion.ts:1383)"),
     ),
     (
         "zdobycze",
-        ComponentSource::NoProducer("web zdobyczePowerByOwner (trwaly bonus po eliminacji); brak producenta w Rust"),
+        ComponentSource::NoProducer("web zdobyczePowerByOwner (zapis main.ts:35673-35675); barbarian_captured_power_gain to tylko krok, brak akumulatora zdarzen eliminacji w Rust (jak brake_power_rest)"),
     ),
 ];
 
@@ -142,8 +147,9 @@ pub fn produce_for_owner(inputs: &ProducerInputs<'_>, owner_id: i64) -> Produced
     }
 }
 
-/// Wpisuje wyniki producentow do `ObjectivePowerRaw`. Pola bez producenta (`NoProducer`) zostaja
-/// nietkniete - wolajacy ustawia je jawnie.
+/// Wpisuje wyniki `produce_for_owner` do `ObjectivePowerRaw` (4 pola). Pozostale pola - w tym
+/// `RustProducer` spoza tego zestawu (armia, terytorium, infra, tech, religia) i `NoProducer` - zostaja
+/// nietkniete; wolajacy ustawia je jawnie.
 pub fn apply_produced(raw: &mut ObjectivePowerRaw, produced: &ProducedComponents) {
     raw.suma_ludkow = Component::Provided(produced.suma_ludkow);
     raw.rekrut_ekw = Component::Provided(produced.rekrut_ekw);
