@@ -1,3 +1,9 @@
+## ROBOCZA 1b873b87 -- 2026-11-06 -- FALA 655: FALA 655: lewy baner widoku miasta mieści się w oknie 1366/1280/1024 px (W24) (testowa)
+
+- R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, left-banner-overflow 74/0, city-side-panels 61/0, hud-topbar-layout-a 144/0, audio-sidecar PASS
+- Limity: widok miasta w pelnej grze NIE_ZMIERZONO; nie wiadomo czy to ten baner widzial wlasciciel
+
 ## ROBOCZA d87d074b -- 2026-11-06 -- FALA 654: FALA 654: szturm bez machin oblężniczych zablokowany, pozostaje oblężenie (W18) (testowa)
 
 - R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1
