@@ -572,8 +572,8 @@ wymagające decyzji właściciela (już rozstrzygnięte), tylko kontynuuj zadani
 
 ## 6. Bramki
 
-Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-08-20 na czystym checkoucie
-`main` — to jest punkt odniesienia na dziś, nie stała wartość; jeśli wynik odbiega,
+Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-11-12 na czystym checkoucie
+`origin/main` @ `ef27be007` (R-PROC-GATE-REFERENCE-REFRESH-Q2) — to jest punkt odniesienia na dziś, nie stała wartość; jeśli wynik odbiega,
 porównaj z aktualnym `main` przed uznaniem czegoś za regresję, nie ufaj tej liczbie
 z pamięci przy kolejnym użyciu:
 
@@ -581,9 +581,9 @@ z pamięci przy kolejnym użyciu:
 |---|---|---|
 | TypeScript | `npx tsc --noEmit` (wymaga `node_modules`; wersja projektu 5.9.3 — bez tego wynik jest niewiarygodny, patrz playbook C-029) | 0 błędów |
 | Logika | `node tools/logic-test.cjs` | 213/213 |
-| Drzewo technologii | `node tools/tech-tree-test.cjs` | 19/19 |
+| Drzewo technologii | `node tools/tech-tree-test.cjs` | 20/20 |
 | Badania | `node tools/research-test.cjs` | 33/33 |
-| Wymiana jednostek | `node tools/unit-replace-test.cjs` | 13/13 |
+| Wymiana jednostek | `node tools/unit-replace-test.cjs` | 21/21 |
 | Walka | `node tools/combat-test.cjs` | 6/6 |
 | Moc jednostek | `node tools/unit-power-test.cjs` | **czerwony pre-istniejąco: 4 pass / 2 fail** — nie regresja, nie naprawiaj przy okazji |
 | Generator mapy | `node tools/map-gen-regression-test.cjs` | determinizm A=B + 0 rzek bez ujścia; progi czasowe to pomiar wydajności, nie regresja — wolny (rzędu minut), uruchom osobno |
