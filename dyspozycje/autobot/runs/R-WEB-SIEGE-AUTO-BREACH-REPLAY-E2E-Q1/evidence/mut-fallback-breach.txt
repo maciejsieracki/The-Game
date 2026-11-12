@@ -1,0 +1,9 @@
+BUILD ok in 27 s MUTACJA=fallback-breach
+FALLBACK {"siegeInAtk":11,"breachedBefore":false,"started0":false,"fallbackCalls":1,"finished":true,"winner":"atakujacy","breached":false,"survivors":6,"ffActive":false,"round":0,"logTail":["ATK HP: 2  DEF HP: 0","=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="],"hasDefBonus":true}
+PASS: F0 scena: obleznicza w skladzie atakujacego
+PASS: F1 skip() przed startem bitwy uruchamia _skipInstantFallback (1 wywolanie), bez przewijania
+PASS: F2 fallback konczy bitwe z werdyktem (finished, zwyciezca atakujacy/obronca/remis, lista ocalalych)
+FAIL: F3 fallback: machina w skladzie atakujacego = zalozony wylom (wallEverBreached=true, jak szturm Auto) -- {"siegeInAtk":11,"breachedBefore":false,"started0":false,"fallbackCalls":1,"finished":true,"winner":"atakujacy","breached":false,"survivors":6,"ffActive":false,"round":0,"logTail":["ATK HP: 2  DEF HP: 0","=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="],"hasDefBonus":true}
+PASS: F4 fallback: tabela bonusu muru dla testu parytetu ustawiona
+PASS: F5 brak bledow JS
+--- 5 ok, 1 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO [MUTACJA fallback-breach]
