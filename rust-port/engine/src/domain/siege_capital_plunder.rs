@@ -476,8 +476,15 @@ pub struct PlunderInput<'a> {
     /// Web `(cityBuilt.get(city.id) ?? []).length`.
     pub building_count: usize,
     /// Web `buildObjectivePowerForOwner(oldOwner).power` (liczone tylko w galezi eliminacji).
+    ///
+    /// KONTRAKT KOLEJNOSCI (pin 07d2fbd72, gra/src/main.ts): wolajacy musi policzyc te wartosc PO
+    /// `applyBarbarianAwareCapitalCapturePlunder` (main.ts:35611), a PRZED `eliminateOwner(oldOwner)`
+    /// (main.ts:35769) - tj. w punkcie, w ktorym `buildObjectivePowerForOwner(oldOwner)` (main.ts:35672)
+    /// jeszcze widzi stan ofiary po transferze miasta. Rust tej kolejnosci NIE egzekwuje (wartosc jest
+    /// wejsciem); egzekwuje ja wiring W8 (osobny temat).
     pub lost_power: f64,
     /// Web `shouldShowPlayerTriumphCityStateUnification(...)` (wolane tylko gdy `newOwner === 0`).
+    /// Wartosc wejsciowa: detekcja zjednoczenia Grecji (`typCityCopyOwners`, `aiOwnerCivMap`) jest poza modulem.
     pub triumph_unification: bool,
 }
 
@@ -668,6 +675,9 @@ pub fn run_capital_capture_plunder<A: OwnerResourceAccess + ?Sized, L: PlunderLa
         let key = labels.civ_key_for_owner_id(0);
         ui.push(ui_call("civKeyForOwnerId", vec![json!(0)]));
         let cities_ids: Vec<Value> = input.cities.iter().map(|c| json!({ "id": c.id })).collect();
+        // Web przekazuje realne `typCityCopyOwners` (Set) i `aiOwnerCivMap` (Map) (main.ts:35734-35741).
+        // Modul ich nie posiada; tu rejestrowane sa `null` jak w atrapie generatora (ta sama granica co
+        // `triumph_unification`). Vektory potwierdzaja kolejnosc i pozostale argumenty, NIE zawartosc tych kolekcji.
         ui.push(ui_call(
             "shouldShowPlayerTriumphCityStateUnification",
             vec![json!({

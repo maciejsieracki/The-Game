@@ -168,10 +168,12 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
     // PORTED (Q6): pladrowanie stolicy - `runCapitalCapturePlunder` (main.ts:35558) jako `run_capital_capture_plunder`
     // + czysty rdzen `capital-capture.ts` w `siege_capital_plunder`. Wektory: tests/p6_siege_capital_plunder.rs.
     // Granice jawne: akcesory ekonomii, etykiety/tekst raportu i Power/zjednoczenie sa wejsciami wolajacego.
+    // Status "Ported" oznacza PORT LOGIKI z wektorami; wolajacy (wiring w produkcji, zalezny od W8) NIE jest
+    // jeszcze podpiety - patrz kontrakt kolejnosci `lost_power` w siege_capital_plunder.rs.
     (
         "runCapitalCapturePlunder",
         EffectStatus::Ported(
-            "siege_capital_plunder::run_capital_capture_plunder (+ apply_barbarian_aware_capital_capture_plunder; wektory p6_siege_capital_plunder)",
+            "siege_capital_plunder::run_capital_capture_plunder (logika + wektory p6_siege_capital_plunder; wolajacy niepodpiety - W8)",
         ),
     ),
     // BRAK (Q5): zdarzenie "zdobycie miasta" (`cityCaptureEventDetails`, mirror wierszy raportu, UI panelu wydarzen)

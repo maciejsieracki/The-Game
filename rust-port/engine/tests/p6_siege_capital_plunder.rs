@@ -399,3 +399,102 @@ fn run_capital_capture_plunder_matches_pin_vectors() {
         );
     }
 }
+
+/// Etykiety z `civDisplayNameForOwner` zwracajacym `null` (web: `civDisplayNameForOwner(0) ?? civLabelForOwner(0)`,
+/// main.ts:35746). Atrapa z [`Labels`] zawsze zwraca `Some`, wiec ta galaz nie byla pokryta wektorami.
+struct LabelsNoDisplayName;
+
+impl PlunderLabels for LabelsNoDisplayName {
+    fn civ_label(&self, o: i64) -> String {
+        Labels.civ_label(o)
+    }
+    fn moc_label(&self) -> String {
+        Labels.moc_label()
+    }
+    fn civ_display_name(&self, _o: i64) -> Option<String> {
+        None
+    }
+    fn civ_key_for_owner_id(&self, o: i64) -> String {
+        Labels.civ_key_for_owner_id(o)
+    }
+    fn one_line(&self, kind: &str) -> String {
+        Labels.one_line(kind)
+    }
+    fn spectacle(&self, label: &str) -> String {
+        Labels.spectacle(label)
+    }
+}
+
+#[test]
+fn triumph_display_name_none_falls_back_to_civ_label() {
+    let v: Value = serde_json::from_str(DATA).expect("json");
+    let cases = v["cases"].as_array().expect("cases");
+    let case = cases
+        .iter()
+        .find(|c| c["input"]["triumph"].as_bool() == Some(true))
+        .expect("wektor z triumfem (triumph=true) w vectors.json");
+    let inp = &case["input"];
+    let old = inp["oldOwner"].as_i64().unwrap();
+    let new = inp["newOwner"].as_i64().unwrap();
+    assert_eq!(new, 0, "triumf dotyczy tylko zdobywcy-gracza");
+    let cities: Vec<PlunderCity> = inp["cities"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(parse_city)
+        .collect();
+    let city_id = inp["city"].as_str().unwrap();
+    let city = cities
+        .iter()
+        .find(|c| c.id == city_id)
+        .expect("zdobyte miasto");
+    let capital_map: BTreeMap<i64, String> = inp["capitalMap"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(k, x)| (owner_key(k), x.as_str().unwrap().to_string()))
+        .collect();
+    let zdobycze: BTreeMap<i64, f64> = inp["zdobycze"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(k, x)| (owner_key(k), f(x)))
+        .collect();
+    let building_count = inp["cityBuilt"][city_id].as_u64().unwrap_or(0) as usize;
+    let mut store = parse_store(inp);
+    let mut state = PlunderState {
+        capital_city_id_by_owner: capital_map,
+        zdobycze_power_by_owner: zdobycze,
+        ..Default::default()
+    };
+    let input = PlunderInput {
+        city,
+        old_owner: old,
+        new_owner: new,
+        cities: &cities,
+        building_count,
+        lost_power: f(&inp["lostPower"]),
+        triumph_unification: true,
+    };
+    let (_ret, ui) =
+        run_capital_capture_plunder(&input, &mut state, &mut store, &LabelsNoDisplayName);
+
+    // Kolejnosc wolan: civDisplayNameForOwner(0) (zwraca null), potem civLabelForOwner(0) z fallbacku.
+    let idx = ui
+        .iter()
+        .position(|c| c["fn"] == "civDisplayNameForOwner")
+        .expect("civDisplayNameForOwner w ui_calls");
+    assert_eq!(ui[idx]["args"], json!([0]));
+    assert_eq!(
+        ui[idx + 1]["fn"],
+        json!("civLabelForOwner"),
+        "fallback po null"
+    );
+    assert_eq!(ui[idx + 1]["args"], json!([0]));
+    // Etykieta w powiadomieniu o triumfie = civ_label(0) (fallback), nie display name.
+    let notice = ui
+        .iter()
+        .find(|c| c["fn"] == "showTriumphCityStateNotice")
+        .expect("showTriumphCityStateNotice w ui_calls");
+    assert_eq!(notice["args"][0]["civLabel"], json!("civ0"));
+}
