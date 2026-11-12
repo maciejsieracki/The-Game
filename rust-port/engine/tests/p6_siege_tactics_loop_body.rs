@@ -70,8 +70,8 @@ fn act(q: i64, r: i64, side_atk: bool) -> ActivateUnit {
 fn melee_blow() -> FullBlowInput {
     FullBlowInput {
         ranged: false,
-        // Obrońca (1,0) z facing N (0) jest trafiany z (0,0): kierunek W, czyli flank (relativeHit, r4).
-        hit_arc: HitArc::Flank,
+        // Wartość bez znaczenia: `ProdBody` nadpisuje łuk przez `relative_hit` z aktualnego facing obrońcy.
+        hit_arc: HitArc::Front,
         attacker: AttackerCu {
             weapon_damage: 5.0,
             piercing: 0.0,

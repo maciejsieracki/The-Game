@@ -281,7 +281,9 @@ const classSrc = [
   L(SCENE, 370, fnRange(SCENE, 370)[1]).replace(/^export /gm, ''),
   // relativeHit z pinu, z przechwyceniem łuku (instrumentacja: wynik trafia do OUT.arc).
   L(SCENE, 385, fnRange(SCENE, 385)[1]).replace(/^export /gm, '').replace('function relativeHit(', 'function relativeHitPin('),
-  'function relativeHit(df, ac, ar, dc, dr) { const r = relativeHitPin(df, ac, ar, dc, dr); getOut().arc = r; return r; }',
+  // Przechwycenie łuku: OUT.arc jest zerowane przed każdą aktywacją; drugie wywołanie w tej samej aktywacji = błąd
+  // (inaczej ostatnie wywołanie po cichu wygrywałoby i instrumentacja nie byłaby jednoznaczna).
+  'function relativeHit(df, ac, ar, dc, dr) { const r = relativeHitPin(df, ac, ar, dc, dr); if (getOut().arc !== null) throw new Error("relativeHit wywolany wielokrotnie w aktywacji"); getOut().arc = r; return r; }',
   'class Harness {',
   '  constructor() { this.atk = []; this.def = []; this.finished = false; this._manualMode = false; this.siegeWallCol = -1; this.gateOpen = false;',
   '    this.wallTileHp = new Map(); this._autoBatchPlanning = null; this.__trace = []; this.engaged = new Set(); this.log = [];',
