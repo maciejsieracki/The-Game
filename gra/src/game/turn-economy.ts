@@ -64,7 +64,7 @@ import {
   corruptionRate,
   corruptionBuildingReduction,
 } from './economy';
-import { administratorEffectsFor, totalAdministratorUpkeepForOwner } from './city-administrator';
+import { administratorEffectsFor, totalAdministratorUpkeepForOwner, type CityAdministrator } from './city-administrator';
 import {
   improvementKeysForHex,
   territoryResourceYieldForImprovement,
@@ -2385,6 +2385,8 @@ export function previewOwnerUpkeep(
   playerZbadane: ReadonlySet<string> = new Set(),
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
+  /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator Państwa per owner (utrzymanie raz na Państwo). */
+  stateAdmByOwner: ReadonlyMap<number, CityAdministrator> = new Map(),
 ): UpkeepBalance {
   // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
   // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
@@ -2420,7 +2422,7 @@ export function previewOwnerUpkeep(
   // nie salda) -- 0 jest neutralne, wplywa wylacznie na pola saldo/deficyt ponizej.
   return withAdministratorUpkeep(
     upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams),
-    totalAdministratorUpkeepForOwner(cities, builtByCity, ownerId),
+    totalAdministratorUpkeepForOwner(cities, builtByCity, ownerId, stateAdmByOwner.get(ownerId)),
   );
 }
 
@@ -2472,6 +2474,8 @@ export function advanceCityEconomy(
    * reszta -> trudność menu. Tylko WYBÓR poziomu, liczby z econ-params.json bez zmian.
    */
   resolveOwnerUpkeepDifficulty?: (ownerId: number) => Difficulty,
+  /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator Państwa per owner (utrzymanie raz na Państwo). */
+  stateAdmByOwner: ReadonlyMap<number, CityAdministrator> = new Map(),
   /**
    * R-WEB-RESOURCE-BUILDING-PANEL-FORECAST-Q1: `productionForecastOnly` = tylko faza produkcji surowcow
    * (dopyw z mapy + konwertery) i powrot. Wolacy MUSI podac klon miast (stan jest mutowany).
@@ -3110,7 +3114,7 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = withAdministratorUpkeep(
       upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid)),
-      totalAdministratorUpkeepForOwner(cities, builtByCity, oid),
+      totalAdministratorUpkeepForOwner(cities, builtByCity, oid, stateAdmByOwner.get(oid)),
     );
     result.upkeepByOwner.set(oid, balance);
     // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: liczone OSOBNO (buildingsResUpkeep / unitsResUpkeep),
@@ -3209,7 +3213,7 @@ export function forecastNextTurnProduction(input: ProductionForecastInput): Prod
     'wysoki', new Map(), new Map(), new Map(), new Map(),
     input.resolveOwnerZlotoAccess ?? (() => true),
     input.resolveOwnerActiveLabels, input.resolveOwnerEmpireStock,
-    new Map(), undefined, new Map(), new Map(), new Map(), undefined,
+    new Map(), undefined, new Map(), new Map(), new Map(), undefined, new Map(),
     { productionForecastOnly: true, utilizationOut },
   );
   return { producedByOwner: r.converterProducedByOwner, rawInflowByOwner: r.rawInflowByOwner ?? new Map(), utilizationByCity: utilizationOut };

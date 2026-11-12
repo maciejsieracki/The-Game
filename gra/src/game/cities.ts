@@ -1006,8 +1006,9 @@ export interface City {
    */
   administrator?: CityAdministrator;
   /**
-   * R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: administrator ULEPSZEŃ (max 1) — bez bonusów; odblokowuje wyłącznie
-   * automatyczne ulepszenia terenu w tym mieście. Brak pola (stary zapis) = brak administratora ulepszeń.
+   * R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: LEGACY — dawny administrator ulepszeń przypisany do miasta.
+   * Stan żyje teraz na właścicielu (administrator Państwa, `main.ts` `stateAdmByOwner`). Pole czytane TYLKO
+   * przez migrację starego zapisu (`migrateCityImprovementAdministratorsToState`) i kasowane po migracji.
    */
   administratorUlepszen?: CityAdministrator;
   /** Stan Wealth per miasto (D3). */
