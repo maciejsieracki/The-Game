@@ -50,6 +50,7 @@ pub mod economy_city_fns;
 pub mod economy_city_params;
 pub mod economy_city_terrain;
 pub mod economy_yield;
+pub mod eliminacja;
 mod error;
 pub mod events;
 pub mod formation_rules;
