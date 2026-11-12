@@ -69,6 +69,30 @@ fn threat_slack_pusta_lista_to_infinity() {
     assert_eq!(threat_slack(&[], 3.0, -1.0), f64::INFINITY);
 }
 
+/// Zarzut 4 obrony: NaN w danych wchodzi do `Math.min` i propaguje sie (node 22: `Math.min(Infinity, NaN)` = NaN,
+/// `Math.min(0, NaN)` = NaN, `Math.min(0, Infinity)` = 0). Wartosci oczekiwane wyprowadzone z tego zachowania JS.
+#[test]
+fn threat_slack_nan_propaguje_jak_math_min() {
+    let t = |q: f64, r: f64, range: f64| Threat { q, r, range };
+    // NaN w kolumnie wywolania -> wynik NaN.
+    assert!(threat_slack(&[t(1.0, 1.0, 1.0)], f64::NAN, 0.0).is_nan());
+    // NaN w zasiegu -> wynik NaN.
+    assert!(threat_slack(&[t(1.0, 1.0, f64::NAN)], 0.0, 0.0).is_nan());
+    // NaN w pozycji zagrozenia -> wynik NaN.
+    assert!(threat_slack(&[t(f64::NAN, 0.0, 0.0)], 0.0, 0.0).is_nan());
+    // NaN na dowolnej pozycji listy psuje cala wartosc (kolejne Math.min nie leczą NaN).
+    assert!(threat_slack(&[t(0.0, 0.0, 0.0), t(1.0, 1.0, f64::NAN)], 0.0, 0.0).is_nan());
+    // Kontrola: bez NaN minimum z listy; -Infinity zasiegu daje +Infinity, wiec wygrywa 0.
+    assert_eq!(
+        threat_slack(
+            &[t(0.0, 0.0, 0.0), t(1.0, 1.0, f64::NEG_INFINITY)],
+            0.0,
+            0.0
+        ),
+        0.0
+    );
+}
+
 #[test]
 fn wektory_shooter_threats_zgodne_z_webem() {
     let v = load();
