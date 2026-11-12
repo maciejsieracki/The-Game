@@ -351,7 +351,8 @@ fn dlug_wejscia_sa_calkowite_i32() {
 
 #[test]
 fn dlug_duplikaty_wonderid_pierwsze_dopasowanie() {
-    // apply: `find` = pierwsze dopasowanie; drugi wpis z tym samym wonderId nie nadpisuje przeniesienia.
+    // Zachowanie TS `applyWonderTransfers` (`find`): plan ma dwa wpisy o tym samym wonderId, ale
+    // `apply` przenosi tylko PIERWSZE dopasowanie; drugi wpis nie przenosi (from != aktualny wlasciciel).
     let mut wonders = vec![
         TransferableWonder {
             wonder_id: "dup".into(),
@@ -363,63 +364,113 @@ fn dlug_duplikaty_wonderid_pierwsze_dopasowanie() {
             wonder_id: "dup".into(),
             q: 1,
             r: 0,
-            owner_id: 2,
+            owner_id: 1,
         },
     ];
-    let nodes = vec![WonderTerritoryNode {
+    let nodes_before = vec![WonderTerritoryNode {
         q: 0,
         r: 0,
         radius: 5,
-        owner_id: 3,
+        owner_id: 1,
         is_fort: false,
         is_outpost: false,
     }];
-    let before = begin_wonder_transfer_watch(&wonders, &nodes, None, stub_owner_at).unwrap();
+    let nodes_after = vec![WonderTerritoryNode {
+        owner_id: 2,
+        ..nodes_before[0].clone()
+    }];
+    let before = begin_wonder_transfer_watch(&wonders, &nodes_before, None, stub_owner_at).unwrap();
+    assert_eq!(before.get("dup"), Some(&Some(1)));
     let out = settle_wonder_transfer(
         Some(&before),
         &mut wonders,
-        &nodes,
+        &nodes_after,
         stub_owner_at,
         7,
         3,
         |_| None,
     );
-    // Obie pozycje maja inne hexy; migawka PRZED = [dup -> 3, dup -> 3]; PO = [3, 3]; zadna zmiana.
-    assert_eq!(out.transferred, 0);
-    assert!(out.events.is_empty());
-    assert!(out.ui_calls.is_empty());
+    // Plan: 2 wpisy (oba z from=1 -> to=2); apply: tylko pierwszy przenosi.
+    assert_eq!(out.events.len(), 2, "plan ma wpis dla kazdego wystapienia");
+    assert_eq!(
+        out.transferred, 1,
+        "apply przenosi tylko pierwsze dopasowanie"
+    );
+    assert_eq!(wonders[0].owner_id, 2);
+    assert_eq!(
+        wonders[1].owner_id, 1,
+        "drugi wpis o tym samym wonderId nie przenosi"
+    );
+    assert_eq!(out.ui_calls.len(), 3);
 }
 
 #[test]
 fn dlug_wartosci_skrajne_i32() {
-    // Duze ID wlascicieli (i32::MAX / i32::MIN) przechodza przez plan i apply bez przepelnienia.
+    // Duze ID wlascicieli przechodza przez plan i apply bez przepelnienia (granice i32).
+    // Dodatni skrajny przypadek: MAX-1 -> MAX (cywilizacja, owner_id >= 0), tura = i32::MAX.
     let mut wonders = vec![TransferableWonder {
         wonder_id: "big".into(),
         q: 0,
         r: 0,
-        owner_id: i32::MIN,
+        owner_id: i32::MAX - 1,
     }];
-    let nodes = vec![WonderTerritoryNode {
+    let nodes_before = vec![WonderTerritoryNode {
         q: 0,
         r: 0,
         radius: 1,
-        owner_id: i32::MAX,
+        owner_id: i32::MAX - 1,
         is_fort: false,
         is_outpost: false,
     }];
-    let before = begin_wonder_transfer_watch(&wonders, &nodes, None, stub_owner_at).unwrap();
-    assert_eq!(before.get("big"), Some(&Some(i32::MAX)));
+    let nodes_after = vec![WonderTerritoryNode {
+        owner_id: i32::MAX,
+        ..nodes_before[0].clone()
+    }];
+    let before = begin_wonder_transfer_watch(&wonders, &nodes_before, None, stub_owner_at).unwrap();
+    assert_eq!(before.get("big"), Some(&Some(i32::MAX - 1)));
     let out = settle_wonder_transfer(
         Some(&before),
         &mut wonders,
-        &nodes,
+        &nodes_after,
+        stub_owner_at,
+        i32::MAX,
+        i32::MAX,
+        |_| None,
+    );
+    assert_eq!(out.transferred, 1);
+    assert_eq!(wonders[0].owner_id, i32::MAX);
+    assert_eq!(out.events[0].transfer.from_owner_id, i32::MAX - 1);
+    assert_eq!(out.events[0].transfer.to_owner_id, i32::MAX);
+    assert_eq!(
+        out.events[0].notice.as_ref().map(|n| n.variant),
+        Some("mine"),
+        "me_owner_id == MAX: przejecie przez gracza"
+    );
+    assert!(out.events[0]
+        .log_line
+        .starts_with("[Cuda] Tura 2147483647:"));
+
+    // Ujemny skrajny przypadek: wlasciciel cudu MIN (nie-cywilizacja), PRZED != wlasciciel -> brak spojnosci.
+    let mut wonders_min = vec![TransferableWonder {
+        wonder_id: "neg".into(),
+        q: 0,
+        r: 0,
+        owner_id: i32::MIN,
+    }];
+    let before_min =
+        begin_wonder_transfer_watch(&wonders_min, &nodes_after, None, stub_owner_at).unwrap();
+    let out_min = settle_wonder_transfer(
+        Some(&before_min),
+        &mut wonders_min,
+        &nodes_after,
         stub_owner_at,
         i32::MAX,
         i32::MAX,
         |_| None,
     );
     assert_eq!(
-        out.transferred, 0,
-        "migawka PRZED != wlasciciel cudu (MIN): brak spojnosci"
+        out_min.transferred, 0,
+        "MIN nie jest cywilizacja: brak przeniesienia"
     );
+    assert_eq!(wonders_min[0].owner_id, i32::MIN);
 }
