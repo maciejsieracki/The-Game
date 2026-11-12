@@ -90,12 +90,12 @@ async function main() {
     r = await probe();
     assert(`ponownie pusta ${pct}%: komunikat wraca`, r.visible === 1, r);
   }
-  // Obrona r1, zarzut 1: podzial 0% Budynki + pusta kolejka -> doBudynkow=0 -> komunikatu NIE ma (production.ts: kolejkaPustaDoPuli wymaga split.doBudynkow > 0).
+  // FC r1: minimum podzialu to 50% (cities.ts:433), setSplit(0) przycina do 50% -> doBudynkow>0 -> komunikat WIDOCZNY.
   await D(() => window.__workPoolTestDebug.setSplit(0));
   await D((id) => window.__workPoolTestDebug.clearQueue(id), cityId);
   await reopen();
   const r0 = await probe();
-  assert('pusta kolejka 0% Budynki: komunikat nieobecny', r0.n === 0 && r0.panelOpen, r0);
+  assert('pusta kolejka, setSplit(0) przyciete do minimum 50%: komunikat widoczny', r0.visible === 1, r0);
   assert('brak pageerror', errors.length === 0, errors.slice(0, 3));
   await browser.close();
   try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (e) { /* ignore */ }

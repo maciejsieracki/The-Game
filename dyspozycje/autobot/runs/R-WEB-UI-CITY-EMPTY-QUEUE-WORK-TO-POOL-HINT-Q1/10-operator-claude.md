@@ -1,16 +1,14 @@
-STATUS: PASS-WITH-NOTES
+STATUS: PASS
 DOMAIN: GAME
 TEMAT: R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1
-GOAL: komunikat "Kolejka pusta — Praca idzie do puli imperium" w panelu miasta (zakładka Podział pracy), gdy kolejka produkcji pusta i Praca faktycznie trafia do puli; silnik bez zmian.
-ZMIANY/COMMIT: gra/src/ui/cityPanel.ts (pole kolejkaPustaDoPuli w cityPracaSplit z effectivePracaRouting, stała KOLEJKA_PUSTA_PRACA_DO_PULI_HINT, element .praca-empty-queue-hint pod chipami w appendPodzialPracyInfo); nowy gra/tools/city-empty-queue-work-to-pool-hint-real-render-test.cjs; ten raport. Silnik/produkcja nietknięte.
-TESTY (surowe wyjścia):
-- nowy test Chromium (realny panel, realne openCityPanelForTest + klik ikony "Podział pracy"): pass=15 fail=0 (pusta 100%/70% -> widoczny dokładny tekst; kolejka niepusta -> brak elementu; ponownie pusta -> wraca).
-- mutacja czerwieni (warunek odwrócony): 6 FAIL; po przywróceniu zielono.
-- tsc --noEmit: exit 0.
-- logic-test 213/213; tech-tree-test 20 pass 0 fail; research-test 33/33; unit-replace-test 21/21; combat-test 6/6.
-- mgla-sciezka-inwariant-test: 41 pass 1 fail (trafienia w src/game/ai.ts; ten temat zmienia tylko cityPanel.ts, więc nie z tej zmiany; NIE_ZMIERZONO na czystej bazie).
-- praca-jeden-podzial-kontrakt-test: 635 OK 2 FAIL (kontrole negatywne budżetu z przyrostu, logika silnika niezmieniona; NIE_ZMIERZONO na czystej bazie).
-BLOKADY: brak pliku DODATKU orkiestratora (00-dispatch-DODATEK-claude.md nie istnieje na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0; 00-dispatch.md był tylko na tej gałęzi, nie na main). Luki rozstrzygnięte założeniem: komunikat w zakładce "Podział pracy" panelu miasta; przy kolejce wstrzymanej komunikat nie jest pokazywany (silnik nie księguje wtedy nic).
-RUNDY: 1/5
-NASTĘPNY KROK: Evaluator (sprawdzenie dwóch czerwonych bramek na czystym origin/main, ocena umiejscowienia komunikatu).
+GOAL: komunikat "Kolejka pusta — Praca idzie do puli imperium" w panelu miasta; test realnego renderu bez blednej asercji 0%.
+ZMIANY/COMMIT: tylko gra/tools/city-empty-queue-work-to-pool-hint-real-render-test.cjs (asercja 0% Budynki zastapiona: setSplit(0) przycina do minimum 50% (cities.ts:433), wiec komunikat jest WIDOCZNY, r0.visible===1). Baza 288b5a798. cityPanel.ts i silnik NIETKNIETE. Plus ten raport.
+TESTY (surowe wyjscia, worktree z npm ci):
+- city-empty-queue-work-to-pool-hint-real-render-test.cjs: pass=17 fail=0 (realny Chromium)
+- mutacja (cityPanel.ts:5275 `if (false && ...)`, cofnieta): pass=12 fail=5 -> test czerwienieje, w tym nowa asercja 50%
+- tsc --noEmit: exit 0
+- logic-test 213/213; tech-tree-test 20 pass 0 fail; research-test 33/33; unit-replace-test 21/21; combat-test 6/6
+BLOKADY: brak. (Uwaga: w repo 17 asercji zamiast 15/16 z dispatchu - dodatkowe wywolania "panel miasta otwarty".)
+RUNDY: 2/5
+NASTEPNY KROK: Evaluator -> Final Control
 DEPLOY/PUSH: NIE WYKONANO
