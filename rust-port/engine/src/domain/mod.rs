@@ -98,6 +98,7 @@ pub mod siege_tactics_breach;
 pub mod siege_tactics_end;
 pub mod siege_tactics_endcheck;
 pub mod siege_tactics_tower;
+pub mod siege_tactics_unit;
 pub mod siege_tactics_walk;
 pub mod siege_transfer;
 pub mod siege_transfer_effects;
