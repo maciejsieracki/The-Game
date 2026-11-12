@@ -37,7 +37,7 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ),
     (
         "bitwy",
-        ComponentSource::NoProducer("web battlePowerPtsByOwner (akumulator walk, main.ts:2254, zapis main.ts:34490); battle_power_points_from_defeated_enemy to tylko krok, brak akumulatora stanu walk w Rust (jak brake_power_rest)"),
+        ComponentSource::RustProducer("war_turn_state::WarTurnState::battle_power_pts_for (akumulator battlePowerPtsByOwner, main.ts:2254/2763; wygraneBitwy = literal 0, main.ts:2764)"),
     ),
     ("ludki", ComponentSource::RustProducer("recruitment::manpower::empire_suma_ludkow")),
     (
@@ -68,11 +68,12 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ),
     (
         "zdobycze",
-        ComponentSource::NoProducer("web zdobyczePowerByOwner (zapis main.ts:35673-35675); barbarian_captured_power_gain to tylko krok, brak akumulatora zdarzen eliminacji w Rust (jak brake_power_rest)"),
+        ComponentSource::RustProducer("war_turn_state::WarTurnState::zdobycze_power_for (akumulator zdobyczePowerByOwner, main.ts:2264/2779; zapis barbarian_captured_power_gain, main.ts:35673-35675)"),
     ),
 ];
 
 /// Klucze skladnikow bez producenta (`NoProducer`). Wolajacy (W8 r3) musi podac je jawnie w `ObjectivePowerRaw`.
+/// Po P6-POWER-BITWY-ZDOBYCZE: pusta lista (wszystkie 12 skladnikow ma producenta).
 pub fn no_producer_keys() -> Vec<&'static str> {
     COMPONENT_SOURCES
         .iter()

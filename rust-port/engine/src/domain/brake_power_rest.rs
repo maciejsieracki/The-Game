@@ -28,11 +28,11 @@ pub enum RestSource {
     NoProducer(&'static str),
 }
 
-/// Tabela 6 skladnikow pozostalych (NIE_ZMIERZONO tam, gdzie brak producenta).
+/// Tabela 6 skladnikow pozostalych (P6-POWER-BITWY-ZDOBYCZE: `bitwy` i `zdobycze` maja producentow z akumulatorow stanu wojny).
 pub const REST_COMPONENT_SOURCES: [(&str, RestSource); 6] = [
     (
         "bitwy",
-        RestSource::NoProducer("web battlePowerPtsByOwner (main.ts:2254; zapis main.ts:34490 = battlePowerPointsFromDefeatedEnemy(sumRosterFieldM(przegrany)), power-objective.ts:103; odczyt bitwyPktSum main.ts:2763) - akumulator stanu walk; Rust nie ma zapisu zwyciestw ani portu armyFieldPower (unit-power.ts:182) / sumRosterFieldM (auto-battle-power.ts:50). Wybor zrodla wg modelu bitwy (power-objective.ts:231, bitwyRaw): enemy_m_sum -> bitwyPktSum; flat_count -> wygraneBitwy, ktorego web w main.ts:2764 i 2819 nie zasila (literal 0); main.ts:19222 (computePotegaComponents) ma wygraneBitwy: 0.5 poza ta sciezka. Wolajacy W8 r4 bierze wartosc zgodnie z modelem, nie z literalu"),
+        RestSource::RustProducer("war_turn_state::WarTurnState::battle_power_pts_for (web battlePowerPtsByOwner.get(ownerId) ?? 0, main.ts:2763; akumulator: record_battle_win = battlePowerPointsFromDefeatedEnemy, main.ts:34487-34490); wygraneBitwy = literal 0 (main.ts:2764, :2819) - Provided(0)"),
     ),
     (
         "infra",
@@ -52,11 +52,11 @@ pub const REST_COMPONENT_SOURCES: [(&str, RestSource); 6] = [
     ),
     (
         "zdobycze",
-        RestSource::NoProducer("web zdobyczePowerByOwner (zapis main.ts:35673-35675 = barbarianCapturedPowerGain(lostPower, barbCaptor), capital-capture.ts:438; krok czysty w barbarian_captured_power_gain) - lostPower = PELNA moc ofiary (buildObjectivePowerForOwner, w tym 3 skladniki NoProducer powyzej) i akumulator zdarzen eliminacji; brak w Rust"),
+        RestSource::RustProducer("war_turn_state::WarTurnState::zdobycze_power_for (web zdobyczePowerByOwner.get(ownerId) ?? 0, main.ts:2779; akumulator: record_capture_power_gain = barbarianCapturedPowerGain, main.ts:35673-35675)"),
     ),
 ];
 
-/// Klucze skladnikow bez producenta (`NoProducer`) w tej tabeli.
+/// Klucze skladnikow bez producenta (`NoProducer`) w tej tabeli (po POWER-BITWY-ZDOBYCZE: pusta lista).
 pub fn rest_no_producer_keys() -> Vec<&'static str> {
     REST_COMPONENT_SOURCES
         .iter()

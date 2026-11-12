@@ -263,10 +263,12 @@ fn production_power_inputs_have_producers_for_all_stored_components() {
     // Skladniki z producenta / jawne zera.
     assert!(matches!(raw.miasta, Component::Provided(m) if m == 1.0));
     assert!(matches!(raw.jednostki, Component::Provided(_)));
-    assert_eq!(raw.wygrane_bitwy, Component::ExplicitZero);
-    assert_eq!(raw.bitwy_pkt_sum, Component::ExplicitZero);
+    // P6-POWER-BITWY-ZDOBYCZE: bitwy/zdobycze z akumulatorow stanu wojny (pusty stan = realne 0, Provided).
+    // wygrane_bitwy = literal 0 weba (main.ts:2764, :2819).
+    assert_eq!(raw.wygrane_bitwy, Component::Provided(0.0));
+    assert_eq!(raw.bitwy_pkt_sum, Component::Provided(0.0));
     assert_eq!(raw.ulepszenia_terenu, Component::ExplicitZero);
-    assert_eq!(raw.zdobycze_power, Component::ExplicitZero);
+    assert_eq!(raw.zdobycze_power, Component::Provided(0.0));
     assert!(UNPRODUCED_POWER_COMPONENTS.is_empty());
     for model in [BattlePowerModel::FlatCount, BattlePowerModel::EnemyMSum] {
         objective_power_for_owner(&raw, &coeffs, model, &Default::default())
@@ -276,8 +278,8 @@ fn production_power_inputs_have_producers_for_all_stored_components() {
         assert!(has_pin_file_line_ref(reason), "{key}: brak plik:linia pinu");
     }
     let keys: Vec<&str> = EXPLICIT_ZERO_REASONS.iter().map(|(k, _)| *k).collect();
-    // P6-POWER-ULEPSZENIA: "ulepszenia" ma producenta w COMPONENT_SOURCES, wiec zniknelo z EXPLICIT_ZERO_REASONS.
-    assert_eq!(keys, ["bitwy", "zdobycze"]);
+    // P6-POWER-BITWY-ZDOBYCZE: bitwy i zdobycze maja producentow, a "ulepszenia" ma producenta w COMPONENT_SOURCES.
+    assert!(keys.is_empty(), "EXPLICIT_ZERO_REASONS: {keys:?}");
     // KNOWN_GAPS: kazdy brakujacy skladnik jest nazwany w liscie luk; luki epoki i granicy maja pin.
     assert_eq!(KNOWN_GAPS.len(), 5);
     for key in UNPRODUCED_POWER_COMPONENTS {

@@ -258,7 +258,16 @@ fn rest_table_covers_six_components_with_explicit_sources() {
             .expect("skladnik");
         assert!(matches!(src, RestSource::RustProducer(_)), "{key}");
     }
-    assert_eq!(rest_no_producer_keys(), vec!["bitwy", "zdobycze"]);
+    // P6-POWER-BITWY-ZDOBYCZE: bitwy i zdobycze maja producentow (RustProducer).
+    assert!(rest_no_producer_keys().is_empty());
+    for key in ["bitwy", "zdobycze"] {
+        let src = REST_COMPONENT_SOURCES
+            .iter()
+            .find(|(k, _)| *k == key)
+            .map(|(_, s)| *s)
+            .expect("skladnik");
+        assert!(matches!(src, RestSource::RustProducer(_)), "{key}");
+    }
     // Kazdy wpis (producent i brak) ma uzasadnienie z odwolaniem plik.ts:linia do pinu.
     for (k, s) in REST_COMPONENT_SOURCES.iter() {
         let reason = match s {

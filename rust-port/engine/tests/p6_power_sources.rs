@@ -406,6 +406,23 @@ fn check_legacy(key: &str) -> usize {
     }
 }
 
+/// Producenci `bitwy` / `zdobycze` (P6-POWER-BITWY-ZDOBYCZE): krok akumulatora na probce; pelne wektory
+/// sekwencji z pinu sa w `tests/p6_power_battle_acc.rs`.
+fn check_power_acc(key: &str) -> usize {
+    use civ_engine::domain::war_turn_state::WarTurnState;
+    let mut w = WarTurnState::default();
+    if key == "bitwy" {
+        w.record_battle_win(1, 2.5);
+        w.record_battle_win(1, 4.0);
+        assert_same(w.battle_power_pts_for(1), 6.0, "bitwy");
+    } else {
+        w.record_capture_power_gain(2, 10.0, false);
+        w.record_capture_power_gain(2, 5.0, true);
+        assert_same(w.zdobycze_power_for(2), 10.0, "zdobycze");
+    }
+    1
+}
+
 /// Dla RustProducer: wolana funkcja daje wartosc na wektorach (lub jawnym wejsciu).
 fn check_key(key: &str) -> usize {
     match key {
@@ -415,6 +432,7 @@ fn check_key(key: &str) -> usize {
         "infra" => check_infra(),
         "tech" => check_tech(),
         "religia" => check_religia(),
+        "bitwy" | "zdobycze" => check_power_acc(key),
         "ludki" | "rekruci" | "miasta" | "kultura" => check_legacy(key),
         other => {
             panic!("RustProducer `{other}` bez testu producenta - dopisz przypadek w check_key")
@@ -437,6 +455,7 @@ fn every_rust_producer_is_callable_and_matches_vector_input() {
         rust_keys,
         vec![
             "armia",
+            "bitwy",
             "ludki",
             "rekruci",
             "miasta",
@@ -445,13 +464,14 @@ fn every_rust_producer_is_callable_and_matches_vector_input() {
             "tech",
             "ulepszenia",
             "kultura",
-            "religia"
+            "religia",
+            "zdobycze"
         ]
     );
 }
 
 #[test]
-fn no_producer_entries_are_exactly_the_two_open_components() {
+fn no_producer_entries_are_empty_after_power_bitwy_zdobycze() {
     let no_producer: Vec<&str> = COMPONENT_SOURCES
         .iter()
         .filter_map(|(k, s)| match s {
@@ -459,7 +479,11 @@ fn no_producer_entries_are_exactly_the_two_open_components() {
             ComponentSource::RustProducer(_) => None,
         })
         .collect();
-    assert_eq!(no_producer, vec!["bitwy", "zdobycze"]);
+    // P6-POWER-BITWY-ZDOBYCZE: bitwy i zdobycze maja producentow z akumulatorow WarTurnState.
+    assert!(
+        no_producer.is_empty(),
+        "otwarte NoProducer: {no_producer:?}"
+    );
     assert_eq!(no_producer_keys(), no_producer);
     // Zadna pozycja NoProducer nie jest tez RustProducer (tabela ma 12 unikalnych kluczy).
     let unique: HashSet<&str> = COMPONENT_SOURCES.iter().map(|(k, _)| *k).collect();
