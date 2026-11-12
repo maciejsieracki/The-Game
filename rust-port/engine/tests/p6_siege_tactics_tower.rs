@@ -126,6 +126,7 @@ fn event_of(e: &serde_json::Value) -> TowerEvent {
         "advance" => TowerEvent::AdvanceToward {
             col: ival(&e["col"]),
             row: ival(&e["row"]),
+            then_arrive: bval(&e["thenArrive"]),
         },
         "done" => TowerEvent::Done,
         other => panic!("nieznane zdarzenie w wektorze: {other}"),
@@ -251,6 +252,17 @@ fn wektory_wiez_zgodne_z_wykonanym_pinem() {
         }
         if gates.iter().any(|&r| !r) {
             *tally.entry("gate:proceed".into()).or_default() += 1;
+        }
+        if out.events.iter().any(|ev| {
+            matches!(
+                ev,
+                TowerEvent::AdvanceToward {
+                    then_arrive: true,
+                    ..
+                }
+            )
+        }) {
+            *tally.entry("advance:arrive".into()).or_default() += 1;
         }
         if want_ml.is_nan() {
             *tally.entry("nan:moveLeft".into()).or_default() += 1;

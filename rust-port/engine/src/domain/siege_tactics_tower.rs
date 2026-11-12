@@ -13,7 +13,7 @@
 //! (normName/stats), tu nie sa powtarzane.
 //!
 //! EFEKTY SCENY (jawne wyjscie [`TowerEvent`], nie wykonywane tutaj): `_advanceToward` -> [`TowerEvent::AdvanceToward`]
-//! (bez `done`, wolajacy czeka na swoj callback), `_attackGate` -> [`TowerEvent::AttackGate`] (bez `done`), `_schedule`
+//! (bez `done`, wolajacy czeka na swoj callback; `then_arrive` niesie informacje, ze callbackiem jest `arrive` wiezy), `_attackGate` -> [`TowerEvent::AttackGate`] (bez `done`), `_schedule`
 //! -> [`TowerEvent::Schedule`], `_doMove` -> [`TowerEvent::Move`] / [`TowerEvent::Gate`], wywolanie `done()` ->
 //! [`TowerEvent::Done`], dopisanie do `towerAtWallRows` -> [`TowerEvent::AddRow`], komunikat WYLOM -> `scene.log`.
 //! Wiezowe `arrive` (`towerAtWallRows.add` przed `done`) jest odtworzone przy zakonczeniu marszu.
@@ -145,8 +145,15 @@ pub enum TowerEvent {
     AddRow { row: i64 },
     /// `_attackGate(ru, done)` (efekt sceny, bez `done` w tej funkcji).
     AttackGate,
-    /// `_advanceToward(ru, col, row, ...)` (efekt sceny).
-    AdvanceToward { col: i64, row: i64 },
+    /// `_advanceToward(ru, col, row, done)` (efekt sceny). `then_arrive = true` gdy `done` to closure `arrive` z galezi
+    /// wiezy (`_siegeRamTowerStep`, `_advanceToward(ru, wallBase, ru.r, arrive)`): po dojsciu wolajacy MUSI wykonac
+    /// `arrive` = gdy `ru.q >= col` dopisac `ru.r` do `towerAtWallRows`, potem `done()`. `false` = zwykle `done`
+    /// (galez bramy). Ten flag jest jedynym nosnikiem tego skutku; bez niego zdarzenie tracilo `arrive` (zarzut 1 FC).
+    AdvanceToward {
+        col: i64,
+        row: i64,
+        then_arrive: bool,
+    },
     /// `done()`.
     Done,
 }
@@ -359,6 +366,7 @@ pub fn siege_ram_tower_step(scene: &mut TowerScene, unit: &mut TowerUnit) -> Tow
         return handled(vec![TowerEvent::AdvanceToward {
             col: scene.gate_col,
             row: scene.gate_row,
+            then_arrive: false,
         }]);
     }
     if unit.is_siege_tower {
@@ -381,6 +389,7 @@ pub fn siege_ram_tower_step(scene: &mut TowerScene, unit: &mut TowerUnit) -> Tow
         return handled(vec![TowerEvent::AdvanceToward {
             col: wall_base,
             row: unit.walk.r,
+            then_arrive: true,
         }]);
     }
     not_handled()

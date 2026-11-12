@@ -17,6 +17,7 @@
    "ev:attackGate": 36,
    "ev:addRow": 73,
    "ev:advance": 11,
+   "advance:arrive": 5,
    "climb:false": 206,
    "nan:moveLeft": 59,
    "climb:true": 314,
@@ -6288,7 +6289,8 @@
      {
       "k": "advance",
       "col": 4,
-      "row": 8
+      "row": 8,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -25862,7 +25864,8 @@
      {
       "k": "advance",
       "col": 27,
-      "row": 26
+      "row": 26,
+      "thenArrive": true
      }
     ],
     "scene": {
@@ -25913,7 +25916,8 @@
    },
    "cat": [
     "ram:true",
-    "ev:advance"
+    "ev:advance",
+    "advance:arrive"
    ]
   },
   {
@@ -30305,7 +30309,8 @@
      {
       "k": "advance",
       "col": 16,
-      "row": 15
+      "row": 15,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -50470,7 +50475,8 @@
      {
       "k": "advance",
       "col": 29,
-      "row": 5
+      "row": 5,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -65480,7 +65486,8 @@
      {
       "k": "advance",
       "col": 21,
-      "row": 29
+      "row": 29,
+      "thenArrive": true
      }
     ],
     "scene": {
@@ -65559,7 +65566,8 @@
    },
    "cat": [
     "ram:true",
-    "ev:advance"
+    "ev:advance",
+    "advance:arrive"
    ]
   },
   {
@@ -78505,7 +78513,8 @@
      {
       "k": "advance",
       "col": 15,
-      "row": 18
+      "row": 18,
+      "thenArrive": true
      }
     ],
     "scene": {
@@ -78596,7 +78605,8 @@
    },
    "cat": [
     "ram:true",
-    "ev:advance"
+    "ev:advance",
+    "advance:arrive"
    ]
   },
   {
@@ -80698,7 +80708,8 @@
      {
       "k": "advance",
       "col": 8,
-      "row": 18
+      "row": 18,
+      "thenArrive": true
      }
     ],
     "scene": {
@@ -80773,7 +80784,8 @@
    },
    "cat": [
     "ram:true",
-    "ev:advance"
+    "ev:advance",
+    "advance:arrive"
    ]
   },
   {
@@ -81107,7 +81119,8 @@
      {
       "k": "advance",
       "col": 19,
-      "row": 6
+      "row": 6,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -81474,7 +81487,8 @@
      {
       "k": "advance",
       "col": 15,
-      "row": 5
+      "row": 5,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -92821,7 +92835,8 @@
      {
       "k": "advance",
       "col": 20,
-      "row": 14
+      "row": 14,
+      "thenArrive": false
      }
     ],
     "scene": {
@@ -96304,7 +96319,8 @@
      {
       "k": "advance",
       "col": 26,
-      "row": 16
+      "row": 16,
+      "thenArrive": true
      }
     ],
     "scene": {
@@ -96387,7 +96403,8 @@
    },
    "cat": [
     "ram:true",
-    "ev:advance"
+    "ev:advance",
+    "advance:arrive"
    ]
   },
   {

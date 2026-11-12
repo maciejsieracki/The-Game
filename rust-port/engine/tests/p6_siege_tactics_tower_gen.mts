@@ -106,7 +106,9 @@ const moduleSrc = [
   '  _siegeShooterThreats() { return this.threats.map((t) => ({ q: t.q, r: t.r, range: t.range })); }',
   '  _passableForUnit(ru, col, row) { return !this.blocked.has(cellKey(col, row)); }',
   '  _moveCostForUnit(ru, col, row) { return COST[(((3 * col + 5 * row) % 5) + 5) % 5]; }',
-  "  _advanceToward(ru, targetCol, targetRow, done) { this.ev.push({ k: 'advance', col: targetCol, row: targetRow }); }",
+  // thenArrive: czy done to closure `arrive` z _siegeRamTowerStep (galaz wiezy; dopisuje wiersz przy dojsciu).
+  // Nazwa closure z pinu to 'arrive' (const arrive = () => ...); harness podaje done o nazwie 'done'.
+  "  _advanceToward(ru, targetCol, targetRow, done) { this.ev.push({ k: 'advance', col: targetCol, row: targetRow, thenArrive: done.name === 'arrive' }); }",
   "  _attackGate(ru, done) { this.ev.push({ k: 'attackGate' }); }",
   "  _schedule(ms, cb) { this.ev.push({ k: 'schedule', ms }); if (++this.steps > 400) throw new Error('za dlugi marsz'); cb(); }",
   '  _doMove(ru, col, row, done) {',
@@ -330,6 +332,7 @@ function categorize(fn: string, c: any): string[] {
   if (!e.ret) out.push(`${fn}:false`);
   else out.push(`${fn}:true`);
   for (const k of kinds) out.push(`ev:${k}`);
+  if (e.ev.some((x: any) => x.k === 'advance' && x.thenArrive)) out.push('advance:arrive');
   if (e.ev.some((x: any) => x.k === 'gate' && x.refused)) out.push('gate:refused');
   if (e.ev.some((x: any) => x.k === 'gate' && !x.refused)) out.push('gate:proceed');
   if (e.unit.moveLeft === 'NaN') out.push('nan:moveLeft');
