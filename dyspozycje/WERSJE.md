@@ -1,3 +1,9 @@
+## ROBOCZA d87d074b -- 2026-11-06 -- FALA 654: FALA 654: szturm bez machin oblężniczych zablokowany, pozostaje oblężenie (W18) (testowa)
+
+- R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, siege-storm-needs-machines 18/0, city-siege-wall-rules 50/0, audio-sidecar PASS
+- Limity: okablowanie main.ts przypiete regexem; pelny przebieg gry w Chromium NIE_ZMIERZONO
+
 ## ROBOCZA 16ffc1de -- 2026-11-06 -- FALA 653: FALA 653: pościg uciekinierów w bitwie (W21) + replay oblężenia przywraca mur (W16) + procent wykorzystania mocy budynków (W22) (testowa)
 
 - R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 + R-WEB-SIEGE-REPLAY-RESTORE-WALL-TERRAIN-Q1 + R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1
