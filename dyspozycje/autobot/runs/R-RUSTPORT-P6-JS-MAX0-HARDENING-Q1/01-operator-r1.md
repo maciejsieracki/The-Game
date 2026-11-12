@@ -24,3 +24,10 @@ BLOKADY: brak (poza NIE_ZMIERZONO powyzej).
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator r1 - weryfikacja delegacji 5 sciezek do js_max, wektorow z pinu i mutacji js_max (usuniecie galezi zera musi dac FAIL p6_js_max0 i p6_js_max_sign).
 DEPLOY/PUSH: NIE WYKONANO (zakaz push/integracji w dispatchu).
+
+## Dopisek obrony (Operator, runda 1)
+
+- SHA kodu funkcyjnego r1: 3f5ebd2a900c469ba3384bd4e981114b020f1e9c.
+- SHA commita obrony (testy modułowe js_max0_zero_sign_jak_math_max w 5 modułach): aba6c5cedfeb62602590be193b0dbb079b77a3ac.
+- Mutacja js_max(0.0,x) -> f64::max(0.0,x) w siege_tactics_breach.rs: FAIL testu modułowego, przywrócone.
+- Wyniki bramek po obronie: zob. 02a-obrona.md.
