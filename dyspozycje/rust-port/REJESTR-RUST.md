@@ -329,3 +329,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1 (#109):** baza `23e33793e`, dispatch w origin, workflow `wf2qml924`. Warunek wstępny dla WYLOM.
 - **Aktywne Workflow (2):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`), K5LOOP-OUTCOME-Q1 (#109, `wf_5c18cda4-98d`).
 - **Do zrobienia:** AUTO r2 (podział na (a)–(d)) — dispatch jeszcze nie napisany; decyzja architektoniczna (jedna pętla) przyjęta przeze mnie zgodnie z rekomendacją FC.
+
+## Przebieg (po 23:2x): dysk 0 MB, sprzątanie, wznowienie OUTCOME
+- **Incydent:** K5LOOP-OUTCOME-Q1 padł na `WorktreeIsolationError` (dysk 44 MB). Przyczyna: worktree zakończonych tematów WIEZE (4), AUTO (4), WYLOM (3) i nieudanego startu OUTCOME (3), ok. 1,2 GB każdy.
+- **Sprzątanie:** HEAD-y 14 worktree zabezpieczone `refs/keep/wt-*`, worktree usunięte. Dysk: 15 GB wolnego.
+- **Wznowienie:** R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1 (#109) — `wf_f174bc7f-ec5`, baza `23e33793e`.
+- **Aktywne Workflow (2):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`), K5LOOP-OUTCOME-Q1 (#109, `wf_f174bc7f-ec5`).
+- **Uwaga procesowa:** kolejne starty zużywają ~1,2 GB na worktree. Przy 4 tematach równolegle trzeba sprzątać po każdym BLOCK/FAIL od razu.
