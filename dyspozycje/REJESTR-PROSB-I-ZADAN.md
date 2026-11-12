@@ -9535,3 +9535,6 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 
 ### Zgłoszenie właściciela 2026-11-12: nadmiar miedzi
 Jedna cywilizacja ma ~24 000 szt. miedzi krótko po wejściu w epokę miedzi — traktowane jako błąd/przeciek. Temat R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1 (audyt źródeł miedzi + naprawa), Operator OPUS 5.5 na wyraźne życzenie właściciela (wyjątek od zasady modeli).
+
+### Zgłoszenie właściciela 2026-11-12: BOOT ERROR przy otwarciu gry (zalew ResizeObserver)
+Gra z pliku Gra-ROBOCZA.html pokazuje czerwony overlay „BOOT ERROR" z setkami linii „ResizeObserver loop completed…". Hipoteza: fitCitySideTop (cityUxFrame.ts, commit 6ebbaf0c1) tworzy nowy ResizeObserver przy każdym wywołaniu z callbacka. Temat R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1 (Operator HAIKU, błąd krytyczny, bez pytania). Zlecenie właściciela „tooltip zamiast tekstu w panelu administratora ulepszeń" zostaje w kolejce po tym tematu.
