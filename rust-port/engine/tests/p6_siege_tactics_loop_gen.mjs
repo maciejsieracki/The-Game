@@ -204,9 +204,9 @@ function mkUnit(side, idx, u) {
     morale: u.morale,
     moraleMax: u.moraleMax,
     dead: false,
-    fadingOut: false,
-    removed: false,
-    routed: false,
+    fadingOut: !!u.fadingOut,
+    removed: !!u.removed,
+    routed: !!u.routed,
     acted: false,
     moveLeft: 0,
     playerOrder: { type: 'none' },
@@ -272,6 +272,10 @@ function genUnit(i, side) {
     mp: randInt(0, 4),
     dur: pick(DUR_POOL),
     eff: pick(EFF_POOL),
+    // Flagi wejscia _activateNext/_beginTurn (pin: !dead && !fadingOut && !removed). Losowane po starych polach.
+    fadingOut: rnd() < 0.08,
+    removed: rnd() < 0.05,
+    routed: rnd() < 0.08,
   };
 }
 
@@ -312,6 +316,10 @@ const stats = {
   winnersAtk: sequences.filter((s) => s.expect.winner === 'atk').length,
   winnersDef: sequences.filter((s) => s.expect.winner === 'def').length,
   maxRound: Math.max(...sequences.map((s) => s.expect.roundNo)),
+  withFadingOut: sequences.filter((s) => [...s.spec.atk, ...s.spec.def].some((u) => u.fadingOut)).length,
+  withRemoved: sequences.filter((s) => [...s.spec.atk, ...s.spec.def].some((u) => u.removed)).length,
+  withRouted: sequences.filter((s) => [...s.spec.atk, ...s.spec.def].some((u) => u.routed)).length,
+  withMoveZero: sequences.filter((s) => [...s.spec.atk, ...s.spec.def].some((u) => u.mp === 0)).length,
   activations: sequences.reduce((n, s) => n + s.expect.trace.filter((t) => t.startsWith('act:')).length, 0),
 };
 console.error('statystyki', JSON.stringify(stats));

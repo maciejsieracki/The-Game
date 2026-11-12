@@ -98,9 +98,9 @@ fn unit_of(u: &Value) -> (SeqUnit, (f64, Eff), f64) {
         move_left: 0.0,
         never_rout: false,
         dead: false,
-        fading_out: false,
-        routed: false,
-        removed: false,
+        fading_out: u["fadingOut"].as_bool().unwrap_or(false),
+        routed: u["routed"].as_bool().unwrap_or(false),
+        removed: u["removed"].as_bool().unwrap_or(false),
         acted: false,
     };
     let spec = (num(&u["dur"]), eff_of(u["eff"].as_str().expect("eff")));
@@ -311,4 +311,56 @@ fn p6_siege_tactics_loop_vectors_cover_breach_towers_and_cap() {
         count(&|s| s["expect"]["winner"] == Value::String("def".into())) > 0,
         "brak zwyciestwa obroncy"
     );
+}
+
+fn any_unit(seq: &Value, f: &dyn Fn(&Value) -> bool) -> bool {
+    seq["spec"]["atk"]
+        .as_array()
+        .into_iter()
+        .chain(seq["spec"]["def"].as_array())
+        .flatten()
+        .any(f)
+}
+
+#[test]
+fn p6_siege_tactics_loop_vectors_cover_fading_removed_routed_and_zero_mp() {
+    let v: Value = serde_json::from_str(VECTORS).expect("vectors.json");
+    let seqs = v["sequences"].as_array().expect("sequences");
+    assert!(
+        seqs.iter()
+            .any(|s| any_unit(s, &|u| u["fadingOut"] == Value::Bool(true))),
+        "brak jednostki fadingOut"
+    );
+    assert!(
+        seqs.iter()
+            .any(|s| any_unit(s, &|u| u["removed"] == Value::Bool(true))),
+        "brak jednostki removed"
+    );
+    assert!(
+        seqs.iter()
+            .any(|s| any_unit(s, &|u| u["routed"] == Value::Bool(true))),
+        "brak jednostki routed"
+    );
+    assert!(
+        seqs.iter()
+            .any(|s| any_unit(s, &|u| u["mp"].as_f64().unwrap_or(0.0) > 0.0)),
+        "brak jednostki z moveLeft > 0"
+    );
+}
+
+#[test]
+fn p6_siege_tactics_loop_halts_without_siege_instead_of_panicking() {
+    // Sciezka AUTO bez oblezenia (siegeWallCol < 0) jest poza zakresem sterownika: ma sie zatrzymac z powodem,
+    // bez paniki i bez zwyciezcy. Brak wektora pinu: pin dla tej sciezki rzuca (stub `_beginAutoBatchPhase`).
+    let v: Value = serde_json::from_str(VECTORS).expect("vectors.json");
+    let mut spec = v["sequences"][0]["spec"].clone();
+    spec["wallCol"] = Value::from(-1);
+    let mut built = build(&spec);
+    let _stop = built.sl.run(&mut built.clock, 50_000);
+    assert!(
+        built.sl.unsupported.is_some(),
+        "brak zatrzymania poza zakresem"
+    );
+    assert!(built.sl.st.finished, "sterownik nie oznaczyl konca");
+    assert_eq!(built.sl.winner_label(), None);
 }
