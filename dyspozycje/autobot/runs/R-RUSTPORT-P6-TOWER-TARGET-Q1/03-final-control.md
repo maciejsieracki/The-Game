@@ -1,17 +1,28 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-TOWER-TARGET-Q1
-GOAL: pickTowerTarget jako czysta funkcja Rust + wektory z pinu 07d2fbd72 (bez wpinania w petle)
-ZMIANY/COMMIT: kod b2e284cf1; obrona 796bb8920 (HEAD oceniany). Baza b0ba891fb jest przodkiem (merge-base --is-ancestor OK). Allowlista czysta: siege_tactics_tower.rs, tests/p6_tower_target{.rs,_gen.mjs,_vectors/}, runs/**. Brak gra/, Cargo.*, siege_tactics_loop.rs.
-TESTY (odtworzone samodzielnie): rustc 1.97.0; fmt --check exit 0; clippy --all-targets -D warnings exit 0; lib 94 passed; p6_tower_target 2 passed; p6_siege_tactics_tower 12 passed; brak #[ignore].
-ORZECZENIA ZARZUTOW:
-1 fireOrderCases niekonsumowane, brak fire_siege_towers: ODDAL (poza zakresem; dlug dla #96 - musi konsumowac fireOrderCases).
-2 kolejnosc/stagger 180 ms na atrapach: ODDAL (pomiar, nie dowod parytetu; zgodne z dispatchem).
-3 Node >= 22.13: ODDAL (nota).
-4 Co-Authored-By: DO DECYZJI CZLOWIEKA (dispatch kontra instrukcja atrybucji).
-5 wezszy zakres wektorow (hp ujemne/ulamkowe/Infinity, zasieg Infinity/ulamkowy): ODDAL (logika identyczna z pinem, 600 przypadkow + remisy; NIE_ZMIERZONO dla tych wejsc).
-6 bramki: potwierdzone.
+GOAL: wolanie `pick_tower_target` z produkcyjnej petli oblezenia (SiegeLoop, FireSiegeTowers), bez strzalu wiez (#96)
+ZMIANY/COMMIT: kod operatora 786f049c5 (siege_tactics_loop.rs, tests/p6_tower_target_wiring.rs); obrona aa6641acd (tylko 02a-obrona.md). Baza 23e33793e jest przodkiem aa6641acd i 786f049c5 (zweryfikowane). Diff wzgledem bazy: 3 pliki, wszystkie w allowliscie albo raporty rol. Brak Cargo.lock, gra/, #[ignore].
+TESTY (odtworzone samodzielnie na aa6641acd): cargo fmt --check 0; clippy --all-targets -D warnings 0; cargo test --lib 99 ok; p6_tower_target_wiring 2 ok; p6_siege* EXIT 0, 0 failed.
 BLOKADY: brak
-RUNDY: 1/5
-NASTEPNY KROK: integracja orkiestratora (merge-base + diff --stat), potem #96
+RUNDY: FC r2 / 5
+NASTEPNY KROK: integracja orkiestratora; decyzje czlowieka nizej
+
+## Rozstrzygniecie zarzutow
+1. Brak generatora/straznika SHA: ODDAL. Istnieje `p6_tower_target_gen.mjs` (b2e284cf1) ze straznikiem SHA-256 fragmentow pinu (pickTowerTarget, _fireSiegeTowers, _destroyTowerAtRow); meta vectors.json niesie fragmentSha256. Nota: filtr wrogow z `_fireOneTower` (!dead && !fadingOut && !routed && !removed) NIE jest pod strazniem ani w wektorach; test pokrywa tylko `dead`. Pokrycie fading_out/routed/removed do dopisania (DO DECYZJI CZLOWIEKA, nizej).
+2. Wiazanie martwe w produkcji: ODDAL. Cala SiegeLoop nie ma jeszcze wolajacego poza testami (#113); sciezka produkcyjna = apply(FireSiegeTowers) w siege_tactics_loop.rs (ok. :306), pin battleScene.ts `_fireOneTower` :4226-4234, `_beginTurn` :5643. `tower_targeting=None` domyslnie = zachowanie sprzed zmiany. Dokladny numer pinu: pick jest w `_fireOneTower` (:4230), nie w `_fireSiegeTowers`.
+3. Kolejnosc wzgledem pinu: ODDAL. Pin planuje pick przez `_schedule(0)` (vTimers), wiec po synchronicznym `_beginTurn`; LoopBody::start dostaje &TurnSeqState (nie moze zmienic wrogow), a pick czyta tylko hp/flagi. Brak testu ze zmiana stanu przed pickiem: ograniczenie, nie blad.
+4. Stub env.tower przed pickiem: ODDAL. Stub dotyczy jednostki self.tower, nie wiez obroncy; zakres #96.
+5. Wiele wiez / stagger 180 ms / jeden wpis tower_log: ODDAL do #96 (jawnie poza GOAL).
+6. atk_pos statyczne: ODDAL do #113 (CombatUnit bez wspolrzednych; poza allowlista).
+7. 01-operator-r1.md nadpisal raport poprzedniego tematu: ODDAL (poprzednia tresc w ed70002a1); do potwierdzenia przez orkiestratora, ze zakres to wpiecie.
+8. Co-Authored-By vs dispatch: ODDAL; dispatch ma priorytet, SHA nie zmieniany.
+
+Zero zarzutow NAPRAW.
+
+## DO DECYZJI CZLOWIEKA
+- Czy dopisac (w #96) wektory/test filtru fading_out/routed/removed oraz straznika SHA fragmentu `_fireOneTower`.
+- Czy zakres "wpiecie w SiegeLoop z opcjonalnym tower_targeting" wystarcza do zamkniecia #116 (realna aktywacja dopiero w #113/#96).
+- Archiwizacja nadpisanego 01-operator-r1.md poprzedniego tematu.
+
 DEPLOY/PUSH: NIE WYKONANO
