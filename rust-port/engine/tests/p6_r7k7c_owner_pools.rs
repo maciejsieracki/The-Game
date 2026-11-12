@@ -279,17 +279,37 @@ fn apply_deltas_moves_human_and_ai_balances() {
 }
 
 #[test]
-fn apply_deltas_is_atomic_on_missing_owner() {
+fn apply_missing_owner_entry_counts_as_zero_like_pin() {
+    // Parytet z pinem (main.ts:10238, 20047, 34877): brak wpisu skarbca = `?? 0`, zapis tworzy wpis.
+    // Zastepuje dawna asercje bledu brakujacego producenta (zmiana swiadoma, wymieniona w raporcie).
+    let base = with_ai(fresh_game().state().clone());
+    let ai = ai_id(&base);
+    let mut st = base.clone();
+    st.economy.ai_treasury_by_owner.insert(ai, 30.0);
+
+    let treasury = BTreeMap::from([(ai as i64, -5.0), (99, 1.0)]);
+    apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new()).expect("apply");
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&ai), Some(&25.0));
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&99), Some(&1.0));
+
+    // Brak wpisu puli Pracy: `ownerPracaPool(id) ?? 0`, wynik podlogowany do zera.
+    let praca = BTreeMap::from([(99_i64, -2.0), (ai as i64, 3.0)]);
+    apply_dipl_deltas_to_state(&mut st, &BTreeMap::new(), &praca).expect("apply");
+    assert_eq!(st.economy.praca_pool_by_owner.get(&99), Some(&0.0));
+    assert_eq!(st.economy.praca_pool_by_owner.get(&ai), Some(&3.0));
+}
+
+#[test]
+fn apply_deltas_is_atomic_on_non_finite_entry() {
+    // Atomowosc: wartosc niefinitna w jednej pozycji cofa cala zmiane (takze poprawnej pozycji dla `ai`).
     let base = with_ai(fresh_game().state().clone());
     let ai = ai_id(&base);
     let mut st = base.clone();
     st.economy.ai_treasury_by_owner.insert(ai, 30.0);
     let before = st.clone();
-
-    // Wlasciciel 99 nie ma producenta: cala zmiana odrzucona, takze poprawna pozycja dla `ai`.
-    let treasury = BTreeMap::from([(ai as i64, -5.0), (99, 1.0)]);
+    let treasury = BTreeMap::from([(ai as i64, -5.0), (99, f64::INFINITY)]);
     let err = apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new())
-        .expect_err("brak producenta");
+        .expect_err("niefinitna wartosc");
     assert!(matches!(err, WarTurnError::DiplStep(_)));
     assert_eq!(st, before, "blad = zadnej zmiany");
 }

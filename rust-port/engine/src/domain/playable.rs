@@ -10,6 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::{error::Error, fmt};
 
 use super::building_costs::p6_7b::StockRecord;
+use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{build_war_inputs, production_config};
 use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::types::Difficulty;
@@ -1118,7 +1119,16 @@ impl PlayableGame {
             inputs: &inputs,
             config: &config,
         };
-        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let report =
+            run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        // P6-WIRE-WAR-R7K7-C: efekty umow na skarbcach i pulach Pracy zapisuja sie w PlayableState
+        // (atomowo; blad = zadnej zmiany, a `advance_turn` cofa tez stan wojny).
+        apply_dipl_deltas_to_state(
+            &mut self.state,
+            &report.dipl.treasury_deltas,
+            &report.dipl.praca_deltas,
+        )
+        .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 

@@ -993,9 +993,9 @@ fn owner_key(owner: i64) -> Result<u64, WarTurnError> {
 /// do `PlayableState`. Czysta funkcja nad stanem: kazda nowa wartosc jest liczona i walidowana (skonczona)
 /// PRZED zapisem, wiec blad = zadnej zmiany (atomowosc).
 /// Skarbiec gracza ludzkiego idzie do `economy.treasury`; pozostali wlasciciele do `ai_treasury_by_owner`.
-/// Brak wpisu wlasciciela, ktorego delta dotyczy, daje `WarTurnError::DiplStep` (nigdy nie tworzy zera).
-/// Odchylenie swiadome i OTWARTE (DECISION_REQUIRED, nie zmieniane tu): pin czyta brak wpisu jako 0
-/// (`aiSkarbiecByOwner.get(id) ?? 0`), Rust zwraca blad. Patrz 02a-obrona.md, zarzut 1.
+/// Brak wpisu wlasciciela (AI) traktowany jak 0 -- parytet z pinem: `aiSkarbiecByOwner.get(id) ?? 0`
+/// i `ownerPracaPool(id) = aiPracaPoolByOwner.get(id) ?? 0` (main.ts:10238, 20047, 34877); zapis tworzy wpis.
+/// Blad tylko dla wartosci niefinitych (NaN/Inf), wtedy zadna zmiana nie jest zapisywana.
 pub fn apply_dipl_deltas_to_state(
     state: &mut PlayableState,
     treasury_deltas: &BTreeMap<i64, f64>,
@@ -1022,15 +1022,13 @@ pub fn apply_dipl_deltas_to_state(
             new_human_treasury = Some(value);
         } else {
             let key = owner_key(owner)?;
-            let cur = *state
+            // Pin: `aiSkarbiecByOwner.get(id) ?? 0`.
+            let cur = state
                 .economy
                 .ai_treasury_by_owner
                 .get(&key)
-                .ok_or_else(|| {
-                    err(format!(
-                        "brak producenta skarbca wlasciciela {owner} (web ownerTreasury)"
-                    ))
-                })?;
+                .copied()
+                .unwrap_or(0.0);
             let value = cur + delta;
             if !value.is_finite() {
                 return Err(err(format!("skarbiec wlasciciela {owner} nieskonczony")));
@@ -1044,11 +1042,13 @@ pub fn apply_dipl_deltas_to_state(
         if !delta.is_finite() {
             return Err(err(format!("delta Pracy wlasciciela {owner} nieskonczona")));
         }
-        let cur = *state.economy.praca_pool_by_owner.get(&key).ok_or_else(|| {
-            err(format!(
-                "brak producenta puli Pracy wlasciciela {owner} (web ownerPracaPool)"
-            ))
-        })?;
+        // Pin: `ownerPracaPool(id) = aiPracaPoolByOwner.get(id) ?? 0`.
+        let cur = state
+            .economy
+            .praca_pool_by_owner
+            .get(&key)
+            .copied()
+            .unwrap_or(0.0);
         let value = cur + delta;
         if !value.is_finite() {
             return Err(err(format!("pula Pracy wlasciciela {owner} nieskonczona")));
