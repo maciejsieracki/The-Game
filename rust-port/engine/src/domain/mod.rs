@@ -103,6 +103,7 @@ pub mod siege_tactics_blow;
 pub mod siege_tactics_blow_full;
 pub mod siege_tactics_blow_inputs;
 pub mod siege_tactics_breach;
+pub mod siege_tactics_class_adapters;
 pub mod siege_tactics_classify;
 pub mod siege_tactics_clock;
 pub mod siege_tactics_end;
