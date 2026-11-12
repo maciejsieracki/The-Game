@@ -5,10 +5,14 @@
  * wybudować teraz. Bramka budynków/ulepszeń i odcisk (main.ts) używają TEGO SAMEGO predykatu co
  * panel produkcji: buildingCanBuildNow (cityPanel.ts), czyli wszystkich chipów wymagań.
  *  A. JEDNOSTKOWA: realne isCityUnderSiege (src/game/city-siege-state.ts, esbuild).
- *  B. STRUKTURALNA src/main.ts: bramki budynków/ulepszeń i odcisk wołają buildingCanBuildNow;
- *     bramka werbunku i odcisk mają guard oblężenia.
+ *  B. STRUKTURALNA src/main.ts: bramki budynków/ulepszeń i odcisk wołają buildingCanBuildNow (linia
+ *     `if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;` dokładnie, bez canAffordBuildingStock);
+ *     bramka werbunku i odcisk mają guard oblężenia. B2: MUTACJE main.ts w pamięci (if(false), `|| true`,
+ *     powrót do canAffordBuildingStock, zdjęcie guardu) MUSZĄ czerwienić strukturę -- dowód, że test
+ *     wykrywa cofnięcie poprawki w main.ts, a nie tylko własną kopię predykatu.
  *  C. BEHAWIORALNA: realny cityPanel.ts (esbuild, realne gra/data/buildings.json): budynek z kosztem
- *     magazynu bez surowców -> buildingCanBuildNow = false (brak zdarzenia); z pełnym magazynem -> true.
+ *     magazynu bez surowców -> buildingCanBuildNow = false (brak zdarzenia); z pełnym magazynem -> true;
+ *     z pełnym magazynem, ale bez odblokowanej technologii (chip tech) -> false.
  *  D. MUTACJA: bundel cityPanel.ts bez chipów magazynu MUSI dać true bez surowców (test C wykrywa).
  * Zakres: sprawdza predykat i strukturę bramki; samej funkcji cityHasActionableProduction (lokalnej
  * w boot()) nie wykonuje. Dowód w przeglądarce: NIE_ZMIERZONO (zakaz build/dev w gra/).
@@ -35,7 +39,8 @@ const FP_SIG = 'function productionOptionsFingerprint(';
 const ENQ_SIG = 'function cityHasAffordableBuildingEnqueue(';
 const UPG_SIG = 'function cityHasAffordableLevelUpgrade(';
 const GUARD = /isCityUnderSiege\(\[city\], city\)/;
-const PRED = /buildingCanBuildNow\(/;
+const PRED_LINE = 'if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;';
+const LEGACY = /canAffordBuildingStock\(/;
 
 function structural(src) {
   const gate = fnBody(src, GATE_SIG);
@@ -45,10 +50,19 @@ function structural(src) {
   return {
     gateGuard: !!gate && GUARD.test(gate),
     fpGuard: !!fp && GUARD.test(fp),
-    enqPred: !!enq && PRED.test(enq),
-    upgPred: !!upg && PRED.test(upg),
-    fpPred: !!fp && PRED.test(fp),
+    enqPred: !!enq && enq.includes(PRED_LINE) && !LEGACY.test(enq),
+    upgPred: !!upg && upg.includes(PRED_LINE) && !LEGACY.test(upg),
+    fpPred: !!fp && fp.includes(PRED_LINE),
   };
+}
+// Mutant: podmiana tekstu WEWNĄTRZ ciała jednej funkcji (np. enqueue) -- reszta pliku bez zmian.
+function mutateBody(src, sig, from, to) {
+  const start = src.indexOf(sig);
+  if (start < 0) throw new Error('brak sygnatury ' + sig);
+  const end = src.indexOf('\n    }\n', start);
+  const body = src.slice(start, end);
+  if (!body.includes(from)) throw new Error('brak wzorca mutacji w ' + sig);
+  return src.slice(0, start) + body.split(from).join(to) + src.slice(end);
 }
 
 const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
@@ -74,6 +88,19 @@ console.log('B. STRUKTURALNA src/main.ts (predykat panelu + guard oblężenia)')
   ok(s.enqPred, 'cityHasAffordableBuildingEnqueue używa buildingCanBuildNow (predykat panelu)');
   ok(s.upgPred, 'cityHasAffordableLevelUpgrade używa buildingCanBuildNow (predykat panelu)');
   ok(s.fpPred, 'productionOptionsFingerprint używa buildingCanBuildNow (spójność z bramką)');
+}
+console.log('B2. MUTACJE main.ts w pamięci (test musi je wykryć)');
+{
+  const cases = [
+    ['enqueue: if(false) zamiast predykatu', mutateBody(mainSrc, ENQ_SIG, PRED_LINE, 'if (false) continue;'), s => !s.enqPred],
+    ['enqueue: predykat z || true', mutateBody(mainSrc, ENQ_SIG, PRED_LINE, 'if (!(buildingCanBuildNow(def, city, data, ctx, techs) || true)) continue;'), s => !s.enqPred],
+    ['enqueue: cofnięcie do canAffordBuildingStock', mutateBody(mainSrc, ENQ_SIG, PRED_LINE, 'if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;'), s => !s.enqPred],
+    ['ulepszenia: cofnięcie do canAffordBuildingStock', mutateBody(mainSrc, UPG_SIG, PRED_LINE, 'if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;'), s => !s.upgPred],
+    ['odcisk: zdjęty guard oblężenia', mutateBody(mainSrc, FP_SIG, 'city.ownerId === 0 && !isCityUnderSiege([city], city)', 'city.ownerId === 0'), s => !s.fpGuard],
+  ];
+  for (const [name, mutSrc, detected] of cases) {
+    ok(detected(structural(mutSrc)), 'mutacja wykryta: ' + name);
+  }
 }
 
 (async () => {
@@ -188,6 +215,12 @@ if (!real) {
   console.log(`  (budynek testowy: ${real.id})`);
   ok(real.noStock === false, 'bez surowców w magazynie: buildingCanBuildNow = false (brak zdarzenia)', real.noStock);
   ok(real.withStock === true, 'z pełnym magazynem: buildingCanBuildNow = true (zdarzenie)', real.withStock);
+  const panelOrig = await bundlePanel('orig');
+  const def = data.buildings.find(b => b.id === real.id);
+  const cost = panelOrig.buildingStockCost(def);
+  const base = { builtBuildingIds: [], productionQueue: [], epoch: 1, civBonusy: [], buildingCostPace: 'niski', difficulty: 'normal', isCapital: false, cityHasCoastOrRiver: false, cityHasRiver: false, empireBuiltIds: [] };
+  const noTech = panelOrig.buildingCanBuildNow(def, undefined, data, { ...base, empireResourceStock: { ...cost } }, []);
+  ok(noTech === false, 'pełny magazyn, brak odblokowanej technologii (chip tech): buildingCanBuildNow = false', noTech);
 }
 
 console.log('D. MUTACJA cityPanel.ts (bez chipów magazynu) musi wywrócić C');
