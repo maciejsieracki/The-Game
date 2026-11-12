@@ -5,7 +5,7 @@ GOAL: producent epoki per wlasciciel (pin main.ts:2419 empireEpochForOwner + gam
 ZMIANY/COMMIT: SHA w sekcji NOTATKI NA KONCU. Pliki: rust-port/engine/src/domain/turn_war_epoch.rs (nowy), mod.rs, turn_war_inputs.rs, playable.rs (tylko 1 test modulowy), tests/p6_wire_war_epoch.rs + p6_wire_war_epoch_gen.mjs + p6_wire_war_epoch_vectors/vectors.json (nowe), tests/p6_wire_war_inputs.rs (2 testy dostosowane), ten raport.
 TESTY: patrz sekcja TESTY nizej
 BLOKADY: brak (znane luki: sekcja Nastepny bloker)
-RUNDY: 1/5 (Operator r1 tematu EPOKA; nazwa pliku 01-operator-r4.md wg zlecenia workflow)
+RUNDY: 1/5 (Operator r1 tematu EPOKA; obrona po zarzutach Evaluatora w 02a-obrona.md; plik przemianowany z 01-operator-r4.md na 01-operator-r1.md wg dispatchu)
 NASTEPNY KROK: Evaluator (to samo ID)
 DEPLOY/PUSH: NIE WYKONANO
 
@@ -13,7 +13,7 @@ DEPLOY/PUSH: NIE WYKONANO
 Zlecenie workflow wskazywalo baze origin/rust-port/parity-v2 (ceb688b0d), ale tam NIE ISTNIEJA turn_war_inputs.rs / turn_war_pipeline.rs (pipeline W8 r5 nie jest w parity-v2; historie rozjechane 12/12 commitow). Dispatch wymaga tych plikow, wiec pracowalem na bazie z dispatchu: 74c8456ff (FC W8 r5). Commit jest potomkiem 74c8456ff, NIE parity-v2. Integracja wymaga merge z parity-v2 po stronie orkiestratora (konflikty niezbadane).
 
 ## Co zrobiono
-1. `turn_war_epoch.rs`: port 1:1 `ERA_ID_TO_NUM`/`eraNumberFromEpochId` (main.ts:2402-2405, dokladny klucz, `?? 1`), `gameStartEra()` (`_menuEpochId || 'kamien'`, :2415), `empireEpochForOwner` (:2419): czlowiek -> era ze stanu gracza (brak = blad `HumanEraMissing`, odpowiednik `!` weba), AI -> `ownerEraByOwner ?? gameStartEra()`. Kazda epoka niesie `EpochSource` (`Tracked` / `FallbackGameStartEra`): fallback jest jawny, nie ciche podstawienie.
+1. `turn_war_epoch.rs`: port 1:1 `ERA_ID_TO_NUM`/`eraNumberFromEpochId` (main.ts:2402-2405, dokladny klucz, `?? 1`), `gameStartEra()` (`_menuEpochId || 'kamien'`, :2415), `empireEpochForOwner` (:2419): czlowiek -> era ze stanu gracza (brak = blad `HumanEraMissing`, odpowiednik `!` weba), AI -> `ownerEraByOwner ?? gameStartEra()`. Kazda epoka niesie `EpochSource` (`Tracked` / `DerivedFromStartEra` dla czlowieka bez badan / `FallbackGameStartEra` dla AI): fallback jest jawny, nie ciche podstawienie, a zalozenie epoki startu dla czlowieka nie jest oznaczone jako odczyt stanu (poprawka po zarzucie 1 Evaluatora).
 2. PlayableState NIE ma badan ani epoki per wlasciciel => `owner_era_facts`: ownerEraByOwner puste (AI = jawny fallback pinu, wariant A), czlowiek = epoka startu. Uzasadnienie z pinu w naglowku modulu (setupAiOwnerEpoch :2582, reconcilePlayerEraFromResearch :2521, computeMainCivEraFromResearch owner-epoch.ts:112: bez zbadanych tech epoki startu era == start). Gdy stan dostanie realne dane, wystarczy wypelnic `OwnerEraFacts`. UWAGA: epoka czlowieka = start to WNIOSEK z braku badan w PlayableState, nie odczyt stanu (NIE_ZMIERZONO na realnej grze webowej).
 3. `epochs_from_state` korzysta z producenta; `build_war_inputs` nie zwraca juz `OwnerEpochUnavailable` (wstrzykiwane `build_war_inputs_with_epochs` zachowuje wymog epoki dla kazdego wlasciciela).
 4. KNOWN_GAPS: wpis 0 (epoka) przepisany na "producent + jawny fallback", wpis 1 (granica) uszczegolowiony o wejscia; liczba wpisow nadal 5, asercje p6_wire_war_inputs o KNOWN_GAPS nieosłabione.
@@ -38,7 +38,7 @@ Producent epoki nie dodaje zadnych zer; skladniki mocy nadal Missing/ExplicitZer
 - cargo fmt --check: EXIT 0
 - cargo clippy --all-targets -- -D warnings: EXIT 0
 - cargo test --lib: 51 ok, EXIT 0
-- p6_wire_war_pipeline 7, p6_wire_war_inputs 14, p6_wire_war_diplo 13, p6_brake_inputs 10, p6_power_nozeros 9, p6_power_rest 9, p6_wire_war_epoch 6: wszystkie ok, EXIT 0
+- p6_wire_war_pipeline 7, p6_wire_war_inputs 14, p6_wire_war_diplo 13, p6_brake_inputs 10, p6_power_nozeros 9, p6_power_rest 9, p6_wire_war_epoch 9 (po obronie: +3 testy): wszystkie ok, EXIT 0
 - pelny cargo test --no-fail-fast: patrz NOTATKI NA KONCU
 - env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, CARGO_TARGET_DIR=/tmp/claude-0/work/target (poza repo, usuniety po bramkach)
 

@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use civ_engine::domain::playable::{PlayableCity, PlayablePlayer, PlayableState};
 use civ_engine::domain::turn_war_epoch::{
     empire_epoch_for_owner, epochs_with_sources, era_number_from_epoch_id, game_start_era,
-    EpochSource, OwnerEpochError, OwnerEraFacts,
+    owner_era_facts, EpochSource, OwnerEpochError, OwnerEraFacts,
 };
 use civ_engine::domain::turn_war_inputs::{
     build_war_inputs, epochs_from_state, production_config, shared_border_pairs, WarInputsError,
@@ -56,7 +56,11 @@ fn epoch_vectors_from_pin_match_the_decision_function() {
                 .iter()
                 .map(|x| x.as_i64().unwrap())
                 .collect(),
-            human_era: id_map(&c["humanEra"]),
+            // Wektory z pinu to odczyty wpisu stanu (`playerStateByHuman.era`) => `Tracked`.
+            human_era: id_map(&c["humanEra"])
+                .into_iter()
+                .map(|(k, v)| (k, (v, EpochSource::Tracked)))
+                .collect(),
             owner_era_by_owner: id_map(&c["ownerEra"]),
         };
         let owner = c["owner"].as_i64().unwrap();
@@ -132,8 +136,8 @@ fn production_epochs_name_their_source_for_every_owner() {
         let got = epochs_with_sources(&state, &owners).expect("epoki");
         assert_eq!(
             got[&1],
-            (want, EpochSource::Tracked),
-            "czlowiek: epoka startu {menu:?}"
+            (want, EpochSource::DerivedFromStartEra),
+            "czlowiek: zalozenie z epoki startu, nie odczyt wpisu {menu:?}"
         );
         assert_eq!(
             got[&2],
@@ -145,6 +149,53 @@ fn production_epochs_name_their_source_for_every_owner() {
             Ok([(1, want), (2, want)].into_iter().collect())
         );
     }
+}
+
+#[test]
+fn production_source_is_never_tracked_because_state_has_no_epoch_entries() {
+    // Zarzut Evaluatora 1: w produkcji zadna epoka nie jest odczytem wpisu stanu.
+    let facts = owner_era_facts(&state_with("braz", &[(1, 2), (2, 5)]));
+    assert!(
+        facts.owner_era_by_owner.is_empty(),
+        "brak ownerEraByOwner w PlayableState"
+    );
+    assert!(facts
+        .human_era
+        .values()
+        .all(|(_, s)| *s == EpochSource::DerivedFromStartEra));
+}
+
+#[test]
+fn production_human_era_covers_every_human_so_human_missing_is_unreachable() {
+    // Zarzut Evaluatora 3: HumanEraMissing z produkcji jest niedosiezne, bo wpisy powstaja z human_ids.
+    let mut state = state_with("zelazo", &[(1, 2), (2, 5)]);
+    state.players.push(PlayablePlayer {
+        id: PlayerId::new(3),
+        name: "H2".to_owned(),
+        civilization: "gracz2".to_owned(),
+        is_human: true,
+    });
+    let facts = owner_era_facts(&state);
+    assert_eq!(
+        facts.human_era.keys().copied().collect::<Vec<_>>(),
+        vec![1, 3]
+    );
+    let owners: BTreeSet<i64> = [1, 2, 3].into();
+    let got = epochs_with_sources(&state, &owners).expect("kazdy czlowiek ma epoke");
+    assert_eq!(got[&3], (3.0, EpochSource::DerivedFromStartEra));
+    assert!(epochs_from_state(&state).is_ok());
+    assert!(build_war_inputs(&state, &WarTurnState::default()).is_ok());
+}
+
+#[test]
+fn owner_epochs_are_static_across_turns_known_gap() {
+    // ZNANA LUKA (KNOWN_GAPS[0], zarzut Evaluatora 2): PlayableState nie ma badan, wiec epoka nie awansuje
+    // miedzy turami. Ten test utrwala obecne zachowanie: epoka zalezy tylko od epoch_id, nie od tury.
+    let mut state = state_with("braz", &[(1, 2), (2, 5)]);
+    let first = epochs_from_state(&state).expect("epoki");
+    state.turn = 40;
+    assert_eq!(epochs_from_state(&state), Ok(first.clone()));
+    assert_eq!(first, [(1, 2.0), (2, 2.0)].into_iter().collect());
 }
 
 #[test]

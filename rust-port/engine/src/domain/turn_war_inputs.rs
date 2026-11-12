@@ -94,7 +94,7 @@ pub const UNPRODUCED_POWER_COMPONENTS: [&str; 7] = [
 
 /// Znane luki producentow (NIE_ZMIERZONO wzgledem web) = lista producentow potrzebnych w r6.
 pub const KNOWN_GAPS: [&str; 5] = [
-    "epoka wlasciciela: producent turn_war_epoch (web empireEpochForOwner main.ts:2419); brak badan/era per owner w PlayableState => jawny fallback gameStartEra (main.ts:2415), nie luka blokujaca",
+    "epoka wlasciciela: producent turn_war_epoch (web empireEpochForOwner main.ts:2419); brak badan/era per owner w PlayableState => jawny fallback gameStartEra (main.ts:2415) i czlowiek DerivedFromStartEra; LUKA: epoka STATYCZNA miedzy turami (awans badan nie jest odtwarzany: web syncOwnerEraFromResearch / reconcilePlayerEraFromResearch main.ts:2521)",
     "wspolna granica: pary z >2 miastami po obu stronach wymagaja ownersShareLandBorderLive (main.ts:5690) -> ownersHaveSharedLandBorder (trade-routes.ts:264): potrzebne pop miast (cityTerritoryRadius) i teren heksow mapy; PlayableCity bez populacji",
     "populacja i kultura miast: PlayableCity bez pol => ludki, rekruci, terytorium, kultura = Missing",
     "budynki (infra), tech zbadane, religia panstwowa: brak magazynow => infra, tech, religia = Missing",

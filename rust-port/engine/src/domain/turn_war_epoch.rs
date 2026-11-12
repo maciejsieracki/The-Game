@@ -15,6 +15,14 @@
 //! - czlowiek: `reconcilePlayerEraFromResearch` (main.ts:2521) przy braku badan epoki startu zwraca `startEra`
 //!   (`computeMainCivEraFromResearch`, owner-epoch.ts:112: petla awansu wymaga `allEraTechsResearched`).
 //!
+//! Zrodla wartosci sa jawne (`EpochSource`): czlowiek = `DerivedFromStartEra` (zalozenie z epoki startu,
+//! NIE odczyt wpisu stanu), AI bez wpisu = `FallbackGameStartEra`. Zadna wartosc nie jest `Tracked` w produkcji.
+//!
+//! ZNANA LUKA (KNOWN_GAPS[0], `turn_war_inputs`): epoka jest STATYCZNA miedzy turami. Web zmienia epoke
+//! wlasciciela przy awansie badan (`syncOwnerEraFromResearch` dla AI, `reconcilePlayerEraFromResearch`
+//! main.ts:2521 dla czlowieka); `PlayableState` nie ma badan, wiec `advance_turn` nie awansuje epoki.
+//! Test `owner_epochs_are_static_across_turns_known_gap` (p6_wire_war_epoch.rs) utrwala to zachowanie.
+//!
 //! Gdy `PlayableState` dostanie realne dane epoki per wlasciciel, wystarczy wypelnic `OwnerEraFacts` - funkcja
 //! decyzyjna `empire_epoch_for_owner` pozostaje bez zmian.
 
@@ -49,6 +57,9 @@ pub enum EpochSource {
     Tracked,
     /// Web `?? gameStartEra()` dla AI bez wpisu w `ownerEraByOwner` (zgodnosc z pinem, wariant A).
     FallbackGameStartEra,
+    /// Czlowiek bez wpisu badan w `PlayableState`: epoka = epoka startu wyprowadzona z `params.epoch_id`
+    /// (NIE odczyt `playerStateByHuman.era`). Brak badan = brak awansu, wiec to zalozenie, nie stan.
+    DerivedFromStartEra,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -70,12 +81,13 @@ impl std::fmt::Display for OwnerEpochError {
 impl std::error::Error for OwnerEpochError {}
 
 /// Dane stanu, z ktorych web czyta epoke (ID w jednej przestrzeni, tu Rust).
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OwnerEraFacts {
     /// `isHuman(id)`.
     pub human_ids: BTreeSet<i64>,
-    /// `playerStateByHuman.get(id).era`.
-    pub human_era: BTreeMap<i64, f64>,
+    /// `playerStateByHuman.get(id).era` wraz ze zrodlem wartosci (`Tracked` = odczyt wpisu,
+    /// `DerivedFromStartEra` = zalozenie z epoki startu, gdy `PlayableState` nie niesie badan).
+    pub human_era: BTreeMap<i64, (f64, EpochSource)>,
     /// `ownerEraByOwner`.
     pub owner_era_by_owner: BTreeMap<i64, f64>,
 }
@@ -87,10 +99,12 @@ pub fn empire_epoch_for_owner(
     game_start_era: f64,
 ) -> Result<(f64, EpochSource), OwnerEpochError> {
     if facts.human_ids.contains(&owner_id) {
+        // Dla faktow z `owner_era_facts` ta galaz jest nieosiagalna (kazdy czlowiek ma wpis, test
+        // `production_human_era_covers_every_human`); `HumanEraMissing` pokrywa wstrzyknione fakty.
         return facts
             .human_era
             .get(&owner_id)
-            .map(|&e| (e, EpochSource::Tracked))
+            .copied()
             .ok_or(OwnerEpochError::HumanEraMissing(owner_id));
     }
     Ok(match facts.owner_era_by_owner.get(&owner_id) {
@@ -109,7 +123,10 @@ pub fn owner_era_facts(state: &PlayableState) -> OwnerEraFacts {
         .filter(|p| p.is_human)
         .map(|p| p.id.get() as i64)
         .collect();
-    let human_era = human_ids.iter().map(|&id| (id, start)).collect();
+    let human_era = human_ids
+        .iter()
+        .map(|&id| (id, (start, EpochSource::DerivedFromStartEra)))
+        .collect();
     OwnerEraFacts {
         human_ids,
         human_era,
