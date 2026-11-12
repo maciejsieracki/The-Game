@@ -24,10 +24,16 @@ fn num(v: &serde_json::Value) -> f64 {
             "NaN" => f64::NAN,
             "Infinity" => f64::INFINITY,
             "-Infinity" => f64::NEG_INFINITY,
-            other => panic!("nieznana liczba w wektorze: {other}"),
+            other => return other.parse::<f64>().expect("liczba w wektorze"),
         };
     }
-    v.as_f64().expect("liczba")
+    if let Some(f) = v.as_f64() {
+        return f;
+    }
+    // Liczby z generatora sa tekstem `String(x)`; parsowanie `str` jest dokladne (nie zalezy od serde_json).
+    v.as_str()
+        .and_then(|s| s.parse::<f64>().ok())
+        .expect("liczba")
 }
 
 /// Rownosc jak w wektorach: NaN == NaN.
@@ -191,6 +197,32 @@ fn wektory_zgodne_z_pinem_i_pokrycie_galezi() {
             "{id}: HP po ciosie {} != {}",
             out.def_hp_after,
             num(&e["defHpAfter"])
+        );
+        // K5I-2: hitPct, rzut (roll = u*100) i extraMorale porownywane z pinem (instrumentacja generatora).
+        assert!(
+            same(out.hit_pct, num(&e["hitPct"])),
+            "{id}: hitPct {} != {}",
+            out.hit_pct,
+            num(&e["hitPct"])
+        );
+        assert!(
+            same(out.roll, num(&e["roll"])),
+            "{id}: roll {} != {}",
+            out.roll,
+            num(&e["roll"])
+        );
+        assert!(
+            same(out.extra_morale, num(&e["extraMorale"])),
+            "{id}: extraMorale {} != {}",
+            out.extra_morale,
+            num(&e["extraMorale"])
+        );
+        // `this.engaged.add(key)` tylko dla ciosu wrecz (battleScene.ts:8899); klucz obecny w pinie po ciosie.
+        assert_eq!(out.engaged_add, !input.ranged, "{id}: engaged_add");
+        assert_eq!(
+            e["engagedKeyAfter"].as_bool().unwrap(),
+            !input.ranged || i["engagedBefore"].as_bool().unwrap(),
+            "{id}: klucz engaged po ciosie (pin)"
         );
         let want: Vec<SceneEffect> = e["events"]
             .as_array()
