@@ -1,3 +1,9 @@
+## ROBOCZA eb4ecfaa -- 2026-11-12 -- FALA 669: Rozdzielanie armii: blokada wejścia na miasto i heks wroga (testowa)
+
+- rozdzielenie armii i ruch pod-stosu nie wchodzą na obce miasto ani heks z obcą jednostką (splitTargetPassable + wpięcie w main.ts)
+- Weryfikacja: tsc OK; logic 213/213; army-split-enemy-city-block-test 14/0; mutacja wpięcia wykryta; dowód Chromium NIE_ZMIERZONO
+- Limity: brak dowodu w przeglądarce — smoke po deployu
+
 ## ROBOCZA b6490d0b -- 2026-11-12 -- FALA 668: Przełącznik trafień losowe / pewne i tooltip administratora ulepszeń (testowa)
 
 - Ustawienia zaawansowane mapy: Trafienia losowe / pewne (domyślnie w nowej grze PEWNE: 100% trafień, obrona przez pancerz, AUTO bez upsetu; stare zapisy bez pola = LOSOWE). Parytet SKIP=AUTO w trybie pewne. Teksty administratora ulepszeń: krótki komunikat w panelu, pełne wyjaśnienie w tooltipie.
