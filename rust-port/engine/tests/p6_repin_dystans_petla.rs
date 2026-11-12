@@ -6,7 +6,7 @@
 use civ_engine::domain::combat::ranged_phase::{
     resolve_ranged_phase, RangedPhaseInput, RangedSide, Side,
 };
-use civ_engine::domain::unit_power::ranged_shot_damage;
+use civ_engine::domain::unit_power::ranged_shot_damage_f64;
 use serde_json::Value;
 
 const VEC: &str = include_str!("p6_repin_dystans_vectors/dystans-petla.json");
@@ -82,15 +82,15 @@ fn p6_repin_dystans_petla_matches_web() {
                 Side::Defender => cur_hp.0,
             };
             if s.hit {
-                assert_eq!(s.damage as f64, f(e, "damage"), "{ctx} obrazenia");
+                assert_eq!(s.damage, f(e, "damage"), "{ctx} obrazenia");
                 assert_eq!(s.target_hp, f(e, "targetHp"), "{ctx} HP celu");
             } else {
-                assert_eq!(s.damage, 0, "{ctx} chybienie bez obrazen");
+                assert_eq!(s.damage, 0.0, "{ctx} chybienie bez obrazen");
             }
             // Niezaleznie od web: HP celu po strzale = HP przed - obrazenia (chybienie: bez zmian).
             assert_eq!(
                 s.target_hp,
-                target_before - s.damage as f64,
+                target_before - s.damage,
                 "{ctx} HP celu = przed - obrazenia"
             );
             match s.side {
@@ -196,9 +196,9 @@ fn p6_repin_dystans_petla_uses_ranged_shot_damage() {
     assert_eq!(res.shots.len(), 1);
     assert_eq!(
         res.shots[0].damage,
-        ranged_shot_damage(Some("Slinger"), Some("Procarz"), 20.0, 5.0, 1.0)
+        ranged_shot_damage_f64(Some("Slinger"), Some("Procarz"), 20.0, 5.0, 1.0)
     );
-    assert_eq!(res.shots[0].damage, 45);
+    assert_eq!(res.shots[0].damage, 45.0);
     assert_eq!(res.hp_defender, 55.0);
 }
 

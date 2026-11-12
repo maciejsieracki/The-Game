@@ -89,25 +89,6 @@ pub fn ranged_shot_damage_f64(
     js_max(1.0, js_round_js(raw))
 }
 
-/// Wariant calkowity dla wolajacych z wartosciami skonczonymi (testy formul dystansu).
-/// NIE UZYWAC w produkcji: `resolve_ranged_phase` (combat.rs) woła wyłącznie `ranged_shot_damage_f64`.
-/// Ta funkcja jest w produkcji nieużywana (tylko testy p6_repin_dystans_*) i rozjeżdża się z pinem dla NaN.
-/// NaN -> 1 (dawne zachowanie `f64::max`); +/-Infinity i wartosci poza zakresem i64 nasycaja sie `as i64`.
-pub fn ranged_shot_damage(
-    typ: Option<&str>,
-    jednostka: Option<&str>,
-    missile_attack: f64,
-    armor: f64,
-    counter_mult: f64,
-) -> i64 {
-    let v = ranged_shot_damage_f64(typ, jednostka, missile_attack, armor, counter_mult);
-    if v.is_nan() {
-        1
-    } else {
-        v as i64
-    }
-}
-
 /// `hitChanceTw` z web (pin 07d2fbd72, combat.ts:446; TW v3): `Math.max(hit_min, Math.min(hit_max, raw))`,
 /// raw = hit_base + atk - def + hit_bonus. NaN propaguje sie jak w JS ([`js_min`]/[`js_max`]).
 pub fn hit_chance_tw(melee_attack: f64, melee_defence: f64, hit_bonus: f64) -> f64 {
