@@ -90,3 +90,64 @@ Orkiestrator decyduje o punkcie 4: rerun na bazie z FALĄ 664 (619e1e48e) albo z
 ## DEPLOY/PUSH
 
 NIE WYKONANO (operator nie integruje, nie deployuje i nie pushuje na main).
+
+---
+
+# RUNDA 2/5 — punkt 4 (W32): komunikat czyszczenia kolejki fortyfikacji
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-LIVE-VERIFY-WAVE-650-664-Q1 (runda 2, tylko punkt 4 z DODATKU)
+GOAL: w żywej grze (Chromium, bundle Vite poza repo) wczytanie starego zapisu z kolejką Palisada + Mury kamienne + Mury ceglane pokazuje komunikat czyszczenia dokładnie raz; w kolejce zostaje najwyższy etap; zrzut obejrzany.
+BAZA: kandydat d1a3edc2a (detach) + merge origin/main b4853c8e6 (zawiera FALĘ 664, kod W32) → HEAD = merge commit (SHA w polu sha wyniku). Zero zmian w `gra/src/**`, JSON, WERSJE.md, rust-port.
+ZMIANY-COMMIT: nowy skrypt `gra/tools/live-verify-wave-650-664-fort-queue-r2.cjs` i dowody `evidence/fort-queue-r2/` (wszystko w allowliście DODATKU).
+
+## Metoda
+
+- Bundle: vite build poza repo (`CIV_R2_OUT` w scratchpad), plugin Vite TYLKO w kopii bundla dodaje hooki do `__eraTestDebug` (fixture kolejki, odczyt kolejki/cityBuilt, zapis i wczytanie przez ŚCIEŻKI GRY: `persistSaveToSlot` i `loadGameFromSlot` → `restoreGameFromSave` → `collapseFortificationQueuesInCities`). `src/` nietknięte.
+- Fixture „starego zapisu”: kolejka miasta gracza `city0` ustawiona na [palisada, mury_kamienne, mury], zapisana przez zwykły zapis gry (F3: zapis NIE sanityzuje kolejki, w pamięci nadal 3 etapy), po czym kolejka w pamięci wyzerowana i zapis wczytany.
+- Liczenie komunikatu: obserwator DOM `#civ-hint-toast` (zbocza display:block z tekstem „Usunięto”), liczone od początku sesji.
+- Stan miasta przed wczytaniem: cityBuilt = [koszary, spichlerz] (bez fortyfikacji, więc reguła „wyższy etap w mieście” nie zadziałała; sprawdzona jest reguła kolejki).
+
+## Wyniki (surowe, `node tools/live-verify-wave-650-664-fort-queue-r2.cjs`, ostatni przebieg PRAWDZIWEGO kodu)
+
+```
+PASS F0 miasto gracza istnieje -- city0
+PASS F1 fixture: kolejka w pamieci = [palisada, mury_kamienne, mury]
+PASS F2 zapis starego stanu ok
+PASS F3 zapis nie sanityzuje kolejki (w pamieci nadal 3 etapy przed wczytaniem)
+PASS W1a komunikat czyszczenia pojawil sie DOKLADNIE raz po wczytaniu starego zapisu -- rise 1
+PASS W1b tresc: "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt i postęp nie zostały zwrócone."
+PASS W1c w kolejce zostaje najwyzszy etap (mury), dwa nizsze usuniete -- ["mury"]
+PASS W2 ponowne wczytanie tego samego starego zapisu: dokladnie jedno pojawienie -- rise 1, ["mury"]
+PASS W3a zapis po wczytaniu zapisany
+PASS W3b wczytanie nowego zapisu: zero komunikatu (kolejka czysta) -- rise 0
+PASS W3c kolejka po wczytaniu nowego zapisu = ["mury"]
+PASS C1 brak pageerror i console.error -- 0
+PASS C2 brak 404 i odpowiedzi HTML -- 0
+Wynik: 14 PASS / 0 FAIL / czas 153 s
+```
+
+## Mutacja (kopia bundla, repo nietknięte) — test czerwony
+
+- `CIV_MUT=notice` (komunikat wyłączony, collapse działa): `Wynik (MUT=notice): 10 PASS / 4 FAIL` — FAIL W1a (rise 0), W1b (notice null), W1d, W2 (rise 0). Kolejka [mury] nadal PASS (poprawnie: test rozróżnia komunikat od czyszczenia).
+- `CIV_MUT=wire` (wpięcie wyłączone, collapse nie wywołany): `Wynik (MUT=wire): 8 PASS / 6 FAIL` — FAIL W1a, W1b, W1c (kolejka 3 etapy), W1d, W2, W3c.
+- Dowody: `evidence/fort-queue-r2/fort-queue-r2-result-mut-notice.json`, `...-mut-wire.json`.
+
+## Ocena punktu 4
+
+- Logika (1 komunikat na wczytanie, treść, najwyższy etap zostaje, brak komunikatu po zapisie czystej kolejki, mutacje czerwone): PASS z dowodem.
+- Widoczność na ekranie: NIE_ZWERYFIKOWANO w pikselach. Pomiar w przeglądarce (in-page, Date.now):
+  - w chwili pokazania komunikatu (rising edge, probe synchroniczny): rect [440, 823, 560, 53], w viewport, `display:block`, `visibility:visible`, `opacity:1`, `z-index:320`, `position:fixed`, tło rgba(8,12,20,0.92), tekst jasny; `pointer-events:none`, więc elementFromPoint zwraca CANVAS i NIE jest to dowód przysłonięcia;
+  - komunikat w DOM widoczny ok. 12,4 s (show 1794491772639 → hide 1794491785021 ms); pomiar Node jest tak wolny (swiftshader), że zrzut i odczyt wykonywały się po ~1–12 s.
+- Zrzut `evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png` OBEJRZANY: NIE pokazuje komunikatu (ani „Wczytano”), mimo że w DOM komunikat był widoczny. Nie traktuję go jako dowodu widoczności. Przyczyna nieustalona (prawdopodobnie zrzut z nieodświeżonej klatki pod obciążeniem headless; ten sam md5 w kilku przebiegach). Plik zostawiam z tą adnotacją.
+
+## BLOKADY / NOTATKI (do Evaluatora)
+
+1. Widoczność pikselowa komunikatu W32 (i toastów ogólnie na mapie) niezweryfikowana: potrzebny przebieg z trwałym, wolnym od opóźnień zrzutem (np. zrzut wymuszony w przeglądarce po wydłużeniu czasu wyświetlania w KOPII bundla, bez zmiany src) albo inny sposób (CDP screenshot z pauzą timerów). Nie robiłem tego: dispatch zakazuje zmian src, a to wymagałoby nowego, osobnego tematu.
+2. Dowód DOM (zbocza) i mutacje są wiarygodne; zrzut nie jest dowodem.
+3. Punkty 1, 2, 3, 5 nie powtarzane (PASS w r1).
+
+NASTĘPNY KROK: Evaluator (SONNET) — weryfikacja skryptu i mutacji; decyzja orkiestratora, czy punkt 4 zamknąć jako PASS (logika) z notatką o widoczności, czy wymagać osobnego dowodu pikselowego.
+RUNDY: 2/5
+DEPLOY/PUSH: NIE WYKONANO

@@ -1,0 +1,190 @@
+{
+  "mode": "fort-queue-r2",
+  "mut": "wire",
+  "steps": [
+    {
+      "step": "W1-load-old",
+      "rise": 0,
+      "qAfter": [
+        "palisada",
+        "mury_kamienne",
+        "mury"
+      ],
+      "texts": [
+        "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość).",
+        "Wczytano: «w32-fort-queue-live» (tura 1)Maly · Kontynenty · rzymianie · 4 jednostki / 2 miasta · seed 376434473 · PLAYTEST"
+      ],
+      "shot": null,
+      "shotInfo": null,
+      "edges1": [],
+      "riseProbe1": null
+    },
+    {
+      "step": "W2-load-old-again",
+      "rise": 0,
+      "qAfter": [
+        "palisada",
+        "mury_kamienne",
+        "mury"
+      ]
+    },
+    {
+      "step": "W3-load-after-save",
+      "rise": 0,
+      "qAfter": [
+        "palisada",
+        "mury_kamienne",
+        "mury"
+      ],
+      "savedNew": true
+    }
+  ],
+  "bundle": {
+    "bytes": 14557090,
+    "mut": "wire"
+  },
+  "errors": [],
+  "anomalies": [],
+  "checks": [
+    {
+      "label": "F0 miasto gracza (ownerId 0) istnieje",
+      "ok": true,
+      "detail": {
+        "cityId": "city0"
+      }
+    },
+    {
+      "label": "F1 fixture: kolejka w pamieci = [palisada, mury_kamienne, mury]",
+      "ok": true,
+      "detail": {
+        "fixtureIds": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ],
+        "builtBefore": [
+          "koszary",
+          "spichlerz"
+        ]
+      }
+    },
+    {
+      "label": "F2 zapis starego stanu (persistSaveToSlot) ok",
+      "ok": true,
+      "detail": {
+        "savedOld": true
+      }
+    },
+    {
+      "label": "F3 zapis nie sanityzuje kolejki (w pamieci nadal 3 etapy przed wczytaniem)",
+      "ok": true,
+      "detail": {
+        "afterSaveIds": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W1a komunikat czyszczenia pojawil sie DOKLADNIE raz po wczytaniu starego zapisu",
+      "ok": false,
+      "detail": {
+        "rise": 0
+      }
+    },
+    {
+      "label": "W1b tresc komunikatu: „Usunięto 2 zbędne pozycje”, bez zwrotu kosztu",
+      "ok": false,
+      "detail": {
+        "notice1": null
+      }
+    },
+    {
+      "label": "W1c w kolejce zostaje najwyzszy etap (mury), dwa nizsze usuniete",
+      "ok": false,
+      "detail": {
+        "qAfter1": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W1d zrzut ekranu komunikatu wykonany",
+      "ok": false,
+      "detail": {
+        "shot": null
+      }
+    },
+    {
+      "label": "W2 ponowne wczytanie tego samego starego zapisu: dokladnie jedno pojawienie komunikatu",
+      "ok": false,
+      "detail": {
+        "rise": 0,
+        "qAfter": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W3a zapis po wczytaniu zapisany",
+      "ok": true,
+      "detail": {
+        "savedNew": true
+      }
+    },
+    {
+      "label": "W3b wczytanie nowego zapisu: zero komunikatu czyszczenia (kolejka czysta)",
+      "ok": true,
+      "detail": {
+        "rise": 0
+      }
+    },
+    {
+      "label": "W3c kolejka po wczytaniu nowego zapisu = [mury]",
+      "ok": false,
+      "detail": {
+        "qAfter3": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "C1 brak pageerror i console.error w sesji",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "errors": []
+      }
+    },
+    {
+      "label": "C2 brak 404 i odpowiedzi HTML dla zasobow",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "label": "C3 fixture builtBefore (cityBuilt miasta przed wczytaniem)",
+      "info": true,
+      "detail": {
+        "builtBefore": [
+          "koszary",
+          "spichlerz"
+        ]
+      }
+    }
+  ],
+  "durationMs": 218387,
+  "summary": {
+    "pass": 8,
+    "fail": 6
+  }
+}

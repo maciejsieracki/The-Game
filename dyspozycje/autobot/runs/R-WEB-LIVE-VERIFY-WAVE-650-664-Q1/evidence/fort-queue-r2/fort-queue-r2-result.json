@@ -1,0 +1,257 @@
+{
+  "mode": "fort-queue-r2",
+  "mut": null,
+  "steps": [
+    {
+      "step": "W1-load-old",
+      "rise": 1,
+      "qAfter": [
+        "mury"
+      ],
+      "texts": [
+        "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość).",
+        "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt i postęp nie zostały zwrócone."
+      ],
+      "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png",
+      "shotInfo": {
+        "rect": [
+          440,
+          823,
+          560,
+          53
+        ],
+        "opacity": "1",
+        "text": "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy ",
+        "at": 1794491784754,
+        "cvDiag": {
+          "cvChain": [
+            "CANVAS#. z=auto pos=fixed",
+            "BODY#. z=auto pos=static",
+            "HTML#. z=auto pos=static"
+          ],
+          "cvBox": [
+            0,
+            0,
+            1440,
+            900
+          ],
+          "cvPointerEvents": "auto",
+          "toastChain": [
+            "DIV#civ-hint-toast z=320 pos=fixed tf=none",
+            "HTML# z=auto pos=static tf=none"
+          ],
+          "toastBox": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "vis": "visible",
+        "hasFocus": true,
+        "topAtCenter": "CANVAS",
+        "toastInTop": false,
+        "toastCls": "",
+        "toastZ": "320",
+        "toastPos": "fixed",
+        "shotErr": null,
+        "shotAtMs": 1794491786016,
+        "probeToShotMs": 1262
+      },
+      "edges1": [
+        {
+          "at": 1794491772639,
+          "now": true,
+          "shown": true
+        },
+        {
+          "at": 1794491785021,
+          "now": false,
+          "shown": false
+        }
+      ],
+      "riseProbe1": {
+        "rect": [
+          440,
+          823,
+          560,
+          53
+        ],
+        "center": [
+          720,
+          850
+        ],
+        "topTag": "CANVAS#",
+        "topIsToastOrChild": false,
+        "opacity": "1",
+        "z": "320",
+        "pe": "none",
+        "cvPe": "auto",
+        "parent": "HTML",
+        "bgColor": "rgba(8, 12, 20, 0.92)",
+        "color": "rgb(232, 224, 200)",
+        "vis": "visible",
+        "disp": "block",
+        "inViewport": true,
+        "at": 1794491772639
+      }
+    },
+    {
+      "step": "W2-load-old-again",
+      "rise": 1,
+      "qAfter": [
+        "mury"
+      ]
+    },
+    {
+      "step": "W3-load-after-save",
+      "rise": 0,
+      "qAfter": [
+        "mury"
+      ],
+      "savedNew": true
+    }
+  ],
+  "bundle": {
+    "bytes": 14557517,
+    "mut": null
+  },
+  "errors": [],
+  "anomalies": [],
+  "checks": [
+    {
+      "label": "F0 miasto gracza (ownerId 0) istnieje",
+      "ok": true,
+      "detail": {
+        "cityId": "city0"
+      }
+    },
+    {
+      "label": "F1 fixture: kolejka w pamieci = [palisada, mury_kamienne, mury]",
+      "ok": true,
+      "detail": {
+        "fixtureIds": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ],
+        "builtBefore": [
+          "koszary",
+          "spichlerz"
+        ]
+      }
+    },
+    {
+      "label": "F2 zapis starego stanu (persistSaveToSlot) ok",
+      "ok": true,
+      "detail": {
+        "savedOld": true
+      }
+    },
+    {
+      "label": "F3 zapis nie sanityzuje kolejki (w pamieci nadal 3 etapy przed wczytaniem)",
+      "ok": true,
+      "detail": {
+        "afterSaveIds": [
+          "palisada",
+          "mury_kamienne",
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W1a komunikat czyszczenia pojawil sie DOKLADNIE raz po wczytaniu starego zapisu",
+      "ok": true,
+      "detail": {
+        "rise": 1
+      }
+    },
+    {
+      "label": "W1b tresc komunikatu: „Usunięto 2 zbędne pozycje”, bez zwrotu kosztu",
+      "ok": true,
+      "detail": {
+        "notice1": "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt i postęp nie zostały zwrócone."
+      }
+    },
+    {
+      "label": "W1c w kolejce zostaje najwyzszy etap (mury), dwa nizsze usuniete",
+      "ok": true,
+      "detail": {
+        "qAfter1": [
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W1d zrzut ekranu komunikatu wykonany",
+      "ok": true,
+      "detail": {
+        "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png"
+      }
+    },
+    {
+      "label": "W2 ponowne wczytanie tego samego starego zapisu: dokladnie jedno pojawienie komunikatu",
+      "ok": true,
+      "detail": {
+        "rise": 1,
+        "qAfter": [
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "W3a zapis po wczytaniu zapisany",
+      "ok": true,
+      "detail": {
+        "savedNew": true
+      }
+    },
+    {
+      "label": "W3b wczytanie nowego zapisu: zero komunikatu czyszczenia (kolejka czysta)",
+      "ok": true,
+      "detail": {
+        "rise": 0
+      }
+    },
+    {
+      "label": "W3c kolejka po wczytaniu nowego zapisu = [mury]",
+      "ok": true,
+      "detail": {
+        "qAfter3": [
+          "mury"
+        ]
+      }
+    },
+    {
+      "label": "C1 brak pageerror i console.error w sesji",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "errors": []
+      }
+    },
+    {
+      "label": "C2 brak 404 i odpowiedzi HTML dla zasobow",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "anomalies": []
+      }
+    },
+    {
+      "label": "C3 fixture builtBefore (cityBuilt miasta przed wczytaniem)",
+      "info": true,
+      "detail": {
+        "builtBefore": [
+          "koszary",
+          "spichlerz"
+        ]
+      }
+    }
+  ],
+  "durationMs": 152773,
+  "summary": {
+    "pass": 14,
+    "fail": 0
+  }
+}
