@@ -877,12 +877,20 @@ pub fn note_war_declarations(
     declarations: &[(i64, i64)],
     turn: f64,
 ) -> Result<(), WarTurnError> {
-    if declarations.is_empty() {
+    // Guard z webu `chargeWarDeclarationCredibility` (main.ts:12181): barbarzynca (owner -1) nie jest
+    // stroną rejestru wiarygodności, wiec para z barbarzyńcą nie zeruje licznika.
+    const BARBARIAN_OWNER_ID: i64 = -1;
+    let pairs: Vec<(i64, i64)> = declarations
+        .iter()
+        .copied()
+        .filter(|&(a, b)| a != BARBARIAN_OWNER_ID && b != BARBARIAN_OWNER_ID)
+        .collect();
+    if pairs.is_empty() {
         return Ok(());
     }
     let before = CredibilityRegistry::from_meta(&war.opaque).map_err(|e| err(e.to_string()))?;
     let mut reg = before.clone();
-    for &(a, b) in declarations {
+    for &(a, b) in &pairs {
         reg.note_war_entered(a, b, turn);
     }
     reg.store_changes(&before, &mut war.opaque);

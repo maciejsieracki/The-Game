@@ -204,3 +204,30 @@ fn note_war_declarations_writes_both_sides_and_is_idempotent_per_turn() {
         "powtorzenie tej samej tury nie zmienia zapisu"
     );
 }
+
+#[test]
+fn note_war_declarations_ignores_pairs_with_barbarian() {
+    // Guard z webu chargeWarDeclarationCredibility (main.ts:12181): barbarzynca nie zeruje licznika.
+    let mut war = WarTurnState::default();
+    let before = war.opaque.clone();
+    note_war_declarations(&mut war, &[(-1, AI_A), (AI_B, -1)], 9.0).expect("pary z barbarzynca");
+    assert_eq!(
+        war.opaque, before,
+        "para z barbarzynca = brak zmiany opaque"
+    );
+    assert!(last_war_of(&war).is_empty());
+}
+
+#[test]
+fn note_war_declarations_several_pairs_in_one_turn_write_all_sides() {
+    let mut war = WarTurnState::default();
+    note_war_declarations(&mut war, &[(AI_A, AI_B), (4, 5)], 11.0).expect("dwie wojny");
+    let last = last_war_of(&war);
+    for owner in [AI_A, AI_B, 4, 5] {
+        assert!(
+            last.contains(&(owner, 11.0)),
+            "owner {owner} zeruje licznik w tej turze"
+        );
+    }
+    assert_eq!(last.len(), 4, "dokladnie cztery wpisy, bez nadmiaru");
+}
