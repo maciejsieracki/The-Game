@@ -8,6 +8,12 @@
 //   * gra/src/game/production.ts: sanitizeBuildQueue, filterQueue, dropFrontItem;
 //   * gra/src/game/cities.ts: applyCapturePopulationLoss, stampCityFounderOnCapture, stala CAPTURE_POP_LOSS;
 //   * gra/data/miasto-params.json: wartosc capture_pop_loss (dla CAPTURE_POP_LOSS).
+//   * (Q4-Q1 r2) gra/src/game/post-capture-law.ts: applyPostCaptureLawOnCapture, isRebellionReconquest, stale
+//     POST_CAPTURE_FRESH_TURNS / POST_CAPTURE_REBELLION_RECONQUEST_TURNS;
+//   * (Q4-Q1 r2) gra/src/game/society-breakdown.ts: stala REBEL_FACTION_OWNER_ID;
+//   * (Q4-Q1 r2) gra/src/game/barbarians.ts: isBarbarian, stala BARBARIAN_OWNER_ID;
+//   * (Q4-Q1 r2) gra/src/main.ts: triggerRebelProtectionWarConsequence (wycinane z zagniezdzenia closure).
+//   Atrapa ownerDeclareWarOn NIE jest stubem bez danych: zapisuje argumenty do `declareWar` (wektor transfer).
 //
 // Wykonywane REALNIE (wycinane po nazwie, typy zdejmowane przez node:module.stripTypeScriptTypes, uruchamiane w `with`
 // na Proxy): wszystkie funkcje wymienione wyzej. Nie ma stubow dla applyCapturePopulationLoss, sanitizeBuildQueue,
@@ -22,16 +28,17 @@
 // `calls` musi byc puste - to dowod, ze zadna z wykonywanych funkcji nie zawiera atrapy.
 // Sentinel `Stop` przerywa resolveSiegeSurrender w miejscu enterCityAfterSurrender (po splice obroncow i population).
 //
-// Uzycie (sześć plików wejściowych spoza repo, wynik na stdout):
+// Uzycie (dziewiec plikow wejsciowych spoza repo, wynik na stdout):
 //   node tests/p6_siege_transfer_gen.mjs <main.ts@pin> <units/setup.ts@pin> <display-names.ts@pin> \
-//     <production.ts@pin> <cities.ts@pin> <miasto-params.json@pin> > tests/p6_siege_transfer_vectors/vectors.json
+//     <production.ts@pin> <cities.ts@pin> <miasto-params.json@pin> <post-capture-law.ts@pin> \
+//     <society-breakdown.ts@pin> <barbarians.ts@pin> > tests/p6_siege_transfer_vectors/vectors.json
 
 import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 
-const [mainPath, setupPath, displayPath, prodPath, citiesPath, paramsPath] = process.argv.slice(2);
-if (!mainPath || !setupPath || !displayPath || !prodPath || !citiesPath || !paramsPath) {
-  throw new Error('uzycie: gen.mjs <main.ts> <units/setup.ts> <display-names.ts> <production.ts> <cities.ts> <miasto-params.json>');
+const [mainPath, setupPath, displayPath, prodPath, citiesPath, paramsPath, postLawPath, societyPath, barbPath] = process.argv.slice(2);
+if (!mainPath || !setupPath || !displayPath || !prodPath || !citiesPath || !paramsPath || !postLawPath || !societyPath || !barbPath) {
+  throw new Error('uzycie: gen.mjs <main.ts> <units/setup.ts> <display-names.ts> <production.ts> <cities.ts> <miasto-params.json> <post-capture-law.ts> <society-breakdown.ts> <barbarians.ts>');
 }
 const readLines = p => readFileSync(p, 'utf8').split('\n');
 const mainLines = readLines(mainPath);
@@ -39,6 +46,9 @@ const setupLines = readLines(setupPath);
 const displayLines = readLines(displayPath);
 const prodLines = readLines(prodPath);
 const citiesLines = readLines(citiesPath);
+const postLawLines = readLines(postLawPath);
+const societyLines = readLines(societyPath);
+const barbLines = readLines(barbPath);
 const miastoParams = JSON.parse(readFileSync(paramsPath, 'utf8'));
 
 function extractFn(lines, name) {
@@ -75,6 +85,14 @@ const SRC = {
   dropFrontItem: extractFn(prodLines, 'dropFrontItem'),
   stampCityFounderOnCapture: extractFn(citiesLines, 'stampCityFounderOnCapture'),
   applyCapturePopulationLoss: extractFn(citiesLines, 'applyCapturePopulationLoss'),
+  POST_CAPTURE_FRESH_TURNS: extractConst(postLawLines, 'POST_CAPTURE_FRESH_TURNS'),
+  POST_CAPTURE_REBELLION_RECONQUEST_TURNS: extractConst(postLawLines, 'POST_CAPTURE_REBELLION_RECONQUEST_TURNS'),
+  isRebellionReconquest: extractFn(postLawLines, 'isRebellionReconquest'),
+  applyPostCaptureLawOnCapture: extractFn(postLawLines, 'applyPostCaptureLawOnCapture'),
+  REBEL_FACTION_OWNER_ID: extractConst(societyLines, 'REBEL_FACTION_OWNER_ID'),
+  BARBARIAN_OWNER_ID: extractConst(barbLines, 'BARBARIAN_OWNER_ID'),
+  isBarbarian: extractFn(barbLines, 'isBarbarian'),
+  triggerRebelProtectionWarConsequence: extractFn(mainLines, 'triggerRebelProtectionWarConsequence'),
 };
 
 class Stop extends Error {}
@@ -163,11 +181,16 @@ const poolOut = pool => Object.fromEntries([...pool.entries()].sort((a, b) => a[
 function runTransfer(scn) {
   const calls = [];
   const pool = new Map();
+  const warCalls = [];
   const city = {
     id: 'c', name: 'C', q: scn.cityQ, r: scn.cityR, ownerId: scn.cityOwner, population: scn.pop,
     startCityState: scn.startCityState, foundedByOwner: scn.foundedByOwner, rebelState: scn.rebelState,
     foundedBy: scn.foundedBy, capturedFromOwnerId: scn.capturedFromOwnerId,
     rebelPreviousOwnerId: scn.rebelPreviousOwnerId,
+    postCaptureLawTurnsRemaining: scn.postCaptureLawTurnsRemaining,
+    wasRebellionReconquest: scn.wasRebellionReconquest,
+    rebelProtectionTurnsRemaining: scn.rebelProtectionTurnsRemaining,
+    revoltGraceRemaining: scn.revoltGraceRemaining,
   };
   const units = scn.units.map(u => ({ ...u }));
   const siegeBesiegerByCity = new Map([['c', scn.besieger]]);
@@ -184,11 +207,20 @@ function runTransfer(scn) {
     wasIndependentCityStateBeforeCapture: () => { calls.push('wasIndependentCityStateBeforeCapture'); return scn.wasIndependent; },
     enterCityAfterSurrender: () => { calls.push('enterCityAfterSurrender'); throw new Stop(); },
     showHintMessage: () => { calls.push('showHintMessage'); },
+    // Q4-Q1 r2: ownerDeclareWarOn jest atrapa z ZAPISEM argumentow (nie wykonuje dyplomacji; to CallerSide).
+    ownerDeclareWarOn: (attackerId, defenderId, force = false, cause = undefined) => {
+      calls.push('ownerDeclareWarOn');
+      warCalls.push({ attacker: attackerId, defender: defenderId, force: force === true, cause: cause ?? null });
+    },
   };
   const fns = load([
     'hexDistance', 'besiegerOwnerForCity', 'clearCityStateFlagOnCapture', 'WONDER_PROD_PREFIX', 'CAPTURE_POP_LOSS',
     'stampCityFounderOnCapture', 'applyCapturePopulationLoss', 'parseWonderProdId', 'sanitizeBuildQueue',
     'filterQueue', 'dropFrontItem', 'sanitizeProductionQueue', 'resolveSiegeSurrender',
+    // Q4-Q1 r2: prawdziwe wykonanie Prawa po przejeciu i wojny rebeliantow (dawniej stub w `calls`).
+    'POST_CAPTURE_FRESH_TURNS', 'POST_CAPTURE_REBELLION_RECONQUEST_TURNS', 'REBEL_FACTION_OWNER_ID',
+    'BARBARIAN_OWNER_ID', 'isBarbarian', 'isRebellionReconquest', 'applyPostCaptureLawOnCapture',
+    'triggerRebelProtectionWarConsequence',
   ], vars, calls);
   let branch = 'none';
   try {
@@ -197,13 +229,15 @@ function runTransfer(scn) {
     if (!(e instanceof Stop)) throw e;
     branch = 'transfer';
   }
-  return { branch, city, units, calls, pool, prodAfter: cityProd.get('c') ?? null };
+  return { branch, city, units, calls, warCalls, pool, prodAfter: cityProd.get('c') ?? null };
 }
 
 const rTr = makeRnd(0x51e6f001);
 const transfer = [];
 for (let i = 0; i < 160; i++) {
-  const cityOwner = pick(rTr, OWNERS);
+  // Q4-Q1 r2: ~30% miast nalezy do rebeliantow (-99, REBEL_FACTION_OWNER_ID) - wtedy odbicie po buncie jest mozliwe.
+  const isRebel = rTr() < 0.3;
+  const cityOwner = isRebel ? -99 : pick(rTr, OWNERS);
   let besieger = pick(rTr, OWNERS_ALL);
   if (besieger === cityOwner) besieger = (cityOwner + 1) % 4;
   const { enemy } = makeEnemy(rTr, [besieger, cityOwner]);
@@ -225,15 +259,21 @@ for (let i = 0; i < 160; i++) {
     pop: pick(rTr, POPS),
     startCityState: flag(rTr),
     foundedByOwner: flag(rTr),
-    rebelState: flag(rTr),
+    rebelState: isRebel ? pick(rTr, [true, true, false]) : flag(rTr),
     wasIndependent: rTr() < 0.5,
     enemy,
     foundedBy: pick(rTr, OPT_OWNERS),
     capturedFromOwnerId: pick(rTr, OPT_OWNERS),
-    rebelPreviousOwnerId: pick(rTr, OPT_OWNERS),
+    // Odbicie po buncie: poprzedni wlasciciel = zdobywca (polowa miast rebeliantow).
+    rebelPreviousOwnerId: isRebel && rTr() < 0.5 ? besieger : pick(rTr, OPT_OWNERS),
     prod: rTr() < 0.6 ? makeProd(rTr) : null,
     isNewCapital: rTr() < 0.3,
     wonderOk: makeWonderOk(rTr),
+    // Q4-Q1 r2: pola Prawa po przejeciu i okna ochrony rebeliantow (wejscie wykonywanego pinu).
+    postCaptureLawTurnsRemaining: pick(rTr, [undefined, 3, 10]),
+    wasRebellionReconquest: flag(rTr),
+    rebelProtectionTurnsRemaining: pick(rTr, [undefined, 0, 0.5, 5, 20]),
+    revoltGraceRemaining: pick(rTr, [undefined, null, 2]),
   };
   const r = runTransfer(scn);
   if (r.branch !== 'transfer') throw new Error(`transfer ${i}: oczekiwano galezi transfer, jest ${r.branch}`);
@@ -252,6 +292,10 @@ for (let i = 0; i < 160; i++) {
       prod: prodOut(scn.prod),
       isNewCapital: scn.isNewCapital,
       wonderOk: scn.wonderOk,
+      postCaptureLawTurnsRemaining: enc(scn.postCaptureLawTurnsRemaining),
+      wasRebellionReconquest: enc(scn.wasRebellionReconquest),
+      rebelProtectionTurnsRemaining: enc(scn.rebelProtectionTurnsRemaining),
+      revoltGraceRemaining: enc(scn.revoltGraceRemaining),
       enemyPairs: OWNERS_ALL.flatMap(a => OWNERS_ALL.map(b => [a, b, enemy(a, b)])),
     },
     expect: {
@@ -263,6 +307,13 @@ for (let i = 0; i < 160; i++) {
       rebelState: enc(r.city.rebelState),
       foundedBy: enc(r.city.foundedBy),
       capturedFromOwnerId: enc(r.city.capturedFromOwnerId),
+      postCaptureLawTurnsRemaining: enc(r.city.postCaptureLawTurnsRemaining),
+      wasRebellionReconquest: enc(r.city.wasRebellionReconquest),
+      rebelPreviousOwnerId: enc(r.city.rebelPreviousOwnerId),
+      rebelProtectionTurnsRemaining: enc(r.city.rebelProtectionTurnsRemaining),
+      revoltGraceRemaining: enc(r.city.revoltGraceRemaining),
+      // Wywolania ownerDeclareWarOn (triggerRebelProtectionWarConsequence): 0 albo 1 element.
+      declareWar: r.warCalls,
       unitIdsAfter: r.units.map(u => u.id),
       praca: poolOut(r.pool),
       production: prodOut(r.prodAfter),
@@ -323,8 +374,11 @@ const out = {
   source: 'gra/src/main.ts (resolveSiegeSurrender, sanitizeProductionQueue, parseWonderProdId, WONDER_PROD_PREFIX, besiegerOwnerForCity), '
     + 'gra/src/units/setup.ts (hexDistance), gra/src/game/display-names.ts (clearCityStateFlagOnCapture), '
     + 'gra/src/game/production.ts (sanitizeBuildQueue, filterQueue, dropFrontItem), gra/src/game/cities.ts '
-    + '(applyCapturePopulationLoss, stampCityFounderOnCapture, CAPTURE_POP_LOSS), gra/data/miasto-params.json '
-    + '@ 07d2fbd72f758705f8e1d59cc4968027ffbafe75; wykonanie wycinkow (bez stubow tych funkcji)',
+    + '(applyCapturePopulationLoss, stampCityFounderOnCapture, CAPTURE_POP_LOSS), gra/data/miasto-params.json, '
+    + 'gra/src/game/post-capture-law.ts (applyPostCaptureLawOnCapture, isRebellionReconquest, stale), '
+    + 'gra/src/game/society-breakdown.ts (REBEL_FACTION_OWNER_ID), gra/src/game/barbarians.ts (isBarbarian, BARBARIAN_OWNER_ID), '
+    + 'triggerRebelProtectionWarConsequence (main.ts) '
+    + '@ 07d2fbd72f758705f8e1d59cc4968027ffbafe75; wykonanie wycinkow (bez stubow tych funkcji; ownerDeclareWarOn = atrapa z zapisem argumentow)',
   capturePopLoss: consts.CAPTURE_POP_LOSS,
   wonderPrefix: consts.WONDER_PROD_PREFIX,
   capitalBuildings: BUILDINGS.filter(b => b.lokalizacja === 'stolica').map(b => b.id),

@@ -9,24 +9,29 @@
 //! jednostki, kolejka, Praca zwrocona staremu i zdobywcy), (2) kazde wolanie z pinu jest wpisane w
 //! `TRANSFER_EFFECTS`, (3) wykonane skutki nie pojawiaja sie w logu wolan atrap.
 
+use civ_engine::domain::order_effects_lane::PostCaptureLawFields;
 use civ_engine::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
 use civ_engine::domain::siege_enter_city::EnterUnit;
 use civ_engine::domain::siege_transfer::{
     apply_transfer_with_effects, EffectStatus, TransferCity, TransferExtras, TransferProduction,
     TRANSFER_EFFECTS,
 };
-use civ_engine::domain::siege_transfer_effects::{CapturePopLossInput, CAPTURE_POP_LOSS_PIN};
+use civ_engine::domain::siege_transfer_effects::{
+    CapturePopLossInput, PostCaptureCityFields, CAPTURE_POP_LOSS_PIN,
+};
 use serde_json::Value;
 
 const DATA: &str = include_str!("p6_siege_transfer_vectors/vectors.json");
 
 /// Kroki, ktore generator wykonuje realnie (nie atrapa); nie moga pojawic sie w logu wolan.
-const EXECUTED_IN_PIN: [&str; 5] = [
+const EXECUTED_IN_PIN: [&str; 7] = [
     "applyCapturePopulationLoss",
     "sanitizeBuildQueue",
     "sanitizeProductionQueue",
     "filterQueue",
     "clearCityStateFlagOnCapture",
+    "applyPostCaptureLawOnCapture",
+    "triggerRebelProtectionWarConsequence",
 ];
 
 fn parse_num(v: &Value) -> f64 {
@@ -114,6 +119,8 @@ fn transfer_vectors_match_pin_state_calls_and_praca() {
         u64::from(CAPTURE_POP_LOSS_PIN)
     );
 
+    let mut war_count = 0usize;
+    let mut reconquest_count = 0usize;
     for (idx, case) in cases.iter().enumerate() {
         let inp = &case["input"];
         let exp = &case["expect"];
@@ -172,6 +179,15 @@ fn transfer_vectors_match_pin_state_calls_and_praca() {
             is_capital_only_building: &is_cap,
         });
 
+        // Q4-Q1 r2: pola Prawa i revoltGraceRemaining z wejscia pinu (web czyta je w galezi Transfer ZAWSZE).
+        let mut law = PostCaptureLawFields {
+            post_capture_law_turns_remaining: opt_f64(&inp["postCaptureLawTurnsRemaining"]),
+            was_rebellion_reconquest: opt_bool(&inp["wasRebellionReconquest"]).unwrap_or(false),
+            rebel_previous_owner_id: opt_i64(&inp["rebelPreviousOwnerId"]),
+            rebel_protection_turns_remaining: opt_f64(&inp["rebelProtectionTurnsRemaining"]),
+        };
+        let mut grace = opt_f64(&inp["revoltGraceRemaining"]);
+
         let out = apply_transfer_with_effects(
             &mut city,
             besieger,
@@ -181,8 +197,81 @@ fn transfer_vectors_match_pin_state_calls_and_praca() {
             TransferExtras {
                 pop_loss: Some(pop_input),
                 wonder_gate_ok: Some(&gate),
+                post_capture_law: Some(PostCaptureCityFields {
+                    law: &mut law,
+                    revolt_grace_remaining: &mut grace,
+                }),
             },
         );
+
+        // Prawo po przejeciu + wojna rebeliantow (pin main.ts:17693-17703).
+        assert!(
+            out.performed.contains(&"applyPostCaptureLawOnCapture"),
+            "vector {idx}: applyPostCaptureLawOnCapture"
+        );
+        assert!(
+            out.performed
+                .contains(&"triggerRebelProtectionWarConsequence"),
+            "vector {idx}: triggerRebelProtectionWarConsequence"
+        );
+        assert_eq!(
+            law.post_capture_law_turns_remaining,
+            opt_f64(&exp["postCaptureLawTurnsRemaining"]),
+            "vector {idx}: postCaptureLawTurnsRemaining"
+        );
+        assert_eq!(
+            law.was_rebellion_reconquest,
+            opt_bool(&exp["wasRebellionReconquest"]).unwrap_or(false),
+            "vector {idx}: wasRebellionReconquest"
+        );
+        assert_eq!(
+            out.post_capture_law_reconquest,
+            Some(law.was_rebellion_reconquest),
+            "vector {idx}: wynik reconquest"
+        );
+        assert_eq!(
+            law.rebel_previous_owner_id,
+            opt_i64(&exp["rebelPreviousOwnerId"]),
+            "vector {idx}: rebelPreviousOwnerId po kasowaniu"
+        );
+        assert_eq!(
+            law.rebel_protection_turns_remaining,
+            opt_f64(&exp["rebelProtectionTurnsRemaining"]),
+            "vector {idx}: rebelProtectionTurnsRemaining po kasowaniu"
+        );
+        assert_eq!(
+            grace,
+            opt_f64(&exp["revoltGraceRemaining"]),
+            "vector {idx}: revoltGraceRemaining"
+        );
+        // Wojna: web ownerDeclareWarOn(newOwner, rebelPrev, true, 'wymuszona_inna') albo brak wywolania.
+        let war_exp = exp["declareWar"].as_array().expect("declareWar[]");
+        assert!(
+            war_exp.len() <= 1,
+            "vector {idx}: co najwyzej jedno wywolanie wojny"
+        );
+        match (war_exp.first(), &out.rebel_war_request) {
+            (None, None) => {}
+            (Some(w), Some(req)) => {
+                assert_eq!(
+                    w["attacker"].as_i64(),
+                    Some(req.declarer),
+                    "vector {idx}: declarer"
+                );
+                assert_eq!(
+                    w["defender"].as_i64(),
+                    Some(req.target),
+                    "vector {idx}: target"
+                );
+                assert_eq!(w["force"], Value::Bool(true), "vector {idx}: force=true");
+                assert_eq!(w["cause"], "wymuszona_inna", "vector {idx}: powod");
+                war_count += 1;
+            }
+            (w, req) => panic!("vector {idx}: wojna pin {w:?} vs Rust {req:?}"),
+        }
+        if law.was_rebellion_reconquest {
+            reconquest_count += 1;
+        }
 
         assert_eq!(out.new_owner, besieger, "vector {idx}: newOwner");
         assert_eq!(
@@ -312,6 +401,15 @@ fn transfer_vectors_match_pin_state_calls_and_praca() {
             "vector {idx}"
         );
     }
+    // Pokrycie galezi: odbicia po buncie i wojny rebeliantow musza wystapic w wektorach z pinu.
+    assert!(
+        reconquest_count >= 10,
+        "za malo odbic po buncie: {reconquest_count}"
+    );
+    assert!(
+        war_count >= 10,
+        "za malo wojen z triggerRebelProtectionWarConsequence: {war_count}"
+    );
 }
 
 #[test]
@@ -337,8 +435,6 @@ fn coverage_table_has_no_silent_ported_gaps() {
         missing,
         vec![
             "beginWonderTransferWatch",
-            "applyPostCaptureLawOnCapture",
-            "triggerRebelProtectionWarConsequence",
             "settleWonderTransfer",
             "noteCityCapture",
             "syncCityGarnizon",

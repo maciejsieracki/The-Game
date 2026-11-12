@@ -23,8 +23,9 @@ use crate::domain::production_units::{CityProduction, ProductionItem};
 use crate::domain::siege_enter_city::EnterUnit;
 use crate::domain::siege_surrender::surrender_population_after;
 use crate::domain::siege_transfer_effects::{
-    apply_capture_population_loss, sanitize_production_queue_for_owner, CapturePopLossInput,
-    CapturePopLossOutcome,
+    apply_capture_population_loss, apply_post_capture_law_on_capture, rebel_protection_war_request,
+    sanitize_production_queue_for_owner, was_protected_rebel, CapturePopLossInput,
+    CapturePopLossOutcome, PostCaptureCityFields, RebelWarRequest,
 };
 use crate::domain::state::p6_6b::display_names::clear_city_state_flag_on_capture;
 
@@ -57,10 +58,23 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         "applyCapturePopulationLoss",
         EffectStatus::Ported("siege_transfer_effects::apply_capture_population_loss (TransferExtras::pop_loss)"),
     ),
-    ("applyPostCaptureLawOnCapture", EffectStatus::Missing),
+    (
+        "applyPostCaptureLawOnCapture",
+        EffectStatus::Ported(
+            "siege_transfer_effects::apply_post_capture_law_on_capture (TransferExtras::post_capture_law = Some; pola Prawa + revoltGraceRemaining=null; None = pominiete)",
+        ),
+    ),
     (
         "triggerRebelProtectionWarConsequence",
-        EffectStatus::Missing,
+        EffectStatus::CallerSide(
+            "siege_transfer_effects::rebel_protection_war_request zwraca RebelWarRequest (warunki web zgodne z wektorami); deklaracja wojny po stronie wolajacego",
+        ),
+    ),
+    (
+        "ownerDeclareWarOn",
+        EffectStatus::CallerSide(
+            "ZALEZNOSC W8 r4 (NIE_ZMIERZONO): force=true (omija isPeaceLockedBetween, czysci peaceUntilTurn) i powod 'wymuszona_inna' nie maja odpowiednika w diplomacy_truce_flow::declare_war_opts (tylko skip_n2)",
+        ),
     ),
     ("settleWonderTransfer", EffectStatus::Missing),
     ("noteCityCapture", EffectStatus::Missing),
@@ -203,6 +217,10 @@ pub struct TransferOutcome {
     /// WOLAJACY MUSI zapisac `captured_from_owner_id` i `founded_by` (web `city.capturedFromOwnerId`,
     /// `city.foundedBy`): `TransferCity` nie ma tych pol.
     pub capture_loss: Option<CapturePopLossOutcome>,
+    /// Web `city.wasRebellionReconquest` po `applyPostCaptureLawOnCapture` (`None` = krok nie wykonany / no-op).
+    pub post_capture_law_reconquest: Option<bool>,
+    /// Zadanie wojny z `triggerRebelProtectionWarConsequence`; WOLAJACY wykonuje `ownerDeclareWarOn(declarer, target, force=true)`.
+    pub rebel_war_request: Option<RebelWarRequest>,
 }
 
 /// Opcjonalne skutki galezi Transfer, ktorych nie ma w [`apply_transfer`] (R-RUSTPORT-P6-SIEGE-TRANSFER-Q3-Q1).
@@ -214,6 +232,13 @@ pub struct TransferExtras<'a> {
     /// (sanityzacja nadal wykonana). ZALEZNOSC: `wonderGateOk`/`parseWonderProdId` nie maja odpowiednika w Rust (W8 r3);
     /// wolajacy z cudami w kolejce MUSI podac bramke, inaczej wynik rozni sie od weba.
     pub wonder_gate_ok: Option<&'a dyn Fn(&ProductionItem) -> bool>,
+    /// Pola Prawa po zdobyciu miasta (`rebelPreviousOwnerId`, `rebelProtectionTurnsRemaining`, bonus Prawa) oraz
+    /// `revoltGraceRemaining`. `Some` = wykonac `applyPostCaptureLawOnCapture` + `triggerRebelProtectionWarConsequence`
+    /// (sekwencja web main.ts:17693-17703: odczyt ochrony PRZED kasowaniem).
+    /// `None` = krok POMINIETY po cichu (tylko tryb legacy). Web wykonuje oba skutki ZAWSZE w galezi Transfer,
+    /// wiec wolajacy produkcyjny (W8 r4) MUSI podac `Some`; `None` daje wynik rozny od weba (test
+    /// `p6_siege_transfer_effects_q4::none_pomija_prawo_i_wojne_jawnie` to dokumentuje).
+    pub post_capture_law: Option<PostCaptureCityFields<'a>>,
 }
 
 /// Galaz Transfer. Wywolac po warunku wstepnym (zob. naglowek). `was_independent_city_state` = web
@@ -226,7 +251,9 @@ pub struct TransferExtras<'a> {
 /// generatora); `sanitizeProductionQueue` wykonuje z bramka przepuszczajaca. Do produkcji uzywac
 /// [`apply_transfer_with_effects`] z realna bramka cudow.
 /// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem pozostalych skutkow BRAK z [`TRANSFER_EFFECTS`]
-/// (`applyPostCaptureLawOnCapture`, `triggerRebelProtectionWarConsequence`, `noteCityCapture`, plunder, ...).
+/// (`beginWonderTransferWatch`/`settleWonderTransfer`, `noteCityCapture`, `syncCityGarnizon`,
+/// `runCapitalCapturePlunder`, `recordCityCaptureEvent`, `applyLiveSafeRationForCity`, ...). Prawo po przejęciu
+/// i wojna z rebeliantów (Q4) sa dostepne przez [`TransferExtras::post_capture_law`].
 pub fn apply_transfer(
     city: &mut TransferCity,
     new_owner: i64,
@@ -257,7 +284,7 @@ pub fn apply_transfer_with_effects(
     was_independent_city_state: bool,
     units: &mut Vec<EnterUnit>,
     production: Option<TransferProduction<'_>>,
-    extras: TransferExtras<'_>,
+    mut extras: TransferExtras<'_>,
 ) -> TransferOutcome {
     let old_owner = city.owner_id;
     let mut performed: Vec<&'static str> = Vec::new();
@@ -278,8 +305,25 @@ pub fn apply_transfer_with_effects(
         performed.push("applyCapturePopulationLoss");
     }
 
-    // BRAK (tabela): applyPostCaptureLawOnCapture, triggerRebelProtectionWarConsequence,
-    // beginWonderTransferWatch/settleWonderTransfer, noteCityCapture - nie wykonane tutaj.
+    // Web: wasProtectedRebel + rebelPrevOwnerSnapshot (odczyt PRZED applyPostCaptureLawOnCapture),
+    // potem applyPostCaptureLawOnCapture, triggerRebelProtectionWarConsequence (main.ts:17700-17720).
+    let mut post_capture_law_reconquest = None;
+    let mut rebel_war_request = None;
+    if let Some(f) = extras.post_capture_law.as_mut() {
+        let was_protected = was_protected_rebel(city.rebel_state, f.law);
+        let rebel_prev = f.law.rebel_previous_owner_id;
+        post_capture_law_reconquest = apply_post_capture_law_on_capture(
+            f.law,
+            f.revolt_grace_remaining,
+            new_owner,
+            old_owner,
+        );
+        performed.push("applyPostCaptureLawOnCapture");
+        rebel_war_request = rebel_protection_war_request(was_protected, rebel_prev, new_owner);
+        performed.push("triggerRebelProtectionWarConsequence");
+    }
+
+    // BRAK (tabela): beginWonderTransferWatch/settleWonderTransfer, noteCityCapture - nie wykonane tutaj.
     city.owner_id = new_owner;
 
     let start_city_state_cleared = clear_city_state_flag_on_capture(&mut city.start_city_state);
@@ -356,6 +400,8 @@ pub fn apply_transfer_with_effects(
         city_siege_owner_changed: true,
         performed,
         capture_loss,
+        post_capture_law_reconquest,
+        rebel_war_request,
     }
 }
 
