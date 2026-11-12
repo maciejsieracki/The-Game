@@ -18,6 +18,10 @@
 //! * Efekty sceny (logi, `_ffEnterAuto`, `_tickProjectiles`, `_tickFades`, callbacki timerów i kolejki, `_ffRoundCapResult`)
 //!   są jawnymi zdarzeniami [`FfEvent`] przekazywanymi do [`FfHost::event`]. Host wykonuje efekt i ma dostęp do stanu
 //!   (w tym do `_raf` w trybie FF: dopisanie do [`FfLoopState::queue`], jak `_ffQueue.push` w `:9407`).
+//! * Sufit tur: [`run_fast_forward`] NIE ustawia `clock.finished`, nie zeruje kolejki i nie zmienia aktywności FF.
+//!   Po zwrocie [`FfStop::RoundCap`] host MUSI wykonać resztę `_ffRoundCapResult` (`battleScene.ts:9485-9497`):
+//!   `finished = true`, `ffActive = false`, opróżnienie kolejki `ffQueue`, log PAT, zapis zwycięzcy i ekran wyniku
+//!   (dla remisu `_finishDraw`, `:9467`). Moduł tego nie robi, bo nie posiada stanu sceny; K5f/K5g muszą to zrobić jawnie.
 //! * Decyzja sufitu tur ([`FfHost::round_cap`]) jest wstrzykiwana. Domyślna implementacja hosta: [`round_cap_verdict_step`]
 //!   (`ff_cap_step` z K5d, bez bramki żywych stron, jak `_roundCapVerdict` w `_runFastForward`).
 //! * Uwaga do dispatchu: w pinie pętla przewijania NIE wywołuje `_checkEnd` (`:9424` to `_roundCapVerdict`).
