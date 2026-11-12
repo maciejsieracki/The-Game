@@ -638,6 +638,15 @@ pub fn dipl_steps_inputs(state: &PlayableState) -> Result<DiplStepsInputs, WarIn
         out.treasury
             .insert(human.id.get() as i64, state.economy.treasury);
     }
+    // P6-WIRE-WAR-R7K7-C: skarbce AI i pule Pracy wlascicieli (web ownerTreasury / ownerPracaPool) z magazynu
+    // `economy`. Puste mapy = producent nieobecny (blad przy uzyciu w kroku), NIE zero.
+    for (&owner, &value) in &state.economy.ai_treasury_by_owner {
+        // Gracz ludzki ma skarbiec w `economy.treasury` (wpis z mapy AI nie nadpisuje go).
+        out.treasury.entry(owner as i64).or_insert(value);
+    }
+    for (&owner, &value) in &state.economy.praca_pool_by_owner {
+        out.praca_pool.insert(owner as i64, value);
+    }
     out.cities = Some(
         state
             .cities

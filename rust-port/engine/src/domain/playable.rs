@@ -386,6 +386,15 @@ pub struct PlayableReplaceEconomy {
     /// Stan zamiany jednostek (klucz: id jednostki); brak wpisu = stan domyslny.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub units: BTreeMap<u64, PlayableReplaceUnit>,
+    /// P6-WIRE-WAR-R7K7-C: skarbce AI (web `aiSkarbiecByOwner`), klucz: id wlasciciela AI. Gracz ludzki NIE
+    /// wpisuje sie tu (jego skarbiec to `treasury`); `set_owner_treasury` to wymusza. Brak wpisu = producent
+    /// nieobecny (blad przy uzyciu w handlu/danince), NIE zero.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub ai_treasury_by_owner: BTreeMap<u64, f64>,
+    /// P6-WIRE-WAR-R7K7-C: pule Pracy wlascicieli (web `ownerPracaPool`), klucz: id wlasciciela (takze
+    /// gracza). Brak wpisu = producent nieobecny (blad przy uzyciu), NIE zero.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub praca_pool_by_owner: BTreeMap<u64, f64>,
 }
 
 impl PlayableReplaceEconomy {
@@ -528,6 +537,8 @@ pub enum PlayableError {
     NoCityForReplace,
     /// P6-UNIT-REPLACE-L3: skarbiec/pula z wartoscia NaN lub nieskonczona (odrzucane).
     NonFiniteEconomy,
+    /// P6-WIRE-WAR-R7K7-C: skarbiec gracza ludzkiego zapisuje sie w `economy.treasury`, nie w mapie AI.
+    EconomyOwnerIsHuman(u64),
     /// P6-UNIT-REPLACE-L3-KOSZT: etykieta trudnosci stanu bez odpowiednika `Difficulty` (odrzucane, nie zgadywane).
     ReplaceDifficultyUnknown(String),
     /// P6-UNIT-REPLACE-L3: zamiana odrzucona przez reguly pinu (koszt, magazyn, blokada, uzycie).
@@ -570,6 +581,10 @@ impl fmt::Display for PlayableError {
             Self::NonFiniteEconomy => {
                 formatter.write_str("economy value must be finite (no NaN or infinity)")
             }
+            Self::EconomyOwnerIsHuman(id) => write!(
+                formatter,
+                "owner {id} is the human player; use the human treasury field instead"
+            ),
             Self::NoCityForReplace => {
                 formatter.write_str("unit replacement needs a city owned by the human player")
             }
@@ -759,6 +774,36 @@ impl PlayableGame {
         }
         self.state.economy.treasury = value;
         Ok(())
+    }
+
+    /// P6-WIRE-WAR-R7K7-C: ustawia skarbiec AI (scenariusz startowy/testowy; producent `ownerTreasury`).
+    /// Wartosci NaN i nieskonczone sa odrzucane; gracz ludzki jest odrzucany (ma wlasne pole).
+    pub fn set_owner_treasury(&mut self, owner: u64, value: f64) -> Result<(), PlayableError> {
+        if self.is_human_owner(owner) {
+            return Err(PlayableError::EconomyOwnerIsHuman(owner));
+        }
+        if !value.is_finite() {
+            return Err(PlayableError::NonFiniteEconomy);
+        }
+        self.state.economy.ai_treasury_by_owner.insert(owner, value);
+        Ok(())
+    }
+
+    /// P6-WIRE-WAR-R7K7-C: ustawia pule Pracy wlasciciela (takze gracza ludzkiego; `ownerPracaPool`).
+    /// Wartosci NaN i nieskonczone sa odrzucane.
+    pub fn set_owner_praca_pool(&mut self, owner: u64, value: f64) -> Result<(), PlayableError> {
+        if !value.is_finite() {
+            return Err(PlayableError::NonFiniteEconomy);
+        }
+        self.state.economy.praca_pool_by_owner.insert(owner, value);
+        Ok(())
+    }
+
+    fn is_human_owner(&self, owner: u64) -> bool {
+        self.state
+            .players
+            .iter()
+            .any(|p| p.is_human && p.id.get() == owner)
     }
 
     /// Ustawia pule surowcow stolicy gracza ludzkiego (scenariusz startowy/testowy).
