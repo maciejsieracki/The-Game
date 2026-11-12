@@ -1,3 +1,9 @@
+## ROBOCZA b7cf61d0 -- 2026-11-06 -- FALA 663: FALA 663: dług testowy testów bitew, HUD i pracy (W30) — tylko testy (testowa)
+
+- R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3
+- Weryfikacja: tsc, 5 bramek referencyjnych, praca-jeden 634/0, grupy-budynkow 83/0, load-fail-toast 15/0, audio-sidecar PASS; FC: 11 z 12 testow zielonych
+- Limity: mgla-sciezka-inwariant 41/1 do ECHO whitelisty; chariot-r5 niestabilnosc nieudowodniona
+
 ## ROBOCZA 9797f628 -- 2026-11-06 -- FALA 662: FALA 662: spójny tekst panelu Wpływ relacji przy aktywnym Przyjmij (W31) (testowa)
 
 - R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1
