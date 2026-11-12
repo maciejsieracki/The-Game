@@ -5,7 +5,7 @@
 //!   rekruci, kultura - wektory z p6_power_producers_vectors). Wyjatek: `miasta` nie ma wektora pinu
 //!   (generator go nie emituje) - test reczny (`ownerCities.length`).
 //! - Lista `RustProducer` jest zamknieta: nowy producent bez przypadku testowego w `check_key` panikuje.
-//! - Kazdy `NoProducer` jest jawnie wymieniony (bitwy, ulepszenia, zdobycze) i ma uzasadnienie z odwolaniem
+//! - Kazdy `NoProducer` jest jawnie wymieniony (bitwy, zdobycze) i ma uzasadnienie z odwolaniem
 //!   do pinu `plik.ts:linia`; zadna pozycja NoProducer nie jest wywolywana w tym tescie.
 //! - Tabela `REST_COMPONENT_SOURCES` (brake_power_rest) musi byc zgodna z `COMPONENT_SOURCES` (ten sam rodzaj).
 
@@ -14,7 +14,9 @@ use std::collections::{BTreeMap, HashSet};
 use civ_engine::domain::brake_power_army::{
     armia_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
 };
-use civ_engine::domain::brake_power_improvements::ulepszenia_for_owner;
+use civ_engine::domain::brake_power_improvements::{
+    improvement_count_for_hex, ulepszenia_for_owner,
+};
 use civ_engine::domain::brake_power_producers::{
     kultura_for_owner, ludki_for_owner, miasta_for_owner, no_producer_keys, rekruci_ekw_for_owner,
     ComponentSource, COMPONENT_SOURCES,
@@ -24,7 +26,7 @@ use civ_engine::domain::brake_power_rest::{
     has_pin_file_line_ref, rest_no_producer_keys, set_size, ReligionCity, RestSource,
     REST_COMPONENT_SOURCES,
 };
-use civ_engine::domain::improvements::{improvement_keys_for_hex, HexLike};
+use civ_engine::domain::improvements::HexLike;
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::ManpowerCity;
 use civ_engine::domain::terrain::{FortImprovementType, FortNode};
@@ -135,7 +137,7 @@ fn check_armia() -> usize {
     cases.len()
 }
 
-/// Producent `terytorium` na wektorach `terytorium` (p6_power_army_vectors).
+/// Producent `ulepszenia` na wektorach `ulepszenia` (p6_power_improvements_vectors).
 fn check_ulepszenia() -> usize {
     let cases = load(IMPROVEMENTS_VECTORS, "owner");
     for (idx, c) in cases.iter().enumerate() {
@@ -186,7 +188,7 @@ fn check_ulepszenia() -> usize {
                 };
                 (
                     (q.parse().expect("q"), r.parse().expect("r")),
-                    improvement_keys_for_hex(&hex).len(),
+                    improvement_count_for_hex(&hex),
                 )
             })
             .collect();
@@ -448,7 +450,7 @@ fn every_rust_producer_is_callable_and_matches_vector_input() {
 }
 
 #[test]
-fn no_producer_entries_are_exactly_the_three_open_components() {
+fn no_producer_entries_are_exactly_the_two_open_components() {
     let no_producer: Vec<&str> = COMPONENT_SOURCES
         .iter()
         .filter_map(|(k, s)| match s {
