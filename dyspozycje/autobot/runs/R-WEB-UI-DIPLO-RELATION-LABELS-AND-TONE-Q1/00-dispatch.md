@@ -1,0 +1,6 @@
+# R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1 (GAME/UI, tylko teksty i ton wiersza; Haiku)
+DECYZJE WŁAŚCICIELA 2026-11-12: (1) wariant B — rozdziel etykiety relacji; (2) ton wiersza relacji NEUTRALNY, gdy oferta może być przyjęta.
+Tło (pomiar W33, FC PASS e607cc120): „Relacja 11,6” w wierszu „Wpływ Relacji na deal” = Zaufanie 0,6 + respekt z mocy z PERSPEKTYWY PROPONENTA (AI) (main.ts:24632-24650), „Relacja 90 / 200” w audiencji = perspektywa gracza (udział mocy 89 + zaufanie), zapisany Respekt to osobna wartość (np. 50). NIE nazywaj 11,6 „zapisaną”.
+GOAL: (1) etykiety: wiersz wpływu: „Relacja z perspektywy AI 11,6 …”, audiencja: „Relacja z perspektywy gracza 90 / 200 …” (dokładne brzmienie po polsku, spójne z wikiBundle/terminologią; opcjonalny tooltip wyjaśniający dwie perspektywy); (2) wiersz relacji w stanie „Możesz przyjąć — wymiana symetryczna” (incomingAccepted) bez czerwonej ramki i bez napisu „Twoja strona słabsza” — ton neutralny; przy ofercie naprawdę niekorzystnej ton jak dotąd.
+ZAKAZ: zmiany reguł handlu, bramek, progów i wartości w silniku.
+KRYTERIA: test display (render) + live Chromium (wzorzec: diplomacy-relation-deal-text-consistent-live-test.cjs i diplomacy-relation-value-mismatch-live-test.cjs z kandydata e607cc120); zrzut obejrzany; mutacja czerwieni; tsc + 5 bramek; wiki/poradnik jeśli etykieta tam występuje (regeneracja wikiBundle).
