@@ -9,8 +9,14 @@
 // flankRearDefensePenalty (combat.ts:589-606), rangedDamageMultFor (unit-power.ts:26-32),
 // applyMultiplier (civ-bonuses.ts:229-231), fieldFortifyDefenseBonus (city-defense.ts:237-245).
 //
+// JEDNOSTKI (K5I2b, runda obrony): statystyki atakujacego i obroncy pochodza z WIERSZY `gra/data/units.json` PINU
+// (SHA-256 pliku = straznik), a CombatUnit (cuA/cuD) buduje TEKST pinu `toCombatUnit` (battleScene.ts:1355-1378)
+// wraz z `combatUnitFromDef` (combat.ts:194-234) i przeskalowaniami weterana/glodu/deficytu zlota - te same zakresy
+// co w p6_siege_tactics_inputs_unit_gen.mjs (K5I2a4). Nie ma losowych cuA/cuD. W 15% przypadkow jedna statystyka
+// wiersza jest nadpisana przez NaN/Infinity (celowo, dla semantyki Math.max/min/round); to jedyna ingerencja w dane.
+//
 // STUBY (wyjscia liczone poza zakresem K5I-2b, podawane z wektora; kazdy stub zapisuje wywolanie do `OUT`):
-//   toCombatUnit (K5I2a4), relativeHit (inputs_pos), battleUnitCivBonusy / civCombatStatMultipliers /
+//   relativeHit (inputs_pos), battleUnitCivBonusy / civCombatStatMultipliers /
 //   mergeBuildingBonusIntoStatMultipliers (civ), civWallDefenseMultiplier (civ), battleUnitDifficultyCombatMult,
 //   counterMultiplier (combat.ts; tabela counters poza zakresem), bracesAgainstCharge (battleScene.ts:1571),
 //   isFordTile / isShoreAdjacentToFord (mapa), terrainMap.combatTerrainName, terrainRiverAttackMultiplier
@@ -19,7 +25,7 @@
 // Scena: `this` = stub (log, engaged = prawdziwy Set, _sfxMelee/_updateHpBar/_resolveBlowOutcome = spy).
 // Rzut: `Math` w tekscie pinu = obiekt z `random()` zwracajacym wartosc wektora u (roll = u*100 jak w pinie).
 //
-// Straznik: SHA-256 zlaczonych fragmentow pinu (po zdjeciu typow). Zmiana pinu -> blad zamiast cichych wektorow.
+// Straznik: SHA-256 zlaczonych fragmentow pinu (po zdjeciu typow) + SHA-256 units.json. Zmiana pinu -> blad zamiast cichych wektorow.
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -34,10 +40,16 @@ const COMBAT = 'gra/src/game/combat.ts';
 const CITY = 'gra/src/game/city-defense.ts';
 const UNIT_POWER = 'gra/src/game/unit-power.ts';
 const CIV = 'gra/src/game/civ-bonuses.ts';
+const VETERAN = 'gra/src/game/veteran.ts';
+const HUNGER = 'gra/src/game/army-starvation.ts';
+const GOLD = 'gra/src/game/gold-deficit.ts';
 const PARAMS = 'gra/data/combat-params.json';
+const UNITS = 'gra/data/units.json';
 const BODY_FROM = 8812;
 const BODY_TO = 9010;
 const FRAGMENT_SHA256 = 'b2f9e19f1e35644e0e2ea636a9d50a02dd10d729355de5eb3eb35668910e5526';
+const UNIT_FRAGMENT_SHA256 = 'd1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c';
+const UNITS_SHA256 = '7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7';
 const N_CASES = 1200;
 const SEED = 2201;
 
@@ -115,6 +127,61 @@ if (FRAGMENT_SHA256 !== 'PLACEHOLDER' && digest !== FRAGMENT_SHA256) {
 }
 console.error(`fragment sha256 = ${digest}`);
 
+// --- toCombatUnit z pinu (te same zakresy co p6_siege_tactics_inputs_unit_gen.mjs, K5I2a4) ---
+const UNIT_FILES = { scene: SCENE, combat: COMBAT, veteran: VETERAN, hunger: HUNGER, gold: GOLD };
+// [plik, od, do, pierwsza linia zawiera, ostatnia linia (trim)]
+const UNIT_R = {
+  toCombatUnit: ['scene', 1355, 1378, 'function toCombatUnit(', '}'],
+  normField: ['combat', 148, 152, 'export function combatNormField(', '}'],
+  unitRowStat: ['combat', 158, 176, 'export function unitRowStat(', '}'],
+  statField: ['combat', 178, 184, 'function combatStatField(', '}'],
+  fromDef: ['combat', 194, 234, 'export function combatUnitFromDef(', '}'],
+  vetRound4: ['veteran', 333, 335, 'function round4(', '}'],
+  vetApply: ['veteran', 362, 385, 'export function applyVeteranFracToCombatUnit<', '}'],
+  hunRound4: ['hunger', 26, 28, 'function round4(', '}'],
+  hunApply: ['hunger', 35, 52, 'export function applyArmyHungerStatMultToCombatUnit(', '}'],
+  golRound4: ['gold', 172, 174, 'function round4(', '}'],
+  golApply: ['gold', 182, 199, 'export function applyGoldDeficitStatMultToCombatUnit(', '}'],
+};
+const uLines = Object.fromEntries(Object.entries(UNIT_FILES).map(([k, p]) => [k, gitShow(p).split('\n')]));
+const ufrag = {};
+for (const [name, [file, a, b, first, last]] of Object.entries(UNIT_R)) {
+  const ls = uLines[file].slice(a - 1, b);
+  if (!ls[0].includes(first)) throw new Error(`pin: ${name} poczatek nie na ${a}: ${ls[0]}`);
+  if (ls[ls.length - 1].trim() !== last) throw new Error(`pin: ${name} koniec nie na ${b}: ${ls[ls.length - 1]}`);
+  ufrag[name] = ls.join('\n');
+}
+const uDigest = createHash('sha256')
+  .update(Object.keys(ufrag).map((n) => `${n}\n${ufrag[n]}`).join('\n---\n'))
+  .digest('hex');
+if (UNIT_FRAGMENT_SHA256 !== 'PLACEHOLDER' && uDigest !== UNIT_FRAGMENT_SHA256) {
+  throw new Error(`SHA-256 fragmentow toCombatUnit zmieniony: ${uDigest}`);
+}
+console.error(`toCombatUnit fragment sha256 = ${uDigest}`);
+const unitsText = gitShow(UNITS);
+const unitsDigest = createHash('sha256').update(unitsText).digest('hex');
+if (UNITS_SHA256 !== 'PLACEHOLDER' && unitsDigest !== UNITS_SHA256) throw new Error(`SHA-256 units.json pinu zmieniony: ${unitsDigest}`);
+console.error(`units.json sha256 = ${unitsDigest}`);
+const UNITS_ALL = JSON.parse(unitsText);
+if (UNITS_ALL.length < 75) throw new Error(`units.json: ${UNITS_ALL.length} < 75 jednostek`);
+
+// Wiersze jednostek: tylko pola skalarne (bez dlugich tekstow/tablic, ktorych zadna z funkcji nie czyta).
+const UNIT_SKIP = new Set(['Historia', 'Opis', 'Top3']);
+const UNIT_ROWS = UNITS_ALL.map((u) => Object.fromEntries(
+  Object.entries(u).filter(([k, v]) => !UNIT_SKIP.has(k) && !(v !== null && typeof v === 'object')),
+));
+
+// --- Wykonanie tekstu pinu: helpery toCombatUnit ---
+const uStrip = (s) => stripTypeScriptTypes(s.replace(/^export /gm, ''));
+const uFns = new Function(`${[ufrag.normField, ufrag.unitRowStat, ufrag.statField, ufrag.fromDef].map(uStrip).join('\n')}\nreturn { combatUnitFromDef };`)();
+const applyVeteran = new Function(`${uStrip(ufrag.vetRound4)}\n${uStrip(ufrag.vetApply)}\nreturn applyVeteranFracToCombatUnit;`)();
+const applyHunger = new Function(`${uStrip(ufrag.hunRound4)}\n${uStrip(ufrag.hunApply)}\nreturn applyArmyHungerStatMultToCombatUnit;`)();
+const applyGold = new Function(`${uStrip(ufrag.golRound4)}\n${uStrip(ufrag.golApply)}\nreturn applyGoldDeficitStatMultToCombatUnit;`)();
+const realToCombatUnit = new Function(
+  'combatUnitFromDef', 'applyVeteranFracToCombatUnit', 'applyArmyHungerStatMultToCombatUnit', 'applyGoldDeficitStatMultToCombatUnit',
+  `${uStrip(ufrag.toCombatUnit)}\nreturn toCombatUnit;`,
+)(uFns.combatUnitFromDef, applyVeteran, applyHunger, applyGold);
+
 // --- Helpery z pinu (wykonane tekstem pinu) ---
 const helperCode = stripTypeScriptTypes(textFragments.helpers.replace(/^export /gm, ''));
 const helperFns = new Function('TW', `${helperCode}\nreturn { hitChanceTw, damageTw, rangeDamageTw, rangeDamage, baseDamage };`)({
@@ -147,7 +214,12 @@ const singleBlowFactory = new Function(...bodyParams, `${bodySrc}\nreturn __sing
 
 const MathStub = { random: () => C.u, max: Math.max, min: Math.min, round: Math.round, floor: Math.floor };
 const stubs = {
-  toCombatUnit: (bu) => (bu.id === 'A' ? C.cuA : C.cuD),
+  // Prawdziwy toCombatUnit z pinu na wierszu units.json (+ ewentualne nadpisanie NaN/Inf). Wynik zapisany w OUT.
+  toCombatUnit: (bu, armyHungerStatMult, skipHunger, goldDeficitStatMult, skipGoldDeficit) => {
+    const cu = realToCombatUnit(bu, armyHungerStatMult, skipHunger, goldDeficitStatMult, skipGoldDeficit);
+    OUT[bu.id === 'A' ? 'cuA' : 'cuD'] = cu;
+    return cu;
+  },
   relativeHit: () => { OUT.relativeHit = C.hitArc; return C.hitArc; },
   battleUnitCivBonusy: (bu, list) => list,
   civCombatStatMultipliers: (bonusy, cu, opts) => (opts.side === 'attacker' ? C.atkMods : C.defMods),
@@ -202,8 +274,8 @@ const blowFn = singleBlowFactory(...bodyParams.map((n) => stubs[n]));
 // Obiekt `this` sceny (stub). Pola zgodne z uzyciem w tekscie pinu.
 function makeScene() {
   return {
-    armyHungerStatMult: 1,
-    goldDeficitStatMult: 1,
+    armyHungerStatMult: C.hunger,
+    goldDeficitStatMult: C.gold,
     terrainMap: {
       combatTerrainName: (q, r) => (q === C.attacker.q && r === C.attacker.r ? C.atkName : C.defName),
     },
@@ -267,11 +339,37 @@ function encodeNum(v) {
   }
   return v;
 }
+// Kodowanie wartosci JS z tagami (wiersze jednostek, observed CombatUnit): ["n","..."] | ["s","..."] | ["z"] | ["u"] | ["b",bool].
+const enc = (x) => {
+  if (x === undefined) return ['u'];
+  if (x === null) return ['z'];
+  if (typeof x === 'number') return ['n', Number.isNaN(x) ? 'NaN' : x === Infinity ? 'Infinity' : x === -Infinity ? '-Infinity' : Object.is(x, -0) ? '-0' : String(x)];
+  if (typeof x === 'string') return ['s', x];
+  if (typeof x === 'boolean') return ['b', x];
+  throw new Error(`nieobslugiwany typ ${typeof x}`);
+};
+const encRecord = (o) => Object.fromEntries(
+  Object.entries(o).filter(([, v]) => !(v !== null && typeof v === 'object')).map(([k, v]) => [k, enc(v)]),
+);
 
 const TYPES = ['Piechota', 'Lucznik', 'Procarz', 'Kawaleria', 'Oszczepnik', 'Oblezenie', 'Slinger', 'Distance', 'Mount'];
-const NAMES = ['Łucznik', 'Lucznik (bialy)', 'Procarz', 'Oszczepnik', 'Jezdziec', 'Wojownik', 'łucznik konny'];
-const ROLES = ['Piechota', 'Obleznicza', 'Kawaleria'];
 const TERRAINS = ['Rzeka', 'Plaskie (rownina/laka)', 'Wzgorza', 'Las'];
+const KATEGORIE = ['Piechota', 'Lucznik', 'Kawaleria', 'Oblezenie'];
+const OVR_FIELDS = ['meleeAttack', 'missileAttack', 'weaponDamage', 'meleeDefence', 'armor', 'piercing', 'chargeBonus'];
+
+// Losowanie jednostki: wiersz z PINU + wejscia wywolania toCombatUnit (weteran, glod, deficyt) + rzadkie nadpisanie NaN/Inf.
+function unitDraw() {
+  const idx = int(0, UNIT_ROWS.length - 1);
+  const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity]) } : {};
+  return {
+    idx,
+    ovr,
+    kategoria: pick(KATEGORIE),
+    veteranBonusFrac: pick([0, 0.1, 0.25, 0.5]),
+    armyHungry: chance(0.3),
+    goldDeficit: chance(0.3),
+  };
+}
 
 function makeCase(i) {
   const ranged = chance(0.35);
@@ -283,24 +381,8 @@ function makeCase(i) {
   const onWall = chance(0.2);
   const isCity = chance(0.3);
   const wallTotal = chance(0.5) ? uni(0, 500) : 0;
-  const cu = {
-    weaponDamage: special(int(0, 30)),
-    piercing: int(0, 8),
-    meleeAttack: special(int(0, 40)),
-    missileAttack: chance(0.05) ? null : special(int(0, 40)),
-    chargeBonus: int(0, 15),
-    counterTyp: pick(TYPES),
-    typNazwa: pick(NAMES),
-    rola: pick(ROLES),
-  };
-  const cuD = {
-    meleeDefence: special(int(0, 40)),
-    armor: special(int(0, 30)),
-    counterTyp: pick(TYPES),
-    rola: pick(ROLES),
-    'Kara obrony z flanki (%)': pick([null, NaN, 0, 25, 50, 100]),
-    'Kara obrony z tylu (%)': pick([null, NaN, 0, 30, 75, 100]),
-  };
+  const unitA = unitDraw();
+  const unitD = unitDraw();
   const mods = () => ({
     atk: pick([0, 0.1, -0.25, 0.5, 1]),
     rangedAtk: pick([0, 0.2, -0.1, 0.5]),
@@ -312,11 +394,19 @@ function makeCase(i) {
   const defMods = mods();
   const attacker = {
     side: 'atk', q: aq, r: ar, facing: int(0, 5), onWallWalkway: false, mounted: chance(0.3),
-    bu: { id: 'A', nazwa: 'Atakujacy', hp: int(1, 150), maxHp: int(1, 200), pancerzBonusFrac: pick([0, 0.1]), parametryBonusFrac: pick([0, 0.2]) },
+    bu: {
+      id: 'A', nazwa: 'Atakujacy', kategoria: unitA.kategoria, stats: { ...UNIT_ROWS[unitA.idx], ...unitA.ovr },
+      veteranBonusFrac: unitA.veteranBonusFrac, armyHungry: unitA.armyHungry, goldDeficit: unitA.goldDeficit,
+      hp: int(1, 150), maxHp: int(1, 200), pancerzBonusFrac: pick([0, 0.1]), parametryBonusFrac: pick([0, 0.2]),
+    },
   };
   const defender = {
     side: 'def', q: dq, r: dr, facing: int(0, 5), onWallWalkway: onWall, mounted: false,
-    bu: { id: 'D', nazwa: 'Obronca', hp: int(1, 150), maxHp: int(1, 200), fortifiedInField: chance(0.3), pancerzBonusFrac: pick([0, 0.15]), parametryBonusFrac: 0 },
+    bu: {
+      id: 'D', nazwa: 'Obronca', kategoria: unitD.kategoria, stats: { ...UNIT_ROWS[unitD.idx], ...unitD.ovr },
+      veteranBonusFrac: unitD.veteranBonusFrac, armyHungry: unitD.armyHungry, goldDeficit: unitD.goldDeficit,
+      hp: int(1, 150), maxHp: int(1, 200), fortifiedInField: chance(0.3), pancerzBonusFrac: pick([0, 0.15]), parametryBonusFrac: 0,
+    },
   };
   return {
     i,
@@ -340,8 +430,10 @@ function makeCase(i) {
     diffD: pick([1, 1.2, 0.8, 1.5]),
     wallCiv: pick([1, 1.2, 1.5]),
     ctr: pick([0.5, 0.75, 1, 1.25, 1.5, 2, special(1)]),
-    cuA: cu,
-    cuD,
+    hunger: pick([0.75, 0.5, 1]),
+    gold: pick([0.75, 0.5, 1]),
+    unitA,
+    unitD,
     atkMods,
     defMods,
     attacker,
@@ -353,7 +445,7 @@ function runCase(c) {
   C = c;
   OUT = {
     sfx: 0, hpUpdates: 0, outcome: null, hitArgs: null, hitRet: null, rangeArgs: null, baseArgs: null,
-    rdm: null, rdmTyp: null, rdmJedn: null, bracesCalled: false, relativeHit: null,
+    rdm: null, rdmTyp: null, rdmJedn: null, bracesCalled: false, relativeHit: null, cuA: null, cuD: null,
   };
   const scene = makeScene();
   const key = 'A>D';
@@ -365,6 +457,10 @@ function runCase(c) {
   // isCharge = firstBlow && !bracesAgainstCharge(...) (pin: short-circuit). bracesAgainstCharge wolane tylko gdy firstBlow
   // i tylko w gałęzi wręcz; wiec isCharge = (braces wolane) && !braces.
   const isChargeTrue = OUT.bracesCalled && !c.braces;
+  const encUnit = (u) => ({
+    idx: u.idx, kategoria: u.kategoria, ovr: encRecord(u.ovr), vet: encodeNum(u.veteranBonusFrac),
+    hungry: u.armyHungry, gold: u.goldDeficit,
+  });
   return {
     id: c.i,
     in: {
@@ -389,8 +485,13 @@ function runCase(c) {
       diffD: encodeNum(c.diffD),
       wallCiv: encodeNum(c.wallCiv),
       ctr: encodeNum(c.ctr),
-      cuA: Object.fromEntries(Object.entries(c.cuA).map(([k, v]) => [k, encodeNum(v)])),
-      cuD: Object.fromEntries(Object.entries(c.cuD).map(([k, v]) => [k, encodeNum(v)])),
+      hunger: encodeNum(c.hunger),
+      gold: encodeNum(c.gold),
+      unitA: encUnit(c.unitA),
+      unitD: encUnit(c.unitD),
+      // CombatUnit zwrocony przez prawdziwy toCombatUnit (pin) - do porownania z to_combat_unit po stronie Rust.
+      cuA: encRecord(OUT.cuA),
+      cuD: encRecord(OUT.cuD),
       atkMods: Object.fromEntries(Object.entries(c.atkMods).map(([k, v]) => [k, encodeNum(v)])),
       defMods: Object.fromEntries(Object.entries(c.defMods).map(([k, v]) => [k, encodeNum(v)])),
       attacker: {
@@ -455,6 +556,10 @@ const cov = {
   defHpZeroAfter: cases.filter((c) => c.out.hit && Number(c.out.defHpAfter) === 0).length,
   nanCase: cases.filter((c) => JSON.stringify(c).includes('"NaN"')).length,
   infCase: cases.filter((c) => JSON.stringify(c).includes('Infinity')).length,
+  unitRowsUsed: new Set(cases.flatMap((c) => [c.in.unitA.idx, c.in.unitD.idx])).size,
+  unitRowsTotal: UNIT_ROWS.length,
+  unitOverride: cases.filter((c) => Object.keys(c.in.unitA.ovr).length + Object.keys(c.in.unitD.ovr).length > 0).length,
+  hungerOrGoldDeficit: cases.filter((c) => c.in.unitA.hungry || c.in.unitD.hungry || c.in.unitA.gold || c.in.unitD.gold).length,
 };
 
 const outDir = join(here, 'p6_siege_tactics_blow_full_vectors');
@@ -464,10 +569,13 @@ writeFileSync(
   `${JSON.stringify({
     pin: PIN,
     fragmentSha256: digest,
+    unitFragmentSha256: uDigest,
+    unitsSha256: unitsDigest,
     seed: SEED,
     brod: Object.fromEntries(Object.entries(BROD).map(([k, v]) => [k, encodeNum(v)])),
     fortify: encodeNum(FORTIFY),
     riverMult: encodeNum(RIVER_MULT),
+    units: UNIT_ROWS.map(encRecord),
     coverage: cov,
     cases,
   }, null, 1)}\n`,

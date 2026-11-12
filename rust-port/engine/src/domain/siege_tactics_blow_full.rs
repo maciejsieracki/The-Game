@@ -28,6 +28,7 @@ use crate::domain::siege_tactics_blow::{
 };
 use crate::domain::siege_tactics_blow_inputs::terrain_river_attack_multiplier;
 use crate::domain::siege_tactics_inputs_pos::{flank_rear_defense_penalty, JsVal};
+use crate::domain::siege_tactics_inputs_unit::CombatUnitModel;
 use crate::domain::siege_tactics_inputs_wall::{
     city_terr_mult, field_fortify_defense_bonus, terr_def_mult,
 };
@@ -302,6 +303,30 @@ pub fn compose_blow(input: &FullBlowInput) -> (BlowInput, Composition) {
         routed_after_morale: input.routed_after_morale,
     };
     (blow_input, comp)
+}
+
+/// Adapter: `cuA` z `CombatUnitModel` (wynik `to_combat_unit`, K5I2a4 - ten sam obiekt co `toCombatUnit` w pinie).
+pub fn attacker_from_cu(cu: &CombatUnitModel) -> AttackerCu {
+    AttackerCu {
+        weapon_damage: cu.weapon_damage,
+        piercing: cu.piercing,
+        melee_attack: cu.melee_attack,
+        // `cuA.missileAttack ?? 0`: model ma juz `combat_norm_field(.., 0)` (null/undefined -> 0).
+        missile_attack: Some(cu.missile_attack),
+        charge_bonus: cu.charge_bonus,
+        counter_typ: cu.counter_typ.clone(),
+        typ_nazwa: cu.typ_nazwa.js_to_string(),
+    }
+}
+
+/// Adapter: `cuD` z `CombatUnitModel` (pola obrony i kary z flanki/tylu).
+pub fn defender_from_cu(cu: &CombatUnitModel) -> DefenderCu {
+    DefenderCu {
+        melee_defence: cu.melee_defence,
+        armor: cu.armor,
+        kara_flanka: Some(cu.kara_flanka),
+        kara_tyl: Some(cu.kara_tyl),
+    }
 }
 
 /// Jeden cios `_singleBlow` end-to-end: skladanie [`compose_blow`] + rdzen [`single_blow`] (K5I).

@@ -12,12 +12,19 @@
 
 use civ_engine::domain::siege_tactics_blow::{DefenderState, HitArc, Outcome, SequenceRolls};
 use civ_engine::domain::siege_tactics_blow_full::{
-    compose_blow, single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu,
-    FullBlowInput,
+    attacker_from_cu, compose_blow, defender_from_cu, single_blow_full, AtkMods, AttackerCu,
+    BlowEnv, DefMods, DefenderCu, FullBlowInput,
 };
+use civ_engine::domain::siege_tactics_inputs_unit::{
+    to_combat_unit, BattleUnitIn, CombatUnitModel, StatRow, ToCombatUnitOpts, UVal,
+};
+use std::collections::HashMap;
 
 const VECTORS: &str = include_str!("p6_siege_tactics_blow_full_vectors/vectors.json");
 const FRAGMENT_SHA256: &str = "b2f9e19f1e35644e0e2ea636a9d50a02dd10d729355de5eb3eb35668910e5526";
+const UNIT_FRAGMENT_SHA256: &str =
+    "d1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c";
+const UNITS_SHA256: &str = "7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7";
 
 fn load() -> serde_json::Value {
     serde_json::from_str(VECTORS).expect("vectors.json jest poprawnym JSON-em")
@@ -59,10 +66,106 @@ fn arc(s: &str) -> HitArc {
     }
 }
 
-fn build_input(c: &serde_json::Value, top: &serde_json::Value) -> FullBlowInput {
+/// Tekst wartosci z tagiem (`["n","..."] | ["s","..."] | ["z"] | ["u"] | ["b",bool]`), jak w wektorach jednostek.
+fn tagged(v: &serde_json::Value) -> UVal {
+    let a = v.as_array().expect("tag");
+    match a[0].as_str().expect("tag str") {
+        "u" => UVal::Undef,
+        "z" => UVal::Null,
+        "n" => UVal::Num(num_from_tag(a[1].as_str().expect("liczba"))),
+        "s" => UVal::Str(a[1].as_str().expect("napis").to_string()),
+        "b" => UVal::Bool(a[1].as_bool().expect("bool")),
+        other => panic!("nieznany tag {other}"),
+    }
+}
+
+fn num_from_tag(s: &str) -> f64 {
+    match s {
+        "NaN" => f64::NAN,
+        "Infinity" => f64::INFINITY,
+        "-Infinity" => f64::NEG_INFINITY,
+        "-0" => -0.0,
+        other => other.parse::<f64>().expect("liczba w wektorze"),
+    }
+}
+
+/// Wiersze `gra/data/units.json` PINU (pola skalarne) z wektora.
+fn units_table(v: &serde_json::Value) -> Vec<StatRow> {
+    v.as_array()
+        .expect("units")
+        .iter()
+        .map(|row| {
+            row.as_object()
+                .expect("wiersz")
+                .iter()
+                .map(|(k, val)| (k.clone(), tagged(val)))
+                .collect::<HashMap<String, UVal>>()
+        })
+        .collect()
+}
+
+/// `cuA`/`cuD` z wiersza PINU: wiersz + nadpisanie NaN/Inf (jesli jest) -> `to_combat_unit` (K5I2a4) -> model.
+fn unit_models(c: &serde_json::Value, units: &[StatRow]) -> (CombatUnitModel, CombatUnitModel) {
     let i = &c["in"];
-    let cu_a = &i["cuA"];
-    let cu_d = &i["cuD"];
+    let one = |u: &serde_json::Value, hp: &serde_json::Value| -> CombatUnitModel {
+        let idx = u["idx"].as_u64().expect("idx") as usize;
+        let mut stats = units[idx].clone();
+        for (k, v) in u["ovr"].as_object().expect("ovr") {
+            stats.insert(k.clone(), tagged(v));
+        }
+        let bu = BattleUnitIn {
+            stats: Some(stats),
+            kategoria: u["kategoria"].as_str().expect("kategoria").to_string(),
+            hp: opt_num(hp),
+            veteran_bonus_frac: opt_num(&u["vet"]),
+            army_hungry: u["hungry"].as_bool().expect("hungry"),
+            gold_deficit: u["gold"].as_bool().expect("gold"),
+        };
+        to_combat_unit(
+            &bu,
+            &ToCombatUnitOpts {
+                army_hunger_stat_mult: num(&i["hunger"]),
+                skip_hunger: false,
+                gold_deficit_stat_mult: num(&i["gold"]),
+                skip_gold_deficit: false,
+            },
+        )
+    };
+    (
+        one(&i["unitA"], &i["attacker"]["hp"]),
+        one(&i["unitD"], &i["defender"]["hp"]),
+    )
+}
+
+/// Porownanie `CombatUnit` Rust (`to_combat_unit`) z `CombatUnit` pinu (observed w generatorze).
+fn cu_mismatches(js: &serde_json::Value, m: &CombatUnitModel) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut eq = |name: &str, key: &str, rust: f64| {
+        let want = match tagged(&js[key]) {
+            UVal::Num(n) => n,
+            UVal::Null | UVal::Undef => f64::NAN,
+            other => panic!("pole {key}: {other:?}"),
+        };
+        let js_is_undef = matches!(tagged(&js[key]), UVal::Undef);
+        if !js_is_undef && !same(rust, want) {
+            out.push(format!("{name}: rust={rust} js={want}"));
+        }
+    };
+    eq("meleeAttack", "meleeAttack", m.melee_attack);
+    eq("meleeDefence", "meleeDefence", m.melee_defence);
+    eq("weaponDamage", "weaponDamage", m.weapon_damage);
+    eq("armor", "armor", m.armor);
+    eq("piercing", "piercing", m.piercing);
+    eq("chargeBonus", "chargeBonus", m.charge_bonus);
+    eq("missileAttack", "missileAttack", m.missile_attack);
+    eq("Kara flanka", "Kara obrony z flanki (%)", m.kara_flanka);
+    eq("Kara tyl", "Kara obrony z tylu (%)", m.kara_tyl);
+    out
+}
+
+fn build_input(c: &serde_json::Value, top: &serde_json::Value, units: &[StatRow]) -> FullBlowInput {
+    let i = &c["in"];
+    let (cu_a, cu_d) = unit_models(c, units);
     let am = &i["atkMods"];
     let dm = &i["defMods"];
     let at_name = i["atkName"].as_str().expect("atkName");
@@ -70,15 +173,7 @@ fn build_input(c: &serde_json::Value, top: &serde_json::Value) -> FullBlowInput 
     FullBlowInput {
         ranged: i["ranged"].as_bool().expect("ranged"),
         hit_arc: arc(i["hitArc"].as_str().expect("hitArc")),
-        attacker: AttackerCu {
-            weapon_damage: num(&cu_a["weaponDamage"]),
-            piercing: num(&cu_a["piercing"]),
-            melee_attack: num(&cu_a["meleeAttack"]),
-            missile_attack: opt_num(&cu_a["missileAttack"]),
-            charge_bonus: num(&cu_a["chargeBonus"]),
-            counter_typ: cu_a["counterTyp"].as_str().expect("counterTyp").to_string(),
-            typ_nazwa: cu_a["typNazwa"].as_str().expect("typNazwa").to_string(),
-        },
+        attacker: attacker_from_cu(&cu_a),
         atk_mods: AtkMods {
             atk: num(&am["atk"]),
             ranged_atk: num(&am["rangedAtk"]),
@@ -86,12 +181,7 @@ fn build_input(c: &serde_json::Value, top: &serde_json::Value) -> FullBlowInput 
         },
         atk_diff_mult: num(&i["diffA"]),
         atk_mounted: i["attacker"]["mounted"].as_bool().expect("mounted"),
-        defender: DefenderCu {
-            melee_defence: num(&cu_d["meleeDefence"]),
-            armor: num(&cu_d["armor"]),
-            kara_flanka: opt_num(&cu_d["Kara obrony z flanki (%)"]),
-            kara_tyl: opt_num(&cu_d["Kara obrony z tylu (%)"]),
-        },
+        defender: defender_from_cu(&cu_d),
         def_mods: DefMods {
             obrona: num(&dm["obrona"]),
             pancerz: num(&dm["pancerz"]),
@@ -172,15 +262,35 @@ fn zgodnosc_z_pinem_end_to_end() {
         FRAGMENT_SHA256,
         "fragmenty pinu zmienione: wygeneruj wektory ponownie i zaktualizuj sume"
     );
+    assert_eq!(
+        v["unitFragmentSha256"].as_str().expect("sha jednostek"),
+        UNIT_FRAGMENT_SHA256,
+        "fragment toCombatUnit zmieniony"
+    );
+    assert_eq!(
+        v["unitsSha256"].as_str().expect("sha units"),
+        UNITS_SHA256,
+        "units.json pinu zmieniony"
+    );
     let cases = v["cases"].as_array().expect("cases");
     assert!(cases.len() >= 500, "za malo przypadkow: {}", cases.len());
+    let units = units_table(&v["units"]);
+    assert_eq!(units.len(), 75, "wiersze units.json pinu");
 
     let mut cov = Cover::default();
     let mut failures: Vec<String> = Vec::new();
 
     for c in cases {
         let id = c["id"].as_u64().expect("id");
-        let input = build_input(c, &v);
+        // CombatUnit: to_combat_unit (Rust) vs toCombatUnit pinu (JS, observed) - przed skladaniem ciosu.
+        let (cu_a, cu_d) = unit_models(c, &units);
+        for m in cu_mismatches(&c["in"]["cuA"], &cu_a) {
+            failures.push(format!("#{id} cuA {m}"));
+        }
+        for m in cu_mismatches(&c["in"]["cuD"], &cu_d) {
+            failures.push(format!("#{id} cuD {m}"));
+        }
+        let input = build_input(c, &v, &units);
         let o = &c["out"];
         let u = num(&c["in"]["u"]);
         let mut rolls = SequenceRolls::new(vec![u]);
