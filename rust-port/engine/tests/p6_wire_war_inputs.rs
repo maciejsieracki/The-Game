@@ -4,13 +4,14 @@
 //! i skladanie tick -> brake dla pary ze wspolna granica (kara wg epok). Rozbieznosci wzgledem web sa
 //! oznaczone `ROZNICA B` (asercja na wartosc Rust + komentarz kolejnosci web).
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use civ_engine::domain::ai_diplomacy_turn::PairKey;
 use civ_engine::domain::brake_power::{
     battle_power_model, objective_power_for_owner, BattlePowerModel, Component, PowerCoeffs,
 };
-use civ_engine::domain::brake_power_rest::has_pin_file_line_ref;
+use civ_engine::domain::brake_power_producers::no_producer_keys;
+use civ_engine::domain::brake_power_rest::{has_pin_file_line_ref, rest_no_producer_keys};
 use civ_engine::domain::diplomacy::{Relation, RelationStatus};
 use civ_engine::domain::playable::{PlayableCity, PlayablePlayer, PlayableState};
 use civ_engine::domain::turn_war_inputs::{
@@ -574,6 +575,50 @@ fn strict_missing_component_is_an_error_not_a_zero() {
     assert_eq!(
         run_war_turn(&mut ctx),
         Err(WarTurnError::PowerComponentsMissing(2, vec!["terytorium"]))
+    );
+}
+
+#[test]
+fn strict_non_finite_component_is_an_explicit_error_not_a_zero_or_propagated() {
+    // POWER-NAN-STRICT na poziomie pipeline'u: Provided(NaN/Inf) w produkcyjnym power_raw daje jawny
+    // `PowerComponentNonFinite` z kluczem skladnika (nie `PowerComponentsMissing`, nie zero, nie NaN w wyniku).
+    let state = state_with(None, "rzymianie", "kamien");
+    let cfg = production_config(&state).expect("config");
+    for bad in [f64::NAN, f64::INFINITY] {
+        let mut inputs = test_inputs(&state, &WarTurnState::default(), &[(1, 1.0), (2, 1.0)]);
+        let mut raw = inputs.power_raw[&2].clone();
+        raw.heksy_terytorium = Component::Provided(bad);
+        inputs.power_raw.insert(2, raw);
+        let mut war = WarTurnState::default();
+        let mut ctx = WarTurnContext {
+            war: &mut war,
+            turn: 1.0,
+            inputs: &inputs,
+            config: &cfg,
+        };
+        assert_eq!(
+            run_war_turn(&mut ctx),
+            Err(WarTurnError::PowerComponentNonFinite(2, vec!["terytorium"])),
+            "wartosc {bad} w skladniku ma byc jawnym bledem"
+        );
+    }
+}
+
+#[test]
+fn explicit_zero_reasons_match_no_producer_components_in_both_tables() {
+    // Mechaniczne egzekwowanie spojnosci ExplicitZero z NoProducer (dawniej tylko deklaracja w komentarzu):
+    // nowy producent, ktory zdejmie skladnik z NoProducer, bez usuniecia wpisu z EXPLICIT_ZERO_REASONS
+    // (lub odwrotnie) wywoluje czerwony test. Sprawdzane osobno dla obu tabel zrodel.
+    let reasons: BTreeSet<&str> = EXPLICIT_ZERO_REASONS.iter().map(|(k, _)| *k).collect();
+    let producers: BTreeSet<&str> = no_producer_keys().into_iter().collect();
+    let rest: BTreeSet<&str> = rest_no_producer_keys().into_iter().collect();
+    assert_eq!(
+        reasons, producers,
+        "COMPONENT_SOURCES NoProducer != EXPLICIT_ZERO_REASONS"
+    );
+    assert_eq!(
+        reasons, rest,
+        "REST_COMPONENT_SOURCES NoProducer != EXPLICIT_ZERO_REASONS"
     );
 }
 

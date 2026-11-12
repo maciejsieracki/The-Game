@@ -3,8 +3,10 @@
 //! r6: epoka wlasciciela ma producenta (`turn_war_epoch`, pin main.ts:2419; AI bez wpisu = jawny
 //! `gameStartEra()`, zrodlo `EpochSource`). r6 klocek 2 (WIRE-WAR-POP): `PlayableCity` niesie populacje i
 //! kulture (`#[serde(default)]`), wiec ludki, rekruci, kultura, terytorium i wspolna granica maja producentow.
-//! `advance_turn` z AI posiadajacym miasta konczy sie jawnym `WarTurnError::PowerComponentsMissing` dla
-//! skladnikow BEZ danych w stanie (infra, tech, religia; `UNPRODUCED_POWER_COMPONENTS`). BEZ cichych zer.
+//! r6 klocek 3 (WIRE-WAR-STORES): infra, tech i religia maja producentow z `PlayableStores`, wiec
+//! `UNPRODUCED_POWER_COMPONENTS` jest pusta i `advance_turn` z AI posiadajacym miasta przechodzi. Skladnik
+//! bez danych daje jawny `WarTurnError::PowerComponentsMissing`, a skladnik NaN/Inf jawny
+//! `WarTurnError::PowerComponentNonFinite`. BEZ cichych zer.
 //! Wejscia (`ObjectivePowerRaw`), blokady pokoju, parametry par hamulca
 //! (`diploBrakeWarParams`) i flaga multiwar. Zrodla (pin 07d2fbd72, tylko odczyt):
 //! - `diploBrakeWarParams` main.ts:11567 (wyzsza z dwoch `progWojnyRelacji`, N = `hamulecN` tej strony;
@@ -17,11 +19,11 @@
 //! STRICT w `run_war_turn`). Pole, ktorego stan nie niesie, a ktore nie jest faktem strukturalnym,
 //! jest bledem (`WarInputsError` / `WarTurnError`), nie zerem ani stala.
 //!
-//! r5: `PlayableState` NIE symuluje fazy Economy ani badan. Nie ma budynkow, tech, religii, ulepszen, walk
-//! ani epoki per wlasciciel (r6: epoka = jawny fallback pinu). Populacja i kultura miast (r6 klocek 2) sa
-//! polami stanu, ktore NIE ROSNA miedzy turami (brak Economy; `KNOWN_GAPS`). Skladniki bez danych w stanie
-//! sa `Missing` - produkcyjny `advance_turn` z AI posiadajacym miasta zwraca wiec jawny blad do czasu
-//! powstania producentow infra/tech/religia.
+//! r5 (stan historyczny): `PlayableState` NIE symulowal fazy Economy ani badan. Nie bylo budynkow, tech,
+//! religii, ulepszen, walk ani epoki per wlasciciel (r6: epoka = jawny fallback pinu). Populacja i kultura
+//! miast (r6 klocek 2) sa polami stanu, ktore NIE ROSNA miedzy turami (brak Economy; `KNOWN_GAPS`).
+//! Skladniki bez danych w stanie sa `Missing` i daja jawny blad STRICT; od r6 klocek 3 infra/tech/religia
+//! maja magazyny `PlayableStores` (puste = `Provided(0)` jako realny stan pusty, patrz `KNOWN_GAPS`).
 //!
 //! Identyfikatory: Rust numeruje gracza od 1 (`HUMAN_OWNER_ID`), web od 0. Pipeline dziala w
 //! przestrzeni Rust; `web_owner_id` / `rust_owner_id` to jedyne mapowanie (testowane na wektorze pinu).
