@@ -51,6 +51,40 @@ fn apply_events(w: &mut WarTurnState, events: &[Value]) {
 }
 
 #[test]
+fn meta_load_duplicate_keys_follow_web_map_set() {
+    // Web: for (const [oid, n] of saved) map.set(oid, n) -> ostatni zapis wygrywa, pozycja pierwsza.
+    let meta: Map<String, Value> =
+        serde_json::from_str(r#"{"battlePowerPtsByOwner":[[1,5],[2,4],[1,3]]}"#).expect("json");
+    let w = WarTurnState::from_meta_json(&meta);
+    assert_eq!(w.battle_power_pts_by_owner, vec![(1, 3.0), (2, 4.0)]);
+    assert_eq!(w.battle_power_pts_for(1), 3.0);
+    assert_eq!(w.battle_power_pts_for(2), 4.0);
+}
+
+#[test]
+fn meta_load_drops_null_pair_from_infinity_as_zero_contribution() {
+    // JSON.stringify(Infinity) = null: para z null nie wchodzi do akumulatora (wklad 0).
+    let meta: Map<String, Value> =
+        serde_json::from_str(r#"{"zdobyczePowerByOwner":[[3,null],[4,2]]}"#).expect("json");
+    let w = WarTurnState::from_meta_json(&meta);
+    assert_eq!(w.zdobycze_power_for(3), 0.0);
+    assert_eq!(w.zdobycze_power_by_owner, vec![(4, 2.0)]);
+}
+
+#[test]
+fn infinite_capture_gain_is_kept_in_state_and_written_as_null() {
+    // Nieskonczona moc ofiary przechodzi (jak web: gain > 0); zapis JSON daje null (jak JSON.stringify).
+    let mut w = WarTurnState::default();
+    w.record_capture_power_gain(5, f64::INFINITY, false);
+    assert_eq!(w.zdobycze_power_for(5), f64::INFINITY);
+    assert_eq!(
+        w.to_meta_json()["zdobyczePowerByOwner"],
+        serde_json::json!([[5, null]])
+    );
+    assert!(w == w.clone(), "Eq z +Infinity pozostaje zwrotne");
+}
+
+#[test]
 fn accumulator_sequences_match_pin_vectors() {
     let v = vectors();
     let cases = v["cases"].as_array().expect("cases");

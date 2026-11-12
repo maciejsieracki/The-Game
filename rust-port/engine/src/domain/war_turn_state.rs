@@ -146,6 +146,9 @@ pub struct WarTurnState {
 }
 
 /// Klucze `meta` akumulatorow mocy (web `battlePowerPtsByOwner`, `zdobyczePowerByOwner`); zarzadzane przez `WarTurnState`.
+///
+/// STAN WDROZENIA (nie-ukryty): producenci tych akumulatorow NIE sa jeszcze wolani z kodu bitwy, zdobywania
+/// ani eliminacji (osobne tematy). Do tego czasu akumulatory w produkcji pozostaja puste, wklad mocy = 0.
 pub const POWER_ACC_META_KEYS: [&str; 2] = ["battlePowerPtsByOwner", "zdobyczePowerByOwner"];
 
 /// Wszystkie klucze `meta`, ktore modul zapisuje lub czyta (do usuniecia przed ponownym zapisem).
@@ -456,7 +459,10 @@ fn turn_map_to(entries: &[(i64, f64)]) -> Value {
     )
 }
 
-// ZALOZENIE: `WarTurnState` zawiera `f64` tylko z JSON (skonczone), wiec `Eq` jest bezpieczne
+// ZALOZENIE: `WarTurnState` nie zawiera NaN, wiec zwrotnosc `==` zachodzi. Zrodla pol f64:
+// JSON (bez NaN/Infinity), `record_battle_win` (pts = 0 dla niefinitycznego pola), `record_capture_power_gain`
+// (przepuszcza tylko `gain > 0`, NaN odpada). `+Infinity` moze wejsc przez zdobycie z nieskonczona moca
+// ofiary (jak w webie); `Infinity == Infinity` jest prawdziwe, wiec `Eq` pozostaje poprawne
 // (potrzebne, bo `GameStateDto`/`PlayableState` derive `Eq`).
 impl Eq for WarTurnState {}
 
@@ -523,10 +529,8 @@ impl WarTurnState {
                 .get(RUST_WAR_WEARINESS_KEY)
                 .map(war_weariness_from)
                 .unwrap_or_default(),
-            battle_power_pts_by_owner: rest_until_of(meta, "battlePowerPtsByOwner")
-                .unwrap_or_default(),
-            zdobycze_power_by_owner: rest_until_of(meta, "zdobyczePowerByOwner")
-                .unwrap_or_default(),
+            battle_power_pts_by_owner: power_acc_of(meta, "battlePowerPtsByOwner"),
+            zdobycze_power_by_owner: power_acc_of(meta, "zdobyczePowerByOwner"),
         }
     }
 
@@ -629,6 +633,23 @@ impl WarTurnState {
             .retain(|(k, _)| *k != owner_id);
         self.zdobycze_power_by_owner.retain(|(k, _)| *k != owner_id);
     }
+}
+
+/// Odczyt akumulatora z `meta` z semantyka webowej petli `for (k, n) of saved: map.set(k, n)`:
+/// duplikat klucza nadpisuje wartosc (pozycja pierwszego wpisu zostaje). Para z polem nie-liczbowym
+/// (`null` z `JSON.stringify(Infinity)`) jest pomijana, czyli wklad 0. Znany brzeg: duplikat, w ktorym
+/// drugi wpis ma `null`, web zapisze jako `null`, a Rust zostawi poprzednia wartosc. Wejscie niemozliwe
+/// z zapisu webowego (`Array.from(Map.entries())` daje unikalne klucze).
+fn power_acc_of(meta: &Map<String, Value>, key: &str) -> Vec<(i64, f64)> {
+    let mut out: Vec<(i64, f64)> = Vec::new();
+    for (k, v) in rest_until_of(meta, key).unwrap_or_default() {
+        if let Some(slot) = out.iter_mut().find(|(e, _)| *e == k) {
+            slot.1 = v;
+        } else {
+            out.push((k, v));
+        }
+    }
+    out
 }
 
 /// Odczyt akumulatora (brak wpisu = 0, jak `?? 0` w webie).
