@@ -35,6 +35,7 @@
 //! (KLASY nie ma na bazie K5h). Przywrocenie `ru.range = origRange` w galezi muru jest no-op (nic w galezi nie
 //! zmienia `range`), wiec nie ma zdarzenia.
 
+use super::siege_tactics_blow::js_max;
 use super::siege_tactics_unit::{effective_flee_threshold, should_rout, CombatUnit};
 
 /// Web `MORALE_SURROUND_HIT` (`battleScene.ts:1142`).
@@ -183,11 +184,7 @@ fn manhattan(ac: i64, ar: i64, bc: i64, br: i64) -> i64 {
 
 /// `Math.max(0, x)` z zachowaniem NaN.
 fn js_max0(x: f64) -> f64 {
-    if x.is_nan() {
-        x
-    } else {
-        x.max(0.0)
-    }
+    js_max(0.0, x)
 }
 
 /// Web `_checkRout(ru)` (`battleScene.ts:9783-9797`) przez K5A.
@@ -606,5 +603,20 @@ mod tests {
         let r = activate_unit(&mut u, &scene(), &en, &mut NoOps);
         assert!(u.routed);
         assert_eq!(r.events.last(), Some(&ActivateEvent::Flee));
+    }
+}
+
+#[cfg(test)]
+mod js_max0_zero_sign_tests {
+    use super::js_max0;
+
+    /// Zachowanie `Math.max(0, x)` na tym module: `-0` -> `+0`, NaN zachowany, skonczone bez zmian.
+    #[test]
+    fn js_max0_zero_sign_jak_math_max() {
+        assert_eq!(js_max0(-0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(-3.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(f64::NEG_INFINITY).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(2.5), 2.5);
+        assert!(js_max0(f64::NAN).is_nan());
     }
 }

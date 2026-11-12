@@ -57,37 +57,8 @@ pub struct VirtualClock<T> {
     pub finished: bool,
 }
 
-/// Web `Math.max(a, b)` dla dwoch liczb: `NaN` propaguje, `+0` wygrywa z `-0`.
-pub fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a > b {
-        a
-    } else if b > a {
-        b
-    } else if a.is_sign_positive() {
-        a
-    } else {
-        b
-    }
-}
-
-/// Web `Math.min(a, b)` dla dwoch liczb: `NaN` propaguje, `-0` wygrywa z `+0`.
-pub fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a < b {
-        a
-    } else if b < a {
-        b
-    } else if a.is_sign_negative() {
-        a
-    } else {
-        b
-    }
-}
+/// Web `Math.max` / `Math.min` (NaN propaguje, znak zera jak w JS): wspolne helpery z `siege_tactics_blow`.
+pub use crate::domain::siege_tactics_blow::{js_max, js_min};
 
 impl<T> VirtualClock<T> {
     /// Nowy zegar: stan poczatkowy jak pola sceny webu (`vNow = 0`, `vLastWall = 0`, `vTimers = []`, `vTimerSeq = 0`).
