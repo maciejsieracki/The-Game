@@ -2,10 +2,10 @@ STATUS: PASS
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-SIEGE-TAKTYKA-K5I2A1-Q1
 GOAL: port 1:1 czystych funkcji terenowych (normTerrain, parseDefenseBonusPct, terrainDefenseMultiplier, terrainRiverAttackMultiplier, cityGatedTerrainMultiplier) z pinu 07d2fbd72 do nowego modulu z wektorami z wykonania tekstu pinu
-ZMIANY/COMMIT: baza a097600e1. Pliki (allowlista): rust-port/engine/src/domain/siege_tactics_inputs_terrain.rs (nowy), src/domain/mod.rs (tylko `pub mod`), tests/p6_siege_tactics_inputs_terrain.rs, tests/p6_siege_tactics_inputs_terrain_gen.mjs, tests/p6_siege_tactics_inputs_terrain_vectors/vectors.json, ten raport. SHA commitu: patrz `git log` gałęzi roboczej (SHA podany w odpowiedzi orkiestratorowi; commit zawiera ten raport).
+ZMIANY/COMMIT: baza a097600e1. Pliki (allowlista): rust-port/engine/src/domain/siege_tactics_inputs_terrain.rs (nowy), src/domain/mod.rs (tylko `pub mod`), tests/p6_siege_tactics_inputs_terrain.rs, tests/p6_siege_tactics_inputs_terrain_gen.mjs, tests/p6_siege_tactics_inputs_terrain_vectors/vectors.json, ten raport. SHA przeglądanego kodu: e5fd83368e596600b1093641fd747adfded6fd84 (ten raport jest w tym samym commicie; nazwa pliku 01-operator-r1.md wg dispatchu).
 TESTY: cargo fmt --check EXIT 0; cargo clippy --all-targets -- -D warnings EXIT 0; cargo test --lib 57 passed EXIT 0; cargo test --test p6_siege_tactics_blow (3) --test p6_siege_tactics_end (8) --test p6_siege_tactics_endcheck (9) --test p6_siege_tactics_inputs_terrain (7): wszystkie ok, EXIT 0. Testy K5I bez zmian.
 BLOKADY: brak
-RUNDY: 4/5 wg numeracji dispatchu (pierwsza runda K5I2a1 na bazie a097600e1; plik raportu 01-operator-r4.md wg polecenia)
+RUNDY: 1/5 wg dispatchu (pierwsza runda K5I2a1 na bazie a097600e1; wcześniejsza etykieta "r4" w commicie i nazwie pliku była błędna)
 NASTĘPNY KROK: Evaluator
 
 ## Lokalizacja w pinie (potwierdzona grepem)
