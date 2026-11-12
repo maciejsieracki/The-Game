@@ -63,7 +63,7 @@ const panelInfo = (page) => page.evaluate(() => {
     const s = await C.openMenu(browser);
     const page = s.page;
     let dialogMode = 'accept'; let dialogSeen = 0;
-    page.on('dialog', (d) => { dialogSeen++; if (dialogMode === 'dismiss') d.dismiss(); else d.accept(); });
+    let lastDialog = ''; page.on('dialog', (d) => { dialogSeen++; lastDialog = d.message(); if (dialogMode === 'dismiss') d.dismiss(); else d.accept(); });
     await page.evaluate(() => window.__cityStateStartUnitsTestDebug.startNewGame('normal', 2, 'normal'));
     await C.waitAwaitingCity(page);
     await C.foundCapital(page);
@@ -115,6 +115,12 @@ const panelInfo = (page) => page.evaluate(() => {
     out.p1 = await panelInfo(page);
     await page.screenshot({ path: C.EVID + '/03-panel-administratora-ulepszen-przed-zatrudnieniem.png' });
     ok(out.p1 && out.p1.confirmDisabled === false, 'z 500 w skarbcu Zatrudnij aktywne', out.p1);
+    // okno potwierdzenia zatrudnienia: Anuluj = bez zmian; potem Potwierdź (poniżej) zatrudnia
+    dialogMode = 'dismiss'; const seen0 = dialogSeen;
+    await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(600);
+    const stCancel = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
+    ok(dialogSeen === seen0 + 1 && /40/.test(lastDialog) && /Bonusy/.test(lastDialog) && !stCancel.hired && stCancel.treasury === t0, 'Zatrudnij -> okno z kosztem i bonusami; Anuluj nic nie zmienia (niezatrudniony, skarbiec bez zmian)', { lastDialog, stCancel, t0 });
+    dialogMode = 'accept';
     await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(800);
     const st = await page.evaluate((i) => window.__civTest.impAdminState(i), cap.id);
     out.p2 = await panelInfo(page);
@@ -156,6 +162,11 @@ const panelInfo = (page) => page.evaluate(() => {
     await page.screenshot({ path: C.EVID + '/06-panel-administratora-miasta.png' });
     ok(out.city0 && out.city0.kind === 'city' && /%/.test(out.city0.bonuses) && /40/.test(out.city0.cost), 'administrator miasta: panel z bonusami % (z silnika) i kosztem', out.city0);
     const tc0 = (await page.evaluate((i) => window.__civTest.adminState(i), cap.id)).treasury;
+    dialogMode = 'dismiss';
+    await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(600);
+    const acCancel = await page.evaluate((i) => window.__civTest.adminState(i), cap.id);
+    ok(!acCancel.hired && /korupcja/.test(lastDialog) && /40/.test(lastDialog), 'administrator miasta: okno z kosztem i bonusami; Anuluj nic nie zmienia', { lastDialog, acCancel });
+    dialogMode = 'accept';
     await page.evaluate(() => document.querySelector('[data-adm-panel-confirm]').click()); await wait(800);
     const ac = await page.evaluate((i) => window.__civTest.adminState(i), cap.id);
     ok(ac.hired && ac.working && ac.treasury === tc0 - 40, 'administrator miasta: Zatrudnij działa jak dotąd (−40)', { tc0, ac });
