@@ -532,6 +532,34 @@ impl PlayableStores {
 }
 
 impl PlayableState {
+    /// Adapter zdarzenia "wygrana bitwy" dla akumulatora mocy (R-RUSTPORT-P6-POWER-AKUMULATORY-WIRING-Q1).
+    /// Deleguje do `WarTurnState::record_battle_win` (web main.ts:34487-34490). BRAK wolajacego w produkcji:
+    /// petla walki Rust (`combat::resolve_combat`) nie ma produkcyjnego wywolania - patrz raport.
+    pub fn power_record_battle_win(&mut self, winner_owner_id: i64, enemy_field_m: f64) {
+        self.war.record_battle_win(winner_owner_id, enemy_field_m);
+    }
+
+    /// Adapter zdarzenia "zdobycie stolicy / obozu barbarzyncow" dla akumulatora mocy
+    /// (web main.ts:35669-35675). Deleguje do `WarTurnState::record_capture_power_gain`.
+    /// BRAK wolajacego w produkcji: `apply_transfer_with_effects` nie jest wolany poza testami.
+    pub fn power_record_city_capture(
+        &mut self,
+        new_owner_id: i64,
+        lost_power: f64,
+        barb_captor: bool,
+    ) {
+        self.war
+            .record_capture_power_gain(new_owner_id, lost_power, barb_captor);
+    }
+
+    /// Adapter eliminacji wlasciciela dla akumulatorow mocy (web main.ts:35399, :35410).
+    /// Deleguje do `WarTurnState::clear_power_accumulators_for_owner`. BRAK wolajacego w produkcji.
+    pub fn power_clear_eliminated_owner(&mut self, owner_id: i64) {
+        self.war.clear_power_accumulators_for_owner(owner_id);
+    }
+}
+
+impl PlayableState {
     /// Empty state used only by the deterministic bridge mock.
     pub fn empty() -> Self {
         Self {
