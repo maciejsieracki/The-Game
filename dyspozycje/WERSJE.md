@@ -1,3 +1,9 @@
+## ROBOCZA 3cea76c2 -- 2026-11-06 -- FALA 661: FALA 661: zapis gry zablokowany w trakcie bitwy (W27) + poprawione testy B4b (W26) i fallbacku (W29) (testowa)
+
+- R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1 (kod) + R-WEB-SIEGE-AUTO-BREACH-ATTACKERS-ENTER-BEHIND-WALL-Q1 i R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1 (tylko testy)
+- Weryfikacja: tsc, 5 bramek referencyjnych, battle-save-disabled 8/0, audio-sidecar PASS; FC: live Chromium 8/0, mutacja czerwieni
+- Limity: autozapis rotacyjny i menu pauzy na zywo NIE_ZMIERZONO; straty fallbacku i parytet AUTO 1x vs SKIP 1x NIE_ZMIERZONO
+
 ## ROBOCZA 847ff30b -- 2026-11-06 -- FALA 660: FALA 660: handel AI do gracza — wyrównane oferty, Przyjmij aktywne (W4) (testowa)
 
 - R-WEB-AI-TRADE-WIRING-E2E-Q1
