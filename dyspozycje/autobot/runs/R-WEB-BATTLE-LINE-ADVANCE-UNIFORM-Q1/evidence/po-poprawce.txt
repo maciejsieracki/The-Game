@@ -1,0 +1,195 @@
+
+== open / atk  (approach window: 13 rounds, max spread 0)
+krok 0: rozrzut=0 q=4,4,4,4,4,4,4,4,4
+krok 1: rozrzut=0 q=6,6,6,6,6,6,6,6,6
+krok 2: rozrzut=0 q=8,8,8,8,8,8,8,8,8
+krok 3: rozrzut=0 q=10,10,10,10,10,10,10,10,10
+krok 4: rozrzut=0 q=12,12,12,12,12,12,12,12,12
+krok 5: rozrzut=0 q=14,14,14,14,14,14,14,14,14
+krok 6: rozrzut=0 q=16,16,16,16,16,16,16,16,16
+krok 7: rozrzut=0 q=18,18,18,18,18,18,18,18,18
+krok 8: rozrzut=0 q=20,20,20,20,20,20,20,20,20
+krok 9: rozrzut=0 q=22,22,22,22,22,22,22,22,22
+krok 10: rozrzut=0 q=24,24,24,24,24,24,24,24,24
+krok 11: rozrzut=0 q=26,26,26,26,26,26,26,26,26
+krok 12: rozrzut=0 q=28,28,28,28,28,28,28,28,28
+
+== open / def  (approach window: 13 rounds, max spread 0)
+krok 0: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 1: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 2: rozrzut=0 q=58,58,58,58,58,58,58,58,58
+krok 3: rozrzut=0 q=56,56,56,56,56,56,56,56,56
+krok 4: rozrzut=0 q=54,54,54,54,54,54,54,54,54
+krok 5: rozrzut=0 q=52,52,52,52,52,52,52,52,52
+krok 6: rozrzut=0 q=50,50,50,50,50,50,50,50,50
+krok 7: rozrzut=0 q=48,48,48,48,48,48,48,48,48
+krok 8: rozrzut=0 q=46,46,46,46,46,46,46,46,46
+krok 9: rozrzut=0 q=44,44,44,44,44,44,44,44,44
+krok 10: rozrzut=0 q=42,42,42,42,42,42,42,42,42
+krok 11: rozrzut=0 q=40,40,40,40,40,40,40,40,40
+krok 12: rozrzut=0 q=38,38,38,38,38,38,38,38,38
+
+== rocks / atk  (approach window: 23 rounds, max spread 2)
+krok 0: rozrzut=0 q=4,4,4,4,4,4,4,4,4
+krok 1: rozrzut=1 q=6,6,5,6,6,6,6,6,6
+krok 2: rozrzut=2 q=7,7,5,6,7,7,7,7,7
+krok 3: rozrzut=1 q=7,7,6,6,7,7,7,7,7
+krok 4: rozrzut=2 q=8,8,8,6,8,8,8,8,8
+krok 5: rozrzut=2 q=8,8,8,6,8,8,8,8,8
+krok 6: rozrzut=0 q=8,8,8,8,8,8,8,8,8
+krok 7: rozrzut=0 q=10,10,10,10,10,10,10,10,10
+krok 8: rozrzut=1 q=12,12,12,12,12,12,12,12,11
+krok 9: rozrzut=0 q=13,13,13,13,13,13,13,13,13
+krok 10: rozrzut=0 q=15,15,15,15,15,15,15,15,15
+krok 11: rozrzut=0 q=17,17,17,17,17,17,17,17,17
+krok 12: rozrzut=0 q=19,19,19,19,19,19,19,19,19
+krok 13: rozrzut=0 q=21,21,21,21,21,21,21,21,21
+krok 14: rozrzut=0 q=23,23,23,23,23,23,23,23,23
+krok 15: rozrzut=0 q=25,25,25,25,25,25,25,25,25
+krok 16: rozrzut=0 q=27,27,27,27,27,27,27,27,27
+krok 17: rozrzut=0 q=29,29,29,29,29,29,29,29,29
+krok 18: rozrzut=0 q=31,31,31,31,31,31,31,31,31
+krok 19: rozrzut=1 q=33,33,33,33,33,33,33,33,32
+krok 20: rozrzut=0 q=34,34,34,34,34,34,34,34,34
+krok 21: rozrzut=0 q=36,36,36,36,36,36,36,36,36
+krok 22: rozrzut=0 q=38,38,38,38,38,38,38,38,38
+
+== rocks / def  (approach window: 23 rounds, max spread 2)
+krok 0: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 1: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 2: rozrzut=2 q=58,58,59,59,60,58,58,58,58
+krok 3: rozrzut=2 q=58,58,58,58,60,58,58,58,58
+krok 4: rozrzut=2 q=58,58,58,58,60,58,58,58,58
+krok 5: rozrzut=2 q=58,58,58,58,60,58,58,58,58
+krok 6: rozrzut=2 q=58,58,58,58,60,58,58,58,58
+krok 7: rozrzut=0 q=58,58,58,58,58,58,58,58,58
+krok 8: rozrzut=2 q=56,56,58,56,57,56,56,56,58
+krok 9: rozrzut=2 q=56,56,58,56,56,56,56,56,57
+krok 10: rozrzut=2 q=56,56,58,56,56,56,56,56,56
+krok 11: rozrzut=2 q=56,56,58,56,56,56,56,56,56
+krok 12: rozrzut=2 q=56,56,58,56,56,56,56,56,56
+krok 13: rozrzut=2 q=56,56,58,56,56,56,56,56,56
+krok 14: rozrzut=1 q=56,56,57,56,56,56,56,56,56
+krok 15: rozrzut=0 q=55,55,55,55,55,55,55,55,55
+krok 16: rozrzut=2 q=53,53,54,53,53,53,53,53,55
+krok 17: rozrzut=1 q=53,53,53,53,53,53,53,53,54
+krok 18: rozrzut=0 q=52,52,52,52,52,52,52,52,52
+krok 19: rozrzut=2 q=50,50,51,50,52,50,50,50,51
+krok 20: rozrzut=1 q=50,50,50,50,51,50,50,50,51
+krok 21: rozrzut=1 q=49,49,49,49,49,49,49,49,50
+krok 22: rozrzut=0 q=48,48,48,48,48,48,48,48,48
+
+== wall / atk  (approach window: 31 rounds, max spread 2)
+krok 0: rozrzut=0 q=4,4,4,4,4,4,4,4,4
+krok 1: rozrzut=1 q=5,5,6,6,6,6,6,6,6
+krok 2: rozrzut=1 q=7,6,6,7,7,7,7,7,7
+krok 3: rozrzut=2 q=8,6,6,7,7,8,8,8,8
+krok 4: rozrzut=2 q=8,8,6,7,7,8,8,8,8
+krok 5: rozrzut=2 q=8,8,6,7,7,8,8,8,8
+krok 6: rozrzut=2 q=8,8,6,8,7,8,8,8,8
+krok 7: rozrzut=2 q=8,8,6,8,7,8,8,8,8
+krok 8: rozrzut=2 q=8,8,6,8,7,8,8,8,8
+krok 9: rozrzut=1 q=8,8,7,8,7,8,8,8,8
+krok 10: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 11: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 12: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 13: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 14: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 15: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 16: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 17: rozrzut=2 q=9,9,9,9,7,9,9,9,9
+krok 18: rozrzut=0 q=9,9,9,9,9,9,9,9,9
+krok 19: rozrzut=0 q=11,11,11,11,11,11,11,11,11
+krok 20: rozrzut=0 q=13,13,13,13,13,13,13,13,13
+krok 21: rozrzut=0 q=15,15,15,15,15,15,15,15,15
+krok 22: rozrzut=1 q=17,17,17,17,17,17,17,17,16
+krok 23: rozrzut=0 q=18,18,18,18,18,18,18,18,18
+krok 24: rozrzut=0 q=20,20,20,20,20,20,20,20,20
+krok 25: rozrzut=0 q=22,22,22,22,22,22,22,22,22
+krok 26: rozrzut=0 q=24,24,24,24,24,24,24,24,24
+krok 27: rozrzut=0 q=26,26,26,26,26,26,26,26,26
+krok 28: rozrzut=0 q=28,28,28,28,28,28,28,28,28
+krok 29: rozrzut=0 q=30,30,30,30,30,30,30,30,30
+krok 30: rozrzut=0 q=32,32,32,32,32,32,32,32,32
+
+== wall / def  (approach window: 31 rounds, max spread 2)
+krok 0: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 1: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 2: rozrzut=2 q=59,59,59,60,59,60,58,58,58
+krok 3: rozrzut=2 q=58,58,58,60,58,60,58,58,58
+krok 4: rozrzut=1 q=58,58,58,59,58,59,58,58,58
+krok 5: rozrzut=2 q=57,57,57,57,57,59,57,57,57
+krok 6: rozrzut=1 q=57,57,57,57,57,58,57,57,57
+krok 7: rozrzut=2 q=56,57,57,57,56,58,56,56,56
+krok 8: rozrzut=2 q=56,57,57,57,56,58,56,56,56
+krok 9: rozrzut=2 q=56,56,57,57,56,58,56,56,56
+krok 10: rozrzut=1 q=56,56,57,57,56,57,56,56,56
+krok 11: rozrzut=2 q=55,55,57,57,55,55,55,55,55
+krok 12: rozrzut=1 q=55,55,56,56,55,55,55,55,55
+krok 13: rozrzut=2 q=54,54,56,56,54,54,54,54,54
+krok 14: rozrzut=2 q=54,54,55,56,54,54,54,54,54
+krok 15: rozrzut=2 q=54,54,54,56,54,54,54,54,54
+krok 16: rozrzut=2 q=54,54,54,56,54,54,54,54,54
+krok 17: rozrzut=1 q=54,54,54,55,54,54,54,54,54
+krok 18: rozrzut=0 q=53,53,53,53,53,53,53,53,53
+krok 19: rozrzut=2 q=51,51,52,52,53,53,51,51,51
+krok 20: rozrzut=1 q=51,51,51,51,52,52,51,51,51
+krok 21: rozrzut=0 q=50,50,50,50,50,50,50,50,50
+krok 22: rozrzut=2 q=48,48,48,49,49,49,48,48,50
+krok 23: rozrzut=2 q=48,48,48,48,48,48,48,48,50
+krok 24: rozrzut=1 q=48,48,48,48,48,48,48,48,49
+krok 25: rozrzut=0 q=47,47,47,47,47,47,47,47,47
+krok 26: rozrzut=1 q=45,45,45,45,46,46,45,45,46
+krok 27: rozrzut=1 q=44,44,44,44,44,44,44,44,45
+krok 28: rozrzut=0 q=43,43,43,43,43,43,43,43,43
+krok 29: rozrzut=1 q=41,41,41,41,42,42,41,41,42
+krok 30: rozrzut=1 q=40,40,40,40,40,40,40,40,41
+
+== frozen: round 14 advance front q=14
+
+== mixedSpeed / atk  (approach window: 13 rounds, max spread 0)
+krok 0: rozrzut=0 q=4,4,4,4,4,4,4,4,4
+krok 1: rozrzut=0 q=6,6,6,6,6,6,6,6,6
+krok 2: rozrzut=0 q=8,8,8,8,8,8,8,8,8
+krok 3: rozrzut=0 q=10,10,10,10,10,10,10,10,10
+krok 4: rozrzut=0 q=12,12,12,12,12,12,12,12,12
+krok 5: rozrzut=0 q=14,14,14,14,14,14,14,14,14
+krok 6: rozrzut=0 q=16,16,16,16,16,16,16,16,16
+krok 7: rozrzut=0 q=18,18,18,18,18,18,18,18,18
+krok 8: rozrzut=0 q=20,20,20,20,20,20,20,20,20
+krok 9: rozrzut=0 q=22,22,22,22,22,22,22,22,22
+krok 10: rozrzut=0 q=24,24,24,24,24,24,24,24,24
+krok 11: rozrzut=0 q=26,26,26,26,26,26,26,26,26
+krok 12: rozrzut=0 q=28,28,28,28,28,28,28,28,28
+
+== mixedSpeed / def  (approach window: 13 rounds, max spread 0)
+krok 0: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 1: rozrzut=0 q=60,60,60,60,60,60,60,60,60
+krok 2: rozrzut=0 q=58,58,58,58,58,58,58,58,58
+krok 3: rozrzut=0 q=56,56,56,56,56,56,56,56,56
+krok 4: rozrzut=0 q=54,54,54,54,54,54,54,54,54
+krok 5: rozrzut=0 q=52,52,52,52,52,52,52,52,52
+krok 6: rozrzut=0 q=50,50,50,50,50,50,50,50,50
+krok 7: rozrzut=0 q=48,48,48,48,48,48,48,48,48
+krok 8: rozrzut=0 q=46,46,46,46,46,46,46,46,46
+krok 9: rozrzut=0 q=44,44,44,44,44,44,44,44,44
+krok 10: rozrzut=0 q=42,42,42,42,42,42,42,42,42
+krok 11: rozrzut=0 q=40,40,40,40,40,40,40,40,40
+krok 12: rozrzut=0 q=38,38,38,38,38,38,38,38,38
+PASS open/atk: max front spread 0 <= 2
+PASS open/def: max front spread 0 <= 2
+PASS rocks/atk: max front spread 2 <= 2
+PASS rocks/atk: front regains cohesion (spread <= 1) within 3 rounds of clearing the obstacle
+PASS rocks/atk: end of approach window spread 0 <= 1
+PASS rocks/def: max front spread 2 <= 2
+PASS rocks/def: front regains cohesion (spread <= 1) within 3 rounds of clearing the obstacle
+PASS rocks/def: end of approach window spread 0 <= 1
+PASS wall/atk: max front spread 2 <= 2
+PASS wall/atk: front regains cohesion (spread <= 1) within 3 rounds of clearing the obstacle
+PASS wall/atk: end of approach window spread 0 <= 1
+PASS wall/def: max front spread 2 <= 2
+PASS wall/def: front regains cohesion (spread <= 1) within 3 rounds of clearing the obstacle
+PASS wall/def: end of approach window spread 1 <= 1
+PASS frozen: rest of the line advances past q=14 by round 14 (q=14)
+PASS mixedSpeed/atk: max front spread 0 <= 2
+PASS mixedSpeed/def: max front spread 0 <= 2
