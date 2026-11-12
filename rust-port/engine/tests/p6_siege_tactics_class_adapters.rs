@@ -10,13 +10,20 @@
 //!
 //! Uwaga: wynik K3 jest cache'owany po krotce flag (K3 wykonuje BFS, ~6000 odwiedzin); cache nie omija porownania,
 //! bo obie strony (adapter i wektor) sa liczone i porownywane dla kazdej jednostki.
-//! `is_catapult` jest wejsciem wolajacego (brak klasyfikatora w wektorach), tu ustawiane identycznie po obu stronach.
+//! `is_catapult` jest wejsciem wolajacego (brak klasyfikatora w wektorach, NIE_ZMIERZONO): testy wariantuja go
+//! jawnie (false i true) po obu stronach porownania, zeby galez K5H zalezna od katapulty byla pokryta.
+//!
+//! Test (4) [`adapter_wires_flags_into_expected_fields`] nie korzysta z adaptera do budowy oczekiwanych struktur:
+//! literaly ApproachUnit / TowerUnit / ActivateUnit sa skladane z pol wektora i wejsc wolajacego, a adapter ma
+//! ich dokladnie dorownac. Wylapuje zamiane pol (np. `is_ram` <-> `is_siege_tower`), ktorej testy (3) nie widza,
+//! bo obie strony kompozycji uzywaja tego samego okablowania.
+//! Test (5) [`each_class_flag_changes_some_decision`] dowodzi, ze scena jest wrazliwa na kazda flage.
 
 use civ_engine::domain::siege_tactics_activate::{
     activate_unit, ActivateOps, ActivateResult, ActivateScene, ActivateUnit, EnemyRef,
 };
 use civ_engine::domain::siege_tactics_approach::{
-    siege_approach_restricted, ApproachWallState, Threat,
+    siege_approach_restricted, ApproachUnit, ApproachWallState, Threat,
 };
 use civ_engine::domain::siege_tactics_class_adapters::{
     activate_unit as adapt_activate, approach_unit, class_flags, tower_unit, ClassFlags,
@@ -269,7 +276,7 @@ struct Decision {
     activate: (ActivateResult, ActivateUnit),
 }
 
-fn decide(flags: &ClassFlags, common: &CommonFields) -> Decision {
+fn decide(flags: &ClassFlags, common: &CommonFields, catapult: bool) -> Decision {
     // K1
     let approach: Vec<bool> = wall_variants()
         .iter()
@@ -298,7 +305,7 @@ fn decide(flags: &ClassFlags, common: &CommonFields) -> Decision {
         routed: false,
         is_catapult: false,
     }];
-    let mut au = adapt_activate(activate_base(common), flags, false);
+    let mut au = adapt_activate(activate_base(common), flags, catapult);
     let scene = activate_scene();
     let res = activate_unit(&mut au, &scene, &enemies, &mut StubOps);
 
@@ -370,17 +377,153 @@ fn composition_adapter_flags_drive_same_decisions_as_vector_flags() {
             );
 
             for (vi, common) in commons.iter().enumerate() {
-                let from_adapter = decide(&adapter_flags, common);
-                let from_vector = decide(&vector_flags, common);
-                assert_eq!(
-                    from_adapter, from_vector,
-                    "decyzje dla {:?} / {:?} / wariant {vi}",
-                    c.unit, s.shoot
-                );
-                compared += 1;
+                for catapult in [false, true] {
+                    let from_adapter = decide(&adapter_flags, common, catapult);
+                    let from_vector = decide(&vector_flags, common, catapult);
+                    assert_eq!(
+                        from_adapter, from_vector,
+                        "decyzje dla {:?} / {:?} / wariant {vi} / katapulta {catapult}",
+                        c.unit, s.shoot
+                    );
+                    compared += 1;
+                }
             }
         }
     }
     assert!(units >= 300, "jednostek kompozycji: {units}");
-    assert_eq!(compared, units * commons.len());
+    assert_eq!(compared, units * commons.len() * 2);
+}
+
+/// Oczekiwany `ApproachUnit` zlozony z pol wektora (`v`, `s`) i wspolnych pol (`c`), bez adaptera.
+fn expected_approach(c: &CommonFields, v: &NameCase, s: &ShootCase) -> ApproachUnit {
+    ApproachUnit {
+        side_atk: c.side_atk,
+        routed: c.routed,
+        on_wall_walkway: c.on_wall_walkway,
+        is_siege_unit: v.siege_unit,
+        primary_ranged: c.primary_ranged,
+        can_shoot: s.can_shoot,
+        shooting_disabled: c.shooting_disabled,
+        mounted: c.mounted,
+    }
+}
+
+#[test]
+fn adapter_wires_flags_into_expected_fields() {
+    let (names, shoots) = load();
+    let commons = common_variants();
+    let mut checked = 0usize;
+
+    for c in &names {
+        for s in &shoots {
+            for common in &commons {
+                // K1: pola wejscia ApproachUnit.
+                let flags = class_flags(&c.unit, &s.shoot);
+                assert_eq!(
+                    approach_unit(common, &flags),
+                    expected_approach(common, c, s),
+                    "K1 {:?} / {:?}",
+                    c.unit,
+                    s.shoot
+                );
+
+                // K3: pola TowerUnit, w tym is_ram i is_siege_tower z wlasnych pol.
+                let expected_tower = TowerUnit {
+                    walk: tower_walk(),
+                    side_atk: common.side_atk,
+                    routed: common.routed,
+                    on_wall_walkway: common.on_wall_walkway,
+                    mounted: common.mounted,
+                    primary_ranged: common.primary_ranged,
+                    can_shoot: s.can_shoot,
+                    shooting_disabled: common.shooting_disabled,
+                    is_siege_unit: c.siege_unit,
+                    is_ram: c.ram,
+                    is_siege_tower: c.siege_tower,
+                };
+                assert_eq!(
+                    tower_unit(tower_walk(), common, &flags),
+                    expected_tower,
+                    "K3 {:?} / {:?}",
+                    c.unit,
+                    s.shoot
+                );
+
+                // K5H: pola ActivateUnit; is_catapult jest wejsciem wolajacego.
+                for catapult in [false, true] {
+                    let expected_activate = ActivateUnit {
+                        can_shoot: s.can_shoot,
+                        is_siege_unit: c.siege_unit,
+                        is_siege_tower: c.siege_tower,
+                        is_ram: c.ram,
+                        is_catapult: catapult,
+                        ..activate_base(common)
+                    };
+                    assert_eq!(
+                        adapt_activate(activate_base(common), &flags, catapult),
+                        expected_activate,
+                        "K5H {:?} / {:?} / katapulta {catapult}",
+                        c.unit,
+                        s.shoot
+                    );
+                    checked += 1;
+                }
+            }
+        }
+    }
+    assert_eq!(checked, names.len() * shoots.len() * commons.len() * 2);
+}
+
+/// Wrazliwosc sceny: dla kazdej flagi istnieje wariant (pozostale flagi, wspolne pola, katapulta), w ktorym jej
+/// przelaczenie zmienia wynik K1/K3/K5H. Bez tego test (3) moglby przejsc dla sceny, ktora flagi ignoruje.
+#[test]
+fn each_class_flag_changes_some_decision() {
+    let commons = common_variants();
+    let flag_set = |bits: u8| ClassFlags {
+        is_siege_unit: bits & 1 != 0,
+        is_siege_tower: bits & 2 != 0,
+        is_ram: bits & 4 != 0,
+        can_shoot: bits & 8 != 0,
+    };
+    let flip = |f: ClassFlags, idx: usize| match idx {
+        0 => ClassFlags {
+            is_siege_unit: !f.is_siege_unit,
+            ..f
+        },
+        1 => ClassFlags {
+            is_siege_tower: !f.is_siege_tower,
+            ..f
+        },
+        2 => ClassFlags {
+            is_ram: !f.is_ram,
+            ..f
+        },
+        _ => ClassFlags {
+            can_shoot: !f.can_shoot,
+            ..f
+        },
+    };
+    let mut sensitive = [false; 5];
+
+    for bits in 0u8..16 {
+        let base = flag_set(bits);
+        for common in &commons {
+            for catapult in [false, true] {
+                let d0 = decide(&base, common, catapult);
+                for (idx, hit) in sensitive.iter_mut().enumerate().take(4) {
+                    if !*hit && decide(&flip(base, idx), common, catapult) != d0 {
+                        *hit = true;
+                    }
+                }
+            }
+            if !sensitive[4] && decide(&base, common, true) != decide(&base, common, false) {
+                sensitive[4] = true;
+            }
+        }
+    }
+    assert_eq!(
+        sensitive,
+        [true; 5],
+        "flagi bez wplywu na decyzje [is_siege_unit, is_siege_tower, is_ram, can_shoot, is_catapult]: {sensitive:?}"
+    );
 }
