@@ -18654,6 +18654,8 @@ async function boot(): Promise<void> {
 
     function cityHasAffordableUnitRecruitment(city: City, ctx: AvailabilityContext): boolean {
       if (city.ownerId !== 0) return false;
+      // Ta sama blokada co w panelu rekrutacji (cityPanel: isCityUnderSiege → brak werbunku).
+      if (isCityUnderSiege([city], city)) return false;
       const techs = unlockedTechsForOwner(city.ownerId);
       const treasury = player.skarbiec;
       const pool = ownerSurowcePoolFor(city.ownerId);
