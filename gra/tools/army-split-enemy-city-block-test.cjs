@@ -128,6 +128,27 @@ console.log('Scenariusz F: wrogie miasto na heksie origin nie zmienia blokady ce
   assert(!has(dests, armyQ, armyR), 'origin bez allowSameHex nie jest dodany jako cel');
 }
 
+console.log('Scenariusz G: wpięcie w main.ts (3 wywołania findSplitDestHexes + guard onSplit + etykieta)');
+{
+  // Test źródłowy: mutacja wpięcia (cofnięcie splitTargetPassable na isHexPassableForUnit
+  // w którymkolwiek z 3 wywołań, usunięcie guardu onSplit lub etykiety) musi czerwienić test.
+  const mainSrc = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
+  const callRe = /findSplitDestHexes\(\s*units,\s*[\w.]+,\s*[\w.]+,\s*(\w+)\(/g;
+  const predicates = [];
+  let m;
+  while ((m = callRe.exec(mainSrc)) !== null) predicates.push(m[1]);
+  assert(predicates.length === 3, `main.ts ma 3 wywołania findSplitDestHexes (znaleziono ${predicates.length})`);
+  assert(predicates.every(p => p === 'splitTargetPassable'),
+    'każde wywołanie findSplitDestHexes w main.ts używa splitTargetPassable (nie surowego isHexPassableForUnit)');
+  const wiredRe = /splitTargetPassable\(isHexPassableForUnit,\s*(active|u)\.ownerId,\s*cities\)/g;
+  const wired = (mainSrc.match(wiredRe) || []).length;
+  assert(wired === 3, `splitTargetPassable(isHexPassableForUnit, <owner>, cities) wystąpi 3 razy (znaleziono ${wired})`);
+  assert(/canUnitOccupyCityHex\(active\.ownerId,\s*destQ,\s*destR,\s*cities\)[\s\S]{0,200}Nie można rozdzielić armii na obce miasto/.test(mainSrc),
+    'guard onSplit: canUnitOccupyCityHex na celu + komunikat „Nie można rozdzielić armii na obce miasto."');
+  assert(/canUnitOccupyCityHex\(active\.ownerId,\s*q,\s*r,\s*cities\)\)\s*reason\s*=\s*'Miasto przeciwnika'/.test(mainSrc),
+    'etykieta sąsiada „Miasto przeciwnika" w splitNeighbors');
+}
+
 console.log('');
 console.log(`Wynik: ${pass} PASS, ${fail} FAIL`);
 if (fail > 0) {
