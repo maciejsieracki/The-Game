@@ -142,3 +142,11 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 
 ## DECISION_REQUIRED (gameplay, do rano w czacie) — dopisek 04:4x UTC
 - SIEGE-TAKTYKA K5-AUDYT (FC b2336c005): gałąź SZTURM ODPARTY w `_checkEnd` (pin battleScene.ts :10184-10187) jest na pinie NIEOSIĄGALNA — `_stalled` ustawia tylko `_updateStallWatch`, który przy `siegeWallCol >= 0` wychodzi wcześniej (:5571), więc bitwa oblężnicza kończy się remisem po 150 turach. Pytanie do właściciela (gameplay): odwzorować w Rust TO SAMO zachowanie z pinu (rekomendacja: TAK — parytet) czy naprawić „zamierzone” zachowanie (szturm odparty = zwycięstwo obrońcy)? Do czasu decyzji K5 stosuje parytet z pinem.
+
+## DECISION_REQUIRED (gameplay, do rano w czacie) — W8 r7 (AUDYT FC de92c63fd; dokument P6-W8-R7-AUDYT.md na gałęzi rust-port-wip/WIRE-WAR-R7-AUDYT-fc)
+Wariant B (kolejność faz z planu Rust) jest decyzją właściciela; audyt pinu wykazał różnice kolejności, które zmieniają rozgrywkę. Pytania (rekomendacje = parytet z pinem):
+- Q1: dyplomacja AI i pokój AI-AI — po ekonomii i oblężeniach (jak pin, rekomendacja) czy na początku tury wg kolejności Rust? (R7-K5)
+- Q2: kapitulacja głodowa oblężenia i szturm po maszynach w tej samej turze, po ekonomii (jak pin)? (R7-K1/K2/K3)
+- Q3: wojna wypowiedziana przez hamulec działa w tej samej turze, przed ekonomią i ruchami AI (jak pin D8)? (R7-K4)
+- Q4: rebelia miasta wpływa na produkcję tej samej tury (pin) czy dopiero od następnej? (R7-K6)
+Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależne od pytań (wpięcie istniejących funkcji bez zmiany kolejności) mogą startować.
