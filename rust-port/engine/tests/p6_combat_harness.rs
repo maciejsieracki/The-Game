@@ -299,12 +299,53 @@ fn recount(cases: &[Value]) -> Counts {
     c
 }
 
+/// Liczniki zapisane w pliku (`counts`, wygenerowane przez `p6_combat_harness_gen.mjs`).
+/// Klucze JSON wg generatora; pola jak w `Counts`.
+fn counts_from_file(root: &Value) -> Result<Counts, String> {
+    let c = &root["counts"];
+    let u = |key: &str| -> Result<u64, String> {
+        c[key]
+            .as_u64()
+            .ok_or_else(|| format!("brak licznika `{key}` w pliku"))
+    };
+    Ok(Counts {
+        cases: u("cases")?,
+        shots: u("shots")?,
+        shots_hit_nan_pct: u("shotsHitNaNPct")?,
+        shots_nan_damage: u("shotsNaNDamage")?,
+        shots_inf_damage: u("shotsInfDamage")?,
+        shots_roll_eq: u("shotsRollEq")?,
+        shots_roll_just_below: u("shotsRollJustBelow")?,
+        shots_roll_just_above: u("shotsRollJustAbove")?,
+        shots_target_hp_zero: u("shotsTargetHpZero")?,
+        shots_neg_zero_any_field: u("shotsNegZeroAnyField")?,
+        cases_nan_hp: u("casesNaNHp")?,
+        cases_minus_inf_hp: u("casesMinusInfHp")?,
+        cases_routed: u("casesRouted")?,
+    })
+}
+
+/// Przeliczenie licznikow w Rust musi byc zgodne z licznikami w pliku (wszystkie pola).
+fn counts_agree(root: &Value) -> Result<(), String> {
+    let cases = root["cases"].as_array().ok_or("brak `cases` w pliku")?;
+    let got = recount(cases);
+    let file = counts_from_file(root)?;
+    if got == file {
+        Ok(())
+    } else {
+        Err(format!("przeliczone w Rust {got:?} != w pliku {file:?}"))
+    }
+}
+
 #[test]
 fn p6_combat_harness_wektory_pinu_zgodne() {
     let root: Value = serde_json::from_str(VEC).expect("vectors.json");
     let cases = root["cases"].as_array().expect("cases");
     assert!(cases.len() >= 300, "za malo przypadkow: {}", cases.len());
-    // Liczniki pokrycia wylacznie z przeliczenia w Rust (`recount`); `counts` z pliku nie sa czytane.
+    // Liczniki pokrycia przeliczane z przypadkow w Rust (`recount`) i wymagane zgodne z `counts` w pliku.
+    if let Err(msg) = counts_agree(&root) {
+        panic!("liczniki pokrycia: {msg}");
+    }
     let got = recount(cases);
     assert!(
         got.shots_hit_nan_pct >= 20,
@@ -337,6 +378,39 @@ fn p6_combat_harness_wektory_pinu_zgodne() {
     for (n, row) in cases.iter().enumerate() {
         check_row(n, row);
     }
+}
+
+#[test]
+fn p6_combat_harness_mutacja_licznika_daje_fail() {
+    // Kazdy licznik w pliku, zmieniony o 1, musi dac niezgodnosc z przeliczeniem w Rust.
+    const KEYS: [&str; 13] = [
+        "cases",
+        "shots",
+        "shotsHitNaNPct",
+        "shotsNaNDamage",
+        "shotsInfDamage",
+        "shotsRollEq",
+        "shotsRollJustBelow",
+        "shotsRollJustAbove",
+        "shotsTargetHpZero",
+        "shotsNegZeroAnyField",
+        "casesNaNHp",
+        "casesMinusInfHp",
+        "casesRouted",
+    ];
+    let mut root: Value = serde_json::from_str(VEC).expect("vectors.json");
+    counts_agree(&root).expect("bazowe liczniki pliku musza byc zgodne");
+    for key in KEYS {
+        let orig = root["counts"][key].clone();
+        let v = orig.as_u64().expect("licznik liczbowy");
+        root["counts"][key] = Value::from(v + 1);
+        assert!(
+            counts_agree(&root).is_err(),
+            "mutacja licznika `{key}` w pliku nie dala FAIL"
+        );
+        root["counts"][key] = orig;
+    }
+    counts_agree(&root).expect("po przywroceniu zgodne");
 }
 
 #[test]
