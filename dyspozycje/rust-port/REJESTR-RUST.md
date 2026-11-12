@@ -257,3 +257,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Modele:** Operator Haiku, Obrona Haiku, Evaluator i Final Control Sonnet.
 - **Pytania gameplay (w czacie, nie rozstrzygane):** SZTURM ODPARTY (#60), W8 r7 Q1–Q4 (#63), units.json (#27), DYSTANS (#10), REPIN-DRYFT 1–6 (#14–#19).
 - **NIE_ZMIERZONO:** liczba testów dla dispatchu B22 (podany 3243) — zmierzono 3253; skan `journal.jsonl` nie odróżnia działających Workflow od zakończonych, aktywność oceniono po czasie zapisu.
+
+## Przebieg (po 20:18): ZLOZE-WIRING-Q1 zamknięty, CRED-WOJNA-Q1 start
+- **R-RUSTPORT-P6-ZLOZE-WIRING-Q1 (#104): BLOCK operatora, FC PASS-WITH-NOTES, zamknięte.** Brak modelu `zlozeGrants` w stanie Rust (`DiplomacyState` ma tylko `relations` i `deals`). Wpięcie wymaga nowego pola stanu i zmiany formatu zapisu, czyli poza allowlistą. `sync_relation_status_from_deals` to duplikat testowy; produkcyjny odpowiednik `sync_relation_from_deals` jest wołany w `turn_war_dipl_steps.rs:1004`.
+  - **Decyzja (do odwrócenia przez właściciela): wariant B** — #104 poza zakresem wiringu, luka odnotowana. Wariant A (osobny temat modelu `zlozeGrants`: pole stanu, serde, `suspend_zloze_grants_for_war`, 4 wołania z pinu `main.ts:22774/23694/24234/24294`) do decyzji właściciela, bo dotyczy formatu zapisu.
+  - Osobny temat sprzątania: duplikat `sync_relation_status_from_deals` (diplomacy.rs:4225) do usunięcia lub `#[cfg(test)]`.
+- **R-RUSTPORT-P6-CRED-WOJNA-Q1 (#103): start**, baza `23e33793e`, dispatch `fe6a87711`, workflow `wf_0c57af11-d37`. Operator najpierw weryfikuje, czy hak P4 (`turn_war_dipl_steps.rs:895`) pokrywa wszystkie ścieżki wejścia w wojnę.
+- Pozostałe w toku: R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), ELIMINACJA-WIRING-Q1 (`wf_2ace4e9c-1d5`), ZDOBYCIE-WIRING-Q1 (`wf_99c4f54b-b1d`).
