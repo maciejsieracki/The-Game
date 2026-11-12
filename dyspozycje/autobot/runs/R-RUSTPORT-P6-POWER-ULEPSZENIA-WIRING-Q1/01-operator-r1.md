@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-POWER-ULEPSZENIA-WIRING-Q1
 GOAL: Ustalic, czy PlayableState niesie dane potrzebne producentowi `ulepszenia` (count ulepszen terenu, web countImprovementsForOwner, main.ts:2643). Jesli tak - podpiac producenta w power_raw_for_owner. Jesli nie - jawny BRAK z dowodem plik:linia.
 BAZA: 513e1a56c (= origin/rust-port/parity-v2 po INTEG-B14A), detached worktree.
-ZMIANY/COMMIT: allowlista zachowana. Zmiana tylko komentarza w rust-port/engine/src/domain/turn_war_inputs.rs (blok przy `raw.ulepszenia_terenu = Component::ExplicitZero`). Brak zmiany kodu, EXPLICIT_ZERO_REASONS, testow i wektorow. SHA commita: patrz raport Operatora w odpowiedzi.
+ZMIANY/COMMIT: allowlista zachowana. Zmiana tylko komentarza w rust-port/engine/src/domain/turn_war_inputs.rs (blok przy `raw.ulepszenia_terenu = Component::ExplicitZero`). Brak zmiany kodu, EXPLICIT_ZERO_REASONS, testow i wektorow. SHA commita: 7fbf85ed7 (kod komentarza i ten raport r1 w jednym commicie).
 DECYZJA (kryteria 1 i 2 - galaz BRAK):
   - PlayableTile ma tylko position, terrain, passable (rust-port/engine/src/domain/playable.rs:256-260). Brak pol ulepszenie/ulepszenia/improvementKey.
   - PlayableMap (playable.rs:264-268) to width/height/tiles, bez warstw ulepszen.
