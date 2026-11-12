@@ -289,3 +289,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start:** R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-Q1 (#120), baza `23e33793e`, dispatch `641cfcb1b`, rozszerzona allowlista (`diplomacy_truce_flow.rs`) jako follow-up CRED-WOJNA.
 - **Aktywne Workflow (2):** R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), CRED-HAK-WYPOWIEDZENIE-Q1 (`wf_a1e9a7cf-854`).
 - **Otwarte decyzje właściciela:** (a) alias `umowa_handlowa` / usunięcie `LegacyTradeAgreement`; (b) driver zdobycia miasta (W8) — zakres i priorytet.
+
+## Przebieg (heartbeat 20:48): sloty uzupełnione do czterech
+- **Dysk:** 8,6 GB przy starcie tiku (próg 8 GB dla Rust spełniony). Parity-v2 = `23e33793e`, bez zmian.
+- **Aktywne Workflow (4):**
+  1. R7K7C-WIRING-Q2 (#106) — `wf_4e654117-8b1`, Operator HAIKU, od 20:20
+  2. CRED-HAK-WYPOWIEDZENIE-Q1 (#120) — `wf_a1e9a7cf-854`, Operator HAIKU, od ok. 20:30
+  3. K5LOOP-WIEZE-Q1 (#96) — `wf_5619c24d-e0d`, Operator HAIKU, teraz; dispatch `55b9eb260`
+  4. K5LOOP-AUTO-Q1 (#97) — `wf_54cdbdf9-c79`, Operator HAIKU, teraz; dispatch `55b9eb260`
+- **Uwaga o kolejce:** pozycje #101, #105, #117, #119, #126, #127, #130, #138, #141 są już zintegrowane (wg rejestru i gałęzi), a lista zadań ich nie odzwierciedla. Nie startowano ich ponownie. Do uporządkowania listy.
+- **Otwarte decyzje właściciela:** (a) alias `umowa_handlowa` / usunięcie `LegacyTradeAgreement`; (b) driver zdobycia miasta (W8) dla #115 i #114.
