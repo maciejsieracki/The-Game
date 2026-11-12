@@ -368,6 +368,8 @@ struct Cover {
     nan_case: usize,
     inf_case: usize,
     counter_not_one: usize,
+    wall_nan_inf: usize,
+    neg_zero_cu: usize,
 }
 
 #[test]
@@ -649,6 +651,19 @@ fn zgodnosc_z_pinem_end_to_end() {
         if text.contains("Infinity") {
             cov.inf_case += 1;
         }
+        // Mur: NaN/Inf w sumie obrony muru (wejscie wall_defense_totals z pinu).
+        if matches!(
+            c["in"]["wallTotal"].as_str(),
+            Some("NaN" | "Infinity" | "-Infinity")
+        ) {
+            cov.wall_nan_inf += 1;
+        }
+        // -0 w CombatUnit zwróconym przez toCombatUnit PINU (observed, tagged ["n","-0"]).
+        if c["in"]["cuA"].to_string().contains("[\"n\",\"-0\"]")
+            || c["in"]["cuD"].to_string().contains("[\"n\",\"-0\"]")
+        {
+            cov.neg_zero_cu += 1;
+        }
     }
 
     assert!(
@@ -664,7 +679,7 @@ fn zgodnosc_z_pinem_end_to_end() {
     );
 
     // Liczniki galezi: kazda galez musi byc pokryta wektorami.
-    let checks: [(&str, usize); 26] = [
+    let checks: [(&str, usize); 28] = [
         ("miss", cov.miss),
         ("hit_melee", cov.hit_melee),
         ("hit_ranged", cov.hit_ranged),
@@ -691,6 +706,8 @@ fn zgodnosc_z_pinem_end_to_end() {
         ("nan_case", cov.nan_case),
         ("inf_case", cov.inf_case),
         ("counter_not_one", cov.counter_not_one),
+        ("wall_nan_inf", cov.wall_nan_inf),
+        ("neg_zero_cu", cov.neg_zero_cu),
     ];
     for (name, n) in checks {
         assert!(n > 0, "galaz bez pokrycia: {name}");
@@ -702,6 +719,17 @@ fn zgodnosc_z_pinem_end_to_end() {
         "procarz: {} < 100 przypadkow dystansowych",
         cov.slinger_ranged
     );
+    // K5I2B2-POKRYCIE: lucznik >= 14 (regres wag losowania 14 -> 2 musi wywalic test).
+    assert!(
+        cov.lucznik_ranged >= 14,
+        "lucznik: {} < 14 przypadkow dystansowych",
+        cov.lucznik_ranged
+    );
+    assert!(
+        cov.wall_nan_inf > 0,
+        "mur: brak przypadkow NaN/Inf w sumie obrony"
+    );
+    assert!(cov.neg_zero_cu > 0, "brak -0 w CombatUnit pinu");
 }
 
 #[test]
