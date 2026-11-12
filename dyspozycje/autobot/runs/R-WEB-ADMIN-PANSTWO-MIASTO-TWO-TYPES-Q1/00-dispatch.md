@@ -29,3 +29,19 @@ ALLOWLISTA: gra/src/game/city-administrator.ts, gra/src/game/auto-build-gate.ts,
 IZOLACJA: worktree na izolowanej gałęzi, baza aeb52465e845d29acb5f7b628370789af399d673.
 
 ZAKAZ BEZWZGLĘDNY: npm run build / npm run dev w gra/. Dozwolone: tsc --noEmit; node tools/*-test.cjs.
+
+## DODATEK orkiestratora — runda 2 (po BLOCK/FAIL r1, 2026-11-12)
+
+Decyzja orkiestratora (wariant A): poszerzenie allowlisty o pliki wskazane przez Operatora i Evaluatora:
+- gra/src/game/turn-economy.ts (utrzymanie administratorów liczone na Państwo; linie ok. 2423 i 3113 wołają totalAdministratorUpkeepForOwner),
+- gra/src/game/cities.ts (pole City.administratorUlepszen — stan przeniesiony na właściciela),
+- gra/tools/improvement-administrator-test.cjs (asercje per miasto → asercje per Państwo).
+
+Założenia z rundy 1 przyjęte do rundy 2 (do potwierdzenia właściciela w raporcie):
+Z1: koszt zatrudnienia 40 i utrzymanie 2 z sekcji administrator_ulepszen w JSON;
+Z2: migracja zapisów bez ponownego kosztu;
+Z3: AI bez bramki administratora (bez zmiany zachowania);
+Z4: tryb automatyzacji per miasto (pola miasta) — pola bez miasta = tryb Państwa.
+
+Kryteria z dispatchu r1 pozostają (1–8). Testy: tsc, 5 bramek referencyjnych, testy administratora, dowód w Chromium oznaczony NIE_ZMIERZONO, jeśli niewykonalny.
+Warunek startu: wolne miejsce na dysku ≥ 6 GB.
