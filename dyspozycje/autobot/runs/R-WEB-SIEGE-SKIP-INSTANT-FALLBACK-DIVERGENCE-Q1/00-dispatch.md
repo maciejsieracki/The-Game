@@ -1,0 +1,4 @@
+# R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1 (GAME, analiza + naprawa tylko jeśli rozjazd potwierdzony; Haiku)
+Źródło: raport W6 (R-WEB-SIEGE-AUTO-BREACH-REPLAY-E2E-Q1): rozjazd _skipInstantFallback (atakujący) vs SKIP 400 tur (obrońca) — klasa FALI 618; „do zbadania".
+GOAL: zmierzyć, czy fallback _skipInstantFallback daje inne wyniki niż pętla SKIP/AUTO (parytet strat i zwycięzcy) w oblężeniu, i naprawić bez zmiany balansu, jeśli rozjazd jest realnym błędem. Gdy rozjazd wynika z decyzji produktowej — DECISION_REQUIRED z liczbami (NIE zgaduj).
+KRYTERIA: tabela scenariusz → wynik SKIP / AUTO / fallback (surowe liczby, kilka ziaren); wniosek: błąd albo zamierzone; jeśli błąd — poprawka + test + mutacja; battle-skip-equals-auto-resolve-test (osobno, limit 280 s), battle-skip-siege-parity, siege-parity; tsc + 5 bramek.
