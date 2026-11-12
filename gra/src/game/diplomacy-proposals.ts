@@ -1031,6 +1031,15 @@ function handelFairnessReject(
 }
 
 /**
+ * R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): relTotal bramki uczciwosci dla ofert AI
+ * (proponent) -> gracz (responder). 100 = wspolczynnik relacji 1 (handelRequiredPn clampuje
+ * do 100): wymagane givePn >= receivePn. Podglad „Przyjmij" gracza (previewIncomingPlayerAccept,
+ * netPw >= 0) wymaga receivePn >= givePn -- przeciecie to oferty „rowne za rowne".
+ * Bramka gracz->AI NIE uzywa tej stalej.
+ */
+export const AI_PROPOSER_FAIRNESS_REL_TOTAL = 100;
+
+/**
  * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
  * (handelFairnessGate i pwBalance przy sukcesie muszą użyć TEJ SAMEJ liczby, inaczej
  * wraca P-DYPLO-BILANS-GATE-NIESPOJNY). PODŁOGA PARYTETU (runda 4): nigdy poniżej receivePn.
@@ -1558,6 +1567,9 @@ export function evaluateProposal(
       // komentarz bloku handelWillingnessMultiplier wyżej (naprawa regresji rundy 2).
       const responderIsPlayer = responderOwnerId === 0;
       const handelMultiplier = handelWillingnessMultiplier(stance, p, responderIsPlayer);
+      // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): AI proponent -> gracz: bramka uczciwosci
+      // z wspolczynnikiem 1 (AI oddaje co najwyzej tyle PW, ile dostaje). Gracz->AI bez zmian.
+      const fairnessRelTotal = responderIsPlayer ? AI_PROPOSER_FAIRNESS_REL_TOTAL : relTotal;
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
       if (proposalHasResourceAccess(payload)) {
@@ -1573,9 +1585,9 @@ export function evaluateProposal(
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (cyklFairnessReject) return cyklFairnessReject;
-        const cyklPwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        const cyklPwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
@@ -1605,9 +1617,9 @@ export function evaluateProposal(
       }
 
       if (hasPnPath) {
-        const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const fairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (fairnessReject) return fairnessReject;
-        const pwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        const pwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true, pwBalance };
       }
 

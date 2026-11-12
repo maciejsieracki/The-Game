@@ -1,0 +1,28 @@
+const S = '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad';
+const gra = '/home/user/The-Game/.claude/worktrees/wf_13e053ff-11e-3/gra';
+const esbuild = require(gra + '/node_modules/esbuild');
+const out = S + '/gridbundle.cjs';
+esbuild.buildSync({ entryPoints: [S + '/grid-entry.ts'], bundle: true, platform: 'node', format: 'cjs', outfile: out, absWorkingDir: gra, logLevel: 'silent' });
+const M = require(out);
+const pairs = [['zelazo','cegla'],['drewno','kamien'],['cegla','zelazo'],['kamien','drewno'],['zelazo','kamien'],['drewno','cegla']];
+const T = M.AI_RESOURCE_TRADE_DEFAULT_TURNS;
+const rows = [];
+for (const rel of [50, 80, 100, 130]) {
+  for (const [g, r] of pairs) {
+    let n = 0, gateAi = 0, playerOk = 0, both = 0, ex = null, maxGive = 0;
+    for (let gq = 10; gq <= 300; gq += 10) for (let rq = 10; rq <= 600; rq += 10) {
+      const payload = { giveItems: [{ typ: 'surowiec_ilosc', id: g, ilosc: gq }], receiveItems: [{ typ: 'surowiec_ilosc', id: r, ilosc: rq }], resourceTradeMode: 'per_turn', turns: T, exchangeDurationTurns: T };
+      const { givePn, receivePn } = M.resolveProposalPn(payload, { difficulty: 'normal', proposerOwnerId: 1, playerOwnerId: 0, actionId: 'handel', tempoGry: 'standardowa', ...M.proposalPnTurnsMultiplier(payload) });
+      n++;
+      const a = M.handelFairnessGate(givePn, receivePn, rel, 1) == null;
+      const pv = M.previewIncomingPlayerAccept('handel', payload, rel, { difficulty: 'normal', proposerOwnerId: 1, tempoGry: 'standardowa' });
+      const p = pv == null || pv.accepted;
+      if (a) gateAi++;
+      if (p) playerOk++;
+      if (a && p) { both++; if (!ex) ex = { gq, rq, givePn, receivePn }; }
+    }
+    rows.push({ rel, pair: g + '/' + r, n, gateAi, playerOk, both, ex });
+  }
+}
+require('fs').writeFileSync(S + '/grid.json', JSON.stringify(rows));
+for (const x of rows) console.log(x.rel, x.pair, 'n=' + x.n, 'AI=' + x.gateAi, 'gracz=' + x.playerOk, 'both=' + x.both, JSON.stringify(x.ex));
