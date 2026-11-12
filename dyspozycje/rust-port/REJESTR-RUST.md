@@ -199,3 +199,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - INTEG-B17 (po B16): STAN-ULEPSZENIA (konflikt z BITWY w turn_war_inputs.rs i p6_wire_war_inputs.rs — rozwiązuje runda Operatora), R7K7-B, K5-LOOP.
 - Decyzja techniczna: "P7" z dispatchu R7K7-B nie istnieje jako reguła wiarygodności (pin: P7 = bonus Zaufania za wymianę, applyDiploP7Bonuses) — nie portować jako wiarygodność; wpis zamknięty.
 - Długi: ranged_shot_damage NaN/Inf (zwrot i64; combat.rs); STAN-ULEPSZENIA-TERYTORIUM-VEC (wektor pinu heksy_terytorium z fortami); D3 tickCyclicResourceTradeDeals bez wektorów pinu; wpięcie deactivate_zloze_grants/sync_relation (stan zlozeGrants, R7K7-C); wpięcie akumulatorów bitew/zdobyczy w walkę/zdobywanie/eliminację; K5-LOOP #91 OTWARTE: ciało jednostki (K5H/K5I single_blow_full) niepodpięte, port wież (_schedule 180 ms, pickTowerTarget), wektory flee/rout/moveLeft/wyłom w trakcie bitwy/tryb ręczny/AUTO bez oblężenia, test niezależności od podziału kroków przewijania, test halt_unsupported; vectors.json 7,1 MB.
+
+## Przebieg — 13:2x UTC
+- parity-v2 = 82bb87fb1 (INTEG-B16: MAXNAN + BITWY-ZDOBYCZE + K5I2B2; pełny cargo test 3162 passed/0 failed/1 ignored; FF + readback).
+- W toku (Operator HAIKU): INTEG-B17 (STAN-ULEPSZENIA + R7K7-B + K5-LOOP, konflikt STAN×BITWY rozwiązuje Operator), RANGED-DAMAGE-NAN, DOC-TAKTYKA-WIERSZE.
+- 4. slot niewykorzystany celowo: pozostałe tematy (R7K7-C, wpięcie akumulatorów, K5-LOOP ciało jednostki, STAN-TERYTORIUM-VEC) dotykają playable.rs/turn_war_inputs.rs/siege_tactics_loop.rs i zależą od B17 — start po FF B17.
