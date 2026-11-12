@@ -1,3 +1,9 @@
+## ROBOCZA 16ffc1de -- 2026-11-06 -- FALA 653: FALA 653: pościg uciekinierów w bitwie (W21) + replay oblężenia przywraca mur (W16) + procent wykorzystania mocy budynków (W22) (testowa)
+
+- R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 + R-WEB-SIEGE-REPLAY-RESTORE-WALL-TERRAIN-Q1 + R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, testy tematow (52 i 30 PASS), audio-sidecar PASS; battle-skip-equals-auto 38/0 tylko w FC (w deployu pominiety — restarty kontenera)
+- Limity: piechota nie dogania uciekajacej piechoty (ABC); B4b znany defekt; Chromium na harnessie sekcji panelu
+
 ## ROBOCZA 3d624885 -- 2026-11-06 -- FALA 652: FALA 652: kontrolki mapy pod panelami (W14) + fortyfikacje jako lancuch awansu (W20) (testowa)
 
 - R-WEB-UI-TOOLBAR-ZOOM-BEHIND-EXPANDED-PANELS-Q1 + R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1
