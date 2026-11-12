@@ -200,6 +200,7 @@ fn check_ulepszenia() -> usize {
     cases.len()
 }
 
+/// Producent `terytorium` na wektorach `terytorium` (p6_power_army_vectors).
 fn check_terytorium() -> usize {
     let cases = load(ARMY_VECTORS, "terytorium");
     for (idx, case) in cases.iter().enumerate() {

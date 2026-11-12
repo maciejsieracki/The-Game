@@ -398,7 +398,8 @@ fn is_zero_f64(value: &f64) -> bool {
 /// Postep jednostki dla HP zamiany. Stan Rust nie niesie jeszcze web `battlesSurvived` ani
 /// `parametryBonusProc` (brak zrodla w `PlayableUnit`/`PlayableReplaceUnit`), wiec wejscie jest
 /// JAWNIE zerowe: bonus weterana i parametrow = 0, a HP = bazowe `health`. Gdy stan dostanie te pola,
-/// zamien te stala na odczyt z jednostki.
+/// zamien te stala na odczyt z jednostki. Skutek do tego czasu: HP po zamianie zranionej lub
+/// doswiadczonej jednostki NIE jest parytetowe z web (brak pol `battlesSurvived`/`parametryBonusProc`).
 const PLAYABLE_UNIT_PROGRESS: ReplaceUnitProgress = ReplaceUnitProgress {
     parametry_bonus_proc: None,
     battles_survived: None,
