@@ -2228,7 +2228,7 @@ function renderGenStep(host: HTMLElement): void {
     ['Cywilizacja', p.civName || '(nie wybrano)'],
     ['Epoka startowa', p.epoch],
     ['Trudność', p.difficulty],
-    ['Rozmiar mapy', p.mapSize],
+    ['Rozmiar mapy', mapSizeDisplayLabel(p.mapSize)],
     ['Typ świata', p.worldType],
     ['Miasta-państwa', String(p.cityStatesCount) + ' w klastrze'],
     ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],

@@ -81,9 +81,12 @@ const UI_BAD = [
   [/\(ponizej /, 'ponizej -> poniżej', "'(ponizej 3 tur).'"],
   [/Super Huge/, 'Super Huge -> etykieta „Bardzo ogromny” (tekst dla gracza)', "'Możesz generować nawet Super Huge.'"],
   [/\bMalenki\b/, 'Malenki -> etykieta „Maleńki” (tekst dla gracza)', "'Rozmiar: Malenki'"],
+  [/Maleński/, 'Maleński -> „Maleńki” (tekst dla gracza)', "'Rozmiar: Maleński'"],
+  [/przez \$\{turns\} tur/, 'diplomacy-display: przez ${turns} tur -> formatTurCountAcc', "'Wymiana co turę przez ${turns} tur'"],
+  [/umowa na \$\{turns\} tur/, 'diplomacy-display: umowa na ${turns} tur -> formatTurCountAcc', "'(umowa na ${turns} tur)'"],
 ];
 // Pliki logiki gry z tekstami powodów/ofert widocznymi dla gracza (R-WEB-POLISH-LANGUAGE-AUDIT-Q1, runda 3).
-const GAME_TEXT_FILES = ['gra/src/game/ai.ts', 'gra/src/game/diplomacy-proposals.ts', 'gra/src/game/diplomacy-sensible-deals.ts'];
+const GAME_TEXT_FILES = ['gra/src/game/ai.ts', 'gra/src/game/diplomacy-proposals.ts', 'gra/src/game/diplomacy-sensible-deals.ts', 'gra/src/game/diplomacy-display.ts'];
 const UI_FILES = walk('gra/src/ui').filter((f) => f.endsWith('.ts') && !/entityCards|resourceAmountChip|administratorIcon|buildModeHud/.test(f))
   .concat(['gra/src/main.ts'], GAME_TEXT_FILES);
 // linie niebędące komentarzem (komentarze deweloperskie poza zakresem rundy)
@@ -124,6 +127,19 @@ try {
   eq(F.formatKolejkiCount(23), '23 kolejki', 'kolejki23'); eq(F.formatKolejkiCount(11), '11 kolejek', 'kolejek11');
   eq(G.formatObywateleLabel(1), '1 obywatel', 'ob1'); eq(G.formatObywateleLabel(3), '3 obywatele', 'ob3'); eq(G.formatObywateleLabel(5), '5 obywateli', 'ob5'); eq(G.formatObywateleLabel(13), '13 obywateli', 'ob13'); eq(G.formatObywateleLabel(23), '23 obywatele', 'ob23');
 } catch (e) { uiFail++; console.log('FAIL odmiana (esbuild):', e && e.message); }
+// 4) wdrożenie etykiet rozmiaru mapy i odmiany tur w miejscach poza newGameFlow/saveLoadDialog (runda 4, NAPRAW 1-2)
+{
+  const checks = [
+    ['gra/src/ui/newGameFlow.ts', /\['Rozmiar mapy', mapSizeDisplayLabel\(p\.mapSize\)\]/, 'newGameFlow: Rozmiar mapy -> mapSizeDisplayLabel'],
+    ['gra/src/ui/saveLoadDialog.ts', /mapSizeDisplayLabel\(f\.mapSize\)\} · /, 'saveLoadDialog: linia kontekstu -> mapSizeDisplayLabel'],
+    ['gra/src/game/diplomacy-display.ts', /import \{ formatTurCountAcc \} from '\.\.\/ui\/formatPl';/, 'diplomacy-display: import formatTurCountAcc'],
+  ];
+  for (const [f, re, why] of checks) {
+    if (re.test(rd(f))) uiPass++; else { uiFail++; console.log('FAIL', f, why); }
+    // mutacja: ten sam regex nie pasuje do wersji sprzed zmiany (surowy klucz / surowy tur)
+    if (!re.test('const x = p.mapSize; const y = turns;')) uiPass++; else { uiFail++; console.log('FAIL mutacja', why); }
+  }
+}
 pass += uiPass; fail += uiFail;
 console.log(`polish-language-audit-q1-guard (runda 2, UI): ${uiPass} ok, ${uiFail} fail`);
 

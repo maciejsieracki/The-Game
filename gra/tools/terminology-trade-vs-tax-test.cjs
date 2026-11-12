@@ -169,7 +169,7 @@ check('[P] Irygacja', title('Gospodarka wodna', /^Irygacja/) === 'Irygacja: +5 �
 check('[P] Droga', title('Koło', /^Droga: \+/) === 'Droga: +2 podatku na polu', title('Koło', /^Droga: \+/));
 check('[P] Kopalnia miedzi', title('Brązownictwo', /^Kopalnia miedzi/) === 'Kopalnia miedzi: +20 rudy na turę, +5 podatku', title('Brązownictwo', /^Kopalnia miedzi/));
 check('[P] Łodzie rybackie', title('Żegluga', /^Łodzie/) === 'Łodzie rybackie: +6 żywności, +6 Pracy, +6 podatku', title('Żegluga', /^Łodzie/));
-check('[P] Mennica (karta odkrycia)', title('Waluta', /^Mennica: ×/) === 'Mennica: ×1,50 podatku w każdym mieście', title('Waluta', /^Mennica: ×/));
+check('[P] Mennica (karta odkrycia)', title('Waluta', /^Mennica: podatek ×/) === 'Mennica: podatek ×1,38 lub więcej (zależnie od cywilizacji)', title('Waluta', /^Mennica: podatek ×/));
 check('[P] Kopalnia złota', title('Waluta', /^Kopalnia złota/) === 'Kopalnia złota: +10 podatku i +1 złota na turę', title('Waluta', /^Kopalnia złota/));
 check('[P] Droga brukowana', title('Drogi brukowane', /^Droga brukowana: \+/) === 'Droga brukowana: +3 podatku na polu (Droga: +2)', title('Drogi brukowane', /^Droga brukowana: \+/));
 check('[P] Mennica (karta budynku): „Mnoży podatek wszystkich miast …”', /^Mnoży podatek wszystkich miast przed podziałem/.test(bldCards.mennica.top5[0].zdanie), bldCards.mennica.top5[0]);
