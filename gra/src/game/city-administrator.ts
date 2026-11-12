@@ -178,32 +178,11 @@ export function aiRequiresImprovementAdministrator(): boolean {
   return P.administrator_ulepszen.ai_wymaga_administratora === true;
 }
 
-/** Czy miasto ma ZATRUDNIONEGO administratora ulepszeń (niezależnie od tego, czy pracuje). */
-export function cityHasImprovementAdministrator(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): boolean {
-  return !!city.administratorUlepszen && city.administratorUlepszen.ownerId === city.ownerId;
-}
 
-/** Czy miasto ma DZIAŁAJĄCEGO administratora ulepszeń (zatrudniony + pokryte utrzymanie). */
-export function cityHasWorkingImprovementAdministrator(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): boolean {
-  return cityHasImprovementAdministrator(city) && city.administratorUlepszen!.pracuje === true;
-}
 
-/** Utrzymanie administratora ulepszeń tego miasta w tej turze (0, gdy brak/nie pracuje). */
-export function improvementAdministratorUpkeepForCity(city: Pick<City, 'ownerId' | 'administratorUlepszen'>): number {
-  return cityHasWorkingImprovementAdministrator(city) ? improvementAdministratorUpkeep() : 0;
-}
 
 export type ImprovementHireBlockReason = 'ma_administratora' | 'brak_srodkow';
 
-/** Powód, dla którego NIE można zatrudnić administratora ulepszeń (null = można). */
-export function improvementAdministratorHireBlockReason(
-  city: Pick<City, 'ownerId' | 'administratorUlepszen'>,
-  treasury: number,
-): ImprovementHireBlockReason | null {
-  if (cityHasImprovementAdministrator(city)) return 'ma_administratora';
-  if (treasury < improvementAdministratorHireCost()) return 'brak_srodkow';
-  return null;
-}
 
 export function improvementAdministratorHireBlockText(reason: ImprovementHireBlockReason): string {
   return reason === 'ma_administratora'
@@ -211,19 +190,7 @@ export function improvementAdministratorHireBlockText(reason: ImprovementHireBlo
     : `Brak środków w skarbcu: zatrudnienie kosztuje ${improvementAdministratorHireCost()} Pieniądza`;
 }
 
-/** Zatrudnij administratora ulepszeń (BEZ pobrania kosztu — pobiera wołający). false = zablokowane. */
-export function hireImprovementAdministrator(city: City, treasury: number, turn: number): boolean {
-  if (improvementAdministratorHireBlockReason(city, treasury) !== null) return false;
-  city.administratorUlepszen = { ownerId: city.ownerId, hiredTurn: turn, pracuje: true };
-  return true;
-}
 
-/** Zwolnij administratora ulepszeń (bez zwrotu kosztu). */
-export function dismissImprovementAdministrator(city: City): boolean {
-  if (!city.administratorUlepszen) return false;
-  delete city.administratorUlepszen;
-  return true;
-}
 
 /** Tekst stanu administratora ulepszeń do tooltipa/UI. */
 export function improvementAdministratorStatusText(working: boolean): string {
@@ -239,32 +206,36 @@ export function administratorUpkeepForCity(
   return administratorUpkeepForTier(administrativeBuildingTier(builtIds));
 }
 
-/** Suma utrzymania DZIAŁAJĄCYCH administratorów ownera (płatna ze skarbca państwa). */
+/**
+ * Suma utrzymania administratorów ownera (płatna ze skarbca państwa): administratorzy MIAST (tier)
+ * + JEDEN administrator PAŃSTWA (stan na właścicielu, `stateAdm`, płatny raz na Państwo).
+ * Liczy tylko działających (`pracuje`).
+ */
 export function totalAdministratorUpkeepForOwner(
-  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator' | 'administratorUlepszen'>>,
+  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator'>>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   ownerId: number,
+  stateAdm?: CityAdministrator,
 ): number {
-  let sum = 0;
+  let sum = ownerImprovementAdministratorUpkeep(stateAdm, ownerId);
   for (const c of cities) {
     if (c.ownerId !== ownerId) continue;
     sum += administratorUpkeepForCity(c, builtByCity.get(c.id) ?? []);
-    sum += improvementAdministratorUpkeepForCity(c);
   }
   return sum;
 }
 
 /** Suma utrzymania WSZYSTKICH zatrudnionych administratorów ownera (także bezczynnych) — do prognozy. */
 export function totalAdministratorUpkeepIfAllWorkForOwner(
-  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator' | 'administratorUlepszen'>>,
+  cities: ReadonlyArray<Pick<City, 'id' | 'ownerId' | 'administrator'>>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   ownerId: number,
+  stateAdm?: CityAdministrator,
 ): number {
-  let sum = 0;
+  let sum = ownerHasStateImprovementAdministrator(stateAdm, ownerId) ? improvementAdministratorUpkeep() : 0;
   for (const c of cities) {
     if (c.ownerId !== ownerId) continue;
     if (cityHasAdministrator(c)) sum += administratorUpkeepForTier(administrativeBuildingTier(builtByCity.get(c.id) ?? []));
-    if (cityHasImprovementAdministrator(c)) sum += improvementAdministratorUpkeep();
   }
   return sum;
 }
@@ -324,20 +295,27 @@ export interface AdministratorChange { city: City; kind: AdministratorChangeKind
 /**
  * Odśwież stan administratorów (wołać na starcie tury ekonomii, po zatrudnieniu/zwolnieniu,
  * po wczytaniu zapisu i przed podglądem HUD):
- *   1. koniec służby: zmiana właściciela miasta (zdobycie) albo brak budynku administracyjnego
- *      (zburzenie / utrata) — administrator znika;
- *   2. finansowanie: dla każdego ownera administratorzy (w kolejności tablicy `cities`) pracują,
- *      dopóki skarbiec państwa (`treasuryOf(owner)`) pokrywa narastająco ich utrzymanie;
- *      reszta NIE pracuje (zostaje przypisana, wraca do pracy, gdy skarbiec pokryje utrzymanie).
- * Zwraca listę zmian (do powiadomień).
+ *   1. administratorzy MIAST: koniec służby przy zmianie właściciela albo braku budynku administracyjnego;
+ *   2. administrator PAŃSTWA (`stateAdmByOwner`, stan na właścicielu): koniec służby TYLKO przy zmianie
+ *      właściciela; nie wymaga budynku;
+ *   3. finansowanie: dla każdego ownera najpierw administratorzy miast (kolejność tablicy `cities`),
+ *      potem administrator Państwa — wszyscy z tym samym budżetem `treasuryOf(owner)`; kto nie mieści
+ *      się w budżecie, NIE pracuje (zostaje przypisany).
+ * Mutuje `city.administrator` i wpisy `stateAdmByOwner`. Zwraca listę zmian (do powiadomień).
+ * Zmiany administratora Państwa mają `role: 'ulepszenia'` i `city` = pierwsze miasto właściciela.
  */
 export function refreshAdministratorState(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   treasuryOf: (ownerId: number) => number,
+  stateAdmByOwner: Map<number, CityAdministrator> = new Map(),
 ): AdministratorChange[] {
   const changes: AdministratorChange[] = [];
   const remaining = new Map<number, number>();
+  const budgetOf = (ownerId: number): number => {
+    if (!remaining.has(ownerId)) remaining.set(ownerId, treasuryOf(ownerId));
+    return remaining.get(ownerId)!;
+  };
   for (const city of cities) {
     const adm = city.administrator;
     if (!adm) continue;
@@ -353,8 +331,7 @@ export function refreshAdministratorState(
       changes.push({ city, kind: 'ended_no_building', role: 'miasto' });
       continue;
     }
-    if (!remaining.has(city.ownerId)) remaining.set(city.ownerId, treasuryOf(city.ownerId));
-    const left = remaining.get(city.ownerId)!;
+    const left = budgetOf(city.ownerId);
     const upkeep = administratorUpkeepForTier(tier);
     const was = adm.pracuje === true;
     if (left >= upkeep) {
@@ -366,28 +343,19 @@ export function refreshAdministratorState(
       if (was) changes.push({ city, kind: 'stopped_no_funds', role: 'miasto' });
     }
   }
-  // Przebieg 2: administratorzy ULEPSZEŃ — ten sam budżet skarbca państwa (po administratorach miast),
-  // bez wymogu budynku (brak tieru => stawka z JSON); koniec służby tylko przy zmianie właściciela.
-  for (const city of cities) {
-    const adm = city.administratorUlepszen;
-    if (!adm) continue;
-    if (adm.ownerId !== city.ownerId) {
-      delete city.administratorUlepszen;
-      changes.push({ city, kind: 'ended_owner_changed', role: 'ulepszenia' });
+  // Administrator PAŃSTWA: po administratorach miast tego samego właściciela, ten sam budżet.
+  for (const [ownerId, adm] of [...stateAdmByOwner.entries()]) {
+    const firstCity = cities.find(c => c.ownerId === ownerId);
+    if (adm.ownerId !== ownerId) {
+      stateAdmByOwner.delete(ownerId);
+      if (firstCity) changes.push({ city: firstCity, kind: 'ended_owner_changed', role: 'ulepszenia' });
       continue;
     }
-    if (!remaining.has(city.ownerId)) remaining.set(city.ownerId, treasuryOf(city.ownerId));
-    const left = remaining.get(city.ownerId)!;
-    const upkeep = improvementAdministratorUpkeep();
-    const was = adm.pracuje === true;
-    if (left >= upkeep) {
-      remaining.set(city.ownerId, left - upkeep);
-      adm.pracuje = true;
-      if (!was) changes.push({ city, kind: 'resumed', role: 'ulepszenia' });
-    } else {
-      adm.pracuje = false;
-      if (was) changes.push({ city, kind: 'stopped_no_funds', role: 'ulepszenia' });
-    }
+    const funded = fundOwnerImprovementAdministrator(adm, ownerId, budgetOf(ownerId));
+    remaining.set(ownerId, funded.budgetLeft);
+    stateAdmByOwner.set(ownerId, funded.adm!);
+    if (funded.resumed && firstCity) changes.push({ city: firstCity, kind: 'resumed', role: 'ulepszenia' });
+    if (funded.stopped && firstCity) changes.push({ city: firstCity, kind: 'stopped_no_funds', role: 'ulepszenia' });
   }
   return changes;
 }
@@ -412,4 +380,101 @@ export function aiShouldHireAdministrator(
 /** Tekst stanu do tooltipa/UI. */
 export function administratorStatusText(working: boolean): string {
   return working ? 'pracuje' : 'nie pracuje — brak środków w skarbcu państwa';
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (runda 3, czysta logika, bez wpięcia w main.ts):
+// ADMINISTRATOR PAŃSTWA (ulepszenia terenu) — stan NA WŁAŚCICIELU, nie na mieście. Jeden koszt
+// zatrudnienia i jedno utrzymanie na Państwo. Funkcje przyjmują stan jako argument
+// (`CityAdministrator | undefined`), więc wołający decyduje, gdzie stan leży (np. `playerState`).
+// ---------------------------------------------------------------------------
+
+/** Czy właściciel ma ZATRUDNIONEGO administratora państwa (niezależnie od pracy). */
+export function ownerHasStateImprovementAdministrator(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+): boolean {
+  return !!adm && adm.ownerId === ownerId;
+}
+
+/** Czy właściciel ma DZIAŁAJĄCEGO administratora państwa (zatrudniony + pokryte utrzymanie). */
+export function ownerHasWorkingStateImprovementAdministrator(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+): boolean {
+  return ownerHasStateImprovementAdministrator(adm, ownerId) && adm!.pracuje === true;
+}
+
+/** Utrzymanie administratora państwa na turę (0, gdy nie pracuje). Płatne RAZ na Państwo. */
+export function ownerImprovementAdministratorUpkeep(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+): number {
+  return ownerHasWorkingStateImprovementAdministrator(adm, ownerId) ? improvementAdministratorUpkeep() : 0;
+}
+
+/** Powód, dla którego NIE można zatrudnić administratora państwa (null = można). Bez wymogu budynku. */
+export function ownerImprovementAdministratorHireBlockReason(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+  treasury: number,
+): ImprovementHireBlockReason | null {
+  if (ownerHasStateImprovementAdministrator(adm, ownerId)) return 'ma_administratora';
+  if (treasury < improvementAdministratorHireCost()) return 'brak_srodkow';
+  return null;
+}
+
+/**
+ * Zatrudnij administratora państwa (BEZ pobrania kosztu — pobiera wołający ze skarbca).
+ * Zwraca nowy stan albo null, gdy zablokowane.
+ */
+export function hireOwnerImprovementAdministrator(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+  treasury: number,
+  turn: number,
+): CityAdministrator | null {
+  if (ownerImprovementAdministratorHireBlockReason(adm, ownerId, treasury) !== null) return null;
+  return { ownerId, hiredTurn: turn, pracuje: true };
+}
+
+/**
+ * Finansowanie administratora państwa z budżetu skarbca (wołać PO administratorach miast tego
+ * samego właściciela, z tym samym `budgetLeft`). Brak środków => `pracuje=false` (zostaje przypisany).
+ * Koniec służby tylko przy zmianie właściciela (`ended`).
+ */
+export function fundOwnerImprovementAdministrator(
+  adm: CityAdministrator | undefined,
+  ownerId: number,
+  budgetLeft: number,
+): { adm: CityAdministrator | undefined; budgetLeft: number; ended: boolean; resumed: boolean; stopped: boolean } {
+  if (!adm) return { adm: undefined, budgetLeft, ended: false, resumed: false, stopped: false };
+  if (adm.ownerId !== ownerId) return { adm: undefined, budgetLeft, ended: true, resumed: false, stopped: false };
+  const upkeep = improvementAdministratorUpkeep();
+  const was = adm.pracuje === true;
+  if (budgetLeft >= upkeep) {
+    return { adm: { ...adm, pracuje: true }, budgetLeft: budgetLeft - upkeep, ended: false, resumed: !was, stopped: false };
+  }
+  return { adm: { ...adm, pracuje: false }, budgetLeft, ended: false, resumed: false, stopped: was };
+}
+
+/**
+ * Migracja starego zapisu: administrator ulepszeń przypisany do MIASTA -> administrator państwa tego
+ * właściciela (koszt raz, bez ponownego pobrania). Gdy właściciel ma kilka takich miast, bierze się
+ * pierwsze w tablicy `cities` (deterministycznie); pozostałe pola są tylko czyszczone (`clearedCityIds`).
+ */
+export function migrateCityImprovementAdministratorsToState(
+  cities: ReadonlyArray<{ id: string; ownerId: number; administratorUlepszen?: CityAdministrator }>,
+): { byOwner: Map<number, CityAdministrator>; clearedCityIds: string[] } {
+  const byOwner = new Map<number, CityAdministrator>();
+  const clearedCityIds: string[] = [];
+  for (const city of cities) {
+    const adm = city.administratorUlepszen;
+    if (!adm) continue;
+    if (adm.ownerId === city.ownerId && !byOwner.has(city.ownerId)) {
+      byOwner.set(city.ownerId, { ownerId: city.ownerId, hiredTurn: adm.hiredTurn, pracuje: adm.pracuje === true });
+    }
+    clearedCityIds.push(city.id);
+  }
+  return { byOwner, clearedCityIds };
 }

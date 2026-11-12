@@ -1446,14 +1446,14 @@ import {
   refreshAdministratorState,
   totalAdministratorUpkeepIfAllWorkForOwner,
   administratorUpkeepForCity,
-  improvementAdministratorUpkeepForCity,
   type AdministratorChange,
+  type CityAdministrator,
   aiRequiresImprovementAdministrator,
-  cityHasImprovementAdministrator,
-  cityHasWorkingImprovementAdministrator,
-  dismissImprovementAdministrator,
-  hireImprovementAdministrator,
-  improvementAdministratorHireBlockReason,
+  ownerHasStateImprovementAdministrator,
+  ownerHasWorkingStateImprovementAdministrator,
+  hireOwnerImprovementAdministrator,
+  ownerImprovementAdministratorHireBlockReason,
+  migrateCityImprovementAdministratorsToState,
   improvementAdministratorHireBlockText,
   improvementAdministratorHireCost,
   improvementAdministratorUpkeep,
@@ -9040,7 +9040,7 @@ async function boot(): Promise<void> {
             // OFF (opcja „Administratorzy” wyłączona) -> undefined: brak wiersza w panelu.
             utrzymanieAdministratora: !administratorsEnabled ? undefined : (() => {
               const c = cities.find(x => x.id === cityId);
-              return c ? administratorUpkeepForCity(c, cityBuilt.get(c.id) ?? []) + improvementAdministratorUpkeepForCity(c) : 0;
+              return c ? administratorUpkeepForCity(c, cityBuilt.get(c.id) ?? []) : 0;
             })(),
           };
         },
@@ -10194,7 +10194,8 @@ async function boot(): Promise<void> {
     function isCityAutoImprovementActive(city: City): boolean {
       return isCityAutoImprovementAllowed(
         city.ownerId, humanSeats.humanOwnerIds, administratorsEnabled,
-        cityHasWorkingImprovementAdministrator(city), aiRequiresImprovementAdministrator(),
+        ownerHasWorkingStateImprovementAdministrator(stateAdmByOwner.get(city.ownerId), city.ownerId),
+        aiRequiresImprovementAdministrator(),
       );
     }
     /**
@@ -10233,7 +10234,7 @@ async function boot(): Promise<void> {
      * finansowanie ze skarbca państwa). `notify` = wpisy w „Ważne” (tylko realne zmiany tury/akcji gracza).
      */
     function refreshCityAdministrators(notify: boolean): void {
-      const changes = refreshAdministratorState(cities, cityBuilt, ownerTreasury);
+      const changes = refreshAdministratorState(cities, cityBuilt, ownerTreasury, stateAdmByOwner);
       // Zmiany z cichych odświeżeń (podgląd HUD `refreshLiveEmpireRatesUnsafe`, wydatki gracza w trakcie tury)
       // NIE są tracone: akumulujemy je per miasto, a powiadamiamy przy pierwszym `notify=true` (start ticku /
       // akcja zatrudnienia). Przejście „nie pracuje” → „wrócił” (albo odwrotnie) w obrębie jednej tury znosi
@@ -10304,42 +10305,47 @@ async function boot(): Promise<void> {
         effects,
       };
     }
-    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: zatrudnij administratora ulepszeń gracza (koszt ze skarbca państwa). */
+    /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: zatrudnij administratora PAŃSTWA gracza (koszt ze skarbca; stan na właścicielu). */
     function hireImprovementAdministratorForPlayer(cityId: string): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isHuman(city.ownerId)) return false;
       if (!administratorsEnabled) return false; // opcja „Administratorzy” wyłączona: brak mechaniki
       const treasury = ownerTreasury(city.ownerId);
-      if (!hireImprovementAdministrator(city, treasury, turn)) {
-        const reason = improvementAdministratorHireBlockReason(city, treasury);
+      const cur = stateAdmByOwner.get(city.ownerId);
+      const next = hireOwnerImprovementAdministrator(cur, city.ownerId, treasury, turn);
+      if (!next) {
+        const reason = ownerImprovementAdministratorHireBlockReason(cur, city.ownerId, treasury);
         if (reason) showHintMessage(improvementAdministratorHireBlockText(reason), 3500);
         return false;
       }
+      stateAdmByOwner.set(city.ownerId, next);
       setOwnerTreasury(city.ownerId, treasury - improvementAdministratorHireCost());
       refreshCityAdministrators(true);
       updateHud();
-      showHintMessage(`Zatrudniono administratora ulepszeń: ${city.name} (−${improvementAdministratorHireCost()} Pieniądza)`, 3000);
+      showHintMessage(`Zatrudniono administratora Państwa (ulepszenia terenu) (−${improvementAdministratorHireCost()} Pieniądza)`, 3000);
       return true;
     }
-    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: zwolnij administratora ulepszeń gracza (bez zwrotu kosztu). */
+    /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: zwolnij administratora Państwa gracza (bez zwrotu kosztu). */
     function dismissImprovementAdministratorForPlayer(cityId: string): boolean {
       const city = cities.find(c => c.id === cityId);
       if (!city || !isHuman(city.ownerId)) return false;
-      if (!dismissImprovementAdministrator(city)) return false;
+      if (!stateAdmByOwner.has(city.ownerId)) return false;
+      stateAdmByOwner.delete(city.ownerId);
       updateHud();
-      showHintMessage(`Zwolniono administratora ulepszeń: ${city.name}`, 3000);
+      showHintMessage(`Zwolniono administratora Państwa (ulepszenia terenu)`, 3000);
       return true;
     }
-    /** R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: stan administratora ulepszeń miasta dla UI panelu ulepszeń. */
+    /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: stan administratora Państwa dla UI (panel miasta czyta stan właściciela). */
     function improvementAdministratorUiState(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city) return null;
       if (!administratorsEnabled && isHuman(city.ownerId)) return null; // OFF: brak sekcji administratora ulepszeń gracza
-      const hired = cityHasImprovementAdministrator(city);
-      const reason = hired ? null : improvementAdministratorHireBlockReason(city, ownerTreasury(city.ownerId));
+      const adm = stateAdmByOwner.get(city.ownerId);
+      const hired = ownerHasStateImprovementAdministrator(adm, city.ownerId);
+      const reason = hired ? null : ownerImprovementAdministratorHireBlockReason(adm, city.ownerId, ownerTreasury(city.ownerId));
       return {
         hired,
-        working: cityHasWorkingImprovementAdministrator(city),
+        working: ownerHasWorkingStateImprovementAdministrator(adm, city.ownerId),
         upkeep: improvementAdministratorUpkeep(),
         hireCost: improvementAdministratorHireCost(),
         blockReasonText: reason ? improvementAdministratorHireBlockText(reason) : null,
@@ -10354,7 +10360,7 @@ async function boot(): Promise<void> {
       for (const city of cities) {
         if (city.ownerId !== ownerId) continue;
         const built = cityBuilt.get(city.id) ?? [];
-        const upkeepNow = totalAdministratorUpkeepIfAllWorkForOwner(cities, cityBuilt, ownerId);
+        const upkeepNow = totalAdministratorUpkeepIfAllWorkForOwner(cities, cityBuilt, ownerId, stateAdmByOwner.get(ownerId));
         if (!aiShouldHireAdministrator(city, built, treasury, upkeepNow)) continue;
         if (!hireAdministrator(city, built, treasury, turn)) continue;
         treasury -= administratorHireCost();
@@ -10374,8 +10380,8 @@ async function boot(): Promise<void> {
       return improvementAutomationBlockedRule(
         administratorsEnabled,
         scope,
-        c ? { mine: isMe(c.ownerId), working: cityHasWorkingImprovementAdministrator(c) } : null,
-        cities.filter(x => isMe(x.ownerId)).map(x => cityHasWorkingImprovementAdministrator(x)),
+        c ? { mine: isMe(c.ownerId), working: ownerHasWorkingStateImprovementAdministrator(stateAdmByOwner.get(c.ownerId), c.ownerId) } : null,
+        cities.filter(x => isMe(x.ownerId)).map(x => ownerHasWorkingStateImprovementAdministrator(stateAdmByOwner.get(x.ownerId), x.ownerId)),
       );
     }
     /** Czy opcja „Administratorzy" tej gry jest włączona (UI: aktywność kontrolek automatyzacji gracza). */
@@ -13900,6 +13906,8 @@ async function boot(): Promise<void> {
      *  się nad `playerPracaPool`, żeby zachować "zero kopii" mimo że to
      *  primitywa, nie obiekt). */
     const playerStateByHuman: Map<number, PlayerState> = new Map([[HUMAN_OWNER_PRIMARY, player]]);
+    /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator PAŃSTWA (ulepszenia terenu) — stan na właścicielu, nie na mieście. */
+    const stateAdmByOwner = new Map<number, CityAdministrator>();
     /** Civilization identity per human seat; effects are always reconstructed from matrix data. */
     const playerCivTypeByHuman: Map<number, string> = new Map([[HUMAN_OWNER_PRIMARY, player.civType as string]]);
     /** Komórka-alias (getter/setter) nad `playerPracaPool` — czytanie/pisanie
@@ -22317,6 +22325,7 @@ async function boot(): Promise<void> {
       const bogactwoUpkeepPreview = previewOwnerUpkeep(
         0, playerCities, data, _menuDifficulty, cityBuilt, playerEconUnitsForUpkeep,
         player.era, player.zbadane, empireEpochForOwner, unlockedTechSetForOwner,
+        stateAdmByOwner,
       );
       _lastBogactwoHandel = playerEcon.pieniadzZTras;
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
@@ -35373,6 +35382,7 @@ async function boot(): Promise<void> {
         ownerId, cities, data, effectiveGameDifficultyForOwner(ownerId), cityBuilt, list,
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
+        stateAdmByOwner,
       );
       const before = preview(toEcon(own));
       // R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2): zamiana NIE dodaje jednostki -- jedna
@@ -37877,6 +37887,8 @@ async function boot(): Promise<void> {
           // R-WEB-CITY-ADMINISTRATOR-Q1: jednorazowe powiadomienie migracyjne już pokazane.
           cityAdministratorNoticeShown,
           improvementAdministratorNoticeShown,
+          // R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator Państwa (ulepszenia) per właściciel.
+          stateImprovementAdministrators: [...stateAdmByOwner.values()].map(a => ({ ...a })),
           // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: opcja klawisza F trwa w zapisie (brak pola = wyłączona).
           fogRevealKeyFEnabled,
           // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
@@ -38970,6 +38982,7 @@ async function boot(): Promise<void> {
             // R-WEB-CITYSTATE-UPKEEP-DIFFICULTY-Q1: utrzymanie miasta-państwa wg
             // cityStateDifficulty (osobny suwak), AI wg trudności menu, gracz wg menu.
             (oid: number) => effectiveGameDifficultyForOwner(oid),
+            stateAdmByOwner,
           );
           pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
@@ -40668,7 +40681,9 @@ async function boot(): Promise<void> {
                   isAutoBuildAllowedFor(hOid),
                   // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: tylko miasta z DZIAŁAJĄCYM administratorem ulepszeń.
                   isCityAutoImprovementActive,
-                  c => effectiveUlepszeniaForCity(c).tryb === 'auto',
+                  // R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (Z4, decyzja właściciela): tryb automatyzacji jest JEDEN
+                  // dla Państwa (`ulepszeniaEmpireForOwner`), nie per miasto — override trybu miasta nie wpływa na auto.
+                  c => ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto',
                 );
                 const hOidPracaPool = ownerPracaPool(hOid);
                 // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” liczony od nowa co turę;
@@ -40708,7 +40723,7 @@ async function boot(): Promise<void> {
                   // R-WEB-AUTO-FORT-CLAIM-Q1: forty/posterunki z automatu dopiero po wyczerpaniu limitu miast.
                   cityLimitExhausted: isCityLimitExhausted(cities.filter(c => c.ownerId === hOid), _menuCityLimitBase, empireEpochForOwner(hOid)),
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
-                  getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
+                  getFocus: c => ulepszeniaEmpireForOwner((c as City).ownerId).focus,
                   // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): silnik NIE podaje juz
                   // `improvementBudgetCap`. Picker liczy pulap sam — `pracaBudgetPercent`
                   // (polityka imperium) x SKUMULOWANA pula na wejsciu (`pracaAvailable`
@@ -40717,7 +40732,7 @@ async function boot(): Promise<void> {
                   // przebija w gore). Podanie tu 100% + absolutnego capu z przyrostu tury
                   // bylo zrodlem progu opisanego przy `playerUlepszeniaPolicy` wyzej.
                   pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent,
-                  getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
+                  getPracaBudgetPercent: c => ulepszeniaEmpireForOwner((c as City).ownerId).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
                       city as City, map, territoryNodesAuto,
@@ -40732,7 +40747,7 @@ async function boot(): Promise<void> {
                   // idzie NA PRZOD, po zaspokojeniu automat wraca do zywnosci. K1 nie odwoluje sie
                   // do niedoborow (picker pomija `resourceDeficitKeys` dla profilu zywnosc).
                   foodImprovementStages: city => {
-                    const policy = effectiveUlepszeniaForCity(city as City);
+                    const policy = ulepszeniaEmpireForOwner((city as City).ownerId);
                     return policy.focus === 'zywnosc' || policy.focus === 'zrownowazone';
                   },
                   // Wycinka w toku (wieloturowa) - picker nie moze jej emitowac drugi raz (exec-wycinka-in-progress).
@@ -41438,6 +41453,7 @@ async function boot(): Promise<void> {
                   aiResearchDone.get(ownerId) ?? new Set<string>(),
                   empireEpochForOwner,
                   unlockedTechSetForOwner,
+                  stateAdmByOwner,
                 );
                 const sliderDecision = decideAIEconomySliders(
                   {
@@ -47772,9 +47788,22 @@ async function boot(): Promise<void> {
       // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1: stary zapis bez pola = administratorzy WYŁĄCZENI (nic po cichu).
       // Zapis sprzed opcji z włączoną dotąd automatyzacją (`meta.autoBuildEnabled`) → JEDNORAZOWE powiadomienie (niżej).
       administratorsEnabled = administratorsFromSaveMeta(saved.meta?.administratorsEnabled);
-      // Czy gracz miał zatrudnionego administratora (liczone PRZED kasowaniem niżej) — wtedy komunikat także przy autoBuildEnabled=false.
-      const hadHiredAdministrator = cities.some(c => isHuman(c.ownerId)
-        && !!((c as { administrator?: unknown }).administrator || (c as { administratorUlepszen?: unknown }).administratorUlepszen));
+      // R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator PAŃSTWA (ulepszenia) ze zapisu (`meta.stateImprovementAdministrators`).
+      // Stary zapis (bez pola) = MIGRACJA: administrator ulepszeń przypisany do miasta -> administrator Państwa
+      // tego właściciela (koszt raz, bez ponownego pobrania). Pola miast są kasowane po migracji.
+      stateAdmByOwner.clear();
+      const savedStateAdm = saved.meta?.stateImprovementAdministrators as CityAdministrator[] | undefined;
+      if (Array.isArray(savedStateAdm)) {
+        for (const a of savedStateAdm) {
+          if (a && typeof a.ownerId === 'number') stateAdmByOwner.set(a.ownerId, { ownerId: a.ownerId, hiredTurn: a.hiredTurn, pracuje: a.pracuje === true });
+        }
+      } else {
+        for (const [oid, a] of migrateCityImprovementAdministratorsToState(cities).byOwner) stateAdmByOwner.set(oid, a);
+      }
+      for (const c of cities) delete (c as { administratorUlepszen?: unknown }).administratorUlepszen;
+      // Czy gracz miał zatrudnionego administratora (miasta lub Państwa) — wtedy komunikat także przy autoBuildEnabled=false.
+      const hadHiredAdministrator = cities.some(c => isHuman(c.ownerId) && !!(c as { administrator?: unknown }).administrator)
+        || [...stateAdmByOwner.keys()].some(o => isHuman(o));
       const legacyAutomationMigration = shouldShowLegacyAutomationMigration(saved.meta as { administratorsEnabled?: unknown; autoBuildEnabled?: unknown } | undefined, hadHiredAdministrator);
       if (!administratorsEnabled) {
         // Bez opcji nie istnieje mechanika administratora dla gracza: zatrudnieni administratorzy gracza znikają (bez bonusów i utrzymania).
@@ -47783,6 +47812,7 @@ async function boot(): Promise<void> {
           delete (c as { administrator?: unknown }).administrator;
           delete (c as { administratorUlepszen?: unknown }).administratorUlepszen;
         }
+        for (const o of [...stateAdmByOwner.keys()]) if (isHuman(o)) stateAdmByOwner.delete(o);
       }
       // R-WEB-CITY-ADMINISTRATOR-Q1: stary zapis (bez pola) = powiadomienie migracyjne jeszcze niepokazane.
       cityAdministratorNoticeShown = saved.meta?.cityAdministratorNoticeShown === true;
@@ -47794,7 +47824,8 @@ async function boot(): Promise<void> {
       improvementAdministratorNoticeShown = saved.meta?.improvementAdministratorNoticeShown === true;
       {
         const affectedImp = cities.filter(c => isHuman(c.ownerId)
-          && administratorsEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto' && !cityHasWorkingImprovementAdministrator(c));
+          && administratorsEnabled && ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto'
+          && !ownerHasWorkingStateImprovementAdministrator(stateAdmByOwner.get(c.ownerId), c.ownerId));
         const show = shouldShowImprovementAdminMigration(improvementAdministratorNoticeShown, affectedImp.length);
         improvementAdministratorNoticeShown = true;
         if (show) {
