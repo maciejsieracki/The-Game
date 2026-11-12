@@ -69,6 +69,50 @@ fn replace_view(game: &PlayableGame) -> (Option<String>, bool) {
     )
 }
 
+/// P6-UNIT-REPLACE-L3-KOSZT (kryterium 3): e2e komendy gracza na PRODUKCYJNEJ tabeli. Po zamianie
+/// kategoria i HP (hpMax + HP po ratio) musza zgadzac sie z tabela produkcyjna, a Pieniadz = koszt
+/// tabeli (rabat/tempo/trudnosc z stanu gry).
+#[test]
+fn produkcyjna_zamiana_ustawia_kategorie_hp_i_koszt_z_tabeli() {
+    use civ_engine::domain::types::Difficulty;
+    use civ_engine::domain::unit_replace_defs::production_replace_defs_for_civ;
+
+    let mut game = game();
+    game.set_human_treasury(1_000.0).expect("skarbiec");
+    game.set_capital_stock(drewno_pool(1_000.0))
+        .expect("stolica");
+    let table = production_replace_defs_for_civ("rzymianie", "niski", Difficulty::Normal);
+    let target = table.get("Procarz").expect("Procarz w tabeli produkcyjnej");
+    let treasury_before = game.state().economy.treasury;
+
+    game.replace_unit(HUMAN_UNIT, "Procarz", None)
+        .expect("zamiana produkcyjna ma sie udac");
+
+    let economy = &game.state().economy;
+    assert_eq!(
+        treasury_before - economy.treasury,
+        target.money_cost,
+        "Pieniadz = koszt produkcyjnej tabeli"
+    );
+    let state = &economy.units[&HUMAN_UNIT];
+    assert_eq!(
+        state.category.as_deref(),
+        Some(target.category.as_str()),
+        "kategoria po zamianie"
+    );
+    // Web: syncHpMax = !humanTreasury, wiec gracz NIE dostaje hpMax z zamiany (pole zostaje jak bylo).
+    assert_eq!(
+        state.hp_max, None,
+        "gracz: hpMax nie jest synchronizowany (web syncHpMax=false)"
+    );
+    // Stare HP = maks. starego typu (Wojownik), ratio 1 -> HP = newMaxHp = bazowe health nowego typu.
+    assert_eq!(
+        state.hp,
+        Some(target.max_hp),
+        "HP po zamianie = newMaxHp (bez bonusow stanu)"
+    );
+}
+
 #[test]
 fn stan_domyslny_nie_pojawia_sie_w_dto() {
     let game = game();

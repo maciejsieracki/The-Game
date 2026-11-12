@@ -1,26 +1,29 @@
-//! P6-UNIT-REPLACE-L3-DEFS (dlug L-3, etap 3): produkcyjne zrodlo tabeli `ReplaceUnitDef`.
+//! P6-UNIT-REPLACE-L3-DEFS (dlug L-3, etap 3) + P6-UNIT-REPLACE-L3-KOSZT (etap 4): produkcyjne
+//! zrodlo tabeli `ReplaceUnitDef`.
 //!
 //! Zakres tego modulu:
 //! - `category_of`: 1:1 port web `categoryOf(name, role, isSuper, typ)` z
 //!   `gra/src/units/setup.ts` (pin 07d2fbd72, linie 239-311: `normalizeForMatch` od linii 239,
 //!   `categoryOf` linie 246-311).
 //!   Funkcja czysta; wektory z pinu: `tests/p6_unit_replace_defs_vectors/`.
-//! - `production_replace_defs`: tabela `ReplaceUnitDef` zbudowana z osadzonego
-//!   `rust-port/engine/data/units.json` (kategoria, `Health`, `Epoka`, `Surowiec`, `Surowiec (ilość)`,
-//!   `Typ`) oraz z tabeli wartosci `derived/unit-gold-costs.json` (`Pieniądz (koszt)` po skali epoki).
-//!
-//! Znane ograniczenie (NIE_ZMIERZONO w tym etapie): web `replaceUnitMoneyCost` liczy koszt przez
-//! `unitProductionItem(..., civBonusy, kosztJednostekPace, owner, difficulty)`. Tabela produkcyjna
-//! przyjmuje bazowy koszt Pieniądz z tabeli wartosci (ta sama wartosc co `canonical_recruitment_costs`),
-//! bez mnoznikow civ/tempo/poziom trudnosci. Domkniecie wymaga osobnego tematu.
+//! - `production_replace_defs_with` / `production_replace_defs_for_civ`: tabela `ReplaceUnitDef`
+//!   zbudowana z osadzonego `rust-port/engine/data/units.json` (kategoria, `health`, `Epoka`, `Surowiec`,
+//!   `Surowiec (ilość)`, `Typ`) oraz z tabeli `derived/unit-gold-costs.json` (koszt bazowy po skali epoki).
+//!   Koszt Pieniadza = `unit_replace_cost::replace_money_cost` (web `replaceUnitMoneyCost`: markery
+//!   cywilizacji, tempo, trudnosc). HP bazowe = `health` (web `unitHealth`).
 
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
-use crate::data::derived::{parse_unit_gold_costs, UnitGoldRow};
+use crate::data::civilizations::{parse_civ_matrix, CivMatrixFile};
+use crate::data::derived::parse_unit_gold_costs;
 use crate::data::units_combat::{parse_units, UnitRecord};
 use crate::domain::building_costs::p6_7b::{EpochInput, UnitStockCostSource};
+use crate::domain::building_costs::repin_b2::civ_production_cost_markers;
 use crate::domain::civ_bonuses::strip_diacritics;
+use crate::domain::recruitment::army_merge::UnitCostPace;
+use crate::domain::types::Difficulty;
+use crate::domain::unit_replace_cost::{replace_money_cost, ReplaceCostContext};
 use crate::domain::unit_replace_wiring::ReplaceUnitDef;
 
 /// Web `normalizeForMatch`: NFD, usuniecie U+0300-U+036F, `Ł`/`ł` -> `l`, male litery.
@@ -148,35 +151,50 @@ pub fn category_of(name: &str, role: &str, is_super: bool, typ: Option<&str>) ->
 
 /// Zrodlo tabeli produkcyjnej (do dokumentacji i raportow).
 pub const PRODUCTION_DEFS_SOURCE: &str =
-    "units.json (Jednostka, Rola (linia), Super-jednostka, Typ, Health, Epoka, Surowiec, Surowiec (ilość)) \
-     + derived/unit-gold-costs.json (Pieniądz (koszt) po skali epoki)";
+    "units.json (Jednostka, Rola (linia), Super-jednostka, Typ, health, Epoka, Surowiec, Surowiec (ilość)) \
+     + derived/unit-gold-costs.json (koszt bazowy Pieniądz po skali epoki) \
+     + unit_replace_cost (markery cywilizacji, tempo, trudnosc = web replaceUnitMoneyCost)";
 
-/// Produkcyjna tabela `ReplaceUnitDef` indeksowana `Jednostka` (= typeId). Budowana raz.
-///
-/// Panikuje tylko wtedy, gdy osadzony plik nie parsuje albo brakuje wiersza kosztu zlota dla jednostki
-/// (te same zalozenia co `canonical_recruitment_costs`).
-pub fn production_replace_defs() -> &'static BTreeMap<String, ReplaceUnitDef> {
-    static DEFS: OnceLock<BTreeMap<String, ReplaceUnitDef>> = OnceLock::new();
-    DEFS.get_or_init(|| {
+/// Dane wejsciowe tabeli, parsowane raz: rekordy units.json, koszt bazowy i macierz cywilizacji.
+struct ReplaceSource {
+    records: Vec<UnitRecord>,
+    gold_base: BTreeMap<String, f64>,
+    civ_matrix: CivMatrixFile,
+}
+
+fn replace_source() -> &'static ReplaceSource {
+    static SOURCE: OnceLock<ReplaceSource> = OnceLock::new();
+    SOURCE.get_or_init(|| {
         let records = parse_units().expect("embedded units.json must parse");
         let gold = parse_unit_gold_costs().expect("embedded derived gold table must parse");
-        let gold_rows: BTreeMap<&str, &UnitGoldRow> = gold
+        let gold_base = gold
             .wiersze
             .iter()
-            .map(|row| (row.jednostka.as_str(), row))
+            .map(|row| (row.jednostka.clone(), f64::from(row.pieniadz_koszt)))
             .collect();
-        build_defs(&records, &gold_rows)
+        let civ_matrix = parse_civ_matrix().expect("embedded civ-matrix.json must parse");
+        ReplaceSource {
+            records,
+            gold_base,
+            civ_matrix,
+        }
     })
 }
 
-fn build_defs(
-    records: &[UnitRecord],
-    gold_rows: &BTreeMap<&str, &UnitGoldRow>,
+/// Produkcyjna tabela `ReplaceUnitDef` dla wlasciciela z danym kontekstem kosztu (web
+/// `replaceUnitMoneyCost` dla tego samego stanu). `money_cost` = pelny koszt Pieniadza po markerach,
+/// tempie i trudnosci; `max_hp` = bazowe `health` (web `unitHealth`), bez bonusow jednostki.
+/// Panikuje tylko wtedy, gdy osadzone dane nie parsuja albo brakuje kosztu bazowego jednostki.
+pub fn production_replace_defs_with(
+    ctx: &ReplaceCostContext<'_>,
 ) -> BTreeMap<String, ReplaceUnitDef> {
-    records
+    let source = replace_source();
+    source
+        .records
         .iter()
         .map(|record| {
-            let gold = gold_rows
+            let base = *source
+                .gold_base
                 .get(record.jednostka.as_str())
                 .unwrap_or_else(|| panic!("derived gold table lacks {}", record.jednostka));
             let def = ReplaceUnitDef {
@@ -187,13 +205,31 @@ fn build_defs(
                     Some(&record.typ),
                 )
                 .to_owned(),
-                money_cost: f64::from(gold.pieniadz_koszt),
+                money_cost: replace_money_cost(base, &record.jednostka, ctx),
                 stock_source: Some(stock_source_of(record)),
-                max_hp: record.health as f64,
+                max_hp: record.health_lc as f64,
             };
             (record.jednostka.clone(), def)
         })
         .collect()
+}
+
+/// Produkcyjna tabela dla wlasciciela gracza (owner 0) z cywilizacja `civ_key`, tempem `pace_key`
+/// (klucz `unit-cost-tempo.json`: `niski` / `normalny` / `wysoki`) i trudnoscia `difficulty`.
+/// Markery: web `civBonusyForOwnerId(0)` -> `civProductionCostBonusyForCivKey`; brak wiersza
+/// macierzy dla klucza = brak markerow (jak web).
+pub fn production_replace_defs_for_civ(
+    civ_key: &str,
+    pace_key: &str,
+    difficulty: Difficulty,
+) -> BTreeMap<String, ReplaceUnitDef> {
+    let markers = civ_production_cost_markers(&replace_source().civ_matrix, civ_key);
+    production_replace_defs_with(&ReplaceCostContext {
+        markers: &markers,
+        pace: Some(UnitCostPace::Key(pace_key)),
+        owner_id: 0,
+        difficulty,
+    })
 }
 
 /// Web `unitStockCost(lookupUnitDef(newTypeId))`: pola surowcowe z units.json.

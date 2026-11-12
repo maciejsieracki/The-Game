@@ -16,6 +16,7 @@ use super::building_costs::p6_7b::{unit_stock_cost, StockRecord, UnitStockCostSo
 use super::unit_replace::{
     execute_unit_replace, UnitReplaceDeps, UnitReplaceResult, UnitReplaceTarget,
 };
+use super::unit_replace_cost::{replace_max_hp, ReplaceUnitProgress};
 use std::collections::BTreeMap;
 
 /// Powod blokady dla nieznanego typu docelowego (brak wpisu w tabeli definicji).
@@ -50,6 +51,8 @@ pub struct WiredReplaceDeps<'a> {
     new_type_id: String,
     gate: Option<String>,
     sync_hp_max: bool,
+    /// Postep jednostki zamienianej (web: `u.parametryBonusProc`, `u.battlesSurvived`) dla HP.
+    progress: ReplaceUnitProgress,
 }
 
 impl<'a> WiredReplaceDeps<'a> {
@@ -96,12 +99,17 @@ impl UnitReplaceDeps for WiredReplaceDeps<'_> {
     }
 
     fn old_max_hp(&self, unit: &UnitReplaceTarget) -> f64 {
+        // Web oldMaxHp = effectiveRuntimeUnitMaxHp(u, def): bazowe HP starego typu + bonusy tej jednostki.
         // Brak definicji starego typu -> 0 (execute_unit_replace traktuje to jako ratio 1.0).
-        self.defs.get(&unit.type_id).map_or(0.0, |d| d.max_hp)
+        self.defs
+            .get(&unit.type_id)
+            .map_or(0.0, |d| replace_max_hp(d.max_hp, self.progress))
     }
 
     fn new_max_hp(&self, _unit: &UnitReplaceTarget, _new_type_id: &str) -> f64 {
-        self.new_def().map_or(0.0, |d| d.max_hp)
+        // Web newMaxHp = effectiveMaxHp(unitHealth(newDef), parametry(u), weteran(u)).
+        self.new_def()
+            .map_or(0.0, |d| replace_max_hp(d.max_hp, self.progress))
     }
 
     fn category(&self, _new_type_id: &str) -> String {
@@ -116,6 +124,7 @@ impl UnitReplaceDeps for WiredReplaceDeps<'_> {
 
 /// Wykonuje zamiane jednostki przez adaptery. Mutuje `unit` i `city` wylacznie przy sukcesie
 /// (zgodnie z `execute_unit_replace`). `sync_hp_max`: true dla AI (web aktualizuje hpMax).
+/// `progress`: postep zamienianej jednostki (bonusy parametrow/weterana) wejscie do HP (web newMaxHp/oldMaxHp).
 pub fn replace_unit_wired(
     unit: &mut UnitReplaceTarget,
     new_type_id: &str,
@@ -123,6 +132,7 @@ pub fn replace_unit_wired(
     city: &mut ReplaceCity,
     gate: Option<String>,
     sync_hp_max: bool,
+    progress: ReplaceUnitProgress,
 ) -> UnitReplaceResult {
     let mut deps = WiredReplaceDeps {
         defs,
@@ -130,6 +140,7 @@ pub fn replace_unit_wired(
         new_type_id: new_type_id.to_owned(),
         gate,
         sync_hp_max,
+        progress,
     };
     execute_unit_replace(unit, new_type_id, &mut deps)
 }
@@ -263,6 +274,7 @@ mod tests {
                     new_type_id: new_type.to_owned(),
                     gate,
                     sync_hp_max: sync,
+                    progress: ReplaceUnitProgress::default(),
                 },
                 stock,
             };
@@ -288,6 +300,7 @@ mod tests {
             new_type_id: "Nowy".to_owned(),
             gate: None,
             sync_hp_max: false,
+            progress: ReplaceUnitProgress::default(),
         };
         let unit = UnitReplaceTarget {
             type_id: "Stary".to_owned(),
