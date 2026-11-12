@@ -1,14 +1,16 @@
 //! R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1: produkcyjna sciezka zdobycia stolicy
 //! (`apply_capital_capture_with_plunder`) = Transfer + `run_capital_capture_plunder` + akumulator zdobyczy w `PlayableState`.
 //!
-//! Wartosci oczekiwane pochodza z wektorow pinu 07d2fbd72 w `tests/p6_siege_capital_plunder_vectors/vectors.json`:
-//! * `h05-elim-player-wins-triumph` (2 -> 0, eliminacja, lostPower 120): `main.store` (skarbiec 0 = 120, praca 35,
-//!   nauka 47, techy {a,b,c}) i `main.zdobycze` = {"0": 120};
-//! * `h04-capital-ai-keeps-cities` (2 -> 0, przejecie stolicy, zostaja miasta): skarbiec 0 = 120, brak zdobyczy;
-//! * `h09-elim-barb-captor` (2 -> -1, eliminacja, zdobywca barbarzynca): brak zdobyczy (`main.zdobycze` = {}).
+//! Wejscie i oczekiwania sa CZYTANE z `tests/p6_siege_capital_plunder_vectors/vectors.json` (wygenerowany przez
+//! `p6_siege_capital_plunder_gen.mjs` z pinu 07d2fbd72). Porownywane sa: pelny stan ekonomii wszystkich wlascicieli
+//! (skarbiec, praca, nauka, techy, zywnosc), akumulator zdobyczy, zwrot eliminacji, slot raportu, spektakl, mapa stolic
+//! i cala sekwencja wywolan UI (fn + args).
 //!
-//! Granica: wektory pinu sa generowane przez `p6_siege_capital_plunder_gen.mjs`; ten test NIE weryfikuje SHA-256 pliku
-//! wektorow (NIE_ZMIERZONO w tym temacie) - wartosci sa zapisane jawnie wg powyzszych case'ow.
+//! Granice jawne:
+//! * SHA-256 pliku wektorow NIE jest sprawdzany (brak zaleznosci sha2 w Cargo.toml - poza allowlista tematu).
+//! * `lost_power` jest podawane jako stala z wektora (atrapa `buildObjectivePowerForOwner`). Pin liczy je PO
+//!   `applyBarbarianAware` (main.ts:35672 vs 35611); kolejnosci tej wrapper nie odtwarza (patrz raport obrony).
+//! * Wejscie garnizonu (`enterCityAfterSurrender`) nie jest wolane przez wrapper.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -17,9 +19,56 @@ use civ_engine::domain::siege_capital_plunder::{
     OwnerResourceAccess, PlunderCity, PlunderLabels, PlunderState,
 };
 use civ_engine::domain::siege_transfer::{
-    apply_capital_capture_with_plunder, CapitalPlunderCtx, CapitalTransferArgs, TransferCity,
-    TransferExtras,
+    apply_capital_capture_with_plunder, CapitalCaptureResult, CapitalPlunderCtx,
+    CapitalTransferArgs, TransferCity, TransferExtras,
 };
+use serde_json::{json, Value};
+
+const DATA: &str = include_str!("p6_siege_capital_plunder_vectors/vectors.json");
+const OWNERS: [i64; 6] = [-99, -1, 0, 1, 2, 3];
+
+fn norm(v: &Value) -> Value {
+    match v {
+        Value::Number(n) => json!(n.as_f64().expect("liczba")),
+        Value::Array(a) => Value::Array(a.iter().map(norm).collect()),
+        Value::Object(o) => Value::Object(o.iter().map(|(k, v)| (k.clone(), norm(v))).collect()),
+        other => other.clone(),
+    }
+}
+
+fn pin_case(id: &str) -> Value {
+    let data: Value = serde_json::from_str(DATA).expect("vectors.json");
+    data["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|c| c["id"] == id)
+        .cloned()
+        .unwrap_or_else(|| panic!("brak wektora {id}"))
+}
+
+fn num_map(v: &Value) -> BTreeMap<i64, f64> {
+    v.as_object()
+        .map(|o| {
+            o.iter()
+                .map(|(k, v)| {
+                    (
+                        k.parse().expect("klucz wlasciciela"),
+                        v.as_f64().expect("liczba"),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn pin_num(map: &Value, key: &str) -> f64 {
+    map.get(key).and_then(Value::as_f64).unwrap_or(0.0)
+}
+
+fn acc(m: &BTreeMap<i64, f64>, o: i64) -> f64 {
+    m.get(&o).copied().unwrap_or(0.0)
+}
 
 #[derive(Default)]
 struct Store {
@@ -27,23 +76,57 @@ struct Store {
     praca: BTreeMap<i64, f64>,
     nauka: BTreeMap<i64, f64>,
     techs: BTreeMap<i64, BTreeSet<String>>,
+    food: BTreeMap<i64, f64>,
+    cap: BTreeMap<i64, f64>,
+    food_supported: bool,
+}
+
+impl Store {
+    fn from_input(input: &Value) -> Self {
+        let s = &input["store"];
+        assert_eq!(input["capMode"], "value", "wektor w trybie cap=value");
+        let techs: BTreeMap<i64, BTreeSet<String>> = s["techs"]
+            .as_object()
+            .expect("techs")
+            .iter()
+            .map(|(k, v)| {
+                (
+                    k.parse().expect("klucz"),
+                    v.as_array()
+                        .expect("lista")
+                        .iter()
+                        .map(|x| x.as_str().expect("tech").to_string())
+                        .collect(),
+                )
+            })
+            .collect();
+        Store {
+            treasury: num_map(&s["treasury"]),
+            praca: num_map(&s["praca"]),
+            nauka: num_map(&s["nauka"]),
+            techs,
+            food: num_map(&s["food"]),
+            cap: num_map(&input["cap"]),
+            food_supported: input["foodSupported"].as_bool().expect("foodSupported"),
+        }
+    }
 }
 
 impl OwnerResourceAccess for Store {
     fn get_treasury(&self, o: i64) -> f64 {
-        self.treasury.get(&o).copied().unwrap_or(0.0)
+        acc(&self.treasury, o)
     }
     fn set_treasury(&mut self, o: i64, v: f64) {
         self.treasury.insert(o, v);
     }
     fn get_praca_pool(&self, o: i64) -> f64 {
-        self.praca.get(&o).copied().unwrap_or(0.0)
+        acc(&self.praca, o)
     }
     fn set_praca_pool(&mut self, o: i64, v: f64) {
         self.praca.insert(o, v);
     }
     fn get_nauka_pool(&self, o: i64) -> f64 {
-        self.nauka.get(&o).copied().unwrap_or(0.0)
+        acc(&self.nauka, o)
     }
     fn set_nauka_pool(&mut self, o: i64, v: f64) {
         self.nauka.insert(o, v);
@@ -55,17 +138,20 @@ impl OwnerResourceAccess for Store {
         self.techs.entry(o).or_default().extend(ids.iter().cloned());
     }
     fn food_supported(&self) -> bool {
-        false
+        self.food_supported
     }
-    fn get_food_reserve(&self, _o: i64) -> f64 {
-        0.0
+    fn get_food_reserve(&self, o: i64) -> f64 {
+        acc(&self.food, o)
     }
-    fn set_food_reserve(&mut self, _o: i64, _v: f64) {}
-    fn get_food_capacity(&self, _o: i64) -> Option<f64> {
-        None
+    fn set_food_reserve(&mut self, o: i64, v: f64) {
+        self.food.insert(o, v);
+    }
+    fn get_food_capacity(&self, o: i64) -> Option<f64> {
+        self.cap.get(&o).copied()
     }
 }
 
+/// Etykiety zgodne ze stubami generatora (civLabelForOwner = civ{o}, mocLabel = Moc, oneLine = OL:{kind}, ...).
 struct Labels;
 
 impl PlunderLabels for Labels {
@@ -89,148 +175,248 @@ impl PlunderLabels for Labels {
     }
 }
 
-fn city(id: &str, owner: i64, population: f64) -> PlunderCity {
+fn city_from(v: &Value) -> PlunderCity {
+    let id = v["id"].as_str().expect("id miasta").to_string();
     PlunderCity {
-        id: id.to_string(),
-        name: format!("Miasto {id}"),
-        owner_id: owner,
-        population,
-        surowce: BTreeMap::new(),
+        name: format!("N-{id}"),
+        id,
+        owner_id: v["ownerId"].as_i64().expect("ownerId"),
+        population: v["population"].as_f64().expect("population"),
+        surowce: v["surowce"]
+            .as_object()
+            .map(|o| {
+                o.iter()
+                    .map(|(k, v)| (k.clone(), v.as_f64().expect("surowiec")))
+                    .collect()
+            })
+            .unwrap_or_default(),
     }
 }
 
-fn player_store() -> Store {
-    let mut s = Store::default();
-    s.treasury.insert(0, 20.0);
-    s.treasury.insert(2, 100.0);
-    s.praca.insert(0, 5.0);
-    s.praca.insert(2, 30.0);
-    s.nauka.insert(0, 7.0);
-    s.nauka.insert(2, 40.0);
-    s.techs
-        .insert(0, ["b"].iter().map(|x| x.to_string()).collect());
-    s.techs
-        .insert(2, ["a", "b", "c"].iter().map(|x| x.to_string()).collect());
-    s
+struct Run {
+    res: CapitalCaptureResult,
+    store: Store,
+    playable: PlayableState,
+    plunder: PlunderState,
 }
 
-/// Uruchamia produkcyjna sciezke dla miasta `c1` (indeks 0) z wlasciciela 2 do `new_owner`.
-fn run_capture(
-    cities: &mut Vec<PlunderCity>,
-    store: &mut Store,
-    playable: &mut PlayableState,
-    new_owner: i64,
-    population: f64,
-    lost_power: f64,
-) -> (
-    civ_engine::domain::siege_transfer::CapitalCaptureResult,
-    PlunderState,
-) {
+/// Odtwarza wejscie wektora przez produkcyjna sciezke (wrapper), bez zmian w danych wektora.
+fn run_pin_case(case: &Value) -> Run {
+    let input = &case["input"];
+    let city_id = input["city"].as_str().expect("city");
+    let mut cities: Vec<PlunderCity> = input["cities"]
+        .as_array()
+        .expect("cities")
+        .iter()
+        .map(city_from)
+        .collect();
+    let city_index = cities
+        .iter()
+        .position(|c| c.id == city_id)
+        .expect("miasto zdobywane jest na liscie miast");
+    assert!(
+        input["zdobycze"].as_object().expect("zdobycze").is_empty(),
+        "wektor startuje z pustym akumulatorem zdobyczy"
+    );
+    let old_owner = input["oldOwner"].as_i64().expect("oldOwner");
+    let new_owner = input["newOwner"].as_i64().expect("newOwner");
+    let building_count = input["cityBuilt"][city_id].as_u64().expect("cityBuilt") as usize;
+    let lost_power = input["lostPower"].as_f64().expect("lostPower");
+
     let mut tc = TransferCity {
-        owner_id: 2,
-        population,
+        owner_id: old_owner,
+        population: cities[city_index].population,
         q: 0,
         r: 0,
         found_by_owner: None,
         rebel_state: None,
         start_city_state: None,
     };
-    let mut plunder_state = PlunderState::default();
+    let mut store = Store::from_input(input);
+    let mut plunder = PlunderState::default();
+    for (k, v) in input["capitalMap"].as_object().expect("capitalMap") {
+        plunder.capital_city_id_by_owner.insert(
+            k.parse().expect("klucz"),
+            v.as_str().expect("id").to_string(),
+        );
+    }
+    let mut playable = PlayableState::empty();
     let mut units = Vec::new();
     let labels = Labels;
-    let ctx = CapitalPlunderCtx {
-        access: store,
-        labels: &labels,
-        plunder_state: &mut plunder_state,
-        cities,
-        city_index: 0,
-        building_count: 2,
-        triumph_unification: false,
+    let res = {
+        let ctx = CapitalPlunderCtx {
+            access: &mut store,
+            labels: &labels,
+            plunder_state: &mut plunder,
+            cities: &mut cities,
+            city_index,
+            building_count,
+            triumph_unification: input["triumph"].as_bool().expect("triumph"),
+        };
+        apply_capital_capture_with_plunder(
+            &mut tc,
+            CapitalTransferArgs {
+                new_owner,
+                was_independent_city_state: false,
+                units: &mut units,
+                production: None,
+                extras: TransferExtras::default(),
+            },
+            ctx,
+            &mut playable,
+            || lost_power,
+        )
     };
-    let res = apply_capital_capture_with_plunder(
-        &mut tc,
-        CapitalTransferArgs {
-            new_owner,
-            was_independent_city_state: false,
-            units: &mut units,
-            production: None,
-            extras: TransferExtras::default(),
-        },
-        ctx,
-        playable,
-        || lost_power,
-    );
     assert_eq!(
         tc.owner_id, new_owner,
         "Transfer zmienia wlasciciela miasta"
     );
-    (res, plunder_state)
+    Run {
+        res,
+        store,
+        playable,
+        plunder,
+    }
 }
 
-#[test]
-fn elimination_by_player_matches_pin_h05_and_records_zdobycz() {
-    let mut cities = vec![city("c1", 2, 12.0)];
-    let mut store = player_store();
-    let mut playable = PlayableState::empty();
-
-    let (res, _) = run_capture(&mut cities, &mut store, &mut playable, 0, 12.0, 120.0);
-
-    // Pin h05: eliminacja, zwrot = wiersz ELIMINACJA dla civ2.
-    let elim = res.elimination.expect("eliminacja zwraca szczegoly");
-    assert_eq!(elim.eliminated_civ_label, "civ2");
-    assert_eq!(elim.eliminated_details, "OL:eliminacja");
-    // Pin h05 main.store: skarbiec/praca/nauka/techy zdobywcy po przejeciu.
-    assert_eq!(store.get_treasury(0), 120.0);
-    assert_eq!(store.get_praca_pool(0), 35.0);
-    assert_eq!(store.get_nauka_pool(0), 47.0);
-    assert_eq!(
-        store.get_researched_techs(0),
-        ["a", "b", "c"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<BTreeSet<_>>()
+/// Porownanie z pinem: stan ekonomii (wszyscy wlasciciele), zdobycze, zwrot, slot, spektakl, stolice, wywolania UI.
+fn assert_matches_pin(case: &Value, run: &Run) {
+    let main = &case["main"];
+    let pin_store = &main["store"];
+    for o in OWNERS {
+        let k = o.to_string();
+        assert_eq!(
+            run.store.get_treasury(o),
+            pin_num(&pin_store["treasury"], &k),
+            "skarbiec {o}"
+        );
+        assert_eq!(
+            run.store.get_praca_pool(o),
+            pin_num(&pin_store["praca"], &k),
+            "praca {o}"
+        );
+        assert_eq!(
+            run.store.get_nauka_pool(o),
+            pin_num(&pin_store["nauka"], &k),
+            "nauka {o}"
+        );
+        assert_eq!(
+            run.store.get_food_reserve(o),
+            pin_num(&pin_store["food"], &k),
+            "zywnosc {o}"
+        );
+        let pin_techs: BTreeSet<String> = pin_store["techs"][&k]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .map(|x| x.as_str().expect("tech").to_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+        assert_eq!(run.store.get_researched_techs(o), pin_techs, "techy {o}");
+        assert_eq!(
+            run.playable.war.zdobycze_power_for(o),
+            pin_num(&main["zdobycze"], &k),
+            "zdobycze Power {o}"
+        );
+    }
+    match main["ret"].as_object() {
+        None => assert!(run.res.elimination.is_none(), "pin: ret = null"),
+        Some(r) => {
+            let e = run.res.elimination.as_ref().expect("pin: ret != null");
+            assert_eq!(
+                e.eliminated_civ_label, r["eliminatedCivLabel"],
+                "etykieta eliminacji"
+            );
+            assert_eq!(
+                e.eliminated_details, r["eliminatedDetails"],
+                "szczegoly eliminacji"
+            );
+        }
+    }
+    let pin_slot = &main["slot"];
+    let slot = run
+        .plunder
+        .capital_capture_report_slot
+        .as_ref()
+        .map(|(k, l)| json!({ "kind": k, "oneLine": l }))
+        .unwrap_or(Value::Null);
+    assert_eq!(slot, *pin_slot, "slot raportu kapitału");
+    let spectacle: BTreeMap<String, String> = run.plunder.elimination_spectacle_by_label.clone();
+    let pin_spectacle: BTreeMap<String, String> = main["spectacle"]
+        .as_object()
+        .expect("spectacle")
+        .iter()
+        .map(|(k, v)| (k.clone(), v.as_str().expect("spec").to_string()))
+        .collect();
+    assert_eq!(spectacle, pin_spectacle, "spektakl eliminacji");
+    let capitals: BTreeMap<String, String> = run
+        .plunder
+        .capital_city_id_by_owner
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.clone()))
+        .collect();
+    let pin_capitals: BTreeMap<String, String> = main["capitalMap"]
+        .as_object()
+        .expect("capitalMap")
+        .iter()
+        .map(|(k, v)| (k.clone(), v.as_str().expect("id").to_string()))
+        .collect();
+    assert_eq!(capitals, pin_capitals, "mapa stolic po zdobyciu");
+    // Licznik niepustosci: wektor musi miec wywolania UI, a wrapper musi je wyprodukowac.
+    let pin_calls = main["calls"].as_array().expect("calls");
+    assert!(!pin_calls.is_empty(), "wektor ma wywolania UI");
+    assert!(
+        !run.res.ui_calls.is_empty(),
+        "wrapper wyprodukowal wywolania UI"
     );
-    // Pin h05 main.zdobycze = {"0": 120}: akumulator zdobyczy zapisany w stanie gry.
-    assert!(res.zdobycze_recorded);
-    assert_eq!(playable.war.zdobycze_power_for(0), 120.0);
-    assert_eq!(res.lost_power, 120.0);
-    assert!(!res.ui_calls.is_empty(), "wywolania UI sa zapisane");
-}
-
-#[test]
-fn capital_capture_with_surviving_cities_matches_pin_h04_without_zdobycz() {
-    let mut cities = vec![city("c1", 2, 9.0), city("c2", 2, 9.0)];
-    let mut store = player_store();
-    let mut playable = PlayableState::empty();
-
-    let (res, _) = run_capture(&mut cities, &mut store, &mut playable, 0, 9.0, 120.0);
-
-    // Pin h04: przejecie stolicy (bez eliminacji), skarbiec zdobywcy = 20 + 100.
-    assert!(res.elimination.is_none());
-    assert_eq!(store.get_treasury(0), 120.0);
-    assert_eq!(store.get_praca_pool(0), 5.0);
-    // Brak zdobyczy Power w tej galezi (pin h04: main.zdobycze = {}).
-    assert!(!res.zdobycze_recorded);
-    assert_eq!(playable.war.zdobycze_power_for(0), 0.0);
-    // Pierwsze wywolanie UI w galezi stolicy to mocLabel (kolejnosc web).
-    assert_eq!(res.ui_calls[0]["fn"], "mocLabel");
-}
-
-#[test]
-fn barbarian_captor_elimination_records_no_zdobycz_pin_h09() {
-    let mut cities = vec![city("c1", 2, 9.0)];
-    let mut store = player_store();
-    let mut playable = PlayableState::empty();
-
-    let (res, _) = run_capture(&mut cities, &mut store, &mut playable, -1, 9.0, 120.0);
-
-    // Pin h09: zdobywca barbarzynca -> brak zdobyczy (barbarianCapturedPowerGain = 0).
-    assert!(res.elimination.is_none());
-    assert!(!res.zdobycze_recorded);
-    assert_eq!(playable.war.zdobycze_power_for(-1), 0.0);
     assert_eq!(
-        store.get_treasury(-1),
-        0.0,
+        norm(&Value::Array(run.res.ui_calls.clone())),
+        norm(&Value::Array(pin_calls.clone())),
+        "kolejnosc i argumenty wywolan UI"
+    );
+}
+
+#[test]
+fn pin_h04_capital_capture_keeps_cities_matches_full_state() {
+    let case = pin_case("h04-capital-ai-keeps-cities");
+    let run = run_pin_case(&case);
+    assert_matches_pin(&case, &run);
+    assert!(run.res.elimination.is_none());
+    assert!(
+        !run.res.zdobycze_recorded,
+        "brak zdobyczy w galezi przejecia stolicy"
+    );
+    assert_eq!(run.res.lost_power, 120.0);
+}
+
+#[test]
+fn pin_h05_elimination_by_player_matches_full_state_and_records_zdobycz() {
+    let case = pin_case("h05-elim-player-wins-triumph");
+    let run = run_pin_case(&case);
+    assert_matches_pin(&case, &run);
+    // Pin h05: triumph = true, wiec ret = null, a zdobycz 120 zapisana w stanie gry.
+    assert!(run.res.elimination.is_none());
+    assert!(run.res.zdobycze_recorded);
+    assert_eq!(run.playable.war.zdobycze_power_for(0), 120.0);
+    assert_eq!(run.res.lost_power, 120.0);
+}
+
+#[test]
+fn pin_h09_barbarian_captor_elimination_records_no_zdobycz() {
+    let case = pin_case("h09-elim-barb-captor");
+    let run = run_pin_case(&case);
+    assert_matches_pin(&case, &run);
+    assert!(run.res.elimination.is_none(), "pin h09: ret = null");
+    assert!(!run.res.zdobycze_recorded, "pin h09: zdobycze = {{}}");
+    assert_eq!(
+        run.store.get_treasury(-1),
+        20.0,
         "barbarzynca nie dostaje zasobow (pin h09)"
+    );
+    assert_eq!(
+        run.store.get_treasury(2),
+        0.0,
+        "ofiara traci skarbiec (pin h09)"
     );
 }
