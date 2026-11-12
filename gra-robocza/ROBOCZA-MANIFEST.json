@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "08f4b7914427c90d5a7d75d9691da97c",
-  "bundleSha256": "eea1c8c9d67aeff4ca514d476ef8f6fd2d0023b597d3041cbb676db0b896f1d0",
-  "bundleBytes": 14551147,
+  "bundleMd5": "bed343960ff4533bcfaccb985e757459",
+  "bundleSha256": "5f24dca78eb9b289211097507c524ed5693cfa288c93e9ac5e880cc59ba309aa",
+  "bundleBytes": 14552030,
   "sourceSnapshot": {
-    "source": "FC 773e8b1e3",
+    "source": "FC 2306c021e",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 657: R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1"
+    "FALA 658: R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1"
   ],
   "verification": [
-    "tsc, 5 bramek referencyjnych, battle-line-advance-uniform 17/0, battle-cap-500 59 PASS, audio-sidecar PASS; FC: battle-skip-equals-auto 42/0"
+    "tsc, 5 bramek referencyjnych, administrator-panel 48/0, city-administrator 119/0, improvement-administrator 53/0, live-verify LIVE OK (Evaluator), audio-sidecar PASS"
   ],
   "limits": [
-    "zywa scena 3D: poprawa dopiero w rundach 9-10; strzelcy, konnica i machiny poza sufitem; 500v500 54 tury zamiast 42; ABC prog 10 rund"
+    "natywne window.confirm bez ikon; poziom 3 administratora w zywej grze NIE_ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
     "notes": "Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-12T05:29:52",
+  "hubGeneratedAt": "2026-11-12T07:51:49",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "08f4b7914427c90d5a7d75d9691da97c",
-      "sizeBytes": 14551147
+      "md5": "bed343960ff4533bcfaccb985e757459",
+      "sizeBytes": 14552030
     }
   ],
-  "md5": "08f4b7914427c90d5a7d75d9691da97c",
+  "md5": "bed343960ff4533bcfaccb985e757459",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

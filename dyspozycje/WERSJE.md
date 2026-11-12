@@ -1,3 +1,9 @@
+## ROBOCZA bed34396 -- 2026-11-06 -- FALA 658: FALA 658: okno potwierdzenia zatrudnienia administratora (W25) (testowa)
+
+- R-WEB-UI-ADMINISTRATOR-HIRE-CONFIRM-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, administrator-panel 48/0, city-administrator 119/0, improvement-administrator 53/0, live-verify LIVE OK (Evaluator), audio-sidecar PASS
+- Limity: natywne window.confirm bez ikon; poziom 3 administratora w zywej grze NIE_ZMIERZONO
+
 ## ROBOCZA 08f4b791 -- 2026-11-06 -- FALA 657: FALA 657: równe natarcie linii piechoty w bitwie (W19) (testowa)
 
 - R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1
