@@ -1,3 +1,9 @@
+## ROBOCZA 70d6a2a0 -- 2026-11-12 -- FALA 671: Ruch w bitwie: Konnica 7 (rydwany bez zmian) (testowa)
+
+- w bitwie Konnica ma ruch 7; rydwany bez zmian (woły 5, konne 6); mapa bez zmian
+- Weryfikacja: tsc OK; logic 213/213; chariot-move-6-data-test 163/0; Chromium NIE_ZMIERZONO
+- Limity: dług bazowy w rydwan-konnica-x2-test (Drewno/Brąz); smoke w bitwie po deployu
+
 ## ROBOCZA 6eee943a -- 2026-11-12 -- FALA 670: Powiadomienie kolejki pustej tylko gdy można coś zbudować (testowa)
 
 - bramka budynków, ulepszeń i odcisku używa predykatu panelu produkcji (buildingCanBuildNow); test behawioralny
