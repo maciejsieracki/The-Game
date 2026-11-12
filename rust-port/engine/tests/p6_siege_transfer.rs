@@ -435,8 +435,7 @@ fn coverage_table_has_no_silent_ported_gaps() {
     // applyLiveSafeRationForCity przeszly na Ported (wektory: tests/p6_siege_transfer_q5.rs).
     // R-RUSTPORT-P6-SIEGE-TRANSFER-Q6-Q1: runCapitalCapturePlunder przeszedl na Ported (wektory: tests/p6_siege_capital_plunder.rs).
     // R-RUSTPORT-P6-SIEGE-TRANSFER-Q7-Q1: recordCityCaptureEvent przeszedl na Ported (wektory: tests/p6_siege_capture_events.rs).
-    assert_eq!(
-        missing,
-        vec!["beginWonderTransferWatch", "settleWonderTransfer",]
-    );
+    // R-RUSTPORT-P6-SIEGE-TRANSFER-Q9-Q1: beginWonderTransferWatch/settleWonderTransfer przeszly na Ported
+    // (wektory: tests/p6_siege_wonder_wrappers.rs). Lista BRAK jest pusta.
+    assert!(missing.is_empty(), "BRAK: {missing:?}");
 }
