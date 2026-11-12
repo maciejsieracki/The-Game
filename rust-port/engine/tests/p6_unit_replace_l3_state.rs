@@ -269,3 +269,23 @@ fn wartosc_niesko_nczona_w_ekonomii_jest_odrzucana() {
     );
     assert!(game.state().economy.is_default(), "stan bez zmian");
 }
+
+#[test]
+fn zapis_sprzed_etapu_2_jest_wyjsciem_generatora_startu() {
+    // Dowod pochodzenia fixture: start (seed 7), wybor i ruch jednostki 1 o jeden heks w prawo,
+    // potem jedno przejscie tury (turn 2, PlayerActions). Kod po zmianie daje ten sam JSON
+    // (wartosci); pole economy jest pominiete, wiec zapis sprzed etapu 2 ma ten sam ksztalt.
+    // Sekwencja ustalona eksperymentalnie (bez niej fixture rozni sie pozycja jednostki).
+    let mut started = game();
+    let from = started.state().units[0].position;
+    let to = civ_engine::domain::PositionDto::new(from.x() + 1, from.y());
+    started.select_unit(HUMAN_UNIT).expect("wybor jednostki");
+    started.move_unit(HUMAN_UNIT, to).expect("ruch jednostki");
+    started.advance_turn().expect("tura 1");
+    let generated = serde_json::to_value(started.state()).expect("json");
+    let old: serde_json::Value = serde_json::from_str(PRE_ETAP2_STATE).expect("json");
+    assert_eq!(
+        generated, old,
+        "fixture = wyjscie generatora startu sprzed zmiany"
+    );
+}

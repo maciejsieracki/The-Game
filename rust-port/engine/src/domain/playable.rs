@@ -698,6 +698,9 @@ impl PlayableGame {
     /// Pieniadz z skarbca gracza, surowce z puli stolicy (jedyne miasto gracza w tym wycinku).
     /// `defs` = tabela definicji jednostek; `gate` = blokada z reguly pinu (np. limit super-jednostek).
     /// Odrzucenie zwraca `UnitReplaceRejected` i nie zmienia stanu.
+    /// MARKER UNIT-REPLACE-L3-DEFS-SOURCE-OPEN: produkcyjnej tabeli `defs` nie ma jeszcze w Rust
+    /// (brak portu web `categoryOf`); komenda przyjmuje ja jako argument, jak adapter L3.
+    /// Domkniecie: osobny temat (units.json + kategoria modelu), zob. runs/R-RUSTPORT-P6-UNIT-REPLACE-L3-STAN-Q1.
     pub fn replace_unit(
         &mut self,
         unit_id: u64,
@@ -794,8 +797,9 @@ impl PlayableGame {
                 }
             }
             // P6-UNIT-REPLACE-L3 (kryterium 3c): PUNKT PODPIECIA AI-zamiany jednostek (`ai_replace_*`)
-            // na fazie TurnPhase::Ai. Galaz celowo nie wykonuje nic: PlayableState nie niesie danych
-            // ekonomii (skarbiec, pula miasta, definicje jednostek, limit udzialu), a atrapa bylaby
+            // na fazie TurnPhase::Ai. Galaz celowo nie wykonuje nic: stan ekonomii zamiany (skarbiec,
+            // pule miast, stan jednostek) jest juz w PlayableState.economy (etap 2), ale brakuje
+            // definicji jednostek (produkcyjne zrodlo ReplaceUnitDef) i limitu udzialu AI; atrapa bylaby
             // falszywym dowodem wiringu. Decyzja zakresu: zob. runs/R-RUSTPORT-P6-UNIT-REPLACE-L3-Q1.
             phases.push(entry.phase());
         }
@@ -984,5 +988,134 @@ mod war_pipeline_advance_tests {
             second,
             PlayableError::TurnPhaseQueueIncomplete { .. }
         ));
+    }
+}
+
+#[cfg(test)]
+mod unit_replace_error_tests {
+    use super::*;
+    use crate::domain::unit_replace_wiring::ReplaceUnitDef;
+
+    fn defs() -> BTreeMap<String, ReplaceUnitDef> {
+        let mut table = BTreeMap::new();
+        table.insert(
+            "Wojownik".to_owned(),
+            ReplaceUnitDef {
+                category: "Wrecz".to_owned(),
+                money_cost: 2.0,
+                stock_source: None,
+                max_hp: 10.0,
+            },
+        );
+        table.insert(
+            "Wlocznik".to_owned(),
+            ReplaceUnitDef {
+                category: "Wrecz".to_owned(),
+                money_cost: 4.0,
+                stock_source: None,
+                max_hp: 14.0,
+            },
+        );
+        table
+    }
+
+    fn game_with_treasury() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 7,
+            ..StartGameParams::default()
+        })
+        .expect("scenariusz startowy");
+        game.set_human_treasury(100.0).expect("skarbiec");
+        game
+    }
+
+    /// Jednostka gracza ludzkiego z wycinka startowego.
+    fn human_unit_id(game: &PlayableGame) -> u64 {
+        game.state()
+            .units
+            .iter()
+            .find(|unit| unit.owner_id == HUMAN_PLAYER_ID)
+            .map(|unit| unit.id.get())
+            .expect("jednostka gracza")
+    }
+
+    #[test]
+    fn nieistniejaca_jednostka_daje_unit_not_found() {
+        let mut game = game_with_treasury();
+        let before = game.state().clone();
+        assert_eq!(
+            game.replace_unit(999_999, "Wlocznik", &defs(), None),
+            Err(PlayableError::UnitNotFound(999_999))
+        );
+        assert_eq!(game.state(), &before, "brak mutacji");
+    }
+
+    #[test]
+    fn jednostka_innego_gracza_daje_unit_not_owned() {
+        let mut game = game_with_treasury();
+        game.add_player(2, "AI".to_owned()).expect("ai");
+        game.state.units.push(PlayableUnit {
+            id: UnitId::new(900),
+            owner_id: PlayerId::new(2),
+            kind: PlayableUnitKind::Warrior,
+            position: PositionDto::new(5, 5),
+            movement: 2,
+            movement_max: 2,
+            selected: false,
+        });
+        let before = game.state().clone();
+        assert_eq!(
+            game.replace_unit(900, "Wlocznik", &defs(), None),
+            Err(PlayableError::UnitNotOwned(900))
+        );
+        assert_eq!(game.state(), &before, "brak mutacji");
+    }
+
+    #[test]
+    fn brak_miasta_gracza_daje_no_city_for_replace() {
+        let mut game = game_with_treasury();
+        let unit = human_unit_id(&game);
+        game.state
+            .cities
+            .retain(|city| city.owner_id != HUMAN_PLAYER_ID);
+        let before = game.state().clone();
+        assert_eq!(
+            game.replace_unit(unit, "Wlocznik", &defs(), None),
+            Err(PlayableError::NoCityForReplace)
+        );
+        assert_eq!(game.state(), &before, "brak mutacji");
+    }
+
+    #[test]
+    fn miasto_gracza_bez_stolicy_daje_no_city_for_replace() {
+        let mut game = game_with_treasury();
+        for city in &mut game.state.cities {
+            if city.owner_id == HUMAN_PLAYER_ID {
+                city.is_capital = false;
+            }
+        }
+        let unit = human_unit_id(&game);
+        assert_eq!(
+            game.replace_unit(unit, "Wlocznik", &defs(), None),
+            Err(PlayableError::NoCityForReplace)
+        );
+        assert_eq!(
+            game.set_capital_stock(StockRecord::from([("drewno".to_owned(), 5.0)])),
+            Err(PlayableError::NoCityForReplace)
+        );
+        assert!(
+            game.state().economy.city_stock.is_empty(),
+            "brak puli bez stolicy"
+        );
+    }
+
+    #[test]
+    fn set_capital_stock_odrzuca_nieskonczone_wartosci() {
+        let mut game = game_with_treasury();
+        assert_eq!(
+            game.set_capital_stock(StockRecord::from([("drewno".to_owned(), f64::NAN)])),
+            Err(PlayableError::NonFiniteEconomy)
+        );
+        assert!(game.state().economy.city_stock.is_empty(), "stan bez zmian");
     }
 }
