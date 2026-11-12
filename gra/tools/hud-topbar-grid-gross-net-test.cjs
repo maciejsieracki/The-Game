@@ -170,7 +170,7 @@ function assertAll(res, label) {
     const ref = k0(w, 'small').cells;
     for (const n of ['big', 'huge', 'nodef']) {
       const cur = k0(w, n).cells;
-      const same = Object.keys(ref).every((x) => cur[x] && cur[x].x === ref[x].x && Math.abs(cur[x].y - ref[x].y) < 4 && cur[x].w === ref[x].w);
+      const same = Object.keys(ref).every((x) => cur[x] && cur[x].x === ref[x].x && Math.abs(cur[x].y - ref[x].y) < 2 && cur[x].w === ref[x].w);
       ok(same, `${label} ${w}px: pozycje/rozmiary komorek IDENTYCZNE dla small i ${n} (brak przeskakiwania)`, { ref: Object.fromEntries(Object.entries(ref).map(([k, v]) => [k, [v.x, v.y]])), cur: Object.fromEntries(Object.entries(cur).map(([k, v]) => [k, [v.x, v.y]])) });
     }
   }
