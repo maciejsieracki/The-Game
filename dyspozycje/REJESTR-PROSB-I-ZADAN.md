@@ -9620,3 +9620,10 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - Temat: R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1 (runda 3). FC PASS-WITH-NOTES (9ab5b6883), integracja i deploy na ROBOCZĄ: main b77a0b7b9, MD5 6eee943a (raw zgodny), sidecary zgodne.
 - Zakres: bramka budynków, ulepszeń i odcisku używa predykatu panelu produkcji (buildingCanBuildNow); test behawioralny.
 - Dowód: tsc OK, logic 213/213, test 16/0. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
+
+## FALA 671 — ROBOCZA 70d6a2a0 (2026-11-12) — Konnica 7 w bitwie (rydwany bez zmian)
+
+- Temat: R-WEB-CHARIOT-MOVE-6-DATA-Q1 (runda 2). FC PASS-WITH-NOTES (f1b2aedae, kod 897d3294), integracja i deploy na ROBOCZĄ: main 8c447758e, MD5 70d6a2a0 (raw zgodny), sidecary zgodne.
+- Zakres: w bitwie „Konnica” ma ruch 7; rydwany bez zmian (woły 5, konne 6); pole Ruch (mapa) bez zmian.
+- Dowód: tsc OK, logic 213/213, chariot-move-6-data-test 163/0. Chromium NIE_ZMIERZONO — zalecany smoke na polu bitwy (ucieczki konnicy).
+- Dług bazowy (poza tematem): rydwan-konnica-x2-test — niezgodności Rydwan (woły) Drewno/Brąz.
