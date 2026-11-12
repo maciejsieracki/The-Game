@@ -5,7 +5,7 @@
 //!   zdobycie barbarzyncow, eliminacja) -> oczekiwane `bitwy_pkt_sum` i `zdobycze_power` wlasciciela.
 //! - Wejscie: adaptery `PlayableState::power_record_*` (tu testowane przez `power_raw_for_owner`, nie przez
 //!   bezposredni dostep do `war`).
-//! - Brak wolajacego w produkcji: adaptery nie maja jeszcze produkcyjnych wywolan (patrz raport temat).
+//! - Brak wolajacego w produkcji: adaptery nie maja jeszcze produkcyjnych wywolan (patrz 01-operator-r1.md, sekcja BLOKADY).
 
 use civ_engine::domain::brake_power::Component;
 use civ_engine::domain::playable::PlayableState;
