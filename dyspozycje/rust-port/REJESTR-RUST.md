@@ -163,3 +163,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - FC PASS-WITH-NOTES poza parity-v2: L3-DEFS 05aaf3922, L3-KOSZT 0fe9b3222 (konflikt playable.rs), POWER-ULEPSZENIA f47aa359c, R7-AUDYT de92c63fd, K5A 0804daad0, K5E 9bba72be5, K5D 5dabae57e, K5G0 e40f9c710, K5F bcb64cead (konflikty mod.rs) → batch 14 (runda Operatora).
 - W toku (4): R7K7 (wf_08a142d1-ac2, Sonnet), K5J (wf_cb72c017-8ff), K5I (wf_37894d02-4f5), K5G (wf_076c64a6-536, Sonnet).
 - DECISION_REQUIRED (gameplay, rano): SZTURM ODPARTY, W8 r7 Q1–Q4, dane units.json vs pin (50 pól; Konnica 22 vs 44, Jeździec chiński 28 vs 56), DYSTANS, REPIN-DRYFT 1–6.
+
+## Przebieg 2026-11-12 07:2x UTC (orkiestrator Rust)
+- parity-v2 = db1e75378 (INTEG-B13). Batch 14A (L3-DEFS + L3-KOSZT + POWER-ULEPSZENIA + R7-AUDYT; wf_361dff94-a0b) po 3 etapach, czeka na FC.
+- FC PASS-WITH-NOTES poza parity-v2: łańcuch K5 w jednym commicie K5H 86223e037 (K5A 0804daad0, K5E 9bba72be5, K5D 5dabae57e, K5G0 e40f9c710, K5F bcb64cead, K5G 1a119b78e, K5I ff8688bf9 [rdzeń _singleBlow — status „częściowo”], K5J bbbc17b6b, K5H) — konflikt mod.rs → B14B; R7K7 fb7ac73d1 (czysty).
+- Decyzje techniczne: K5I RNG = wstrzyknięte rzuty (T1); K5J — pin nie woła _checkEnd w pętli FF (kryterium dispatchu było błędne); K5H „zdarzenia-zamiary” zaakceptowane; K5I2 podzielony na K5I2a1 (teren), a2 (pozycja/bród/trudność/engaged), a3 (mur), a4 (toCombatUnit), b (BlowInput + rangedDamageMultFor) — po 2 rundach Haiku bez kodu: Sonnet z uzasadnieniem.
+- W toku (4): B14A, K5I2a1 (wf_ef30cea0-a13), K5I2a2 (wf_601d59e3-335), CRED (wf_2f114aeb-222). Następne: B14B po FF B14A; K5I2a3/a4/b; R7-K8 po Q2 (gameplay).
+- DŁUG dopisek: R7K7 BRAK — P7, deactivateZlozeGrantsForDeal, wektory D3/syncRelationFromDeals, efekty na PlayableState (skarbce/zapasy), producent skarbca AI i puli Pracy; K5G rozbieżność halt (for..of po starej tablicy) do rozstrzygnięcia przy wpięciu; K5H/K5G/K5J/K5F bez wołającego (pętla K5 niewpięta — wymaga decyzji K6/Q).
