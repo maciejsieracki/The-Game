@@ -8,7 +8,9 @@
 // hexDistance i endMapSiege RZUCAJA: wektory nie generuja oblezen (brak oblegaCityId), wiec nie powinny byc wolane.
 // Straznik SHA-256: generator odmawia pracy, gdy pliki pinu roznia sie od zapisanych skrotow.
 // Zakres porownania (snapshot): jednostki (id po kolejnosci), eliminatedOwners, battlePowerPtsByOwner,
-// zdobyczePowerByOwner, diplomacyRelations (klucze par). Reszta pol eliminateOwner jest NIE_ZMIERZONO w Rust.
+// zdobyczePowerByOwner, diplomacyRelations (klucze par), activeDeals (strony), wojny wymuszone trzech epok
+// (pending/cycle/rest/active), bronze/ironEraEnterTurnByOwner, regularWarCapturedByPairKey, forcedWarWavesByPairKey,
+// diplomacyPairMeta, diplomacyFactorLog (pelne wpisy). Reszta pol eliminateOwner jest NIE_ZMIERZONO w Rust.
 //
 // Uzycie (WEB_ROOT = `git archive 07d2fbd72 gra/src | tar -x -C <katalog>`, poza repo; Node 22+):
 //   node rust-port/engine/tests/p6_eliminacja_gen.mjs <WEB_ROOT> > rust-port/engine/tests/p6_eliminacja_vectors/vectors.json
@@ -104,12 +106,15 @@ for (const name of free) {
     kinds[name] = k;
   }
 }
-const SNAP = ['units', 'eliminatedOwners', 'battlePowerPtsByOwner', 'zdobyczePowerByOwner', 'diplomacyRelations'];
+const ERAS = ['stone', 'bronze', 'iron'];
+const ERA_NAMES = ERAS.flatMap(e => [`${e}ForceWarPendingOwners`, `${e}ForceWarCycleOwners`, `${e}ForceWarRestUntilByOwner`, `${e}ForceWarActiveByPairKey`]);
+const EXTRA = [...ERA_NAMES, 'activeDeals', 'bronzeEraEnterTurnByOwner', 'ironEraEnterTurnByOwner', 'regularWarCapturedByPairKey', 'forcedWarWavesByPairKey', 'diplomacyPairMeta', 'diplomacyFactorLog'];
+const SNAP = ['units', 'eliminatedOwners', 'battlePowerPtsByOwner', 'zdobyczePowerByOwner', 'diplomacyRelations', ...EXTRA];
 for (const n of SNAP) {
   if (!free.includes(n)) throw new Error(`zmienna snapshotu ${n} nie wystepuje w kodzie funkcji`);
 }
 
-const factorySrc = `${stripped}\nreturn { run: eliminateOwner, snap: () => ({ units, eliminatedOwners, battlePowerPtsByOwner, zdobyczePowerByOwner, diplomacyRelations }) };`;
+const factorySrc = `${stripped}\nreturn { run: eliminateOwner, snap: () => ({ units, eliminatedOwners, battlePowerPtsByOwner, zdobyczePowerByOwner, diplomacyRelations, ${EXTRA.join(', ')} }) };`;
 // console.log z kodu weba (logi eliminacji) wycisz: stdout jest zarezerwowany dla JSON.
 console.log = () => {};
 const factory = new Function(...free, factorySrc);
@@ -154,6 +159,61 @@ function snapOf(env, inst) {
   };
 }
 
+// Stan rozszerzony (wojna, umowy, mapy wejscia w epoke): typy jak w pinie (Set/Map/tablica obiektow).
+function extraOf(s) {
+  const era = e => ({
+    pending: [...s[`${e}ForceWarPendingOwners`]],
+    cycle: [...s[`${e}ForceWarCycleOwners`]],
+    rest: [...s[`${e}ForceWarRestUntilByOwner`].entries()],
+    active: [...s[`${e}ForceWarActiveByPairKey`].entries()].map(([k, v]) => [k, v.attackerId, v.targetId]),
+  });
+  return {
+    deals: s.activeDeals.map(d => [...d.strony]),
+    stone: era('stone'),
+    bronze: era('bronze'),
+    iron: era('iron'),
+    era_bronze: [...s.bronzeEraEnterTurnByOwner.entries()],
+    era_iron: [...s.ironEraEnterTurnByOwner.entries()],
+    regular: [...s.regularWarCapturedByPairKey.entries()],
+    waves: [...s.forcedWarWavesByPairKey.entries()],
+    pair_meta: [...s.diplomacyPairMeta.entries()],
+    factor_log: [...s.diplomacyFactorLog.entries()],
+  };
+}
+
+function randomExtra(env) {
+  // Umowy: strony rosnaco (kanoniczna para jak CivilizationPair w Rust).
+  const nDeals = Math.floor(rnd() * 4);
+  for (let i = 0; i < nDeals; i++) {
+    const a = pick(OWNERS);
+    const b = pick(OWNERS.filter(x => x !== a));
+    env.activeDeals.push({ id: `d${i}`, strony: [Math.min(a, b), Math.max(a, b)] });
+  }
+  for (const e of ERAS) {
+    for (const o of OWNERS) if (rnd() < 0.4) env[`${e}ForceWarPendingOwners`].add(o);
+    for (const o of OWNERS) if (rnd() < 0.4) env[`${e}ForceWarCycleOwners`].add(o);
+    for (const o of OWNERS) if (rnd() < 0.4) env[`${e}ForceWarRestUntilByOwner`].set(o, 100 + Math.floor(rnd() * 50));
+    const nActive = Math.floor(rnd() * 3);
+    for (let i = 0; i < nActive; i++) {
+      const a = pick(OWNERS);
+      const b = pick(OWNERS.filter(x => x !== a));
+      const key = `${Math.min(a, b)}_${Math.max(a, b)}`;
+      env[`${e}ForceWarActiveByPairKey`].set(key, { attackerId: a, targetId: b, capturedByAttacker: 0, capturedByDefender: 0, startTurn: 50 });
+      if (rnd() < 0.7) env.forcedWarWavesByPairKey.set(key, { waves: [], history: [], nextWaveId: 1 });
+    }
+  }
+  for (const o of OWNERS) if (rnd() < 0.4) env.bronzeEraEnterTurnByOwner.set(o, 10 + Math.floor(rnd() * 90));
+  for (const o of OWNERS) if (rnd() < 0.4) env.ironEraEnterTurnByOwner.set(o, 10 + Math.floor(rnd() * 90));
+  for (let a = 1; a <= 4; a++) for (let b = a + 1; b <= 4; b++) {
+    if (rnd() < 0.4) env.regularWarCapturedByPairKey.set(`${a}_${b}`, { ownerA: a, ownerB: b, capturedByA: Math.floor(rnd() * 3), capturedByB: Math.floor(rnd() * 3) });
+    if (rnd() < 0.3) env.forcedWarWavesByPairKey.set(`${a}_${b}`, { waves: [], history: [], nextWaveId: 1 });
+    if (rnd() < 0.3) env.diplomacyPairMeta.set(`${a}_${b}`, { v: a + b });
+    if (rnd() < 0.3) env.diplomacyFactorLog.set(`${a}_${b}`, { v: a * b });
+  }
+  // Klucz z trzema czesciami nie jest para (web diploPairKeyHasOwner: parts.length === 2).
+  if (rnd() < 0.3) env.diplomacyPairMeta.set(`${pick(OWNERS)}_${pick(OWNERS)}_${pick(OWNERS)}`, { v: 0 });
+}
+
 function randomInit() {
   const env = freshEnv();
   const unitCount = Math.floor(rnd() * 8);
@@ -164,13 +224,14 @@ function randomInit() {
   for (let a = 1; a <= 5; a++) for (let b = a + 1; b <= 5; b++) {
     if (rnd() < 0.35) env.diplomacyRelations.set(`${a}_${b}`, { trust: 1 });
   }
+  randomExtra(env);
   return env;
 }
 
 function initSnapshot(env) {
   // Stan poczatkowy w formacie wektora (przed pierwszym wywolaniem). Wlasciciele jednostek sa osobnym polem.
   const inst = factory(...free.map(n => env[n]));
-  return { ...snapOf(env, inst), unit_owners: env.units.map(u => u.ownerId) };
+  return { ...snapOf(env, inst), unit_owners: env.units.map(u => u.ownerId), extra: extraOf(inst.snap()) };
 }
 
 const cases = [];
@@ -196,6 +257,7 @@ for (let i = 0; i < 180; i++) {
       expect_battle: after.battle,
       expect_zdobycze: after.zdobycze,
       expect_relations: after.relations,
+      expect_extra: extraOf(inst.snap()),
     });
   }
   cases.push({ init, steps });
