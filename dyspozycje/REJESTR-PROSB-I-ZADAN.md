@@ -9614,3 +9614,9 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - Temat: R-WEB-ARMY-SPLIT-ENEMY-CITY-BLOCK-Q1. FC PASS-WITH-NOTES (d8a0666d1), integracja i deploy na ROBOCZĄ: main 6a0cbba28, MD5 eb4ecfaa (raw zgodny), sidecary audio-pack-1/2/3 zgodne.
 - Zakres: rozdzielenie armii i ruch pod-stosu nie wchodzą na obce miasto ani heks z obcą jednostką.
 - Dowód: tsc OK, logic 213/213, test 14/0, mutacja wpięcia wykryta. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
+
+## FALA 670 — ROBOCZA 6eee943a (2026-11-12) — powiadomienie „Kolejka pusta” tylko gdy można coś zbudować
+
+- Temat: R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1 (runda 3). FC PASS-WITH-NOTES (9ab5b6883), integracja i deploy na ROBOCZĄ: main b77a0b7b9, MD5 6eee943a (raw zgodny), sidecary zgodne.
+- Zakres: bramka budynków, ulepszeń i odcisku używa predykatu panelu produkcji (buildingCanBuildNow); test behawioralny.
+- Dowód: tsc OK, logic 213/213, test 16/0. Chromium NIE_ZMIERZONO — zalecany smoke w grze.
