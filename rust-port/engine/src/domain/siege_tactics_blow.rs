@@ -176,21 +176,38 @@ pub struct BlowOutput {
     pub engaged_add: bool,
 }
 
-/// `Math.max(a, b)` z JS: NaN propaguje.
+/// `Math.max(a, b)` z JS: NaN propaguje, `+0` wygrywa z `-0` (`Math.max(-0, 0) === +0`).
+/// `f64::max` ignoruje NaN i dla `(-0, +0)` nie gwarantuje znaku, stad reczna wersja.
 pub fn js_max(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
+    } else if a == 0.0 && b == 0.0 {
+        if a.is_sign_positive() || b.is_sign_positive() {
+            0.0
+        } else {
+            -0.0
+        }
+    } else if a > b {
+        a
     } else {
-        a.max(b)
+        b
     }
 }
 
-/// `Math.min(a, b)` z JS: NaN propaguje.
+/// `Math.min(a, b)` z JS: NaN propaguje, `-0` wygrywa z `+0` (`Math.min(0, -0) === -0`).
 pub fn js_min(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
+    } else if a == 0.0 && b == 0.0 {
+        if a.is_sign_negative() || b.is_sign_negative() {
+            -0.0
+        } else {
+            0.0
+        }
+    } else if a < b {
+        a
     } else {
-        a.min(b)
+        b
     }
 }
 
