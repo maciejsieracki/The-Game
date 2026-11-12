@@ -300,7 +300,9 @@ const stubs = {
   mergeBuildingBonusIntoStatMultipliers: (mods) => mods,
   fieldFortifyDefenseBonus: realFortify,
   applyMultiplier: realApply,
-  battleUnitDifficultyCombatMult: (bu) => (bu.id === 'A' ? C.diffA : C.diffD),
+  // Ta sama regula co produkcja (battle-unit-context.ts:13): unit.difficultyCombatMult ?? fallback po stronie.
+  // Fallback przychodzi z pinu wg side (attacker.side==='atk' ? diffA : diffD), wiec riposta jest liczona po stronie.
+  battleUnitDifficultyCombatMult: (bu, sideFallback) => bu.difficultyCombatMult ?? sideFallback,
   civWallDefenseMultiplier: () => C.wallCiv,
   rangedShotAccuracy: realRangedShot,
   counterMultiplier: () => C.ctr,
@@ -464,7 +466,8 @@ function makeCase(i) {
   for (let k = 0; k < GRID * GRID; k += 1) {
     const code = pick([0, 0, 1, 2, 3, 4, 4, 5]);
     codes.push(code);
-    names.push(code === 4 && chance(0.6) ? 'Rzeka' : pick(NAME_POOL));
+    // Pusta nazwa kafla (`''`) celowo w puli: pin combatTerrainName moze dac '' przy niepustym terrainData (flagi rzeki).
+    names.push(code === 4 && chance(0.6) ? 'Rzeka' : pick([...NAME_POOL, '']));
   }
   const terrain = chance(0.2) ? TERRAIN_ROWS.filter((r) => r.Teren !== 'Rzeka') : TERRAIN_ROWS;
   const onWall = chance(0.2);
@@ -481,8 +484,12 @@ function makeCase(i) {
   });
   const atkMods = mods();
   const defMods = mods();
+  // Strona ODBIORCY ciosu (defender w _singleBlow) losowana 50/50: 'def' (zwykly cios) albo 'atk' (riposta:
+  // pin wola _singleBlow(defender, attacker, false), wiec porazony ma side 'atk'). Pin czyta side tylko w
+  // _wallBonusProcFor oraz w wyborze mnoznikow trudnosci (attacker.side==='atk' ? diffA : diffD).
+  const struckIsAtk = chance(0.5);
   const attacker = {
-    side: 'atk', q: aq, r: ar, facing: int(0, 5), onWallWalkway: false, mounted: chance(0.3),
+    side: struckIsAtk ? 'def' : 'atk', q: aq, r: ar, facing: int(0, 5), onWallWalkway: false, mounted: chance(0.3),
     bu: {
       id: 'A', nazwa: 'Atakujacy', kategoria: unitA.kategoria, stats: { ...UNIT_ROWS[unitA.idx], ...unitA.ovr },
       veteranBonusFrac: unitA.veteranBonusFrac, armyHungry: unitA.armyHungry, goldDeficit: unitA.goldDeficit,
@@ -490,7 +497,7 @@ function makeCase(i) {
     },
   };
   const defender = {
-    side: 'def', q: dq, r: dr, facing: int(0, 3), onWallWalkway: onWall, mounted: false,
+    side: struckIsAtk ? 'atk' : 'def', q: dq, r: dr, facing: int(0, 3), onWallWalkway: onWall, mounted: false,
     bu: {
       id: 'D', nazwa: 'Obronca', kategoria: unitD.kategoria, stats: { ...UNIT_ROWS[unitD.idx], ...unitD.ovr },
       veteranBonusFrac: unitD.veteranBonusFrac, armyHungry: unitD.armyHungry, goldDeficit: unitD.goldDeficit,
@@ -585,11 +592,11 @@ function runCase(c) {
       atkMods: Object.fromEntries(Object.entries(c.atkMods).map(([k, v]) => [k, encodeNum(v)])),
       defMods: Object.fromEntries(Object.entries(c.defMods).map(([k, v]) => [k, encodeNum(v)])),
       attacker: {
-        q: c.attacker.q, r: c.attacker.r, mounted: c.attacker.mounted,
+        side: c.attacker.side, q: c.attacker.q, r: c.attacker.r, mounted: c.attacker.mounted,
         hp: encodeNum(aHp0), maxHp: encodeNum(c.attacker.bu.maxHp),
       },
       defender: {
-        q: c.defender.q, r: c.defender.r, facing: c.defender.facing, onWall: c.defender.onWallWalkway,
+        side: c.defender.side, q: c.defender.q, r: c.defender.r, facing: c.defender.facing, onWall: c.defender.onWallWalkway,
         fortified: c.defender.bu.fortifiedInField,
         hp: encodeNum(dHp0), maxHp: encodeNum(c.defender.bu.maxHp),
       },

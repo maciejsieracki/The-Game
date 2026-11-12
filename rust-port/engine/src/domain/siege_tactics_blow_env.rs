@@ -124,6 +124,10 @@ pub struct BlowPlacement {
     pub defender_facing: i32,
     /// `defender.onWallWalkway`.
     pub defender_on_wall: bool,
+    /// `defender.side === 'def'`: strona ODBIORCY ciosu (jednostka porazona w `_singleBlow`, nie zawsze obronca).
+    /// Przy riposcie pin wola `_singleBlow(defender, attacker, false)`, wiec odbiorca ma `side === 'atk'`
+    /// i `_wallBonusProcFor` daje 0 (`defenderInsideFortification` wymaga `side === 'def'`).
+    pub defender_side_def: bool,
     /// `cuA.rola` (argument `terrainDefenseMultiplier`).
     pub atk_rola: String,
 }
@@ -150,11 +154,12 @@ pub fn blow_hit_arc(p: &BlowPlacement) -> HitArc {
     )
 }
 
-/// `_wallBonusProcFor(defender)` (battleScene.ts:7459-7464): bonus obwarowania obrońcy (%).
+/// `_wallBonusProcFor(defender)` (battleScene.ts:7459-7464): bonus obwarowania ODBIORCY ciosu (%).
+/// Strona odbiorcy idzie z `p.defender_side_def` (nie na sztywno), tak jak `u.side` w pinie.
 pub fn blow_wall_bonus_proc(ctx: &BlowSceneCtx, p: &BlowPlacement) -> f64 {
     let (dq, _) = p.defender;
     wall_bonus_proc_for(
-        true,
+        p.defender_side_def,
         p.defender_on_wall,
         f64::from(dq),
         ctx.siege_wall_col,
@@ -250,11 +255,22 @@ mod tests {
     }
 
     fn place(a: (i32, i32), d: (i32, i32), facing: i32, on_wall: bool) -> BlowPlacement {
+        place_sided(a, d, facing, on_wall, true)
+    }
+
+    fn place_sided(
+        a: (i32, i32),
+        d: (i32, i32),
+        facing: i32,
+        on_wall: bool,
+        side_def: bool,
+    ) -> BlowPlacement {
         BlowPlacement {
             attacker: a,
             defender: d,
             defender_facing: facing,
             defender_on_wall: on_wall,
+            defender_side_def: side_def,
             atk_rola: "Piechota".to_string(),
         }
     }
@@ -351,5 +367,21 @@ mod tests {
         assert_eq!(env.field_terrain_multiplier, 1.0);
         assert_eq!(env.gated_terrain_multiplier, 1.5);
         assert_eq!(env.wall_bonus_proc, 200.0);
+    }
+
+    #[test]
+    fn odbiorca_strony_atk_nie_dostaje_bonusu_muru() {
+        // Riposta: pin wola _singleBlow(defender, attacker, false); odbiorca ma side 'atk' -> _wallBonusProcFor = 0,
+        // nawet na chodniku i za linia muru (q > siegeWallCol). Regresja: wczesniej side_def bylo na sztywno true.
+        let mut ctx = ctx_with(vec![0, 0, 0, 0], vec!["Las", "Las", "Las", "Las"]);
+        ctx.is_city_defense_battle = true;
+        ctx.wall_defense_total_proc = 200.0;
+        ctx.siege_wall_col = 0.0;
+        let chodnik = place_sided((0, 0), (1, 0), 0, true, false);
+        assert_eq!(blow_env_for(&ctx, &chodnik).wall_bonus_proc, 0.0);
+        let za_mur = place_sided((0, 0), (1, 0), 0, false, false);
+        assert_eq!(blow_env_for(&ctx, &za_mur).wall_bonus_proc, 0.0);
+        let obronca_za_mur = place_sided((0, 0), (1, 0), 0, false, true);
+        assert_eq!(blow_env_for(&ctx, &obronca_za_mur).wall_bonus_proc, 200.0);
     }
 }

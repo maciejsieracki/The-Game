@@ -236,6 +236,7 @@ fn placement(i: &serde_json::Value, atk_rola: &str) -> BlowPlacement {
         ),
         defender_facing: df["facing"].as_i64().expect("defender.facing") as i32,
         defender_on_wall: df["onWall"].as_bool().expect("onWall"),
+        defender_side_def: df["side"].as_str().expect("defender.side") == "def",
         atk_rola: atk_rola.to_string(),
     }
 }
@@ -256,14 +257,23 @@ fn build_input(c: &serde_json::Value, top: &serde_json::Value, units: &[StatRow]
             ranged_atk: num(&am["rangedAtk"]),
             uderzenie: num(&am["uderzenie"]),
         },
-        atk_diff_mult: num(&i["diffA"]),
+        // Mnozniki trudnosci sa po STRONIE (`side`), jak w pinie: attacker.side==='atk' ? diffA : diffD.
+        atk_diff_mult: if i["attacker"]["side"].as_str().expect("attacker.side") == "atk" {
+            num(&i["diffA"])
+        } else {
+            num(&i["diffD"])
+        },
         atk_mounted: i["attacker"]["mounted"].as_bool().expect("mounted"),
         defender: defender_from_cu(&cu_d),
         def_mods: DefMods {
             obrona: num(&dm["obrona"]),
             pancerz: num(&dm["pancerz"]),
         },
-        def_diff_mult: num(&i["diffD"]),
+        def_diff_mult: if i["defender"]["side"].as_str().expect("defender.side") == "def" {
+            num(&i["diffD"])
+        } else {
+            num(&i["diffA"])
+        },
         def_on_wall: i["defender"]["onWall"].as_bool().expect("onWall"),
         def_fortified_in_field: i["defender"]["fortified"].as_bool().expect("fortified"),
         def_wall_civ_mult: num(&i["wallCiv"]),
