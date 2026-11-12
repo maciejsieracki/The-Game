@@ -491,3 +491,20 @@ Decyzje techniczne (rekomendacje, bez ABC):
 
 - Tabela §1 (wiersze 1–38) i §4 NIE zmienione. K5 nadal wymaga osobnej autoryzacji właściciela (§4).
 - Stan K5 na bazie `a70375e52`: brak kodu pętli w Rust. Wejściami są predykaty L7 (częściowo), L9 (PORTED) i podzbiory L19 (K1 i K1b).
+
+## Stan integracji K5 po B14B (R-RUSTPORT-P6-INTEG-B14B-Q1, runda 1, Operator Haiku 5.5)
+
+- **Scalenia na gałęzi `rust-port-wip/INTEG-B14B-Q1` (baza `513e1a56c` = `rust-port/parity-v2` po INTEG-B14A):**
+  1. `86223e037` (łańcuch K5 K5A…K5H, `rust-port-wip/SIEGE-TAKTYKA-K5H-fc`) → merge `b6bb8500e`. Konflikt w `rust-port/engine/src/domain/mod.rs` (rejestracje `siege_tactics_classify` i `siege_tactics_clock`) rozwiązany przez zachowanie obu stron.
+  2. `fb7ac73d1` (R7-K7, `rust-port-wip/WIRE-WAR-R7K7-fc`) → merge `b959ba486`. Bez konfliktu.
+  3. `eee18680c` (K5I2a1, `rust-port-wip/SIEGE-TAKTYKA-K5I2A1-fc`) → merge `e98b2e6c1`. Konflikt w `mod.rs` (rejestracje `siege_tactics_fastforward`, `siege_tactics_inputs_terrain`, `siege_tactics_roundcap`) rozwiązany przez zachowanie wszystkich trzech.
+- **Kolizja nazw:** `terrain_river_attack_multiplier` istnieje w `siege_tactics_blow_inputs.rs` i w `siege_tactics_inputs_terrain.rs`. Oba moduły są publiczne; test `p6_siege_tactics_inputs_terrain.rs` importuje wersję z `siege_tactics_inputs_terrain` przez pełną ścieżkę. Adaptacji testów nie wykonano (wynik bramki w raporcie).
+- **Brak wołającego poza testami** (sprawdzone grepem w `rust-port/engine/src`, poza `tests/`):
+  - `activate_unit` (`siege_tactics_activate.rs`) — wywołuje go tylko moduł testów.
+  - `begin_auto_batch_phase`, `fire_timers` (`siege_tactics_autobatch.rs`) — wywołania tylko w module lub testach; brak pętli wejściowej w Rust.
+  - `run_fast_forward` (`siege_tactics_fastforward.rs`) — brak wołającego.
+  - `begin_turn` i `activate_next` — wywołania tylko wewnątrz `siege_tactics_turnseq.rs` / `siege_tactics_roundcap.rs` oraz w testach; brak pętli sterującej w produkcji.
+  Konsekwencja: łańcuch K5 jest portem warstwy funkcji i kontraktów, bez działającej pętli taktycznej w produkcji.
+- **Wymagana pętla K5F/K5G:** produkcyjna pętla musi wywoływać sekwencję K5F (`begin_turn` → `activate_next` → faza AUTO K5G z `begin_auto_batch_phase`/`fire_timers` → `_checkEnd`), zachowując kolejność z pinu `07d2fbd72`.
+- **Kontrakt kolejności `ru.range` i flag klas (K5H):** `_targetInRange` i `_rangedTargetInRange` czytają `ru.range` (dla `canShoot`), więc wynik zależy od `range` po `_applyTerrainRange`. Predykat `can_shoot` nie czyta `range`; `isSiegeUnit`, `isSiegeTower`, `_isRam` czytają właściwości jednostki. Kontrakt jest opisany w dokumentacji traitu `ActivateOps` i pola `ActivateUnit::can_shoot`. Wektory nie zapisują liczby wywołań zapytań (NIE_ZMIERZONO jako dowód testowy).
+- **Rozbieżność halt vs web (K5G):** web `battleScene.ts` @`07d2fbd72` iteruje `for (const resolution of this._autoBatchResolutions)` po starej tablicy, a `_haltAutoBattleTurn` przypisuje nową pustą tablicę (`:5739-5742`, `:17333-17344`). Rust (`siege_tactics_autobatch.rs`, indeks `0..len` z `get` i `break` na `None`, `halt_auto_battle_turn` czyści `st.resolutions`) nie odtwarza tej różnicy. Obecne wywołania `_haltAutoBattleTurn` (`:10568`, `:17379`) nie leżą w łańcuchu `_launchAutoBatchResolution`, więc różnica nie jest osiągalna w obecnym modelu; decyzja o zachowaniu do właściciela.
