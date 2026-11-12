@@ -280,3 +280,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - **Decyzja orkiestratora (techniczna):** #114 łączę z #115 (ZDOBYCIE-WIRING-Q1, wciąż w toku) w jeden temat r2 po jego FC, z poszerzoną allowlistą: `siege_capital_plunder.rs`, `tests/p6_siege_capital_plunder.rs`, pole wyeliminowanych w `PlayableState`. Nie uruchamiam tego teraz, bo wymaga wyniku #115.
   - Testy operatora: `p6_eliminacja` 3/3 zielone, `fmt`, `clippy -D warnings`, `cargo test --lib` (99 passed) EXIT 0 — dowód, że gałąź jest czysta, nie że wiring działa.
   - Gałąź z pracą operatora: `0b2fde2c9` (lokalnie, nie wypchnięta). Zabezpieczę przy sprzątaniu.
+
+## Przebieg (po 21:0x): ZDOBYCIE-WIRING-Q1 (#115) FAIL, dysk, start CRED-HAK-WYPOWIEDZENIE
+- **R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1 (#115): FAIL w FC.** Kryterium 1: brak produkcyjnego drivera zdobycia miasta (`apply_capital_capture_with_plunder` ma tylko definicję i doc-comment; `apply_transfer_with_effects` tylko w testach). Kryterium 2: generator bez straznika SHA-256 (poza allowlistą). Wrapper gotowy, ale martwy — nie zaakceptowano jako wiring. Gałąź: `rust-port-wip/R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1` = `7c2d45a7b`.
+  - **Decyzja orkiestratora (techniczna):** #115 zamknięte jako BLOCK. Potrzebny osobny temat: driver zdobycia miasta w Rust (W8), z kontraktem `lost_power` jako closure po `applyBarbarianAware` (pin ok. 35611 przed 35672). #114 (eliminacja) czeka na ten sam driver — łączone jako jeden temat.
+- **Operator ELIMINACJA-WIRING:** gałąź `rust-port-wip/R-RUSTPORT-P6-ELIMINACJA-WIRING-Q1` = `0b2fde2c9`.
+- **Sprzątanie:** usunięte 8 worktree (`wf_2ace4e9c-1d5-1..4`, `wf_99c4f54b-b1d-1..4`). Dysk: 1,7 GB → 11 GB.
+- **Start:** R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-Q1 (#120), baza `23e33793e`, dispatch `641cfcb1b`, rozszerzona allowlista (`diplomacy_truce_flow.rs`) jako follow-up CRED-WOJNA.
+- **Aktywne Workflow (2):** R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), CRED-HAK-WYPOWIEDZENIE-Q1 (`wf_a1e9a7cf-854`).
+- **Otwarte decyzje właściciela:** (a) alias `umowa_handlowa` / usunięcie `LegacyTradeAgreement`; (b) driver zdobycia miasta (W8) — zakres i priorytet.
