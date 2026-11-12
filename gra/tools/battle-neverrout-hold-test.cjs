@@ -24,6 +24,10 @@ const CASES = [
   { name: 'Chaska trzyma, reszta ucieka (seed 1)', atk: `${CHASKA}:4,Wojownik:6`, def: 'Hastati:16', seed: 1, loser: 'atk' },
   { name: 'Chaska trzyma, reszta ucieka (seed 2)', atk: `${CHASKA}:4,Wojownik:6`, def: 'Hastati:16', seed: 2, loser: 'atk' },
   { name: 'Chaska po stronie obrony (seed 1)', atk: 'Hastati:16', def: `${CHASKA}:4,Wojownik:6`, seed: 1, loser: 'def' },
+  // Dyskryminujace (czerwone na bazie 6a0cbba): sama Chaska, bez zwyklych jednostek do ucieczki. Po zalamaniu nie ma
+  // uciekinierow na polu, wiec na bazie bitwa konczy sie w turze zalamania z zywa Chaska; na kandydacie walka trwa.
+  { name: 'sama Chaska po zalamaniu (seed 1)', atk: `${CHASKA}:4`, def: 'Hastati:16', seed: 1, loser: 'atk', noFlee: true },
+  { name: 'sama Chaska po zalamaniu (seed 2)', atk: `${CHASKA}:3`, def: 'Hastati:16', seed: 2, loser: 'atk', noFlee: true },
 ];
 
 // HOLD_CASES (JSON, opcjonalnie): nadpisuje liste scenariuszy, np. do strojenia bez edycji pliku.
@@ -50,9 +54,8 @@ if (process.env.HOLD_CASES) CASES.splice(0, CASES.length, ...JSON.parse(process.
         const orig = s._routWholeArmy.bind(s);
         s._routWholeArmy = (roster) => {
           const hasNever = roster.some(u => u.neverRout && alive(u) && !u.routed);
-          const had = roster.some(u => !u.neverRout && alive(u) && !u.routed);
           const r = orig(roster);
-          if (hasNever && had && nr.collapseRound < 0) { nr.collapseRound = s.roundNo; nr.collapseSide = roster === s.atk ? 'atk' : 'def'; }
+          if (hasNever && nr.collapseRound < 0) { nr.collapseRound = s.roundNo; nr.collapseSide = roster === s.atk ? 'atk' : 'def'; }
           return r;
         };
       });
@@ -90,7 +93,7 @@ if (process.env.HOLD_CASES) CASES.splice(0, CASES.length, ...JSON.parse(process.
       // Uciekinierzy PRZEGRANEJ strony (kryterium 1) musza schodzic na krawedz wlasnej strony. Wyjatek poza zakresem
       // tego tematu: zwyciezca z pojedynczym zwyklym zalamaniem (nie neverRout), usuwany przy koncu bitwy (_resolveRemainingRouted).
       check(`[${c.name}] kr.1: uciekinierzy przegranej strony schodza na krawedz wlasnej strony`, r.notEdge.filter(x => x[0] === loser).length === 0, [r.fledAtEdge, r.fledNotAtEdge, r.notEdge]);
-      check(`[${c.name}] kr.1: przegrani uciekinierzy widocznie uciekaja (fledAtEdge > 0)`, t.fled > 0, t);
+      if (!c.noFlee) check(`[${c.name}] kr.1: przegrani uciekinierzy widocznie uciekaja (fledAtEdge > 0)`, t.fled > 0, t);
       check(`[${c.name}] kr.4: poscig nie trwa dluzej niz ${PURSUIT_MAX_ROUNDS} tur`, r.pursuitStartRound < 0 || r.round - r.pursuitStartRound <= PURSUIT_MAX_ROUNDS + 1, [r.round, r.pursuitStartRound]);
       for (const side of ['atk', 'def']) {
         const x = r[side];

@@ -10346,10 +10346,10 @@ export class BattleScene {
     // R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: po zalamaniu morale zostaja przy zyciu tylko jednostki
     // "walczy do smierci" (neverRout) -- one NIE uciekaja i walcza dalej, wiec strona pozostaje w grze
     // (aliveX=true). Bitwa konczy sie, gdy one zgina albo uciekinierzy zejda z pola (_pursuitPending).
-    if (brokenA && aliveA && !this._lastLogHas('Morale armii ATAKUJACEGO')) {
+    if (brokenA && aliveA && !this._logHas('Morale armii ATAKUJACEGO')) {
       this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
     }
-    if (brokenD && aliveD && !this._lastLogHas('Morale armii OBRONCY')) {
+    if (brokenD && aliveD && !this._logHas('Morale armii OBRONCY')) {
       this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
     }
     // Sufit tur w AUTO/recznej: ten sam werdykt co przewijanie (_roundCapVerdict),
@@ -10405,10 +10405,9 @@ export class BattleScene {
     return true;
   }
 
-  /** R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: czy ostatni wpis logu juz zawiera dany fragment (bez powtarzania komunikatu co ture). */
-  private _lastLogHas(fragment: string): boolean {
-    const last = this.log[this.log.length - 1];
-    return typeof last === 'string' && last.includes(fragment);
+  /** R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: czy log bitwy juz zawiera dany fragment (komunikat zalamania jednorazowo, nie co ture). */
+  private _logHas(fragment: string): boolean {
+    return this.log.some(l => typeof l === 'string' && l.includes(fragment));
   }
 
   /** Uciekinierzy strony nadal na planszy (zywi, nie usunieci). */
