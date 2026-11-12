@@ -3,6 +3,7 @@
 // Wycieta logika (bez typow TS, bez `this.`, reczne wyciecie jak w p6_siege_tactics_gen.mjs):
 //   _siegeShooterThreats 7924-7937, _threatSlack 7939-7943, _siegeApproachRestricted 7951-7960.
 // Wejscia stanu sceny i pomocnicze (canShoot, isSiegeUnit, _applyTerrainRange) sa podawane jawnie w wektorach.
+// K1 (runda 1): _siegeMoveRefused 7962-7970 i czesc decyzyjna _siegeSafeApproach 8107-8136 (sekcje moveRefused, safeApproachGoal).
 // Wynik -> p6_siege_tactics_approach_vectors/vectors.json.
 
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -27,6 +28,14 @@ const fragmentDigest = createHash('sha256')
   .digest('hex');
 if (fragmentDigest !== FRAGMENT_SHA256) {
   throw new Error(`fragmenty pinu 7924-7937/7939-7943/7951-7960 nie zgadzaja sie z hashem: ${fragmentDigest}`);
+}
+// K1 (runda 1): _siegeMoveRefused 7962-7970 oraz czesc decyzyjna _siegeSafeApproach 8107-8136.
+const FRAGMENT_SHA256_K1 = 'c6bc8a53868c784773c9a3a127002b0ca9d1ea1083e1982872217b6a9bcfab94';
+const fragmentDigestK1 = createHash('sha256')
+  .update([pinRange(7962, 7970), pinRange(8107, 8136)].join('\n---\n'))
+  .digest('hex');
+if (fragmentDigestK1 !== FRAGMENT_SHA256_K1) {
+  throw new Error(`fragmenty pinu K1 7962-7970/8107-8136 nie zgadzaja sie z hashem: ${fragmentDigestK1}`);
 }
 
 // --- wycieta z battleScene.ts:7939-7943 ---
@@ -148,6 +157,136 @@ for (let k = 0; k < 2000; k++) {
   approachCases.push({ ru, wall: s, branch: r.branch, expect: r.restricted });
 }
 
+// --- K1: wycieta z battleScene.ts:7962-7970 (_siegeMoveRefused); bez this; threats = wynik _siegeShooterThreats (jawny). ---
+// Zwraca { gate, refused }: gate = galaz decydujaca (unrestricted | no-threats | safe-to | refused | allowed).
+function siegeMoveRefused(ru, s, threats, from, to) {
+  if (!approachRestricted(ru, s).restricted) return { gate: 'unrestricted', refused: false };
+  if (threats.length === 0) return { gate: 'no-threats', refused: false };
+  const toSlack = threatSlack(threats, to.c, to.r);
+  if (toSlack > 0) return { gate: 'safe-to', refused: false };
+  const refused = toSlack < threatSlack(threats, from.c, from.r);
+  return { gate: refused ? 'refused' : 'allowed', refused };
+}
+
+// --- K1: wycieta z battleScene.ts:8107-8136, czesc decyzyjna (wybor kafla celu BFS). ---
+// occByKey + _passableForUnit -> zbior `blocked` (klucze "c,r"); BF_COLS/BF_ROWS/DIRS4 z battleScene.ts:661-662, 326-331.
+const BF_COLS = 68;
+const BF_ROWS = 156;
+const DIRS4_K1 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+function safeApproachGoal(sq, sr, tc, tr, threats, blocked) {
+  const safe = (c, r) => threatSlack(threats, c, r) > 0;
+  const seen = new Set([sq + ',' + sr]);
+  const frontier = [[sq, sr]];
+  let best = null;
+  let bestD = safe(sq, sr) ? Math.abs(sq - tc) + Math.abs(sr - tr) : Infinity;
+  for (let head = 0; head < frontier.length && head < 6000; head++) {
+    const [cc, cr] = frontier[head];
+    for (const [dc, dr] of DIRS4_K1) {
+      const nc = cc + dc;
+      const nr = cr + dr;
+      if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
+      const k = nc + ',' + nr;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (blocked.has(k) || !safe(nc, nr)) continue;
+      const d = Math.abs(nc - tc) + Math.abs(nr - tr);
+      if (d < bestD) { bestD = d; best = k; }
+      frontier.push([nc, nr]);
+    }
+  }
+  return { goal: best, startSafe: safe(sq, sr), capHit: frontier.length > 6000 };
+}
+
+const NUM_SPECIAL = [NaN, Infinity, -Infinity];
+const COORDS_K1 = [-3, -1, 0, 1, 2, 4, 7, 12, 30, 67, 68, 155, 156];
+const pickK1 = (arr) => arr[Math.floor(rnd() * arr.length)];
+
+// Ruch: losowe przypadki z pelnym zestawem galezi + przypadki NaN/Infinity.
+const moveCases = [];
+for (let k = 0; k < 1200; k++) {
+  // Wiekszosc przypadkow ma ograniczone podejscie (atk, mur, brak wyjatkow galezi (b)/(c)), by pokryc galezie gate.
+  const ru = {
+    side: coin(0.93) ? 'atk' : 'def',
+    routed: coin(0.04),
+    onWallWalkway: coin(0.04),
+    isSiegeUnit: coin(0.04),
+    primaryRanged: coin(0.15),
+    canShoot: coin(0.6),
+    shootingEnabled: pick([true, false, undefined]),
+    mounted: coin(0.35),
+  };
+  const s = {
+    wallCol: coin(0.9) ? 3 : -1,
+    gateOpen: coin(0.2),
+    wallEverBreached: coin(0.1),
+    siegeWallTilesInit: pick([0, 2, 4]),
+    wallTileHpSize: pick([0, 1, 2, 4]),
+    towerAtWallRowsCount: pick([0, 0, 1]),
+  };
+  const nt = k % 8 === 0 ? 0 : 1 + Math.floor(rnd() * 3); // co 8. przypadek: brak zagrozen
+  const threats = [];
+  for (let i = 0; i < nt; i++) threats.push({ q: pick(COORDS), r: pick(COORDS), range: pick(RANGES) });
+  const from = { c: pick(COORDS), r: pick(COORDS) };
+  const to = { c: pick(COORDS), r: pick(COORDS) };
+  const res = siegeMoveRefused(ru, s, threats, from, to);
+  moveCases.push({ ru, wall: s, threats, from, to, gate: res.gate, expect: res.refused });
+}
+// NaN / Infinity jako wejscia liczbowe (kodowane napisami "NaN", "Infinity", "-Infinity").
+for (let k = 0; k < 120; k++) {
+  const ru = { side: 'atk', routed: false, onWallWalkway: false, isSiegeUnit: false, primaryRanged: false,
+    canShoot: false, shootingEnabled: undefined, mounted: coin(0.5) };
+  const s = { wallCol: 3, gateOpen: false, wallEverBreached: false, siegeWallTilesInit: 2,
+    wallTileHpSize: 1, towerAtWallRowsCount: 0 };
+  const threats = [];
+  const nt = 1 + Math.floor(rnd() * 3);
+  for (let i = 0; i < nt; i++) {
+    const special = coin(0.4);
+    threats.push({ q: special && coin(0.3) ? pick(NUM_SPECIAL) : pick(COORDS),
+      r: pick(COORDS), range: special ? pick(NUM_SPECIAL) : pick(RANGES) });
+  }
+  const from = { c: coin(0.2) ? pick(NUM_SPECIAL) : pick(COORDS), r: pick(COORDS) };
+  const to = { c: pick(COORDS), r: coin(0.2) ? pick(NUM_SPECIAL) : pick(COORDS) };
+  const res = siegeMoveRefused(ru, s, threats, from, to);
+  moveCases.push({ ru, wall: s, threats, from, to, gate: res.gate, expect: res.refused, special: true });
+}
+
+// Wybor celu podejscia: losowe bloki i zagrozenia, plus przypadki graniczne (limit BFS, NaN celu).
+const safeCases = [];
+for (let k = 0; k < 700; k++) {
+  const sq = Math.floor(rnd() * BF_COLS);
+  const sr = Math.floor(rnd() * BF_ROWS);
+  const tc = coin(0.9) ? pick(COORDS_K1) : pick(NUM_SPECIAL);
+  const tr = coin(0.9) ? pick(COORDS_K1) : pick(NUM_SPECIAL);
+  const nt = Math.floor(rnd() * 4);
+  const threats = [];
+  for (let i = 0; i < nt; i++) {
+    threats.push({ q: coin(0.7) ? Math.max(0, sq + Math.floor(rnd() * 13) - 6) : pick(COORDS_K1),
+      r: coin(0.7) ? Math.max(0, sr + Math.floor(rnd() * 13) - 6) : pick(COORDS_K1),
+      range: pick([0, 1, 2, 3, 5, 9, 25, 40]) });
+  }
+  const blocked = new Set();
+  const nb = pick([0, 0, 10, 60, 250]);
+  for (let i = 0; i < nb; i++) blocked.add(Math.floor(rnd() * BF_COLS) + ',' + Math.floor(rnd() * BF_ROWS));
+  const res = safeApproachGoal(sq, sr, tc, tr, threats, blocked);
+  safeCases.push({ start: { q: sq, r: sr }, target: { c: tc, r: tr }, threats, blocked: [...blocked],
+    expect: res.goal === null ? null : res.goal.split(',').map(Number),
+    startSafe: res.startSafe, found: res.goal !== null, capHit: res.capHit, hasBlocks: nb > 0 });
+}
+// Przypadki graniczne jawnie: otwarte pole bez zagrozen (limit BFS), start w rogu, cel NaN, zagrozenie NaN.
+for (const c of [
+  { sq: 0, sr: 0, tc: 67, tr: 155, threats: [] },
+  { sq: 34, sr: 78, tc: 0, tr: 0, threats: [] },
+  { sq: 10, sr: 10, tc: NaN, tr: 3, threats: [] },
+  { sq: 10, sr: 10, tc: 5, tr: 5, threats: [{ q: 10, r: 10, range: NaN }] },
+  { sq: 10, sr: 10, tc: 5, tr: 5, threats: [{ q: 0, r: 0, range: Infinity }] },
+  { sq: 10, sr: 10, tc: 5, tr: 5, threats: [{ q: 10, r: 10, range: -Infinity }] },
+]) {
+  const res = safeApproachGoal(c.sq, c.sr, c.tc, c.tr, c.threats, new Set());
+  safeCases.push({ start: { q: c.sq, r: c.sr }, target: { c: c.tc, r: c.tr }, threats: c.threats, blocked: [],
+    expect: res.goal === null ? null : res.goal.split(',').map(Number),
+    startSafe: res.startSafe, found: res.goal !== null, capHit: res.capHit, hasBlocks: false, special: true });
+}
+
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'p6_siege_tactics_approach_vectors');
 mkdirSync(outDir, { recursive: true });
 const branches = {};
@@ -158,6 +297,11 @@ const payload = {
   threatSlack: slackCases,
   shooterThreats: shooterCases,
   approach: approachCases,
+  moveRefused: moveCases,
+  safeApproachGoal: safeCases,
 };
-writeFileSync(join(outDir, 'vectors.json'), JSON.stringify(payload, (k, v) => (v === Infinity ? 'Infinity' : v), 1) + '\n');
+writeFileSync(join(outDir, 'vectors.json'), JSON.stringify(payload, (k, v) => (typeof v === 'number' && !Number.isFinite(v) ? String(v) : v), 1) + '\n');
 console.log('slack', slackCases.length, 'shooter', shooterCases.length, 'approach', approachCases.length, JSON.stringify(branches));
+const gates = {};
+for (const c of moveCases) gates[c.gate] = (gates[c.gate] ?? 0) + 1;
+console.log('moveRefused', moveCases.length, JSON.stringify(gates), 'safeApproachGoal', safeCases.length, 'found', safeCases.filter((c) => c.found).length, 'capHit', safeCases.filter((c) => c.capHit).length);

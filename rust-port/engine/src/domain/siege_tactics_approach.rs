@@ -17,8 +17,12 @@
 //! * pola sceny `siegeWallCol`, `siegeTowers`, `towerRange`, `gateOpen`, `wallEverBreached`, `siegeWallTilesInit`,
 //!   `wallTileHp.size`, `towerAtWallRows.size` -> pola struktur [`SiegeTowerRef`], [`ApproachWallState`].
 //!
-//! Nie portowano (BRAK, poza tym modulem): `_siegeMoveRefused` (wiersz 29), `_siegeSafeApproach` (wiersz 30),
-//! `_applyTerrainRange` (sam zasieg terenu), `canShoot`, `isSiegeUnit`.
+//! K1 (runda 1): [`siege_move_refused`] = `_siegeMoveRefused` (wiersz 29, PORTED) oraz [`siege_safe_approach_goal`] =
+//! czesc decyzyjna `_siegeSafeApproach` (wiersz 30, PARTIAL: petla `_siegeWalkTo`/`_bfsFirstStep`/`_doMove` nie
+//! jest portowana). Zagrozenia i przechodniosc sa wejsciami jawnymi.
+//!
+//! Nie portowano (BRAK, poza tym modulem): `_applyTerrainRange` (sam zasieg terenu), `canShoot`, `isSiegeUnit`,
+//! `_siegeWalkTo` / `_bfsFirstStep` (efekty marszu sceny).
 //! Patrz `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`.
 
 /// Zrodlo ostrzalu `{q, r, range}` (web `Array<{ q: number; r: number; range: number }>`).
@@ -179,4 +183,104 @@ pub fn siege_approach_restricted(ru: &ApproachUnit, wall: &ApproachWallState) ->
     }
     // (e)
     !(wall.wall_ever_breached || wall.tower_at_wall_rows_count > 0)
+}
+
+/// Web `battleScene.ts:7962-7970` `_siegeMoveRefused(ru, col, row)`.
+///
+/// Wejscia jawne: `threats` = wynik `_siegeShooterThreats()` (patrz [`siege_shooter_threats`]; web wywoluje go dopiero po
+/// przejsciu straznika `_siegeApproachRestricted`, tu lista jest liczona przez wywolujacego). `from` = `(ru.q, ru.r)`,
+/// `to` = `(col, row)`. Galezie zgodne z webem:
+/// * `!_siegeApproachRestricted(ru)` -> `false`,
+/// * pusta lista zagrozen -> `false`,
+/// * `slack(to) > 0` -> `false`,
+/// * w przeciwnym razie odmowa tylko gdy krok nie zmniejsza zagrozenia: `slack(to) < slack(from)`.
+///
+/// NaN: porownania JS (`>`, `<`) na NaN sa fałszywe, tak samo jak w Rust `f64`, wiec wynik jest identyczny.
+pub fn siege_move_refused(
+    ru: &ApproachUnit,
+    wall: &ApproachWallState,
+    threats: &[Threat],
+    from: (f64, f64),
+    to: (f64, f64),
+) -> bool {
+    if !siege_approach_restricted(ru, wall) {
+        return false;
+    }
+    if threats.is_empty() {
+        return false;
+    }
+    let to_slack = threat_slack(threats, to.0, to.1);
+    if to_slack > 0.0 {
+        return false;
+    }
+    to_slack < threat_slack(threats, from.0, from.1)
+}
+
+/// Web `battleScene.ts:661-662` `BF_COLS` / `BF_ROWS` (pelne pole).
+pub const BF_COLS: i64 = 68;
+/// Web `battleScene.ts:662` `BF_ROWS`.
+pub const BF_ROWS: i64 = 156;
+/// Web `battleScene.ts:337` `DIRS4` = `DIR_DELTA` (kolejnosc N, E, S, W; `battleScene.ts:326-331`).
+const DIRS4: [(i64, i64); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+/// Limit odwiedzin BFS z `_siegeSafeApproach` (`battleScene.ts:8115`, `head < 6000`).
+pub const SAFE_APPROACH_MAX_VISITED: usize = 6000;
+
+/// Web `battleScene.ts:8107-8136` `_siegeSafeApproach(ru, tc, tr, done)` -- CZESC DECYZYJNA.
+///
+/// Zwraca kafel celu (najblizszy `(tc, tr)` sposrod bezpiecznych, osiagalnych kafli BFS), albo `None` gdy web
+/// zwraca `false` (brak lepszego bezpiecznego kafla niz pozycja startowa). Start liczy sie jako kandydat tylko
+/// gdy jest bezpieczny (`bestD` startuje od manhattan(start) albo `Infinity`); przy remisie wygrywa wczesniej
+/// odkryty kafel (scisle `<`).
+///
+/// * `start` = `(ru.q, ru.r)`, `target` = `(tc, tr)` (f64, zgodnie z webem: NaN przechodzi do `Infinity`-owego `bestD`
+///   i nie daje kandydata),
+/// * `passable(c, r)` = web `!this.occByKey.has(k) && this._passableForUnit(ru, c, r)` (wejscie jawne),
+/// * bezpieczenstwo kafla = `threat_slack(threats, c, r) > 0` (jak `safe` w webie).
+///
+/// CZESC NIEPORTOWANA (wiersz 30 w `P6-SIEGE-TAKTYKA.md` = PARTIAL): `this._siegeWalkTo(ru, goal, done, safe)` --
+/// petla marszu z `_bfsFirstStep`, `_doMove` i `_schedule`; to efekty sceny, bez odpowiednika w tym module.
+pub fn siege_safe_approach_goal<P>(
+    start: (i64, i64),
+    target: (f64, f64),
+    threats: &[Threat],
+    mut passable: P,
+) -> Option<(i64, i64)>
+where
+    P: FnMut(i64, i64) -> bool,
+{
+    let safe = |c: i64, r: i64| threat_slack(threats, c as f64, r as f64) > 0.0;
+    let dist = |c: i64, r: i64| (c as f64 - target.0).abs() + (r as f64 - target.1).abs();
+    let mut best: Option<(i64, i64)> = None;
+    let mut best_d: f64 = if safe(start.0, start.1) {
+        dist(start.0, start.1)
+    } else {
+        f64::INFINITY
+    };
+    let mut seen = std::collections::HashSet::new();
+    seen.insert(start);
+    let mut frontier: Vec<(i64, i64)> = vec![start];
+    let mut head = 0usize;
+    while head < frontier.len() && head < SAFE_APPROACH_MAX_VISITED {
+        let (cc, cr) = frontier[head];
+        head += 1;
+        for (dc, dr) in DIRS4 {
+            let (nc, nr) = (cc + dc, cr + dr);
+            if nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS {
+                continue;
+            }
+            if !seen.insert((nc, nr)) {
+                continue;
+            }
+            if !passable(nc, nr) || !safe(nc, nr) {
+                continue;
+            }
+            let d = dist(nc, nr);
+            if d < best_d {
+                best_d = d;
+                best = Some((nc, nr));
+            }
+            frontier.push((nc, nr));
+        }
+    }
+    best
 }
