@@ -465,3 +465,46 @@ pub fn siege_infantry_to_tower_step(scene: &mut TowerScene, unit: &mut TowerUnit
     }
     handled(run_walk(scene, unit, goal, None, None))
 }
+
+/// Web `city-towers.ts:141-157` `TowerTarget` (`q`, `r`, `hp`, `dead?`): wejscie [`pick_tower_target`].
+///
+/// `hp` jest `f64` i ma semantyke JS (`NaN < x` = fałsz); `dead` odpowiada `e.dead` (brak pola = `false`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TowerTarget {
+    pub q: i64,
+    pub r: i64,
+    pub hp: f64,
+    pub dead: bool,
+}
+
+/// Web `city-towers.ts:141-157` `pickTowerTarget(tower, range, enemies)`.
+///
+/// Cel ostrzalu: najblizszy wrog w zasiegu (odleglosc Manhattan jak w scenie), remis -> najmniej HP,
+/// potem pierwszy w liscie. Pomija martwych (`dead`) oraz wrogow w odleglosci `< 1` (wlasny kafel)
+/// i `> range`. `range` jest `f64` (JS `number`): dla `NaN` zaden wrog nie jest odrzucony na podstawie zasiegu.
+/// Zwraca indeks w `enemies` albo `None` (odpowiednik `-1` z pinu).
+pub fn pick_tower_target(
+    tower_q: i64,
+    tower_r: i64,
+    range: f64,
+    enemies: &[TowerTarget],
+) -> Option<usize> {
+    let mut best_i: Option<usize> = None;
+    let mut best_d = f64::INFINITY;
+    let mut best_hp = f64::INFINITY;
+    for (i, e) in enemies.iter().enumerate() {
+        if e.dead {
+            continue;
+        }
+        let d = ((tower_q - e.q).abs() + (tower_r - e.r).abs()) as f64;
+        if d < 1.0 || d > range {
+            continue;
+        }
+        if d < best_d || (d == best_d && e.hp < best_hp) {
+            best_i = Some(i);
+            best_d = d;
+            best_hp = e.hp;
+        }
+    }
+    best_i
+}
