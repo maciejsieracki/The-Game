@@ -25,14 +25,34 @@ to pole `facing: Dir` (N/E/S/W) i jego pochodne liczone na siatce.
 
 Wszystkie wywołania `dirYaw(...)` przypisują wynik do `group.rotation.y` lub `ru.group.rotation.y`:
 `:4506`, `:4675`, `:5412`, `:8340`, `:9105`, `:9140`, `:9186`, `:9817`, `:17193`.
-Dodatkowo `:11401` i `:11412` ustawiają `rotation.y = angle` dla overlay rozkazów
-(kąt z `Math.atan2(dir.x, dir.z)` wektora pozycji, nie ze stanu jednostki).
+Dodatkowo `:11401` (`shaft.rotation.y = angle`) i `:11412` (`cone.rotation.y = angle`) ustawiają
+kąt overlay rozkazów `angle = Math.atan2(dir.x, dir.z)` (`:11385`), gdzie `dir` to wektor
+kierunku strzałki rozkazu w świecie, nie stan jednostki.
 Również `:4095` (`wallGroup.rotation.y`) i `:4373`, `:4390`, `:4398`, `:4925`, `:4933`,
 `:5147` (dummy/InstancedMesh, jitter z `tileJitter`) są wyłącznie renderem.
 
-Grep po całym pinie: w wyrażeniach nie ma odczytu `*.rotation.y` po stronie logiki
-(poza przypisaniami wymienionymi wyżej). Brak `rotation` w ścieżkach `resolveCombat`
-i fazach AI.
+Druga ścieżka renderu bez `dirYaw`, z własnym przypisaniem `rotation.y` zależnym od znaku
+różnicy współrzędnych (nie od `Dir`), to `gra/src/battle/manualBattle.ts`:
+`:754` (`group.rotation.y = Math.PI` gdy `!facingRight`), `:1018`-`:1019` (`ru.group.rotation.y`
+= 0 lub PI wg `to.x` względem `from.x`), `:1057`-`:1058` (`attacker/defender.group.rotation.y`
+wg `aw.x`/`dw.x`). Również wyłącznie zapis, bez odczytu w logice; nie przechodzi przez `Dir`.
+
+Grep po `battleScene.ts` oraz `manualBattle.ts` (pin `07d2fbd72`): w wyrażeniach nie ma odczytu
+`*.rotation.y` po stronie logiki (poza przypisaniami wymienionymi wyżej). Brak `rotation` w ścieżkach
+`resolveCombat` i fazach AI.
+
+### Zapisy stanu `facing: Dir` (źródło prawdy, nie yaw)
+
+- `:4243`, `:4714` — inicjalizacja jednostek literałem `facing: Dir.W`.
+- `:8337`-`:8339` — `ru.facing = newFacing`, gdzie `newFacing = facingFromTo(...)` (`:8337`).
+- `:9104` — `attacker.facing = facingFromTo(...)`.
+- `:9139` — `defender.facing = facingFromTo(...)` (kontratak / odwrócenie).
+- `:9185` — `attacker.facing = facingFromTo(...)`.
+- `:9816` — `ru.facing = ru.side === 'atk' ? Dir.W : Dir.E` (ustawienie startowe).
+
+Każdy z tych zapisów jest wykonywany PRZED odpowiadającym mu wywołaniem `dirYaw` (`:8340`,
+`:9105`, `:9140`, `:9186`, `:9817`), czyli yaw jest pochodną `Dir`, nie odwrotnie.
+`facingFromTo` (`:359`) zwraca `Dir` na siatce i nie czyta `rotation`.
 
 ### Miejsca, w których o wyniku decyduje `facing: Dir` (sim, nie yaw)
 
