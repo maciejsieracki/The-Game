@@ -13,6 +13,8 @@
 //! `wallEverBreached` (ustawiane w `battleScene.ts:3721, 7647, 7759, 8072`), oraz blok PAT dla bitew bez oblezenia
 //! (`battleScene.ts:10178-10182`, morale). Patrz `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`.
 
+use super::siege_tactics_blow::js_max;
+
 /// Strona bitwy zwyciezajaca w web `winner: 'atakujacy' | 'obronca'` (bez `remis`: remis oblezenia jest w `siege_no_breach::round_cap_verdict`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BattleSide {
@@ -22,11 +24,7 @@ pub enum BattleSide {
 
 /// Web `Math.max(0, hp)` dla pojedynczej jednostki. `NaN` zostaje `NaN` (JS: `Math.max(0, NaN) === NaN`).
 fn js_max0(hp: f64) -> f64 {
-    if hp.is_nan() {
-        hp
-    } else {
-        hp.max(0.0)
-    }
+    js_max(0.0, hp)
 }
 
 /// Web `units.reduce((s, u) => s + Math.max(0, u.bu.hp), 0)`, sumowane od lewej.

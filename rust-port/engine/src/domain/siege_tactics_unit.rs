@@ -29,16 +29,14 @@
 //! `siege_tactics_endcheck.rs`). Miejsce podstawienia (bez refaktoru): wywolujacy budujacy `EndCheckInput` z listy
 //! `CombatUnit` podstawia `alive_a = side_alive_end(&atk)`, `alive_d = side_alive_end(&def)`, `total_dead = total_dead(..)`.
 
+use super::siege_tactics_blow::js_max;
+
 /// Web `MORALE_TERRAIN_RESIST` (`battleScene.ts:1143`).
 pub const MORALE_TERRAIN_RESIST: f64 = 5.0;
 
 /// Web `Math.max(0, x)` dla jednej wartosci. `NaN` zostaje `NaN` (jak w JS; `f64::max` zwrocilby 0).
 fn js_max0(x: f64) -> f64 {
-    if x.is_nan() {
-        x
-    } else {
-        x.max(0.0)
-    }
+    js_max(0.0, x)
 }
 
 /// Minimalny model jednostki boju: pola `RuntimeBattleUnit` czytane przez predykaty K5a.
