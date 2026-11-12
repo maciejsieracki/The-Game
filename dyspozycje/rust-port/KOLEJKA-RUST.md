@@ -18,3 +18,12 @@ Zasada (właściciel, 2026-11-11): zawsze działają cztery tematy operatorskie.
 - Faza zwarcia DYSTANS / resolve_combat (zadanie 10).
 - REPIN-DRYFT 1–6 (zadania 14–19).
 - 50 rozbieżności pól units.json Rust vs pin (zadanie 27).
+
+## Następne (08:0x UTC; zadania 83–93 na liście; kolejność zalecana)
+1. K5I2b — składanie BlowInput + rangedDamageMultFor (po K5I2a3/a4).
+2. INTEG-B14C — K5I2a1–a4 + CRED (+ R7K7, jeśli nie w B14B) na parity-v2.
+3. DLUG-POWER-ULEPSZENIA-WIRING; POWER-BITWY-ZDOBYCZE; DLUG-UNIT-REPLACE-PROGRESS (stan: pola serde default + zgodność zapisu).
+4. R7K7-B (P7, zlozeGrants, wektory D3/sync) i R7K7-C (efekty na PlayableState, skarbiec AI, pula Pracy).
+5. K5-LOOP (test składania pętli taktycznej), KLASY-WIRE, DLUG-NFD-CCC.
+6. Raport poranny (pytania gameplay: SZTURM ODPARTY, Q1–Q4 W8 r7, units.json vs pin, DYSTANS, REPIN-DRYFT 1–6).
+Zasada: każdy start od dispatchu z jedyną obowiązującą BAZĄ; temat zależny startuje na czubku fc, integracja rundą Operatora z pełnym cargo test.
