@@ -127,3 +127,9 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - FC PASS-WITH-NOTES poza parity-v2: Q8 ee29d7906, POWER-SOURCES ab9cc23e2 (konflikt z NAN-STRICT → runda integracyjna Operatora), W8 r3 95bbf99d7 / r4 0b5fc5fb9 / r5 74c8456ff, UNIT-REPLACE L3 etap 1 ab116e492 i etap 2 415a7d67f.
 - Decyzje techniczne: W8 r5 NIE wchodzi na parity-v2 (advance_turn z AI z miastami zwraca WarTurn do czasu producentów r6); fallback epoki AI = gameStartEra() wg pinu main.ts:2419; kolejne klocki W8 r6: epoka → populacja/kultura/terytorium → budynki/tech/religia → TickContext → R2.
 - W toku (4): SIEGE-TAKTYKA-K1 (wf_57c6f6dd-8c8), W8 r6 EPOKA (wf_27d17112-1eb), POWER-SOURCES-INTEG (wf_9ea19b81-25a), SIEGE-TAKTYKA-K2 (wf_5ecd6899-90b).
+
+## Przebieg 2026-11-12 03:2x UTC (orkiestrator Rust)
+- parity-v2 = 81e7840ba (batch 10: Q7 + K0b; 2844 passed, fmt/clippy 0).
+- FC PASS-WITH-NOTES poza parity-v2 (refs rust-port-wip/*): Q8 ee29d7906, K1 759621568, K1b 7276ed3da, K2 c6a253485, POWER-SOURCES-INTEG merge f7bb7b286 (2840 passed; merge-tree czysty vs 81e7840ba), W8 linia r3–r5 + EPOKA fa480bf2a, UNIT-REPLACE L3 etap 1/2.
+- Decyzje techniczne: K1 wiersz 30 PARTIAL zaakceptowany, reszta jako K1b/K3; epoka statyczna (wariant A); linia W8 wymaga adaptacji do PowerInputError (NAN-STRICT) w rundzie integracyjnej na końcu; K2/K1/Q8 przez rundę integracyjną (konflikt mod.rs).
+- W toku (4): INTEG-B11 (wf_6bb00f80-766), W8 r6 POP (wf_97d225f9-289), SIEGE-TAKTYKA-K3 (wf_475394da-12c), SIEGE-TAKTYKA-ENDCHECK (wf_524dfe35-f29). Dysk ~7,4 GB — nowe starty wstrzymane do ≥ 8 GB.
