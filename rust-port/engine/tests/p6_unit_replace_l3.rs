@@ -110,7 +110,8 @@ fn koszt_adaptera_zgodny_z_wektorami_weba() {
         let id = c["id"].as_str().unwrap();
         // Wejscie: null / "NaN" = brak kosztu (web: `!(x > 0)` -> 0).
         let money = match c["money"].as_str() {
-            Some(_) => f64::NAN,
+            Some("NaN") => f64::NAN,
+            Some(other) => panic!("{id}: nieznany tekst liczbowy {other}"),
             None if c["money"].is_null() => f64::NAN,
             None => num(&c["money"]),
         };

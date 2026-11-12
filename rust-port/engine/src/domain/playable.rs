@@ -587,6 +587,10 @@ impl PlayableGame {
                     return Err(error);
                 }
             }
+            // P6-UNIT-REPLACE-L3 (kryterium 3c): PUNKT PODPIECIA AI-zamiany jednostek (`ai_replace_*`)
+            // na fazie TurnPhase::Ai. Galaz celowo nie wykonuje nic: PlayableState nie niesie danych
+            // ekonomii (skarbiec, pula miasta, definicje jednostek, limit udzialu), a atrapa bylaby
+            // falszywym dowodem wiringu. Decyzja zakresu: zob. runs/R-RUSTPORT-P6-UNIT-REPLACE-L3-Q1.
             phases.push(entry.phase());
         }
         if phases.len() != PHASE_COUNT {
