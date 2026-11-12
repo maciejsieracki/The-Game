@@ -45,6 +45,9 @@ use super::diplomacy::{shared_border_penalty_for_epochs, DiplomacyParams, TickCo
 use super::diplomacy_tick_war_brake::{ai_ai_pairs, is_ai_ai_eligible_owner, BrakeWarOutcome};
 use super::diplomacy_truce::PairMetaWeb;
 use super::playable::PlayableState;
+use super::turn_war_dipl_steps::{
+    run_dipl_steps, DiplStepsContext, DiplStepsInputs, DiplStepsReport,
+};
 use super::war_turn_state::WarTurnState;
 
 /// Tabele mocy z `data/power-params.json` (identyczne z pinem) plus model bitwy i klucze wojskowe.
@@ -118,6 +121,8 @@ pub struct WarTurnInputs {
     /// Bazowy `TickContext` per para (handel, religia, dobra wola...). Brak wpisu = domyslny.
     pub tick_extras: BTreeMap<PairKey, TickContext>,
     pub peace_locks: Option<PeaceLockFacts>,
+    /// Wejscia krokow D1-D7 (`turn_war_dipl_steps`); `Default` = brak wejsc (kroki lenia: blad tylko gdy potrzebne).
+    pub dipl: DiplStepsInputs,
 }
 
 /// Kontekst wywolania: stan wojny (wlasciciel) + wejscia + konfiguracja.
@@ -136,6 +141,8 @@ pub struct WarTurnReport {
     pub relation_after_tick: BTreeMap<PairKey, f64>,
     pub dobra_active: BTreeSet<PairKey>,
     pub declarations: Vec<BrakeWarOutcome>,
+    /// Raport krokow D1-D7 (K7).
+    pub dipl: DiplStepsReport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -149,6 +156,8 @@ pub enum WarTurnError {
     /// `breakdown.key`); odrzucane jawnie, nie zerowane ani propagowane.
     PowerComponentNonFinite(i64, Vec<&'static str>),
     MissingPeaceLocks,
+    /// K7 (D1-D7): brak wejscia lub niespojny stan kroku dyplomacji, z powodem (nigdy ciche zero).
+    DiplStep(String),
 }
 
 impl fmt::Display for WarTurnError {
@@ -168,6 +177,7 @@ impl fmt::Display for WarTurnError {
                 keys.join(", ")
             ),
             Self::MissingPeaceLocks => write!(f, "war turn: brak producenta blokad pokoju"),
+            Self::DiplStep(why) => write!(f, "war turn: krok dyplomacji D1-D7: {why}"),
         }
     }
 }
@@ -346,6 +356,28 @@ pub fn run_war_turn(ctx: &mut WarTurnContext<'_>) -> Result<WarTurnReport, WarTu
         let gate = gate_blocked_set(cfg.multiwar_enabled, ctx.turn, &tick_pairs, &facts);
         (epochs, power, Some(peace), gate)
     };
+
+    // 3b) K7: kroki D1-D7 pinu (przed tickiem relacji par i hamulcem D8, jak na pinie).
+    let mut dipl_owner_ids: Vec<i64> = inp
+        .human_ids
+        .iter()
+        .chain(inp.ai_start_owner_ids.iter())
+        .chain(inp.city_owner_ids.iter())
+        .copied()
+        .collect();
+    dipl_owner_ids.sort_unstable();
+    dipl_owner_ids.dedup();
+    report.dipl = run_dipl_steps(
+        ctx.war,
+        &DiplStepsContext {
+            me_id: me,
+            human_ids: &inp.human_ids,
+            contacts: &inp.contacts,
+            owner_ids: &dipl_owner_ids,
+            turn: ctx.turn,
+            inputs: &inp.dipl,
+        },
+    )?;
 
     // 4) Tick relacji par z TickContext (wspolna granica = delta wg epoki pary).
     let mut contexts = BTreeMap::new();

@@ -47,6 +47,7 @@ use super::brake_power_rest::{
     count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
     ReligionCity,
 };
+use super::diplomacy::CityResourceState;
 use super::diplomacy_truce::PairMetaWeb;
 use super::diplomacy_war_peace_profile::{
     brake_relation_threshold, resolve_war_peace_profile, war_peace_params,
@@ -63,6 +64,7 @@ use super::territory::ReligionState;
 use super::trade::{
     owners_have_shared_land_border, HexCoord, TerrainType as TradeTerrain, TerritoryNode, TradeMap,
 };
+use super::turn_war_dipl_steps::DiplStepsInputs;
 use super::turn_war_epoch::{epochs_with_sources, OwnerEpochError};
 use super::turn_war_pipeline::{PeaceLockFacts, WarTurnConfig, WarTurnInputs};
 use super::types::{porzadek::society_params, Difficulty};
@@ -622,13 +624,65 @@ pub fn shared_border_pairs(state: &PlayableState) -> Result<BTreeSet<PairKey>, W
     Ok(out)
 }
 
+/// Producent wejsc krokow D1-D7 (K7, `turn_war_dipl_steps`) z `PlayableState`.
+/// - skarbiec: tylko gracz-czlowiek (`economy.treasury`); AI nie ma skarbca w stanie => brak wpisu (blad
+///   `WarTurnError::DiplStep`, gdy krok faktycznie go potrzebuje, np. danina z AI),
+/// - pula Pracy: brak producenta (stan jej nie niesie) => brak wpisow (jak wyzej),
+/// - zapasy miast: `economy.city_stock` (brak wpisu miasta = puste `surowce`, jak web `c.surowce ?? {}`),
+/// - stolica: miasto z `is_capital` (pierwsze w kolejnosci stanu),
+/// - moc armii (web `sumArmyMForOwner`): ten sam producent co skladnik `jednostki` mocy obiektywnej.
+pub fn dipl_steps_inputs(state: &PlayableState) -> Result<DiplStepsInputs, WarInputsError> {
+    let mut out = DiplStepsInputs::default();
+    if let Some(human) = state.players.iter().find(|p| p.is_human) {
+        out.treasury
+            .insert(human.id.get() as i64, state.economy.treasury);
+    }
+    out.cities = Some(
+        state
+            .cities
+            .iter()
+            .map(|c| {
+                let mut r = CityResourceState::new(c.id.get().to_string(), c.owner_id);
+                if let Some(stock) = state.economy.city_stock.get(&c.id.get()) {
+                    r.resources = stock.clone();
+                }
+                r
+            })
+            .collect(),
+    );
+    for c in state.cities.iter().filter(|c| c.is_capital) {
+        out.capital_city
+            .entry(c.owner_id.get() as i64)
+            .or_insert_with(|| c.id.get().to_string());
+    }
+    let def = warrior_def()?;
+    let units: Vec<ArmyUnit> = state
+        .units
+        .iter()
+        .filter(|u| matches!(u.kind, PlayableUnitKind::Warrior))
+        .map(|u| ArmyUnit {
+            owner_id: u.owner_id.get() as i64,
+            is_settler: false,
+            def: def.clone(),
+        })
+        .collect();
+    let settlers = count_settlers();
+    for id in all_owner_ids(state) {
+        out.army_m.insert(id, armia_for_owner(&units, id, settlers));
+    }
+    Ok(out)
+}
+
 /// Pelne wejscia fazy Diplomacy; epoki z `epochs_from_state` (dzis zawsze blad dla AI z miastami).
 pub fn build_war_inputs(
     state: &PlayableState,
     war: &WarTurnState,
 ) -> Result<WarTurnInputs, WarInputsError> {
     if !has_ai_city(state) {
-        return Ok(WarTurnInputs::from_playable(state, war)); // brak par: wejsc nie trzeba
+        // brak par: wejsc hamulca nie trzeba; wejscia krokow D1-D7 (K7) sa zawsze produkowane.
+        let mut inputs = WarTurnInputs::from_playable(state, war);
+        inputs.dipl = dipl_steps_inputs(state)?;
+        return Ok(inputs);
     }
     // Blokady pokoju najpierw: zepsute dane maja swoj wlasny blad, nie maskowany brakiem epok.
     peace_locks_from_war(war)?;
@@ -652,6 +706,7 @@ pub fn build_war_inputs_with_epochs(
     epochs: &BTreeMap<i64, f64>,
 ) -> Result<WarTurnInputs, WarInputsError> {
     let mut inputs = WarTurnInputs::from_playable(state, war);
+    inputs.dipl = dipl_steps_inputs(state)?;
     if !has_ai_city(state) {
         return Ok(inputs);
     }
