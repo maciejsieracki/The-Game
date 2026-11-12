@@ -1,20 +1,28 @@
 'use strict';
 /**
  * R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1 regression (headless engine, production turn loop).
- * Mixed attacker army (melee infantry rank 0, archers + siege machines rank 1, cavalry rank 2)
- * advances under the Atak (steady) doctrine. Before the first melee contact, every non-mounted
- * unit of one formation rank must keep the pace of the slowest unit of that rank (spread <= 2),
- * archers and machines included. Cavalry is outside the pace rule.
+ *
+ * Checks (runda 4/5, zarzuty FC rundy 1):
+ *  A. Approach pace of the mixed attacker army (melee rank 0, archers + siege machines rank 1, cavalry
+ *     outside the pace rule). Melee spread <= TOL, machines spread <= TOL_RANK1 (ABC: TOL=2, TOL_RANK1=2).
+ *     Zarzut 2: the archer spread does NOT distinguish the base 81e357dee from the fix in this scenario
+ *     (both 0); the archer check is kept as a regression only, the mutation proof is machines-only.
+ *  B. Post-contact kite (zarzut 1): an archer adjacent to a melee foe must step away (RANGED KITE forced
+ *     in isolation). MUTATE_KITE=1 disables kite on the archer -> check must FAIL.
+ *  C. Group without infantry (zarzut 4): a group of archers + machines with no melee unit of its own
+ *     keeps its pace while another group is already in melee contact (contact is group-scoped).
+ *
  * Run from gra/: node tools/battle-mixed-army-advance-pace-test.cjs
- *   MEASURE=1 prints per-round spreads; SCENE_FILE=battleScene.orig-before.ts runs the pre-fix scene (mutation check).
+ *   MEASURE=1 prints per-round data; SCENE_FILE=<file in src/battle/> runs an alternative scene (mutation).
  */
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { loadBattleScene, metrics } = require('./battle-line-advance-uniform-test.cjs');
 
 const ROWS = 9;
-const TOL = 2;      // piechota rangi 0: najmniejsza pula ruchu = 2 (mp 2/3)
-const TOL_RANK1 = 1; // strzelcy+machiny rangi 1: najmniejsza pula ruchu = 1 (taran mp 1), sufit = tempo najwolniejszej jednostki
+const TOL = 2;       // piechota rangi 0 (decyzja ABC 2026-11-12: TOL = 2, zmierzona wartosc)
+const TOL_RANK1 = 2; // strzelcy+machiny rangi 1 (decyzja ABC 2026-11-12: TOL_RANK1 = 2, zapas o jedno pole)
+const MELEE_SAFE_GAP = 2;
 
 function unit(id, side, q, r, o = {}) {
   const ranged = !!o.ranged;
@@ -33,7 +41,7 @@ function unit(id, side, q, r, o = {}) {
     range: ranged ? 4 : 0, rangeBase: ranged ? 4 : 0, ammoLeft: ranged ? 10 : 0, ammoMax: ranged ? 10 : 0, moveLeft: 2,
     acted: false, morale: 100, moraleMax: 100, playerOrder: { type: 'none' },
     attackDirection: 'front', facing: side === 'atk' ? 'E' : 'W',
-    groupId: `${side}-mixed`, formationRank: o.rank ?? 0,
+    groupId: o.groupId ?? `${side}-mixed`, formationRank: o.rank ?? 0,
   };
 }
 
@@ -50,12 +58,16 @@ function buildArmies() {
   return { atk, def };
 }
 
-function runMixed(BattleScene, rounds) {
-  const { atk, def } = buildArmies();
+/**
+ * Headless turn loop on a stubbed scene. onMove(u, fromQ, fromR, toQ, toR, scene) is called for every
+ * real (non-planning) move, BEFORE the unit is relocated, so the caller sees the pre-move position.
+ */
+function runMixed(BattleScene, rounds, armies = buildArmies(), onMove = null) {
+  const { atk, def } = armies;
   const queue = [];
   const frames = [];
   const snapshot = () => [...atk, ...def].map(u => ({
-    id: u.bu.id, side: u.side, q: u.q, r: u.r, rank: u.formationRank,
+    id: u.bu.id, side: u.side, q: u.q, r: u.r, rank: u.formationRank, group: u.groupId,
     mounted: u.mounted, shooter: u.rangedBase || (u.bu.stats && u.bu.stats.Typ === 'Siege'),
   }));
   const scene = Object.create(BattleScene.prototype);
@@ -81,6 +93,7 @@ function runMixed(BattleScene, rounds) {
     _schedule(_d, cb) { if (this._autoBatchPlanning) cb(); else queue.push(cb); },
     _doMove(u, q, r, done) {
       if (this._autoBatchPlanning) return BattleScene.prototype._doMove.call(this, u, q, r, done);
+      if (onMove) onMove(u, u.q, u.r, q, r, this);
       this.occByKey.delete(`${u.q},${u.r}`);
       u.q = q; u.r = r; u.moveLeft--;
       this.occByKey.set(`${q},${r}`, u);
@@ -112,12 +125,28 @@ function rankSpread(frame, rank, filter = () => true) {
   return { spread: Math.max(...qs) - Math.min(...qs), max: Math.max(...qs), min: Math.min(...qs) };
 }
 
-async function main() {
-  const BattleScene = await loadBattleScene();
+function manhattanQR(q1, r1, q2, r2) {
+  // axial distance (the engine's manhattan on hex coords used by MELEE_SAFE_GAP)
+  const dq = q1 - q2; const dr = r1 - r2;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
+
+function buildG2() {
+  const g2 = [];
+  for (let i = 0; i < 3; i++) g2.push(unit(`atk-g2-a${i}`, 'atk', 2, 40 + i, { rank: 1, ranged: true, groupId: 'atk-g2', stats: { __mp: i === 0 ? 3 : 2 } }));
+  g2.push(unit('atk-g2-m0', 'atk', 2, 43, { rank: 1, siege: true, groupId: 'atk-g2', stats: { Typ: 'Siege', Jednostka: 'Taran', __mp: 3 } }));
+  return g2;
+}
+
+function buildD2() {
+  return [unit('def-g2-a0', 'def', 60, 40, { rank: 1, ranged: true, groupId: 'def-g2' })];
+}
+
+/** A: pace of the mixed army before the first melee contact. */
+async function checkApproach(BattleScene, checks) {
   const rounds = Number(process.env.ROUNDS || 30);
   const { frames } = runMixed(BattleScene, rounds);
   const win = preContactFrames(frames);
-  const checks = [];
   if (process.env.MEASURE) console.log(`approach window: ${win.length} rounds`);
   const rows = win.map((f, i) => ({
     i,
@@ -131,18 +160,78 @@ async function main() {
   const maxMelee = Math.max(...rows.map(r => r.melee.spread));
   const maxShooters = Math.max(...rows.map(r => r.shooters.spread));
   const maxMachines = Math.max(...rows.map(r => r.machines.spread));
-  checks.push([`approach: melee rank spread ${maxMelee} <= ${TOL}`, maxMelee <= TOL]);
-  checks.push([`approach: archers spread ${maxShooters} <= ${TOL_RANK1} (pace of the slowest rank-1 unit)`, maxShooters <= TOL_RANK1]);
-  checks.push([`approach: machines spread ${maxMachines} <= ${TOL_RANK1} (pace of the slowest rank-1 unit)`, maxMachines <= TOL_RANK1]);
-  // Paced units must actually advance (no permanent freeze of the mixed line).
+  checks.push([`A1 approach: melee rank spread ${maxMelee} <= ${TOL}`, maxMelee <= TOL]);
+  checks.push([`A2 approach (regresja, NIE rozroznia bazy 81e357dee): archers spread ${maxShooters} <= ${TOL_RANK1}`, maxShooters <= TOL_RANK1]);
+  checks.push([`A3 approach: machines spread ${maxMachines} <= ${TOL_RANK1} (pace of the slowest rank-1 unit)`, maxMachines <= TOL_RANK1]);
   const last = win[win.length - 1] ?? frames[frames.length - 1];
   const advanced = last.filter(u => u.side === 'atk' && !u.mounted && u.rank === 1 && u.id.startsWith('atk-a'));
   const startQ = 2;
   const minAdv = Math.min(...advanced.map(u => u.q));
-  checks.push([`approach: archers advance (min q ${minAdv} > start ${startQ})`, minAdv > startQ]);
+  checks.push([`A4 approach: archers advance (min q ${minAdv} > start ${startQ})`, minAdv > startQ]);
+}
+
+/**
+ * B: post-contact kite (zarzut 1). One archer next to one melee foe with free ground behind the archer.
+ * Every real move of the archer that starts inside MELEE_SAFE_GAP must increase the distance; at least one
+ * such kite move must occur (the mechanism is forced in isolation, not left to chance).
+ */
+async function checkKite(BattleScene, checks) {
+  const mutate = !!process.env.MUTATE_KITE;
+  const archer = unit('atk-k', 'atk', 10, 20, { rank: 1, ranged: true });
+  // 'manual' doctrine routes the archer to _rangedAction (kite branch); the AUTO doctrine path
+  // (_executeGroupDoctrineStep) shoots and holds without the kite step.
+  archer.unitDoctrine = 'manual';
+  if (mutate) archer.rangedKite = false;
+  const foe = unit('def-m', 'def', 11, 20, { rank: 0 });
+  const kiteMoves = [];
+  const { frames } = runMixed(BattleScene, 6, { atk: [archer], def: [foe] }, (u, fq, fr, tq, tr) => {
+    if (u.bu.id !== 'atk-k') return;
+    const pre = manhattanQR(fq, fr, foe.q, foe.r);
+    const post = manhattanQR(tq, tr, foe.q, foe.r);
+    if (pre <= MELEE_SAFE_GAP) kiteMoves.push({ pre, post, from: [fq, fr], to: [tq, tr] });
+  });
+  if (process.env.MEASURE) {
+    console.log(`kite frames: ${frames.length}; archer moves inside gap: ${JSON.stringify(kiteMoves)}`);
+  }
+  const kiteOk = kiteMoves.every(m => m.post > m.pre);
+  // Gap restored: from an adjacent foe (pre 1) the step must reach MELEE_SAFE_GAP.
+  const restored = kiteMoves.filter(m => m.pre <= 1).every(m => m.post >= MELEE_SAFE_GAP);
+  checks.push([`B1 kite: archer in melee gap steps away (${kiteMoves.length} kite move(s), all increase distance)`, kiteMoves.length >= 1 && kiteOk]);
+  checks.push([`B2 kite: step from adjacent foe restores gap >= ${MELEE_SAFE_GAP}`, kiteMoves.some(m => m.pre <= 1) && restored]);
+}
+
+/**
+ * C: group without infantry (zarzut 4). Group g1 (infantry) is already in melee contact with a def foe;
+ * group g2 has only archers + one machine (no melee unit). g2 must keep its pace (spread <= TOL_RANK1)
+ * during the rounds while g1 is engaged: the first-contact lift is group-scoped.
+ */
+async function checkGroupWithoutInfantry(BattleScene, checks) {
+  const g1 = [unit('atk-g1-w0', 'atk', 4, 20, { rank: 0, groupId: 'atk-g1' }),
+    unit('atk-g1-w1', 'atk', 4, 21, { rank: 0, groupId: 'atk-g1' })];
+  const d1 = [unit('def-g1-w0', 'def', 5, 20, { rank: 0, groupId: 'def-g1' })];
+  const g2 = buildG2();
+  const d2 = buildD2();
+  const armies = { atk: [...g1, ...g2], def: [...d1, ...d2] };
+  const { frames } = runMixed(BattleScene, 12, armies);
+  const g2Of = f => f.filter(u => u.side === 'atk' && u.group === 'atk-g2' && !u.mounted);
+  const rows = frames.map((f, i) => {
+    const qs = g2Of(f).map(u => u.q);
+    return { i, spread: Math.max(...qs) - Math.min(...qs) };
+  });
+  const maxSpread = Math.max(...rows.map(r => r.spread));
+  if (process.env.MEASURE) console.log(`group-no-infantry g2 spreads: ${rows.map(r => r.spread).join(',')}`);
+  checks.push([`C1 group without infantry (g2 archers+machine, other group in contact): spread ${maxSpread} <= ${TOL_RANK1}`, maxSpread <= TOL_RANK1]);
+}
+
+async function main() {
+  const BattleScene = await loadBattleScene();
+  const checks = [];
+  await checkApproach(BattleScene, checks);
+  await checkKite(BattleScene, checks);
+  await checkGroupWithoutInfantry(BattleScene, checks);
   let failed = 0;
   for (const [label, ok] of checks) { console.log(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failed++; }
   assert.equal(failed, 0, `${failed} mixed-army pace check(s) failed`);
 }
 if (require.main === module) main().catch(e => { console.error(e.stack); process.exit(1); });
-module.exports = { buildArmies, runMixed, preContactFrames, rankSpread, path };
+module.exports = { buildArmies, runMixed, preContactFrames, rankSpread, path, metrics };
