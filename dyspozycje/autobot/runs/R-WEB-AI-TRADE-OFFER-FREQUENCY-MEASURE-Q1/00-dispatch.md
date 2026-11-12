@@ -1,0 +1,5 @@
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (GAME, POMIAR tylko do odczytu; Haiku)
+Kontekst: po decyzji A1 (FALA 660) AI→gracz składa oferty tylko przy ścisłej równości PW; test siatki dał 1–6 ofert na 400 prób na parę przy Relacji 11,6; częstość w pełnej grze NIE_ZMIERZONO. Pytanie właściciela czeka na liczby.
+GOAL: ZMIERZYĆ, jak często AI faktycznie składa gracz ofertę handlową (cykliczną i jednorazową) w pełnej rozgrywce: ≥ 3 ziarna × ≥ 150 tur (hak ?civTest=1, tryb przyspieszony, AI normalny), ≥ 3 poziomy relacji (niska/średnia/wysoka) jeśli da się ustawić; policz oferty AI→gracz na 100 tur, ile ma „Przyjmij” aktywne, ile pary surowców.
+ZASADA: ZERO zmian gra/src i reguł; tylko skrypt pomiarowy gra/tools/measure-ai-trade-offer-frequency.cjs i raport z tabelą (ziarno, tury, relacja → liczba ofert, aktywne Przyjmij, pary). Wniosek: czy oferty AI występują w grze wystarczająco często (próg nie narzucony — tylko liczby) → dane do decyzji ABC właściciela (zostawić / tolerancja par).
+KRYTERIA: surowe wyniki w evidence/; powtarzalność (to samo ziarno = ten sam wynik); tsc + 5 bramek (kod bez zmian).
