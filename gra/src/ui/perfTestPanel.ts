@@ -14,6 +14,8 @@
  *
  * Styl spójny z mapLoadingOverlay.ts (te same tokeny brand).
  */
+import { pluralPl } from './formatPl';
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 import * as THREE from 'three';
 import { UI_PARAMS } from './uiParams';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
@@ -197,14 +199,14 @@ function detectionRows(det: HardwareDetection): ReportRow[] {
   // CPU wątki.
   if (det.cpuThreads != null) {
     if (det.cpuThreads >= 12) {
-      rows.push({ status: 'ok', label: `${det.cpuThreads} wątków CPU`, tip: 'Możesz generować nawet Super Huge.' });
+      rows.push({ status: 'ok', label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`, tip: 'Możesz generować nawet mapę „Bardzo ogromny”.' });
     } else if (det.cpuThreads >= 6) {
-      rows.push({ status: 'ok', label: `${det.cpuThreads} wątków CPU`, tip: 'Zalecany rozmiar mapy do Ogromny.' });
+      rows.push({ status: 'ok', label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`, tip: 'Zalecany rozmiar mapy: Ogromny.' });
     } else {
       rows.push({
         status: 'warn',
-        label: `${det.cpuThreads} wątki/wątków CPU`,
-        tip: 'Zalecany rozmiar mapy: Standardowy. Super Huge będzie generować się kilka minut.',
+        label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`,
+        tip: 'Zalecany rozmiar mapy: Standardowy. Mapa „Bardzo ogromny” będzie generować się kilka minut.',
       });
     }
   } else {
@@ -455,7 +457,7 @@ function buildTextReport(
   L.push('');
   L.push('-- Zalecany preset --');
   L.push(`Jakość renderu: ${qualityLabelPl(preset.renderQuality)}`);
-  L.push(`Maks. rozmiar mapy: ${preset.maxMapSizeLabel}`);
+  L.push(`Maks. rozmiar mapy: ${mapSizeDisplayLabel(preset.maxMapSizeLabel)}`);
   L.push(`Limit workerów: ${preset.workerLimit}`);
   return L.join('\n');
 }
@@ -559,7 +561,7 @@ export function showPerfTestPanel(opts: PerfTestPanelOptions = {}): void {
     const clsLabel = cls === 'MOCNY' ? 'MOCNY' : cls === 'SREDNI' ? 'ŚREDNI' : 'SŁABY';
     verdictEl.innerHTML =
       `Klasa sprzętu: <b>${clsLabel}</b>. Zalecane: jakość <b>${escapeHtml(qualityLabelPl(preset.renderQuality))}</b>, ` +
-      `maks. rozmiar mapy <b>${escapeHtml(preset.maxMapSizeLabel)}</b>, limit workerów <b>${preset.workerLimit}</b>.`;
+      `maks. rozmiar mapy <b>${escapeHtml(mapSizeDisplayLabel(preset.maxMapSizeLabel))}</b>, limit workerów <b>${preset.workerLimit}</b>.`;
   };
 
   renderRows(detListEl, detRows);
@@ -649,7 +651,7 @@ export function showPerfTestPanel(opts: PerfTestPanelOptions = {}): void {
   applyBtn.addEventListener('click', () => {
     const preset = currentPreset();
     saveHardwareProfile(det, bench, preset);
-    appliedEl.textContent = `Zapisano: jakość ${qualityLabelPl(preset.renderQuality)}, maks. mapa ${preset.maxMapSizeLabel}, workery ${preset.workerLimit}. Wejdzie w życie w kreatorze nowej gry.`;
+    appliedEl.textContent = `Zapisano: jakość ${qualityLabelPl(preset.renderQuality)}, maks. mapa ${mapSizeDisplayLabel(preset.maxMapSizeLabel)}, workery ${preset.workerLimit}. Wejdzie w życie w kreatorze nowej gry.`;
     opts.onPresetApplied?.(preset);
   });
 

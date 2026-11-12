@@ -1951,7 +1951,7 @@ export function cityMiastaMiniDetail(
   const grid = miastaColumnGridTemplate(cols);
 
   let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
-    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
+    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obywateli na turę</div>`;
   // Punkt (a): checkboxy widoczności kolumn nad tabelą.
   h += cityMiastaColFilterHtml();
   h += `<div class="civ-emp-mini-scroll"><div class="civ-emp-mini">`;
@@ -2276,7 +2276,7 @@ export function renderMiastoSection(
     }
     h += '<div class="civ-emp-grp-sum">'
       + `<span class="nm">CAŁA CYWILIZACJA · ${nChecked} z ${prodRows.length}</span>`
-      + `<span class="val">${signedIntTxt(sumChecked)} szt./turę</span></div>`;
+      + `<span class="val">${signedIntTxt(sumChecked)} sztuk na turę</span></div>`;
     h += '</div>';
     h += '<div class="civ-emp-foot">Produkcja WŁASNA / turę (teren + konwertery, bez umów '
       + 'dyplomatycznych) — liczba całego imperium: silnik nie rozbija produkcji surowców na '
@@ -2675,8 +2675,8 @@ export function renderObywateleSection(
   h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpowerCompact(sumAbs))} ludzi</div>`;
   h += '<div class="civ-emp-hero-sub">'
     + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)} Sz</b> · ` : '')
-    + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
-    + `zużycie surowców <b>${zuzyciePerTyp}</b> szt./turę na każdy z <b>${citizenResCount}</b> `
+    + `przyrost <b>${signedIntTxt(przyrost)}</b> obywateli na turę · `
+    + `zużycie na turę: <b>${zuzyciePerTyp}</b> sztuk każdego z <b>${citizenResCount}</b> `
     + 'surowców epoki</div>';
 
   // — PODZIAŁ PRACY OBYWATELI —

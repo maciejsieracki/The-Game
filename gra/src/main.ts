@@ -23710,7 +23710,7 @@ async function boot(): Promise<void> {
       return {
         type: 'zaproponuj_handel_surowiec',
         targetId: '0',
-        powod: `${verb}: ${offer.pakietyPerTura} szt./turę`
+        powod: `${verb}: ${offer.pakietyPerTura} sztuk na turę`
           + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(AI_RESOURCE_TRADE_DEFAULT_TURNS)}`
           + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
         surowiecKey: offer.surowiecKey,
@@ -23909,7 +23909,7 @@ async function boot(): Promise<void> {
           if (handelSurowiecCykliczny) {
             console.log(
               `[Dyplomacja] AI↔AI handel surowcem: ${ownerDiploLabel(bestOffer!.seller)} → ` +
-              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} szt./turę`,
+              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} sztuk na turę`,
             );
           }
           syncRelationFromDeals(a, b);
