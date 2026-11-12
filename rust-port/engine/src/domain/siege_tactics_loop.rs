@@ -20,6 +20,7 @@
 //!
 //! Nie wpina się w `PlayableState`. Nie zawiera czasu ściennego: budżet przewijania to jawny `max_steps`.
 
+use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
@@ -99,23 +100,25 @@ fn unit_tag(u: UnitRef) -> String {
 }
 
 impl<B: LoopBody> SiegeEnv<B> {
-    /// Stub `_armyMoraleRatio`: suma `max(0, morale)` / suma `moraleMax` dla strony (kolejność tablicy jak w pinie).
+    /// `_armyMoraleRatio` piny: `armyMoraleRatioWithoutCommander` (game/army-leadership.ts) na jednostkach strony.
     fn ratio(&self, st: &TurnSeqState, side: BattleSide) -> f64 {
         let (units, maxes) = match side {
             BattleSide::Attacker => (&st.atk, &self.morale_max[0]),
             BattleSide::Defender => (&st.def, &self.morale_max[1]),
         };
-        let mut m = 0.0;
-        let mut mm = 0.0;
-        for (u, mx) in units.iter().zip(maxes.iter()) {
-            m += u.c.morale.max(0.0);
-            mm += mx;
-        }
-        if mm > 0.0 {
-            m / mm
-        } else {
-            0.0
-        }
+        let army: Vec<ArmyLeaderCombatant> = units
+            .iter()
+            .zip(maxes.iter())
+            .map(|(u, mx)| ArmyLeaderCombatant {
+                is_army_commander: false,
+                morale: u.c.morale,
+                morale_max: *mx,
+                dead: u.c.dead,
+                fading_out: u.c.fading_out,
+                routed: u.c.routed,
+            })
+            .collect();
+        army_morale_ratio_without_commander(&army)
     }
 }
 
@@ -173,6 +176,9 @@ pub struct SiegeLoop<B: LoopBody> {
     pub trace: Vec<String>,
     /// Zwycięzca po zakończeniu bitwy (`None` gdy jeszcze trwa).
     pub winner: Option<LoopWinner>,
+    /// Ścieżka poza zakresem sterownika (AUTO bez oblężenia, wejście w AUTO z przewijania). Ustawienie zatrzymuje
+    /// bitwę bez zwycięzcy zamiast paniki; wywołujący sprawdza to pole po `run`.
+    pub unsupported: Option<&'static str>,
 }
 
 impl<B: LoopBody> SiegeLoop<B> {
@@ -182,6 +188,7 @@ impl<B: LoopBody> SiegeLoop<B> {
             env,
             trace: Vec::new(),
             winner: None,
+            unsupported: None,
         }
     }
 
@@ -198,6 +205,12 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// Etykieta zwycięzcy (`atk` / `def` / `remis`) albo `None`.
     pub fn winner_label(&self) -> Option<&'static str> {
         self.winner.map(LoopWinner::label)
+    }
+
+    fn halt_unsupported(&mut self, clock: &mut VirtualClock<LoopTimer>, reason: &'static str) {
+        self.unsupported = Some(reason);
+        self.st.finished = true;
+        clock.finished = true;
     }
 
     fn finish(&mut self, clock: &mut VirtualClock<LoopTimer>, winner: LoopWinner) {
@@ -217,7 +230,10 @@ impl<B: LoopBody> SiegeLoop<B> {
                     self.trace.push(format!("turn:{}", self.st.round_no));
                 }
                 SeqEvent::BeginAutoBatchPhase { .. } => {
-                    panic!("sterownik K5-LOOP obsluguje tylko oblezenie; AUTO bez oblezenia poza zakresem");
+                    self.halt_unsupported(
+                        clock,
+                        "sterownik K5-LOOP obsluguje tylko oblezenie; AUTO bez oblezenia poza zakresem",
+                    );
                 }
                 SeqEvent::EndCheck { site, outcome } => {
                     let site_s = match site {
@@ -314,7 +330,10 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
                 self.finish(clock, w);
             }
             FfEvent::EnterAuto => {
-                panic!("sterownik K5-LOOP nie wchodzi w AUTO z przewijania (pending_auto zawsze false)");
+                self.halt_unsupported(
+                    clock,
+                    "sterownik K5-LOOP nie wchodzi w AUTO z przewijania (pending_auto zawsze false)",
+                );
             }
             FfEvent::TickProjectiles(_) | FfEvent::TickFades(_) | FfEvent::RunQueued(()) => {}
         }

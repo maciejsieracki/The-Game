@@ -12,7 +12,8 @@
 //   _activateUnit: ciało jednostki = timer o zadanym czasie trwania (animacja) + zadany efekt (nop / kill / hurt), po
 //     ktorym wywolywany jest callback z pinu. Efekty sa jawnym wejsciem sekwencji, nie logika boju (RNG/cios: K5I).
 //   _fireSiegeTowers: wiezyczka zabija jedna zadana jednostke (efekt R4, jawny w sekwencji).
-//   _armyMoraleRatio: stub formula (suma max(0,morale) / suma moraleMax) — prawdziwa funkcja morale nie jest w tym zakresie.
+//   _armyMoraleRatio: WYCINANE Z PINU (metoda wola armyMoraleRatioWithoutCommander z game/army-leadership.ts, to
+//     tez wycinane z pinu po SHA) — bez stubu formuly.
 //   _startRout / commandersToWithdrawAfterArmyBreak: pusta lista dowodcow (wycofanie dowodcow poza zakresem).
 //   _battleUnitsForMapExport, _showEndScreen, _tickProjectiles, _tickFades, _counterBudget, hint, banner, refresh kolejki.
 //   _beginAutoBatchPhase: rzuca wyjatek (sekwencje sa wylacznie oblezeniem, wiec sciezka AUTO nie wystepuje).
@@ -32,7 +33,7 @@ const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
 const PIN_PATH = 'gra/src/battle/battleScene.ts';
 const SEED = 2217;
 const SEQUENCE_COUNT = 360;
-const LOOP_FRAGMENT_SHA256 = 'f355f9a9197c5f782bf86756b8b61b6e61223df1523d5aab752c79e8ed545167';
+const LOOP_FRAGMENT_SHA256 = 'b48108ea742e51fd647ad14e7542f9db83854a42255c5aa68761fb248a3de88c';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..', '..');
@@ -83,6 +84,7 @@ const ranges = {
   schedule: methodRange(/^  private _schedule\(ms: number, cb: \(\) => void\): void \{$/),
   drainTimers: methodRange(/^  private _drainTimers\(\): void \{$/),
   checkEnd: methodRange(/^  private _checkEnd\(\): boolean \{$/),
+  armyMorale: methodRange(/^  private _armyMoraleRatio\(side: 'atk' \| 'def'\): number \{$/),
 };
 console.error('zakresy pinu', JSON.stringify(ranges));
 
@@ -100,6 +102,19 @@ console.error('fragment sha256', fragmentDigest);
 const checkEndText = textOf(ranges.checkEnd).replace('private _checkEnd(): boolean {', '_checkEndPin() {');
 if (!checkEndText.includes('_checkEndPin() {')) throw new Error('rename _checkEnd nie zadzialal');
 
+// Czysta funkcja morale z game/army-leadership.ts (wycinek po nazwie, do pierwszej linii '}' o zerowym wcieciu).
+const ARMY_LEADERSHIP_PATH = 'gra/src/game/army-leadership.ts';
+const alLines = execFileSync('git', ['show', `${PIN}:${ARMY_LEADERSHIP_PATH}`], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  maxBuffer: 64 * 1024 * 1024,
+}).split('\n');
+const alStart = alLines.findIndex((l) => l.startsWith('export function armyMoraleRatioWithoutCommander('));
+if (alStart < 0) throw new Error('brak armyMoraleRatioWithoutCommander w army-leadership.ts');
+const alEnd = alLines.findIndex((l, i) => i > alStart && l === '}');
+if (alEnd < 0) throw new Error('brak konca armyMoraleRatioWithoutCommander');
+const armyMoraleFnText = alLines.slice(alStart, alEnd + 1).join('\n').replace('export function', 'function');
+
 const pinMethods = [
   textOf(ranges.stall),
   textOf(ranges.beginTurn),
@@ -113,6 +128,7 @@ const pinMethods = [
   textOf(ranges.schedule),
   textOf(ranges.drainTimers),
   checkEndText,
+  textOf(ranges.armyMorale),
 ]
   .join('\n')
   .replaceAll('BattleScene.', 'Harness.');
@@ -120,6 +136,7 @@ const pinMethods = [
 const classSrc = [
   LINE(1014), LINE(1023), LINE(1119), LINE(1125), LINE(1157),
   'function commandersToWithdrawAfterArmyBreak(arr) { return []; }',
+  armyMoraleFnText,
   mkUnit.toString(),
   'class Harness {',
   '  static BATTLE_FRAME_WALL_MS = 16;',
@@ -140,12 +157,6 @@ const classSrc = [
   '    this._counterBudget = { beginTurn() {} };',
   '    this.hint = { textContent: "" };',
   '    this.__self = self;',
-  '  }',
-  '  _armyMoraleRatio(side) {',
-  '    const arr = side === "atk" ? this.atk : this.def;',
-  '    let m = 0, mm = 0;',
-  '    for (const u of arr) { m += Math.max(0, u.morale); mm += u.moraleMax; }',
-  '    return mm > 0 ? m / mm : 0;',
   '  }',
   '  _startRout() { throw new Error("nie powinno sie wykonac: pusta lista dowodcow"); }',
   '  _battleUnitsForMapExport() { return []; }',
