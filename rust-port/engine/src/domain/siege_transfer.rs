@@ -3,7 +3,8 @@
 //! Pin webu 07d2fbd72f758705f8e1d59cc4968027ffbafe75: `gra/src/main.ts:17646-17893` (galaz `newOwner`).
 //! Ta funkcja wykonuje czesc skutkow przejecia, ktora ma odpowiednik w Rust (zmiana wlasciciela, podloga
 //! populacji, usuniecie obroncow starego wlasciciela, flagi miasta, kolejka produkcji z odzyskiem Pracy).
-//! Pozostale skutki sa WYPISANE w [`TRANSFER_EFFECTS`] jako `Missing` / `ExistsNotWired` / `CallerSide` (NIE_ZMIERZONO tam, gdzie nie zmierzono).
+//! Pozostale skutki sa WYPISANE w [`TRANSFER_EFFECTS`] jako `Missing` / `ExistsNotWired` / `CallerSide` / `Ported` / `Ui`
+//! (`Ported` = logika istnieje, wolanie moze lezec po stronie wolajacego; NIE_ZMIERZONO tam, gdzie nie zmierzono).
 //! Wejscie garnizonu (`enterCityAfterSurrender`) i `endMapSiege` leza po stronie wolajacego
 //! (kolejnosc: ta funkcja -> wejscie -> `end_map_siege_fields`).
 //!
@@ -55,7 +56,7 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
     // jest w `siege_wonder_watch` (Q8, czysty); brak wrappera watch z main.ts (stan gry + efekty UI).
     ("beginWonderTransferWatch", EffectStatus::Missing),
     // Wykonane przez apply_transfer_with_effects gdy TransferExtras::pop_loss = Some (tryb legacy apply_transfer: NIE).
-    // Generator pinu (p6_siege_transfer_gen.mjs) nadal stubuje to wolanie - wektory NIE zostaly przegenerowane.
+    // Generator pinu (p6_siege_transfer_gen.mjs) NIE stubuje tego wolania (linia 19 generatora: "Nie ma stubow dla applyCapturePopulationLoss").
     (
         "applyCapturePopulationLoss",
         EffectStatus::Ported("siege_transfer_effects::apply_capture_population_loss (TransferExtras::pop_loss)"),
@@ -370,7 +371,7 @@ pub fn apply_transfer_with_effects(
         performed.push("triggerRebelProtectionWarConsequence");
     }
 
-    // BRAK (tabela): beginWonderTransferWatch/settleWonderTransfer, noteCityCapture - nie wykonane tutaj.
+    // Missing (tabela): beginWonderTransferWatch/settleWonderTransfer; noteCityCapture (Ported, wolany przez wolajacego PO apply_transfer) - nie wykonane tutaj.
     city.owner_id = new_owner;
 
     let start_city_state_cleared = clear_city_state_flag_on_capture(&mut city.start_city_state);
@@ -380,7 +381,7 @@ pub fn apply_transfer_with_effects(
         city.found_by_owner = Some(false);
     }
 
-    // BRAK / ExistsNotWired (tabela): maybeResolveRegularWarOnCityCapture, recordWarCityLossForPair,
+    // ExistsNotWired (tabela): maybeResolveRegularWarOnCityCapture, recordWarCityLossForPair,
     // seedCityOwnerDefaults - wolajacy (W8 r3) musi je wykonac po tej funkcji.
 
     let (refunded_praca_to_old, forfeited_praca_to_new, production_out) = match production {

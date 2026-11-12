@@ -27,23 +27,25 @@
 //! | sanitizeBuildQueue (production.ts)             | `production_queue::sanitize_build_queue`                    | ISTNIEJE |
 //! | filterQueue                                    | `production_queue::filter_queue`                            | ISTNIEJE |
 //! | clearCityStateFlagOnCapture (state)            | `state::clear_city_state_flag_on_capture`                   | ISTNIEJE |
-//! | applyPostCaptureLawOnCapture                   | `order_effects_lane::apply_post_capture_law_override`       | ISTNIEJE |
-//! | triggerRebelProtectionWarConsequence           | `order_effects_lane::tick_rebel_protection_end_of_turn` (inna funkcja, do weryfikacji) | ISTNIEJE? |
+//! | applyPostCaptureLawOnCapture                   | `siege_transfer_effects::apply_post_capture_law_on_capture` (wolany przez `apply_transfer_with_effects`) | ISTNIEJE |
+//! | triggerRebelProtectionWarConsequence           | `siege_transfer_effects::rebel_protection_war_request` (zwraca zadanie wojny; deklaracja po stronie wolajacego) | ISTNIEJE |
 //! | recordWarCityLossForPair                       | `diplomacy_war_peace_profile::record_war_city_loss`         | ISTNIEJE |
-//! | maybeResolveRegularWarOnCityCapture            | `war_turn_declare::register_regular_war_city_loss` (do weryfikacji) | ISTNIEJE? |
-//! | seedCityOwnerDefaults                          | `turn_economy_inputs_podzial::seed_city_owner_defaults_podzial` (wariant) | ISTNIEJE? |
+//! | maybeResolveRegularWarOnCityCapture            | `war_turn_declare::register_regular_war_city_loss` (wymaga WarTurnState) | ISTNIEJE |
+//! | seedCityOwnerDefaults                          | `turn_economy_inputs_podzial::seed_city_owner_defaults_podzial` (wariant dla innych typow wejsc) | ISTNIEJE |
 //! | siegeDefenderUnits (siege-starvation.ts)       | `siege_starvation::siege_defender_units` (inny zbior: nie splice) | ISTNIEJE |
-//! | applyCapturePopulationLoss                     | brak nazwy w `src`                                          | BRAK |
+//! | applyCapturePopulationLoss                     | `siege_transfer_effects::apply_capture_population_loss` (wolany przez `apply_transfer_with_effects` gdy `TransferExtras::pop_loss` = Some) | ISTNIEJE |
 //! | beginWonderTransferWatch / settleWonderTransfer| wrapper: brak; rdzen planu w `siege_wonder_watch` (Q8)      | BRAK (wrapper) |
 //! | noteCityCapture                                | `siege_transfer_q5::note_city_capture`                      | ISTNIEJE (Q5) |
 //! | runCapitalCapturePlunder                       | `siege_capital_plunder::run_capital_capture_plunder` (Q6)   | PORT |
 //! | recordCityCaptureEvent                         | `siege_capture_events::CaptureEventStore::record_city_capture_event` (Q7) | PORT |
 //! | capturePopLossReportRow                        | brak nazwy w `src`                                          | BRAK |
-//! | applyLiveSafeRationForCity                     | brak nazwy w `src`                                          | BRAK |
-//! | foundedByOwner (pole miasta, ustawiane warunkowo) | brak logiki w `src` tego tematu                          | BRAK |
+//! | applyLiveSafeRationForCity                     | `siege_transfer_q5::apply_live_safe_ration_for_city` (czesc decyzyjna; wolany PO `endMapSiege`) | ISTNIEJE (Q5) |
+//! | foundedByOwner (pole miasta, ustawiane warunkowo) | pole `siege_transfer::TransferCity::found_by_owner`; stamp w `siege_transfer_effects::apply_capture_population_loss` | ISTNIEJE (czesciowo) |
 //! | showHintMessage (UI)                           | poza domena Rust                                            | N/D |
 //!
-//! Wniosek: galaz przejecia NIE jest jeszcze zlozona w jedna funkcje. Zaleznosci BRAK wymagaja osobnych tematow.
+//! Wniosek: galaz przejecia NIE jest jeszcze zlozona w jedna funkcje (zlozenie galezi `apply_transfer_with_effects` + wolajacy
+//! to osobny temat). BRAK po tej weryfikacji: wrapper `beginWonderTransferWatch`/`settleWonderTransfer` oraz
+//! `capturePopLossReportRow` (UI, brak nazwy w `src`).
 //!
 //! Zalozenia (do akceptacji, brak w dispatchu):
 //! * Z-SU-1 `besieger` = `None` odpowiada web `null` (brak oblegajacego); identyfikatory wlascicieli to `i64`.
