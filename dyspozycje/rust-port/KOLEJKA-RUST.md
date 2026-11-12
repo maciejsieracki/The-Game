@@ -27,3 +27,6 @@ Zasada (właściciel, 2026-11-11): zawsze działają cztery tematy operatorskie.
 5. K5-LOOP (test składania pętli taktycznej), KLASY-WIRE, DLUG-NFD-CCC.
 6. Raport poranny (pytania gameplay: SZTURM ODPARTY, Q1–Q4 W8 r7, units.json vs pin, DYSTANS, REPIN-DRYFT 1–6).
 Zasada: każdy start od dispatchu z jedyną obowiązującą BAZĄ; temat zależny startuje na czubku fc, integracja rundą Operatora z pełnym cargo test.
+
+## REGUŁA MODELI (właściciel, 2026-11-12 ~07:55 UTC; wiążąca, limit schodzi zbyt szybko)
+Operator = HAIKU 5.5 ZAWSZE. SONNET na Operatorze WYŁĄCZNIE po dwóch nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL/BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu — nie z góry „bo trudny temat”. Skrypt workflow: r-rustport-p6-w6s-wf_89e542b7-6b5.js (Haiku); skrypt Sonnet (r-rustport-p6-w6s-sonnet-op.js) tylko po spełnieniu warunku. Obrona = Haiku; Evaluator i Final Control = Sonnet. Zadania dokumentacyjne/integracyjne = Haiku. Nie startować zbędnych tematów „dla zapełnienia”, jeśli nie ma realnej pracy bez zależności od decyzji gameplay.
