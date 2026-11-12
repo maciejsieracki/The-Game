@@ -13,3 +13,10 @@ KRYTERIA: tsc czysty; ids-leak-audit, wonder-text-no-raw-ids, terminology-trade-
 
 ## DODATEK (2026-11-12) — DECYZJA WŁAŚCICIELA
 Popraw wszystkie pozycje audytu językowego (literówki, odmiany, nazwy rozmiarów mapy Malenki/Super Huge, skróty „obyw./turę”, 'rownowaga(W)'/'score') BEZ pytania o każdą. Zakaz zmiany znaczenia i wartości liczbowych. „złoto” vs „Pieniądz” — zostaje obecna terminologia gry. Po zmianie tekstów regeneracja wikiBundle zgodnie z procedurą; testy tekstowe/wiki zielone; lista zmian w raporcie.
+
+## DODATEK (runda 4/5, 2026-11-12) — FC FAIL r3 → NAPRAW
+BAZA: kandydat 430cf74cf96731600b3bdf15f34e07afa56e3234 (gałąź web-wip/R-WEB-POLISH-LANGUAGE-AUDIT-Q1), NAJPIERW merge origin/main (b0b0e3f86; merge-tree czysty), regeneracja wikiBundle, powtórz tsc i testy tekstowe. MODEL: Operator HAIKU, Obrona HAIKU (zasada modeli CLAUDE.md; wcześniejsze wzmianki o Sonnet w tym pliku NIEAKTUALNE).
+NAPRAW 1: etykiety rozmiaru mapy — mapSizeDisplayLabel ma być użyte TAKŻE w gra/src/ui/newGameFlow.ts:~2231 (wiersz „Rozmiar mapy” na ekranie generowania) i gra/src/ui/saveLoadDialog.ts:~49 (linia kontekstu zapisu); klucze (Malenki/Super Huge) bez zmian; etykiety Maleński → „Maleńki”, „Bardzo ogromny” (decyzja właściciela: popraw wszystko). Strażnik rozszerz o te dwa miejsca + mutacja.
+NAPRAW 2: gra/src/game/diplomacy-display.ts linie ~475, 504, 556, 558, 595, 596: „przez ${turns} tur”/„umowa na ${turns} tur” → formatTurCountAcc(turns).
+POZOSTAJE BEZ ZMIAN (nie ruszać, decyzje poza zakresem): „upgrade” w polu wymagania, „Zrówn.” w nagłówkach tabel, „×N”, Dur-Sharrukin, Emporion/Wielka Kuźnia top3, „złoto” vs „Pieniądz”, „(poniżej N tur)”, „≥ N tur”.
+KRYTERIA: tsc, strażnik, ids-leak, wonder-text, hud-gross-net-rest, 5 bramek, wikiBundle odtwarzalny (cmp); zapisać raport w runs/ (nie tylko w odpowiedzi).
