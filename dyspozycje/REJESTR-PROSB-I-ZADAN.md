@@ -9550,3 +9550,11 @@ Zamiast jednej mechaniki: „Trafienia: losowe / pewne” w ustawieniach zaawans
 
 ### Zgłoszenie właściciela 2026-11-12: teksty administratora ulepszeń → tooltip
 Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przenieść do tooltipu; w treści krótki komunikat. Temat R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1 (Operator HAIKU), task #287.
+
+### FALA 667 (2026-11-12) — wdrożone na ROBOCZĄ: BOOT ERROR (pętla ResizeObserver przy panelu miasta)
+- main 6c9a36bd5, MD5 bundla 0fb9441f023980e17fd2f41f6d832f76 (Raw = lokalny), audio-pack-1/2/3 zgodne z Raw (5b990bc3, 0a9a1047, 9e88be9f).
+- Źródło: FC d5e5e8635 (PASS-WITH-NOTES, wf_92288458) na bazie 81e357dee; integracja a988c3ddc (FF względem main). Ref zachowany: refs/keep/R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1-fc; gałąź web-wip/R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1.
+- Zakres: fitCitySideTop tworzy jeden ResizeObserver zamiast nowego przy każdym wywołaniu; obserwacja tylko przy zmianie zestawu elementów; przeliczenie przez requestAnimationFrame. Filtry w index.html i main.ts ignorują wyłącznie komunikat „ResizeObserver loop completed with undelivered notifications”.
+- Weryfikacja: tsc 0; npm ci 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-side-panels 61/0; city-RO boot-error 1/0, expand-click 5/0, live 7/0; audio-sidecar-test EXIT=0; live Chromium RO=0 po otwarciu panelu miasta, PASS 7/0.
+- NIE_ZMIERZONO: prawdziwe kliknięcie „Więcej szczegółów” w pełnej grze z kartą jednostki. Przyczynowość kliknięcia nie jest udowodniona; udowodniona jest przyczyna (ponowne tworzenie ResizeObserver), którą poprawka usuwa. Do potwierdzenia przez właściciela na żywo.
+- Commit FC: Co-Authored-By pominięty (zasada: bez identyfikatora modelu w commitach); Claude-Session zachowany.
