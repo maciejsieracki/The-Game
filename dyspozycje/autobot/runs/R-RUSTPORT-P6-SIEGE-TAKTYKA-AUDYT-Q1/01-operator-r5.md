@@ -25,3 +25,17 @@ DEPLOY/PUSH: NIE WYKONANO
 Uwaga o nazwie raportu: workflow task wspomina `01-operator-r1.md`, ale dispatch (addendum DODATEK r5, najnowszy dla tego ID) wymaga `01-operator-r5.md`; zapisano jako r5.
 
 Zakres rund: r1 (baza parity-v2) → r3 (zarzut 2) → r5 (zarzut 1). Ten raport dotyczy wyłącznie r5.
+
+## Uzupełnienie po obronie (02a-obrona.md)
+
+Wynik porównania nazwa-po-nazwie wklejony dosłownie (skrypt w repo: `enum-decl.py`; pin przez `git show 07d2fbd72...:gra/src/battle/battleScene.ts`):
+
+```
+tryb=new
+linii wzorca: 143
+trafienia tri(: [1303, 1304]
+deklaracje unikalne (bez tri): 141
+pin -> brak wiersza w tabeli: 0 []
+```
+
+Korekta do tego raportu (wynik obrony): `git diff --stat` r5 to 2 pliki (`P6-SIEGE-TAKTYKA.md` i ten raport), a nie 1. Podsumowanie 1b poprawione na `BRAK 3 (2 × G, 1 × M, PORTED 0)`. Zarzut FC dotyczący `static` i pól-funkcji strzałkowych: wiersze 38.1–38.3 dopisane w obronie; szczegóły w `02a-obrona.md`.

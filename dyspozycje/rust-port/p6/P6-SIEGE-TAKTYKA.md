@@ -9,7 +9,7 @@ Numeracja L2–L5 / L9–L10 wg `dyspozycje/rust-port/p6/P6-REPIN-OBLEZENIE-LIMI
 Legenda statusu: **PORTED** = odpowiednik Rust 1:1 (plik:linia Rust), **PARTIAL** = tylko część funkcji, **BRAK** = brak odpowiednika (powód w kolumnie), **NIE_ZMIERZONO** = nie sprawdzono (dane spoza repo lub poza zakresem deklarowanym niżej).
 Klasyfikacja metod (wiersze 32.x, 33.x): **O** = oblężnicza (dotyczy muru, bramy, wieży, taranu), **M** = mieszana (ogólna z gałęzią oblężniczą), **G** = ogólna walka / UI / scena (poza oblężeniem), klasyfikacja wg treści lub, dla metod oznaczonych „wg nazwy”, wg nazwy i wywołań (treść nie czytana w tej rundzie).
 
-Zakres „100% funkcji pętli L2–L5” (stan r5): wszystkie deklaracje metod `battleScene.ts` na pinie, których nazwa pasuje do wzorca `siege|wall|gate|breach|tower|tick|round|rout|morale|check|_ff|fast|rang|_do|sortie|palis|machin|ram|stall|end|draw|winner|verdict|climb|pomin|manual|auto`. Enumeracja: `git show 07d2fbd72f758705f8e1d59cc4968027ffbafe75:gra/src/battle/battleScene.ts` → `grep -nE "^  (private |public |protected )?(async )?[A-Za-z_]\w*\("` → filtr `grep -iE` po wzorcu → `sed` nazwy. Wynik grepu: **140 trafień** (linii wzorca). Dwa z nich to trafienia `tri(...)` (wiersze 1303–1304): wywołania w funkcji modułowej, nie deklaracje metod — pominięte. Pozostaje **138 deklaracji metod** (r5: liczba poprawiona z 138 na wynik grepu minus `tri`; jawnie: 140 − 2 = 138). Sprawdzenie nazwa po nazwie na tym dokumencie: każda z 138 deklaracji ma wiersz w §1 (wiersze 1–35, 32.x, 33.x) albo w §1a (wiersze 35.1–35.36, dodane w r4 po zarzucie 1 audytu), albo w §1b (wiersze 36.1–36.3, dopisane w r5 po zarzucie 1 FC r4: `_isUnitDoctrineAuto`, `_doctrineLabel`, `_doctrineMoveDest`), albo w §1c (wiersze 37.1–37.6, dopisane w r5 po kontroli programowej). Deklaracje spoza wzorca NIE są enumerowane i NIE są twierdzone jako pokryte — patrz §5 D-ST-3. Uwaga r5: wzorzec dopasowuje całą linię deklaracji (także typy parametrów i komentarze), więc część metod kamery/UI (`_tickZoom`, `_drawMinimap` itd.) również wchodzi w zakres — mają wiersze w §1c.
+Zakres „100% funkcji pętli L2–L5” (stan po obronie r5, zarzut 1 FC r4 + zarzut 1 obrony): wszystkie deklaracje `battleScene.ts` na pinie, których nazwa pasuje do wzorca `siege|wall|gate|breach|tower|tick|round|rout|morale|check|_ff|fast|rang|_do|sortie|palis|machin|ram|stall|end|draw|winner|verdict|climb|pomin|manual|auto`, **w tym metody `static`** i **pola-funkcje strzałkowe** (`private readonly _x = (...) => {`), których poprzedni wzorzec nie łapał. Enumeracja (skrypt w repo: `dyspozycje/autobot/runs/R-RUSTPORT-P6-SIEGE-TAKTYKA-AUDYT-Q1/enum-decl.py`, pin podawany argumentem): `git show 07d2fbd72f758705f8e1d59cc4968027ffbafe75:gra/src/battle/battleScene.ts` → (A) metody: `^  (private |public |protected )?(static )?(async )?[A-Za-z_]\w*\(`, (B) pola-funkcje: `^  (private |public |protected )?(readonly )?[A-Za-z_]\w* = (async )?\(` → filtr słów kluczowych po pełnej linii (bez rozróżniania wielkości liter). Wynik: **143 trafienia linii wzorca**. Dwa z nich to `tri(...)` (wiersze 1303–1304): wywołania w funkcji modułowej, nie deklaracje — pominięte. Pozostaje **141 deklaracji** (przed obroną 138 = wynik wzorca bez `static` i pól-funkcji, minus `tri`; obrona dopisuje 3: `_threatSlack` (`static`, `:7939`), `_onResize` (`:12386`), `_onKeyManual` (`:17406`)). Sprawdzenie nazwa po nazwie: każda z 141 deklaracji ma wiersz w §1, §1a, §1b, §1c lub §1d (wynik zbiorów: `02a-obrona.md`). Deklaracje spoza wzorca NIE są enumerowane i NIE są twierdzone jako pokryte — patrz §5 D-ST-3. Uwaga: wzorzec dopasowuje całą linię deklaracji (także typy parametrów i treść w jednej linii), więc część metod kamery/UI (`_tickZoom`, `_drawMinimap` itd.) również wchodzi w zakres — mają wiersze w §1c.
 
 ## 1. Tabela pokrycia — poziomy L2–L5 (pętla taktyczna)
 
@@ -163,15 +163,15 @@ Dopisane 3 deklaracje z enumeracji §0 (pin `07d2fbd72`), których r4 nie miał 
 
 | # | Metoda (pin) | Linie pinu | Rust | Status | Uwagi |
 |---|---|---|---|---|---|
-| 36.1 | `_isUnitDoctrineAuto(ru)` | `battleScene.ts:17621-17630` | brak | BRAK (G) | Czy jednostka idzie w AUTO wg doktryny: `_getEffectiveDoctrine` (`manual` → false), `ru.unitDoctrine`, `_groupMeta.autoPlay`. Treść r5: nie zawiera gałęzi muru ani oblężniczej. Zależy od `_getEffectiveDoctrine` i `_groupMeta` (stan grup, poza zakresem). |
+| 36.1 | `_isUnitDoctrineAuto(ru)` | `battleScene.ts:17621-17630` | brak | BRAK (G) | Czy jednostka idzie w AUTO wg doktryny: `_getEffectiveDoctrine` (`manual` → false), `ru.unitDoctrine`, `_groupMeta.autoPlay`. Treść (przeczytana w całości w obronie r5): nie zawiera gałęzi muru ani oblężniczej. Zależy od `_getEffectiveDoctrine` i `_groupMeta` (stan grup, poza zakresem). |
 | 36.2 | `_doctrineLabel(d)` | `battleScene.ts:17698-17704` | brak | BRAK (G, UI) | Etykieta doktryny (`defensive`→OBRONA, `steady`→ATAK, `aggressive`→SZTURM, `skirmish`→OSTRZAL, inaczej RECZNIE). Czysta funkcja nad `GroupDoctrine`, ale wyłącznie UI; poza pętlą taktyczną. |
 | 36.3 | `_doctrineMoveDest(ru, meta)` | `battleScene.ts:17931-17963` | brak | BRAK (M) | Cel ruchu wg doktryny: `skirmish` (strzelec → null), `defensive` → null, `steady` (`_attackFormationRallyPoint`, `_moveTargetForUnit`), `aggressive` (`_chargeMoveDest`), `rallyCol/rallyRow`, fallback `_pickTargetByPriority`; każda gałąź przechodzi przez `_destAllowedByBlockade` (blokada, gałąź oblężnicza pośrednia). Zależy od kilku metod spoza tabeli (wiersze 32.x/33.x zakresu) i od `GroupMeta`. |
 
-Podsumowanie 1b: 3 wiersze; BRAK 3 (2 × G/M, 1 × M, PORTED 0). Rust nie ma żadnego z nich.
+Podsumowanie 1b: 3 wiersze; BRAK 3 (2 × G, 1 × M, PORTED 0). Rust nie ma żadnego z nich.
 
 ## 1c. Uzupełnienie enumeracji (r5, kontrola nazwa-po-nazwie) — 6 deklaracji wzorca bez wiersza
 
-Porównanie programowe (`01-operator-r5.md`) wykazało 6 deklaracji z listy wzorca (§0, 140 linii grepu = 138 metod + 2 × `tri`) występujących tylko w prozie §0, bez wiersza w tabeli. Dopisane w r5. Rust: brak (0 trafień nazw w `rust-port/engine/src`). Wszystkie BRAK; żadna nie jest PORTED.
+Porównanie programowe (`01-operator-r5.md`) wykazało 6 deklaracji z listy wzorca (§0, 140 linii grepu = 138 metod + 2 × `tri`) występujących tylko w prozie §0, bez wiersza w tabeli. Dopisane w r5. Ciała wszystkich 6 przeczytane w całości w obronie r5 (klasyfikacje bez zmian; 37.4 = predykat trybu, M/L5). Rust: brak (0 trafień nazw w `rust-port/engine/src`). Wszystkie BRAK; żadna nie jest PORTED.
 
 | # | Metoda (pin) | Linie pinu | Rust | Status | Uwagi |
 |---|---|---|---|---|---|
@@ -183,6 +183,18 @@ Porównanie programowe (`01-operator-r5.md`) wykazało 6 deklaracji z listy wzor
 | 37.6 | `_drawMinimap()` | `battleScene.ts:11961-11966` | brak | BRAK (G, UI) | Rysowanie minimapy (`drawBattleMinimap`). Tylko UI. |
 
 Podsumowanie 1c: 6 wierszy; BRAK 6; PORTED 0.
+
+## 1d. Uzupełnienie enumeracji (r5, obrona na zarzut 1 — `static` i pola-funkcje strzałkowe) — 3 deklaracje
+
+Dopisane w obronie r5: poprzedni wzorzec §0 (`^  (private |public |protected )?(async )?[A-Za-z_]\w*\(`) nie łapał metody `static` ani pól-funkcji `= (...) =>`. Wynik nazwa-po-nazwie: `02a-obrona.md`. Rust: brak (`grep -rn 'threat_slack\|ThreatSlack\|on_resize\|on_key_manual' rust-port/engine/src` → 0 trafień).
+
+| # | Metoda (pin) | Linie pinu | Rust | Status | Uwagi |
+|---|---|---|---|---|---|
+| 38.1 | `_threatSlack(threats, col, row)` (`private static`) | `battleScene.ts:7939-7943` | brak | BRAK (O) | CZYSTA funkcja: `min_t(\|col−t.q\| + \|row−t.r\| − t.range)`, bez `this` i bez stanu; pusta lista → `Infinity`. Wołana z `_siegeMoveRefused` (`:7967`, `:7969`; wiersz 29) i `_siegeSafeApproach` (`:8109`; wiersz 30). Wejście: lista zagrożeń `{q,r,range}` z `_siegeShooterThreats` (wiersz 33.21). Kandydat K0b (§4). |
+| 38.2 | `_onResize` (pole-funkcja, `= (): void => {...}`) | `battleScene.ts:12386` | brak | BRAK (G, UI) | Jedna linia: `_syncRendererSize()`. Zmiana rozmiaru renderera; nie mechanika. Trafienie wzorca wyłącznie przez treść (`Renderer` zawiera `end`). |
+| 38.3 | `_onKeyManual` (pole-funkcja) | `battleScene.ts:17406-17420` | brak | BRAK (M, L5) | Klawisz R → `_toggleManualMode()` (przełącznik RECZNE/AUTO, wiersz 21 / K6); Esc anuluje atak-marsz; strażnik `deployPhase \|\| !started \|\| finished`. Obsługa wejścia UI, zależy od stanu trybu L5. |
+
+Podsumowanie 1d: 3 wiersze; BRAK 3 (38.1 O, 38.2 G, 38.3 M); PORTED 0.
 
 ## 2. Tabela pokrycia — SIEGE-NEARBY-STAN L9–L10
 
@@ -207,6 +219,7 @@ Dla L6–L8 (`besiegeArmyGroups`, `besiegeLockTargets`, `stackGroupIdOf`) status
 | Krok | Klocek | Pin | Zależy od | Uwagi |
 |---|---|---|---|---|
 | K0a | `attacker_wall_entry_is_breach(side_atk, on_walkway)` + `melee_blocked_by_wall(ctx)` + `auto_storm_breach(has_machine)` (wiersze 22, 23, 23a) | `city-fortification.ts:76-79, 86-88, 96-98` | wiersze 15–17 jako `bool` | Trzy czyste funkcje, zerowe zależności (zarzut 2). Wektory z pinu jak K0. Zalecane przed K1. Zmiana r3: dodano 23a. |
+| K0b | `threat_slack(threats, col, row)` (`static`, wiersz 38.1) | `battleScene.ts:7939-7943` | brak zależności od stanu sceny; wejście = lista `{q,r,range}` jako dane | Czysta funkcja bez `this` (zarzut 1 obrony r5: najmniejszy czysty klocek tej pętli, obok K0a). Pusta lista → `Infinity` (typ wyniku do ustalenia w porcie). Wektory z pinu jak K0. Wejście do K2 (wiersze 29/30 wołają `threat_slack`). Nie port w r5. |
 | K1 | `stall_pat_loser(ratio_a, ratio_d) -> BattleSide` (gałąź PAT bez oblężenia) | `:10178-10182` | Z-NB-3 (ratio policzone wejściem); flaga `_stalled` z `_updateStallWatch` (`:5568`, wiersz 33.9) jako `bool` | Czysty, ~10 wektorów. |
 | K2 | `siege_approach_restricted_*`: NAJPIERW rozbić wiersz 19 na podfunkcje wejściowe (a)–(e) z tabeli; potem czysty predykat dla gałęzi (d) `mounted` i (e) piesi | `:7951-7962` | wiersze 15–17, 19 (a)–(e) jako `bool`/liczby | Poprawiony opis (zarzut 1): NIE jest 2×2 bool. Wektory obejmują każdą gałąź (a)–(e) osobno. |
 | K3 | `end_check_order(...)`: złożenie kroków 10172 (stall) → 10184 → 10189 → 10197 → 10208 w jedną funkcję czystą. **Wymóg z zarzutu 3:** `siege_no_breach_repels_attack` stosować WYŁĄCZNIE wewnątrz `_stalled && alive_a && alive_d`; test K3 musi mieć przypadek `stalled=false` bez zmiany wyniku | `:10172-10220` | K0a, K1, K2, `round_cap_verdict`, `battle_winner`, wiersz 8 jako liczby | Wymaga K1 i wejść morale (wiersz 8) jako liczb. |
@@ -221,7 +234,7 @@ Zależności: K0a → K3; K1 → K3; K2 → K3; K4 → K2; K3 + K4 → K5 → K6
 
 * D-ST-1: pin `07d2fbd72` vs baza `258afaf8f` — funkcje oblężenia w `battleScene.ts` nie były porównywane na poziomie diffu między pinem a `origin/main`; NIE_ZMIERZONO.
 * D-ST-2: plik `rust-port/engine/Cargo.lock` powstał lokalnie przy `cargo` (untracked) i NIE jest częścią commita.
-* D-ST-3 (zakres): deklaracje `battleScene.ts` spoza wzorca §0 (deploy, kamera, pasek minimapy, `_drawMinimap` `:11961`, `_renderDeploy*`, `_pickGroundTile`, `_tickCameraPanKeys`, `_tickZoom`, `_sfxRout`, `_isManualInputActive`) NIE są enumerowane w tabeli; traktowane jako poza zakresem silnika (UI/wejście). Nie twierdzi się dla nich pokrycia.
+* D-ST-3 (zakres): deklaracje `battleScene.ts` spoza wzorca §0 (deploy, kamera, pasek minimapy, `_drawMinimap` `:11961`, `_renderDeploy*`, `_pickGroundTile`, `_tickCameraPanKeys`, `_tickZoom`, `_sfxRout`, `_isManualInputActive`) NIE są enumerowane w tabeli; traktowane jako poza zakresem silnika (UI/wejście). Nie twierdzi się dla nich pokrycia. Obrona r5: `static` i pola-funkcje strzałkowe są objęte wzorcem (§0) i mają wiersze 38.1–38.3; konstanty `static readonly` i pola nie-funkcyjne (typy, liczby) pozostają poza enumeracją.
 * D-ST-4 (r4): treść przeczytana dla 33.12, 33.14 (`_wallBonusProcFor`), 33.23, 33.33, 33.35 (`_destAllowedByBlockade`) — klasyfikacje zaktualizowane powyżej. Nadal wg nazw i wywołań: 33.10 (rodzina AUTO batch, ~260 linii), 33.13 (`_animateRam`/`_sfxRamImpact`/`_isRam`), 33.14 (`_isWallCrownShooter`), 33.35 (`_performSiegeManualOrder`), oraz wszystkie wiersze 35.x (klasyfikacja wg nazwy i liczby trafień słów kluczowych, bez czytania ciał). Rozstrzygnięcie treści — przy klockach K4/K5.
 
 ## 6. Handoff UNITS-do-SILNIK_AI-siege-3poziomy.md (wiersze 34.x)
