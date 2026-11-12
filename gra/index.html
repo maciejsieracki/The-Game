@@ -18,6 +18,8 @@
         d.innerHTML+='\n'+String(msg);
       }
       window.onerror=function(msg,src,line,col,err){
+        // Nieszkodliwe ostrzeżenie przeglądarki (nie błąd startu) — tylko ten jeden komunikat jest pomijany.
+        if(String(msg).indexOf('ResizeObserver loop completed with undelivered notifications')!==-1) return true;
         showBootErr((err?err.message:msg)+' @'+src+':'+line+':'+col+(err&&err.stack?'\n'+err.stack:''));
         return false;
       };
