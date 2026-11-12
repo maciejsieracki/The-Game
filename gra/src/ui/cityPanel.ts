@@ -1550,6 +1550,7 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   doPuli: number;
   pctBudynki: number;
   pctPuli: number;
+  kolejkaPustaDoPuli: boolean;
 } {
   const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
   const split = splitPraca(view.praca, pctB / 100);
@@ -1564,8 +1565,12 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
     doPuli: routed.doPuli,
     pctBudynki: pctB,
     pctPuli: procentPuliImperiumZBudynkow(pctB),
+    kolejkaPustaDoPuli: routed.kolejkaPustaDoPuli,
   };
 }
+
+/** R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tekst podpowiedzi (jedno zrodlo dla UI i testu). */
+export const KOLEJKA_PUSTA_PRACA_DO_PULI_HINT = 'Kolejka pusta — Praca idzie do puli imperium';
 
 /**
  * Bilans żywności miasta (PYTANIE-85: produkcja − racje).
@@ -5264,6 +5269,16 @@ function appendPodzialPracyInfo(
     statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
     statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
+
+  // R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tylko gdy kolejka pusta i Praca faktycznie
+  // trafia do puli (wyjatek silnika `pracaImperialPoolGain`); znika po dodaniu pozycji.
+  if (praca?.kolejkaPustaDoPuli) {
+    const hint = el('div', 'praca-empty-queue-hint muted');
+    hint.setAttribute('data-testid', 'praca-empty-queue-hint');
+    hint.style.cssText = 'font-size:0.74em;margin:0.2em 0;';
+    hint.textContent = KOLEJKA_PUSTA_PRACA_DO_PULI_HINT;
+    mount.appendChild(hint);
+  }
 
   const info = el('div', 'praca-split-info');
 
