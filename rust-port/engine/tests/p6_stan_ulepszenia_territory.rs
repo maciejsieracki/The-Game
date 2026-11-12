@@ -26,7 +26,7 @@ const TERRITORY_PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 const TERRITORY_EXTRACTED_SHA256: &str =
     "491e441c6fdf52465065aac9d95966761cba83c7cbdaa008b734a098b852da49";
 const TERRITORY_MIN_CASES: usize = 200;
-const TERRITORY_MIN_TIE_CASES: usize = 40;
+const TERRITORY_MIN_SEQ_INDEPENDENCE_CASES: usize = 40;
 const TERRITORY_MIN_FORT_CHANGED: usize = 30;
 
 /// Stan z graczami 1..3 (producent wymaga wpisu w `players`, jak w p6_stan_ulepszenia.rs `base_state`).
@@ -224,7 +224,7 @@ fn heksy_terytorium_with_forts_matches_pin() {
     }
     assert_eq!(checks, cases.len() * owners.len(), "liczba sprawdzen");
     assert!(
-        tie_cases >= TERRITORY_MIN_TIE_CASES,
+        tie_cases >= TERRITORY_MIN_SEQ_INDEPENDENCE_CASES,
         "za malo przypadkow z remisem builtAtTurn: {tie_cases}"
     );
     assert!(

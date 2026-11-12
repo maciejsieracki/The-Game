@@ -22,6 +22,37 @@
 use crate::domain::siege_tactics_blow::HitArc;
 use crate::domain::unit_health::js_parse_float;
 
+/// `Math.max(a, b)` z JS, z ZNAKIEM zera (K5I2b2): NaN propaguje; `Math.max(-0, +0) === +0` (JS preferuje +0),
+/// dla pozostalych wartosci jak `f64::max`. Znak zera jest obserwowalny (np. `defEffObrona`, `hitChanceTw`).
+pub fn js_max_sign(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        return f64::NAN;
+    }
+    if a == 0.0 && b == 0.0 {
+        return if a.is_sign_positive() || b.is_sign_positive() {
+            0.0
+        } else {
+            -0.0
+        };
+    }
+    a.max(b)
+}
+
+/// `Math.min(a, b)` z JS, z ZNAKIEM zera (K5I2b2): NaN propaguje; `Math.min(+0, -0) === -0` (JS preferuje -0).
+pub fn js_min_sign(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        return f64::NAN;
+    }
+    if a == 0.0 && b == 0.0 {
+        return if a.is_sign_negative() || b.is_sign_negative() {
+            -0.0
+        } else {
+            0.0
+        };
+    }
+    a.min(b)
+}
+
 /// Wartosc JS wchodzaca do funkcji (`undefined`, `null`, liczba, napis) - do odwzorowania koercji.
 #[derive(Debug, Clone, PartialEq)]
 pub enum JsVal {

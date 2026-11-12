@@ -38,7 +38,7 @@ const UNIT_FRAGMENT_SHA256: &str =
     "d1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c";
 const UNITS_SHA256: &str = "7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7";
 const ENV_FRAGMENT_SHA256: &str =
-    "c2ef94c501ea2f04e7f13e3350d7a7ff53de42db7be1afe7dcbbcdbd090c716b";
+    "8a9afb5582c2edad3e6f8e1500f679c63223d37285b579b7ac7fd226041cc7e1";
 const TERRAIN_SHA256: &str = "b5f0f9c5c25a65273bc674d1ae1121ab09d93141085eb0c1a9b1bc911798f9bf";
 
 fn load() -> serde_json::Value {
@@ -67,9 +67,9 @@ fn opt_num(v: &serde_json::Value) -> Option<f64> {
     }
 }
 
-/// Rownosc jak w wektorach: NaN == NaN.
+/// Rownosc jak w wektorach: NaN == NaN, a -0 != +0 (K5I2b2: Math.max(-0,0) = +0 w pinie, znak zera jest obserwowalny).
 fn same(a: f64, b: f64) -> bool {
-    (a.is_nan() && b.is_nan()) || a == b
+    (a.is_nan() && b.is_nan()) || (a == b && a.is_sign_negative() == b.is_sign_negative())
 }
 
 fn arc(s: &str) -> HitArc {
@@ -696,6 +696,12 @@ fn zgodnosc_z_pinem_end_to_end() {
         assert!(n > 0, "galaz bez pokrycia: {name}");
     }
     assert!(cov.total >= 500);
+    // K5I2b2: procarz >= 100 przypadkow dystansowych (dispatch); regres ponizej progu musi wywalic test.
+    assert!(
+        cov.slinger_ranged >= 100,
+        "procarz: {} < 100 przypadkow dystansowych",
+        cov.slinger_ranged
+    );
 }
 
 #[test]

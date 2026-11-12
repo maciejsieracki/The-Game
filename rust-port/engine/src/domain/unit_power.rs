@@ -13,7 +13,10 @@
 use std::sync::OnceLock;
 
 use crate::data::units_combat::{parse_combat_params, RangedDamageMultParams};
-use crate::domain::siege_tactics_blow::{js_max, js_min, js_round as js_round_js};
+use crate::domain::siege_tactics_blow::js_round as js_round_js;
+// Znak zera jak w JS (Math.max(-0,+0)=+0, Math.min(+0,-0)=-0): wersje ze znakiem z siege_tactics_inputs_pos.
+// Obie wersje propaguja NaN tak samo (js_max/js_min z siege_tactics_blow), wiec zmiana DLUG nie osłabia RANGED-DAMAGE-NAN.
+use crate::domain::siege_tactics_inputs_pos::{js_max_sign as js_max, js_min_sign as js_min};
 
 fn ranged_params() -> &'static RangedDamageMultParams {
     static TABLE: OnceLock<RangedDamageMultParams> = OnceLock::new();
