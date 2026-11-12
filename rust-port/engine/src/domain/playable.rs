@@ -6,8 +6,10 @@
 //! separate domains and are not pulled into this vertical slice.
 
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::{error::Error, fmt};
 
+use super::turn_war_pipeline::{run_war_turn, WarTurnConfig, WarTurnContext, WarTurnInputs};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
@@ -370,6 +372,7 @@ pub enum PlayableError {
     DestinationOutOfRange { distance: u32, movement: u8 },
     TurnPhaseQueueIncomplete { expected: usize, actual: usize },
     DuplicatePlayer(u64),
+    WarTurn(String),
 }
 
 impl fmt::Display for PlayableError {
@@ -401,6 +404,7 @@ impl fmt::Display for PlayableError {
                 "turn phase queue resolved {actual} phases; expected {expected}"
             ),
             Self::DuplicatePlayer(id) => write!(formatter, "player {id} already exists"),
+            Self::WarTurn(message) => write!(formatter, "war turn: {message}"),
         }
     }
 }
@@ -573,6 +577,9 @@ impl PlayableGame {
                 .phase_queue
                 .pop_next()
                 .expect("peeked event remains in queue");
+            if entry.phase() == TurnPhase::Diplomacy {
+                self.run_diplomacy_war_phase()?;
+            }
             phases.push(entry.phase());
         }
         if phases.len() != PHASE_COUNT {
@@ -591,6 +598,22 @@ impl PlayableGame {
         }
         self.enqueue_turn_phases(self.state.turn);
         self.state.status = format!("Tura {} rozpoczęta.", self.state.turn);
+        Ok(())
+    }
+
+    /// P6-WIRE-WAR-PIPELINE: jedyne wywolanie `run_war_turn` (faza Diplomacy).
+    /// Deklaracje wojny z hamulca nie maja jeszcze efektow (W4/W8); zwracane sa tylko przez raport.
+    fn run_diplomacy_war_phase(&mut self) -> Result<(), PlayableError> {
+        let inputs = WarTurnInputs::from_playable(&self.state, &self.state.war);
+        // Produkcja: brak ustawien par wojny i trybu multiwar w PlayableState (r4).
+        let config = WarTurnConfig::new(BTreeMap::new(), false);
+        let mut ctx = WarTurnContext {
+            war: &mut self.state.war,
+            turn: f64::from(self.state.turn),
+            inputs: &inputs,
+            config: &config,
+        };
+        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
