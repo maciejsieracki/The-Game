@@ -21,6 +21,7 @@
 
 import fs from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
+import { createHash } from 'node:crypto';
 
 const [, , srcDir, unitsPath, outPath, pinSha] = process.argv;
 if (!srcDir || !unitsPath || !outPath || !pinSha) {
@@ -111,6 +112,8 @@ const parts = [
 ];
 
 const jsCode = parts.map((p) => stripTypeScriptTypes(p, { mode: 'strip' })).join('\n');
+// Straznik: SHA-256 tekstu funkcji pinu, z ktorego powstaly wektory (zmiana pinu = nowy hash).
+const textSha256 = createHash('sha256').update(parts.join('\n'), 'utf8').digest('hex');
 const lib = new Function(`${jsCode}
 return { civMatrixCostDiscount, civRecruitmentDiscount, unitMoneyCost, applyDifficultyCostMultiplier,
   applyUnitCostPace, scaleCostByEpoch, effectiveMaxHp, veteranCombatBonusFrac, unitParametryBonusFrac,
@@ -218,6 +221,7 @@ const pinData = units.map((u) => ({
 const doc = {
   meta: {
     pinSha,
+    textSha256,
     generator: 'gen-unit-replace-cost-vectors.mjs',
     source: 'gra/src/game/{production,unit-cost-tempo,difficulty-cost,building-stock-cost,unit-card-stats,civ-bonuses,unit-building-bonuses,veteran}.ts + main.ts (normFieldVal, unitHealth)',
     note: 'Wykonanie tekstu pinu w node (type-stripping). Markery: zestawy jawne (markerSets).',

@@ -23,8 +23,19 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_unit_replace_cost_vectors/unit-replace-cost-vectors.json");
 
+/// Straznik pina: SHA-256 tekstu funkcji pinu 07d2fbd72 uzytego przez generator (meta.textSha256).
+/// Zmiana wektorow (regeneracja z innego pina) wymaga swiadomej zmiany tej stalej.
+const EXPECTED_TEXT_SHA256: &str =
+    "6d734a83d43db62b2a95ef0cbb2c1d1995b2a2b78d7dc227a0440e9941569e69";
+
 fn parse_vectors() -> Value {
-    serde_json::from_str(VECTORS).expect("wektory kosztu i HP parsuja sie")
+    let doc: Value = serde_json::from_str(VECTORS).expect("wektory kosztu i HP parsuja sie");
+    assert_eq!(
+        doc["meta"]["textSha256"].as_str(),
+        Some(EXPECTED_TEXT_SHA256),
+        "wektory pochodza z innego tekstu pinu"
+    );
+    doc
 }
 
 fn same_f64(got: f64, expected: f64) -> bool {
