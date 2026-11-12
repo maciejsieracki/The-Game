@@ -59,6 +59,11 @@ Sonnet na Operatorze **wyłącznie** po DWÓCH nieudanych rundach Haiku TEGO SAM
 Skrypt Workflow: wyłącznie `r-rustport-p6-w6s-wf_89e542b7-6b5.js` (Operator/Obrona = Haiku, Evaluator/FC = Sonnet). Skrypt z Operatorem na Sonnecie jest ZABLOKOWANY (plik `*.disabled`); odblokować tylko po spełnieniu warunku wyżej. Przed każdym `Workflow` sprawdź: czy model Operatora w skrypcie = Haiku.
 Nie startuj tematów „dla zapełnienia” czterech slotów, jeśli brak realnej pracy bez zależności od decyzji gameplay — oszczędzaj limit.
 
+## ⚠ RAPORTOWANIE BACKGROUND TASKÓW (właściciel, 2026-11-12; obowiązkowe w KAŻDYM raporcie statusu)
+
+Nie podawaj samych numerów/ID. W każdym raporcie statusu wypisz tabelę trwających Workflow: **temat po polsku (co jest robione i po co) | etap (Operator/Evaluator/Obrona/FC, np. 2/4) | model aktualnego etapu (HAIKU/SONNET) | od jak dawna**. Przy zakończeniu tematu: werdykt FC, co zostało dostarczone (jedno zdanie, co to daje w grze/porcie) i co dalej.
+Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"` generuje skrypt `topic-<ID>.js` z nazwą tematu i opisem modeli (Operator=HAIKU · Evaluator=SONNET · Obrona=HAIKU · FC=SONNET); potem `Workflow({scriptPath: <wynik>, args:{id:<ID>}})`.
+
 ## STAŁE ZASADY ORKIESTRATORA (właściciel przypomina je co sesję — czytaj PRZED każdą decyzją)
 
 1. **Cała praca merytoryczna przez Workflow** (Operator → Evaluator → Obrona → Final Control, max 5 rund,
