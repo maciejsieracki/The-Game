@@ -293,7 +293,6 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
     let wplywRazem = 0;
     let pierwszeUlepszenieWTurze = null;
     let ujemnaPula = false;
-    let maxAutoWTurze = { wartosc: 0, wplyw: 0, przekroczenia: 0 };
 
     for (let t = 1; t <= tur; t++) {
       // (1) WPŁYW — jedyny podział Pracy miasta, prawdziwy splitPraca.
@@ -325,13 +324,11 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
         pracaBudgetPercent: wiring === 'przyrost' ? 100 : PCT_AUTO,
       };
       if (wiring === 'przyrost') opts.improvementBudgetCap = wplywTejTury;
-      let wydaneAutoTura = 0;
       for (const pick of M.pickAutoImprovements(opts)) {
         if (pula < pick.kosztPraca) continue;
         if (pula - pick.kosztPraca < RES) continue;
         pula -= pick.kosztPraca;
         wydatki.ulepszeniaAuto += pick.kosztPraca;
-        wydaneAutoTura += pick.kosztPraca;
         const hk = `${pick.q},${pick.r}`;
         placed.set(hk, [...(placed.get(hk) ?? []), pick.key]);
         if (pierwszeUlepszenieWTurze === null) pierwszeUlepszenieWTurze = t;
@@ -352,12 +349,10 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
         wydatki.wycinka += wyrabKoszt;
       }
 
-      if (wydaneAutoTura > wplywTejTury) maxAutoWTurze.przekroczenia += 1;
-      if (wydaneAutoTura > maxAutoWTurze.wartosc) maxAutoWTurze = { ...maxAutoWTurze, wartosc: wydaneAutoTura, wplyw: wplywTejTury };
       if (pula < 0) ujemnaPula = true;
     }
     const wydane = Object.values(wydatki).reduce((a, b) => a + b, 0);
-    return { pula, wplywRazem, wydatki, wydane, pierwszeUlepszenieWTurze, ujemnaPula, maxAutoWTurze };
+    return { pula, wplywRazem, wydatki, wydane, pierwszeUlepszenieWTurze, ujemnaPula };
   }
 
   // --- 7a. Wszyscy konsumenci realnie dostają Pracę z puli (nie regex — pomiar). ---
@@ -376,6 +371,16 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
   eq(sym.wplywRazem, sym.wydane + sym.pula,
     'księga puli domyka się: wpływ = suma wydatków wszystkich konsumentów + saldo końcowe');
 
+  // Najtańsze ulepszenie kupowalne przez automat: skipWyrab:true wyklucza 'wyrab' (Wycinka 2,5),
+  // więc minimum liczymy z terrain-improvements.json po pozostałych pozycjach (bez _meta i wyrab).
+  const MIN_KOSZT_ULEPSZENIA_AUTO = (() => {
+    const dane = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'terrain-improvements.json'), 'utf8'));
+    const koszty = Object.entries(dane)
+      .filter(([k, v]) => k !== '_meta' && k !== 'wyrab' && v && typeof v.koszt_praca === 'number')
+      .map(([, v]) => v.koszt_praca);
+    return Math.min(...koszty);
+  })();
+
   // --- 7b. F1: budżet automatu liczony od SKUMULOWANEJ puli, nie od przyrostu tury. ---
   // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (decyzja właściciela): „% budżetu Pracy liczonym od
   // SKUMULOWANEJ puli Pracy na WEJŚCIU do wywołania (nie od przyrostu)". Runda 1 podała
@@ -393,14 +398,13 @@ console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD B
     ok(saldo.wydatki.ulepszeniaAuto > 0,
       `wpływ ${wplyw} Pracy/turę: automat ulepszeń DZIAŁA (wydał ${saldo.wydatki.ulepszeniaAuto} Pracy, `
       + `pierwsze ulepszenie w turze ${saldo.pierwszeUlepszenieWTurze})`);
-    if (wplyw < 40) {
-      // Kontrola negatywna (korekta 2026-11 po audycie Evaluatora): runda 1 zakładała, że najtańsze
-      // ulepszenie kosztuje 30+ Pracy, więc przy capie = przyrost tury zero zakupów. Dane mają dziś
-      // tańsze pozycje (np. Wycinka 2,5 Pracy), więc zero nie jest już właściwym kryterium. Właściwy
-      // inwariant mechanizmu przyrostu: picker NIE przekracza capu w ŻADNEJ turze (wydane ≤ wpływ tury).
-      ok(przyrost.maxAutoWTurze.przekroczenia === 0,
-        `kontrola negatywna: budżet z PRZYROSTU (runda 1) ogranicza wydatki automatu do wpływu KAŻDEJ tury `
-        + `(przekroczeń: ${przyrost.maxAutoWTurze.przekroczenia}, max w turze ${przyrost.maxAutoWTurze.wartosc} Pracy, wpływ ${wplyw})`);
+    if (wplyw < MIN_KOSZT_ULEPSZENIA_AUTO) {
+      // Kontrola negatywna (runda 1, asercja BEZ zmian): przy budżecie z PRZYROSTU wpływ tury, który
+      // nie sięga kosztu najtańszego ulepszenia kupowalnego przez automat, daje zero zakupów. Próg jest
+      // liczony z danych (nie ze stałej 40), bo koszty ulepszeń w terrain-improvements.json się zmieniły.
+      eq(przyrost.wydatki.ulepszeniaAuto, 0,
+        `kontrola negatywna: budżet z PRZYROSTU (runda 1) ten sam wpływ ${wplyw}/turę daje 0 Pracy na ulepszenia `
+        + `(próg: najtańsze kupowalne ${MIN_KOSZT_ULEPSZENIA_AUTO} Pracy)`);
     }
   }
   // Skumulowana pula nie jest „martwym zapasem": im większa, tym większy pułap jednej tury.

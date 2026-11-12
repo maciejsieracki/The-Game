@@ -1,94 +1,102 @@
-# R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3 — obrona Operatora (runda 2, odpowiedź na zarzuty Evaluatora)
+# R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3 — raport Obrony (odpowiedź na zarzuty Evaluatora, runda 2)
 
 STATUS: PASS-WITH-NOTES
-DOMAIN: GAME-TEST (zmiany wyłącznie w gra/tools/*-test.cjs; zero zmian w gra/src, JSON, WERSJE.md, rust-port)
+DOMAIN: GAME-TEST (zmiany tylko w gra/tools/*-test.cjs i w katalogu runu; zero zmian w gra/src, gra/data, WERSJE.md, rust-port)
 TEMAT: R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3
-GOAL: dług testowy z FAL 651–658. Dla każdego testu: wynik, klasyfikacja (nieaktualny test | realny defekt | timeout środowiska), poprawka tylko przy klasyfikacji „nieaktualny test", bez osłabiania asercji.
-BAZA: fc88effc126cd8b83a70c182b33a83d5fa4fb93d (kandydat z dispatchu, detached HEAD w worktree).
-ALLOWLISTA (ta runda): gra/tools/praca-jeden-podzial-kontrakt-test.cjs, gra/tools/battle-attack-move-pointer-test.cjs, dyspozycje/autobot/runs/R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3/30-obrona-claude.md.
-ŚRODOWISKO: gra/ npm ci --ignore-scripts (exit 0). Brak npm run build/dev. Dysk „/" 3,9 GB wolne przed startem (poniżej progu 4 GB z CLAUDE.md dla web, uwaga dla orkiestratora). Load average w trakcie 7–16.
+GOAL: dług testowy z FAL 651–658: dla każdego z 12 testów wynik, klasyfikacja (nieaktualny test | realny defekt | timeout środowiska | ABC), poprawka tylko przy klasyfikacji „nieaktualny test", bez osłabiania asercji.
+BAZA: origin/main 6b9bcaf2b (pomiary bazowe); kandydat cfb7070222854fd7c1dc7a5acf75ee3743a80e36 (= dd026d165 + poprawka harnessu favicon, commit cfb70702).
+SHA KANDYDATA: cfb7070222854fd7c1dc7a5acf75ee3743a80e36. SHA commita tej odpowiedzi: ostatni commit gałęzi po zapisie tego pliku (`git log -1 --format=%H -- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3/30-obrona-claude.md`).
+ŚRODOWISKO: worktree wf_8be3657d-ef3-3 (detached HEAD); `npm ci --ignore-scripts` w gra/ (exit 0); brak `npm run build`/`dev`; testy bitew pojedynczo. Pomiary bazowe w kopii `git archive 6b9bcaf2b` poza repo (scratchpad), żeby nie zanieczyszczać drzewa plikami dowodowymi.
+
+## ODPOWIEDZI NA ZARZUTY EVALUATORA (f07a152c4)
+
+**Zarzut 1 (praca-jeden: osłabiona kontrola negatywna) — PRZYJMUJĘ.**
+- Cofnięto zmianę semantyki: asercja `eq(przyrost.wydatki.ulepszeniaAuto, 0, ...)` jest przywrócona w brzmieniu z rundy 1 (bez `ok(... przekroczeń === 0)`).
+- Zmieniony został tylko warunek wstępny: zamiast stałej `wplyw < 40` używany jest próg `MIN_KOSZT_ULEPSZENIA_AUTO` liczony z `gra/data/terrain-improvements.json` (minimum `koszt_praca` po pozostałych pozycjach, bez `_meta` i `wyrab`, bo `skipWyrab:true` wyklucza `wyrab` w `auto-improvements.ts:317`). Wynik: 15 Pracy (droga). To minimum jest konserwatywne: asercja obejmuje wszystkie wpływy poniżej najtańszego kosztu w danych, więc nie zawęża pokrycia wbrew danym.
+- Usunięto martwą instrumentację (`maxAutoWTurze`, `wydaneAutoTura`) dodaną w rundzie 2.
+- Komentarze bloku 7b zaktualizowane do stanu faktycznego (próg z danych, bez stałej 40).
+- Wynik po zmianie: `praca-jeden-podzial-kontrakt-test: 634 OK, 0 FAIL`, EXIT 0 (dwa przebiegi). Liczba OK spadła z 637 (wersja kandydata z przekroczeniami) na 634 (asercja z rundy 1 na trzech punktach kontrolnych wplyw 6/9/12 < 15). Mutacja (usunięcie `improvementBudgetCap`) z rundy 1 nie była powtarzana w tej odpowiedzi.
+
+**Zarzut 2 (mgla: rozszerzenie whitelisty bez ECHO) — PRZYJMUJĘ.**
+- R-PROC-AUTOBOT §6 (wiersz „Mgła wzdłuż ścieżki") zabrania rozszerzania whitelisty bez ECHO właściciela; ECHO nie istnieje. Cofnięto 4 wpisy (ai.ts: `su.q = d.q`, `simUnit.q/r = step.q/r`, `me.q = c.toQ`) — plik `gra/tools/mgla-sciezka-inwariant-test.cjs` = wersja z origin/main 6b9bcaf2b.
+- Wynik po cofnięciu: `41 pass, 1 fail` (FAIL [1] na czterech miejscach ai.ts:3737, 3772, 3773, 3820). Ten sam wynik co baza origin/main. Test 10 pozostaje CZERWONY.
+- Merytorycznie kopie planistyczne AI są prawdopodobnie niegroźne (zgodnie z zarzutem), ale decyzja o whitelistcie należy do właściciela: ABC do właściciela (patrz niżej).
+
+**Zarzut 3 (klasyfikacje timeout dla #4 chariot-r5 i #6 ranged bez pomiaru na origin/main) — PRZYJMUJĘ jako brak dowodu, pomiar wykonany.**
+- Zmierzono na czystym origin/main (kopia archiwum 6b9bcaf2b), surowe wyniki poniżej. Obie klasyfikacje zostały zmienione zgodnie z pomiarem (patrz tabela).
+- Harness chariot-r5 (`createServer` zwraca index.html dla każdego URL): PRZYJMUJĘ jako uwagę. Nie zmieniam testu, bo na bazie dał EXIT 0 z tą samą wadą (ta sama linia `Unexpected token '<'` w logu bazowym, liczba 1), a dispatch zabrania ruszać testy bez dowodu związku z błędem. Tablica `errors` nie jest asercją i nie wpływa na EXIT.
+
+**Zarzut 4 (brak SHA kandydata w 10-operator-claude.md) — PRZYJMUJĘ.** SHA kandydata podano w nagłówku tego raportu (cfb70702...). Raport 10-operator-claude.md nie jest zmieniany w tej odpowiedzi (jest to plik poprzedniej rundy); SHA kandydata i pełna tabela są w tym pliku (30-obrona-claude.md).
+
+**Zarzut 5 (uwagi procesowe) — PRZYJMUJĘ jako notatki.**
+- (a) Pliki dowodowe `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1/evidence/` NIE były modyfikowane w tej odpowiedzi: test ranged uruchomiono wyłącznie w kopii archiwum poza repo. W drzewie roboczym nie ma śladu po tym teście. Ryzyko szerokiego `git add` pozostaje dla przyszłych uruchomień i jest odnotowane.
+- (b) Czasy: hint-toast 292 s i deadzone 252 s przekraczają limity dispatchu (280 s / 110 s). Nie zmieniam limitów ani testów; czasy są zapisane w tabeli jako surowe liczby.
 
 ## ZMIANY / COMMIT
-- SHA kodu rundy 2: patrz pole `sha` w StructuredOutput (commit zawiera dwa pliki testów i ten raport; SHA ustalony po commicie).
-- gra/tools/praca-jeden-podzial-kontrakt-test.cjs: kontrola negatywna „przyrost" (blok 7b) zmieniona z `eq(ulepszeniaAuto, 0)` na inwariant mechanizmu: picker NIE przekracza capu w żadnej turze (`przekroczenia === 0`). Dodane pole `maxAutoWTurze` w `przepuscTury`. Uzasadnienie w komentarzu w kodzie (patrz ODPOWIEDŹ NA ZARZUT 2).
-- gra/tools/battle-attack-move-pointer-test.cjs: serwer testowy zwracał `index.html` na KAŻDY URL (stąd „Unexpected token '<'"). Zastąpiony statycznym serwerem plików z `out/` z MIME. Zmiana wyłącznie harnessu; asercje bez zmian.
-- Brak zmian w gra/src (zweryfikowane `git status`: tylko 2 pliki M).
-- Plik tymczasowy mutacji (src/battle/battleScene.ts) cofnięty `git checkout --` (po mutacji `git status` czysty w src).
+- gra/tools/praca-jeden-podzial-kontrakt-test.cjs: przywrócona asercja z rundy 1, próg z danych, usunięta martwa instrumentacja, komentarze zaktualizowane.
+- gra/tools/mgla-sciezka-inwariant-test.cjs: cofnięte 4 wpisy whitelisty (= origin/main).
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3/30-obrona-claude.md: ten raport.
+- Brak zmian: gra/src, gra/data, chariot-r5, ranged-approach, pointer (poprawka 204 z cfb7070 bez zmian), pozostałe testy.
+- Commit: tylko powyższe 3 pliki (`git add <ścieżka>`, nie `-A`).
 
-## ODPOWIEDŹ NA ZARZUTY EVALUATORA
+## WYNIKI BRAMEK (surowe wyjście, uruchomione w tej odpowiedzi na drzewie po zmianach)
+- `node ./node_modules/typescript/bin/tsc --noEmit`: EXIT 0.
+- logic-test: EXIT 0, `LOGIC OK (213/213)`.
+- tech-tree-test: EXIT 0, `tech-tree-test: 20 pass, 0 fail`.
+- research-test: EXIT 0, `ALL GREEN`.
+- unit-replace-test: EXIT 0, `[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)`.
+- combat-test: EXIT 0, `All sanity checks passed.`
+- Uwaga: `git diff --stat 6b9bcaf2b HEAD -- gra/src gra/data` jest puste, więc kod gry kandydata = origin/main; wyniki bramek kodu gry są takie same na bazie i kandydacie.
+- praca-jeden-podzial-kontrakt-test: EXIT 0, `634 OK, 0 FAIL` (kandydat po zmianach, runda obrony).
+- mgla-sciezka-inwariant-test: EXIT 1, `41 pass, 1 fail` (kandydat po cofnięciu whitelisty = baza).
 
-**Zarzut 1 (hint-toast-zindex: zielony status NIE_ZMIERZONO) — PRZYJMUJĘ, dowód.**
-Ponowny pomiar z limitem 580 s: `node tools/hint-toast-zindex-empire-panel-test.cjs` → EXIT 0, czas 4 min 43 s, wynik `18 pass · 0 fail` (surowe wyjście: 18 linii `OK`, 0 linii FAIL). Load average w chwili startu 7,65. Poprzednie exit 124 zgadza się z przeciążeniem maszyny (load ~17); nie odtworzone w tym przebiegu. Statyczne sprawdzenia Evaluatora (regex 4, FIXED_ZINDEX_LINE 1x, BROKEN 0x) potwierdzone w pliku: linie 104–105.
+## POMIARY BAZOWE NA origin/main 6b9bcaf2b (w tej odpowiedzi, kopia archiwum poza repo)
+- battle-natural-chariot-r5-test: EXIT 0, czas 133 s (2m13s), `grep -c R5_FAIL` = 0, w logu 1 linia `Unexpected token`.
+- battle-ranged-approach-regression-test: EXIT 0, czas 249 s (4m09s), raport JSON zapisany, bez `activation timeout` i bez FAIL.
 
-**Zarzut 2 (5 testów bez klasyfikacji końcowej) — PRZYJMUJĘ, klasyfikacje poniżej.**
-- praca-jeden-podzial-kontrakt-test — **nieaktualny test (przesłanka)**. Dowód: data/terrain-improvements.json zawiera pozycje `koszt_praca` 2,5 (Wycinka), 15, 18, 20; test zakładał „najtańsze kosztuje 30+". Picker honoruje cap: src/game/auto-improvements.ts:904 (`totalBudget`) i :1323 (`imperiumBudgetCap`), więc przy `improvementBudgetCap = przyrost tury` zakupy są możliwe i zero nie jest właściwym kryterium. Po poprawce: `637 OK, 0 FAIL` (surowe wyjście: `--- praca-jeden-podzial-kontrakt-test: 637 OK, 0 FAIL ---`, EXIT 0, 3 s). UWAGA dla FC: forma asercji się zmieniła (z „zero" na „brak przekroczeń capu w każdej turze") — FC ma ocenić, czy to nie jest osłabienie; uzasadnienie: stara asercja sprawdzała założenie o cenach, które już nie obowiązuje, a nowa sprawdza sam mechanizm, który kontrola ma chronić.
-- battle-attack-move-pointer-test — **NIE ROZSTRZYGNIĘTE (częściowo naprawiony harness)**. Przed poprawką: `Unexpected token '<'` (serwer zwracał HTML dla modułów). Po poprawce: bitwa się otwiera (`battle:open:complete`, jedyny błąd strony: 404 jednego zasobu), a następnie `locator.click` na `#player-roster-bar [data-unit-id="atk0"]` timeoutuje 30 s; call log: „locator resolved", „element is visible, enabled and stable", „done scrolling", bez „performing click" — czyli główny wątek strony nie odpowiada. Diagnostyka strony też timeoutuje („diagnostic page sample timed out after 3000ms"). Wynik: EXIT 1, czas 2 min 45 s. Nie dowiedziono defektu gry ani przyczyny w teście; klasyfikacja: timeout środowiska / do zbadania.
-- battle-natural-chariot-r5-test — **NIE ROZSTRZYGNIĘTE**. Dowód: `waiting for locator('button[data-deploy-main-btn="lines"]')` → resolved → „waiting for element to be visible, enabled and stable" przez 30 s bez stabilizacji (po „attempting click action"). Możliwa przyczyna: ciągła animacja/re-render przycisku pod obciążeniem, ale NIE zbadano. EXIT 2, czas 1 min 25 s. Brak poprawki (nie ma dowodu „nieaktualnego testu").
-- battle-ranged-approach-regression-test — **timeout środowiska (nieudowodnione w pełni)**. Dowód: `activation timeout atk/infantry/aggressive/1`. Ten timeout to 12 s zegar przeglądarki (tools/battle-ranged-approach-browser-entry.ts, ~linia 203) czekający na zakończenie aktywacji jednostki; pod load ~14 nie zdąża. Całkowity czas 5 min 33 s, EXIT 1. Brak poprawki.
-- sidepanel-hud-deadzone-test — **timeout limitu 110 s za krótki (wynik zielony)**. Dowód: EXIT 0, `43 pass · 0 fail`, czas całkowity 5 min 31 s (331 s), load ~13,5. Dispatch podaje limit 110 s, który jest za krótki na tę maszynę.
+## TABELA 12 TESTÓW (test | wynik na bazie | wynik na kandydacie | klasyfikacja)
+Oznaczenia źródła: [M-obrona] = zmierzone w tej odpowiedzi; [R2] = wynik rundy 2 Operatora (cfb7070/dd026d165), nie powtórzony w tej odpowiedzi; [E] = wynik podany przez Evaluatora (baza 6b9bcaf2b), nie powtórzony przeze mnie.
 
-Realny defekt gry: NIE wykazany dla żadnego z pięciu testów (żaden nie ma dowodu z zachowaniem gry). Nie otwieram osobnego tematu z dowodem defektu; proponuję dwa tematy diagnostyczne do decyzji orkiestratora (patrz NASTĘPNY KROK).
+| # | Test (gra/tools/) | Wynik na bazie | Wynik na kandydacie | Klasyfikacja |
+|---|---|---|---|---|
+| 1 | auto-battle-simultaneous-test | FAIL (E, r1) | 29 pass, 0 fail, EXIT 0 [R2] | nieaktualny test (poprawka r1); nie powtórzony w tej odpowiedzi |
+| 2 | battle-attack-move-pointer-test | FAIL: 404 /favicon.ico liczone jako błąd strony (r1) | 5/5 PASS, EXIT 0, 117 s [R2]; potwierdzone przez E | harness: poprawka 204 dla favicon (NAPRAW 1) |
+| 3 | battle-dead-unit-disappearance-test | FAIL (E, r1) | PASS, EXIT 0 [R2] | nieaktualny test (poprawka r1); nie powtórzony |
+| 4 | battle-natural-chariot-r5-test | PASS, EXIT 0, 133 s, 0 R5_FAIL [M-obrona] | PASS, EXIT 0, 144 s, 0 R5_FAIL [R2]; EXIT 2 `not stable` w obronie r2 wcześniejszej (fc88effc1) | niestabilność NIE odtworzona na bazie ani na kandydacie w tej odpowiedzi; nieudowodniony timeout środowiska. Otwarte (patrz NOTY) |
+| 5 | pre-battle-save-test | crash bundlera (r1) | OK, EXIT 0, 2 s [R2] | nieaktualny test + brak shimów (poprawka r1) |
+| 6 | battle-ranged-approach-regression-test | exit 124 po 280 s (r1); PASS EXIT 0, 249 s [M-obrona] | PASS, EXIT 0, 296 s [R2]; FAIL `activation timeout` EXIT 1, 5 min 33 s, load ~14 (obrona r2 wcześniejsza) | timeout środowiska pod obciążeniem: limit 280 s za krótki dla czasu 249–296 s; FAIL aktywacji widziany tylko przy load ~14. Klasyfikacja zamknięta jako timeout środowiska, NIE jako defekt gry; brak zmiany testu |
+| 7 | hint-toast-zindex-empire-panel-test | FAIL (E, 4 regex); exit 124 (280 s) | 18 pass, 0 fail, EXIT 0, 274 s [R2] | nieaktualny test (poprawka r1); czas 274 s blisko limitu |
+| 8 | load-fail-toast-zindex-test | FAIL 3 (E, r1) | 15 passed, 0 failed, EXIT 0 [R2] | nieaktualny test (poprawka r1) |
+| 9 | grupy-budynkow-test | FAIL 3 (E, r1) | 83 pass, 0 fail, EXIT 0 [R2] | nieaktualny test (dane +1 budynek; poprawka r1) |
+| 10 | mgla-sciezka-inwariant-test | 41 pass / 1 FAIL [E] | 41 pass / 1 FAIL [M-obrona, po cofnięciu whitelisty] | NIE NAPRAWIONE: wymaga ECHO właściciela (R-PROC §6). Blokada, ABC do właściciela |
+| 11 | praca-jeden-podzial-kontrakt-test | FAIL 2 (r1) | 634 OK, 0 FAIL, EXIT 0 [M-obrona] | nieaktualny test: próg kontroli negatywnej z danych (15 Pracy), asercja z rundy 1 bez osłabiania |
+| 12 | sidepanel-hud-deadzone-test | timeout 110 s (dispatch); EXIT 0, 43/0, 331 s (obrona r2 wcześniejsza) | 43 pass, 0 fail, EXIT 0, 233 s [R2] | timeout limitu 110 s za krótki na tę maszynę (wynik zielony) |
 
-**Zarzut 3 (brak dowodu mutacyjnego) — CZĘŚCIOWO PRZYJMUJĘ.**
-- battle-dead-unit-disappearance-test — WYKONANA mutacja: w `_startRout` dodano `this.occByKey.delete(cellKey(ru.q, ru.r))` (zwolnienie pola uciekiniera). Wynik: `AssertionError [ERR_ASSERTION]: routed unit keeps its tile occupied until it flees`, EXIT 1. Po `git checkout -- src/battle/battleScene.ts` bazowy przebieg: EXIT 0, „PASS — killed unit detached immediately; routed unit still flees visibly".
-- grupy-budynkow, mgla-sciezka-inwariant, pre-battle-save — mutacji NIE wykonano w tej rundzie: NIE_ZMIERZONO (czas/zasoby; pre-battle-save wymaga pełnego buildu esbuild z shimami).
+## KLASYFIKACJE ROZSTRZYGNIĘTE (z dowodem)
+- Harness pointer (#2): defekt w harnessie (404 favicon), nie w grze.
+- battle-ranged-approach (#6): na bazie origin/main przechodzi EXIT 0 w 249 s [M-obrona]. Limit 280 s z dispatchu jest za krótki dla tej maszyny. FAIL aktywacji wystąpił tylko przy obciążeniu ~14 i nie jest odtworzony na czystej maszynie.
+- battle-natural-chariot-r5 (#4): na bazie PASS EXIT 0 w 133 s bez R5_FAIL [M-obrona]. Wcześniejszy EXIT 2 (`not stable`) nie został odtworzony. Klasyfikacja „timeout środowiska" NIE jest udowodniona; zostaje jako niestabilność nieudowodniona.
 
-**Zarzut 4 (brak SHA w raporcie Operatora; pięć bramek nieuruchomionych) — PRZYJMUJĘ, uzupełnione.**
-SHA kandydata: fc88effc126cd8b83a70c182b33a83d5fa4fb93d. Bramki uruchomione przeze mnie na tym kodzie (surowe wyjście):
-- `npx tsc --noEmit` → EXIT 0, 0 linii wyjścia.
-- logic-test → `LOGIC OK (213/213)`, EXIT 0.
-- tech-tree-test → `tech-tree-test: 20 pass, 0 fail`, EXIT 0.
-- research-test → `PASSED: 33 / FAILED: 0 / TOTAL: 33`, EXIT 0.
-- unit-replace-test → `WSZYSTKIE TESTY ZIELONE (21/21)`, EXIT 0.
-- combat-test → `All sanity checks passed.`, EXIT 0.
+## NIEROZSTRZYGNIĘTE / NOTY
+1. battle-natural-chariot-r5 (#4): EXIT 2 `locator.click not stable` z wcześniejszej obrony nie został odtworzony ani na bazie, ani w tej odpowiedzi. Wymaga powtórnego pomiaru pod obciążeniem (przez orkiestratora), jeśli ma być zamknięty.
+2. mgla (#10): test pozostaje czerwony (41/1) na bazie i kandydacie. Zamknięcie wymaga decyzji właściciela (ABC, patrz niżej).
+3. Limity dispatchu (280 s / 110 s) są nierealistyczne dla kilku testów na tej maszynie (#6, #7, #12). Nie zmieniono limitów; czasy podano jako surowe liczby.
+4. Realny defekt gry: NIE wykazany dla żadnego z 12 testów.
+5. Pięć bramek referencyjnych i tsc: zmierzone w tej odpowiedzi (sekcja WYNIKI BRAMEK).
 
-**Zarzut 5 (shim esbuild w pre-battle-save-test) — ODRZUCAM ryzyko, z dowodem.**
-Test nie asertuje portretów: `grep -n "portret|portrait|import.meta.glob" tools/pre-battle-save-test.cjs` zwraca tylko komentarz i sam shim (linie 26, 39). Shim zastępuje `import.meta.glob(` w src/*.ts pustą mapą wyłącznie w buildzie testowym; asercje dotyczą zapisu, a nie ładowania obrazów. Ryzyko „maskowania portretów" nie dotyczy asercji tego testu. Bez zmian w pliku.
-
-**Zarzut 6 (komentarz grupy: nie wskazano, który budynek dał +1) — NIE ROZSTRZYGNIĘTE, bez zmiany.**
-Hipoteza Evaluatora (łańcuch fortyfikacji 0bf194d76) NIE jest potwierdzona: `git show 0bf194d76 -- gra/data/buildings.json` nie dodaje żadnej linii z `"id"`/`"nazwa"`/`"grupa"`. Grupa „Wojsko i obrona" w data/buildings.json ma 8 pozycji (palisada, mury_kamienne, mury, koszary, fort, baszta, warsztat_oblezniczy, akademia_wojskowa), ale nie ustaliłem, która jest nowa. Komentarz pozostaje bez zmiany; tożsamość oznaczam jako NIE_ZMIERZONO dla FC.
-
-**Zarzut 7 (mgla: test nie egzekwuje zakresu kopii sim/pos) — ODRZUCAM w tym temacie.**
-Zakres R-WEB-TEST-DEBT-Q3 to klasyfikacja i naprawa długu, a nie nowy inwariant. Brak egzekucji zakresu kopii to luka pokrycia, nie czerwień testu i nie został wskazany jako błąd. Zapisuję jako obserwację do osobnego tematu, bez zmian w mgla-test.
-
-## TESTY (rund 2, surowe wyniki)
-- praca-jeden-podzial-kontrakt-test: `637 OK, 0 FAIL`, EXIT 0.
-- battle-attack-move-pointer-test: EXIT 1 (`locator.click: Timeout 30000ms`, roster card), czas 2 min 45 s.
-- battle-natural-chariot-r5-test: EXIT 2 (`R5_FAIL locator.click: Timeout 30000ms`, „not stable"), czas 1 min 25 s.
-- battle-ranged-approach-regression-test: EXIT 1 (`activation timeout atk/infantry/aggressive/1`), czas 5 min 33 s.
-- sidepanel-hud-deadzone-test: `43 pass · 0 fail`, EXIT 0, czas 5 min 31 s.
-- hint-toast-zindex-empire-panel-test: `18 pass · 0 fail`, EXIT 0, czas 4 min 43 s.
-- battle-dead-unit-disappearance-test: baza EXIT 0 (PASS); pod mutacją EXIT 1 (AssertionError).
-- tsc i 5 bramek referencyjnych: jak w ODPOWIEDZI NA ZARZUT 4 (wszystkie zielone).
-
-## KLASYFIKACJA KOŃCOWA (rozszerzona tabela)
-
-| Test | Baza (fc88effc1) | Po rundzie 2 | Klasyfikacja |
-|---|---|---|---|
-| praca-jeden-podzial-kontrakt | 635 OK / 2 FAIL | 637 OK / 0 FAIL | nieaktualny test (przesłanka: ceny; uwaga FC o formie asercji) |
-| battle-attack-move-pointer | FAIL (Unexpected token '<') | EXIT 1: click roster, page nieresponsywna | harness naprawiony; reszta NIE ROZSTRZYGNIĘTE / timeout środowiska |
-| battle-natural-chariot-r5 | FAIL (click, not stable) | EXIT 2, to samo | NIE ROZSTRZYGNIĘTE |
-| battle-ranged-approach-regression | FAIL (activation timeout 12 s) | EXIT 1, to samo | timeout środowiska (nieudowodnione w pełni) |
-| sidepanel-hud-deadzone | timeout 110 s | exit 0, 43/0, 331 s | timeout limitu (wynik zielony) |
-| hint-toast-zindex-empire-panel | exit 124 (570 s) | exit 0, 18/0, 4 min 43 s | timeout środowiska w poprzedniej rundzie; zielony |
-
-## BLOKADY
-1. Nierozstrzygnięte bez defektu/dowodu: battle-attack-move-pointer (po naprawie harnessu nadal click nie wykonuje się), battle-natural-chariot-r5 (not stable), battle-ranged-approach-regression (12 s timer pod load).
-2. Mutacje NIE wykonane: grupy-budynkow, mgla-sciezka-inwariant, pre-battle-save.
-3. Tożsamość +1 budynku w grupie „Wojsko i obrona" — NIE_ZMIERZONO.
-4. Dysk przed startem 3,9 GB < 4 GB (próg CLAUDE.md dla web); nie wpłynęło na wynik, odnotowane.
-5. Testy bitew (battle-*) uruchamiane pojedynczo, zgodnie z dispatchem; nie dotykałem gra/src/battle.
+## ABC DO WŁAŚCICIELA (do decyzji, nie rozstrzygam sam)
+- Test mgla-sciezka-inwariant (#10): czy zaakceptować 4 wpisy whitelisty dla kopii planistycznych ai.ts (applyCoreDest, applyArmySeeksEnemyArmy, orderMovesToUnblock) jako klasę „BEZ-MGLY-GRACZA"? Rekomendacja: TAK, po ECHO (kopie sim/pos jednostek AI, nie RuntimeUnit gracza), z zapisem w R-PROC §6. Bez ECHO test pozostaje czerwony.
 
 ## ZAŁOŻENIA (luki rozstrzygnięte założeniem)
-- Zmiana formy kontroli „przyrost" w praca-jeden: uznana za korektę nieaktualnej przesłanki, nie za osłabienie (FC ma to zweryfikować).
-- Przyczyna „Unexpected token '<'" w battle-attack-move-pointer: serwer zwracający index.html dla każdego URL (wzorzec nieobecny w siostrzanych testach, które serwują plik po ścieżce).
+- Próg kontroli negatywnej praca-jeden: minimum `koszt_praca` po pozostałych pozycjach terrain-improvements.json (15, droga), a nie 20 jak sugerował Evaluator. Założenie: droga może być kupowana przez automat, więc próg konserwatywny.
+- Pomiary bazowe chariot/ranged wykonane na kopii `git archive 6b9bcaf2b` (gra + dyspozycje), z symlinkiem na node_modules kandydata. Pliki tych testów są identyczne na bazie i kandydacie (diff pusty).
 
 ## RUNDY
-2/5 (runda 1 = Operator; runda 2 = ta obrona, bez poprawek kodu gry).
+2/5 (runda 1 = Operator, FC FAIL; runda 2 = naprawa FAIL r1 + odpowiedź na zarzuty Evaluatora w tej odpowiedzi).
 
 ## NASTĘPNY KROK
-- Evaluator/FC: ponowna weryfikacja praca-jeden (forma kontroli) i battle-attack-move-pointer (harness).
-- Orkiestrator do decyzji: osobne tematy diagnostyczne (BEZ pushu z tej sesji): (a) zbadać, dlaczego główny wątek strony przestaje odpowiadać przy bitwie pod obciążeniem (battle-attack-move-pointer, battle-ranged-approach); (b) wyjaśnić „not stable" przycisku w battle-natural-chariot-r5; (c) mutacje dla grupy/mgla/pre-battle-save.
-- Obserwacja (bez tematu): mgla-test nie egzekwuje zakresu kopii sim/pos.
+- Evaluator: ponowna weryfikacja praca-jeden (634 OK, asercja z rundy 1, próg z danych) i cofniętej whitelisty mgla (41/1 = baza).
+- FC: potwierdzenie tabeli 12 testów wobec surowych wyników powyżej.
+- Orkiestrator (poza tym tematem): decyzja ABC o whitelistcie mgla; ewentualny powtórny pomiar chariot-r5 pod obciążeniem.
 
 DEPLOY/PUSH: NIE WYKONANO

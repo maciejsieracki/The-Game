@@ -305,16 +305,6 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'u.r = mv.r;', nr: 1, klasa: 'TELEPORT-BEZ-SCIEZKI', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'su.q = destQ;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'koniec animacji marszu w renderLoop (pathHexes); MIEJSCE 3 z 3' },
   { plik: MAIN_TS, tekst: 'su.r = destR;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'j.w.' },
-
-  // --- ai.ts: kopie pozycji do PLANOWANIA ruchow jednostek AI (sim/pos), nie RuntimeUnit gracza ---
-  // Dlug testowy R-WEB-TEST-DEBT-BATTLE-HUD-WORK-Q3: wpisy dopisane do istniejacego kontraktu, bo
-  // applyArmySeeksEnemyArmy / orderMovesToUnblock (ai.ts) pojawily sie po ostatniej klasyfikacji.
-  // Zapis dotyczy kopii (Map sim / pos) jednostek przeciwnika/AI (playerId = AI); explored gracza
-  // liczy sie wylacznie z jednostek ownerId === 0, a realny ruch wykonuje silnik przez komendy `move`.
-  { plik: 'src/game/ai.ts', tekst: 'if (d !== undefined && su !== undefined) { su.q = d.q; su.r = d.r; }', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'applyCoreDest: kopia sim jednostek AI (planowanie kolumny), nie jednostka gracza' },
-  { plik: 'src/game/ai.ts', tekst: 'simUnit.q = step.q;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'applyArmySeeksEnemyArmy: kopia sim jednostki AI po zleconym kroku (planowanie tras)' },
-  { plik: 'src/game/ai.ts', tekst: 'simUnit.r = step.r;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
-  { plik: 'src/game/ai.ts', tekst: 'if (me !== undefined) { me.q = c.toQ; me.r = c.toR; }', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'orderMovesToUnblock: kopia pos jednostek AI (planowanie kolejnosci ruchow)' },
 ];
 
 const indeksKlasyfikacji = new Map();
