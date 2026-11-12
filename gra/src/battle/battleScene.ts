@@ -8236,8 +8236,8 @@ export class BattleScene {
       // Odswiezenie RAZ na runde (pierwsze zapytanie rangi): rekord postepu, rundy bez postepu,
       // jednostki w kontakcie i najmniejsza pula ruchu rangi.
       info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY, meleeContact: false };
-      // Pierwsze wzwarcie wrecz w grupie (piechota; bez konnicy, strzelcow i machin) zdejmuje sufit strzelcom i machinom.
-      info.meleeContact = roster.some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted
+      // Pierwsze wzwarcie wrecz w grupie (piechota i konnica; bez strzelcow i machin) zdejmuje sufit strzelcom i machinom.
+      info.meleeContact = roster.some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
         && !u.rangedBase && !isSiegeUnit(u.bu) && (u.groupId ?? '') === (ru.groupId ?? '')
         && this._canAttackFrom(u, u.q, u.r));
       const entries: { id: string; p: number; progressed: boolean }[] = [];
