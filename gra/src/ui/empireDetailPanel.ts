@@ -31,6 +31,7 @@ import { formatLiczbaPl, signedPl, formatBudynkiCount, formatJednostkiCount, for
 import { formatCompactNumber } from './formatCompactNumber';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import type { BuildingUtilizationView } from '../game/building-toggle';
 import { resourceAmountChipHtml, RESOURCE_CHIP_CSS } from './resourceAmountChip';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
@@ -2483,10 +2484,51 @@ export function renderMiastoSection(
  * (historia) vs. możliwa przy włączonych budynkach vs. możliwa ze wszystkich zbudowanych.
  * Czysto prezentacja migawki `producers` — zero liczenia ekonomii w panelu.
  */
+/**
+ * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: komórka „wykorzystanie mocy w następnej turze" wiersza
+ * budynku surowcowego. Procent pochodzi z migawki (ten sam przebieg co prognoza produkcji) — panel tylko
+ * formatuje. Powód dla < 100%: brakujące wejścia jako chipy ikona+liczba (ile brakuje do pełnej mocy).
+ */
+export function utilizationCellHtml(b: { enabled: boolean; utilization?: BuildingUtilizationView }): string {
+  const cell = (inner: string, title: string): string =>
+    `<span class="civ-emp-util" data-prod-util style="font-size:11px;color:#9aa4b5;margin-right:8px;text-align:right" title="${esc(title)}">${inner}</span>`;
+  if (!b.enabled) return cell('<i data-prod-util-kind="off">wyłączony</i>', 'Budynek wyłączony — nie produkuje');
+  const u = b.utilization;
+  if (!u) return '';
+  if (u.kind === 'noConversion') {
+    return cell('<b data-prod-util-pct="100" style="color:#7fbf7f">100%</b> <span data-prod-util-kind="noConversion">bez przerobu</span>',
+      'Budynek nie przetwarza surowców (dodaje % do dopływu z mapy), więc zapas wejść go nie ogranicza');
+  }
+  const color = u.pct >= 100 ? '#7fbf7f' : (u.pct > 0 ? '#d9a441' : '#e07a6a');
+  let reason = '';
+  if (u.pct < 100) {
+    if (u.kind === 'asleep') reason = ' <span data-prod-util-kind="asleep">uśpiony (brak dostępu do złoża)</span>';
+    else if (u.limitedBy === 'magazyn') reason = ' <span data-prod-util-kind="magazyn">limit magazynu</span>';
+    else if (u.limitedBy === 'wejscie') {
+      const chips = Object.entries(u.missing).map(([k, n]) => resourceAmountChipHtml(k, `brakuje ${n}`)).join(' ');
+      reason = ` <span data-prod-util-kind="wejscie">${chips}</span>`;
+    }
+  }
+  const tip = u.kind === 'asleep'
+    ? 'Budynek jest uśpiony przez bramkę dostępu — w następnej turze nie ruszy'
+    : `Następna tura: ${u.cykle} z ${u.maxCykle} możliwych cykli (przy obecnych zapasach i limitach)`;
+  return cell(`<b data-prod-util-pct="${u.pct}" style="color:${color}">${u.pct}%</b>${reason}`, tip);
+}
+
 export function renderProducersSection(producers: EmpireDetailSnap['producers'] | undefined): string {
   let h = subHdr('Budynki produkcyjne — włączanie i wyłączanie');
   if (!producers || producers.cities.length === 0) {
     return h + '<div class="civ-emp-empty">Brak zbudowanych budynków produkujących surowce.</div>';
+  }
+  if (producers.typeSummaries && producers.typeSummaries.length > 0) {
+    // Agregat per typ budynku w całej cywilizacji (np. „Garncarnia: 6 szt. · średnie wykorzystanie 35%").
+    h += '<div id="civ-emp-producers-type-sum" style="margin:2px 0 6px;font-size:11px;color:#9aa4b5">';
+    h += producers.typeSummaries.map(t => {
+      const avg = t.avgPct === null ? '—' : `${t.avgPct}%`;
+      const off = t.disabled > 0 ? ` (wyłączone: ${t.disabled})` : '';
+      return `<span data-prod-type="${esc(t.buildingId)}"><b>${esc(t.label)}</b>: ${t.count} szt.${off} · średnie wykorzystanie ${avg}</span>`;
+    }).join('<br>');
+    h += '</div>';
   }
   h += '<div class="civ-emp-grp-list" id="civ-emp-producers-list">';
   for (const c of producers.cities) {
@@ -2495,6 +2537,7 @@ export function renderProducersSection(producers: EmpireDetailSnap['producers'] 
       h += `<div class="civ-emp-grp-row${b.enabled ? '' : ' off'}" style="cursor:default" `
         + `data-prod-row="${esc(c.cityId)}|${esc(b.buildingId)}">`
         + `<span class="nm">${esc(b.label)}</span>`
+        + utilizationCellHtml(b)
         + `<button type="button" class="civ-emp-mocview-btn${b.enabled ? ' active' : ''}" style="flex:none;min-width:96px" `
         + `data-prod-toggle="${esc(c.cityId)}|${esc(b.buildingId)}" data-prod-enabled="${b.enabled ? '1' : '0'}" `
         + `title="${b.enabled ? 'Kliknij, aby wyłączyć: budynek przestaje produkować, zużywać surowce i kosztować utrzymanie' : 'Kliknij, aby włączyć'}">`
@@ -2527,6 +2570,10 @@ export function renderProducersSection(producers: EmpireDetailSnap['producers'] 
     + 'Drewno i Kamień: Stolarnia i Warsztat kamieniarski dodają po +10% do dopływu drewna/kamienia z mapy '
     + '(wszystkie budynki w państwie sumują się); po wyłączeniu tego bonusu nie ma. '
     + 'Dla nich liczby oznaczają cały dopływ z mapy, a maksimum nie jest przycięte limitem magazynu.</div>';
+  h += '<div class="civ-emp-foot">WYKORZYSTANIE MOCY (procent przy budynku) = ile z maksymalnej przepustowości budynku zostanie '
+    + 'zrealizowane w następnej turze przy obecnych zapasach wejść i limitach — z tej samej prognozy co kolumna poniżej. '
+    + 'Niski procent = budynek jest zbędny (brakuje mu surowca) i można go wyłączyć. '
+    + 'Stolarnia i Warsztat kamieniarski nie przetwarzają surowców, więc zawsze pokazują 100%.</div>';
   return h;
 }
 
