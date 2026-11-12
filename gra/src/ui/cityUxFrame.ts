@@ -161,7 +161,19 @@ function unbindCityUxNavKeys(): void {
 }
 
 let sideTopObserver: ResizeObserver | null = null;
+const sideTopObserved = new Set<Element>();
+let sideTopFitQueued = false;
 let sideTopResizeBound = false;
+
+/** Przeliczenie po zmianie banera planowane na następną klatkę — callback ResizeObserver nie wywołuje pomiaru synchronicznie (brak pętli RO). */
+function queueSideTopFit(): void {
+  if (sideTopFitQueued) return;
+  sideTopFitQueued = true;
+  requestAnimationFrame(() => {
+    sideTopFitQueued = false;
+    fitCitySideTop();
+  });
+}
 
 /** Mierzy dolną krawędź banerów górnych (lewy/prawy żeton + plakietka miasta) i ustawia `--civ-city-side-top`. */
 export function fitCitySideTop(): void {
@@ -178,10 +190,19 @@ export function fitCitySideTop(): void {
   if (need > LEFT_RAIL_TOP) frameRoot.style.setProperty(SIDE_TOP_VAR, need + 'px');
   else frameRoot.style.removeProperty(SIDE_TOP_VAR);
   // Zmiana rozmiaru banera (treść/zawijanie) po malowaniu — obserwuj elementy i przelicz.
+  // Obserwator tworzony RAZ; obserwowany jest tylko zbiór elementów (zmiana zbioru, nie każde przeliczenie).
   if (typeof ResizeObserver !== 'undefined') {
-    sideTopObserver?.disconnect();
-    sideTopObserver = new ResizeObserver(() => fitCitySideTop());
-    for (const el of els) sideTopObserver.observe(el);
+    if (sideTopObserver === null) sideTopObserver = new ResizeObserver(() => queueSideTopFit());
+    for (const old of Array.from(sideTopObserved)) {
+      if (els.includes(old as HTMLElement)) continue;
+      sideTopObserver.unobserve(old);
+      sideTopObserved.delete(old);
+    }
+    for (const el of els) {
+      if (sideTopObserved.has(el)) continue;
+      sideTopObserver.observe(el);
+      sideTopObserved.add(el);
+    }
   }
   if (!sideTopResizeBound && typeof window !== 'undefined') {
     sideTopResizeBound = true;
@@ -327,6 +348,7 @@ export function hideCityUxFrame(): void {
   frameOnClose = null;
   sideTopObserver?.disconnect();
   sideTopObserver = null;
+  sideTopObserved.clear();
   frameRoot?.remove();
   frameRoot = null;
   mounts = null;

@@ -43,6 +43,8 @@ function showErr(msg: string): void {
 }
 
 window.addEventListener('error', (e) => {
+  // Nieszkodliwe ostrzeżenie przeglądarki (nie błąd startu) — tylko ten jeden komunikat jest pomijany.
+  if (String(e.message).includes('ResizeObserver loop completed with undelivered notifications')) return;
   showErr(e.message + ' @' + e.filename + ':' + e.lineno + ':' + e.colno);
 });
 window.addEventListener('unhandledrejection', (e) => {
