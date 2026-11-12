@@ -8,17 +8,18 @@
 //!   (`diplomacyRelations`, klucz `a_b`, `diploPairKeyHasOwner` main.ts:35242).
 //! - Akumulatory: przez istniejace `WarTurnState::clear_power_accumulators_for_owner` (przez
 //!   `PlayableState::power_clear_eliminated_owner`).
+//! - Umowy (`activeDeals`, pin main.ts:35482) -> `DiplomacyState::clear_deals_for_owner` (diplomacy.rs).
+//! - Wojny wymuszone `forced[0..2]` (pending/cycle/rest/active, pin main.ts:35418-35441) wraz z falami
+//!   `forcedWarWavesByPairKey` o tych samych kluczach, tury wejscia w Braz/Zelazo (`bronzeEraEnterTurnByOwner`,
+//!   `ironEraEnterTurnByOwner`), `regularWarCapturedByPairKey`, `diplomacyPairMeta`, `diplomacyFactorLog`
+//!   -> `WarTurnState::clear_eliminated_owner_war_state` (war_turn_state.rs). Pola surowe (`opaque`) i typowane
+//!   pola istniejace od partii W1; NIE dodano nowych pol serde, wiec zgodnosc wsteczna nie wymaga nowego testu.
 //!
 //! NIE_ZMIERZONO (zostaje w webie, poza tym modulem): pozostale struktury czyszczone przez `eliminateOwner`
-//! (skarbce/pule AI, cykle wojen wymuszonych, rejestry wiarygodnosci, `diplomacyPairMeta`, `diplomacyFactorLog`, ...).
-//! W tym module NIE sa czyszczone (pin main.ts), kazda z osobna przyczyna:
-//! - `activeDeals` (pin main.ts:35482, `d.strony.includes(ownerId)`) -> Rust `war.diplomacy.deals` (diplomacy.rs:1656);
-//! - wymuszone wojny `forced[0..2]` (pending/cycle/rest/active, pin main.ts:35418-35441) -> Rust `war.forced` (war_turn_state.rs:124);
-//! - `bronzeEraEnterTurnByOwner` / `ironEraEnterTurnByOwner` (pin main.ts:35418, :35440) -> Rust
-//!   `war.bronze_era_enter_turn_by_owner` / `war.iron_era_enter_turn_by_owner` (war_turn_state.rs:126,128);
-//! - oblezenia (`oblegajacyOwnerId`, `siegeBesiegerByCity`) -> brak struktury oblezen w Rust.
-//!   Zakres dyspozycji (miasta, jednostki, akumulatory, relacje) tego nie obejmuje. Rejestracja jako osobny temat:
-//!   proponowane ID `ELIMINACJA-GRACZA-DEALS-WOJNY-Q2` (decyzja orkiestratora).
+//! (skarbce/pule AI, rejestry wiarygodnosci, `aiTargetMemoryByOwner` i inne, ...).
+//! - oblezenia (`oblegajacyOwnerId`, `siegeBesiegerByCity`, `siegeTurnByCity`, `siegeAiStateByKey`) -> brak
+//!   typowanej struktury oblezen w Rust (surowe `siegeTurnByCity`/`siegeBesiegerByCity` w `opaque` nie sa
+//!   filtrowane tym modulem). Rejestracja jako osobny temat (decyzja orkiestratora).
 //!
 //! Wolanie z tur/walki: osobny temat (brak wpiecia tutaj).
 //!
@@ -63,6 +64,9 @@ pub fn eliminate_owner(
     let usuniete_jednostki = jednostki_przed - state.units.len();
 
     state.power_clear_eliminated_owner(owner_id);
+
+    state.war.diplomacy.clear_deals_for_owner(pid);
+    state.war.clear_eliminated_owner_war_state(owner_id);
 
     let relacje_przed = state.war.diplomacy.relations.len();
     state
