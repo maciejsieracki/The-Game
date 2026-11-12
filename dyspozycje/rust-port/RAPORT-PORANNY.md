@@ -20,11 +20,12 @@ Zakres: `237e54526` (Operator r1 B17, ostatni znany punkt z `AUDYT-PARYTETU-RANO
 | B20 | `b0ba891fb` (FC PASS-WITH-NOTES) | `e998a039a` (merge B19 FC), `3216f8ff8` COMBAT-HARNESS r2 (`6a4a864dd`), `923540b65` K5LOOP-FACING (`ee0e3970d`), `72af377b1` K5LOOP-KONTRATAK (`039066ae1`) |
 | dokumenty B20 | `dd8baef0d`…`f6d917610`, `eda6aeaa9`, `709d00577` | AUDYT-LUK-B18 (KNOWN_GAPS, EXPLICIT_ZERO, COMPONENT_SOURCES), NIEPODPIETE-MODULY, K5-PRZEGLAD (FC) |
 | B21 | `fe6991eeb` (FC PASS-WITH-NOTES) | `cf281d785` INTEG-B21: POKRYCIE + JS0-HARDENING + ELIMINACJA-GRACZA |
+| B21 — merge'y dodatkowe w zakresie (sprawdzone: przodkowie `5ad0f90d7`) | — | `70c609621` merge `fd517ea9a` (ELIMINACJA-Q1, FC r2 PASS-WITH-NOTES); `21c321262` merge `8000d1d3d` (JS-MAX0 r1, **obrona Operatora**, nie FC; zakres treści NIE_ZMIERZONO); `0b55da590` merge `2130224cc` (K5I2B2-POKRYCIE, FC `03-final-control.md`) |
 | COMBAT-RECOUNT | `59ff97106` (integracja) | liczniki pokrycia przeliczane w Rust (FC `74c2f5c45` — patrz §2) |
 | DYRAW-DECYZJA (dok.) | `a9d04b4a1` (FC PASS-WITH-NOTES) | decyzja a: `dirYaw` render-only (dokument) |
 | HARNESS-MUTACJE | `5ad0f90d7` (baza) | skrypt mutacyjny dla rzutów dystansowych |
 
-Wniosek: od B17 weszło 6 integracji kodowych (B18–B21, COMBAT-RECOUNT, HARNESS-MUTACJE) oraz kilka tematów dokumentacyjnych. Pełne rozbicie łat (`git cherry`) NIE_ZMIERZONO w tym temacie.
+Wniosek: od B17 w zakresie są integracje B18–B21, COMBAT-RECOUNT i HARNESS-MUTACJE, trzy dodatkowe merge'e B21 (wyżej) oraz tematy dokumentacyjne. Liczba integracji kodowych nie jest tu podawana jako wynik: rozbicie łat (`git cherry`) i pełny przegląd merge'ów NIE_ZMIERZONO w tym temacie.
 
 ## 2. Co czeka na integrację (FC PASS bez merge do parity-v2)
 
@@ -46,10 +47,10 @@ Sprawdzenie: `git merge-base --is-ancestor <SHA> 5ad0f90d7`.
 Każde pytanie: opcje, rekomendacja z dokumentu. Orkiestrator nie rozstrzyga progów ani balansu.
 
 ### 3.1 SZTURM ODPARTY — #60
-Źródło: `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md` §K5.9. Gałąź `_checkEnd` („SZTURM ODPARTY”, `battleScene.ts:10184-10186`) jest bramkowana przez `_stalled`. W pinie `_stalled` nie bywa ustawiane w bitwie oblężniczej, więc gałąź jest **nieosiągalna**. Dziś oblężenie bez wyłomu kończy się sufitem tur (remis po 150 turach).
-- **A (parytet):** nie wpinać `siege_no_breach_repels_attack` jako zachowania gry; zachować zachowanie pinu. Rekomendacja: NIE_ZMIERZONO (dokument nie wskazuje wprost).
-- **B (naprawa):** wpiąć gałąź (bramka `_stalled`); zmienia wynik gry (oblężenie bez wyłomu odpierane zamiast remisu). Dokument: „decyzja gameplay”.
-- Rekomendacja z dokumentu: brak jawnej; dokument wymaga decyzji właściciela.
+Źródło: `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md` §K5.9 (martwa gałąź) oraz **K5.12, l. 482** (pytanie Q1 z opcjami). Gałąź `_checkEnd` („SZTURM ODPARTY”, `battleScene.ts:10184-10186`) jest bramkowana przez `_stalled`. W pinie `_stalled` nie bywa ustawiane w bitwie oblężniczej, więc gałąź jest **nieosiągalna**. Dziś oblężenie bez wyłomu kończy się sufitem tur (remis po 150 turach).
+- **A (zachować obecne zachowanie):** remis po 150 turach; martwą gałąź udokumentować w K5c. **Rekomendacja z dokumentu: A** (`P6-SIEGE-TAKTYKA.md` l. 482).
+- **B (aktywować wcześniejsze zakończenie SZTURM):** zmiana gry (oblężenie bez wyłomu odpierane zamiast remisu). Dokument zastrzega, że wymaga zmiany bramki `_stalled` **w pinie, poza portem** (praca po stronie pinu, nie Rust).
+- Uwaga o statusie: ten sam dokument (l. 482) wspomina „ABC 2026-11-10”, więc pytanie mogło być już rozstrzygnięte. Treść tamtej decyzji NIE_ZMIERZONO (nie sprawdzono w repo ani w rejestrze); właściciel potwierdza, czy #60 jest zamknięte.
 
 ### 3.2 W8 r7 Q1–Q4 — kolejność faz — #63
 Źródło: `dyspozycje/rust-port/p6/P6-W8-R7-AUDYT.md` (sekcja pytań). Każde pytanie ma rekomendację „zgodnie z pinem”.
