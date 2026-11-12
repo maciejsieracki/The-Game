@@ -658,6 +658,8 @@ function cloneBattleUnitsForReplay(units: BattleUnit[]): BattleUnit[] {
 // the ranks occupy and guarantees a passable clash corridor across the river
 // (see _carveBattleBox), so the lines stand on flat passable ground and can
 // reach each other, while terrain survives EVERYWHERE else as obstacles/scenery.
+/** R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: po tylu rundach bez nowego postepu jednostka nie wstrzymuje linii. */
+const LINE_ADVANCE_STALL_ROUNDS = 10; // zmierzone: objazd sciany 5 pol z zatorem czekajacych liderow <= 9 rund (tools/battle-line-advance-uniform-test.cjs)
 const BF_COLS = 68;   // pełne pole (2× poprzednie 34) — margines do przewijania kamery
 const BF_ROWS = 156;  // pełne pole (2× poprzednie 78)
 
@@ -2709,6 +2711,9 @@ export class BattleScene {
   // walks it. activeSide is kept only for the opening hint.
   private activeSide: 'atk' | 'def' = 'atk';
   private roundNo = 0;
+  private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
+  /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
+  private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
   private turnOrder: RuntimeBattleUnit[] = [];
   private turnIdx = 0;
 
@@ -8191,6 +8196,82 @@ export class BattleScene {
     });
   }
 
+  private _lineAdvanceWithinCap(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    const sign = ru.side === 'atk' ? 1 : -1;
+    // Ruch wstecz / w bok nigdy nie jest ograniczany sufitem natarcia.
+    if (sign * candidateCol <= sign * ru.q) return true;
+    return sign * candidateCol <= this._lineAdvanceCap(ru);
+  }
+
+  /**
+   * R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: wspolny sufit tempa dla jednej rangi piechoty grupy
+   * (Atak). Bez niego kazda jednostka maszeruje niezaleznie (inna predkosc, objazd skal/wody),
+   * wiec front rozsypuje sie i NIGDY sie nie zbiera (zmierzone: rozrzut 4-12 kolumn bez powrotu).
+   * Zasada: kolumna docelowa <= (najmniej zaawansowana jednostka rangi, liczona na POCZATKU rundy)
+   * + najmniejsza pula ruchu rangi. Rowne tempo wszystkich, tempo wyznacza najwolniejsza.
+   * Anti-freeze: jednostka w kontakcie z wrogiem albo bez nowego postepu przez
+   * LINE_ADVANCE_STALL_ROUNDS rund (zablokowana na amen) przestaje wyznaczac sufit.
+   * Stan (postep/kontakt/min. ruch) odswiezany raz na (runda, strona, grupa, ranga); sam sufit z
+   * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
+   */
+  private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
+      return Number.POSITIVE_INFINITY;
+    }
+    const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
+    const key = `${ru.side}|${ru.groupId ?? ''}|${rank}`;
+    const sign = ru.side === 'atk' ? 1 : -1;
+    const isMate = (u: RuntimeBattleUnit): boolean =>
+      !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !u.rangedBase
+      && (u.groupId ?? '') === (ru.groupId ?? '')
+      && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank
+      && !isSiegeUnit(u.bu);
+    const roster = ru.side === 'atk' ? this.atk : this.def;
+    const state = this._lineAdvanceState ??= new Map<string, { best: number; stall: number }>();
+    let cache = this._lineCapCache;
+    if (!cache || cache.round !== this.roundNo) { cache = { round: this.roundNo, info: new Map() }; this._lineCapCache = cache; }
+    let info = cache.info.get(key);
+    if (!info) {
+      // Odswiezenie RAZ na runde (pierwsze zapytanie rangi): rekord postepu, rundy bez postepu,
+      // jednostki w kontakcie i najmniejsza pula ruchu rangi.
+      info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY };
+      const entries: { id: string; p: number; progressed: boolean }[] = [];
+      for (const u of roster) {
+        if (!isMate(u)) continue;
+        const p = sign * u.q;
+        const st = state.get(u.bu.id);
+        const progressed = !st || p > st.best;
+        if (progressed) state.set(u.bu.id, { best: p, stall: 0 });
+        if (this._canAttackFrom(u, u.q, u.r)) { info.engaged.add(u.bu.id); continue; } // w kontakcie: nie wyznacza tempa
+        entries.push({ id: u.bu.id, p, progressed });
+        info.minMp = Math.min(info.minMp, this._movementPointsFor(u.bu));
+      }
+      let refMin0 = Number.POSITIVE_INFINITY;
+      for (const e of entries) {
+        if (state.get(e.id)!.stall < LINE_ADVANCE_STALL_ROUNDS && e.p < refMin0) refMin0 = e.p;
+      }
+      // Rundy bez postepu liczy sie TYLKO jednostce, ktora aktualnie wyznacza tempo linii (najmniej
+      // zaawansowanej); czekajacy na nia liderzy nie sa "zablokowani" i nie moga zostac wykluczeni.
+      for (const e of entries) {
+        const st = state.get(e.id)!;
+        if (st.stall >= LINE_ADVANCE_STALL_ROUNDS) continue;
+        if (e.p === refMin0 && !e.progressed) st.stall++;
+        else if (e.p > refMin0) st.stall = 0;
+      }
+      cache.info.set(key, info);
+    }
+    // Sufit liczony z ZYWYCH pozycji (planowanie AUTO pracuje na klonach stanu z poczatku fazy,
+    // wiec dla kazdej jednostki to ten sam, deterministyczny obraz).
+    let refMin = Number.POSITIVE_INFINITY;
+    for (const u of roster) {
+      if (!isMate(u) || info.engaged.has(u.bu.id)) continue;
+      if ((state.get(u.bu.id)?.stall ?? 0) >= LINE_ADVANCE_STALL_ROUNDS) continue; // zablokowana na amen
+      const p = sign * u.q;
+      if (p < refMin) refMin = p;
+    }
+    return Number.isFinite(refMin) && Number.isFinite(info.minMp) ? refMin + info.minMp : Number.POSITIVE_INFINITY;
+  }
+
   /** A shooter may close to a firing tile while staying behind the melee line. */
   private _rangedFiringStepStaysBehindMelee(ru: RuntimeBattleUnit, candidateCol: number): boolean {
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || !ru.rangedBase || ru.mounted) return false;
@@ -8273,6 +8354,9 @@ export class BattleScene {
     // take only its FIRST step. This routes around occupied allied tiles
     // instead of stalling like a greedy step would. If BFS finds nothing
     // reachable (fully walled in), fall back to a greedy nudge closer.
+    // R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: jednostka na suficie tempa linii czeka w miejscu
+    // (zamiast szukac bocznych krokow, ktore rozsypuja szyk i marnuja ruch).
+    if (!this._lineAdvanceWithinCap(ru, ru.q + this._advanceDir(ru.side))) { done(); return; }
     const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
     const stepKey = this._firstStepAlongPathToAttack(ru, (q, r) =>
       this._compactAttackAllowsStep(ru, q)
@@ -8287,7 +8371,7 @@ export class BattleScene {
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
 
-    if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
+    if (!this._compactAttackAllowsStep(ru, nc) || !this._lineAdvanceWithinCap(ru, nc)) { done(); return; }
 
     const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
     this._doMove(ru, nc, nr, () => {
@@ -10693,6 +10777,8 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._lineCapCache = null;
+    this._lineAdvanceState?.clear();
     this.activeSide = 'atk';
     this._manualMode = true;
     this._battleAwaitingOrders = true;
