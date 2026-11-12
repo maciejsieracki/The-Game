@@ -204,3 +204,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - parity-v2 = 82bb87fb1 (INTEG-B16: MAXNAN + BITWY-ZDOBYCZE + K5I2B2; pełny cargo test 3162 passed/0 failed/1 ignored; FF + readback).
 - W toku (Operator HAIKU): INTEG-B17 (STAN-ULEPSZENIA + R7K7-B + K5-LOOP, konflikt STAN×BITWY rozwiązuje Operator), RANGED-DAMAGE-NAN, DOC-TAKTYKA-WIERSZE.
 - 4. slot niewykorzystany celowo: pozostałe tematy (R7K7-C, wpięcie akumulatorów, K5-LOOP ciało jednostki, STAN-TERYTORIUM-VEC) dotykają playable.rs/turn_war_inputs.rs/siege_tactics_loop.rs i zależą od B17 — start po FF B17.
+
+## Przebieg — 14:2x UTC
+- parity-v2 = 237e54526 (INTEG-B17: STAN-ULEPSZENIA + R7K7-B + K5-LOOP; pełny cargo test 3179 passed/0 failed/1 ignored; FF + readback). Konflikt STAN×BITWY rozwiązany przez Operatora (ulepszenia, bitwy, zdobycze = Provided; EXPLICIT_ZERO_REASONS = []).
+- FC PASS-WITH-NOTES czekające na integrację: RANGED-DAMAGE-NAN e9b505939, DOC-TAKTYKA-WIERSZE 3ec2e2827, POWER-AKUMULATORY-WIRING 857fe1733 (adaptery bez wołających — brak pętli walki/zdobywania/eliminacji), R7K7-C 3d0716842 (apply_dipl_deltas bez wołającego; DECYZJA TECHNICZNA: brak wpisu skarbca/Pracy = 0 jak pin), STAN-TERYTORIUM-VEC a5d93810a (czysty merge; kosmetyka nazwy TERRITORY_MIN_TIE_CASES przy integracji). INTEG-B18 (pierwsze cztery) w toku.
+- W toku (Operator HAIKU): INTEG-B18, K5LOOP-BODY r2 (r1 FAIL: src/ bez zmian), K5I2B2-DLUG, CRED-WOJNA.
+- Zadania do uruchomienia od zera: #96–#99 (K5-LOOP-WIEZE/AUTO/WYLOM/RESUME), #100 COMBAT-HARNESS, #101 RANGED-DAMAGE-CLEANUP, #104 ZLOZA-WIRING, #105 AUDYT-LUK-B18, #106 R7K7C-WIRING.
+- Incydent dysku: 400 MB wolnego przy 5 równoległych kompilacjach (Obrona K5LOOP-BODY padła na worktree). Zwolniono własne katalogi scratchpad/worktree; reguła: max 4 tematy z kompilacją naraz, sprzątanie po każdym FC.
