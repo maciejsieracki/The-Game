@@ -185,6 +185,8 @@ pub struct SiegeLoop<B: LoopBody> {
     /// Ścieżka poza zakresem sterownika (AUTO bez oblężenia, wejście w AUTO z przewijania). Ustawienie zatrzymuje
     /// bitwę bez zwycięzcy zamiast paniki; wywołujący sprawdza to pole po `run`.
     pub unsupported: Option<&'static str>,
+    /// Stan pętli przewijania (`ffVirtualMs`, `ffPendingAuto`, kolejka) zachowany między wywołaniami [`Self::resume`].
+    ff: FfLoopState<()>,
 }
 
 impl<B: LoopBody> SiegeLoop<B> {
@@ -195,17 +197,37 @@ impl<B: LoopBody> SiegeLoop<B> {
             trace: Vec::new(),
             winner: None,
             unsupported: None,
+            ff: FfLoopState::<()>::new(),
         }
     }
 
-    /// Start bitwy: web `_beginTurn()` z kickoffu, potem pętla przewijania [`run_fast_forward`] aż do zakończenia
-    /// albo wyczerpania `max_steps` pełnych iteracji.
-    pub fn run(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
+    /// Start bitwy: web `_beginTurn()` z kickoffu. Wywoływany raz, przed pierwszym [`Self::resume`].
+    pub fn start(&mut self, clock: &mut VirtualClock<LoopTimer>) {
         let mut out = Vec::new();
         begin_turn(&mut self.st, &mut self.env, &mut out);
         self.apply(clock, out);
-        let mut ff = FfLoopState::<()>::new();
-        run_fast_forward(clock, &mut ff, self, max_steps)
+    }
+
+    /// Wznowienie pętli przewijania [`run_fast_forward`] z zachowanym stanem, najwyżej `max_steps` pełnych iteracji.
+    /// Wynik zależy tylko od sumy wykonanych iteracji, nie od podziału na wywołania: kolejne wywołania z małym
+    /// `max_steps` dają ten sam stan i ślad co jedno wywołanie z dużym limitem.
+    pub fn resume(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
+        let mut ff = std::mem::take(&mut self.ff);
+        let stop = run_fast_forward(clock, &mut ff, self, max_steps);
+        self.ff = ff;
+        stop
+    }
+
+    /// Start bitwy i przewijanie aż do zakończenia albo wyczerpania `max_steps` pełnych iteracji.
+    /// Równoważne `start` + `resume`.
+    pub fn run(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
+        self.start(clock);
+        self.resume(clock, max_steps)
+    }
+
+    /// Stan pętli przewijania zachowany między [`Self::resume`] (tylko odczyt, do asercji w testach).
+    pub fn ff_state(&self) -> &FfLoopState<()> {
+        &self.ff
     }
 
     /// Etykieta zwycięzcy (`atk` / `def` / `remis`) albo `None`.
