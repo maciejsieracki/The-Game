@@ -1,0 +1,290 @@
+{
+  "mode": "real-r2",
+  "steps": [
+    {
+      "step": "B1-ctrl-s-battle",
+      "writes": 0,
+      "keys": [],
+      "showsMs": [
+        2802,
+        2898,
+        4328,
+        5860,
+        7275
+      ],
+      "toast": {
+        "visibleCount": 1,
+        "visibleText": "Zapis niedostępny w trakcie bitwy",
+        "textOk": true,
+        "inViewport": true,
+        "firstVisible": {
+          "tMs": 1413,
+          "text": "Zapis niedostępny w trakcie bitwy",
+          "display": "block",
+          "rect": [
+            608,
+            841,
+            223,
+            35
+          ],
+          "opacity": "1",
+          "visibility": "visible",
+          "z": "10030",
+          "inViewport": true,
+          "visible": true
+        },
+        "shot": "/home/user/The-Game/.claude/worktrees/wf_876fe022-5b5-3/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/save-r2/B1-ctrl-s-w-bitwie-toast-widoczny.png",
+        "samplesTotal": 1
+      }
+    },
+    {
+      "step": "B2-pause-buttons",
+      "pauseOpen": true,
+      "pauseButtons": [
+        {
+          "text": "Zapisz grę",
+          "rects": 1,
+          "display": "flex",
+          "visibility": "visible",
+          "pos": "static"
+        }
+      ]
+    },
+    {
+      "step": "B2-pause-click",
+      "writes": 0,
+      "toast": {
+        "visibleCount": 1,
+        "visibleText": "Zapis niedostępny w trakcie bitwy",
+        "textOk": true,
+        "inViewport": true,
+        "firstVisible": {
+          "tMs": 1305,
+          "text": "Zapis niedostępny w trakcie bitwy",
+          "display": "block",
+          "rect": [
+            608,
+            841,
+            223,
+            35
+          ],
+          "opacity": "1",
+          "visibility": "visible",
+          "z": "10030",
+          "inViewport": true,
+          "visible": true
+        },
+        "shot": "/home/user/The-Game/.claude/worktrees/wf_876fe022-5b5-3/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/save-r2/B2-klik-zapisz-w-bitwie-toast.png",
+        "samplesTotal": 1
+      }
+    },
+    {
+      "step": "B3-autosave-battle",
+      "writes": 0,
+      "autoWarn": [
+        "[Autosave] pomijam -- bitwa na ekranie, tura=1"
+      ]
+    }
+  ],
+  "bundle": {
+    "path": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r2-bundle/index.html",
+    "bytes": 14557306,
+    "audioPacks": [
+      {
+        "f": "audio-pack-1.js",
+        "exists": true
+      },
+      {
+        "f": "audio-pack-2.js",
+        "exists": true
+      },
+      {
+        "f": "audio-pack-3.js",
+        "exists": true
+      }
+    ]
+  },
+  "diagB1": {
+    "logLenAll": 14,
+    "logSinceKey": [
+      [
+        2802,
+        "Zapis niedostępny w trakcie bitwy"
+      ],
+      [
+        2898,
+        "Zapis niedostępny w trakcie bitwy"
+      ],
+      [
+        4328,
+        "Zapis niedostępny w trakcie bitwy"
+      ],
+      [
+        5860,
+        "Zapis niedostępny w trakcie bitwy"
+      ],
+      [
+        7275,
+        "Zapis niedostępny w trakcie bitwy"
+      ]
+    ],
+    "keysSince": [
+      {
+        "at": 1794487187790,
+        "key": "Control",
+        "ctrl": true,
+        "prevented": false
+      },
+      {
+        "at": 1794487189114,
+        "key": "s",
+        "ctrl": true,
+        "prevented": false
+      }
+    ],
+    "toastNow": {
+      "display": "none",
+      "text": "Zapis niedostępny w trakcie bitwy"
+    }
+  },
+  "errors": [],
+  "anomalies": [],
+  "checks": [
+    {
+      "label": "A baseline: poza bitwa Ctrl+S zapisuje",
+      "ok": true,
+      "detail": {
+        "writes": 2
+      }
+    },
+    {
+      "label": "bitwa otwarta i nie zakonczona",
+      "ok": true,
+      "detail": {
+        "inBattle": true
+      }
+    },
+    {
+      "label": "B1a Ctrl+S w bitwie: zero zapisow",
+      "ok": true,
+      "detail": {
+        "writes": 0,
+        "keys": []
+      }
+    },
+    {
+      "label": "B1b komunikat „Zapis niedostępny w trakcie bitwy” pokazany po Ctrl+S (display:block, obserwator DOM)",
+      "ok": true,
+      "detail": {
+        "showsMs": [
+          2802,
+          2898,
+          4328,
+          5860,
+          7275
+        ]
+      }
+    },
+    {
+      "label": "B1c komunikat WIDOCZNY w probce (rect>0, opacity>0, visibility) i w viewport",
+      "ok": true,
+      "detail": {
+        "firstVisible": {
+          "tMs": 1413,
+          "text": "Zapis niedostępny w trakcie bitwy",
+          "display": "block",
+          "rect": [
+            608,
+            841,
+            223,
+            35
+          ],
+          "opacity": "1",
+          "visibility": "visible",
+          "z": "10030",
+          "inViewport": true,
+          "visible": true
+        },
+        "shot": "/home/user/The-Game/.claude/worktrees/wf_876fe022-5b5-3/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/save-r2/B1-ctrl-s-w-bitwie-toast-widoczny.png"
+      }
+    },
+    {
+      "label": "B2 stan menu pauzy po otwarciu w bitwie",
+      "info": true,
+      "detail": {
+        "pauseOpen": true,
+        "pauseButtonsFound": 1
+      }
+    },
+    {
+      "label": "B2a menu pauzy „Zapisz grę” w bitwie: zero zapisow",
+      "ok": true,
+      "detail": {
+        "writes": 0,
+        "keys": [],
+        "tPause": 1794487225634
+      }
+    },
+    {
+      "label": "B2b menu pauzy w bitwie: komunikat widoczny",
+      "ok": true,
+      "detail": {
+        "visibleCount": 1,
+        "firstVisible": {
+          "tMs": 1305,
+          "text": "Zapis niedostępny w trakcie bitwy",
+          "display": "block",
+          "rect": [
+            608,
+            841,
+            223,
+            35
+          ],
+          "opacity": "1",
+          "visibility": "visible",
+          "z": "10030",
+          "inViewport": true,
+          "visible": true
+        }
+      }
+    },
+    {
+      "label": "B3a autozapis rotacyjny w bitwie: zero zapisow",
+      "ok": true,
+      "detail": {
+        "writes": 0,
+        "keys": []
+      }
+    },
+    {
+      "label": "B3b autozapis rotacyjny w bitwie: pominiety (ostrzezenie konsoli)",
+      "ok": true,
+      "detail": {
+        "autoWarn": [
+          "[Autosave] pomijam -- bitwa na ekranie, tura=1"
+        ]
+      }
+    },
+    {
+      "label": "C1 brak pageerror i console.error w sesji",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "errors": []
+      }
+    },
+    {
+      "label": "C2 brak 404 i odpowiedzi HTML dla zasobow (serwer statyczny, bez fallbacku)",
+      "ok": true,
+      "detail": {
+        "count": 0,
+        "anomalies": []
+      }
+    }
+  ],
+  "durationMs": 205393,
+  "summary": {
+    "pass": 11,
+    "fail": 0
+  }
+}
