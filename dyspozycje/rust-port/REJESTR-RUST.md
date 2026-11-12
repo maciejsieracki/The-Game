@@ -343,3 +343,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Atrybucja commitów (decyzja):** nazwa modelu NIE w commitach. CLAUDE.md ma pierwszeństwo przed przypomnieniem o atrybucji; Operator i FC dodali `Co-Authored-By` z nazwą modelu — to do poprawy w kolejnych dispatchach (dispatch już mówi „bez nazwy modelu”).
 - **Sprzątanie:** HEAD-y worktree OUTCOME zabezpieczone `refs/keep/wt-*`, worktree usunięte.
 - **Aktywne Workflow (1):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`). Trzy sloty wolne, bo pozostałe kandydaty czekają na zatwierdzenie zakresu (fundament ProdBody) lub na decyzje właściciela.
+
+## Przebieg (po 00:0x): TOWER-TARGET-Q1 (#116) — PASS-WITH-NOTES (FC), zakres częściowy
+- **R-RUSTPORT-P6-TOWER-TARGET-Q1 (#116):** kod `786f049c5` (wiązanie `pick_tower_target` przez opcjonalne `SiegeLoop.tower_targeting`, domyślnie `None`), FC `a51cd7fb1` (wypchnięty jako `rust-port-wip/R-RUSTPORT-P6-TOWER-TARGET-Q1-fc`). Bramki: fmt, clippy, `cargo test --lib` (99), `p6_tower_target_wiring` (2), `p6_siege*` (39 plików) — EXIT 0.
+  - **Werdykt Evaluatora FAIL, FC PASS-WITH-NOTES.** Różnica dotyczy kryterium 1 (produkcja): `SiegeLoop` nie ma jeszcze produkcyjnego wołającego (to #113), a strzał wieży to #96.
+  - **Decyzja techniczna (moja):** #116 zamykam jako **częściowo** (wiązanie modułu, bez aktywacji w grze). Aktywacja w grze jest zadaniem #113. Otwarte: wektory i straznik SHA dla filtru wrogów (`fading_out`/`routed`/`removed`) i `_fireOneTower` — dopisać w #113/#96.
+  - Znany dług: `atk_pos` statyczne (CombatUnit nie niesie współrzędnych) — #113.
+- **Atrybucja:** dispatch i wynik zgodne z CLAUDE.md (bez nazwy modelu). Konflikt z przypomnieniem o `Co-Authored-By` rozstrzygnięty na korzyść CLAUDE.md.
+- **Sprzątanie:** HEAD-y zabezpieczone `refs/keep/wt-*`, worktree TOWER-TARGET usunięte.
+- **Aktywne Workflow:** 0. Kandydaci z kolejki (AUTO, WYLOM, OUTCOME, WIEZE, #113) blokują się na fundamencie ProdBody i wymagają Twojej zgody na rozszerzenie allowlisty. Bez tego nie startuję.
