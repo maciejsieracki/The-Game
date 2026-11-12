@@ -10,6 +10,9 @@
  * Porownanie: zwyciezca, tura konca, straty i pozostali zywi po obu stronach, czy byl wylom,
  * oraz ktora sciezka zakonczyla bitwe (wpis logu: SZTURM / PAT / przewijanie).
  *
+ * Tryb 'fallback' (R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1): wymuszenie sciezki awaryjnej
+ * _skipInstantFallback (deployPhase=false, started=false, potem skip()); wynik liczony natychmiast, bez przewijania.
+ *
  * Przebiegi sa rozbite na wywolania (limit narzedzia): WSKIP_SEEDS="1" WSKIP_MODES="auto" itd.
  * Wyniki dopisywane sa jako linie JSON do WSKIP_OUT; tryb 'compare' (WSKIP_COMPARE=1) porownuje pary.
  *
@@ -127,6 +130,12 @@ async function runOne(browser, distDir, mode, seed) {
     window.__wskipT0 = bs.vNow;
     bs._setSpeedIdx(parseInt(window.__wskipSpeedIdx || '0', 10), { clamp: true }); // ta sama predkosc wejscia AUTO/SKIP
     if (mode === 'skip') {
+      bs.skip();
+    } else if (mode === 'fallback') {
+      // Wymuszona sciezka awaryjna _skipInstantFallback (R-WEB-SIEGE-SKIP-INSTANT-FALLBACK-DIVERGENCE-Q1):
+      // stan jak przed startem bitwy (bez fazy rozstawiania, bez started). To NIE jest klik gracza.
+      bs.deployPhase = false;
+      bs.started = false;
       bs.skip();
     } else {
       if (bs.deployPhase) bs._endDeployPhase();
