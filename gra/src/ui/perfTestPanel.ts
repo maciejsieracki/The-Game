@@ -14,6 +14,7 @@
  *
  * Styl spójny z mapLoadingOverlay.ts (te same tokeny brand).
  */
+import { pluralPl } from './formatPl';
 import * as THREE from 'three';
 import { UI_PARAMS } from './uiParams';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
@@ -197,14 +198,14 @@ function detectionRows(det: HardwareDetection): ReportRow[] {
   // CPU wątki.
   if (det.cpuThreads != null) {
     if (det.cpuThreads >= 12) {
-      rows.push({ status: 'ok', label: `${det.cpuThreads} wątków CPU`, tip: 'Możesz generować nawet Super Huge.' });
+      rows.push({ status: 'ok', label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`, tip: 'Możesz generować nawet mapę „Bardzo ogromny”.' });
     } else if (det.cpuThreads >= 6) {
-      rows.push({ status: 'ok', label: `${det.cpuThreads} wątków CPU`, tip: 'Zalecany rozmiar mapy do Ogromny.' });
+      rows.push({ status: 'ok', label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`, tip: 'Zalecany rozmiar mapy: Ogromny.' });
     } else {
       rows.push({
         status: 'warn',
-        label: `${det.cpuThreads} wątki/wątków CPU`,
-        tip: 'Zalecany rozmiar mapy: Standardowy. Super Huge będzie generować się kilka minut.',
+        label: `${det.cpuThreads} ${pluralPl(det.cpuThreads, 'wątek', 'wątki', 'wątków')} CPU`,
+        tip: 'Zalecany rozmiar mapy: Standardowy. Mapa „Bardzo ogromny” będzie generować się kilka minut.',
       });
     }
   } else {

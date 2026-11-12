@@ -22,7 +22,6 @@ const BAD = [
   [/Brama narodów/, 'Brama narodów -> Brama wszystkich narodów'],
   [/dodatkowy slot linii/, 'slot -> dodatkową linię wymiany (anglicyzm)', 'dodatkowy slot linii wymiany'],
   [/kamiennych Murów/, 'kamiennych Murów -> Murów kamiennych', 'Po wybudowaniu kamiennych Murów w tym mieście'],
-  [/\$\{f\.unitsCount\} j\. \//, 'j. -> formatJednostkiCount (jednostki)', '${f.unitsCount} j. / ${formatMiastaCount(f.citiesCount)}'],
 ];
 const files = [
   ...walk('docs/encyklopedia').filter((f) => f.endsWith('.md')),
@@ -77,9 +76,16 @@ const UI_BAD = [
   [/wpiecia onPurchaseBuilding/, 'żargon deweloperski w tooltipie', "'Wymaga wpiecia onPurchaseBuilding przez silnik'"],
   [/obyw\.\/tur/, 'obyw./turę -> obywateli na turę', "'obyw./turę'"],
   [/szt\.\/tur/, 'szt./turę -> sztuk na turę', "'szt./turę</span>'"],
+  [/\$\{f\.unitsCount\} j\. \//, 'j. -> formatJednostkiCount (zapis/wczytaj)', "'${f.unitsCount} j. / ${formatMiastaCount(f.citiesCount)}'"],
+  [/zuzycie netto/, 'zuzycie -> zużycie', "'zuzycie netto 5 sztuk na turę'"],
+  [/\(ponizej /, 'ponizej -> poniżej', "'(ponizej 3 tur).'"],
+  [/Super Huge/, 'Super Huge -> etykieta „Bardzo ogromny” (tekst dla gracza)', "'Możesz generować nawet Super Huge.'"],
+  [/\bMalenki\b/, 'Malenki -> etykieta „Maleńki” (tekst dla gracza)', "'Rozmiar: Malenki'"],
 ];
+// Pliki logiki gry z tekstami powodów/ofert widocznymi dla gracza (R-WEB-POLISH-LANGUAGE-AUDIT-Q1, runda 3).
+const GAME_TEXT_FILES = ['gra/src/game/ai.ts', 'gra/src/game/diplomacy-proposals.ts', 'gra/src/game/diplomacy-sensible-deals.ts'];
 const UI_FILES = walk('gra/src/ui').filter((f) => f.endsWith('.ts') && !/entityCards|resourceAmountChip|administratorIcon|buildModeHud/.test(f))
-  .concat(['gra/src/main.ts']);
+  .concat(['gra/src/main.ts'], GAME_TEXT_FILES);
 // linie niebędące komentarzem (komentarze deweloperskie poza zakresem rundy)
 const codeLines = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).filter((l) => l.trim() !== '');
 let uiPass = 0, uiFail = 0;

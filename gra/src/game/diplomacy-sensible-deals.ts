@@ -164,7 +164,7 @@ export function tradeOfferReason(
   const z = Math.round(stock);
   if (powod === 'deficyt') {
     const burn = Math.round(-netRatePerTurn);
-    return `Brakuje nam surowca: zapas ${z} szt., zuzycie netto ${burn} szt./turę (ponizej ${config.deficitTurns} tur).`;
+    return `Brakuje nam surowca: zapas ${z} sztuk, zużycie netto ${burn} sztuk na turę (poniżej ${config.deficitTurns} tur).`;
   }
   return `Mamy nadwyżkę: zapas ${z} szt. (powyżej ${config.surplusMultiple}x pakietu), a Ty masz niedobór tego surowca.`;
 }
