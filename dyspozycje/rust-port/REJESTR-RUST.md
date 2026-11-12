@@ -229,3 +229,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - KONTRAKTEK (K5LOOP-KONTRATAK): pierwszy start padł na zapełnionym dysku (~0,5 GB) przy przygotowaniu worktree; usunięto własne worktree zakończonych tematów (FACING, nieudany start KONTRATAK); ponowny start 16:2x.
 - Trwają: INTEG-B19 (Operator), COMBAT-HARNESS r2 (Operator), KOTRAKTEK (Operator). Sloty: 3 z 4 + KONTRAKTEK ponownie = 4.
 - Uwaga środowiskowa: scratchpad/tgt (2,4 GB, 16:13) — cudzy cel kompilacji, nie usuwany.
+
+## Przebieg — 17:19 UTC (heartbeat slotów)
+- ELIMINACJA-GRACZA: r2 FC PASS-WITH-NOTES (fd517ea9a, kod 5ad5d363c); gałąź wip wypchnięta. Integracja → po B20 (B21). Zadanie #141 (deals/forced/era-enter) osobno.
+- KONTRAKTEK: FC PASS-WITH-NOTES (039066ae1, kod bd4e4f63e); wejdzie w B20.
+- JS-MAX-SIGN: FC PASS-WITH-NOTES (9a9112a3d); kandydat na konflikt nazw js_max_sign z B19 przy B20/B21.
+- W toku: INTEG-B20 (Evaluator), JS0-HARDENING (Operator), K5I2B2-POKRYCIE (Operator). Razem 3 aktywne; czwarty slot świadomie wolny (#101 i #134–#137 zależą od B20).
+- Dysk 9,2 GB.
