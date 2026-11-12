@@ -613,7 +613,8 @@ impl PlayableGame {
     fn run_diplomacy_war_phase(&mut self) -> Result<(), PlayableError> {
         let inputs = build_war_inputs(&self.state, &self.state.war)
             .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
-        let config = production_config(&self.state);
+        let config = production_config(&self.state)
+            .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         let mut ctx = WarTurnContext {
             war: &mut self.state.war,
             turn: f64::from(self.state.turn),
@@ -749,20 +750,22 @@ mod war_pipeline_advance_tests {
     }
 
     #[test]
-    fn advance_turn_with_ai_city_passes_three_turns_and_ticks_the_pair() {
+    fn advance_turn_with_ai_city_fails_explicitly_on_missing_owner_epoch_and_restores_state() {
+        // r5: PlayableState nie ma epoki per wlasciciel (brak badan); pipeline nie podstawia epoki
+        // startu, wiec produkcyjny advance_turn z AI posiadajacym miasta zwraca jawny blad (KNOWN_GAPS).
         let mut game = game_with_ai_city();
-        for _ in 0..3 {
-            game.advance_turn()
-                .expect("faza wojny ma producentow wejsc");
+        let queue_len = game.pending_phase_count();
+        let before = game.state().war.clone();
+        let err = game.advance_turn().expect_err("brak producenta epoki");
+        match &err {
+            PlayableError::WarTurn(message) => {
+                assert!(message.contains("epoki wlasciciela"), "{message}")
+            }
+            other => panic!("oczekiwano WarTurn, jest {other:?}"),
         }
-        assert_eq!(game.state().turn, 4);
-        let war = &game.state().war;
-        assert!(
-            war.diplomacy
-                .relation(PlayerId::new(1), PlayerId::new(2))
-                .is_some(),
-            "tick pary gracz<->AI zapisal relacje"
-        );
+        assert_eq!(game.state().turn, 1, "tura sie nie zwieksza");
+        assert_eq!(game.pending_phase_count(), queue_len, "kolejka cofnieta");
+        assert_eq!(game.state().war, before, "stan wojny bez zmian");
     }
 
     #[test]

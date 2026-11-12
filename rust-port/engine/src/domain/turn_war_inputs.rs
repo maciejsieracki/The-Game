@@ -8,13 +8,17 @@
 //! - `WAR_RULES_MULTIWAR_ENABLED = true` war-rules-multiwar.ts:50,
 //! - `forcedEraPeaceUntilNextEraByPairKey` / `diplomacyPairMeta` (main.ts:37336, :37431) z surowego `opaque`.
 //!
-//! Zasada: BRAK CICHYCH ZER. Kazdy skladnik mocy jest `Provided` (producent z danych stanu) albo
-//! `ExplicitZero` z uzasadnieniem plik:linia pinu (`EXPLICIT_ZERO_REASONS`). Pole, ktorego stan
-//! nie niesie, a ktore nie jest faktem strukturalnym, jest bledem (`WarInputsError`), nie zerem.
+//! Zasada: BRAK CICHYCH ZER. Kazdy skladnik mocy jest `Provided` (producent z danych stanu),
+//! `ExplicitZero` z uzasadnieniem plik:linia pinu (`EXPLICIT_ZERO_REASONS`) albo `Missing` (blad
+//! STRICT w `run_war_turn`). Pole, ktorego stan nie niesie, a ktore nie jest faktem strukturalnym,
+//! jest bledem (`WarInputsError` / `WarTurnError`), nie zerem ani stala.
 //!
-//! `PlayableState` NIE symuluje jeszcze fazy Economy: miasta sa w stanie zalozenia (populacja
-//! `FOUNDING_POPULATION`, kultura `FOUNDING_CULTURE`, brak budynkow/badan/ulepszen/religii/walk).
-//! Gdy magazyny te powstana, producenci tego modulu MUSZA czytac je zamiast stalych (`KNOWN_GAPS`).
+//! r5: `PlayableState` NIE symuluje fazy Economy ani badan. Nie ma populacji miast, kultury,
+//! budynkow, tech, religii, ulepszen, walk ani epoki per wlasciciel. Producenci NIE podstawiaja
+//! stalych zalozenia: skladniki zalezne od tych danych sa `Missing`, epoka wlasciciela jest bledem
+//! (`WarInputsError::OwnerEpochUnavailable`), wspolna granica pary z >2 miastami po obu stronach
+//! jest bledem (`SharedBorderUnavailable`). Produkcyjny `advance_turn` z AI posiadajacym miasta
+//! zwraca wiec jawny blad do czasu powstania producentow z `KNOWN_GAPS` (lista dla r6).
 //!
 //! Identyfikatory: Rust numeruje gracza od 1 (`HUMAN_OWNER_ID`), web od 0. Pipeline dziala w
 //! przestrzeni Rust; `web_owner_id` / `rust_owner_id` to jedyne mapowanie (testowane na wektorze pinu).
@@ -30,14 +34,8 @@ use crate::data::units_combat::{parse_power_params, parse_units, BoolOrText};
 use super::ai_diplomacy_turn::{pair_key, PairKey, PairWarParams};
 use super::brake_inputs::ForcedEraLock;
 use super::brake_power::{Component, ObjectivePowerRaw};
-use super::brake_power_army::{
-    armia_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
-};
+use super::brake_power_army::{armia_for_owner, ArmyUnit, ArmyUnitDef};
 use super::brake_power_producers::{apply_produced, produce_for_owner, ProducerInputs};
-use super::brake_power_rest::{
-    count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
-    ReligionCity,
-};
 use super::diplomacy_truce::PairMetaWeb;
 use super::diplomacy_war_peace_profile::{
     brake_relation_threshold, resolve_war_peace_profile, war_peace_params,
@@ -53,9 +51,11 @@ use super::war_turn_state::WarTurnState;
 pub const WAR_RULES_MULTIWAR_ENABLED: bool = true;
 /// Id gracza-czlowieka w `PlayableState` (`HUMAN_PLAYER_ID`); web = 0.
 pub const HUMAN_OWNER_ID: i64 = 1;
-/// Populacja miasta w stanie zalozenia (`AiCity::new`, `ai_turn.rs`): `PlayableCity` nie ma populacji.
+/// Wejscie-zaslepka producenta `miasta` (`produce_for_owner` wymaga populacji i kultury, ktorych
+/// `PlayableCity` nie ma). Wyniki zalezne od nich (`suma_ludkow`, `rekrut_ekw`, `kultura_imperium`)
+/// sa ZAWSZE nadpisywane `Component::Missing` - te stale nie wchodza do mocy (r5, NAPRAW 4).
 pub const FOUNDING_POPULATION: f64 = 1.0;
-/// Kultura skumulowana miasta w stanie zalozenia: `PlayableCity` nie ma pola kultury.
+/// Zaslepka kultury (patrz `FOUNDING_POPULATION`); nie wchodzi do mocy.
 pub const FOUNDING_CULTURE: f64 = 0.0;
 /// Klucze `opaque` (web `meta`): blokady pokoju epoki i meta par (pary `[klucz, wartosc]`).
 pub const KEY_PAIR_META: &str = "diplomacyPairMeta";
@@ -77,18 +77,37 @@ pub const EXPLICIT_ZERO_REASONS: [(&str, &str); 3] = [
     ),
 ];
 
-/// Znane luki producentow (NIE_ZMIERZONO wzgledem web); lista jawna, nie ciche domysly.
-pub const KNOWN_GAPS: [&str; 4] = [
-    "commonBorder: brak producenta wspolnej granicy (shared_border puste => tick bez kary granicznej)",
-    "epoka wlasciciela = epoka startu gry (PlayableState nie ma badan => empireEpochForOwner nie rosnie)",
+/// Skladniki mocy bez producenta w `PlayableState` (klucze web `breakdown.key`); produkcyjne wejscia
+/// ustawiaja je na `Component::Missing` (test egzekwuje zgodnosc z `run_war_turn`).
+pub const UNPRODUCED_POWER_COMPONENTS: [&str; 7] = [
+    "ludki",
+    "rekruci",
+    "terytorium",
+    "infra",
+    "tech",
+    "kultura",
+    "religia",
+];
+
+/// Znane luki producentow (NIE_ZMIERZONO wzgledem web) = lista producentow potrzebnych w r6.
+pub const KNOWN_GAPS: [&str; 5] = [
+    "epoka wlasciciela: brak badan/era per owner w PlayableState (web empireEpochForOwner main.ts:2419)",
+    "wspolna granica: pary z >2 miastami po obu stronach wymagaja ownersShareLandBorderLive (main.ts:5690)",
+    "populacja i kultura miast: PlayableCity bez pol => ludki, rekruci, terytorium, kultura = Missing",
+    "budynki (infra), tech zbadane, religia panstwowa: brak magazynow => infra, tech, religia = Missing",
     "TickContext: handel, religia, dobra wola, wiarygodnosc = domyslne (PlayableState ich nie niesie)",
-    "populacja/kultura miast = stan zalozenia (FOUNDING_POPULATION/FOUNDING_CULTURE), bez Economy",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WarInputsError {
     /// `params.epoch_id` poza `numer_epoki` (player-state-params.json).
     UnknownStartEpoch(String),
+    /// `PlayableState` nie niesie epoki per wlasciciel (brak badan); NIE podstawiamy epoki startu.
+    OwnerEpochUnavailable(i64),
+    /// Para ma >2 miasta po obu stronach: web wymaga `ownersShareLandBorderLive` (brak producenta).
+    SharedBorderUnavailable(i64, i64),
+    /// Wlasciciel (np. miasta) bez wpisu w `players`: brak profilu cywilizacji, nie zgadujemy.
+    UnknownOwner(i64),
     /// AI z miastami, ale brak gracza-czlowieka (para gracz<->AI nie ma sensu).
     NoHumanPlayer,
     /// Brak rekordu jednostki `Wojownik` w units.json.
@@ -103,6 +122,15 @@ impl std::fmt::Display for WarInputsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnknownStartEpoch(id) => write!(f, "war inputs: nieznana epoka startu '{id}'"),
+            Self::OwnerEpochUnavailable(id) => write!(
+                f,
+                "war inputs: brak producenta epoki wlasciciela {id} (PlayableState bez badan)"
+            ),
+            Self::SharedBorderUnavailable(a, b) => write!(
+                f,
+                "war inputs: para {a}-{b} ma >2 miasta po obu stronach, brak producenta wspolnej granicy"
+            ),
+            Self::UnknownOwner(id) => write!(f, "war inputs: wlasciciel {id} bez wpisu w players"),
             Self::NoHumanPlayer => write!(f, "war inputs: brak gracza-czlowieka"),
             Self::NoWarriorRecord => write!(f, "war inputs: brak rekordu Wojownik w units.json"),
             Self::BadPairKey(k) => write!(f, "war inputs: zly klucz pary '{k}'"),
@@ -170,7 +198,7 @@ pub fn power_raw_for_owner(
     state: &PlayableState,
     owner_id: i64,
     epoka: f64,
-    is_human: bool,
+    _is_human: bool,
 ) -> Result<ObjectivePowerRaw, WarInputsError> {
     let manpower: Vec<ManpowerCity> = state
         .cities
@@ -232,6 +260,16 @@ pub fn power_raw_for_owner(
         zdobycze_power: Component::Missing,
     };
     apply_produced(&mut raw, &produced);
+    // r5 (NAPRAW 4): wyniki zalezne od populacji/kultury, ktorych PlayableState nie niesie, to NIE moc
+    // (stale zalozenia zafalszowalyby wartosc) - jawnie Missing (blad STRICT), nie Provided(stala).
+    raw.suma_ludkow = Component::Missing; // ludnosc
+    raw.rekrut_ekw = Component::Missing; // rekruci (manpower z populacji)
+    raw.kultura_imperium = Component::Missing; // kultura
+    raw.heksy_terytorium = Component::Missing; // promien terytorium zalezy od populacji miasta
+                                               // infra / tech / religia: brak magazynow w PlayableState => brak producenta (nie Provided(0)).
+    raw.budynki = Component::Missing;
+    raw.tech_zbadane = Component::Missing;
+    raw.miasta_jednosc_religii = Component::Missing;
 
     // armia: Wojownik z units.json (jedyny rodzaj jednostki w PlayableState).
     let def = warrior_def()?;
@@ -246,53 +284,6 @@ pub fn power_raw_for_owner(
         })
         .collect();
     raw.jednostki = Component::Provided(armia_for_owner(&units, owner_id, count_settlers()));
-
-    // terytorium: unia dyskow promieni miast; heks istnieje, gdy lezy na mapie (q = x, r = y).
-    let tcities: Vec<TerritoryCityInput> = state
-        .cities
-        .iter()
-        .map(|c| TerritoryCityInput {
-            q: i32::from(c.position.x()),
-            r: i32::from(c.position.y()),
-            population: FOUNDING_POPULATION,
-            owner_id: c.owner_id.get() as i64,
-        })
-        .collect();
-    let map = &state.map;
-    let exists = |q: i32, r: i32| {
-        u16::try_from(q)
-            .ok()
-            .zip(u16::try_from(r).ok())
-            .is_some_and(|(x, y)| map.contains(super::PositionDto::new(x, y)))
-    };
-    raw.heksy_terytorium =
-        Component::Provided(terytorium_for_owner(&tcities, &[], owner_id, &exists));
-
-    // infra / tech / religia: producenci POWER-REST na (pustych) magazynach stanu.
-    let cities_ids: Vec<(u64, i64)> = state
-        .cities
-        .iter()
-        .map(|c| (c.id.get(), c.owner_id.get() as i64))
-        .collect();
-    let built: [(u64, usize); 0] = [];
-    raw.budynki =
-        Component::Provided(count_buildings_for_owner(&built, &cities_ids, owner_id) as f64);
-    raw.tech_zbadane = Component::Provided(count_tech_for_owner(is_human, 0, None) as f64);
-    let rel_cities: Vec<ReligionCity<'_>> = state
-        .cities
-        .iter()
-        .map(|c| ReligionCity {
-            owner_id: c.owner_id.get() as i64,
-            religion_state: None,
-        })
-        .collect();
-    // Brak religii panstwowej => 0 przed uzyciem progu dominacji (prog nieuzywany w tej galezi).
-    raw.miasta_jednosc_religii = Component::Provided(count_cities_with_dominant_state_religion(
-        &rel_cities,
-        owner_id,
-        None,
-        0.0,
-    ));
 
     // Jawne zera z uzasadnieniem (EXPLICIT_ZERO_REASONS): bitwy (oba modele), ulepszenia, zdobycze.
     raw.wygrane_bitwy = Component::ExplicitZero;
@@ -364,32 +355,39 @@ pub fn peace_locks_from_war(war: &WarTurnState) -> Result<PeaceLockFacts, WarInp
 }
 
 /// Web `diploBrakeWarParams(a, b)` dla kazdej pary graczy (dane z `diplomacy-war-peace-params.json`).
-pub fn pair_params_for(state: &PlayableState) -> BTreeMap<PairKey, PairWarParams> {
+/// Wlasciciel bez wpisu w `players` => `UnknownOwner` (r5: zadnego cichego profilu gracza).
+pub fn pair_params_for(
+    state: &PlayableState,
+) -> Result<BTreeMap<PairKey, PairWarParams>, WarInputsError> {
     let wp = war_peace_params();
     let me = state
         .players
         .iter()
         .find(|p| p.is_human)
         .map(|p| p.id.get() as i64);
-    let civ = |id: i64| {
-        let key = state
+    let ids: Vec<i64> = all_owner_ids(state).into_iter().collect();
+    // Web: `isMe(o) ? undefined : civKeyForOwnerId(o)`.
+    let mut civs: BTreeMap<i64, Option<&str>> = BTreeMap::new();
+    for &id in &ids {
+        let player = state
             .players
             .iter()
             .find(|p| p.id.get() as i64 == id)
-            .map(|p| p.civilization.as_str());
-        // Web: `isMe(o) ? undefined : civKeyForOwnerId(o)`.
-        if Some(id) == me {
-            None
-        } else {
-            key
-        }
-    };
-    let ids: Vec<i64> = all_owner_ids(state).into_iter().collect();
+            .ok_or(WarInputsError::UnknownOwner(id))?;
+        civs.insert(
+            id,
+            if Some(id) == me {
+                None
+            } else {
+                Some(player.civilization.as_str())
+            },
+        );
+    }
     let mut out = BTreeMap::new();
     for (i, &a) in ids.iter().enumerate() {
         for &b in &ids[i + 1..] {
-            let pa = resolve_war_peace_profile(civ(a), wp);
-            let pb = resolve_war_peace_profile(civ(b), wp);
+            let pa = resolve_war_peace_profile(civs[&a], wp);
+            let pb = resolve_war_peace_profile(civs[&b], wp);
             let higher = if pa.prog_wojny_relacji >= pb.prog_wojny_relacji {
                 pa
             } else {
@@ -404,40 +402,96 @@ pub fn pair_params_for(state: &PlayableState) -> BTreeMap<PairKey, PairWarParams
             );
         }
     }
-    out
+    Ok(out)
 }
 
 /// Konfiguracja produkcyjna fazy: pary z danych Rust, multiwar jak pin.
-pub fn production_config(state: &PlayableState) -> WarTurnConfig {
-    WarTurnConfig::new(pair_params_for(state), WAR_RULES_MULTIWAR_ENABLED)
+pub fn production_config(state: &PlayableState) -> Result<WarTurnConfig, WarInputsError> {
+    Ok(WarTurnConfig::new(
+        pair_params_for(state)?,
+        WAR_RULES_MULTIWAR_ENABLED,
+    ))
 }
 
-/// Pelne wejscia fazy Diplomacy z `PlayableState` + `WarTurnState` (epoki, moc, blokady).
+/// Epoki wlascicieli z `PlayableState`: producent NIE istnieje (brak badan/era per owner), wiec dla
+/// AI z miastami zawsze blad. Epoka startu (`params.epoch_id`) NIE jest epoka wlasciciela: web
+/// `empireEpochForOwner` (main.ts:2419) czyta bierzaca epoke (`playerStateByHuman.era`/`ownerEraByOwner`).
+pub fn epochs_from_state(state: &PlayableState) -> Result<BTreeMap<i64, f64>, WarInputsError> {
+    match all_owner_ids(state).into_iter().next() {
+        Some(id) => Err(WarInputsError::OwnerEpochUnavailable(id)),
+        None => Ok(BTreeMap::new()),
+    }
+}
+
+/// Wspolna granica pary (web `karaWspolnaGranica`, main.ts:22876): wymaga >2 miast po obu stronach ORAZ
+/// `ownersShareLandBorderLive`. Producent granicy nie istnieje: gdy ktoras strona ma <=2 miasta,
+/// wynik jest strukturalnie `false` (pierwszy czlon `&&`); w przeciwnym razie blad.
+pub fn shared_border_pairs(state: &PlayableState) -> Result<BTreeSet<PairKey>, WarInputsError> {
+    let count = |id: i64| {
+        state
+            .cities
+            .iter()
+            .filter(|c| c.owner_id.get() as i64 == id)
+            .count()
+    };
+    let ids: Vec<i64> = all_owner_ids(state).into_iter().collect();
+    for (i, &a) in ids.iter().enumerate() {
+        for &b in &ids[i + 1..] {
+            if count(a) > 2 && count(b) > 2 {
+                return Err(WarInputsError::SharedBorderUnavailable(a, b));
+            }
+        }
+    }
+    Ok(BTreeSet::new())
+}
+
+/// Pelne wejscia fazy Diplomacy; epoki z `epochs_from_state` (dzis zawsze blad dla AI z miastami).
 pub fn build_war_inputs(
     state: &PlayableState,
     war: &WarTurnState,
 ) -> Result<WarTurnInputs, WarInputsError> {
-    let mut inputs = WarTurnInputs::from_playable(state, war);
-    let has_ai_city = state.cities.iter().any(|c| {
+    if !has_ai_city(state) {
+        return Ok(WarTurnInputs::from_playable(state, war)); // brak par: wejsc nie trzeba
+    }
+    // Blokady pokoju najpierw: zepsute dane maja swoj wlasny blad, nie maskowany brakiem epok.
+    peace_locks_from_war(war)?;
+    build_war_inputs_with_epochs(state, war, &epochs_from_state(state)?)
+}
+
+fn has_ai_city(state: &PlayableState) -> bool {
+    state.cities.iter().any(|c| {
         state
             .players
             .iter()
             .any(|p| p.id == c.owner_id && !p.is_human)
-    });
-    if !has_ai_city {
-        return Ok(inputs); // brak AI z miastami: faza bez par, wejsc nie trzeba
+    })
+}
+
+/// Cialo produkcyjne `build_war_inputs` z wstrzyknietym zrodlem epok (przyszly producent albo wektor z pinu).
+/// Epoka musi byc podana dla KAZDEGO wlasciciela, inaczej `OwnerEpochUnavailable`.
+pub fn build_war_inputs_with_epochs(
+    state: &PlayableState,
+    war: &WarTurnState,
+    epochs: &BTreeMap<i64, f64>,
+) -> Result<WarTurnInputs, WarInputsError> {
+    let mut inputs = WarTurnInputs::from_playable(state, war);
+    if !has_ai_city(state) {
+        return Ok(inputs);
     }
     if inputs.human_ids.is_empty() {
         return Err(WarInputsError::NoHumanPlayer);
     }
-    let epoch = start_epoch_number(&state.params.epoch_id)?;
     for id in all_owner_ids(state) {
+        let epoch = *epochs
+            .get(&id)
+            .ok_or(WarInputsError::OwnerEpochUnavailable(id))?;
         let is_human = inputs.human_ids.contains(&id);
         inputs.epochs.insert(id, epoch);
         inputs
             .power_raw
             .insert(id, power_raw_for_owner(state, id, epoch, is_human)?);
     }
+    inputs.shared_border = shared_border_pairs(state)?;
     inputs.peace_locks = Some(peace_locks_from_war(war)?);
     Ok(inputs)
 }
