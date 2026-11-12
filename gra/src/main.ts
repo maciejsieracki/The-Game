@@ -27510,6 +27510,10 @@ async function boot(): Promise<void> {
     // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: hak live-testu (tylko ?civTest=1). Wejścia testowe:
     // zakup rekrutacji / trasa / osiągalność idą REALNYMI funkcjami gry (purchaseRecruitmentUnit,
     // computePath, reachableWithMergeTargets); hak tylko je woła i zwraca wynik.
+    // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: hak testowy (tylko ?civTest=1) -- ustawia tryb trafień
+    // w trakcie sceny playtestu (playtest nie przechodzi przez kreator; applyMenuParams ustawia
+    // 'losowe' przy starcie). Produkcja: window.__civSetHitMode === undefined.
+    if (isCivTestEnabled(window.location.search)) (window as any).__civSetHitMode = setActiveHitMode;
     if (isCivTestEnabled(window.location.search)) (window as any).__siegeBlockTestDebug = {
       tryPurchase: (cityId: string): { ok: boolean; queued: number; item: string | null } => {
         const c = cities.find(x => x.id === cityId);
