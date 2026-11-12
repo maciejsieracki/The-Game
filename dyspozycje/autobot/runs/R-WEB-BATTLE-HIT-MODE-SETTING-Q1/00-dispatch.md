@@ -1,4 +1,4 @@
-# R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (GAME, ustawienie + zmiana mechaniki bitwy, Operator SONNET — uzasadnienie niżej)
+# R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (GAME, ustawienie + zmiana mechaniki bitwy, Operator HAIKU (eskalacja do Sonnet dopiero po 2 nieudanych rundach Haiku))
 Decyzje właściciela (ABC, 2026-11-12):
  1) Zgłoszenie: w bitwach zbyt duży rozstrzał wyników (jedna jednostka wygrywa totalnie, druga nie zadaje strat). Duży rozrzut wynika z szansy trafienia × rzutu na każde uderzenie.
  2) Właściciel: dodać do USTAWIEŃ ZAAWANSOWANYCH generowania mapy przełącznik „Trafienia: losowe / pewne”. Obie ścieżki zostają w kodzie. Wybór gracza decyduje o rozstrzygnięciu bitew.
@@ -21,4 +21,4 @@ KRYTERIA BINARNE:
  (7) tsc --noEmit; 5 bramek referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test); istniejące testy bitew zielone.
 ALLOWLISTA: gra/src/battle/battleScene.ts (ścieżka rozstrzygania uderzenia), gra/src/game/combat.ts, gra/src/game/auto-battle-power.ts, gra/src/game/auto-battle-params.ts (tylko przełączenie upsetu przez hitMode — bez zmiany wartości), ustawienia nowej gry i zapisu (gra/src/ui/ — panel zaawansowany mapy; gra/src/main.ts tylko przekazanie pola), gra/tools/*-test.cjs, dyspozycje/autobot/runs/R-WEB-BATTLE-HIT-MODE-SETTING-Q1/**. Zakaz: WERSJE.md, JSON balansu, rust-port (dług REPIN wskaż: Rust ma własną bitwę).
 BAZA: origin/main 81e357dee.
-UZASADNIENIE MODELU SONNET (CLAUDE.md zasada 2): temat wieloplikowy (UI ustawień, meta zapisu, mechanika bitwy, parytet AUTO/SKIP, migracja zapisów); obiektywnie trudny. Obrona Haiku; Evaluator i FC Sonnet.
+MODEL: Operator HAIKU; po 2 nieudanych rundach Haiku — eskalacja do Sonnet z pisemnym uzasadnieniem (CLAUDE.md zasada 2). Obrona Haiku; Evaluator i FC Sonnet.
