@@ -9,14 +9,14 @@ Temat: `R-RUSTPORT-P6-AUDYT-PARYTETU-Q1` (runda 1/5, Operator, HAIKU). Temat dok
 
 ## 0. Ważne zastrzeżenia do źródeł
 
-1. **`REJESTR-RUST.md` nie istnieje w repo** (`git ls-files | grep -i rejestr` nie zwraca pliku rust; `git grep REJESTR-RUST` trafia tylko w pliki runów). Numery z dispatchu „z REJESTR-RUST.md” zastąpiono numerami z listy zadań sesji (#NN) oraz tabelą `dyspozycje/rust-port/REPIN-DRYFT-POMIAR-20261111.md` §1. Numeracja rejestru NIE_ZMIERZONO.
-2. **Piny w testach nie są jednolite.** Komentarze nagłówkowe testów cytują kilka commitów (liczby = liczba plików `rust-port/engine/tests/**/*.rs` zawierających dany hash, `grep -rl`):
-   - `edb8fb56` — 117 plików (commit istnieje: `git cat-file -t` → commit),
-   - `07d2fbd7` (pin dispatchu) — 71 plików,
-   - `91dc998a` — 59 plików (commit istnieje),
-   - `4bbef081` — 22 pliki, `dc8a3adc` — 10 plików, pojedyncze inne,
-   - 173 plików nie cytuje żadnego z powyższych hashy.
-   Wniosek: sformułowanie „wektory z pinu 07d2fbd72” obejmuje tylko część wektorów. Czy wektory `edb8fb56` / `91dc998a` są zgodne z `07d2fbd72` — **NIE_ZMIERZONO**.
+1. **`REJESTR-RUST.md` nie istnieje w repo** (`git ls-files | grep -i rejestr` nie zwraca pliku rust; `git grep REJESTR-RUST` trafia tylko w pliki runów). Numery z dispatchu „z REJESTR-RUST.md” zastąpiono numerami z listy zadań sesji (#NN) oraz tabelą `dyspozycje/rust-port/REPIN-DRYFT-POMIAR-20261111.md` §1. Numeracja rejestru NIE_ZMIERZONO. Numery #NN, statusy `pending` i przypisanie #96–#140 pochodzą z listy zadań sesji (poza repo, bez pliku:linia); stan opisany jest na chwilę pomiaru.
+2. **Piny w testach nie są jednolite.** Wcześniejsze liczby (117/71/59/22/10) NIE odtworzyły się przy ponownym pomiarze i są wycofane. Pomiar (`git grep -l <hash> 613ab8af9 -- rust-port/engine/tests`, identycznie w bazie `358cb6cf6`; liczba plików `*.rs` zawierających hash):
+   - `edb8fb56` — 192 pliki (commit istnieje: `git cat-file -t` → commit),
+   - `07d2fbd7` (pin dispatchu) — 186 plików,
+   - `91dc998a` — 120 plików (commit istnieje),
+   - `4bbef081` — 40 plików, `dc8a3adc` — 18 plików.
+   Suma 556 przy 460 plikach `.rs` oznacza, że część plików cytuje kilka hashy. Wystąpienia frazy `pin <hash>` w komentarzach: `edb8fb56` 71, `07d2fbd7` 67, `91dc998a` 31, `4bbef081` 4, `dc8a3adc` 3.
+   Podział wektorów per moduł wg pinu: **NIE_ZMIERZONO** (nie zrobiono mapowania plik testu → moduł → pin). Skala rozbieżności danych między pinami (`git diff --stat 07d2fbd72 <pin> -- gra/`, ostatnia linia): `edb8fb56` 1085 plików, `91dc998a` 933, `4bbef081` 820, `dc8a3adc` 887. Zgodność wektorów z `edb8fb56`/`91dc998a` z pinem `07d2fbd72`: **NIE_ZMIERZONO**. Wniosek: sformułowanie „wektory z pinu 07d2fbd72” obejmuje tylko część wektorów.
 3. Liczba „przypadków” w JSON to liczność tablic (`list` albo klucz-tablica w słowniku); nie jest to liczba przypadków testowych w sensie `#[test]`. Zob. `dowody/01-wektory-json-liczba-przypadkow.tsv`.
 
 ## 1. Moduły Rust z wektorami z pinu
@@ -62,7 +62,7 @@ Metoda: `dowody/skrypt-02-wolajacy.py` — dla każdego modułu `src/domain/**` 
 ai_era_unit_promotion, ai_move_range, ai_peace_city_offer, ai_war_march_plan, army_consolidation, army_follow_auto_merge, diplomacy_locks, diplomacy_rejection_cooldown, diplomacy_war_gates, economy_city_terrain, formation_rules, general_quick_follow, map_snapshot, rivers_c, rivers_d, rivers_e1, rivers_e2, siege_city_fortification, siege_engine_build, siege_nearby_lock, siege_tactics_autobatch, siege_tactics_blow_env, siege_tactics_breach, siege_tactics_class_adapters, siege_tactics_loop, trade_flow_apply, turn_economy_inputs_civ, turn_economy_inputs_native, turn_economy_post, turn_economy_preview, war_turn_forced, wonder_placement, work_tax.
 
 Wszystkie 33 są przywoływane wyłącznie w `rust-port/engine/tests/` (`grep -rlw`, 1–5 plików każdy; `dowody/skrypt-02-testy-tylko.sh`). Czyli: **kod istnieje, produkcyjnie niepodpięty**. Zastrzeżenia:
-- `battle_mode` NIE jest na liście 33: ma w `src/` jedno słowo-odwołanie w komentarzu doc (`save_load.rs:287`, `battle_mode::restored_setting_version`), a komentarz liczy się jako trafienie. Po odrzuceniu komentarza moduł jest bez wołającego w `src/` (kod funkcji w pliku własnym). Traktować jako kandydata na listę zerową.
+- `battle_mode` — rozstrzygnięcie rozbieżności 33 vs 34. Wariant pełnotekstowy (`dowody/02-moduly-domain-wolajacy-pelny-tekst.tsv`, skrypt `dowody/skrypt-02-wolajacy-pelny-tekst.py`) daje 33 moduły bez wołającego: jedyne trafienie `battle_mode` to komentarz doc w `save_load.rs:287` (`battle_mode::restored_setting_version`), więc przy metodzie słowo-dopasowania moduł ma 1 trafienie i nie jest na liście 33. Wariant obcinany po pierwszym `#[cfg(test)]` (`dowody/02-moduly-domain-wolajacy.tsv`, skrypt `dowody/skrypt-02-wolajacy.py`) daje 34 zera, bo `save_load.rs` ma `#[cfg(test)]` już w linii 41, więc komentarz w linii 287 jest ucinany. Ten wariant ma ślepotę: każdy plik z wczesnym `#[cfg(test)]` ukrywa kod produkcyjny poniżej, więc jego zera są zawyżone. Wg znaczenia (wołanie, nie komentarz) `battle_mode` NIE ma wołającego w `src/`/`benches/`, więc liczba modułów bez produkcyjnego wołającego to **34** (33 + `battle_mode`). Lista 33 poniżej pochodzi z wariantu pełnotekstowego. Liczba 33 wobec 34 wynika z metody, nie z danych.
 - `map_snapshot` jest na liście 33 (0 odwołań w `src/`), ma 5 plików testów. Funkcja `is_valid_map_snapshot` nie zawiera słowa-stemu w granicy słowa, więc nie zawyża wyniku.
 - Glob re-exporty (`pub use x::*`) istnieją w `okolica.rs` i `society_breakdown.rs` (submoduły), nie dotyczą modułów z listy zerowej (sprawdzone `grep`).
 - Wynik pomija wołania przez ścieżki bez słowa-stemu (niemożliwe w Rust poza glob re-export). Nie sprawdzono wołań z plików `build.rs` i `src/bin` (NIE_ZMIERZONO, jeśli istnieją; `ls rust-port/engine` pokazuje tylko `src`, `tests`, `benches`, `data`).
@@ -79,12 +79,12 @@ Wiązanie z zadaniami: wpięcie tych modułów to zadania #105 (AUDYT-LUK-B18), 
 | W8 r7 Q1–Q4 — kolejność faz (dyplomacja AI, kapitulacja głodowa/szturm, wojna z hamulca, rebelia) | #63 | pending (decyzja rano) | lista zadań |
 | 50 rozbieżności pól units.json vs pin 07d2fbd72 (balans) — zmierzone: 71 komórek / 51 jednostek | #27 | pending | lista zadań + pkt 1 |
 | DYSTANS — faza zwarcia (`resolve_combat`) | #10 | pending | lista zadań |
-| REPIN-DRYFT 1: korupcja Pałac II/III + Trybunał (30%) — pin 6 budynków, Rust 3 | #14 | pending | `REPIN-DRYFT-POMIAR…md` wiersz 1 (linia 22) |
-| REPIN-DRYFT 2: odlewnie 50/75 (epoka 2/3) | #15 | pending | wiersz 2 (linia 23) |
-| REPIN-DRYFT 3: handel kontaktowy (3a `emporion` w `TRADE_BUILDING_IDS`, 3b wspólna granica) | #16 | pending | wiersz 3a/3b (linie 24–25) |
-| REPIN-DRYFT 4: łodzie rybackie 6/6/6 vs 2/3/3 w `terrain-improvements.json` i `production_for` | #17 | pending | wiersz 4 (linia 26) |
-| REPIN-DRYFT 5: civBonusy w zapisie (web nie zapisuje; Rust nie zapisuje) | #18 | pending | wiersz 5 (linia 27) |
-| REPIN-DRYFT 6: dane dyplomacji (6a–6f: przewagaMilitarna, pokojAiAi, progNap 151 bez konsumenta, ekspansja graniczna, sisterAlliance bez portu, aiDiplomacyStance) | #19 | pending | wiersze 6a–6f (linie 28–33) |
+| REPIN-DRYFT 1: korupcja Pałac II/III + Trybunał (30%) — pin 6 budynków, Rust 3 | #14 | pending | `REPIN-DRYFT-POMIAR…md` wiersz 1 (linia 24; linia 22 = nagłówek, 23 = separator) |
+| REPIN-DRYFT 2: odlewnie 50/75 (epoka 2/3) | #15 | pending | wiersz 2 (linia 25) |
+| REPIN-DRYFT 3: handel kontaktowy (3a `emporion` w `TRADE_BUILDING_IDS`, 3b wspólna granica) | #16 | pending | wiersz 3a/3b (linie 26–27) |
+| REPIN-DRYFT 4: łodzie rybackie 6/6/6 vs 2/3/3 w `terrain-improvements.json` i `production_for` | #17 | pending | wiersz 4 (linia 28) |
+| REPIN-DRYFT 5: civBonusy w zapisie (web nie zapisuje; Rust nie zapisuje) | #18 | pending | wiersz 5 (linia 29) |
+| REPIN-DRYFT 6: dane dyplomacji (6a–6f: przewagaMilitarna, pokojAiAi, progNap 151 bez konsumenta, ekspansja graniczna, sisterAlliance bez portu, aiDiplomacyStance) | #19 | pending | wiersze 6a–6f (linie 30–35) |
 | UNIT-REPLACE L-1: awanse INFANTRY 21/23 brak w Rust `units.json` | #20 | pending | lista zadań |
 
 Uwaga: w `REPIN-DRYFT-POMIAR` pozycja 6c stwierdza, że `progNapBezterminowyRelacja` nie ma konsumenta po stronie Rust (`diplomacy.rs:259-261`, zgodnie z kodem); to nie jest rozstrzygnięcie gameplay.
@@ -112,7 +112,7 @@ Ten temat nie sprawdzał, które z tych zadań są już częściowo wpięte w ko
 
 ## 5. Tematy czekające na integrację (SHA FC)
 
-Źródło: `git ls-remote origin 'refs/heads/rust-port-wip/*'` → 318 refów, z czego **124** to `*-fc` (`dowody/05-wip-refs-origin.txt`). Test „czy FC jest przodkiem bazy” (`git branch -r --merged 358cb6cf6`) oraz równoważność łat (`git cherry 358cb6cf6 <FC>`, skrypt `dowody/skrypt-05-cherry.sh`).
+Źródło: `git ls-remote origin 'refs/heads/rust-port-wip/*'` → 318 refów, z czego **124** to nazwy kończące się na `-fc` (metoda: `awk '$1 ~ /-fc$/'` na `dowody/05-wip-refs-origin.txt`; `-fc` w dowolnym miejscu nazwy daje 129, w tym 5 z `-fc-rN`; 318 wierszy, 312 unikalnych SHA) (`dowody/05-wip-refs-origin.txt`). Test „czy FC jest przodkiem bazy” (`git branch -r --merged 358cb6cf6`) oraz równoważność łat (`git cherry 358cb6cf6 <FC>`, skrypt `dowody/skrypt-05-cherry.sh`).
 
 **20 gałęzi `*-fc` niebędących przodkiem bazy** (`dowody/05-fc-niescalone-wzgledem-bazy.txt`), z liczbą commitów bez odpowiednika łaty w bazie (`plus`):
 
@@ -139,7 +139,7 @@ Ten temat nie sprawdzał, które z tych zadań są już częściowo wpięte w ko
 | rdyplo-r2-fc | 5aef0ebdf | 0 (2 równoważne) |
 | rdyplo-r4-fc | 1a6a157bf | 0 (5 równoważnych) |
 
-Interpretacja (uczciwie): ancestry nie jest dowodem integracji, a `plus` nie mówi, czy brakujący commit to kod, czy dokument FC. Gałęzie `INTEG-B11`…`B14C` są w liście zadań oznaczone jako zintegrowane na `parity-v2` (#49, #56, #58, #84), więc ich `plus` 1–2 najpewniej to commit dokumentacyjny FC — **NIE_ZMIERZONO**. `W8-r1-fc` (1869) i `SAVESNAPSHOT-DESER-r1-fc` (1852) mają inną linię historii; ich status integracji jest NIE_ZMIERZONO.
+Interpretacja (uczciwie): ancestry nie jest dowodem integracji, a `plus` sam nie mówi, czy brakujący commit to kod, czy dokument FC; rozstrzyga to treść commitów opisana niżej. **Rozstrzygnięte (dowód `git cherry`):** dla tipów `INTEG-B11-fc` 22f7178ef, `INTEG-B12-fc` f94f47159, `INTEG-B13-fc` ee435eebe, `INTEG-B14A-fc` 70bd9743d, `INTEG-B14C-fc` 6131e2dad jedynymi commitami bez odpowiednika łaty w `358cb6cf6` (`+`) są commity dokumentów: `22f7178ef` (FC PASS-WITH-NOTES), `068092b25` (obrona 02a, dla B12), `f94f47159` (FC B12), `ee435eebe`, `70bd9743d`, `6131e2dad` (03-final-control.md). Kod tych integracji jest więc w bazie (odpowiedniki łat, `-`). Nie sprawdzono B14B (brak tipu w tabeli) i nie zweryfikowano, że każdy commit kodu z `*-fc` trafił do bazy: NIE_ZMIERZONO poza tymi pięcioma tipami. Przykładowe FC w bazie (ancestry): `eee18680c`, `9d4a2c17b`, `0fe9b3222`, `86223e037`, `fb7ac73d1`, `4b6595876`, `9164ab7d7` są przodkami `358cb6cf6`. `W8-r1-fc` (1869) i `SAVESNAPSHOT-DESER-r1-fc` (1852) mają inną linię historii; ich status integracji jest NIE_ZMIERZONO.
 
 Wiązanie z listą zadań (zadania oczekujące na wpięcie/integrację w kolejnych batchach):
 - #89 R7K7-B — FC PASS `da070d099` (wip `R-RUSTPORT-P6-R7K7B-Q1`), wg listy: integracja w B17 (zob. `INTEG-B17` w wip, ref `R-RUSTPORT-P6-INTEG-B17-Q1-ob`).
