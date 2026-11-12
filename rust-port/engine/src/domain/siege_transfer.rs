@@ -165,9 +165,15 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "siege_transfer_q5::record_player_ever_owned_city (wolajacy PO wejsciu garnizonu; NIE w apply_transfer - kolejnosc web main.ts:17816)",
         ),
     ),
-    // BRAK (Q5): pladrowanie stolicy (`capitalCaptureReportSlot`, `capital-capture.ts` zasady, eliminacja) - duzy klocek
-    // (main.ts:35558-~35780), osobny temat; NIE wycinany w tym temacie.
-    ("runCapitalCapturePlunder", EffectStatus::Missing),
+    // PORTED (Q6): pladrowanie stolicy - `runCapitalCapturePlunder` (main.ts:35558) jako `run_capital_capture_plunder`
+    // + czysty rdzen `capital-capture.ts` w `siege_capital_plunder`. Wektory: tests/p6_siege_capital_plunder.rs.
+    // Granice jawne: akcesory ekonomii, etykiety/tekst raportu i Power/zjednoczenie sa wejsciami wolajacego.
+    (
+        "runCapitalCapturePlunder",
+        EffectStatus::Ported(
+            "siege_capital_plunder::run_capital_capture_plunder (+ apply_barbarian_aware_capital_capture_plunder; wektory p6_siege_capital_plunder)",
+        ),
+    ),
     // BRAK (Q5): zdarzenie "zdobycie miasta" (`cityCaptureEventDetails`, mirror wierszy raportu, UI panelu wydarzen)
     // nie ma odpowiednika w rust-port/engine/src (grep 2026-11-12 pusty); wyglad UI/event store poza domena.
     ("recordCityCaptureEvent", EffectStatus::Missing),
