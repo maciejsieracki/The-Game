@@ -10,7 +10,7 @@ use civ_engine::domain::brake_power::{
     Component, MissingComponents, ObjectivePowerRaw, PowerCoeffs,
 };
 use civ_engine::domain::brake_power_producers::{
-    apply_produced, produce_for_owner, ProducerInputs,
+    apply_produced, produce_for_owner, ProducerInputs, COMPONENT_SOURCES,
 };
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::ManpowerCity;
@@ -109,7 +109,7 @@ fn all_open_components_missing_are_listed_in_component_order() {
 }
 
 #[test]
-fn open_components_without_producer_list_is_exactly_no_producer_keys() {
+fn open_components_without_producer_list_is_table_minus_apply_produced_keys() {
     let mut raw = complete();
     for field in [
         &mut raw.jednostki,
@@ -126,10 +126,17 @@ fn open_components_without_producer_list_is_exactly_no_producer_keys() {
     }
     let err = compute_objective_power(&raw, &coeff(), BattlePowerModel::EnemyMSum, &military())
         .unwrap_err();
-    // Brakujace wejscia wolajacego (te same 8 kluczy co przed POWER-SOURCES; producenci armia/terytorium/
-    // infra/tech/religia nie sa wpisywani automatycznie, wiec wolajacy musi je podac jawnie).
+    // Oczekiwane brakujace wejscia = tabela COMPONENT_SOURCES minus 4 pola wpisywane przez apply_produced
+    // (ludki, rekruci, miasta, kultura). Powiazane z tabela, nie z reczna lista.
+    let auto_applied = ["ludki", "rekruci", "miasta", "kultura"];
+    let expected: Vec<&str> = COMPONENT_SOURCES
+        .iter()
+        .map(|(k, _)| *k)
+        .filter(|k| !auto_applied.contains(k))
+        .collect();
+    assert_eq!(err.0, expected);
     assert_eq!(
-        err.0,
+        expected,
         vec![
             "armia",
             "bitwy",

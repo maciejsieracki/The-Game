@@ -33,7 +33,7 @@ pub enum ComponentSource {
 pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     (
         "armia",
-        ComponentSource::RustProducer("brake_power_army::armia_for_owner (web sumArmyMForOwner, main.ts; armyFieldPower = army_field_power, unit-power.ts)"),
+        ComponentSource::RustProducer("brake_power_army::armia_for_owner (web sumArmyMForOwner, main.ts:2672; armyFieldPower = army_field_power, unit-power.ts)"),
     ),
     (
         "bitwy",
@@ -47,7 +47,7 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ("miasta", ComponentSource::RustProducer("liczba miast wlasciciela (owner_city_ids)")),
     (
         "terytorium",
-        ComponentSource::RustProducer("brake_power_army::terytorium_for_owner (web countTerritoryHexes(statsTerritoryNodesForOwner), main.ts; kandydat territory.rs::collect_territory_hex_keys_by_owner nie jest tym skladnikiem)"),
+        ComponentSource::RustProducer("brake_power_army::terytorium_for_owner (web countTerritoryHexes(statsTerritoryNodesForOwner), main.ts:6135 + statsTerritoryNodesForOwner main.ts:5657; kandydat territory.rs::collect_territory_hex_keys_by_owner nie jest tym skladnikiem)"),
     ),
     (
         "infra",

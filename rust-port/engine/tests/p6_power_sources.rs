@@ -1,11 +1,13 @@
 //! P6-POWER-SOURCES (Q1): tabela `COMPONENT_SOURCES` (brake_power_producers) zgodna z kodem.
 //!
 //! - Kazdy `RustProducer` jest wywolywany tutaj przez swoja funkcje (kompilacja = istnienie) i daje
-//!   wartosc zgodna z wektorami z pinu 07d2fbd72 (armia, terytorium, infra, tech, religia) albo z
-//!   jawnym wejsciem (ludki, rekruci, miasta, kultura - wektory w p6_power_producers).
+//!   wartosc zgodna z wektorami z pinu 07d2fbd72 (armia, terytorium, infra, tech, religia; ludki,
+//!   rekruci, kultura - wektory z p6_power_producers_vectors). Wyjatek: `miasta` nie ma wektora pinu
+//!   (generator go nie emituje) - test reczny (`ownerCities.length`).
 //! - Lista `RustProducer` jest zamknieta: nowy producent bez przypadku testowego w `check_key` panikuje.
 //! - Kazdy `NoProducer` jest jawnie wymieniony (bitwy, ulepszenia, zdobycze) i ma uzasadnienie z odwolaniem
-//!   do pinu; zadna pozycja NoProducer nie jest wywolywana w tym tescie.
+//!   do pinu `plik.ts:linia`; zadna pozycja NoProducer nie jest wywolywana w tym tescie.
+//! - Tabela `REST_COMPONENT_SOURCES` (brake_power_rest) musi byc zgodna z `COMPONENT_SOURCES` (ten sam rodzaj).
 
 use std::collections::{BTreeMap, HashSet};
 
@@ -18,7 +20,8 @@ use civ_engine::domain::brake_power_producers::{
 };
 use civ_engine::domain::brake_power_rest::{
     count_buildings_for_owner, count_cities_with_dominant_state_religion, count_tech_for_owner,
-    set_size, ReligionCity,
+    has_pin_file_line_ref, rest_no_producer_keys, set_size, ReligionCity, RestSource,
+    REST_COMPONENT_SOURCES,
 };
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::ManpowerCity;
@@ -28,6 +31,7 @@ use civ_engine::domain::unit_power::UnitPowerInput;
 use serde_json::Value;
 
 const ARMY_VECTORS: &str = include_str!("p6_power_army_vectors/vectors.json");
+const PRODUCERS_VECTORS: &str = include_str!("p6_power_producers_vectors/vectors.json");
 const REST_VECTORS: &str = include_str!("p6_power_rest_vectors/vectors.json");
 
 fn load(json: &str, key: &str) -> Vec<Value> {
@@ -253,27 +257,85 @@ fn check_religia() -> usize {
     cases.len()
 }
 
-/// Producenci z `produce_for_owner` (ludki, rekruci, miasta, kultura): pelne wektory sa w
-/// p6_power_producers.rs; tu jawne wejscie, zeby tabela wskazywala zywa funkcje.
+fn manpower_from(arr: &[Value]) -> Vec<ManpowerCity> {
+    arr.iter()
+        .enumerate()
+        .map(|(idx, c)| {
+            let mut m =
+                ManpowerCity::new(format!("c{idx}"), int(&c["ownerId"]), f(&c["population"]));
+            m.manpower = c.get("manpower").map(f);
+            m
+        })
+        .collect()
+}
+
+fn pressure_from(arr: &[Value]) -> Vec<PressureCity> {
+    arr.iter()
+        .map(|c| PressureCity {
+            owner_id: int(&c["ownerId"]),
+            kultura_skumulowana: f(&c["kulturaSkumulowana"]),
+            religion_state: ReligionState::default(),
+        })
+        .collect()
+}
+
+/// Producenci z `produce_for_owner` (ludki, rekruci, kultura): wektory z pinu z
+/// p6_power_producers_vectors (te same, na ktorych testuje p6_power_producers.rs).
+/// `miasta`: brak wektora pinu (generator nie emituje) - jawne wejscie, `ownerCities.length`.
 fn check_legacy(key: &str) -> usize {
-    let manpower = vec![
-        ManpowerCity::new("a", 0, 10.0),
-        ManpowerCity::new("b", 1, 4.0),
-    ];
-    let pressure = vec![PressureCity {
-        owner_id: 0,
-        kultura_skumulowana: 12.5,
-        religion_state: ReligionState::default(),
-    }];
-    let owners = [0_i64, 1, 0];
+    let root: Value =
+        serde_json::from_str(PRODUCERS_VECTORS).expect("vectors.json musi sie parsowac");
+    let cases_of = |k: &str| -> Vec<Value> {
+        root[k]
+            .as_array()
+            .unwrap_or_else(|| panic!("brak tablicy {k}"))
+            .clone()
+    };
     match key {
-        "ludki" => assert_same(ludki_for_owner(&manpower, 0), 10.0, "ludki"),
-        "rekruci" => assert!(rekruci_ekw_for_owner(&manpower, 0, 1.0, 1.0, 1.0).is_finite()),
-        "miasta" => assert_same(miasta_for_owner(&owners, 0), 2.0, "miasta"),
-        "kultura" => assert_same(kultura_for_owner(&pressure, 0), 12.5, "kultura"),
+        "ludki" => {
+            let cases = cases_of("ludki");
+            for (idx, c) in cases.iter().enumerate() {
+                let cities = manpower_from(c["cities"].as_array().expect("cities"));
+                let got = ludki_for_owner(&cities, int(&c["owner"]));
+                assert_same(got, f(&c["expect"]), &format!("ludki[{idx}]"));
+            }
+            cases.len()
+        }
+        "rekruci" => {
+            let cases = cases_of("pobor");
+            for (idx, c) in cases.iter().enumerate() {
+                let cities = manpower_from(c["cities"].as_array().expect("cities"));
+                let got = rekruci_ekw_for_owner(
+                    &cities,
+                    int(&c["owner"]),
+                    f(&c["epoka"]),
+                    f(&c["maxMult"]),
+                    f(&c["costMult"]),
+                );
+                assert_same(
+                    got,
+                    f(&c["expect"]["rekrutEkw"]),
+                    &format!("rekruci[{idx}]"),
+                );
+            }
+            cases.len()
+        }
+        "kultura" => {
+            let cases = cases_of("kultura");
+            for (idx, c) in cases.iter().enumerate() {
+                let cities = pressure_from(c["cities"].as_array().expect("cities"));
+                let got = kultura_for_owner(&cities, int(&c["owner"]));
+                assert_same(got, f(&c["expect"]), &format!("kultura[{idx}]"));
+            }
+            cases.len()
+        }
+        "miasta" => {
+            let owners = [0_i64, 1, 0];
+            assert_same(miasta_for_owner(&owners, 0), 2.0, "miasta");
+            1
+        }
         other => panic!("RustProducer `{other}` bez testu producenta"),
     }
-    1
 }
 
 /// Dla RustProducer: wolana funkcja daje wartosc na wektorach (lub jawnym wejsciu).
@@ -342,6 +404,40 @@ fn no_producer_reasons_cite_pin_source() {
                 reason.starts_with("web "),
                 "uzasadnienie NoProducer dla {key} musi zaczynac sie od zrodla web: {reason}"
             );
+            assert!(
+                has_pin_file_line_ref(reason),
+                "uzasadnienie NoProducer dla {key} bez odwolania plik.ts:linia pinu: {reason}"
+            );
         }
     }
+}
+
+#[test]
+fn rest_table_kinds_match_component_sources() {
+    // Kazdy wpis tabeli pozostalych 6 skladnikow ma ten sam rodzaj (Rust/NoProducer) w tabeli glownej.
+    for (key, rest) in REST_COMPONENT_SOURCES.iter() {
+        let main = COMPONENT_SOURCES
+            .iter()
+            .find(|(k, _)| *k == *key)
+            .map(|(_, s)| *s)
+            .unwrap_or_else(|| panic!("REST `{key}` brak w COMPONENT_SOURCES"));
+        let same = matches!(
+            (rest, main),
+            (
+                RestSource::RustProducer(_),
+                ComponentSource::RustProducer(_)
+            ) | (RestSource::NoProducer(_), ComponentSource::NoProducer(_))
+        );
+        assert!(
+            same,
+            "dryf: `{key}` REST={rest:?} vs COMPONENT_SOURCES={main:?}"
+        );
+    }
+    // Otwarte (NoProducer) skladniki z tabeli pozostalych == NoProducer tabeli glownej na tych kluczach.
+    let rest_keys: Vec<&str> = REST_COMPONENT_SOURCES.iter().map(|(k, _)| *k).collect();
+    let main_open_in_rest: Vec<&str> = no_producer_keys()
+        .into_iter()
+        .filter(|k| rest_keys.contains(k))
+        .collect();
+    assert_eq!(rest_no_producer_keys(), main_open_in_rest);
 }
