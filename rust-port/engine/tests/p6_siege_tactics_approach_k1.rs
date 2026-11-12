@@ -6,8 +6,9 @@
 //! (pin 07d2fbd72): `_siegeMoveRefused` 7962-7970, `_siegeSafeApproach` 8107-8136 (straznik SHA-256 w generatorze).
 
 use civ_engine::domain::siege_tactics_approach::{
-    siege_move_refused, siege_safe_approach_goal, ApproachUnit, ApproachWallState, Threat, BF_COLS,
-    BF_ROWS, SAFE_APPROACH_MAX_VISITED,
+    siege_move_refused, siege_safe_approach_goal, siege_shooter_threats, ApproachUnit,
+    ApproachWallState, ShooterDefender, SiegeTowerRef, Threat, BF_COLS, BF_ROWS,
+    SAFE_APPROACH_MAX_VISITED,
 };
 use std::collections::{BTreeMap, HashSet};
 
@@ -322,4 +323,63 @@ fn safe_approach_nan_i_infinity_jak_w_webie() {
         siege_safe_approach_goal((5, 5), (6.0, 5.0), &th, |_, _| true),
         None
     );
+}
+
+/// Kompozycja `_siegeShooterThreats` (wiersz 29) z `_siegeMoveRefused` na tym samym stanie. Oczekiwane wartosci
+/// wyliczone recznie ze wzoru slack = |c-q| + |r-r0| - zasieg (zrodla: obronca (0,0) zasieg 2, wieza (10,3) zasieg 2).
+fn shooter(can_shoot: bool) -> ShooterDefender {
+    ShooterDefender {
+        q: 0.0,
+        r: 0.0,
+        dead: false,
+        fading_out: false,
+        removed: false,
+        routed: false,
+        can_shoot,
+        range_base: 2.0,
+    }
+}
+
+#[test]
+fn kompozycja_zagrozenia_strzelcow_i_wiezy_z_odmowa_kroku() {
+    let ru = infantry();
+    let wall = wall_open();
+    let tower = [SiegeTowerRef {
+        destroyed: false,
+        row: 3.0,
+    }];
+    let defenders = [shooter(true)];
+    let th = siege_shooter_threats(&defenders, &tower, 10.0, 2.0, |d| d.range_base);
+    assert_eq!(th.len(), 2);
+    // Krok (3,0) -> (1,0): slack celu -1 (obronca), slack startu 1 -> odmowa.
+    assert!(siege_move_refused(&ru, &wall, &th, (3.0, 0.0), (1.0, 0.0)));
+    // Krok (0,0) -> (1,0): oddalanie od obroncy (-2 -> -1) -> dopuszczone.
+    assert!(!siege_move_refused(&ru, &wall, &th, (0.0, 0.0), (1.0, 0.0)));
+    // Wieza sama: krok (8,3) -> (9,3): slack celu -1 < slack startu 0 -> odmowa.
+    let th_tower = siege_shooter_threats(&[], &tower, 10.0, 2.0, |d| d.range_base);
+    assert_eq!(th_tower.len(), 1);
+    assert!(siege_move_refused(
+        &ru,
+        &wall,
+        &th_tower,
+        (8.0, 3.0),
+        (9.0, 3.0)
+    ));
+}
+
+#[test]
+fn kompozycja_bez_strzelca_z_amunicja_i_bez_wiezy_daje_pusta_liste() {
+    let ru = infantry();
+    let wall = wall_open();
+    // Obronca bez amunicji (can_shoot = false) i brak zniszczonych/zywych wiez: lista pusta -> dopuszczone.
+    let th = siege_shooter_threats(&[shooter(false)], &[], 10.0, 2.0, |d| d.range_base);
+    assert!(th.is_empty());
+    assert!(!siege_move_refused(&ru, &wall, &th, (3.0, 0.0), (1.0, 0.0)));
+    // Wieza zniszczona jest pomijana w liscie zagrozen.
+    let destroyed = [SiegeTowerRef {
+        destroyed: true,
+        row: 3.0,
+    }];
+    let th2 = siege_shooter_threats(&[], &destroyed, 10.0, 2.0, |d| d.range_base);
+    assert!(th2.is_empty());
 }

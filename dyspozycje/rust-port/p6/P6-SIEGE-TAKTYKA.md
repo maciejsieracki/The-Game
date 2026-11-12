@@ -228,7 +228,7 @@ Dla L6–L8 (`besiegeArmyGroups`, `besiegeLockTargets`, `stackGroupIdOf`) status
 | K6 | Bitwa ręczna / „Pomiń" (L5) | `:3572`, `:3718` | K5 | Poza zakresem engine do czasu K5. |
 | K7 | AI stanowiska oblężenia (`decideAISiegeStance` + estymatory, wiersze 34.x) — POZA pętlą L2–L5, nie wchodzi w łańcuch K1–K6 | `gra/src/game/siegeAi.ts:81-292`, wpięcie `main.ts:18053` i `main.ts:18135` | konfiguracja `SiegeAi` (`rust-port/engine/src/data/units_combat.rs:260`, już jest), typy `SiegeUnit`/`SiegeCity` | Osobny temat, nie blokuje K1–K6. Zob. §6. |
 
-**Status K1 (temat `R-RUSTPORT-P6-SIEGE-TAKTYKA-K1-Q1`, runda 1, Operator):** wiersz 29 PORTED; wiersz 30 PARTIAL (część decyzyjna `_siegeSafeApproach` PORTED, marsz `_siegeWalkTo` BRAK). Klocek K1 z tabeli powyżej (stall PAT) jest odrębnym, niezrealizowanym klockiem; oznaczenie „K1” w dispatchu K1-Q1 dotyczy wierszy 29–30.
+**Status tematu `R-RUSTPORT-P6-SIEGE-TAKTYKA-K1-Q1` (wiersze 29–30, runda 1, Operator; etykieta „K1-Q1” NIE oznacza klocka K1 z tabeli klocków):** wiersz 29 PORTED; wiersz 30 PARTIAL (część decyzyjna `_siegeSafeApproach` PORTED, marsz `_siegeWalkTo` + `_bfsFirstStep` + `_doMove` + `_schedule` BRAK). Kryterium (1) dispatchu dla wiersza 30 NIESPEŁNIONE do decyzji właściciela (A: zaakceptować PARTIAL, B: K1b). Klocek K1 z tabeli klocków (stall PAT, `_checkEnd`, wiersz 9) jest odrębnym, niezrealizowanym klockiem.
 
 Zależności: K0a → K3; K1 → K3; K2 → K3; K4 → K2; K3 + K4 → K5 → K6. Kolejność K0a → K1 → K2 → K3 bez zmian względem r2. L9–L10 (SIEGE-NEARBY, UI) poza tą listą (D-OBL-5). K7 niezależny.
 
