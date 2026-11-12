@@ -9521,3 +9521,9 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - 2026-11-12 FALA 665 WDROŻONA na ROBOCZĄ (FC 9ee05d2a8 + a20c9f9dc): W38 — jednorazowa oferta handlowa AI→gracz nie oddaje więcej PW niż AI otrzymuje (filtr enqueue, helper aiOneshotHandelOverpaysPlayer; decyzja właściciela „dodaj limit”); oferta jest odrzucana, nie przycinana; evaluateProposal bez zmian. W36 — tabela bramek w R-PROC-AUTOBOT §6 odświeżona (tech-tree 20, unit-replace 21, moc jednostek 6/0), niezmierzone wiersze oznaczone NIE_ZMIERZONO. Częstość ofert po filtrze → pomiar W35.
 
 - 2026-11-12 W39 R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1: FC PASS-WITH-NOTES 1ec3a2505 (tylko narzędzie pomiarowe gra/tools/measure-siege-fallback-vs-skip-auto.cjs, wchodzi z kolejną FALĄ). Wynik pomiaru: _skipInstantFallback (computeInstantResult na kopiach, nie mutuje rosterów) daje INNE wyniki niż SKIP/AUTO (z wyłomem: zwycięzca zależy od ziarna; SKIP: obrońca po PAT 400 tur, straty 26/11–13), ale w normalnym przepływie UI ta ścieżka jest NIEOSIĄGALNA — „Pomiń” w fazie rozstawiania woła _endDeployPhase → _startBattle (started=true). DECYZJA WŁAŚCICIELA: udokumentować, BEZ zmian w kodzie. AUTO 1× niezmierzony (pełny przebieg ~50 min/komórkę); wymagałby wznawialnego runnera — nie zlecam bez zgłoszonego problemu.
+
+### FALA 666 (2026-11-12) — wdrożone na ROBOCZĄ
+- main 81e357dee, MD5 index 915466b5b368205ae223b4f804989568 (Raw = lokalny), audio-pack 1–3 zgodne.
+- W37 R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1: etykiety „Relacja z perspektywy AI / gracza", neutralny ton przy symetrycznej wymianie.
+- W39 R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1: tylko narzędzie pomiarowe (decyzja: udokumentować, bez zmian w grze).
+- W34 r2 R-WEB-LIVE-VERIFY-WAVE-650-664-Q1 pkt 4: FC PASS-WITH-NOTES (komunikat kolejki fortyfikacji raz na wczytanie; powtarzalność N>=3 i widoczność przy otwartym menu NIE_ZMIERZONO) — tylko skrypt/evidence, bez deployu kodu.
