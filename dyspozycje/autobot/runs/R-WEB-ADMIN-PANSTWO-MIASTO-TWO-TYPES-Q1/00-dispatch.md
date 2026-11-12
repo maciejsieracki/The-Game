@@ -45,3 +45,10 @@ Z4: tryb automatyzacji per miasto (pola miasta) — pola bez miasta = tryb Pańs
 
 Kryteria z dispatchu r1 pozostają (1–8). Testy: tsc, 5 bramek referencyjnych, testy administratora, dowód w Chromium oznaczony NIE_ZMIERZONO, jeśli niewykonalny.
 Warunek startu: wolne miejsce na dysku ≥ 6 GB.
+
+## DECYZJA WŁAŚCICIELA (2026-11-12, ABC) — korekta Z4 i podział tematu
+
+- Z4 ZMIENIONE: tryb automatyzacji jest JEDEN dla całego Państwa (nie per miasto). Tryby miast przestają wpływać na auto-ulepszenia; pola wszystkich miast i pola bez miasta mają jeden tryb Państwa.
+- PODZIAŁ na dwa tematy:
+  1. SILNIK (ten temat, #316): stan administratora Państwa, koszt utrzymania raz na Państwo, auto-ulepszenia w miastach gracza wg jednego trybu Państwa, migracja zapisu z administratora miasta, bramka auto-ulepszeń.
+  2. PANEL I NAZWY (nowy temat, #327): zatrudnianie/zwalnianie administratora Państwa w panelu Państwa; nazwy „Administrator państwa” i „Administrator miasta” w tekstach dla gracza.
