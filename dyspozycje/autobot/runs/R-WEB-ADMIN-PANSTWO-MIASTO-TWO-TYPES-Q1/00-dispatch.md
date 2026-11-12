@@ -52,3 +52,11 @@ Warunek startu: wolne miejsce na dysku ≥ 6 GB.
 - PODZIAŁ na dwa tematy:
   1. SILNIK (ten temat, #316): stan administratora Państwa, koszt utrzymania raz na Państwo, auto-ulepszenia w miastach gracza wg jednego trybu Państwa, migracja zapisu z administratora miasta, bramka auto-ulepszeń.
   2. PANEL I NAZWY (nowy temat, #327): zatrudnianie/zwalnianie administratora Państwa w panelu Państwa; nazwy „Administrator państwa” i „Administrator miasta” w tekstach dla gracza.
+
+## DODATEK orkiestratora — runda 5 (ostatnia; po FC FAIL r4, 2026-11-12)
+
+Baza rundy 5: c0e54a705 (kandydat obrony r4 z kodem 1003bdc98).
+Jedyny zarzut do naprawy (Z4): tryb automatyzacji ma być JEDEN dla Państwa. Trzy miejsca w gra/src/main.ts nadal czytają focus, pracaAutoPercent i foodImprovementStages per miasto przez effectiveUlepszeniaForCity (ok. linii 40726, 40735, 40750) — zamienić na ulepszeniaEmpireForOwner(c.ownerId). Dodać w gra/tools/admin-panstwo-city-gate-test.cjs asercję, że override miasta nie zmienia wyboru automatu.
+Allowlista rundy 5: gra/src/main.ts (tylko te trzy miejsca i wywołania potrzebne do nich), gra/tools/admin-panstwo-city-gate-test.cjs. Nie zmieniać panelu (#327), tekstów (#327), administrators-wizard-test.cjs.
+Kryteria 1–8 z dispatchu r1 pozostają tam, gdzie dotyczą silnika. Panel i nazwy to #327 (nie blokują silnika).
+Dowód w Chromium: NIE_ZMIERZONO jeśli niewykonalny.
