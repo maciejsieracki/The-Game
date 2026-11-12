@@ -16,7 +16,7 @@ use civ_engine::domain::war_turn_state::WarTurnState;
 use serde_json::json;
 
 fn forced_stone_war(state: &mut WarTurnState, attacker: i64, target: i64, turn: f64) {
-    declare_forced_wars(state, &[(ForcedEra::Stone, attacker, target)], turn);
+    declare_forced_wars(state, &[(ForcedEra::Stone, attacker, target)], turn).unwrap();
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn forced_war_pair_is_not_counted_as_regular_city_loss() {
 #[test]
 fn forced_war_pair_guard_is_era_independent() {
     let mut state = WarTurnState::default();
-    declare_forced_wars(&mut state, &[(ForcedEra::Iron, 3, 4)], 50.0);
+    declare_forced_wars(&mut state, &[(ForcedEra::Iron, 3, 4)], 50.0).unwrap();
     assert_eq!(
         register_regular_war_city_loss(&mut state, 4, 3, true, true),
         CityLossVerdict::ForcedWarPair
