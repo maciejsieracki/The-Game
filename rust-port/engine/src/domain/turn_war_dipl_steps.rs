@@ -20,8 +20,11 @@
 //!   `allWiarygodnoscOwnerIds()` :24273): WPIETE w kolejnosci pinu: po D3 (`tickCyclicResourceTradeDeals`), przed D5
 //!   (`tickTruceExpiries`). Trudnosc (`_menuDifficulty`) = `DiplStepsInputs::difficulty` (domyslnie normalna jak
 //!   `default:` w webie); wlasciciele P4 = `owner_ids` bez `credibility_excluded_owners` (barbarzyncy, §1).
-//!   Hak "wojna zeruje licznik P4" (`main.ts:12223`) to `CredibilityRegistry::note_war_entered`: BRAK wywolania
-//!   (deklaracje wojny sa poza tym krokiem), zapis pola `wiarygodnoscOstatniaWojnaTuraByOwner` czytany bez zmian.
+//!   Hak "wojna zeruje licznik P4" (`main.ts:12223`) to `CredibilityRegistry::note_war_entered`: WPIETY od
+//!   R-RUSTPORT-P6-CRED-WOJNA-Q1 w `note_war_declarations`, wolany w `run_war_turn` PO hamulcu D8 dla par z
+//!   `BrakePhaseOutput::declarations` (wojny z progu, AI-AI i gracz-AI z `may_declare`). Deklaracje wojny
+//!   wymuszonej (W3, `war_turn_declare.rs`) i wypowiedzenia z sojuszu/klastra NIE sa tu wpiete (web: poza
+//!   `chargeWarDeclarationCredibility` tego kroku; sciezki alians/klaster = NIE_ZMIERZONO, patrz raport).
 //! - D5 `tickTruceExpiries` (:12122) -> `truce_end_tick_pair` na `TruceDiplomacy` (porty z `diplomacy_truce_flow`):
 //!   WPIETE (`truce_expiry_action` jest wolane wewnatrz `truce_end_tick_pair`).
 //! - D6 `tickDiplomacyPayments` + zerwania za danine (:24275-24298) -> `tick_diplomacy_payments`,
@@ -863,6 +866,27 @@ pub struct DiplStepsContext<'a> {
     pub owner_ids: &'a [i64],
     pub turn: f64,
     pub inputs: &'a DiplStepsInputs,
+}
+
+/// Hak P4 (`main.ts:12223-12224`, R-RUSTPORT-P6-CRED-WOJNA-Q1): KAZDA wojna zeruje licznik "bez wojny" OBU stron.
+/// Wolane w `run_war_turn` po hamulcu (`run_brake_phase`) dla kazdej pary, ktora faktycznie weszla w wojne w tej
+/// turze (`BrakePhaseOutput::declarations`, tam gdzie web woła `chargeWarDeclarationCredibility`). Zapis do `opaque`
+/// tylko zmienionych kluczy; brak wojny = brak zmiany stanu.
+pub fn note_war_declarations(
+    war: &mut WarTurnState,
+    declarations: &[(i64, i64)],
+    turn: f64,
+) -> Result<(), WarTurnError> {
+    if declarations.is_empty() {
+        return Ok(());
+    }
+    let before = CredibilityRegistry::from_meta(&war.opaque).map_err(|e| err(e.to_string()))?;
+    let mut reg = before.clone();
+    for &(a, b) in declarations {
+        reg.note_war_entered(a, b, turn);
+    }
+    reg.store_changes(&before, &mut war.opaque);
+    Ok(())
 }
 
 /// D1 -> D2 -> D3 -> D4 -> D5 -> D6 -> D7 (galaz OFF + `syncRelationFromDeals`). Atomowo.

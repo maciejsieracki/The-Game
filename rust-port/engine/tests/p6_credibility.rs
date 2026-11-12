@@ -700,7 +700,18 @@ fn three_turns_write_credibility_d2_finish_and_d4_streams() {
     // rejestr w zapisie
     let meta = war.to_meta_json();
     assert!(meta.contains_key(KEY_EVENTS) && meta.contains_key(KEY_STREAMS));
-    assert!(!meta.contains_key(KEY_LAST_WAR) && !meta.contains_key(KEY_P4_MILESTONES));
+    // R-RUSTPORT-P6-CRED-WOJNA-Q1: fixture ma wojne AI-AI z hamulca w turze 2 (N = 2), wiec hak P4
+    // zapisuje licznik "ostatnia wojna" obu stron (web `main.ts:12223-12224`). Milestone P4 nadal brak.
+    assert!(meta.contains_key(KEY_LAST_WAR) && !meta.contains_key(KEY_P4_MILESTONES));
+    assert_eq!(
+        reg_of(&war)
+            .last_war_turn
+            .iter()
+            .filter(|(_, t)| *t == 2.0)
+            .count(),
+        2,
+        "obie strony wojny AI-AI w turze 2"
+    );
 
     // --- Zapis -> odczyt -> tura 4 daje to samo co ciagla gra (rejestr przechodzi przez zapis).
     let mut reloaded = WarTurnState::from_meta_json(&meta);
