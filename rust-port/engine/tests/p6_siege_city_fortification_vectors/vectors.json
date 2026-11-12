@@ -1,0 +1,6215 @@
+{
+ "source": "gra/src/game/city-fortification.ts @ 07d2fbd72f758705f8e1d59cc4968027ffbafe75, linie 29-36, 61-70, 76-79, 96-98",
+ "generator": "rust-port/engine/tests/p6_siege_city_fortification_gen.mjs (node v22.23.4, seed 217; expect = wykonanie pinu)",
+ "cityFortificationKind": [
+  {
+   "builtBuildingIds": null,
+   "expect": "none",
+   "branch": "null"
+  },
+  {
+   "expect": "none",
+   "branch": "null"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "none"
+  },
+  {
+   "builtBuildingIds": [
+    ""
+   ],
+   "expect": "none",
+   "branch": "none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "mury_kamienne",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "targ",
+    "fort",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "Mury",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "palisada_x",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "",
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "swiatynia",
+    "targ"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "",
+    "mury_kamienne",
+    "",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "mury",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "palisada",
+    "kuznia",
+    "mury_kamienne",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "mury_kamienne",
+    "targ",
+    "",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "palisada",
+    "mury",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "Mury",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "kuznia",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "swiatynia",
+    "targ",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada_x",
+    "Mury",
+    "fort",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "kuznia",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "palisada_x",
+    "",
+    "kuznia",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "targ",
+    "Mury",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "fort",
+    "mury",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "fort",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "targ",
+    "fort",
+    "fort",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "kuznia",
+    "mury_kamienne",
+    "swiatynia",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury",
+    "mury",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "targ",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "targ",
+    "kuznia",
+    "fort",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "mury_kamienne",
+    "swiatynia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "targ",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "mury",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "palisada_x",
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "Mury",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "Mury",
+    "",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada",
+    "palisada",
+    "kuznia",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "palisada_x",
+    "swiatynia",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "Mury",
+    "kuznia",
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "palisada_x",
+    "palisada_x",
+    "mury",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "mury_kamienne",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "Mury",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "Mury",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "fort",
+    "swiatynia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "mury_kamienne",
+    "fort",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "mury",
+    "mury_kamienne",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "palisada_x",
+    "mury_kamienne",
+    "palisada",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "",
+    "palisada_x",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury_kamienne",
+    "palisada",
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "palisada_x",
+    "palisada",
+    "targ",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "Mury",
+    "mury_kamienne",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "palisada_x",
+    "swiatynia",
+    "fort",
+    "swiatynia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "targ",
+    "",
+    "kuznia",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "Mury",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "palisada_x",
+    "fort",
+    "fort",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "palisada_x",
+    "targ",
+    "targ",
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "palisada",
+    "palisada",
+    "targ",
+    "swiatynia"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "mury",
+    "palisada",
+    "",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "targ",
+    "palisada",
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "fort",
+    "swiatynia",
+    "mury",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "fort",
+    "Mury",
+    "kuznia",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "palisada_x",
+    "swiatynia",
+    "mury",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "mury_kamienne",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "",
+    "mury",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "swiatynia",
+    "targ",
+    "palisada",
+    "Mury"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "palisada_x",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "mury_kamienne",
+    "kuznia",
+    "fort",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury_kamienne",
+    "kuznia",
+    "fort",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "palisada_x",
+    "swiatynia",
+    "swiatynia",
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury",
+    "mury_kamienne",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "targ",
+    "targ",
+    "palisada_x",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada_x",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "",
+    "mury_kamienne",
+    "targ",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada_x",
+    "swiatynia",
+    "kuznia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "Mury",
+    "mury",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "mury_kamienne",
+    "fort",
+    "palisada_x",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "kuznia",
+    "palisada",
+    "",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "fort",
+    "palisada_x",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "kuznia",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "swiatynia",
+    "targ",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "fort",
+    "swiatynia",
+    "mury_kamienne",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "targ",
+    "fort",
+    "palisada_x",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "mury_kamienne",
+    "kuznia",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "kuznia",
+    "mury_kamienne",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "swiatynia",
+    "",
+    "Mury",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "",
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "",
+    "swiatynia",
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "fort",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "mury_kamienne",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "fort",
+    "Mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "palisada_x",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "Mury",
+    "kuznia",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "palisada_x",
+    "palisada",
+    "kuznia"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "targ",
+    "mury_kamienne",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "palisada",
+    "targ",
+    "kuznia",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "Mury",
+    "mury",
+    "palisada",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "kuznia",
+    "kuznia",
+    "",
+    "swiatynia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "mury_kamienne",
+    "swiatynia"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "Mury",
+    "",
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "palisada_x",
+    "swiatynia",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "mury",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "kuznia",
+    "swiatynia",
+    "swiatynia",
+    "Mury"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "palisada_x",
+    "palisada",
+    "swiatynia"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "palisada_x",
+    "kuznia",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury",
+    "Mury",
+    "kuznia",
+    "mury_kamienne",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    ""
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "Mury",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x",
+    "targ"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "",
+    "palisada",
+    "targ",
+    "targ"
+   ],
+   "expect": "palisada",
+   "branch": "list:palisada"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "fort",
+    "kuznia",
+    "",
+    "swiatynia",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "swiatynia",
+    "mury",
+    "palisada"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "swiatynia",
+    "palisada_x",
+    "mury_kamienne",
+    ""
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "kuznia",
+    "fort"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury_kamienne",
+    "palisada_x"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "Mury"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "swiatynia",
+    "palisada_x",
+    "palisada_x",
+    "palisada_x",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "Mury",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada_x"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury",
+    "fort",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "mury",
+    "palisada_x",
+    "swiatynia",
+    "mury_kamienne"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [
+    "targ",
+    "Mury",
+    "",
+    "kuznia",
+    "kuznia"
+   ],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "palisada",
+    "mury_kamienne",
+    "targ"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  },
+  {
+   "builtBuildingIds": [],
+   "expect": "none",
+   "branch": "list:none"
+  },
+  {
+   "builtBuildingIds": [
+    "mury_kamienne",
+    "mury_kamienne",
+    "palisada",
+    "kuznia",
+    "mury"
+   ],
+   "expect": "mur",
+   "branch": "list:mur"
+  }
+ ],
+ "meleeBlockedByWall": [
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": true,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": true,
+    "defenderOnWall": false,
+    "wallBreached": false
+   },
+   "expect": false,
+   "branch": "c-attackerOnWall:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": true,
+    "wallBreached": false
+   },
+   "expect": true,
+   "branch": "e-blocked:wb-false"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": true
+   },
+   "expect": false,
+   "branch": "b-notMelee:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": true,
+    "attackerOnWall": false,
+    "defenderOnWall": false
+   },
+   "expect": false,
+   "branch": "d-defenderOffWall:wb-absent"
+  },
+  {
+   "ctx": {
+    "attackerIsMelee": false,
+    "attackerOnWall": false,
+    "defenderOnWall": false,
+    "wallBreached": true
+   },
+   "expect": false,
+   "branch": "a-breached:wb-true"
+  }
+ ],
+ "attackerWallEntryIsBreach": [
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": null,
+   "expect": false,
+   "branch": "atk-noWalkway"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": false,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "def",
+   "onWallWalkway": true,
+   "expect": false,
+   "branch": "def"
+  },
+  {
+   "side": "atk",
+   "onWallWalkway": true,
+   "expect": true,
+   "branch": "atk-walkway"
+  }
+ ]
+}
