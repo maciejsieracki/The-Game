@@ -95,6 +95,7 @@ pub mod siege_starvation;
 pub mod siege_surrender;
 pub mod siege_tactics_approach;
 pub mod siege_tactics_blow;
+pub mod siege_tactics_blow_full;
 pub mod siege_tactics_blow_inputs;
 pub mod siege_tactics_breach;
 pub mod siege_tactics_end;
