@@ -136,7 +136,8 @@ const rnd = () => {
 };
 const pick = arr => arr[Math.floor(rnd() * arr.length)];
 const OWNERS = [1, 2, 3, 4];
-const CALLS = [0, 1, 2, 3, 4, 5];
+// Id ujemne (-3) wchodza do wektorow: web dopisuje je do eliminatedOwners bez dopasowan w jednostkach i parach.
+const CALLS = [0, 1, 2, 3, 4, 5, -3];
 
 function sortedEntries(map) {
   return [...map.entries()].map(([k, v]) => [k, v]).sort((a, b) => a[0] - b[0]);
@@ -145,7 +146,8 @@ function snapOf(env, inst) {
   const s = inst.snap();
   return {
     units: s.units.map(u => u.id),
-    eliminated: [...s.eliminatedOwners].sort((a, b) => a - b),
+    // Kolejnosc wstawiania zachowana (Set JS i Vec Rust): porownanie scisle po kolejnosci, bez sortowania.
+    eliminated: [...s.eliminatedOwners],
     battle: sortedEntries(s.battlePowerPtsByOwner),
     zdobycze: sortedEntries(s.zdobyczePowerByOwner),
     relations: [...s.diplomacyRelations.keys()].map(k => k.split('_').map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1]),

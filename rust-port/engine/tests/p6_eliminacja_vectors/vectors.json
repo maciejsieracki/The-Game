@@ -183,19 +183,25 @@
      ]
     },
     {
-     "owner": 1,
+     "owner": 2,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 2,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_relacje": 3,
      "expect_units": [
+      1,
       2,
-      3
+      3,
+      4
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      2
      ],
      "expect_battle": [
+      [
+       1,
+       36.5
+      ],
       [
        4,
        10.5
@@ -203,8 +209,8 @@
      ],
      "expect_zdobycze": [
       [
-       2,
-       18
+       1,
+       33.5
       ],
       [
        4,
@@ -213,18 +219,6 @@
      ],
      "expect_relations": [
       [
-       2,
-       3
-      ],
-      [
-       2,
-       4
-      ],
-      [
-       2,
-       5
-      ],
-      [
        3,
        4
       ]
@@ -232,25 +226,34 @@
     },
     {
      "owner": 2,
-     "expect_pominieta": false,
+     "expect_pominieta": true,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 3,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
-      2,
-      3
-     ],
-     "expect_eliminated": [
       1,
       2,
-      3
+      3,
+      4
+     ],
+     "expect_eliminated": [
+      3,
+      2
      ],
      "expect_battle": [
+      [
+       1,
+       36.5
+      ],
       [
        4,
        10.5
       ]
      ],
      "expect_zdobycze": [
+      [
+       1,
+       33.5
+      ],
       [
        4,
        97.25
@@ -269,21 +272,30 @@
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
      "expect_units": [
-      2,
-      3
-     ],
-     "expect_eliminated": [
       1,
       2,
-      3
+      3,
+      4
+     ],
+     "expect_eliminated": [
+      3,
+      2
      ],
      "expect_battle": [
+      [
+       1,
+       36.5
+      ],
       [
        4,
        10.5
       ]
      ],
      "expect_zdobycze": [
+      [
+       1,
+       33.5
+      ],
       [
        4,
        97.25
@@ -693,18 +705,18 @@
      ]
     },
     {
-     "owner": 3,
+     "owner": 4,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 2,
      "expect_usuniete_relacje": 3,
      "expect_units": [
       1,
       2,
-      4,
-      5
+      3,
+      6
      ],
      "expect_eliminated": [
-      3
+      4
      ],
      "expect_battle": [
       [
@@ -722,33 +734,32 @@
        66
       ],
       [
-       4,
-       80.5
+       3,
+       61.75
       ]
      ],
      "expect_relations": [
       [
-       1,
-       4
+       2,
+       3
       ],
       [
-       2,
-       4
+       3,
+       5
       ]
      ]
     },
     {
      "owner": 3,
-     "expect_pominieta": true,
-     "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_pominieta": false,
+     "expect_usuniete_jednostki": 2,
+     "expect_usuniete_relacje": 2,
      "expect_units": [
       1,
-      2,
-      4,
-      5
+      2
      ],
      "expect_eliminated": [
+      4,
       3
      ],
      "expect_battle": [
@@ -765,22 +776,9 @@
       [
        2,
        66
-      ],
-      [
-       4,
-       80.5
       ]
      ],
-     "expect_relations": [
-      [
-       1,
-       4
-      ],
-      [
-       2,
-       4
-      ]
-     ]
+     "expect_relations": []
     }
    ]
   },
@@ -853,8 +851,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -1236,8 +1234,8 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -1347,8 +1345,8 @@
       1
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -1370,17 +1368,23 @@
      ]
     },
     {
-     "owner": 3,
-     "expect_pominieta": false,
-     "expect_usuniete_jednostki": 1,
+     "owner": 4,
+     "expect_pominieta": true,
+     "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
-     "expect_units": [],
-     "expect_eliminated": [
-      2,
-      3,
-      4
+     "expect_units": [
+      1
      ],
-     "expect_battle": [],
+     "expect_eliminated": [
+      4,
+      2
+     ],
+     "expect_battle": [
+      [
+       3,
+       7.5
+      ]
+     ],
      "expect_zdobycze": [
       [
        1,
@@ -1399,13 +1403,19 @@
      "expect_pominieta": true,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
-     "expect_units": [],
-     "expect_eliminated": [
-      2,
-      3,
-      4
+     "expect_units": [
+      1
      ],
-     "expect_battle": [],
+     "expect_eliminated": [
+      4,
+      2
+     ],
+     "expect_battle": [
+      [
+       3,
+       7.5
+      ]
+     ],
      "expect_zdobycze": [
       [
        1,
@@ -1831,8 +1841,8 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -1865,9 +1875,9 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      2,
+      4,
       3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -1945,8 +1955,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -2055,7 +2065,7 @@
      ]
     },
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
@@ -2068,7 +2078,7 @@
      "expect_eliminated": [
       3,
       4,
-      5
+      -3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -2294,8 +2304,8 @@
       4
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -2392,8 +2402,8 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -2437,9 +2447,9 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
+      4,
       1,
-      2,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -2567,23 +2577,22 @@
      ]
     },
     {
-     "owner": 3,
+     "owner": 4,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_jednostki": 1,
      "expect_usuniete_relacje": 1,
      "expect_units": [
       1,
-      2,
       3
      ],
      "expect_eliminated": [
       2,
-      3
+      4
      ],
      "expect_battle": [
       [
-       4,
-       17.5
+       3,
+       3.5
       ]
      ],
      "expect_zdobycze": [
@@ -2592,8 +2601,8 @@
        46
       ],
       [
-       4,
-       78
+       3,
+       65.75
       ]
      ],
      "expect_relations": []
@@ -2692,8 +2701,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -2727,8 +2736,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
       2,
+      1,
       3
      ],
      "expect_battle": [],
@@ -2803,8 +2812,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -2843,8 +2852,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -2882,9 +2891,9 @@
       3
      ],
      "expect_eliminated": [
+      3,
       1,
-      2,
-      3
+      2
      ],
      "expect_battle": [
       [
@@ -2980,13 +2989,14 @@
      ]
     },
     {
-     "owner": 4,
-     "expect_pominieta": true,
+     "owner": 5,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      4
+      4,
+      5
      ],
      "expect_battle": [
       [
@@ -3008,12 +3018,7 @@
        66.5
       ]
      ],
-     "expect_relations": [
-      [
-       3,
-       5
-      ]
-     ]
+     "expect_relations": []
     },
     {
      "owner": 2,
@@ -3022,8 +3027,9 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      5,
+      2
      ],
      "expect_battle": [
       [
@@ -3036,12 +3042,7 @@
       ]
      ],
      "expect_zdobycze": [],
-     "expect_relations": [
-      [
-       3,
-       5
-      ]
-     ]
+     "expect_relations": []
     }
    ]
   },
@@ -3213,8 +3214,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -3327,8 +3328,8 @@
       5
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -3382,8 +3383,8 @@
       5
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -3728,8 +3729,8 @@
       4
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -3945,19 +3946,23 @@
      ]
     },
     {
-     "owner": 4,
+     "owner": 5,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
       2,
-      4
+      5
      ],
      "expect_battle": [
       [
        3,
        100
+      ],
+      [
+       4,
+       30.25
       ]
      ],
      "expect_zdobycze": [
@@ -3968,12 +3973,16 @@
       [
        3,
        15.5
+      ],
+      [
+       4,
+       14.75
       ]
      ],
      "expect_relations": [
       [
-       3,
-       5
+       1,
+       4
       ]
      ]
     },
@@ -3981,36 +3990,60 @@
      "owner": 3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
       2,
-      3,
-      4
+      5,
+      3
      ],
-     "expect_battle": [],
+     "expect_battle": [
+      [
+       4,
+       30.25
+      ]
+     ],
      "expect_zdobycze": [
       [
        1,
        35.75
+      ],
+      [
+       4,
+       14.75
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       1,
+       4
+      ]
+     ]
     },
     {
      "owner": 1,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
       2,
+      5,
       3,
-      4
+      1
      ],
-     "expect_battle": [],
-     "expect_zdobycze": [],
+     "expect_battle": [
+      [
+       4,
+       30.25
+      ]
+     ],
+     "expect_zdobycze": [
+      [
+       4,
+       14.75
+      ]
+     ],
      "expect_relations": []
     }
    ]
@@ -4059,23 +4092,25 @@
    },
    "steps": [
     {
-     "owner": 3,
+     "owner": 4,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_jednostki": 2,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
-      2,
-      3,
       4
      ],
      "expect_eliminated": [
-      3
+      4
      ],
      "expect_battle": [
       [
        2,
        96.25
+      ],
+      [
+       3,
+       13.5
       ]
      ],
      "expect_zdobycze": [
@@ -4088,7 +4123,12 @@
        69.75
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       1,
+       3
+      ]
+     ]
     }
    ]
   },
@@ -4161,8 +4201,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -4200,8 +4240,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -4302,8 +4342,8 @@
       4
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -4434,8 +4474,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -4471,8 +4511,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -4506,9 +4546,9 @@
       5
      ],
      "expect_eliminated": [
+      3,
       1,
-      2,
-      3
+      2
      ],
      "expect_battle": [
       [
@@ -4702,8 +4742,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -4742,8 +4782,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -4781,8 +4821,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
       3,
+      1,
       4
      ],
      "expect_battle": [
@@ -4882,9 +4922,9 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -4925,9 +4965,9 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -4968,9 +5008,9 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -5066,8 +5106,8 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -5115,9 +5155,9 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      1,
+      4,
       2,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -5153,9 +5193,9 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
+      4,
       2,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -5282,9 +5322,9 @@
       1
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -5318,9 +5358,9 @@
       1
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -5354,10 +5394,10 @@
       1
      ],
      "expect_eliminated": [
-      1,
       2,
-      3,
-      4
+      4,
+      1,
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -5441,20 +5481,20 @@
    },
    "steps": [
     {
-     "owner": 3,
+     "owner": 4,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 1,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 3,
      "expect_units": [
       1,
       2,
       3,
+      4,
       5,
-      6,
-      7
+      6
      ],
      "expect_eliminated": [
-      3
+      4
      ],
      "expect_battle": [
       [
@@ -5466,43 +5506,34 @@
        39.5
       ],
       [
-       4,
-       31.75
+       3,
+       6.75
       ]
      ],
      "expect_zdobycze": [
       [
        2,
        63.75
+      ],
+      [
+       3,
+       95.5
       ]
      ],
-     "expect_relations": [
-      [
-       1,
-       4
-      ],
-      [
-       2,
-       4
-      ],
-      [
-       4,
-       5
-      ]
-     ]
+     "expect_relations": []
     },
     {
      "owner": 2,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 4,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
-      7
+      4
      ],
      "expect_eliminated": [
-      2,
-      3
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -5510,21 +5541,17 @@
        9.5
       ],
       [
-       4,
-       31.75
+       3,
+       6.75
       ]
      ],
-     "expect_zdobycze": [],
-     "expect_relations": [
+     "expect_zdobycze": [
       [
-       1,
-       4
-      ],
-      [
-       4,
-       5
+       3,
+       95.5
       ]
-     ]
+     ],
+     "expect_relations": []
     }
    ]
   },
@@ -5890,8 +5917,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -6058,9 +6085,9 @@
       1
      ],
      "expect_eliminated": [
-      1,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -6102,10 +6129,10 @@
       1
      ],
      "expect_eliminated": [
-      1,
-      2,
       3,
-      4
+      4,
+      1,
+      2
      ],
      "expect_battle": [
       [
@@ -6134,10 +6161,10 @@
       1
      ],
      "expect_eliminated": [
-      1,
-      2,
       3,
-      4
+      4,
+      1,
+      2
      ],
      "expect_battle": [
       [
@@ -6225,8 +6252,8 @@
       3
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -6316,8 +6343,8 @@
       5
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -6411,8 +6438,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -6466,8 +6493,8 @@
       1
      ],
      "expect_eliminated": [
-      1,
       2,
+      1,
       3
      ],
      "expect_battle": [
@@ -6561,17 +6588,17 @@
    },
    "steps": [
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 2,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
       2,
       3
      ],
      "expect_eliminated": [
-      5
+      -3
      ],
      "expect_battle": [
       [
@@ -6605,6 +6632,14 @@
       [
        1,
        3
+      ],
+      [
+       1,
+       5
+      ],
+      [
+       3,
+       5
       ]
      ]
     }
@@ -6765,8 +6800,8 @@
       7
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -6793,9 +6828,9 @@
       5
      ],
      "expect_eliminated": [
+      4,
       1,
-      2,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -6970,9 +7005,9 @@
       4
      ],
      "expect_eliminated": [
-      1,
       2,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -6998,7 +7033,7 @@
      ]
     },
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
@@ -7008,10 +7043,10 @@
       4
      ],
      "expect_eliminated": [
-      1,
       2,
       4,
-      5
+      1,
+      -3
      ],
      "expect_battle": [
       [
@@ -7137,8 +7172,8 @@
       2
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -7304,27 +7339,21 @@
    },
    "steps": [
     {
-     "owner": 0,
-     "expect_pominieta": true,
-     "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "owner": 1,
+     "expect_pominieta": false,
+     "expect_usuniete_jednostki": 3,
+     "expect_usuniete_relacje": 2,
      "expect_units": [
-      1,
       2,
       3,
       4,
-      5,
-      6,
       7
      ],
      "expect_eliminated": [
-      3
+      3,
+      1
      ],
      "expect_battle": [
-      [
-       1,
-       54.25
-      ],
       [
        3,
        9
@@ -7335,16 +7364,7 @@
       ]
      ],
      "expect_zdobycze": [],
-     "expect_relations": [
-      [
-       1,
-       3
-      ],
-      [
-       1,
-       4
-      ]
-     ]
+     "expect_relations": []
     },
     {
      "owner": 2,
@@ -7352,21 +7372,15 @@
      "expect_usuniete_jednostki": 2,
      "expect_usuniete_relacje": 0,
      "expect_units": [
-      1,
       3,
-      4,
-      5,
-      6
+      4
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      1,
+      2
      ],
      "expect_battle": [
-      [
-       1,
-       54.25
-      ],
       [
        3,
        9
@@ -7377,16 +7391,7 @@
       ]
      ],
      "expect_zdobycze": [],
-     "expect_relations": [
-      [
-       1,
-       3
-      ],
-      [
-       1,
-       4
-      ]
-     ]
+     "expect_relations": []
     }
    ]
   },
@@ -7460,8 +7465,8 @@
       3
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -7594,14 +7599,14 @@
      ]
     },
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
       4,
-      5
+      -3
      ],
      "expect_battle": [
       [
@@ -7627,6 +7632,10 @@
       [
        1,
        3
+      ],
+      [
+       1,
+       5
       ]
      ]
     },
@@ -7637,9 +7646,9 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      3,
       4,
-      5
+      -3,
+      3
      ],
      "expect_battle": [
       [
@@ -7657,19 +7666,24 @@
        86.5
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       1,
+       5
+      ]
+     ]
     },
     {
      "owner": 1,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      3,
       4,
-      5
+      -3,
+      3,
+      1
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -7878,9 +7892,9 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -8117,8 +8131,8 @@
       7
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -9458,19 +9472,22 @@
      ]
     },
     {
-     "owner": 3,
-     "expect_pominieta": false,
+     "owner": 4,
+     "expect_pominieta": true,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      3,
       4
      ],
      "expect_battle": [
       [
        2,
        73.25
+      ],
+      [
+       3,
+       56
       ]
      ],
      "expect_zdobycze": [
@@ -9486,6 +9503,10 @@
       ],
       [
        2,
+       3
+      ],
+      [
+       2,
        5
       ]
      ]
@@ -9497,13 +9518,16 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      3,
       4
      ],
      "expect_battle": [
       [
        2,
        73.25
+      ],
+      [
+       3,
+       56
       ]
      ],
      "expect_zdobycze": [
@@ -9516,6 +9540,10 @@
       [
        1,
        5
+      ],
+      [
+       2,
+       3
       ],
       [
        2,
@@ -9904,8 +9932,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -9936,8 +9964,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -9968,8 +9996,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -10060,8 +10088,8 @@
       4
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -10098,9 +10126,9 @@
       3
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [
       [
@@ -10247,8 +10275,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -10286,8 +10314,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -10325,8 +10353,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -10521,8 +10549,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -10636,8 +10664,8 @@
       6
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -10679,8 +10707,8 @@
       6
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -10831,9 +10859,9 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -10918,8 +10946,8 @@
       4
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -10954,9 +10982,9 @@
       4
      ],
      "expect_eliminated": [
-      2,
+      4,
       3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -10982,9 +11010,9 @@
       4
      ],
      "expect_eliminated": [
-      2,
+      4,
       3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -11235,9 +11263,9 @@
       4
      ],
      "expect_eliminated": [
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -11324,8 +11352,8 @@
       2
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -11481,8 +11509,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [
       [
@@ -11667,9 +11695,9 @@
      ],
      "expect_eliminated": [
       1,
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -11896,19 +11924,22 @@
      ]
     },
     {
-     "owner": 3,
-     "expect_pominieta": false,
+     "owner": 4,
+     "expect_pominieta": true,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      3,
       4
      ],
      "expect_battle": [
       [
        2,
        78.75
+      ],
+      [
+       3,
+       68
       ]
      ],
      "expect_zdobycze": [
@@ -11919,6 +11950,10 @@
       [
        2,
        14.25
+      ],
+      [
+       3,
+       50.5
       ],
       [
        4,
@@ -11933,6 +11968,10 @@
       [
        2,
        5
+      ],
+      [
+       3,
+       4
       ]
      ]
     },
@@ -11943,33 +11982,46 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      3,
-      4
+      4,
+      2
      ],
-     "expect_battle": [],
+     "expect_battle": [
+      [
+       3,
+       68
+      ]
+     ],
      "expect_zdobycze": [
       [
        1,
        8.5
       ],
       [
+       3,
+       50.5
+      ],
+      [
        4,
        31
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       3,
+       4
+      ]
+     ]
     },
     {
      "owner": 3,
-     "expect_pominieta": true,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -12238,8 +12290,52 @@
       2
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
+     ],
+     "expect_battle": [
+      [
+       1,
+       61.5
+      ],
+      [
+       4,
+       95.75
+      ]
+     ],
+     "expect_zdobycze": [
+      [
+       2,
+       47
+      ],
+      [
+       4,
+       82
+      ]
+     ],
+     "expect_relations": [
+      [
+       1,
+       5
+      ],
+      [
+       4,
+       5
+      ]
+     ]
+    },
+    {
+     "owner": 3,
+     "expect_pominieta": true,
+     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_relacje": 0,
+     "expect_units": [
+      1,
+      2
+     ],
+     "expect_eliminated": [
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -12281,49 +12377,9 @@
       1
      ],
      "expect_eliminated": [
-      2,
+      4,
       3,
-      4
-     ],
-     "expect_battle": [
-      [
-       1,
-       61.5
-      ],
-      [
-       4,
-       95.75
-      ]
-     ],
-     "expect_zdobycze": [
-      [
-       4,
-       82
-      ]
-     ],
-     "expect_relations": [
-      [
-       1,
-       5
-      ],
-      [
-       4,
-       5
-      ]
-     ]
-    },
-    {
-     "owner": 2,
-     "expect_pominieta": true,
-     "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
-     "expect_units": [
-      1
-     ],
-     "expect_eliminated": [
-      2,
-      3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -12454,8 +12510,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -12477,8 +12533,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -13125,8 +13181,8 @@
       4
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [
       [
@@ -13715,8 +13771,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [
       [
@@ -13745,9 +13801,9 @@
       2
      ],
      "expect_eliminated": [
-      1,
+      3,
       2,
-      3
+      1
      ],
      "expect_battle": [
       [
@@ -13813,38 +13869,42 @@
    },
    "steps": [
     {
-     "owner": 4,
+     "owner": 5,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 1,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [
       1,
+      2,
       3,
       4,
       5
      ],
      "expect_eliminated": [
       3,
-      4
+      5
      ],
      "expect_battle": [
       [
        1,
        59.5
+      ],
+      [
+       4,
+       54.5
       ]
      ],
      "expect_zdobycze": [
       [
        2,
        26.5
+      ],
+      [
+       4,
+       79.75
       ]
      ],
-     "expect_relations": [
-      [
-       3,
-       5
-      ]
-     ]
+     "expect_relations": []
     },
     {
      "owner": 2,
@@ -13853,26 +13913,31 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
+      2,
       5
      ],
      "expect_eliminated": [
-      2,
       3,
-      4
+      5,
+      2
      ],
      "expect_battle": [
       [
        1,
        59.5
+      ],
+      [
+       4,
+       54.5
       ]
      ],
-     "expect_zdobycze": [],
-     "expect_relations": [
+     "expect_zdobycze": [
       [
-       3,
-       5
+       4,
+       79.75
       ]
-     ]
+     ],
+     "expect_relations": []
     },
     {
      "owner": 0,
@@ -13881,26 +13946,31 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
+      2,
       5
      ],
      "expect_eliminated": [
-      2,
       3,
-      4
+      5,
+      2
      ],
      "expect_battle": [
       [
        1,
        59.5
+      ],
+      [
+       4,
+       54.5
       ]
      ],
-     "expect_zdobycze": [],
-     "expect_relations": [
+     "expect_zdobycze": [
       [
-       3,
-       5
+       4,
+       79.75
       ]
-     ]
+     ],
+     "expect_relations": []
     }
    ]
   },
@@ -13991,8 +14061,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -14045,8 +14115,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -14099,8 +14169,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -14365,8 +14435,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -14521,8 +14591,8 @@
      ],
      "expect_eliminated": [
       1,
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -14560,8 +14630,8 @@
      ],
      "expect_eliminated": [
       1,
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -14667,8 +14737,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -14715,9 +14785,9 @@
       2
      ],
      "expect_eliminated": [
-      1,
+      4,
       2,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -14751,10 +14821,10 @@
       2
      ],
      "expect_eliminated": [
-      1,
+      4,
       2,
-      3,
-      4
+      1,
+      3
      ],
      "expect_battle": [
       [
@@ -14780,10 +14850,10 @@
       2
      ],
      "expect_eliminated": [
-      1,
+      4,
       2,
-      3,
-      4
+      1,
+      3
      ],
      "expect_battle": [
       [
@@ -15304,10 +15374,10 @@
      ]
     },
     {
-     "owner": 4,
-     "expect_pominieta": true,
+     "owner": 5,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [
       1,
       2,
@@ -15317,7 +15387,8 @@
       6
      ],
      "expect_eliminated": [
-      4
+      4,
+      5
      ],
      "expect_battle": [
       [
@@ -15349,10 +15420,6 @@
        4
       ],
       [
-       2,
-       5
-      ],
-      [
        3,
        4
       ]
@@ -15371,8 +15438,9 @@
       6
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      5,
+      1
      ],
      "expect_battle": [
       [
@@ -15398,10 +15466,6 @@
       [
        2,
        4
-      ],
-      [
-       2,
-       5
       ],
       [
        3,
@@ -15797,8 +15861,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -16017,8 +16081,8 @@
       1
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -16136,9 +16200,9 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -16599,9 +16663,9 @@
       4
      ],
      "expect_eliminated": [
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -16732,8 +16796,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -16764,8 +16828,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -17289,8 +17353,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -17325,9 +17389,9 @@
       5
      ],
      "expect_eliminated": [
+      3,
       1,
-      2,
-      3
+      2
      ],
      "expect_battle": [
       [
@@ -17430,8 +17494,8 @@
       6
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -17474,9 +17538,9 @@
       5
      ],
      "expect_eliminated": [
-      2,
+      4,
       3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -17502,9 +17566,9 @@
       5
      ],
      "expect_eliminated": [
-      2,
+      4,
       3,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -17644,15 +17708,16 @@
      ]
     },
     {
-     "owner": 2,
-     "expect_pominieta": true,
+     "owner": 3,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 1,
      "expect_units": [
       1
      ],
      "expect_eliminated": [
-      2
+      2,
+      3
      ],
      "expect_battle": [
       [
@@ -17662,10 +17727,6 @@
      ],
      "expect_zdobycze": [],
      "expect_relations": [
-      [
-       1,
-       3
-      ],
       [
        1,
        4
@@ -17840,8 +17901,8 @@
       1
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -17875,9 +17936,9 @@
       1
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -17902,9 +17963,9 @@
       1
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -17972,8 +18033,8 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -18005,8 +18066,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -18038,8 +18099,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -18071,8 +18132,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -18422,55 +18483,6 @@
    },
    "steps": [
     {
-     "owner": 3,
-     "expect_pominieta": true,
-     "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
-     "expect_units": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7
-     ],
-     "expect_eliminated": [
-      1,
-      3
-     ],
-     "expect_battle": [
-      [
-       4,
-       94.5
-      ]
-     ],
-     "expect_zdobycze": [
-      [
-       3,
-       17
-      ]
-     ],
-     "expect_relations": [
-      [
-       1,
-       3
-      ],
-      [
-       1,
-       5
-      ],
-      [
-       2,
-       5
-      ],
-      [
-       4,
-       5
-      ]
-     ]
-    },
-    {
      "owner": 4,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 3,
@@ -18505,6 +18517,37 @@
       [
        2,
        5
+      ]
+     ]
+    },
+    {
+     "owner": 5,
+     "expect_pominieta": false,
+     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_relacje": 2,
+     "expect_units": [
+      2,
+      3,
+      4,
+      6
+     ],
+     "expect_eliminated": [
+      1,
+      3,
+      4,
+      5
+     ],
+     "expect_battle": [],
+     "expect_zdobycze": [
+      [
+       3,
+       17
+      ]
+     ],
+     "expect_relations": [
+      [
+       1,
+       3
       ]
      ]
     }
@@ -18667,8 +18710,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -18715,10 +18758,10 @@
       3
      ],
      "expect_eliminated": [
-      1,
       2,
+      4,
       3,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -18753,10 +18796,10 @@
       3
      ],
      "expect_eliminated": [
-      1,
       2,
+      4,
       3,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -18791,10 +18834,10 @@
       3
      ],
      "expect_eliminated": [
-      1,
       2,
+      4,
       3,
-      4
+      1
      ],
      "expect_battle": [
       [
@@ -19351,8 +19394,8 @@
       6
      ],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -19391,9 +19434,9 @@
       5
      ],
      "expect_eliminated": [
+      3,
       1,
-      2,
-      3
+      2
      ],
      "expect_battle": [
       [
@@ -19424,9 +19467,9 @@
       5
      ],
      "expect_eliminated": [
+      3,
       1,
       2,
-      3,
       5
      ],
      "expect_battle": [
@@ -19588,8 +19631,8 @@
       5
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -19627,9 +19670,9 @@
       1
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [],
      "expect_zdobycze": [
@@ -19774,8 +19817,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -19813,9 +19856,9 @@
       2
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [
       [
@@ -19840,9 +19883,9 @@
       2
      ],
      "expect_eliminated": [
+      4,
       2,
-      3,
-      4
+      3
      ],
      "expect_battle": [
       [
@@ -19981,8 +20024,8 @@
      ],
      "expect_eliminated": [
       2,
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -20097,8 +20140,8 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -20226,8 +20269,8 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [],
@@ -20246,8 +20289,8 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [],
@@ -20409,8 +20452,8 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      3
+      3,
+      1
      ],
      "expect_battle": [
       [
@@ -20610,10 +20653,10 @@
       2
      ],
      "expect_eliminated": [
-      1,
       2,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -20798,9 +20841,9 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      2,
       3,
-      4
+      4,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [],
@@ -21152,30 +21195,40 @@
      ]
     },
     {
-     "owner": 4,
+     "owner": 5,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 2,
+     "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 1,
      "expect_units": [
       1,
+      3,
+      4,
       6,
       7
      ],
      "expect_eliminated": [
       1,
       2,
-      4
+      5
      ],
      "expect_battle": [
       [
        3,
        97.25
+      ],
+      [
+       4,
+       15.25
       ]
      ],
      "expect_zdobycze": [
       [
        3,
        20.5
+      ],
+      [
+       4,
+       15
       ]
      ],
      "expect_relations": [
@@ -21545,8 +21598,8 @@
      ]
     },
     {
-     "owner": 3,
-     "expect_pominieta": true,
+     "owner": 4,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
      "expect_units": [
@@ -21559,16 +21612,13 @@
      ],
      "expect_eliminated": [
       1,
-      3
+      3,
+      4
      ],
      "expect_battle": [
       [
        3,
        58.25
-      ],
-      [
-       4,
-       18.25
       ]
      ],
      "expect_zdobycze": [
@@ -21583,10 +21633,6 @@
       [
        3,
        93.75
-      ],
-      [
-       4,
-       56.25
       ]
      ],
      "expect_relations": [
@@ -21664,10 +21710,10 @@
    },
    "steps": [
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
       2,
@@ -21676,7 +21722,7 @@
       5
      ],
      "expect_eliminated": [
-      5
+      -3
      ],
      "expect_battle": [
       [
@@ -21708,6 +21754,10 @@
        3
       ],
       [
+       2,
+       5
+      ],
+      [
        3,
        4
       ]
@@ -21726,8 +21776,8 @@
       5
      ],
      "expect_eliminated": [
-      4,
-      5
+      -3,
+      4
      ],
      "expect_battle": [
       [
@@ -21753,6 +21803,10 @@
       [
        1,
        3
+      ],
+      [
+       2,
+       5
       ]
      ]
     }
@@ -22030,15 +22084,15 @@
    },
    "steps": [
     {
-     "owner": 5,
+     "owner": -3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 1,
+     "expect_usuniete_relacje": 0,
      "expect_units": [
       1
      ],
      "expect_eliminated": [
-      5
+      -3
      ],
      "expect_battle": [
       [
@@ -22064,6 +22118,10 @@
       [
        1,
        4
+      ],
+      [
+       2,
+       5
       ]
      ]
     }
@@ -22123,8 +22181,8 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -22154,21 +22212,17 @@
      ]
     },
     {
-     "owner": 2,
+     "owner": 3,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
+      4,
       1,
-      2,
-      4
+      3
      ],
      "expect_battle": [
-      [
-       3,
-       14.25
-      ],
       [
        4,
        66.75
@@ -22182,7 +22236,7 @@
      ],
      "expect_relations": [
       [
-       3,
+       2,
        4
       ]
      ]
@@ -22194,15 +22248,11 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
+      4,
       1,
-      2,
-      4
+      3
      ],
      "expect_battle": [
-      [
-       3,
-       14.25
-      ],
       [
        4,
        66.75
@@ -22216,7 +22266,7 @@
      ],
      "expect_relations": [
       [
-       3,
+       2,
        4
       ]
      ]
@@ -22383,8 +22433,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -22420,9 +22470,9 @@
       5
      ],
      "expect_eliminated": [
+      4,
       1,
-      2,
-      4
+      2
      ],
      "expect_battle": [
       [
@@ -22687,8 +22737,8 @@
      "expect_units": [],
      "expect_eliminated": [
       1,
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [],
      "expect_zdobycze": [],
@@ -22819,8 +22869,8 @@
       4
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -22855,8 +22905,8 @@
       4
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -23149,8 +23199,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23198,8 +23248,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23247,8 +23297,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23296,8 +23346,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23394,8 +23444,8 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23435,8 +23485,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2
+      2,
+      1
      ],
      "expect_battle": [
       [
@@ -23760,29 +23810,32 @@
    },
    "steps": [
     {
-     "owner": 2,
+     "owner": 3,
      "expect_pominieta": false,
-     "expect_usuniete_jednostki": 0,
+     "expect_usuniete_jednostki": 1,
      "expect_usuniete_relacje": 0,
      "expect_units": [
       1,
       2,
-      3,
-      4
+      3
      ],
      "expect_eliminated": [
-      2
+      3
      ],
      "expect_battle": [
       [
        1,
        62.75
+      ],
+      [
+       2,
+       51.25
       ]
      ],
      "expect_zdobycze": [
       [
-       3,
-       21.75
+       2,
+       51.25
       ]
      ],
      "expect_relations": [
@@ -23885,8 +23938,8 @@
       5
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [
       [
@@ -23983,8 +24036,8 @@
       5
      ],
      "expect_eliminated": [
-      1,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -24081,13 +24134,13 @@
    },
    "steps": [
     {
-     "owner": 4,
+     "owner": 5,
      "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 4,
+     "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      4
+      5
      ],
      "expect_battle": [
       [
@@ -24097,6 +24150,10 @@
       [
        3,
        91
+      ],
+      [
+       4,
+       42.25
       ]
      ],
      "expect_zdobycze": [
@@ -24116,7 +24173,15 @@
       ],
       [
        1,
-       5
+       4
+      ],
+      [
+       2,
+       4
+      ],
+      [
+       3,
+       4
       ]
      ]
     },
@@ -24127,8 +24192,8 @@
      "expect_usuniete_relacje": 2,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      5,
+      1
      ],
      "expect_battle": [
       [
@@ -24138,6 +24203,10 @@
       [
        3,
        91
+      ],
+      [
+       4,
+       42.25
       ]
      ],
      "expect_zdobycze": [
@@ -24146,7 +24215,16 @@
        36
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       2,
+       4
+      ],
+      [
+       3,
+       4
+      ]
+     ]
     },
     {
      "owner": 1,
@@ -24155,8 +24233,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      5,
+      1
      ],
      "expect_battle": [
       [
@@ -24166,6 +24244,10 @@
       [
        3,
        91
+      ],
+      [
+       4,
+       42.25
       ]
      ],
      "expect_zdobycze": [
@@ -24174,7 +24256,16 @@
        36
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       2,
+       4
+      ],
+      [
+       3,
+       4
+      ]
+     ]
     },
     {
      "owner": 1,
@@ -24183,8 +24274,8 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      4
+      5,
+      1
      ],
      "expect_battle": [
       [
@@ -24194,6 +24285,10 @@
       [
        3,
        91
+      ],
+      [
+       4,
+       42.25
       ]
      ],
      "expect_zdobycze": [
@@ -24202,7 +24297,16 @@
        36
       ]
      ],
-     "expect_relations": []
+     "expect_relations": [
+      [
+       2,
+       4
+      ],
+      [
+       3,
+       4
+      ]
+     ]
     }
    ]
   },
@@ -24432,8 +24536,8 @@
       6
      ],
      "expect_eliminated": [
-      2,
-      4
+      4,
+      2
      ],
      "expect_battle": [
       [
@@ -24850,8 +24954,8 @@
       3
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -25890,10 +25994,10 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -25927,10 +26031,10 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -25964,10 +26068,10 @@
       6
      ],
      "expect_eliminated": [
-      1,
       2,
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
       [
@@ -26188,8 +26292,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
-      3
+      3,
+      2
      ],
      "expect_battle": [
       [
@@ -26236,8 +26340,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
       3,
+      2,
       4
      ],
      "expect_battle": [
@@ -26277,8 +26381,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
       3,
+      2,
       4
      ],
      "expect_battle": [
@@ -26318,8 +26422,8 @@
       2
      ],
      "expect_eliminated": [
-      2,
       3,
+      2,
       4
      ],
      "expect_battle": [
@@ -26470,8 +26574,8 @@
       3
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -26623,10 +26727,10 @@
      ]
     },
     {
-     "owner": 0,
-     "expect_pominieta": true,
+     "owner": 1,
+     "expect_pominieta": false,
      "expect_usuniete_jednostki": 0,
-     "expect_usuniete_relacje": 0,
+     "expect_usuniete_relacje": 2,
      "expect_units": [
       1,
       2,
@@ -26635,13 +26739,10 @@
      ],
      "expect_eliminated": [
       3,
-      4
+      4,
+      1
      ],
      "expect_battle": [
-      [
-       1,
-       92.25
-      ],
       [
        2,
        99
@@ -26658,14 +26759,6 @@
       ]
      ],
      "expect_relations": [
-      [
-       1,
-       2
-      ],
-      [
-       1,
-       5
-      ],
       [
        2,
        3
@@ -26838,17 +26931,25 @@
      ]
     },
     {
-     "owner": 2,
-     "expect_pominieta": false,
+     "owner": 3,
+     "expect_pominieta": true,
      "expect_usuniete_jednostki": 0,
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      2,
       3
      ],
-     "expect_battle": [],
+     "expect_battle": [
+      [
+       2,
+       69
+      ]
+     ],
      "expect_zdobycze": [
+      [
+       2,
+       63.25
+      ],
       [
        4,
        54
@@ -26872,12 +26973,20 @@
      "expect_usuniete_relacje": 1,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2,
-      3
+      3,
+      1
      ],
-     "expect_battle": [],
+     "expect_battle": [
+      [
+       2,
+       69
+      ]
+     ],
      "expect_zdobycze": [
+      [
+       2,
+       63.25
+      ],
       [
        4,
        54
@@ -26897,12 +27006,20 @@
      "expect_usuniete_relacje": 0,
      "expect_units": [],
      "expect_eliminated": [
-      1,
-      2,
-      3
+      3,
+      1
      ],
-     "expect_battle": [],
+     "expect_battle": [
+      [
+       2,
+       69
+      ]
+     ],
      "expect_zdobycze": [
+      [
+       2,
+       63.25
+      ],
       [
        4,
        54
@@ -27058,8 +27175,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -27106,8 +27223,8 @@
       7
      ],
      "expect_eliminated": [
-      3,
-      4
+      4,
+      3
      ],
      "expect_battle": [
       [
@@ -27152,9 +27269,9 @@
       6
      ],
      "expect_eliminated": [
-      1,
+      4,
       3,
-      4
+      1
      ],
      "expect_battle": [
       [

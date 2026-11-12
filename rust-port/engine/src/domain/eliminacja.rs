@@ -10,8 +10,16 @@
 //!   `PlayableState::power_clear_eliminated_owner`).
 //!
 //! NIE_ZMIERZONO (zostaje w webie, poza tym modulem): pozostale struktury czyszczone przez `eliminateOwner`
-//! (skarbce/pule AI, cykle wojen wymuszonych, rejestry wiarygodnosci, `activeDeals`, oblezenia `siegeBesiegerByCity`,
-//! `diplomacyPairMeta`, `diplomacyFactorLog`, ...). Wolanie z tur/walki: osobny temat (brak wpiecia tutaj).
+//! (skarbce/pule AI, cykle wojen wymuszonych, rejestry wiarygodnosci, `diplomacyPairMeta`, `diplomacyFactorLog`, ...).
+//! W tym module NIE sa czyszczone (pin main.ts), kazda z osobna przyczyna:
+//! - `activeDeals` (pin main.ts:35482, `d.strony.includes(ownerId)`) -> Rust `war.diplomacy.deals` (diplomacy.rs:1656);
+//! - wymuszone wojny `forced[0..2]` (pending/cycle/rest/active, pin main.ts:35418-35441) -> Rust `war.forced` (war_turn_state.rs:124);
+//! - `bronzeEraEnterTurnByOwner` / `ironEraEnterTurnByOwner` (pin main.ts:35418, :35440) -> Rust
+//!   `war.bronze_era_enter_turn_by_owner` / `war.iron_era_enter_turn_by_owner` (war_turn_state.rs:126,128);
+//! - oblezenia (`oblegajacyOwnerId`, `siegeBesiegerByCity`) -> brak struktury oblezen w Rust.
+//!   Zakres dyspozycji (miasta, jednostki, akumulatory, relacje) tego nie obejmuje. Rejestracja jako osobny temat:
+//!   proponowane ID `ELIMINACJA-GRACZA-DEALS-WOJNY-Q2` (decyzja orkiestratora).
+//! Wolanie z tur/walki: osobny temat (brak wpiecia tutaj).
 //!
 //! Wejscie `wyeliminowani` jest jawne (web `eliminatedOwners`): wolajacy trzyma zbior. Modul nie zapisuje stanu
 //! poza `state` i tym zbiorem.

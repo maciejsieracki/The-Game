@@ -79,8 +79,8 @@ fn build_state(init: &Value) -> (PlayableState, Vec<i64>) {
             Relation::new(0.0, 0.0, RelationStatus::Neutral),
         );
     }
-    let mut eliminated = i64s(&init["eliminated"]);
-    eliminated.sort_unstable();
+    // Kolejnosc wstawiania z wektora (jak Set w webie) zachowana bez sortowania.
+    let eliminated = i64s(&init["eliminated"]);
     (state, eliminated)
 }
 
@@ -128,12 +128,10 @@ fn wektory_pinu_eliminacji_zgodne_z_webem_krok_po_kroku() {
                 jednostki, oczek_jednostki,
                 "{ctx}: jednostki (id po kolejnosci)"
             );
-            let mut elim_sorted = elim.clone();
-            elim_sorted.sort_unstable();
             assert_eq!(
-                elim_sorted,
+                elim,
                 i64s(&step["expect_eliminated"]),
-                "{ctx}: eliminatedOwners"
+                "{ctx}: eliminatedOwners (kolejnosc wstawiania)"
             );
             assert_eq!(
                 sorted_pairs_f64(state.war.battle_power_pts_by_owner.clone()),
