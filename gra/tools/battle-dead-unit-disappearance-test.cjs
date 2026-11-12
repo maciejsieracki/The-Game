@@ -101,7 +101,9 @@ async function main() {
   assert.strictEqual(routed.group.visible, true, 'routed model remains visible while fleeing');
   assert.strictEqual(routed.hpBarGroup.visible, true, 'routed health bar remains visible until exit');
   assert.strictEqual(routed.bu.hp, 73, 'routed unit retains surviving HP');
-  assert.strictEqual(rout.scene.occByKey.has('7,12'), false, 'routed unit frees its tile to let allies pass');
+  // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 (FALA 653): uciekinier ZOSTAJE na swoim polu w occByKey
+  // (zywa jednostka na planszy; ruch sojusznika nie moze go wchlonac). Stara asercja (zwalnia pole) byla nieaktualna.
+  assert.strictEqual(rout.scene.occByKey.has('7,12'), true, 'routed unit keeps its tile occupied until it flees');
   assert.strictEqual(rout.scene.routedUnits.length, 1, 'routed unit remains recorded in routed roster');
 
   const source = require('fs').readFileSync(path.join(ROOT, 'src/battle/battleScene.ts'), 'utf8');

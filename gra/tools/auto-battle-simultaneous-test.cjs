@@ -353,8 +353,12 @@ function runResolverChecks() {
     { unitId: 'def-a', side: 'def', kind: 'attack', targetId: 'atk-a', steps: [] },
     { unitId: 'def-b', side: 'def', kind: 'attack', targetId: 'atk-a', steps: [] },
   ]);
-  assert(unavailableResolved.length === 0,
-    'dead/routed/previously-acted units cannot enter a later phase');
+  // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 (FALA 653): zroutowany (uciekajacy) zyje na polu,
+  // jest celem ataku i sam wykonuje ruch ucieczki -- wiec jego intencja zostaje rozstrzygnieta.
+  // Stara asercja (length === 0) byla nieaktualna wobec tej decyzji. Zachowane twarde warunki:
+  // martwy nie dziala (atk-a), a juz dzialajacy w tej rundzie (def-b, acted) nie wchodzi w faze.
+  assert(unavailableResolved.length === 1 && unavailableResolved[0].unitId === 'def-a',
+    'routed unit stays live and flees; dead attacker and previously-acted unit do not enter the phase');
 
   const invalidHp = resolve('atk', [
     { id: 'zero-hp', side: 'atk', q: 0, r: 0, hp: 0 },

@@ -70,7 +70,8 @@ function stripLineComments(src) {
     'main.ts importuje isMainMenuOpen z ./ui/mainMenu',
   );
 
-  const fnStartMarker = 'function showHintMessage(msg: string, durationMs: number = 3000): void {';
+  // Sygnatura rozrosla sie o parametry ctx/aboveBattle (wieloliniowa) -- szukamy samej nazwy funkcji.
+  const fnStartMarker = 'function showHintMessage(';
   const fnStart = mainSrc.indexOf(fnStartMarker);
   ok(fnStart >= 0, 'znaleziono function showHintMessage(...)');
 
@@ -82,9 +83,9 @@ function stripLineComments(src) {
   const fnBodyCode = stripLineComments(fnBody);
 
   ok(
-    /hintToast\.style\.zIndex\s*=\s*isPreBattleOpen\(\)\s*\?\s*'9950'\s*:\s*\(isMainMenuOpen\(\)\s*\?\s*'600'\s*:\s*'320'\)\s*;/
+    /hintToast\.style\.zIndex\s*=\s*aboveBattle\s*\?\s*'10030'\s*:\s*\(isPreBattleOpen\(\)\s*\?\s*'9950'\s*:\s*\(\(isMainMenuOpen\(\)\s*\|\|\s*isEmpireDetailPanelOpen\(\)\)\s*\?\s*'600'\s*:\s*'320'\)\)\s*;/
       .test(fnBodyCode),
-    "formuła z-index toastu to isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320') "
+    "formuła z-index toastu: aboveBattle ? '10030' : (isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320')) "
     + '-- isPreBattleOpen ma pierwszeństwo (bitwa polowa nad menu), isMainMenuOpen podnosi '
     + 'toast nad .civ-menu, domyślne 320 zostaje gdy nic z tego nie jest otwarte',
   );
