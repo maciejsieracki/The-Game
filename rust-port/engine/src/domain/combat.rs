@@ -1057,7 +1057,16 @@ pub mod unit_building_bonuses {
 /// Te modyfikatory licza sie poza ta funkcja (patrz zalozenia w
 /// `dyspozycje/rust-port/p6/P6-REPIN-DYSTANS-PETLA.md`). Faza zwarcia nie jest portowana.
 pub mod ranged_phase {
-    use crate::domain::unit_power::{hit_chance_tw, ranged_shot_accuracy, ranged_shot_damage};
+    use crate::domain::unit_power::{hit_chance_tw, ranged_shot_accuracy, ranged_shot_damage_f64};
+
+    /// Pole `RangedShot::damage` (i64, informacyjne): NaN -> 0, reszta nasycana `as i64`.
+    fn damage_exact_to_i64(v: f64) -> i64 {
+        if v.is_nan() {
+            0
+        } else {
+            v as i64
+        }
+    }
 
     /// Strona walki w fazie dystansowej (odpowiednik pol `CombatUnit` + wartosci `*0` z web).
     #[derive(Debug, Clone, PartialEq)]
@@ -1099,8 +1108,12 @@ pub mod ranged_phase {
         pub side: Side,
         pub hit_pct: f64,
         pub hit: bool,
-        /// Obrazenia (0 przy chybieniu).
+        /// Obrazenia (0 przy chybieniu), calkowite: wartosci NaN/Infinity nie maja tu reprezentacji
+        /// (NaN -> 0, Infinity -> i64::MAX). Dokladna wartosc jak na pinie jest w [`Self::damage_exact`].
         pub damage: i64,
+        /// Obrazenia dokladnie jak `rangedShotDamage` z pinu (f64; NaN/Infinity zachowane). To ta wartosc
+        /// zmniejsza HP celu, zgodnie z `hpDef -= dmg` w pinie.
+        pub damage_exact: f64,
         /// HP celu po strzale.
         pub target_hp: f64,
     }
@@ -1167,24 +1180,27 @@ pub mod ranged_phase {
                         0.0,
                     );
                     let roll = rng() * 100.0;
+                    // `roll < NaN` jest false (pudlo), jak w pinie.
                     let hit = roll < hit_pct;
-                    let mut damage = 0;
-                    if hit {
-                        damage = ranged_shot_damage(
+                    let damage_exact = if hit {
+                        ranged_shot_damage_f64(
                             attacker.counter_typ.as_deref(),
                             attacker.typ_nazwa.as_deref(),
                             attacker.missile_attack,
                             defender.armor,
                             attacker.counter_mult,
-                        );
-                        defender.hp -= damage as f64;
-                    }
+                        )
+                    } else {
+                        0.0
+                    };
+                    defender.hp -= damage_exact;
                     shots.push(RangedShot {
                         round: total_rounds,
                         side: Side::Attacker,
                         hit_pct,
                         hit,
-                        damage,
+                        damage: damage_exact_to_i64(damage_exact),
+                        damage_exact,
                         target_hp: defender.hp,
                     });
                 }
@@ -1197,24 +1213,27 @@ pub mod ranged_phase {
                         0.0,
                     );
                     let roll = rng() * 100.0;
+                    // `roll < NaN` jest false (pudlo), jak w pinie.
                     let hit = roll < hit_pct;
-                    let mut damage = 0;
-                    if hit {
-                        damage = ranged_shot_damage(
+                    let damage_exact = if hit {
+                        ranged_shot_damage_f64(
                             defender.counter_typ.as_deref(),
                             defender.typ_nazwa.as_deref(),
                             defender.missile_attack,
                             attacker.armor,
                             defender.counter_mult,
-                        );
-                        attacker.hp -= damage as f64;
-                    }
+                        )
+                    } else {
+                        0.0
+                    };
+                    attacker.hp -= damage_exact;
                     shots.push(RangedShot {
                         round: total_rounds,
                         side: Side::Defender,
                         hit_pct,
                         hit,
-                        damage,
+                        damage: damage_exact_to_i64(damage_exact),
+                        damage_exact,
                         target_hp: attacker.hp,
                     });
                 }

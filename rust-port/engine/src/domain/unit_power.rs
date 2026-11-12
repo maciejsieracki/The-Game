@@ -13,7 +13,7 @@
 use std::sync::OnceLock;
 
 use crate::data::units_combat::{parse_combat_params, RangedDamageMultParams};
-use crate::domain::siege_tactics_blow::{js_max, js_min};
+use crate::domain::siege_tactics_blow::{js_max, js_min, js_round as js_round_js};
 
 fn ranged_params() -> &'static RangedDamageMultParams {
     static TABLE: OnceLock<RangedDamageMultParams> = OnceLock::new();
@@ -70,8 +70,24 @@ pub fn range_damage_tw(missile_attack: f64, armor: f64) -> f64 {
     js_max(1.0, missile_attack - armor)
 }
 
-/// `rangedShotDamage` z web: koncowe obrazenia pocisku auto-walki.
-/// raw = rangeDamageTw * counterMult * rangedDamageMultFor; wynik = max(1, round(raw)).
+/// `rangedShotDamage` z web (pin 07d2fbd72, combat.ts:485-495): koncowe obrazenia pocisku auto-walki
+/// jako f64, zgodnie z pinem: raw = rangeDamageTw * counterMult * rangedDamageMultFor;
+/// wynik = `Math.max(1, Math.round(raw))` (JS: NaN i Infinity propaguja; zaokraglenie jak JS `Math.round`).
+pub fn ranged_shot_damage_f64(
+    typ: Option<&str>,
+    jednostka: Option<&str>,
+    missile_attack: f64,
+    armor: f64,
+    counter_mult: f64,
+) -> f64 {
+    let raw = range_damage_tw(missile_attack, armor)
+        * counter_mult
+        * ranged_damage_mult_for(typ, jednostka);
+    js_max(1.0, js_round_js(raw))
+}
+
+/// Wariant calkowity dla wolajacych z wartosciami skonczonymi (testy formul dystansu).
+/// NaN -> 1 (dawne zachowanie `f64::max`); +/-Infinity i wartosci poza zakresem i64 nasycaja sie `as i64`.
 pub fn ranged_shot_damage(
     typ: Option<&str>,
     jednostka: Option<&str>,
@@ -79,10 +95,12 @@ pub fn ranged_shot_damage(
     armor: f64,
     counter_mult: f64,
 ) -> i64 {
-    let raw = range_damage_tw(missile_attack, armor)
-        * counter_mult
-        * ranged_damage_mult_for(typ, jednostka);
-    js_round(raw).max(1.0) as i64
+    let v = ranged_shot_damage_f64(typ, jednostka, missile_attack, armor, counter_mult);
+    if v.is_nan() {
+        1
+    } else {
+        v as i64
+    }
 }
 
 /// `hitChanceTw` z web (pin 07d2fbd72, combat.ts:446; TW v3): `Math.max(hit_min, Math.min(hit_max, raw))`,
