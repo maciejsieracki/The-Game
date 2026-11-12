@@ -120,6 +120,7 @@ pub mod turn_economy_territory;
 pub mod turn_economy_tick;
 pub mod turn_economy_upkeep;
 pub mod turn_economy_wire;
+pub mod turn_war_epoch;
 pub mod turn_war_inputs;
 pub mod turn_war_pipeline;
 pub mod types;

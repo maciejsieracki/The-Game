@@ -1,8 +1,9 @@
 //! P6-WIRE-WAR-PIPELINE (W8 r4): producenci wejsc fazy Diplomacy z `PlayableState` + `WarTurnState`.
 //!
-//! r5: BEZ podstawiania epoki startu i BEZ cichych zer. `advance_turn` z AI posiadajacym miasta
-//! konczy sie jawnym `WarTurnError` (`OwnerEpochUnavailable`, `Missing`) do czasu producentow
-//! epok per wlasciciel i wspolnej granicy (lista blokerow: runs/.../01-operator-r5.md).
+//! r6: epoka wlasciciela ma producenta (`turn_war_epoch`, pin main.ts:2419; AI bez wpisu = jawny
+//! `gameStartEra()`, zrodlo `EpochSource`). `advance_turn` z AI posiadajacym miasta konczy sie jawnym
+//! `WarTurnError::PowerComponentsMissing` (nastepny bloker) albo `SharedBorderUnavailable` (>2 miasta po
+//! obu stronach) do czasu pozostalych producentow (`KNOWN_GAPS`). BEZ cichych zer.
 //! Wejscia (`ObjectivePowerRaw`), blokady pokoju, parametry par hamulca
 //! (`diploBrakeWarParams`) i flaga multiwar. Zrodla (pin 07d2fbd72, tylko odczyt):
 //! - `diploBrakeWarParams` main.ts:11567 (wyzsza z dwoch `progWojnyRelacji`, N = `hamulecN` tej strony;
@@ -16,9 +17,8 @@
 //! jest bledem (`WarInputsError` / `WarTurnError`), nie zerem ani stala.
 //!
 //! r5: `PlayableState` NIE symuluje fazy Economy ani badan. Nie ma populacji miast, kultury,
-//! budynkow, tech, religii, ulepszen, walk ani epoki per wlasciciel. Producenci NIE podstawiaja
-//! stalych zalozenia: skladniki zalezne od tych danych sa `Missing`, epoka wlasciciela jest bledem
-//! (`WarInputsError::OwnerEpochUnavailable`), wspolna granica pary z >2 miastami po obu stronach
+//! budynkow, tech, religii, ulepszen, walk ani epoki per wlasciciel (r6: epoka = jawny fallback pinu).
+//! Producenci NIE podstawiaja stalych zalozenia: skladniki zalezne od tych danych sa `Missing`, wspolna granica pary z >2 miastami po obu stronach
 //! jest bledem (`SharedBorderUnavailable`). Produkcyjny `advance_turn` z AI posiadajacym miasta
 //! zwraca wiec jawny blad do czasu powstania producentow z `KNOWN_GAPS` (lista dla r6).
 //!
@@ -46,6 +46,7 @@ use super::order_effects_culture::PressureCity;
 use super::playable::{PlayableState, PlayableUnitKind};
 use super::recruitment::manpower::{civ_manpower_max_mult, civ_manpower_mults, ManpowerCity};
 use super::territory::ReligionState;
+use super::turn_war_epoch::{epochs_with_sources, OwnerEpochError};
 use super::turn_war_pipeline::{PeaceLockFacts, WarTurnConfig, WarTurnInputs};
 use super::war_turn_state::WarTurnState;
 
@@ -93,8 +94,8 @@ pub const UNPRODUCED_POWER_COMPONENTS: [&str; 7] = [
 
 /// Znane luki producentow (NIE_ZMIERZONO wzgledem web) = lista producentow potrzebnych w r6.
 pub const KNOWN_GAPS: [&str; 5] = [
-    "epoka wlasciciela: brak badan/era per owner w PlayableState (web empireEpochForOwner main.ts:2419)",
-    "wspolna granica: pary z >2 miastami po obu stronach wymagaja ownersShareLandBorderLive (main.ts:5690)",
+    "epoka wlasciciela: producent turn_war_epoch (web empireEpochForOwner main.ts:2419); brak badan/era per owner w PlayableState => jawny fallback gameStartEra (main.ts:2415), nie luka blokujaca",
+    "wspolna granica: pary z >2 miastami po obu stronach wymagaja ownersShareLandBorderLive (main.ts:5690) -> ownersHaveSharedLandBorder (trade-routes.ts:264): potrzebne pop miast (cityTerritoryRadius) i teren heksow mapy; PlayableCity bez populacji",
     "populacja i kultura miast: PlayableCity bez pol => ludki, rekruci, terytorium, kultura = Missing",
     "budynki (infra), tech zbadane, religia panstwowa: brak magazynow => infra, tech, religia = Missing",
     "TickContext: handel, religia, dobra wola, wiarygodnosc = domyslne (PlayableState ich nie niesie)",
@@ -414,14 +415,16 @@ pub fn production_config(state: &PlayableState) -> Result<WarTurnConfig, WarInpu
     ))
 }
 
-/// Epoki wlascicieli z `PlayableState`: producent NIE istnieje (brak badan/era per owner), wiec dla
-/// AI z miastami zawsze blad. Epoka startu (`params.epoch_id`) NIE jest epoka wlasciciela: web
-/// `empireEpochForOwner` (main.ts:2419) czyta bierzaca epoke (`playerStateByHuman.era`/`ownerEraByOwner`).
+/// Epoki wlascicieli z `PlayableState` (producent `turn_war_epoch`, pin main.ts:2419 `empireEpochForOwner`).
+/// `PlayableState` nie niesie badan ani epoki per wlasciciel: AI dostaje jawny `gameStartEra()` (zgodnosc z
+/// pinem `ownerEraByOwner.get(id) ?? gameStartEra()`, `EpochSource::FallbackGameStartEra`), czlowiek epoke
+/// startu (brak badan = brak awansu). Zrodla: `turn_war_epoch::epochs_with_sources`.
 pub fn epochs_from_state(state: &PlayableState) -> Result<BTreeMap<i64, f64>, WarInputsError> {
-    match all_owner_ids(state).into_iter().next() {
-        Some(id) => Err(WarInputsError::OwnerEpochUnavailable(id)),
-        None => Ok(BTreeMap::new()),
-    }
+    epochs_with_sources(state, &all_owner_ids(state))
+        .map(|m| m.into_iter().map(|(id, (e, _))| (id, e)).collect())
+        .map_err(|e| match e {
+            OwnerEpochError::HumanEraMissing(id) => WarInputsError::OwnerEpochUnavailable(id),
+        })
 }
 
 /// Wspolna granica pary (web `karaWspolnaGranica`, main.ts:22876): wymaga >2 miast po obu stronach ORAZ

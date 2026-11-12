@@ -297,8 +297,9 @@ fn completed_power_grows_with_city_count_producer() {
 }
 
 #[test]
-fn production_owner_epochs_are_unavailable_not_the_start_epoch() {
-    // Epoka startu z parametrow gry nadal jest odczytywalna, ale NIE jest epoka wlasciciela.
+fn production_owner_epochs_come_from_the_epoch_producer_not_ad_hoc() {
+    // W8 r6 (WIRE-WAR-EPOKA): producent `turn_war_epoch` (pin main.ts:2419). PlayableState nie niesie
+    // badan, wiec AI = jawny fallback gameStartEra, czlowiek = epoka startu (patrz p6_wire_war_epoch).
     assert_eq!(start_epoch_number("kamien"), Ok(1.0));
     assert_eq!(start_epoch_number("zelazo"), Ok(3.0));
     assert!(matches!(
@@ -306,15 +307,9 @@ fn production_owner_epochs_are_unavailable_not_the_start_epoch() {
         Err(WarInputsError::UnknownStartEpoch(_))
     ));
     let state = state_with(None, "rzymianie", "zelazo");
-    // Produkcyjna sciezka (bez wstrzyknietych epok): jawny blad, zadnego podstawienia 3.0.
-    assert_eq!(
-        epochs_from_state(&state),
-        Err(WarInputsError::OwnerEpochUnavailable(1))
-    );
-    assert_eq!(
-        build_war_inputs(&state, &WarTurnState::default()),
-        Err(WarInputsError::OwnerEpochUnavailable(1))
-    );
+    assert_eq!(epochs_from_state(&state), Ok(epochs(&[(1, 3.0), (2, 3.0)])));
+    let built = build_war_inputs(&state, &WarTurnState::default()).expect("epoki z producenta");
+    assert_eq!(built.epochs, epochs(&[(1, 3.0), (2, 3.0)]));
     // Wstrzykniete epoki musza obejmowac KAZDEGO wlasciciela.
     assert_eq!(
         build_war_inputs_with_epochs(&state, &WarTurnState::default(), &epochs(&[(1, 3.0)])),
@@ -337,16 +332,10 @@ fn production_owner_epochs_are_unavailable_not_the_start_epoch() {
 
 #[test]
 fn production_path_fails_with_explicit_blockers_for_ai_with_cities() {
-    // build_war_inputs -> blad epoki; z wstrzyknietymi epokami run_war_turn zglasza brakujace
-    // skladniki mocy (STRICT) zamiast cichych zer.
+    // W8 r6: build_war_inputs przechodzi (epoki z producenta); NASTEPNY bloker to brakujace skladniki mocy
+    // (STRICT w run_war_turn) zamiast cichych zer.
     let state = state_with(None, "rzymianie", "kamien");
-    assert!(build_war_inputs(&state, &WarTurnState::default()).is_err());
-    let inputs = build_war_inputs_with_epochs(
-        &state,
-        &WarTurnState::default(),
-        &epochs(&[(1, 1.0), (2, 1.0)]),
-    )
-    .expect("inputs");
+    let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
     let cfg = production_config(&state).expect("config");
     let mut war = WarTurnState::default();
     let mut ctx = WarTurnContext {

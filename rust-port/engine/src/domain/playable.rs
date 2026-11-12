@@ -750,16 +750,20 @@ mod war_pipeline_advance_tests {
     }
 
     #[test]
-    fn advance_turn_with_ai_city_fails_explicitly_on_missing_owner_epoch_and_restores_state() {
-        // r5: PlayableState nie ma epoki per wlasciciel (brak badan); pipeline nie podstawia epoki
-        // startu, wiec produkcyjny advance_turn z AI posiadajacym miasta zwraca jawny blad (KNOWN_GAPS).
+    fn advance_turn_with_ai_city_fails_explicitly_on_missing_power_components_and_restores_state() {
+        // r6: epoka wlasciciela ma producenta (turn_war_epoch); NASTEPNY bloker (KNOWN_GAPS) to skladniki
+        // mocy bez producenta (ludki, rekruci, terytorium, infra, tech, kultura, religia) => jawny blad.
         let mut game = game_with_ai_city();
         let queue_len = game.pending_phase_count();
         let before = game.state().war.clone();
-        let err = game.advance_turn().expect_err("brak producenta epoki");
+        let err = game.advance_turn().expect_err("brak skladnikow mocy");
         match &err {
             PlayableError::WarTurn(message) => {
-                assert!(message.contains("epoki wlasciciela"), "{message}")
+                assert!(
+                    message.contains("skladniki mocy bez zrodla") && message.contains("ludki"),
+                    "{message}"
+                );
+                assert!(!message.contains("epoki wlasciciela"), "{message}");
             }
             other => panic!("oczekiwano WarTurn, jest {other:?}"),
         }
