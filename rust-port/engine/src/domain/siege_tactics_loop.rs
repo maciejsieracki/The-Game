@@ -350,8 +350,10 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // K5-LOOP-BODY (r2 + r3 Operatora): produkcyjne ciało jednostki. Zgodność z pinem: wektory `p6_siege_tactics_loop_body_pin`
 // (r3: generator wykonuje tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow`, ślad aktywacji + wynik ciosu + stan + `engaged`).
 //
-// NIE WPINAĆ do [`SiegeLoop`] przed osobnymi tematami: skutki `_resolveBlowOutcome` (morale/rout po ciosie), kontratak
-// (`_defenderCounters`) i timing `BLOW_HIT_T` NIE są tu zaimplementowane, więc stan produkcyjny rozjechałby się z pinem.
+// NIE WPINAĆ do [`SiegeLoop`] przed osobnymi tematami: skutki `_resolveBlowOutcome` (morale/rout po ciosie) i timing
+// `BLOW_HIT_T` NIE są tu zaimplementowane, więc stan produkcyjny rozjechałby się z pinem. KONTRATAK obrońcy
+// (`_defenderCounters`, K5LOOP-KONTRATAK) JEST zaimplementowany w [`ProdBody::counter_strike`] (budżet tury, rzut RNG,
+// HP/zabicie atakującego, `engaged`, facing).
 // FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
 // początku aktywacji, `_nearestEnemy` + `facingToward`) i przypisanie `attacker.facing` w `_doMeleeAttack` (przed ciosem)
 // aktualizują stan; łuk ciosu liczy [`relative_hit`] z AKTUALNEGO facing obrońcy i pozycji (nie z szablonu).
@@ -373,6 +375,9 @@ pub struct ProdUnit {
     pub melee_target: Option<usize>,
     /// Szablon ciosu na `melee_target`. Stan obrońcy jest nadpisywany z [`TurnSeqState`] przy `complete`.
     pub blow: Option<FullBlowInput>,
+    /// Szablony kontrataku tej jednostki (jako OBROŃCY) na wrogów, indeks = indeks wroga w liście strony przeciwnej
+    /// (pin `_defenderCounters` + `_singleBlow(defender, attacker)`). Stan obu stron jest nadpisywany przy `complete`.
+    pub counter_blows: Vec<FullBlowInput>,
     /// Czas animacji ciosu (ms) zwracany przez `start` (wejście adaptera; timing `_doAttack` nieportowany).
     pub body_ms: f64,
     /// Początkowy `facing` (`Dir` jako liczba 0..3, `battleScene.ts:315-320`); potem zmienia go `_updateFacing`.
@@ -493,6 +498,10 @@ pub struct ProdBody<R: RollSource> {
     pub blows: Vec<BlowRecord>,
     /// Zbiór `engaged` sceny (`attacker>defender`, `battleScene.ts:8899`): tylko ciosy w zwarciu, także chybione.
     pub engaged: Vec<(UnitRef, UnitRef)>,
+    /// Kontrataki obrońców (K5LOOP-KONTRATAK), osobno od ciosów głównych; jeden wpis na wykonany kontratak.
+    pub counters: Vec<BlowRecord>,
+    /// Budżet kontrataków (`DefenderCounterBudget`, combat.ts:1279): tura, w której obrońca już kontratakował.
+    counter_round: [Vec<Option<i64>>; 2],
     /// Flaga `surroundApplied` (jednorazowa) trzymana między aktywacjami, bo nie ma jej w [`CombatUnit`].
     surround: [Vec<bool>; 2],
     pending: [Vec<Option<ProdPending>>; 2],
@@ -513,6 +522,7 @@ impl<R: RollSource> ProdBody<R> {
                 .collect(),
         ];
         let pending = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        let counter_round = [vec![None; units[0].len()], vec![None; units[1].len()]];
         let facing = [
             units[0].iter().map(|u| u.facing).collect(),
             units[1].iter().map(|u| u.facing).collect(),
@@ -525,6 +535,8 @@ impl<R: RollSource> ProdBody<R> {
             trace: Vec::new(),
             blows: Vec::new(),
             engaged: Vec::new(),
+            counters: Vec::new(),
+            counter_round,
             surround,
             pending,
             facing,
@@ -729,36 +741,54 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             side: opposite(unit.side),
             idx: target,
         };
-        let tc = st.unit(tref).c;
-        let Some(mut input) = self.units[ix][unit.idx].blow.clone() else {
+        let Some(input) = self.units[ix][unit.idx].blow.clone() else {
             return;
         };
+        let rec = self.strike(st, unit, tref, input);
+        self.blows.push(rec);
+        self.counter_strike(st, unit, tref);
+    }
+}
+
+impl<R: RollSource> ProdBody<R> {
+    /// Jeden cios `_singleBlow` (pin): łuk względem facing celu, pierwsza para z `engaged`, stan celu z `st`, jeden rzut,
+    /// skutki HP/zabicia, wpis do `engaged`. Wspólne dla ciosu głównego i kontrataku. Efekty `_resolveBlowOutcome`
+    /// (morale/rout po ciosie) NIE są tu stosowane: zapis w `unported`.
+    fn strike(
+        &mut self,
+        st: &mut TurnSeqState,
+        attacker: UnitRef,
+        target: UnitRef,
+        mut input: FullBlowInput,
+    ) -> BlowRecord {
+        let ix = side_ix(attacker.side);
+        let tix = side_ix(target.side);
+        let tc = st.unit(target).c;
+        let (aq, ar) = (
+            self.units[ix][attacker.idx].activate.q,
+            self.units[ix][attacker.idx].activate.r,
+        );
+        let (dq, dr) = (
+            self.units[tix][target.idx].activate.q,
+            self.units[tix][target.idx].activate.r,
+        );
         // `_doMeleeAttack` (battleScene.ts:9104): atakujący zwraca się ku celowi; `_singleBlow` klasyfikuje łuk
         // względem facing OBROŃCY w tym momencie (`relativeHit`, battleScene.ts:8880).
-        let (aq, ar) = (
-            self.units[ix][unit.idx].activate.q,
-            self.units[ix][unit.idx].activate.r,
-        );
-        let tix = side_ix(tref.side);
-        let (dq, dr) = (
-            self.units[tix][tref.idx].activate.q,
-            self.units[tix][tref.idx].activate.r,
-        );
-        self.facing[ix][unit.idx] = facing_toward(
+        self.facing[ix][attacker.idx] = facing_toward(
             &JsVal::Num((dq - aq) as f64),
             &JsVal::Num((dr - ar) as f64),
-            &JsVal::Num(self.facing[ix][unit.idx]),
+            &JsVal::Num(self.facing[ix][attacker.idx]),
         )
         .to_number();
         input.hit_arc = relative_hit(
-            &JsVal::Num(self.facing[tix][tref.idx]),
+            &JsVal::Num(self.facing[tix][target.idx]),
             &JsVal::Num(aq as f64),
             &JsVal::Num(ar as f64),
             &JsVal::Num(dq as f64),
             &JsVal::Num(dr as f64),
         );
         // Para jest „pierwsza", dopóki jej klucza nie ma w `engaged` (`firstBlow = !this.engaged.has(key)`, :8896).
-        input.first_blow_of_pair = !self.engaged.contains(&(unit, tref));
+        input.first_blow_of_pair = !self.engaged.contains(&(attacker, target));
         input.defender_state = DefenderState {
             hp: tc.hp,
             max_hp: input.defender_state.max_hp,
@@ -772,23 +802,21 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         };
         let out = single_blow_full(&input, &mut self.rolls);
         {
-            let dc = unit_cu_mut(st, tref);
+            let dc = unit_cu_mut(st, target);
             dc.hp = out.blow.def_hp_after;
             if out.blow.outcome == Outcome::Kill {
                 dc.dead = true;
             }
         }
-        // Efekty `_resolveBlowOutcome` (morale, ucieczka po ciosie, efekty sceny) i zbiór `engaged` nie są
-        // portowane w tym klocku: zapis ścieżki zamiast cichego pominięcia.
         if out.blow.outcome != Outcome::None {
-            self.unported.push((unit, "resolveBlowOutcome-efekty"));
+            self.unported.push((attacker, "resolveBlowOutcome-efekty"));
         }
-        if out.blow.engaged_add && !self.engaged.contains(&(unit, tref)) {
-            self.engaged.push((unit, tref));
+        if out.blow.engaged_add && !self.engaged.contains(&(attacker, target)) {
+            self.engaged.push((attacker, target));
         }
-        self.blows.push(BlowRecord {
-            attacker: unit,
-            target: tref,
+        BlowRecord {
+            attacker,
+            target,
             missed: out.blow.missed,
             hit_pct: out.blow.hit_pct,
             roll: out.blow.roll,
@@ -797,13 +825,41 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             extra_morale: out.blow.extra_morale,
             is_charge: out.blow.is_charge,
             hit_arc: input.hit_arc,
-        });
-        // Kontratak obrońcy (`_doMeleeAttack`, COUNTER-ATTACK w battleScene.ts) nie jest portowany w tym klocku.
-        // Jeśli cel przeżył cios, zapisujemy kandydata na nieportowaną gałąź (zamiast cichego pominięcia).
-        // Warunek „obrońca jest melee" nie jest tu sprawdzany, więc wpis jest konserwatywny.
-        if !st.unit(tref).c.dead {
-            self.unported
-                .push((unit, "kontratak-kandydat-nieportowany"));
         }
+    }
+
+    /// Kontratak obrońcy (pin `_doMeleeAttack`, COUNTER-ATTACK, battleScene.ts:9134-9143). Warunki jak w
+    /// `_defenderCounters` (battleScene.ts:9079-9091): obrońca żywy, nie znika, nie ucieka, HP > 0, budżet tury
+    /// (`DefenderCounterBudget`: jeden kontratak na obrońcę w turze; turę oznacza `round_no`). Budżet sprawdzany przed
+    /// gałęzią strzelca. Strzelec podstawowy (`primary_ranged`) wymaga stanu „bez amunicji”, którego ProdBody nie
+    /// trzyma: zapisywany jako nieportowany, bez kontrataku.
+    fn counter_strike(&mut self, st: &mut TurnSeqState, attacker: UnitRef, defender: UnitRef) {
+        let dix = side_ix(defender.side);
+        let dc = st.unit(defender).c;
+        if dc.dead || dc.fading_out || dc.routed || dc.hp <= 0.0 {
+            return;
+        }
+        if self.counter_round[dix][defender.idx] == Some(st.round_no) {
+            return;
+        }
+        if self.units[dix][defender.idx].activate.primary_ranged {
+            self.unported.push((defender, "kontratak-strzelec"));
+            return;
+        }
+        let Some(cin) = self.units[dix][defender.idx]
+            .counter_blows
+            .get(attacker.idx)
+            .cloned()
+        else {
+            self.unported.push((defender, "kontratak-bez-szablonu"));
+            return;
+        };
+        // `_counterBudget.consume` + `engaged.add(defender>attacker)` (odmowa szarży kontrataku).
+        self.counter_round[dix][defender.idx] = Some(st.round_no);
+        if !self.engaged.contains(&(defender, attacker)) {
+            self.engaged.push((defender, attacker));
+        }
+        let rec = self.strike(st, defender, attacker, cin);
+        self.counters.push(rec);
     }
 }
