@@ -41,7 +41,8 @@
 //! (tak samo jak `declarations` w hamulcu). Stan wlasciciela (`war.diplomacy`, meta par, skrzynka, liczniki
 //! dostaw) jest zmieniany w miejscu, atomowo: blad = zadnej zmiany.
 //!
-//! BRAK CICHYCH ZER: brak skarbca / puli Pracy / mocy armii wlasciciela, ktorego krok faktycznie potrzebuje,
+//! PARYTET Z PINEM (R-RUSTPORT-P6-R7K7C-WIRING-Q1): brak wpisu skarbca / puli Pracy AI = 0 (pin `?? 0`), brak
+//! wpisu gracza ludzkiego = blad (pin `!`). Brak mocy armii wlasciciela, ktorego krok faktycznie potrzebuje,
 //! daje `WarTurnError::DiplStep` z powodem (wejscie sprawdzane leniwie: tylko gdy dane wchodza do decyzji).
 
 use std::cell::RefCell;
@@ -78,9 +79,9 @@ pub const BARBARIAN_COOPERATION_TURNS: f64 = 3.0;
 pub struct DiplStepsInputs {
     /// `true` = flaga hamulca OFF (galaz `tickDobraWolaOnRelation`). Domyslnie `false` = ON (pin).
     pub brake_flag_off: bool,
-    /// Skarbce wlascicieli (web `ownerTreasury`). Brak wpisu = producent nieobecny (blad przy uzyciu).
+    /// Skarbce wlascicieli (web `ownerTreasury`). Brak wpisu AI = 0 (pin `?? 0`); gracz ludzki bez wpisu = blad.
     pub treasury: BTreeMap<i64, f64>,
-    /// Pule Pracy wlascicieli (web `ownerPracaPool`). Brak wpisu = blad przy uzyciu.
+    /// Pule Pracy wlascicieli (web `ownerPracaPool`). Brak wpisu AI = 0 (pin `?? 0`); gracz ludzki bez wpisu = blad.
     pub praca_pool: BTreeMap<i64, f64>,
     /// Zapasy miast (web `city.surowce`). `None` = producent nieobecny (blad, gdy sa umowy cykliczne).
     pub cities: Option<Vec<CityResourceState>>,
@@ -164,7 +165,7 @@ pub struct TributeDeal {
     pub until: Option<f64>,
 }
 
-/// Skarbiec jako adapter (web `TreasuryAdapter`); blad = brak producenta dla wlasciciela.
+/// Skarbiec jako adapter (web `TreasuryAdapter`); blad = brak producenta gracza ludzkiego (AI: brak wpisu = 0).
 pub trait Treasury {
     fn balance(&self, owner: i64) -> Result<f64, WarTurnError>;
     fn add(&mut self, owner: i64, delta: f64) -> Result<(), WarTurnError>;
@@ -298,6 +299,8 @@ pub fn sync_relation_from_deals(state: &mut DiplomacyState, a: PlayerId, b: Play
 
 struct Ledger<'a> {
     inp: &'a DiplStepsInputs,
+    /// Wlasciciele ludzcy (pin: `playerStateByHuman.get(id)!` / `pracaPoolByHuman.get(id)!` -- brak = blad).
+    humans: Vec<i64>,
     cities: Option<Vec<CityResourceState>>,
     treasury: BTreeMap<i64, f64>,
     praca: BTreeMap<i64, f64>,
@@ -306,9 +309,10 @@ struct Ledger<'a> {
 }
 
 impl<'a> Ledger<'a> {
-    fn new(inp: &'a DiplStepsInputs) -> Self {
+    fn new(inp: &'a DiplStepsInputs, human_ids: &[i64]) -> Self {
         Self {
             inp,
+            humans: human_ids.to_vec(),
             cities: inp.cities.clone(),
             treasury: inp.treasury.clone(),
             praca: inp.praca_pool.clone(),
@@ -334,22 +338,32 @@ impl<'a> Ledger<'a> {
             .sum())
     }
 
+    /// Web/pin `ownerPracaPool(id)`: człowiek -- wpis wymagany (`pracaPoolByHuman.get(id)!`);
+    /// AI -- brak wpisu = 0 (`aiPracaPoolByOwner.get(id) ?? 0`).
     fn praca_of(&self, owner: i64) -> Result<f64, WarTurnError> {
-        self.praca.get(&owner).copied().ok_or_else(|| {
-            err(format!(
-                "brak producenta puli Pracy wlasciciela {owner} (web ownerPracaPool)"
-            ))
-        })
+        if self.humans.contains(&owner) {
+            return self.praca.get(&owner).copied().ok_or_else(|| {
+                err(format!(
+                    "brak producenta puli Pracy gracza {owner} (web ownerPracaPool)"
+                ))
+            });
+        }
+        Ok(self.praca.get(&owner).copied().unwrap_or(0.0))
     }
 }
 
 impl Treasury for Ledger<'_> {
+    /// Web/pin `ownerTreasury(id)`: człowiek -- wpis wymagany (`playerStateByHuman.get(id)!.skarbiec`);
+    /// AI -- brak wpisu = 0 (`aiSkarbiecByOwner.get(id) ?? 0`, main.ts:34865). Skarbiec AI bez podłogi.
     fn balance(&self, owner: i64) -> Result<f64, WarTurnError> {
-        self.treasury.get(&owner).copied().ok_or_else(|| {
-            err(format!(
-                "brak producenta skarbca wlasciciela {owner} (web ownerTreasury)"
-            ))
-        })
+        if self.humans.contains(&owner) {
+            return self.treasury.get(&owner).copied().ok_or_else(|| {
+                err(format!(
+                    "brak producenta skarbca gracza {owner} (web ownerTreasury)"
+                ))
+            });
+        }
+        Ok(self.treasury.get(&owner).copied().unwrap_or(0.0))
     }
 
     fn add(&mut self, owner: i64, delta: f64) -> Result<(), WarTurnError> {
@@ -892,7 +906,7 @@ pub fn run_dipl_steps(
     }
 
     // D3: handel cykliczny.
-    let mut ledger = Ledger::new(cx.inputs);
+    let mut ledger = Ledger::new(cx.inputs, cx.human_ids);
     let mut deals = std::mem::take(&mut work.diplomacy.deals);
     tick_cyclic_resource_trade_deals(&mut deals, &mut ledger, &mut report)?;
     work.diplomacy.deals = deals;

@@ -1,0 +1,1616 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "pin_file": "gra/src/main.ts",
+ "pin_file_sha256": "e80f9cb41d513b92846972a19f2760e08eb4247d6a9b344526d8bc71bd7d5f19",
+ "snippet_sha256": {
+  "ownerTreasurySrc": "33c3b06ccb86d6c8a80cb5ed982416775f2137c3e6a585793e42e28770dd343a",
+  "addSrc": "19e6a10ece1098109936aa4afa1f835830b6bfe321c14f197ef4718fada3224d",
+  "ownerPracaSrc": "a6e683651a5607e4aa34d143f4de3d04eaa0013e7cb26d8a66c92f36b681a492",
+  "setPracaSrc": "3d97e442a447da85dd931248c83f857476b68e5f2f41d8114c8165d8353394e8"
+ },
+ "generator": "tests/p6_r7k7c_wiring_vectors/gen-apply-vectors.mjs",
+ "note": "Wektory apply: kind treasury (ownerTreasury+add) i praca (ownerPracaPool+setOwnerPracaPool). expect=\"error\" = pin rzuca (czlowiek bez wpisu).",
+ "count": 200,
+ "vectors": [
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c002000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "c012000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4058ec28f5c28f5c",
+   "delta_bits": "3fc999999999999a",
+   "expect": "4058f8f5c28f5c29"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "c00170a3d70a3d71",
+   "expect": "401347ae5796bfca"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "404ecb851eb851ec",
+   "delta_bits": "bfb999999999999a",
+   "expect": "404ebeb851eb851f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c02de66666666666",
+   "delta_bits": "c02cf5c28f5c28f6",
+   "expect": "c03d6e147ae147ae"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c047a3d70a3d70a4",
+   "delta_bits": "4058851eb851eb85",
+   "expect": "4049666666666666"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "bfb999999999999a",
+   "delta_bits": "4052ea3d70a3d70a",
+   "expect": "4052e3d70a3d70a4"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "404f4a3d70a3d70a",
+   "delta_bits": "401c0000431bde83",
+   "expect": "4051651ebc83a96d"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c04def5c28f5c28f",
+   "delta_bits": "4033266666666666",
+   "expect": "c0445c28f5c28f5c"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4044000000000000",
+   "delta_bits": "3fb999999999999a",
+   "expect": "40440ccccccccccd"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "c053d5c28f5c28f6",
+   "expect": "c05215c28b2a6b0e"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4059000000000000",
+   "delta_bits": "c05827ae147ae148",
+   "expect": "400b0a3d70a3d700"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4040b33333333333",
+   "delta_bits": "c04455c28f5c28f6",
+   "expect": "c01d147ae147ae18"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "430c6bf526340000",
+   "delta_bits": "c04911eb851eb852",
+   "expect": "430c6bf52633fe6f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "403319999999999a",
+   "delta_bits": "403e000000000000",
+   "expect": "40488ccccccccccd"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c032547ae147ae14",
+   "delta_bits": "bfb999999999999a",
+   "expect": "c0326e147ae147ae"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "4058b47ae147ae14",
+   "expect": "4058c7ae147ae147"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c1cdcd6500000000",
+   "delta_bits": "402d3851eb851eb8",
+   "expect": "c1cdcd64f8b1eb85"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4038bd70a3d70a3d",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "c0212fc504816f02"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fc999999999999a",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "c040910ff9724745"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "404d0b851eb851ec",
+   "delta_bits": "401c0000431bde83",
+   "expect": "405045c2938de6de"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "bfb999999999999a",
+   "delta_bits": "430c6bf526340000",
+   "expect": "430c6bf52633ffff"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0491eb851eb851f",
+   "delta_bits": "403b0ccccccccccd",
+   "expect": "c03730a3d70a3d71"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4044000000000000",
+   "delta_bits": "4047347ae147ae14",
+   "expect": "40559a3d70a3d70a"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "c0340a3d70a3d70a",
+   "expect": "c02a147abfb9bed2"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0460ccccccccccd",
+   "delta_bits": "40fe240c9fbe76c9",
+   "expect": "40fe214b0624dd2f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c1cdcd6500000000",
+   "delta_bits": "40525a3d70a3d70a",
+   "expect": "c1cdcd64db4b851f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c045770a3d70a3d7",
+   "delta_bits": "3fd5555555555555",
+   "expect": "c0454c5f92c5f92c"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c045a8f5c28f5c29",
+   "delta_bits": "3fc999999999999a",
+   "expect": "c0458f5c28f5c28f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "404479999999999a",
+   "delta_bits": "3fe6666666666666",
+   "expect": "4044d33333333334"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c016000000000000",
+   "delta_bits": "c04fd851eb851eb8",
+   "expect": "c0514c28f5c28f5c"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c056ec28f5c28f5c",
+   "delta_bits": "c029dc28f5c28f5c",
+   "expect": "c05a27ae147ae148"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "01a56e1fc2f8f359",
+   "delta_bits": "4027c7ae147ae148",
+   "expect": "4027c7ae147ae148"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "430c6bf526340000",
+   "delta_bits": "3fb999999999999a",
+   "expect": "430c6bf526340001"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4058866666666666",
+   "delta_bits": "c0173d70a3d70a3d",
+   "expect": "4057128f5c28f5c2"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "4044000000000000",
+   "expect": "4044266666666666"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4050d8f5c28f5c29",
+   "delta_bits": "3fc999999999999a",
+   "expect": "4050e5c28f5c28f6"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c04c7c28f5c28f5c",
+   "delta_bits": "c0527d70a3d70a3d",
+   "expect": "c0605dc28f5c28f6"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4053233333333333",
+   "delta_bits": "c04395c28f5c28f6",
+   "expect": "4042b0a3d70a3d70"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fb999999999999a",
+   "delta_bits": "404e251eb851eb85",
+   "expect": "404e31eb851eb852"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0549e147ae147ae",
+   "delta_bits": "430c6bf526340000",
+   "expect": "430c6bf52633fd6c"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "403e000000000000",
+   "delta_bits": "c016000000000000",
+   "expect": "4038800000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4049028f5c28f5c3",
+   "delta_bits": "3fd5555555555555",
+   "expect": "40492d3a06d3a06e"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c031e147ae147ae1",
+   "delta_bits": "401c0000431bde83",
+   "expect": "c025c28f3a9b0680"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c03ef33333333333",
+   "delta_bits": "bfb999999999999a",
+   "expect": "c03f0ccccccccccd"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4051f47ae147ae14",
+   "delta_bits": "4044000000000000",
+   "expect": "405bf47ae147ae14"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "3fc999999999999a",
+   "expect": "3fe0000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4044000000000000",
+   "delta_bits": "c046f1eb851eb852",
+   "expect": "c0178f5c28f5c290"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4044000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "4042e00000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c044d1eb851eb852",
+   "delta_bits": "401c0000431bde83",
+   "expect": "c04151eb7cbb3c82"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c016b851eb851eb8",
+   "delta_bits": "40fe240c9fbe76c9",
+   "expect": "40fe23b1be76c8b5"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fe6666666666666",
+   "delta_bits": "404828f5c28f5c29",
+   "expect": "4048828f5c28f5c3"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "402ca8f5c28f5c29",
+   "expect": "4035547af20ea5b5"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c054a147ae147ae1",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "c054a147ad080b67"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40fe240c9fbe76c9",
+   "delta_bits": "4340000000000000",
+   "expect": "434000000000f120"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "403e000000000000",
+   "expect": "403e4ccccccccccd"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4059000000000000",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "4050aaab367a0f90"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "c002000000000000",
+   "expect": "bfff333333333333"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c01a70a3d70a3d71",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "c01a70a3c64345d0"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "403ca147ae147ae1",
+   "delta_bits": "403319999999999a",
+   "expect": "4047dd70a3d70a3e"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4044000000000000",
+   "expect": "4044000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "0000000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "404e651eb851eb85",
+   "expect": "404e651eb851eb85"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "404815c28f5c28f6",
+   "expect": "404815c28f5c28f6"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "c002000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4340000000000000",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4054eeb851eb851f",
+   "expect": "4054eeb851eb851f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "01a56e1fc2f8f359"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "403e000000000000",
+   "expect": "403e000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c05128f5c28f5c29",
+   "expect": "c05128f5c28f5c29"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c03268f5c28f5c29",
+   "expect": "c03268f5c28f5c29"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4030947ae147ae14",
+   "expect": "4030947ae147ae14"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "404927ae147ae148",
+   "expect": "404927ae147ae148"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4340000000000000",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "c002000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4052770a3d70a3d7",
+   "expect": "4052770a3d70a3d7"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c1cdcd6500000000",
+   "expect": "c1cdcd6500000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c0505b851eb851ec",
+   "expect": "c0505b851eb851ec"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "403e000000000000",
+   "expect": "403e000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "40519a3d70a3d70a",
+   "expect": "40519a3d70a3d70a"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4031fd70a3d70a3d",
+   "expect": "4031fd70a3d70a3d"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4340000000000000",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4059000000000000",
+   "expect": "4059000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4052651eb851eb85",
+   "expect": "4052651eb851eb85"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "01a56e1fc2f8f359"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "c002000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4050feb851eb851f",
+   "expect": "4050feb851eb851f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "01a56e1fc2f8f359"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "0000000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "bfb999999999999a",
+   "expect": "bfb999999999999a"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "403823d70a3d70a4",
+   "expect": "403823d70a3d70a4"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "0000000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4054f00000000000",
+   "expect": "4054f00000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "404cb0a3d70a3d71",
+   "expect": "404cb0a3d70a3d71"
+  },
+  {
+   "kind": "treasury",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c1cdcd6500000000",
+   "expect": "c1cdcd6500000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "401c000053e2d624"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c04c8147ae147ae1",
+   "delta_bits": "404f4b851eb851ec",
+   "expect": "401651eb851eb858"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "404530a3d70a3d71",
+   "delta_bits": "c03bd1eb851eb852",
+   "expect": "402d1eb851eb8520"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "430c6bf526340000",
+   "delta_bits": "40493c28f5c28f5c",
+   "expect": "430c6bf526340194"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c002000000000000",
+   "delta_bits": "404a800000000000",
+   "expect": "4049600000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "403a9c28f5c28f5c",
+   "expect": "4040ce148344c37e"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4340000000000000",
+   "delta_bits": "3fe6666666666666",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4045f33333333333",
+   "expect": "4045f33333333333"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "405118f5c28f5c29",
+   "delta_bits": "40545e147ae147ae",
+   "expect": "4062bb851eb851ec"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c1cdcd6500000000",
+   "delta_bits": "403e000000000000",
+   "expect": "c1cdcd64f1000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c057733333333333",
+   "delta_bits": "c050beb851eb851f",
+   "expect": "c06418f5c28f5c29"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c016000000000000",
+   "delta_bits": "4059000000000000",
+   "expect": "4057a00000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c029fae147ae147b",
+   "delta_bits": "c05700a3d70a3d71",
+   "expect": "c05a400000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "3fd5555555555555",
+   "expect": "401d5555987133d8"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "3fd5555555555555",
+   "delta_bits": "c053666666666666",
+   "expect": "c053511111111111"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c04508f5c28f5c29",
+   "delta_bits": "bffccccccccccccd",
+   "expect": "c045ef5c28f5c28f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "0000000000000000",
+   "delta_bits": "3fc999999999999a",
+   "expect": "3fc999999999999a"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "40516c28f5c28f5c",
+   "delta_bits": "3fd3333333333333",
+   "expect": "40517f5c28f5c28f"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "3fe6666666666666",
+   "delta_bits": "c055e28f5c28f5c3",
+   "expect": "c055b5c28f5c28f6"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4059000000000000",
+   "delta_bits": "c02b666666666666",
+   "expect": "4055933333333333"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "402675c28f5c28f6",
+   "delta_bits": "4043a3d70a3d70a4",
+   "expect": "40494147ae147ae2"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c1cdcd6500000000",
+   "delta_bits": "c002000000000000",
+   "expect": "c1cdcd6501200000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "40350ccccccccccd",
+   "delta_bits": "c03375c28f5c28f6",
+   "expect": "3ff970a3d70a3d70"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c02f570a3d70a3d7",
+   "delta_bits": "3fb999999999999a",
+   "expect": "c02f23d70a3d70a4"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "402c0f5c28f5c28f",
+   "delta_bits": "c0254ccccccccccd",
+   "expect": "400b0a3d70a3d708"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4056566666666666",
+   "delta_bits": "4059000000000000",
+   "expect": "4067ab3333333333"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4044000000000000",
+   "delta_bits": "c04bfd70a3d70a3d",
+   "expect": "c02ff5c28f5c28f4"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "40262e147ae147ae",
+   "delta_bits": "c057233333333333",
+   "expect": "c0545d70a3d70a3d"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4046e51eb851eb85",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "4046e51eba6aca79"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "40364ccccccccccd",
+   "expect": "403d4cccdd93c46e"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "40fe240c9fbe76c9",
+   "delta_bits": "3fc999999999999a",
+   "expect": "40fe240fd2f1a9fc"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "400aa3d70a3d70a4",
+   "delta_bits": "3fb999999999999a",
+   "expect": "400b70a3d70a3d71"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c057e3d70a3d70a4",
+   "delta_bits": "4055df5c28f5c28f",
+   "expect": "c02023d70a3d70a8"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4340000000000000",
+   "delta_bits": "0000000000000000",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "c042370a3d70a3d7",
+   "delta_bits": "c0588a3d70a3d70a",
+   "expect": "c060d2e147ae147b"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4002666666666666",
+   "delta_bits": "404e2ccccccccccd",
+   "expect": "404f533333333333"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "3fc999999999999a",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "c040910ff9724745"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "40588eb851eb851f",
+   "expect": "405a4eb8561d4307"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "4049747ae147ae14",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "403193a29c779a6a"
+  },
+  {
+   "kind": "treasury",
+   "owner": "human",
+   "has_entry": true,
+   "start_bits": "0000000000000000",
+   "delta_bits": "402f428f5c28f5c3",
+   "expect": "402f428f5c28f5c3"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c1cdcd6500000000",
+   "delta_bits": "40fe240c9fbe76c9",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40fe240c9fbe76c9",
+   "delta_bits": "3fb999999999999a",
+   "expect": "40fe240e39581063"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c016000000000000",
+   "delta_bits": "c058d33333333333",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0546b851eb851ec",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c034c51eb851eb85",
+   "delta_bits": "404bea3d70a3d70a",
+   "expect": "404187ae147ae148"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "bfb999999999999a",
+   "delta_bits": "3fd3333333333333",
+   "expect": "3fc9999999999999"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "bfb999999999999a",
+   "delta_bits": "4059000000000000",
+   "expect": "4058f9999999999a"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40432a3d70a3d70a",
+   "delta_bits": "c05320a3d70a3d71",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "0000000000000000",
+   "delta_bits": "401ef5c28f5c28f6",
+   "expect": "401ef5c28f5c28f6"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c040aaa9930be0df",
+   "delta_bits": "c01728f5c28f5c29",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3e90c6f7a0b5ed8d",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c040aaa9930be0df",
+   "delta_bits": "40fe240c9fbe76c9",
+   "expect": "40fe21f74a8c154d"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "401c0000431bde83",
+   "delta_bits": "bfb999999999999a",
+   "expect": "401b9999dcb5781d"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fe6666666666666",
+   "delta_bits": "c04703d70a3d70a4",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c04dca3d70a3d70a",
+   "delta_bits": "c05881eb851eb852",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "403c028f5c28f5c3",
+   "delta_bits": "404119999999999a",
+   "expect": "404f1ae147ae147c"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "01a56e1fc2f8f359",
+   "delta_bits": "c02c19999999999a",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd5555555555555",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "3fd5555555555555"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0456e147ae147ae",
+   "delta_bits": "401c0000431bde83",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c04f1eb851eb851f",
+   "delta_bits": "4050dae147ae147b",
+   "expect": "4014b851eb851eb8"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40245c28f5c28f5c",
+   "delta_bits": "4059000000000000",
+   "expect": "405b8b851eb851ec"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40135c28f5c28f5c",
+   "delta_bits": "40fe240c9fbe76c9",
+   "expect": "40fe245a10624dd3"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40fe240c9fbe76c9",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "40fe240c9fbe76c9"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0452ccccccccccd",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "430c6bf526340000",
+   "delta_bits": "3fb999999999999a",
+   "expect": "430c6bf526340001"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c016000000000000",
+   "delta_bits": "c05830a3d70a3d71",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "40494147ae147ae1",
+   "delta_bits": "0000000000000000",
+   "expect": "40494147ae147ae1"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0561147ae147ae1",
+   "delta_bits": "3e90c6f7a0b5ed8d",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c002000000000000",
+   "delta_bits": "4032e8f5c28f5c29",
+   "expect": "4030a8f5c28f5c29"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4055f3d70a3d70a4",
+   "delta_bits": "4059000000000000",
+   "expect": "406779eb851eb852"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c03f51eb851eb852",
+   "delta_bits": "403e000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "403e000000000000",
+   "delta_bits": "c05841eb851eb852",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c040aaa9930be0df",
+   "delta_bits": "c053200000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c02ba3d70a3d70a4",
+   "delta_bits": "404ffc28f5c28f5c",
+   "expect": "4049133333333333"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3fd3333333333333",
+   "delta_bits": "4340000000000000",
+   "expect": "4340000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "3e90c6f7a0b5ed8d",
+   "delta_bits": "c04e3851eb851eb8",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "4027000000000000",
+   "delta_bits": "3fd3333333333333",
+   "expect": "402799999999999a"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c056e00000000000",
+   "delta_bits": "430c6bf526340000",
+   "expect": "430c6bf52633fd24"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "0000000000000000",
+   "delta_bits": "40530a3d70a3d70a",
+   "expect": "40530a3d70a3d70a"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": true,
+   "start_bits": "c0577f5c28f5c28f",
+   "delta_bits": "c05741eb851eb852",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c05337ae147ae148",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "401c0000431bde83",
+   "expect": "401c0000431bde83"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c03e19999999999a",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "0000000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c03cbd70a3d70a3d",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c002000000000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c0393851eb851eb8",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c1cdcd6500000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c056cf5c28f5c28f",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "404695c28f5c28f6",
+   "expect": "404695c28f5c28f6"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c03ffd70a3d70a3d",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4044000000000000",
+   "expect": "4044000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "3fc999999999999a",
+   "expect": "3fc999999999999a"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "40376b851eb851ec",
+   "expect": "40376b851eb851ec"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "430c6bf526340000",
+   "expect": "430c6bf526340000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "01a56e1fc2f8f359",
+   "expect": "01a56e1fc2f8f359"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "4008cccccccccccd",
+   "expect": "4008cccccccccccd"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c1cdcd6500000000",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "405045c28f5c28f6",
+   "expect": "405045c28f5c28f6"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c0589eb851eb851f",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c040aaa9930be0df",
+   "expect": "0000000000000000"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "3fb999999999999a",
+   "expect": "3fb999999999999a"
+  },
+  {
+   "kind": "praca",
+   "owner": "ai",
+   "has_entry": false,
+   "start_bits": "0000000000000000",
+   "delta_bits": "c0577d70a3d70a3d",
+   "expect": "0000000000000000"
+  }
+ ]
+}

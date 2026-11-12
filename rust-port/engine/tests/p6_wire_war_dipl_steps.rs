@@ -600,18 +600,19 @@ fn flag_off_ticks_good_will_and_missing_inputs_are_explicit_errors() {
     let on = run_turn(&mut war_on, 1.0, &world_inputs(), &cfg).expect("turn on");
     assert!(on.dipl.dobra_wola_off_ticked.is_empty());
 
-    // Brak skarbca platnika (AI) = jawny blad, stan nietkniety (atomowosc).
+    // Brak wpisu skarbca platnika (AI) = saldo 0 (pin `aiSkarbiecByOwner.get(id) ?? 0`, parytet
+    // R7K7C-WIRING): nie jest to blad calej tury; trybut 40 > 0 zrywa sie jak przy zbyt malym saldzie.
+    // (Dawna asercja "brak skarbca = blad" zmieniona swiadomie -- wymieniona w 01-operator-r1.md.)
     let mut inputs = world_inputs();
     inputs.dipl.treasury.remove(&AI_B);
     let mut war = WarTurnState::default();
     war.diplomacy.add_deal(tribute_deal());
-    let snapshot = war.clone();
-    let err = run_turn(&mut war, 1.0, &inputs, &cfg).expect_err("brak skarbca");
+    let rep = run_turn(&mut war, 1.0, &inputs, &cfg).expect("brak wpisu AI = 0, tura bez bledu");
+    assert_eq!(rep.dipl.payments.broken, vec!["danina".to_owned()]);
     assert!(
-        matches!(&err, WarTurnError::DiplStep(m) if m.contains("skarbca") && m.contains('3')),
-        "{err}"
+        !rep.dipl.treasury_deltas.contains_key(&AI_B),
+        "brak platnosci przy saldzie 0"
     );
-    assert_eq!(war, snapshot, "blad = brak zmian stanu");
 
     // Brak puli Pracy przy platnosci Praca = jawny blad.
     let mut inputs = world_inputs();
@@ -625,6 +626,15 @@ fn flag_off_ticks_good_will_and_missing_inputs_are_explicit_errors() {
         matches!(&err, WarTurnError::DiplStep(m) if m.contains("Pracy")),
         "{err}"
     );
+
+    // D3 parytet: brak wpisu skarbca sprzedawcy AI = saldo 0 (pin `?? 0`), nie blad calej tury.
+    let mut inputs = world_inputs();
+    inputs.dipl.treasury.remove(&AI_A);
+    let mut d = cyclic_deal();
+    d.cyclic_resource_transfers[0].payment = Some(PaymentKind::Gold);
+    let mut war = WarTurnState::default();
+    war.diplomacy.add_deal(d);
+    run_turn(&mut war, 1.0, &inputs, &cfg).expect("D3 bez skarbca AI = 0, bez bledu");
 
     // Brak zapasow miast przy handlu cyklicznym = jawny blad.
     let mut inputs = world_inputs();

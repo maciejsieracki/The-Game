@@ -300,6 +300,18 @@ fn apply_missing_owner_entry_counts_as_zero_like_pin() {
 }
 
 #[test]
+fn apply_missing_ai_treasury_entry_goes_negative_without_floor() {
+    // Pin `aiSkarbiecByOwner.set(id, (get ?? 0) + delta)` BEZ podlogi: brak wpisu + ujemna delta = ujemne saldo
+    // (dlug AI trwa, jak dlug gracza). Podloga dotyczy wylacznie puli Pracy.
+    let base = with_ai(fresh_game().state().clone());
+    let mut st = base.clone();
+    st.economy.ai_treasury_by_owner.remove(&99);
+    let treasury = BTreeMap::from([(99_i64, -2.5)]);
+    apply_dipl_deltas_to_state(&mut st, &treasury, &BTreeMap::new()).expect("apply");
+    assert_eq!(st.economy.ai_treasury_by_owner.get(&99), Some(&-2.5));
+}
+
+#[test]
 fn apply_deltas_is_atomic_on_non_finite_entry() {
     // Atomowosc: wartosc niefinitna w jednej pozycji cofa cala zmiane (takze poprawnej pozycji dla `ai`).
     let base = with_ai(fresh_game().state().clone());

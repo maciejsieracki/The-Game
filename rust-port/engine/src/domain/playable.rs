@@ -1461,3 +1461,59 @@ mod unit_replace_error_tests {
         assert!(game.state().economy.city_stock.is_empty(), "stan bez zmian");
     }
 }
+
+/// P6-WIRE-WAR-R7K7-C: zachowanie end-to-end `advance_turn` z NIEZEROWYMI deltami umow (test mutacyjny:
+/// bez wywolania `apply_dipl_deltas_to_state` w `run_diplomacy_war_phase` ten test pada).
+#[cfg(test)]
+mod r7k7c_wiring_behaviour_tests {
+    use super::*;
+    use crate::domain::diplomacy::{ActiveDeal, TreatyEconomy, TreatyKind};
+
+    #[test]
+    fn advance_turn_applies_tribute_deltas_to_ai_and_human_treasuries() {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 7,
+            ..StartGameParams::default()
+        })
+        .expect("scenariusz startowy");
+        let human = game
+            .state
+            .players
+            .iter()
+            .find(|p| p.is_human)
+            .map(|p| p.id)
+            .expect("gracz ludzki");
+        // Stan startowy ma tylko gracza ludzkiego: dokladamy gracza AI (wzorzec `with_ai` z testow owner_pools).
+        let ai = PlayerId::new(2);
+        let mut ai_player = game
+            .state
+            .players
+            .iter()
+            .find(|p| p.is_human)
+            .expect("gracz ludzki")
+            .clone();
+        ai_player.is_human = false;
+        ai_player.id = ai;
+        game.state.players.push(ai_player);
+        game.state
+            .economy
+            .ai_treasury_by_owner
+            .insert(ai.get(), 100.0);
+        let human_before = game.state.economy.treasury;
+
+        // Danina AI -> gracz 40 ¤/tura: saldo AI 100 -> 60, skarbiec gracza +40 (zapis przez apply).
+        let mut tribute = ActiveDeal::new(TreatyKind::Vassalization, ai, human, 1, None);
+        tribute.id = "danina-wiring".to_owned();
+        tribute.economy = Some(TreatyEconomy {
+            payer_owner_id: ai,
+            receiver_owner_id: human,
+            money_per_turn: 40.0,
+        });
+        game.state.war.diplomacy.add_deal(tribute);
+
+        game.advance_turn().expect("tura z niezerowa danina");
+        let st = game.state();
+        assert_eq!(st.economy.ai_treasury_by_owner.get(&ai.get()), Some(&60.0));
+        assert_eq!(st.economy.treasury, human_before + 40.0);
+    }
+}

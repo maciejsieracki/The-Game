@@ -3,8 +3,8 @@
 //! Zakres tego pliku (granica swiadoma): tura bez umow przechodzi z wpietym krokiem i nie tworzy spurious wpisow skarbca/puli Pracy
 //!   (parytet "brak wpisu = 0" nie moze zapisywac zer, ktorych pin nie zapisuje w tej sciezce),
 //! oraz zgodnosc wsteczna: stan bez kluczy pul wlascicieli (sprzed R7K7-C) laduje sie z pustymi mapami.
-//! Sciezka z niezerowymi deltami przez `advance_turn` NIE jest tu pokryta: API nie daje wstrzyknac
-//! stanu umow do `PlayableGame` z zewnatrz (brak `state_mut`); pokrycie tej sciezki = NIE_ZMIERZONO.
+//! Sciezka z niezerowymi deltami przez `advance_turn` jest pokryta w `src/domain/playable.rs`
+//! (`r7k7c_wiring_behaviour_tests`: danina AI 40 ¤/tura, saldo 100 -> 60; test pada bez wywolania apply).
 
 use civ_engine::domain::playable::{PlayableGame, PlayableState, StartGameParams};
 
