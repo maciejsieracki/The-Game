@@ -29910,6 +29910,8 @@ async function boot(): Promise<void> {
             payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
           })),
           tableLen: negotiationTable.length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
+          relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
           /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
           entries: negotiationTable.map(n => ({
             id: n.id, actionId: n.actionId, cyclic: !!n.aiCyclicBarter,

@@ -43,7 +43,10 @@ const REL = process.env.MEAS_REL ? parseInt(process.env.MEAS_REL, 10) : null;
 // 480 s (nie 540): start + build + pętla muszą mieścić się w limicie 590 s pojedynczego wywołania bash (Evaluator r1, zarzut 10).
 const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '480', 10) * 1000;
 const RESULT_FILE = process.env.MEAS_RESULT || '';
-const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1' + (SEED != null ? '&civSeed=' + SEED : '');
+// MEAS_GATE=1: bramka ?civTest=1 — bez flagi hak nieobecny i ziarno z ?civSeed= ignorowane (PLAYTEST_MAPA_SEED=271828).
+const GATE = process.env.MEAS_GATE === '1';
+const PLAYTEST_SEED_DEFAULT = 271828;
+const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa' + (GATE ? '' : '&civTest=1') + (SEED != null ? '&civSeed=' + SEED : '');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -96,7 +99,9 @@ async function main() {
   const browser = await launchBrowser(chromium);
   const t00 = Date.now();
   const rep = {
-    arm: ARM, seedNote: 'PLAYTEST_MAPA_SEED (stale, 1 ziarno)', relationNote: 'naturalny (brak haka ustawiania relacji)',
+    arm: ARM,
+    seedNote: SEED != null ? 'ziarno z ?civSeed=' + SEED + ' (tylko z civTest=1)' : 'PLAYTEST_MAPA_SEED (domyslne, brak ?civSeed)',
+    relationNote: REL != null ? 'przypiete haka setRelationTotal=' + REL + ' przed kazdym endTurn (relacja po turze moze dryfowac; patrz relDrift)' : 'naturalny (brak haka ustawiania relacji)',
     seed: SEED, relTotalSet: REL, relTotalAfter: null, offersCyclic: 0, offersOneShot: 0,
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
     tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,
@@ -109,6 +114,17 @@ async function main() {
     page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', e => consoleErrors.push('[pageerror] ' + e.message));
     page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()); if (/EndTurn\] blocked/.test(m.text())) endBlocks.push(m.text().slice(0, 160)); });
+    if (GATE) {
+      // Bramka: bez ?civTest=1 hak musi byc nieobecny, a ziarno z ?civSeed= ignorowane.
+      const seedLine = new Promise(res => { page.on('console', m => { const x = /\[PlaytestMapa\] seed=(\d+)/.exec(m.text()); if (x) res(Number(x[1])); }); });
+      await page.goto(URL_HTML, { waitUntil: 'load', timeout: 180000 });
+      const seedSeen = await Promise.race([seedLine, wait(170000).then(() => null)]);
+      const hookPresent = await page.evaluate(() => typeof window.__aiTradeWiringTestDebug !== 'undefined');
+      const gate = { gate: true, civSeedRequested: SEED, seedSeen, seedExpected: PLAYTEST_SEED_DEFAULT, hookPresent, pass: seedSeen === PLAYTEST_SEED_DEFAULT && hookPresent === false };
+      console.log('[meas] GATE ' + JSON.stringify(gate));
+      if (RESULT_FILE) fs.writeFileSync(RESULT_FILE, JSON.stringify(gate, null, 2));
+      return;
+    }
     await page.goto(URL_HTML, { waitUntil: 'load', timeout: 180000 });
     await page.waitForFunction(
       () => !!window.__aiTradeWiringTestDebug && !!window.__civTest && !!window.__eraTestDebug
@@ -134,6 +150,11 @@ async function main() {
         for (const p of st.pending) { await page.evaluate(id => window.__aiTradeWiringTestDebug.reject(id), p.id); rep.scriptRejected++; }
       }
       rep.autoBattles += await clearBattles(page);
+      // Relacja przypinana PRZED kazdym endTurn (smoke r3: bez przypiecia relacja spadala 40→29→9 w 3 turach = dryf naturalny).
+      let relBeforeEnd = null;
+      if (REL != null) {
+        relBeforeEnd = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
+      }
       await endTurnWait(page);
       st = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
       rep.turnsRun = i + 1;
@@ -161,13 +182,17 @@ async function main() {
       }
       // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
       rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
-      rep.perTurn.push({ t: st.turn, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected });
+      rep.perTurn.push({ t: st.turn, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     rep.tableEnd = sEnd.tableLen;
     rep.tableGrowth = rep.tableEnd - rep.tableStart;
     rep.per100 = rep.turnsRun > 0 ? +(rep.offers * 100 / rep.turnsRun).toFixed(2) : 0;
     rep.secs = Math.round((Date.now() - tStart) / 1000);
+    rep.relTotalFirst = rep.perTurn.length ? rep.perTurn[0].relTotalAi : null;
+    rep.relTotalLast = rep.perTurn.length ? rep.perTurn[rep.perTurn.length - 1].relTotalAi : null;
+    rep.relDrift = (rep.relTotalSet != null && rep.perTurn.length) ? rep.perTurn.some(x => x.relTotalAi !== rep.relTotalSet) : null;
+    rep.relPinnedBeforeEnd = REL != null ? rep.perTurn.every(x => x.relBeforeEnd === REL) : null;
     if (!rep.stoppedBy) rep.stoppedBy = rep.turnsRun >= TURNS ? 'koniec przebiegu' : 'przerwany';
   } catch (e) {
     rep.stoppedBy = 'blad: ' + e.message;

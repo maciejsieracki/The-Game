@@ -1,64 +1,60 @@
-# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — obrona Operatora (runda 2/5)
+# R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 — obrona Operatora (runda 2, Obrona Haiku)
 
 STATUS: DECISION_REQUIRED
-DOMAIN: GAME (pomiar, tylko odczyt; zero zmian w gra/src)
+DOMAIN: GAME (pomiar; hooki za ?civTest=1; zero zmian reguł handlu i bramek)
 TEMAT: R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1
-GOAL: zmierzyć, jak często AI składa graczowi ofertę handlową (cykliczną i jednorazową) w pełnej grze: ≥3 ziarna × ≥150 tur × ≥3 relacje. Stan: NIE w pełnym zakresie (patrz BLOKADY). Wniosek o częstości w pełnej grze: NIE_ZMIERZONO.
-BAZA/KANDYDAT: kandydat 21df657ca (runda 1). Runda 2 startuje od 21df657ca i zmienia wyłącznie allowlistę: gra/tools/measure-ai-trade-offer-frequency.cjs oraz dyspozycje/autobot/runs/R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1/**.
+GOAL: zmierzyć częstość ofert AI→gracz w pełnej grze (≥3 ziarna × ≥150 tur × ≥3 relacje, tryb przyspieszony, tabela zbiorcza). NIE_ZMIERZONO w całości — patrz odpowiedzi na zarzuty 1, 2, 8.
+BAZA/KANDYDAT: 259aaa615 (start obrony); nowy commit obrony = SHA w polu sha.
+NUMERACJA: odpowiedzi według zarzutów Evaluatora (nr 1–8) z 20-evaluator-claude.md.
 
-## ZMIANY-COMMIT
+## ZMIANY-COMMIT (obrona r2)
+- gra/src/main.ts (+2 linie, w bloku `?civTest=1`): pole `relTotalAi` w `__aiTradeWiringTestDebug.state()` = relationTotal pary AI(start)↔gracz (odczyt, bez zapisu).
 - gra/tools/measure-ai-trade-offer-frequency.cjs:
-  - domyślny MEAS_MAX_SEC 540 → 480 (odpowiedź na zarzut 10, margines na start i build w limicie 590 s),
-  - instrumentacja odrzuceń: `rejectCooldownsMax` w raporcie i `rejCd` oraz `scriptRejectedSoFar` w każdej turze, z `state().rejectCooldowns` hooka (odpowiedź na zarzut 9: wpływ odrzuceń na kooldowny będzie widoczny w danych, nie tylko założony),
-  - komentarze ograniczeń bez zmiany logiki pomiaru.
-- dyspozycje/.../evidence/smoke-prepared-3t-r2.json: przebieg kontrolny 3 tury (arm prepared), potwierdza działanie nowych pól.
-- dyspozycje/.../30-obrona-claude.md: ten raport.
-- Brak zmian w gra/src, JSON balansu, WERSJE.md, rust-port. `npm ci --ignore-scripts` w gra/ (node_modules poza commitem). Bez `npm run build/dev`. Bundle vite do katalogu scratchpad (poza repo).
+  - `MEAS_GATE=1` = tryb bramki: URL bez `civTest=1`, z `civSeed=999`; zapis `pass` (seed = 271828 i brak haka).
+  - Relacja przypinana (`setRelationTotal`) PRZED każdym endTurn (`relBeforeEnd`), po turze zapisywane `relTotalAi`; pola `relDrift`, `relPinnedBeforeEnd`, `relTotalFirst/Last`.
+  - Etykiety `seedNote`/`relationNote` wyliczane z env (dawne stałe były błędne).
+- dyspozycje/.../evidence/: gate-noflag-civSeed999-r3.json, gate-MUTANT-seedgate-removed-r3.json, smoke-seed1111-rel40-r3-repeat-A.json, smoke-seed1111-rel40-r3-repeat-B.json (przed przypięciem relacji), smoke-seed1111-rel40-r3-pinned.json, natural-seed1111-rel40-r3-partial.json (częściowy 150-tur, przerwany).
+- Nie zmieniano: gra/src poza powyższymi 2 liniami, JSON balansu, WERSJE.md, rust-port. Mutant `civ-test-hooks.ts` cofnięty (`git checkout`), nie jest w commicie.
 
-## TESTY (surowe wyniki z terminala, runda 2)
-- `node --check gra/tools/measure-ai-trade-offer-frequency.cjs` → SYNTAX_OK
-- smoke: `MEAS_TURNS=3 MEAS_ARM=prepared node tools/measure-ai-trade-offer-frequency.cjs` → `RESULT {"arm":"prepared","turnsRun":3,"offers":0,"per100":0,"activePrzyjmij":0,"pairs":{},"cyclicDealsMax":0,"tableGrowth":0,"scriptRejected":0,"rejectCooldownsMax":0,"stoppedBy":"koniec przebiegu","consoleErrors":0}`, EXIT=0, pole `secs: 27` (pętla, 3 tury ≈ 9 s/turę na tym przebiegu).
-- evidence smoke: grep potwierdza `rejCd` (3 wystąpienia), `rejectCooldownsMax: 0`.
-- Bramki gry (tsc, logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6): NIE PONOWIONO w tej rundzie. Kod gry jest bit-w-bit ten sam co na 21df657ca (zmiany tylko w gra/tools i dyspozycje), wyniki z zarzutu Evaluatora dotyczą tego kodu. Weryfikacja: `git diff --stat 21df657ca HEAD` po commicie (tylko allowlista).
-- Dowód mutacyjny: NIE DOTYCZY (brak poprawki w kodzie gry).
+## TESTY (surowe wyniki)
+- `npm ci --ignore-scripts` (gra/): EXIT=0. Bez `npm run build/dev`.
+- `npx tsc --noEmit -p .` (gra/): TSC_EXIT=0.
+- Bramki: logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `ALL GREEN`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `All sanity checks passed.` (wszystkie EXIT=0).
+- Bundle vite do scratchpadu (BUNDLE_DIR poza repo), build 23,80 s.
+- Zarzut 3 (bez flagi): `MEAS_GATE=1 MEAS_SEED=999` → `{"seedSeen":271828,"seedExpected":271828,"hookPresent":false,"pass":true}`.
+- Zarzut 4 (mutacja): w `civTestSeedOverride` usunięto `isCivTestEnabled` (plik tymczasowo zmieniony, build bundle-mut) → `{"seedSeen":999,"seedExpected":271828,"hookPresent":false,"pass":false}`. Bramka wykrywa mutanta. Mutacje `setRelationTotal`/`entries` NIE wykonane (NIE_ZMIERZONO).
+- Zarzut 5 (powtarzalność): dwa przebiegi smoke (3 tury, seed 1111, rel 40, natural, przed przypięciem): identyczne `perTurn`, `offers`, `tableEnd` (repeat-A vs repeat-B). Tylko 3 tury i 0 ofert; brak powtórzeń dla ≥3 ziaren.
+- Zarzut 7 (dryf relacji), zmierzone:
+  - bez przypięcia: relTotalAi po turach = 29, 9, 11 (repeat-A), ustawione 40;
+  - z przypięciem: relBeforeEnd = 40 w każdej turze, relTotalAi po endTurn = 29 w każdej turze (smoke-pinned). Wniosek: endTurn sam obniża relację (~−11), a AI widzi wartość przypiętą.
+- Częściowy przebieg 150 tur (seed 1111, rel 40, natural, MEAS_MAX_SEC 470): `turnsRun` 23, `stoppedBy` = "blad: page.waitForFunction: Timeout 90000ms exceeded.", diag: tura 24, `endBlocks`: "[EndTurn] blocked: preBattleOpen {pending: true}" (x3). Oferty: 2 (obie jednorazowe, actionId "rozejm", tury 11 i 17), cykliczne 0, „Przyjmij” aktywne 0. per100 nie policzono (przerwanie). Tury 1–23 łącznie ~470 s.
 
-## ODPOWIEDZI NA ZARZUTY EVALUATORA (runda 1, 7d832c1ed)
-1. (ziarna 1 z ≥3) — PRZYJMUJĘ fakt, ODRZUCAM naprawę w tej rundzie. Dowód: stałe ziarno `PLAYTEST_MAPA_SEED` (gra/src/game/playtestMapaSwiata.ts:29, re-export; użycie gra/src/main.ts:46343, 46367, 46369). Brak parametru URL zmieniającego ziarno. Dodanie haka wymaga zmiany gra/src, czego zakazuje dispatch i allowlista. → BLOKADA / decyzja orkiestratora.
-2. (tury 52 i 49 z ≥150, przerwane limitem) — PRZYJMUJĘ fakt. Naprawy w allowliście: MEAS_MAX_SEC 480 (margines). Pełne 150 tur nie mieści się w jednym wywołaniu bash (~8–9 s/turę + start ~90 s) przy zakazie run_in_background, a skrypt nie zapisuje ani nie wczytuje stanu gry, więc przebiegu nie da się wznowić bez zmiany gra/src. → BLOKADA.
-3. (relacje 1 z ≥3) — ODRZUCAM naprawę w tej rundzie: brak haka ustawiania poziomu relacji w hooku `__aiTradeWiringTestDebug` (gra/src/main.ts:29804–29925, funkcje: info, foundFirstCity, prepare, setStock, stock, probeBarter, diagPayload, diag, endTurn, isEndTurnInProgress, canEnd, clearBarterCooldown, setBarterCooldownTurn, state, previewAccept, forceAccept). Dodanie wymaga gra/src. → BLOKADA.
-4. (powtarzalność dla 150 tur NIE_ZMIERZONO) — PRZYJMUJĘ. Pozostaje NIE_ZMIERZONO. Kontrola 8 tur ×2 z FC nie jest dowodem dla 150 tur.
-5. (oferty jednorazowe NIE_ZMIERZONO, hak filtruje tylko aiCyclicBarter) — PRZYJMUJĘ fakt, ODRZUCAM naprawę w allowliście. Dowód: `state().pending` = `negotiationTable.filter(n => n.aiCyclicBarter)` (gra/src/main.ts ok. 29850–29860); hak zwraca tylko `tableLen` dla pozostałych wpisów, bez typu. Klasyfikacja wymaga zmiany hooka w gra/src. → BLOKADA.
-6. (brak trybu przyspieszonego z GOAL) — PRZYJMUJĘ fakt. Hak `?civTest=1` (gra/src/main.ts:29804 i dalej) nie eksponuje żadnego trybu tempa; skrypt używa normalnego tempa tury i tego nie zmieniam (zmiana wymagałaby gra/src). Brak trybu przyspieszonego jest więc jawnie niezrealizowany, nie ukryty. → BLOKADA / doprecyzowanie GOAL przez orkiestratora.
-7. (ramię prepared nie jest pomiarem pełnej gry; n=1) — PRZYJMUJĘ. Etykieta „NIE jest pomiarem naturalnym” jest w nagłówku skryptu. Wygasanie cooldownów ustawionych na turn 0 nie jest zmierzone. Ramię prepared nie służy do wniosku o częstości; wniosek opieramy wyłącznie na danych, których nie zmieniono.
-8. (ramię natural: 0 ofert w 52 turach) — PRZYJMUJĘ. 0 nie jest informatywne o częstości w pełnej grze (kontakt i technologia Wymiany nie powstały w tym czasie). Pozostaje jako fakt surowy, bez wniosku.
-9. (wpływ odrzucania wiszących ofert na cooldowny nie zmierzony; scriptRejected=0) — CZĘŚCIOWO. ODRZUCAM zarzut w części „dane”: w obu przebiegach `scriptRejected` = 0 (evidence/natural-150-run1-partial.json i evidence/prepared-150-run1-partial.json, pole `"scriptRejected": 0`). PRZYJMUJĘ w części „pomiar”: dodano `rejectCooldownsMax` i `rejCd` per tura z `state().rejectCooldowns`, więc wpływ będzie widoczny w przyszłych przebiegach. Na długich przebiegach nadal NIE_ZMIERZONO.
-10. (czas: ~7 s/tura, limit 590 s bash, brak wznawiania) — PRZYJMUJĘ. Naprawa częściowa: MEAS_MAX_SEC domyślnie 480 s (commit). Pomiar czasu: smoke 3 tury = 27 s pętli (≈9 s/turę na tym przebiegu; ewaluator podał ~7 s). Całkowity wall-clock z buildem i startem: NIE_ZMIERZONO (smoke nie mierzył całości). Wznawianie wymaga zmiany gra/src (zapis/wczytanie stanu) → BLOKADA.
-11. (brak liczb do ABC #274; status DECISION_REQUIRED) — PRZYJMUJĘ. Status pozostaje DECISION_REQUIRED. Liczb do ABC #274 (częstość ofert przy ścisłej równości PW) ten temat nie dostarcza.
+## POKRYCIE vs GOAL (stan po obronie r2)
+- Ziarna: 1 (1111) w danych; ≥3 NIE_ZMIERZONO.
+- Relacje: 1 poziom (40, przypięty); ≥3 NIE_ZMIERZONO.
+- Tury: 23 z 150 (jeden przebieg, przerwany); NIE_ZMIERZONO.
+- Tryb przyspieszony: NIE zaimplementowany; NIE_ZMIERZONO.
+- Tabela zbiorcza: NIE wykonana.
 
-## POKRYCIE vs GOAL (stan po rundzie 2)
-- Ziarna: 1 z ≥3 (stałe) — BLOKADA.
-- Tury: 49–52 z ≥150 (przebiegi z rundy 1 przerwane limitem) — BLOKADA.
-- Relacje: 1 z ≥3 — BLOKADA.
-- Tempo przyspieszone: NIE zrealizowane — BLOKADA.
-- Oferty cykliczne: mierzone (1 oferta w 49 turach, ramię prepared, n=1; 0 w 52 turach, ramię natural).
-- Oferty jednorazowe: NIE_ZMIERZONO (hook nie eksponuje typu).
-- Powtarzalność dla 150 tur: NIE_ZMIERZONO.
-- Wniosek o częstości w pełnej grze: NIE_ZMIERZONO.
+## ODPOWIEDZI NA ZARZUTY EVALUATORA
+1. (GOAL niespełniony, brak pomiaru ≥3×≥150×≥3) — PRZYJMUJĘ. Nie naprawione w tej rundzie. Dane: 23 tury z 150, jedna komórka. Powód: (a) runner przerywa na oknie przedbitewnym (`preBattleOpen`, tura 24) — `clearBattles` klika `.pb-overlay [data-act="auto"]`, które nie zwolniło blokady; przyczyny nie zbadano; (b) brak wznawialnego stanu między wywołaniami bash (każde wywołanie zaczyna od tury 0); (c) przy ~7 s/turę jedna komórka 150 tur ≈ 1050 s > limit 590 s. Wymaga decyzji orkiestratora (patrz BLOKADY).
+2. (tryb przyspieszony niezaimplementowany) — PRZYJMUJĘ jako fakt. NIE naprawione: zmiana pętli endTurn/render wykracza poza hooki i wymaga osobnej decyzji (ścieżka A: osobny mały temat hakowy; ścieżka B: zawężenie GOAL).
+3. (brak testu bez flagi) — PRZYJMUJĘ, NAPRAWIONE: tryb MEAS_GATE (wynik wyżej, pass:true).
+4. (brak dowodu mutacyjnego) — PRZYJMUJĘ, CZĘŚCIOWO NAPRAWIONE: mutacja bramki ziarna wykryta (pass:false). Nieobjęte: mutacje `setRelationTotal` i `entries` (NIE_ZMIERZONO; wymagałyby kolejnych buildów/testów).
+5. (surowe wyniki i powtarzalność) — PRZYJMUJĘ częściowo: powtórzenie 3-turowego smoke identyczne (wyniki w evidence/). Zakres ziaren NIE_ZMIERZONO. Realnej zmiany mapy między ziarnami NIE porównano (NIE_ZMIERZONO) — zarzut o haku ziarna pozostaje otwarty.
+6. (niespójne etykiety w smoke r2) — PRZYJMUJĘ, NAPRAWIONE w skrypcie (etykiety z env). Plik smoke-seed1111-rel40-natural-3t-r2.json POZOSTAWIONY jako historyczny z błędnymi etykietami (nie edytuję dowodów). Nowe pliki r3 mają poprawne etykiety.
+7. (dryf relacji bez dowodu trwałości) — PRZYJMUJĘ, zmierzone i zaradzone: dryf realny (40 → 29 po endTurn). Zaradzenie: przypięcie przed każdym endTurn (relBeforeEnd = 40 w każdej turze). Dryf po turze nadal istnieje i jest zapisany (relDrift = true); to ograniczenie interpretacji, nie błąd haka.
+8. (brak liczb do ABC #274) — PRZYJMUJĘ. Nie ma wniosku o częstości. Jedyna liczba: 2 oferty w 23 turach (obie jednorazowe „rozejm”); nie jest podstawą decyzji ABC (jedna komórka, przerwany przebieg).
 
 ## BLOKADY / DECYZJA WYMAGANA
-1. Hak ziarna (PLAYTEST_MAPA_SEED stałe), hak relacji i hak typu oferty (jednorazowe) wymagają zmiany gra/src — poza allowlistą i poza zakazem dispatchu. Decyzja orkiestratora: osobny temat hakowy `?civTest=1` (ziarno z URL, ustawienie relacji, typ wpisu w `state().pending`) albo zawężenie GOAL do 1 ziarna i 1 relacji.
-2. Czas: 150 tur × ~8 s + start nie mieści się w jednym wywołaniu bash bez tła; brak wznawiania stanu. Decyzja: osobny runner (dłuższy limit / wznawialny zapis stanu) albo zmniejszenie GOAL.
-3. Tryb przyspieszony z GOAL nie istnieje w haku — decyzja: doprecyzować GOAL lub osobny temat.
-4. ABC #274 (częstość ofert) nie ma danych do odpowiedzi; bez blokad 1–3 ten temat nie dostarczy wniosku.
-
-## WNIOSKI (bez progu, bez wniosku o częstości)
-- Dane z rundy 1 nie wspierają wniosku o częstości: 1 oferta w 49 turach (ramię prepared, n=1), 0 w 52 turach (ramię natural, bez kontaktu i technologii).
-- Skrypt po rundzie 2 jest dokładniejszy (limit czasu z marginesem, rejectCooldowns mierzone), ale wniosek pozostaje NIE_ZMIERZONO.
+1. Pomiar GOAL niewykonany (zarzut 1). Potrzebna decyzja: (A) osobny temat hakowy: tryb przyspieszony + obsługa okna przedbitewnego w runnerze + zapis/wczytanie stanu (quickSave/loadSlot) do wznowienia; albo (B) zawężenie GOAL do pomiaru z mniejszą liczbą tur/komórek i jawnym NIE_ZMIERZONO reszty.
+2. Okno przedbitewne (`preBattleOpen`) blokuje endTurn w teście (tura 24) — przyczyna nieznana; potrzebna diagnoza przed kolejnym przebiegiem.
+3. Decyzja ABC #274 bez danych.
 
 ## NASTĘPNY KROK
-Orkiestrator: decyzja w sprawie blokad 1–3 (osobny temat hakowy w gra/src z własną allowlistą albo zawężenie GOAL i wybór runnera). Przy wyborze hakowym kolejne przebiegi 150 tur × 3 ziarna × 3 relacje z tą wersją skryptu.
+Orkiestrator: decyzja A/B z blokady 1 oraz zlecenie diagnozy okna przedbitewnego (blokada 2). Dopiero potem przebiegi 3 ziarna × 3 relacje z wynikiem zbiorczym.
 
 ## RUNDY
-2/5 (obrona Operatora, Haiku). Kolejna runda: Evaluator na SHA z tego commita.
+2/5 (obrona). Evaluator i Final Control poza tym etapem.
 
 DEPLOY/PUSH: NIE WYKONANO
