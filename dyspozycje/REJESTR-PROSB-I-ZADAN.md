@@ -9558,3 +9558,17 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - Weryfikacja: tsc 0; npm ci 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-side-panels 61/0; city-RO boot-error 1/0, expand-click 5/0, live 7/0; audio-sidecar-test EXIT=0; live Chromium RO=0 po otwarciu panelu miasta, PASS 7/0.
 - NIE_ZMIERZONO: prawdziwe kliknięcie „Więcej szczegółów” w pełnej grze z kartą jednostki. Przyczynowość kliknięcia nie jest udowodniona; udowodniona jest przyczyna (ponowne tworzenie ResizeObserver), którą poprawka usuwa. Do potwierdzenia przez właściciela na żywo.
 - Commit FC: Co-Authored-By pominięty (zasada: bez identyfikatora modelu w commitach); Claude-Session zachowany.
+
+### FALA 668 (2026-11-12) — wdrożone na ROBOCZĄ: przełącznik trafień + tooltip administratora
+- main aeb52465e, MD5 bundla b6490d0bce91076ad4da4ad518d6c29e (Raw = lokalny), audio-pack 1–3 zgodne z Raw (5b990bc3, 0a9a1047, 9e88be9f).
+- Źródła: R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (#285) kandydat 6fef8773c, FC PASS-WITH-NOTES; R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1 (#287) kandydat 54a4a1715, FC PASS-WITH-NOTES (wf_57083201). Integracja 54b050ac5 (merge obu FC na bazie 6c9a36bd5, konflikty: brak).
+- Zakres 1 (#285): ustawienia zaawansowane mapy — „Trafienia: losowe / pewne”. Domyślnie w nowej grze PEWNE (100% trafień, obrona przez pancerz, AUTO bez upsetu). Stare zapisy bez pola = LOSOWE (wynik bez zmian). Parytet SKIP=AUTO w trybie pewne.
+- Zakres 2 (#287): w panelu automatyzacji ulepszeń krótki komunikat; pełne wyjaśnienie, koszt i utrzymanie w tooltipie najechanego elementu (natywny title nie użyty — showLockTip).
+- Weryfikacja: tsc 0; npm ci 0; logic 213/213; hit-mode-test 18/0; improvement-admin-tooltip-real-render-test 14/0; battle-skip-equals-auto-resolve-test 42/0; newgame-settings-layout-reposition-test PASS; vite build 14,559 kB; audio-sidecar-test PASS EXIT=0.
+- NIE_ZMIERZONO: przełącznik i zapis/wczytanie trybu pewne w pełnej grze (Chromium); parytet AUTO=SKIP dla seedów 2, 3, 7 w trybie pewne (zmierzono seed 7); zrzut administratora z żywej gry. Do potwierdzenia przez właściciela na żywo.
+
+### Decyzje właściciela 2026-11-12 (W40, tempo mieszanej armii, #282)
+- TOL = 2 (zmierzona wartość).
+- TOL_RANK1 = 2 (zamiast zmierzonego 1 bez zapasu; rekomendacja przyjęta).
+- Kryterium 3 (strzelcy po wejściu wroga w zwarcie) w tej samej rundzie 4/5, bez osobnego tematu.
+- Status: runda 4/5 do uruchomienia po zwolnieniu dysku (próg 6 GB dla startu).
