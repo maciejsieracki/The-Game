@@ -1,3 +1,9 @@
+## ROBOCZA 0fb9441f -- 2026-11-12 -- FALA 667: BOOT ERROR: pętla ResizeObserver przy panelu miasta (testowa)
+
+- fitCitySideTop tworzy jeden ResizeObserver zamiast nowego przy każdym wywołaniu; obserwacja tylko przy zmianie zestawu elementów; przeliczenie przez requestAnimationFrame; filtry w index.html i main.ts ignorują wyłącznie komunikat ResizeObserver loop completed with undelivered notifications
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-side-panels 61/0; city-RO boot-error 1/0, expand-click 5/0, live 7/0; audio-sidecar-test EXIT=0 (PASS); live Chromium RO=0 po otwarciu panelu miasta, PASS 7/0. NIE_ZMIERZONO: prawdziwe kliknięcie Więcej szczegółów w pełnej grze z kartą jednostki
+- Limity: Przyczynowość kliknięcia Więcej szczegółów nie została udowodniona; udowodniona przyczyna to ponowne tworzenie ResizeObserver, którą poprawka usuwa. Live klik w pełnej grze do potwierdzenia przez właściciela
+
 ## ROBOCZA 915466b5 -- 2026-11-06 -- FALA 666: Etykiety relacji w oknie dyplomacji (perspektywa AI / gracza) i neutralny ton przy symetrycznej wymianie; narzędzie pomiaru fallbacku oblężenia (testowa)
 
 - R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1 (W37), R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1 (W39, tylko narzędzie)
