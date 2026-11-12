@@ -121,6 +121,19 @@ impl Component {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MissingComponents(pub Vec<&'static str>);
 
+/// Skladniki aktywnego modelu podane jako `Component::Provided(v)`, gdzie `v` nie jest skonczony
+/// (NaN, +Inf, -Inf). P6-POWER-NAN-STRICT-Q1: odrzucane jawnie, nie propagowane ani zerowane.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NonFiniteComponents(pub Vec<&'static str>);
+
+/// Blad `compute_objective_power` / `objective_power_for_owner` (STRICT).
+/// `Missing` ma pierwszenstwo: gdy brakuje skladnika, nie raportujemy osobno wartosci niesk.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PowerInputError {
+    Missing(MissingComponents),
+    NonFinite(NonFiniteComponents),
+}
+
 /// Web `EmpirePowerRaw` (pola uzywane przez computeObjectivePower).
 /// Kazdy skladnik ma jawny stan `Component`; polityka domyslna STRICT (brak = blad, nie zero).
 #[derive(Debug, Clone, PartialEq)]
@@ -168,19 +181,30 @@ pub struct ObjectivePowerResult {
 
 /// Web `computeObjectivePower(input, coeff, battleModel, militaryKeys)`.
 ///
-/// STRICT: brak ktoregokolwiek skladnika AKTYWNEGO modelu bitew zwraca `Err(MissingComponents)`.
+/// STRICT: brak ktoregokolwiek skladnika AKTYWNEGO modelu bitew zwraca `Err(Missing)`.
 /// `bitwy` czyta `bitwy_pkt_sum` w EnemyMSum, `wygrane_bitwy` we FlatCount; pole drugiego modelu
-/// nie jest wymagane.
+/// nie jest wymagane (takze gdy ma NaN/Inf - nie jest czytane).
+///
+/// P6-POWER-NAN-STRICT-Q1: `Provided(v)` z `v` NaN / +Inf / -Inf w aktywnym skladniku zwraca
+/// `Err(NonFinite)`. Roznica wzgledem webu (pin 07d2fbd72, `power-objective.ts`): web robi
+/// `Math.max(0, x)`, wiec NaN propaguje sie do wyniku, +Inf dalej jest +Inf, a -Inf daje 0.
+/// Rust nie zgaduje: wszystkie trzy przypadki to blad wejscia. Rust `f64::max` dawalby dla NaN
+/// ciche 0, dlatego walidacja jest przed `max(0.0)`.
 pub fn compute_objective_power(
     input: &ObjectivePowerRaw,
     coeff: &PowerCoeffs,
     battle: BattlePowerModel,
     military: &BTreeSet<&'static str>,
-) -> Result<ObjectivePowerResult, MissingComponents> {
+) -> Result<ObjectivePowerResult, PowerInputError> {
     let mut missing: Vec<&'static str> = Vec::new();
+    let mut non_finite: Vec<&'static str> = Vec::new();
     let mut get = |key: &'static str, c: Component| -> f64 {
         match c.resolve() {
-            Some(v) => v.max(0.0),
+            Some(v) if v.is_finite() => v.max(0.0),
+            Some(_) => {
+                non_finite.push(key);
+                0.0
+            }
             None => {
                 missing.push(key);
                 0.0
@@ -233,7 +257,10 @@ pub fn compute_objective_power(
     // niezaleznie od militaryKeys (brak wpisu w JSON).
     let zdobycze_raw = get("zdobycze", input.zdobycze_power);
     if !missing.is_empty() {
-        return Err(MissingComponents(missing));
+        return Err(PowerInputError::Missing(MissingComponents(missing)));
+    }
+    if !non_finite.is_empty() {
+        return Err(PowerInputError::NonFinite(NonFiniteComponents(non_finite)));
     }
     let mut components: Vec<PowerComponent> = raw_values
         .into_iter()
@@ -264,12 +291,13 @@ pub fn compute_objective_power(
 
 /// Adapter `objectivePowerForOwner` (web main.ts): wynik `power` dla wlasciciela.
 /// Zbieranie `ObjectivePowerRaw` z PlayableState jest poza tym modulem (patrz raport, tabela pokrycia).
-/// STRICT: `Err` przy brakujacym skladniku; zero trzeba podac jawnie jako `Component::ExplicitZero`.
+/// STRICT: `Err` przy brakujacym albo niesk. (NaN/Inf) skladniku; zero trzeba podac jawnie
+/// jako `Component::ExplicitZero`.
 pub fn objective_power_for_owner(
     input: &ObjectivePowerRaw,
     coeff: &PowerCoeffs,
     battle: BattlePowerModel,
     military: &BTreeSet<&'static str>,
-) -> Result<f64, MissingComponents> {
+) -> Result<f64, PowerInputError> {
     compute_objective_power(input, coeff, battle, military).map(|r| r.power)
 }

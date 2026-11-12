@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 use civ_engine::data::units_combat::parse_power_params;
 use civ_engine::domain::brake_power::{
     compute_objective_power, military_component_keys, objective_power_for_owner, BattlePowerModel,
-    Component, MissingComponents, ObjectivePowerRaw, PowerCoeffs,
+    Component, MissingComponents, ObjectivePowerRaw, PowerCoeffs, PowerInputError,
 };
 use civ_engine::domain::brake_power_producers::{
     apply_produced, no_producer_keys, produce_for_owner, ProducerInputs,
@@ -80,7 +80,10 @@ fn missing_active_component_is_error_not_zero() {
     raw.budynki = Component::Missing;
     let err = compute_objective_power(&raw, &coeff(), BattlePowerModel::EnemyMSum, &military())
         .unwrap_err();
-    assert_eq!(err, MissingComponents(vec!["infra"]));
+    assert_eq!(
+        err,
+        PowerInputError::Missing(MissingComponents(vec!["infra"]))
+    );
 }
 
 #[test]
@@ -91,7 +94,7 @@ fn all_open_components_missing_are_listed_in_component_order() {
     // Producenci (ludki, rekruci, miasta, kultura) nie sa wypelnieni - tez brakuja.
     assert_eq!(
         err,
-        MissingComponents(vec![
+        PowerInputError::Missing(MissingComponents(vec![
             "armia",
             "bitwy",
             "ludki",
@@ -104,7 +107,7 @@ fn all_open_components_missing_are_listed_in_component_order() {
             "kultura",
             "religia",
             "zdobycze",
-        ])
+        ]))
     );
 }
 
@@ -126,7 +129,10 @@ fn open_components_without_producer_list_is_exactly_no_producer_keys() {
     }
     let err = compute_objective_power(&raw, &coeff(), BattlePowerModel::EnemyMSum, &military())
         .unwrap_err();
-    assert_eq!(err.0, no_producer_keys());
+    assert_eq!(
+        err,
+        PowerInputError::Missing(MissingComponents(no_producer_keys()))
+    );
 }
 
 #[test]
@@ -164,13 +170,13 @@ fn active_battle_field_missing_is_error_in_each_model() {
     flat.wygrane_bitwy = Component::Missing;
     assert_eq!(
         compute_objective_power(&flat, &c, BattlePowerModel::FlatCount, &m).unwrap_err(),
-        MissingComponents(vec!["bitwy"])
+        PowerInputError::Missing(MissingComponents(vec!["bitwy"]))
     );
     let mut enemy = complete();
     enemy.bitwy_pkt_sum = Component::Missing;
     assert_eq!(
         compute_objective_power(&enemy, &c, BattlePowerModel::EnemyMSum, &m).unwrap_err(),
-        MissingComponents(vec!["bitwy"])
+        PowerInputError::Missing(MissingComponents(vec!["bitwy"]))
     );
 }
 
@@ -180,7 +186,10 @@ fn adapter_propagates_missing_error() {
     raw.heksy_terytorium = Component::Missing;
     let err = objective_power_for_owner(&raw, &coeff(), BattlePowerModel::FlatCount, &military())
         .unwrap_err();
-    assert_eq!(err, MissingComponents(vec!["terytorium"]));
+    assert_eq!(
+        err,
+        PowerInputError::Missing(MissingComponents(vec!["terytorium"]))
+    );
 }
 
 #[test]
@@ -220,7 +229,9 @@ fn producers_must_be_applied_before_strict_compute() {
     // Przed producentami: producenci wciaz Missing -> blad z ich kluczami.
     assert_eq!(
         compute_objective_power(&raw, &c, b, &m).unwrap_err(),
-        MissingComponents(vec!["ludki", "rekruci", "miasta", "kultura"])
+        PowerInputError::Missing(MissingComponents(vec![
+            "ludki", "rekruci", "miasta", "kultura"
+        ]))
     );
 
     apply_produced(&mut raw, &produce_for_owner(&inputs, 0));
