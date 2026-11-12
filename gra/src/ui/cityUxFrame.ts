@@ -70,7 +70,7 @@ function ensureFrameStyles(): void {
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1280px);box-sizing:border-box;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1480px);box-sizing:border-box;pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .civ-v-w3-chips-flank{pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack button,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .hover-detail-anchor,
