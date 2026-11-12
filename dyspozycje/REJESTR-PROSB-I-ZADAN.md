@@ -9627,3 +9627,9 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - Zakres: w bitwie „Konnica” ma ruch 7; rydwany bez zmian (woły 5, konne 6); pole Ruch (mapa) bez zmian.
 - Dowód: tsc OK, logic 213/213, chariot-move-6-data-test 163/0. Chromium NIE_ZMIERZONO — zalecany smoke na polu bitwy (ucieczki konnicy).
 - Dług bazowy (poza tematem): rydwan-konnica-x2-test — niezgodności Rydwan (woły) Drewno/Brąz.
+
+## FALA 672 — ROBOCZA 1c2cdb70 (2026-11-12) — bitwa: neverRout zostają, reszta ucieka i jest gonina
+
+- Temat: R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1. FC PASS-WITH-NOTES (10c4bb0b6). Integracja i deploy na ROBOCZĄ: main 15b4327ba, MD5 1c2cdb70 (raw zgodny), sidecary zgodne.
+- Zakres: po załamaniu morale armii jednostki „walczy do śmierci” nie uciekają i walczą dalej; zwykłe uciekają i są gonione; bitwa kończy się, gdy neverRout zginą, uciekinierzy zejdą albo minie limit tur.
+- Dowód: tsc OK, logic 213/213, battle-neverrout-hold-test 58/0, mutacja 4 FAIL. Chromium NIE_ZMIERZONO — zalecany smoke w bitwie.
