@@ -39,7 +39,7 @@ use super::brake_inputs::{
 };
 use super::brake_power::{
     battle_power_model, military_component_keys, objective_power_for_owner, BattlePowerModel,
-    ObjectivePowerRaw, PowerCoeffs,
+    ObjectivePowerRaw, PowerCoeffs, PowerInputError,
 };
 use super::diplomacy::{shared_border_penalty_for_epochs, DiplomacyParams, TickContext};
 use super::diplomacy_tick_war_brake::{ai_ai_pairs, is_ai_ai_eligible_owner, BrakeWarOutcome};
@@ -145,6 +145,9 @@ pub enum WarTurnError {
     MissingPower(i64),
     /// STRICT (POWER-NOZEROS): skladniki mocy w stanie `Missing` (klucze web `breakdown.key`).
     PowerComponentsMissing(i64, Vec<&'static str>),
+    /// STRICT (POWER-NAN-STRICT): skladniki mocy podane jako `Provided(NaN/Inf)` (klucze web
+    /// `breakdown.key`); odrzucane jawnie, nie zerowane ani propagowane.
+    PowerComponentNonFinite(i64, Vec<&'static str>),
     MissingPeaceLocks,
 }
 
@@ -157,6 +160,11 @@ impl fmt::Display for WarTurnError {
             Self::PowerComponentsMissing(id, keys) => write!(
                 f,
                 "war turn: wlasciciel {id}: skladniki mocy bez zrodla (STRICT): {}",
+                keys.join(", ")
+            ),
+            Self::PowerComponentNonFinite(id, keys) => write!(
+                f,
+                "war turn: wlasciciel {id}: skladniki mocy nieskonczone/NaN (STRICT): {}",
                 keys.join(", ")
             ),
             Self::MissingPeaceLocks => write!(f, "war turn: brak producenta blokad pokoju"),
@@ -292,7 +300,10 @@ pub fn run_war_turn(ctx: &mut WarTurnContext<'_>) -> Result<WarTurnReport, WarTu
                 cfg.power.battle,
                 &cfg.power.military,
             )
-            .map_err(|e| WarTurnError::PowerComponentsMissing(id, e.0))?;
+            .map_err(|e| match e {
+                PowerInputError::Missing(m) => WarTurnError::PowerComponentsMissing(id, m.0),
+                PowerInputError::NonFinite(n) => WarTurnError::PowerComponentNonFinite(id, n.0),
+            })?;
             power_values.insert(id, value);
         }
         let power = power_map(

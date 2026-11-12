@@ -11,7 +11,7 @@ use std::{error::Error, fmt};
 
 use super::building_costs::p6_7b::StockRecord;
 use super::turn_war_inputs::{build_war_inputs, production_config};
-use super::turn_war_pipeline::{run_war_turn, WarTurnConfig, WarTurnContext, WarTurnInputs};
+use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::unit_replace::{UnitReplaceFail, UnitReplaceResult, UnitReplaceTarget};
 use super::unit_replace_wiring::{replace_unit_wired, ReplaceCity, ReplaceUnitDef};
 use super::war_turn_state::WarTurnState;

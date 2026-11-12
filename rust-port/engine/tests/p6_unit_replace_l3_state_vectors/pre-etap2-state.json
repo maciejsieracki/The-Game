@@ -412,7 +412,9 @@
         "x": 1,
         "y": 1
       },
-      "isCapital": true
+      "isCapital": true,
+      "population": 1,
+      "culture": 0
     }
   ],
   "units": [
