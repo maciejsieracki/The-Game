@@ -150,3 +150,9 @@ Wariant B (kolejność faz z planu Rust) jest decyzją właściciela; audyt pinu
 - Q3: wojna wypowiedziana przez hamulec działa w tej samej turze, przed ekonomią i ruchami AI (jak pin D8)? (R7-K4)
 - Q4: rebelia miasta wpływa na produkcję tej samej tury (pin) czy dopiero od następnej? (R7-K6)
 Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależne od pytań (wpięcie istniejących funkcji bez zmiany kolejności) mogą startować.
+
+## Przebieg 2026-11-12 05:2x UTC (orkiestrator Rust)
+- parity-v2 = 46c42deab (batch 12 = INTEG-B12: POWER-SOURCES-INTEG + K1b + ENDCHECK + K3 + K4 na batch 11; testy Operatora 2910 passed / 0 failed / 1 ignored; Evaluator odtworzył bramki częściowo — pełnego przebiegu niezależnie nie powtórzono).
+- FC PASS-WITH-NOTES poza parity-v2 (refs rust-port-wip/*): linia W8 STORES 9164ab7d7 + L3-STAN 415a7d67f + Q9 d3b11f071 + KLASY de6204fdc + KOMENT 24ef0de70 + K5-AUDYT b2336c005 — zebrane w INTEG-B13 (wf_c6c3d8d3-0e1, Sonnet; adaptacja do PowerInputError, pełny cargo test); L3-DEFS 05aaf3922; POWER-ULEPSZENIA f47aa359c (merge-tree czysty); W8-R7-AUDYT de92c63fd.
+- DECISION_REQUIRED (gameplay): SZTURM ODPARTY (K5-AUDYT) i Q1–Q4 W8 r7 — patrz wyżej; rekomendacja: parytet z pinem.
+- W toku (4): INTEG-B13, L3-KOSZT (wf_e8c19444-ed2), SIEGE-TAKTYKA K5A (wf_3e4a1a30-321), K5E (wf_0ad9abe5-0a8). Po B13: R7-K7, R7-K8, wpięcie ulepszeń do power_raw_for_owner.
