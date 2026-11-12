@@ -15,7 +15,11 @@
  *   MSF_SEEDS      (domyslnie "1,2,3")            ziarna Math.random
  *   MSF_SCENARIOS  (domyslnie "breach,nobreach")
  *   MSF_MODES      (domyslnie "fallback,skip,auto")
- *   MSF_OUT        plik JSON-lines (dopisywany; wznawialny: pominie pary juz zapisane)
+ *   MSF_OUT        plik JSON-lines (dopisywany; wznawia TYLKO pary zakonczone -- przebieg przerwany
+ *                  limitem czasu (timeout) nie jest zapisywany jako zakonczony i startuje od nowa
+ *                  w nastepnym wywolaniu; strona Chromium nie przechowuje postepu miedzy wywolaniami)
+ *   MSF_MODES      fallback: straty z _endSurvivors (tylko zwyciezca ma ocalalych w bitwie miejskiej,
+ *                  przegrany = 0); skip/auto: straty z rosteru (_sideEndStats).
  *   MSF_DIST       gotowy build (pomija vite build); bez tego build do katalogu tymczasowego poza repo
  *   MSF_TIMEOUT_S  limit czasu jednego przebiegu (domyslnie 540)
  *   MSF_TABLE=1    tylko tabela z MSF_OUT (bez Chromium)
@@ -168,14 +172,30 @@ async function runOne(browser, baseUrl, scenario, mode, seed) {
     const bs = window.__lastBattleScene;
     const sa = bs._sideEndStats('atk');
     const sd = bs._sideEndStats('def');
+    const es = bs._endSurvivors || [];
     return {
       winner: bs._endWinner, round: bs.roundNo, vNow: Math.round(bs.vNow - window.__wskipT0),
       breached: !!bs.wallEverBreached,
-      atk: { total: sa.total, lost: sa.lost, remaining: sa.remaining, hp: Math.round(sa.hp) },
-      def: { total: sd.total, lost: sd.lost, remaining: sd.remaining, hp: Math.round(sd.hp) },
-      endLine: bs.log.find((l) => /PAT|SZTURM/.test(l)) || null,
+      // Tryb fallback: straty z ocalalych zwroconych przez computeInstantResult (_endSurvivors),
+      // NIE z rosteru (roster nie jest mutowany przez _skipInstantFallback). Zob. _derive nizej.
+      endSurv: { n: es.length, hp: Math.round(es.reduce((s, u) => s + Math.max(0, u.hp), 0)), city: !!bs.isCityDefenseBattle },
+      atk: { total: sa.total, lost: sa.lost, remaining: sa.remaining, hp: Math.round(sa.hp), src: 'roster' },
+      def: { total: sd.total, lost: sd.lost, remaining: sd.remaining, hp: Math.round(sd.hp), src: 'roster' },
+      endLine: bs.log.find((l) => /PAT|SZTURM|Natychmiastowy wynik/.test(l)) || null,
     };
   });
+  if (mode === 'fallback') {
+    // Bitwa oblezenia = isCityDefenseBattle: computeInstantResult zwraca ocalalych TYLKO zwyciezcy
+    // (battleScene.ts: survivors = isCityDefense ? (winner ? survivorsA : survivorsD) : ...).
+    // Przegrany nie ma ocalalych w wyniku (przegrani gina), wiec jego remaining = 0.
+    if (!res.endSurv.city) throw new Error('fallback bez trybu miejskiego: nie da sie przypisac ocalalych do stron');
+    const side = res.winner === 'atakujacy' ? 'atk' : 'def';
+    for (const s of ['atk', 'def']) {
+      const alive = s === side ? res.endSurv.n : 0;
+      const hp = s === side ? res.endSurv.hp : 0;
+      res[s] = { total: res[s].total, lost: res[s].total - alive, remaining: alive, hp, src: 'endSurvivors' };
+    }
+  }
   await page.close();
   return { scenario, mode, seed, timeout: false, errors, ...res };
 }
