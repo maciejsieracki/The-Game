@@ -2711,7 +2711,7 @@ export class BattleScene {
   // walks it. activeSide is kept only for the opening hint.
   private activeSide: 'atk' | 'def' = 'atk';
   private roundNo = 0;
-  private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
+  private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number; meleeContact: boolean }> } | null = null;
   /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
   private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
   private turnOrder: RuntimeBattleUnit[] = [];
@@ -8215,17 +8215,18 @@ export class BattleScene {
    * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
    */
   private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
-    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
+    // R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1: strzelcy i machiny sa w tym samym tempie co piechota
+    // swojej rangi, az do pierwszego wzwarcia wrecz w grupie; konnica (mounted) poza regula tempa.
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted) {
       return Number.POSITIVE_INFINITY;
     }
     const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
     const key = `${ru.side}|${ru.groupId ?? ''}|${rank}`;
     const sign = ru.side === 'atk' ? 1 : -1;
     const isMate = (u: RuntimeBattleUnit): boolean =>
-      !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !u.rangedBase
+      !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted
       && (u.groupId ?? '') === (ru.groupId ?? '')
-      && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank
-      && !isSiegeUnit(u.bu);
+      && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank;
     const roster = ru.side === 'atk' ? this.atk : this.def;
     const state = this._lineAdvanceState ??= new Map<string, { best: number; stall: number }>();
     let cache = this._lineCapCache;
@@ -8234,7 +8235,11 @@ export class BattleScene {
     if (!info) {
       // Odswiezenie RAZ na runde (pierwsze zapytanie rangi): rekord postepu, rundy bez postepu,
       // jednostki w kontakcie i najmniejsza pula ruchu rangi.
-      info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY };
+      info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY, meleeContact: false };
+      // Pierwsze wzwarcie wrecz w grupie (piechota; bez konnicy, strzelcow i machin) zdejmuje sufit strzelcom i machinom.
+      info.meleeContact = roster.some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted
+        && !u.rangedBase && !isSiegeUnit(u.bu) && (u.groupId ?? '') === (ru.groupId ?? '')
+        && this._canAttackFrom(u, u.q, u.r));
       const entries: { id: string; p: number; progressed: boolean }[] = [];
       for (const u of roster) {
         if (!isMate(u)) continue;
@@ -8260,6 +8265,7 @@ export class BattleScene {
       }
       cache.info.set(key, info);
     }
+    if ((ru.rangedBase || isSiegeUnit(ru.bu)) && info.meleeContact) return Number.POSITIVE_INFINITY;
     // Sufit liczony z ZYWYCH pozycji (planowanie AUTO pracuje na klonach stanu z poczatku fazy,
     // wiec dla kazdej jednostki to ten sam, deterministyczny obraz).
     let refMin = Number.POSITIVE_INFINITY;
