@@ -7204,8 +7204,12 @@ function buildingRequirementChips(
   return chips;
 }
 
-/** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
-function buildingCanBuildNow(
+/**
+ * Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…).
+ * R-PROD-EMPTY-GATE-Q1: WSPÓLNA bramka — eksportowana, by zdarzenie `prod-empty-*` (main.ts)
+ * liczyło „możliwe teraz” DOKŁADNIE tym samym predykatem co wiersz panelu.
+ */
+export function buildingCanBuildNow(
   def: BuildingDef,
   city: City,
   data: GameData,
@@ -8352,6 +8356,30 @@ function empireRekruciAffordable(
 ): boolean {
   if (mpCost <= 0) return true;
   return available == null || available >= mpCost;
+}
+
+/**
+ * R-PROD-EMPTY-GATE-Q1 — WSPÓLNA bramka „można TERAZ zrekrutować” dla jednej pozycji jednostki:
+ * oblężenie, rekruci imperium (ludność/manpower), pula PAŃSTWA (jednorazowy koszt surowcowy)
+ * i skarbiec ≥ koszt zakupu. Te same składowe co karta jednostki w panelu (`appendUnitRecruitCompactRow`),
+ * eksportowane, by zdarzenie `prod-empty-*` w main.ts nie liczyło własnej, rozbieżnej wersji.
+ * Nie zawiera bramki `cfg.onPurchaseUnit` (to podpięcie silnika, nie warunek ekonomii).
+ */
+export function unitRecruitAllowedNow(
+  city: City,
+  item: ProductionItem,
+  data: GameData,
+  skarb: number | undefined,
+): boolean {
+  const udef = findUnitDef(data, item.id);
+  if (!udef) return false;
+  if (isCityUnderSiege([city], city)) return false;
+  const mpCost = recruitManpowerCost(city, item.id);
+  if (!empireRekruciAffordable(city, mpCost, empireRekruciTotal(city))) return false;
+  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(udef));
+  if (Object.keys(stockMissing).length > 0) return false;
+  if (skarb !== undefined && skarb < item.koszt) return false;
+  return true;
 }
 
 /**

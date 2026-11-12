@@ -738,7 +738,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession, buildingCanBuildNow, unitRecruitAllowedNow } from './ui/cityPanel';
 import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { livingGeneralsOf, resolveRecruitGeneral, recruitRallyStamp, pickRallyGeneral } from './game/recruit-general';
@@ -18612,7 +18612,6 @@ async function boot(): Promise<void> {
       const techs = unlockedTechsForOwner(city.ownerId);
       const epoch = ctx.epoch ?? 1;
       const civBonusy = ctx.civBonusy ?? [];
-      const pool = ownerSurowcePoolFor(city.ownerId);
       const seen = new Set<string>();
       for (const id of built) {
         if (seen.has(id)) continue;
@@ -18634,7 +18633,9 @@ async function boot(): Promise<void> {
           ctx.difficulty ?? 'normal',
         );
         if (!item) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        // R-PROD-EMPTY-GATE-Q1: ta sama bramka co wiersz „Ulepsz” w panelu (chipy: tech, lokalizacja,
+        // etykieta surowca, magazyn). Sam magazyn nie wystarcza — np. Garncarnia wymaga Gliny.
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         return true;
       }
       return false;
@@ -18642,11 +18643,11 @@ async function boot(): Promise<void> {
 
     function cityHasAffordableBuildingEnqueue(city: City, ctx: AvailabilityContext): boolean {
       const techs = unlockedTechsForOwner(city.ownerId);
-      const pool = ownerSurowcePoolFor(city.ownerId);
       for (const item of buildableProduction(city, data, techs, ctx)) {
         const def = data.buildings.find(b => b.id === item.id);
         if (!def) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        // R-PROD-EMPTY-GATE-Q1: WSPÓLNA bramka z panelem (`buildingCanBuildNow`), nie sam magazyn.
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         return true;
       }
       return cityHasAffordableLevelUpgrade(city, ctx);
@@ -18655,19 +18656,9 @@ async function boot(): Promise<void> {
     function cityHasAffordableUnitRecruitment(city: City, ctx: AvailabilityContext): boolean {
       if (city.ownerId !== 0) return false;
       const techs = unlockedTechsForOwner(city.ownerId);
-      const treasury = player.skarbiec;
-      const pool = ownerSurowcePoolFor(city.ownerId);
-      const ep = empireEpochForOwner(city.ownerId);
-      const mpMults = civManpowerMultsForOwner(city.ownerId);
       for (const item of purchasableUnits(city, data, techs, ctx)) {
-        if (treasury < item.koszt) continue;
-        const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
-        if (!unitDef) continue;
-        if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
-        if (!canAffordUnitManpowerEmpire(
-          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
-        )) continue;
-        return true;
+        // R-PROD-EMPTY-GATE-Q1: WSPÓLNA bramka z kartą jednostki w panelu (oblężenie, rekruci, magazyn, skarbiec).
+        if (unitRecruitAllowedNow(city, item, data, player.skarbiec)) return true;
       }
       return false;
     }
@@ -18719,28 +18710,17 @@ async function boot(): Promise<void> {
     function productionOptionsFingerprint(city: City): string {
       const ctx = productionAvailabilityCtxForCity(city);
       const techs = unlockedTechsForOwner(city.ownerId);
-      const pool = ownerSurowcePoolFor(city.ownerId);
       const affordIds: string[] = [];
       for (const item of buildableProduction(city, data, techs, ctx)) {
         const def = data.buildings.find(b => b.id === item.id);
         if (!def) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         affordIds.push(item.id);
       }
       const unitIds: string[] = [];
       if (city.ownerId === 0) {
-        const treasury = player.skarbiec;
-        const ep = empireEpochForOwner(city.ownerId);
-        const mpMults = civManpowerMultsForOwner(city.ownerId);
         for (const item of purchasableUnits(city, data, techs, ctx)) {
-          if (treasury < item.koszt) continue;
-          const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
-          if (!unitDef) continue;
-          if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
-          if (!canAffordUnitManpowerEmpire(
-            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
-          )) continue;
-          unitIds.push(item.id);
+          if (unitRecruitAllowedNow(city, item, data, player.skarbiec)) unitIds.push(item.id);
         }
       }
       const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;
@@ -28580,6 +28560,96 @@ async function boot(): Promise<void> {
         if (isDiploListHudOpen()) hideDiploListHud();
         document.getElementById('civ-elim-notice-host')?.remove();
         refreshD1bHud();
+      },
+    };
+
+    // R-PROD-EMPTY-GATE-Q1 — hak pomiarowy dla tools/prod-empty-gate-real-render-test.cjs.
+    // Ten sam warunek dostępu co `__dealsLiveDebug` (dev albo sandbox ?playtest=*). Odczyt
+    // pokazuje, KTÓRE pozycje przechodzą bramkę zdarzenia `prod-empty-*` (ta sama logika co
+    // `cityHasActionableProduction`, ale z listą id zamiast boolean); zapis zeruje magazyn,
+    // skarbiec i ludność, żeby test mierzył wyłącznie tę bramkę.
+    const prodEmptyProbeAllowed = import.meta.env.DEV
+      || new URLSearchParams(typeof location !== 'undefined' ? location.search : '').has('playtest');
+    if (prodEmptyProbeAllowed) (window as any).__prodEmptyTestDebug = {
+      setTreasury: (ownerId: number, value: number): void => setOwnerTreasury(ownerId, value),
+      /** Ustawia KAŻDY surowiec magazynu państwa na `amount` (w pierwszym mieście ownera; suma = amount). */
+      grantStock: (ownerId: number, amount: number): void => {
+        const first = cities.find(c => c.ownerId === ownerId);
+        if (!first) return;
+        for (const c of cities) {
+          if (c.ownerId !== ownerId || !c.surowce) continue;
+          for (const k of Object.keys(c.surowce)) c.surowce[k] = 0;
+        }
+        first.surowce = first.surowce ?? {};
+        for (const k of ['drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'ceramika', 'braz', 'zelazo', 'stal', 'sol', 'zloto', 'wegiel', 'kon']) {
+          first.surowce[k] = amount;
+        }
+      },
+      setManpower: (ownerId: number, value: number): void => {
+        for (const c of cities) if (c.ownerId === ownerId) c.manpower = value;
+      },
+      /** Czyści kolejkę produkcji miasta (zdarzenie `prod-empty-*` dotyczy tylko pustej kolejki). */
+      clearQueue: (cityId: string): void => {
+        const p = cityProd.get(cityId);
+        if (p) cityProd.set(cityId, { ...p, kolejka: [], postep: 0 });
+      },
+      probe: (cityId: string) => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return null;
+        const ctx = productionAvailabilityCtxForCity(city);
+        const techs = unlockedTechsForOwner(city.ownerId);
+        const pool = ownerSurowcePoolFor(city.ownerId);
+        // Każda pozycja: stockOk = sam magazyn (stara bramka), canBuildNow = bramka panelu/zdarzenia.
+        const buildings: Array<{ id: string; kind: 'budowa' | 'poziom'; stockOk: boolean; canBuildNow: boolean }> = [];
+        for (const item of buildableProduction(city, data, techs, ctx)) {
+          const def = data.buildings.find(b => b.id === item.id);
+          if (!def) continue;
+          buildings.push({
+            id: item.id, kind: 'budowa',
+            stockOk: canAffordBuildingStock(pool, buildingStockCost(def)),
+            canBuildNow: buildingCanBuildNow(def, city, data, ctx, techs),
+          });
+        }
+        const built = ctx.builtBuildingIds ?? [];
+        const queue = ctx.productionQueue ?? [];
+        const seenLv = new Set<string>();
+        for (const id of built) {
+          if (seenLv.has(id)) continue;
+          seenLv.add(id);
+          const def = data.buildings.find(b => b.id === id);
+          if (!def || def.maksPoziom <= 1) continue;
+          if (buildingTypeQueued(id, queue)) continue;
+          const targetLevel = buildingLevelForEpoch(
+            def.epokaWejscia, ctx.epoch ?? 1, def.maksPoziom, def.poziomTechGate, techs,
+          );
+          if (targetLevel <= 1) continue;
+          const item = buildingProductionItem(
+            id, data, targetLevel, ctx.civBonusy ?? [], ctx.buildingCostPace ?? 'niski',
+            city.ownerId, ctx.difficulty ?? 'normal',
+          );
+          if (!item) continue;
+          buildings.push({
+            id, kind: 'poziom',
+            stockOk: canAffordBuildingStock(pool, buildingStockCost(def)),
+            canBuildNow: buildingCanBuildNow(def, city, data, ctx, techs),
+          });
+        }
+        const units: Array<{ id: string; canBuildNow: boolean }> = [];
+        if (city.ownerId === 0) {
+          for (const item of purchasableUnits(city, data, techs, ctx)) {
+            units.push({ id: item.id, canBuildNow: unitRecruitAllowedNow(city, item, data, player.skarbiec) });
+          }
+        }
+        return {
+          eventPresent: collectTurnEvents().some(e => e.id === 'prod-empty-' + city.id),
+          actionable: cityHasActionableProduction(city),
+          fingerprint: productionOptionsFingerprint(city),
+          buildings,
+          units,
+          treasury: player.skarbiec,
+          manpower: city.manpower ?? null,
+          stock: { ...pool },
+        };
       },
     };
 
