@@ -9572,3 +9572,39 @@ Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przeni
 - TOL_RANK1 = 2 (zamiast zmierzonego 1 bez zapasu; rekomendacja przyjęta).
 - Kryterium 3 (strzelcy po wejściu wroga w zwarcie) w tej samej rundzie 4/5, bez osobnego tematu.
 - Status: runda 4/5 do uruchomienia po zwolnieniu dysku (próg 6 GB dla startu).
+
+## ZGŁOSZENIA WŁAŚCICIELA — sesja 2026-11-12 (zapisane 20:xx; stan na chwilę zapisu)
+
+### Z-1 HUD: surowce w jednym rzędzie na górze, boczne bloki obniżone (zrzut 13.webp)
+- Zgłoszenie: surowce miały być na samej górze obok siebie, równomiernie; tylko lewy i prawy panel boczny obniżyć, żeby nie nachodziły. Obecnie chipy leżą pionowo.
+- Ustalenie: zamiar właściciela nadpisuje „dwa piętra" z układu A (2026-11-07) w tej części. Przyczyna: siatka 6 kolumn w hud.ts nie działa przy tej szerokości; fallback wygrywa pionowo.
+- Temat: R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1, #308. Dispatch 0cee0a857 (docs). Kryteria K1–K8 w dispatchu, weryfikacja na zrzutach Chromium 1920×1080 i 1366×768.
+- Status: w kolejce (4 sloty zajęte w chwili zgłoszenia).
+
+### Z-2 Administrator: natywne okno przy zatrudnieniu + mieszanie administratorów
+- Zgłoszenie: po zatrudnieniu administratora pojawia się natywne okno przeglądarki („Komunikat z bieżącej strony … OK”). Wychodzi z pełnego ekranu. Nie powinno go być.
+- Zgłoszenie 2: teksty mieszają administratora ulepszeń z administratorem miasta. Administrator miasta wymaga budynku administracyjnego i ma bonusy miasta. Administrator ulepszeń nie wymaga budynku, nie ma bonusów miasta i działa tylko na ulepszeniach terenu. Każdy tekst ma mieć osobne, konkretne komunikaty.
+- Źródło: administratorPanel.ts:306 (window.confirm zatrudnienia, dubluje przycisk „Zatrudnij”) i :315 (zwolnienie). Teksty: administratorPanel.ts, buildModeHud.ts, cityPanel.ts.
+- Temat: R-WEB-ADMIN-NATIVE-DIALOG-AND-TEXT-SPLIT-Q1. Dispatch 294e6489c + korekta 5bbb1fffff66 (docs). Workflow wf_fb44a822 w toku (Operator HAIKU).
+
+### Z-3 Bitwa: po utracie morale wojsko nie ucieka i nikt nie goni
+- Zgłoszenie: mimo przewagi wojska nie ucieka po utracie morale, nikt go nie goni, bitwa po prostu się kończy (zrzut: panel po walce, Inkowie, 1 obrońca, HP 20→9/20).
+- Ustalenie (kod, origin/main aeb52465e): `_checkEnd()` rozstrzyga uciekinierów w `_resolveRemainingRouted()` od razu (zginął w pościgu / uciekł z planszy), bez symulowania ruchu i bez tur ucieczki. Zamiar z W21 (FALA 653): uciekinierzy uciekają, zwycięzca goni, bitwa trwa do końca pościgu.
+- Temat: R-WEB-BATTLE-ROUT-NO-FLEE-NO-PURSUIT-LIVE-BUG-Q1 (dispatch a184d96ef, docs). Gotowy do startu, czeka na slot.
+
+### Z-4 Bitwa: równe tempo armii nadal nie działa na żywo (zrzut z gry)
+- Zgłoszenie: górna część armii idzie szybciej, dolna zwalnia, linia się rozjeżdża. Równe podejście nadal nie działa.
+- Ustalenie: W19 był oznaczony jako wdrożony bez weryfikacji na zrzutach; W40 (mieszana armia) zakończył się FAIL po 5 rundach. Testy nie różnicują bazy od poprawki.
+- Temat: R-WEB-BATTLE-PACE-EQUAL-LINE-LIVE-BUG-Q1 (dispatch a184d96ef, docs). Gotowy do startu, czeka na slot.
+
+### Z-5 Przeciek miedzi (#283/#290) — decyzje właściciela
+- Zatwierdzone: limit kopalń z niedoboru = 1 na typ na turę (miedź, cyna, żelazo).
+- Otwarte: model przepływu na szlaku (kandydat 605036e6b: połowa różnicy). Pytanie: czy szlak w ogóle ma przesuwać zapasy, czy ma dawać tylko dochód. Właściciel nie odpowiedział w pytaniu ABC (wysłał wiadomość), więc decyzja jest otwarta.
+- Stan: W41 zakończony, DECISION_REQUIRED. Ref `refs/keep/R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1-fc`, gałąź web-wip wypchnięta.
+
+### Z-6 Respekt AI (#298) — decyzje właściciela
+- Audyt zakończony FC PASS-WITH-NOTES (r3, kandydat 1e09d1e4c). Ustalenia: 29 wynika z limitu wojny na zapisanym respekcie, 67 z efektywnej Mocy na panelu (różne chwile); zdarzenia militarne nie docierają do silnika (respekt nadpisywany co turę).
+- Otwarte (pytanie ABC bez odpowiedzi): A bez zmian (rekomendacja), B(2) podpięcie zdarzeń militarnych (wymaga zmiany nadpisywania), C osobny składnik Strach. Oraz: czy Zaufanie w wojnie spada dla par bez wspólnej granicy.
+
+### Z-7 Zgłoszenia z 2026-11-12 do późniejszego rozpisania
+- Inne natywne okna gry (window.confirm): main.ts:9367, main.ts:25930, saveLoadDialog.ts:346, empireDetailPanel.ts:1529, cityPanel.ts:12135. Poza zakresem Z-2; do decyzji właściciela.
