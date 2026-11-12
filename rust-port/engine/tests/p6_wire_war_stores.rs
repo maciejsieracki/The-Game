@@ -4,11 +4,13 @@
 //! Test 3 tur `advance_turn` z AI z miastami: `domain::playable::war_pipeline_advance_tests`.
 
 use civ_engine::domain::brake_power::Component;
+use civ_engine::domain::order_effects_culture::{civ_religion_for_key, load_religion_params};
 use civ_engine::domain::playable::{PlayableGame, PlayableState, StartGameParams};
 use civ_engine::domain::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, UNPRODUCED_POWER_COMPONENTS,
 };
 use civ_engine::domain::turn_war_pipeline::{run_war_turn, WarTurnContext};
+use civ_engine::domain::types::Difficulty;
 use civ_engine::domain::war_turn_state::WarTurnState;
 use civ_engine::domain::{CityId, PlayableCity, PlayerId, PositionDto};
 
@@ -128,12 +130,40 @@ fn tech_counts_set_size_per_owner() {
 #[test]
 fn religion_unity_follows_stored_city_religion() {
     // web countCitiesWithDominantStateReligion: miasto liczy sie, gdy dominuje religia panstwowa wlasciciela.
+    // Wlasciciel AI dostaje cywilizacje "Grecy" (civs.json), wiec jego religia panstwowa jest znana
+    // z tych samych danych co produkcja (civ_religion_for_key + society-params.json).
     let mut state = state_with_ai();
+    state
+        .players
+        .iter_mut()
+        .find(|p| p.id.get() == 2)
+        .expect("ai player")
+        .civilization = "Grecy".to_owned();
+    let civs: serde_json::Value =
+        serde_json::from_str(civ_engine::data::civilizations::CIVS_JSON).expect("civs");
+    let society: serde_json::Value =
+        serde_json::from_str(civ_engine::data::derived::SOCIETY_PARAMS_JSON).expect("society");
+    let own = civ_religion_for_key(Some("Grecy"), Some(&society), Some(&civs))
+        .expect("Grecy ma religie panstwowa");
+    let prog = load_religion_params(Some(&society), Difficulty::Normal).prog_dominacji_pct;
+    assert_eq!(prog, 50.0, "granica testu zaklada prog 50%");
+
+    // Brak zapisu: stan domyslny z populacji (1) i wlasna religia => miasto liczy sie.
     let default_unity = provided(
         power_raw_for_owner(&state, 2, 1.0)
             .expect("ai")
             .miasta_jednosc_religii,
     );
+    assert_eq!(default_unity, 1.0);
+
+    // Zapisany stan wlasnej religii dominujacej => miasto liczy sie.
+    state
+        .stores
+        .religion_by_city
+        .insert(900, [(own.clone(), 10)].into());
+    let own_dom = power_raw_for_owner(&state, 2, 1.0).expect("ai");
+    assert_eq!(own_dom.miasta_jednosc_religii, Component::Provided(1.0));
+
     // Zapisany stan obcej religii (100% wyznawcow) zastepuje stan domyslny => miasto sie nie liczy.
     state
         .stores
@@ -141,17 +171,34 @@ fn religion_unity_follows_stored_city_religion() {
         .insert(900, [("ObcaReligia".to_owned(), 10)].into());
     let foreign = power_raw_for_owner(&state, 2, 1.0).expect("ai");
     assert_eq!(foreign.miasta_jednosc_religii, Component::Provided(0.0));
-    assert!(default_unity == 0.0 || default_unity == 1.0);
+
+    // Granica progu (prog 50%, dominacja > progu): 51% wlasnej => liczy sie; 50% => nie (ostro >).
+    state.stores.religion_by_city.insert(
+        900,
+        [(own.clone(), 51), ("ObcaReligia".to_owned(), 49)].into(),
+    );
+    let above = power_raw_for_owner(&state, 2, 1.0).expect("ai");
+    assert_eq!(above.miasta_jednosc_religii, Component::Provided(1.0));
+    state
+        .stores
+        .religion_by_city
+        .insert(900, [(own, 50), ("ObcaReligia".to_owned(), 50)].into());
+    let at_threshold = power_raw_for_owner(&state, 2, 1.0).expect("ai");
+    assert_eq!(
+        at_threshold.miasta_jednosc_religii,
+        Component::Provided(0.0)
+    );
 }
 
 #[test]
 fn three_war_turns_with_ai_cities_pass_strict() {
     // (3) run_war_turn (STRICT) z AI z miastami przechodzi 3 tury z rzedu na tym samym stanie wojny.
     let state = state_with_ai();
-    let inputs = build_war_inputs(&state, &WarTurnState::default()).expect("inputs");
     let cfg = production_config(&state).expect("config");
     let mut war = WarTurnState::default();
     for turn in 1..=3 {
+        // Wejscia budowane od nowa z biezacego stanu wojny przed kazda tura (jak w advance_turn).
+        let inputs = build_war_inputs(&state, &war).expect("inputs");
         let mut ctx = WarTurnContext {
             war: &mut war,
             turn: f64::from(turn),
