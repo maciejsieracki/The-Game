@@ -11,14 +11,17 @@
 //! 3. `tabela_produkcyjna_koszt_i_hp_z_danych_pinu` - raport rozbieznosci DANYCH (units.json Rust vs pin):
 //!    koszt bazowy i zdrowie. Rozbieznosci nie sa rozstrzygane tutaj (decyzja gameplay, zadanie 27).
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use civ_engine::domain::building_costs::repin_b2::{unit_money_cost_web, CostMarker, MarkerValue};
 use civ_engine::domain::recruitment::army_merge::UnitCostPace;
 use civ_engine::domain::types::Difficulty;
 use civ_engine::domain::unit_health::unit_health_value;
 use civ_engine::domain::unit_replace_cost::{replace_max_hp, ReplaceUnitProgress};
-use civ_engine::domain::unit_replace_defs::production_replace_defs_for_civ;
+use civ_engine::domain::unit_replace_defs::{
+    production_base_gold, production_replace_defs_for_civ,
+};
+use civ_engine::domain::unit_replace_wiring::ReplaceUnitDef;
 use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_unit_replace_cost_vectors/unit-replace-cost-vectors.json");
@@ -210,5 +213,79 @@ fn tabela_produkcyjna_koszt_i_hp_z_danych_pinu() {
         table.len() >= 70,
         "tabela produkcyjna: {} jednostek",
         table.len()
+    );
+}
+
+/// Straznik pina dla sekcji `productionMoney`: SHA-256 tekstu funkcji produkcyjnych (macierz cywilizacji,
+/// `civProductionCostBonusyForCivKey`) i pliku `civ-matrix.json` uzytych przez generator.
+const EXPECTED_PRODUCTION_SHA256: &str =
+    "250c5c695dd3532468475a71d0e365d6f414f0af40d05896227df2b861806eb4";
+
+/// Tabela PRODUKCYJNA (`production_replace_defs_for_civ`, ta sama droga co komenda gracza) vs pin:
+/// cywilizacje z rabatem i tempem oraz `""` (brak wiersza macierzy), tempo i trudnosc.
+/// Przypadki z rozbieznoscia DANYCH (baza kosztu Rust != pin) sa wypisywane i pomijane, nie ukrywane.
+#[test]
+fn tabela_produkcyjna_koszt_zgodny_z_pinem_per_cywilizacja() {
+    let doc = parse_vectors();
+    assert_eq!(
+        doc["meta"]["productionTextSha256"].as_str(),
+        Some(EXPECTED_PRODUCTION_SHA256),
+        "wektory produkcyjne pochodza z innego tekstu pinu"
+    );
+    let cases = doc["productionMoney"].as_array().expect("productionMoney");
+    assert!(cases.len() >= 200, "wektory produkcyjne: {}", cases.len());
+
+    let mut tables: BTreeMap<(String, String, String), BTreeMap<String, ReplaceUnitDef>> =
+        BTreeMap::new();
+    let mut compared = 0usize;
+    let mut zulusi_discounted = 0usize;
+    let mut data_skipped: BTreeSet<String> = BTreeSet::new();
+    let mut mismatches = Vec::new();
+    for case in cases {
+        let civ = case["civ"].as_str().expect("civ");
+        let unit = case["unit"].as_str().expect("unit");
+        let pace = case["pace"].as_str().expect("pace");
+        let diff = case["diff"].as_str().expect("diff");
+        let base = num(&case["base"]);
+        let expected = num(&case["out"]);
+        if !production_base_gold(unit).is_some_and(|rust| same_f64(rust, base)) {
+            data_skipped.insert(unit.to_owned());
+            continue;
+        }
+        let table = tables
+            .entry((civ.to_owned(), pace.to_owned(), diff.to_owned()))
+            .or_insert_with(|| production_replace_defs_for_civ(civ, pace, difficulty_of(diff)));
+        let Some(def) = table.get(unit) else {
+            mismatches.push(format!("{unit}: brak w tabeli produkcyjnej"));
+            continue;
+        };
+        compared += 1;
+        if civ == "zulusi" && expected != base {
+            zulusi_discounted += 1;
+        }
+        if !same_f64(def.money_cost, expected) {
+            mismatches.push(format!(
+                "civ={civ} unit={unit} pace={pace} diff={diff}: got={} expected={expected}",
+                def.money_cost
+            ));
+        }
+    }
+    eprintln!(
+        "PARYTET PRODUKCYJNY: porownano {compared} przypadkow, zulusi z rabatem/tempem {zulusi_discounted}; \
+         POMINIETE (rozbieznosc DANYCH units.json, baza Rust != pin): {data_skipped:?}"
+    );
+    assert!(
+        mismatches.is_empty(),
+        "rozbieznosci produkcyjne z pinem ({}): {:?}",
+        mismatches.len(),
+        &mismatches[..mismatches.len().min(10)]
+    );
+    assert!(
+        compared >= 200,
+        "porownane przypadki produkcyjne: {compared}"
+    );
+    assert!(
+        zulusi_discounted >= 20,
+        "przypadki z rabatem i tempem (zulusi): {zulusi_discounted}"
     );
 }

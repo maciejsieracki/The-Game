@@ -69,48 +69,85 @@ fn replace_view(game: &PlayableGame) -> (Option<String>, bool) {
     )
 }
 
-/// P6-UNIT-REPLACE-L3-KOSZT (kryterium 3): e2e komendy gracza na PRODUKCYJNEJ tabeli. Po zamianie
-/// kategoria i HP (hpMax + HP po ratio) musza zgadzac sie z tabela produkcyjna, a Pieniadz = koszt
-/// tabeli (rabat/tempo/trudnosc z stanu gry).
-#[test]
-fn produkcyjna_zamiana_ustawia_kategorie_hp_i_koszt_z_tabeli() {
-    use civ_engine::domain::types::Difficulty;
-    use civ_engine::domain::unit_replace_defs::production_replace_defs_for_civ;
+/// Stan startowy z cywilizacja, tempem kosztu i etykieta trudnosci (pola `StartGameParams`).
+fn game_with(civ: &str, pace: &str, difficulty: &str) -> PlayableGame {
+    let mut params = StartGameParams {
+        seed: 7,
+        ..StartGameParams::default()
+    };
+    params.civ_id = civ.to_owned();
+    params.difficulty = difficulty.to_owned();
+    params.advanced.unit_cost_pace = pace.to_owned();
+    PlayableGame::new(params).expect("scenariusz startowy")
+}
 
-    let mut game = game();
+/// P6-UNIT-REPLACE-L3-KOSZT (kryteria 2 i 3): e2e komendy gracza na PRODUKCYJNEJ tabeli. Wartosci
+/// LITERALNE z wektorow pinu 07d2fbd72 (`productionMoney`, `pinData`), nie z funkcji produkcyjnej:
+/// Procarz, baza 8, cywilizacja `zulusi` (rabat), tempo `normalny`: Normal = 14, Hard = 28
+/// (`Łatwy` = Easy = 14 jak w pinie). Kategoria `procarz` (categoryOf), HP = health 16 (`pinData`).
+#[test]
+fn produkcyjna_zamiana_ustawia_kategorie_hp_i_koszt_z_pinu() {
+    for (label, expected_cost) in [
+        ("Normalny", 14.0),
+        ("Łatwy", 14.0),
+        ("Trudny", 28.0),
+        ("normal", 14.0),
+        ("easy", 14.0),
+        ("hard", 28.0),
+    ] {
+        let mut game = game_with("zulusi", "normalny", label);
+        game.set_human_treasury(1_000.0).expect("skarbiec");
+        game.set_capital_stock(drewno_pool(1_000.0))
+            .expect("stolica");
+        let treasury_before = game.state().economy.treasury;
+
+        game.replace_unit(HUMAN_UNIT, "Procarz", None)
+            .unwrap_or_else(|err| panic!("{label}: zamiana ma sie udac: {err:?}"));
+
+        let economy = &game.state().economy;
+        assert_eq!(
+            treasury_before - economy.treasury,
+            expected_cost,
+            "{label}: Pieniadz = koszt z wektorow pinu"
+        );
+        let state = &economy.units[&HUMAN_UNIT];
+        assert_eq!(
+            state.category.as_deref(),
+            Some("procarz"),
+            "{label}: kategoria po zamianie"
+        );
+        // Web: syncHpMax = !humanTreasury, wiec gracz NIE dostaje hpMax z zamiany (pole zostaje jak bylo).
+        assert_eq!(
+            state.hp_max, None,
+            "{label}: gracz: hpMax nie jest synchronizowany (web syncHpMax=false)"
+        );
+        // Stare HP = maks. starego typu (Wojownik), ratio 1 -> HP = newMaxHp = health 16 z pinu.
+        assert_eq!(
+            state.hp,
+            Some(16.0),
+            "{label}: HP po zamianie = newMaxHp z pinu (bez bonusow stanu, patrz PLAYABLE_UNIT_PROGRESS)"
+        );
+    }
+}
+
+/// Nieznana etykieta trudnosci nie jest zgadywana: komenda zwraca blad, bez zmian w skarbcu.
+#[test]
+fn nieznana_etykieta_trudnosci_odrzuca_zamiane() {
+    let mut game = game_with("zulusi", "normalny", "Koszmar");
     game.set_human_treasury(1_000.0).expect("skarbiec");
     game.set_capital_stock(drewno_pool(1_000.0))
         .expect("stolica");
-    let table = production_replace_defs_for_civ("rzymianie", "niski", Difficulty::Normal);
-    let target = table.get("Procarz").expect("Procarz w tabeli produkcyjnej");
     let treasury_before = game.state().economy.treasury;
 
-    game.replace_unit(HUMAN_UNIT, "Procarz", None)
-        .expect("zamiana produkcyjna ma sie udac");
+    let err = game
+        .replace_unit(HUMAN_UNIT, "Procarz", None)
+        .expect_err("nieznana trudnosc musi byc bledem");
 
-    let economy = &game.state().economy;
     assert_eq!(
-        treasury_before - economy.treasury,
-        target.money_cost,
-        "Pieniadz = koszt produkcyjnej tabeli"
+        err,
+        PlayableError::ReplaceDifficultyUnknown("Koszmar".to_owned())
     );
-    let state = &economy.units[&HUMAN_UNIT];
-    assert_eq!(
-        state.category.as_deref(),
-        Some(target.category.as_str()),
-        "kategoria po zamianie"
-    );
-    // Web: syncHpMax = !humanTreasury, wiec gracz NIE dostaje hpMax z zamiany (pole zostaje jak bylo).
-    assert_eq!(
-        state.hp_max, None,
-        "gracz: hpMax nie jest synchronizowany (web syncHpMax=false)"
-    );
-    // Stare HP = maks. starego typu (Wojownik), ratio 1 -> HP = newMaxHp = bazowe health nowego typu.
-    assert_eq!(
-        state.hp,
-        Some(target.max_hp),
-        "HP po zamianie = newMaxHp (bez bonusow stanu)"
-    );
+    assert_eq!(game.state().economy.treasury, treasury_before);
 }
 
 #[test]

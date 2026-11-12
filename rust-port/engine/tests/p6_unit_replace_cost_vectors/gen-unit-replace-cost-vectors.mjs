@@ -218,10 +218,52 @@ const pinData = units.map((u) => ({
   baseHealth: lib.unitHealth({ ...(u.health !== undefined ? { health: u.health } : {}), ...(u.Health !== undefined ? { Health: u.Health } : {}) }),
 }));
 
+// Sekcja produkcyjna (poprawka po obronie): koszt Pieniadza przez MARKERY CYWILIZACJI z pinu, czyli
+// dokladnie to, co robi web: civBonusyForOwnerId(0) -> civProductionCostBonusyForCivKey(civKey)
+// (production.ts) z macierza z pinu (civ-matrix.ts: loadCivMatrix/resolveRow/civMatrixParam, DATA = gra/data/civ-matrix.json).
+const civMatrixRaw = fs.readFileSync(`${srcDir}/../data/civ-matrix.json`, 'utf8');
+const civMatrixSha256 = createHash('sha256').update(civMatrixRaw, 'utf8').digest('hex');
+const civMatrixSrc = readSrc('game/civ-matrix.ts');
+const prodParts = [
+  `const DATA = ${civMatrixRaw.trim()};`,
+  grabFunction(civMatrixSrc, 'loadCivMatrix'),
+  grabFunction(civMatrixSrc, 'resolveRow'),
+  grabFunction(civMatrixSrc, 'civMatrixParam'),
+  grabFunction(production, 'civProductionCostBonusyForCivKey'),
+];
+const productionTextSha256 = createHash('sha256').update(prodParts.slice(1).join('\n'), 'utf8').digest('hex');
+const prodJs = [
+  jsCode,
+  ...prodParts.map((p, i) => (i === 0 ? p : stripTypeScriptTypes(p, { mode: 'strip' }))),
+].join('\n');
+const prodLib = new Function(`${prodJs}
+return { unitMoneyCost, civProductionCostBonusyForCivKey };`)();
+
+const civKeys = [...JSON.parse(civMatrixRaw).cywilizacje.map((c) => c.ikonaId), ''];
+const prodPaces = ['niski', 'normalny', 'wysoki'];
+const prodDiffs = ['normal', 'easy', 'hard'];
+const productionMoney = [];
+for (const civ of civKeys) {
+  const markers = prodLib.civProductionCostBonusyForCivKey(civ);
+  for (const u of units) {
+    const raw = u['Pieniądz (koszt)'];
+    if (typeof raw !== 'number' || !(raw > 0)) continue;
+    const base = lib.scaleCostByEpoch(raw, u['Epoka']);
+    for (const pace of prodPaces) {
+      for (const diff of prodDiffs) {
+        const out = prodLib.unitMoneyCost(base, markers, pace, 0, diff, u['Jednostka']);
+        productionMoney.push({ civ, unit: u['Jednostka'], base, pace, diff, out });
+      }
+    }
+  }
+}
+
 const doc = {
   meta: {
     pinSha,
     textSha256,
+    productionTextSha256,
+    civMatrixSha256,
     generator: 'gen-unit-replace-cost-vectors.mjs',
     source: 'gra/src/game/{production,unit-cost-tempo,difficulty-cost,building-stock-cost,unit-card-stats,civ-bonuses,unit-building-bonuses,veteran}.ts + main.ts (normFieldVal, unitHealth)',
     note: 'Wykonanie tekstu pinu w node (type-stripping). Markery: zestawy jawne (markerSets).',
@@ -230,6 +272,7 @@ const doc = {
   money,
   hp,
   pinData,
+  productionMoney,
 };
 fs.writeFileSync(outPath, JSON.stringify(doc));
-console.log(`money=${money.length} hp=${hp.length} pinData=${pinData.length}`);
+console.log(`money=${money.length} hp=${hp.length} pinData=${pinData.length} productionMoney=${productionMoney.length}`);

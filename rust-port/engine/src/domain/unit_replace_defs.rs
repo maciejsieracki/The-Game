@@ -232,6 +232,12 @@ pub fn production_replace_defs_for_civ(
     })
 }
 
+/// Koszt bazowy jednostki po skali epoki z derived/unit-gold-costs.json (przed markerami, tempem i
+/// trudnoscia). Sluzy testom parytetu do wykrycia rozbieznosci DANYCH (baza Rust vs pin), `None` = brak.
+pub fn production_base_gold(unit: &str) -> Option<f64> {
+    replace_source().gold_base.get(unit).copied()
+}
+
 /// Web `unitStockCost(lookupUnitDef(newTypeId))`: pola surowcowe z units.json.
 fn stock_source_of(record: &UnitRecord) -> UnitStockCostSource {
     UnitStockCostSource {

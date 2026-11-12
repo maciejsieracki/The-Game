@@ -388,12 +388,13 @@ const PLAYABLE_UNIT_PROGRESS: ReplaceUnitProgress = ReplaceUnitProgress {
 };
 
 /// Etykieta trudnosci stanu (`StartGameParams.difficulty`, domyslnie "Normalny") -> `Difficulty`.
-/// Odpowiada web `_menuDifficulty` (`easy` / `normal` / `hard`). Nieznana etykieta = blad.
+/// Mapa 1:1 z web `main.ts:44372-44374` (`'Łatwy': 'easy'`, `'Normalny': 'normal'`, `'Trudny': 'hard'`)
+/// oraz klucze `_menuDifficulty` (`easy` / `normal` / `hard`). Nieznana etykieta = blad.
 fn replace_difficulty_of(label: &str) -> Result<Difficulty, PlayableError> {
     match label {
         "Normalny" | "normal" => Ok(Difficulty::Normal),
-        "easy" => Ok(Difficulty::Easy),
-        "hard" => Ok(Difficulty::Hard),
+        "Łatwy" | "easy" => Ok(Difficulty::Easy),
+        "Trudny" | "hard" => Ok(Difficulty::Hard),
         other => Err(PlayableError::ReplaceDifficultyUnknown(other.to_owned())),
     }
 }
@@ -1051,6 +1052,32 @@ mod war_pipeline_advance_tests {
             second,
             PlayableError::TurnPhaseQueueIncomplete { .. }
         ));
+    }
+}
+
+#[cfg(test)]
+mod replace_difficulty_label_tests {
+    use super::*;
+
+    /// Kazda etykieta stanu z web (`main.ts:44372-44374`) i klucz `_menuDifficulty` ma wlasne mapowanie.
+    #[test]
+    fn kazda_etykieta_trudnosci_ma_mapowanie() {
+        assert_eq!(replace_difficulty_of("Normalny"), Ok(Difficulty::Normal));
+        assert_eq!(replace_difficulty_of("normal"), Ok(Difficulty::Normal));
+        assert_eq!(replace_difficulty_of("Łatwy"), Ok(Difficulty::Easy));
+        assert_eq!(replace_difficulty_of("easy"), Ok(Difficulty::Easy));
+        assert_eq!(replace_difficulty_of("Trudny"), Ok(Difficulty::Hard));
+        assert_eq!(replace_difficulty_of("hard"), Ok(Difficulty::Hard));
+    }
+
+    #[test]
+    fn nieznana_etykieta_trudnosci_jest_bledem() {
+        assert_eq!(
+            replace_difficulty_of("Koszmar"),
+            Err(PlayableError::ReplaceDifficultyUnknown(
+                "Koszmar".to_owned()
+            ))
+        );
     }
 }
 
