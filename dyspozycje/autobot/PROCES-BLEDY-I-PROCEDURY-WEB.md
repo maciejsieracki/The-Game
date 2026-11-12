@@ -28,3 +28,8 @@ Ten plik jest obowiązkowo czytany przed każdą zmianą statusu tematu, taska a
 - Częściowo: sojusznik dołączający do wojny na wezwanie — brak prośby po ataku na sojusznika (task #296).
 - Do potwierdzenia: machiny oblężnicze budowane tylko podczas oblężenia, 1 na 10, koszt z zasobów (task #297).
 - W toku: przełącznik trafień (`6fef8773c`, FC PASS-WITH-NOTES, do integracji po zwolnieniu miejsca na dysku).
+
+## Korekta 2026-11-12 (po weryfikacji)
+
+- **Sojusznik wzywa do wojny (task #296): WDROŻONE.** Potwierdzone w kodzie i przez właściciela. Commit `ab0ec32f1` (feat: persist alliance war calls, 11.11) i test `8ee813d7b` są w `origin/main`. Mechanizm: `enqueueAllianceWarCall` (main.ts ~21419) wstawia prośbę do `pendingDiplomacyInbox` z `cmdType: alliance_war_call`; `resolveAllianceWarCall` (~21445) obsługuje Dołącz/Odrzuć; `allianceWarCallHistory` zapisuje joined/refused/expired. Dispatch `eb733306c` został zrealizowany tym commitem, nie osobnym workflow. Błąd procesu: uznałem to za niewdrożone, bo szukałem po słowach „dołącz do wojny” i „wezwanie”, a kod używa nazw `alliance_war_call` i `enqueueAllianceWarCall`. Poprawka: szukać po identyfikatorach z dispatchu i po `git log -S` nad nazwą funkcji, nie po tekście UI.
+- **Machiny oblężnicze (task #297): NIE POTWIERDZONE.** Istnieje kolejka budowy (`siegeMachines.ts`, merge `c37106ed0`), ale brak dowodu na reguły „tylko podczas oblężenia, 1 na 10, koszt z zasobów”.
