@@ -176,9 +176,21 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "siege_capital_plunder::run_capital_capture_plunder (logika + wektory p6_siege_capital_plunder; wolajacy niepodpiety - W8)",
         ),
     ),
-    // BRAK (Q5): zdarzenie "zdobycie miasta" (`cityCaptureEventDetails`, mirror wierszy raportu, UI panelu wydarzen)
-    // nie ma odpowiednika w rust-port/engine/src (grep 2026-11-12 pusty); wyglad UI/event store poza domena.
-    ("recordCityCaptureEvent", EffectStatus::Missing),
+    // PORTED (Q7): event store zdarzenia "zdobycie miasta" (`cityCaptureEventDetails` + karta `capture-*`) jako
+    // `siege_capture_events::CaptureEventStore::record_city_capture_event`. Wektory: tests/p6_siege_capture_events.rs.
+    // Granice jawne: `eliminationSpectacleByLabel` (spektakl) i `refreshD1bHud` (UI, licznik) - wejscia/efekty wolajacego.
+    // Pole `spectacle` NIE jest portowane (wektory maja mape pusta); zaleznosc W8. Wolajacy (wiring w
+    // apply_transfer_with_effects, zalezny od W8) NIE jest jeszcze podpiety.
+    (
+        "recordCityCaptureEvent",
+        EffectStatus::Ported(
+            "siege_capture_events::CaptureEventStore::record_city_capture_event (logika store bez pola spectacle - W8; wektory p6_siege_capture_events; wolajacy niepodpiety - W8)",
+        ),
+    ),
+    // UWAGA (Q7 r2): `recordCivElimEvent` NIE jest w tej tabeli. W pinie 07d2fbd72 wolany jest poza galezia Transfer
+    // (gra/src/main.ts:35336 - wchloniecie; :35767 - podboj ofiary-AI), a zakres galezi to 17646-17893. Port karty
+    // `elim-cs-*` istnieje jako `siege_capture_events::CaptureEventStore::record_civ_elim_event` (wektory p6_siege_capture_events),
+    // wolajacy poza galezia Transfer - zalezny od W8.
     ("showHintMessage", EffectStatus::Ui),
     // Pomocniki raportowe/UI wolane w galezi Transfer (pin main.ts, zakres 17646-17893: setSelectionHex,
     // mocLabel, buildCityCaptureReportRows, capturePopLossReportRow, captureReportOneLine, civLabelForOwner).
@@ -285,9 +297,9 @@ pub struct TransferExtras<'a> {
 /// Tryb LEGACY (bez [`TransferExtras`]): NIE wykonuje `applyCapturePopulationLoss` (ta sciezka nie jest objeta wektorami
 /// generatora); `sanitizeProductionQueue` wykonuje z bramka przepuszczajaca. Do produkcji uzywac
 /// [`apply_transfer_with_effects`] z realna bramka cudow.
-/// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem pozostalych skutkow BRAK z [`TRANSFER_EFFECTS`]
-/// (`beginWonderTransferWatch`/`settleWonderTransfer`, `noteCityCapture`, `syncCityGarnizon`,
-/// `runCapitalCapturePlunder`, `recordCityCaptureEvent`, `applyLiveSafeRationForCity`, ...). Prawo po przejęciu
+/// NIE PODPINAC wolajacego (W8 r3) przed wykonaniem pozostalych skutkow z [`TRANSFER_EFFECTS`]: BRAK
+/// (`beginWonderTransferWatch`/`settleWonderTransfer`) oraz Ported-niepodpiete (`runCapitalCapturePlunder`,
+/// `recordCityCaptureEvent`, ...). Prawo po przejęciu
 /// i wojna z rebeliantów (Q4) sa dostepne przez [`TransferExtras::post_capture_law`].
 pub fn apply_transfer(
     city: &mut TransferCity,

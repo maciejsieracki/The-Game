@@ -1,0 +1,3154 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "source": "gra/src/main.ts: recordCivElimEvent, recordCityCaptureEvent, captureReportOneLine, captureReportShortLine, mirrorCaptureReportRowsForVictim; gra/src/game/retained-side-panel-events.ts: trimSidePanelEventLog",
+  "boundary": "eliminationSpectacleByLabel pusta: pole spectacle nieobecne we wszystkich wektorach",
+  "scenarios": [
+    {
+      "name": "player-captures-ai-city",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 3
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": 2,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "capture-3-c1-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Rzym",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-3-c1-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Rzym",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai-captures-player-city-mirrors-rows",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 4
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "p1",
+              "cityName": "Ateny",
+              "oldOwner": 0,
+              "newOwner": 3,
+              "rows": [
+                {
+                  "label": "Złoto ze skarbca",
+                  "value": "+1234",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Nauka",
+                  "value": "+16",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Budynki",
+                  "value": "+2",
+                  "tone": "info",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Lup: brak",
+                  "value": "brak",
+                  "tone": "info"
+                }
+              ],
+              "victimLabel": "Gracz",
+              "captorLabel": "Kartagina",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "capture-4-p1-0-3",
+                "icon": "🚩",
+                "title": "Utracono miasto: Ateny",
+                "subtitle": "Przejęte przez Kartagina — Złoto ze skarbca: −1234 · Nauka: −16",
+                "kind": "enemy",
+                "negative": true,
+                "turnCreated": 4
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-4-p1-0-3": {
+                "title": "Miasto utracone",
+                "cityName": "Ateny",
+                "subtitle": "Przejęte przez Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto ze skarbca",
+                    "value": "−1234",
+                    "tone": "loss",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Nauka",
+                    "value": "−16",
+                    "tone": "loss",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Budynki",
+                    "value": "+2",
+                    "tone": "info",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Lup: brak",
+                    "value": "brak",
+                    "tone": "info"
+                  }
+                ],
+                "rowsTitle": "Bilans straty"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "dedup-same-turn-same-pair-and-reverse-pair",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 5
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": 2,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "capture-5-c1-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Rzym",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 5
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-5-c1-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Rzym",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": 2,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto ze skarbca",
+                  "value": "+1234",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Nauka",
+                  "value": "+16",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Budynki",
+                  "value": "+2",
+                  "tone": "info",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Lup: brak",
+                  "value": "brak",
+                  "tone": "info"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "capture-5-c1-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Rzym",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 5
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-5-c1-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Rzym",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": 0,
+              "newOwner": 2,
+              "rows": [
+                {
+                  "label": "Złoto ze skarbca",
+                  "value": "+1234",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Nauka",
+                  "value": "+16",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Budynki",
+                  "value": "+2",
+                  "tone": "info",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Lup: brak",
+                  "value": "brak",
+                  "tone": "info"
+                }
+              ],
+              "victimLabel": "Gracz",
+              "captorLabel": "Kartagina",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 2,
+            "warEventLog": [
+              {
+                "id": "capture-5-c1-0-2",
+                "icon": "🚩",
+                "title": "Utracono miasto: Rzym",
+                "subtitle": "Przejęte przez Kartagina — Złoto ze skarbca: −1234 · Nauka: −16",
+                "kind": "enemy",
+                "negative": true,
+                "turnCreated": 5
+              },
+              {
+                "id": "capture-5-c1-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Rzym",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 5
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-5-c1-0-2": {
+                "title": "Miasto utracone",
+                "cityName": "Rzym",
+                "subtitle": "Przejęte przez Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto ze skarbca",
+                    "value": "−1234",
+                    "tone": "loss",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Nauka",
+                    "value": "−16",
+                    "tone": "loss",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Budynki",
+                    "value": "+2",
+                    "tone": "info",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Lup: brak",
+                    "value": "brak",
+                    "tone": "info"
+                  }
+                ],
+                "rowsTitle": "Bilans straty"
+              },
+              "capture-5-c1-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Rzym",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai-to-ai-capture-is-ignored",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 6
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": 2,
+              "newOwner": 3,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c1",
+              "cityName": "Rzym",
+              "oldOwner": -1,
+              "newOwner": 2,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "capture-with-elimination-label",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 7
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c9",
+              "cityName": "Kartagina-Stolica",
+              "oldOwner": 3,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto ze skarbca",
+                  "value": "+1234",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Nauka",
+                  "value": "+16",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Budynki",
+                  "value": "+2",
+                  "tone": "info",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Lup: brak",
+                  "value": "brak",
+                  "tone": "info"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": "Kartagina"
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "capture-7-c9-3-0",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Złoto ze skarbca: +1234 · Nauka: +16",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-7-c9-3-0": {
+                "title": "ELIMINACJA!",
+                "cityName": "Kartagina-Stolica",
+                "subtitle": "Kartagina — ostatnie miasto przejęte, cywilizacja wyeliminowana",
+                "rows": [
+                  {
+                    "label": "Złoto ze skarbca",
+                    "value": "+1234",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Nauka",
+                    "value": "+16",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Budynki",
+                    "value": "+2",
+                    "tone": "info",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Lup: brak",
+                    "value": "brak",
+                    "tone": "info"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c10",
+              "cityName": "Pusta",
+              "oldOwner": 4,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+5",
+                  "tone": "gain"
+                }
+              ],
+              "victimLabel": "Ateny",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": ""
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 2,
+            "warEventLog": [
+              {
+                "id": "capture-7-c10-4-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Pusta",
+                "subtitle": "",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              },
+              {
+                "id": "capture-7-c9-3-0",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Złoto ze skarbca: +1234 · Nauka: +16",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-7-c10-4-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Pusta",
+                "subtitle": "Odebrane: Ateny",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+5",
+                    "tone": "gain"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-7-c9-3-0": {
+                "title": "ELIMINACJA!",
+                "cityName": "Kartagina-Stolica",
+                "subtitle": "Kartagina — ostatnie miasto przejęte, cywilizacja wyeliminowana",
+                "rows": [
+                  {
+                    "label": "Złoto ze skarbca",
+                    "value": "+1234",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Nauka",
+                    "value": "+16",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Budynki",
+                    "value": "+2",
+                    "tone": "info",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Lup: brak",
+                    "value": "brak",
+                    "tone": "info"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "c11",
+              "cityName": "Bez lupu",
+              "oldOwner": 4,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                }
+              ],
+              "victimLabel": "Ateny",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 3,
+            "warEventLog": [
+              {
+                "id": "capture-7-c11-4-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Bez lupu",
+                "subtitle": "",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              },
+              {
+                "id": "capture-7-c10-4-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: Pusta",
+                "subtitle": "",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              },
+              {
+                "id": "capture-7-c9-3-0",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Złoto ze skarbca: +1234 · Nauka: +16",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 7
+              }
+            ],
+            "civElim": {},
+            "city": {
+              "capture-7-c10-4-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Pusta",
+                "subtitle": "Odebrane: Ateny",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+5",
+                    "tone": "gain"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-7-c11-4-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "Bez lupu",
+                "subtitle": "Odebrane: Ateny",
+                "rows": [
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-7-c9-3-0": {
+                "title": "ELIMINACJA!",
+                "cityName": "Kartagina-Stolica",
+                "subtitle": "Kartagina — ostatnie miasto przejęte, cywilizacja wyeliminowana",
+                "rows": [
+                  {
+                    "label": "Złoto ze skarbca",
+                    "value": "+1234",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Nauka",
+                    "value": "+16",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Budynki",
+                    "value": "+2",
+                    "tone": "info",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Lup: brak",
+                    "value": "brak",
+                    "tone": "info"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "civ-elim-default-and-podboj-and-duplicate-id",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 8
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 3,
+            "civLabel": "Kartagina",
+            "details": "Wchłonięta przez dyplomację"
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "elim-cs-8-3",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              }
+            ],
+            "civElim": {
+              "elim-cs-8-3": {
+                "civLabel": "Kartagina",
+                "details": "Wchłonięta przez dyplomację",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 4,
+            "civLabel": "Ateny",
+            "details": "Zdobyta",
+            "cause": "podboj"
+          },
+          "snapshot": {
+            "hudRefreshes": 2,
+            "warEventLog": [
+              {
+                "id": "elim-cs-8-4",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Ateny",
+                "subtitle": "Podbita — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              },
+              {
+                "id": "elim-cs-8-3",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              }
+            ],
+            "civElim": {
+              "elim-cs-8-3": {
+                "civLabel": "Kartagina",
+                "details": "Wchłonięta przez dyplomację",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-8-4": {
+                "civLabel": "Ateny",
+                "details": "Zdobyta",
+                "cause": "podboj"
+              }
+            },
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 3,
+            "civLabel": "Kartagina",
+            "details": "Druga wersja",
+            "cause": "dyplomacja"
+          },
+          "snapshot": {
+            "hudRefreshes": 3,
+            "warEventLog": [
+              {
+                "id": "elim-cs-8-3",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              },
+              {
+                "id": "elim-cs-8-4",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Ateny",
+                "subtitle": "Podbita — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              },
+              {
+                "id": "elim-cs-8-3",
+                "icon": "🏴",
+                "title": "ELIMINACJA: Kartagina",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 8
+              }
+            ],
+            "civElim": {
+              "elim-cs-8-3": {
+                "civLabel": "Kartagina",
+                "details": "Druga wersja",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-8-4": {
+                "civLabel": "Ateny",
+                "details": "Zdobyta",
+                "cause": "podboj"
+              }
+            },
+            "city": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "trim-evicts-details-beyond-eight-entries",
+      "steps": [
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 1
+          },
+          "snapshot": {
+            "hudRefreshes": 0,
+            "warEventLog": [],
+            "civElim": {},
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 1,
+            "civLabel": "A",
+            "details": "a"
+          },
+          "snapshot": {
+            "hudRefreshes": 1,
+            "warEventLog": [
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {}
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "x1",
+              "cityName": "X1",
+              "oldOwner": 1,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 2,
+            "warEventLog": [
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 2
+          },
+          "snapshot": {
+            "hudRefreshes": 2,
+            "warEventLog": [
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 2,
+            "civLabel": "B",
+            "details": "b"
+          },
+          "snapshot": {
+            "hudRefreshes": 3,
+            "warEventLog": [
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "x2",
+              "cityName": "X2",
+              "oldOwner": 2,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 4,
+            "warEventLog": [
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 3
+          },
+          "snapshot": {
+            "hudRefreshes": 4,
+            "warEventLog": [
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 5,
+            "civLabel": "C",
+            "details": "c"
+          },
+          "snapshot": {
+            "hudRefreshes": 5,
+            "warEventLog": [
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "x3",
+              "cityName": "X3",
+              "oldOwner": 5,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 6,
+            "warEventLog": [
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 4
+          },
+          "snapshot": {
+            "hudRefreshes": 6,
+            "warEventLog": [
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 6,
+            "civLabel": "D",
+            "details": "d"
+          },
+          "snapshot": {
+            "hudRefreshes": 7,
+            "warEventLog": [
+              {
+                "id": "elim-cs-4-6",
+                "icon": "🏴",
+                "title": "ELIMINACJA: D",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 4
+              },
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-4-6": {
+                "civLabel": "D",
+                "details": "d",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "x4",
+              "cityName": "X4",
+              "oldOwner": 6,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 8,
+            "warEventLog": [
+              {
+                "id": "capture-4-x4-6-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X4",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 4
+              },
+              {
+                "id": "elim-cs-4-6",
+                "icon": "🏴",
+                "title": "ELIMINACJA: D",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 4
+              },
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-4-6": {
+                "civLabel": "D",
+                "details": "d",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-4-x4-6-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X4",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "setTurn",
+            "turn": 5
+          },
+          "snapshot": {
+            "hudRefreshes": 8,
+            "warEventLog": [
+              {
+                "id": "capture-4-x4-6-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X4",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 4
+              },
+              {
+                "id": "elim-cs-4-6",
+                "icon": "🏴",
+                "title": "ELIMINACJA: D",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 4
+              },
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              },
+              {
+                "id": "elim-cs-1-1",
+                "icon": "🏴",
+                "title": "ELIMINACJA: A",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-1-1": {
+                "civLabel": "A",
+                "details": "a",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-4-6": {
+                "civLabel": "D",
+                "details": "d",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-4-x4-6-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X4",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "civElim",
+            "csOwnerId": 7,
+            "civLabel": "E",
+            "details": "e"
+          },
+          "snapshot": {
+            "hudRefreshes": 9,
+            "warEventLog": [
+              {
+                "id": "elim-cs-5-7",
+                "icon": "🏴",
+                "title": "ELIMINACJA: E",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 5
+              },
+              {
+                "id": "capture-4-x4-6-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X4",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 4
+              },
+              {
+                "id": "elim-cs-4-6",
+                "icon": "🏴",
+                "title": "ELIMINACJA: D",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 4
+              },
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              },
+              {
+                "id": "capture-1-x1-1-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X1",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 1
+              }
+            ],
+            "civElim": {
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-4-6": {
+                "civLabel": "D",
+                "details": "d",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-5-7": {
+                "civLabel": "E",
+                "details": "e",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-1-x1-1-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X1",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-4-x4-6-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X4",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        },
+        {
+          "step": {
+            "op": "cityCapture",
+            "args": {
+              "cityId": "x5",
+              "cityName": "X5",
+              "oldOwner": 7,
+              "newOwner": 0,
+              "rows": [
+                {
+                  "label": "Złoto",
+                  "value": "+120",
+                  "tone": "gain",
+                  "group": "lup"
+                },
+                {
+                  "label": "Ludność",
+                  "value": "+1",
+                  "tone": "gain",
+                  "group": "przejete"
+                },
+                {
+                  "label": "Pula pracy",
+                  "value": "−30",
+                  "tone": "loss",
+                  "group": "strata"
+                }
+              ],
+              "victimLabel": "Kartagina",
+              "captorLabel": "Gracz",
+              "eliminatedCivLabel": null
+            }
+          },
+          "snapshot": {
+            "hudRefreshes": 10,
+            "warEventLog": [
+              {
+                "id": "capture-5-x5-7-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X5",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 5
+              },
+              {
+                "id": "elim-cs-5-7",
+                "icon": "🏴",
+                "title": "ELIMINACJA: E",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 5
+              },
+              {
+                "id": "capture-4-x4-6-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X4",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 4
+              },
+              {
+                "id": "elim-cs-4-6",
+                "icon": "🏴",
+                "title": "ELIMINACJA: D",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 4
+              },
+              {
+                "id": "capture-3-x3-5-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X3",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 3
+              },
+              {
+                "id": "elim-cs-3-5",
+                "icon": "🏴",
+                "title": "ELIMINACJA: C",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 3
+              },
+              {
+                "id": "capture-2-x2-2-0",
+                "icon": "🏰",
+                "title": "Zdobyto miasto: X2",
+                "subtitle": "Złoto: +120",
+                "kind": "city",
+                "negative": false,
+                "turnCreated": 2
+              },
+              {
+                "id": "elim-cs-2-2",
+                "icon": "🏴",
+                "title": "ELIMINACJA: B",
+                "subtitle": "Wchłonięta dyplomatycznie — kliknij po szczegóły",
+                "kind": "diplo",
+                "negative": true,
+                "turnCreated": 2
+              }
+            ],
+            "civElim": {
+              "elim-cs-2-2": {
+                "civLabel": "B",
+                "details": "b",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-3-5": {
+                "civLabel": "C",
+                "details": "c",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-4-6": {
+                "civLabel": "D",
+                "details": "d",
+                "cause": "dyplomacja"
+              },
+              "elim-cs-5-7": {
+                "civLabel": "E",
+                "details": "e",
+                "cause": "dyplomacja"
+              }
+            },
+            "city": {
+              "capture-2-x2-2-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X2",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-3-x3-5-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X3",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-4-x4-6-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X4",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              },
+              "capture-5-x5-7-0": {
+                "title": "Miasto zdobyte",
+                "cityName": "X5",
+                "subtitle": "Odebrane: Kartagina",
+                "rows": [
+                  {
+                    "label": "Złoto",
+                    "value": "+120",
+                    "tone": "gain",
+                    "group": "lup"
+                  },
+                  {
+                    "label": "Ludność",
+                    "value": "+1",
+                    "tone": "gain",
+                    "group": "przejete"
+                  },
+                  {
+                    "label": "Pula pracy",
+                    "value": "−30",
+                    "tone": "loss",
+                    "group": "strata"
+                  }
+                ],
+                "rowsTitle": "Bilans zdobycia"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
