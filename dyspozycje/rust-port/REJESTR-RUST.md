@@ -274,3 +274,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięte 7 worktree (`wf_90998bc1-f29-2..4`, `wf_0c57af11-d37-1..4`); HEAD-y w `refs/keep/wt-*`.
 - **Aktywne Workflow (3):** R7K7C-WIRING-Q2 (`wf_4e654117-8b1`), ELIMINACJA-WIRING-Q1 (`wf_2ace4e9c-1d5`), ZDOBYCIE-WIRING-Q1 (`wf_99c4f54b-b1d`). Slot po #103/#104 wolny do czasu progu dysku.
 - **Pojedynczy plik** `.claude/pin-main.ts.txt` (kopia `gra/src/main.ts`) przeniesiony do scratchpada, nie commitowany.
+
+## Przebieg (po 20:53): ELIMINACJA-WIRING-Q1 (#114) BLOCK
+- **R-RUSTPORT-P6-ELIMINACJA-WIRING-Q1 (#114): BLOCK operatora (kryterium 1 niespełnione), FC PASS-WITH-NOTES na jakość pracy, status tematu BLOCK.** Brak produkcyjnego wołającego `eliminate_owner`: wołany tylko z `tests/p6_eliminacja.rs`. Pin wywołuje `eliminateOwner` w `annexCityStateToOwner` (`main.ts:35300`) i w eliminacji `oldOwner` (`main.ts:35769`). Wpięcie wymaga zmiany sygnatury `run_capital_capture_plunder` (łamie `tests/p6_siege_capital_plunder.rs`, poza allowlistą) albo nowego pola w `PlayableState` (zbiór wyeliminowanych jest dziś parametrem).
+  - **Decyzja orkiestratora (techniczna):** #114 łączę z #115 (ZDOBYCIE-WIRING-Q1, wciąż w toku) w jeden temat r2 po jego FC, z poszerzoną allowlistą: `siege_capital_plunder.rs`, `tests/p6_siege_capital_plunder.rs`, pole wyeliminowanych w `PlayableState`. Nie uruchamiam tego teraz, bo wymaga wyniku #115.
+  - Testy operatora: `p6_eliminacja` 3/3 zielone, `fmt`, `clippy -D warnings`, `cargo test --lib` (99 passed) EXIT 0 — dowód, że gałąź jest czysta, nie że wiring działa.
+  - Gałąź z pracą operatora: `0b2fde2c9` (lokalnie, nie wypchnięta). Zabezpieczę przy sprzątaniu.
