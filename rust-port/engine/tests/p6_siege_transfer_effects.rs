@@ -228,6 +228,7 @@ fn niespojny_pop_loss_jest_wykrywany() {
                 capture_pop_loss: CAPTURE_POP_LOSS_PIN,
             }),
             wonder_gate_ok: None,
+            post_capture_law: None,
         },
     );
 }

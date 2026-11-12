@@ -35,7 +35,8 @@
 //! | siegeDefenderUnits (siege-starvation.ts)       | `siege_starvation::siege_defender_units` (inny zbior: nie splice) | ISTNIEJE |
 //! | applyCapturePopulationLoss                     | brak nazwy w `src`                                          | BRAK |
 //! | beginWonderTransferWatch / settleWonderTransfer| brak nazwy w `src`                                          | BRAK |
-//! | noteCityCapture, runCapitalCapturePlunder      | brak nazwy w `src`                                          | BRAK |
+//! | noteCityCapture                                | `siege_transfer_q5::note_city_capture`                      | ISTNIEJE (Q5) |
+//! | runCapitalCapturePlunder                       | `siege_capital_plunder::run_capital_capture_plunder` (Q6)   | PORT |
 //! | recordCityCaptureEvent, capturePopLossReportRow| brak nazwy w `src`                                          | BRAK |
 //! | applyLiveSafeRationForCity                     | brak nazwy w `src`                                          | BRAK |
 //! | foundedByOwner (pole miasta, ustawiane warunkowo) | brak logiki w `src` tego tematu                          | BRAK |
