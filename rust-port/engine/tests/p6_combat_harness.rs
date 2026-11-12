@@ -226,8 +226,15 @@ struct Counts {
     cases_routed: u64,
 }
 
-/// Tolerancja sasiedztwa granicy: roll*100 w odleglosci <= 1e-9 od hitPct (sasiedzi ULP przy hitPct ~ 15..75).
-const BOUNDARY_EPS: f64 = 1e-9;
+/// Sasiedztwo ULP granicy: `roll_pct` jest dokladnie nastepnym double pod `hit_pct` (hit_pct skonczony, > 0).
+fn is_ulp_below(roll_pct: f64, hit_pct: f64) -> bool {
+    hit_pct.is_finite() && hit_pct > 0.0 && roll_pct == f64::from_bits(hit_pct.to_bits() - 1)
+}
+
+/// Sasiedztwo ULP granicy: `roll_pct` jest dokladnie nastepnym double nad `hit_pct` (hit_pct skonczony, > 0).
+fn is_ulp_above(roll_pct: f64, hit_pct: f64) -> bool {
+    hit_pct.is_finite() && hit_pct > 0.0 && roll_pct == f64::from_bits(hit_pct.to_bits() + 1)
+}
 
 /// Zero ujemne w zapisanym polu zdarzenia (napis "-0" wg konwencji wektorow).
 fn is_neg_zero(v: &Value) -> bool {
@@ -282,15 +289,9 @@ fn recount(cases: &[Value]) -> Counts {
             let roll_pct = num(&draws[k]) * 100.0;
             if roll_pct == hit_pct {
                 c.shots_roll_eq += 1;
-            } else if hit_pct.is_finite()
-                && roll_pct < hit_pct
-                && roll_pct >= hit_pct - BOUNDARY_EPS
-            {
+            } else if is_ulp_below(roll_pct, hit_pct) {
                 c.shots_roll_just_below += 1;
-            } else if hit_pct.is_finite()
-                && roll_pct > hit_pct
-                && roll_pct <= hit_pct + BOUNDARY_EPS
-            {
+            } else if is_ulp_above(roll_pct, hit_pct) {
                 c.shots_roll_just_above += 1;
             }
         }

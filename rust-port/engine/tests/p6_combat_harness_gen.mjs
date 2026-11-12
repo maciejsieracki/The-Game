@@ -267,6 +267,11 @@ const applyBoundary = (c, i) => {
 // Zdarzenie z zerem w targetHp (R2): HP obroncy ustawione tak, by pierwszy strzal ATK (trafienie wymuszone
 // rzutem 0) doprowadzil HP dokladnie do zera (`hpDef - dmg === 0`, wynik +0 w IEEE). Obrazenia strzalu nie
 // zaleza od HP celu, wiec pierwszy przebieg z rng=0 podaje wartosc, ktora przypadek potem uzywa.
+// Sasiad ULP double: x +/- 1 w reprezentacji bitowej (dla x > 0 skonczonego).
+const f64Buf = new Float64Array(1);
+const u64Buf = new BigUint64Array(f64Buf.buffer);
+const ulpStep = (x, d) => { f64Buf[0] = x; u64Buf[0] = u64Buf[0] + d; return f64Buf[0]; };
+
 const applyZeroHp = (c, i) => {
   const probe = parseShots(runLoop(mkInput(c), () => 0, TW, params.ranged_damage_mult).log, i);
   const first = probe[0];
@@ -340,9 +345,9 @@ const counts = {
     .filter(([s, d]) => d * 100 === parseNum(s.hitPct)).length,
   // R2: sasiedzi ULP wokol granicy (roll*100 tuz ponizej / tuz powyzej hitPct) oraz zero w targetHp (+0).
   shotsRollJustBelow: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
-    .filter(([s, d]) => Number.isFinite(parseNum(s.hitPct)) && d * 100 < parseNum(s.hitPct) && d * 100 >= parseNum(s.hitPct) - 1e-9).length,
+    .filter(([s, d]) => { const h = parseNum(s.hitPct); return Number.isFinite(h) && h > 0 && d * 100 === ulpStep(h, -1n); }).length,
   shotsRollJustAbove: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
-    .filter(([s, d]) => Number.isFinite(parseNum(s.hitPct)) && d * 100 > parseNum(s.hitPct) && d * 100 <= parseNum(s.hitPct) + 1e-9).length,
+    .filter(([s, d]) => { const h = parseNum(s.hitPct); return Number.isFinite(h) && h > 0 && d * 100 === ulpStep(h, 1n); }).length,
   shotsTargetHpZero: allShots.filter((s) => s.targetHp === 0).length,
   shotsNegZeroAnyField: allShots.filter((s) => [s.hitPct, s.damage, s.targetHp].includes('-0')).length,
 };
