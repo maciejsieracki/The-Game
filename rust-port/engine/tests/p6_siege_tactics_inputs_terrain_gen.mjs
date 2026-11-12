@@ -1,6 +1,7 @@
 // P6 SIEGE-TAKTYKA K5i-2a1 (R-RUSTPORT-P6-SIEGE-TAKTYKA-K5I2A1-Q1): generator wektorow funkcji terenowych
 // WYKONUJACY tekst pinu (pin 07d2fbd72). Uruchomienie: node rust-port/engine/tests/p6_siege_tactics_inputs_terrain_gen.mjs (Node 22)
-// Wynik -> p6_siege_tactics_inputs_terrain_vectors/vectors.json oraz tabela NFD (stdout z flaga --table, patrz nizej).
+// Wynik -> p6_siege_tactics_inputs_terrain_vectors/vectors.json oraz tabela NFD (stdout z flaga --table, patrz nizej)
+// oraz tabela rang ccc (stdout z flaga --ccc; wyprowadzona z normalize('NFD'), bez zaleznosci od danych Unicode).
 // Ziarno PRNG 2211 (mulberry32).
 //
 // Wykonywane zakresy linii pinu (1-based, wlacznie), po zdjeciu typow TS (module.stripTypeScriptTypes):
@@ -82,6 +83,52 @@ if (process.argv.includes('--table')) {
   const rows = [];
   for (let i = 0; i < items.length; i += 6) rows.push('    ' + items.slice(i, i + 6).join(', ') + ',');
   process.stdout.write(rows.join('\n') + '\n');
+  process.exit(0);
+}
+
+// ---- ranga klasy ccc (do wklejenia w module Rust): --ccc ----
+// Node nie eksponuje ccc wprost. Wyprowadzamy porzadek ccc z zachowania normalize('NFD'):
+//  * x jest znakiem niestartowym (ccc>0) <=> przestawia sie z sentinelem U+0345 (ccc 240) albo z U+0334 (ccc 1);
+//  * dla niestartowych x,y: "a"+x+y -> "a"+y+x <=> ccc(x) > ccc(y) > 0.
+// Ranga = numer klasy ccc w rosnacym porzadku (ta sama ccc => ta sama ranga). Tylko kolejnosc jest potrzebna.
+// Dotyczy wylacznie punktow nierozkladalnych (NFD(x) === x); rozkladalne daja wyniki tabeli NFD.
+const nfdOf = (s) => s.normalize('NFD');
+const CCC_S240 = 'ͅ';
+const CCC_S1 = '̴';
+const cccSwapped = (x, y) => x !== y && nfdOf('a' + x + y) === 'a' + y + x;
+const cccCmp = (x, y) => (cccSwapped(x, y) ? 1 : cccSwapped(y, x) ? -1 : 0);
+// Niestartowe (ccc>0) punkty nierozkladalne, posortowane wg ccc; rank = numer klasy ccc.
+function cccRanking() {
+  const nonStarters = [];
+  for (let cp = 0; cp <= 0x10ffff; cp++) {
+    if (cp >= 0xd800 && cp <= 0xdfff) continue;
+    const s = String.fromCodePoint(cp);
+    if (nfdOf(s) !== s) continue;
+    if (nfdOf('a' + CCC_S240 + s) === 'a' + s + CCC_S240 || nfdOf('a' + s + CCC_S1) === 'a' + CCC_S1 + s) nonStarters.push(s);
+  }
+  nonStarters.sort(cccCmp);
+  const rank = new Map();
+  let r = 0;
+  let prev = null;
+  for (const s of nonStarters) {
+    if (prev === null || cccCmp(prev, s) !== 0) r++;
+    rank.set(s, r);
+    prev = s;
+  }
+  return { rank, classes: r };
+}
+
+if (process.argv.includes('--ccc')) {
+  const { rank, classes: r } = cccRanking();
+  if (r > 255) throw new Error(`ranga ccc > 255: ${r}`);
+  const items = [...rank.entries()]
+    .map(([s, k]) => [s.codePointAt(0), k])
+    .sort((a, b) => a[0] - b[0])
+    .map(([cp, k]) => `(0x${cp.toString(16)}, ${k})`);
+  const rows = [];
+  for (let i = 0; i < items.length; i += 8) rows.push('    ' + items.slice(i, i + 8).join(', ') + ',');
+  process.stdout.write(rows.join('\n') + '\n');
+  console.error(`ccc: punktow=${items.length} klas=${r}`);
   process.exit(0);
 }
 
@@ -262,6 +309,33 @@ for (const k of ['def_early', 'def_no_entry', 'def_las_bonus', 'def_las_plain', 
 }
 console.error('pokrycie galezi:', JSON.stringify(counts));
 
+// ---- kolejnosc ccc (K-NFD-CCC): wszystkie pary niestartowych + sekwencje mieszane ----
+// Pary: "a"+x+y dla KAZDEJ pary (x,y) z listy niestartowych (ccc>0) — hash wyjsc normTerrain (kolejnosc x,y jak nizej).
+// Sekwencje: losowe ciagi znakow bazowych i znakow laczacych w roznej kolejnosci (PRNG dopisany NA KONCU, bez zmiany wczesniejszych wektorow).
+const cccRanked = cccRanking();
+const cccCps = [...cccRanked.rank.keys()].map((s) => s.codePointAt(0)).sort((a, b) => a - b);
+const cccStr = cccCps.map((cp) => String.fromCodePoint(cp));
+const pairOuts = [];
+for (const x of cccStr) for (const y of cccStr) pairOuts.push(fns.normTerrain('a' + x + y));
+const cccPairFnv = fnv64(pairOuts);
+const BASES = ['a', 'ą', 'ó', 'ł', 'L', 'e', 'o', 'གཱི', 'ཀ', 'ཱ', 'כ', 'ب', '가', 'ß', 'Ж', 'x'];
+const seq = [];
+const seqSeen = new Set();
+while (seq.length < 2200) {
+  const base = pick(BASES);
+  const n = int(1, 6);
+  let s = base;
+  for (let i = 0; i < n; i++) {
+    const cp = rnd() < 0.2 ? pick(BASES) : pick(cccStr);
+    s += cp;
+  }
+  if (rnd() < 0.3) s += pick(BASES) + pick(cccStr) + pick(cccStr);
+  if (seqSeen.has(s)) continue;
+  seqSeen.add(s);
+  seq.push({ s, out: fns.normTerrain(s) });
+}
+console.error(`ccc: punktow=${cccStr.length} pary=${pairOuts.length} seq=${seq.length}`);
+
 const out = {
   pin: PIN,
   fragmentSha256: digest,
@@ -269,6 +343,10 @@ const out = {
   note: 'Wektory generowane wykonaniem tekstu pinu (combat.ts, city-defense.ts); combatParamsRaw.river_attack_mult = wejscie wektora.',
   normAllFnv,
   normAllCount: allOut.length,
+  cccCps,
+  cccPairCount: pairOuts.length,
+  cccPairFnv,
+  seq,
   counts,
   norm: normCases,
   bonus: bonusCases,
