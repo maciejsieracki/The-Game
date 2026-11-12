@@ -290,9 +290,12 @@ console.log('-- 4. złoto PŁYNIE ilościowo przez szlak (PYTANIE-84-U3=A) -- we
   ok(zlotoFlows.length === 1, `4: dokładnie jeden transfer złota policzony na trasie p1<->f1 (ma: ${zlotoFlows.length})`);
   ok(!!zlotoFlows[0] && zlotoFlows[0].fromOwnerId === 1 && zlotoFlows[0].toOwnerId === 0,
     '4: złoto płynie OD partnera (większa nadwyżka: 10) DO gracza (mniejszy zapas: 0)');
+  // R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1: przepływ wyrównuje zapasy -- połowa różnicy, nie więcej niż
+  // nadwyżka ponad rezerwę (dawniej cała nadwyżka, co koncentrowało zapasy sieci tras u jednej cywilizacji).
   const minReserve = M.DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
-  eq(zlotoFlows[0] && zlotoFlows[0].amount, stockBefore[1].zloto - minReserve,
-    `4: ilość transferu = nadwyżka partnera ponad rezerwę (${stockBefore[1].zloto} - ${minReserve} = ${stockBefore[1].zloto - minReserve})`);
+  const expected4 = Math.min(stockBefore[1].zloto - minReserve, Math.floor((stockBefore[1].zloto - stockBefore[0].zloto) / 2));
+  eq(zlotoFlows[0] && zlotoFlows[0].amount, expected4,
+    `4: ilość transferu = min(nadwyżka ponad rezerwę ${stockBefore[1].zloto - minReserve}, połowa różnicy ${Math.floor((stockBefore[1].zloto - stockBefore[0].zloto) / 2)}) = ${expected4}`);
 
   for (const f of flows) {
     stockAfter[f.fromOwnerId][f.resourceKey] -= f.amount;

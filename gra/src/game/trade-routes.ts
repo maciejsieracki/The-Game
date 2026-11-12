@@ -2154,8 +2154,10 @@ export interface TradeRouteResourceFlow {
  * Wylicza transfery ilościowe surowca dla wszystkich aktywnych tras. Model:
  * dla KAŻDEJ trasy `status === 'polaczony'` i KAŻDEGO surowca z
  * TRADE_ROUTE_STOCK_FLOW_KEYS, strona z WIĘKSZYM zapasem (wg `ownerStock`,
- * civ-wide) eksportuje CAŁĄ nadwyżkę PONAD `params.minStockReserve` do strony
- * z mniejszym zapasem (PYTANIE-84-U16: bez limitu przepustowości trasy).
+ * civ-wide) eksportuje do strony z mniejszym zapasem POŁOWĘ różnicy zapasów, nie więcej
+ * niż nadwyżkę PONAD `params.minStockReserve` (PYTANIE-84-U16: bez limitu przepustowości
+ * trasy; R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1: wyrównanie zamiast przerzucania całej nadwyżki,
+ * które koncentrowało zapasy całej sieci tras u jednej cywilizacji).
  *
  * `ownerStock` to WEJŚCIOWY snapshot (główny wołający liczy go z
  * ownerResourceStockAll, building-stock-cost.ts) — ale funkcja utrzymuje
@@ -2207,7 +2209,16 @@ export function computeTradeRouteResourceFlow(
       const surplus = donorStock - params.minStockReserve;
       if (surplus <= 0) continue;
 
-      const amount = Math.floor(surplus);
+      // R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1: przepływ WYRÓWNUJE zapasy (połowa różnicy), a nie
+      // przerzuca CAŁEJ nadwyżki. Dawniej `amount = floor(surplus)` — przy wielu trasach
+      // (kontakt wystarcza, R-WEB-TRADE-ROUTE-CONTACT-ONLY-Q1, także AI↔AI) cały Brąz/Żelazo
+      // sieci handlowej spływał w jednej turze łańcuchem tras do JEDNEJ cywilizacji (ostatni
+      // odbiorca w kolejności `id`), a pozostałe zostawały na rezerwie (2 szt.) — stąd
+      // dziesiątki tysięcy Brązu u jednej cywilizacji tuż po wejściu w epokę Brązu.
+      // Połowa różnicy: odbiorca nigdy nie przegania dawcy (max zapasów w sieci nie rośnie
+      // przez handel), dalej bez limitu trasy (U-16) i z rezerwą dawcy (ABC-15).
+      const halfGap = Math.floor((donorStock - Math.min(ownerStockNow, toOwnerStockNow)) / 2);
+      const amount = Math.min(Math.floor(surplus), halfGap);
       if (amount <= 0) continue;
 
       applyDelta(fromOwnerId, key, -amount);

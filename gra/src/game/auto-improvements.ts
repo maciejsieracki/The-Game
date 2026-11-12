@@ -841,7 +841,48 @@ export function actionableDeficitKeys(deficitKeys?: readonly string[]): string[]
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const picks = pickAutoImprovementsStaged({ ...opts, roadPlanMemo: { cities: opts.cities } });
-  return picks;
+  return capDeficitMinePicks(picks, opts);
+}
+
+/**
+ * R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1 (audyt przecieku miedzi, pomiar w pełnej grze): ile KOPALŃ jednego typu
+ * krok „brakujący surowiec” (K2 gracz „zrównoważone” / K3 AI, `demandDriven`) może postawić w JEDNYM
+ * wywołaniu pickera (= jedna tura jednego właściciela).
+ *
+ * Zmierzone (3 ziarna, Standardowy/kontynenty, realny `endTurn`): niedobór `ruda` (zapas < pakiet 10 szt. —
+ * Odlewnie wyjadają Rudę do zera) otwierał budowę Kopalni miedzi na WSZYSTKICH złożach w zasięgu naraz:
+ * +42, +58, +37, +34, +27 kopalń w JEDNEJ turze u pojedynczych cywilizacji AI (np. 5→47, 5→63). Każda daje
+ * 20×1,5^(epoka−1) Rudy/turę, a Odlewnie przerabiają 50 cykli/turę/budynek, więc nadwyżka 1–2,5 tys./turę
+ * odkładała się w magazynie: 25 075 i 29 085 Rudy miedzi ~20 tur po wejściu w Brąz. To łamie zasadę
+ * właściciela (ECHO 2026-08-27: surowcowe ulepszenia „tylko w miarę potrzeby […], a nie budować na zapas”).
+ *
+ * Limit 1/typ/turę: niedobór jest oceniany co turę od nowa, więc kolejne kopalnie powstają tylko dopóki
+ * zapas nadal nie pokrywa zużycia. ZAŁOŻENIE (do ABC właściciela): wartość 1 — najmniejsza, która nie blokuje
+ * reakcji na niedobór; dotyczy wyłącznie kopalń (`MINE_IMPROVEMENT_KEYS`) w trybie `demandDriven`.
+ */
+export const DEFICIT_MINE_PICKS_PER_KEY_PER_TURN = 1;
+
+const DEFICIT_CAPPED_MINE_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
+  'kopalnia_miedzi', 'kopalnia_cyny', 'kopalnia_zelaza',
+]);
+
+function capDeficitMinePicks(
+  picks: AutoImprovementPick[],
+  opts: PickAutoImprovementsOpts,
+): AutoImprovementPick[] {
+  if (opts.demandDriven !== true) return picks;
+  const capped = new Set<ImprovementKey>(
+    deficitImprovementKeys(opts.resourceDeficitKeys).filter(k => DEFICIT_CAPPED_MINE_KEYS.has(k)),
+  );
+  if (capped.size === 0) return picks;
+  const taken = new Map<ImprovementKey, number>();
+  return picks.filter(p => {
+    if (!capped.has(p.key)) return true;
+    const n = taken.get(p.key) ?? 0;
+    if (n >= DEFICIT_MINE_PICKS_PER_KEY_PER_TURN) return false;
+    taken.set(p.key, n + 1);
+    return true;
+  });
 }
 
 /**
