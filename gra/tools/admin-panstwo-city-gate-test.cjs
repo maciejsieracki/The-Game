@@ -76,6 +76,48 @@ const funded = M.fundOwnerImprovementAdministrator(hired, HUMAN, 0);
 ok(funded.adm && funded.adm.pracuje === false, 'budżet 0 => administrator nie pracuje');
 ok(selectFor(funded.adm, true).length === 0, 'nie pracujący administrator nie uruchamia auto-ulepszeń');
 
+console.log('(7) granica administratora MIASTA: buduje tylko w swoim mieście (ta sama bramka co main.ts)');
+const adminBld = M.administrativeBuildingIds()[0];
+const cA = { id: 'A', ownerId: HUMAN, mode: 'auto' };
+const cB = { id: 'B', ownerId: HUMAN, mode: 'auto' };
+ok(M.hireAdministrator(cA, [adminBld], 1000, 1) === true, 'administrator miasta A zatrudniony (budynek administracyjny)');
+const builtB7 = new Map([['A', [adminBld]], ['B', []]]);
+M.refreshAdministratorState([cA, cB], builtB7, () => 1000, new Map());
+ok(M.cityHasWorkingAdministrator(cA) === true, 'miasto A ma działającego administratora miasta');
+ok(M.cityHasWorkingAdministrator(cB) === false, 'miasto B nie ma administratora miasta');
+ok(M.isCityAutoBuildAllowed(HUMAN, humanOwnerIds, true, M.cityHasWorkingAdministrator(cA), false) === true, 'autobudowa w A dozwolona');
+ok(M.isCityAutoBuildAllowed(HUMAN, humanOwnerIds, true, M.cityHasWorkingAdministrator(cB), false) === false, 'autobudowa w B zablokowana (administrator z A nie buduje w B)');
+const stateOnly = M.hireOwnerImprovementAdministrator(undefined, HUMAN, 1000, 1);
+ok(M.isCityAutoBuildAllowed(HUMAN, humanOwnerIds, true, M.cityHasWorkingAdministrator(cB), false) === false
+  && M.ownerHasWorkingStateImprovementAdministrator(stateOnly, HUMAN) === true,
+  'administrator Państwa NIE otwiera autobudowy budynków w B (tylko ulepszenia terenu)');
+
+console.log('(8) migracja zapisu: administrator miasta -> Państwo (koszt raz)');
+const migCities = [
+  { id: 'X', ownerId: HUMAN, administratorUlepszen: { ownerId: HUMAN, hiredTurn: 5, pracuje: true } },
+  { id: 'Y', ownerId: HUMAN, administratorUlepszen: { ownerId: HUMAN, hiredTurn: 7, pracuje: true } },
+  { id: 'Z', ownerId: 3 },
+];
+const mig = M.migrateCityImprovementAdministratorsToState(migCities);
+ok(mig.byOwner.size === 1 && mig.byOwner.get(HUMAN).hiredTurn === 5, 'jeden administrator Państwa (pierwsze miasto w kolejności tablicy)');
+ok(mig.clearedCityIds.join(',') === 'X,Y', 'pola administratora ulepszeń miast X,Y oznaczone do wyczyszczenia');
+ok(M.totalAdministratorUpkeepForOwner(migCities, new Map(), HUMAN, mig.byOwner.get(HUMAN)) === M.improvementAdministratorUpkeep(),
+  'utrzymanie po migracji = jedno utrzymanie administratora Państwa (nie dwa)');
+ok(M.migrateCityImprovementAdministratorsToState([{ id: 'Q', ownerId: HUMAN }]).byOwner.size === 0, 'brak administratora ulepszeń w zapisie => brak migracji');
+
+console.log('(9) wpięcie w main.ts (test statyczny: regex na źródle, NIE wykonanie tury)');
+const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+ok(/const stateAdmByOwner = new Map<number, CityAdministrator>\(\)/.test(mainSrc), 'stan Państwa: stateAdmByOwner (mapa per właściciel)');
+ok(/function isCityAutoImprovementActive[\s\S]{0,300}?ownerHasWorkingStateImprovementAdministrator\(stateAdmByOwner\.get\(city\.ownerId\)/.test(mainSrc), 'bramka auto-ulepszeń czyta stan Państwa właściciela');
+ok(/refreshAdministratorState\(cities, cityBuilt, ownerTreasury, stateAdmByOwner\)/.test(mainSrc), 'odświeżenie stanu przekazuje stateAdmByOwner');
+ok(/hireOwnerImprovementAdministrator\(cur, city\.ownerId, treasury, turn\)/.test(mainSrc), 'zatrudnienie Państwa przez hireOwnerImprovementAdministrator');
+ok(/stateImprovementAdministrators: \[\.\.\.stateAdmByOwner\.values\(\)\]/.test(mainSrc), 'zapis gry niesie stan administratora Państwa');
+ok(/Array\.isArray\(savedStateAdm\)/.test(mainSrc) && /migrateCityImprovementAdministratorsToState\(cities\)/.test(mainSrc), 'wczytanie: gałąź zapisu nowego i gałąź migracji starego');
+ok(/for \(const c of cities\) delete \(c as \{ administratorUlepszen\?: unknown \}\)\.administratorUlepszen;/.test(mainSrc), 'wczytanie kasuje pola administratora ulepszeń miast po migracji');
+ok(/if \(!administratorsEnabled\) \{[\s\S]{0,600}?stateAdmByOwner\.delete\(o\)/.test(mainSrc), 'wczytanie przy OFF usuwa administratora Państwa gracza');
+ok(!/effectiveUlepszeniaForCity\(c\)\.tryb/.test(mainSrc), 'Z4: w main.ts nie ma odczytu trybu automatyzacji per miasto');
+ok(/c => ulepszeniaEmpireForOwner\(c\.ownerId\)\.tryb === 'auto'/.test(mainSrc), 'Z4: tryb auto z polityki Państwa właściciela (selectCitiesForAutoImprovement)');
+
 console.log('');
 console.log('RESULT: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed === 0 ? 0 : 1);

@@ -40681,7 +40681,9 @@ async function boot(): Promise<void> {
                   isAutoBuildAllowedFor(hOid),
                   // R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1: tylko miasta z DZIAŁAJĄCYM administratorem ulepszeń.
                   isCityAutoImprovementActive,
-                  c => effectiveUlepszeniaForCity(c).tryb === 'auto',
+                  // R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 (Z4, decyzja właściciela): tryb automatyzacji jest JEDEN
+                  // dla Państwa (`ulepszeniaEmpireForOwner`), nie per miasto — override trybu miasta nie wpływa na auto.
+                  c => ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto',
                 );
                 const hOidPracaPool = ownerPracaPool(hOid);
                 // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” liczony od nowa co turę;
@@ -47808,6 +47810,7 @@ async function boot(): Promise<void> {
         for (const c of cities) {
           if (!isHuman(c.ownerId)) continue;
           delete (c as { administrator?: unknown }).administrator;
+          delete (c as { administratorUlepszen?: unknown }).administratorUlepszen;
         }
         for (const o of [...stateAdmByOwner.keys()]) if (isHuman(o)) stateAdmByOwner.delete(o);
       }
@@ -47821,7 +47824,7 @@ async function boot(): Promise<void> {
       improvementAdministratorNoticeShown = saved.meta?.improvementAdministratorNoticeShown === true;
       {
         const affectedImp = cities.filter(c => isHuman(c.ownerId)
-          && administratorsEnabled && effectiveUlepszeniaForCity(c).tryb === 'auto'
+          && administratorsEnabled && ulepszeniaEmpireForOwner(c.ownerId).tryb === 'auto'
           && !ownerHasWorkingStateImprovementAdministrator(stateAdmByOwner.get(c.ownerId), c.ownerId));
         const show = shouldShowImprovementAdminMigration(improvementAdministratorNoticeShown, affectedImp.length);
         improvementAdministratorNoticeShown = true;
