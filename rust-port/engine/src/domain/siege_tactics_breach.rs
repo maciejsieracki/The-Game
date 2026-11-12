@@ -167,3 +167,18 @@ pub fn skip_instant_fallback(s: &WallState, atk_has_alive_siege_unit: bool) -> W
     }
     n
 }
+
+#[cfg(test)]
+mod js_max0_zero_sign_tests {
+    use super::js_max0;
+
+    /// Zachowanie `Math.max(0, x)` na tym module: `-0` -> `+0`, NaN zachowany, skonczone bez zmian.
+    #[test]
+    fn js_max0_zero_sign_jak_math_max() {
+        assert_eq!(js_max0(-0.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(-3.0).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(f64::NEG_INFINITY).to_bits(), 0.0_f64.to_bits());
+        assert_eq!(js_max0(2.5), 2.5);
+        assert!(js_max0(f64::NAN).is_nan());
+    }
+}
