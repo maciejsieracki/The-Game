@@ -1049,6 +1049,8 @@ import {
 } from './game/city-defense';
 import {
   autoStormBreach,
+  stormBlockedWithoutMachines,
+  STORM_NEEDS_SIEGE_MACHINES_MSG,
   canCaptureCity,
   cityFortificationKind,
   cityIsFortified,
@@ -18092,6 +18094,7 @@ async function boot(): Promise<void> {
           ? visibleSiegeEngineOptions(siegeEngineOptions(city), new Set(unlockedTechsForOwner(ownerId)))
           : [];
       },
+      isStormBlocked: (ctx: MapSiegeContext) => playerStormBlockedWithoutMachines(ctx),
       onBuildSiegeEngine: (cityId: string, unitId: string) => {
         const city = cities.find(item => item.id === cityId);
         const ownerId = city?.oblegajacyOwnerId ?? (city ? siegeBesiegerByCity.get(city.id) : undefined);
@@ -37097,6 +37100,18 @@ async function boot(): Promise<void> {
     }
 
     /** C1: szturm z panelu oblężenia → preBattle → bitwa z murem (tylko oblegający gracz). */
+    /** DODATEK 2: obwarowane miasto + brak machin (także gotowych w kolejce) = szturm zablokowany. */
+    function playerStormBlockedWithoutMachines(ctx: MapSiegeContext): boolean {
+      const city = cities.find(c => c.id === ctx.city.id);
+      const anchor = units.find(u => u.id === ctx.atakujacy.id);
+      if (!city || !anchor) return false;
+      const roster = appendReadyMachinesToRoster(collectSiegeAtkRoster(city, anchor), city, anchor.ownerId, false);
+      return stormBlockedWithoutMachines(
+        cityIsFortified(city.maMur, cityBuilt.get(city.id)),
+        roster.some(u => isSiegeUnit(unitDefFor(u))),
+      );
+    }
+
     function launchSiegeStormFromMap(ctx: MapSiegeContext): void {
       if (ctx.oblegajacyOwnerId !== 0) {
         showHintMessage(
@@ -37114,6 +37129,10 @@ async function boot(): Promise<void> {
       }
       if (!city.maMur) {
         showHintMessage('Miasto bez muru — użyj zwykłej potyczki, nie szturmu.', 4000);
+        return;
+      }
+      if (playerStormBlockedWithoutMachines(ctx)) {
+        showHintMessage(city.name + ': ' + STORM_NEEDS_SIEGE_MACHINES_MSG + '.', 5000);
         return;
       }
 
