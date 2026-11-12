@@ -133,8 +133,10 @@ export function renderRelationDealModRowHtml(
   const balanceNote = context === 'treaty' && modPct !== 0
     ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
     : '';
+  // Przy 'incomingAccepted' werdykt to „Możesz przyjąć” — tooltip nie może mówić „trzeba dopłacić”.
+  const tipBase = context === 'incomingAccepted' ? '' : RELATION_DEAL_TOOLTIP + ' ';
   const tip = ' title="' + esc(
-    RELATION_DEAL_TOOLTIP + ' ' + RELATION_DEAL_PERSPECTIVE_NOTE + ' ' + formatRelationModLabel(relTotal),
+    tipBase + RELATION_DEAL_PERSPECTIVE_NOTE + ' ' + formatRelationModLabel(relTotal),
   ) + '"';
 
   return (

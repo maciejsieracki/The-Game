@@ -89,6 +89,7 @@ async function openAudienceFromHud(page) {
     })),
     text: (document.body.innerText || ''),
     relRows: Array.from(document.querySelectorAll('.da-pn-rel-mod')).map(e => ({ cls: e.className, text: (e.textContent || '').trim() })),
+    relTotalLabel: ((document.querySelector('.da-rel-row.relacja-total > span') || {}).textContent || '').trim(),
   }));
 }
 
@@ -161,6 +162,16 @@ async function main() {
     assert('wiersz Relacji w oknie istnieje', ui.relRows.length >= 1, ui.relRows);
     const rowsBad = ui.relRows.filter(r => r.text.includes(REL_TEXT_BAD));
     assert('wiersz „Wpływ Relacji na deal” NIE mowi „musisz dać więcej” przy aktywnym „Przyjmij”', rowsBad.length === 0, ui.relRows);
+    // R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1: neutralny ton + etykiety perspektywy (asercje live, nie tylko log).
+    const r0 = ui.relRows[0] || { cls: '', text: '' };
+    assert('wiersz Relacji „Możesz przyjąć”: klasa neutral (bez worse)',
+      /\bneutral\b/.test(r0.cls) && !/\bworse\b/.test(r0.cls), r0);
+    assert('wiersz Relacji „Możesz przyjąć”: tekst „wymiana symetryczna”, bez „słabsza”',
+      r0.text.includes('wymiana symetryczna') && !r0.text.includes('słabsza'), r0);
+    assert('wiersz Relacji: etykieta „Relacja z perspektywy AI”', r0.text.includes('Relacja z perspektywy AI'), r0);
+    // Asercja na wiersz audiencji (.da-rel-row.relacja-total), nie na cały tekst okna: „Stan bieżący” też zawiera tę frazę.
+    assert('audiencja: wiersz relacja-total ma etykietę „Relacja z perspektywy gracza”',
+      ui.relTotalLabel === 'Relacja z perspektywy gracza', ui.relTotalLabel);
     console.log('  [info] wiersze Relacji:', JSON.stringify(ui.relRows));
     await shot(page, 'drtc-01-okno-przyjmij-aktywne.png');
     await closeAudience(page);

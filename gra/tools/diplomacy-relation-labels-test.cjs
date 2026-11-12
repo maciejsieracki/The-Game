@@ -79,10 +79,25 @@ ok(!accNeg.includes('słabsza'), 'incomingAccepted @52: brak „Twoja strona sł
 ok(accNeg.includes('wymiana symetryczna'), 'incomingAccepted @52: tekst „wymiana symetryczna”');
 ok(accNeg.includes('Relacja z perspektywy AI 52'), 'incomingAccepted @52: etykieta perspektywy AI');
 
+// 3b. incomingAccepted przy Relacji >100 (dotąd 'better' / „Twoja strona silniejsza”): decyzja — ton neutralny
+// i „wymiana symetryczna” obowiązują dla całego wariantu incomingAccepted (dispatch: bez „strona słabsza”).
+const accPos = mod.renderRelationDealModRowHtml(120, 'incomingAccepted');
+ok(/class="da-pn-rel-mod neutral"/.test(accPos), 'incomingAccepted @120: klasa neutral (decyzja: cały wariant neutralny)');
+ok(!/class="da-pn-rel-mod better"/.test(accPos), 'incomingAccepted @120: brak klasy better');
+ok(accPos.includes('wymiana symetryczna') && !accPos.includes('silniejsza'), 'incomingAccepted @120: „wymiana symetryczna”, bez „silniejsza”');
+ok(accPos.includes('Relacja z perspektywy AI 120'), 'incomingAccepted @120: etykieta perspektywy AI');
+
+// 3c. Tooltip incomingAccepted nie mówi „trzeba dopłacić” (sprzeczne z „Możesz przyjąć”); treaty zachowuje pełny tooltip.
+const accTitle = (accNeg.match(/title="([^"]*)"/) || [])[1] || '';
+ok(accTitle.length > 0 && !accTitle.includes('dopłacić'), 'incomingAccepted @52: tooltip bez „trzeba dopłacić”');
+ok(accTitle.includes('Relacje:'), 'incomingAccepted @52: tooltip zawiera wartość wpływu');
+
 // 4. Wariant treaty przy tej samej Relacji zachowuje czerwień (bez zmiany zachowania).
 const treatyNeg = mod.renderRelationDealModRowHtml(52, 'treaty');
 ok(/class="da-pn-rel-mod worse"/.test(treatyNeg), 'treaty @52: klasa worse zachowana');
 ok(treatyNeg.includes('Twoja strona słabsza'), 'treaty @52: tekst „Twoja strona słabsza” zachowany');
+const treatyTitle = (treatyNeg.match(/title="([^"]*)"/) || [])[1] || '';
+ok(treatyTitle.includes('trzeba dopłacić'), 'treaty @52: tooltip zachowuje „trzeba dopłacić”');
 
 // 5. Panel PW: AI→gracz z Przyjmij aktywnym przy ujemnym wpływie — brak czerwieni w wierszu.
 const incomingPanel = mod.renderPnBalancePanelHtml(panel('incoming', true, 52, 5));
