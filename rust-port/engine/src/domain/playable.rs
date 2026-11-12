@@ -13,6 +13,7 @@ use super::building_costs::p6_7b::StockRecord;
 use super::turn_war_inputs::{build_war_inputs, production_config};
 use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::unit_replace::{UnitReplaceFail, UnitReplaceResult, UnitReplaceTarget};
+use super::unit_replace_defs::production_replace_defs;
 use super::unit_replace_wiring::{replace_unit_wired, ReplaceCity, ReplaceUnitDef};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
@@ -750,10 +751,20 @@ impl PlayableGame {
     /// Pieniadz z skarbca gracza, surowce z puli stolicy (jedyne miasto gracza w tym wycinku).
     /// `defs` = tabela definicji jednostek; `gate` = blokada z reguly pinu (np. limit super-jednostek).
     /// Odrzucenie zwraca `UnitReplaceRejected` i nie zmienia stanu.
-    /// MARKER UNIT-REPLACE-L3-DEFS-SOURCE-OPEN: produkcyjnej tabeli `defs` nie ma jeszcze w Rust
-    /// (brak portu web `categoryOf`); komenda przyjmuje ja jako argument, jak adapter L3.
-    /// Domkniecie: osobny temat (units.json + kategoria modelu), zob. runs/R-RUSTPORT-P6-UNIT-REPLACE-L3-STAN-Q1.
+    /// Zrodlem `defs` jest produkcyjna tabela `unit_replace_defs::production_replace_defs`
+    /// (units.json + kategoria `categoryOf`, P6-UNIT-REPLACE-L3-DEFS).
     pub fn replace_unit(
+        &mut self,
+        unit_id: u64,
+        new_type_id: &str,
+        gate: Option<String>,
+    ) -> Result<(), PlayableError> {
+        self.replace_unit_with_defs(unit_id, new_type_id, production_replace_defs(), gate)
+    }
+
+    /// Wariant z jawnie podana tabela `defs` (wstrzykniecie w testach i scenariuszach L3).
+    /// Logika identyczna z `replace_unit`; jedyna roznica to zrodlo definicji.
+    pub fn replace_unit_with_defs(
         &mut self,
         unit_id: u64,
         new_type_id: &str,
@@ -1121,7 +1132,7 @@ mod unit_replace_error_tests {
         let mut game = game_with_treasury();
         let before = game.state().clone();
         assert_eq!(
-            game.replace_unit(999_999, "Wlocznik", &defs(), None),
+            game.replace_unit_with_defs(999_999, "Wlocznik", &defs(), None),
             Err(PlayableError::UnitNotFound(999_999))
         );
         assert_eq!(game.state(), &before, "brak mutacji");
@@ -1142,7 +1153,7 @@ mod unit_replace_error_tests {
         });
         let before = game.state().clone();
         assert_eq!(
-            game.replace_unit(900, "Wlocznik", &defs(), None),
+            game.replace_unit_with_defs(900, "Wlocznik", &defs(), None),
             Err(PlayableError::UnitNotOwned(900))
         );
         assert_eq!(game.state(), &before, "brak mutacji");
@@ -1157,7 +1168,7 @@ mod unit_replace_error_tests {
             .retain(|city| city.owner_id != HUMAN_PLAYER_ID);
         let before = game.state().clone();
         assert_eq!(
-            game.replace_unit(unit, "Wlocznik", &defs(), None),
+            game.replace_unit_with_defs(unit, "Wlocznik", &defs(), None),
             Err(PlayableError::NoCityForReplace)
         );
         assert_eq!(game.state(), &before, "brak mutacji");
@@ -1173,7 +1184,7 @@ mod unit_replace_error_tests {
         }
         let unit = human_unit_id(&game);
         assert_eq!(
-            game.replace_unit(unit, "Wlocznik", &defs(), None),
+            game.replace_unit_with_defs(unit, "Wlocznik", &defs(), None),
             Err(PlayableError::NoCityForReplace)
         );
         assert_eq!(

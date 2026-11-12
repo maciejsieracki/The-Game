@@ -101,7 +101,7 @@ fn sukces_pobiera_pieniadz_i_surowce_zmienia_typ_i_hp() {
     let cost = unit_stock_cost(Some(&procarz_source()));
     assert!(!cost.is_empty(), "koszt surowcowy procarza niepusty");
 
-    game.replace_unit(HUMAN_UNIT, "Procarz", &table, None)
+    game.replace_unit_with_defs(HUMAN_UNIT, "Procarz", &table, None)
         .expect("zamiana ma sie udac");
 
     let economy = &game.state().economy;
@@ -137,7 +137,7 @@ fn brak_srodkow_odrzuca_bez_mutacji() {
     let before = game.state().clone();
 
     let err = game
-        .replace_unit(HUMAN_UNIT, "Procarz", &defs(), None)
+        .replace_unit_with_defs(HUMAN_UNIT, "Procarz", &defs(), None)
         .expect_err("za malo Pieniadza");
     assert_eq!(
         err,
@@ -157,7 +157,7 @@ fn brak_magazynu_odrzuca_bez_mutacji() {
     let before = game.state().clone();
 
     let err = game
-        .replace_unit(HUMAN_UNIT, "Procarz", &defs(), None)
+        .replace_unit_with_defs(HUMAN_UNIT, "Procarz", &defs(), None)
         .expect_err("za malo drewna");
     assert!(matches!(
         err,
@@ -176,7 +176,7 @@ fn blokada_pinu_odrzuca_z_powodem() {
     game.set_capital_stock(drewno_pool(100.0)).expect("stolica");
 
     let err = game
-        .replace_unit(
+        .replace_unit_with_defs(
             HUMAN_UNIT,
             "Procarz",
             &defs(),
@@ -199,7 +199,7 @@ fn nieznany_typ_docelowy_jest_blokada_z_powodem() {
     game.set_capital_stock(drewno_pool(100.0)).expect("stolica");
 
     let err = game
-        .replace_unit(HUMAN_UNIT, "Nieistniejacy", &defs(), None)
+        .replace_unit_with_defs(HUMAN_UNIT, "Nieistniejacy", &defs(), None)
         .expect_err("brak definicji");
     assert_eq!(
         err,
@@ -217,13 +217,13 @@ fn jednostka_uzyta_w_turze_jest_odrzucana_do_kolejnej_tury() {
     game.set_capital_stock(drewno_pool(100.0)).expect("stolica");
     let table = defs();
 
-    game.replace_unit(HUMAN_UNIT, "Procarz", &table, None)
+    game.replace_unit_with_defs(HUMAN_UNIT, "Procarz", &table, None)
         .expect("pierwsza zamiana");
     assert_eq!(replace_view(&game), (Some("Procarz".to_owned()), true));
 
     let before = game.state().clone();
     let err = game
-        .replace_unit(HUMAN_UNIT, "Wojownik", &table, None)
+        .replace_unit_with_defs(HUMAN_UNIT, "Wojownik", &table, None)
         .expect_err("druga zamiana w tej samej turze");
     assert_eq!(
         err,
@@ -236,7 +236,7 @@ fn jednostka_uzyta_w_turze_jest_odrzucana_do_kolejnej_tury() {
 
     game.advance_turn().expect("koniec tury");
     assert_eq!(replace_view(&game), (Some("Procarz".to_owned()), false));
-    game.replace_unit(HUMAN_UNIT, "Wojownik", &table, None)
+    game.replace_unit_with_defs(HUMAN_UNIT, "Wojownik", &table, None)
         .expect("w nowej turze zamiana znow dozwolona");
 }
 
@@ -247,7 +247,7 @@ fn zamiana_nie_zmienia_pozostalych_pol_stanu() {
     game.set_capital_stock(drewno_pool(100.0)).expect("stolica");
     let mut before = game.state().clone();
 
-    game.replace_unit(HUMAN_UNIT, "Procarz", &defs(), None)
+    game.replace_unit_with_defs(HUMAN_UNIT, "Procarz", &defs(), None)
         .expect("zamiana");
     // Poza ekonomia i ruchem jednostki (zuzyty) reszta stanu jest identyczna.
     before.economy = game.state().economy.clone();

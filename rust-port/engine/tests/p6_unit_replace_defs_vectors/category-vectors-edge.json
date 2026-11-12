@@ -1,0 +1,226 @@
+[
+  {
+    "name": "Osadnik",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "osadnik"
+  },
+  {
+    "name": "Robotnik",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "robotnik"
+  },
+  {
+    "name": "Zwiadowca",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "zwiadowca"
+  },
+  {
+    "name": "Łucznik",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Łuczniczka",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "lucznik"
+  },
+  {
+    "name": "Legion Rzymski",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "legionista"
+  },
+  {
+    "name": "Legionista",
+    "role": "Wręcz",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "legionista"
+  },
+  {
+    "name": "Wojownik tyrreński",
+    "role": "",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "topor"
+  },
+  {
+    "name": "Wojownik",
+    "role": "",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "domyslny"
+  },
+  {
+    "name": "Wojownik",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "domyslny"
+  },
+  {
+    "name": "Wojownik",
+    "role": "",
+    "is_super": false,
+    "typ": null,
+    "expected": "domyslny"
+  },
+  {
+    "name": "Piechota hetycka",
+    "role": "",
+    "is_super": false,
+    "typ": "Spearman",
+    "expected": "wlocznik"
+  },
+  {
+    "name": "Gwardia Ishtar",
+    "role": "",
+    "is_super": false,
+    "typ": "Swordsman",
+    "expected": "miecznik"
+  },
+  {
+    "name": "Gwardia Ishtar",
+    "role": "",
+    "is_super": false,
+    "typ": "Nieznany typ",
+    "expected": "domyslny"
+  },
+  {
+    "name": "Okręt",
+    "role": "Morska",
+    "is_super": false,
+    "typ": "Naval",
+    "expected": "galera"
+  },
+  {
+    "name": "Rydwan",
+    "role": "",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "rydwan"
+  },
+  {
+    "name": "Rydwan",
+    "role": "",
+    "is_super": true,
+    "typ": "Swordsman",
+    "expected": "super"
+  },
+  {
+    "name": "Osadnik",
+    "role": "",
+    "is_super": true,
+    "typ": "",
+    "expected": "super"
+  },
+  {
+    "name": "Taran",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Katapulta",
+    "role": "Oblężnicza",
+    "is_super": false,
+    "typ": "Siege",
+    "expected": "obleznicza"
+  },
+  {
+    "name": "Falanga",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "falanga"
+  },
+  {
+    "name": "Hoplita",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "falanga"
+  },
+  {
+    "name": "Champi",
+    "role": "",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "maczuga"
+  },
+  {
+    "name": "Maczuga gwiazdzista (champi)",
+    "role": "",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "maczuga"
+  },
+  {
+    "name": "Topór bojowy",
+    "role": "",
+    "is_super": false,
+    "typ": "Offensive",
+    "expected": "topor"
+  },
+  {
+    "name": "Konnica lekka",
+    "role": "Konnica",
+    "is_super": false,
+    "typ": "Mount",
+    "expected": "konnica"
+  },
+  {
+    "name": "Jeździec",
+    "role": "",
+    "is_super": false,
+    "typ": "Distance",
+    "expected": "konnica"
+  },
+  {
+    "name": "Procarz",
+    "role": "",
+    "is_super": false,
+    "typ": "Slinger",
+    "expected": "procarz"
+  },
+  {
+    "name": "",
+    "role": "",
+    "is_super": false,
+    "typ": "",
+    "expected": "domyslny"
+  },
+  {
+    "name": "",
+    "role": "",
+    "is_super": true,
+    "typ": "",
+    "expected": "super"
+  },
+  {
+    "name": "Nieznana jednostka XYZ",
+    "role": "Brak",
+    "is_super": false,
+    "typ": "Brak",
+    "expected": "domyslny"
+  },
+  {
+    "name": "Ż",
+    "role": "Ł",
+    "is_super": false,
+    "typ": "Ś",
+    "expected": "domyslny"
+  }
+]
