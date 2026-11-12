@@ -1,3 +1,9 @@
+## ROBOCZA 853a8ff7 -- 2026-11-12 -- FALA 673: Administrator państwa — silnik: stan Państwa, koszt raz, tryb auto jeden dla Państwa, migracja (testowa)
+
+- administrator ulepszeń jako stan Państwa; jeden koszt utrzymania na Państwo; auto-ulepszenia w miastach wg trybu Państwa; migracja zapisu z administratora miasta
+- Weryfikacja: tsc OK; logic 213/213; admin-panstwo-city-gate-test 36/0; Chromium NIE_ZMIERZONO
+- Limity: UI panelu Państwa i nazwy — #327; dług handlerów per miasto w UI; smoke w grze
+
 ## ROBOCZA 1c2cdb70 -- 2026-11-12 -- FALA 672: Bitwa: jednostki walczy do smierci zostaja, reszta ucieka i jest gonina (testowa)
 
 - po zalamaniu morale armii jednostki neverRout nie uciekaja i walcza dalej; zwykle jednostki uciekaja i sa gonione; bitwa konczy sie, gdy neverRout zgina, uciekinierzy zejda lub minie limit tur
