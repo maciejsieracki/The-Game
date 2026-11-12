@@ -18,7 +18,8 @@
 //!   dostarczony przez [`PlunderLabels::one_line`].
 //! * `eliminateOwner`, `markCityStateDirty`, `showHintMessage`, `recordCityCaptureEvent`, `recordCivElimEvent`,
 //!   `showTriumphCityStateNotice` - efekty uboczne po stronie wolajacego; tu tylko zapisywane w `ui_calls`.
-//!   Store po stronie wolajacego dla `recordCityCaptureEvent` / `recordCivElimEvent`: `siege_capture_events::CaptureEventStore` (Q7).
+//!   Logika zapisu (store) dla `recordCityCaptureEvent` / `recordCivElimEvent` jest w `siege_capture_events::CaptureEventStore` (Q7);
+//!   ten modul NIE wola go sam - obok wpisu w `ui_calls` wolajacy musi wykonac zapis do store.
 //!
 //! Zalozenia (do akceptacji, brak w dispatchu):
 //! * Z-PL-1 `cityFoundOrder` zwraca `f64` (`INFINITY` dla id niepasujacego do `city<N>`), tak jak JS `Number`.
