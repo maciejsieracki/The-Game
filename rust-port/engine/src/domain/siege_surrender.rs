@@ -38,14 +38,14 @@
 //! | noteCityCapture                                | `siege_transfer_q5::note_city_capture`                      | ISTNIEJE (Q5) |
 //! | runCapitalCapturePlunder                       | `siege_capital_plunder::run_capital_capture_plunder` (Q6)   | PORT |
 //! | recordCityCaptureEvent                         | `siege_capture_events::CaptureEventStore::record_city_capture_event` (Q7) | PORT |
-//! | capturePopLossReportRow                        | brak nazwy w `src`                                          | BRAK |
+//! | capturePopLossReportRow                        | nazwa nie wystepuje w `src`; `TRANSFER_EFFECTS` = Ui (siege_transfer.rs) | UI (poza domena) |
 //! | applyLiveSafeRationForCity                     | `siege_transfer_q5::apply_live_safe_ration_for_city` (czesc decyzyjna; wolany PO `endMapSiege`) | ISTNIEJE (Q5) |
-//! | foundedByOwner (pole miasta, ustawiane warunkowo) | pole `siege_transfer::TransferCity::found_by_owner`; stamp w `siege_transfer_effects::apply_capture_population_loss` | ISTNIEJE (czesciowo) |
+//! | foundedByOwner (pole miasta, ustawiane warunkowo) | pole `siege_transfer::TransferCity::found_by_owner`: `Some(false)` ustawiane w `apply_transfer_with_effects` (siege_transfer.rs); stamp `foundedBy` (warunek na `found_by_owner`) w `siege_transfer_effects::apply_capture_population_loss` | ISTNIEJE |
 //! | showHintMessage (UI)                           | poza domena Rust                                            | N/D |
 //!
-//! Wniosek: galaz przejecia NIE jest jeszcze zlozona w jedna funkcje (zlozenie galezi `apply_transfer_with_effects` + wolajacy
-//! to osobny temat). BRAK po tej weryfikacji: wrapper `beginWonderTransferWatch`/`settleWonderTransfer` oraz
-//! `capturePopLossReportRow` (UI, brak nazwy w `src`).
+//! Wniosek: galaz przejecia jest zlozona w `siege_transfer::apply_transfer_with_effects` (siege_transfer.rs), ale jej
+//! wolajacy (podpiecie `resolveSiegeSurrender` z efektami, W8) NIE jest jeszcze w `src`. BRAK po tej weryfikacji: wrapper
+//! `beginWonderTransferWatch`/`settleWonderTransfer`. `capturePopLossReportRow` jest poza domena (UI, Ui w `TRANSFER_EFFECTS`).
 //!
 //! Zalozenia (do akceptacji, brak w dispatchu):
 //! * Z-SU-1 `besieger` = `None` odpowiada web `null` (brak oblegajacego); identyfikatory wlascicieli to `i64`.
