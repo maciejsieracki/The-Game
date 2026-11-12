@@ -10343,13 +10343,14 @@ export class BattleScene {
         aliveA = false;
       }
     }
-    if (brokenA && aliveA) {
-      this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- armia w rozsypce! ===');
-      aliveA = false;
+    // R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: po zalamaniu morale zostaja przy zyciu tylko jednostki
+    // "walczy do smierci" (neverRout) -- one NIE uciekaja i walcza dalej, wiec strona pozostaje w grze
+    // (aliveX=true). Bitwa konczy sie, gdy one zgina albo uciekinierzy zejda z pola (_pursuitPending).
+    if (brokenA && aliveA && !this._lastLogHas('Morale armii ATAKUJACEGO')) {
+      this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
     }
-    if (brokenD && aliveD) {
-      this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- armia w rozsypce! ===');
-      aliveD = false;
+    if (brokenD && aliveD && !this._lastLogHas('Morale armii OBRONCY')) {
+      this.log.push('=== Morale armii OBRONCY zalamane (' + Math.round(ratioD * 100) + '% < 25%) -- zwykli uciekaja, walczacy do smierci zostaja ===');
     }
     // Sufit tur w AUTO/recznej: ten sam werdykt co przewijanie (_roundCapVerdict),
     // dzieki czemu "Pomin do wyniku" i dojscie AUTO do sufitu daja identyczny wynik.
@@ -10404,6 +10405,12 @@ export class BattleScene {
     return true;
   }
 
+  /** R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: czy ostatni wpis logu juz zawiera dany fragment (bez powtarzania komunikatu co ture). */
+  private _lastLogHas(fragment: string): boolean {
+    const last = this.log[this.log.length - 1];
+    return typeof last === 'string' && last.includes(fragment);
+  }
+
   /** Uciekinierzy strony nadal na planszy (zywi, nie usunieci). */
   private _routedOnField(roster: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
     return roster.filter(u => u.routed && !u.dead && !u.fadingOut && !u.removed);
@@ -10428,7 +10435,15 @@ export class BattleScene {
       const winnerAlive = loserAtk ? aliveD : aliveA;
       return winnerAlive && this._routedOnField(loser).length > 0;
     };
-    if (!(!aliveA && chasing(true)) && !(!aliveD && chasing(false))) return false;
+    // R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1: strona, ktora po zalamaniu morale nadal ma walczace do smierci
+    // jednostki (neverRout), a jej uciekinierzy sa jeszcze na polu, nie moze zniknac z bitwy w tej samej
+    // turze -- uciekinierzy maja byc widoczni az zejda z pola (limit PURSUIT_MAX_ROUNDS tez obowiazuje).
+    const neverLeft = (roster: RuntimeBattleUnit[]): boolean =>
+      roster.some(u => u.neverRout && !u.dead && !u.fadingOut && !u.removed && !u.routed);
+    const neverFlight = (alive: boolean, roster: RuntimeBattleUnit[]): boolean =>
+      alive && neverLeft(roster) && this._routedOnField(roster).length > 0;
+    const neverPending = neverFlight(aliveA, this.atk) || neverFlight(aliveD, this.def);
+    if (!(!aliveA && chasing(true)) && !(!aliveD && chasing(false)) && !neverPending) return false;
     if (this._pursuitStartRound < 0) {
       this._pursuitStartRound = this.roundNo;
       this.log.push('=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===');
