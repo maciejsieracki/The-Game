@@ -1049,7 +1049,7 @@ import {
 } from './game/city-defense';
 import {
   autoStormBreach,
-  stormBlockedWithoutMachines,
+  stormBlockedForRoster,
   STORM_NEEDS_SIEGE_MACHINES_MSG,
   canCaptureCity,
   cityFortificationKind,
@@ -18289,6 +18289,7 @@ async function boot(): Promise<void> {
         onSiege: () => startMapSiege(ctx),
         onStorm: () => launchSiegeStormFromMap(ctx),
         onCancel: () => {},
+        isStormBlocked: () => playerStormBlockedWithoutMachines(ctx),
       });
       return true;
     }
@@ -32825,6 +32826,7 @@ async function boot(): Promise<void> {
               onSiege: () => startMapSiege(action.ctx),
               onStorm: () => launchSiegeStormFromMap(action.ctx),
               onCancel: () => {},
+              isStormBlocked: () => playerStormBlockedWithoutMachines(action.ctx),
             });
             return;
           case 'field_battle':
@@ -37106,9 +37108,10 @@ async function boot(): Promise<void> {
       const anchor = units.find(u => u.id === ctx.atakujacy.id);
       if (!city || !anchor) return false;
       const roster = appendReadyMachinesToRoster(collectSiegeAtkRoster(city, anchor), city, anchor.ownerId, false);
-      return stormBlockedWithoutMachines(
+      return stormBlockedForRoster(
         cityIsFortified(city.maMur, cityBuilt.get(city.id)),
-        roster.some(u => isSiegeUnit(unitDefFor(u))),
+        roster,
+        u => isSiegeUnit(unitDefFor(u)),
       );
     }
 

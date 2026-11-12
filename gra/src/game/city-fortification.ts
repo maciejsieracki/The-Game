@@ -97,6 +97,15 @@ export function stormBlockedWithoutMachines(fortified: boolean, hasSiegeMachine:
   return fortified && !autoStormBreach(hasSiegeMachine);
 }
 
+/** Wariant na sklad armii: machina = dowolna jednostka, dla ktorej `isSiege` zwraca true. */
+export function stormBlockedForRoster<T>(
+  fortified: boolean,
+  roster: readonly T[],
+  isSiege: (u: T) => boolean,
+): boolean {
+  return stormBlockedWithoutMachines(fortified, roster.some(isSiege));
+}
+
 /**
  * R5: wejscie ATAKUJACEGO na korone muru/palisady (wspiecie sie wieza obleznicza
  * w bitwie taktycznej) = wylom dla celow zdobycia miasta i bicia obroncow z muru

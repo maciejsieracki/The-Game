@@ -18,7 +18,8 @@ const BUNDLE = path.join(__dirname, '.siege-storm-needs-machines-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export { loadGameData } from '../src/data/loader';
 export * from '../src/game/siege-engine-build';
-export { stormBlockedWithoutMachines, STORM_NEEDS_SIEGE_MACHINES_MSG, canCaptureCity } from '../src/game/city-fortification';
+export { isSiegeUnit } from '../src/game/unit-power';
+export { stormBlockedForRoster, stormBlockedWithoutMachines, STORM_NEEDS_SIEGE_MACHINES_MSG, canCaptureCity } from '../src/game/city-fortification';
 `, 'utf8');
 esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   loader: { '.ts': 'ts', '.json': 'json' }, outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent' });
@@ -47,11 +48,24 @@ check('szturm: miasto bez obwarowania = zasady bez zmian (dozwolony)', M.stormBl
 check('spojnosc z R1: zablokowany szturm <=> canCaptureCity=false bez wylomu',
   [[true, false], [true, true], [false, false], [false, true]].every(([f, m]) => M.stormBlockedWithoutMachines(f, m) === !M.canCaptureCity(f, m)));
 check('komunikat zgodny z decyzja wlasciciela', /Potrzebne machiny oblężnicze — pozostaje oblężenie/.test(M.STORM_NEEDS_SIEGE_MACHINES_MSG));
+// zarzut 1: zachowanie funkcji uzywanej przez main.ts (sklad armii -> blokada) na prawdziwych definicjach jednostek
+{
+  const def = (n) => data.units.find(u => u.Jednostka === n);
+  const siege = (u) => M.isSiegeUnit(u);
+  check('roster: sam Wojownik + obwarowane = zablokowany', M.stormBlockedForRoster(true, [def('Wojownik')], siege) === true);
+  check('roster: Wojownik + Taran + obwarowane = dozwolony', M.stormBlockedForRoster(true, [def('Wojownik'), def('Taran')], siege) === false);
+  check('roster: sam Wojownik + brak obwarowania = dozwolony', M.stormBlockedForRoster(false, [def('Wojownik')], siege) === false);
+  check('roster: pusty + obwarowane = zablokowany', M.stormBlockedForRoster(true, [], siege) === true);
+}
 const main = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
 const execStorm = main.slice(main.indexOf('function executeSilentSiegeStorm'), main.indexOf('function executeSilentSiegeStorm') + 900);
 check('AI (executeSilentSiegeStorm) juz blokuje szturm bez machin (pomiar, bez zmian)', /fortifiedCityCaptureBlocked\(/.test(execStorm) && /startMapSiege\(ctx\)/.test(execStorm));
 const launch = main.slice(main.indexOf('function launchSiegeStormFromMap'), main.indexOf('function launchSiegeStormFromMap') + 1600);
 check('gracz (launchSiegeStormFromMap) ma bramke machin PRZED preBattle', /playerStormBlockedWithoutMachines\(ctx\)/.test(launch));
+check('main.ts: playerStormBlockedWithoutMachines deleguje do stormBlockedForRoster (cityIsFortified + isSiegeUnit)',
+  /function playerStormBlockedWithoutMachines[\s\S]{0,700}anchor\.ownerId, false\);\s*\n\s*return stormBlockedForRoster\(\s*cityIsFortified\(city\.maMur, cityBuilt\.get\(city\.id\)\),\s*roster,\s*u => isSiegeUnit\(unitDefFor\(u\)\),/.test(main));
+const cac = fs.readFileSync(path.join(GRA, 'src/ui/cityAttackChoice.ts'), 'utf8');
+check('menu wyboru ataku: obie sciezki main.ts podaja isStormBlocked', (main.match(/isStormBlocked: \(\) => playerStormBlockedWithoutMachines\(/g) || []).length === 2);
 check('panel dostaje isStormBlocked z main.ts', /isStormBlocked:\s*\(ctx: MapSiegeContext\) => playerStormBlockedWithoutMachines\(ctx\)/.test(main));
 
 // --- (2) Chromium na prawdziwym panelu
@@ -87,7 +101,7 @@ async function live() {
         stormClickFired: (window.__stormCalls || 0) > before, stormText: storm.textContent };
     }, { techs, filter, stormBlocked });
     const NAMES = ['Taran', 'Taran okuty', 'Katapulta', 'Wieża oblężnicza'];
-    const snap = async (name) => { if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.screenshot({ path: path.join(SHOTS, name) }); } };
+    const snap = async (name) => { await page.waitForTimeout(500); if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.screenshot({ path: path.join(SHOTS, name) }); } };
 
     let r = await run({ techs: [], filter: true, stormBlocked: true });
     await snap('01-start-bez-machin.png');
@@ -106,6 +120,26 @@ async function live() {
     await snap('03-po-braz.png');
     check('LIVE Brazownictwo: 3 machiny, bez Katapulty', r.btns.length === 3 && !/Katapulta/.test(r.text), r.btns);
     check('LIVE z machina: Szturm aktywny i klik dziala', !r.stormDisabled && r.stormClickFired === true);
+
+    // menu wyboru ataku (zarzut 3)
+    const choice = (blocked) => page.evaluate(async (blocked) => {
+      const C = await import('/src/ui/cityAttackChoice.ts');
+      C.hideCityAttackChoice();
+      window.__cacStorm = 0;
+      const city = { id: 'c1', ownerId: 1, q: 3, r: 3, name: 'Memfis', population: 5, garnizon: 4, maMur: true };
+      C.showCityAttackChoice({ tryb: 'oblezenie', city, atakujacy: { id: 'u0', ownerId: 0, typeId: 'Wojownik' }, garnizonUnit: null, oblegajacyOwnerId: 0 },
+        { onSiege() {}, onStorm() { window.__cacStorm++; }, onCancel() {}, ...(blocked === null ? {} : { isStormBlocked: () => blocked }) });
+      const b = document.querySelector('#civ-city-attack-choice [data-act="storm"]');
+      b.click(); document.dispatchEvent(new KeyboardEvent('keydown', { key: '2' }));
+      return { disabled: b.disabled, text: b.textContent, fired: window.__cacStorm };
+    }, blocked);
+    let c = await choice(true);
+    await snap('04-menu-ataku-zablokowany.png');
+    check('LIVE menu ataku: obwarowane bez machin => Szturm disabled + komunikat, klik i klawisz 2 nie odpalaja', c.disabled && /Potrzebne machiny oblężnicze — pozostaje oblężenie/.test(c.text) && c.fired === 0, c);
+    c = await choice(false);
+    check('LIVE menu ataku: z machina => Szturm aktywny (klik odpala)', !c.disabled && c.fired >= 1, c);
+    c = await choice(null);
+    check('LIVE menu ataku: bez isStormBlocked => zachowanie jak dotad', !c.disabled && c.fired >= 1, c);
 
     r = await run({ techs: [], filter: false, stormBlocked: true });
     check('MUTACJA (brak filtra techu): DOM zawiera niedostepne machiny => test czerwieni', NAMES.some(n => r.text.includes(n)) && r.btns.length > 0, r.btns);
