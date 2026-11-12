@@ -33,3 +33,10 @@ Ten plik jest obowiązkowo czytany przed każdą zmianą statusu tematu, taska a
 
 - **Sojusznik wzywa do wojny (task #296): WDROŻONE.** Potwierdzone w kodzie i przez właściciela. Commit `ab0ec32f1` (feat: persist alliance war calls, 11.11) i test `8ee813d7b` są w `origin/main`. Mechanizm: `enqueueAllianceWarCall` (main.ts ~21419) wstawia prośbę do `pendingDiplomacyInbox` z `cmdType: alliance_war_call`; `resolveAllianceWarCall` (~21445) obsługuje Dołącz/Odrzuć; `allianceWarCallHistory` zapisuje joined/refused/expired. Dispatch `eb733306c` został zrealizowany tym commitem, nie osobnym workflow. Błąd procesu: uznałem to za niewdrożone, bo szukałem po słowach „dołącz do wojny” i „wezwanie”, a kod używa nazw `alliance_war_call` i `enqueueAllianceWarCall`. Poprawka: szukać po identyfikatorach z dispatchu i po `git log -S` nad nazwą funkcji, nie po tekście UI.
 - **Machiny oblężnicze (task #297): NIE POTWIERDZONE.** Istnieje kolejka budowy (`siegeMachines.ts`, merge `c37106ed0`), ale brak dowodu na reguły „tylko podczas oblężenia, 1 na 10, koszt z zasobów”.
+
+## Korekta 2026-11-12 (machiny oblężnicze, task #297): WDROŻONE
+
+- Budowa tylko w oblężeniu, 1 machina na 10 jednostek na turę, koszt z zasobów: commit `6218f2ab1` w `main`, `game/siege-engine-build.ts`, test `siege-engines-built-during-siege-test.cjs`. Zgłoszenie w rejestrze z 2026-11-09.
+- Widoczność machin wg technologii: `visibleSiegeEngineOptions` (`siege-engine-build.ts:106`) używane w `main.ts:18098`. FALA 654 (`af12bab71`): bez machin przycisk Szturm wyłączony. Rejestr: 2026-11-11/12.
+- Otwarte: potwierdzenie w żywej grze (Chromium), przy odblokowanej i zablokowanej technologii.
+- Błąd procesu: poprzednio napisałem „nie potwierdzono”, bo nie sprawdziłem rejestru i nie znalazłem nazwy „W18” w rejestrze. Zgłoszenie było zapisane pod innymi słowami („Taran wymaga Obróbki drewna”, „bez machin oblężniczych”). Poprawka: przeszukiwać rejestr po kilku sformułowaniach (machin, maszyn, oblęż, taran, technolog) i po dacie.
