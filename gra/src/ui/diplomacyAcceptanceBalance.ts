@@ -67,7 +67,12 @@ export const RELATION_DEAL_TOOLTIP =
   + 'Niska Relacja = niższe PW Twojej strony — trzeba dopłacić do bilansu. '
   + 'Partner zawsze na bazie traktatu.';
 
-type RelationDealContext = 'treaty' | 'trade';
+/**
+ * 'incomingAccepted' — przychodząca oferta AI→gracz, którą gracz może przyjąć (Przyjmij aktywne).
+ * Tekst nie może wtedy mówić „musisz dać więcej", bo werdykt pod spodem mówi „Możesz przyjąć".
+ * Wariant czysto wyświetlany: liczby i bramki (canAccept, pwBalance) są bez zmian.
+ */
+type RelationDealContext = 'treaty' | 'trade' | 'incomingAccepted';
 
 function formatModPctSigned(modPct: number): string {
   if (modPct === 0) return '0%';
@@ -636,7 +641,12 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, 'Traktat', treatyBase)
     : '';
 
-  const relModRow = relationRowFromBalance(their, data.myBalance);
+  // Oferta AI→gracz z aktywnym „Przyjmij" (verdict „Możesz przyjąć"): wiersz Relacji nie może
+  // pokazywać wariantu 'trade' („musisz dać więcej…"), bo przeczy werdyktowi (dispatch
+  // R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1). Oferta gracz→AI zostaje bez zmian.
+  const relModRow = incomingTrade && data.canAccept !== false
+    ? renderRelationDealModRowHtml(relTotal, 'incomingAccepted')
+    : relationRowFromBalance(their, data.myBalance);
 
   const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0
     ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(their.relCurrent ?? 0)
