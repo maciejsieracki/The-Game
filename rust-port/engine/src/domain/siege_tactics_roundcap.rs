@@ -17,6 +17,12 @@
 //! * Petla tur: modul NIE zawiera petli (wymog dispatchu). Wywolujacy podaje stan i flagi przy kazdym kroku.
 //! * Morale: wejscia `atk_ratio` / `def_ratio` to juz policzone `_armyMoraleRatio` (web liczy je leniwie;
 //!   tu sa jawnym wejsciem; wywolujacy musi podac wartosc po ewentualnym `_startRout`, jak w `:10197`).
+//! * KOLEJNOSC w webie (do zlozenia w K5f, nie modelowana tutaj): `_beginTurn` `:5632-5636` wykonuje kolejno
+//!   `finished` -> `_battleAwaitingOrders` (wczesne `return`) -> `_updateStallWatch()` (`:5634`) -> `_checkEnd()`
+//!   -> `roundNo++`. `_checkEnd` przed sufitem (`:10199`) ma blok stall (`:10172-10188`, moze ustawic `aliveA`/`aliveD`
+//!   na `false`) oraz zakonczenia morale/zabojstwem. Gdy ktorakolwiek z tych sciezek konczy bitwe, sufit tury
+//!   w webie NIE jest sprawdzany. [`begin_turn`] modeluje wylacznie sufit; wywolujacy (K5f) musi wykonac powyzsze
+//!   sprawdzenia PRZED wywolaniem [`begin_turn`] i wywolac je tylko dla zywych obu stron.
 //!
 //! Zachowanie przy NaN: `round_cap_verdict` i porownania JS (`<=`) daja te same wyniki (NaN -> atakujacy).
 
@@ -83,6 +89,10 @@ pub fn ff_cap_step(state: &RoundCapState, atk_ratio: f64, def_ratio: f64) -> Rou
 ///
 /// Wywolujacy MUSI podac obie strony zywe (`alive_a && alive_d`). Przy `Finish` licznik NIE rosnie (web `return`
 /// przed `roundNo++`). Przy `Continue` licznik rosnie o 1.
+///
+/// NIE modeluje wczesnych `return` z `_beginTurn` (`finished`, `_battleAwaitingOrders`, `:5632-5633`) ani
+/// `_updateStallWatch` (`:5634`) i bloku stall w `_checkEnd` (`:10172-10188`): wszystkie sa przed sufitem w webie.
+/// Wywolujacy (K5f) sprawdza je sam i wola tę funkcje tylko wtedy, gdy bitwa trwa i obie strony sa zywe.
 pub fn begin_turn(
     state: &RoundCapState,
     atk_ratio: f64,

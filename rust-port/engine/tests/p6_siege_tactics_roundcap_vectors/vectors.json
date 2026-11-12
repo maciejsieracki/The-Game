@@ -122,7 +122,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.676,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -602,7 +602,7 @@
    },
    "aliveA": false,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.1,
    "expect": "continue"
   },
@@ -629,7 +629,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.25,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -889,7 +889,7 @@
    "aliveA": false,
    "aliveD": true,
    "ratioA": 0.957,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -1057,7 +1057,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.52,
    "expect": "continue"
   },
@@ -1435,7 +1435,7 @@
    "aliveA": true,
    "aliveD": false,
    "ratioA": 0.75,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -1551,7 +1551,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 1.5,
    "expect": "obronca"
   },
@@ -1838,7 +1838,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.482,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -2890,7 +2890,7 @@
    },
    "aliveA": true,
    "aliveD": false,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.501,
    "expect": "continue"
   },
@@ -2943,7 +2943,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.306,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -3371,8 +3371,8 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
-   "ratioD": 0,
+   "ratioA": "-0",
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -3580,7 +3580,7 @@
    "aliveA": false,
    "aliveD": true,
    "ratioA": "-Infinity",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -3879,7 +3879,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.092,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -4086,7 +4086,7 @@
    },
    "aliveA": false,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.458,
    "expect": "continue"
   },
@@ -4320,7 +4320,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 1,
    "expect": "continue"
   },
@@ -4619,7 +4619,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": "Infinity",
    "expect": "continue"
   },
@@ -4645,7 +4645,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.25,
    "expect": "continue"
   },
@@ -4697,7 +4697,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.055,
    "expect": "remis"
   },
@@ -4711,7 +4711,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": "-Infinity",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -5087,7 +5087,7 @@
    },
    "aliveA": false,
    "aliveD": false,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 1.5,
    "expect": "continue"
   },
@@ -5439,7 +5439,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.131,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -5464,7 +5464,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.097,
    "expect": "continue"
   },
@@ -5620,7 +5620,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": "-Infinity",
    "expect": "remis"
   },
@@ -5985,7 +5985,7 @@
    "aliveA": true,
    "aliveD": false,
    "ratioA": 0.126,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -6010,7 +6010,7 @@
    },
    "aliveA": false,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.036,
    "expect": "continue"
   },
@@ -6075,7 +6075,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": "-Infinity",
    "expect": "atakujacy"
   },
@@ -6218,8 +6218,8 @@
    },
    "aliveA": true,
    "aliveD": false,
-   "ratioA": 0,
-   "ratioD": 0,
+   "ratioA": "-0",
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -6309,7 +6309,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.185,
    "expect": "continue"
   },
@@ -6440,7 +6440,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.698,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -6752,7 +6752,7 @@
    "aliveA": true,
    "aliveD": false,
    "ratioA": 0.427,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -7089,7 +7089,7 @@
    },
    "aliveA": true,
    "aliveD": false,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.459,
    "expect": "continue"
   },
@@ -7298,7 +7298,7 @@
    "aliveA": true,
    "aliveD": false,
    "ratioA": 0.135,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -7350,7 +7350,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 1,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -7428,7 +7428,7 @@
    "aliveA": false,
    "aliveD": true,
    "ratioA": 0.682,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -7467,7 +7467,7 @@
    "aliveA": true,
    "aliveD": true,
    "ratioA": 0.178,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -7544,7 +7544,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": "-Infinity",
    "expect": "continue"
   },
@@ -7583,7 +7583,7 @@
    },
    "aliveA": true,
    "aliveD": false,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.593,
    "expect": "continue"
   },
@@ -7791,7 +7791,7 @@
    },
    "aliveA": true,
    "aliveD": true,
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.956,
    "expect": "continue"
   },
@@ -8009,7 +8009,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": "-Infinity",
    "expect": "atakujacy",
    "roundNoAfter": 449
@@ -8106,7 +8106,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.693,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 150
   },
@@ -8117,7 +8117,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.433,
    "expect": "remis",
    "roundNoAfter": 400
@@ -8250,7 +8250,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.619,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 150
   },
@@ -8394,7 +8394,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.545,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis",
    "roundNoAfter": 401
   },
@@ -8513,7 +8513,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.816,
    "expect": "continue",
    "roundNoAfter": 152
@@ -8526,7 +8526,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.5,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis",
    "roundNoAfter": 400
   },
@@ -8693,7 +8693,7 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 1,
    "expect": "continue",
    "roundNoAfter": 2
@@ -9041,7 +9041,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0,
    "expect": "obronca",
    "roundNoAfter": 401
@@ -9089,7 +9089,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.822,
    "expect": "continue",
    "roundNoAfter": 3
@@ -9509,7 +9509,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.935,
    "expect": "continue",
    "roundNoAfter": 2
@@ -9522,7 +9522,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.379,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 152
   },
@@ -9545,7 +9545,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.919,
    "expect": "obronca",
    "roundNoAfter": 419
@@ -9582,7 +9582,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.559,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 54
   },
@@ -9798,7 +9798,7 @@
     "wallEverBreached": false
    },
    "ratioA": "-Infinity",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 2
   },
@@ -10086,7 +10086,7 @@
     "wallEverBreached": true
    },
    "ratioA": "-Infinity",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "obronca",
    "roundNoAfter": 445
   },
@@ -10362,7 +10362,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.892,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 241
   },
@@ -10374,7 +10374,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.964,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 150
   },
@@ -10433,8 +10433,8 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
-   "ratioD": 0,
+   "ratioA": "-0",
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 1
   },
@@ -10637,7 +10637,7 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.556,
    "expect": "continue",
    "roundNoAfter": 242
@@ -11166,7 +11166,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.219,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue",
    "roundNoAfter": 185
   },
@@ -11477,7 +11477,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 1,
    "expect": "continue",
    "roundNoAfter": 151
@@ -12342,7 +12342,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.941,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis",
    "roundNoAfter": 401
   },
@@ -12450,7 +12450,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.903,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy",
    "roundNoAfter": 486
   },
@@ -12663,7 +12663,7 @@
     "wallPresent": true,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.392,
    "expect": "continue"
   },
@@ -12719,7 +12719,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -12751,7 +12751,7 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.554,
    "expect": "continue"
   },
@@ -12762,7 +12762,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.749,
    "expect": "remis"
   },
@@ -12785,7 +12785,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.612,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -12796,7 +12796,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.722,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -12840,7 +12840,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.75,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -12906,7 +12906,7 @@
     "wallEverBreached": false
    },
    "ratioA": 1,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -12983,7 +12983,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.75,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -13004,7 +13004,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.521,
    "expect": "remis"
   },
@@ -13378,7 +13378,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.5,
    "expect": "remis"
   },
@@ -13841,7 +13841,7 @@
     "wallEverBreached": false
    },
    "ratioA": "-Infinity",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -14028,7 +14028,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.258,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -14203,7 +14203,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.561,
    "expect": "remis"
   },
@@ -14699,7 +14699,7 @@
     "wallEverBreached": true
    },
    "ratioA": 1,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -15061,7 +15061,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.902,
    "expect": "continue"
   },
@@ -15161,7 +15161,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.615,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -15381,7 +15381,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.065,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -15392,7 +15392,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.396,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -15413,7 +15413,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.5,
    "expect": "continue"
   },
@@ -15678,7 +15678,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.394,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -15732,7 +15732,7 @@
     "wallPresent": true,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.057,
    "expect": "continue"
   },
@@ -15920,7 +15920,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.185,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "remis"
   },
   {
@@ -15953,7 +15953,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.523,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -16041,7 +16041,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.25,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -16370,7 +16370,7 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.296,
    "expect": "obronca"
   },
@@ -16711,7 +16711,7 @@
     "wallPresent": false,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.1,
    "expect": "obronca"
   },
@@ -17294,7 +17294,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.036,
    "expect": "remis"
   },
@@ -17305,7 +17305,7 @@
     "wallPresent": false,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.516,
    "expect": "continue"
   },
@@ -17536,7 +17536,7 @@
     "wallPresent": true,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.585,
    "expect": "continue"
   },
@@ -17603,7 +17603,7 @@
     "wallEverBreached": false
    },
    "ratioA": 0.1,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "atakujacy"
   },
   {
@@ -17625,7 +17625,7 @@
     "wallEverBreached": false
    },
    "ratioA": 1.5,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -17679,7 +17679,7 @@
     "wallPresent": true,
     "wallEverBreached": true
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.5,
    "expect": "obronca"
   },
@@ -17944,7 +17944,7 @@
     "wallEverBreached": true
    },
    "ratioA": "NaN",
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -17977,7 +17977,7 @@
     "wallEverBreached": true
    },
    "ratioA": 0.1,
-   "ratioD": 0,
+   "ratioD": "-0",
    "expect": "continue"
   },
   {
@@ -18086,7 +18086,7 @@
     "wallPresent": true,
     "wallEverBreached": false
    },
-   "ratioA": 0,
+   "ratioA": "-0",
    "ratioD": 0.289,
    "expect": "continue"
   },

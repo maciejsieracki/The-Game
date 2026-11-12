@@ -133,9 +133,44 @@ fn pokrycie_galezi_wektorow() {
         }
     }
     for case in v["beginTurn"].as_array().unwrap() {
+        let s = state(&case["state"]);
+        if s.wall_present && !s.wall_ever_breached {
+            bump("begin: oblezenie bez wylomu");
+        }
         match case["expect"].as_str().unwrap() {
             "continue" => bump("begin: roundNo++"),
             _ => bump("begin: werdykt (bez roundNo++)"),
+        }
+    }
+    // Wartosci nieskonczone i -0 w ratio (wektory musza je zawierac, inaczej test nie pokrywa NaN/Inf).
+    for (sec, ka, kd) in [
+        ("gate", "ratioA", "ratioD"),
+        ("beginTurn", "ratioA", "ratioD"),
+        ("ff", "ratioA", "ratioD"),
+    ] {
+        for case in v[sec].as_array().unwrap() {
+            for k in [ka, kd] {
+                let x = num(&case[k]);
+                if x.is_nan() {
+                    bump(match sec {
+                        "gate" => "gate: ratio NaN",
+                        "beginTurn" => "begin: ratio NaN",
+                        _ => "ff: ratio NaN",
+                    });
+                } else if x.is_infinite() {
+                    bump(match sec {
+                        "gate" => "gate: ratio Inf",
+                        "beginTurn" => "begin: ratio Inf",
+                        _ => "ff: ratio Inf",
+                    });
+                } else if x == 0.0 && x.is_sign_negative() {
+                    bump(match sec {
+                        "gate" => "gate: ratio -0",
+                        "beginTurn" => "begin: ratio -0",
+                        _ => "ff: ratio -0",
+                    });
+                }
+            }
         }
     }
     for case in v["ff"].as_array().unwrap() {
@@ -162,6 +197,16 @@ fn pokrycie_galezi_wektorow() {
         "gate: atakujacy",
         "begin: roundNo++",
         "begin: werdykt (bez roundNo++)",
+        "begin: oblezenie bez wylomu",
+        "gate: ratio NaN",
+        "gate: ratio Inf",
+        "gate: ratio -0",
+        "begin: ratio NaN",
+        "begin: ratio Inf",
+        "begin: ratio -0",
+        "ff: ratio NaN",
+        "ff: ratio Inf",
+        "ff: ratio -0",
         "ff: kontynuacja",
         "ff: remis",
         "ff: obronca",

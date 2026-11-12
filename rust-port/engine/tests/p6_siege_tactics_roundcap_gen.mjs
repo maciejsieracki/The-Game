@@ -220,8 +220,13 @@ for (let k = 0; k < 500; k++) {
   ffCases.push({ state, ratioA, ratioD, expect });
 }
 
-// JSON bez NaN/Infinity: wartosci nieskonczone jako napisy.
-const jsonReplacer = (_k, v) => (typeof v === 'number' && !Number.isFinite(v) ? String(v) : v);
+// JSON bez NaN/Infinity: wartosci nieskonczone jako napisy. Minus zero jako "-0" (JSON.stringify(-0) === "0"
+// gubi znak; bez tego wektory nie zawieraja -0 mimo puli RATIO_POOL).
+const jsonReplacer = (_k, v) => {
+  if (typeof v !== 'number') return v;
+  if (Object.is(v, -0)) return '-0';
+  return Number.isFinite(v) ? v : String(v);
+};
 
 const counts = { gate: gateCases.length, begin: beginCases.length, ff: ffCases.length };
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'p6_siege_tactics_roundcap_vectors');
