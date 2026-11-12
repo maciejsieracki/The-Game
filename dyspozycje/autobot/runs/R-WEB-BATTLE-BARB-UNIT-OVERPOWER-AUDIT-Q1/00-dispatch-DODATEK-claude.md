@@ -1,0 +1,2 @@
+# DODATEK orkiestratora (R-WEB-BATTLE-BARB-UNIT-OVERPOWER-AUDIT-Q1, 2026-11-12)
+BAZA: origin/main 81e357dee. MODEL: Operator HAIKU 5.5, Obrona HAIKU, Evaluator/FC SONNET. Audyt bez zmian kodu gry. Wskazówki: silnik bitwy w gra/src/battle/**; obrażenia i mnożniki szukaj grep-em po "damage|dmg|mnoz|mult|bonus" w battle/ i game/combat*; sprawdź osobno ścieżkę dystansową (strzelcy) i wręcz. Ciężkie testy bitew z limitem 280 s. ŚRODOWISKO: worktree, npm ci --ignore-scripts, zakaz npm run build/dev, tsc --noEmit.

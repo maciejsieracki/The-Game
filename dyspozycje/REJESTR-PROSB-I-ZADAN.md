@@ -9538,3 +9538,6 @@ Jedna cywilizacja ma ~24 000 szt. miedzi krótko po wejściu w epokę miedzi —
 
 ### Zgłoszenie właściciela 2026-11-12: BOOT ERROR przy otwarciu gry (zalew ResizeObserver)
 Gra z pliku Gra-ROBOCZA.html pokazuje czerwony overlay „BOOT ERROR" z setkami linii „ResizeObserver loop completed…". Hipoteza: fitCitySideTop (cityUxFrame.ts, commit 6ebbaf0c1) tworzy nowy ResizeObserver przy każdym wywołaniu z callbacka. Temat R-WEB-CITY-SIDE-TOP-RO-LOOP-BOOT-ERROR-Q1 (Operator HAIKU, błąd krytyczny, bez pytania). Zlecenie właściciela „tooltip zamiast tekstu w panelu administratora ulepszeń" zostaje w kolejce po tym tematu.
+
+### Zgłoszenie właściciela 2026-11-12: bitwa — jednostka barbarzyńców „z supermocą”
+Jednostka barbarzyńców o tej samej mocy co gracza zniszczyła jednostkę gracza bez strat po jego stronie. Temat R-WEB-BATTLE-BARB-UNIT-OVERPOWER-AUDIT-Q1 (audyt read-only, Operator HAIKU): tabela modyfikatorów obrażeń obu stron, przyczyna, propozycja poprawki (bez commita). Nie mylić z FALĄ 626 (×3 liczby jednostek barbarzyńców, nie siły). Pytania o parametry: do właściciela ABC po wyniku.
