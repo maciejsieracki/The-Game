@@ -13,9 +13,9 @@
   "max_rounds": 200
  },
  "counts": {
-  "acc": 225,
-  "hits": 1125,
-  "ranges": 225
+  "acc": 256,
+  "hits": 1536,
+  "ranges": 256
  },
  "acc": [
   {
@@ -36,6 +36,11 @@
   {
    "melee": "NaN",
    "missile": 0,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": "-0",
    "expected": "NaN"
   },
   {
@@ -111,6 +116,11 @@
   {
    "melee": "Infinity",
    "missile": 0,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": "-0",
    "expected": "Infinity"
   },
   {
@@ -190,6 +200,11 @@
   },
   {
    "melee": "-Infinity",
+   "missile": "-0",
+   "expected": "-0"
+  },
+  {
+   "melee": "-Infinity",
    "missile": -1,
    "expected": -1
   },
@@ -265,6 +280,11 @@
   },
   {
    "melee": 0,
+   "missile": "-0",
+   "expected": 0
+  },
+  {
+   "melee": 0,
    "missile": -1,
    "expected": 0
   },
@@ -319,6 +339,86 @@
    "expected": 0
   },
   {
+   "melee": "-0",
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": "-0",
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": "-0",
+   "missile": "-Infinity",
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": "-0",
+   "missile": "-0",
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": -1,
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": "-0",
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": "-0",
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": "-0",
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": "-0",
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": "-0",
+   "missile": -106.5,
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": "-0",
+   "missile": -25,
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": -19.5,
+   "expected": "-0"
+  },
+  {
+   "melee": "-0",
+   "missile": -97.5,
+   "expected": "-0"
+  },
+  {
    "melee": -1,
    "missile": "NaN",
    "expected": "NaN"
@@ -340,6 +440,11 @@
   },
   {
    "melee": -1,
+   "missile": "-0",
+   "expected": "-0"
+  },
+  {
+   "melee": -1,
    "missile": -1,
    "expected": -1
   },
@@ -415,6 +520,11 @@
   },
   {
    "melee": 2.5,
+   "missile": "-0",
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
    "missile": -1,
    "expected": 2.5
   },
@@ -490,6 +600,11 @@
   },
   {
    "melee": 40,
+   "missile": "-0",
+   "expected": 40
+  },
+  {
+   "melee": 40,
    "missile": -1,
    "expected": 40
   },
@@ -565,6 +680,11 @@
   },
   {
    "melee": 75,
+   "missile": "-0",
+   "expected": 75
+  },
+  {
+   "melee": 75,
    "missile": -1,
    "expected": 75
   },
@@ -636,6 +756,11 @@
   {
    "melee": 1e+308,
    "missile": 0,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": "-0",
    "expected": 1e+308
   },
   {
@@ -711,6 +836,11 @@
   {
    "melee": 65.5,
    "missile": 0,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": "-0",
    "expected": 65.5
   },
   {
@@ -790,6 +920,11 @@
   },
   {
    "melee": -106.5,
+   "missile": "-0",
+   "expected": "-0"
+  },
+  {
+   "melee": -106.5,
    "missile": -1,
    "expected": -1
   },
@@ -865,6 +1000,11 @@
   },
   {
    "melee": 17.5,
+   "missile": "-0",
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
    "missile": -1,
    "expected": 17.5
   },
@@ -937,6 +1077,11 @@
    "melee": -25,
    "missile": 0,
    "expected": 0
+  },
+  {
+   "melee": -25,
+   "missile": "-0",
+   "expected": "-0"
   },
   {
    "melee": -25,
@@ -1012,6 +1157,11 @@
    "melee": -19.5,
    "missile": 0,
    "expected": 0
+  },
+  {
+   "melee": -19.5,
+   "missile": "-0",
+   "expected": "-0"
   },
   {
    "melee": -19.5,
@@ -1087,6 +1237,11 @@
    "melee": -97.5,
    "missile": 0,
    "expected": 0
+  },
+  {
+   "melee": -97.5,
+   "missile": "-0",
+   "expected": "-0"
   },
   {
    "melee": -97.5,
@@ -1154,6 +1309,12 @@
   {
    "atk": "NaN",
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1184,6 +1345,12 @@
   {
    "atk": "NaN",
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1214,6 +1381,12 @@
   {
    "atk": "NaN",
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1244,6 +1417,12 @@
   {
    "atk": "NaN",
    "def": 0,
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1262,6 +1441,42 @@
   {
    "atk": "NaN",
    "def": 0,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-0",
    "bonus": 7.5,
    "expected": "NaN"
   },
@@ -1269,6 +1484,12 @@
    "atk": "NaN",
    "def": -1,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1299,6 +1520,12 @@
    "atk": "NaN",
    "def": 2.5,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1329,6 +1556,12 @@
    "atk": "NaN",
    "def": 40,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1359,6 +1592,12 @@
    "atk": "NaN",
    "def": 75,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1389,6 +1628,12 @@
    "atk": "NaN",
    "def": 1e+308,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1419,6 +1664,12 @@
    "atk": "NaN",
    "def": 65.5,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1449,6 +1700,12 @@
    "atk": "NaN",
    "def": -106.5,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1479,6 +1736,12 @@
    "atk": "NaN",
    "def": 17.5,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1509,6 +1772,12 @@
    "atk": "NaN",
    "def": -25,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1539,6 +1808,12 @@
    "atk": "NaN",
    "def": -19.5,
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -1574,6 +1849,12 @@
   {
    "atk": "NaN",
    "def": -97.5,
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1604,6 +1885,12 @@
   {
    "atk": "Infinity",
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1634,6 +1921,12 @@
   {
    "atk": "Infinity",
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1664,6 +1957,12 @@
   {
    "atk": "Infinity",
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1694,6 +1993,12 @@
   {
    "atk": "Infinity",
    "def": 0,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -1712,6 +2017,42 @@
   {
    "atk": "Infinity",
    "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "-0",
    "bonus": 7.5,
    "expected": 75
   },
@@ -1719,6 +2060,12 @@
    "atk": "Infinity",
    "def": -1,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1749,6 +2096,12 @@
    "atk": "Infinity",
    "def": 2.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1779,6 +2132,12 @@
    "atk": "Infinity",
    "def": 40,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1809,6 +2168,12 @@
    "atk": "Infinity",
    "def": 75,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1839,6 +2204,12 @@
    "atk": "Infinity",
    "def": 1e+308,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1869,6 +2240,12 @@
    "atk": "Infinity",
    "def": 65.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1899,6 +2276,12 @@
    "atk": "Infinity",
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1929,6 +2312,12 @@
    "atk": "Infinity",
    "def": 17.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1959,6 +2348,12 @@
    "atk": "Infinity",
    "def": -25,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -1989,6 +2384,12 @@
    "atk": "Infinity",
    "def": -19.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -2024,6 +2425,12 @@
   {
    "atk": "Infinity",
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2054,6 +2461,12 @@
   {
    "atk": "-Infinity",
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2084,6 +2497,12 @@
   {
    "atk": "-Infinity",
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2114,6 +2533,12 @@
   {
    "atk": "-Infinity",
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2144,6 +2569,12 @@
   {
    "atk": "-Infinity",
    "def": 0,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2162,6 +2593,42 @@
   {
    "atk": "-Infinity",
    "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-0",
    "bonus": 7.5,
    "expected": 15
   },
@@ -2169,6 +2636,12 @@
    "atk": "-Infinity",
    "def": -1,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2199,6 +2672,12 @@
    "atk": "-Infinity",
    "def": 2.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2229,6 +2708,12 @@
    "atk": "-Infinity",
    "def": 40,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2259,6 +2744,12 @@
    "atk": "-Infinity",
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2289,6 +2780,12 @@
    "atk": "-Infinity",
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2319,6 +2816,12 @@
    "atk": "-Infinity",
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2349,6 +2852,12 @@
    "atk": "-Infinity",
    "def": -106.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2379,6 +2888,12 @@
    "atk": "-Infinity",
    "def": 17.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2409,6 +2924,12 @@
    "atk": "-Infinity",
    "def": -25,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2439,6 +2960,12 @@
    "atk": "-Infinity",
    "def": -19.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2469,6 +2996,12 @@
    "atk": "-Infinity",
    "def": -97.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2504,6 +3037,12 @@
   {
    "atk": 0,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2529,6 +3068,12 @@
    "atk": 0,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2559,6 +3104,12 @@
    "atk": 0,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -2594,6 +3145,12 @@
   {
    "atk": 0,
    "def": 0,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 0,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2617,8 +3174,50 @@
   },
   {
    "atk": 0,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 0,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 0,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 0,
    "def": -1,
    "bonus": 0,
+   "expected": 41
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": "-0",
    "expected": 41
   },
   {
@@ -2654,6 +3253,12 @@
   {
    "atk": 0,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 37.5
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2684,6 +3289,12 @@
   {
    "atk": 0,
    "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2709,6 +3320,12 @@
    "atk": 0,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2739,6 +3356,12 @@
    "atk": 0,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2769,6 +3392,12 @@
    "atk": 0,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -2799,6 +3428,12 @@
    "atk": 0,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -2829,6 +3464,12 @@
    "atk": 0,
    "def": 17.5,
    "bonus": 0,
+   "expected": 22.5
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 22.5
   },
   {
@@ -2864,6 +3505,12 @@
   {
    "atk": 0,
    "def": -25,
+   "bonus": "-0",
+   "expected": 65
+  },
+  {
+   "atk": 0,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2889,6 +3536,12 @@
    "atk": 0,
    "def": -19.5,
    "bonus": 0,
+   "expected": 59.5
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 59.5
   },
   {
@@ -2924,6 +3577,12 @@
   {
    "atk": 0,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -2946,9 +3605,591 @@
    "expected": 75
   },
   {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": 0,
+   "expected": 41
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": "-0",
+   "expected": 41
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 48.5
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 37.5
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": "-0",
+   "expected": 37.5
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 45
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 22.5
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": "-0",
+   "expected": 22.5
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 30
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": 0,
+   "expected": 65
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": "-0",
+   "expected": 65
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 72.5
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 59.5
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": "-0",
+   "expected": 59.5
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 67
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-0",
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
    "atk": -1,
    "def": "NaN",
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -2979,6 +4220,12 @@
    "atk": -1,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3009,6 +4256,12 @@
    "atk": -1,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -3044,6 +4297,12 @@
   {
    "atk": -1,
    "def": 0,
+   "bonus": "-0",
+   "expected": 39
+  },
+  {
+   "atk": -1,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3067,8 +4326,50 @@
   },
   {
    "atk": -1,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 39
+  },
+  {
+   "atk": -1,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 39
+  },
+  {
+   "atk": -1,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 46.5
+  },
+  {
+   "atk": -1,
    "def": -1,
    "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": "-0",
    "expected": 40
   },
   {
@@ -3104,6 +4405,12 @@
   {
    "atk": -1,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 36.5
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3134,6 +4441,12 @@
   {
    "atk": -1,
    "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3159,6 +4472,12 @@
    "atk": -1,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3189,6 +4508,12 @@
    "atk": -1,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3219,6 +4544,12 @@
    "atk": -1,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3249,6 +4580,12 @@
    "atk": -1,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -3279,6 +4616,12 @@
    "atk": -1,
    "def": 17.5,
    "bonus": 0,
+   "expected": 21.5
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 21.5
   },
   {
@@ -3314,6 +4657,12 @@
   {
    "atk": -1,
    "def": -25,
+   "bonus": "-0",
+   "expected": 64
+  },
+  {
+   "atk": -1,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3339,6 +4688,12 @@
    "atk": -1,
    "def": -19.5,
    "bonus": 0,
+   "expected": 58.5
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 58.5
   },
   {
@@ -3374,6 +4729,12 @@
   {
    "atk": -1,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3404,6 +4765,12 @@
   {
    "atk": 2.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3429,6 +4796,12 @@
    "atk": 2.5,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3459,6 +4832,12 @@
    "atk": 2.5,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -3494,6 +4873,12 @@
   {
    "atk": 2.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 42.5
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3517,8 +4902,50 @@
   },
   {
    "atk": 2.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 42.5
+  },
+  {
+   "atk": 2.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 42.5
+  },
+  {
+   "atk": 2.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 50
+  },
+  {
+   "atk": 2.5,
    "def": -1,
    "bonus": 0,
+   "expected": 43.5
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 43.5
   },
   {
@@ -3554,6 +4981,12 @@
   {
    "atk": 2.5,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3584,6 +5017,12 @@
   {
    "atk": 2.5,
    "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3609,6 +5048,12 @@
    "atk": 2.5,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3639,6 +5084,12 @@
    "atk": 2.5,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3669,6 +5120,12 @@
    "atk": 2.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -3699,6 +5156,12 @@
    "atk": 2.5,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -3729,6 +5192,12 @@
    "atk": 2.5,
    "def": 17.5,
    "bonus": 0,
+   "expected": 25
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 25
   },
   {
@@ -3764,6 +5233,12 @@
   {
    "atk": 2.5,
    "def": -25,
+   "bonus": "-0",
+   "expected": 67.5
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3789,6 +5264,12 @@
    "atk": 2.5,
    "def": -19.5,
    "bonus": 0,
+   "expected": 62
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 62
   },
   {
@@ -3824,6 +5305,12 @@
   {
    "atk": 2.5,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3854,6 +5341,12 @@
   {
    "atk": 40,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3884,6 +5377,12 @@
   {
    "atk": 40,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3914,6 +5413,12 @@
   {
    "atk": 40,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3944,6 +5449,12 @@
   {
    "atk": 40,
    "def": 0,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -3962,6 +5473,42 @@
   {
    "atk": 40,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 75
   },
@@ -3969,6 +5516,12 @@
    "atk": 40,
    "def": -1,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -3999,6 +5552,12 @@
    "atk": 40,
    "def": 2.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4034,6 +5593,12 @@
   {
    "atk": 40,
    "def": 40,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 40,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4064,6 +5629,12 @@
   {
    "atk": 40,
    "def": 75,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 75,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4089,6 +5660,12 @@
    "atk": 40,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -4119,6 +5696,12 @@
    "atk": 40,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -4154,6 +5737,12 @@
   {
    "atk": 40,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4179,6 +5768,12 @@
    "atk": 40,
    "def": 17.5,
    "bonus": 0,
+   "expected": 62.5
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 62.5
   },
   {
@@ -4214,6 +5809,12 @@
   {
    "atk": 40,
    "def": -25,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4244,6 +5845,12 @@
   {
    "atk": 40,
    "def": -19.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4274,6 +5881,12 @@
   {
    "atk": 40,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4304,6 +5917,12 @@
   {
    "atk": 75,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4334,6 +5953,12 @@
   {
    "atk": 75,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4364,6 +5989,12 @@
   {
    "atk": 75,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4394,6 +6025,12 @@
   {
    "atk": 75,
    "def": 0,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4412,6 +6049,42 @@
   {
    "atk": 75,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 75
   },
@@ -4419,6 +6092,12 @@
    "atk": 75,
    "def": -1,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4449,6 +6128,12 @@
    "atk": 75,
    "def": 2.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4479,6 +6164,12 @@
    "atk": 75,
    "def": 40,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4514,6 +6205,12 @@
   {
    "atk": 75,
    "def": 75,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 75,
+   "def": 75,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4539,6 +6236,12 @@
    "atk": 75,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -4574,6 +6277,12 @@
   {
    "atk": 75,
    "def": 65.5,
+   "bonus": "-0",
+   "expected": 49.5
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4604,6 +6313,12 @@
   {
    "atk": 75,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4634,6 +6349,12 @@
   {
    "atk": 75,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4664,6 +6385,12 @@
   {
    "atk": 75,
    "def": -25,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4694,6 +6421,12 @@
   {
    "atk": 75,
    "def": -19.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4724,6 +6457,12 @@
   {
    "atk": 75,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4754,6 +6493,12 @@
   {
    "atk": 1e+308,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4784,6 +6529,12 @@
   {
    "atk": 1e+308,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4814,6 +6565,12 @@
   {
    "atk": 1e+308,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4844,6 +6601,12 @@
   {
    "atk": 1e+308,
    "def": 0,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4862,6 +6625,42 @@
   {
    "atk": 1e+308,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 75
   },
@@ -4869,6 +6668,12 @@
    "atk": 1e+308,
    "def": -1,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4899,6 +6704,12 @@
    "atk": 1e+308,
    "def": 2.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -4934,6 +6745,12 @@
   {
    "atk": 1e+308,
    "def": 40,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4964,6 +6781,12 @@
   {
    "atk": 1e+308,
    "def": 75,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -4994,6 +6817,12 @@
   {
    "atk": 1e+308,
    "def": 1e+308,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5024,6 +6853,12 @@
   {
    "atk": 1e+308,
    "def": 65.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5054,6 +6889,12 @@
   {
    "atk": 1e+308,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5084,6 +6925,12 @@
   {
    "atk": 1e+308,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5114,6 +6961,12 @@
   {
    "atk": 1e+308,
    "def": -25,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5144,6 +6997,12 @@
   {
    "atk": 1e+308,
    "def": -19.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5174,6 +7033,12 @@
   {
    "atk": 1e+308,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5204,6 +7069,12 @@
   {
    "atk": 65.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5234,6 +7105,12 @@
   {
    "atk": 65.5,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5264,6 +7141,12 @@
   {
    "atk": 65.5,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5294,6 +7177,12 @@
   {
    "atk": 65.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5312,6 +7201,42 @@
   {
    "atk": 65.5,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 75
   },
@@ -5319,6 +7244,12 @@
    "atk": 65.5,
    "def": -1,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -5349,6 +7280,12 @@
    "atk": 65.5,
    "def": 2.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -5384,6 +7321,12 @@
   {
    "atk": 65.5,
    "def": 40,
+   "bonus": "-0",
+   "expected": 65.5
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5409,6 +7352,12 @@
    "atk": 65.5,
    "def": 75,
    "bonus": 0,
+   "expected": 30.5
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": "-0",
    "expected": 30.5
   },
   {
@@ -5444,6 +7393,12 @@
   {
    "atk": 65.5,
    "def": 1e+308,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5469,6 +7424,12 @@
    "atk": 65.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 40
   },
   {
@@ -5504,6 +7465,12 @@
   {
    "atk": 65.5,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5534,6 +7501,12 @@
   {
    "atk": 65.5,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5564,6 +7537,12 @@
   {
    "atk": 65.5,
    "def": -25,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5594,6 +7573,12 @@
   {
    "atk": 65.5,
    "def": -19.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5624,6 +7609,12 @@
   {
    "atk": 65.5,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5654,6 +7645,12 @@
   {
    "atk": -106.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5684,6 +7681,12 @@
   {
    "atk": -106.5,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5714,6 +7717,12 @@
   {
    "atk": -106.5,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5744,6 +7753,12 @@
   {
    "atk": -106.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5762,6 +7777,42 @@
   {
    "atk": -106.5,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 15
   },
@@ -5769,6 +7820,12 @@
    "atk": -106.5,
    "def": -1,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5799,6 +7856,12 @@
    "atk": -106.5,
    "def": 2.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5829,6 +7892,12 @@
    "atk": -106.5,
    "def": 40,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5859,6 +7928,12 @@
    "atk": -106.5,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5889,6 +7964,12 @@
    "atk": -106.5,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5919,6 +8000,12 @@
    "atk": -106.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -5954,6 +8041,12 @@
   {
    "atk": -106.5,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -5984,6 +8077,12 @@
   {
    "atk": -106.5,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6009,6 +8108,12 @@
    "atk": -106.5,
    "def": -25,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6039,6 +8144,12 @@
    "atk": -106.5,
    "def": -19.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6074,6 +8185,12 @@
   {
    "atk": -106.5,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 31
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6104,6 +8221,12 @@
   {
    "atk": 17.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6129,6 +8252,12 @@
    "atk": 17.5,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6159,6 +8288,12 @@
    "atk": 17.5,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6194,6 +8329,12 @@
   {
    "atk": 17.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 57.5
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6217,8 +8358,50 @@
   },
   {
    "atk": 17.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 57.5
+  },
+  {
+   "atk": 17.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 57.5
+  },
+  {
+   "atk": 17.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 65
+  },
+  {
+   "atk": 17.5,
    "def": -1,
    "bonus": 0,
+   "expected": 58.5
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 58.5
   },
   {
@@ -6254,6 +8437,12 @@
   {
    "atk": 17.5,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 55
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6279,6 +8468,12 @@
    "atk": 17.5,
    "def": 40,
    "bonus": 0,
+   "expected": 17.5
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": "-0",
    "expected": 17.5
   },
   {
@@ -6314,6 +8509,12 @@
   {
    "atk": 17.5,
    "def": 75,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6339,6 +8540,12 @@
    "atk": 17.5,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6369,6 +8576,12 @@
    "atk": 17.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6399,6 +8612,12 @@
    "atk": 17.5,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6434,6 +8653,12 @@
   {
    "atk": 17.5,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 40
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6464,6 +8689,12 @@
   {
    "atk": 17.5,
    "def": -25,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6489,6 +8720,12 @@
    "atk": 17.5,
    "def": -19.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6519,6 +8756,12 @@
    "atk": 17.5,
    "def": -97.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6549,6 +8792,12 @@
    "atk": -25,
    "def": "NaN",
    "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": "-0",
    "expected": "NaN"
   },
   {
@@ -6579,6 +8828,12 @@
    "atk": -25,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6609,6 +8864,12 @@
    "atk": -25,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6639,6 +8900,12 @@
    "atk": -25,
    "def": 0,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6667,8 +8934,50 @@
   },
   {
    "atk": -25,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 22.5
+  },
+  {
+   "atk": -25,
    "def": -1,
    "bonus": 0,
+   "expected": 16
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": "-0",
    "expected": 16
   },
   {
@@ -6704,6 +9013,12 @@
   {
    "atk": -25,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6734,6 +9049,12 @@
   {
    "atk": -25,
    "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6759,6 +9080,12 @@
    "atk": -25,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6789,6 +9116,12 @@
    "atk": -25,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6819,6 +9152,12 @@
    "atk": -25,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6849,6 +9188,12 @@
    "atk": -25,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -6879,6 +9224,12 @@
    "atk": -25,
    "def": 17.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -6909,6 +9260,12 @@
    "atk": -25,
    "def": -25,
    "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": "-0",
    "expected": 40
   },
   {
@@ -6944,6 +9301,12 @@
   {
    "atk": -25,
    "def": -19.5,
+   "bonus": "-0",
+   "expected": 34.5
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -6974,6 +9337,12 @@
   {
    "atk": -25,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7004,6 +9373,12 @@
   {
    "atk": -19.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7029,6 +9404,12 @@
    "atk": -19.5,
    "def": "Infinity",
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7059,6 +9440,12 @@
    "atk": -19.5,
    "def": "-Infinity",
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -7094,6 +9481,12 @@
   {
    "atk": -19.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 20.5
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7117,8 +9510,50 @@
   },
   {
    "atk": -19.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 20.5
+  },
+  {
+   "atk": -19.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 20.5
+  },
+  {
+   "atk": -19.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": "-0",
+   "bonus": 7.5,
+   "expected": 28
+  },
+  {
+   "atk": -19.5,
    "def": -1,
    "bonus": 0,
+   "expected": 21.5
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 21.5
   },
   {
@@ -7154,6 +9589,12 @@
   {
    "atk": -19.5,
    "def": 2.5,
+   "bonus": "-0",
+   "expected": 18
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7184,6 +9625,12 @@
   {
    "atk": -19.5,
    "def": 40,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7209,6 +9656,12 @@
    "atk": -19.5,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7239,6 +9692,12 @@
    "atk": -19.5,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7269,6 +9728,12 @@
    "atk": -19.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7299,6 +9764,12 @@
    "atk": -19.5,
    "def": -106.5,
    "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": "-0",
    "expected": 75
   },
   {
@@ -7329,6 +9800,12 @@
    "atk": -19.5,
    "def": 17.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7364,6 +9841,12 @@
   {
    "atk": -19.5,
    "def": -25,
+   "bonus": "-0",
+   "expected": 45.5
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7389,6 +9872,12 @@
    "atk": -19.5,
    "def": -19.5,
    "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 40
   },
   {
@@ -7424,6 +9913,12 @@
   {
    "atk": -19.5,
    "def": -97.5,
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7454,6 +9949,12 @@
   {
    "atk": -97.5,
    "def": "NaN",
+   "bonus": "-0",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7484,6 +9985,12 @@
   {
    "atk": -97.5,
    "def": "Infinity",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7514,6 +10021,12 @@
   {
    "atk": -97.5,
    "def": "-Infinity",
+   "bonus": "-0",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7544,6 +10057,12 @@
   {
    "atk": -97.5,
    "def": 0,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7562,6 +10081,42 @@
   {
    "atk": -97.5,
    "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "-0",
    "bonus": 7.5,
    "expected": 15
   },
@@ -7569,6 +10124,12 @@
    "atk": -97.5,
    "def": -1,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7599,6 +10160,12 @@
    "atk": -97.5,
    "def": 2.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7629,6 +10196,12 @@
    "atk": -97.5,
    "def": 40,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7659,6 +10232,12 @@
    "atk": -97.5,
    "def": 75,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7689,6 +10268,12 @@
    "atk": -97.5,
    "def": 1e+308,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7719,6 +10304,12 @@
    "atk": -97.5,
    "def": 65.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7754,6 +10345,12 @@
   {
    "atk": -97.5,
    "def": -106.5,
+   "bonus": "-0",
+   "expected": 49
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7784,6 +10381,12 @@
   {
    "atk": -97.5,
    "def": 17.5,
+   "bonus": "-0",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
    "bonus": "NaN",
    "expected": "NaN"
   },
@@ -7809,6 +10412,12 @@
    "atk": -97.5,
    "def": -25,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7839,6 +10448,12 @@
    "atk": -97.5,
    "def": -19.5,
    "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": "-0",
    "expected": 15
   },
   {
@@ -7869,6 +10484,12 @@
    "atk": -97.5,
    "def": -97.5,
    "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": "-0",
    "expected": 40
   },
   {
@@ -7919,6 +10540,11 @@
   },
   {
    "missile": "NaN",
+   "armor": "-0",
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
    "armor": -1,
    "expected": "NaN"
   },
@@ -7994,6 +10620,11 @@
   },
   {
    "missile": "Infinity",
+   "armor": "-0",
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
    "armor": -1,
    "expected": "Infinity"
   },
@@ -8069,6 +10700,11 @@
   },
   {
    "missile": "-Infinity",
+   "armor": "-0",
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
    "armor": -1,
    "expected": 1
   },
@@ -8140,6 +10776,11 @@
   {
    "missile": 0,
    "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": "-0",
    "expected": 1
   },
   {
@@ -8198,6 +10839,86 @@
    "expected": 97.5
   },
   {
+   "missile": "-0",
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": "-0",
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": "-0",
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": "-0",
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": -106.5,
+   "expected": 106.5
+  },
+  {
+   "missile": "-0",
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": "-0",
+   "armor": -25,
+   "expected": 25
+  },
+  {
+   "missile": "-0",
+   "armor": -19.5,
+   "expected": 19.5
+  },
+  {
+   "missile": "-0",
+   "armor": -97.5,
+   "expected": 97.5
+  },
+  {
    "missile": -1,
    "armor": "NaN",
    "expected": "NaN"
@@ -8215,6 +10936,11 @@
   {
    "missile": -1,
    "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": "-0",
    "expected": 1
   },
   {
@@ -8294,6 +11020,11 @@
   },
   {
    "missile": 2.5,
+   "armor": "-0",
+   "expected": 2.5
+  },
+  {
+   "missile": 2.5,
    "armor": -1,
    "expected": 3.5
   },
@@ -8365,6 +11096,11 @@
   {
    "missile": 40,
    "armor": 0,
+   "expected": 40
+  },
+  {
+   "missile": 40,
+   "armor": "-0",
    "expected": 40
   },
   {
@@ -8444,6 +11180,11 @@
   },
   {
    "missile": 75,
+   "armor": "-0",
+   "expected": 75
+  },
+  {
+   "missile": 75,
    "armor": -1,
    "expected": 76
   },
@@ -8515,6 +11256,11 @@
   {
    "missile": 1e+308,
    "armor": 0,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": "-0",
    "expected": 1e+308
   },
   {
@@ -8594,6 +11340,11 @@
   },
   {
    "missile": 65.5,
+   "armor": "-0",
+   "expected": 65.5
+  },
+  {
+   "missile": 65.5,
    "armor": -1,
    "expected": 66.5
   },
@@ -8665,6 +11416,11 @@
   {
    "missile": -106.5,
    "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": "-0",
    "expected": 1
   },
   {
@@ -8744,6 +11500,11 @@
   },
   {
    "missile": 17.5,
+   "armor": "-0",
+   "expected": 17.5
+  },
+  {
+   "missile": 17.5,
    "armor": -1,
    "expected": 18.5
   },
@@ -8815,6 +11576,11 @@
   {
    "missile": -25,
    "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": "-0",
    "expected": 1
   },
   {
@@ -8894,6 +11660,11 @@
   },
   {
    "missile": -19.5,
+   "armor": "-0",
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
    "armor": -1,
    "expected": 1
   },
@@ -8965,6 +11736,11 @@
   {
    "missile": -97.5,
    "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": "-0",
    "expected": 1
   },
   {

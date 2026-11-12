@@ -67,9 +67,9 @@ fn opt_num(v: &serde_json::Value) -> Option<f64> {
     }
 }
 
-/// Rownosc jak w wektorach: NaN == NaN.
+/// Rownosc jak w wektorach: NaN == NaN, a -0 != +0 (K5I2b2: Math.max(-0,0) = +0 w pinie, znak zera jest obserwowalny).
 fn same(a: f64, b: f64) -> bool {
-    (a.is_nan() && b.is_nan()) || a == b
+    (a.is_nan() && b.is_nan()) || (a == b && a.is_sign_negative() == b.is_sign_negative())
 }
 
 fn arc(s: &str) -> HitArc {

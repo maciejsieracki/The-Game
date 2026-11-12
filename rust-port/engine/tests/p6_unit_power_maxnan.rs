@@ -7,6 +7,7 @@
 //!
 //! Wartosci NaN/Infinity w JSON sa napisami: "NaN", "Infinity", "-Infinity".
 
+use civ_engine::domain::siege_tactics_inputs_pos::js_min_sign;
 use civ_engine::domain::unit_power::{hit_chance_tw, range_damage_tw, ranged_shot_accuracy};
 use serde_json::Value;
 
@@ -19,6 +20,7 @@ fn num(v: &Value, key: &str) -> f64 {
             "NaN" => f64::NAN,
             "Infinity" => f64::INFINITY,
             "-Infinity" => f64::NEG_INFINITY,
+            "-0" => -0.0,
             other => panic!("nieznany napis liczbowy {other}"),
         },
         other => panic!("pole {key} musi byc liczba, jest {other}"),
@@ -30,6 +32,12 @@ fn same(got: f64, exp: f64, ctx: &str) {
         assert!(got.is_nan(), "oczekiwano NaN, jest {got}: {ctx}");
     } else {
         assert_eq!(got, exp, "{ctx}");
+        // Znak zera jest obserwowalny: Math.max(-0,+0) === +0, Math.min(+0,-0) === -0 (K5I2b2).
+        assert_eq!(
+            got.is_sign_negative(),
+            exp.is_sign_negative(),
+            "znak zera: {ctx}"
+        );
     }
 }
 
@@ -81,4 +89,10 @@ fn p6_unit_power_maxnan_jawne_przypadki_js() {
     assert_eq!(hit_chance_tw(f64::INFINITY, 0.0, 0.0), 75.0);
     assert_eq!(hit_chance_tw(f64::NEG_INFINITY, 0.0, 0.0), 15.0);
     assert_eq!(hit_chance_tw(40.0, 40.0, 0.0), 40.0);
+    // Znak zera (K5I2b2): Math.max(-0, +0) === +0; Math.max(-0, -0) === -0; Math.min(+0, -0) === -0.
+    assert!(ranged_shot_accuracy(-0.0, 0.0).is_sign_positive());
+    assert!(ranged_shot_accuracy(-0.0, -0.0).is_sign_negative());
+    assert!(ranged_shot_accuracy(0.0, -0.0).is_sign_positive());
+    assert!(js_min_sign(0.0, -0.0).is_sign_negative());
+    assert!(js_min_sign(-0.0, 0.0).is_sign_negative());
 }

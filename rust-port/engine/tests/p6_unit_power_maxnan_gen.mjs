@@ -75,11 +75,12 @@ const rnd = () => {
 };
 const randFinite = () => Math.round((rnd() * 240 - 120) * 2) / 2;
 
-const SPECIAL = [NaN, Infinity, -Infinity, 0, -1, 2.5, 40, 75, 1e308];
+const SPECIAL = [NaN, Infinity, -Infinity, 0, -0, -1, 2.5, 40, 75, 1e308]; // -0: Math.max(-0,+0)=+0, Math.min(+0,-0)=-0 (K5I2b2)
 const VALS = [...SPECIAL, ...Array.from({ length: 6 }, randFinite)];
-const BONUS = [0, NaN, Infinity, -Infinity, 7.5];
+const BONUS = [0, -0, NaN, Infinity, -Infinity, 7.5];
 
-const enc = (x) => (Number.isNaN(x) ? 'NaN' : x === Infinity ? 'Infinity' : x === -Infinity ? '-Infinity' : x);
+// -0 jako napis '-0' (JSON.stringify(-0) === '0' gubi znak).
+const enc = (x) => (Number.isNaN(x) ? 'NaN' : x === Infinity ? 'Infinity' : x === -Infinity ? '-Infinity' : Object.is(x, -0) ? '-0' : x);
 
 const acc = [];
 for (const melee of VALS) for (const missile of VALS) {
