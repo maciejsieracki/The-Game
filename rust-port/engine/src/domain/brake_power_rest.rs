@@ -5,7 +5,8 @@
 //! kroki akumulatorow: `bitwy` (`battlePowerPointsFromDefeatedEnemy`) i `zdobycze`
 //! (`barbarianCapturedPowerGain`) - akumulator i pelna moc ofiary zostaja po stronie wolajacego.
 //!
-//! Pozostale 3 skladniki (bitwy, ulepszenia, zdobycze) maja jawny `NoProducer` z dowodem (plik:linia pinu
+//! `ulepszenia` przeniesiono do `brake_power_improvements` (P6-POWER-ULEPSZENIA-Q1, producent w tabeli).
+//! Pozostale 2 skladniki (bitwy, zdobycze) maja jawny `NoProducer` z dowodem (plik:linia pinu
 //! + brak danych w Rust). Wolajacy (W8 r4) musi podac je jawnie w `ObjectivePowerRaw`; brak cichych zer.
 //!
 //! Wektory: tests/p6_power_rest_vectors/vectors.json (generator tests/p6_power_rest_gen.mjs wykonuje
@@ -43,7 +44,7 @@ pub const REST_COMPONENT_SOURCES: [(&str, RestSource); 6] = [
     ),
     (
         "ulepszenia",
-        RestSource::NoProducer("web countImprovementsForOwner (main.ts:2643) - domkniecie: statsTerritoryNodesForOwner (main.ts:5657), hudPureScope, improvementKeysForHex, hexKeysWithinRadius; brak portu tej sumy w Rust"),
+        RestSource::RustProducer("brake_power_improvements::ulepszenia_for_owner (web countImprovementsForOwner, main.ts:2643; countImprovementsForNodes main.ts:2654; statsTerritoryNodesForOwner main.ts:5657)"),
     ),
     (
         "religia",

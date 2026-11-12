@@ -250,7 +250,7 @@ fn rest_table_covers_six_components_with_explicit_sources() {
             "zdobycze"
         ]
     );
-    for key in ["infra", "tech", "religia"] {
+    for key in ["infra", "tech", "ulepszenia", "religia"] {
         let src = REST_COMPONENT_SOURCES
             .iter()
             .find(|(k, _)| *k == key)
@@ -258,10 +258,7 @@ fn rest_table_covers_six_components_with_explicit_sources() {
             .expect("skladnik");
         assert!(matches!(src, RestSource::RustProducer(_)), "{key}");
     }
-    assert_eq!(
-        rest_no_producer_keys(),
-        vec!["bitwy", "ulepszenia", "zdobycze"]
-    );
+    assert_eq!(rest_no_producer_keys(), vec!["bitwy", "zdobycze"]);
     // Kazdy wpis (producent i brak) ma uzasadnienie z odwolaniem plik.ts:linia do pinu.
     for (k, s) in REST_COMPONENT_SOURCES.iter() {
         let reason = match s {

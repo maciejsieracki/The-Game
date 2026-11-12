@@ -59,7 +59,7 @@ pub const COMPONENT_SOURCES: [(&str, ComponentSource); 12] = [
     ),
     (
         "ulepszenia",
-        ComponentSource::NoProducer("web countImprovementsForOwner (main.ts:2643) z domknieciem statsTerritoryNodesForOwner (main.ts:5657) i hex improvements; brak portu tej sumy w Rust (placed_improvements_for_owner to tylko wejscie, niezweryfikowane)"),
+        ComponentSource::RustProducer("brake_power_improvements::ulepszenia_for_owner (web countImprovementsForOwner, main.ts:2643; countImprovementsForNodes main.ts:2654; statsTerritoryNodesForOwner main.ts:5657)"),
     ),
     ("kultura", ComponentSource::RustProducer("order_effects_culture::empire_culture_total")),
     (
