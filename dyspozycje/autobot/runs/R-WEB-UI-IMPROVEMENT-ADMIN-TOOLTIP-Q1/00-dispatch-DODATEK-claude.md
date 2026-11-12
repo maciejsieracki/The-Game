@@ -1,0 +1,2 @@
+# DODATEK orkiestratora (R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1, 2026-11-12)
+BAZA: origin/main 81e357dee. Istniejący mechanizm tooltipów: data-lock-hint + showLockTip (buildModeHud.ts ~864–915) — użyj go zamiast nowego. Nie zmieniaj tekstów w kodzie na angielski. Polszczyzna zgodna z resztą UI. Integracja i push: NIE TY (orkiestrator). Zakaz npm run build/dev; tsc --noEmit; Chromium przez Playwright z /opt/pw-browsers/chromium.

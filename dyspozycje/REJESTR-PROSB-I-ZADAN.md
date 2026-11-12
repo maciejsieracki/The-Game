@@ -9547,3 +9547,6 @@ Jednostka barbarzyńców o tej samej mocy co gracza zniszczyła jednostkę gracz
 
 ### DECYZJA ABC właściciela 2026-11-12: przełącznik trafień w ustawieniach zaawansowanych
 Zamiast jednej mechaniki: „Trafienia: losowe / pewne” w ustawieniach zaawansowanych generowania mapy. Domyślnie w nowych grach: PEWNE (100% trafień, obrona przez pancerz, AUTO bez upsetu). Stare zapisy bez pola = LOSOWE (bez zmian wyniku). Temat R-WEB-BATTLE-HIT-MODE-SETTING-Q1 (Sonnet — uzasadnienie w dispatchu).
+
+### Zgłoszenie właściciela 2026-11-12: teksty administratora ulepszeń → tooltip
+Długie komunikaty w panelu automatyzacji ulepszeń (zrzut, miasto Ateny) przenieść do tooltipu; w treści krótki komunikat. Temat R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1 (Operator HAIKU), task #287.
