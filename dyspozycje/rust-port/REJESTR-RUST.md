@@ -244,3 +244,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - RANGED-CLEANUP: FC PASS-WITH-NOTES (182d298ef, kod 1943362b8, baza a8210a4f2 ⊂ parity). Czeka na B22.
 - Incydenty dyskowe: 215 MB (18:0x) — zatrzymano K5-SWEEP startujący przy 1,1 GB (błąd procesu); czyszczenie worktree zakończonych tematów w tle. Od teraz start tylko przy ≥4 GB.
 - Aktywne: INTEG-B21 (Obrona), DIR-CONST-ENUM (Obrona), TOWER-TARGET (Evaluator), K5-SWEEP-PRZEGLAD (wznowiony).
+
+## Przebieg 20:18 UTC (heartbeat: sloty + integracja)
+- **Integracja na parity-v2:** K5-LOOP-RESUME-Q1 (FC `d07241a5a`) i RAPORT-PORANNY-Q1 (FC `19f875a37`) → `de9cd05d7` (bramki: fmt/clippy OK, pełny `cargo test` 3247 passed, 0 failed, 1 ignored). INTEG-B22-Q1 (FC `655a27204`, scalony z `de9cd05d7`) → `23e33793e` (bramki: fmt/clippy OK, pełny test 3253 passed, 0 failed, 1 ignored). Wszystkie trzy FF na `rust-port/parity-v2`.
+- **Zabezpieczenie:** `refs/keep/*-fc` i `rust-port-wip/*` dla K5, RAPORT, B22; HEAD-y worktree w `refs/keep/wt-*`.
+- **Sprzątanie:** usunięte worktree K5, RAPORT, B22 i bramkowy `wf_db6e5078-6c4-1`; dysk 17 GB wolnego. Usuwanie pliku `/gates-k5r-full.txt` zablokowane przez zabezpieczenie (nie obejściono; plik z błędnej zmiennej `$S`).
+- **Sloty:** przed przebiegiem 0 aktywnych Workflow. Uruchomione 4 tematy wiringu (baza `23e33793e`, dispatche na `claude/rust-sivvrn` = `23ae2a411`):
+  1. R-RUSTPORT-P6-ZLOZE-WIRING-Q1 (#104) — wf_90998bc1-f29
+  2. R-RUSTPORT-P6-R7K7C-WIRING-Q2 (#106, zastępuje nieudany start Q1) — wf_4e654117-8b1
+  3. R-RUSTPORT-P6-ELIMINACJA-WIRING-Q1 (#114) — wf_2ace4e9c-1d5
+  4. R-RUSTPORT-P6-ZDOBYCIE-WIRING-Q1 (#115) — wf_99c4f54b-b1d
+- **Modele:** Operator Haiku, Obrona Haiku, Evaluator i Final Control Sonnet.
+- **Pytania gameplay (w czacie, nie rozstrzygane):** SZTURM ODPARTY (#60), W8 r7 Q1–Q4 (#63), units.json (#27), DYSTANS (#10), REPIN-DRYFT 1–6 (#14–#19).
+- **NIE_ZMIERZONO:** liczba testów dla dispatchu B22 (podany 3243) — zmierzono 3253; skan `journal.jsonl` nie odróżnia działających Workflow od zakończonych, aktywność oceniono po czasie zapisu.
