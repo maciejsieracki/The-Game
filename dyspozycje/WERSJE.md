@@ -1,3 +1,9 @@
+## ROBOCZA 3d624885 -- 2026-11-06 -- FALA 652: FALA 652: kontrolki mapy pod panelami (W14) + fortyfikacje jako lancuch awansu (W20) (testowa)
+
+- R-WEB-UI-TOOLBAR-ZOOM-BEHIND-EXPANDED-PANELS-Q1 + R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, testy tematow, audio-sidecar PASS
+- Limity: stare zapisy z dwoma etapami lancucha w kolejce placa za zbedny etap; modale nie zmierzone elementFromPoint
+
 ## ROBOCZA fb8c7652 -- 2026-11-06 -- FALA 651: FALA 651: administrator ulepszen — blokada automatyzacji bez administratora + panel wyboru administratora (W9) (testowa)
 
 - R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1
