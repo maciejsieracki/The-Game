@@ -5,6 +5,7 @@
 import type { RuntimeUnit } from '../units/setup';
 import { keyOf, hexDistance } from '../units/setup';
 import { pickStackLeader } from './stack-leader';
+import { canUnitOccupyCityHex, type CityHexRef } from './city-hex-movement';
 import type { UnitPowerInput } from './unit-power';
 import { sumRosterFieldM } from './auto-battle-power';
 import {
@@ -707,6 +708,25 @@ export function findSplitDestHexes(
     out.push(d);
   }
   return out;
+}
+
+/**
+ * Predykat przejezdności dla CELU rozdzielenia armii / ruchu pod-stosu:
+ * terenowa przejezdność ORAZ prawo wejścia właściciela na heks miasta
+ * (canUnitOccupyCityHex). Obce miasto (także puste, bez obrońców) nie jest
+ * celem rozdzielenia — rozdzielenie nie zdobywa miasta, więc wpadnięcie tam
+ * dawało jednostkę „w mieście przeciwnika" bez zajęcia.
+ *
+ * EN: Passability predicate for split / sub-stack move TARGETS: terrain
+ * passability AND the owner's right to enter the hex's city (foreign city
+ * hexes are never split targets, even when empty).
+ */
+export function splitTargetPassable(
+  isPassable: (q: number, r: number) => boolean,
+  ownerId: number,
+  cities: readonly CityHexRef[],
+): (q: number, r: number) => boolean {
+  return (q, r) => isPassable(q, r) && canUnitOccupyCityHex(ownerId, q, r, cities);
 }
 
 /** Cofnięcie wielu jednostek (np. cały przybywający stos) — po jednym heksie każda. */
