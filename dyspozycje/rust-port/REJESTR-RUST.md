@@ -236,3 +236,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - JS-MAX-SIGN: FC PASS-WITH-NOTES (9a9112a3d); kandydat na konflikt nazw js_max_sign z B19 przy B20/B21.
 - W toku: INTEG-B20 (Evaluator), JS0-HARDENING (Operator), K5I2B2-POKRYCIE (Operator). Razem 3 aktywne; czwarty slot świadomie wolny (#101 i #134–#137 zależą od B20).
 - Dysk 9,2 GB.
+
+## Przebieg — 18:18 UTC (heartbeat slotów)
+- COMBAT-MELEE-VEC: Operator BLOCK (brak portu fazy zwarcia w Rust; combat.rs:1058 "Faza zwarcia nie jest portowana"), Evaluator FAIL, FC FAIL. Decyzja orkiestratora: temat rozbity — A (generator z pinem, bez Rust; wymaga stubów civ/veteran → najpierw port modyfikatorów) i B (port zwarcia z rozszerzoną allowlistą combat.rs). Zostaje otwarte (#134–#136).
+- ELIMINACJA-DEALS-Q2: FC PASS-WITH-NOTES (5db1f2845, kod d81d79704). Merge z parity czysty. Czeka na B22.
+- JS0-REST: FC PASS-WITH-NOTES (621e7338f, kod 1fe2e36c3). Czeka na B22.
+- RANGED-CLEANUP: FC PASS-WITH-NOTES (182d298ef, kod 1943362b8, baza a8210a4f2 ⊂ parity). Czeka na B22.
+- Incydenty dyskowe: 215 MB (18:0x) — zatrzymano K5-SWEEP startujący przy 1,1 GB (błąd procesu); czyszczenie worktree zakończonych tematów w tle. Od teraz start tylko przy ≥4 GB.
+- Aktywne: INTEG-B21 (Obrona), DIR-CONST-ENUM (Obrona), TOWER-TARGET (Evaluator), K5-SWEEP-PRZEGLAD (wznowiony).
