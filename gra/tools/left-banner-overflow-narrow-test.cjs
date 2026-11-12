@@ -55,7 +55,7 @@ function plugin() {
 
 const FIXTURE = `
 (() => {
-  const cityA = { id: 'city-a', ownerId: 0, q: 0, r: 0, name: 'Ateny', population: 6 };
+  const cityA = { id: 'city-a', ownerId: 0, q: 0, r: 0, name: 'Ateny', population: ${Number(process.env.POP || 6)} };
   const map = { szerokoscQ: 8, wysokoscR: 8, seed: 42, riverPaths: [],
     hexes: { '0,0': { coords: { q: 0, r: 0 }, terenBazowy: 'rownina', nakladka: 'brak' } } };
   window.__configureCityPanel({
@@ -79,7 +79,7 @@ async function main() {
   let browser;
   try { browser = await chromium.launch({ headless: true }); }
   catch (e) { browser = await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox'] }); }
-  const sizes = [[2000, 900], [1366, 768], [1280, 720], [1024, 768]];
+  const sizes = [[2000, 900], [1920, 1080], [1600, 900], [1480, 900], [1366, 768], [1280, 720], [1024, 768]];
   console.log('TABELA (' + TAG + '): rozdz | lewy l..r | prawy l..r | plakietka l..r | scrollW | wysokosc banera');
   for (const [w, h] of sizes) {
     const page = await browser.newPage({ viewport: { width: w, height: h } });
@@ -111,7 +111,7 @@ async function main() {
       const bottom = Math.max(m.left.b, m.right.b, m.badge ? m.badge.b : 0);
       check(`${w}: panele boczne pod banerem`, m.panelL.t >= bottom - 0.5 && m.panelR.t >= bottom - 0.5, { bottom, pl: m.panelL.t, pr: m.panelR.t });
     }
-    if (w === 2000 && m.left) check('2000: uklad szeroki zachowany (jedna linia, wysokosc < 70 px)', m.left.b - m.left.t < 70, m.left);
+    if (w >= 1480 && m.left) check(w + ': uklad szeroki zachowany (jedna linia, wysokosc < 70 px)', m.left.b - m.left.t < 70, m.left);
     check(`${w}: brak bledow strony`, errs.length === 0, errs);
     if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.screenshot({ path: path.join(SHOTS, `${TAG}-${w}x${h}.png`) }); }
     await page.close();
