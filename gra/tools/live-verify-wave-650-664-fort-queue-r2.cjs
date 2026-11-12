@@ -42,6 +42,8 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const MUT = process.env.CIV_MUT || '';
+// CIV_HOLD_MS (domyslnie 0 = bez zmian): przedluza czas komunikatu czyszczenia W KOPII bundla, tylko do zrzutu.
+const HOLD_MS = Number(process.env.CIV_HOLD_MS || 0);
 const OUT = path.resolve(process.env.CIV_R2_OUT || path.join(os.tmpdir(), 'civ-r2-fortq-bundle' + (MUT ? '-' + MUT : '')));
 const EVIDENCE = path.resolve(ROOT, '..', 'dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2');
 const CHROME = fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined;
@@ -123,6 +125,14 @@ function makePlugin() {
         output = output.replace(wire, 'fortQueueCleanupNotice = 0; /* MUT wire */');
       } else if (MUT) {
         throw new Error('Nieznany CIV_MUT=' + MUT);
+      }
+      if (HOLD_MS > 0) {
+        // Tylko do zrzutu (kopia bundla): czas komunikatu czyszczenia 6000 ms -> HOLD_MS, zeby zrzut
+        // (Node + swiftshader, ~1-12 s opoznienia) trafil w okno widocznosci. Wartosc produkcyjna 6000
+        // jest sprawdzana w tym samym przebiegu (throw, gdy wzorzec nie pasuje).
+        const holdRe = /(zwrócone\.`,\s*)6000,/;
+        if (!holdRe.test(output)) throw new Error('Nie znaleziono czasu komunikatu czyszczenia (6000 ms)');
+        output = output.replace(holdRe, (_m, p1) => p1 + HOLD_MS + ',');
       }
       return { code: output, map: null };
     },
@@ -233,7 +243,7 @@ async function main() {
       const r = d.getBoundingClientRect();
       window.__shotProbe = { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], opacity: getComputedStyle(d).opacity, text: d.textContent.trim().slice(0, 60), at: Date.now() };
       return true;
-    }, undefined, { timeout: 30000, polling: 25 }).then(() => true, () => false);
+    }, undefined, { timeout: 60000, polling: 25 }).then(() => true, () => false);
     if (detected) {
       const probe = await page.evaluate(() => {
         const d = document.getElementById('civ-hint-toast');
@@ -252,9 +262,16 @@ async function main() {
       console.log('PROBE ' + JSON.stringify(probe));
       const shotErr = await page.screenshot({ path: shot1, timeout: 15000 }).then(() => null, e => String(e && e.message || e).slice(0, 300));
       shotTaken = !shotErr;
-      shotInfo = { ...probe, shotErr, shotAtMs: Date.now(), probeToShotMs: Date.now() - probe.at };
+      // Dowod widocznosci W CHWILI ZRZUTU: stan toasta odczytany in-page zaraz po page.screenshot.
+      const visAfter = await page.evaluate(() => {
+        const d = document.getElementById('civ-hint-toast');
+        const r = d.getBoundingClientRect();
+        return { disp: d.style.display, text: (d.textContent || '').includes('Usunięto'), box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], opacity: getComputedStyle(d).opacity, at: Date.now() };
+      }).catch(e => ({ error: String(e && e.message || e).slice(0, 200) }));
+      shotInfo = { ...probe, shotErr, shotAtMs: Date.now(), probeToShotMs: Date.now() - probe.at, visAfter, holdMs: HOLD_MS || null };
       console.log('SHOT ' + JSON.stringify(shotInfo));
     }
+    const shotVisible = !!(shotInfo && shotInfo.visAfter && shotInfo.visAfter.disp === 'block' && shotInfo.visAfter.text && shotInfo.visAfter.box && shotInfo.visAfter.box[2] > 0);
     await wait(7000);
     const rise1 = (await page.evaluate(() => window.__noticeRise)) - r0;
     const qAfter1 = await page.evaluate(id => window.__eraTestDebug.cityProdIdsForTest(id), cityId);
@@ -267,9 +284,12 @@ async function main() {
     check('W1a komunikat czyszczenia pojawil sie DOKLADNIE raz po wczytaniu starego zapisu', rise1 === 1, { rise: rise1 });
     check('W1b tresc komunikatu: „Usunięto 2 zbędne pozycje”, bez zwrotu kosztu', !!notice1 && /Usunięto 2 zbędne pozycje/.test(notice1) && /Koszt i postęp nie zostały zwrócone/.test(notice1), { notice1 });
     check('W1c w kolejce zostaje najwyzszy etap (mury), dwa nizsze usuniete', JSON.stringify(qAfter1) === JSON.stringify(['mury']), { qAfter1 });
-    check('W1d zrzut ekranu komunikatu wykonany', shotTaken, { shot: shotTaken ? shot1 : null });
+    check('W1d zrzut ekranu komunikatu wykonany i komunikat widoczny w chwili zrzutu (in-page po zrzucie)', shotTaken && shotVisible, { shot: shotTaken ? shot1 : null, visAfter: shotInfo && shotInfo.visAfter, holdMs: HOLD_MS || null });
 
-    // Wczytanie 2 tego samego starego zapisu (plik nadal stary): znow jedno pojawienie
+    // Wczytanie 2 tego samego starego zapisu (plik nadal stary): znow jedno pojawienie.
+    // Przy CIV_HOLD_MS komunikat z W1 jeszcze wisi: zeruje toast osobnym zadaniem, zeby obserwator
+    // zobaczyl nowe zbocze (bez tego obie wstawki w jednym zadaniu daja tylko stan koncowy).
+    await page.evaluate(() => { const d = document.getElementById('civ-hint-toast'); if (d) { d.style.display = 'none'; d.textContent = ''; } });
     await page.evaluate(([id, ids]) => window.__eraTestDebug.fortFixtureForTest(id, ids), [cityId, FIXTURE]);
     await page.evaluate(id => window.__eraTestDebug.clearQueueForTest(id), cityId);
     r0 = await page.evaluate(() => window.__noticeRise);
@@ -281,6 +301,7 @@ async function main() {
     check('W2 ponowne wczytanie tego samego starego zapisu: dokladnie jedno pojawienie komunikatu', rise2 === 1, { rise: rise2, qAfter: qAfter2 });
 
     // Zapis po wczytaniu -> wczytanie nowego zapisu: kolejka czysta, zero komunikatu
+    await page.evaluate(() => { const d = document.getElementById('civ-hint-toast'); if (d) { d.style.display = 'none'; d.textContent = ''; } });
     const savedNew = await page.evaluate(slot => window.__eraTestDebug.persistForTest(slot), SLOT_NEW);
     await page.evaluate(id => window.__eraTestDebug.clearQueueForTest(id), cityId);
     r0 = await page.evaluate(() => window.__noticeRise);

@@ -12,7 +12,7 @@
         "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość).",
         "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt i postęp nie zostały zwrócone."
       ],
-      "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png",
+      "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-3/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png",
       "shotInfo": {
         "rect": [
           440,
@@ -22,7 +22,7 @@
         ],
         "opacity": "1",
         "text": "Usunięto 2 zbędne pozycje z kolejki produkcji (niższe etapy ",
-        "at": 1794491784754,
+        "at": 1794494100629,
         "cvDiag": {
           "cvChain": [
             "CANVAS#. z=auto pos=fixed",
@@ -37,14 +37,14 @@
           ],
           "cvPointerEvents": "auto",
           "toastChain": [
-            "DIV#civ-hint-toast z=320 pos=fixed tf=none",
+            "DIV#civ-hint-toast z=320 pos=fixed tf=matrix(1, 0, 0, 1, -",
             "HTML# z=auto pos=static tf=none"
           ],
           "toastBox": [
-            0,
-            0,
-            0,
-            0
+            440,
+            823,
+            560,
+            53
           ]
         },
         "vis": "visible",
@@ -55,19 +55,27 @@
         "toastZ": "320",
         "toastPos": "fixed",
         "shotErr": null,
-        "shotAtMs": 1794491786016,
-        "probeToShotMs": 1262
+        "shotAtMs": 1794494103800,
+        "probeToShotMs": 3171,
+        "visAfter": {
+          "disp": "block",
+          "text": true,
+          "box": [
+            440,
+            823,
+            560,
+            53
+          ],
+          "opacity": "1",
+          "at": 1794494103795
+        },
+        "holdMs": 60000
       },
       "edges1": [
         {
-          "at": 1794491772639,
+          "at": 1794494066874,
           "now": true,
           "shown": true
-        },
-        {
-          "at": 1794491785021,
-          "now": false,
-          "shown": false
         }
       ],
       "riseProbe1": {
@@ -93,7 +101,7 @@
         "vis": "visible",
         "disp": "block",
         "inViewport": true,
-        "at": 1794491772639
+        "at": 1794494066874
       }
     },
     {
@@ -183,10 +191,23 @@
       }
     },
     {
-      "label": "W1d zrzut ekranu komunikatu wykonany",
+      "label": "W1d zrzut ekranu komunikatu wykonany i komunikat widoczny w chwili zrzutu (in-page po zrzucie)",
       "ok": true,
       "detail": {
-        "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-1/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png"
+        "shot": "/home/user/The-Game/.claude/worktrees/wf_b4081437-945-3/dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-WAVE-650-664-Q1/evidence/fort-queue-r2/W1-wczytanie-starego-zapisu-komunikat.png",
+        "visAfter": {
+          "disp": "block",
+          "text": true,
+          "box": [
+            440,
+            823,
+            560,
+            53
+          ],
+          "opacity": "1",
+          "at": 1794494103795
+        },
+        "holdMs": 60000
       }
     },
     {
@@ -249,7 +270,7 @@
       }
     }
   ],
-  "durationMs": 152773,
+  "durationMs": 358407,
   "summary": {
     "pass": 14,
     "fail": 0

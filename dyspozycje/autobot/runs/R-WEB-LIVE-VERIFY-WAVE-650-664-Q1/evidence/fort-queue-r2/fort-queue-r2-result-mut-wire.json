@@ -12,7 +12,7 @@
       ],
       "texts": [
         "PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość).",
-        "Wczytano: «w32-fort-queue-live» (tura 1)Maly · Kontynenty · rzymianie · 4 jednostki / 2 miasta · seed 376434473 · PLAYTEST"
+        "Wczytano: «w32-fort-queue-live» (tura 1)Maly · Kontynenty · rzymianie · 4 jednostki / 2 miasta · seed 789683225 · PLAYTEST"
       ],
       "shot": null,
       "shotInfo": null,
@@ -112,10 +112,12 @@
       }
     },
     {
-      "label": "W1d zrzut ekranu komunikatu wykonany",
+      "label": "W1d zrzut ekranu komunikatu wykonany i komunikat widoczny w chwili zrzutu (in-page po zrzucie)",
       "ok": false,
       "detail": {
-        "shot": null
+        "shot": null,
+        "visAfter": null,
+        "holdMs": 60000
       }
     },
     {
@@ -182,7 +184,7 @@
       }
     }
   ],
-  "durationMs": 218387,
+  "durationMs": 309775,
   "summary": {
     "pass": 8,
     "fail": 6
