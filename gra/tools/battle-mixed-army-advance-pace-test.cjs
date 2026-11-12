@@ -101,6 +101,9 @@ function runMixed(BattleScene, rounds, armies = buildArmies(), onMove = null) {
     },
     _doAttack(u, target, done) { done(); },
   });
+  // MUTATE_PACE=1 (mutacja calego sufitu tempa, bez regul): kazda jednostka idzie bez limitu.
+  // Test MUSI czerwienic (A1/A3); sama baza 81e357dee to NIE jest ta mutacja (patrz A3 i raport obrony).
+  if (process.env.MUTATE_PACE) scene._lineAdvanceCap = () => Number.POSITIVE_INFINITY;
   queue.push(() => scene._beginTurn());
   let steps = 0;
   while (queue.length && steps < 800000) { steps++; queue.shift()(); }
@@ -198,6 +201,14 @@ async function checkKite(BattleScene, checks) {
   const restored = kiteMoves.filter(m => m.pre <= 1).every(m => m.post >= MELEE_SAFE_GAP);
   checks.push([`B1 kite: archer in melee gap steps away (${kiteMoves.length} kite move(s), all increase distance)`, kiteMoves.length >= 1 && kiteOk]);
   checks.push([`B2 kite: step from adjacent foe restores gap >= ${MELEE_SAFE_GAP}`, kiteMoves.some(m => m.pre <= 1) && restored]);
+  // B3 (zarzut 3, wiele tur): przy nieruchomym wrogu po 6 rundach strzelec stoi na dystansie >= 2 i nie zbliza sie
+  // do wroga ani razu po osiagnieciu dystansu (ciaglosc w czasie, tylko doktryna manual). NIE rozroznia bazy 81e357dee.
+  const lastArcher = frames[frames.length - 1].find(u => u.id === 'atk-k');
+  const finalGap = lastArcher ? manhattanQR(lastArcher.q, lastArcher.r, foe.q, foe.r) : 0;
+  let reachedGap = false;
+  let closedAgain = false;
+  for (const m of kiteMoves) { if (m.post >= MELEE_SAFE_GAP) reachedGap = true; else if (reachedGap && m.post < m.pre) closedAgain = true; }
+  checks.push([`B3 kite: over rounds, final gap ${finalGap} >= ${MELEE_SAFE_GAP}, no approach after gap reached (static foe)`, finalGap >= MELEE_SAFE_GAP && !closedAgain]);
 }
 
 /**
