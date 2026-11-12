@@ -57,11 +57,11 @@ NIE_ZMIERZONO: cooldown po wznowionej wojnie poza karą za złamanie — nie zna
 L1 (UI, istotna): relacja po rozejmie pokazuje etykietę „Pokój” identycznie jak po pokoju stałym.
 `gra/src/game/diplomacy-display.ts` ~312 (`contactEstablished → 'Pokój'`). Pole `truceUntilTurn` nie jest czytane w żadnym pliku `gra/src/ui/` (grep: 0 trafień). Gracz nie widzi, że to rozejm ani kiedy wygasa.
 
-L2 (UI/treść): „runda 1/3” z zrzutu właściciela nie odpowiada żadnemu napisowi w kodzie powiadomień. Jedyny licznik `N/maxRounds` to „Kontroferta r/max” (`diplomacyAudience.ts` ~1962–1971), widoczny dopiero od rundy 2. NIE_ZMIERZONO: źródło zrzutu (inny build lub starszy tekst).
+L2 (UI/treść, niespójność): napis „runda 1/3” z zrzutu właściciela POCHODZI Z KODU. ZMIERZONO (odpowiedź na poprzednią wersję tego punktu, poprawka po Evaluatorze): `gra/src/main.ts:19057` buduje subtitle powiadomienia jako `negotiationSummary(n, true) + ' (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})'`, a `NEGOTIATION_MAX_ROUNDS = 3` (`gra/src/game/diplomacy-proposals.ts:2485`). Powiadomienie ma `blocking: true`, stąd „WYMAGA DECYZJI”. Licznik w powiadomieniu pokazuje się od rundy 1 (np. „1/3”), natomiast karta audiencji pokazuje „Kontroferta r/max” dopiero od rundy 2 (`gra/src/ui/diplomacyAudience.ts:1968–1971`, `visible = r.round > 1 ? … : expLabel`). Obie formy liczą tę samą wartość `round`, ale różnie ją eksponują — to jest luka do decyzji (ujednolicić czy zostawić).
 
 L3 (do potwierdzenia): asymetria akceptacji pokoju po rozejmie. Adresat AI akceptuje tylko, gdy proponujący jest co najmniej o 20% słabszy (`truceEndAiAccepts`). Kod podaje to jako decyzję właściciela z 2026-11-10. Przy rozejmie z AI do gracza gracz decyduje sam. Do potwierdzenia przez właściciela, czy to ma być reguła docelowa.
 
-L4 (drobne): komunikat wygaśnięcia dla gracza (`truceEndTickPair` → `enqueueOffer`, reason „Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)”) nie podaje długości rozejmu. Generyczny tytuł karty to `diploPendingTitle('zaproponuj_pokoj')`. NIE_ZMIERZONO w UI, czy `reason` jest wyświetlany.
+L4 (drobne): komunikat wygaśnięcia dla gracza (`truceEndTickPair` → `enqueueOffer`, reason „Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)”, `gra/src/game/diplomacy-peace-lock.ts:283`) TRAFIA do gracza: subtitle powiadomienia pendingDiplomacyInbox to `diploPendingTitle(p.cmdType) + ' — ' + p.reason` (`gra/src/main.ts:19043–19045`), czyli reason jest wyświetlany (ZMIERZONO w kodzie budującym zdarzenie; renderowanie listy zdarzeń nie sprawdzone w przeglądarce). Komunikat nie podaje długości rozejmu ani numeru tury wygaśnięcia. Generyczny tytuł karty to `diploPendingTitle('zaproponuj_pokoj')`.
 
 Zgodne z postulatem: dwa tryby (rozejm z wyborem 5/10/15, pokój stały), wybór przez gracza na stole, wybór przez AI wg pozycji, automatyczny powrót do wojny i oferta pokoju po wygaśnięciu.
 
@@ -69,10 +69,10 @@ Zgodne z postulatem: dwa tryby (rozejm z wyborem 5/10/15, pokój stały), wybór
 
 P1 (L1): w `diplomacy-display.ts` (lub przy etykiecie relacji w UI) pokazać „Rozejm do tury N” gdy `truceUntilTurn` jest ustawione; „Pokój” zostaje dla pokoju stałego. Zmiana UI, bez zmian reguł.
 P2 (L3): potwierdzić regułę akceptacji po rozejmie (80%/20%) albo zmienić na symetryczną.
-P3 (L2/L4): ustalić treść komunikatu o wygaśnięciu rozejmu i źródło „runda 1/3” z zrzutu właściciela.
+P3 (L2/L4): ujednolicić licznik rund (powiadomienie `main.ts:19057` vs karta audiencji `diplomacyAudience.ts:1968–1971`) i dopisać długość rozejmu / turę wygaśnięcia do komunikatu z `truceEndTickPair`. Źródło zrzutu „runda 1/3” jest już znane (`main.ts:19057`).
 
 ## 6. Pytania ABC do właściciela (propozycja)
 
 A) Czy pokazywać na relacji „Rozejm do tury N” (P1)? Rekomendacja: TAK.
 B) Czy reguła akceptacji pokoju po rozejmie (proponujący ≥20% słabszy) ma zostać, czy być symetryczna? Rekomendacja: zostawić, potwierdzić jako decyzję właściciela.
-C) Skąd zrzut „runda 1/3”? Rekomendacja: najpierw pokazać właścicielowi bieżący tekst karty, zanim cokolwiek zmienimy.
+C) Licznik rund „runda 1/3” w powiadomieniu (od rundy 1, `main.ts:19057`) i „Kontroferta 2/3” na karcie audiencji (od rundy 2) — ujednolicić, czy zostawić? Rekomendacja: ujednolicić na jedną formę (np. zawsze „runda n/3”), bo źródło zrzutu jest już znane (zrzut pochodzi z powiadomienia `main.ts:19057`).
