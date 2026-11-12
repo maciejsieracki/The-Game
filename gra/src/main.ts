@@ -434,6 +434,7 @@ import {
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
+import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
 import {
   applyPostCaptureLawOnCapture,
@@ -44930,6 +44931,8 @@ async function boot(): Promise<void> {
     // -----------------------------------------------------------------------
 
     function applyMenuParams(params: NewGameParams): void {
+      // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb trafień z parametrów gry (brak pola = losowe).
+      setActiveHitMode(normalizeHitMode(params.advanced?.hitMode));
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -46808,6 +46811,10 @@ async function boot(): Promise<void> {
       _battleModeSettingVersion = savedBattleModeVersion === BATTLE_MODE_SETTING_VERSION
         ? BATTLE_MODE_SETTING_VERSION
         : undefined;
+      // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: stary zapis bez pola hitMode -> 'losowe' (zachowanie bez zmian).
+      setActiveHitMode(normalizeHitMode(
+        (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.hitMode,
+      ));
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }

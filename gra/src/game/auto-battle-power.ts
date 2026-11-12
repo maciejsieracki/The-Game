@@ -3,6 +3,7 @@
  */
 
 import type { UnitPowerInput } from './unit-power';
+import { isCertainHitMode } from './hit-mode';
 import { armyFieldPower, armyFieldPowerSplit, isSiegeUnit } from './unit-power';
 import {
   loadAutoBattleParams,
@@ -179,7 +180,8 @@ export function resolveAutoBattleByPower(input: ResolveAutoBattleInput): AutoBat
   const mL = Math.max(Math.min(mAtk, mDef), 1);
   let ratio = mW / mL;
 
-  if (ratio < UPSET_R_THRESHOLD) {
+  // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = brak upsetu w AUTO (wynik deterministyczny).
+  if (ratio < UPSET_R_THRESHOLD && !isCertainHitMode()) {
     if (rng() < UPSET_CHANCE) {
       winner = winner === 'attacker' ? 'defender' : 'attacker';
       upset = true;

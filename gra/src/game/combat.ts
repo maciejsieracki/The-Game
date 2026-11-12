@@ -3,6 +3,7 @@ import { applyMultiplier, civCombatStatMultipliers, civWallDefenseMultiplier } f
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
+import { isCertainHitMode } from './hit-mode';
 import { effectiveMaxHp } from './unit-card-stats';
 import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from './gold-deficit';
@@ -887,6 +888,8 @@ export function resolveCombat(
   }
 
   const rng = opts.rng ?? (() => Math.random());
+  // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb 'pewne' = kazde uderzenie trafia (bez rzutu).
+  const certainHits = isCertainHitMode();
   const position: AttackerPosition = opts.attackerPosition ?? 'front';
   const maxRounds = opts.maxRounds ?? TW.max_rounds;
   const attackerMoved = opts.attackerMoved ?? true;
@@ -1032,11 +1035,11 @@ export function resolveCombat(
       // Attacker shoots
       if (atkIsRanged && ammoAtk > 0) {
         ammoAtk--;
-        const hitPct = hitChanceTw(
+        const hitPct = certainHits ? 100 : hitChanceTw(
           rangedShotAccuracy(atkMelee0, atkMissile0) * terrRiverMult,
           defFinalObrona,
         );
-        const roll = rng() * 100;
+        const roll = certainHits ? 0 : rng() * 100;
         if (roll < hitPct) {
           const dmg = rangedShotDamage(attacker, atkMissile0, defPanc0, ctrAtkVsDef);
           hpDef -= dmg;
@@ -1053,8 +1056,8 @@ export function resolveCombat(
       // Defender shoots back (if alive)
       if (defIsRanged && ammoDef > 0 && hpDef > 0) {
         ammoDef--;
-        const hitPct = hitChanceTw(rangedShotAccuracy(defMelee0, defMissile0), atkObrona0);
-        const roll = rng() * 100;
+        const hitPct = certainHits ? 100 : hitChanceTw(rangedShotAccuracy(defMelee0, defMissile0), atkObrona0);
+        const roll = certainHits ? 0 : rng() * 100;
         if (roll < hitPct) {
           const dmg = rangedShotDamage(defender, defMissile0, atkPanc0, ctrDefVsAtk);
           hpAtk -= dmg;
@@ -1146,8 +1149,8 @@ export function resolveCombat(
       const chargeHitBonus = isCharge ? roundAtkCharge : 0;
 
       // Attacker hits defender
-      const atkHitPct = hitChanceTw(roundAtkMelee, defFinalObrona, chargeHitBonus);
-      const atkRoll = rng() * 100;
+      const atkHitPct = certainHits ? 100 : hitChanceTw(roundAtkMelee, defFinalObrona, chargeHitBonus);
+      const atkRoll = certainHits ? 0 : rng() * 100;
       if (atkRoll < atkHitPct) {
         const rawDmg = damageTw(
           attacker.weaponDamage,
@@ -1168,8 +1171,8 @@ export function resolveCombat(
       }
 
       // Defender counter-attacks simultaneously
-      const defHitPct = hitChanceTw(roundDefMelee, roundAtkObrona);
-      const defRoll = rng() * 100;
+      const defHitPct = certainHits ? 100 : hitChanceTw(roundDefMelee, roundAtkObrona);
+      const defRoll = certainHits ? 0 : rng() * 100;
       if (defRoll < defHitPct) {
         const rawDmg = damageTw(
           defender.weaponDamage,

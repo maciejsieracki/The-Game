@@ -214,10 +214,21 @@ export type VictoryMode = 'moc' | 'dominacja' | 'moc_i_dominacja';
  * `game/cluster-start.ts`/`map/cluster-spawn.ts`.
  */
 export type HumanDistanceMode = 'blisko' | 'daleko' | 'losowo';
+/**
+ * R-WEB-BATTLE-HIT-MODE-SETTING-Q1 — MUSI zostać zsynchronizowany ręcznie z `HitMode`
+ * w `game/hit-mode.ts` (moduł UI świadomie odcięty od importów z game/).
+ * / EN: MUST stay manually in sync with `HitMode` in `game/hit-mode.ts`.
+ */
+export type HitMode = 'losowe' | 'pewne';
 
 export interface NewGameAdvancedOptions {
   barbariansLevel: BarbariansLevel;
   battleAlwaysManual: boolean;
+  /**
+   * Trafienia w bitwach: 'pewne' (domyślne dla nowych gier) = każde uderzenie trafia;
+   * 'losowe' = rzut na każde uderzenie. Brak pola (stare zapisy) = 'losowe'.
+   */
+  hitMode?: HitMode;
   victoryMode: VictoryMode;
   /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
   buildingCostPace: BuildingCostPace;
@@ -258,6 +269,7 @@ export interface NewGameAdvancedOptions {
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   barbariansLevel: 'normalny',
   battleAlwaysManual: true,
+  hitMode: 'pewne',
   victoryMode: 'moc_i_dominacja',
   buildingCostPace: 'normalny',
   kosztJednostekPace: 'normalny',
@@ -354,6 +366,7 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   }
   if (typeof raw.landFractionCustom === 'boolean') base.landFractionCustom = raw.landFractionCustom;
   if (typeof raw.battleAlwaysManual === 'boolean') base.battleAlwaysManual = raw.battleAlwaysManual;
+  if (raw.hitMode === 'pewne' || raw.hitMode === 'losowe') base.hitMode = raw.hitMode;
   if (
     raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
     || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
@@ -1825,6 +1838,14 @@ function advancedSettingRows(): AdvSettingRow[] {
       opts: ['Bitwa automatyczna', 'Bitwa ręczna i automatyczna'],
       getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
       setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
+    },
+    {
+      key: 'hitMode',
+      lbl: 'Trafienia',
+      hint: 'Pewne — każde uderzenie w bitwie trafia; obrona działa tylko przez pancerz. W bitwie automatycznej brak losowego przechyłu wyniku — rozstrzygnięcie jest przewidywalne. Losowe — rzut na każde uderzenie (dawne zachowanie). Domyślnie: Pewne.',
+      opts: ['Pewne', 'Losowe'],
+      getIdx: () => (advOpts.hitMode === 'losowe' ? 1 : 0),
+      setIdx: (i) => { advOpts.hitMode = i === 1 ? 'losowe' : 'pewne'; },
     },
     advRowFromSett(
       'deals_end_turn_gate',
