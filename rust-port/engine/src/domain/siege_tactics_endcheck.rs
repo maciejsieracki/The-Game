@@ -88,7 +88,9 @@ fn js_number_string(x: f64) -> String {
         // JS: String(-0) === "0".
         "0".to_string()
     } else if x.abs() < 1e21 {
-        format!("{:.0}", x)
+        // Display f64 w Rust = najkrotsze cyfry round-trip dopelnione zerami (jak JS),
+        // a NIE dokladne rozwiniecie binarne ({:.0}) - rozbieznosc od 2^53.
+        format!("{}", x)
     } else {
         // JS dla |x| >= 1e21 uzywa notacji wykladniczej z "e+NN".
         let s = format!("{:e}", x);
@@ -252,5 +254,21 @@ pub fn end_check_order(input: &EndCheckInput<'_>) -> EndCheckOutcome {
     match battle_winner(alive_a, alive_d, input.hp_a, input.hp_d) {
         Some(winner) => EndCheckOutcome::Ended(winner),
         None => EndCheckOutcome::Continue,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::js_number_string;
+
+    #[test]
+    fn js_number_string_zgodne_z_string_js_powyzej_2_53() {
+        // Wartosci wyliczone w node (String(x)): najkrotsze cyfry + zera.
+        assert_eq!(js_number_string(2f64.powi(60)), "1152921504606847000");
+        assert_eq!(js_number_string(9007199254740994.0), "9007199254740994");
+        assert_eq!(js_number_string(1e20), "100000000000000000000");
+        assert_eq!(js_number_string(-0.0), "0");
+        assert_eq!(js_number_string(0.5), "0.5");
+        assert_eq!(js_number_string(1e21), "1e+21");
     }
 }
