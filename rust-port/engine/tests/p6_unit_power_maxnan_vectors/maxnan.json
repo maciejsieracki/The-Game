@@ -1,0 +1,9026 @@
+{
+ "source": {
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "file": "gra/src/game/combat.ts",
+  "fragmentSha256": "3f57e2ba744179a2620e2e352770ee81db077458ad7f130294758d4e4f97ad0e",
+  "paramsFile": "gra/data/combat-params.json",
+  "paramsSha256": "5cc90d60c76da67039a1330261a00584933216c8ec80bff3db5183b05c07326e"
+ },
+ "tw_v3": {
+  "hit_base": 40,
+  "hit_min": 15,
+  "hit_max": 75,
+  "max_rounds": 200
+ },
+ "counts": {
+  "acc": 225,
+  "hits": 1125,
+  "ranges": 225
+ },
+ "acc": [
+  {
+   "melee": "NaN",
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 0,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": -1,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 2.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 40,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 75,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 1e+308,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 65.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": -106.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": 17.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": -25,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": -19.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "NaN",
+   "missile": -97.5,
+   "expected": "NaN"
+  },
+  {
+   "melee": "Infinity",
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": "Infinity",
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 0,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": -1,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 2.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 40,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 75,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 1e+308,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 65.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": -106.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": 17.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": -25,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": -19.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "Infinity",
+   "missile": -97.5,
+   "expected": "Infinity"
+  },
+  {
+   "melee": "-Infinity",
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": "-Infinity",
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": "-Infinity",
+   "missile": "-Infinity",
+   "expected": "-Infinity"
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": "-Infinity",
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": "-Infinity",
+   "missile": -106.5,
+   "expected": -106.5
+  },
+  {
+   "melee": "-Infinity",
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": "-Infinity",
+   "missile": -25,
+   "expected": -25
+  },
+  {
+   "melee": "-Infinity",
+   "missile": -19.5,
+   "expected": -19.5
+  },
+  {
+   "melee": "-Infinity",
+   "missile": -97.5,
+   "expected": -97.5
+  },
+  {
+   "melee": 0,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 0,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 0,
+   "missile": "-Infinity",
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": -1,
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": 0,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": 0,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 0,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 0,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 0,
+   "missile": -106.5,
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 0,
+   "missile": -25,
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": -19.5,
+   "expected": 0
+  },
+  {
+   "melee": 0,
+   "missile": -97.5,
+   "expected": 0
+  },
+  {
+   "melee": -1,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": -1,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": -1,
+   "missile": "-Infinity",
+   "expected": -1
+  },
+  {
+   "melee": -1,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": -1,
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": -1,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": -1,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": -1,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": -1,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": -1,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -1,
+   "missile": -106.5,
+   "expected": -1
+  },
+  {
+   "melee": -1,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -1,
+   "missile": -25,
+   "expected": -1
+  },
+  {
+   "melee": -1,
+   "missile": -19.5,
+   "expected": -1
+  },
+  {
+   "melee": -1,
+   "missile": -97.5,
+   "expected": -1
+  },
+  {
+   "melee": 2.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 2.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 2.5,
+   "missile": "-Infinity",
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": 0,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": -1,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": 2.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 2.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 2.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 2.5,
+   "missile": -106.5,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 2.5,
+   "missile": -25,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": -19.5,
+   "expected": 2.5
+  },
+  {
+   "melee": 2.5,
+   "missile": -97.5,
+   "expected": 2.5
+  },
+  {
+   "melee": 40,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 40,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 40,
+   "missile": "-Infinity",
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": 0,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": -1,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": 2.5,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 40,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 40,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 40,
+   "missile": -106.5,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": 17.5,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": -25,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": -19.5,
+   "expected": 40
+  },
+  {
+   "melee": 40,
+   "missile": -97.5,
+   "expected": 40
+  },
+  {
+   "melee": 75,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 75,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 75,
+   "missile": "-Infinity",
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 0,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": -1,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 2.5,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 40,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 75,
+   "missile": 65.5,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": -106.5,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": 17.5,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": -25,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": -19.5,
+   "expected": 75
+  },
+  {
+   "melee": 75,
+   "missile": -97.5,
+   "expected": 75
+  },
+  {
+   "melee": 1e+308,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 1e+308,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 1e+308,
+   "missile": "-Infinity",
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 0,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": -1,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 2.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 40,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 75,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 65.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": -106.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": 17.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": -25,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": -19.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 1e+308,
+   "missile": -97.5,
+   "expected": 1e+308
+  },
+  {
+   "melee": 65.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 65.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 65.5,
+   "missile": "-Infinity",
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": 0,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": -1,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": 2.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": 40,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 65.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 65.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": -106.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": 17.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": -25,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": -19.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 65.5,
+   "missile": -97.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -106.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": -106.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": -106.5,
+   "missile": "-Infinity",
+   "expected": -106.5
+  },
+  {
+   "melee": -106.5,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": -106.5,
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": -106.5,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": -106.5,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": -106.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": -106.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": -106.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -106.5,
+   "missile": -106.5,
+   "expected": -106.5
+  },
+  {
+   "melee": -106.5,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -106.5,
+   "missile": -25,
+   "expected": -25
+  },
+  {
+   "melee": -106.5,
+   "missile": -19.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -106.5,
+   "missile": -97.5,
+   "expected": -97.5
+  },
+  {
+   "melee": 17.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": 17.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": 17.5,
+   "missile": "-Infinity",
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": 0,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": -1,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": 2.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": 17.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": 17.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": 17.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": 17.5,
+   "missile": -106.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": -25,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": -19.5,
+   "expected": 17.5
+  },
+  {
+   "melee": 17.5,
+   "missile": -97.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -25,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": -25,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": -25,
+   "missile": "-Infinity",
+   "expected": -25
+  },
+  {
+   "melee": -25,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": -25,
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": -25,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": -25,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": -25,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": -25,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": -25,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -25,
+   "missile": -106.5,
+   "expected": -25
+  },
+  {
+   "melee": -25,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -25,
+   "missile": -25,
+   "expected": -25
+  },
+  {
+   "melee": -25,
+   "missile": -19.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -25,
+   "missile": -97.5,
+   "expected": -25
+  },
+  {
+   "melee": -19.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": -19.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": -19.5,
+   "missile": "-Infinity",
+   "expected": -19.5
+  },
+  {
+   "melee": -19.5,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": -19.5,
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": -19.5,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": -19.5,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": -19.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": -19.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": -19.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -19.5,
+   "missile": -106.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -19.5,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -19.5,
+   "missile": -25,
+   "expected": -19.5
+  },
+  {
+   "melee": -19.5,
+   "missile": -19.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -19.5,
+   "missile": -97.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -97.5,
+   "missile": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "melee": -97.5,
+   "missile": "Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "melee": -97.5,
+   "missile": "-Infinity",
+   "expected": -97.5
+  },
+  {
+   "melee": -97.5,
+   "missile": 0,
+   "expected": 0
+  },
+  {
+   "melee": -97.5,
+   "missile": -1,
+   "expected": -1
+  },
+  {
+   "melee": -97.5,
+   "missile": 2.5,
+   "expected": 2.5
+  },
+  {
+   "melee": -97.5,
+   "missile": 40,
+   "expected": 40
+  },
+  {
+   "melee": -97.5,
+   "missile": 75,
+   "expected": 75
+  },
+  {
+   "melee": -97.5,
+   "missile": 1e+308,
+   "expected": 1e+308
+  },
+  {
+   "melee": -97.5,
+   "missile": 65.5,
+   "expected": 65.5
+  },
+  {
+   "melee": -97.5,
+   "missile": -106.5,
+   "expected": -97.5
+  },
+  {
+   "melee": -97.5,
+   "missile": 17.5,
+   "expected": 17.5
+  },
+  {
+   "melee": -97.5,
+   "missile": -25,
+   "expected": -25
+  },
+  {
+   "melee": -97.5,
+   "missile": -19.5,
+   "expected": -19.5
+  },
+  {
+   "melee": -97.5,
+   "missile": -97.5,
+   "expected": -97.5
+  }
+ ],
+ "hits": [
+  {
+   "atk": "NaN",
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 0,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -1,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 40,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 75,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -25,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "NaN",
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "Infinity",
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": "-Infinity",
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 0,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 0,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": 0,
+   "expected": 41
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 48.5
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 37.5
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 45
+  },
+  {
+   "atk": 0,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 22.5
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 30
+  },
+  {
+   "atk": 0,
+   "def": -25,
+   "bonus": 0,
+   "expected": 65
+  },
+  {
+   "atk": 0,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 72.5
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 59.5
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 67
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 0,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 0,
+   "bonus": 0,
+   "expected": 39
+  },
+  {
+   "atk": -1,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 46.5
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 36.5
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 44
+  },
+  {
+   "atk": -1,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 21.5
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 29
+  },
+  {
+   "atk": -1,
+   "def": -25,
+   "bonus": 0,
+   "expected": 64
+  },
+  {
+   "atk": -1,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 71.5
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 58.5
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 66
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -1,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 42.5
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 50
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 43.5
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 51
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 25
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 32.5
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 67.5
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 62
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 69.5
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 2.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 0,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 40,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 40,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 40,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 22
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 62.5
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 70
+  },
+  {
+   "atk": 40,
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 40,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 0,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 75,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 75,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 49.5
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 57
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 75,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 1e+308,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 65.5
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 73
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 30.5
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 38
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 65.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 31
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -106.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 38.5
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 57.5
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 65
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 58.5
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 66
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 55
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 62.5
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 17.5
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 25
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": 17.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 22.5
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": 0,
+   "expected": 16
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 23.5
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 20
+  },
+  {
+   "atk": -25,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 34.5
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 42
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -25,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 20.5
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 28
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 21.5
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 29
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 18
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 25.5
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 45.5
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 53
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -19.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
+   "bonus": 0,
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "NaN",
+   "bonus": 7.5,
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
+   "bonus": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "Infinity",
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
+   "bonus": 0,
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
+   "bonus": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": "-Infinity",
+   "bonus": 7.5,
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 0,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -1,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 2.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 40,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 75,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 1e+308,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 65.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
+   "bonus": 0,
+   "expected": 49
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -106.5,
+   "bonus": 7.5,
+   "expected": 56.5
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": 17.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -25,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": 0,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -19.5,
+   "bonus": 7.5,
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": 0,
+   "expected": 40
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": "Infinity",
+   "expected": 75
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": "-Infinity",
+   "expected": 15
+  },
+  {
+   "atk": -97.5,
+   "def": -97.5,
+   "bonus": 7.5,
+   "expected": 47.5
+  }
+ ],
+ "ranges": [
+  {
+   "missile": "NaN",
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 0,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": -1,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 2.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 40,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 75,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 1e+308,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 65.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": -106.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": 17.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": -25,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": -19.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "NaN",
+   "armor": -97.5,
+   "expected": "NaN"
+  },
+  {
+   "missile": "Infinity",
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": "Infinity",
+   "armor": "Infinity",
+   "expected": "NaN"
+  },
+  {
+   "missile": "Infinity",
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 0,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": -1,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 2.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 40,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 75,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 1e+308,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 65.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": -106.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": 17.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": -25,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": -19.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "Infinity",
+   "armor": -97.5,
+   "expected": "Infinity"
+  },
+  {
+   "missile": "-Infinity",
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": "-Infinity",
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": "-Infinity",
+   "expected": "NaN"
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": -106.5,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": -25,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": -19.5,
+   "expected": 1
+  },
+  {
+   "missile": "-Infinity",
+   "armor": -97.5,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 0,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 0,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": -106.5,
+   "expected": 106.5
+  },
+  {
+   "missile": 0,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": 0,
+   "armor": -25,
+   "expected": 25
+  },
+  {
+   "missile": 0,
+   "armor": -19.5,
+   "expected": 19.5
+  },
+  {
+   "missile": 0,
+   "armor": -97.5,
+   "expected": 97.5
+  },
+  {
+   "missile": -1,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": -1,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": -1,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": -106.5,
+   "expected": 105.5
+  },
+  {
+   "missile": -1,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": -1,
+   "armor": -25,
+   "expected": 24
+  },
+  {
+   "missile": -1,
+   "armor": -19.5,
+   "expected": 18.5
+  },
+  {
+   "missile": -1,
+   "armor": -97.5,
+   "expected": 96.5
+  },
+  {
+   "missile": 2.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 2.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 2.5,
+   "armor": 0,
+   "expected": 2.5
+  },
+  {
+   "missile": 2.5,
+   "armor": -1,
+   "expected": 3.5
+  },
+  {
+   "missile": 2.5,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": -106.5,
+   "expected": 109
+  },
+  {
+   "missile": 2.5,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": 2.5,
+   "armor": -25,
+   "expected": 27.5
+  },
+  {
+   "missile": 2.5,
+   "armor": -19.5,
+   "expected": 22
+  },
+  {
+   "missile": 2.5,
+   "armor": -97.5,
+   "expected": 100
+  },
+  {
+   "missile": 40,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 40,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 40,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 40,
+   "armor": 0,
+   "expected": 40
+  },
+  {
+   "missile": 40,
+   "armor": -1,
+   "expected": 41
+  },
+  {
+   "missile": 40,
+   "armor": 2.5,
+   "expected": 37.5
+  },
+  {
+   "missile": 40,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": 40,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 40,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 40,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": 40,
+   "armor": -106.5,
+   "expected": 146.5
+  },
+  {
+   "missile": 40,
+   "armor": 17.5,
+   "expected": 22.5
+  },
+  {
+   "missile": 40,
+   "armor": -25,
+   "expected": 65
+  },
+  {
+   "missile": 40,
+   "armor": -19.5,
+   "expected": 59.5
+  },
+  {
+   "missile": 40,
+   "armor": -97.5,
+   "expected": 137.5
+  },
+  {
+   "missile": 75,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 75,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 75,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 75,
+   "armor": 0,
+   "expected": 75
+  },
+  {
+   "missile": 75,
+   "armor": -1,
+   "expected": 76
+  },
+  {
+   "missile": 75,
+   "armor": 2.5,
+   "expected": 72.5
+  },
+  {
+   "missile": 75,
+   "armor": 40,
+   "expected": 35
+  },
+  {
+   "missile": 75,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 75,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 75,
+   "armor": 65.5,
+   "expected": 9.5
+  },
+  {
+   "missile": 75,
+   "armor": -106.5,
+   "expected": 181.5
+  },
+  {
+   "missile": 75,
+   "armor": 17.5,
+   "expected": 57.5
+  },
+  {
+   "missile": 75,
+   "armor": -25,
+   "expected": 100
+  },
+  {
+   "missile": 75,
+   "armor": -19.5,
+   "expected": 94.5
+  },
+  {
+   "missile": 75,
+   "armor": -97.5,
+   "expected": 172.5
+  },
+  {
+   "missile": 1e+308,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 1e+308,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 1e+308,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 1e+308,
+   "armor": 0,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": -1,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": 2.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": 40,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": 75,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 1e+308,
+   "armor": 65.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": -106.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": 17.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": -25,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": -19.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 1e+308,
+   "armor": -97.5,
+   "expected": 1e+308
+  },
+  {
+   "missile": 65.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 65.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 65.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 65.5,
+   "armor": 0,
+   "expected": 65.5
+  },
+  {
+   "missile": 65.5,
+   "armor": -1,
+   "expected": 66.5
+  },
+  {
+   "missile": 65.5,
+   "armor": 2.5,
+   "expected": 63
+  },
+  {
+   "missile": 65.5,
+   "armor": 40,
+   "expected": 25.5
+  },
+  {
+   "missile": 65.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 65.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 65.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": 65.5,
+   "armor": -106.5,
+   "expected": 172
+  },
+  {
+   "missile": 65.5,
+   "armor": 17.5,
+   "expected": 48
+  },
+  {
+   "missile": 65.5,
+   "armor": -25,
+   "expected": 90.5
+  },
+  {
+   "missile": 65.5,
+   "armor": -19.5,
+   "expected": 85
+  },
+  {
+   "missile": 65.5,
+   "armor": -97.5,
+   "expected": 163
+  },
+  {
+   "missile": -106.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": -106.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": -106.5,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": -106.5,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": -25,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": -19.5,
+   "expected": 1
+  },
+  {
+   "missile": -106.5,
+   "armor": -97.5,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": 17.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": 17.5,
+   "armor": 0,
+   "expected": 17.5
+  },
+  {
+   "missile": 17.5,
+   "armor": -1,
+   "expected": 18.5
+  },
+  {
+   "missile": 17.5,
+   "armor": 2.5,
+   "expected": 15
+  },
+  {
+   "missile": 17.5,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": -106.5,
+   "expected": 124
+  },
+  {
+   "missile": 17.5,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": 17.5,
+   "armor": -25,
+   "expected": 42.5
+  },
+  {
+   "missile": 17.5,
+   "armor": -19.5,
+   "expected": 37
+  },
+  {
+   "missile": 17.5,
+   "armor": -97.5,
+   "expected": 115
+  },
+  {
+   "missile": -25,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": -25,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": -25,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": -106.5,
+   "expected": 81.5
+  },
+  {
+   "missile": -25,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": -25,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": -19.5,
+   "expected": 1
+  },
+  {
+   "missile": -25,
+   "armor": -97.5,
+   "expected": 72.5
+  },
+  {
+   "missile": -19.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": -19.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": -19.5,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": -106.5,
+   "expected": 87
+  },
+  {
+   "missile": -19.5,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": -25,
+   "expected": 5.5
+  },
+  {
+   "missile": -19.5,
+   "armor": -19.5,
+   "expected": 1
+  },
+  {
+   "missile": -19.5,
+   "armor": -97.5,
+   "expected": 78
+  },
+  {
+   "missile": -97.5,
+   "armor": "NaN",
+   "expected": "NaN"
+  },
+  {
+   "missile": -97.5,
+   "armor": "Infinity",
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": "-Infinity",
+   "expected": "Infinity"
+  },
+  {
+   "missile": -97.5,
+   "armor": 0,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": -1,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": 2.5,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": 40,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": 75,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": 1e+308,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": 65.5,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": -106.5,
+   "expected": 9
+  },
+  {
+   "missile": -97.5,
+   "armor": 17.5,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": -25,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": -19.5,
+   "expected": 1
+  },
+  {
+   "missile": -97.5,
+   "armor": -97.5,
+   "expected": 1
+  }
+ ]
+}

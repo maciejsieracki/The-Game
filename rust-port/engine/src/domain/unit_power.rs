@@ -13,6 +13,7 @@
 use std::sync::OnceLock;
 
 use crate::data::units_combat::{parse_combat_params, RangedDamageMultParams};
+use crate::domain::siege_tactics_blow::{js_max, js_min};
 
 fn ranged_params() -> &'static RangedDamageMultParams {
     static TABLE: OnceLock<RangedDamageMultParams> = OnceLock::new();
@@ -57,14 +58,16 @@ pub fn ranged_damage_mult_for(typ: Option<&str>, jednostka: Option<&str>) -> f64
     1.0
 }
 
-/// `rangedShotAccuracy` z web: celnosc pocisku = max(Atak wrecz, Atak dystansowy).
+/// `rangedShotAccuracy` z web (pin 07d2fbd72, combat.ts:476): `Math.max(meleeAttack, missileAttack)`.
+/// NaN propaguje sie jak w JS ([`js_max`]); `f64::max` ignorowalby NaN.
 pub fn ranged_shot_accuracy(melee_attack: f64, missile_attack: f64) -> f64 {
-    melee_attack.max(missile_attack)
+    js_max(melee_attack, missile_attack)
 }
 
-/// `rangeDamageTw` z web (TW Rome 2 faza dystansowa): max(1, missileAttack - armor).
+/// `rangeDamageTw` z web (pin 07d2fbd72, combat.ts:468; TW Rome 2 faza dystansowa): `Math.max(1, missileAttack - armor)`.
+/// NaN propaguje sie jak w JS ([`js_max`]).
 pub fn range_damage_tw(missile_attack: f64, armor: f64) -> f64 {
-    (missile_attack - armor).max(1.0)
+    js_max(1.0, missile_attack - armor)
 }
 
 /// `rangedShotDamage` z web: koncowe obrazenia pocisku auto-walki.
@@ -82,12 +85,12 @@ pub fn ranged_shot_damage(
     js_round(raw).max(1.0) as i64
 }
 
-/// `hitChanceTw` z web (TW v3): clamp(hit_base + atk - def + hit_bonus, hit_min, hit_max).
+/// `hitChanceTw` z web (pin 07d2fbd72, combat.ts:446; TW v3): `Math.max(hit_min, Math.min(hit_max, raw))`,
+/// raw = hit_base + atk - def + hit_bonus. NaN propaguje sie jak w JS ([`js_min`]/[`js_max`]).
 pub fn hit_chance_tw(melee_attack: f64, melee_defence: f64, hit_bonus: f64) -> f64 {
     let (base, min, max) = tw_hit_params();
-    (base + melee_attack - melee_defence + hit_bonus)
-        .min(max)
-        .max(min)
+    let raw = base + melee_attack - melee_defence + hit_bonus;
+    js_max(min, js_min(max, raw))
 }
 
 /// Wspolczynniki mocy jednostki (`UnitPowerCoeffs` z web, `loadUnitPowerCoeffs`).
