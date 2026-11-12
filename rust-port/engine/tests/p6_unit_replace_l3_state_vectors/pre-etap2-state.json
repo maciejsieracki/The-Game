@@ -1,0 +1,447 @@
+{
+  "stateVersion": 1,
+  "sessionId": "rzymianie-7",
+  "params": {
+    "civId": "rzymianie",
+    "civName": "Rzymianie",
+    "epoch": "Epoka Kamienia",
+    "epochId": "kamien",
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "rivals": 6,
+    "speed": "Normalna",
+    "worldType": "Kontynenty",
+    "typSwiata": "kontynenty",
+    "seed": 7,
+    "mapQualityLabel": "Średnia",
+    "mapQuality": "medium",
+    "renderQualityLabel": "Średnia",
+    "renderQuality": "medium",
+    "mapDetailQualityLabel": "Średnia",
+    "mapDetailQuality": "medium",
+    "civTypesCount": 6,
+    "cityStatesCount": 6,
+    "worldDensity": {
+      "resources": "medium",
+      "rivers": "medium",
+      "desert": "medium",
+      "forest": "medium",
+      "relief": "medium"
+    },
+    "worldDensityLabels": {
+      "resources": "Normalnie",
+      "rivers": "Normalnie",
+      "desert": "Normalnie",
+      "forest": "Normalnie",
+      "relief": "Normalnie"
+    },
+    "landFractionPercent": 30,
+    "advanced": {
+      "barbariansLevel": "normalny",
+      "battleAlwaysManual": false,
+      "victoryMode": "moc_i_dominacja",
+      "buildingCostPace": "niski",
+      "kosztJednostekPace": "niski",
+      "wzrostLudnosciPace": "wysoki",
+      "ruchSwiataPace": "krotki",
+      "landFractionPercent": 30,
+      "landFractionCustom": false,
+      "cityStateDifficultyOverride": null,
+      "cityLimitBase": 10
+    },
+    "selectedAiCivIds": [],
+    "villageRewardsEnabled": true,
+    "unsupportedFeatures": [
+      "rivals:NOT_IMPLEMENTED",
+      "difficulty:NOT_IMPLEMENTED",
+      "speed:NOT_IMPLEMENTED",
+      "worldType:NOT_IMPLEMENTED",
+      "typSwiata:NOT_IMPLEMENTED",
+      "mapQuality:NOT_IMPLEMENTED",
+      "renderQuality:NOT_IMPLEMENTED",
+      "mapDetailQuality:NOT_IMPLEMENTED",
+      "civTypesCount:NOT_IMPLEMENTED",
+      "cityStatesCount:NOT_IMPLEMENTED",
+      "worldDensity:NOT_IMPLEMENTED",
+      "landFractionPercent:NOT_IMPLEMENTED",
+      "advanced:NOT_IMPLEMENTED",
+      "selectedAiCivIds:NOT_IMPLEMENTED",
+      "villageRewardsEnabled:NOT_IMPLEMENTED"
+    ]
+  },
+  "map": {
+    "width": 8,
+    "height": 5,
+    "tiles": [
+      {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "terrain": "Water",
+        "passable": false
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 0
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 0
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 0
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 0
+        },
+        "terrain": "Forest",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 0
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 0
+        },
+        "terrain": "Water",
+        "passable": false
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 0
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 1
+        },
+        "terrain": "Water",
+        "passable": false
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 1
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 1
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 2
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 2
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 2
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 2
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 2
+        },
+        "terrain": "Forest",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 2
+        },
+        "terrain": "Forest",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 2
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 3
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 3
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 3
+        },
+        "terrain": "Water",
+        "passable": false
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 3
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 3
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 3
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "terrain": "Forest",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 3
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 4
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 4
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 4
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 4
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 4
+        },
+        "terrain": "Hills",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 4
+        },
+        "terrain": "Plains",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "terrain": "Forest",
+        "passable": true
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 4
+        },
+        "terrain": "Forest",
+        "passable": true
+      }
+    ]
+  },
+  "players": [
+    {
+      "id": 1,
+      "name": "Rzymianie",
+      "civilization": "rzymianie",
+      "isHuman": true
+    }
+  ],
+  "cities": [
+    {
+      "id": 1,
+      "ownerId": 1,
+      "name": "Roma",
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "isCapital": true
+    }
+  ],
+  "units": [
+    {
+      "id": 1,
+      "ownerId": 1,
+      "kind": "Warrior",
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "movement": 1,
+      "movementMax": 1,
+      "selected": false
+    }
+  ],
+  "selectedUnitId": null,
+  "turn": 2,
+  "phase": "PlayerActions",
+  "lastAdvancedPhases": [
+    "StartTurn",
+    "PlayerActions",
+    "Diplomacy",
+    "Economy",
+    "Production",
+    "Ai",
+    "Barbarians",
+    "Victory",
+    "EndTurn"
+  ],
+  "status": "Tura 2 rozpoczęta."
+}
