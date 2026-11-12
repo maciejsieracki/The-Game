@@ -628,8 +628,11 @@ fn improvement_counts_from_state(state: &PlayableState) -> BTreeMap<(i32, i32), 
         .collect()
 }
 
-/// Wezly terytorium miast (web `buildAllTerritoryNodes`) + forty/posterunki stanu (P6-STAN-ULEPSZENIA; wezel
-/// fortu bez `contested_useless = true`, jak web `foundingNodesForOwner`). Promien = `cityTerritoryRadius`.
+/// Wezly terytorium do wspolnej granicy (`shared_border_pairs`): miasta jak web `buildAllTerritoryNodes`
+/// (main.ts:5667, bez fortow) + forty/posterunki stanu jak web `fortTerritoryNodes` (game/fort-territory.ts:141-146):
+/// flagi `fort`/`outpost` (miasta wygrywaja z fortami w `territoryOwnerAt`), `order` = (builtAtTurn ?? 0, seq)
+/// tylko gdy `seq` jest zapisane, a wezel z `contested_useless = true` pomijany (jak w web `fortTerritoryNodes`).
+/// Promien = `cityTerritoryRadius`.
 fn territory_nodes_from_state(state: &PlayableState) -> Vec<TerritoryNode> {
     let cities = state.cities.iter().map(|c| {
         let node = CityNode::city(
