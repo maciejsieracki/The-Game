@@ -62,6 +62,7 @@
     "roll": "75.688143260777",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -105,6 +106,7 @@
     "roll": "34.620761731639504",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -162,6 +164,7 @@
     "roll": "12.31345352716744",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -228,6 +231,7 @@
     "roll": "43.763975938782096",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -290,6 +294,7 @@
     "roll": "31.016760133206844",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -352,6 +357,7 @@
     "roll": "69.35087398160249",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -409,6 +415,7 @@
     "roll": "71.16097535472363",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -466,6 +473,7 @@
     "roll": "87.02577240765095",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -509,6 +517,7 @@
     "roll": "22.498922841623425",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -575,6 +584,7 @@
     "roll": "79.80822399258614",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -618,6 +628,7 @@
     "roll": "16.750922380015254",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -680,6 +691,7 @@
     "roll": "36.5844581509009",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -737,6 +749,7 @@
     "roll": "45.514018554240465",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -780,6 +793,7 @@
     "roll": "31.769735785201192",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -823,6 +837,7 @@
     "roll": "48.88626276515424",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -880,6 +895,7 @@
     "roll": "74.50233320705593",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -942,6 +958,7 @@
     "roll": "0.27939784340560436",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1008,6 +1025,7 @@
     "roll": "53.44820327591151",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1051,6 +1069,7 @@
     "roll": "51.40134042594582",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1094,6 +1113,7 @@
     "roll": "8.664800296537578",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1160,6 +1180,7 @@
     "roll": "32.10584099870175",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1226,6 +1247,7 @@
     "roll": "45.5709642264992",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1283,6 +1305,7 @@
     "roll": "90.37621461320668",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1326,6 +1349,7 @@
     "roll": "79.85697633121163",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1369,6 +1393,7 @@
     "roll": "47.57404413539916",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1435,6 +1460,7 @@
     "roll": "43.54589250870049",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1497,6 +1523,7 @@
     "roll": "80.82288112491369",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1540,6 +1567,7 @@
     "roll": "38.19570417981595",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1583,6 +1611,7 @@
     "roll": "69.79463461320847",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1640,6 +1669,7 @@
     "roll": "30.40291906800121",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1702,6 +1732,7 @@
     "roll": "25.56484064552933",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1745,6 +1776,7 @@
     "roll": "24.486110801808536",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -1788,6 +1820,7 @@
     "roll": "25.6174631183967",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -1831,6 +1864,7 @@
     "roll": "94.02240959461778",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -1874,6 +1908,7 @@
     "roll": "59.63743550237268",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -1940,6 +1975,7 @@
     "roll": "26.90391482319683",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -1983,6 +2019,7 @@
     "roll": "41.87244886998087",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2026,6 +2063,7 @@
     "roll": "13.141857995651662",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2092,6 +2130,7 @@
     "roll": "66.38920500408858",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2135,6 +2174,7 @@
     "roll": "45.527228340506554",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2192,6 +2232,7 @@
     "roll": "54.368368932045996",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2258,6 +2299,7 @@
     "roll": "91.94322812836617",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -2301,6 +2343,7 @@
     "roll": "29.869936499744654",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2367,6 +2410,7 @@
     "roll": "46.206778450869024",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2424,6 +2468,7 @@
     "roll": "21.69015188701451",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2467,6 +2512,7 @@
     "roll": "34.34815264772624",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2524,6 +2570,7 @@
     "roll": "69.0797003917396",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2586,6 +2633,7 @@
     "roll": "64.1626016004011",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2629,6 +2677,7 @@
     "roll": "52.70729120820761",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2695,6 +2744,7 @@
     "roll": "42.039496754296124",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2738,6 +2788,7 @@
     "roll": "59.322543372400105",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2795,6 +2846,7 @@
     "roll": "21.02081028278917",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -2838,6 +2890,7 @@
     "roll": "4.322795430198312",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2895,6 +2948,7 @@
     "roll": "16.846805345267057",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -2952,6 +3006,7 @@
     "roll": "51.03229444939643",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3009,6 +3064,7 @@
     "roll": "85.61550518497825",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3052,6 +3108,7 @@
     "roll": "63.045423571020365",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3095,6 +3152,7 @@
     "roll": "58.88485349714756",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -3138,6 +3196,7 @@
     "roll": "10.82281176932156",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3200,6 +3259,7 @@
     "roll": "55.27600070927292",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3243,6 +3303,7 @@
     "roll": "98.66486256942153",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3286,6 +3347,7 @@
     "roll": "2.6585086714476347",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3343,6 +3405,7 @@
     "roll": "96.93938049022108",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -3386,6 +3449,7 @@
     "roll": "46.570204896852374",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3443,6 +3507,7 @@
     "roll": "89.76892449427396",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3486,6 +3551,7 @@
     "roll": "23.476556898094714",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3529,6 +3595,7 @@
     "roll": "57.10112205706537",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3572,6 +3639,7 @@
     "roll": "30.793872918002307",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3634,6 +3702,7 @@
     "roll": "22.809681273065507",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -3677,6 +3746,7 @@
     "roll": "19.922613282687962",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3739,6 +3809,7 @@
     "roll": "96.921954350546",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3782,6 +3853,7 @@
     "roll": "8.079129783436656",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3839,6 +3911,7 @@
     "roll": "79.24678565468639",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3882,6 +3955,7 @@
     "roll": "22.213277430273592",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -3925,6 +3999,7 @@
     "roll": "35.337333916686475",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -3987,6 +4062,7 @@
     "roll": "12.730759102851152",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4044,6 +4120,7 @@
     "roll": "97.15141588822007",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -4087,6 +4164,7 @@
     "roll": "45.33671212848276",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4144,6 +4222,7 @@
     "roll": "39.25584095995873",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4210,6 +4289,7 @@
     "roll": "87.57430426776409",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -4253,6 +4333,7 @@
     "roll": "84.6119113266468",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4319,6 +4400,7 @@
     "roll": "55.57826282456517",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -4362,6 +4444,7 @@
     "roll": "19.437703653238714",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4419,6 +4502,7 @@
     "roll": "42.400504811666906",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4476,6 +4560,7 @@
     "roll": "24.862417462281883",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4533,6 +4618,7 @@
     "roll": "43.768662540242076",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4590,6 +4676,7 @@
     "roll": "15.719846962019801",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4647,6 +4734,7 @@
     "roll": "29.092417028732598",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -4690,6 +4778,7 @@
     "roll": "53.761721681803465",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4752,6 +4841,7 @@
     "roll": "16.86403735075146",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -4795,6 +4885,7 @@
     "roll": "21.77184671163559",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4857,6 +4948,7 @@
     "roll": "8.803805941715837",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -4923,6 +5015,7 @@
     "roll": "82.16652879491448",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -4966,6 +5059,7 @@
     "roll": "31.589415320195258",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5009,6 +5103,7 @@
     "roll": "48.89151605311781",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5052,6 +5147,7 @@
     "roll": "74.8321711551398",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5095,6 +5191,7 @@
     "roll": "14.781046379357576",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5152,6 +5249,7 @@
     "roll": "57.585177663713694",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5195,6 +5293,7 @@
     "roll": "62.34299491625279",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5238,6 +5337,7 @@
     "roll": "58.961294568143785",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5281,6 +5381,7 @@
     "roll": "29.157853918150067",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5343,6 +5444,7 @@
     "roll": "28.382256696932018",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5405,6 +5507,7 @@
     "roll": "37.070661783218384",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5467,6 +5570,7 @@
     "roll": "1.7889864509925246",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5533,6 +5637,7 @@
     "roll": "98.22731909807771",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5576,6 +5681,7 @@
     "roll": "23.869200493209064",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5633,6 +5739,7 @@
     "roll": "68.35817103274167",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5695,6 +5802,7 @@
     "roll": "52.255296730436385",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5752,6 +5860,7 @@
     "roll": "88.11838838737458",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -5795,6 +5904,7 @@
     "roll": "87.97598562669009",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -5838,6 +5948,7 @@
     "roll": "0.4230622900649905",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -5900,6 +6011,7 @@
     "roll": "83.12242703977972",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -5943,6 +6055,7 @@
     "roll": "10.18763070460409",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6000,6 +6113,7 @@
     "roll": "14.903316367417574",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6066,6 +6180,7 @@
     "roll": "73.21253707632422",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6132,6 +6247,7 @@
     "roll": "98.2357682660222",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6175,6 +6291,7 @@
     "roll": "66.80826591327786",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6218,6 +6335,7 @@
     "roll": "95.21135005634278",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6261,6 +6379,7 @@
     "roll": "88.60732724424452",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6304,6 +6423,7 @@
     "roll": "71.98754961136729",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6347,6 +6467,7 @@
     "roll": "78.45190418884158",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -6390,6 +6511,7 @@
     "roll": "7.274797465652227",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6456,6 +6578,7 @@
     "roll": "2.5818189373239875",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6513,6 +6636,7 @@
     "roll": "42.07615368068218",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6556,6 +6680,7 @@
     "roll": "4.859643033705652",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6613,6 +6738,7 @@
     "roll": "8.713375590741634",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6670,6 +6796,7 @@
     "roll": "15.874252887442708",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6736,6 +6863,7 @@
     "roll": "46.17047996725887",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6779,6 +6907,7 @@
     "roll": "67.59583668317646",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6822,6 +6951,7 @@
     "roll": "33.88464115560055",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6888,6 +7018,7 @@
     "roll": "93.28925586305559",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -6931,6 +7062,7 @@
     "roll": "31.144014443270862",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -6993,6 +7125,7 @@
     "roll": "41.74741853494197",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7055,6 +7188,7 @@
     "roll": "25.47502175439149",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7112,6 +7246,7 @@
     "roll": "31.209399295039475",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7169,6 +7304,7 @@
     "roll": "38.79509577527642",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7231,6 +7367,7 @@
     "roll": "39.148286799900234",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -7274,6 +7411,7 @@
     "roll": "92.93646477162838",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -7317,6 +7455,7 @@
     "roll": "74.92875109892339",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -7360,6 +7499,7 @@
     "roll": "61.514038988389075",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7422,6 +7562,7 @@
     "roll": "98.86328286956996",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7479,6 +7620,7 @@
     "roll": "98.1639307225123",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -7522,6 +7664,7 @@
     "roll": "47.27902689483017",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -7565,6 +7708,7 @@
     "roll": "29.40108058974147",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -7608,6 +7752,7 @@
     "roll": "13.12335201073438",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7674,6 +7819,7 @@
     "roll": "2.150826808065176",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7731,6 +7877,7 @@
     "roll": "72.1101330826059",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -7774,6 +7921,7 @@
     "roll": "16.10467587597668",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -7817,6 +7965,7 @@
     "roll": "39.98293539043516",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7879,6 +8028,7 @@
     "roll": "10.81614289432764",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -7936,6 +8086,7 @@
     "roll": "73.37273152079433",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -7979,6 +8130,7 @@
     "roll": "68.00520189572126",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8036,6 +8188,7 @@
     "roll": "38.49754848051816",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8093,6 +8246,7 @@
     "roll": "93.08436450082809",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8136,6 +8290,7 @@
     "roll": "44.75251897238195",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8193,6 +8348,7 @@
     "roll": "5.708172032609582",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8250,6 +8406,7 @@
     "roll": "61.600412731058896",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8293,6 +8450,7 @@
     "roll": "73.8322799326852",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8359,6 +8517,7 @@
     "roll": "20.836524898186326",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8416,6 +8575,7 @@
     "roll": "75.82271564751863",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8459,6 +8619,7 @@
     "roll": "10.695438436232507",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8521,6 +8682,7 @@
     "roll": "72.67393481452018",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8587,6 +8749,7 @@
     "roll": "52.75284154340625",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8649,6 +8812,7 @@
     "roll": "6.735244509764016",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -8706,6 +8870,7 @@
     "roll": "50.7550491951406",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8749,6 +8914,7 @@
     "roll": "77.49223429709673",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -8792,6 +8958,7 @@
     "roll": "56.195795023813844",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8835,6 +9002,7 @@
     "roll": "41.29740491043776",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8878,6 +9046,7 @@
     "roll": "15.189249580726027",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -8921,6 +9090,7 @@
     "roll": "37.42940938100219",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -8964,6 +9134,7 @@
     "roll": "35.73107784613967",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9030,6 +9201,7 @@
     "roll": "29.986712569370866",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9092,6 +9264,7 @@
     "roll": "2.5106737622991204",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9158,6 +9331,7 @@
     "roll": "74.16798830963671",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -9201,6 +9375,7 @@
     "roll": "35.832336149178445",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9267,6 +9442,7 @@
     "roll": "74.84512066002935",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -9310,6 +9486,7 @@
     "roll": "94.63109592907131",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -9353,6 +9530,7 @@
     "roll": "1.3028064277023077",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9419,6 +9597,7 @@
     "roll": "47.49642978422344",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -9462,6 +9641,7 @@
     "roll": "4.728536284528673",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9528,6 +9708,7 @@
     "roll": "65.71156333666295",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9590,6 +9771,7 @@
     "roll": "4.288551141507924",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9647,6 +9829,7 @@
     "roll": "78.79810018930584",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -9690,6 +9873,7 @@
     "roll": "57.31873265467584",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -9733,6 +9917,7 @@
     "roll": "28.731759055517614",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9799,6 +9984,7 @@
     "roll": "39.36062655411661",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9856,6 +10042,7 @@
     "roll": "38.84130727965385",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9922,6 +10109,7 @@
     "roll": "39.225448365323246",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -9979,6 +10167,7 @@
     "roll": "25.24835083168",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -10022,6 +10211,7 @@
     "roll": "62.33646816108376",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10084,6 +10274,7 @@
     "roll": "54.30790390819311",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10127,6 +10318,7 @@
     "roll": "44.20100462157279",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -10170,6 +10362,7 @@
     "roll": "56.07760474085808",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10227,6 +10420,7 @@
     "roll": "96.02310284972191",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10270,6 +10464,7 @@
     "roll": "94.83443284407258",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10313,6 +10508,7 @@
     "roll": "76.18936731014401",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10356,6 +10552,7 @@
     "roll": "39.8044542176649",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -10399,6 +10596,7 @@
     "roll": "9.086698456667364",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10461,6 +10659,7 @@
     "roll": "67.627860349603",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10504,6 +10703,7 @@
     "roll": "87.90102023631334",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10547,6 +10747,7 @@
     "roll": "34.14629166945815",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10613,6 +10814,7 @@
     "roll": "25.000647944398224",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -10656,6 +10858,7 @@
     "roll": "96.56016437802464",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10699,6 +10902,7 @@
     "roll": "59.89692627917975",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10765,6 +10969,7 @@
     "roll": "97.0830047968775",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10808,6 +11013,7 @@
     "roll": "5.5826900992542505",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10874,6 +11080,7 @@
     "roll": "93.0820295587182",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -10917,6 +11124,7 @@
     "roll": "13.401712803170085",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -10983,6 +11191,7 @@
     "roll": "64.27497891709208",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11026,6 +11235,7 @@
     "roll": "73.94542847760022",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11092,6 +11302,7 @@
     "roll": "99.0822700317949",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11135,6 +11346,7 @@
     "roll": "72.36091173253953",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11192,6 +11404,7 @@
     "roll": "91.56928905285895",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11235,6 +11448,7 @@
     "roll": "3.3082194859161973",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11297,6 +11511,7 @@
     "roll": "39.73274980671704",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11340,6 +11555,7 @@
     "roll": "40.07229721173644",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11406,6 +11622,7 @@
     "roll": "56.660329760052264",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11463,6 +11680,7 @@
     "roll": "76.74547526985407",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11506,6 +11724,7 @@
     "roll": "72.8511096443981",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -11549,6 +11768,7 @@
     "roll": "88.99838873185217",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11592,6 +11812,7 @@
     "roll": "80.01835264731199",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11635,6 +11856,7 @@
     "roll": "40.28808567672968",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11692,6 +11914,7 @@
     "roll": "67.0679023489356",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11749,6 +11972,7 @@
     "roll": "25.327585404738784",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11815,6 +12039,7 @@
     "roll": "11.986683518625796",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -11877,6 +12102,7 @@
     "roll": "67.8471288876608",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -11920,6 +12146,7 @@
     "roll": "83.5433600936085",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -11963,6 +12190,7 @@
     "roll": "70.36296732258052",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12020,6 +12248,7 @@
     "roll": "27.841608901508152",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12086,6 +12315,7 @@
     "roll": "4.699904308654368",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12152,6 +12382,7 @@
     "roll": "67.3678650520742",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12218,6 +12449,7 @@
     "roll": "11.776567646302283",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12284,6 +12516,7 @@
     "roll": "23.927769833244383",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -12327,6 +12560,7 @@
     "roll": "55.20612043328583",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12393,6 +12627,7 @@
     "roll": "46.39791443478316",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -12436,6 +12671,7 @@
     "roll": "24.36157886404544",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -12479,6 +12715,7 @@
     "roll": "75.00807920005172",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -12522,6 +12759,7 @@
     "roll": "5.737048899754882",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12579,6 +12817,7 @@
     "roll": "24.940222944132984",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12636,6 +12875,7 @@
     "roll": "18.961243517696857",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12693,6 +12933,7 @@
     "roll": "91.98156548663974",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -12736,6 +12977,7 @@
     "roll": "25.801414996385574",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12793,6 +13035,7 @@
     "roll": "94.75309159606695",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -12836,6 +13079,7 @@
     "roll": "23.428746056742966",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12893,6 +13137,7 @@
     "roll": "27.984341653063893",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -12959,6 +13204,7 @@
     "roll": "4.796987026929855",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13016,6 +13262,7 @@
     "roll": "20.931392582133412",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13078,6 +13325,7 @@
     "roll": "38.81538731511682",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13144,6 +13392,7 @@
     "roll": "93.41022218577564",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13187,6 +13436,7 @@
     "roll": "87.7853631041944",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13230,6 +13480,7 @@
     "roll": "9.178813290782273",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13287,6 +13538,7 @@
     "roll": "70.20247366745025",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13330,6 +13582,7 @@
     "roll": "3.4249853109940886",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13392,6 +13645,7 @@
     "roll": "83.2394338445738",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -13435,6 +13689,7 @@
     "roll": "91.71666009351611",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -13478,6 +13733,7 @@
     "roll": "67.13106741663069",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13521,6 +13777,7 @@
     "roll": "14.796252246014774",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13578,6 +13835,7 @@
     "roll": "8.94864194560796",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13635,6 +13893,7 @@
     "roll": "12.078683217987418",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13692,6 +13951,7 @@
     "roll": "33.60133836977184",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -13735,6 +13995,7 @@
     "roll": "68.66084260400385",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13778,6 +14039,7 @@
     "roll": "88.54514595586807",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13821,6 +14083,7 @@
     "roll": "45.184644986875355",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13883,6 +14146,7 @@
     "roll": "98.10684164986014",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -13926,6 +14190,7 @@
     "roll": "9.087473643012345",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -13992,6 +14257,7 @@
     "roll": "75.83918075542897",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14035,6 +14301,7 @@
     "roll": "77.8286122251302",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14078,6 +14345,7 @@
     "roll": "19.14015330839902",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14135,6 +14403,7 @@
     "roll": "33.41655198018998",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14192,6 +14461,7 @@
     "roll": "78.75907819252461",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14235,6 +14505,7 @@
     "roll": "75.0976606272161",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14297,6 +14568,7 @@
     "roll": "31.760926521383226",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14340,6 +14612,7 @@
     "roll": "66.77511045709252",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14383,6 +14656,7 @@
     "roll": "36.101301736198366",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14449,6 +14723,7 @@
     "roll": "42.192500666715205",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14492,6 +14767,7 @@
     "roll": "17.225556378252804",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14554,6 +14830,7 @@
     "roll": "83.32875000778586",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14597,6 +14874,7 @@
     "roll": "20.98738041240722",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14640,6 +14918,7 @@
     "roll": "76.17120819631964",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14683,6 +14962,7 @@
     "roll": "18.954295478761196",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -14726,6 +15006,7 @@
     "roll": "25.884782476350665",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14783,6 +15064,7 @@
     "roll": "76.62320544477552",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -14826,6 +15108,7 @@
     "roll": "32.30423417408019",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14883,6 +15166,7 @@
     "roll": "36.91316202748567",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -14949,6 +15233,7 @@
     "roll": "86.8966190610081",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -14992,6 +15277,7 @@
     "roll": "7.196992402896285",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15054,6 +15340,7 @@
     "roll": "79.33470280840993",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15097,6 +15384,7 @@
     "roll": "70.69875642191619",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15159,6 +15447,7 @@
     "roll": "86.87389956321567",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15202,6 +15491,7 @@
     "roll": "33.45049964264035",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15245,6 +15535,7 @@
     "roll": "52.06458931788802",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15288,6 +15579,7 @@
     "roll": "92.0950171072036",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15331,6 +15623,7 @@
     "roll": "76.23343681916595",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15374,6 +15667,7 @@
     "roll": "40.75762229040265",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15436,6 +15730,7 @@
     "roll": "97.76059105060995",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15479,6 +15774,7 @@
     "roll": "4.518891545012593",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15545,6 +15841,7 @@
     "roll": "44.88197674509138",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15588,6 +15885,7 @@
     "roll": "70.54877632763237",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15631,6 +15929,7 @@
     "roll": "91.05770352762192",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15674,6 +15973,7 @@
     "roll": "75.57372415903956",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15717,6 +16017,7 @@
     "roll": "53.39770650025457",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15783,6 +16084,7 @@
     "roll": "87.3598738340661",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -15826,6 +16128,7 @@
     "roll": "59.23008744139224",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15883,6 +16186,7 @@
     "roll": "42.69376900047064",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -15926,6 +16230,7 @@
     "roll": "48.389230272732675",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -15983,6 +16288,7 @@
     "roll": "64.72202469594777",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -16026,6 +16332,7 @@
     "roll": "98.88926094863564",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16069,6 +16376,7 @@
     "roll": "95.07228201255202",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16112,6 +16420,7 @@
     "roll": "35.25342263747007",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16178,6 +16487,7 @@
     "roll": "91.39258509967476",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -16221,6 +16531,7 @@
     "roll": "39.824108802713454",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16283,6 +16594,7 @@
     "roll": "74.26559557206929",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16340,6 +16652,7 @@
     "roll": "8.748716814443469",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16397,6 +16710,7 @@
     "roll": "72.78909513261169",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16454,6 +16768,7 @@
     "roll": "89.64620518963784",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16497,6 +16812,7 @@
     "roll": "44.807635131292045",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16540,6 +16856,7 @@
     "roll": "42.641536868177354",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16583,6 +16900,7 @@
     "roll": "99.76402800530195",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16626,6 +16944,7 @@
     "roll": "83.2696697441861",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -16669,6 +16988,7 @@
     "roll": "23.184207384474576",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16712,6 +17032,7 @@
     "roll": "82.22993675153702",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16755,6 +17076,7 @@
     "roll": "54.714855016209185",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16798,6 +17120,7 @@
     "roll": "82.22290920093656",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16841,6 +17164,7 @@
     "roll": "35.80118527170271",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -16903,6 +17227,7 @@
     "roll": "50.99124002736062",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -16946,6 +17271,7 @@
     "roll": "65.37478833924979",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -16989,6 +17315,7 @@
     "roll": "42.61056110262871",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17032,6 +17359,7 @@
     "roll": "0.2334606135264039",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17098,6 +17426,7 @@
     "roll": "99.61653903592378",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17141,6 +17470,7 @@
     "roll": "82.9681018833071",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17184,6 +17514,7 @@
     "roll": "63.27446326613426",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17241,6 +17572,7 @@
     "roll": "52.74990415200591",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17284,6 +17616,7 @@
     "roll": "72.57232591509819",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17346,6 +17679,7 @@
     "roll": "16.492824349552393",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17389,6 +17723,7 @@
     "roll": "26.587455323897302",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17446,6 +17781,7 @@
     "roll": "1.0166372638195753",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17512,6 +17848,7 @@
     "roll": "94.426394905895",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -17555,6 +17892,7 @@
     "roll": "44.504385185427964",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17598,6 +17936,7 @@
     "roll": "33.78325484227389",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17660,6 +17999,7 @@
     "roll": "14.448272529989481",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17722,6 +18062,7 @@
     "roll": "27.49069849960506",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17784,6 +18125,7 @@
     "roll": "84.1362819308415",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17827,6 +18169,7 @@
     "roll": "86.60888588055968",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -17870,6 +18213,7 @@
     "roll": "15.77061410062015",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -17913,6 +18257,7 @@
     "roll": "55.414119409397244",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -17975,6 +18320,7 @@
     "roll": "54.51811598613858",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18037,6 +18383,7 @@
     "roll": "21.185848652385175",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -18080,6 +18427,7 @@
     "roll": "89.79051883798093",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -18123,6 +18471,7 @@
     "roll": "9.246363653801382",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18185,6 +18534,7 @@
     "roll": "12.566337501630187",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18242,6 +18592,7 @@
     "roll": "7.098027435131371",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18304,6 +18655,7 @@
     "roll": "11.17588090710342",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18361,6 +18713,7 @@
     "roll": "50.48634251579642",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -18404,6 +18757,7 @@
     "roll": "63.15788656938821",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18461,6 +18815,7 @@
     "roll": "95.84093233570457",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -18504,6 +18859,7 @@
     "roll": "3.0023940140381455",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18566,6 +18922,7 @@
     "roll": "5.905858287587762",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18628,6 +18985,7 @@
     "roll": "27.475364273414016",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -18671,6 +19029,7 @@
     "roll": "79.51810306403786",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -18714,6 +19073,7 @@
     "roll": "85.03370708785951",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -18757,6 +19117,7 @@
     "roll": "24.907151167280972",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18823,6 +19184,7 @@
     "roll": "36.03199552744627",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18889,6 +19251,7 @@
     "roll": "87.3266695998609",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -18932,6 +19295,7 @@
     "roll": "11.55249453149736",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -18989,6 +19353,7 @@
     "roll": "96.56540001742542",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19032,6 +19397,7 @@
     "roll": "89.44643381983042",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19075,6 +19441,7 @@
     "roll": "8.204912021756172",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19137,6 +19504,7 @@
     "roll": "49.46806791704148",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19180,6 +19548,7 @@
     "roll": "6.259073759429157",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19246,6 +19615,7 @@
     "roll": "54.1008006548509",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19312,6 +19682,7 @@
     "roll": "48.06377626955509",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19374,6 +19745,7 @@
     "roll": "62.792440759949386",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19431,6 +19803,7 @@
     "roll": "67.6216643769294",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19474,6 +19847,7 @@
     "roll": "29.455595393665135",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19517,6 +19891,7 @@
     "roll": "65.24296815041453",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19579,6 +19954,7 @@
     "roll": "86.74732961226255",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19622,6 +19998,7 @@
     "roll": "55.13618739787489",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19665,6 +20042,7 @@
     "roll": "72.06517243757844",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19708,6 +20086,7 @@
     "roll": "79.50071461964399",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19751,6 +20130,7 @@
     "roll": "14.675624226219952",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19808,6 +20188,7 @@
     "roll": "8.901464706286788",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -19870,6 +20251,7 @@
     "roll": "51.45929967984557",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -19913,6 +20295,7 @@
     "roll": "94.31298160925508",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -19956,6 +20339,7 @@
     "roll": "89.56187977455556",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -19999,6 +20383,7 @@
     "roll": "36.53632081113756",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20056,6 +20441,7 @@
     "roll": "95.28277441859245",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20099,6 +20485,7 @@
     "roll": "30.126809398643672",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20142,6 +20529,7 @@
     "roll": "90.40651184041053",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20185,6 +20573,7 @@
     "roll": "39.28317332174629",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20242,6 +20631,7 @@
     "roll": "14.772344450466335",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20299,6 +20689,7 @@
     "roll": "7.181546674109995",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20361,6 +20752,7 @@
     "roll": "3.0153645435348153",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20418,6 +20810,7 @@
     "roll": "54.92021827958524",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20475,6 +20868,7 @@
     "roll": "95.95473203808069",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20518,6 +20912,7 @@
     "roll": "67.52198475878686",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20561,6 +20956,7 @@
     "roll": "19.159198319539428",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20604,6 +21000,7 @@
     "roll": "98.92256376333535",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20647,6 +21044,7 @@
     "roll": "95.7863304996863",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20690,6 +21088,7 @@
     "roll": "94.5936121745035",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -20733,6 +21132,7 @@
     "roll": "46.230850578285754",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -20776,6 +21176,7 @@
     "roll": "22.555130789987743",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20819,6 +21220,7 @@
     "roll": "73.03217924199998",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20876,6 +21278,7 @@
     "roll": "23.722980357706547",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -20919,6 +21322,7 @@
     "roll": "28.667485108599067",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -20976,6 +21380,7 @@
     "roll": "7.655310886912048",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21033,6 +21438,7 @@
     "roll": "5.788613040931523",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21099,6 +21505,7 @@
     "roll": "51.130270841531456",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21142,6 +21549,7 @@
     "roll": "70.4731029458344",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21185,6 +21593,7 @@
     "roll": "2.332353498786688",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21247,6 +21656,7 @@
     "roll": "5.823116120882332",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21304,6 +21714,7 @@
     "roll": "75.09628594852984",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21347,6 +21758,7 @@
     "roll": "69.31978520005941",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21390,6 +21802,7 @@
     "roll": "50.38730076048523",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21433,6 +21846,7 @@
     "roll": "5.784581694751978",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21499,6 +21913,7 @@
     "roll": "91.46265040617436",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21542,6 +21957,7 @@
     "roll": "92.87313809618354",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21585,6 +22001,7 @@
     "roll": "92.25521928165108",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21628,6 +22045,7 @@
     "roll": "73.80076551344246",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -21671,6 +22089,7 @@
     "roll": "40.00714770518243",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21737,6 +22156,7 @@
     "roll": "79.99867943581194",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21780,6 +22200,7 @@
     "roll": "68.95338138565421",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21837,6 +22258,7 @@
     "roll": "46.18534573819488",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21880,6 +22302,7 @@
     "roll": "37.06300368066877",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -21923,6 +22346,7 @@
     "roll": "36.06333795469254",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -21985,6 +22409,7 @@
     "roll": "44.754127878695726",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22042,6 +22467,7 @@
     "roll": "3.744598454795778",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22099,6 +22525,7 @@
     "roll": "85.18609467428178",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -22142,6 +22569,7 @@
     "roll": "38.700393005274236",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22208,6 +22636,7 @@
     "roll": "53.44827838707715",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22270,6 +22699,7 @@
     "roll": "90.24441055953503",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -22313,6 +22743,7 @@
     "roll": "11.873682821169496",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22375,6 +22806,7 @@
     "roll": "68.86081632692367",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22432,6 +22864,7 @@
     "roll": "41.29462195560336",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22498,6 +22931,7 @@
     "roll": "71.7204702552408",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -22541,6 +22975,7 @@
     "roll": "45.02727650105953",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22607,6 +23042,7 @@
     "roll": "64.11482505500317",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22664,6 +23100,7 @@
     "roll": "85.36167177371681",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -22707,6 +23144,7 @@
     "roll": "48.35955654270947",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -22750,6 +23188,7 @@
     "roll": "79.20525607187301",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -22793,6 +23232,7 @@
     "roll": "17.43988653179258",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22850,6 +23290,7 @@
     "roll": "49.29590306710452",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -22907,6 +23348,7 @@
     "roll": "85.41893928777426",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -22950,6 +23392,7 @@
     "roll": "68.45861510373652",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23016,6 +23459,7 @@
     "roll": "64.6806619130075",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23059,6 +23503,7 @@
     "roll": "89.42741490900517",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23102,6 +23547,7 @@
     "roll": "95.21376686170697",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23145,6 +23591,7 @@
     "roll": "98.7795130815357",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23188,6 +23635,7 @@
     "roll": "58.54732310399413",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23231,6 +23679,7 @@
     "roll": "31.887471047230065",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23297,6 +23746,7 @@
     "roll": "98.46548638306558",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -23340,6 +23790,7 @@
     "roll": "86.65915292222053",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23383,6 +23834,7 @@
     "roll": "16.155576426535845",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23426,6 +23878,7 @@
     "roll": "12.510674516670406",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23483,6 +23936,7 @@
     "roll": "69.91138001903892",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23549,6 +24003,7 @@
     "roll": "77.68096374347806",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -23592,6 +24047,7 @@
     "roll": "83.70735463686287",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23635,6 +24091,7 @@
     "roll": "33.92909744288772",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23692,6 +24149,7 @@
     "roll": "99.45629097055644",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23735,6 +24193,7 @@
     "roll": "22.978266631253064",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23792,6 +24251,7 @@
     "roll": "48.45905494876206",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -23835,6 +24295,7 @@
     "roll": "21.569458162412047",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23892,6 +24353,7 @@
     "roll": "10.71678048465401",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -23958,6 +24420,7 @@
     "roll": "36.14573017694056",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -24001,6 +24464,7 @@
     "roll": "85.03216011449695",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -24044,6 +24508,7 @@
     "roll": "43.08860953897238",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24101,6 +24566,7 @@
     "roll": "13.53551815263927",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24158,6 +24624,7 @@
     "roll": "50.33793190959841",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24201,6 +24668,7 @@
     "roll": "37.66238323878497",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24244,6 +24712,7 @@
     "roll": "69.90485172718763",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24287,6 +24756,7 @@
     "roll": "46.59272916615009",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24330,6 +24800,7 @@
     "roll": "22.77941405773163",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24387,6 +24858,7 @@
     "roll": "55.18391975201666",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24444,6 +24916,7 @@
     "roll": "56.24537339899689",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24501,6 +24974,7 @@
     "roll": "97.07681452855468",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24544,6 +25018,7 @@
     "roll": "92.4144352786243",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24587,6 +25062,7 @@
     "roll": "99.84673622529954",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24630,6 +25106,7 @@
     "roll": "35.96343449316919",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24673,6 +25150,7 @@
     "roll": "65.84889509249479",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24730,6 +25208,7 @@
     "roll": "49.660035222768784",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24796,6 +25275,7 @@
     "roll": "69.66597274877131",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24839,6 +25319,7 @@
     "roll": "20.3121405094862",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -24901,6 +25382,7 @@
     "roll": "75.779645354487",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -24944,6 +25426,7 @@
     "roll": "30.07152413483709",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -24987,6 +25470,7 @@
     "roll": "72.71594589110464",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -25030,6 +25514,7 @@
     "roll": "2.291273046284914",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25092,6 +25577,7 @@
     "roll": "42.841181345283985",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25135,6 +25621,7 @@
     "roll": "23.520792229101062",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25178,6 +25665,7 @@
     "roll": "7.79855833388865",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25240,6 +25728,7 @@
     "roll": "35.66894109826535",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25306,6 +25795,7 @@
     "roll": "17.24961285945028",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25363,6 +25853,7 @@
     "roll": "63.05555212311447",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25420,6 +25911,7 @@
     "roll": "40.434026648290455",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25477,6 +25969,7 @@
     "roll": "81.79051589686424",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25520,6 +26013,7 @@
     "roll": "19.368890183977783",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25582,6 +26076,7 @@
     "roll": "0.12835797388106585",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25648,6 +26143,7 @@
     "roll": "34.94927138090134",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25710,6 +26206,7 @@
     "roll": "39.304254273884",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25767,6 +26264,7 @@
     "roll": "61.384554649703205",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25810,6 +26308,7 @@
     "roll": "62.75882662739605",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25853,6 +26352,7 @@
     "roll": "15.488241240382195",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -25896,6 +26396,7 @@
     "roll": "23.332805279642344",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -25953,6 +26454,7 @@
     "roll": "0.6187379127368331",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26010,6 +26512,7 @@
     "roll": "97.76417673565447",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26053,6 +26556,7 @@
     "roll": "13.009883603081107",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26119,6 +26623,7 @@
     "roll": "7.750912639312446",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26185,6 +26690,7 @@
     "roll": "44.935763254761696",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26247,6 +26753,7 @@
     "roll": "51.510612340644",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26313,6 +26820,7 @@
     "roll": "58.374332753010094",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26370,6 +26878,7 @@
     "roll": "98.97683660965413",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -26413,6 +26922,7 @@
     "roll": "45.35052049905062",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -26456,6 +26966,7 @@
     "roll": "63.426815858110785",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -26499,6 +27010,7 @@
     "roll": "17.786914482712746",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26565,6 +27077,7 @@
     "roll": "32.08866608329117",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26622,6 +27135,7 @@
     "roll": "24.83199427369982",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26665,6 +27179,7 @@
     "roll": "96.9560201978311",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26708,6 +27223,7 @@
     "roll": "63.14592103008181",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26751,6 +27267,7 @@
     "roll": "78.31066749058664",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26794,6 +27311,7 @@
     "roll": "30.269705830141902",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -26851,6 +27369,7 @@
     "roll": "81.80457195267081",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26894,6 +27413,7 @@
     "roll": "82.49739930033684",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -26937,6 +27457,7 @@
     "roll": "90.62145806383342",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -26980,6 +27501,7 @@
     "roll": "60.61580462846905",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27023,6 +27545,7 @@
     "roll": "54.69186496920884",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27089,6 +27612,7 @@
     "roll": "39.98240535147488",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27132,6 +27656,7 @@
     "roll": "94.62554659694433",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27175,6 +27700,7 @@
     "roll": "32.58992531336844",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27241,6 +27767,7 @@
     "roll": "64.77197147905827",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27284,6 +27811,7 @@
     "roll": "86.43478760495782",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -27327,6 +27855,7 @@
     "roll": "92.41336861159652",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27370,6 +27899,7 @@
     "roll": "34.19181371573359",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27432,6 +27962,7 @@
     "roll": "71.2252392899245",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -27475,6 +28006,7 @@
     "roll": "60.85419710725546",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27518,6 +28050,7 @@
     "roll": "33.291421621106565",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27580,6 +28113,7 @@
     "roll": "14.168283576145768",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27637,6 +28171,7 @@
     "roll": "28.74636990018189",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -27680,6 +28215,7 @@
     "roll": "94.09600491635501",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27723,6 +28259,7 @@
     "roll": "80.33117963932455",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27766,6 +28303,7 @@
     "roll": "26.970029110088944",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -27809,6 +28347,7 @@
     "roll": "53.92045183107257",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -27852,6 +28391,7 @@
     "roll": "65.43308952823281",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27918,6 +28458,7 @@
     "roll": "55.84400522056967",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -27980,6 +28521,7 @@
     "roll": "75.20666357595474",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28023,6 +28565,7 @@
     "roll": "75.01287097111344",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28066,6 +28609,7 @@
     "roll": "89.49160040356219",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28109,6 +28653,7 @@
     "roll": "69.92256592493504",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -28152,6 +28697,7 @@
     "roll": "47.58444863837212",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28214,6 +28760,7 @@
     "roll": "6.492576049640775",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28280,6 +28827,7 @@
     "roll": "21.175325009971857",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28337,6 +28885,7 @@
     "roll": "84.56805113237351",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28380,6 +28929,7 @@
     "roll": "7.765823160298169",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28442,6 +28992,7 @@
     "roll": "42.4927027663216",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28508,6 +29059,7 @@
     "roll": "18.78764054272324",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -28551,6 +29103,7 @@
     "roll": "92.58987593930215",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28594,6 +29147,7 @@
     "roll": "95.20141836255789",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -28637,6 +29191,7 @@
     "roll": "36.141261109150946",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28703,6 +29258,7 @@
     "roll": "6.479028007015586",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28769,6 +29325,7 @@
     "roll": "94.74642854183912",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28812,6 +29369,7 @@
     "roll": "64.5685057155788",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28855,6 +29413,7 @@
     "roll": "46.35948003269732",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -28921,6 +29480,7 @@
     "roll": "83.35484999697655",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -28964,6 +29524,7 @@
     "roll": "33.38689578231424",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29030,6 +29591,7 @@
     "roll": "42.74150752462447",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -29073,6 +29635,7 @@
     "roll": "76.16557802539319",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29116,6 +29679,7 @@
     "roll": "14.369158004410565",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29182,6 +29746,7 @@
     "roll": "73.11584893614054",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -29225,6 +29790,7 @@
     "roll": "92.10446097422391",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29268,6 +29834,7 @@
     "roll": "25.63558730762452",
     "extraMorale": "15",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29330,6 +29897,7 @@
     "roll": "52.14446587488055",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -29373,6 +29941,7 @@
     "roll": "77.57832114584744",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29416,6 +29985,7 @@
     "roll": "32.81713721808046",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -29459,6 +30029,7 @@
     "roll": "68.82872546557337",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29502,6 +30073,7 @@
     "roll": "39.83580181375146",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29545,6 +30117,7 @@
     "roll": "13.32871790509671",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29607,6 +30180,7 @@
     "roll": "35.075093572959304",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29650,6 +30224,7 @@
     "roll": "65.57856942526996",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29716,6 +30291,7 @@
     "roll": "43.19211698602885",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29759,6 +30335,7 @@
     "roll": "28.285963996313512",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29825,6 +30402,7 @@
     "roll": "51.74352277535945",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -29868,6 +30446,7 @@
     "roll": "21.134976134635508",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29934,6 +30513,7 @@
     "roll": "7.561172661371529",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -29996,6 +30576,7 @@
     "roll": "47.55852420348674",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30053,6 +30634,7 @@
     "roll": "46.340903150849044",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -30096,6 +30678,7 @@
     "roll": "58.99774068966508",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30153,6 +30736,7 @@
     "roll": "30.027159256860614",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -30196,6 +30780,7 @@
     "roll": "73.20336350239813",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -30239,6 +30824,7 @@
     "roll": "40.873734629713",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30301,6 +30887,7 @@
     "roll": "23.313123360276222",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30358,6 +30945,7 @@
     "roll": "64.74783758167177",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30415,6 +31003,7 @@
     "roll": "40.639788401313126",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -30458,6 +31047,7 @@
     "roll": "46.704612486064434",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30524,6 +31114,7 @@
     "roll": "51.19345027487725",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30581,6 +31172,7 @@
     "roll": "21.64042869117111",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30643,6 +31235,7 @@
     "roll": "16.471625468693674",
     "extraMorale": "15",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30705,6 +31298,7 @@
     "roll": "70.67529391497374",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30767,6 +31361,7 @@
     "roll": "75.06553404964507",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -30810,6 +31405,7 @@
     "roll": "8.27539088204503",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30872,6 +31468,7 @@
     "roll": "11.306577431969345",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -30929,6 +31526,7 @@
     "roll": "79.71095822285861",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -30972,6 +31570,7 @@
     "roll": "75.99684596061707",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -31015,6 +31614,7 @@
     "roll": "88.18473236169666",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -31058,6 +31658,7 @@
     "roll": "1.085095712915063",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31115,6 +31716,7 @@
     "roll": "90.17144532408565",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -31158,6 +31760,7 @@
     "roll": "48.99111231788993",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31224,6 +31827,7 @@
     "roll": "35.34537870436907",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -31267,6 +31871,7 @@
     "roll": "78.16597141791135",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -31310,6 +31915,7 @@
     "roll": "76.25878856051713",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -31353,6 +31959,7 @@
     "roll": "68.1610134895891",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31415,6 +32022,7 @@
     "roll": "5.834030197001994",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31472,6 +32080,7 @@
     "roll": "54.4370390009135",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": []
    }
   },
@@ -31515,6 +32124,7 @@
     "roll": "38.80725733470172",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -31558,6 +32168,7 @@
     "roll": "81.5465699415654",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -31601,6 +32212,7 @@
     "roll": "24.84515765681863",
     "extraMorale": "8",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31663,6 +32275,7 @@
     "roll": "34.078507497906685",
     "extraMorale": "8",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31720,6 +32333,7 @@
     "roll": "42.88902715779841",
     "extraMorale": "30",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31777,6 +32391,7 @@
     "roll": "8.0073973396793",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31834,6 +32449,7 @@
     "roll": "50.64838614780456",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31896,6 +32512,7 @@
     "roll": "20.137471542693675",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -31958,6 +32575,7 @@
     "roll": "26.693843957036734",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32024,6 +32642,7 @@
     "roll": "18.03269737865776",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32086,6 +32705,7 @@
     "roll": "21.321803121827543",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -32129,6 +32749,7 @@
     "roll": "0",
     "extraMorale": "23",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32195,6 +32816,7 @@
     "roll": "99",
     "extraMorale": "0",
     "engagedKeyAfter": false,
+    "engagedAddCalls": "0",
     "events": []
    }
   },
@@ -32238,6 +32860,7 @@
     "roll": "0",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32304,6 +32927,7 @@
     "roll": "10",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32361,6 +32985,7 @@
     "roll": "0",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",
@@ -32418,6 +33043,7 @@
     "roll": "0",
     "extraMorale": "0",
     "engagedKeyAfter": true,
+    "engagedAddCalls": "1",
     "events": [
      {
       "e": "UpdateHpBar",

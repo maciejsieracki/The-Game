@@ -146,7 +146,11 @@ function runCase(input) {
     routed: input.routed, neverRout: input.neverRout,
     morale: input.morale, fleeMorale: input.fleeMorale,
   };
-  const engaged = new Set(input.engagedBefore ? ['A1>D1'] : []);
+  // Szpieg na `engaged.add` (K5I2a2, zarzut Evaluatora 7): lista kluczy wywolan `this.engaged.add(key)` wykonanych przez TEKST pinu
+  // (battleScene.ts:8899); asercja Rust porownuje `engaged_add` z tym, a nie z wyrazeniem `!ranged` skopiowanym z src.
+  const engagedAddCalls = [];
+  const engaged = new (class extends Set { add(k) { engagedAddCalls.push(k); return super.add(k); } })(input.engagedBefore ? ['A1>D1'] : []);
+  engagedAddCalls.length = 0; // dla pewnosci: liczymy tylko wywolania z tekstu pinu
   // Stub sceny: efekty zapisywane do events (nieportowane cialo stanu poza routed).
   const scene = {
     log,
@@ -199,6 +203,7 @@ function runCase(input) {
     extraMorale: seen.extraMorale,
     // `this.engaged.add(key)` (battleScene.ts:8899) wykonane tylko dla ciosu wrecz; klucz obecny po wywolaniu.
     engagedKeyAfter: engaged.has('A1>D1'),
+    engagedAddCalls: engagedAddCalls.length,
     events,
   };
 }
