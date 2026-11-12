@@ -102,6 +102,7 @@ pub mod siege_tactics_endcheck;
 pub mod siege_tactics_inputs_pos;
 pub mod siege_tactics_inputs_terrain;
 pub mod siege_tactics_inputs_unit;
+pub mod siege_tactics_inputs_wall;
 pub mod siege_tactics_tower;
 pub mod siege_tactics_walk;
 pub mod siege_transfer;
