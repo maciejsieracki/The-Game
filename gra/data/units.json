@@ -607,7 +607,7 @@
     "Uderzenie": 12,
     "Obrona": 8,
     "Ruch": 4,
-    "Ruch w bitwie (heksy)": 6,
+    "Ruch w bitwie (heksy)": 7,
     "Health": 320,
     "Próg dezercji (% health)": 0.3,
     "Widok pola": 4,
@@ -652,7 +652,7 @@
     "Opis": "Kawaleria flankująca, szybsza i lepiej opancerzona niż rydwan.",
     "Top3": [
       {
-        "tytul": "Ruch 4 (6 w bitwie)",
+        "tytul": "Ruch 4 (7 w bitwie)",
         "tekst": "Najwyższa mobilność wśród jednostek tej partii, idealna do szybkich uderzeń z flanki."
       },
       {
