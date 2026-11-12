@@ -10,6 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::{error::Error, fmt};
 
 use super::building_costs::p6_7b::StockRecord;
+use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{build_war_inputs, production_config};
 use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::types::Difficulty;
@@ -1118,7 +1119,19 @@ impl PlayableGame {
             inputs: &inputs,
             config: &config,
         };
-        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let report =
+            run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        // P6-WIRE-WAR-R7K7-C (R7K7C-WIRING, pin 07d2fbd72 `buildDiploTreasury().add` / `aiSkarbiecByOwner`):
+        // przyrosty skarbcow i pul Pracy z kroków D1-D7 trafiaja do stanu. Atomowe (blad = brak zmiany skarbcow);
+        // cofniecie wojny i kolejki przy bledzie robi `advance_turn`. Brak wpisu w mapie delt = brak zmiany.
+        // Kolejnosc wzgledem pinu: przyrosty stosowane po D8 (hamulec), ktory nie czyta skarbcow/pul Pracy
+        // (BrakePhaseInput: moc liczona z wejsc sprzed kroku D), wiec wynik jest rownowazny.
+        apply_dipl_deltas_to_state(
+            &mut self.state,
+            &report.dipl.treasury_deltas,
+            &report.dipl.praca_deltas,
+        )
+        .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
@@ -1259,6 +1272,40 @@ mod war_pipeline_advance_tests {
             game.advance_turn().expect("advance_turn z AI z miastami");
             assert_eq!(game.state().turn, expected);
         }
+    }
+
+    #[test]
+    fn advance_turn_moves_tribute_from_ai_treasury_to_human_treasury() {
+        // R7K7C-WIRING: przyrosty D6 (danina AI -> gracz) przechodza przez `apply_dipl_deltas_to_state`
+        // w `run_diplomacy_war_phase`. Skarbiec AI ma producenta (`ai_treasury_by_owner`), wiec przelew
+        // jest pelny; bez wpiecia skarbce by sie nie zmienily.
+        use crate::domain::diplomacy::{ActiveDeal, TreatyEconomy, TreatyKind};
+        let mut game = game_with_ai_city();
+        let human = game
+            .state
+            .players
+            .iter()
+            .find(|p| p.is_human)
+            .expect("gracz ludzki")
+            .id;
+        let human_before = game.state.economy.treasury;
+        game.state.economy.ai_treasury_by_owner.insert(2, 500.0);
+        let mut deal = ActiveDeal::new(TreatyKind::Vassalization, PlayerId::new(2), human, 1, None);
+        deal.id = "danina-wiring".to_owned();
+        deal.economy = Some(TreatyEconomy {
+            payer_owner_id: PlayerId::new(2),
+            receiver_owner_id: human,
+            money_per_turn: 40.0,
+        });
+        game.state.war.diplomacy.add_deal(deal);
+
+        game.advance_turn().expect("advance_turn z danina AI");
+
+        assert_eq!(game.state().economy.treasury, human_before + 40.0);
+        assert_eq!(
+            game.state().economy.ai_treasury_by_owner.get(&2),
+            Some(&460.0)
+        );
     }
 
     #[test]
