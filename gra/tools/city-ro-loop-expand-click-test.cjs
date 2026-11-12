@@ -117,7 +117,11 @@ async function main() {
   });
   await page.evaluate(() => window.__openCity());
   await page.waitForTimeout(300);
+  // Okno BEZ kliknięcia (kontrola przyczynowości): zdarzenia RO w 2 s przed pierwszym kliknięciem.
+  const beforeIdle = await page.evaluate(() => window.__roCount);
+  await page.waitForTimeout(2000);
   const before = await page.evaluate(() => window.__roCount);
+  const roIdle = before - beforeIdle;
   const bClick = await page.evaluate(() => {
     const b = document.querySelector('[data-sp-expand]');
     if (!b) return false;
@@ -138,7 +142,8 @@ async function main() {
   const afterLess = await page.evaluate(() => window.__roCount);
   const roMore = afterMore - before;
   const roLess = afterLess - afterMore;
-  console.log(`RO po otwarciu panelu miasta: ${before}`);
+  console.log(`RO w 2 s BEZ kliknięcia, po otwarciu panelu miasta (${MUTANT ? 'MUTANT' : 'KOD'}): ${roIdle}`);
+  console.log(`RO po otwarciu panelu miasta (licznik): ${before}`);
   console.log(`RO w 2 s po "Więcej szczegółów" (${MUTANT ? 'MUTANT' : 'KOD'}): ${roMore}`);
   console.log(`RO w 2 s po "Mniej szczegółów" (${MUTANT ? 'MUTANT' : 'KOD'}): ${roLess}`);
   check('klik "Więcej szczegółów": RO <= 1', roMore <= 1, { roMore });
