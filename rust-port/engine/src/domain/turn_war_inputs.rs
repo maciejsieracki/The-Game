@@ -119,6 +119,8 @@ pub enum WarInputsError {
     BadPairKey(String),
     /// Zly wpis meta (klucz web, powod).
     BadMeta(&'static str, String),
+    /// P6-WIRE-WAR-R7K7-C: wpis `ai_treasury_by_owner` dla gracza ludzkiego (jego skarbiec to `economy.treasury`).
+    HumanOwnerInAiTreasury(i64),
 }
 
 impl std::fmt::Display for WarInputsError {
@@ -134,6 +136,10 @@ impl std::fmt::Display for WarInputsError {
             Self::NoWarriorRecord => write!(f, "war inputs: brak rekordu Wojownik w units.json"),
             Self::BadPairKey(k) => write!(f, "war inputs: zly klucz pary '{k}'"),
             Self::BadMeta(key, why) => write!(f, "war inputs: {key}: {why}"),
+            Self::HumanOwnerInAiTreasury(id) => write!(
+                f,
+                "war inputs: skarbiec AI zawiera gracza ludzkiego {id} (wlasciwe pole: economy.treasury)"
+            ),
         }
     }
 }
@@ -714,6 +720,23 @@ pub fn dipl_steps_inputs(state: &PlayableState) -> Result<DiplStepsInputs, WarIn
     if let Some(human) = state.players.iter().find(|p| p.is_human) {
         out.treasury
             .insert(human.id.get() as i64, state.economy.treasury);
+    }
+    // P6-WIRE-WAR-R7K7-C: skarbce AI i pule Pracy wlascicieli (web ownerTreasury / ownerPracaPool) z magazynu
+    // `economy`. Puste mapy = producent nieobecny (blad przy uzyciu w kroku), NIE zero.
+    for (&owner, &value) in &state.economy.ai_treasury_by_owner {
+        // Gracz ludzki ma skarbiec w `economy.treasury`; wpis dla niego w mapie AI to stan niespojny
+        // (np. zapis omijajacy setter) -- odrzucamy zamiast po cichu ignorowac.
+        if state
+            .players
+            .iter()
+            .any(|p| p.is_human && p.id.get() == owner)
+        {
+            return Err(WarInputsError::HumanOwnerInAiTreasury(owner as i64));
+        }
+        out.treasury.insert(owner as i64, value);
+    }
+    for (&owner, &value) in &state.economy.praca_pool_by_owner {
+        out.praca_pool.insert(owner as i64, value);
     }
     out.cities = Some(
         state

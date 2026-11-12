@@ -61,6 +61,7 @@ use super::diplomacy_truce::{pair_meta_from_save, PairMetaWeb};
 use super::diplomacy_truce_end::{truce_end_tick_pair, PairTruceMeta, TruceEndPorts};
 use super::diplomacy_truce_flow::{InboxOffer, TruceDiplomacy};
 use super::ids::PlayerId;
+use super::playable::PlayableState;
 use super::turn_war_pipeline::WarTurnError;
 use super::types::Difficulty;
 use super::war_turn_state::WarTurnState;
@@ -978,4 +979,90 @@ pub fn run_dipl_steps(
     report.praca_deltas = ledger.praca_delta;
     *war = work;
     Ok(report)
+}
+
+// ---------------------------------------------------------------------------------------------
+// P6-WIRE-WAR-R7K7-C: zastosowanie efektow umow do stanu (skarbce, pule Pracy).
+// ---------------------------------------------------------------------------------------------
+
+fn owner_key(owner: i64) -> Result<u64, WarTurnError> {
+    u64::try_from(owner).map_err(|_| err(format!("wlasciciel {owner} poza zakresem stanu")))
+}
+
+/// Stosuje przyrosty skarbcow (`treasury_deltas`) i pul Pracy (`praca_deltas`) z raportu kroku dyplomacji
+/// do `PlayableState`. Czysta funkcja nad stanem: kazda nowa wartosc jest liczona i walidowana (skonczona)
+/// PRZED zapisem, wiec blad = zadnej zmiany (atomowosc).
+/// Skarbiec gracza ludzkiego idzie do `economy.treasury`; pozostali wlasciciele do `ai_treasury_by_owner`.
+/// Brak wpisu wlasciciela, ktorego delta dotyczy, daje `WarTurnError::DiplStep` (nigdy nie tworzy zera).
+/// Odchylenie swiadome i OTWARTE (DECISION_REQUIRED, nie zmieniane tu): pin czyta brak wpisu jako 0
+/// (`aiSkarbiecByOwner.get(id) ?? 0`), Rust zwraca blad. Patrz 02a-obrona.md, zarzut 1.
+pub fn apply_dipl_deltas_to_state(
+    state: &mut PlayableState,
+    treasury_deltas: &BTreeMap<i64, f64>,
+    praca_deltas: &BTreeMap<i64, f64>,
+) -> Result<(), WarTurnError> {
+    let human = state
+        .players
+        .iter()
+        .find(|p| p.is_human)
+        .map(|p| p.id.get() as i64);
+    let mut new_human_treasury: Option<f64> = None;
+    let mut new_ai_treasury: BTreeMap<u64, f64> = BTreeMap::new();
+    for (&owner, &delta) in treasury_deltas {
+        if !delta.is_finite() {
+            return Err(err(format!(
+                "delta skarbca wlasciciela {owner} nieskonczona"
+            )));
+        }
+        if Some(owner) == human {
+            let value = state.economy.treasury + delta;
+            if !value.is_finite() {
+                return Err(err(format!("skarbiec gracza {owner} nieskonczony")));
+            }
+            new_human_treasury = Some(value);
+        } else {
+            let key = owner_key(owner)?;
+            let cur = *state
+                .economy
+                .ai_treasury_by_owner
+                .get(&key)
+                .ok_or_else(|| {
+                    err(format!(
+                        "brak producenta skarbca wlasciciela {owner} (web ownerTreasury)"
+                    ))
+                })?;
+            let value = cur + delta;
+            if !value.is_finite() {
+                return Err(err(format!("skarbiec wlasciciela {owner} nieskonczony")));
+            }
+            new_ai_treasury.insert(key, value);
+        }
+    }
+    let mut new_praca: BTreeMap<u64, f64> = BTreeMap::new();
+    for (&owner, &delta) in praca_deltas {
+        let key = owner_key(owner)?;
+        if !delta.is_finite() {
+            return Err(err(format!("delta Pracy wlasciciela {owner} nieskonczona")));
+        }
+        let cur = *state.economy.praca_pool_by_owner.get(&key).ok_or_else(|| {
+            err(format!(
+                "brak producenta puli Pracy wlasciciela {owner} (web ownerPracaPool)"
+            ))
+        })?;
+        let value = cur + delta;
+        if !value.is_finite() {
+            return Err(err(format!("pula Pracy wlasciciela {owner} nieskonczona")));
+        }
+        // Pin: setOwnerPracaPool zapisuje `Math.max(0, value)` -- pula Pracy nie schodzi ponizej zera.
+        // (Skarbce NIE maja podlogi: pin ich nie podlogowuje, patrz komentarz przy aiSkarbiecByOwner.set.)
+        let value = if value > 0.0 { value } else { 0.0 };
+        new_praca.insert(key, value);
+    }
+    // Zatwierdzenie dopiero po walidacji wszystkich pozycji.
+    if let Some(value) = new_human_treasury {
+        state.economy.treasury = value;
+    }
+    state.economy.ai_treasury_by_owner.extend(new_ai_treasury);
+    state.economy.praca_pool_by_owner.extend(new_praca);
+    Ok(())
 }
