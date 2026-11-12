@@ -97,12 +97,21 @@ const HEADER = `
   const routAtk = __in.routAtk; const routDef = __in.routDef;
   const routed = []; const log = [];
   const rng = __rng;
+  const __z = (x) => (Object.is(x, -0) ? '-0' : String(x));
 `;
 const FOOTER = `
   return { hpAtk, hpDef, ammoAtk, ammoDef, totalRounds, routed, log };
 `;
+// Formatowanie zdarzen (poprawka zarzutu 4): JS `String(-0) === "0"`, wiec szablony logu pinu gubia znak zera
+// w hitPct/dmg/HP. Jedyna zmiana tekstu petli: 10 szablonow `${hitPct|dmg|hpDef|hpAtk}` -> `${__z(...)}`,
+// gdzie __z(x) = String(x) poza -0 (dla -0 zwraca "-0"). Straznik SHA powyzej dotyczy tekstu pinu PRZED zmiana.
+const LOG_NUM = /\$\{(hitPct|dmg|hpDef|hpAtk)\}/g;
+const nLogNum = [...loopTs.matchAll(LOG_NUM)].length;
+if (nLogNum !== 10) throw new Error(`oczekiwano 10 szablonow liczbowych w logu petli, jest ${nLogNum}`);
+const loopLog = loopTs.replace(LOG_NUM, (_, n) => `\${__z(${n})}`);
+
 // Calosc owinieta w funkcje (stripTypeScriptTypes parsuje modul; `return` na poziomie modulu jest bledem).
-const body = `function __body(__in, __rng, __tw, __rdm) {\nconst TW = __tw; const RANGED_DAMAGE_MULT = __rdm;\n${fnTs}\n${multTs}\n${HEADER}\n${loopTs}\n${FOOTER}}\n`;
+const body = `function __body(__in, __rng, __tw, __rdm) {\nconst TW = __tw; const RANGED_DAMAGE_MULT = __rdm;\n${fnTs}\n${multTs}\n${HEADER}\n${loopLog}\n${FOOTER}}\n`;
 const bodyJs = stripTypeScriptTypes(body);
 const runLoop = new Function(`${bodyJs}\nreturn __body;`)();
 
@@ -197,10 +206,69 @@ function genCase(i) {
 
 const LINE = /^R(\d+)\[Dyst-(ATK|DEF)\] (trafienie|chybienie) \(([^<>=]+)(?:<|>=)([^%]+)%\)(?: -> ([^ ]+) obra\. [^:]+: (\S+))?\.?$/;
 
+const mkInput = (c) => ({
+  attacker: c.attacker, defender: c.defender,
+  atkIsRanged: c.atkIsRanged, defIsRanged: c.defIsRanged,
+  ammoAtk: c.ammoAtk, ammoDef: c.ammoDef, hpAtk: decJs(c.hpAtk), hpDef: decJs(c.hpDef),
+  totalRounds: c.totalRounds, maxRounds: c.maxRounds,
+  atkMelee0: c.atkMelee0, atkMissile0: c.atkMissile0, atkObrona0: c.atkObrona0, atkPanc0: c.atkPanc0,
+  defMelee0: c.defMelee0, defMissile0: c.defMissile0, defPanc0: c.defPanc0,
+  defFinalObrona: c.defFinalObrona, terrRiverMult: c.terrRiverMult,
+  ctrAtkVsDef: c.ctrAtkVsDef, ctrDefVsAtk: c.ctrDefVsAtk,
+  routAtk: c.routAtk, routDef: c.routDef,
+});
+
+// Zdarzenia strzalow z logu pinu (wyprowadzone z tekstu pinu, nie z ponownej implementacji).
+const parseShots = (log, caseNo) => {
+  const shots = [];
+  for (const line of log) {
+    if (!/Dyst-(ATK|DEF)\]/.test(line)) continue;
+    const m = LINE.exec(line);
+    if (!m) throw new Error(`przypadek ${caseNo}: nie sparsowano linii dystansowej: ${line}`);
+    shots.push({
+      round: Number(m[1]),
+      side: m[2] === 'ATK' ? 'attacker' : 'defender',
+      hit: m[3] === 'trafienie',
+      hitPct: parseNum(m[5].trim()),
+      damage: m[6] !== undefined ? parseNum(m[6]) : 0,
+      targetHp: m[7] !== undefined ? parseNum(m[7]) : null,
+    });
+  }
+  return shots;
+};
+
+// Przypadki graniczne rzutu (zarzut 1): roll = rng()*100 (jak w pinie) ma byc rowny / tuz ponizej / tuz powyzej hitPct.
+// Wartosc losowania dobierana po ULP tak, by (d*100) === hitPct (lub < / >) w IEEE double.
+const f64 = new Float64Array(1);
+const u64 = new BigUint64Array(f64.buffer);
+const stepUlp = (x, s) => { f64[0] = x; u64[0] = u64[0] + BigInt(s); return f64[0]; };
+const ROLL_PRED = { eq: (r, h) => r === h, lt: (r, h) => r < h, gt: (r, h) => r > h };
+const rollFor = (h, mode) => {
+  const d0 = h / 100;
+  for (let s = 0; s <= 16; s++) {
+    for (const d of [stepUlp(d0, s), stepUlp(d0, -s)]) {
+      if (d >= 0 && d < 1 && ROLL_PRED[mode](d * 100, h)) return d;
+    }
+  }
+  return null;
+};
+// hitPct strzalu jest stale dla strony (zalezy tylko od wejsc), wiec pierwszy przebieg z rng=0 podaje je dla kolejnych strzalow.
+const applyBoundary = (c, i) => {
+  const probe = parseShots(runLoop(mkInput(c), () => 0, TW, params.ranged_damage_mult).log, i);
+  const modes = ['eq', 'lt', 'gt'];
+  for (let k = 0; k < Math.min(probe.length, c.draws.length); k++) {
+    const h = probe[k].hitPct;
+    if (!(h > 0 && h <= 100)) continue;
+    const d = rollFor(h, modes[(k + i) % 3]);
+    if (d !== null) c.draws[k] = d;
+  }
+};
+
 const cases = [];
 const N = 700;
 for (let i = 0; i < N; i++) {
   const c = genCase(i);
+  if (i % 7 === 3) applyBoundary(c, i);
   const draws = c.draws;
   let di = 0;
   const rng = () => {
@@ -208,35 +276,15 @@ for (let i = 0; i < N; i++) {
     return draws[di++];
   };
   // Kolejnosc ATK, DEF; sprawdzamy, ze petla nie wykona wiecej strzalow niz zapas (zapas = 2*(maxRounds+2)+2).
-  const input = {
-    attacker: c.attacker, defender: c.defender,
-    atkIsRanged: c.atkIsRanged, defIsRanged: c.defIsRanged,
-    ammoAtk: c.ammoAtk, ammoDef: c.ammoDef, hpAtk: decJs(c.hpAtk), hpDef: decJs(c.hpDef),
-    totalRounds: c.totalRounds, maxRounds: c.maxRounds,
-    atkMelee0: c.atkMelee0, atkMissile0: c.atkMissile0, atkObrona0: c.atkObrona0, atkPanc0: c.atkPanc0,
-    defMelee0: c.defMelee0, defMissile0: c.defMissile0, defPanc0: c.defPanc0,
-    defFinalObrona: c.defFinalObrona, terrRiverMult: c.terrRiverMult,
-    ctrAtkVsDef: c.ctrAtkVsDef, ctrDefVsAtk: c.ctrDefVsAtk,
-    routAtk: c.routAtk, routDef: c.routDef,
-  };
-  const res = runLoop(input, rng, TW, params.ranged_damage_mult);
-  // Zdarzenia strzalow z logu pinu (wyprowadzone z tekstu, nie z ponownej implementacji).
-  const shots = [];
-  for (const line of res.log) {
-    if (!/Dyst-(ATK|DEF)\]/.test(line)) continue;
-    const m = LINE.exec(line);
-    if (!m) throw new Error(`przypadek ${i}: nie sparsowano linii dystansowej: ${line}`);
-    const hitPct = parseNum(m[5].trim());
-    const hit = m[3] === 'trafienie';
-    shots.push({
-      round: Number(m[1]),
-      side: m[2] === 'ATK' ? 'attacker' : 'defender',
-      hit,
-      hitPct: enc(hitPct),
-      damage: m[6] !== undefined ? enc(parseNum(m[6])) : enc(0),
-      targetHp: m[7] !== undefined ? enc(parseNum(m[7])) : null,
-    });
-  }
+  const res = runLoop(mkInput(c), rng, TW, params.ranged_damage_mult);
+  const shots = parseShots(res.log, i).map((p) => ({
+    round: p.round,
+    side: p.side,
+    hit: p.hit,
+    hitPct: enc(p.hitPct),
+    damage: enc(p.damage),
+    targetHp: p.targetHp === null ? null : enc(p.targetHp),
+  }));
   // Losowania zuzyte = liczba strzalow (jedno na strzal).
   if (shots.length > draws.length) throw new Error(`przypadek ${i}: wiecej strzalow niz losowan`);
   cases.push({
@@ -275,6 +323,9 @@ const counts = {
   casesNaNHp: nanHp,
   casesMinusInfHp: infHp,
   casesRouted: cases.filter((c) => c.expected.routed.length > 0).length,
+  // roll*100 === hitPct (granica `<` vs `<=`; pin: trafienie tylko przy roll < hitPct).
+  shotsRollEq: cases.flatMap((c) => c.expected.shots.map((s, k) => [s, parseNum(c.draws[k])]))
+    .filter(([s, d]) => d * 100 === parseNum(s.hitPct)).length,
 };
 const out = {
   source: { pin: PIN, files: [COMBAT, UNIT_POWER], fragmentSha256: fragmentSha, paramsFile: PARAMS, paramsSha256: paramsSha },

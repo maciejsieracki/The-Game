@@ -208,33 +208,89 @@ fn check_row(n: usize, row: &Value) {
     }
 }
 
+/// Liczniki pokrycia przeliczane z przypadkow w Rust (zarzut 3: nie czytane z pliku).
+#[derive(Debug, Default, PartialEq)]
+struct Counts {
+    cases: u64,
+    shots: u64,
+    shots_hit_nan_pct: u64,
+    shots_nan_damage: u64,
+    shots_inf_damage: u64,
+    shots_roll_eq: u64,
+    cases_nan_hp: u64,
+    cases_minus_inf_hp: u64,
+    cases_routed: u64,
+}
+
+fn recount(cases: &[Value]) -> Counts {
+    let mut c = Counts::default();
+    for row in cases {
+        c.cases += 1;
+        let exp = &row["expected"];
+        let hp_atk = field(exp, "hpAtk");
+        let hp_def = field(exp, "hpDef");
+        if hp_atk.is_nan() || hp_def.is_nan() {
+            c.cases_nan_hp += 1;
+        }
+        if hp_atk == f64::NEG_INFINITY || hp_def == f64::NEG_INFINITY {
+            c.cases_minus_inf_hp += 1;
+        }
+        if !exp["routed"].as_array().unwrap().is_empty() {
+            c.cases_routed += 1;
+        }
+        let draws = row["draws"].as_array().unwrap();
+        for (k, shot) in exp["shots"].as_array().unwrap().iter().enumerate() {
+            c.shots += 1;
+            let hit_pct = num(&shot["hitPct"]);
+            let damage = num(&shot["damage"]);
+            if hit_pct.is_nan() {
+                c.shots_hit_nan_pct += 1;
+            }
+            if damage.is_nan() {
+                c.shots_nan_damage += 1;
+            }
+            if damage == f64::INFINITY {
+                c.shots_inf_damage += 1;
+            }
+            // Granica rzutu: roll = rng() * 100 (jak w pinie) rowny hitPct.
+            if num(&draws[k]) * 100.0 == hit_pct {
+                c.shots_roll_eq += 1;
+            }
+        }
+    }
+    c
+}
+
 #[test]
 fn p6_combat_harness_wektory_pinu_zgodne() {
     let root: Value = serde_json::from_str(VEC).expect("vectors.json");
     let cases = root["cases"].as_array().expect("cases");
     assert!(cases.len() >= 300, "za malo przypadkow: {}", cases.len());
-    let c = &root["counts"];
+    let got = recount(cases);
+    // Plikowe `counts` sa tylko zgloszeniem generatora: musza sie zgadzac z przeliczeniem.
+    let file = &root["counts"];
+    let file_counts = Counts {
+        cases: file["cases"].as_u64().unwrap(),
+        shots: file["shots"].as_u64().unwrap(),
+        shots_hit_nan_pct: file["shotsHitNaNPct"].as_u64().unwrap(),
+        shots_nan_damage: file["shotsNaNDamage"].as_u64().unwrap(),
+        shots_inf_damage: file["shotsInfDamage"].as_u64().unwrap(),
+        shots_roll_eq: file["shotsRollEq"].as_u64().unwrap(),
+        cases_nan_hp: file["casesNaNHp"].as_u64().unwrap(),
+        cases_minus_inf_hp: file["casesMinusInfHp"].as_u64().unwrap(),
+        cases_routed: file["casesRouted"].as_u64().unwrap(),
+    };
+    assert_eq!(got, file_counts, "counts w pliku != przeliczenie w Rust");
     assert!(
-        c["shotsHitNaNPct"].as_u64().unwrap() >= 20,
+        got.shots_hit_nan_pct >= 20,
         "brak NaN w procencie trafienia"
     );
-    assert!(
-        c["shotsNaNDamage"].as_u64().unwrap() >= 5,
-        "brak NaN w obrazeniach"
-    );
-    assert!(
-        c["shotsInfDamage"].as_u64().unwrap() >= 5,
-        "brak Infinity w obrazeniach"
-    );
-    assert!(c["casesNaNHp"].as_u64().unwrap() >= 20, "brak NaN w HP");
-    assert!(
-        c["casesMinusInfHp"].as_u64().unwrap() >= 20,
-        "brak -Infinity w HP"
-    );
-    assert!(
-        c["casesRouted"].as_u64().unwrap() >= 50,
-        "za malo roztopien"
-    );
+    assert!(got.shots_nan_damage >= 5, "brak NaN w obrazeniach");
+    assert!(got.shots_inf_damage >= 5, "brak Infinity w obrazeniach");
+    assert!(got.shots_roll_eq >= 20, "za malo rzutow rownych hitPct");
+    assert!(got.cases_nan_hp >= 20, "brak NaN w HP");
+    assert!(got.cases_minus_inf_hp >= 20, "brak -Infinity w HP");
+    assert!(got.cases_routed >= 50, "za malo roztopien");
     for (n, row) in cases.iter().enumerate() {
         check_row(n, row);
     }
