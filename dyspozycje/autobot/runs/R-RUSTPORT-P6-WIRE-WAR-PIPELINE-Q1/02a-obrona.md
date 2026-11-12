@@ -1,32 +1,42 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-WIRE-WAR-PIPELINE-Q1
-GOAL: obrona r4 po zarzutach Evaluatora (7 punktow): kazdy zarzut PRZYJMUJE (z dowodem odczytu kodu) albo ODRZUCAM (z dowodem).
-ZMIANY/COMMIT: w tej obronie NIE zmieniono kodu. Kod r4 pozostaje na ac3f0664727422a3e2f0e48056a68a95ab9a74a2 (raport 01-operator-r4.md na ee69d5d9da373d98684671ac752ef9adea7768ee). Commit obrony: ten plik, SHA w sekcji SHA na dole. Allowlista: tylko dyspozycje/autobot/runs/R-RUSTPORT-P6-WIRE-WAR-PIPELINE-Q1/02a-obrona.md. Cargo.lock nie dotyczy (brak cargo). NIE wypchnieto.
-TESTY: NIE_ZMIERZONO w tej obronie (brak uruchomienia cargo; ponowne bramki nie byly potrzebne, bo kod sie nie zmienil). Dowody ponizej to odczyt kodu i testow (grep, sed).
-BLOKADY: punkty 1, 2, 3, 4, 5, 6 PRZYJETE jako dlug r5 (nie naprawione w r4). Punkt 7 ODRZUCONY w czesci o bazie. Otwarte: wspolna granica i epoki w produkcji (pkt 1), wywolania web/rust_owner_id (pkt 2), izolacja bramki R1/R2 (pkt 3), Provided(0) bez ExplicitZero (pkt 4), egzekwowanie KNOWN_GAPS (pkt 5), cichy profil dla wlasciciela bez wpisu w players (pkt 6).
-RUNDY: obrona po zarzutach Evaluatora do r4 (numer rundy ustala orkiestrator; w dispatchu r4 jest to runda 1/5 Operatora r4).
-NASTEPNY KROK: orkiestrator decyduje, czy dlug r5 (pkt 1-6) wchodzi do dispatchu r5, a bazowy rekord sciezki bazy (pkt 7) zostaje jak w dispatchu r4 (56cb59bdc).
+GOAL: odpowiedz na 7 zarzutow Evaluatora r5 (02-evaluator.md, commit 3f29d10c1) dla SHA f868d009e; poprawki tam, gdzie zarzut jest zasadny
+ZMIANY/COMMIT: baza f868d009e (r5 Operator); commit obrony = SHA z `git log -1` tej galezi (wpisany ponizej). Pliki: rust-port/engine/src/domain/turn_war_inputs.rs (naglowek modulu, usuniety parametr _is_human), rust-port/engine/tests/p6_wire_war_inputs.rs (zmiana nazwy helpera na complete_power_test_only_zeros, komentarz), ten plik. Cargo.lock NIE commitowany. Brak zmian w gra/, WERSJE.md, Cargo.toml.
+RUNDY: r5/5 (obrona w tej samej rundzie; bez nowej rundy)
 DEPLOY/PUSH: NIE WYKONANO
 
-## Tabela odpowiedzi na zarzuty
+## Odpowiedzi na zarzuty
 
-| # | Zarzut (skrot) | Odpowiedz | Dowod |
-|---|---|---|---|
-| 1 | Test tick->brake wstrzykuje shared_border i epoki recznie; produkcyjne build_war_inputs zostawia shared_border puste, epoki = epoka startu | PRZYJMUJE (dlug r5) | Odczyt: `turn_war_inputs.rs:436` `inputs.epochs.insert(id, epoch)` z jednej `start_epoch_number(...)` dla wszystkich wlascicieli. `shared_border` nie jest wypelniane w zadnym producencie (`grep shared_border` daje tylko pole w `turn_war_pipeline.rs:117`, uzycie w `:343` i KNOWN_GAPS w `turn_war_inputs.rs:82`). Dispatch r4 pkt 1 (producent epok z forcedEra/PairMeta i wspolna granica z realnych epok) NIE jest zrealizowany. Zgodnie z zarzutem: wektor tick->brake weryfikuje skladanie, nie produkcyjne wejscie. Poprawka w r4 nie wykonana. |
-| 2 | web_owner_id/rust_owner_id bez wolajacego w src; test sprawdza arytmetyke | PRZYJMUJE (dlug r5) | Odczyt: `grep -rn web_owner_id rust-port/engine/src` daje tylko definicje w `turn_war_inputs.rs:117-122` i komentarze; wolajacy sa w `tests/p6_wire_war_inputs.rs:71-80`. Dispatch r4 pkt 5 (mapowanie 1 vs 0 w produkcji) jest spelniony tylko formalnie. |
-| 3 | Bramka R1/R2 nie zasercjonowana; asercja 2-3 nigdy nie deklarowana przechodzi dzieki blokadzie pokoju | PRZYJMUJE (dlug r5) | Odczyt: `tests/p6_wire_war_inputs.rs:261` nazwa testu `peace_lock_from_state_blocks_declaration_and_gate_r1_is_applied_in_rust_order`, ale `:280` wstawia blokade `KEY_ERA_PEACE_LOCK` dla "2-3", a asercja `:303-307` sprawdza brak deklaracji i brak `at_war`. Bramka nie jest izolowana, wektora z pinu brak (NIE_ZMIERZONO, zgodnie z raportem Operatora). |
-| 4 | Provided(0) z pustych magazynow (budynki, tech, miasta_jednosc_religii) zamiast ExplicitZero z powodem; suma_ludkow i kultura ze stalych FOUNDING_* | PRZYJMUJE (dlug r5) | Odczyt: `turn_war_inputs.rs:278` `budynki = Provided(count_buildings_for_owner(&built, ...))` z `let built: [(u64, usize); 0] = []` (pusta tablica, wynik 0); `:279` `tech_zbadane = Provided(...)` z `None`; `:282-287` `miasta_jednosc_religii = Provided(...)` z `religion_state: None`. `EXPLICIT_ZERO_REASONS` (`:65-79`) obejmuje tylko bitwy, ulepszenia, zdobycze. `suma_ludkow`/`kultura` ida ze stalych `FOUNDING_POPULATION` (`:57`) i `FOUNDING_CULTURE` (`:59`), co KNOWN_GAPS (`:85`) przyznaje. Zarzut trafny w czesci o zerach. Poprawka (ExplicitZero z uzasadnieniem pin plik:linia albo Missing) nie wykonana w r4. |
-| 5 | KNOWN_GAPS to stala bez egzekwowania; test sprawdza tylko !is_empty | PRZYJMUJE (dlug r5) | Odczyt: `tests/p6_wire_war_inputs.rs:200` `assert!(!KNOWN_GAPS.is_empty(), ...)`. Nic nie laczy wpisow z producentami. Lista jest jawna (nie ukryta), ale nie wymusza zamkniecia luk. |
-| 6 | pair_params_for: wlasciciel z miastem bez wpisu w players dostaje cicho profil gracza (civ=None) | PRZYJMUJE (dlug r5) | Odczyt: `all_owner_ids` (`turn_war_inputs.rs:159-166`) dokleja wlascicieli miast do id graczy. Domkniecie `civ` (`:374-381`) przez `state.players.iter().find(...)` zwraca `None`, gdy brak wpisu, a `resolve_war_peace_profile(None, ...)` daje profil domyslny bez bledu. To jest ciche zero w sensie dispatchu. Poprawka (blad zamiast profilu) nie wykonana w r4. |
-| 7 | Odchylenie od polecenia: baza 56cb59bdc zamiast parity-v2 f207ea6b1 | ODRZUCAM w czesci o odchyleniu; PRZYJMUJE uwage o Evaluatorze | Dowod: dispatch r4 (sekcja `DODATEK r4`, pierwsza linia tej sekcji) ustawia `Baza: 56cb59bdc (BATCH7-tip ...)`. Wiersz `f207ea6b1` z pierwszej czesci dispatchu zostal nadpisany przez dodatek r4 (dodatek r3 wskazywal ec4e11741, dodatek r4 56cb59bdc). Baza zgodna z poleceniem. Przy tym: nota orkiestratora w dispatchu r4 mowi, ze parity-v2 94cba6667 nie zawiera pipeline'u, co potwierdza wybor bazy. Pelny `cargo test --no-fail-fast` w tej obronie NIE powtorzony (NIE_ZMIERZONO), wynik 387 ok pochodzi z raportu Operatora r4. Naprawa kompilacji bazy (`PowerComponentsMissing`) jest w `turn_war_pipeline.rs` i jest zgodna z dispatchem r4 (naprawa kompilacji, bez cichego zera). |
+1. PRZYJMUJE jako fakt, ODRZUCAM jako defekt kodu. Produkcyjny `advance_turn` z AI posiadajacym miasta zwraca `PlayableError::WarTurn` (brak producentow epok per wlasciciel i wspolnej granicy). To jest zachowanie, ktore dispatch r5 wprost przewiduje (NAPRAW 1 i zdanie "Jesli po tej rundzie pipeline nadal zwraca blad ... to OCZEKIWANE"). Regresja wzgledem 0b5fc5fb9 jest zamierzona i opisana w 01-operator-r5.md. NIE jest to decyzja Operatora o integracji. DECISION_REQUIRED (zasada 3, pytanie ABC do wlasciciela, nie do Operatora): (a) nie integrowac tej galezi na parity-v2, dopoki r6 nie dostarczy producentow epok i granicy; albo (b) zintegrowac z flaga/odlozonym wywolaniem run_war_turn w produkcji. Rekomendacja Operatora: (a), bo (b) oznacza, ze wywolanie jest martwe w produkcji, a to juz bylo punktem zarzutu r3.
 
-## Co nie zmienilo sie w tej obronie
+2. PRZYJMUJE. Kryterium r4 pkt 1 (advance_turn z AI z miastami przechodzi, 2-3 tury) jest NIESPELNIONE i nie zostanie spelnione bez producentow z pkt 1. Produkcyjna sciezke pokrywa test `production_path_fails_with_explicit_blockers_for_ai_with_cities` (blad, nie cichy sukces) i `advance_turn_with_ai_city_fails_explicitly_on_missing_owner_epoch_and_restores_state` (playable.rs, rollback). Testy z wstrzyknietymi epokami i helperem zer nie dowodza zachowania pipeline'u na danych produkcyjnych. PORAWKA: helper `complete_power` przemianowany na `complete_power_test_only_zeros` z komentarzem TEST-ONLY ZERA i wskazaniem, ze kryterium r4 pkt 1 jest niespelnione (p6_wire_war_inputs.rs). Zachowanie testow bez zmian (7+14+13+10+9+9 ok).
 
-- Brak zmian w kodzie i w testach. Kod r4 = ac3f0664727422a3e2f0e48056a68a95ab9a74a2.
-- Brak uruchomienia cargo w tej obronie (NIE_ZMIERZONO). Wyniki bramek sa z raportu Operatora r4 i nie sa tu powtorzone.
-- Brak pushu, brak integracji, gra/ nietkniete, Cargo.lock nie dodany.
+3. PRZYJMUJE. Naglowek `turn_war_inputs.rs` (linie 1-6) byl nieaktualny i zostal przepisany: opisuje stan po r5 (jawny `WarTurnError` dla AI z miastami), a nie zamkniecie luk. Dowod: diff tej galezi, plik turn_war_inputs.rs linie 1-6.
 
-## SHA
+4. PRZYJMUJE czesciowo. Rozszerzenie NAPRAW 4 o `rekrut_ekw` i `heksy_terytorium` zostaje: oba zaleza od populacji miast (`PlayableCity` jej nie ma), wiec sa tej samej klasy co `suma_ludkow`, ktore dispatch r5 juz wskazal. Dlug, ktory Evaluator slusznie wskazuje: `terytorium_for_owner` (producent POWER-ARMIA-TERYTORIUM) nie ma produkcyjnego wolajacego w pipeline. Wpisany jako jawny bloker r6 (pozycja 3 w 01-operator-r5.md obejmuje "terytorium"; ta obrona wpisuje to tez wprost jako dlug producenta). Brak zmiany kodu.
 
-Zob. commit obrony (ostatni commit na galezi wip/R-RUSTPORT-P6-WIRE-WAR-PIPELINE-Q1-r4-obrona, sprawdzany po zapisie).
+5. PRZYJMUJE. Parametr `_is_human` usuniety z `power_raw_for_owner` (turn_war_inputs.rs) i z jedynego wolania w `build_war_inputs_with_epochs`; wolanie w tescie (p6_wire_war_inputs.rs) zaktualizowane. Brak martwego parametru API. Kompilacja `clippy --all-targets -D warnings` EXIT 0.
+
+6. NIE_ZMIERZONO (bez zmiany kodu). Evaluator sam ocenil jako akceptowalne. Bramka R2 w izolacji wymaga zywych wojen w `brake_phase.at_war` bez efektow deklaracji; zostaje dla r6. Opis w 01-operator-r5.md.
+
+7. PRZYJMUJE jako fakt (zweryfikowane w pinie). Pin 07d2fbd72, `gra/src/main.ts:2419`: `function empireEpochForOwner(ownerId) { if (isHuman(ownerId)) return playerStateByHuman.get(ownerId)!.era; return ownerEraByOwner.get(ownerId) ?? gameStartEra(); }`. Czyli dla AI bez wpisu web podstawia epoke startu, a Rust tego nie robi (dispatch r5 NAPRAW 1). Odmowa Rusta zostaje. DECISION_REQUIRED (pytanie ABC do wlasciciela, decyzja produktowa): czy dla AI bez wpisu `ownerEraByOwner` epoka startu ma byc jawnym, udokumentowanym producentem (rekomendacja Operatora, zgodna z webem), czy ma byc dostarczona przez producenta epok per wlasciciel z PlayableState (wtedy fallback nie jest potrzebny). Decyzja nalezy do r6.
+
+## Bramki (EXIT zapisany, po poprawkach)
+- cargo fmt --check: EXIT 0
+- cargo clippy --all-targets -- -D warnings: EXIT 0 (kompiluje wszystkie cele testowe)
+- cargo test --lib: 51 ok, EXIT 0
+- cargo test --test p6_wire_war_inputs --test p6_wire_war_pipeline --test p6_wire_war_diplo --test p6_brake_inputs --test p6_power_nozeros --test p6_power_rest: 14, 7, 13, 10, 9, 9 ok, EXIT 0
+- pelny cargo test --no-fail-fast: NIE_ZMIERZONO w tej rundzie obrony (zmiany to sygnatura, nazwa helpera i naglowek; wszystkie cele testowe kompiluja sie przez clippy). Wynik pelnego testu z r5 (2834 ok) jest dowodem tylko dla f868d009e, nie dla commita obrony.
+- CARGO_TARGET_DIR poza repo, usuniety po bramkach.
+
+## Blokery i decyzje dla r6 (bez zmian wzgledem 01-operator-r5.md, plus dopisek z pkt 4)
+1. Producent epoki per wlasciciel (`ownerEraByOwner` / fallback z pkt 7).
+2. Producent wspolnej granicy `ownersShareLandBorderLive` (main.ts:5690) dla par z > 2 miastami.
+3. Populacja i kultura miast w `PlayableCity`: ludki, rekruci, terytorium (`terytorium_for_owner` bez wolajacego w pipeline), kultura.
+4. Magazyny budynkow, tech, religii panstwowej.
+5. `TickContext` poza granica (handel, religia, dobra wola, wiarygodnosc).
+6. R2 w izolacji.
+7. Decyzja ABC z pkt 1 (integracja/flaga) i z pkt 7 (fallback epoki startu dla AI).
+
+NASTEPNY KROK: Evaluator r5 (zarzuty 1-7 z odpowiedziami, ponowna ocena tylko zmienionych miejsc); decyzje ABC z pkt 1 i 7 przed integracja.

@@ -1,7 +1,9 @@
 //! P6-WIRE-WAR-PIPELINE (W8 r4): producenci wejsc fazy Diplomacy z `PlayableState` + `WarTurnState`.
 //!
-//! Zamyka luki r3, przez ktore `advance_turn` z AI posiadajacym miasta konczylo sie `WarTurnError`:
-//! epoki wlascicieli, wejscia mocy (`ObjectivePowerRaw`), blokady pokoju, parametry par hamulca
+//! r5: BEZ podstawiania epoki startu i BEZ cichych zer. `advance_turn` z AI posiadajacym miasta
+//! konczy sie jawnym `WarTurnError` (`OwnerEpochUnavailable`, `Missing`) do czasu producentow
+//! epok per wlasciciel i wspolnej granicy (lista blokerow: runs/.../01-operator-r5.md).
+//! Wejscia (`ObjectivePowerRaw`), blokady pokoju, parametry par hamulca
 //! (`diploBrakeWarParams`) i flaga multiwar. Zrodla (pin 07d2fbd72, tylko odczyt):
 //! - `diploBrakeWarParams` main.ts:11567 (wyzsza z dwoch `progWojnyRelacji`, N = `hamulecN` tej strony;
 //!   gracz = brak wiersza macierzy = wartosci bazowe) -> `diplomacy_war_peace_profile`,
@@ -198,7 +200,6 @@ pub fn power_raw_for_owner(
     state: &PlayableState,
     owner_id: i64,
     epoka: f64,
-    _is_human: bool,
 ) -> Result<ObjectivePowerRaw, WarInputsError> {
     let manpower: Vec<ManpowerCity> = state
         .cities
@@ -485,11 +486,10 @@ pub fn build_war_inputs_with_epochs(
         let epoch = *epochs
             .get(&id)
             .ok_or(WarInputsError::OwnerEpochUnavailable(id))?;
-        let is_human = inputs.human_ids.contains(&id);
         inputs.epochs.insert(id, epoch);
         inputs
             .power_raw
-            .insert(id, power_raw_for_owner(state, id, epoch, is_human)?);
+            .insert(id, power_raw_for_owner(state, id, epoch)?);
     }
     inputs.shared_border = shared_border_pairs(state)?;
     inputs.peace_locks = Some(peace_locks_from_war(war)?);

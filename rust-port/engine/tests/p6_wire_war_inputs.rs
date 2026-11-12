@@ -73,9 +73,12 @@ fn epochs(pairs: &[(i64, f64)]) -> BTreeMap<i64, f64> {
     pairs.iter().copied().collect()
 }
 
-/// Test-only: uzupelnia skladniki `Missing` wejsc mocy jawna wartoscia, aby wektory tick->brake i
-/// bramki mogly przejsc STRICT. Produkcja tego NIE robi (`strict_*` testy ponizej).
-fn complete_power(inputs: &mut WarTurnInputs) {
+/// TEST-ONLY ZERA (r5, zarzut Evaluatora pkt 2): uzupelnia skladniki `Missing` wejsc mocy wartoscia
+/// `Provided(0.0)`, zeby wektory tick->brake i bramki mogly przejsc STRICT. Produkcja tego NIE robi
+/// (`production_power_inputs_mark_unproduced_components_missing_not_zero` i testy STRICT ponizej).
+/// Testy korzystajace z tej funkcji NIE dowodza zachowania pipeline'u z produkcyjnymi danymi
+/// (kryterium r4 pkt 1 NIESPELNIONE, patrz 02a-obrona.md).
+fn complete_power_test_only_zeros(inputs: &mut WarTurnInputs) {
     for raw in inputs.power_raw.values_mut() {
         for c in [
             &mut raw.suma_ludkow,
@@ -96,7 +99,7 @@ fn complete_power(inputs: &mut WarTurnInputs) {
 /// Produkcyjne `build_war_inputs_with_epochs` + `complete_power` (test).
 fn test_inputs(state: &PlayableState, war: &WarTurnState, e: &[(i64, f64)]) -> WarTurnInputs {
     let mut inputs = build_war_inputs_with_epochs(state, war, &epochs(e)).expect("inputs");
-    complete_power(&mut inputs);
+    complete_power_test_only_zeros(&mut inputs);
     inputs
 }
 
@@ -218,7 +221,7 @@ fn tick_then_brake_matches_web_for_border_pairs_by_epoch() {
 #[test]
 fn production_power_inputs_mark_unproduced_components_missing_not_zero() {
     let state = state_with(None, "rzymianie", "kamien");
-    let raw = power_raw_for_owner(&state, 2, 1.0, false).expect("raw");
+    let raw = power_raw_for_owner(&state, 2, 1.0).expect("raw");
     let p = civ_engine::data::units_combat::parse_power_params().expect("params");
     let coeffs = PowerCoeffs::from_params(&p);
     // Skladniki bez producenta: Missing (nie Provided(0), nie stala zalozenia).
