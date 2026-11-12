@@ -156,6 +156,8 @@ struct Coverage {
     morale_only_with_rout: usize,
     dmg_floor_applied: usize,
     nan_inputs: usize,
+    engaged_add_true: usize,
+    engaged_add_false: usize,
     infinite_inputs: usize,
 }
 
@@ -218,7 +220,22 @@ fn wektory_zgodne_z_pinem_i_pokrycie_galezi() {
             num(&e["extraMorale"])
         );
         // `this.engaged.add(key)` tylko dla ciosu wrecz (battleScene.ts:8899); klucz obecny w pinie po ciosie.
-        assert_eq!(out.engaged_add, !input.ranged, "{id}: engaged_add");
+        // K5I2a2: szpieg na `engaged.add` w generatorze (liczba wywolan z TEKSTU pinu), nie kopia wyrazenia `!ranged` z src.
+        let pin_add_calls = num(&e["engagedAddCalls"]);
+        assert!(
+            pin_add_calls == 0.0 || pin_add_calls == 1.0,
+            "{id}: add wolane <= 1 raz"
+        );
+        assert_eq!(
+            out.engaged_add,
+            pin_add_calls > 0.0,
+            "{id}: engaged_add vs szpieg pinu"
+        );
+        if out.engaged_add {
+            cov.engaged_add_true += 1;
+        } else {
+            cov.engaged_add_false += 1;
+        }
         assert_eq!(
             e["engagedKeyAfter"].as_bool().unwrap(),
             !input.ranged || i["engagedBefore"].as_bool().unwrap(),
@@ -303,6 +320,10 @@ fn wektory_zgodne_z_pinem_i_pokrycie_galezi() {
     );
     assert!(cov.dmg_floor_applied > 0, "brak podlogi obrazen 1");
     assert!(cov.nan_inputs > 0, "brak przypadkow NaN");
+    assert!(
+        cov.engaged_add_true > 0 && cov.engaged_add_false > 0,
+        "brak obu galezi engaged.add"
+    );
     assert!(cov.infinite_inputs > 0, "brak przypadkow Infinity");
 }
 
