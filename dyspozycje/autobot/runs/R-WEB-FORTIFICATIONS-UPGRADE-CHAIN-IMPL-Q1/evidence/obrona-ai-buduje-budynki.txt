@@ -1,0 +1,23 @@
+  OK  sanity: empire-city-defaults.ts zawiera ciało naprawy nowej gry (mutacja wykonalna)
+  OK  sanity: empire-city-defaults.ts zawiera ciało migracji wczytania (mutacja wykonalna)
+  OK  sanity: migracja wczytania ma gałąź barbarzyńską (MUT-B może zdjąć OBA nośniki gwarancji)
+  OK  sanity: migracja wczytania ma linię pomijającą ownera 0 (MUT-C wykonalny, A10 nietautologiczna)
+  OK  sanity: main.ts woła upgradeBudowaProfilAutoDefaultsOnLoad na OBU ścieżkach wczytania
+  OK  H0: katalogi buildu leżą POZA drzewem repo (§9 pkt 1 / C-001)
+[ai-buduje-budynki-test] vite build (fix) -> /tmp/civ-ai-buduje-budynki-20641-x6zil8/dist-fix ...
+[ai-buduje-budynki-test] build (fix) OK.
+[ai-buduje-budynki-test] vite build (mut-a) -> /tmp/civ-ai-buduje-budynki-20641-x6zil8/dist-mut-a ...
+[ai-buduje-budynki-test] build (mut-a) OK.
+[ai-buduje-budynki-test] vite build (mut-b) -> /tmp/civ-ai-buduje-budynki-20641-x6zil8/dist-mut-b ...
+[ai-buduje-budynki-test] build (mut-b) OK.
+[ai-buduje-budynki-test] vite build (mut-c) -> /tmp/civ-ai-buduje-budynki-20641-x6zil8/dist-mut-c ...
+[ai-buduje-budynki-test] build (mut-c) OK.
+  OK  H0b: bramka nie zmieniła ŻADNEGO śledzonego pliku źródłowego
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+[ai-buduje-budynki-test] BLAD: page.evaluate: Target page, context or browser has been closed
+    at pollUntil (/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-3/gra/tools/ai-buduje-budynki-test.cjs:302:23)
+    at async runScenarioOnBrowser (/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-3/gra/tools/ai-buduje-budynki-test.cjs:407:3)
+    at async runScenario (/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-3/gra/tools/ai-buduje-budynki-test.cjs:367:12)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_ffde2640-822-3/gra/tools/ai-buduje-budynki-test.cjs:598:15) {
+  log: []
+}

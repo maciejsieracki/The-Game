@@ -1,0 +1,290 @@
+[
+ {
+  "scen": "wrecz 12v12",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 18,
+   "atk": {
+    "total": 12,
+    "killed": 0,
+    "fled": 12,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 24,
+   "exportedAtk": 12,
+   "exportedDef": 12,
+   "attacksOnRouted": 1,
+   "killedWhileRouted": 0,
+   "collapseRound": 9,
+   "fledAtEdge": 12,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+   ]
+  }
+ },
+ {
+  "scen": "wrecz 12v12",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 10,
+   "exportedAtk": 10,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "wrecz 12v12",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 18,
+   "atk": {
+    "total": 12,
+    "killed": 0,
+    "fled": 12,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 24,
+   "exportedAtk": 12,
+   "exportedDef": 12,
+   "attacksOnRouted": 1,
+   "killedWhileRouted": 0,
+   "collapseRound": 9,
+   "fledAtEdge": 12,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+   ]
+  }
+ },
+ {
+  "scen": "wrecz 12v12",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 6,
+   "exportedAtk": 6,
+   "exportedDef": 0,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "strzelcy+wrecz vs wrecz",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 17,
+   "atk": {
+    "total": 14,
+    "killed": 2,
+    "fled": 12,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 1,
+    "routedLeft": 0,
+    "survived": 11
+   },
+   "exported": 24,
+   "exportedAtk": 12,
+   "exportedDef": 12,
+   "attacksOnRouted": 7,
+   "killedWhileRouted": 1,
+   "collapseRound": 7,
+   "fledAtEdge": 13,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+   ]
+  }
+ },
+ {
+  "scen": "strzelcy+wrecz vs wrecz",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 0,
+   "atk": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 8,
+   "exportedAtk": 0,
+   "exportedDef": 8,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "strzelcy+wrecz vs wrecz",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 16,
+   "atk": {
+    "total": 14,
+    "killed": 2,
+    "fled": 12,
+    "routedLeft": 0,
+    "survived": 0
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 24,
+   "exportedAtk": 12,
+   "exportedDef": 12,
+   "attacksOnRouted": 7,
+   "killedWhileRouted": 1,
+   "collapseRound": 6,
+   "fledAtEdge": 12,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+   ]
+  }
+ },
+ {
+  "scen": "strzelcy+wrecz vs wrecz",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "obronca",
+   "round": 0,
+   "atk": {
+    "total": 14,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 14
+   },
+   "def": {
+    "total": 12,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 12
+   },
+   "exported": 9,
+   "exportedAtk": 0,
+   "exportedDef": 9,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ }
+]

@@ -1,0 +1,23 @@
+BUILD ok in 0 s
+REPLAY {"via":"button","before":{"finished":true,"breached":true,"gateOpen":false,"tilesLeft":147,"init":154,"tileDiff":7},"after":{"finished":false,"started":false,"deploy":true,"breached":false,"gateOpen":false,"gateHp":400,"tilesLeft":154,"init":154,"towers":0,"round":0,"atkAlive":17,"defAlive":6,"tileDiff":7}}
+PASS: R0 przed replayem: oblezenie z wylomem zakonczone (wylom + zniszczony teren muru/bramy)
+PASS: R1 po replayu: bitwa od nowa (faza rozstawiania, tura 0, brak konca)
+PASS: R2 po replayu: wylom wyzerowany (wallEverBreached=false, brama zamknieta, HP bramy 400, wiezy przy murze 0)
+PASS: R3 po replayu: HP kafli muru przywrocone (liczba kafli == poczatkowa)
+PASS: R4 po replayu: roster wrocil (ten sam sklad zywych: 6+obleznicza vs 6)
+DEFEKT: R5 po replayu: TEREN muru/bramy przywrocony (kafle == stan startowy); inaczej wyburzony mur zostaje otwarty mimo wallEverBreached=false (obejscie reguly R1) -- {"tileDiffPoReplayu":7,"tileDiffPrzed":7}
+PASS: R6 brak bledow JS
+RUN {"mode":"manual","winner":"remis","round":150,"breached":true,"wallS":30.2,"atk":{"lost":2,"remaining":15,"hp":2666},"def":{"lost":0,"remaining":6,"hp":217},"ev":1,"inside":3,"onBreachTile":0,"manual":{"modeAtStart":true,"awaitingAtStart":true,"space":1,"ordersIssued":17,"turnsStarted":0,"manualFalseSeen":false,"playerSide":"atk"}}
+PASS: M0 tryb RECZNY byl wlaczony od startu i ani razu nie przelaczony na AUTO; tury startowane SPACJA (>=1) i rozkazy gracza wydane
+PASS: M1 bitwa reczna oblezenicza doszla do konca BEZ Skip (finished, w limicie)
+PASS: M2 reczna: rozstrzygniecie silnika (zwyciezca ustawiony), tura > 0
+PASS: M3 reczna: wylom padl i atakujacy weszli za mur
+PASS: M4 brak bledow JS
+FALLBACK {"siegeInAtk":11,"breachedBefore":false,"started0":false,"fallbackCalls":1,"finished":true,"winner":"atakujacy","breached":true,"survivors":6,"ffActive":false,"round":0,"logTail":["ATK HP: 2  DEF HP: 0","=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="],"hasDefBonus":true}
+PASS: F0 scena: obleznicza w skladzie atakujacego
+PASS: F1 skip() przed startem bitwy uruchamia _skipInstantFallback (1 wywolanie), bez przewijania
+PASS: F2 fallback konczy bitwe z werdyktem (finished, zwyciezca atakujacy/obronca/remis, lista ocalalych)
+PASS: F3 fallback: machina w skladzie atakujacego = zalozony wylom (wallEverBreached=true, jak szturm Auto)
+PASS: F4 fallback: tabela bonusu muru dla testu parytetu ustawiona
+PASS: F5 brak bledow JS
+--- 17 ok, 0 fail, 1 defekt(y) gry, 0 NIE_ZMIERZONO

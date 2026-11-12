@@ -79,6 +79,11 @@ import {
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
+  skipChainLowerIds,
+  skipChainHigherIds,
+  skipChainUpgradeSource,
+  type BuildingUpgradeLite,
+  type UpgradeChainNode,
 } from './building-upgrades';
 import miastoParams from '../../data/miasto-params.json';
 import { R_STAWKI_KOSZT_MULT, R_STAWKI_FALA2_MULT } from './r-stawki-strojenie';
@@ -839,28 +844,48 @@ export function buildingTypeCommitted(
 export function isBuildingSupersededByUpgrade(
   buildingId: string,
   builtIds: readonly string[],
-  buildings: readonly { id: string; upgradeFrom?: string }[],
+  buildings: readonly UpgradeChainNode[],
 ): boolean {
   for (const b of buildings) {
     if (b.upgradeFrom === buildingId && builtIds.includes(b.id)) return true;
   }
-  return false;
+  // Łańcuch z przeskokiem: wyższy etap zastępuje też etapy niższe niż bezpośredni poprzednik.
+  return skipChainHigherIds(buildingId, buildings).some(id => builtIds.includes(id));
 }
 
-/** A stronger completed wall tier blocks construction of the weaker tier. */
+/**
+ * Fortyfikacje: w mieście i w kolejce najwyżej JEDEN etap łańcucha (Palisada -> Mury kamienne ->
+ * Mury ceglane, relacja `upgradeFrom` + `upgradeSkip`). Blokada w obie strony:
+ *  - wyższy etap stoi/jest w kolejce -> niższy niedostępny (nie cofamy awansu),
+ *  - niższy etap jest w KOLEJCE -> wyższy niedostępny (nie zamówisz dwóch naraz;
+ *    gdy niższy już STOI, wyższy jest awansem i jest dozwolony).
+ * Cytadela (fort) blokuje niższe etapy jak dotąd, ale sama nie należy do łańcucha.
+ */
 function isWallTierBlockedByStrongerWall(
   buildingId: string,
   builtIds: readonly string[],
   queue: readonly ProductionItem[],
+  buildings: readonly UpgradeChainNode[],
 ): boolean {
   const existsOrQueued = (id: string) => builtIds.includes(id) || buildingTypeQueued(id, queue);
-  if (buildingId === 'palisada') {
-    return existsOrQueued('mury_kamienne') || existsOrQueued('mury') || existsOrQueued('fort');
+  const higher = skipChainHigherIds(buildingId, buildings);
+  if (higher.length > 0) {
+    if (higher.some(existsOrQueued)) return true;
+    if (existsOrQueued('fort')) return true;
   }
-  if (buildingId === 'mury_kamienne') {
-    return existsOrQueued('mury') || existsOrQueued('fort');
-  }
-  return false;
+  return skipChainLowerIds(buildingId, buildings).some(id => buildingTypeQueued(id, queue));
+}
+
+/** Etykieta etapu łańcucha: „Rozbuduj X -> Y” gdy stoi niższy etap, inaczej zwykła nazwa (budowa od zera). */
+function chainUpgradeDisplayName(
+  target: BuildingUpgradeLite,
+  builtIds: readonly string[],
+  buildings: readonly BuildingUpgradeLite[],
+): string {
+  const src = skipChainUpgradeSource(target.id, builtIds, buildings);
+  if (!src) return target.nazwa;
+  const prev = buildings.find(x => x.id === src);
+  return `Rozbuduj ${prev?.nazwa ?? src} → ${target.nazwa}`;
 }
 
 /**
@@ -870,7 +895,7 @@ function isWallTierBlockedByStrongerWall(
 export function applyCompletedBuildingIds(
   builtIds: readonly string[],
   completedBuildingId: string,
-  buildings: readonly { id: string; upgradeFrom?: string }[],
+  buildings: readonly UpgradeChainNode[],
 ): string[] {
   const def = buildings.find(b => b.id === completedBuildingId);
   const next = [...builtIds];
@@ -880,23 +905,31 @@ export function applyCompletedBuildingIds(
     if (idx >= 0) next.splice(idx, 1);
   }
   if (!next.includes(completedBuildingId)) next.push(completedBuildingId);
-  // Kamienne Mury zastępują wczesną Palisadę drewnianą (nie stack bonusów).
-  if (completedBuildingId === 'mury') {
-    for (const replacedId of ['mury_kamienne', 'palisada']) {
-      const idx = next.indexOf(replacedId);
-      if (idx >= 0) next.splice(idx, 1);
-    }
-  } else if (completedBuildingId === 'mury_kamienne') {
-    // A delayed lower-tier queue item must never downgrade an existing brick wall.
-    if (next.includes('mury') || next.includes('fort')) return next.filter(id => id !== 'mury_kamienne' && id !== 'palisada');
-    const pi = next.indexOf('palisada');
-    if (pi >= 0) next.splice(pi, 1);
-  } else if (completedBuildingId === 'palisada') {
-    // Defensive completion guard for stale queues / saves: keep only the highest tier.
-    if (next.includes('mury') || next.includes('fort')) return next.filter(id => id !== 'palisada' && id !== 'mury_kamienne');
-    if (next.includes('mury_kamienne')) return next.filter(id => id !== 'palisada');
-  }
+  // Łańcuch fortyfikacji (upgradeSkip): ukończony etap zastępuje WSZYSTKIE niższe (też przy przeskoku).
+  // Spóźniony niższy etap z kolejki/zapisu nigdy nie cofa wyższego (ani Cytadeli): zostaje najwyższy.
+  const lowerIds = skipChainLowerIds(completedBuildingId, buildings);
+  const higherIds = skipChainHigherIds(completedBuildingId, buildings);
+  const blockedByHigher = higherIds.length > 0 && (higherIds.some(id => next.includes(id)) || next.includes('fort'));
+  if (blockedByHigher) return next.filter(id => id !== completedBuildingId && !lowerIds.includes(id));
+  if (lowerIds.length > 0) return next.filter(id => !lowerIds.includes(id));
   return next;
+}
+
+/**
+ * Migracja zapisu (R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1, decyzja 3): jeśli w mieście stoi kilka
+ * etapów łańcucha fortyfikacji (stare zapisy), zostaje NAJWYŻSZY, niższe są usuwane bez zwrotu.
+ * Pure; Cytadela/Baszta nie należą do łańcucha i nie są ruszane. Zwraca tę samą tablicę gdy brak zmian.
+ */
+export function collapseFortificationChain(
+  builtIds: readonly string[],
+  buildings: readonly UpgradeChainNode[],
+): string[] {
+  const drop = new Set<string>();
+  for (const id of builtIds) {
+    if (skipChainHigherIds(id, buildings).some(h => builtIds.includes(h))) drop.add(id);
+  }
+  if (drop.size === 0) return builtIds as string[];
+  return builtIds.filter(id => !drop.has(id));
 }
 
 /**
@@ -1029,11 +1062,12 @@ export function availableProduction(
 
     // Block weaker tiers when a stronger wall/Citadel already exists. The same
     // availability function feeds player production and AI city building.
-    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue)) continue;
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings)) continue;
 
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
     if (upgradeFrom.length > 0) {
-      if (!builtList.includes(upgradeFrom)) continue;
+      // upgradeSkip (łańcuch fortyfikacji): poprzednik NIE jest wymagany -- przeskok budowany od zera.
+      if (b.upgradeSkip !== true && !builtList.includes(upgradeFrom)) continue;
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     } else {
       if (isBuildingSupersededByUpgrade(b.id, builtList, data.buildings)) continue;
@@ -1081,7 +1115,9 @@ export function availableProduction(
     items.push({
       kind: 'budynek',
       id: b.id,
-      nazwa: upgradeProductionDisplayName(b, data.buildings),
+      nazwa: b.upgradeSkip === true
+        ? chainUpgradeDisplayName(b, builtList, data.buildings)
+        : upgradeProductionDisplayName(b, data.buildings),
       koszt: buildingWorkCost(
         itemCost('budynek', b.id, data, level),
         ctx.civBonusy,
@@ -2583,7 +2619,7 @@ export function eraBuildingCatalog(
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
-    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue)) continue;
+    if (isWallTierBlockedByStrongerWall(b.id, builtList, queue, data.buildings)) continue;
 
     const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),

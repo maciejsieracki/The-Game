@@ -207,7 +207,10 @@ ok(/Autobudowa wymaga administratora/.test(main), 'main.ts: komunikat migracyjny
 ok(/getCityAdministratorState:/.test(main) && /onHireAdministrator:/.test(main) && /onDismissAdministrator:/.test(main), 'main.ts: UI dostaje hak administratora');
 ok(/id="civ-v-administrator"/.test(panel) && /Administrator \+/.test(panel) && /Administrator ✓/.test(panel), 'cityPanel.ts: przycisk „Administrator +/✓”');
 ok(panel.indexOf('capitalBadgeOrButtonHtml(city) +\n    administratorHeaderHtml(city)') > 0, 'cityPanel.ts: przycisk OBOK pastylki „Ustaw jako stolicę” w nagłówku');
-ok(/window\.confirm\('Zwolnić administratora/.test(panel), 'cityPanel.ts: zwolnienie z potwierdzeniem');
+const admPanelSrc = fs.readFileSync(path.join(SRC, 'ui', 'administratorPanel.ts'), 'utf8');
+ok(/openAdministratorPanel\(/.test(panel) && /onDismiss: \(\) => cfg\.onDismissAdministrator/.test(panel) && /onHire: \(\) => cfg\.onHireAdministrator/.test(panel), 'cityPanel.ts: przycisk otwiera panel wyboru; zatrudnienie/zwolnienie przez dotychczasowe haki');
+ok(/window\.confirm\('Zwolnić administratora\?/.test(admPanelSrc), 'administratorPanel.ts: zwolnienie z potwierdzeniem (window.confirm)');
+ok(/data-adm-panel-dismiss>Zwolnij</.test(admPanelSrc) && /nie wraca/.test(admPanelSrc), 'administratorPanel.ts: zwolnienie w panelu z ostrzeżeniem o braku zwrotu kosztu');
 ok(/civ-v-adm-chip/.test(panel) && /data-adm-chip/.test(panel), 'cityPanel.ts: chip „Administrator” pod nazwą miasta');
 ok(/AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT/.test(panel), 'cityPanel.ts: autobudowa wyszarzona z powodem (brak administratora)');
 const saveSrc = fs.readFileSync(path.join(SRC, 'game', 'save.ts'), 'utf8');

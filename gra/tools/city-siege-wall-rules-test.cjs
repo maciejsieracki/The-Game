@@ -82,7 +82,7 @@ assert(D.cityWallDefenseBonusPercent(['mury'], P) === 200, `mur +${P.mur}%`);
 assert(D.cityWallDefenseBonusPercent(['palisada'], P) === 100, `palisada +${P.palisada}%`);
 const BS = fs.readFileSync(path.join(GRA, 'src/battle/battleScene.ts'), 'utf8');
 const pins = [
-  ['konstruktor: wallDefenseTotalProc z builtBuildingIds (palisada w P)', /cityWallDefenseBonusPercent\(opts\.siege\?\.builtBuildingIds, \{\s*\n\s*mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,/],
+  ['konstruktor: wallDefenseTotalProc z builtBuildingIds (palisada w P)', /cityWallDefenseBonusPercent\(opts\.siege\?\.builtBuildingIds, \{\s*\n\s*mur: murProc, murKamienny: murKamiennyProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,/],
   // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1 (decyzja wlasciciela 2026-11-03): bonus dla KAZDEGO obroncy
   // wewnatrz obwarowania (korona ALBO za murem), nie tylko dla stojacych na koronie -- wspolna regula
   // _wallBonusProcFor -> fortificationDefenseBonusForUnit (city-defense.ts). Pelne pomiary:
@@ -106,7 +106,7 @@ for (const [name, src, re] of bsPins) {
 }
 const mainPins = [
   ['AI bez machin nie szturmuje obwarowanego miasta', /if \(fortifiedCityCaptureBlocked\(city, appendReadyMachinesToRoster\(atkRoster, city, anchor\.ownerId, false\)\)\) \{\s*\n\s*if \(!city\.oblegane\) startMapSiege\(ctx\);/],
-  ['szturm gracza: puste obwarowane miasto bez machin nie pada', /if \(!cityHasDefenders\(city\) \|\| collectSiegeDefRoster\(city\)\.length === 0\) \{\s*\n\s*if \(fortifiedCityCaptureBlocked\(city, atkRoster\)\)/],
+  ['szturm gracza: puste obwarowane miasto bez machin nie pada', /if \(!cityHasDefenders\(city, anchor\.ownerId\) \|\| collectSiegeDefRoster\(city, anchor\.ownerId\)\.length === 0\) \{\s*\n\s*if \(fortifiedCityCaptureBlocked\(city, atkRoster\)\)/],
   ['atak z allowCityCapture (barbarzyncy hard) nie zdobywa obwarowanego miasta bez machin', /opts\?\.allowCityCapture === true\s*\n\s*&& opts\?\.siegeContext !== true\s*\n\s*&& cityOnHex !== null\s*\n\s*&& !canCaptureCity\(/],
   ['capture w applyMapBattleOutcome respektuje fortifiedCaptureBlocked', /&& !fortifiedCaptureBlocked\s*\n\s*\) \{\s*\n\s*const atkOwner/],
   ['holdPositionAfterWin z fortifiedCaptureBlocked', /holdPositionAfterWin: fortifiedCaptureBlocked,/],

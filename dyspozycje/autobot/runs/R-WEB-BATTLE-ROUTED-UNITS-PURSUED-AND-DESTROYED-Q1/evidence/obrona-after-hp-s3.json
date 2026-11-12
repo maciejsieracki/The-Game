@@ -1,0 +1,186 @@
+[
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 16,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20,
+    "hpStart": 760,
+    "hpEnd": 637,
+    "hpLostPct": 16
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 10,
+    "routedLeft": 0,
+    "survived": 0,
+    "hpStart": 380,
+    "hpEnd": 217,
+    "hpLostPct": 43
+   },
+   "exported": 30,
+   "exportedAtk": 20,
+   "exportedDef": 10,
+   "exportedHpAtk": 637,
+   "exportedHpDef": 217,
+   "hpStartAtk": 760,
+   "hpStartDef": 380,
+   "attacksOnRouted": 22,
+   "killedWhileRouted": 0,
+   "collapseRound": 8,
+   "fledAtEdge": 10,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 1,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20,
+    "hpStart": 760,
+    "hpEnd": 760,
+    "hpLostPct": 0
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10,
+    "hpStart": 380,
+    "hpEnd": 380,
+    "hpLostPct": 0
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "exportedHpAtk": 440,
+   "exportedHpDef": 0,
+   "hpStartAtk": 760,
+   "hpStartDef": 380,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "skip",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 17,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20,
+    "hpStart": 760,
+    "hpEnd": 640,
+    "hpLostPct": 16
+   },
+   "def": {
+    "total": 10,
+    "killed": 1,
+    "fled": 9,
+    "routedLeft": 0,
+    "survived": 0,
+    "hpStart": 380,
+    "hpEnd": 173,
+    "hpLostPct": 54
+   },
+   "exported": 29,
+   "exportedAtk": 20,
+   "exportedDef": 9,
+   "exportedHpAtk": 640,
+   "exportedHpDef": 173,
+   "hpStartAtk": 760,
+   "hpStartDef": 380,
+   "attacksOnRouted": 24,
+   "killedWhileRouted": 1,
+   "collapseRound": 9,
+   "fledAtEdge": 9,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": [
+    "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+   ]
+  }
+ },
+ {
+  "scen": "przewaga 2:1",
+  "seed": 2,
+  "mode": "instant",
+  "timedOut": false,
+  "errors": [],
+  "r": {
+   "winner": "atakujacy",
+   "round": 0,
+   "atk": {
+    "total": 20,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 20,
+    "hpStart": 760,
+    "hpEnd": 760,
+    "hpLostPct": 0
+   },
+   "def": {
+    "total": 10,
+    "killed": 0,
+    "fled": 0,
+    "routedLeft": 0,
+    "survived": 10,
+    "hpStart": 380,
+    "hpEnd": 380,
+    "hpLostPct": 0
+   },
+   "exported": 20,
+   "exportedAtk": 20,
+   "exportedDef": 0,
+   "exportedHpAtk": 435,
+   "exportedHpDef": 0,
+   "hpStartAtk": 760,
+   "hpStartDef": 380,
+   "attacksOnRouted": 0,
+   "killedWhileRouted": 0,
+   "collapseRound": -1,
+   "fledAtEdge": 0,
+   "fledNotAtEdge": 0,
+   "notEdge": [],
+   "log": []
+  }
+ }
+]

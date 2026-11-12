@@ -1,0 +1,29 @@
+
+=== A1: palisada stoi, kopia obronna pod zagrozeniem ===
+  kandydaci: Wojownik, mury_kamienne, mury_kamienne, Wojownik, Wojownik, Łucznik, mury_kamienne, mury | lancuch: mury_kamienne, mury_kamienne, mury_kamienne, mury
+  [OK] A1a AI nie proponuje palisady, gdy juz stoi
+  [OK] A1b AI proponuje awans na Mury kamienne
+
+=== A2: mury kamienne stoja ===
+  kandydaci: Wojownik, mury, Wojownik, Wojownik, Łucznik, mury | lancuch: mury, mury
+  [OK] A2a AI proponuje awans na Mury ceglane (dawniej martwa galaz: nigdy)
+  [OK] A2b AI nie proponuje nizszych etapow
+
+=== A3: etap lancucha w kolejce -> AI nie dokłada drugiego ===
+  w kolejce palisada: lancuch w kandydatach = []
+  [OK] A3 palisada w kolejce -> AI nie proponuje zadnego etapu lancucha
+  w kolejce mury_kamienne: lancuch w kandydatach = []
+  [OK] A3 mury_kamienne w kolejce -> AI nie proponuje zadnego etapu lancucha
+  w kolejce mury: lancuch w kandydatach = []
+  [OK] A3 mury w kolejce -> AI nie proponuje zadnego etapu lancucha
+  [OK] A3b palisada stoi + awans w kolejce -> AI nie proponuje kolejnego etapu
+
+=== A4: symulacja decyzji AI (wybor -> kolejka -> ukonczenie) ===
+  [OK] A4 krok 0: w trakcie budowy palisada AI nie proponuje kolejnego etapu
+  [OK] A4 krok 1: w trakcie budowy mury_kamienne AI nie proponuje kolejnego etapu
+  [OK] A4 krok 2: w trakcie budowy mury AI nie proponuje kolejnego etapu
+  zaplacone etapy w kolejnosci: palisada -> mury_kamienne -> mury
+  [OK] A4a w miescie nigdy wiecej niz jedna fortyfikacja lancucha
+  [OK] A4b kazdy kolejny zaplacony etap jest WYZSZY od poprzedniego (awans, brak doplat za ten sam/nizszy)
+
+WYNIK: 13 OK, 0 FAIL

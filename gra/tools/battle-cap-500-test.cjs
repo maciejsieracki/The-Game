@@ -230,6 +230,9 @@ async function main() {
   const turnMs = [];
   let turns = 0;
   for (; turns < maxTurns; turns++) {
+    // R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: silnik liczy tempo linii (sufit natarcia) w rundach -- ta petla
+    // musi tykac zegar rundy tak jak _beginTurn (bez tego sufit nie odswieza kontaktu/postepu).
+    scene.roundNo = turns + 1;
     const t0 = performance.now();
     for (const ru of [...scene.atk, ...scene.def]) {
       if (ru.dead) continue;

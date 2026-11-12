@@ -26,6 +26,7 @@ import {
   DEFAULT_CONVERTER_RECIPES,
   converterBuildingIdForRecipe,
   converterProductionDisplayForBuilding,
+  type ConverterBuildingUtilization,
   type Difficulty,
   type RawConverterParamsJson,
 } from './converters';
@@ -149,10 +150,39 @@ export const RAW_INFLOW_RESOURCE_BUILDING: Readonly<Record<string, string>> = {
   kamien: 'kamieniarski',
 };
 
+/**
+ * R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: wykorzystanie mocy budynku w NASTEPNEJ turze
+ * (z TEGO SAMEGO przebiegu co prognoza produkcji). Wylaczony budynek nie ma widoku (`enabled: false`).
+ *  - 'converter'    : konwerter z receptura; `pct` = cykle/maks. cykle, `limitedBy`/`missing` gdy < 100%
+ *  - 'noConversion' : Stolarnia / Warsztat kamieniarski -- brak wejscia/konwersji (dodaja % dopywu), pelne 100%
+ *  - 'asleep'       : konwerter wlaczony, ale uspiony przez bramke runtime (np. brak dostepu do zloza) -- 0%
+ */
+export interface BuildingUtilizationView {
+  kind: 'converter' | 'noConversion' | 'asleep';
+  pct: number;
+  limitedBy?: 'wejscie' | 'magazyn' | 'przepustowosc';
+  /** Brakujace do pelnej mocy wejscia: surowiec -> sztuki. */
+  missing: Record<string, number>;
+  cykle: number;
+  maxCykle: number;
+}
+
 export interface EmpireProducerBuildingRow {
   buildingId: string;
   label: string;
   enabled: boolean;
+  /** Brak gdy wylaczony albo gdy nie podano prognozy. */
+  utilization?: BuildingUtilizationView;
+}
+
+/** Zbiorczo per typ budynku (cala cywilizacja): ile sztuk, ile wylaczonych, srednie wykorzystanie wlaczonych. */
+export interface EmpireProducerTypeSummary {
+  buildingId: string;
+  label: string;
+  count: number;
+  disabled: number;
+  /** Srednie wazone (suma cykli / suma maks. cykli) wlaczonych; null = brak wlaczonych lub brak prognozy. */
+  avgPct: number | null;
 }
 
 export interface EmpireProducerCityRow {
@@ -184,6 +214,8 @@ export interface EmpireProducerResourceRow {
 
 export interface EmpireProducersSnap {
   cities: EmpireProducerCityRow[];
+  /** Agregat per typ budynku (tylko gdy podano prognoze wykorzystania). */
+  typeSummaries?: EmpireProducerTypeSummary[];
   resources: EmpireProducerResourceRow[];
 }
 
@@ -212,6 +244,8 @@ export function buildEmpireProducersSnap(args: {
     enabled: Readonly<Record<string, number>>;
     installed: Readonly<Record<string, number>>;
   };
+  /** cityId -> buildingId -> wykorzystanie mocy (z forecastNextTurnProduction); brak = bez procentow. */
+  utilizationByCity?: ReadonlyMap<string, Readonly<Record<string, ConverterBuildingUtilization>>>;
   buildingLabel: (buildingId: string) => string;
 }): EmpireProducersSnap {
   const enabledPot: Record<string, number> = {};
@@ -225,7 +259,21 @@ export function buildEmpireProducersSnap(args: {
     for (const id of built) {
       if (!isToggleableProductionBuilding(id)) continue;
       const enabled = isProductionBuildingEnabled(city, id);
-      rows.push({ buildingId: id, label: args.buildingLabel(id), enabled });
+      const row: EmpireProducerBuildingRow = { buildingId: id, label: args.buildingLabel(id), enabled };
+      if (enabled && args.utilizationByCity) {
+        const u = args.utilizationByCity.get(city.id)?.[id];
+        if (RAW_PRODUCER_BUILDING_IDS.includes(id)) {
+          row.utilization = { kind: 'noConversion', pct: 100, missing: {}, cykle: 0, maxCykle: 0 };
+        } else if (u) {
+          row.utilization = {
+            kind: 'converter', pct: u.pct, limitedBy: u.limitedBy, missing: { ...u.missing },
+            cykle: u.cykle, maxCykle: u.maxCykle,
+          };
+        } else {
+          row.utilization = { kind: 'asleep', pct: 0, missing: {}, cykle: 0, maxCykle: 0 };
+        }
+      }
+      rows.push(row);
       if (RAW_PRODUCER_BUILDING_IDS.includes(id)) rawBuiltInstalled.add(id);
       const disp = converterProductionDisplayForBuilding(id, args.rawParams, args.difficulty, args.era);
       if (!disp) continue;
@@ -235,6 +283,30 @@ export function buildEmpireProducersSnap(args: {
       }
     }
     if (rows.length > 0) cityRows.push({ cityId: city.id, name: city.name, buildings: rows });
+  }
+  let typeSummaries: EmpireProducerTypeSummary[] | undefined;
+  if (args.utilizationByCity) {
+    // Tylko konwertery (stolarnia/kamieniarski nie maja przerobu -- srednia bylaby bezuzyteczna).
+    const acc = new Map<string, { label: string; count: number; disabled: number; cykle: number; max: number; pctSum: number; pctN: number }>();
+    for (const c of cityRows) {
+      for (const b of c.buildings) {
+        if (RAW_PRODUCER_BUILDING_IDS.includes(b.buildingId)) continue;
+        const t = acc.get(b.buildingId) ?? { label: b.label, count: 0, disabled: 0, cykle: 0, max: 0, pctSum: 0, pctN: 0 };
+        t.count += 1;
+        if (!b.enabled) t.disabled += 1;
+        else if (b.utilization) {
+          t.cykle += b.utilization.cykle;
+          t.max += b.utilization.maxCykle;
+          t.pctSum += b.utilization.pct;
+          t.pctN += 1;
+        }
+        acc.set(b.buildingId, t);
+      }
+    }
+    typeSummaries = [...acc.entries()].map(([buildingId, t]) => ({
+      buildingId, label: t.label, count: t.count, disabled: t.disabled,
+      avgPct: t.max > 0 ? Math.round((100 * t.cykle) / t.max) : (t.pctN > 0 ? Math.round(t.pctSum / t.pctN) : null),
+    }));
   }
   const resources: EmpireProducerResourceRow[] = [];
   for (const [id, label] of Object.entries(PRODUCED_RESOURCE_LABELS)) {
@@ -263,5 +335,5 @@ export function buildEmpireProducersSnap(args: {
       potentialInstalled: Math.floor(installed),
     });
   }
-  return { cities: cityRows, resources };
+  return typeSummaries ? { cities: cityRows, typeSummaries, resources } : { cities: cityRows, resources };
 }

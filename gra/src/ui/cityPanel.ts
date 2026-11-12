@@ -136,6 +136,7 @@ import {
 } from '../game/building-stock-cost';
 import {
   upgradeChainSteps,
+  skipChainUpgradeSource,
   upgradeCompositionLines,
   buildingStructuralDefenseBonusLine,
   buildingStructuralDefenseBonusPercent,
@@ -294,6 +295,7 @@ import { formatGrossNet } from './hudChip6c';
 import { humanizeId, nazwaWyswietlana, nazwyZListyId } from '../game/text-names';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
 import { administratorIconHtml, ADMINISTRATOR_ICON_CSS, administratorChipInnerHtml, administratorUpkeepValueHtml } from './icons/administratorIcon';
+import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
 import { administratorBaseEffectsPct, administratorTierScale, administratorEffectsFor, type AdminTier } from '../game/city-administrator';
 
 // ---------------------------------------------------------------------------
@@ -701,6 +703,26 @@ export interface CityAdministratorUiState {
   hireCost: number;
   /** Powód zablokowania zatrudnienia (null = można zatrudnić albo już zatrudniony). */
   blockReasonText: string | null;
+  /** Rodzaj blokady; `brak_srodkow` NIE blokuje otwarcia panelu wyboru (panel pokazuje, ile brakuje). */
+  blockReason?: 'brak_budynku' | 'ma_administratora' | 'brak_srodkow' | null;
+  /** Skarbiec państwa (Pieniądz) — panel administratora liczy braki do kosztu zatrudnienia. */
+  treasury?: number | null;
+}
+
+/** Model panelu wyboru administratora miasta (liczby z silnika przez stan UI; skala bonusów z poziomu budynku). */
+function cityAdministratorPanelModel(st: CityAdministratorUiState, cityName: string): AdministratorPanelModel {
+  const hard = st.blockReason !== undefined ? (st.blockReason === 'brak_srodkow' ? null : st.blockReasonText) : st.blockReasonText;
+  return {
+    kind: 'city',
+    cityName,
+    hired: st.hired,
+    working: st.working,
+    hireCost: st.hireCost,
+    upkeep: st.upkeep,
+    treasury: st.treasury ?? null,
+    tier: st.tier,
+    blockReasonText: st.hired ? null : hard,
+  };
 }
 
 /** Tooltip przycisku/chipa administratora: efekty (ze skalą tieru), utrzymanie, stan. */
@@ -729,11 +751,11 @@ function administratorHeaderHtml(city: City): string {
     return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn is-hired${st.working ? '' : ' is-idle'}" id="civ-v-administrator" ` +
       `data-adm-state="${st.working ? 'working' : 'idle'}" title="${esc(administratorTooltipText(st))}">${icon}<span>Administrator ✓</span></button>`;
   }
-  const blocked = st.blockReasonText !== null;
+  const blocked = cityAdministratorPanelModel(st, '').blockReasonText !== null;
   const icon = administratorIconHtml({ size: 16, state: blocked ? 'off' : 'ok' });
   const title = blocked
-    ? st.blockReasonText!
-    : `Zatrudnij administratora miasta: ${st.hireCost} Pieniądza jednorazowo, utrzymanie ${st.upkeep}/turę ze skarbca państwa`;
+    ? (st.blockReasonText ?? '')
+    : `Wybierz administratora miasta — koszt ${st.hireCost} Pieniądza, utrzymanie ${st.upkeep} Pieniądza na turę`;
   return `<button type="button" class="civ-v-w3-capital-btn civ-v-adm-btn" id="civ-v-administrator" data-adm-state="${blocked ? 'blocked' : 'available'}" ` +
     `${blocked ? 'disabled ' : ''}title="${esc(title)}">${icon}<span>Administrator +</span></button>`;
 }
@@ -1528,6 +1550,7 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   doPuli: number;
   pctBudynki: number;
   pctPuli: number;
+  kolejkaPustaDoPuli: boolean;
 } {
   const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
   const split = splitPraca(view.praca, pctB / 100);
@@ -1542,8 +1565,12 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
     doPuli: routed.doPuli,
     pctBudynki: pctB,
     pctPuli: procentPuliImperiumZBudynkow(pctB),
+    kolejkaPustaDoPuli: routed.kolejkaPustaDoPuli,
   };
 }
+
+/** R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tekst podpowiedzi (jedno zrodlo dla UI i testu). */
+export const KOLEJKA_PUSTA_PRACA_DO_PULI_HINT = 'Kolejka pusta — Praca idzie do puli imperium';
 
 /**
  * Bilans żywności miasta (PYTANIE-85: produkcja − racje).
@@ -2603,12 +2630,13 @@ ${resourceColorClassCss('.civ-cs')}
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
-.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;overflow:visible;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1480px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
+.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;max-width:100%;min-width:0;overflow:visible;}
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
   padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:0 0 auto;min-width:0;overflow:visible;}
+  /* R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1: baner kurczy sie i zawija zetony (bez wychodzenia poza okno). */
+  flex:0 1 auto;min-width:0;max-width:100%;box-sizing:border-box;overflow:visible;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-left{justify-content:flex-end;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-right{justify-content:flex-start;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
@@ -5243,6 +5271,16 @@ function appendPodzialPracyInfo(
     statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
 
+  // R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1: tylko gdy kolejka pusta i Praca faktycznie
+  // trafia do puli (wyjatek silnika `pracaImperialPoolGain`); znika po dodaniu pozycji.
+  if (praca?.kolejkaPustaDoPuli) {
+    const hint = el('div', 'praca-empty-queue-hint muted');
+    hint.setAttribute('data-testid', 'praca-empty-queue-hint');
+    hint.style.cssText = 'font-size:0.74em;margin:0.2em 0;';
+    hint.textContent = KOLEJKA_PUSTA_PRACA_DO_PULI_HINT;
+    mount.appendChild(hint);
+  }
+
   const info = el('div', 'praca-split-info');
 
   const rowTotal = el('div', 'psi-row');
@@ -7080,7 +7118,11 @@ function buildingRequirementChips(
   }
 
   const parentId = def.upgradeFrom?.trim();
-  if (parentId) {
+  if (parentId && def.upgradeSkip === true) {
+    // Łańcuch fortyfikacji z przeskokiem: poprzednik NIE jest wymagany (budowa od zera jest dozwolona).
+    const parentName = parentBuildingName(data, parentId) ?? parentId;
+    chips.push({ label: `Awans z: ${parentName} (opcjonalnie)`, met: true, kind: 'other' });
+  } else if (parentId) {
     const parentName = parentBuildingName(data, parentId) ?? parentId;
     const met = built.includes(parentId)
       || isBuildingSupersededByUpgrade(parentId, built, buildings);
@@ -8237,7 +8279,7 @@ function appendBuildableItemRow(
   city: City,
   item: ProductionItem,
   data: GameData,
-  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean },
+  opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean; fromName?: string },
 ): void {
   const def = findBuildingDef(data, item.id);
   if (!def) {
@@ -8256,7 +8298,10 @@ function appendBuildableItemRow(
   fillIconElement(ic, buildingIconHtml(def));
   row.appendChild(ic);
   const name = el('span', 'bld-compact-name');
-  name.textContent = def.nazwa;
+  // Awans w łańcuchu (Palisada -> Mury kamienne): „Ulepsz → Mury kamienne” z nazwą źródła w tooltipie.
+  // Pozostałe wiersze (w tym awans POZIOMU) zachowują dotychczasową etykietę def.nazwa (bez zmiany zachowania).
+  name.textContent = opts.fromName ? `Ulepsz → ${def.nazwa}` : def.nazwa;
+  if (opts.fromName) name.title = `${opts.fromName} → ${def.nazwa}`;
   row.appendChild(name);
 
   const actions = el('div', 'bld-compact-actions');
@@ -8428,6 +8473,14 @@ function setArmyRecruitDraft(cityId: string, itemId: string, quantity: number): 
 }
 export function getArmyRecruitDraftTotal(): number {
   return Array.from(armyRecruitDrafts.values()).reduce((sum, quantity) => sum + quantity, 0);
+}
+/**
+ * Zamknięcie panelu rekrutacji (Zamknij / Esc / tło): wszystkie szkice liczników Armii -> 0
+ * (pamięć + localStorage). Dopóki panel jest otwarty, szkice są zachowywane przy odświeżeniach.
+ */
+export function clearArmyRecruitDraftsOnPanelClose(): void {
+  if (armyRecruitDrafts.size === 0) return;
+  resetArmyRecruitDraftsSession();
 }
 /** New/load game boundary: do not carry one save's unpublished Army drafts into another. */
 export function resetArmyRecruitDraftsSession(): void {
@@ -9282,14 +9335,19 @@ export function renderBuildList(
   // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
   // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
   // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
-  const items = sortProductionItemsByBuildability(
+  const allBuildable = sortProductionItemsByBuildability(
     buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
-  const itemIds = new Set(items.map(it => it.id));
+  // Łańcuch fortyfikacji: etap, do którego stoi niższy etap, to AWANS („Ulepsz”), nie „Buduj”.
+  const chainSource = (it: ProductionItem): string | null =>
+    it.kind === 'budynek' ? skipChainUpgradeSource(it.id, built, data.buildings) : null;
+  const items = allBuildable.filter(it => chainSource(it) === null);
+  const chainUps = allBuildable.filter(it => chainSource(it) !== null);
+  const itemIds = new Set(allBuildable.map(it => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -9326,7 +9384,7 @@ export function renderBuildList(
   const fullEraPreview = showEraBuildingPreview;
   const previewEntries = collectEraPreviewEntries(data, techs, prodCtx, fullEraPreview);
 
-  const sortedUps = sortProductionItemsByBuildability(ups, city, data, prodCtx, techs);
+  const sortedUps = sortProductionItemsByBuildability([...chainUps, ...ups], city, data, prodCtx, techs);
 
   if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
@@ -9350,7 +9408,9 @@ export function renderBuildList(
     h.textContent = 'Ulepsz';
     scroll.appendChild(h);
     for (const u of sortedUps) {
-      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
+      const srcId = chainSource(u);
+      const fromName = srcId ? (findBuildingDef(data, srcId)?.nazwa ?? srcId) : undefined;
+      appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true, fromName });
     }
   }
   // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze
@@ -9675,7 +9735,8 @@ function appendOwnedBuildingRow(
       bn.textContent = `${def.nazwa} L${level}`;
     }
   }
-  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+  // Łańcuch fortyfikacji (upgradeSkip): bez przycisku „Skład bonusów” -- to zamiana, nie suma poziomów.
+  if (def && (def.upgradeFrom ?? '').trim().length > 0 && def.upgradeSkip !== true) {
     const upBtn = el('button', 'bld-upg');
     upBtn.type = 'button';
     upBtn.textContent = '↗';
@@ -11393,14 +11454,17 @@ function renderCivResourceTopBar(
   });
   mount.querySelector('#civ-v-administrator')?.addEventListener('click', () => {
     const st = cfg.getCityAdministratorState?.(city.id);
-    if (!st) return;
-    if (st.hired) {
-      if (!window.confirm('Zwolnić administratora miasta ' + city.name + '? Koszt zatrudnienia nie podlega zwrotowi, a autobudowa w tym mieście przestanie działać.')) return;
-      cfg.onDismissAdministrator?.(city.id);
-    } else {
-      cfg.onHireAdministrator?.(city.id);
-    }
-    rerender();
+    if (!st || isAdministratorPanelOpen()) return;
+    // Przycisk „Administrator +/✓” otwiera mały panel wyboru (opis, bonusy, koszt, utrzymanie, Zatrudnij/Zwolnij).
+    openAdministratorPanel({
+      getModel: () => {
+        const cur = cfg.getCityAdministratorState?.(city.id) ?? null;
+        return cur ? cityAdministratorPanelModel(cur, city.name) : null;
+      },
+      onHire: () => cfg.onHireAdministrator?.(city.id) ?? false,
+      onDismiss: () => cfg.onDismissAdministrator?.(city.id) ?? false,
+      onClose: () => rerender(),
+    });
   });
   const garrisonRow = mount.querySelector('#civ-v-garrison-row') as HTMLElement | null;
   if (garrisonRow) renderTopBarGarrison(garrisonRow, city);

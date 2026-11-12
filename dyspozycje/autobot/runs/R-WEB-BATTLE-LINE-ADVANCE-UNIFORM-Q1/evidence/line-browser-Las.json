@@ -1,0 +1,158 @@
+[
+ {
+  "scene": "before",
+  "teren": "Las",
+  "seed": "1",
+  "errors": [],
+  "rows": [
+   {
+    "round": 1,
+    "spread": 0,
+    "n": 16,
+    "min": 32,
+    "max": 32
+   },
+   {
+    "round": 2,
+    "spread": 3,
+    "n": 16,
+    "min": 32,
+    "max": 35
+   },
+   {
+    "round": 3,
+    "spread": 3,
+    "n": 15,
+    "min": 32,
+    "max": 35
+   },
+   {
+    "round": 4,
+    "spread": 3,
+    "n": 13,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 5,
+    "spread": 3,
+    "n": 11,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 6,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 7,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 8,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 9,
+    "spread": 7,
+    "n": 9,
+    "min": 33,
+    "max": 40
+   },
+   {
+    "round": 10,
+    "spread": 10,
+    "n": 9,
+    "min": 34,
+    "max": 44
+   }
+  ]
+ },
+ {
+  "scene": "after",
+  "teren": "Las",
+  "seed": "1",
+  "errors": [],
+  "rows": [
+   {
+    "round": 1,
+    "spread": 0,
+    "n": 16,
+    "min": 32,
+    "max": 32
+   },
+   {
+    "round": 2,
+    "spread": 3,
+    "n": 16,
+    "min": 32,
+    "max": 35
+   },
+   {
+    "round": 3,
+    "spread": 3,
+    "n": 15,
+    "min": 32,
+    "max": 35
+   },
+   {
+    "round": 4,
+    "spread": 3,
+    "n": 13,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 5,
+    "spread": 3,
+    "n": 11,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 6,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 7,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 8,
+    "spread": 3,
+    "n": 9,
+    "min": 33,
+    "max": 36
+   },
+   {
+    "round": 9,
+    "spread": 4,
+    "n": 9,
+    "min": 33,
+    "max": 37
+   },
+   {
+    "round": 10,
+    "spread": 3,
+    "n": 9,
+    "min": 34,
+    "max": 37
+   }
+  ]
+ }
+]

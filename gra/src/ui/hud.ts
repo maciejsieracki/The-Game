@@ -59,6 +59,7 @@ import {
   HUD_TOP_PX,
   HUD_ZOOM_EDGE_PX,
   TOOLBAR_TOP_PX,
+  Z_MAP_CONTROLS,
 } from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
@@ -777,8 +778,8 @@ html .civ-map-toolbar{top:var(--civ-hud-toolbar-top,${TOOLBAR_TOP_PX}px);}
 .civ-hud .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
   font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
   border-right:1px solid rgba(232,216,138,.2);}
-/* Zoom + pełny ekran — nad minimapą i kartą jednostki (root body, z-index 318). */
-.civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:318;
+/* Zoom + pełny ekran (root body) — warstwa kontrolek mapy, POD panelami rozwijanymi. */
+.civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:${Z_MAP_CONTROLS};
   display:flex;align-items:center;gap:8px;
   left:${utilDockLeftCss(MINI_W)};bottom:${utilDockBottomCss()};
   ${CIV_BRAND_SCOPE_VARS}
@@ -880,7 +881,7 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
 .civ-hud.is-city-view .hud-right-cluster .b-menu,
 .civ-hud.is-city-view .hud-right-cluster .b-wiki{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
-.civ-mini{position:fixed;left:${HUD_EDGE_PX}px;bottom:${HUD_EDGE_PX}px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
+.civ-mini{position:fixed;left:${HUD_EDGE_PX}px;bottom:${HUD_EDGE_PX}px;width:${MINI_W}px;height:${MINI_H}px;z-index:${Z_MAP_CONTROLS};display:none;}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
 .civ-fs-hint{position:fixed;top:${HUD_TOP_PX}px;left:50%;transform:translateX(-50%);z-index:9999;
   display:none;padding:6px 14px;border-radius:8px;pointer-events:none;

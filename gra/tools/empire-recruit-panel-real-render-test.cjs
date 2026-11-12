@@ -40,6 +40,11 @@ const plugins = [{
         if (m === source) throw new Error('mutant not applied');
         source = m;
       }
+      if (MUT === 'no-reset-on-close' && /empireRecruitPanel/.test(args.path)) {
+        const m = source.replace('drafts.clear(); // R-WEB-UI-RECRUIT-PANEL', '/* mutant */ // R-WEB-UI-RECRUIT-PANEL');
+        if (m === source) throw new Error('mutant not applied');
+        source = m;
+      }
       if (MUT === 'reset-card' && /unitRecruitCard/.test(args.path)) {
         const m = source.replace('onRecruit(quantity); // licznik zostaje', 'onRecruit(quantity); setQuantity(1); // licznik zostaje');
         if (m === source) throw new Error('mutant not applied');
@@ -100,7 +105,7 @@ async function main() {
           queuedOfType: c.q.filter(x => x === id).length, queueLength: c.q.length,
         }));
       };
-      window.__api.toggleEmpireRecruitPanel({
+      window.__cfg = {
         getRows: () => st.types.map(t => {
           const inp = inputs(t.id);
           return { id: t.id, label: t.label, koszt: t.koszt, capableCities: inp.filter(i => i.canRecruit).length,
@@ -120,7 +125,8 @@ async function main() {
           });
           return { message: out.message, changed: out.changed };
         },
-      });
+      };
+      window.__api.toggleEmpireRecruitPanel(window.__cfg);
     });
 
     const row = id => page.locator(`#civ-empire-recruit-panel [data-unit="${id}"]`);
@@ -177,7 +183,15 @@ async function main() {
     // zamknięcie i ponowne otwarcie: liczniki zapamiętane (sesja UI)
     await page.locator('[data-erp="close"]').click();
     check('panel zamyka się', await page.locator('#civ-empire-recruit-panel').count() === 0);
-    check('liczniki przeżywają zamknięcie panelu', await page.evaluate(() => window.__api.getEmpireRecruitDraft('Wojownik') === 5 && window.__api.getEmpireRecruitDraft('Taran') === 4));
+    // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: po „Zamknij” liczniki zerowane, następne otwarcie = same zera
+    check('po „Zamknij” wszystkie liczniki = 0', await page.evaluate(() => window.__api.getEmpireRecruitDraft('Wojownik') === 0 && window.__api.getEmpireRecruitDraft('Taran') === 0));
+    await page.evaluate(() => { window.__api.toggleEmpireRecruitPanel(window.__cfg); });
+    check('ponowne otwarcie: liczniki Wojownik/Taran = 0 w DOM', await qty('Wojownik') === 0 && await qty('Taran') === 0);
+    await setQty('Wojownik', 7);
+    await page.evaluate(() => { window.__api.refreshEmpireRecruitPanel(); window.__st.cities[1].q.push('Taran'); window.__api.refreshEmpireRecruitPanel(); });
+    check('otwarty panel: liczniki zachowane po odświeżeniach (7)', await qty('Wojownik') === 7);
+    await page.evaluate(() => { window.__api.toggleEmpireRecruitPanel(window.__cfg); }); // toggle zamyka
+    check('zamknięcie przez toggle (HUD) też zeruje', await page.evaluate(() => window.__api.getEmpireRecruitDraft('Wojownik') === 0));
 
     // zarzut 4: nowa gra/wczytanie zamyka panel i czyści liczniki
     await page.evaluate(() => { window.__api.toggleEmpireRecruitPanel({ getRows: () => [], onOrder: () => ({ message: '', changed: false }) }); });

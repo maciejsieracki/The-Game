@@ -1,3 +1,51 @@
+## ROBOCZA 08f4b791 -- 2026-11-06 -- FALA 657: FALA 657: równe natarcie linii piechoty w bitwie (W19) (testowa)
+
+- R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, battle-line-advance-uniform 17/0, battle-cap-500 59 PASS, audio-sidecar PASS; FC: battle-skip-equals-auto 42/0
+- Limity: zywa scena 3D: poprawa dopiero w rundach 9-10; strzelcy, konnica i machiny poza sufitem; 500v500 54 tury zamiast 42; ABC prog 10 rund
+
+## ROBOCZA 3385dd9b -- 2026-11-06 -- FALA 656: FALA 656: komunikat 'kolejka pusta — Praca idzie do puli imperium' w panelu miasta (W23) (testowa)
+
+- R-WEB-UI-CITY-EMPTY-QUEUE-WORK-TO-POOL-HINT-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, test Chromium 17/0, audio-sidecar PASS
+- Limity: kolejka wstrzymana i zwiniety podzial pracy NIE_ZMIERZONO
+
+## ROBOCZA 1b873b87 -- 2026-11-06 -- FALA 655: FALA 655: lewy baner widoku miasta mieści się w oknie 1366/1280/1024 px (W24) (testowa)
+
+- R-WEB-UI-LEFT-BANNER-OVERFLOW-NARROW-WINDOW-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, left-banner-overflow 74/0, city-side-panels 61/0, hud-topbar-layout-a 144/0, audio-sidecar PASS
+- Limity: widok miasta w pelnej grze NIE_ZMIERZONO; nie wiadomo czy to ten baner widzial wlasciciel
+
+## ROBOCZA d87d074b -- 2026-11-06 -- FALA 654: FALA 654: szturm bez machin oblężniczych zablokowany, pozostaje oblężenie (W18) (testowa)
+
+- R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, siege-storm-needs-machines 18/0, city-siege-wall-rules 50/0, audio-sidecar PASS
+- Limity: okablowanie main.ts przypiete regexem; pelny przebieg gry w Chromium NIE_ZMIERZONO
+
+## ROBOCZA 16ffc1de -- 2026-11-06 -- FALA 653: FALA 653: pościg uciekinierów w bitwie (W21) + replay oblężenia przywraca mur (W16) + procent wykorzystania mocy budynków (W22) (testowa)
+
+- R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1 + R-WEB-SIEGE-REPLAY-RESTORE-WALL-TERRAIN-Q1 + R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, testy tematow (52 i 30 PASS), audio-sidecar PASS; battle-skip-equals-auto 38/0 tylko w FC (w deployu pominiety — restarty kontenera)
+- Limity: piechota nie dogania uciekajacej piechoty (ABC); B4b znany defekt; Chromium na harnessie sekcji panelu
+
+## ROBOCZA 3d624885 -- 2026-11-06 -- FALA 652: FALA 652: kontrolki mapy pod panelami (W14) + fortyfikacje jako lancuch awansu (W20) (testowa)
+
+- R-WEB-UI-TOOLBAR-ZOOM-BEHIND-EXPANDED-PANELS-Q1 + R-WEB-FORTIFICATIONS-UPGRADE-CHAIN-IMPL-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, testy tematow, audio-sidecar PASS
+- Limity: stare zapisy z dwoma etapami lancucha w kolejce placa za zbedny etap; modale nie zmierzone elementFromPoint
+
+## ROBOCZA fb8c7652 -- 2026-11-06 -- FALA 651: FALA 651: administrator ulepszen — blokada automatyzacji bez administratora + panel wyboru administratora (W9) (testowa)
+
+- R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1
+- Weryfikacja: tsc, 5 bramek referencyjnych, 6 testow tematu, audio-sidecar PASS, live Chromium LIVE OK
+- Limity: zatrudnienie administratora bez okna potwierdzenia (ABC #262)
+
+## ROBOCZA 453c476e -- 2026-11-06 -- FALA 650: FALA 650: liczniki panelu rekrutacji zerowane po zamknieciu (W17) (testowa)
+
+- R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1 + R-WEB-SIEGE-MACHINES-ONLY-TECH-AVAILABLE-VISIBLE-Q1 (czesc)
+- Weryfikacja: tsc, 5 bramek referencyjnych, 4 testy tematu, audio-sidecar PASS
+- Limity: brak
+
 ## ROBOCZA 9e9b8a1a -- 2026-11-06 -- FALA 649: Siedem poprawek z testu właściciela: panel Rozdziel armię (plaster miodu), panele miasta pod banerami, surowy kod w panelu rekrutacji, Praca z pustej kolejki, ikony w oknie odkrycia, odmiana liczebników (testowa)
 
 - W11 plaster miodu 6d40a8749; W12 panele miasta 6ebbaf0c; W13 surowy HTML 1b2695644; W10 podział Pracy 058f49303; W7 ikony odkryć de5b64c19; W8+PL-PLURAL-LOCAL testy i odmiana 654c721bc/2ee4f3043

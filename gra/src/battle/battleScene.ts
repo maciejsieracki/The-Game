@@ -658,6 +658,8 @@ function cloneBattleUnitsForReplay(units: BattleUnit[]): BattleUnit[] {
 // the ranks occupy and guarantees a passable clash corridor across the river
 // (see _carveBattleBox), so the lines stand on flat passable ground and can
 // reach each other, while terrain survives EVERYWHERE else as obstacles/scenery.
+/** R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: po tylu rundach bez nowego postepu jednostka nie wstrzymuje linii. */
+const LINE_ADVANCE_STALL_ROUNDS = 10; // zmierzone: objazd sciany 5 pol z zatorem czekajacych liderow <= 9 rund (tools/battle-line-advance-uniform-test.cjs)
 const BF_COLS = 68;   // pełne pole (2× poprzednie 34) — margines do przewijania kamery
 const BF_ROWS = 156;  // pełne pole (2× poprzednie 78)
 
@@ -1117,6 +1119,11 @@ const MORALE_HIT_LOSS_SCALE = 100;   // moraleLost = (dmg/maxHp)*100 -- loss off
 // (a "shaken by losses" ripple), within MORALE_DEATH_RADIUS tiles.
 const MORALE_ALLY_DEATH_LOSS = 12;
 const STALL_TURN_LIMIT = 6;   // tury bez zmiany HP/morale/strat -> rozstrzygnij bitwe (anty-pat)
+// R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: sufit FAZY POSCIGU. Bitwa nie konczy sie w chwili,
+// gdy strona traci morale -- trwa, dopoki uciekinierzy nie zgina lub nie opuszcza planszy. Po tylu turach
+// od startu poscigu pozostali uciekinierzy sa rozstrzygani deterministycznie (_resolveRemainingRouted).
+// Wartosc nie jest balansem walki (nie zmienia morale/statow) -- to wylacznie zabezpieczenie przed nieskonczona bitwa.
+const PURSUIT_MAX_ROUNDS = 30;
 // R-WEB-BATTLE-SKIP-TO-RESULT-ABSURD-OUTCOME-Q1 (runda 2): bezpiecznik przewijania (skip).
 // Pomiar: scena ?playtest=oblezenie-duze nie konczy sie silnikiem (stan ustalony, tury
 // rosna bez konca), wiec przewijanie musi miec sufit. Sufit liczony w TURACH (nie w czasie
@@ -2505,6 +2512,12 @@ export class BattleScene {
   private siegeNoBreachMaxRounds: number = SIEGE_NO_BREACH_MAX_ROUNDS;
   /** Max HP pojedynczego kafla muru. */
   private static readonly WALL_TILE_HP = 640;
+  /** Replay: kopia terenu kolumny muru/bramy zaraz po wyrzezbieniu (indeks = rzad), do przywrocenia zburzonych kafli. */
+  private siegeWallInitialTiles: number[] = [];
+  /** Replay: gruz z wylomow (mesh-e dodane do sceny w _breachWallTile) -- zdejmowany przy powtorce. */
+  private siegeRubbleMeshes: THREE.Mesh[] = [];
+  /** Replay: elementy muru/bramy ukryte przez wylom -- przywracane przy powtorce. */
+  private siegeHiddenMeshes: THREE.Object3D[] = [];
   /** HUD: pasek HP bramy + kafla muru. */
   private siegeHudDiv: HTMLDivElement | null = null;
   /** Ostatnio atakowany rząd muru (do wyświetlania HP). */
@@ -2666,6 +2679,8 @@ export class BattleScene {
   // routed, so a future "general rally" feature could bring routed units back.
   // TODO: general rally recovery -- consume this list to respawn rallied units.
   private routedUnits:  { typeId: string; side: 'atk' | 'def'; owner: number }[] = [];
+  /** Numer tury, w ktorej zaczal sie poscig za uciekinierami strony przegranej (-1 = jeszcze nie). */
+  private _pursuitStartRound = -1;
   private projectiles:  { mesh: THREE.Object3D; from: THREE.Vector3; to: THREE.Vector3; t0: number; dur: number; geos: THREE.BufferGeometry[]; mats: THREE.Material[] }[] = [];
 
   // resolveCombat context
@@ -2696,6 +2711,9 @@ export class BattleScene {
   // walks it. activeSide is kept only for the opening hint.
   private activeSide: 'atk' | 'def' = 'atk';
   private roundNo = 0;
+  private _lineCapCache: { round: number; info: Map<string, { engaged: Set<string>; minMp: number }> } | null = null;
+  /** Per jednostka (po bu.id; planowanie AUTO pracuje na klonach): rekord postepu i rundy bez rekordu. */
+  private _lineAdvanceState: Map<string, { best: number; stall: number }> | undefined;
   private turnOrder: RuntimeBattleUnit[] = [];
   private turnIdx = 0;
 
@@ -4061,6 +4079,11 @@ export class BattleScene {
       if (wallCol >= 0 && wallCol < BF_COLS) {
         tiles[idx(wallCol, r)] = isGate ? BTerrain.Gate : BTerrain.Wall;
       }
+    }
+    // Replay: zapamietaj stan poczatkowy kolumny muru (teren kazdego rzedu).
+    this.siegeWallInitialTiles = [];
+    for (let r = 0; r < BF_ROWS; r++) {
+      this.siegeWallInitialTiles[r] = tiles[idx(wallCol, r)] as number;
     }
   }
 
@@ -5910,7 +5933,7 @@ export class BattleScene {
     done: () => void,
   ): void {
     const target = this._findUnitById(targetId);
-    if (!target || target.dead || target.fadingOut || target.removed || target.routed
+    if (!target || target.dead || target.fadingOut || target.removed
       || !this._enemiesOf(attacker).includes(target)
       || !this._canStrikeTargetFrom(attacker, attacker.q, attacker.r, target)) {
       done();
@@ -5930,7 +5953,7 @@ export class BattleScene {
     if (this.finished || this._autoBattleSuspended || this._manualMode) return;
     if (stepIdx >= resolution.steps.length) {
       if (ru.routed) {
-        const homeCol = ru.side === 'atk' ? 0 : (BF_COLS - 1);
+        const homeCol = this._fleeHomeCol(ru);
         const reached = ru.side === 'atk' ? ru.q <= homeCol : ru.q >= homeCol;
         if (reached) {
           this._removeUnitFromScene(ru);
@@ -6902,9 +6925,9 @@ export class BattleScene {
    */
   private _bestBackStep(ru: RuntimeBattleUnit): string | null {
     const dir = this._advanceDir(ru.side); // forward dir; we want the OPPOSITE
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
-    const threat = this._nearestEnemyMelee(ru) ?? this._nearestEnemy(ru);
+    const threat = this._nearestEnemyMelee(ru) ?? this._nearestActiveEnemy(ru);
     if (!threat) return null;
     const dNow = manhattan(ru.q, ru.r, threat.q, threat.r);
 
@@ -6958,7 +6981,7 @@ export class BattleScene {
    */
   private _bestKiteShotStep(ru: RuntimeBattleUnit, threat: RuntimeBattleUnit): string | null {
     const dir = this._advanceDir(ru.side); // forward dir; we want the OPPOSITE
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
     const dNow = manhattan(ru.q, ru.r, threat.q, threat.r);
 
@@ -7116,20 +7139,20 @@ export class BattleScene {
       if (!m) return true;
       return manhattan(ru.q, ru.r, m.q, m.r) >= MELEE_SAFE_GAP;
     }
-    const n = this._nearestEnemy(ru);
+    const n = this._nearestActiveEnemy(ru);
     if (!n) return true;
     return manhattan(ru.q, ru.r, n.q, n.r) >= RANGED_MIN_GAP;
   }
 
   private _bestKiteStep(ru: RuntimeBattleUnit): string | null {
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
     // SKIRMISH REFINE: a PRIMARY shooter scores candidate tiles by distance from
     // the nearest enemy MELEE unit (the thing it must escape); other units use
     // the nearest enemy of any kind. The chosen "threat" anchor below.
     const threat = ru.primaryRanged
-      ? (this._nearestEnemyMelee(ru) ?? this._nearestEnemy(ru))
-      : this._nearestEnemy(ru);
+      ? (this._nearestEnemyMelee(ru) ?? this._nearestActiveEnemy(ru))
+      : this._nearestActiveEnemy(ru);
     const dNow = threat ? manhattan(ru.q, ru.r, threat.q, threat.r) : Infinity;
 
     let best: string | null = null;
@@ -7184,9 +7207,9 @@ export class BattleScene {
    * enemy. With no ammo there is no range to preserve.
    */
   private _bestFallBackStep(ru: RuntimeBattleUnit): string | null {
-    const enemies = this._enemiesOf(ru);
+    const enemies = this._activeEnemiesOf(ru);
     if (enemies.length === 0) return null;
-    const nearestNow = this._nearestEnemy(ru);
+    const nearestNow = this._nearestActiveEnemy(ru);
     const dNow = nearestNow ? manhattan(ru.q, ru.r, nearestNow.q, nearestNow.r) : Infinity;
 
     let best: string | null = null;
@@ -7654,7 +7677,7 @@ export class BattleScene {
       const wallMeshes = this.siegeWallGroup.userData['rowWallMeshes'] as Map<number, THREE.Mesh[]> | undefined;
       if (wallMeshes) {
         const segs = wallMeshes.get(wallRow);
-        if (segs) segs.forEach(m => { m.visible = false; });
+        if (segs) segs.forEach(m => { if (m.visible) this.siegeHiddenMeshes.push(m); m.visible = false; });
       }
       // Gruz — nieregularna sterta boxów/odłamków skalnych w miejscu wyłomu
       // (world space). Deterministyczny jitter (tileJitter — sam mechanizm co
@@ -7689,6 +7712,7 @@ export class BattleScene {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.scene.add(mesh);
+        this.siegeRubbleMeshes.push(mesh);
         this.ownedGeos.push(geo);
         this.ownedMats.push(mat);
       }
@@ -7777,7 +7801,7 @@ export class BattleScene {
     // Zmiana 3: Ukryj całą strukturę bramy — portkulisa + nadproże + most + filary.
     if (this.siegeWallGroup) {
       const gate: THREE.Group | null = this.siegeWallGroup.userData['gate'] as THREE.Group ?? null;
-      if (gate) gate.visible = false;
+      if (gate) { if (gate.visible) this.siegeHiddenMeshes.push(gate); gate.visible = false; }
 
       // Ukryj też nadproże / most / filary bramy:
       // Są to children wallGroup w lokalnym X bliskim 0 (centrum = gateCenterX),
@@ -7796,6 +7820,7 @@ export class BattleScene {
           // Nadproże (lintel): y ≈ wallH; Most (bridge): y ≈ wallH; Wieże bramne: y > wallH/2
           // Nie chcemy ukrywać ościeży/filarów bocznych muru — ale brama jest w centrum.
           if (ly >= wallH * 0.9 || (Math.abs(lx - gateCX) < gateHalfW * 0.9)) {
+            if (mesh.visible) this.siegeHiddenMeshes.push(mesh);
             mesh.visible = false;
           }
         }
@@ -8171,6 +8196,82 @@ export class BattleScene {
     });
   }
 
+  private _lineAdvanceWithinCap(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    const sign = ru.side === 'atk' ? 1 : -1;
+    // Ruch wstecz / w bok nigdy nie jest ograniczany sufitem natarcia.
+    if (sign * candidateCol <= sign * ru.q) return true;
+    return sign * candidateCol <= this._lineAdvanceCap(ru);
+  }
+
+  /**
+   * R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: wspolny sufit tempa dla jednej rangi piechoty grupy
+   * (Atak). Bez niego kazda jednostka maszeruje niezaleznie (inna predkosc, objazd skal/wody),
+   * wiec front rozsypuje sie i NIGDY sie nie zbiera (zmierzone: rozrzut 4-12 kolumn bez powrotu).
+   * Zasada: kolumna docelowa <= (najmniej zaawansowana jednostka rangi, liczona na POCZATKU rundy)
+   * + najmniejsza pula ruchu rangi. Rowne tempo wszystkich, tempo wyznacza najwolniejsza.
+   * Anti-freeze: jednostka w kontakcie z wrogiem albo bez nowego postepu przez
+   * LINE_ADVANCE_STALL_ROUNDS rund (zablokowana na amen) przestaje wyznaczac sufit.
+   * Stan (postep/kontakt/min. ruch) odswiezany raz na (runda, strona, grupa, ranga); sam sufit z
+   * biezacych pozycji -- deterministyczny dla AUTO (klony stanu z poczatku fazy) i SKIP.
+   */
+  private _lineAdvanceCap(ru: RuntimeBattleUnit): number {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || ru.rangedBase || isSiegeUnit(ru.bu)) {
+      return Number.POSITIVE_INFINITY;
+    }
+    const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
+    const key = `${ru.side}|${ru.groupId ?? ''}|${rank}`;
+    const sign = ru.side === 'atk' ? 1 : -1;
+    const isMate = (u: RuntimeBattleUnit): boolean =>
+      !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !u.rangedBase
+      && (u.groupId ?? '') === (ru.groupId ?? '')
+      && Math.max(0, Math.floor(u.formationRank ?? 0)) === rank
+      && !isSiegeUnit(u.bu);
+    const roster = ru.side === 'atk' ? this.atk : this.def;
+    const state = this._lineAdvanceState ??= new Map<string, { best: number; stall: number }>();
+    let cache = this._lineCapCache;
+    if (!cache || cache.round !== this.roundNo) { cache = { round: this.roundNo, info: new Map() }; this._lineCapCache = cache; }
+    let info = cache.info.get(key);
+    if (!info) {
+      // Odswiezenie RAZ na runde (pierwsze zapytanie rangi): rekord postepu, rundy bez postepu,
+      // jednostki w kontakcie i najmniejsza pula ruchu rangi.
+      info = { engaged: new Set<string>(), minMp: Number.POSITIVE_INFINITY };
+      const entries: { id: string; p: number; progressed: boolean }[] = [];
+      for (const u of roster) {
+        if (!isMate(u)) continue;
+        const p = sign * u.q;
+        const st = state.get(u.bu.id);
+        const progressed = !st || p > st.best;
+        if (progressed) state.set(u.bu.id, { best: p, stall: 0 });
+        if (this._canAttackFrom(u, u.q, u.r)) { info.engaged.add(u.bu.id); continue; } // w kontakcie: nie wyznacza tempa
+        entries.push({ id: u.bu.id, p, progressed });
+        info.minMp = Math.min(info.minMp, this._movementPointsFor(u.bu));
+      }
+      let refMin0 = Number.POSITIVE_INFINITY;
+      for (const e of entries) {
+        if (state.get(e.id)!.stall < LINE_ADVANCE_STALL_ROUNDS && e.p < refMin0) refMin0 = e.p;
+      }
+      // Rundy bez postepu liczy sie TYLKO jednostce, ktora aktualnie wyznacza tempo linii (najmniej
+      // zaawansowanej); czekajacy na nia liderzy nie sa "zablokowani" i nie moga zostac wykluczeni.
+      for (const e of entries) {
+        const st = state.get(e.id)!;
+        if (st.stall >= LINE_ADVANCE_STALL_ROUNDS) continue;
+        if (e.p === refMin0 && !e.progressed) st.stall++;
+        else if (e.p > refMin0) st.stall = 0;
+      }
+      cache.info.set(key, info);
+    }
+    // Sufit liczony z ZYWYCH pozycji (planowanie AUTO pracuje na klonach stanu z poczatku fazy,
+    // wiec dla kazdej jednostki to ten sam, deterministyczny obraz).
+    let refMin = Number.POSITIVE_INFINITY;
+    for (const u of roster) {
+      if (!isMate(u) || info.engaged.has(u.bu.id)) continue;
+      if ((state.get(u.bu.id)?.stall ?? 0) >= LINE_ADVANCE_STALL_ROUNDS) continue; // zablokowana na amen
+      const p = sign * u.q;
+      if (p < refMin) refMin = p;
+    }
+    return Number.isFinite(refMin) && Number.isFinite(info.minMp) ? refMin + info.minMp : Number.POSITIVE_INFINITY;
+  }
+
   /** A shooter may close to a firing tile while staying behind the melee line. */
   private _rangedFiringStepStaysBehindMelee(ru: RuntimeBattleUnit, candidateCol: number): boolean {
     if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || !ru.rangedBase || ru.mounted) return false;
@@ -8253,6 +8354,9 @@ export class BattleScene {
     // take only its FIRST step. This routes around occupied allied tiles
     // instead of stalling like a greedy step would. If BFS finds nothing
     // reachable (fully walled in), fall back to a greedy nudge closer.
+    // R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1: jednostka na suficie tempa linii czeka w miejscu
+    // (zamiast szukac bocznych krokow, ktore rozsypuja szyk i marnuja ruch).
+    if (!this._lineAdvanceWithinCap(ru, ru.q + this._advanceDir(ru.side))) { done(); return; }
     const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
     const stepKey = this._firstStepAlongPathToAttack(ru, (q, r) =>
       this._compactAttackAllowsStep(ru, q)
@@ -8267,7 +8371,7 @@ export class BattleScene {
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
 
-    if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
+    if (!this._compactAttackAllowsStep(ru, nc) || !this._lineAdvanceWithinCap(ru, nc)) { done(); return; }
 
     const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
     this._doMove(ru, nc, nr, () => {
@@ -8288,15 +8392,36 @@ export class BattleScene {
   // Private: targeting
   // -------------------------------------------------------------------------
 
+  /**
+   * R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: CELE ataku. Zroutowany (uciekajacy)
+   * wrog pozostaje pelnoprawnym celem -- armia go sciga i dobija; ginie przy HP <= 0.
+   * (Dawniej `!u.routed` pomijal uciekinierow, wiec bitwa konczyla sie zalamaniem morale
+   * bez strat po stronie przegranej.) Do oceny ZAGROZENIA uzywaj _activeEnemiesOf.
+   */
   private _enemiesOf(ru: RuntimeBattleUnit): RuntimeBattleUnit[] {
-    // Routed units are OUT of the fight -- they are no longer valid targets.
-    return (ru.side === 'atk' ? this.def : this.atk).filter(u => !u.dead && !u.fadingOut && !u.routed);
+    return (ru.side === 'atk' ? this.def : this.atk).filter(u => !u.dead && !u.fadingOut && !u.removed);
+  }
+
+  /** Wrogowie jeszcze w walce (bez uciekinierow): zrodlo ZAGROZENIA (kitowanie, odwrot, otoczenie). */
+  private _activeEnemiesOf(ru: RuntimeBattleUnit): RuntimeBattleUnit[] {
+    return this._enemiesOf(ru).filter(u => !u.routed);
   }
 
   private _nearestEnemy(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
     let best: RuntimeBattleUnit | null = null;
     let bestD = Infinity;
     for (const e of this._enemiesOf(ru)) {
+      const dd = manhattan(ru.q, ru.r, e.q, e.r);
+      if (dd < bestD) { bestD = dd; best = e; }
+    }
+    return best;
+  }
+
+  /** Najblizszy wrog jeszcze w walce (bez uciekinierow) -- kotwica ZAGROZENIA dla kitowania/odwrotu. */
+  private _nearestActiveEnemy(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    let best: RuntimeBattleUnit | null = null;
+    let bestD = Infinity;
+    for (const e of this._activeEnemiesOf(ru)) {
       const dd = manhattan(ru.q, ru.r, e.q, e.r);
       if (dd < bestD) { bestD = dd; best = e; }
     }
@@ -8315,7 +8440,7 @@ export class BattleScene {
   private _nearestEnemyMelee(ru: RuntimeBattleUnit, col = ru.q, row = ru.r): RuntimeBattleUnit | null {
     let best: RuntimeBattleUnit | null = null;
     let bestD = Infinity;
-    for (const e of this._enemiesOf(ru)) {
+    for (const e of this._activeEnemiesOf(ru)) {
       if (e.primaryRanged) continue; // only OFFENSIVE (melee) units threaten the gap
       const dd = manhattan(col, row, e.q, e.r);
       if (dd < bestD) { bestD = dd; best = e; }
@@ -9807,9 +9932,9 @@ export class BattleScene {
     ru.acted  = true; // never takes another offensive action
     if (!ru.primaryRanged) this._checkMeleeScreenLost(ru.side);
     this._boostEnemiesOnBreak(ru); // FACTOR 4: this unit broke -> nearby enemies gain morale
-    // Free its tile immediately so others can path through the gap it leaves and
-    // it never blocks tiles while fleeing.
-    this.occByKey.delete(cellKey(ru.q, ru.r));
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: uciekinier ZOSTAJE na swoim polu w
+    // occByKey (jest zywa jednostka na planszy: ruch/cel nie moga go wchlonac ani zdublowac).
+    // Pole zwalnia sie, gdy ucieknie z planszy (_removeUnitFromScene) lub zginie.
     // Turn to FACE its OWN home edge (away from the enemy): the attacker deploys
     // LEFT so it flees WEST toward the left edge; the defender deploys RIGHT so it
     // flees EAST toward the right edge.
@@ -9833,6 +9958,30 @@ export class BattleScene {
     // turn by _beginTurn), so it gets fresh flee-turns afterwards.
   }
 
+  /** Cache: kolumna krawedzi ucieczki per strona (pierwsza kolumna od krawedzi planszy, na ktorej da sie stanac). */
+  private _fleeHomeColCache: { atk: number | null; def: number | null } = { atk: null, def: null };
+
+  /**
+   * R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: KRAWEDZ ucieczki strony = skrajna kolumna pola
+   * bitwy, na ktorej jednostka moze faktycznie stanac (planszy 68 kolumn ma po prawej ~10 kolumn marginesu
+   * kamery nieprzechodnich -- uciekinier dochodzi do konca MAPY, nie do niewidzialnej sciany). Atakujacy
+   * ucieka na zachod (min. kolumna), obronca na wschod (maks. kolumna). Wynik terenu jest staly, wiec cache.
+   */
+  private _fleeHomeCol(ru: RuntimeBattleUnit): number {
+    const cached = this._fleeHomeColCache[ru.side];
+    if (cached !== null) return cached;
+    const playable = (c: number): boolean => {
+      for (let r = 0; r < BF_ROWS; r++) if (this._passableForUnit(ru, c, r)) return true;
+      return false;
+    };
+    let col = ru.side === 'atk' ? 0 : BF_COLS - 1;
+    const step = ru.side === 'atk' ? 1 : -1;
+    while (col >= 0 && col < BF_COLS && !playable(col)) col += step;
+    if (col < 0 || col >= BF_COLS) col = ru.side === 'atk' ? 0 : BF_COLS - 1; // brak przechodnich kolumn: stare zachowanie
+    this._fleeHomeColCache[ru.side] = col;
+    return col;
+  }
+
   /**
    * ROUTED unit's per-turn flee action: walk up to its movement points toward its
    * OWN home edge (attacker -> col 0 / west; defender -> col BF_COLS-1 / east) at
@@ -9847,7 +9996,7 @@ export class BattleScene {
     if (ru.dead || ru.fadingOut || ru.removed) { done(); return; }
     if (ru.moveLeft <= 0) { done(); return; }
 
-    const homeCol = ru.side === 'atk' ? 0 : (BF_COLS - 1);
+    const homeCol = this._fleeHomeCol(ru);
 
     // Already at (or past) the home edge -> leave the field now.
     const atEdge = ru.side === 'atk' ? (ru.q <= homeCol) : (ru.q >= homeCol);
@@ -10167,8 +10316,11 @@ export class BattleScene {
     const ratioD = this._armyMoraleRatio('def');
     const brokenA = ratioA < ARMY_MORALE_LOSS_THRESHOLD;
     const brokenD = ratioD < ARMY_MORALE_LOSS_THRESHOLD;
-    if (brokenA) for (const u of commandersToWithdrawAfterArmyBreak(this.atk, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
-    if (brokenD) for (const u of commandersToWithdrawAfterArmyBreak(this.def, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: zalamanie morale CALEJ armii nie "ocala" reszty --
+    // wszyscy jeszcze walczacy (poza neverRout) pekaja i uciekaja do krawedzi, a zwyciezca ich sciga.
+    if (brokenA) { this._routWholeArmy(this.atk); aliveA = this.atk.some(u => !u.dead && !u.fadingOut && !u.routed); }
+    if (brokenD) { this._routWholeArmy(this.def); aliveD = this.def.some(u => !u.dead && !u.fadingOut && !u.routed); }
+    let forcedVerdict = false; // werdykt wymuszony (pat/sufit/szturm odparty) -- bez odroczenia na poscig
     if (this._stalled && aliveA && aliveD) {
       // Nie rozstrzygaj po stall gdy: (a) tryb oblezenia -- atakujacy maszeruje/
       // buduje machiny wiele tur bez starcia, (b) zerowe straty po obu stronach
@@ -10177,12 +10329,14 @@ export class BattleScene {
       const totalDead = [...this.atk, ...this.def].filter(u => u.dead).length;
       if (!isSiege && totalDead > 0) {
         this.log.push('=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===');
+        forcedVerdict = true;
         if (ratioA <= ratioD) aliveA = false; else aliveD = false;
       }
       // R1/R2: w oblezeniu bez wylomu nikt nie moze zadac ciosu (melee nie bije muru/
       // palisady, brak machin) -- szturm odparty zamiast wiecznego patu.
       if (isSiege && !this.wallEverBreached) {
         this.log.push('=== SZTURM ODPARTY: brak wylomu w murze/palisadzie -- atakujacy nie moga dosiegnac obroncow ===');
+        forcedVerdict = true;
         aliveA = false;
       }
     }
@@ -10201,11 +10355,18 @@ export class BattleScene {
       if (cap) {
         if (cap.winner === 'remis') { this._finishDraw(cap.reason, cap.cap); return true; }
         this.log.push('=== PAT: ' + cap.cap + ' tur bez rozstrzygniecia -- ' + cap.reason + ' ===');
+        forcedVerdict = true;
         if (cap.winner === 'obronca') aliveA = false; else aliveD = false;
       }
     }
 
     if (aliveA && aliveD) return false;
+
+    // R-WEB-BATTLE-ROUTED-UNITS-PURSUED-AND-DESTROYED-Q1: BITWA NIE KONCZY SIE, dopoki strona przegrana ma
+    // na polu uciekinierow, a zwyciezca moze ich scigac (aktywne, niezroutowane jednostki). Uciekinier
+    // ginie w poscigu albo znika jako ocalaly po dotarciu do SWOJEJ krawedzi (_fleeStep).
+    if (!forcedVerdict && this._pursuitPending(aliveA, aliveD)) return false;
+    this._resolveRemainingRouted();
 
     this.finished = true;
 
@@ -10238,6 +10399,61 @@ export class BattleScene {
     this._endSurvivors = survivors;
     this._showEndScreen(winner);
     return true;
+  }
+
+  /** Uciekinierzy strony nadal na planszy (zywi, nie usunieci). */
+  private _routedOnField(roster: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
+    return roster.filter(u => u.routed && !u.dead && !u.fadingOut && !u.removed);
+  }
+
+  /** Zalamanie morale armii: reszta jednostek (poza neverRout) pęka i ucieka do swojej krawedzi. */
+  private _routWholeArmy(roster: RuntimeBattleUnit[]): void {
+    for (const u of commandersToWithdrawAfterArmyBreak(roster, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
+    for (const u of roster) {
+      if (u.dead || u.fadingOut || u.removed || u.routed || u.neverRout) continue;
+      this._startRout(u);
+    }
+  }
+
+  /**
+   * Czy koniec bitwy trzeba ODLOZYC na poscig: przegrana strona ma uciekinierow na polu, a zwyciezca ma
+   * aktywnych (niezroutowanych) scigajacych, i sufit PURSUIT_MAX_ROUNDS nie zostal osiagniety.
+   */
+  private _pursuitPending(aliveA: boolean, aliveD: boolean): boolean {
+    const chasing = (loserAtk: boolean): boolean => {
+      const loser = loserAtk ? this.atk : this.def;
+      const winnerAlive = loserAtk ? aliveD : aliveA;
+      return winnerAlive && this._routedOnField(loser).length > 0;
+    };
+    if (!(!aliveA && chasing(true)) && !(!aliveD && chasing(false))) return false;
+    if (this._pursuitStartRound < 0) {
+      this._pursuitStartRound = this.roundNo;
+      this.log.push('=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===');
+    }
+    return this.roundNo - this._pursuitStartRound < PURSUIT_MAX_ROUNDS;
+  }
+
+  /**
+   * Rozstrzygniecie DETERMINISTYCZNE uciekinierow, ktorzy w chwili konca bitwy sa jeszcze na planszy
+   * (sufit poscigu, brak scigajacych, werdykt wymuszony): w zasiegu (ruch + zasieg ataku) dowolnego
+   * aktywnego wroga -> ginie przed dotarciem do krawedzi; poza zasiegiem -> uznany za uciekajacego (ocalaly).
+   */
+  private _resolveRemainingRouted(): void {
+    for (const roster of [this.atk, this.def]) {
+      const enemies = (roster === this.atk ? this.def : this.atk)
+        .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed);
+      for (const ru of this._routedOnField(roster)) {
+        const caught = enemies.some(e =>
+          manhattan(ru.q, ru.r, e.q, e.r) <= this._movementPointsFor(e.bu) + (canShoot(e) ? e.range : 1));
+        if (caught) {
+          ru.bu.hp = 0;
+          this.log.push('  -> ' + ru.bu.nazwa + ' dogoniony i zniszczony w poscigu');
+        } else {
+          this.log.push('  -> ' + ru.bu.nazwa + ' uciekl z pola bitwy');
+        }
+        this._removeUnitFromScene(ru);
+      }
+    }
   }
 
   /**
@@ -10529,6 +10745,25 @@ export class BattleScene {
     this.wallEverBreached = false;
     this.towerAtWallRows.clear();
     this.wallTileHp.clear();
+    this.lastAttackedWallRow = -1;
+    // Teren kolumny muru/bramy z kopii zapamietanej przy starcie bitwy (wyłomy zamieniaja kafle na Plains).
+    const tiles = this.terrainMap.tiles;
+    if (tiles) {
+      for (let r = 0; r < this.siegeWallInitialTiles.length; r++) {
+        const idx = r * BF_COLS + this.siegeWallCol;
+        if (idx >= 0 && idx < tiles.length) tiles[idx] = this.siegeWallInitialTiles[r] as typeof tiles[number];
+      }
+    }
+    // Wizualia: gruz z wylomow zdjac, ukryte segmenty muru/brama wracaja, wiezyczki odbudowane.
+    for (const m of this.siegeRubbleMeshes) this.scene.remove(m);
+    this.siegeRubbleMeshes = [];
+    for (const o of this.siegeHiddenMeshes) o.visible = true;
+    this.siegeHiddenMeshes = [];
+    for (const t of this.siegeTowers) {
+      t.destroyed = false;
+      if (t.mesh) t.mesh.visible = true;
+    }
+    this._updateSiegeHud();
     const gateRowLo = this.siegeGateRow - 1;
     const gateRowHi = this.siegeGateRow;
     for (let r = this.siegeWallRowLo; r <= this.siegeWallRowHi; r++) {
@@ -10542,6 +10777,8 @@ export class BattleScene {
     this.started = false;
     this.busy = false;
     this.roundNo = 0;
+    this._lineCapCache = null;
+    this._lineAdvanceState?.clear();
     this.activeSide = 'atk';
     this._manualMode = true;
     this._battleAwaitingOrders = true;
