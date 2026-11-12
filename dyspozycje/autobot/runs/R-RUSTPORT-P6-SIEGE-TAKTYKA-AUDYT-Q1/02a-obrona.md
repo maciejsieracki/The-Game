@@ -1,57 +1,40 @@
-STATUS: PASS-WITH-NOTES
+STATUS: INTEGRATION_PENDING
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-SIEGE-TAKTYKA-AUDYT-Q1
-GOAL: obrona operatora (runda 2) na zarzuty Evaluatora r1 z 02-evaluator.md: poprawka tabeli, pokrycie funkcji pomocniczych, strażnik `_stalled`, weryfikacja źródła wektorów.
-ZMIANY/COMMIT: baza 4aa202726 (= commit operatora r1, przodek 258afaf8f; f207ea6b1 jest przodkiem 258afaf8f). Commit r2: patrz sekcja SHA na końcu. Allowlista zachowana: rust-port/engine/src/domain/siege_tactics_end.rs, rust-port/engine/tests/p6_siege_tactics_end.rs, rust-port/engine/tests/p6_siege_tactics_gen.mjs, rust-port/engine/tests/p6_siege_tactics_vectors/vectors.json (bez zmian), dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md, dyspozycje/autobot/runs/R-RUSTPORT-P6-SIEGE-TAKTYKA-AUDYT-Q1/**. Brak zmian w gra/, Cargo.toml, Cargo.lock (untracked, nie commitowany), WERSJE.md, origin/main, rust-port/parity-v2.
+GOAL: obrona operatora na zarzuty Evaluatora r3 (02-evaluator.md, commit 78612dc4b, FAIL na 888f8d7eb)
+ZMIANY/COMMIT: baza 888f8d7eb (r3); zmiana wyłącznie dokumentacyjna: dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md (+ sekcja 1a, 36 wierszy 35.1–35.36, korekta numerów main.ts, aktualizacja D-ST-4 i klasyfikacji 33.12/33.14/33.23/33.33/33.35). Commit: SHA w sekcji „Podaj SHA” niżej. Kod Rust, testy, gra/, Cargo, WERSJE.md — bez zmian.
+TESTY: git diff --check OK (bez uwag). git diff --stat: 1 plik .md. Brak .rs, brak cargo (brak zmian kodu). Weryfikacja nazwa po nazwie: 138 deklaracji metod wzorca na pinie 07d2fbd72 (git show) → każda ma wiersz w P6-SIEGE-TAKTYKA.md (0 braków; poprzednio 36).
+BLOKADY: brak w zakresie obrony. Jawne NIE_ZMIERZONO pozostają: deklaracje battleScene.ts spoza wzorca nazw (deploy, kamera, pasek minimapy; D-ST-3) oraz treść 33.10, 33.13, 33.14 (`_isWallCrownShooter`), 33.35 (`_performSiegeManualOrder`) i wierszy 35.x klasyfikowanych wg nazwy (D-ST-4).
+RUNDY: 4/5 (ten sam ID; r3 FAIL na zarzut 1; obrona r4)
+NASTEPNY KROK: Evaluator (r4) na commit z sekcji „Podaj SHA”, potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
 
 ## Odpowiedzi na zarzuty
 
-Zarzut 1 (K2 / wiersz 19 = czysty bool): PRZYJMUJĘ. Dowód: pin `battleScene.ts:7951-7959` ma gałęzie (a) `!(siegeWallCol >= 0) || side !== 'atk'` -> false, (b) `routed || onWallWalkway || isSiegeUnit` -> false, (c) strzelec `primaryRanged && canShoot && shootingEnabled !== false` -> false, (d) `mounted` -> `!(gateOpen || tileBreached)`, (e) piesi -> `!(wallEverBreached || towerAtWallRows.size > 0)`. Poprawka: wiersz 19 w P6-SIEGE-TAKTYKA.md rozpisany na (a)-(e) z zależnościami; K2 w §4 zmieniony na rozbicie na wejścia przed predykatem. Commit r2.
+### Zarzut 1 (blokujący): PRZYJMUJĘ
+- Dowód zarzutu sprawdzony na pinie 07d2fbd72 (git show, pliki w scratchpad): grep deklaracji wzorca daje 138 metod. Rzeczywiście 36 z nich nie miało wiersza (m.in. `_playerWonFromBattleWinner` 12401, `_haltAutoBattleTurn` 17333, `_toggleManualMode` 17348, `_debugRecordSiegeColumns` 4753, `_syncSiegeHudLayout` 13851, `_endDeployPhase` 17292, `_hideEndScreen` 10472, `_showEndDetails` 10425, `_setBattleChromeForEndScreen` 10631, `_syncManualRailHighlight` 3675, `_applyStartingMoralePowerPenalty` 5597 — wszystkie z listy Evaluatora oraz 25 kolejnych).
+- Wybrana poprawka: DODANIE wierszy (nie zawężanie wzorca). Sekcja 1a: 35.1–35.36, każdy z liniami pinu i statusem (BRAK / PARTIAL; PORTED 0), klasyfikacja O/M/G. Sekcja „Zakres” przepisana: zamiast twierdzenia o 100% opisuje dokładną enumerację, liczbę 138 i sprawdzenie nazwa po nazwie (0 braków).
+- Przy tym wprost wskazane: 35.13 `_playerWonFromBattleWinner` = PARTIAL (część logiczna to wiersz 13 `battle_winner`, PORTED; mapowanie strona→gracz BRAK).
+- Uwaga: wzorzec obejmuje też deklaracje „deploy” (np. `_renderDeployTacticsPopup`); są w 1a jako BRAK (G, deploy UI) — nie jako pokryte.
+- Dowód: `grep` nazw wszystkich 138 deklaracji w dokumencie przed zmianą: 36 braków; po zmianie: 0 braków.
 
-Zarzut 2 (brakujące czyste funkcje): PRZYJMUJĘ. Dodane wiersze 22-32 z numerami linii pinu i statusem:
-- 22 `meleeBlockedByWall` (`city-fortification.ts:76-79`) BRAK, czysta;
-- 23 `attackerWallEntryIsBreach` (`city-fortification.ts:96-98`) BRAK, czysta, najmniejsza (1 linia);
-- 24 `cityFortificationKind` (`city-fortification.ts:29`) BRAK, czysta, poza pętlą (konstruktor, `:2741`);
-- 25 `armyMoraleRatioWithoutCommander` (`game/army-leadership.ts:39`) PORTED w `domain/army_leadership.rs:123`;
-- 26 `commandersToWithdrawAfterArmyBreak` (`game/army-leadership.ts:57`) PORTED w `domain/army_leadership.rs:146`;
-- 27 `isSiegeUnit` (`battleScene.ts:1552`) PARTIAL: Rust `domain/brake_power_army.rs:31` bierze tylko `rola_linia`, web bierze `BattleUnit`;
-- 28 `canShoot` (`battleScene.ts:1457`) BRAK;
-- 29-30 metody gatingu oblężniczego (`:7963`, `:8022-8138`) BRAK;
-- 31 `siegeWall.ts` (tylko funkcje renderu, import `battleScene.ts:137`), `siegeAi.ts` i `mapSiegeDetect.ts` (NIE importowane przez `battleScene.ts`, czyli poza pętlą) — dopisane z uzasadnieniem; handoff `UNITS-do-SILNIK_AI-siege-3poziomy.md` oznaczony NIE_ZMIERZONO;
-- 32 metody `battleScene.ts:8139-9096` NIE_ZMIERZONO.
-Kryterium "100% funkcji L2-L5" NIE jest wykazane i nie jest twierdzone: §1 podsumowuje to wprost. Odrzucam wcześniejsze sformułowanie "100%" jako nieprawdziwe; zostaje "100% wierszy z numerami linii i statusem" oraz NIE_ZMIERZONO tam, gdzie nie rozstrzygnięto.
+### Zarzut 2 (drobny): PRZYJMUJĘ
+- Sprawdzone na pinie: `main.ts:18051` = `siegeAiKey(...)`, `18052` = odczyt `persisted`, `18053` = `decideAISiegeStance(siegeArmy, siegeCity, persisted)`. Druga wywołanie: `main.ts:18135` (`decideAISiegeStance(` z `collectSiegeAtkRoster` i `runtimeUnitToSiegeUnit`, bez `siegeAiStateByKey`).
+- Poprawione w dokumencie: §6 (zdanie o wpięciu), wiersz 34.1 (`main.ts:18053` oraz `main.ts:18135`), wiersz K7 w planie (`main.ts:18053` i `main.ts:18135`).
+- Nie zmieniono: status handoffu — dokument nadal mówi, że jego „CZEKA wpięcie” jest nieaktualne na pinie.
 
-Zarzut 3 (strażnik `_stalled` w `siege_no_breach_repels_attack`): PRZYJMUJĘ. Dowód z pinu: `if (this._stalled && aliveA && aliveD) { ... if (isSiege && !this.wallEverBreached) { ...; aliveA = false; } }` (`battleScene.ts:10172-10186`). Poprawka: ostrzeżenie w doc-komentarzu funkcji w `siege_tactics_end.rs`; K3 w §4 ma wymóg, że predykat stosuje się tylko przy `stalled && alive_a && alive_d`, i ma mieć przypadek `stalled=false`. Nie dodano wbudowanego strażnika do sygnatury, bo wymaga stanu sceny (decyzja: K3).
+### Zarzut 3 (drobny, nieblokujący): PRZYJMUJĘ CZĘŚCIOWO
+- Przeczytano treść (ciała metod) i zaktualizowano klasyfikację:
+  - 33.12 `_attackGate` (`:7310-7338`): O potwierdzone (`gateOpen`, `siegeGateCol`, `_siegeStructureDamage`, `gateHp`, `_breachGate`).
+  - 33.14 `_wallBonusProcFor` (`:7459-7466`): O potwierdzone (wywołuje `fortificationDefenseBonusForUnit`). `_isWallCrownShooter` (`:7467-7489`) NIE czytano w r4 — nadal wg nazwy.
+  - 33.23 `_ffEnterAuto` (`:3709-3712`): G potwierdzone (`_toggleManualMode` + `_kickoffBattleTurn`).
+  - 33.33 `_pickRangedTargetByPriority` (`:17571-`): G potwierdzone (wybór wg `_priorityScore` i dystansu).
+  - 33.35 `_destAllowedByBlockade` (`:17809-`): reklasyfikacja O → G (blokada linii `blockadeCol`, nie mur). `_performSiegeManualOrder` (`:18435-`) NIE czytano w r4.
+- Nieczytane nadal: 33.10 (rodzina AUTO batch), 33.13 (`_animateRam`/`_sfxRamImpact`/`_isRam`), `_isWallCrownShooter`, `_performSiegeManualOrder`, oraz 35.x wg nazwy/słów kluczowych. Zapisane jawnie w D-ST-4.
 
-Zarzut 4 (wektory z ręcznego wycinka): PRZYJMUJĘ CZĘŚCIOWO. Dodany straznik w `p6_siege_tactics_gen.mjs`: generator czyta pin przez `git show 07d2fbd72:gra/src/battle/battleScene.ts` (bez checkoutu), liczy SHA-256 fragmentów 10184-10186 + 10208-10220 i kończy się błędem, gdy hash nie zgadza się z zapisanym `e6a808a1...037`. Uruchomione: `node rust-port/engine/tests/p6_siege_tactics_gen.mjs` -> `repels 4 winner 432`, `vectors.json` bez diffu. NIE_ZMIERZONO: pełna ekstrakcja i wykonanie kodu z pinu (wycięte fragmenty nadal zawierają typy TS i `this.`, więc automatyczna transpilacja wymagałaby esbuild poza repo). Logika portu nadal dowodzi równoważności wycinka, nie całej sceny (Z-ST-1).
+## Podaj SHA
+- Commit obrony: patrz wynik `git rev-parse --short HEAD` w tej sesji (zapisany w odpowiedzi operatora); bez push.
 
-Zarzut 5 (bramka `cargo test --test p6_siege_tactics` nie istnieje): PRZYJMUJĘ jako odchylenie. Plik testowy nazywa się `p6_siege_tactics_end.rs`, więc target to `p6_siege_tactics_end`. Uruchomiono: `cargo test --test p6_siege_tactics_end` -> 8 passed, EXIT 0. Dodatkowo `cargo test p6_siege_tactics` (filtr nazw testów) -> EXIT 0, ale NIE daje dowodu: filtr dopasowuje nazwy funkcji testowych, a te nie zaczynają się od `p6_siege_tactics`; dowodem jest powyższy target. Odchylenie jest odnotowane w tym pliku i w P6-SIEGE-TAKTYKA.md.
-
-Zarzut 6 (gałąź NaN w `js_max0` bez wektora/testu): PRZYJMUJĘ. Dodany test `mutual_elimination_nan_hp_jak_web` w `tests/p6_siege_tactics_end.rs` (nowy test, istniejące asercje bez zmian): `battle_winner(false,false,[NaN],[1.0])`, `([1.0],[NaN])`, `([NaN],[])` -> `Defender`. Oczekiwania zweryfikowane w node 22: `[NaN].reduce((s,hp)=>s+Math.max(0,hp),0) >= 1` -> false, `Math.max(0,NaN)` -> NaN. Test wynik: 8 passed (w tym nowy).
-
-Zarzut 7 (wiersz 3 PORTED opiera się na `p6_repin_oblezenie_limit_web.rs`, nie weryfikowano): PRZYJMUJĘ jako informację i ZWERYFIKOWANO: `cargo test --test p6_repin_oblezenie_limit_web` -> 3 passed, EXIT 0 (testy `web_wektory_cap`, `web_wektory_werdykt_sufitu`, `web_wektory_siege_nearby`). Wektory pochodzą z tematu `R-RUSTPORT-REPIN-OBLEZENIE-LIMIT-150-BLOKADA-Q1` i NIE zostały wygenerowane ponownie w tej rundzie (poza zakresem).
-
-## Bramki (r2, EXIT zapisany)
-- `cargo fmt --check`: EXIT 0
-- `cargo clippy --all-targets -- -D warnings`: EXIT 0
-- `cargo test --lib`: 48 passed, EXIT 0
-- `cargo test --test p6_siege_tactics_end`: 8 passed, EXIT 0 (r1: 7; +1 nowy NaN)
-- `cargo test --test p6_repin_oblezenie_limit_web`: 3 passed, EXIT 0
-- `cargo test p6_siege_tactics` (filtr): EXIT 0, bez dowodu (patrz zarzut 5)
-- `node rust-port/engine/tests/p6_siege_tactics_gen.mjs`: repels 4, winner 432; vectors.json bez diffu
-Env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo (scratchpad/tgt-r2), do usunięcia po zapisie raportu.
-
-## Zmiany w r2
-- `rust-port/engine/src/domain/siege_tactics_end.rs`: doc-komentarz o strażniku `_stalled` (zarzut 3); kod bez zmian.
-- `rust-port/engine/tests/p6_siege_tactics_gen.mjs`: straznik SHA-256 fragmentów pinu przez `git show` (zarzut 4).
-- `rust-port/engine/tests/p6_siege_tactics_end.rs`: +1 test NaN (zarzut 6).
-- `dyspozycje/rust-port/p6/P6-SIEGE-TAKTYKA.md`: wiersz 19 poprawiony, wiersze 22-32 dodane, podsumowanie, §4 (K0a, K2, K3).
-
-## Otwarte
-- Z-ST-1 (wycinek JS, nie cała scena) i NIE_ZMIERZONO z wierszy 31-32 pozostają.
-- Plan kolejności: K0a -> K1 -> K2 (po rozbiciu) -> K3 (z wymogiem strażnika) -> K4/K5/K6 wg §4.
-
-BLOKADY: brak (poza NIE_ZMIERZONO wymienionymi wyżej)
-RUNDY: 2/5 (obrona r2; Final Control po integracji r2)
-NASTĘPNY KROK: Evaluator r2 na commicie r2, potem Final Control; integracja i push po READY_FOR_DEPLOY
-DEPLOY/PUSH: NIE WYKONANO
+## Uwaga procesowa
+- Evaluator r3 (02-evaluator.md, 78612dc4b) jest w historii gałęzi roboczej; nie jest częścią commita 888f8d7eb. Scalenie przy integracji (jak wskazuje FC r2).
+- Numeracja: ta obrona to runda r4 (r3 = 888f8d7eb, FAIL). Pliku 01-operator-r4.md nie tworzono: zakres zmian opisany w tym pliku.

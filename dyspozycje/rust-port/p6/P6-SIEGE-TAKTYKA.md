@@ -9,7 +9,7 @@ Numeracja L2–L5 / L9–L10 wg `dyspozycje/rust-port/p6/P6-REPIN-OBLEZENIE-LIMI
 Legenda statusu: **PORTED** = odpowiednik Rust 1:1 (plik:linia Rust), **PARTIAL** = tylko część funkcji, **BRAK** = brak odpowiednika (powód w kolumnie), **NIE_ZMIERZONO** = nie sprawdzono (dane spoza repo lub poza zakresem deklarowanym niżej).
 Klasyfikacja metod (wiersze 32.x, 33.x): **O** = oblężnicza (dotyczy muru, bramy, wieży, taranu), **M** = mieszana (ogólna z gałęzią oblężniczą), **G** = ogólna walka / UI / scena (poza oblężeniem), klasyfikacja wg treści lub, dla metod oznaczonych „wg nazwy”, wg nazwy i wywołań (treść nie czytana w tej rundzie).
 
-Zakres „100% funkcji pętli L2–L5”: wszystkie deklaracje metod `battleScene.ts`, których nazwa pasuje do wzorca `siege|wall|gate|breach|tower|tick|round|rout|morale|check|_ff|fast|rang|_do|sortie|palis|machin|ram|stall|end|draw|winner|verdict|climb|pomin|manual|auto` (wynik `grep -nE "^  (private |public |protected )?(async )?[A-Za-z_]\w*\("` na pinie, odfiltrowany), plus funkcje modułowe z importów. Każda ma wiersz z liniami pinu i statusem. Deklaracje spoza wzorca (np. czysto deploy/kamera/HUD bez logiki) NIE są enumerowane i w tej tabeli NIE są twierdzone jako pokryte — patrz §5.
+Zakres „100% funkcji pętli L2–L5” (stan r4): wszystkie deklaracje metod `battleScene.ts` na pinie, których nazwa pasuje do wzorca `siege|wall|gate|breach|tower|tick|round|rout|morale|check|_ff|fast|rang|_do|sortie|palis|machin|ram|stall|end|draw|winner|verdict|climb|pomin|manual|auto`. Enumeracja: `git show 07d2fbd72f758705f8e1d59cc4968027ffbafe75:gra/src/battle/battleScene.ts` → `grep -nE "^  (private |public |protected )?(async )?[A-Za-z_]\w*\("` → filtr `grep -iE` po wzorcu → `sed` nazwy. Wynik: **138 deklaracji metod**. Dwa trafienia `tri(...)` (wiersze 1303–1304) to wywołania w funkcji modułowej, nie metody — pominięte. Sprawdzenie nazwa po nazwie na tym dokumencie: każda z 138 deklaracji ma wiersz w §1 (wiersze 1–35, 32.x, 33.x) albo w §1a (wiersze 35.1–35.36, dodane w r4 po zarzucie 1 audytu). Deklaracje spoza wzorca (np. kamera, pasek minimapy `_drawMinimap`, `_tickZoom`, `_tickCameraPanKeys`, `_pickGroundTile`) NIE są enumerowane i NIE są twierdzone jako pokryte — patrz §5 D-ST-3.
 
 ## 1. Tabela pokrycia — poziomy L2–L5 (pętla taktyczna)
 
@@ -81,9 +81,9 @@ Zakres „100% funkcji pętli L2–L5”: wszystkie deklaracje metod `battleScen
 | 33.9 | `_updateStallWatch` | `battleScene.ts:5568-5596` | brak | BRAK (G) | Źródło flagi `_stalled` używanej w `_checkEnd` (wiersz 9, `:10172`). Wejście K1/K3. |
 | 33.10 | rodzina AUTO batch: `_beginAutoBatchTurnFromCurrentState` `:5696`, `_beginAutoBatchPhase` `:5707`, `_snapshotAutoBatchIntents` `:5752`, `_cloneForAutoBatchPlanning` `:5822`, `_disposeAutoBatchPlanningRoster` `:5847`, `_launchAutoBatchResolution` `:5865`, `_resolveAutoBatchAttack` `:5907`, `_resolveAutoBatchMovement` `:5924`, `_finishAutoBatchPhase` `:5961` | `battleScene.ts:5696-` (do `:5961+`) | brak | BRAK (G) | Planowanie i wykonanie tury AUTO (wspólne dla sufitu tur, wiersz 12). Nie czytano treści każdej metody w tej rundzie (klasyfikacja wg nazwy). |
 | 33.11 | `_rangedAction` / `_rangedForwardStep` / `_rangedBackStep` / `_rangedTargetInRange` / `_rangedApproachStep` | `battleScene.ts:6656-6775`, `:6776-7009`, `:7010-7040`, `:7041-7256`, `:7257-7309` | brak | BRAK (M) | Strzelcy; gałęzie oblężnicze (`canShoot`, `isSiegeUnit` w `:6793`, `:6868`). Klasyfikacja wg nazwy + wywołań. |
-| 33.12 | `_attackGate` | `battleScene.ts:7310-7338` | brak | BRAK (O) | Atak na bramę (wg nazwy; treść nie czytana w tej rundzie). |
+| 33.12 | `_attackGate` | `battleScene.ts:7310-7338` | brak | BRAK (O) | Atak na bramę; treść przeczytana r4: `gateOpen`/`siegeGateCol`, `_siegeStructureDamage`, `gateHp`, przy zerze `_breachGate` (wiersz 16) — O potwierdzone. |
 | 33.13 | `_animateRam` / `_sfxRamImpact` / `_isRam` | `battleScene.ts:7339-7365`, `:7366-7401`, `:7402-7458` | brak | BRAK (O/G) | `_isRam` (`:7402`) = rozpoznanie taranu (O); animacja/SFX (G, scena). |
-| 33.14 | `_wallBonusProcFor` / `_isWallCrownShooter` | `battleScene.ts:7459-7466`, `:7467-7489` | brak | BRAK (O, wg nazwy) | Bonus muru i strzelec z korony muru; treść nie czytana w tej rundzie. Wejście mnożnika w 32.20 (`wallDefenseMult`). |
+| 33.14 | `_wallBonusProcFor` / `_isWallCrownShooter` | `battleScene.ts:7459-7466`, `:7467-7489` | brak | BRAK (O, wg nazwy) | Bonus muru (`_wallBonusProcFor`, treść przeczytana r4: wywołuje `fortificationDefenseBonusForUnit` z `city-fortification`) — O potwierdzone; strzelec z korony (`_isWallCrownShooter`) treść nie czytana w r4, wg nazwy. Wejście mnożnika w 32.20 (`wallDefenseMult`). |
 | 33.15 | `_applyTerrainRange` / `_attackRangeFor` | `battleScene.ts:7490-7504`, `:7522-7529` | brak | BRAK (G) | Zasięg terenu i jednostki. |
 | 33.16 | `_siegeStructureDamage` / `_siegeMachineRange` | `battleScene.ts:7505-7521`, `:7530-7539` | brak | BRAK (O) | Obrażenia konstrukcji i zasięg machin. |
 | 33.17 | `_attackWallTile` | `battleScene.ts:7540-7637` | brak | BRAK (O) | Atak na kafelek muru; prowadzi do `_breachWallTile` (wiersz 15). |
@@ -92,7 +92,7 @@ Zakres „100% funkcji pętli L2–L5”: wszystkie deklaracje metod `battleScen
 | 33.20 | `_spawnWallLabel` / `_updateSiegeHud` / `_syncSiegeHudChromeVisibility` | `battleScene.ts:7814-7832`, `:7833-7881`, `:7882-7923` | brak | BRAK (G, UI) | Etykiety i HUD oblężenia — poza silnikiem. |
 | 33.21 | `_siegeShooterThreats` | `battleScene.ts:7924-7950` | brak | BRAK (O) | Zagrożenia strzelców do `_siegeApproachRestricted` (wiersz 19). |
 | 33.22 | `_siegeWalkTo` | `battleScene.ts:8006-8021` | brak | BRAK (O) | Marsz oblężniczy (wywołuje gating z 19/29). |
-| 33.23 | `_ffEnterAuto` | `battleScene.ts:3709-` | brak | BRAK (G) | Przejście do trybu AUTO (L5). |
+| 33.23 | `_ffEnterAuto` | `battleScene.ts:3709-` | brak | BRAK (G) | Przejście do trybu AUTO (L5); treść przeczytana r4: `_toggleManualMode` (jeśli RECZNY) + `_kickoffBattleTurn` — G potwierdzone. |
 | 33.24 | `_tickProjectiles` / `_tickFades` / `_tickFloatLabels` | `battleScene.ts:9326-9343`, `:9344-9365`, `:9366-9414` | brak | BRAK (G, scena) | Zegar sceny; poza pętlą logiczną (D-OBL-4). |
 | 33.25 | `_advanceVClock` / `_scaledWallDelta` | `battleScene.ts:9500-9511`, `:9512-9568` | brak | BRAK (G) | Zegar wirtualny; `wall` = czas ścienny, nie mur. |
 | 33.26 | `_renderClashLog` / `_updateMoraleBar` / `_updateArmyMoraleBars` | `battleScene.ts:9569-9651`, `:9652-9694`, `:10097-10152` | brak | BRAK (G, UI) | Log i paski morale. |
@@ -102,15 +102,60 @@ Zakres „100% funkcji pętli L2–L5”: wszystkie deklaracje metod `battleScen
 | 33.30 | `_sideEndStats` / `_battleSummaryWinner` | `battleScene.ts:10257-10313`, `:10314-10353` | brak | BRAK (G) | Statystyki i zwycięzca do ekranu (wiersz 14). |
 | 33.31 | `_resetSiegeForReplay` | `battleScene.ts:10518-10630` | brak | BRAK (O) | Reset stanu oblężenia (replay). |
 | 33.32 | `_showEndScreen` / `_showResultBanner` | `battleScene.ts:10666-10738`, `:10739-10781` | brak | BRAK (G, UI) | Efekty końca (wiersz 14/5). |
-| 33.33 | `_pickRangedTargetByPriority` / `_unitCanRangedAttack` | `battleScene.ts:17571-`, `:11319-11330` | brak | BRAK (G) | Wybór celu strzelca. |
+| 33.33 | `_pickRangedTargetByPriority` / `_unitCanRangedAttack` | `battleScene.ts:17571-`, `:11319-11330` | brak | BRAK (G) | Wybór celu strzelca wg `_priorityScore` i dystansu; treść przeczytana r4 — G potwierdzone. |
 | 33.34 | `_doRangedAttack` | `battleScene.ts:9179-9295` | brak | BRAK (M) | Atak dystansowy; gałąź machin (wg nazwy). |
-| 33.35 | `_destAllowedByBlockade` / `_performSiegeManualOrder` | `battleScene.ts:17809-17930`, `:18435-` | brak | BRAK (O, L5) | Blokada celu; ręczny rozkaz oblężniczy (L5). |
+| 33.35 | `_destAllowedByBlockade` / `_performSiegeManualOrder` | `battleScene.ts:17809-17930`, `:18435-` | brak | BRAK (G / O, L5) | Reklasyfikacja r4: `_destAllowedByBlockade` (`:17809`, treść przeczytana) = blokada linii `_generalSettings.blockadeCol`, NIE mur → G; `_performSiegeManualOrder` (`:18435`) treść nie czytana w r4 → O/L5 wg nazwy. |
 
 Podsumowanie L2–L5 (po r3): PORTED: 1, 2, 3, 10, 13, 25, 26 (7); PARTIAL: 6, 12, 27 (3); BRAK: pozostałe z powodem. Każdy wiersz 1–35 ma status i numery linii pinu; **brak wierszy NIE_ZMIERZONO** w zakresie wzorca z §0. Wiersz 32 (dawny „NIE_ZMIERZONO 8139–9096”) rozbity na 32.1–32.23; wiersze 20/21 przeniesione na właściwe miejsce numeracji (r3 zarzut 2c).
 
 Klasyfikacja zbiorcza (zakres §0): O (oblężnicza, BRAK) — 15, 16, 17, 19, 20, 22, 23, 23a, 29, 30, 32.9, 33.1–33.5, 33.7, 33.14, 33.16–33.19, 33.21, 33.22, 33.31, 33.35 (oraz 33.12, 33.13 częściowo); M (mieszana) — 32.1, 32.2, 32.10, 32.12–32.14, 32.16, 32.18, 32.20, 33.8, 33.11, 33.34; G (ogólna/UI, poza oblężeniem) — pozostałe.
 
 Najmniejsze czyste funkcje wejścia (bez zależności od stanu sceny): `attackerWallEntryIsBreach` (23), `autoStormBreach` (23a), `meleeBlockedByWall` (22), `canShoot` (28), `cityFortificationKind` i pochodne (24). `_siegeApproachRestricted` (19) NIE jest czystą funkcją.
+
+## 1a. Uzupełnienie enumeracji (r4, zarzut 1 audytu) — deklaracje wzorca bez wiersza w r3
+
+Dopisane 36 deklaracji z enumeracji §0 (pin `07d2fbd72`), których r3 nie miał w tabeli. Wszystkie BRAK / PARTIAL; żadna nie jest PORTED. Klasyfikacja: „treść r4” = ciało przeczytane w tej rundzie; bez tego znacznika = wg nazwy i liczby trafień słów kluczowych (siege/wall/gate/manual/auto/end/rout) w ciele.
+
+| # | Metoda (pin) | Linie pinu | Rust | Status | Uwagi |
+|---|---|---|---|---|---|
+| 35.1 | `_syncManualRailHighlight` | `battleScene.ts:3675-3679` | brak | BRAK (G, UI) | Podświetlenie przycisku RECZNY; treść r4. Tylko UI. |
+| 35.2 | `_debugRecordSiegeColumns` | `battleScene.ts:4753-4768` | brak | BRAK (G, debug) | Zapis do `window.__siegeColTestDebug`; treść r4. Diagnostyka testów, nie logika. |
+| 35.3 | `_applyStartingMoralePowerPenalty` | `battleScene.ts:5597-5630` | brak | BRAK (G) | Kara morale/mocy na starcie przez `toCombatUnit` i `UnitPowerInput`; treść r4. Zależy od modułu mocy (POWER-*), nie od pętli oblężniczej. |
+| 35.4 | `_syncRendererSize` | `battleScene.ts:9296-9308` | brak | BRAK (G, UI) | Rozmiar renderera; treść r4. |
+| 35.5 | `_renderSideRoster` | `battleScene.ts:10072-10081` | brak | BRAK (G, UI) | Render listy strony; treść r4. |
+| 35.6 | `_showBattleStatsOverlay` | `battleScene.ts:10354-10386` | brak | BRAK (G, UI, koniec bitwy) | Overlay statystyk; wg nazwy i trafień `end`. |
+| 35.7 | `_toggleBattleStatsOverlay` | `battleScene.ts:10387-10395` | brak | BRAK (G, UI) | Przełącznik overlay; wg nazwy. |
+| 35.8 | `_buildEndDetailsSide` | `battleScene.ts:10396-10424` | brak | BRAK (G, UI, koniec bitwy) | Szczegóły końca po stronie; wg nazwy (wiersz 14). |
+| 35.9 | `_showEndDetails` | `battleScene.ts:10425-10453` | brak | BRAK (G, UI, koniec bitwy) | Pokaz szczegółów końca; wg nazwy i trafień `end` (wiersz 14). |
+| 35.10 | `_hideEndDetails` | `battleScene.ts:10454-10471` | brak | BRAK (G, UI) | Ukrycie szczegółów; wg nazwy. |
+| 35.11 | `_hideEndScreen` | `battleScene.ts:10472-10485` | brak | BRAK (G, UI, koniec bitwy) | Ukrycie ekranu końca; wg nazwy i trafień `end` (wiersz 14). |
+| 35.12 | `_setBattleChromeForEndScreen` | `battleScene.ts:10631-10665` | brak | BRAK (G, UI) | Chrom ekranu końca; w treści trafia w HUD oblężenia (`siege` x3) → wiersz 33.20 (`_syncSiegeHudChromeVisibility`); treść r4. |
+| 35.13 | `_playerWonFromBattleWinner` | `battleScene.ts:12401-12406` | PARTIAL | PARTIAL (G, mapowanie) | Mapuje wynik `atakujacy`/`obronca` (wiersz 13, `battle_winner`) na wygraną gracza przez `_playerControlSide()`; treść r4. Część logiczna = wiersz 13 (PORTED); mapowanie strona→gracz BRAK (UI/sesja). |
+| 35.14 | `_appendDeployPriorityBlock` | `battleScene.ts:13054-13115` | brak | BRAK (G, deploy) | Blok priorytetu w popupie rozstawienia; poza zakresem silnika (D-ST-3). |
+| 35.15 | `_renderDeployTacticsPopup` | `battleScene.ts:13116-13195` | brak | BRAK (G, deploy UI) | Popup taktyki rozstawienia; D-ST-3. |
+| 35.16 | `_renderDeployStrategyPopup` | `battleScene.ts:13196-13425` | brak | BRAK (G, deploy UI) | Popup strategii rozstawienia; D-ST-3. |
+| 35.17 | `_renderDeployLinesPopup` | `battleScene.ts:13426-13484` | brak | BRAK (G, deploy UI) | Popup linii rozstawienia; D-ST-3. |
+| 35.18 | `_syncSiegeHudLayout` | `battleScene.ts:13851-13870` | brak | BRAK (G, UI oblężenie) | Układ panelu HUD oblężenia (`layoutSiegeHud1E`); treść r4. Nie logika muru. |
+| 35.19 | `_autoGroupDeployByKind` | `battleScene.ts:13929-13948` | brak | BRAK (G, deploy) | Auto-grupowanie rozstawienia; D-ST-3. |
+| 35.20 | `_deployRowKind` | `battleScene.ts:14542-14546` | brak | BRAK (G, deploy) | Rodzaj wiersza rozstawienia; D-ST-3. |
+| 35.21 | `_selectDeployByKind` | `battleScene.ts:15449-15456` | brak | BRAK (G, deploy) | Zaznaczenie wg rodzaju; D-ST-3. |
+| 35.22 | `_selectDeployByKindToggle` | `battleScene.ts:15457-15468` | brak | BRAK (G, deploy) | Przełącznik zaznaczenia; D-ST-3. |
+| 35.23 | `_isDeploySelectionExactlyKind` | `battleScene.ts:15550-15558` | brak | BRAK (G, deploy) | Predykat zaznaczenia; D-ST-3. |
+| 35.24 | `_appendDeployCellOutline` | `battleScene.ts:16160-16190` | brak | BRAK (G, deploy UI) | Kontur komórki rozstawienia; D-ST-3. |
+| 35.25 | `_deployRoleOf` | `battleScene.ts:16287-16296` | brak | BRAK (G, deploy) | Rola jednostki do rozstawienia (`siege` x2 — rozpoznanie machin, nie mechanika); wg nazwy. |
+| 35.26 | `_placeUnitsOneSide` | `battleScene.ts:17082-17283` | brak | BRAK (M) | Rozstawienie jednej strony; gałąź `siegeWallCol` (14 trafień `siege`) → powiązane z 33.8 (`_placeUnits`, siegeMode); wg nazwy i trafień. |
+| 35.27 | `_placeUnitsAtkOnly` | `battleScene.ts:17284-17291` | brak | BRAK (M) | Rozstawienie samej strony atakującej; wg nazwy. |
+| 35.28 | `_endDeployPhase` | `battleScene.ts:17292-17332` | brak | BRAK (M) | Koniec fazy rozstawiania: `formationRank` względem `siegeWallCol` (gałąź oblężnicza), snapshot grup, `_startBattle`; treść r4. Sekwencja startu bitwy, nie pętla tur. |
+| 35.29 | `_haltAutoBattleTurn` | `battleScene.ts:17333-17347` | brak | BRAK (M, L5/AUTO) | Przerwanie tury AUTO (token `_autoBatchToken`, `_autoBatchPhase`, `_autoBattleSuspended`); treść r4. Stan tury → wejście K5/K6. |
+| 35.30 | `_toggleManualMode` | `battleScene.ts:17348-17447` | brak | BRAK (M, L5) | Przełączenie RECZNY/AUTO; treść częściowo r4 (`gateOpen`/`siegeGateCol` w 1 gałęzi, `_disableManualIfCommanderLost`). Klocek L5 = K6. |
+| 35.31 | `_doBoxSelect` | `battleScene.ts:17448-17480` | brak | BRAK (G, UI) | Zaznaczenie prostokątem; wg nazwy i trafień `manual`/`auto`. |
+| 35.32 | `_groupHasRanged` | `battleScene.ts:17800-17808` | brak | BRAK (G) | Czy grupa ma strzelców; wg nazwy (0 trafień słów oblężniczych). |
+| 35.33 | `_removeGroupFrameMarker` | `battleScene.ts:19934-19949` | brak | BRAK (G, UI) | Znacznik ramki grupy; wg nazwy. |
+| 35.34 | `_updateGroupFrameMarker` | `battleScene.ts:19950-19996` | brak | BRAK (G, UI) | Znacznik ramki grupy; wg nazwy. |
+| 35.35 | `_syncAllGroupFrameMarkers` | `battleScene.ts:19997-20007` | brak | BRAK (G, UI) | Synchronizacja znaczników; wg nazwy. |
+| 35.36 | `_selectBattleByKindToggle` | `battleScene.ts:20221-20240` | brak | BRAK (G, UI) | Przełącznik wyboru wg rodzaju; wg nazwy. |
+
+Podsumowanie 1a: 36 wierszy; PARTIAL 1 (35.13); BRAK 35; PORTED 0.
 
 ## 2. Tabela pokrycia — SIEGE-NEARBY-STAN L9–L10
 
@@ -141,7 +186,7 @@ Dla L6–L8 (`besiegeArmyGroups`, `besiegeLockTargets`, `stackGroupIdOf`) status
 | K4 | Automat wyłomu (`wallEverBreached` z trzech zdarzeń) | `:7638, :7757, :8056, :3718` | model muru/bramy (L3) | Decyzja: czy L3 ma być w `domain/`, czy w warstwie stanu. |
 | K5 | Pętla tur taktycznych (`_runFastForward` + wpięcie K3) | `:9415-9437`, `:10153` | D-OBL-4: warstwa pętli tur | Najwyższe ryzyko; osobna autoryzacja właściciela (ABC). |
 | K6 | Bitwa ręczna / „Pomiń" (L5) | `:3572`, `:3718` | K5 | Poza zakresem engine do czasu K5. |
-| K7 | AI stanowiska oblężenia (`decideAISiegeStance` + estymatory, wiersze 34.x) — POZA pętlą L2–L5, nie wchodzi w łańcuch K1–K6 | `gra/src/game/siegeAi.ts:81-292`, wpięcie `main.ts:18051-18052` | konfiguracja `SiegeAi` (`rust-port/engine/src/data/units_combat.rs:260`, już jest), typy `SiegeUnit`/`SiegeCity` | Osobny temat, nie blokuje K1–K6. Zob. §6. |
+| K7 | AI stanowiska oblężenia (`decideAISiegeStance` + estymatory, wiersze 34.x) — POZA pętlą L2–L5, nie wchodzi w łańcuch K1–K6 | `gra/src/game/siegeAi.ts:81-292`, wpięcie `main.ts:18053` i `main.ts:18135` | konfiguracja `SiegeAi` (`rust-port/engine/src/data/units_combat.rs:260`, już jest), typy `SiegeUnit`/`SiegeCity` | Osobny temat, nie blokuje K1–K6. Zob. §6. |
 
 Zależności: K0a → K3; K1 → K3; K2 → K3; K4 → K2; K3 + K4 → K5 → K6. Kolejność K0a → K1 → K2 → K3 bez zmian względem r2. L9–L10 (SIEGE-NEARBY, UI) poza tą listą (D-OBL-5). K7 niezależny.
 
@@ -150,15 +195,15 @@ Zależności: K0a → K3; K1 → K3; K2 → K3; K4 → K2; K3 + K4 → K5 → K6
 * D-ST-1: pin `07d2fbd72` vs baza `258afaf8f` — funkcje oblężenia w `battleScene.ts` nie były porównywane na poziomie diffu między pinem a `origin/main`; NIE_ZMIERZONO.
 * D-ST-2: plik `rust-port/engine/Cargo.lock` powstał lokalnie przy `cargo` (untracked) i NIE jest częścią commita.
 * D-ST-3 (zakres): deklaracje `battleScene.ts` spoza wzorca §0 (deploy, kamera, pasek minimapy, `_drawMinimap` `:11961`, `_renderDeploy*`, `_pickGroundTile`, `_tickCameraPanKeys`, `_tickZoom`, `_sfxRout`, `_isManualInputActive`) NIE są enumerowane w tabeli; traktowane jako poza zakresem silnika (UI/wejście). Nie twierdzi się dla nich pokrycia.
-* D-ST-4: klasyfikacja wierszy 33.10, 33.12, 33.13, 33.23, 33.33, 33.35 wg nazw metod i wywołań; treść nie była czytana linia po linii w tej rundzie. Rozstrzygnięcie treści — przy klockach K4/K5.
+* D-ST-4 (r4): treść przeczytana dla 33.12, 33.14 (`_wallBonusProcFor`), 33.23, 33.33, 33.35 (`_destAllowedByBlockade`) — klasyfikacje zaktualizowane powyżej. Nadal wg nazw i wywołań: 33.10 (rodzina AUTO batch, ~260 linii), 33.13 (`_animateRam`/`_sfxRamImpact`/`_isRam`), 33.14 (`_isWallCrownShooter`), 33.35 (`_performSiegeManualOrder`), oraz wszystkie wiersze 35.x (klasyfikacja wg nazwy i liczby trafień słów kluczowych, bez czytania ciał). Rozstrzygnięcie treści — przy klockach K4/K5.
 
 ## 6. Handoff UNITS-do-SILNIK_AI-siege-3poziomy.md (wiersze 34.x)
 
-Plik `dyspozycje/_handoff/UNITS-do-SILNIK_AI-siege-3poziomy.md` (146 linii) przeczytany w r3. Jego status „CZEKA wpięcie w `main.ts`” jest **NIEAKTUALNY na pinie `07d2fbd72`**: `gra/src/main.ts:541` importuje `decideAISiegeStance`, `EMPTY_SIEGE_AI_STATE`, `estimateUnitCombatStrength`, `SiegeAiState`; `main.ts:2249-2252` trzyma mapę stanu `siegeAiStateByKey`; `main.ts:18051-18052` wywołuje `decideAISiegeStance(siegeArmy, siegeCity, persisted)`. Handoff: „CZEKA wpięcie” = stan sprzed wpięcia; wpięcie jest na pinie.
+Plik `dyspozycje/_handoff/UNITS-do-SILNIK_AI-siege-3poziomy.md` (146 linii) przeczytany w r3. Jego status „CZEKA wpięcie w `main.ts`” jest **NIEAKTUALNY na pinie `07d2fbd72`**: `gra/src/main.ts:541` importuje `decideAISiegeStance`, `EMPTY_SIEGE_AI_STATE`, `estimateUnitCombatStrength`, `SiegeAiState`; `main.ts:2249-2252` trzyma mapę stanu `siegeAiStateByKey`; `main.ts:18053` wywołuje `decideAISiegeStance(siegeArmy, siegeCity, persisted)` (odczyt `persisted` w `:18052`); drugie wywołanie `main.ts:18135` (ścieżka z `collectSiegeAtkRoster`, bez `siegeAiStateByKey`). Handoff: „CZEKA wpięcie” = stan sprzed wpięcia; wpięcie jest na pinie.
 
 | # | Funkcja (`siegeAi.ts`, pin) | Linie | Rust | Status | Uwagi |
 |---|---|---|---|---|---|
-| 34.1 | `decideAISiegeStance(army, city, state, params)` | `siegeAi.ts:209-284` | brak (grep `decide_ai_siege` / `siege_stance` pusty) | BRAK | Wpięte w `main.ts:18052`. Progi T1/T2/T3 z `SiegeAi` (config). |
+| 34.1 | `decideAISiegeStance(army, city, state, params)` | `siegeAi.ts:209-284` | brak (grep `decide_ai_siege` / `siege_stance` pusty) | BRAK | Wpięte w `main.ts:18053` oraz `main.ts:18135`. Progi T1/T2/T3 z `SiegeAi` (config). |
 | 34.2 | `evaluateSiegeAiAction` (alias zwracający stance) | `siegeAi.ts:285-292` | brak | BRAK | Alias 34.1. |
 | 34.3 | `estimateUnitCombatStrength(unit)` | `siegeAi.ts:81-91` | brak | BRAK | Import `ai.ts:27` i `main.ts:541`. |
 | 34.4 | `estimateArmyStrength(units)` | `siegeAi.ts:92-102` | brak | BRAK | Zależy od 34.3. |
