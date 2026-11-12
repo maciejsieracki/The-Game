@@ -120,3 +120,10 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - BATCH7-tip (W8 r3 + POWER-REST + Q4) NIE KOMPILUJE: konflikt semantyczny W8 r3 × POWER-NOZEROS (objective_power_for_owner zwraca Result). Naprawa wchodzi w W8 r5 (Operator); NAN-STRICT po W8. Batch 8 (BATCH8-tip ceb688b0d = parity-v2 + Q4–Q6 + POWER-REST) w bramkach.
 - Decyzje techniczne: NaN/Inf w Provided = błąd (wariant A); L-3 etap 2 (stan ekonomii w PlayableState) jako osobny temat; W8 r4 zawężone do fazy Diplomacy, oblężenie/AI w r6+.
 - W toku (4): W8 r5 (wf_5a21b06a-821), L3-STAN (wf_9e427dfb-a13), SIEGE-TRANSFER-Q7 (wf_8154cf44-ed3), SIEGE-TAKTYKA-K0B (wf_5d829ec6-b80).
+
+## Przebieg 2026-11-12 02:2x UTC (orkiestrator Rust)
+- parity-v2 = b9800e0a7 (batch 9: NAN-STRICT + SIEGE-TAKTYKA-AUDYT; 2836 passed, fmt/clippy 0). Wcześniej batch 8 ceb688b0d (Q4–Q6 + POWER-REST; 2819 passed).
+- BATCH10-tip 81e7840ba (Q7 + K0b) w pełnych bramkach (fmt/clippy 0).
+- FC PASS-WITH-NOTES poza parity-v2: Q8 ee29d7906, POWER-SOURCES ab9cc23e2 (konflikt z NAN-STRICT → runda integracyjna Operatora), W8 r3 95bbf99d7 / r4 0b5fc5fb9 / r5 74c8456ff, UNIT-REPLACE L3 etap 1 ab116e492 i etap 2 415a7d67f.
+- Decyzje techniczne: W8 r5 NIE wchodzi na parity-v2 (advance_turn z AI z miastami zwraca WarTurn do czasu producentów r6); fallback epoki AI = gameStartEra() wg pinu main.ts:2419; kolejne klocki W8 r6: epoka → populacja/kultura/terytorium → budynki/tech/religia → TickContext → R2.
+- W toku (4): SIEGE-TAKTYKA-K1 (wf_57c6f6dd-8c8), W8 r6 EPOKA (wf_27d17112-1eb), POWER-SOURCES-INTEG (wf_9ea19b81-25a), SIEGE-TAKTYKA-K2 (wf_5ecd6899-90b).
