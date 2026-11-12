@@ -211,3 +211,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - W toku (Operator HAIKU): INTEG-B18, K5LOOP-BODY r2 (r1 FAIL: src/ bez zmian), K5I2B2-DLUG, CRED-WOJNA.
 - Zadania do uruchomienia od zera: #96–#99 (K5-LOOP-WIEZE/AUTO/WYLOM/RESUME), #100 COMBAT-HARNESS, #101 RANGED-DAMAGE-CLEANUP, #104 ZLOZA-WIRING, #105 AUDYT-LUK-B18, #106 R7K7C-WIRING.
 - Incydent dysku: 400 MB wolnego przy 5 równoległych kompilacjach (Obrona K5LOOP-BODY padła na worktree). Zwolniono własne katalogi scratchpad/worktree; reguła: max 4 tematy z kompilacją naraz, sprzątanie po każdym FC.
+
+## Przebieg — 15:2x UTC
+- FC PASS-WITH-NOTES czekające na integrację (INTEG-B19 po B18): STAN-TERYTORIUM-VEC a5d93810a, K5I2B2-DLUG 19c13bb4e (konflikt z RANGED w unit_power.rs — rozwiązuje Operator), K5LOOP-BODY r3 4d2e1dfcb (Operator SONNET uzasadniony: 2 nieudane rundy Haiku; ProdBody + generator pinu 320 sekwencji; NIE wpinać do SiegeLoop przed FACING/KONTRATAK/OUTCOME).
+- W toku: INTEG-B18 (Evaluator), CRED-WOJNA r2 (Obrona; r1 FAIL: brak wektorów, hak tylko D8; decyzje techniczne: test S3 na StreamDealKind bez aliasu, hak gracza w zakresie), K5LOOP-FACING, COMBAT-HARNESS.
+- Zadania do uruchomienia od zera: #96–#99, #101, #104–#119 (zob. lista zadań).
+- Dysk: 4–6 GB przy 4 równoległych kompilacjach; sprzątnięto własny scratchpad (stare ekstrakty pinu, target-ev).
