@@ -1,63 +1,49 @@
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME
-TEMAT: R-WEB-POLISH-LANGUAGE-AUDIT-Q1 (runda 2, obrona Operatora)
-GOAL: poprawna polszczyzna w literalach gra/src/ui/** i main.ts bez zmian mechaniki, kluczy, ID, liczb
-ZMIANY/COMMIT: baza 406bfab565cee17bea04da6f894ed2f61be20b3a (potwierdzone: istnieje, ma za przodka 4ee2aba61). Pliki tej rundy:
-  gra/src/ui/formatPl.ts, gra/src/ui/hud.ts, gra/tools/polish-language-audit-q1-guard-test.cjs, ten raport. SHA końcowy w polu `sha` wyniku.
+# 30 — Obrona (runda 4) — R-WEB-POLISH-LANGUAGE-AUDIT-Q1
+
+STATUS: PASS-WITH-NOTES (obrona zarzutów Evaluatora z raportu eca5ab979, kandydat 9673f4661)
+DOMAIN: GAME (TEKSTY / PROCES JAKOŚCI)
+TEMAT: R-WEB-POLISH-LANGUAGE-AUDIT-Q1
+GOAL: odpowiedzieć na każdy zarzut Evaluatora: PRZYJMUJĘ (poprawka + dowód + commit) albo ODRZUCAM (dowód).
+BAZA: 9673f4661a841e75945f0ae54e81adb65b194299 (kandydat startowy, detached HEAD w worktree)
+SHA KODU OBRONY: d248650e970304326c4a470a9b28cbc5f7d7aa32
 
 ## Odpowiedzi na zarzuty
 
-1. Zakres (manpower.ts) — ODRZUCAM cofnięcie, wniosek do orkiestratora.
-   Dowód: `git diff -U0 4ee2aba61 406bfab -- gra/src/game/manpower.ts` = +3 linie w czystym formatterze
-   `formatObywateleLabel` (bez stanu, bez liczb gry). Na bazie dawał „3 obywateli” dla 2–4; ma 3 istniejące miejsca użycia w UI
-   (cityPanel.ts:11439, empireDetailPanel.ts:2628 i :4012), więc cofnięcie przywraca błąd w panelu miasta i imperium.
-   Zakres DODATKU 2 (ui/** i main.ts) formalnie przekroczony. Decyzja do ABC: zostawić (rekomendacja) albo cofnąć
-   manpower.ts + hud.ts (hud.ts użyje wtedy lokalnej odmiany w formatPl.ts).
+### Zarzut 1 (niska waga) — „Super Huge" w panelu wydajności i w raporcie — PRZYJMUJĘ
+- Poprawka (commit d248650e9): `gra/src/ui/perfTestPanel.ts` (3 miejsca: wpis raportu ok. linii 459, wynik klasyfikacji ok. linii 563, komunikat „Zapisano" ok. linii 653) oraz `gra/src/ui/perfReport.ts` (linia `rozmiar:` w tekście raportu). Etykieta przechodzi przez `mapSizeDisplayLabel()` z `gra/src/util/map-size-display.ts`; import dodany w obu plikach.
+- Klucze i dane bez zmian: `RECOMMENDED_MAX_MAP_SIZE` w `hardwareProfile.ts` nadal zwraca klucz „Super Huge" (klucz zapisu/menu). Slug nazwy pliku raportu (`buildPerfReportFilename`, z `rozmiarLabel`) celowo nietknięty, żeby nie zmieniać nazwy pliku.
+- Dowód po zmianie: `grep -n "Super Huge\|Malenki" gra/src/ui/perfTestPanel.ts gra/src/ui/perfReport.ts` daje pusty wynik.
+- Strażnik rozszerzony (`gra/tools/polish-language-audit-q1-guard-test.cjs`, sekcje 4 i 5): sprawdzenie importu i użycia `mapSizeDisplayLabel` w obu plikach (z mutacją na próbce surowego tekstu) oraz negatywne sprawdzenie, że surowy `${preset.maxMapSizeLabel}` / `${escapeHtml(preset.maxMapSizeLabel)}` nie wraca w `perfTestPanel.ts` (mutacja: próbka `maks. mapa ${preset.maxMapSizeLabel}` jest łapana).
 
-2. Cudzysłów w komentarzu CSS hud.ts:652 — PRZYJMUJĘ. Przywrócono oryginał `„+brutto / +netto"`.
-   Dowód: `git diff -U0` na hud.ts po poprawce: hunk -652/+652 tylko ten komentarz względem kandydata; względem bazy
-   4ee2aba61 hunk komentarza znika.
+### Zarzut 2 (informacyjny) — import `formatTurCountAcc` z `../ui/formatPl` w `game/diplomacy-display.ts` — ODRZUCAM (brak żądania zmiany)
+- Zarzut sam stwierdza, że nie wymaga zmiany. Zależność game→ui nie jest nowa: w `gra/src/game` jest 11 plików importujących `../ui/`, również przed tą rundą. `formatPl` to czysty moduł formatowania PL bez DOM. Bez zmian.
 
-3. Niepełny dowód mutacyjny — PRZYJMUJĘ. Dopisano do UI_BAD 5 regexów: `na/przez/za N tur` (biernik), `max HP u N jednostek`,
-   `${totalBuildings} budynków`, plus asercje helperów formatMiastaCount/formatKolejkiCount.
-   Dowód mutacyjny na PRAWDZIWYM kodzie bazowym (main.ts i empireDetailPanel.ts z 4ee2aba61, skrypt /tmp/claude-0/mutcheck.cjs):
-   wszystkie 5 nowych regexów daje „LAPIE baze (zrodla sprzed poprawek)". Na kodzie kandydata+poprawki strażnik: 5064 ok / 0 fail
-   (było 4477). Uwaga uczciwa: regexy łapią cofnięcie w tych konkretnych miejscach; nie dowodzą, że każde miejsce użycia
-   helpera jest pokryte (strażnik jest wzorcowy, nie semantyczny).
+### Zarzut 3 (informacyjny) — przeredagowanie zdania o zużyciu w `empireDetailPanel.ts` — ODRZUCAM (brak poprawki kategorii 1–3)
+- Przeredagowanie było celowe w rundzie 3 (pełne zdanie zamiast skrótu). Liczby bez zmian: ta sama zmienna `zuzyciePerTyp = Math.floor(sumObyw * citizenRate)` i `citizenResCount` (linie 2662 i 2679 w `gra/src/ui/empireDetailPanel.ts`). Zmieniono tylko składnię zdania („zużycie na turę: X sztuk każdego z N surowców epoki"). Zostaje jak w kandydacie.
 
-4. formatMiastaCount: „22 miast” — PRZYJMUJĘ. Błąd był w kodzie istniejącym przed rundą (formatPl.ts, też formatKolejkiCount: „23 kolejek”),
-   ale operator podpiął helper pod nieograniczone liczniki. Poprawka: oba helpery przez pluralPl.
-   Dowód: dopisane asercje formatMiastaCount 22→„22 miasta”, 12→„12 miast”, 3, 1, 25; formatKolejkiCount 23→„23 kolejki”, 11→„11 kolejek” — zielone.
-   side-list-hud-panel-coverage-test (używa cityListHud): 74/74.
+## ZMIANY-COMMIT
+- d248650e9 — `gra/src/ui/perfTestPanel.ts` (import + 4 wywołania), `gra/src/ui/perfReport.ts` (import + 1 wywołanie), `gra/tools/polish-language-audit-q1-guard-test.cjs` (+8 linii sprawdzeń). Allowlista: pliki UI i strażnik tematu.
+- `git diff --check` — czysto. `git diff --stat` od 9673f4661: 3 pliki, 14 insercji, 4 usunięcia.
+- Brak zmian w wikiBundle: poprawka dotyczy tylko kodu UI, nie docs/encyklopedii. Regeneracja niewymagana; NIE_ZMIERZONO ponowna regeneracja w tej rundzie.
 
-5. Duplikacja turnsPl / pluralPl / formatJednostkiCount — ODRZUCAM jako blokadę, nota. Zarzut sam mówi „nie błąd funkcjonalny”.
-   Ujednolicenie to refaktor poza zakresem „tylko literały”. Do osobnego tematu (kandydat: turnsPl -> pluralPl w eliminationSpectacle.ts:380).
+## TESTY (surowe wyniki z tej rundy, na d248650e9)
+- `cd gra && npx tsc --noEmit -p .` → exit 0, log pusty.
+- `node gra/tools/polish-language-audit-q1-guard-test.cjs` → `polish-language-audit-q1-guard (runda 2, UI): 5120 ok, 0 fail` / `polish-language-audit-q1-guard: 7166 ok, 0 fail` (przed poprawką: 7160 ok; dołożone 6 sprawdzeń).
+- `node gra/tools/ids-leak-audit-test.cjs` → `WYNIK: 1648 ok, 0 FAIL`.
+- `node gra/tools/wonder-text-no-raw-ids-test.cjs` → `WYNIK: 132 ok, 0 FAIL`.
+- `node gra/tools/terminology-trade-vs-tax-test.cjs` → `799 pass, 0 fail`.
+- `node gra/tools/hud-gross-net-rest-test.cjs` → `OK: hud-gross-net-rest-test (808 ok, 0 fail)`.
+- `node gra/tools/city-administrator-test.cjs` → `119 passed, 0 failed`.
+- 5 bramek referencyjnych: NIE_ZMIERZONO w tej rundzie (nie uruchamiane przeze mnie; Evaluator raportuje je zielone na 9673f4661).
+- Testy live i przeglądarkowe: NIE_ZMIERZONO. Panel wydajności nie był sprawdzony wizualnie.
 
-6. „od 1 do ${maxTurns} tur” — ODRZUCAM. Dowód: diplomacyTradeBasket.ts:1355 i :1383 `const maxTurns = hasResourceAccess ? 20 : 30;`.
-   Wartości to wyłącznie 20 albo 30, więc „od 1 do 20/30 tur” jest poprawne (dopełniacz mnogi po „do”). Błędna forma „do 1/2/3 tur” nieosiągalna.
+## BLOKADY
+- Brak blokad technicznych.
 
-7. „Odfortyfikuj wszystkie (N jednostek)” — nota przyjęta, bez zmiany; stylistyka, trafia do ABC wraz z pkt 4 listy operatora.
+## RUNDY
+- 4/5 (obrona zarzutów z eca5ab979).
 
-8. terminology-trade-vs-tax 799/0 nieosiągalne — PRZYJMUJĘ jako uwagę procesową. Ten sam wynik 798/1 ([P] Mennica) uzyskałem na kandydacie
-   po poprawkach; błąd bazowy, niezwiązany z tą pracą. Kryterium do korekty po stronie orkiestratora.
+## NASTĘPNY KROK
+- Evaluator r4: ponowna ocena SHA d248650e9. Zarzut 1 zamknięty dowodem, zarzuty 2–3 odrzucone z dowodem.
 
-## TESTY (surowe wyniki, uruchomione w tym worktree po poprawkach)
-- npx tsc --noEmit: exit 0, 0 błędów
-- polish-language-audit-q1-guard-test: 5064 ok, 0 fail
-- ids-leak-audit-test: 1648 ok, 0 FAIL
-- wonder-text-no-raw-ids-test: 132 ok, 0 FAIL
-- city-administrator-test: 117 passed, 0 failed
-- terminology-trade-vs-tax-test: 798 pass, 1 fail ([P] Mennica) — dług bazowy
-- logic-test 213/213; tech-tree-test 20/0; research-test 33/33; unit-replace-test 21/21; combat-test 6/6
-- side-list-hud-panel-coverage-test 74/74
-- git diff --check: czysto
-
-## NIE_ZMIERZONO
-- wikiBundle: nie ruszany w tej rundzie (brak zmian danych), regeneracji nie powtarzałem.
-- Testy wymagające buildu/Chromium (real-render) nie uruchamiane; zakaz npm run build.
-- Nowszy origin/main c90eb3e18 nie integrowany (poza zakresem obrony).
-
-BLOKADY: brak (poza decyzją ABC w pkt 1)
-RUNDY: obrona rundy 2
-NASTĘPNY KROK: Evaluator/Final Control; decyzja orkiestratora w pkt 1 (zakres manpower.ts)
-DEPLOY/PUSH: NIE WYKONANO
+## DEPLOY/PUSH: NIE WYKONANO

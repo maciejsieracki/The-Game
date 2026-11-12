@@ -17,6 +17,7 @@
  * Source: literalny UTF-8 dla polskich napisow; symbole przez encje HTML.
  */
 
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 import { humanizeId } from '../game/text-names';
 import { loadGameData, type GameData } from '../data/loader';
 import {
@@ -1680,10 +1681,10 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
     const ctl = row.querySelector('.sctl') as HTMLElement;
     const left = el('button', 'arr', '&#8249;');
     const sv = el('div', 'sv');
-    sv.textContent = s.opts[s.idx] ?? '';
+    sv.textContent = mapSizeDisplayLabel(s.opts[s.idx] ?? '');
     const right = el('button', 'arr', '&#8250;');
     const refreshSv = () => {
-      sv.textContent = s.opts[s.idx] ?? '';
+      sv.textContent = mapSizeDisplayLabel(s.opts[s.idx] ?? '');
       const desc = s.descs[s.idx] ?? '';
       infoIcon.title = desc;
       infoIcon.setAttribute('aria-label', 'Informacja: ' + desc);
@@ -2227,7 +2228,7 @@ function renderGenStep(host: HTMLElement): void {
     ['Cywilizacja', p.civName || '(nie wybrano)'],
     ['Epoka startowa', p.epoch],
     ['Trudność', p.difficulty],
-    ['Rozmiar mapy', p.mapSize],
+    ['Rozmiar mapy', mapSizeDisplayLabel(p.mapSize)],
     ['Typ świata', p.worldType],
     ['Miasta-państwa', String(p.cityStatesCount) + ' w klastrze'],
     ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],

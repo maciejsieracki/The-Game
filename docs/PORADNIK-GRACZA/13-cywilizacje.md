@@ -46,7 +46,7 @@ Nie każda mapa mieści wszystkie 15 typów naraz — limit rośnie z rozmiarem 
 | Mały | 10 |
 | Standardowy | 12 |
 | Duży | 14 |
-| Ogromny / Super Huge | 15 |
+| Ogromny / Bardzo ogromny | 15 |
 
 ### 82.1c. Znany brak — encyklopedia i katalog jednostek
 

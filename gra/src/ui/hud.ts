@@ -1134,7 +1134,7 @@ function miastaChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Miasta — osiedla imperium`
     + ` · Duża liczba: ${formatMiastaCount(s.osiedla)}`
-    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (przyrost ludności łącznie)`
+    + ` · ${formatGrossNet(rate, rate, 'obywateli na turę')} (przyrost ludności łącznie)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1144,7 +1144,7 @@ function obywateleChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
   return `Obywatele — łączna populacja imperium`
     + ` · Duża liczba: ${formatObywateleLabel(s.ludnosc)} (suma populacji wszystkich miast gracza)`
-    + ` · ${formatGrossNet(rate, rate, 'obyw./turę')} (HUD nie rozdziela przyrostu i strat ludności — pokazuje saldo)`
+    + ` · ${formatGrossNet(rate, rate, 'obywateli na turę')} (HUD nie rozdziela przyrostu i strat ludności — pokazuje saldo)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1215,7 +1215,7 @@ function surowceChipTitle(s: HudState): string {
   // NETTO = po odjęciu zużycia (obywatele, budynki, wojsko) i umów wychodzących; przy deficycie
   // komórka pokazuje NAJGORSZY surowiec (linia „najgorszy"), nie sumę, która maskuje brak.
   if (s.surowceBrutto !== undefined || s.surowceNetto !== undefined) {
-    title += ` · BRUTTO ${signed(s.surowceBrutto ?? 0)} → NETTO ${signed(s.surowceNetto ?? 0)} szt./turę (suma surowców)`;
+    title += ` · BRUTTO ${signed(s.surowceBrutto ?? 0)} → NETTO ${signed(s.surowceNetto ?? 0)} sztuk na turę (suma surowców)`;
     const worst = surowceNajgorszy(s);
     if (worst) title += ` · Najgorszy bilans: ${worst.label} ${signed(worst.netto)}/turę`;
     const lines = (s.surowceBilans ?? [])

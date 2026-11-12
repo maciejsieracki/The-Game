@@ -5118,7 +5118,7 @@ function buildWealthDetailCard(
   appendDetailSection(card, 'Wzory');
   appendDetailFormula(card, `×Skarb = max(1, 1 + (W−1) × ${p.mnoznikNaPoziom})`);
   appendDetailFormula(card, `Próg W(L→L+1) = ${p.progNaPoziom} × (L+1) × epoka`);
-  appendDetailFormula(card, `Utrzymanie = rownowaga(W) × pieniądz_miasta`);
+  appendDetailFormula(card, `Utrzymanie = Równowaga(W) × pieniądz miasta`);
   appendDetailFormula(card, `Równowaga(W) = ${Math.round(p.utrzymanieBaza * 100)}% + (W/cap)×(${Math.round(p.utrzymaniePrzyCap * 100)}%−${Math.round(p.utrzymanieBaza * 100)}%)`);
 
   appendDetailSection(card, 'Skąd bierze się pula');
@@ -5145,7 +5145,7 @@ function buildWealthDetailCard(
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
     `Wejście: strumień z ${daninaLblGen} = floor(podatek netto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
-    'Koszt utrzymania = rownowaga(W) × pieniądz brutto miasta tej tury.',
+    'Koszt utrzymania = Równowaga(W) × pieniądz brutto miasta tej tury.',
     `Pula += wpływ z ${daninaLblGen} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
     'Dopóki pula ≥ próg awansu i W < cap: W+1, pula −= próg, pula ×= zachowanie po awansie.',
     'Mnożnik skarbca rośnie z poziomem W — stosowany do pieniędzy miasta (nie do nauki).',
@@ -6562,7 +6562,7 @@ function appendBuildActionButtons(
     const bBuy = el('button', 'btn btn-sm btn-g', 'Kup') as HTMLButtonElement;
     const canBuy = !!(purchaseHook && stac && canBuild);
     let buyTitle: string;
-    if (!purchaseHook) buyTitle = 'Wymaga wpiecia onPurchaseBuilding przez silnik';
+    if (!purchaseHook) buyTitle = 'Zakup niedostępny w tej wersji gry';
     else if (!canBuild) buyTitle = 'Najpierw spełnij wymagania budowy';
     else if (!stac) buyTitle = `Za mało złota (${skarb ?? 0}/${goldKoszt})`;
     else buyTitle = `Kup natychmiast za ${goldKoszt} złota (×2 kosztu Pracy)`;
@@ -10327,8 +10327,8 @@ function buildOkolicaDetailCard(
   appendDetailAlgo(card, 'Auto-przydział pól (assignWorkedTiles)', [
     'Zbierz wszystkie heksy w promieniu r od centrum (bez centrum miasta).',
     'Dla każdego pola oblicz plony (teren + rzeka + las + ulepszenie).',
-    `Profil „${focusLbl[focus] ?? focus}”: wagi score — np. Żywność 3/0.5/0.5, Zrówn. 1/1/1.`,
-    'Posortuj malejąco po score; remis → bliżej centrum → klucz „q,r”.',
+    `Profil „${focusLbl[focus] ?? focus}”: wagi wyniku — np. Żywność 3/0.5/0.5, Zrównoważony 1/1/1.`,
+    'Posortuj malejąco po wyniku; remis → bliżej centrum → współrzędne „q,r”.',
     `Weź top N pól, gdzie N = populacja (${city.population} 👤).`,
     'Centrum miasta daje plony bez pracownika (jak Civ V).',
   ]);

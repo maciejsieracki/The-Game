@@ -2,6 +2,7 @@
  * diplomacy-proposals.ts — ocena propozycji dyplomatycznych v1.1 (lane CYW).
  * SILNIK/UI wołają evaluateProposal; EKO tick osobno po akceptacji trybutu.
  */
+import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
   clampRelationForWar,
@@ -502,7 +503,7 @@ export function resolveNapDealExpiry(
     return { wygasaTura: null, label: 'Pakt nieagresji (bezterminowy)' };
   }
   const turns = clamp(raw ?? 15, 10, 20);
-  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
+  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${formatTurCountAcc(turns)}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -1597,7 +1598,7 @@ export function evaluateProposal(
           accepted: true,
           reason: payload.exchangeDurationTurns === null
             ? 'Umowa handlowa (surowiec co turę) bezterminowa'
-            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
           deal,
           pwBalance: cyklPwBalance,
         };
@@ -1954,7 +1955,7 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'zaproponuj_pakt':
       return cmd.turns != null && cmd.turns <= 0
         ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
-        : `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
+        : `Proponujemy pakt nieagresji na ${formatTurCountAcc(cmd.turns ?? 15)} — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
       return cmd.rodzaj === 'rozejm'
         ? 'Proponujemy rozejm — na czas ustalony w propozycji wstrzymujemy działania wojenne.'
@@ -1973,11 +1974,11 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
       const reasonSuffix = cmd.reasonHandlu ? ` Uzasadnienie: ${cmd.reasonHandlu}` : '';
       if (cmd.kierunek === 'zakup') {
-        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
-          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} sztuk na turę`
+          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
       }
-      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
-        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} sztuk na turę`
+        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
     }
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
@@ -2345,7 +2346,7 @@ export function resolvePlayerAcceptsAiPending(
           accepted: true,
           reason: payload.exchangeDurationTurns === null
             ? 'Umowa handlowa (surowiec co turę) bezterminowa'
-            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
           deal,
         };
       }

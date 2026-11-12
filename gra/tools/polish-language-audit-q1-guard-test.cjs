@@ -20,6 +20,8 @@ const BAD = [
   [/\+15% wzrost populacji/, 'wzrost -> wzrostu'],
   [/\+2 bazowe Zaufanie/, 'bazowe Zaufanie -> bazowego Zaufania'],
   [/Brama narodów/, 'Brama narodów -> Brama wszystkich narodów'],
+  [/dodatkowy slot linii/, 'slot -> dodatkową linię wymiany (anglicyzm)', 'dodatkowy slot linii wymiany'],
+  [/kamiennych Murów/, 'kamiennych Murów -> Murów kamiennych', 'Po wybudowaniu kamiennych Murów w tym mieście'],
 ];
 const files = [
   ...walk('docs/encyklopedia').filter((f) => f.endsWith('.md')),
@@ -69,9 +71,24 @@ const UI_BAD = [
   [/za \$\{[^}]+\} tur[<`'" .,]/, 'za N tur -> formatTurCountAcc (biernik)', '`<b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b>`'],
   [/max HP u \$\{[^}]+\} jednostek/, 'u N jednostek -> pluralPl (dopełniacz)', '`max HP u ${playerDamagedCount} jednostek`'],
   [/\$\{totalBuildings\} budynków/, 'N budynków -> formatBudynkiCount', '`<span class="val">${totalBuildings} budynków</span>`'],
+  [/rownowaga\(W\)/, 'rownowaga(W) -> Równowaga(W) (żargon w tekście dla gracza)', "'Utrzymanie = rownowaga(W) × pieniądz_miasta'"],
+  [/po score;|wagi score/, 'score -> wynik (żargon)', "'Posortuj malejąco po score; remis'"],
+  [/wpiecia onPurchaseBuilding/, 'żargon deweloperski w tooltipie', "'Wymaga wpiecia onPurchaseBuilding przez silnik'"],
+  [/obyw\.\/tur/, 'obyw./turę -> obywateli na turę', "'obyw./turę'"],
+  [/szt\.\/tur/, 'szt./turę -> sztuk na turę', "'szt./turę</span>'"],
+  [/\$\{f\.unitsCount\} j\. \//, 'j. -> formatJednostkiCount (zapis/wczytaj)', "'${f.unitsCount} j. / ${formatMiastaCount(f.citiesCount)}'"],
+  [/zuzycie netto/, 'zuzycie -> zużycie', "'zuzycie netto 5 sztuk na turę'"],
+  [/\(ponizej /, 'ponizej -> poniżej', "'(ponizej 3 tur).'"],
+  [/Super Huge/, 'Super Huge -> etykieta „Bardzo ogromny” (tekst dla gracza)', "'Możesz generować nawet Super Huge.'"],
+  [/\bMalenki\b/, 'Malenki -> etykieta „Maleńki” (tekst dla gracza)', "'Rozmiar: Malenki'"],
+  [/Maleński/, 'Maleński -> „Maleńki” (tekst dla gracza)', "'Rozmiar: Maleński'"],
+  [/przez \$\{turns\} tur/, 'diplomacy-display: przez ${turns} tur -> formatTurCountAcc', "'Wymiana co turę przez ${turns} tur'"],
+  [/umowa na \$\{turns\} tur/, 'diplomacy-display: umowa na ${turns} tur -> formatTurCountAcc', "'(umowa na ${turns} tur)'"],
 ];
+// Pliki logiki gry z tekstami powodów/ofert widocznymi dla gracza (R-WEB-POLISH-LANGUAGE-AUDIT-Q1, runda 3).
+const GAME_TEXT_FILES = ['gra/src/game/ai.ts', 'gra/src/game/diplomacy-proposals.ts', 'gra/src/game/diplomacy-sensible-deals.ts', 'gra/src/game/diplomacy-display.ts'];
 const UI_FILES = walk('gra/src/ui').filter((f) => f.endsWith('.ts') && !/entityCards|resourceAmountChip|administratorIcon|buildModeHud/.test(f))
-  .concat(['gra/src/main.ts']);
+  .concat(['gra/src/main.ts'], GAME_TEXT_FILES);
 // linie niebędące komentarzem (komentarze deweloperskie poza zakresem rundy)
 const codeLines = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map((l) => l.replace(/(^|\s)\/\/.*$/, '$1')).filter((l) => l.trim() !== '');
 let uiPass = 0, uiFail = 0;
@@ -110,6 +127,27 @@ try {
   eq(F.formatKolejkiCount(23), '23 kolejki', 'kolejki23'); eq(F.formatKolejkiCount(11), '11 kolejek', 'kolejek11');
   eq(G.formatObywateleLabel(1), '1 obywatel', 'ob1'); eq(G.formatObywateleLabel(3), '3 obywatele', 'ob3'); eq(G.formatObywateleLabel(5), '5 obywateli', 'ob5'); eq(G.formatObywateleLabel(13), '13 obywateli', 'ob13'); eq(G.formatObywateleLabel(23), '23 obywatele', 'ob23');
 } catch (e) { uiFail++; console.log('FAIL odmiana (esbuild):', e && e.message); }
+// 4) wdrożenie etykiet rozmiaru mapy i odmiany tur w miejscach poza newGameFlow/saveLoadDialog (runda 4, NAPRAW 1-2)
+{
+  const checks = [
+    ['gra/src/ui/newGameFlow.ts', /\['Rozmiar mapy', mapSizeDisplayLabel\(p\.mapSize\)\]/, 'newGameFlow: Rozmiar mapy -> mapSizeDisplayLabel'],
+    ['gra/src/ui/saveLoadDialog.ts', /mapSizeDisplayLabel\(f\.mapSize\)\} · /, 'saveLoadDialog: linia kontekstu -> mapSizeDisplayLabel'],
+    ['gra/src/game/diplomacy-display.ts', /import \{ formatTurCountAcc \} from '\.\.\/ui\/formatPl';/, 'diplomacy-display: import formatTurCountAcc'],
+    ['gra/src/ui/perfTestPanel.ts', /import \{ mapSizeDisplayLabel \} from '\.\.\/util\/map-size-display';/, 'perfTestPanel: import mapSizeDisplayLabel'],
+    ['gra/src/ui/perfReport.ts', /rozmiar: \$\{mapSizeDisplayLabel\(opts\.rozmiarLabel\)\}/, 'perfReport: rozmiar -> mapSizeDisplayLabel'],
+  ];
+  for (const [f, re, why] of checks) {
+    if (re.test(rd(f))) uiPass++; else { uiFail++; console.log('FAIL', f, why); }
+    // mutacja: ten sam regex nie pasuje do wersji sprzed zmiany (surowy klucz / surowy tur)
+    if (!re.test('const x = p.mapSize; const y = turns;')) uiPass++; else { uiFail++; console.log('FAIL mutacja', why); }
+  }
+  // 5) raw maxMapSizeLabel (klucz rozmiaru) nie może wrócić do tekstu w panelu wydajności
+  const rawPerf = /\$\{(?:escapeHtml\()?preset\.maxMapSizeLabel\)?\}/;
+  for (const f of ['gra/src/ui/perfTestPanel.ts']) {
+    if (rawPerf.test(rd(f))) { uiFail++; console.log('FAIL', f, 'surowy preset.maxMapSizeLabel w tekście dla gracza'); } else uiPass++;
+  }
+  if (rawPerf.test('maks. mapa ${preset.maxMapSizeLabel}')) uiPass++; else { uiFail++; console.log('FAIL mutacja surowego maxMapSizeLabel'); }
+}
 pass += uiPass; fail += uiFail;
 console.log(`polish-language-audit-q1-guard (runda 2, UI): ${uiPass} ok, ${uiFail} fail`);
 

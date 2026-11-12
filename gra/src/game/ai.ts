@@ -11,6 +11,7 @@
  *   cities.ts (City, canFoundCity), units/setup.ts (RuntimeUnit, computePath, hexDistance, categoryOf)
  */
 
+import { formatTurCountAcc } from '../ui/formatPl';
 import type { GameMap } from '../types/map';
 import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
@@ -7155,7 +7156,7 @@ export function decideAIDiplomacy(
     ) {
       komendy.push({
         type: 'zaproponuj_wymiane_cykliczna', targetId: rel.partnerId,
-        powod: `Wymiana cykliczna: ${barter.giveKey} ${barter.giveQty} ↔ ${barter.receiveKey} ${barter.receiveQty} szt./turę`,
+        powod: `Wymiana cykliczna: ${barter.giveKey} ${barter.giveQty} ↔ ${barter.receiveKey} ${barter.receiveQty} sztuk na turę`,
         giveKey: barter.giveKey,
         giveQty: barter.giveQty,
         receiveKey: barter.receiveKey,
@@ -7222,8 +7223,8 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'zaproponuj_handel_surowiec',
         targetId: rel.partnerId,
-        powod:    `${verb}: ${resOffer.pakietyPerTura} szt./turę` +
-          ` za ${resOffer.zaplataPerTura} ${zaplataLabel}/turę przez ${resOffer.turns} tur` +
+        powod:    `${verb}: ${resOffer.pakietyPerTura} sztuk na turę` +
+          ` za ${resOffer.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(resOffer.turns)}` +
           (isDeficitTrade ? ' (deficyt surowca)' : ''),
         surowiecKey: resOffer.surowiecKey,
         label: resOffer.label,
