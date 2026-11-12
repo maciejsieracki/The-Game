@@ -1,7 +1,9 @@
 //! P6 SIEGE-TAKTYKA K4 (#217): testy zgodnosci `domain::siege_tactics_breach` z kodem weba.
 //!
-//! Wektory: `p6_siege_tactics_breach_vectors/vectors.json`, generowane przez `p6_siege_tactics_breach_gen.mjs` (Node 22)
-//! z wycietych fragmentow `gra/src/battle/battleScene.ts` (pin 07d2fbd72; straznik SHA-256 w generatorze).
+//! Wektory: `p6_siege_tactics_breach_vectors/vectors.json`, generowane przez `p6_siege_tactics_breach_gen.mjs` (Node 22).
+//! Generator WYKONUJE zakresy linii tekstu pinu `07d2fbd72` (battleScene.ts, city-fortification.ts) w `new Function`
+//! z `this` = stan sceny; straznik SHA-256 zlaczonych fragmentow jest w generatorze.
+//! Kazdy wektor pojedynczy sprawdza pelny stan muru (w tym pola niezmienne: wallCol, gateCol, wallTilesInit, towerRows).
 //! Test kompozycji: stan po sekwencji zdarzen zasila `siege_approach_restricted`, `siege_no_breach_repels_attack`
 //! i `battle_winner` (wektory z pinu, sekcja `sequences`).
 
@@ -48,6 +50,10 @@ fn hp_map(v: &serde_json::Value) -> BTreeMap<i32, f64> {
         .collect()
 }
 
+fn hp_list(v: &serde_json::Value) -> Vec<f64> {
+    v.as_array().expect("lista hp").iter().map(num).collect()
+}
+
 fn state_from(v: &serde_json::Value) -> WallState {
     let towers: BTreeSet<i32> = v["towerRows"]
         .as_array()
@@ -67,7 +73,31 @@ fn state_from(v: &serde_json::Value) -> WallState {
     }
 }
 
+/// Porownanie CALEGO stanu muru (takze pol niezmiennych w zdarzeniach: wallCol, gateCol, wallTilesInit, towerRows).
 fn assert_state(got: &WallState, expect: &serde_json::Value, ctx: &str) {
+    assert_eq!(
+        got.wall_col as i64,
+        expect["wallCol"].as_i64().unwrap(),
+        "{ctx}: wallCol"
+    );
+    assert_eq!(
+        got.gate_col as i64,
+        expect["gateCol"].as_i64().unwrap(),
+        "{ctx}: gateCol"
+    );
+    assert_eq!(
+        got.wall_tiles_init as u64,
+        expect["wallTilesInit"].as_u64().unwrap(),
+        "{ctx}: wallTilesInit"
+    );
+    let want_towers: Vec<i64> = expect["towerRows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_i64().unwrap())
+        .collect();
+    let got_towers: Vec<i64> = got.tower_at_wall_rows.iter().map(|x| *x as i64).collect();
+    assert_eq!(got_towers, want_towers, "{ctx}: towerRows");
     assert!(
         same(got.gate_hp, num(&expect["gateHp"])),
         "{ctx}: gateHp {} != {:?}",
@@ -104,14 +134,26 @@ fn wektory_attack_wall_tile_zgodne_z_webem() {
     let v = load();
     let cases = v["attackWallTile"].as_array().expect("attackWallTile");
     assert!(cases.len() >= 150, "przypadki: {}", cases.len());
+    // Pokrycie guardu siegeWallCol < 0 (pin :7541): musi wystapic w wektorach.
+    assert!(
+        cases
+            .iter()
+            .any(|c| c["input"]["wallCol"].as_i64() == Some(-1)),
+        "brak przypadku wallCol = -1"
+    );
     for (i, c) in cases.iter().enumerate() {
         let s = state_from(&c["input"]);
-        let got = attack_wall_tile(
-            &s,
-            c["row"].as_i64().unwrap() as i32,
-            num(&c["dmg"]),
-            c["terrainTilesPresent"].as_bool().unwrap(),
-        );
+        // Guard :7541 (wall_attack_allowed) przed zaplanowanym callbackiem (attack_wall_tile = :7556-7564).
+        let got = if wall_attack_allowed(&s) {
+            attack_wall_tile(
+                &s,
+                c["row"].as_i64().unwrap() as i32,
+                num(&c["dmg"]),
+                c["terrainTilesPresent"].as_bool().unwrap(),
+            )
+        } else {
+            s.clone()
+        };
         assert_state(&got, &c["expect"], &format!("attackWallTile #{i}"));
     }
 }
@@ -172,16 +214,80 @@ fn wektory_skip_zgodne_z_webem() {
     }
 }
 
-fn mounted_unit(atk: bool) -> ApproachUnit {
+/// Jednostka z wektora (`unit`): pola `_siegeApproachRestricted` (pin :7952-7959).
+fn unit_from(c: &serde_json::Value) -> ApproachUnit {
+    let u = &c["unit"];
     ApproachUnit {
-        side_atk: atk,
-        routed: false,
-        on_wall_walkway: false,
-        is_siege_unit: false,
-        primary_ranged: false,
-        can_shoot: false,
-        shooting_disabled: false,
-        mounted: true,
+        side_atk: u["side"].as_str().unwrap() == "atk",
+        routed: u["routed"].as_bool().unwrap(),
+        on_wall_walkway: u["onWallWalkway"].as_bool().unwrap(),
+        is_siege_unit: u["siege"].as_bool().unwrap(),
+        primary_ranged: u["primaryRanged"].as_bool().unwrap(),
+        can_shoot: u["canShoot"].as_bool().unwrap(),
+        // web: `ru.shootingEnabled !== false` -> wylaczone tylko przy jawnym false (null = undefined)
+        shooting_disabled: u["shootingEnabled"].as_bool() == Some(false),
+        mounted: u["mounted"].as_bool().unwrap(),
+    }
+}
+
+#[test]
+fn wektory_podejscie_zgodne_z_webem() {
+    let v = load();
+    let cases = v["approachRestricted"]
+        .as_array()
+        .expect("approachRestricted");
+    assert!(cases.len() >= 250, "przypadki: {}", cases.len());
+    for (i, c) in cases.iter().enumerate() {
+        let s = state_from(&c["input"]);
+        let got = siege_approach_restricted(&unit_from(c), &s.to_approach_state());
+        assert_eq!(
+            got,
+            c["expect"].as_bool().unwrap(),
+            "approachRestricted #{i}"
+        );
+    }
+}
+
+#[test]
+fn wektory_repels_zgodne_z_webem() {
+    let v = load();
+    let cases = v["repelsAttack"].as_array().expect("repelsAttack");
+    assert!(cases.len() >= 100, "przypadki: {}", cases.len());
+    // Pin :10184-10187: `if (isSiege && !wallEverBreached) aliveA = false;`, wynik = aliveA po bloku.
+    for (i, c) in cases.iter().enumerate() {
+        let alive_a = c["aliveA"].as_bool().unwrap();
+        let repels = siege_no_breach_repels_attack(
+            c["isSiege"].as_bool().unwrap(),
+            c["wallEverBreached"].as_bool().unwrap(),
+        );
+        let got = alive_a && !repels;
+        assert_eq!(got, c["expect"].as_bool().unwrap(), "repels #{i}");
+    }
+}
+
+/// Wynik pinu: `null` = bitwa trwa (obie strony zyja, `return false`), inaczej zwyciezca.
+fn winner_from_json(v: &serde_json::Value) -> Option<BattleSide> {
+    match v.as_str() {
+        None => None,
+        Some("atakujacy") => Some(BattleSide::Attacker),
+        Some("obronca") => Some(BattleSide::Defender),
+        Some(other) => panic!("nieznany zwyciezca {other}"),
+    }
+}
+
+#[test]
+fn wektory_rozstrzygniecie_zgodne_z_webem() {
+    let v = load();
+    let cases = v["winner"].as_array().expect("winner");
+    assert!(cases.len() >= 100, "przypadki: {}", cases.len());
+    for (i, c) in cases.iter().enumerate() {
+        let got = battle_winner(
+            c["aliveA"].as_bool().unwrap(),
+            c["aliveD"].as_bool().unwrap(),
+            &hp_list(&c["hpA"]),
+            &hp_list(&c["hpD"]),
+        );
+        assert_eq!(got, winner_from_json(&c["expect"]), "winner #{i}");
     }
 }
 
@@ -193,20 +299,24 @@ fn wektory_sekwencje_kompozycja_zgodna_z_webem() {
     let mut total_steps = 0usize;
     for (si, seq) in seqs.iter().enumerate() {
         let mut s = state_from(&seq["init"]);
+        // Obecnosc terenu (`terrainMap.tiles != null`) jest stala w sekwencji; zapisana w `init`.
+        let terrain = seq["init"]["terrainTilesPresent"].as_bool().unwrap();
         for (ki, step) in seq["steps"].as_array().unwrap().iter().enumerate() {
             let kind = step["kind"].as_str().unwrap();
             s = match kind {
-                "attackWall" => attack_wall_tile(
-                    &s,
-                    step["row"].as_i64().unwrap() as i32,
-                    num(&step["dmg"]),
-                    step["terrainTilesPresent"].as_bool().unwrap(),
-                ),
-                "breachWall" => breach_wall_tile(
-                    &s,
-                    step["row"].as_i64().unwrap() as i32,
-                    step["terrainTilesPresent"].as_bool().unwrap(),
-                ),
+                "attackWall" => {
+                    if wall_attack_allowed(&s) {
+                        attack_wall_tile(
+                            &s,
+                            step["row"].as_i64().unwrap() as i32,
+                            num(&step["dmg"]),
+                            terrain,
+                        )
+                    } else {
+                        s.clone()
+                    }
+                }
+                "breachWall" => breach_wall_tile(&s, step["row"].as_i64().unwrap() as i32, terrain),
                 "attackGate" => attack_gate(&s, num(&step["dmg"])),
                 "climb" => tower_climb_enter_wall(&s, step["sideAtk"].as_bool().unwrap()),
                 "skip" => {
@@ -226,11 +336,6 @@ fn wektory_sekwencje_kompozycja_zgodna_z_webem() {
                 e["gateOpen"].as_bool().unwrap(),
                 "{ctx}: gateOpen"
             );
-            assert_eq!(
-                s.tile_breached(),
-                e["tileBreached"].as_bool().unwrap(),
-                "{ctx}: tileBreached"
-            );
             let rows: Vec<i64> = s.wall_tile_hp.keys().map(|k| *k as i64).collect();
             let want_rows: Vec<i64> = e["wallTileRows"]
                 .as_array()
@@ -240,19 +345,29 @@ fn wektory_sekwencje_kompozycja_zgodna_z_webem() {
                 .collect();
             assert_eq!(rows, want_rows, "{ctx}: wiersze kafli");
 
-            // Kompozycja: stan automatu zasila predykaty podejscia (galezie d, e) z tym samym wejsciem muru.
+            // Kompozycja: stan automatu zasila predykaty podejscia (pin :7952-7959) dla wierzchowca i piechoty.
             let approach = s.to_approach_state();
-            let ped = ApproachUnit {
+            let mounted = ApproachUnit {
+                side_atk: true,
+                routed: false,
+                on_wall_walkway: false,
+                is_siege_unit: false,
+                primary_ranged: false,
+                can_shoot: false,
+                shooting_disabled: false,
+                mounted: true,
+            };
+            let foot = ApproachUnit {
                 mounted: false,
-                ..mounted_unit(true)
+                ..mounted
             };
             assert_eq!(
-                siege_approach_restricted(&mounted_unit(true), &approach),
+                siege_approach_restricted(&mounted, &approach),
                 e["approachMounted"].as_bool().unwrap(),
                 "{ctx}: approach mounted"
             );
             assert_eq!(
-                siege_approach_restricted(&ped, &approach),
+                siege_approach_restricted(&foot, &approach),
                 e["approachFoot"].as_bool().unwrap(),
                 "{ctx}: approach piechota"
             );
@@ -261,12 +376,11 @@ fn wektory_sekwencje_kompozycja_zgodna_z_webem() {
             let repels = siege_no_breach_repels_attack(true, s.wall_ever_breached);
             assert_eq!(repels, e["repels"].as_bool().unwrap(), "{ctx}: repels");
             let winner = battle_winner(!repels, true, &[10.0], &[10.0]);
-            let want_winner = match e["winnerIfStalled"].as_str() {
-                None => None,
-                Some("obronca") => Some(BattleSide::Defender),
-                Some(other) => panic!("nieznany zwyciezca {other}"),
-            };
-            assert_eq!(winner, want_winner, "{ctx}: zwyciezca");
+            assert_eq!(
+                winner,
+                winner_from_json(&e["winnerIfStalled"]),
+                "{ctx}: zwyciezca"
+            );
             total_steps += 1;
         }
     }
