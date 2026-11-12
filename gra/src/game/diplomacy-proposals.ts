@@ -1040,6 +1040,29 @@ function handelFairnessReject(
 export const AI_PROPOSER_FAIRNESS_REL_TOTAL = 100;
 
 /**
+ * R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1: górny limit nadpłaty w jednorazowej ofercie
+ * handlowej AI -> gracz. Ta sama reguła co cykliczna (A1): AI nie oddaje więcej PW, niż
+ * otrzymuje (givePn <= receivePn). Dar (isGift) jest wyłączony — dar AI nie ma receivePn.
+ * Zwraca true, gdy jednorazowa oferta handlowa (actionId 'handel', typ inny niż cykliczna)
+ * z perspektywy proponenta AI przekracza ten limit. Jedyne miejsce tej reguły — wołane z
+ * filtra enqueue w main.ts (boot, łańcuch komend AI -> gracz).
+ */
+export function aiOneshotHandelOverpaysPlayer(
+  actionId: string | undefined,
+  cmdType: string | undefined,
+  payload: ProposalPayload,
+  pnOpts?: ResolveProposalPnOptions,
+): boolean {
+  if (actionId !== 'handel' || cmdType === 'zaproponuj_wymiane_cykliczna') return false;
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const isGift = payload.isGift === true
+    || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
+  const hasPnPath = givePn > 0 || receivePn > 0
+    || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  return !isGift && hasPnPath && givePn > receivePn;
+}
+
+/**
  * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
  * (handelFairnessGate i pwBalance przy sukcesie muszą użyć TEJ SAMEJ liczby, inaczej
  * wraca P-DYPLO-BILANS-GATE-NIESPOJNY). PODŁOGA PARYTETU (runda 4): nigdy poniżej receivePn.

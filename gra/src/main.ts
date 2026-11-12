@@ -1526,6 +1526,7 @@ import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBa
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal, handelFairnessGate,
   AI_PROPOSER_FAIRNESS_REL_TOTAL,
+  aiOneshotHandelOverpaysPlayer,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
@@ -20471,6 +20472,11 @@ async function boot(): Promise<void> {
         )
       ) {
         console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
+        return;
+      }
+      // R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1: jednorazowa oferta handlowa AI -> gracz
+      // z nadpłatą (givePn > receivePn) nie trafia na stół; te same reguły co cykliczna (A1).
+      if (aiOneshotHandelOverpaysPlayer(converted.actionId, workingCmd.type, balancedPayload, pnBalanceOpts)) {
         return;
       }
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
