@@ -55,7 +55,7 @@ const SEED = 2201;
 const GRID = 6; // siatka kafli (K5I2b2): OOB -> Plains (jak BattleTerrainMap.at w battle-terrain.ts:781-784)
 const BTERR = 'gra/src/battle/battle-terrain.ts';
 const TERRAIN_DATA = 'gra/data/terrain-combat.json';
-const ENV_FRAGMENT_SHA256 = 'c2ef94c501ea2f04e7f13e3350d7a7ff53de42db7be1afe7dcbbcdbd090c716b';
+const ENV_FRAGMENT_SHA256 = '8a9afb5582c2edad3e6f8e1500f679c63223d37285b579b7ac7fd226041cc7e1';
 const TERRAIN_SHA256 = 'b5f0f9c5c25a65273bc674d1ae1121ab09d93141085eb0c1a9b1bc911798f9bf';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -198,6 +198,7 @@ const ENV_PIECES = [frag.dirDelta, frag.facing, frag.opposite, frag.relative, fr
 const envDigest = createHash('sha256')
   .update([...ENV_PIECES, frag.wallMethod, frag.dirEnum, frag.btEnum].join('\n---\n'))
   .update(`\ndir\n${JSON.stringify(DIR_OBJ)}\nbt\n${JSON.stringify(BT_OBJ)}\nriver\n${RIVER_MULT}`)
+  .update(`\nctnSrc\n${CTN_SRC}\nctnBody\n${CTN_BODY}`)
   .digest('hex');
 if (ENV_FRAGMENT_SHA256 !== 'PLACEHOLDER' && envDigest !== ENV_FRAGMENT_SHA256) throw new Error(`SHA-256 fragmentow srodowiska zmieniony: ${envDigest}`);
 console.error(`env fragment sha256 = ${envDigest}`);
