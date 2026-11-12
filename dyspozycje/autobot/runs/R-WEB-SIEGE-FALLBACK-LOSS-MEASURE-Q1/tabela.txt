@@ -1,0 +1,19 @@
+scenariusz | ziarno | tryb | zwyciezca | tura | wylom | atk strat/zywi/HP | def strat/zywi/HP | status
+breach | 1 | fallback | atakujacy | 0 | tak | 0/39/4188 | 0/28/1008 | OK
+breach | 1 | skip | obronca | 400 | tak | 26/13/2656 | 11/17/738 | OK
+breach | 1 | auto | - | r60 | - | - | - | NIE_ZMIERZONO (limit czasu, vNow 1548784 ms)
+breach | 2 | fallback | obronca | 0 | tak | 0/39/4188 | 0/28/1008 | OK
+breach | 2 | skip | obronca | 400 | tak | 26/13/2641 | 11/17/777 | OK
+breach | 2 | auto | - | - | - | - | - | NIE_ZMIERZONO (brak przebiegu)
+breach | 3 | fallback | obronca | 0 | tak | 0/39/4188 | 0/28/1008 | OK
+breach | 3 | skip | obronca | 400 | tak | 26/13/2655 | 12/16/721 | OK
+breach | 3 | auto | - | - | - | - | - | NIE_ZMIERZONO (brak przebiegu)
+nobreach | 1 | fallback | obronca | 0 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 1 | skip | remis | 150 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 1 | auto | - | - | - | - | - | NIE_ZMIERZONO (brak przebiegu)
+nobreach | 2 | fallback | obronca | 0 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 2 | skip | remis | 150 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 2 | auto | - | - | - | - | - | NIE_ZMIERZONO (brak przebiegu)
+nobreach | 3 | fallback | obronca | 0 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 3 | skip | remis | 150 | nie | 0/28/988 | 0/28/1008 | OK
+nobreach | 3 | auto | - | - | - | - | - | NIE_ZMIERZONO (brak przebiegu)
