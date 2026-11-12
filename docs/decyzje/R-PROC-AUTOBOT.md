@@ -572,10 +572,14 @@ wymagające decyzji właściciela (już rozstrzygnięte), tylko kontynuuj zadani
 
 ## 6. Bramki
 
-Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-11-12 na czystym checkoucie
-`origin/main` @ `ef27be007` (R-PROC-GATE-REFERENCE-REFRESH-Q2) — to jest punkt odniesienia na dziś, nie stała wartość; jeśli wynik odbiega,
-porównaj z aktualnym `main` przed uznaniem czegoś za regresję, nie ufaj tej liczbie
-z pamięci przy kolejnym użyciu:
+Uruchamiaj z katalogu `gra/`. Świeży pomiar 2026-11-12 (R-PROC-GATE-REFERENCE-REFRESH-Q2,
+baza `origin/main` @ `ef27be007`) objął WYŁĄCZNIE wiersze: TypeScript, Logika, Drzewo technologii,
+Badania, Wymiana jednostek, Walka, Moc jednostek. Wiersze pozostałe (Generator mapy, Mgła, AI stawia
+budynki, Bitwa na polu mapy, Kontrakt karty encji, Karta technologii/scrollbar, Krążenie barbarzyńców,
+AI zdobycie miasta) to **NIE_ZMIERZONO w tym temacie** — ich wartości są ostatnimi znanymi z
+wcześniejszych pomiarów, nie świeżą weryfikacją; przed użyciem jako punktu odniesienia zmierz je
+na aktualnym `main`. Liczby nie są stałą wartością; jeśli wynik odbiega, porównaj z aktualnym
+`main` przed uznaniem czegoś za regresję, nie ufaj tej liczbie z pamięci przy kolejnym użyciu:
 
 | Bramka | Komenda | Wynik referencyjny |
 |---|---|---|
@@ -585,7 +589,7 @@ z pamięci przy kolejnym użyciu:
 | Badania | `node tools/research-test.cjs` | 33/33 |
 | Wymiana jednostek | `node tools/unit-replace-test.cjs` | 21/21 |
 | Walka | `node tools/combat-test.cjs` | 6/6 |
-| Moc jednostek | `node tools/unit-power-test.cjs` | **czerwony pre-istniejąco: 4 pass / 2 fail** — nie regresja, nie naprawiaj przy okazji |
+| Moc jednostek | `node tools/unit-power-test.cjs` | **6/0** (`=== unit-power-test: 6 pass, 0 fail ===`, exit 0; pomiar 2026-11-12 @ `ef27be007`). Poprzedni wpis „czerwony 4 pass / 2 fail” jest nieaktualny i został zastąpiony tym pomiarem |
 | Generator mapy | `node tools/map-gen-regression-test.cjs` | determinizm A=B + 0 rzek bez ujścia; progi czasowe to pomiar wydajności, nie regresja — wolny (rzędu minut), uruchom osobno |
 | **Mgła wzdłuż ścieżki (INWARIANT)** | `node tools/mgla-sciezka-inwariant-test.cjs` | **42/42** — skanuje CAŁE `gra/src` w trzech notacjach zapisu pozycji jednostki (`.q=`, `["q"]=`, `Object.assign`) z jawną, uzasadnioną whitelistą. Każde nowe miejsce przesuwające jednostkę o więcej niż heks bez odkrycia mgły wzdłuż ścieżki czerwieni tę bramkę. **Dodana po CZWARTYM zgłoszeniu tego samego błędu** (`P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1`, merge `1af06c38`) — trzy poprzednie tematy naprawiały po jednym miejscu i każdy był ogłaszany jako ostatni. Nie usuwaj i nie osłabiaj whitelisty bez ECHO właściciela. |
 
