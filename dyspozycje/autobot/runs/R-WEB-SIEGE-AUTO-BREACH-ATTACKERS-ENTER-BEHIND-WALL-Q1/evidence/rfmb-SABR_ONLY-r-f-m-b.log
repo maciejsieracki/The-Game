@@ -1,0 +1,41 @@
+BUILD ok in 76 s
+RUN {"mode":"auto","winner":"remis","round":150,"breached":true,"wallS":48.2,"atk":{"lost":5,"remaining":12,"hp":2685},"def":{"lost":2,"remaining":4,"hp":144},"ev":222,"inside":2,"onBreachTile":0,"hist":{"samples":4821,"infOnBreach":314,"infInside":4733,"anyOnBreach":316,"maxInfInside":4,"firstInfInsideRound":24,"firstInfOnBreachRound":23},"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+PASS: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+INFO B4 stan koncowy: onBreachTile=0 (informacyjnie, nie asercja)
+PASS: B4 SZTURM po wylomie: w ktorejs klatce po wylomie zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (historycznie)
+PASS: B4b PIECHOTA ZA MUREM: zywy piechur (bez machin) stoi ZA linia muru (q > kolumna muru) w ciagu 3 tur od wylomu (historycznie)
+PASS: B5 brak bledow JS
+REPLAY {"via":"button","before":{"finished":true,"breached":true,"gateOpen":false,"tilesLeft":147,"init":154,"tileDiff":7,"hiddenN":6,"rubbleN":49,"towersDestroyed":2},"wallColDiff":0,"after":{"finished":false,"started":false,"deploy":true,"breached":false,"gateOpen":false,"gateHp":400,"tilesLeft":154,"init":154,"towers":0,"hpVals":[640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640,640],"hiddenN":0,"rubbleN":0,"towersDestroyed":0,"towersHidden":0,"hiddenStillInvisible":0,"lastAtt":-1,"round":0,"atkAlive":17,"defAlive":6,"tileDiff":0}}
+PASS: R0 przed replayem: oblezenie z wylomem zakonczone (wylom + zniszczony teren muru/bramy)
+PASS: R1 po replayu: bitwa od nowa (faza rozstawiania, tura 0, brak konca)
+PASS: R2 po replayu: wylom wyzerowany (wallEverBreached=false, brama zamknieta, HP bramy 400, wiezy przy murze 0)
+PASS: R3 po replayu: HP kafli muru przywrocone (liczba kafli == poczatkowa)
+PASS: R3b po replayu: HP KAZDEGO kafla muru == 640 (wartosc z samego replayu, nieprzepisana przez test)
+PASS: R3c przed replayem: wylom ukryl segmenty/dodal gruz (co przywracac)
+PASS: R3d po replayu: ukryte segmenty muru/brama przywrocone, gruz zdjety, lastAttackedWallRow=-1
+PASS: R3e po replayu: wiezyczki odbudowane (destroyed=false, mesh widoczny)
+PASS: R4 po replayu: roster wrocil (ten sam sklad zywych: 6+obleznicza vs 6)
+PASS: R5 po replayu: TEREN muru/bramy przywrocony (kafle == stan startowy); inaczej wyburzony mur zostaje otwarty mimo wallEverBreached=false (obejscie reguly R1)
+PASS: R5b po replayu: teren KAZDEGO kafla kolumny muru == poczatkowy (wallColDiff=0)
+PASS: R8 przebiegi B i C po replayach skonczone, oba z wylomem (B: wylom padl, wiec C weryfikuje brak resztek)
+PASS: R9 determinizm replayu: wynik przebiegu C == B (zwyciezca, tura, straty, HP, kafle muru, jednostki)
+PASS: R10 determinizm replayu: zdarzenia wylomu C == B
+PASS: R11 po przebiegu C stan muru po wylomie == po B
+PASS: R6 brak bledow JS
+RUN {"mode":"manual","winner":"remis","round":150,"breached":true,"wallS":45.6,"atk":{"lost":3,"remaining":14,"hp":2646},"def":{"lost":0,"remaining":6,"hp":219},"ev":1,"inside":2,"onBreachTile":0,"hist":{"samples":2855,"infOnBreach":325,"infInside":2733,"anyOnBreach":337,"maxInfInside":3,"firstInfInsideRound":50,"firstInfOnBreachRound":47},"manual":{"modeAtStart":true,"awaitingAtStart":true,"space":1,"ordersIssued":17,"manualFalseSeen":false,"playerSide":"atk"}}
+PASS: M0 tryb RECZNY byl wlaczony od startu i ani razu nie przelaczony na AUTO; tury startowane SPACJA (>=1) i rozkazy gracza wydane
+PASS: M1 bitwa reczna oblezenicza doszla do konca BEZ Skip (finished, w limicie)
+PASS: M2 reczna: rozstrzygniecie silnika (zwyciezca ustawiony), tura > 0
+PASS: M3 reczna: wylom padl i atakujacy weszli za mur
+PASS: M4 brak bledow JS
+FALLBACK {"siegeInAtk":11,"breachedBefore":false,"started0":false,"fallbackCalls":1,"finished":true,"winner":"atakujacy","breached":true,"survivors":6,"ffActive":false,"round":0,"logTail":["ATK HP: 2  DEF HP: 0","=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="],"hasDefBonus":true}
+PASS: F0 scena: obleznicza w skladzie atakujacego
+PASS: F1 skip() przed startem bitwy uruchamia _skipInstantFallback (1 wywolanie), bez przewijania
+PASS: F2 fallback konczy bitwe z werdyktem (finished, zwyciezca atakujacy/obronca/remis, lista ocalalych)
+PASS: F3 fallback: machina w skladzie atakujacego = zalozony wylom (wallEverBreached=true, jak szturm Auto)
+PASS: F4 fallback: tabela bonusu muru dla testu parytetu ustawiona
+PASS: F5 brak bledow JS
+--- 34 ok, 0 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO, 0 znany(ch) defekt(ow) (B4b)

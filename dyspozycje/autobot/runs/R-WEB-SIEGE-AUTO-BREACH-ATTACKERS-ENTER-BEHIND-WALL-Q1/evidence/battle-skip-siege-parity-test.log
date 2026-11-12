@@ -1,0 +1,18 @@
+PASS: S1 combat-params.json: oblezenie.bez_wylomu_max_tur jest liczba calkowita > 0 i < 400
+PASS: S1b battleScene czyta parametr z combat-params.json
+PASS: S2 _roundCapVerdict istnieje
+PASS: S2b oblezenie bez wylomu (siegeWallCol>=0 && !wallEverBreached) -> REMIS po sufitcie siegeNoBreachMaxRounds
+PASS: S2c poza oblezeniem bez wylomu: sufit FF_MAX_ROUNDS i morale (remis morale -> obronca)
+PASS: S3 _checkEnd uzywa _roundCapVerdict i konczy remisem przez _finishDraw
+PASS: S3b _ffRoundCapResult uzywa _roundCapVerdict, bez wlasnego porownania morale
+PASS: S3c _runFastForward sprawdza sufit przez _roundCapVerdict (nie surowe FF_MAX_ROUNDS)
+PASS: S4 _finishDraw: _endWinner=remis i ocalali obu stron
+PASS: S4b ekran konca nie liczy remisu jako wygranej gracza
+PASS: S5 skip() uzywa FF (jedna sciezka awaryjna !started)
+PASS: S6 test zywy battle-skip-siege-parity-live-test.cjs obecny
+PASS: S6b battle-skip-equals-auto-resolve-test.cjs obecny
+PASS: S7 AUTO virtual clock uses shared wall-delta scaler
+PASS: S7b shared scaler clamps to max wall delta and applies speedMul
+PASS: S7c fast-forward derives its tick from the same scaled wall delta
+PASS: S7d fast-forward snapshots the prior-frame callback queue before running callbacks
+RESULT pass=17 fail=0

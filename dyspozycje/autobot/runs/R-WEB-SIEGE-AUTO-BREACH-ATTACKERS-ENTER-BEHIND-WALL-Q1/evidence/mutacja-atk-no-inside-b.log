@@ -1,0 +1,11 @@
+BUILD ok in 51 s MUTACJA=atk-no-inside
+RUN {"mode":"auto","winner":"remis","round":150,"breached":true,"wallS":68.2,"atk":{"lost":6,"remaining":11,"hp":2612},"def":{"lost":0,"remaining":6,"hp":176},"ev":234,"inside":0,"onBreachTile":2,"hist":{"samples":4394,"infOnBreach":1310,"infInside":0,"anyOnBreach":4226,"maxInfInside":0,"firstInfInsideRound":null,"firstInfOnBreachRound":23},"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+PASS: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+INFO B4 stan koncowy: onBreachTile=2 (informacyjnie, nie asercja)
+PASS: B4 SZTURM po wylomie: w ktorejs klatce po wylomie zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (historycznie)
+FAIL: B4b PIECHOTA ZA MUREM: zywy piechur (bez machin) stoi ZA linia muru (q > kolumna muru) w ciagu 3 tur od wylomu (historycznie) -- {"firstInfInsideRound":null,"breachRound":22,"maxInfInside":0,"insideAtkEnd":0}
+PASS: B5 brak bledow JS
+--- 6 ok, 1 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO, 0 znany(ch) defekt(ow) (B4b) [MUTACJA atk-no-inside]
