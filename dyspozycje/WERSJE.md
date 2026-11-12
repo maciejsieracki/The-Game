@@ -1,3 +1,9 @@
+## ROBOCZA 1c2cdb70 -- 2026-11-12 -- FALA 672: Bitwa: jednostki walczy do smierci zostaja, reszta ucieka i jest gonina (testowa)
+
+- po zalamaniu morale armii jednostki neverRout nie uciekaja i walcza dalej; zwykle jednostki uciekaja i sa gonione; bitwa konczy sie, gdy neverRout zgina, uciekinierzy zejda lub minie limit tur
+- Weryfikacja: tsc OK; logic 213/213; battle-neverrout-hold-test 58/0; mutacja 4 FAIL; Chromium NIE_ZMIERZONO
+- Limity: dowod w bitwie na zywo po deployu (smoke)
+
 ## ROBOCZA 70d6a2a0 -- 2026-11-12 -- FALA 671: Ruch w bitwie: Konnica 7 (rydwany bez zmian) (testowa)
 
 - w bitwie Konnica ma ruch 7; rydwany bez zmian (woły 5, konne 6); mapa bez zmian

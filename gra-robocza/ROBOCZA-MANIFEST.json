@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "70d6a2a0c06d52c2c86b575b170f1487",
-  "bundleSha256": "9de6bba5aa2b3575160cd5a6b99a4933d60a32c594ff2f8dfdcb2b5508af06d0",
-  "bundleBytes": 14560269,
+  "bundleMd5": "1c2cdb7067dac99816b4103765073e12",
+  "bundleSha256": "2dea6112306390c77bcb6c1e79c58e414a59314e01824750fa158a77258acb24",
+  "bundleBytes": 14560620,
   "sourceSnapshot": {
-    "source": "R-WEB-CHARIOT-MOVE-6-DATA-Q1 FC f1b2aedae",
+    "source": "R-WEB-BATTLE-NEVERROUT-HOLD-FIGHT-Q1 FC 10c4bb0b6",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 671: w bitwie Konnica ma ruch 7; rydwany bez zmian (woły 5, konne 6); mapa bez zmian"
+    "FALA 672: po zalamaniu morale armii jednostki neverRout nie uciekaja i walcza dalej; zwykle jednostki uciekaja i sa gonione; bitwa konczy sie, gdy neverRout zgina, uciekinierzy zejda lub minie limit tur"
   ],
   "verification": [
-    "tsc OK; logic 213/213; chariot-move-6-data-test 163/0; Chromium NIE_ZMIERZONO"
+    "tsc OK; logic 213/213; battle-neverrout-hold-test 58/0; mutacja 4 FAIL; Chromium NIE_ZMIERZONO"
   ],
   "limits": [
-    "dług bazowy w rydwan-konnica-x2-test (Drewno/Brąz); smoke w bitwie po deployu"
+    "dowod w bitwie na zywo po deployu (smoke)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES (f1b2aedae): Konnica 7 w bitwie, rydwany bez zmian; dług bazowy rydwan-konnica-x2 (Drewno/Brąz) poza zakresem."
+    "notes": "FC PASS-WITH-NOTES (10c4bb0b6): neverRout zostają, reszta ucieka i jest gonina; test hold 58/0; dowód Chromium NIE_ZMIERZONO."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-12T21:24:45",
+  "hubGeneratedAt": "2026-11-12T22:48:40",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "70d6a2a0c06d52c2c86b575b170f1487",
-      "sizeBytes": 14560269
+      "md5": "1c2cdb7067dac99816b4103765073e12",
+      "sizeBytes": 14560620
     }
   ],
-  "md5": "70d6a2a0c06d52c2c86b575b170f1487",
+  "md5": "1c2cdb7067dac99816b4103765073e12",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
