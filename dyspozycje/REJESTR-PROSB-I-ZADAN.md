@@ -9532,3 +9532,6 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 - mgla-sciezka-inwariant: odpowiedź A (rozszerz whitelistę) — POMIAR: test dziś 42 pass / 0 fail, więc dług już nieaktualny, bez tematu.
 - Tempo mieszanej armii: TAK — temp R-WEB-BATTLE-MIXED-ARMY-ADVANCE-PACE-Q1 (równe tempo do wzwarcia wręcz; potem konnica wg trybu ataku, strzelcy w maksymalnym dystansie w zasięgu strzału).
 - BRONZE-STOCK: zamknij jako nieodtworzone (wznowienie po nowej reprodukcji).
+
+### Zgłoszenie właściciela 2026-11-12: nadmiar miedzi
+Jedna cywilizacja ma ~24 000 szt. miedzi krótko po wejściu w epokę miedzi — traktowane jako błąd/przeciek. Temat R-WEB-AUDIT-COPPER-INCOME-LEAK-Q1 (audyt źródeł miedzi + naprawa), Operator OPUS 5.5 na wyraźne życzenie właściciela (wyjątek od zasady modeli).
