@@ -184,6 +184,32 @@ function runRation(c) {
   };
 }
 
+// ---------- isCityAutoWyzywienieEnabled (empire-food.ts:390) z opcjami forceAuto i humanOwnerIds ----------
+const autoCases = [
+  { name: 'gracz, flaga wlaczona', owner: 0, autoWyzywienie: true },
+  { name: 'gracz, flaga wylaczona', owner: 0, autoWyzywienie: false },
+  { name: 'gracz, brak pola autoWyzywienie', owner: 0, autoWyzywienie: undefined },
+  { name: 'AI (owner 1), flaga false -> true', owner: 1, autoWyzywienie: false },
+  { name: 'forceAuto przy fladze wylaczonej -> true', owner: 0, autoWyzywienie: false, forceAuto: true },
+  { name: 'forceAuto=false -> jak domyslnie', owner: 0, autoWyzywienie: false, forceAuto: false },
+  { name: 'hotseat: owner 2 w humanOwnerIds, flaga false -> false', owner: 2, autoWyzywienie: false, humanOwnerIds: [0, 2] },
+  { name: 'hotseat: owner 2 w humanOwnerIds, flaga true -> true', owner: 2, autoWyzywienie: true, humanOwnerIds: [0, 2] },
+  { name: 'hotseat: owner 1 poza humanOwnerIds -> true', owner: 1, autoWyzywienie: false, humanOwnerIds: [0, 2] },
+  { name: 'pusta humanOwnerIds -> kazdy AI -> true', owner: 0, autoWyzywienie: false, humanOwnerIds: [] },
+];
+
+function runAuto(c) {
+  const calls = [];
+  const fns = load(['isCityAutoWyzywienieEnabled'], {}, calls);
+  const city = { id: 'c1', ownerId: c.owner, autoWyzywienie: c.autoWyzywienie };
+  const opts = c.forceAuto === undefined ? undefined : { forceAuto: c.forceAuto };
+  const autoEnabled = c.humanOwnerIds === undefined
+    ? fns.isCityAutoWyzywienieEnabled(city, opts)
+    : fns.isCityAutoWyzywienieEnabled(city, opts, c.humanOwnerIds);
+  if (calls.length) throw new Error(`auto: nieoczekiwane wolania ${calls.join(',')}`);
+  return { autoEnabled };
+}
+
 // ---------- zbior graczy (playerEverOwnedCityByOwner.add) ----------
 const everCases = [
   { name: 'dodanie nowego wlasciciela', initial: [0], owner: 2 },
@@ -199,7 +225,8 @@ function runEver(c) {
 
 const out = {
   garnizon: garnizonCases.map(c => ({ name: c.name, input: { city: c.city, units: c.units }, expected: runGarnizon(c) })),
-  capture: captureCases.map(c => ({ name: c.name, input: { initial: c.initial, oldOwner: c.oldOwner, newOwner: c.newOwner, turn: c.turn }, expected: runCapture(c) })),
+  capture: captureCases.map(c => ({ name: c.name, input: { initial: c.initial, oldOwner: c.oldOwner, newOwner: c.newOwner, turn: Number.isNaN(c.turn) ? 'NaN' : c.turn }, expected: runCapture(c) })),
+  auto: autoCases.map(c => ({ name: c.name, input: { owner: c.owner, autoWyzywienie: c.autoWyzywienie ?? null, forceAuto: c.forceAuto ?? false, humanOwnerIds: c.humanOwnerIds ?? [0] }, expected: runAuto(c) })),
   ration: rationCases.map(c => ({ name: c.name, input: { owner: c.owner, autoWyzywienie: c.autoWyzywienie ?? null, level: c.level, maxSafe: c.maxSafe }, expected: runRation(c) })),
   ever: everCases.map(c => ({ name: c.name, input: { initial: c.initial, owner: c.owner }, expected: runEver(c) })),
 };

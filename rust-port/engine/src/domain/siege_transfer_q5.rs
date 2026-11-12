@@ -108,9 +108,27 @@ pub fn record_player_ever_owned_city(set: &mut BTreeSet<i64>, owner_id: i64) -> 
     set.insert(owner_id)
 }
 
+/// Web `isCityAutoWyzywienieEnabled(city, opts?, humanOwnerIds = [0])` (game/empire-food.ts:390), 1:1:
+/// `forceAuto` -> true; owner spoza `human_owner_ids` -> true; w przeciwnym razie `city.autoWyzywienie === true`
+/// (`auto_wyzywienie` = `None` gdy pole brak). Wolajacy web bez opcji: `(owner, auto, false, &[0])`.
+pub fn is_city_auto_wyzywienie_enabled(
+    owner_id: i64,
+    auto_wyzywienie: Option<bool>,
+    force_auto: bool,
+    human_owner_ids: &[i64],
+) -> bool {
+    if force_auto {
+        return true;
+    }
+    if !human_owner_ids.contains(&owner_id) {
+        return true;
+    }
+    auto_wyzywienie == Some(true)
+}
+
 /// Web `applyLiveSafeRationForCity(cityId)` (main.ts:21803), czesc decyzyjna po wykonaniu warunkow wejsciowych:
 /// * web `if (!city || city.ownerId !== 0) return;` -> `owner_id != 0` daje `None`;
-/// * web `if (!isCityAutoWyzywienieEnabled(city)) return;` -> `auto_enabled` = wynik tej funkcji (dla ownera 0: `autoWyzywienie === true`);
+/// * web `if (!isCityAutoWyzywienieEnabled(city)) return;` -> `auto_enabled` = `is_city_auto_wyzywienie_enabled(owner, auto, false, &[0])`;
 /// * web `ensureCityRationDefaults(city)` i `getCityRationLevel(city)` WYKONUJE WOLAJACY; tu wchodzi juz wynik jako `ration_level`;
 /// * web `maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId)` - `max_safe` od wolajacego (poza zakresem tego klocka);
 /// * web `if (level > maxSafe) { city.poziomRacji = maxSafe; markCityStateDirty(); }`.

@@ -277,7 +277,7 @@
     "initial": [],
     "oldOwner": 1,
     "newOwner": 2,
-    "turn": null
+    "turn": "NaN"
    },
    "expected": {
     "map": [
@@ -511,6 +511,149 @@
       }
      ]
     ]
+   }
+  }
+ ],
+ "auto": [
+  {
+   "name": "gracz, flaga wlaczona",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": true,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": true
+   }
+  },
+  {
+   "name": "gracz, flaga wylaczona",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": false
+   }
+  },
+  {
+   "name": "gracz, brak pola autoWyzywienie",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": null,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": false
+   }
+  },
+  {
+   "name": "AI (owner 1), flaga false -> true",
+   "input": {
+    "owner": 1,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": true
+   }
+  },
+  {
+   "name": "forceAuto przy fladze wylaczonej -> true",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": false,
+    "forceAuto": true,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": true
+   }
+  },
+  {
+   "name": "forceAuto=false -> jak domyslnie",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0
+    ]
+   },
+   "expected": {
+    "autoEnabled": false
+   }
+  },
+  {
+   "name": "hotseat: owner 2 w humanOwnerIds, flaga false -> false",
+   "input": {
+    "owner": 2,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0,
+     2
+    ]
+   },
+   "expected": {
+    "autoEnabled": false
+   }
+  },
+  {
+   "name": "hotseat: owner 2 w humanOwnerIds, flaga true -> true",
+   "input": {
+    "owner": 2,
+    "autoWyzywienie": true,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0,
+     2
+    ]
+   },
+   "expected": {
+    "autoEnabled": true
+   }
+  },
+  {
+   "name": "hotseat: owner 1 poza humanOwnerIds -> true",
+   "input": {
+    "owner": 1,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": [
+     0,
+     2
+    ]
+   },
+   "expected": {
+    "autoEnabled": true
+   }
+  },
+  {
+   "name": "pusta humanOwnerIds -> kazdy AI -> true",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": false,
+    "forceAuto": false,
+    "humanOwnerIds": []
+   },
+   "expected": {
+    "autoEnabled": true
    }
   }
  ],

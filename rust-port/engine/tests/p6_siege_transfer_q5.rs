@@ -10,8 +10,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use civ_engine::domain::siege_enter_city::EnterUnit;
 use civ_engine::domain::siege_transfer_q5::{
-    apply_live_safe_ration_for_city, new_chronicle, note_city_capture,
-    record_player_ever_owned_city, sync_city_garnizon, ChronicleMap, CivChronicle,
+    apply_live_safe_ration_for_city, is_city_auto_wyzywienie_enabled, new_chronicle,
+    note_city_capture, record_player_ever_owned_city, sync_city_garnizon, ChronicleMap,
+    CivChronicle,
 };
 use serde_json::{json, Value};
 
@@ -76,6 +77,15 @@ fn map_json(m: &ChronicleMap) -> Value {
     )
 }
 
+/// Tura z JSON: liczba -> `Some`; tekst "NaN" (generator koduje NaN tak, bo JSON nie ma NaN) -> `Some(NaN)`; null/brak -> `None`.
+fn turn_of(v: &Value) -> Option<f64> {
+    match v {
+        Value::Number(n) => n.as_f64(),
+        Value::String(s) if s == "NaN" => Some(f64::NAN),
+        _ => None,
+    }
+}
+
 #[test]
 fn garnizon_vectors_match_pin() {
     let root: Value = serde_json::from_str(DATA).expect("json");
@@ -120,7 +130,7 @@ fn capture_chronicle_vectors_match_pin() {
         let name = c["name"].as_str().unwrap();
         let mut map: ChronicleMap = BTreeMap::new();
         for e in c["input"]["initial"].as_array().unwrap() {
-            let turn = e["turn"].as_f64();
+            let turn = turn_of(&e["turn"]);
             let legacy = e["legacy"].as_bool().unwrap_or(false);
             let mut ch = new_chronicle(turn, legacy);
             if let Some(v) = e["citiesTaken"].as_f64() {
@@ -131,7 +141,7 @@ fn capture_chronicle_vectors_match_pin() {
             }
             map.insert(e["owner"].as_i64().unwrap(), ch);
         }
-        let turn = c["input"]["turn"].as_f64();
+        let turn = turn_of(&c["input"]["turn"]);
         note_city_capture(
             &mut map,
             c["input"]["oldOwner"].as_i64().unwrap(),
@@ -147,6 +157,45 @@ fn capture_chronicle_vectors_match_pin() {
 }
 
 #[test]
+fn auto_wyzywienie_vectors_match_pin() {
+    let root: Value = serde_json::from_str(DATA).expect("json");
+    let cases = root["auto"].as_array().expect("auto");
+    assert!(cases.len() >= 10);
+    for c in cases {
+        let name = c["name"].as_str().unwrap();
+        let inp = &c["input"];
+        let human: Vec<i64> = inp["humanOwnerIds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_i64().unwrap())
+            .collect();
+        let got = is_city_auto_wyzywienie_enabled(
+            inp["owner"].as_i64().unwrap(),
+            inp["autoWyzywienie"].as_bool(),
+            inp["forceAuto"].as_bool().unwrap_or(false),
+            &human,
+        );
+        assert_eq!(
+            got,
+            c["expected"]["autoEnabled"].as_bool().unwrap(),
+            "auto: {name}"
+        );
+    }
+}
+
+#[test]
+fn chronicle_turn_non_finite_is_dropped() {
+    assert_eq!(new_chronicle(Some(f64::NAN), false).since_turn, None);
+    assert_eq!(new_chronicle(Some(f64::INFINITY), false).since_turn, None);
+    assert_eq!(
+        new_chronicle(Some(f64::NEG_INFINITY), false).since_turn,
+        None
+    );
+    assert_eq!(new_chronicle(Some(3.0), false).since_turn, Some(3.0));
+}
+
+#[test]
 fn ration_vectors_match_pin() {
     let root: Value = serde_json::from_str(DATA).expect("json");
     let cases = root["ration"].as_array().expect("ration");
@@ -155,13 +204,9 @@ fn ration_vectors_match_pin() {
         let name = c["name"].as_str().unwrap();
         let owner = c["input"]["owner"].as_i64().unwrap();
         let auto_input = c["input"]["autoWyzywienie"].as_bool();
-        // Mapowanie isCityAutoWyzywienieEnabled (empire-food.ts:390) dla ownera w [0]: `autoWyzywienie === true`;
-        // dla innych wlascicieli funkcja zwraca true (ale applyLive i tak wraca na ownerId !== 0).
-        let auto_rust = if owner == 0 {
-            auto_input == Some(true)
-        } else {
-            true
-        };
+        // Port isCityAutoWyzywienieEnabled (empire-food.ts:390) z domyslnymi argumentami web (bez forceAuto, humanOwnerIds=[0]),
+        // dokladnie tak jak wola go applyLiveSafeRationForCity (main.ts:21806).
+        let auto_rust = is_city_auto_wyzywienie_enabled(owner, auto_input, false, &[0]);
         let exp = &c["expected"];
         assert_eq!(
             auto_rust,
