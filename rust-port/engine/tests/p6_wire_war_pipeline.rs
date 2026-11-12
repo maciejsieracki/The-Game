@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 
 use civ_engine::domain::ai_diplomacy_turn::{PairKey, PairWarParams};
 use civ_engine::domain::brake_inputs::{ForcedEraLock, OwnerFacts};
-use civ_engine::domain::brake_power::ObjectivePowerRaw;
+use civ_engine::domain::brake_power::{Component, ObjectivePowerRaw};
 use civ_engine::domain::diplomacy::{shared_border_penalty_for_epochs, DiplomacyParams};
 use civ_engine::domain::turn_war_pipeline::{
     run_war_turn, PeaceLockFacts, WarTurnConfig, WarTurnContext, WarTurnError, WarTurnInputs,
@@ -25,23 +25,28 @@ const HUMAN: i64 = 1;
 const AI_A: i64 = 2;
 const AI_B: i64 = 3;
 
+#[allow(non_snake_case)]
+fn P(v: f64) -> Component {
+    Component::Provided(v)
+}
+
 fn power(owner_id: i64, miasta: f64, jednostki: f64) -> ObjectivePowerRaw {
     ObjectivePowerRaw {
         owner_id,
         epoka: 1.0,
-        jednostki,
-        wygrane_bitwy: 0.0,
-        bitwy_pkt_sum: None,
-        suma_ludkow: 0.0,
-        rekrut_ekw: 0.0,
-        miasta,
-        heksy_terytorium: 0.0,
-        budynki: 0.0,
-        tech_zbadane: 0.0,
-        ulepszenia_terenu: 0.0,
-        kultura_imperium: None,
-        miasta_jednosc_religii: None,
-        zdobycze_power: None,
+        jednostki: P(jednostki),
+        wygrane_bitwy: P(0.0),
+        bitwy_pkt_sum: Component::ExplicitZero,
+        suma_ludkow: P(0.0),
+        rekrut_ekw: P(0.0),
+        miasta: P(miasta),
+        heksy_terytorium: P(0.0),
+        budynki: P(0.0),
+        tech_zbadane: P(0.0),
+        ulepszenia_terenu: P(0.0),
+        kultura_imperium: Component::ExplicitZero,
+        miasta_jednosc_religii: Component::ExplicitZero,
+        zdobycze_power: Component::ExplicitZero,
     }
 }
 

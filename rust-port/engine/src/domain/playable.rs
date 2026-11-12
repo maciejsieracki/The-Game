@@ -6,10 +6,10 @@
 //! separate domains and are not pulled into this vertical slice.
 
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 use std::{error::Error, fmt};
 
-use super::turn_war_pipeline::{run_war_turn, WarTurnConfig, WarTurnContext, WarTurnInputs};
+use super::turn_war_inputs::{build_war_inputs, production_config};
+use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
@@ -611,9 +611,9 @@ impl PlayableGame {
     /// P6-WIRE-WAR-PIPELINE: jedyne wywolanie `run_war_turn` (faza Diplomacy).
     /// Deklaracje wojny z hamulca nie maja jeszcze efektow (W4/W8); zwracane sa tylko przez raport.
     fn run_diplomacy_war_phase(&mut self) -> Result<(), PlayableError> {
-        let inputs = WarTurnInputs::from_playable(&self.state, &self.state.war);
-        // Produkcja: brak ustawien par wojny i trybu multiwar w PlayableState (r4).
-        let config = WarTurnConfig::new(BTreeMap::new(), false);
+        let inputs = build_war_inputs(&self.state, &self.state.war)
+            .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let config = production_config(&self.state);
         let mut ctx = WarTurnContext {
             war: &mut self.state.war,
             turn: f64::from(self.state.turn),
@@ -730,7 +730,7 @@ fn event_for_phase(turn: u32, phase: TurnPhase) -> TurnEvent {
 mod war_pipeline_advance_tests {
     use super::*;
 
-    /// Gracz AI z miastem = para wojny, ktorej producenci (moc) nie istnieja w r3 -> fail-loud.
+    /// Gracz AI z miastem = para fazy Diplomacy z produkcyjnymi wejsciami (W8 r4).
     fn game_with_ai_city() -> PlayableGame {
         let mut game = PlayableGame::new(StartGameParams {
             seed: 11,
@@ -749,21 +749,48 @@ mod war_pipeline_advance_tests {
     }
 
     #[test]
-    fn failing_war_phase_restores_queue_turn_and_war_state() {
+    fn advance_turn_with_ai_city_passes_three_turns_and_ticks_the_pair() {
         let mut game = game_with_ai_city();
+        for _ in 0..3 {
+            game.advance_turn()
+                .expect("faza wojny ma producentow wejsc");
+        }
+        assert_eq!(game.state().turn, 4);
+        let war = &game.state().war;
+        assert!(
+            war.diplomacy
+                .relation(PlayerId::new(1), PlayerId::new(2))
+                .is_some(),
+            "tick pary gracz<->AI zapisal relacje"
+        );
+    }
+
+    #[test]
+    fn failing_war_phase_restores_queue_turn_and_war_state() {
+        // Zepsuty zapis blokad pokoju (nie tablica) = jawny blad producenta, stan wraca.
+        let mut game = game_with_ai_city();
+        game.state.war.opaque.insert(
+            "forcedEraPeaceUntilNextEraByPairKey".to_owned(),
+            serde_json::json!("zepsute"),
+        );
         let queue_len = game.pending_phase_count();
         let turn = game.state().turn;
-        let err = game.advance_turn().expect_err("brak wejsc mocy -> blad");
+        let before = game.state().war.clone();
+        let err = game.advance_turn().expect_err("zly zapis blokad -> blad");
         assert!(matches!(err, PlayableError::WarTurn(_)), "{err:?}");
         assert_eq!(game.pending_phase_count(), queue_len, "kolejka cofnieta");
         assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
-        assert!(game.state().war.is_default(), "stan wojny bez zmian");
+        assert_eq!(game.state().war, before, "stan wojny bez zmian");
         assert!(game.state().last_advanced_phases.is_empty());
     }
 
     #[test]
     fn repeated_advance_after_failure_fails_the_same_way_not_with_queue_incomplete() {
         let mut game = game_with_ai_city();
+        game.state.war.opaque.insert(
+            "forcedEraPeaceUntilNextEraByPairKey".to_owned(),
+            serde_json::json!("zepsute"),
+        );
         let first = game.advance_turn().expect_err("blad 1");
         let second = game.advance_turn().expect_err("blad 2");
         assert_eq!(first, second);

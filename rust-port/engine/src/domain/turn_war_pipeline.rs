@@ -143,6 +143,8 @@ pub enum WarTurnError {
     MissingOwnerFacts(i64),
     MissingEpoch(i64),
     MissingPower(i64),
+    /// STRICT (POWER-NOZEROS): skladniki mocy w stanie `Missing` (klucze web `breakdown.key`).
+    PowerComponentsMissing(i64, Vec<&'static str>),
     MissingPeaceLocks,
 }
 
@@ -152,6 +154,11 @@ impl fmt::Display for WarTurnError {
             Self::MissingOwnerFacts(id) => write!(f, "war turn: brak faktow wlasciciela {id}"),
             Self::MissingEpoch(id) => write!(f, "war turn: brak epoki wlasciciela {id}"),
             Self::MissingPower(id) => write!(f, "war turn: brak wejsc mocy wlasciciela {id}"),
+            Self::PowerComponentsMissing(id, keys) => write!(
+                f,
+                "war turn: wlasciciel {id}: skladniki mocy bez zrodla (STRICT): {}",
+                keys.join(", ")
+            ),
             Self::MissingPeaceLocks => write!(f, "war turn: brak producenta blokad pokoju"),
         }
     }
@@ -267,7 +274,7 @@ pub fn run_war_turn(ctx: &mut WarTurnContext<'_>) -> Result<WarTurnReport, WarTu
                 return Err(WarTurnError::MissingPower(id));
             }
         }
-        for &id in &owner_ids {
+        for &id in owner_ids.iter().chain(std::iter::once(&me)) {
             if !inp.epochs.contains_key(&id) {
                 return Err(WarTurnError::MissingEpoch(id));
             }
@@ -277,18 +284,22 @@ pub fn run_war_turn(ctx: &mut WarTurnContext<'_>) -> Result<WarTurnReport, WarTu
             .as_ref()
             .ok_or(WarTurnError::MissingPeaceLocks)?;
         let epochs = inp.epochs.clone();
+        let mut power_values: BTreeMap<i64, f64> = BTreeMap::new();
+        for id in std::iter::once(me).chain(eligible.iter().copied()) {
+            let value = objective_power_for_owner(
+                &inp.power_raw[&id],
+                &cfg.power.coeffs,
+                cfg.power.battle,
+                &cfg.power.military,
+            )
+            .map_err(|e| WarTurnError::PowerComponentsMissing(id, e.0))?;
+            power_values.insert(id, value);
+        }
         let power = power_map(
             &std::iter::once(me)
                 .chain(eligible.iter().copied())
                 .collect::<Vec<_>>(),
-            |id| {
-                objective_power_for_owner(
-                    &inp.power_raw[&id],
-                    &cfg.power.coeffs,
-                    cfg.power.battle,
-                    &cfg.power.military,
-                )
-            },
+            |id| power_values[&id],
         );
         let peace = peace_locked_set(
             &tick_pairs,
