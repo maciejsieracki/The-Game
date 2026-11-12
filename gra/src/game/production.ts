@@ -956,6 +956,26 @@ export function collapseFortificationQueue(
 }
 
 /**
+ * R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: wczytanie zapisu dla wszystkich miast (pętla z restoreGameFromSave).
+ * Podmienia wpisy `cityProd` tam, gdzie coś usunięto; zwraca łączną liczbę usuniętych pozycji (0 = brak komunikatu).
+ */
+export function collapseFortificationQueuesInCities(
+  cityProd: Map<string, CityProduction>,
+  cityBuilt: ReadonlyMap<string, readonly string[]>,
+  buildings: readonly UpgradeChainNode[],
+): number {
+  let total = 0;
+  for (const [cid, prod] of cityProd) {
+    const cleaned = collapseFortificationQueue(prod, cityBuilt.get(cid) ?? [], buildings);
+    if (cleaned.removed.length > 0) {
+      cityProd.set(cid, cleaned.prod);
+      total += cleaned.removed.length;
+    }
+  }
+  return total;
+}
+
+/**
  * Decyzja 55B (Maciej 2026-07-25, "odblokowuje ozywic"): po ukonczeniu budynku
  * zwraca nazwe flagi City do ustawienia na true (np. 'maMur' dla Murow), odczytana
  * z buildings.json pola `odblokowuje` -- zamiast hardkodu `id === 'mury'`.

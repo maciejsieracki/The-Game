@@ -1006,7 +1006,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, effectivePracaRouting, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
-  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds, collapseFortificationChain, collapseFortificationQueue,
+  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds, collapseFortificationChain, collapseFortificationQueuesInCities,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   unitRecruitmentCapacityPerTurn,
   type CityProduction, type AvailabilityContext, unitStockShortfallLabel, epochNumber,
@@ -3470,6 +3470,8 @@ async function boot(): Promise<void> {
     // --- Stan pomiędzy turami: produkcja / built / religia per miasto ---
     const cityProd  = new Map<string, CityProduction>();
     const cityBuilt = new Map<string, string[]>();
+    /** R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: ile pozycji kolejki fortyfikacji usunięto przy ostatnim wczytaniu (0 = brak komunikatu). Deklaracja tu (przed hookami testowymi), nie tuż przed loadGameFromSlot. */
+    let fortQueueCleanupNotice = 0;
     cityBuiltIdsForRender = (cityId) => cityBuilt.get(cityId) ?? [];
     cityProdForRender = (cityId) => cityProd.get(cityId) ?? null;
     const cityRelig = new Map<string, ReligionState>();
@@ -46566,8 +46568,6 @@ async function boot(): Promise<void> {
       startRenderLoop();
     }
 
-    /** R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: ile pozycji kolejki fortyfikacji usunięto przy ostatnim wczytaniu (0 = brak komunikatu). */
-    let fortQueueCleanupNotice = 0;
     async function loadGameFromSlot(slotId: string, fromInGamePause = false): Promise<void> {
       prepareSessionForLoad();
       hideSaveLoadDialog();
@@ -46729,7 +46729,7 @@ async function boot(): Promise<void> {
         if (fortQueueCleanupNotice > 0) {
           // R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: jednorazowy komunikat (stary zapis); po zapisie gry kolejka jest już czysta.
           showHintMessage(
-            `Usunięto ${fortQueueCleanupNotice} zbędn${fortQueueCleanupNotice === 1 ? 'ą pozycję' : 'e pozycje'} z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt nie został zwrócony.`,
+            `Usunięto ${fortQueueCleanupNotice} zbędn${fortQueueCleanupNotice === 1 ? 'ą pozycję' : 'e pozycje'} z kolejki produkcji (niższe etapy fortyfikacji; najwyższy etap zostaje). Koszt i postęp nie zostały zwrócone.`,
             6000,
           );
           fortQueueCleanupNotice = 0;
@@ -47029,14 +47029,7 @@ async function boot(): Promise<void> {
         for (const [cid, blt] of Object.entries(saved.cityBuilt)) cityBuilt.set(cid, collapseFortificationChain(blt as string[], data.buildings).slice());
       }
       // R-WEB-FORTIFICATIONS-OLD-SAVE-QUEUE-CLEANUP-Q1: stary zapis z kilkoma etapami łańcucha fortyfikacji W KOLEJCE -> zostaje najwyższy, niższe bez zwrotu; jednorazowy komunikat po wczytaniu.
-      fortQueueCleanupNotice = 0;
-      for (const [cid, prod] of cityProd) {
-        const cleaned = collapseFortificationQueue(prod, cityBuilt.get(cid) ?? [], data.buildings);
-        if (cleaned.removed.length > 0) {
-          cityProd.set(cid, cleaned.prod);
-          fortQueueCleanupNotice += cleaned.removed.length;
-        }
-      }
+      fortQueueCleanupNotice = collapseFortificationQueuesInCities(cityProd, cityBuilt, data.buildings);
       completedWorldWonders = Array.isArray(saved.meta?.completedWorldWonders)
         ? (saved.meta.completedWorldWonders as string[]).slice()
         : [];
