@@ -181,3 +181,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - DECYZJA TECHNICZNA: dodanie warstw ulepszeń terenu i fortów/posterunków do PlayableState to decyzja techniczna orkiestratora (nie pytanie ABC).
 - ZASADA MODELI (właściciel): zapisana w CLAUDE.md i KOLEJKA-RUST.md; skrypt Sonnet-op zablokowany (.disabled); mkwf.sh generuje czytelne nazwy z podziałem modeli. Raporty: tabela (temat | etap | model | czas).
 - Pytania gameplay do rana: SZTURM ODPARTY; W8 r7 Q1–Q4; units.json vs pin (71 różnic pól w 51/75 jednostek: falanga, Horseman/Chinese Cavalry Epoka, fieldPower); DYSTANS; REPIN-DRYFT 1–6.
+
+## Przebieg 2026-11-12 09:2x UTC (orkiestrator Rust)
+- parity-v2 = 64d6e22ce (INTEG-B14B: łańcuch K5, R7K7, K5I2a1; pełne testy 3089/0/1).
+- W toku (1): INTEG-B14C (CRED + UNIT-REPLACE-PROGRESS + POWER-ULEPSZENIA-WIRING + K5I2b[a2–a4]) — etap Final Control (Sonnet), Operator Haiku.
+- Nowych tematów nie startuję (oszczędzanie limitu wg właściciela): reszta kolejki zależy od B14C albo od pytań gameplay; do zlecenia po B14C: STAN-ULEPSZENIA (#95), POWER-BITWY-ZDOBYCZE (#86), R7K7-B/C (#89–90), K5-LOOP (#91), KLASY-WIRE (#92), NFD-CCC (#88), K5I2b2 (adapter pozycja+mapa+mur → BlowEnv), unit_power::ranged_shot_accuracy (f64::max vs Math.max).
