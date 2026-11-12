@@ -150,13 +150,11 @@ pub struct ResolveWorkedTilesOpts<'a> {
 // ---------------------------------------------------------------------------------------------
 
 /// JS `Math.max(0, Math.floor(x))` — NaN propaguje się (JS `Math.max` zwraca NaN).
-fn js_floor_nonneg(x: f64) -> f64 {
-    let f = x.floor();
-    if f.is_nan() {
-        f
-    } else {
-        f.max(0.0)
-    }
+/// Znak zera: `Math.max(0, -0) === +0`, dlatego zamiast `f64::max` używamy `js_max`
+/// z `siege_tactics_blow` (ręczna wersja ze znakiem zera). Publiczne, bo testy wektorowe
+/// (`tests/p6_js_max0_rest.rs`) i `turn_economy_loop` z niego korzystają.
+pub fn js_floor_nonneg(x: f64) -> f64 {
+    crate::domain::siege_tactics_blow::js_max(0.0, x.floor())
 }
 
 /// JS `Math.max(a, b)` — NaN propaguje się.
