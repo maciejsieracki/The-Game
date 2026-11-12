@@ -1,0 +1,682 @@
+{
+ "garnizon": [
+  {
+   "name": "pusty stan",
+   "input": {
+    "city": {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    "units": []
+   },
+   "expected": {
+    "garnizon": 0
+   }
+  },
+  {
+   "name": "dwie w garnizonie wlasciciela",
+   "input": {
+    "city": {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    "units": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": true
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 2
+   }
+  },
+  {
+   "name": "jednostka poza garnizonem nie liczy sie",
+   "input": {
+    "city": {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    "units": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": false
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 1
+   }
+  },
+  {
+   "name": "obcy wlasciciel na heksie nie liczy sie",
+   "input": {
+    "city": {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    "units": [
+     {
+      "ownerId": 2,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 4,
+      "inGarnizon": true
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 1
+   }
+  },
+  {
+   "name": "inny heks nie liczy sie",
+   "input": {
+    "city": {
+     "ownerId": 1,
+     "q": 3,
+     "r": 4
+    },
+    "units": [
+     {
+      "ownerId": 1,
+      "q": 3,
+      "r": 5,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 1,
+      "q": 4,
+      "r": 4,
+      "inGarnizon": true
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 0
+   }
+  },
+  {
+   "name": "inGarnizon brak klucza = false",
+   "input": {
+    "city": {
+     "ownerId": 0,
+     "q": 0,
+     "r": 0
+    },
+    "units": [
+     {
+      "ownerId": 0,
+      "q": 0,
+      "r": 0
+     },
+     {
+      "ownerId": 0,
+      "q": 0,
+      "r": 0,
+      "inGarnizon": true
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 1
+   }
+  },
+  {
+   "name": "stan po zdobyciu: obroncy starego usunieci, wchodzacy w garnizonie",
+   "input": {
+    "city": {
+     "ownerId": 2,
+     "q": 7,
+     "r": 2
+    },
+    "units": [
+     {
+      "ownerId": 2,
+      "q": 7,
+      "r": 2,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 2,
+      "q": 7,
+      "r": 2,
+      "inGarnizon": true
+     },
+     {
+      "ownerId": 2,
+      "q": 7,
+      "r": 2,
+      "inGarnizon": true
+     }
+    ]
+   },
+   "expected": {
+    "garnizon": 3
+   }
+  }
+ ],
+ "capture": [
+  {
+   "name": "nowe miasto: zdobywca i ofiara z tura",
+   "input": {
+    "initial": [],
+    "oldOwner": 1,
+    "newOwner": 2,
+    "turn": 14
+   },
+   "expected": {
+    "map": [
+     [
+      1,
+      {
+       "sinceTurn": 14,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 1,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      2,
+      {
+       "sinceTurn": 14,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 1,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "bez tury: brak sinceTurn",
+   "input": {
+    "initial": [],
+    "oldOwner": 1,
+    "newOwner": 2,
+    "turn": null
+   },
+   "expected": {
+    "map": [
+     [
+      1,
+      {
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 1,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      2,
+      {
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 1,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "tura NaN: brak sinceTurn",
+   "input": {
+    "initial": [],
+    "oldOwner": 1,
+    "newOwner": 2,
+    "turn": null
+   },
+   "expected": {
+    "map": [
+     [
+      1,
+      {
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 1,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      2,
+      {
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 1,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "ten sam wlasciciel = no-op",
+   "input": {
+    "initial": [
+     {
+      "owner": 3,
+      "turn": 5,
+      "legacy": false,
+      "citiesTaken": 2
+     }
+    ],
+    "oldOwner": 3,
+    "newOwner": 3,
+    "turn": 9
+   },
+   "expected": {
+    "map": [
+     [
+      3,
+      {
+       "sinceTurn": 5,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 2,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "istniejacy wpis: liczniki rosna, sinceTurn zachowany",
+   "input": {
+    "initial": [
+     {
+      "owner": 2,
+      "turn": 5,
+      "legacy": false,
+      "citiesTaken": 1,
+      "citiesLost": 4
+     }
+    ],
+    "oldOwner": 1,
+    "newOwner": 2,
+    "turn": 20
+   },
+   "expected": {
+    "map": [
+     [
+      1,
+      {
+       "sinceTurn": 20,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 1,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      2,
+      {
+       "sinceTurn": 5,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 2,
+       "citiesLost": 4,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "legacy wpis zachowuje flage legacy",
+   "input": {
+    "initial": [
+     {
+      "owner": 0,
+      "turn": null,
+      "legacy": true,
+      "citiesLost": 1
+     }
+    ],
+    "oldOwner": 0,
+    "newOwner": 5,
+    "turn": 30
+   },
+   "expected": {
+    "map": [
+     [
+      0,
+      {
+       "legacy": true,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 2,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      5,
+      {
+       "sinceTurn": 30,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 1,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "odbicie: role odwrocone w tej samej turze",
+   "input": {
+    "initial": [
+     {
+      "owner": 0,
+      "turn": 1,
+      "legacy": false,
+      "citiesTaken": 1
+     },
+     {
+      "owner": 1,
+      "turn": 1,
+      "legacy": false,
+      "citiesLost": 1
+     }
+    ],
+    "oldOwner": 1,
+    "newOwner": 0,
+    "turn": 30
+   },
+   "expected": {
+    "map": [
+     [
+      0,
+      {
+       "sinceTurn": 1,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 2,
+       "citiesLost": 0,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ],
+     [
+      1,
+      {
+       "sinceTurn": 1,
+       "produced": 0,
+       "lost": 0,
+       "destroyed": 0,
+       "battles": 0,
+       "citiesTaken": 0,
+       "citiesLost": 2,
+       "maxCities": 0,
+       "peakPop": 0,
+       "wonders": 0,
+       "vs": {}
+      }
+     ]
+    ]
+   }
+  }
+ ],
+ "ration": [
+  {
+   "name": "gracz, auto wlaczone, poziom ponad maxSafe -> obciecie",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": true,
+    "level": 4,
+    "maxSafe": 2
+   },
+   "expected": {
+    "autoEnabled": true,
+    "poziomRacjiAfter": 2,
+    "dirty": true,
+    "level": 4,
+    "maxSafe": 2
+   }
+  },
+  {
+   "name": "gracz, auto wlaczone, poziom rowny maxSafe -> bez zmian",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": true,
+    "level": 3,
+    "maxSafe": 3
+   },
+   "expected": {
+    "autoEnabled": true,
+    "poziomRacjiAfter": 3,
+    "dirty": false,
+    "level": 3,
+    "maxSafe": 3
+   }
+  },
+  {
+   "name": "gracz, auto wlaczone, poziom ponizej maxSafe -> bez zmian",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": true,
+    "level": 1,
+    "maxSafe": 3
+   },
+   "expected": {
+    "autoEnabled": true,
+    "poziomRacjiAfter": 1,
+    "dirty": false,
+    "level": 1,
+    "maxSafe": 3
+   }
+  },
+  {
+   "name": "gracz, auto wylaczone -> wczesny return",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": false,
+    "level": 5,
+    "maxSafe": 1
+   },
+   "expected": {
+    "autoEnabled": false,
+    "poziomRacjiAfter": 5,
+    "dirty": false,
+    "level": 5,
+    "maxSafe": 1
+   }
+  },
+  {
+   "name": "gracz, auto brak pola -> traktowane jak wylaczone",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": null,
+    "level": 5,
+    "maxSafe": 1
+   },
+   "expected": {
+    "autoEnabled": false,
+    "poziomRacjiAfter": 5,
+    "dirty": false,
+    "level": 5,
+    "maxSafe": 1
+   }
+  },
+  {
+   "name": "AI (owner 1) -> wczesny return mimo auto",
+   "input": {
+    "owner": 1,
+    "autoWyzywienie": true,
+    "level": 5,
+    "maxSafe": 1
+   },
+   "expected": {
+    "autoEnabled": true,
+    "poziomRacjiAfter": 5,
+    "dirty": false,
+    "level": 5,
+    "maxSafe": 1
+   }
+  },
+  {
+   "name": "ulamkowy maxSafe obcina do wartosci maxSafe",
+   "input": {
+    "owner": 0,
+    "autoWyzywienie": true,
+    "level": 4,
+    "maxSafe": 2.5
+   },
+   "expected": {
+    "autoEnabled": true,
+    "poziomRacjiAfter": 2.5,
+    "dirty": true,
+    "level": 4,
+    "maxSafe": 2.5
+   }
+  }
+ ],
+ "ever": [
+  {
+   "name": "dodanie nowego wlasciciela",
+   "input": {
+    "initial": [
+     0
+    ],
+    "owner": 2
+   },
+   "expected": {
+    "semantic": true,
+    "has": true,
+    "sorted": [
+     0,
+     2
+    ]
+   }
+  },
+  {
+   "name": "ponowne dodanie tego samego = bez zmian",
+   "input": {
+    "initial": [
+     0,
+     2
+    ],
+    "owner": 2
+   },
+   "expected": {
+    "semantic": true,
+    "has": true,
+    "sorted": [
+     0,
+     2
+    ]
+   }
+  },
+  {
+   "name": "zbior pusty",
+   "input": {
+    "initial": [],
+    "owner": 1
+   },
+   "expected": {
+    "semantic": true,
+    "has": true,
+    "sorted": [
+     1
+    ]
+   }
+  }
+ ]
+}

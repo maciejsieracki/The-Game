@@ -51,6 +51,8 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         "wasIndependentCityStateBeforeCapture",
         EffectStatus::CallerSide("Z-TR-1: parametr was_independent_city_state"),
     ),
+    // BRAK (Q5): brak planera przeniesienia cudow (`planWonderTransfers`/`applyWonderTransfers`) i snapshotu
+    // terytorium cudow w rust-port/engine/src (grep 2026-11-12 pusty); osobny temat (game/wonder-transfer.ts).
     ("beginWonderTransferWatch", EffectStatus::Missing),
     // Wykonane przez apply_transfer_with_effects gdy TransferExtras::pop_loss = Some (tryb legacy apply_transfer: NIE).
     // Generator pinu (p6_siege_transfer_gen.mjs) nadal stubuje to wolanie - wektory NIE zostaly przegenerowane.
@@ -76,8 +78,14 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "ZALEZNOSC W8 r4 (NIE_ZMIERZONO): force=true (omija isPeaceLockedBetween, czysci peaceUntilTurn) i powod 'wymuszona_inna' nie maja odpowiednika w diplomacy_truce_flow::declare_war_opts (tylko skip_n2)",
         ),
     ),
+    // BRAK (Q5): jak beginWonderTransferWatch (ta sama zaleznosc: planer/snapshot cudow nie istnieje w Rust).
     ("settleWonderTransfer", EffectStatus::Missing),
-    ("noteCityCapture", EffectStatus::Missing),
+    (
+        "noteCityCapture",
+        EffectStatus::Ported(
+            "siege_transfer_q5::note_city_capture (wolajacy po apply_transfer; NIE w apply_transfer - TransferExtras bez pola kroniki, testy Q3/Q4 z literalami struktury)",
+        ),
+    ),
     (
         "clearCityStateFlagOnCapture",
         EffectStatus::Ported("state::p6_6b::display_names::clear_city_state_flag_on_capture"),
@@ -135,7 +143,12 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "turn_economy_inputs_podzial::seed_city_owner_defaults_podzial (inne typy wejsc)",
         ),
     ),
-    ("syncCityGarnizon", EffectStatus::Missing),
+    (
+        "syncCityGarnizon",
+        EffectStatus::Ported(
+            "siege_transfer_q5::sync_city_garnizon (wolajacy PO enter_city_after_surrender; NIE w apply_transfer - kolejnosc web main.ts:17812)",
+        ),
+    ),
     (
         "armyStackLimit",
         EffectStatus::CallerSide("argument enterCityAfterSurrender (krok po apply_transfer)"),
@@ -146,8 +159,17 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "siege_enter_city::enter_city_after_surrender (po apply_transfer)",
         ),
     ),
-    ("playerEverOwnedCityByOwner.add", EffectStatus::Missing),
+    (
+        "playerEverOwnedCityByOwner.add",
+        EffectStatus::Ported(
+            "siege_transfer_q5::record_player_ever_owned_city (wolajacy PO wejsciu garnizonu; NIE w apply_transfer - kolejnosc web main.ts:17816)",
+        ),
+    ),
+    // BRAK (Q5): pladrowanie stolicy (`capitalCaptureReportSlot`, `capital-capture.ts` zasady, eliminacja) - duzy klocek
+    // (main.ts:35558-~35780), osobny temat; NIE wycinany w tym temacie.
     ("runCapitalCapturePlunder", EffectStatus::Missing),
+    // BRAK (Q5): zdarzenie "zdobycie miasta" (`cityCaptureEventDetails`, mirror wierszy raportu, UI panelu wydarzen)
+    // nie ma odpowiednika w rust-port/engine/src (grep 2026-11-12 pusty); wyglad UI/event store poza domena.
     ("recordCityCaptureEvent", EffectStatus::Missing),
     ("showHintMessage", EffectStatus::Ui),
     // Pomocniki raportowe/UI wolane w galezi Transfer (pin main.ts, zakres 17646-17893: setSelectionHex,
@@ -163,7 +185,12 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         "endMapSiege",
         EffectStatus::CallerSide("siege_surrender::end_map_siege_fields (po wejsciu)"),
     ),
-    ("applyLiveSafeRationForCity", EffectStatus::Missing),
+    (
+        "applyLiveSafeRationForCity",
+        EffectStatus::Ported(
+            "siege_transfer_q5::apply_live_safe_ration_for_city (czesc decyzyjna; ensureCityRationDefaults, getCityRationLevel i maxSafe po stronie wolajacego; wolany PO endMapSiege)",
+        ),
+    ),
     (
         "areEnemyOwners",
         EffectStatus::CallerSide("siege_surrender::resolve_surrender_path (warunek wstepny)"),

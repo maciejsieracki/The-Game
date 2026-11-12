@@ -87,6 +87,7 @@ pub mod siege_starvation;
 pub mod siege_surrender;
 pub mod siege_transfer;
 pub mod siege_transfer_effects;
+pub mod siege_transfer_q5;
 pub mod siege_turn;
 pub mod society_breakdown;
 pub mod start_position;

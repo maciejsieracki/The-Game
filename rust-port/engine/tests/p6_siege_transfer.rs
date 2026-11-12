@@ -431,17 +431,15 @@ fn coverage_table_has_no_silent_ported_gaps() {
         .map(|(n, _)| *n)
         .collect();
     // Jawna lista BRAK (dispatch: "jawny brak"); zmiana tej listy wymaga zmiany tabeli i raportu.
+    // R-RUSTPORT-P6-SIEGE-TRANSFER-Q5-Q1: noteCityCapture, syncCityGarnizon, playerEverOwnedCityByOwner.add,
+    // applyLiveSafeRationForCity przeszly na Ported (wektory: tests/p6_siege_transfer_q5.rs).
     assert_eq!(
         missing,
         vec![
             "beginWonderTransferWatch",
             "settleWonderTransfer",
-            "noteCityCapture",
-            "syncCityGarnizon",
-            "playerEverOwnedCityByOwner.add",
             "runCapitalCapturePlunder",
             "recordCityCaptureEvent",
-            "applyLiveSafeRationForCity",
         ]
     );
 }
