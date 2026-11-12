@@ -70,7 +70,8 @@ fn act(q: i64, r: i64, side_atk: bool) -> ActivateUnit {
 fn melee_blow() -> FullBlowInput {
     FullBlowInput {
         ranged: false,
-        hit_arc: HitArc::Front,
+        // Obrońca (1,0) z facing N (0) jest trafiany z (0,0): kierunek W, czyli flank (relativeHit, r4).
+        hit_arc: HitArc::Flank,
         attacker: AttackerCu {
             weapon_damage: 5.0,
             piercing: 0.0,
@@ -172,12 +173,14 @@ fn body_with(attacker: ActivateUnit, blow: Option<FullBlowInput>) -> ProdBody<Se
         melee_target: Some(0),
         blow,
         body_ms: 800.0,
+        facing: 0.0,
     };
     let d = ProdUnit {
         activate: act(1, 0, false),
         melee_target: None,
         blow: None,
         body_ms: 0.0,
+        facing: 0.0,
     };
     ProdBody::new([vec![a], vec![d]], scene(), SequenceRolls::new(vec![ROLL]))
 }

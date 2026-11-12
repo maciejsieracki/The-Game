@@ -5,8 +5,8 @@
 //! WYKONUJE tekst pinu `_activateUnit` -> `_doAttack` -> `_singleBlow` (z prawdziwymi helperami ciosu: `toCombatUnit`,
 //! `hitChanceTw`, `baseDamage`, `flankRearDefensePenalty` itd.) na sekwencjach aktywacji wielu jednostek. Zastubowane są
 //! efekty zewnętrzne (RNG = kolejka rzutów, render/animacja, ruch/doktryna/wieże, wybór celu, dane sceny, skutki
-//! `_resolveBlowOutcome` poza zabiciem) ORAZ (NIE_ZMIERZONO) stan facing + `relativeHit` (łuk = hasz współrzędnych, facing
-//! nigdy się nie zmienia) — patrz nagłówek generatora. Wektory NIE dowodzą zgodności łuków z pinem.
+//! `_resolveBlowOutcome` poza zabiciem). Stan facing (`_updateFacing`, `attacker.facing` w `_doMeleeAttack`) i `relativeHit`
+//! są WYKONANE z tekstu pinu (r4); łuk każdego ciosu i `facing` każdej jednostki po KAŻDEJ aktywacji są porównywane.
 //!
 //! Porównanie po KAŻDEJ aktywacji: ślad zdarzeń `_activateUnit` (`done`/`flee`/`terrainRange`/`moraleBar`/`startRout`/
 //! `facing`/`attack:i`/`advanceStep`/...), wynik ciosu (trafienie, `hitPct`, `roll`, `dmg`, HP obrońcy, `extraMorale`,
@@ -35,6 +35,7 @@ const UNIT_FRAGMENT_SHA256: &str =
     "d1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c";
 const UNITS_SHA256: &str = "7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7";
 const DOATTACK_SHA256: &str = "592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1";
+const FACING_SHA256: &str = "6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3";
 const BODY_MS: f64 = 800.0;
 
 fn num(v: &Value) -> f64 {
@@ -109,7 +110,8 @@ fn label(e: &ActivateEvent) -> String {
 fn blow_input(t: &Value) -> FullBlowInput {
     FullBlowInput {
         ranged: false,
-        hit_arc: arc(t["arc"].as_str().expect("arc")),
+        // Łuk nie jest szablonem (r4): ProdBody liczy go w `complete` z facing obrońcy; wartość tu jest nadpisywana.
+        hit_arc: HitArc::Front,
         attacker: AttackerCu {
             weapon_damage: num(&t["atk"]["weaponDamage"]),
             piercing: num(&t["atk"]["piercing"]),
@@ -228,6 +230,8 @@ fn load() -> Value {
 #[derive(Default)]
 struct Cover {
     activations: usize,
+    facing_changes: usize,
+    reverse_arc_diff: usize,
     blows: usize,
     hits: usize,
     misses: usize,
@@ -261,11 +265,17 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
     );
     assert_eq!(v["unitsSha256"], UNITS_SHA256, "units.json");
     assert_eq!(v["doAttackSha256"], DOATTACK_SHA256, "_doAttack");
+    assert_eq!(
+        v["facingSha256"], FACING_SHA256,
+        "facing: _nearestEnemy/_updateFacing/relativeHit/_doMeleeAttack"
+    );
     let seqs = v["sequences"].as_array().expect("sequences");
-    assert!(seqs.len() >= 200, "za malo sekwencji: {}", seqs.len());
+    assert!(seqs.len() >= 300, "za malo sekwencji: {}", seqs.len());
 
     let mut cov = Cover::default();
     let mut failures: Vec<String> = Vec::new();
+    // Historia ciosow (atakujacy, cel, luk) w biezacej sekwencji: do pokrycia "A->B, potem B->A z innym lukiem".
+    let mut arc_hist: Vec<(String, String, HitArc)> = Vec::new();
 
     for seq in seqs {
         let id = seq["id"].as_u64().expect("id");
@@ -300,6 +310,7 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                     Some(blow_input(&u["blow"]))
                 },
                 body_ms: BODY_MS,
+                facing: num(&u["facing"]),
             };
             let su = SeqUnit {
                 id: k as u64,
@@ -333,6 +344,8 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
         };
         let mut body = ProdBody::new(pus, scene, SequenceRolls::new(rolls));
         let _ = n_def;
+        arc_hist.clear();
+        let mut facing_prev: Vec<f64> = units.iter().map(|u| num(&u["facing"])).collect();
 
         if units.iter().any(|u| num(&u["moveLeft"]) > 0.0) {
             cov.move_left_seqs += 1;
@@ -470,6 +483,21 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                         r.is_charge, w["isCharge"]
                     ));
                 }
+                if r.hit_arc != arc(w["arc"].as_str().expect("arc")) {
+                    failures.push(format!(
+                        "{who}: hitArc rust={:?} js={}",
+                        r.hit_arc, w["arc"]
+                    ));
+                }
+                let me = tag(unit);
+                let tgt = tag(r.target);
+                if arc_hist
+                    .iter()
+                    .any(|(a2, t2, arc2)| *a2 == tgt && *t2 == me && *arc2 != r.hit_arc)
+                {
+                    cov.reverse_arc_diff += 1;
+                }
+                arc_hist.push((me, tgt, r.hit_arc));
                 if r.missed {
                     cov.misses += 1;
                 } else {
@@ -517,6 +545,7 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 chk("hp", ru.hp, num(&wu["hp"]));
                 chk("morale", ru.morale, num(&wu["morale"]));
                 chk("moveLeft", ru.move_left, num(&wu["moveLeft"]));
+                chk("facing", body.facing(r), num(&wu["facing"]));
                 for (what, got, want) in [
                     ("dead", ru.dead, b(&wu["dead"])),
                     ("fadingOut", ru.fading_out, b(&wu["fadingOut"])),
@@ -533,6 +562,24 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 }
             }
             before = st.atk.iter().chain(st.def.iter()).map(|s| s.c).collect();
+            for (i, prev) in facing_prev.iter_mut().enumerate() {
+                let r = if i < n_atk {
+                    UnitRef {
+                        side: BattleSide::Attacker,
+                        idx: i,
+                    }
+                } else {
+                    UnitRef {
+                        side: BattleSide::Defender,
+                        idx: i - n_atk,
+                    }
+                };
+                let now = body.facing(r);
+                if now != *prev {
+                    cov.facing_changes += 1;
+                }
+                *prev = now;
+            }
 
             // --- zbior engaged ---
             let mut got_engaged: Vec<String> = body
@@ -586,6 +633,15 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
 
     // Pokrycie: wszystkie galezie musza wystapic w wektorach (liczone z porownanych danych).
     assert!(cov.activations >= 1000, "aktywacje: {}", cov.activations);
+    assert!(
+        cov.facing_changes > 0,
+        "zmiany facing (_updateFacing/_doMeleeAttack)"
+    );
+    assert!(
+        cov.reverse_arc_diff > 0,
+        "cios A->B i potem B->A z innym lukiem: {}",
+        cov.reverse_arc_diff
+    );
     assert!(cov.blows >= 500, "ciosy: {}", cov.blows);
     assert!(cov.hits > 100 && cov.misses > 100, "trafienia/pudla");
     assert!(cov.charges > 0, "szarza");

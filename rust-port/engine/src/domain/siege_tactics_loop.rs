@@ -25,7 +25,7 @@ use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
-use crate::domain::siege_tactics_blow::{DefenderState, Outcome, RollSource};
+use crate::domain::siege_tactics_blow::{DefenderState, HitArc, Outcome, RollSource};
 use crate::domain::siege_tactics_blow_full::{single_blow_full, FullBlowInput};
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_end::BattleSide;
@@ -33,6 +33,7 @@ use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
 use crate::domain::siege_tactics_fastforward::{
     round_cap_verdict_step, run_fast_forward, FfEvent, FfHost, FfLoopState, FfStop,
 };
+use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
 use crate::domain::siege_tactics_roundcap::RoundCapState;
 use crate::domain::siege_tactics_turnseq::{
     activate_next, activation_done, begin_turn, CheckSite, EndCheckSnapshot, SeqEvent, SeqStep,
@@ -351,9 +352,9 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 //
 // NIE WPINAĆ do [`SiegeLoop`] przed osobnymi tematami: skutki `_resolveBlowOutcome` (morale/rout po ciosie), kontratak
 // (`_defenderCounters`) i timing `BLOW_HIT_T` NIE są tu zaimplementowane, więc stan produkcyjny rozjechałby się z pinem.
-// FACING (NIE_ZMIERZONO, obrona r3): ciało nie ma stanu `facing` (`_updateFacing`/`_nearestEnemy`, przypisanie
-// `attacker.facing` w `_doMeleeAttack`) ani `relativeHit`; łuk ciosu (`hit_arc`) jest wejściem szablonu [`ProdUnit::blow`],
-// a nie wynikiem zmiany kierunku jednostek. Zgodność łuków z pinem NIE jest dowiedziona.
+// FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
+// początku aktywacji, `_nearestEnemy` + `facingToward`) i przypisanie `attacker.facing` w `_doMeleeAttack` (przed ciosem)
+// aktualizują stan; łuk ciosu liczy [`relative_hit`] z AKTUALNEGO facing obrońcy i pozycji (nie z szablonu).
 // ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje tylko gałąź ciosu w zwarciu
 // dla jednostki AUTO bez oblężenia, bez strzelca i bez doktryny: [`activate_unit`] (K5H) decyduje, a dla zdarzenia
 // `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. Każda inna gałąź `_activateUnit`
@@ -374,6 +375,8 @@ pub struct ProdUnit {
     pub blow: Option<FullBlowInput>,
     /// Czas animacji ciosu (ms) zwracany przez `start` (wejście adaptera; timing `_doAttack` nieportowany).
     pub body_ms: f64,
+    /// Początkowy `facing` (`Dir` jako liczba 0..3, `battleScene.ts:315-320`); potem zmienia go `_updateFacing`.
+    pub facing: f64,
 }
 
 /// Wynik `start` przekazywany do `complete`.
@@ -469,6 +472,8 @@ pub struct BlowRecord {
     pub def_hp_after: f64,
     pub extra_morale: f64,
     pub is_charge: bool,
+    /// Łuk ciosu (`relativeHit` względem facing obrońcy w chwili ciosu, `battleScene.ts:8880`).
+    pub hit_arc: HitArc,
 }
 
 /// Produkcyjne ciało jednostki pętli: składa [`activate_unit`] (K5H) i [`single_blow_full`] (K5I).
@@ -491,6 +496,8 @@ pub struct ProdBody<R: RollSource> {
     /// Flaga `surroundApplied` (jednorazowa) trzymana między aktywacjami, bo nie ma jej w [`CombatUnit`].
     surround: [Vec<bool>; 2],
     pending: [Vec<Option<ProdPending>>; 2],
+    /// Stan `facing` każdej jednostki (`ru.facing`, liczba 0..3). Zmieniany przez `_updateFacing` i `_doMeleeAttack`.
+    facing: [Vec<f64>; 2],
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -506,6 +513,10 @@ impl<R: RollSource> ProdBody<R> {
                 .collect(),
         ];
         let pending = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        let facing = [
+            units[0].iter().map(|u| u.facing).collect(),
+            units[1].iter().map(|u| u.facing).collect(),
+        ];
         Self {
             units,
             scene,
@@ -516,7 +527,45 @@ impl<R: RollSource> ProdBody<R> {
             engaged: Vec::new(),
             surround,
             pending,
+            facing,
         }
+    }
+
+    /// Aktualny `facing` jednostki (`ru.facing` w pinie).
+    pub fn facing(&self, unit: UnitRef) -> f64 {
+        self.facing[side_ix(unit.side)][unit.idx]
+    }
+
+    /// `_updateFacing` (battleScene.ts:8334-8341): zwrot ku NAJBLIŻSZEMU żywemu wrogowi (`_nearestEnemy`, Manhattan,
+    /// pierwszy minimalny w kolejności listy). Brak wroga = brak zmiany; wróg na tym samym polu = `facing` bez zmian.
+    fn update_facing(&mut self, unit: UnitRef, enemies: &[EnemyRef]) {
+        let ix = side_ix(unit.side);
+        let (q, r) = (
+            self.units[ix][unit.idx].activate.q,
+            self.units[ix][unit.idx].activate.r,
+        );
+        let mut best: Option<EnemyRef> = None;
+        let mut best_d = f64::INFINITY;
+        for e in enemies
+            .iter()
+            .filter(|e| !e.dead && !e.fading_out && !e.routed)
+        {
+            let dd = ((q - e.q).abs() + (r - e.r).abs()) as f64;
+            if dd < best_d {
+                best_d = dd;
+                best = Some(*e);
+            }
+        }
+        let Some(e) = best else {
+            return;
+        };
+        let cur = self.facing[ix][unit.idx];
+        self.facing[ix][unit.idx] = facing_toward(
+            &JsVal::Num((e.q - q) as f64),
+            &JsVal::Num((e.r - r) as f64),
+            &JsVal::Num(cur),
+        )
+        .to_number();
     }
 
     /// Flaga `surroundApplied` jednostki (stan między aktywacjami; nie ma jej w [`CombatUnit`]).
@@ -625,8 +674,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 | ActivateEvent::PerformPlayerOrder
                 | ActivateEvent::ResetPlayerOrder
                 | ActivateEvent::UpdateMoraleBar
-                | ActivateEvent::StartRout
-                | ActivateEvent::UpdateFacing => {}
+                | ActivateEvent::StartRout => {}
+                ActivateEvent::UpdateFacing => self.update_facing(unit, &enemies),
                 // Wywołania wież i taranu są w pinie bezczynne bez muru (`siegeWallCol < 0` -> `return false`,
                 // battleScene.ts:8023, :8057, :8088); strażnik `oblezenie` wyżej wyklucza mur.
                 ActivateEvent::TowerClimb
@@ -684,6 +733,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let Some(mut input) = self.units[ix][unit.idx].blow.clone() else {
             return;
         };
+        // `_doMeleeAttack` (battleScene.ts:9104): atakujący zwraca się ku celowi; `_singleBlow` klasyfikuje łuk
+        // względem facing OBROŃCY w tym momencie (`relativeHit`, battleScene.ts:8880).
+        let (aq, ar) = (
+            self.units[ix][unit.idx].activate.q,
+            self.units[ix][unit.idx].activate.r,
+        );
+        let tix = side_ix(tref.side);
+        let (dq, dr) = (
+            self.units[tix][tref.idx].activate.q,
+            self.units[tix][tref.idx].activate.r,
+        );
+        self.facing[ix][unit.idx] = facing_toward(
+            &JsVal::Num((dq - aq) as f64),
+            &JsVal::Num((dr - ar) as f64),
+            &JsVal::Num(self.facing[ix][unit.idx]),
+        )
+        .to_number();
+        input.hit_arc = relative_hit(
+            &JsVal::Num(self.facing[tix][tref.idx]),
+            &JsVal::Num(aq as f64),
+            &JsVal::Num(ar as f64),
+            &JsVal::Num(dq as f64),
+            &JsVal::Num(dr as f64),
+        );
         // Para jest „pierwsza", dopóki jej klucza nie ma w `engaged` (`firstBlow = !this.engaged.has(key)`, :8896).
         input.first_blow_of_pair = !self.engaged.contains(&(unit, tref));
         input.defender_state = DefenderState {
@@ -723,6 +796,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             def_hp_after: out.blow.def_hp_after,
             extra_morale: out.blow.extra_morale,
             is_charge: out.blow.is_charge,
+            hit_arc: input.hit_arc,
         });
         // Kontratak obrońcy (`_doMeleeAttack`, COUNTER-ATTACK w battleScene.ts) nie jest portowany w tym klocku.
         // Jeśli cel przeżył cios, zapisujemy kandydata na nieportowaną gałąź (zamiast cichego pominięcia).
