@@ -50,7 +50,7 @@ fn params() -> AiPurchaseParams {
 fn declare_inserts_active_pair_cycle_and_drops_pending() {
     let mut st = WarTurnState::default();
     st.forced[0].pending_owners = vec![3, 4];
-    let n = declare_forced_wars(&mut st, &[(ForcedEra::Stone, 3, 7)], 42.0);
+    let n = declare_forced_wars(&mut st, &[(ForcedEra::Stone, 3, 7)], 42.0).unwrap();
     assert_eq!(n, 1);
     let slot = &st.forced[0];
     assert_eq!(slot.active_by_pair_key.len(), 1);
@@ -71,8 +71,9 @@ fn redeclare_same_pair_replaces_in_place_without_duplicating_cycle() {
         &mut st,
         &[(ForcedEra::Bronze, 1, 2), (ForcedEra::Bronze, 5, 6)],
         10.0,
-    );
-    declare_forced_wars(&mut st, &[(ForcedEra::Bronze, 1, 2)], 30.0);
+    )
+    .unwrap();
+    declare_forced_wars(&mut st, &[(ForcedEra::Bronze, 1, 2)], 30.0).unwrap();
     let slot = &st.forced[1];
     assert_eq!(slot.active_by_pair_key.len(), 2);
     assert_eq!(slot.active_by_pair_key[0].0, "1-2");
@@ -95,7 +96,7 @@ fn declare_from_assignments_keeps_only_declared_pairs() {
             target_id: 4,
         },
     ];
-    let n = declare_from_assignments(&mut st, &assignments, 5.0, &|o, _t| o == 3);
+    let n = declare_from_assignments(&mut st, &assignments, 5.0, &|o, _t| o == 3).unwrap();
     assert_eq!(n, 1);
     assert!(st.forced[2].active_by_pair_key.is_empty());
     assert_eq!(st.forced[0].active_by_pair_key[0].0, "3-4");
@@ -115,7 +116,7 @@ fn era_enter_turn_upserts_bronze_and_iron_only() {
 #[test]
 fn peace_cleanup_removes_entry_and_sets_rest_until() {
     let mut st = WarTurnState::default();
-    declare_forced_wars(&mut st, &[(ForcedEra::Iron, 8, 2)], 100.0);
+    declare_forced_wars(&mut st, &[(ForcedEra::Iron, 8, 2)], 100.0).unwrap();
     let c =
         cleanup_forced_war_on_peace(&mut st, ForcedEra::Iron, 2, 8, 110.0).expect("wpis istnieje");
     assert_eq!(c.attacker_id, 8);
@@ -128,7 +129,7 @@ fn peace_cleanup_removes_entry_and_sets_rest_until() {
 #[test]
 fn peace_cleanup_is_noop_without_entry_or_for_other_era() {
     let mut st = WarTurnState::default();
-    declare_forced_wars(&mut st, &[(ForcedEra::Stone, 1, 2)], 5.0);
+    declare_forced_wars(&mut st, &[(ForcedEra::Stone, 1, 2)], 5.0).unwrap();
     assert!(cleanup_forced_war_on_peace(&mut st, ForcedEra::Bronze, 1, 2, 6.0).is_none());
     assert!(cleanup_forced_war_on_peace(&mut st, ForcedEra::Stone, 3, 4, 6.0).is_none());
     assert_eq!(st.forced[0].active_by_pair_key.len(), 1);
@@ -138,7 +139,7 @@ fn peace_cleanup_is_noop_without_entry_or_for_other_era() {
 #[test]
 fn era_peace_lock_blocks_while_current_era_not_past_war_era() {
     let mut st = WarTurnState::default();
-    declare_forced_wars(&mut st, &[(ForcedEra::Bronze, 4, 9)], 1.0);
+    declare_forced_wars(&mut st, &[(ForcedEra::Bronze, 4, 9)], 1.0).unwrap();
     assert!(set_era_peace_lock(&mut st, 9, 4, &|o| if o == 4 {
         2
     } else {
@@ -306,7 +307,7 @@ fn purchase_declined_by_treasury_gate() {
 #[test]
 fn state_round_trip_keeps_declared_wars_and_city_counter() {
     let mut st = WarTurnState::default();
-    declare_forced_wars(&mut st, &[(ForcedEra::Stone, 1, 2)], 7.0);
+    declare_forced_wars(&mut st, &[(ForcedEra::Stone, 1, 2)], 7.0).unwrap();
     register_regular_war_city_loss(&mut st, 3, 4, true, true);
     let meta = st.to_meta_json();
     assert!(meta.contains_key(KEY_REGULAR_WAR_CAPTURED));

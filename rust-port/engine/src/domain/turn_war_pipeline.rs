@@ -46,7 +46,7 @@ use super::diplomacy_tick_war_brake::{ai_ai_pairs, is_ai_ai_eligible_owner, Brak
 use super::diplomacy_truce::PairMetaWeb;
 use super::playable::PlayableState;
 use super::turn_war_dipl_steps::{
-    run_dipl_steps, DiplStepsContext, DiplStepsInputs, DiplStepsReport,
+    note_war_declarations, run_dipl_steps, DiplStepsContext, DiplStepsInputs, DiplStepsReport,
 };
 use super::war_turn_state::WarTurnState;
 
@@ -413,6 +413,13 @@ pub fn run_war_turn(ctx: &mut WarTurnContext<'_>) -> Result<WarTurnReport, WarTu
         gate_blocked: &gate,
     };
     let out = run_brake_phase(&mut ctx.war.brake_phase, &input);
+    // P4 (hak wojny, web `main.ts:12223-12224`): kazda wojna z hamulca zeruje licznik "bez wojny" obu stron.
+    let entered: Vec<(i64, i64)> = out
+        .declarations
+        .iter()
+        .map(|d| (d.declarer, d.victim))
+        .collect();
+    note_war_declarations(ctx.war, &entered, ctx.turn)?;
     report.relation_after_tick = relation_after_tick;
     report.dobra_active = out.dobra_active;
     report.declarations = out.declarations;
