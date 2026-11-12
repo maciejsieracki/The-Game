@@ -6,8 +6,10 @@
 //! separate domains and are not pulled into this vertical slice.
 
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::{error::Error, fmt};
 
+use super::turn_war_pipeline::{run_war_turn, WarTurnConfig, WarTurnContext, WarTurnInputs};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
@@ -370,6 +372,7 @@ pub enum PlayableError {
     DestinationOutOfRange { distance: u32, movement: u8 },
     TurnPhaseQueueIncomplete { expected: usize, actual: usize },
     DuplicatePlayer(u64),
+    WarTurn(String),
 }
 
 impl fmt::Display for PlayableError {
@@ -401,6 +404,7 @@ impl fmt::Display for PlayableError {
                 "turn phase queue resolved {actual} phases; expected {expected}"
             ),
             Self::DuplicatePlayer(id) => write!(formatter, "player {id} already exists"),
+            Self::WarTurn(message) => write!(formatter, "war turn: {message}"),
         }
     }
 }
@@ -564,6 +568,9 @@ impl PlayableGame {
 
     pub fn advance_turn(&mut self) -> Result<(), PlayableError> {
         let current_turn = self.state.turn;
+        // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
+        let queue_before = self.phase_queue.clone();
+        let war_before = self.state.war.clone();
         let mut phases = Vec::with_capacity(PHASE_COUNT);
         while let Some(entry) = self.phase_queue.peek_next() {
             if entry.turn() != current_turn {
@@ -573,6 +580,13 @@ impl PlayableGame {
                 .phase_queue
                 .pop_next()
                 .expect("peeked event remains in queue");
+            if entry.phase() == TurnPhase::Diplomacy {
+                if let Err(error) = self.run_diplomacy_war_phase() {
+                    self.phase_queue = queue_before;
+                    self.state.war = war_before;
+                    return Err(error);
+                }
+            }
             phases.push(entry.phase());
         }
         if phases.len() != PHASE_COUNT {
@@ -591,6 +605,22 @@ impl PlayableGame {
         }
         self.enqueue_turn_phases(self.state.turn);
         self.state.status = format!("Tura {} rozpoczęta.", self.state.turn);
+        Ok(())
+    }
+
+    /// P6-WIRE-WAR-PIPELINE: jedyne wywolanie `run_war_turn` (faza Diplomacy).
+    /// Deklaracje wojny z hamulca nie maja jeszcze efektow (W4/W8); zwracane sa tylko przez raport.
+    fn run_diplomacy_war_phase(&mut self) -> Result<(), PlayableError> {
+        let inputs = WarTurnInputs::from_playable(&self.state, &self.state.war);
+        // Produkcja: brak ustawien par wojny i trybu multiwar w PlayableState (r4).
+        let config = WarTurnConfig::new(BTreeMap::new(), false);
+        let mut ctx = WarTurnContext {
+            war: &mut self.state.war,
+            turn: f64::from(self.state.turn),
+            inputs: &inputs,
+            config: &config,
+        };
+        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
@@ -693,5 +723,53 @@ fn event_for_phase(turn: u32, phase: TurnPhase) -> TurnEvent {
         TurnPhase::Barbarians => TurnEvent::BarbariansTick,
         TurnPhase::Victory => TurnEvent::VictoryCheck,
         TurnPhase::EndTurn => TurnEvent::TurnEnded(turn),
+    }
+}
+
+#[cfg(test)]
+mod war_pipeline_advance_tests {
+    use super::*;
+
+    /// Gracz AI z miastem = para wojny, ktorej producenci (moc) nie istnieja w r3 -> fail-loud.
+    fn game_with_ai_city() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("scenario");
+        game.add_player(2, "AI".to_owned()).expect("ai");
+        game.state.cities.push(PlayableCity {
+            id: CityId::new(900),
+            owner_id: PlayerId::new(2),
+            name: "AI-city".to_owned(),
+            position: PositionDto::new(5, 5),
+            is_capital: true,
+        });
+        game
+    }
+
+    #[test]
+    fn failing_war_phase_restores_queue_turn_and_war_state() {
+        let mut game = game_with_ai_city();
+        let queue_len = game.pending_phase_count();
+        let turn = game.state().turn;
+        let err = game.advance_turn().expect_err("brak wejsc mocy -> blad");
+        assert!(matches!(err, PlayableError::WarTurn(_)), "{err:?}");
+        assert_eq!(game.pending_phase_count(), queue_len, "kolejka cofnieta");
+        assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
+        assert!(game.state().war.is_default(), "stan wojny bez zmian");
+        assert!(game.state().last_advanced_phases.is_empty());
+    }
+
+    #[test]
+    fn repeated_advance_after_failure_fails_the_same_way_not_with_queue_incomplete() {
+        let mut game = game_with_ai_city();
+        let first = game.advance_turn().expect_err("blad 1");
+        let second = game.advance_turn().expect_err("blad 2");
+        assert_eq!(first, second);
+        assert!(!matches!(
+            second,
+            PlayableError::TurnPhaseQueueIncomplete { .. }
+        ));
     }
 }
