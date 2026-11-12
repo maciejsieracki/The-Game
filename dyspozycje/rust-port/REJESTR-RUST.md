@@ -217,3 +217,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - W toku: INTEG-B18 (Evaluator), CRED-WOJNA r2 (Obrona; r1 FAIL: brak wektorów, hak tylko D8; decyzje techniczne: test S3 na StreamDealKind bez aliasu, hak gracza w zakresie), K5LOOP-FACING, COMBAT-HARNESS.
 - Zadania do uruchomienia od zera: #96–#99, #101, #104–#119 (zob. lista zadań).
 - Dysk: 4–6 GB przy 4 równoległych kompilacjach; sprzątnięto własny scratchpad (stare ekstrakty pinu, target-ev).
+
+## Przebieg — 16:0x UTC (R7K7C-WIRING, COMBAT-HARNESS)
+- R7K7C-WIRING: FC PASS-WITH-NOTES (kod 294e4d361, FC 9eab15258, baza 358cb6cf6; push refs/keep + rust-port-wip). Evaluator r1 dał FAIL (brak wektorów D3, brak testu behawioralnego, Ledger::balance bez podłogi dla AI); Obrona r1 naprawiła: test behawioralny (danina 40/turę przez advance_turn), brak wpisu AI = 0 w Ledger, test ujemnego salda. Wektory apply: 200 z pinu. D3 ≥150: NIE_ZMIERZONO → osobny temat R7K7C-D3-WEKTORY. Decyzja orkiestratora: FC PASS przyjęty jako częściowa dostawa (dispatch dopuszcza granicę opisaną) — ALE Evaluator FAIL nie został zaadresowany w pełni (D3); pozycja do decyzji przy INTEG-B20.
+- COMBAT-HARNESS: FC PASS-WITH-NOTES (3efeecfa6). Port zakresu ranged_phase; combat::resolve bez pętli dystansu → zadanie #136; zera w zdarzeniach → #133.
+- Incydent: FC R7K7C-WIRING usunął /tmp/claude-0/fc-target (współdzielony katalog, nie jego). Nie do odzyskania; nie powtarzać — FC/Operatorzy mają używać własnych CARGO_TARGET_DIR.
+- Dysk: 9,8 GB wolnego po sprzątaniu worktree.
