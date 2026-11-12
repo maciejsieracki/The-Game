@@ -6,6 +6,11 @@
 // Efekty sceny (_doMove: occByKey, koszt ruchu, facing, animacja; _schedule: kolejka timerow) NIE sa wycinane:
 // w wektorach koszt wejscia `cost(c,r)` i `_schedule` sa jawnymi wejsciami/wyjsciami driver-a `walkRun` (ponizej).
 // Wynik -> p6_siege_tactics_walk_vectors/vectors.json.
+// OGRANICZENIE (K1b r2, zarzut recenzenta): kopie funkcji ponizej sa wycinane RECZNIE. Straznik SHA-256 haszuje tekst
+// fragmentow pinu, a NIE kopie w tym pliku, wiec dryf kopii wzgledem pinu nie zostanie automatycznie wykryty
+// (ten sam wzorzec co K0b/K1). Zgodnosc kopii z pinem 07d2fbd72 sprawdzona recznie w K1b r2 (porownanie linia po linii
+// _bfsFirstStep i driver _siegeWalkTo + bramka _doMove): zgodne, poza jawnymi wejsciami (isGoal -> goalSet, koszt -> COST).
+// Pelne usuniecie ryzyka (wykonanie tekstu pinu zamiast kopii) = osobny temat, poza zakresem K1b.
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -311,6 +316,33 @@ for (let k = 0; k < 700; k++) {
     ru,
     threats,
     events,
+    finalUnit: { q: unit.q, r: unit.r, moveLeft: unit.moveLeft },
+  });
+}
+
+// Przypadki odmowy ukierunkowane (K1b r2): 200 przypadkow z zamknietym murem, atakujacym piechota (approachRestricted = true),
+// celem za jednostka w kierunku wschodnim i zagrozeniem na linii marszu. Krok wchodzacy w zasieg jest odmawiany,
+// wiec wiekszosc przypadkow ma zdarzenie `refused`. Losowanie tylko z rnd po 700 przypadkach ogolnych (kolejnosc nie zmienia sie).
+for (let k = 0; k < 200; k++) {
+  const q = randInt(0, 20);
+  const r = randInt(10, BF_ROWS - 11);
+  const ru = { side: 'atk', routed: false, onWallWalkway: false, isSiegeUnit: false, primaryRanged: false, canShoot: false, shootingEnabled: undefined, mounted: false };
+  const wall = { wallCol: randInt(q + 4, q + 10), gateOpen: false, wallEverBreached: false, siegeWallTilesInit: 0, wallTileHpSize: 0, towerAtWallRowsCount: 0 };
+  const gq = randInt(wall.wallCol + 2, Math.min(BF_COLS - 1, wall.wallCol + 8));
+  const goal = [[gq, r]];
+  const threats = [{ q: randInt(q + 3, wall.wallCol), r: randInt(Math.max(0, r - 1), r + 1), range: pick([1, 2, 3]) }];
+  const blockedSet = new Set();
+  const goalSet = new Set(goal.map(([c, rr]) => cellKey(c, rr)));
+  const W = { finished: false, goalSet, blocked: blockedSet, allowSet: null, prefRow: null, wallCol: wall.wallCol, wall, ru, threats };
+  const unit = { q, r, moveLeft: pick([4, 8, 12]), dead: false, fadingOut: false };
+  const startUnit = { ...unit };
+  const events = walkRun(W, unit);
+  for (const e of events) eventStats[e.k] = (eventStats[e.k] ?? 0) + 1;
+  const gateKey = events.some((e) => e.k === 'refused') ? 'refused' : 'restricted-no-refuse';
+  gateStats[gateKey] = (gateStats[gateKey] ?? 0) + 1;
+  walkCases.push({
+    unit: startUnit, finished: false, goal, blocked: [], allow: null, prefRow: null,
+    wallCol: wall.wallCol, wall, ru, threats, events,
     finalUnit: { q: unit.q, r: unit.r, moveLeft: unit.moveLeft },
   });
 }
