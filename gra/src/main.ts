@@ -739,7 +739,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy, recruitPanelPurchasableUnits, resetArmyRecruitDraftsSession, buildingCanBuildNow } from './ui/cityPanel';
 import { toggleEmpireRecruitPanel, refreshEmpireRecruitPanel, resetEmpireRecruitPanelSession, type EmpireRecruitUnitRow } from './ui/empireRecruitPanel';
 import { executeEmpireRecruitment, maxAffordableEmpireRecruits, type RecruitCityInput } from './game/empire-recruit-plan';
 import { livingGeneralsOf, resolveRecruitGeneral, recruitRallyStamp, pickRallyGeneral } from './game/recruit-general';
@@ -18620,7 +18620,6 @@ async function boot(): Promise<void> {
       const techs = unlockedTechsForOwner(city.ownerId);
       const epoch = ctx.epoch ?? 1;
       const civBonusy = ctx.civBonusy ?? [];
-      const pool = ownerSurowcePoolFor(city.ownerId);
       const seen = new Set<string>();
       for (const id of built) {
         if (seen.has(id)) continue;
@@ -18642,7 +18641,8 @@ async function boot(): Promise<void> {
           ctx.difficulty ?? 'normal',
         );
         if (!item) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        // Ten sam predykat co panel „Ulepsz” (buildingCanBuildNow: chipy tech/magazyn/warunki).
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         return true;
       }
       return false;
@@ -18650,11 +18650,11 @@ async function boot(): Promise<void> {
 
     function cityHasAffordableBuildingEnqueue(city: City, ctx: AvailabilityContext): boolean {
       const techs = unlockedTechsForOwner(city.ownerId);
-      const pool = ownerSurowcePoolFor(city.ownerId);
-      for (const item of buildableProduction(city, data, techs, ctx)) {
+      // Ten sam zbiór co panel budowy (showResourceGatedBuildings) i ten sam predykat (buildingCanBuildNow).
+      for (const item of buildableProduction(city, data, techs, { ...ctx, showResourceGatedBuildings: true })) {
         const def = data.buildings.find(b => b.id === item.id);
         if (!def) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         return true;
       }
       return cityHasAffordableLevelUpgrade(city, ctx);
@@ -18662,6 +18662,8 @@ async function boot(): Promise<void> {
 
     function cityHasAffordableUnitRecruitment(city: City, ctx: AvailabilityContext): boolean {
       if (city.ownerId !== 0) return false;
+      // Ta sama blokada co w panelu rekrutacji (cityPanel: isCityUnderSiege → brak werbunku).
+      if (isCityUnderSiege([city], city)) return false;
       const techs = unlockedTechsForOwner(city.ownerId);
       const treasury = player.skarbiec;
       const pool = ownerSurowcePoolFor(city.ownerId);
@@ -18729,14 +18731,15 @@ async function boot(): Promise<void> {
       const techs = unlockedTechsForOwner(city.ownerId);
       const pool = ownerSurowcePoolFor(city.ownerId);
       const affordIds: string[] = [];
-      for (const item of buildableProduction(city, data, techs, ctx)) {
+      for (const item of buildableProduction(city, data, techs, { ...ctx, showResourceGatedBuildings: true })) {
         const def = data.buildings.find(b => b.id === item.id);
         if (!def) continue;
-        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        if (!buildingCanBuildNow(def, city, data, ctx, techs)) continue;
         affordIds.push(item.id);
       }
       const unitIds: string[] = [];
-      if (city.ownerId === 0) {
+      // Ta sama blokada oblężenia co w cityHasAffordableUnitRecruitment (odcisk ma być spójny z bramką).
+      if (city.ownerId === 0 && !isCityUnderSiege([city], city)) {
         const treasury = player.skarbiec;
         const ep = empireEpochForOwner(city.ownerId);
         const mpMults = civManpowerMultsForOwner(city.ownerId);

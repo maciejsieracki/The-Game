@@ -7205,7 +7205,7 @@ function buildingRequirementChips(
 }
 
 /** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
-function buildingCanBuildNow(
+export function buildingCanBuildNow(
   def: BuildingDef,
   city: City,
   data: GameData,
