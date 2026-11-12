@@ -1,7 +1,8 @@
 //! P6-WIRE-WAR-R7K7: testy `domain/turn_war_dipl_steps.rs` (kroki D1-D7 w fazie Diplomacy).
 //!
 //! - Wektory z pinu `07d2fbd72f758705f8e1d59cc4968027ffbafe75` (`p6_wire_war_dipl_steps_gen.mjs`, straznik SHA-256):
-//!   platnosci/danina (D6), dobra wola bez hamulca (D7), `expireTreaties` (D1).
+//!   platnosci/danina (D6), dobra wola bez hamulca (D7), `expireTreaties` (D1), `truceEndTickPair` (D5, 8 scenariuszy).
+//!   BRAK wektorow pinu dla D3 (`tickCyclicResourceTradeDeals`) i `syncRelationFromDeals`: funkcje domkniete w `main.ts`.
 //! - Testy behawioralne 3 tur przez `run_war_turn` na mini-swiecie: wygasanie NAP + sync statusu (D1/D7),
 //!   handel cykliczny z dostawa i niedostarczeniem (D3), danina i jej zerwanie z `trybut_odmowa` (D6),
 //!   wygasniecie rozejmu AI-AI (D5), flaga hamulca OFF (D7), jawne bledy wejsc i atomowosc.
@@ -16,6 +17,9 @@ use civ_engine::domain::diplomacy::{
     TreatyEconomy, TreatyKind,
 };
 use civ_engine::domain::diplomacy_truce::{pair_meta_to_save, PairMetaWeb};
+use civ_engine::domain::diplomacy_truce_end::{
+    truce_end_tick_pair, PairTruceMeta, TruceEndOffer, TruceEndPorts,
+};
 use civ_engine::domain::turn_war_dipl_steps::{
     active_deals_to_payment_deals, sync_relation_from_deals, tick_diplomacy_payments,
     tick_dobra_wola_on_relation, tribute_break_pairs, DiplStepsInputs, Treasury, KEY_PAIR_META,
@@ -425,9 +429,140 @@ fn three_turns_change_treaties_cyclic_trade_tribute_and_truce() {
         row[1].get("truceUntilTurn").is_none(),
         "meta rozejmu wyczyszczona"
     );
-    // Armia 3 vs 1 (inicjator silniejszy) => AI akceptuje pokoj staly albo wojna; w kazdym razie status jest jawny.
+    // D5 (pin truceEndTickPair): inicjator AI_A ma armie 3, adresat AI_B armie 1. truceEndAiAccepts(3, 1)
+    // = 3 <= (1 - 0.2 + eps) * 1 = false => odmowa => wojna (bez kary). Wartosc sprawdzona wektorem `truce`.
     let st = war.diplomacy.relation(p(AI_A), p(AI_B)).unwrap().status;
-    assert!(matches!(st, RelationStatus::Peace | RelationStatus::War));
+    assert_eq!(
+        st,
+        RelationStatus::War,
+        "D5: odmowa pokoju po rozejmie = wojna"
+    );
+}
+
+// ---------------------------------------------------------------------------------------------
+// D5: wektory `truceEndTickPair` z pinu (port `truce_end_tick_pair` z atrapami portow TruceEndPorts)
+// ---------------------------------------------------------------------------------------------
+
+#[derive(Default)]
+struct TruceMock {
+    meta: PairTruceMeta<i64>,
+    peace: bool,
+    army: BTreeMap<i64, f64>,
+    humans: Vec<i64>,
+    war_declared: Option<(i64, i64)>,
+    peace_finalized: Option<(i64, i64)>,
+    enqueued: Vec<(i64, String)>,
+    removed: Vec<String>,
+}
+
+impl TruceEndPorts<i64> for TruceMock {
+    fn meta(&self, _a: i64, _b: i64) -> PairTruceMeta<i64> {
+        self.meta.clone()
+    }
+    fn set_meta(&mut self, _a: i64, _b: i64, meta: PairTruceMeta<i64>) {
+        self.meta = meta;
+    }
+    fn status_is_peace(&self, _a: i64, _b: i64) -> bool {
+        self.peace
+    }
+    fn army_m(&self, owner: i64) -> f64 {
+        self.army.get(&owner).copied().unwrap_or(0.0)
+    }
+    fn is_human(&self, owner: i64) -> bool {
+        self.humans.contains(&owner)
+    }
+    fn declare_war_after_truce(&mut self, a: i64, b: i64) {
+        self.war_declared = Some((a, b));
+        self.peace = false;
+    }
+    fn enqueue_offer(&mut self, owner: i64, reason: &str) -> String {
+        self.enqueued.push((owner, reason.to_owned()));
+        "inbox-1".to_owned()
+    }
+    fn remove_offer(&mut self, inbox_id: &str) {
+        self.removed.push(inbox_id.to_owned());
+    }
+    fn finalize_peace(&mut self, proposer: i64, responder: i64) {
+        self.peace_finalized = Some((proposer, responder));
+        self.peace = true;
+    }
+}
+
+/// Liczba calkowita w JSON (jak `JSON.stringify` z pinu), nie zmiennoprzecinkowa.
+fn num(f: f64) -> Value {
+    Value::from(f as i64)
+}
+
+#[test]
+fn truce_end_tick_pair_matches_pin_vectors() {
+    let v = vectors();
+    let rows = v["truce"].as_array().expect("truce");
+    assert_eq!(rows.len(), 8);
+    for row in rows {
+        let name = row["name"].as_str().unwrap();
+        let pair = row["pair"].as_array().unwrap();
+        let (a, b) = (pair[0].as_i64().unwrap(), pair[1].as_i64().unwrap());
+        let turn = row["turn"].as_f64().unwrap();
+        let mv = &row["meta"];
+        let meta = PairTruceMeta::<i64> {
+            truce_until: mv.get("truceUntilTurn").and_then(Value::as_f64),
+            initiator: mv.get("truceInitiatorId").and_then(Value::as_i64),
+            offer: mv.get("truceEndOffer").map(|o| TruceEndOffer {
+                turn: o["turn"].as_f64().unwrap(),
+                from: o["fromOwnerId"].as_i64().unwrap(),
+                to: o["toOwnerId"].as_i64().unwrap(),
+                inbox_id: o["inboxId"].as_str().map(str::to_owned),
+            }),
+        };
+        let army: BTreeMap<i64, f64> = row["army"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(k, val)| (k.parse::<i64>().unwrap(), val.as_f64().unwrap()))
+            .collect();
+        let humans: Vec<i64> = row["humans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_i64().unwrap())
+            .collect();
+        let mut mock = TruceMock {
+            meta,
+            peace: row["status"] == "pokoj",
+            army,
+            humans,
+            ..Default::default()
+        };
+        truce_end_tick_pair(&mut mock, a, b, turn);
+
+        let mut got_meta = serde_json::Map::new();
+        if let Some(u) = mock.meta.truce_until {
+            got_meta.insert("truceUntilTurn".into(), num(u));
+        }
+        if let Some(i) = mock.meta.initiator {
+            got_meta.insert("truceInitiatorId".into(), Value::from(i));
+        }
+        if let Some(o) = &mock.meta.offer {
+            got_meta.insert(
+                "truceEndOffer".into(),
+                serde_json::json!({
+                    "turn": num(o.turn),
+                    "fromOwnerId": o.from,
+                    "toOwnerId": o.to,
+                    "inboxId": o.inbox_id,
+                }),
+            );
+        }
+        let got = serde_json::json!({
+            "status": if mock.peace { "pokoj" } else { "wojna" },
+            "meta": Value::Object(got_meta),
+            "warDeclared": mock.war_declared.map(|(x, y)| serde_json::json!([x, y])).unwrap_or(Value::Null),
+            "peaceFinalized": mock.peace_finalized.map(|(x, y)| serde_json::json!([x, y])).unwrap_or(Value::Null),
+            "enqueued": mock.enqueued.iter().map(|(o, r)| serde_json::json!([o, r])).collect::<Vec<_>>(),
+            "removedOffers": mock.removed,
+        });
+        assert_eq!(got, row["after"], "{name}");
+    }
 }
 
 #[test]

@@ -22,6 +22,11 @@
 //!   WPIETE (`truce_expiry_action` jest wolane wewnatrz `truce_end_tick_pair`).
 //! - D6 `tickDiplomacyPayments` + zerwania za danine (:24275-24298) -> `tick_diplomacy_payments`,
 //!   `tribute_break_pairs`: WPIETE (port 1:1 `diplomacy-economy.ts`), z wektorami z pinu.
+//! - `deactivateZlozeGrantsForDeal` (pin w `runDiplomacyTurnTick`: :24234 dla wygaslych, :24294 dla zerwanych w D6;
+//!   poza tym tick: :22774 `breakTreatyVoluntarily`, :23694 `breakTreatiesOnWar`): BRAK. Pin trzyma
+//!   `zlozeGrants` w stanie gry (`zlozeGrants = deactivateZlozeGrantsForDeal(...)`), a w Rust nie ma modelu ani
+//!   portu zlozeGrants (grep `zloze_grant|ZlozeGrant|zlozeGrant` w `engine/src` = pusty). Wywolanie nie jest
+//!   wpiete; luka jawna, nie ciche zero.
 //! - D7 dobra wola: galaz z hamulcem (flaga ON, domyslna na pinie) wpieta wczesniej w `run_brake_phase`;
 //!   galaz bez hamulca (`tickDobraWolaOnRelation`) = `tick_dobra_wola_on_relation`, wolana tylko gdy
 //!   `DiplStepsInputs::brake_flag_off` (na pinie `DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true`, wylaczenie tylko w
