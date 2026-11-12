@@ -192,9 +192,9 @@ fn check_row(n: usize, row: &Value) {
             num(&want["hitPct"])
         );
         assert!(
-            same(got.damage_exact, num(&want["damage"])),
+            same(got.damage, num(&want["damage"])),
             "{sctx}: obrazenia {} != pin {}",
-            got.damage_exact,
+            got.damage,
             num(&want["damage"])
         );
         if !want["targetHp"].is_null() {

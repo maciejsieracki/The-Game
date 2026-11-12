@@ -1661,6 +1661,13 @@ impl DiplomacyState {
         Self::default()
     }
 
+    /// Web `activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId))` (pin 07d2fbd72, main.ts:35482):
+    /// usuniecie umow, w ktorych eliminowany wlasciciel jest jedna ze stron. `None` (ujemne id) nie pasuje do zadnej.
+    pub fn clear_deals_for_owner(&mut self, owner: Option<PlayerId>) {
+        self.deals
+            .retain(|d| Some(d.parties.first) != owner && Some(d.parties.second) != owner);
+    }
+
     pub fn relation(&self, owner_a: PlayerId, owner_b: PlayerId) -> Option<&Relation> {
         self.relations.get(&CivilizationPair::new(owner_a, owner_b))
     }

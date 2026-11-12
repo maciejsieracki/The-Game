@@ -61,7 +61,8 @@ use crate::domain::economy_yield::{
 use crate::domain::improvement_build::BuildHex;
 use crate::domain::improvements::{improvement_keys_for_hex, HexLike, TerrainType};
 use crate::domain::okolica::{
-    is_land_workable_hex, resolve_worked_tiles, OkolicaYield, ResolveWorkedTilesOpts,
+    is_land_workable_hex, js_floor_nonneg, resolve_worked_tiles, OkolicaYield,
+    ResolveWorkedTilesOpts,
 };
 use crate::domain::production_units::split_praca;
 use crate::domain::recruitment::manpower::{
@@ -391,14 +392,8 @@ fn city_worked_hexes<'m>(
     if let Some(h) = map.hex(&key_of(city.q, city.r)) {
         out.push(h);
     }
-    let pop = {
-        let f = city.population.floor();
-        if f.is_nan() {
-            f
-        } else {
-            f.max(0.0)
-        }
-    };
+    // JS `Math.max(0, Math.floor(population))` ze znakiem zera (`okolica::js_floor_nonneg`).
+    let pop = js_floor_nonneg(city.population);
     if pop <= 0.0 {
         return out;
     }

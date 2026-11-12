@@ -750,3 +750,31 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
         "cel martwy/uciekajacy odfiltrowany"
     );
 }
+
+/// Samotesty mutacji `Dir` (E<->S) z generatora są w bramce cargo: oba tryby muszą zgłosić FAIL.
+/// Tryb 1 = pełna ścieżka (strażnik SHA wycinka), tryb 2 = sama asercja wartości N/E/S/W.
+/// Brak `node` jest błędem (bez pominięcia testu).
+#[test]
+fn dir_mutant_selftest_wykrywa_zamiane_kierunkow() {
+    let gen = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/p6_siege_tactics_loop_body_gen.mjs"
+    );
+    for tryb in ["1", "2"] {
+        let out = std::process::Command::new("node")
+            .arg(gen)
+            .env("P6_DIR_MUTANT_SELFTEST", tryb)
+            .output()
+            .expect("node (>= 22.13) wymagany przez samotest Dir");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            out.status.success(),
+            "tryb {tryb}: samotest zakonczony kodem {:?}: {err}",
+            out.status.code()
+        );
+        assert!(
+            err.contains("mutant odrzucony (FAIL)"),
+            "tryb {tryb}: mutant Dir nie zostal odrzucony: {err}"
+        );
+    }
+}

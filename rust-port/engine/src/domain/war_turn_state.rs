@@ -170,6 +170,43 @@ pub fn managed_meta_keys() -> Vec<String> {
     keys
 }
 
+const FORCED_WAR_WAVES_OPAQUE_KEY: &str = "forcedWarWavesByPairKey";
+const REGULAR_WAR_CAPTURED_OPAQUE_KEY: &str = "regularWarCapturedByPairKey";
+const DIPLOMACY_PAIR_META_OPAQUE_KEY: &str = "diplomacyPairMeta";
+const DIPLOMACY_FACTOR_LOG_OPAQUE_KEY: &str = "diplomacyFactorLog";
+
+/// Filtr wierszy `[klucz, wartosc]` tablicy surowego pola `opaque` (zapis Map weba: `Array.from(map.entries())`).
+/// Wiersz nieczytelny jako para zostaje bez zmian; brak pola = no-op (pusta Map weba).
+fn retain_opaque_rows(
+    opaque: &mut Map<String, Value>,
+    key: &str,
+    mut keep: impl FnMut(&str, &Value) -> bool,
+) {
+    let Some(arr) = opaque.get_mut(key).and_then(Value::as_array_mut) else {
+        return;
+    };
+    arr.retain(|row| {
+        let Some(para) = row.as_array() else {
+            return true;
+        };
+        let Some(klucz) = para.first().and_then(Value::as_str) else {
+            return true;
+        };
+        keep(klucz, para.get(1).unwrap_or(&Value::Null))
+    });
+}
+
+/// Web `diploPairKeyHasOwner` (main.ts:35242): klucz `a_b` z dokladnie dwoma czesciami, z ktorych jedna = wlasciciel.
+/// `Number(...)` z JS vs `parse::<i64>()`: rozbieznosc tylko dla pustej czesci (`Number("") = 0`), a wlasciciel 0
+/// jest pomijany przed wywolaniem, wiec wynik jest identyczny.
+fn diplo_pair_key_has_owner(key: &str, owner_id: i64) -> bool {
+    let czesci: Vec<&str> = key.split('_').collect();
+    czesci.len() == 2
+        && czesci
+            .iter()
+            .any(|c| c.parse::<i64>().ok() == Some(owner_id))
+}
+
 /// Liczba w formie JSON jak `JSON.stringify`: calkowite bez czesci ulamkowej.
 fn num(v: f64) -> Value {
     if v.is_finite() && v.fract() == 0.0 && v.abs() < 9.0e15 {
@@ -632,6 +669,53 @@ impl WarTurnState {
         self.battle_power_pts_by_owner
             .retain(|(k, _)| *k != owner_id);
         self.zdobycze_power_by_owner.retain(|(k, _)| *k != owner_id);
+    }
+
+    /// Sprzatanie stanu wojny po eliminacji wlasciciela (web `eliminateOwner`, pin 07d2fbd72):
+    /// - wymuszone wojny kazdej epoki (main.ts:35418-35441): `pendingOwners`, `cycleOwners`, `restUntilByOwner`,
+    ///   aktywne pary (`activeByPairKey`, gdy wlasciciel jest atakujacym albo celem) wraz z falami
+    ///   `forcedWarWavesByPairKey` o tym samym kluczu (web `forcedWarWavesByPairKey.delete(key)`);
+    /// - tura wejscia w Braz i Zelazo tego wlasciciela (`bronzeEraEnterTurnByOwner`, `ironEraEnterTurnByOwner`);
+    /// - licznik wojny zwyklej `regularWarCapturedByPairKey` (wpisy z `ownerA` albo `ownerB` = wlasciciel);
+    /// - wpisy `diplomacyPairMeta` i `diplomacyFactorLog` z kluczem pary `a_b` zawierajacym wlasciciela
+    ///   (web `diploPairKeyHasOwner`, main.ts:35242).
+    ///
+    /// Pola `opaque` (surowy JSON) sa filtrowane w miejscu, kolejnosc pozostalych wpisow zachowana.
+    pub fn clear_eliminated_owner_war_state(&mut self, owner_id: i64) {
+        let mut wave_keys: Vec<String> = Vec::new();
+        for era in self.forced.iter_mut() {
+            era.pending_owners.retain(|o| *o != owner_id);
+            era.cycle_owners.retain(|o| *o != owner_id);
+            era.rest_until_by_owner.retain(|(o, _)| *o != owner_id);
+            era.active_by_pair_key.retain(|(key, st)| {
+                let zwiazana = st.attacker_id == owner_id || st.target_id == owner_id;
+                if zwiazana {
+                    wave_keys.push(key.clone());
+                }
+                !zwiazana
+            });
+        }
+        self.bronze_era_enter_turn_by_owner
+            .retain(|(o, _)| *o != owner_id);
+        self.iron_era_enter_turn_by_owner
+            .retain(|(o, _)| *o != owner_id);
+
+        retain_opaque_rows(&mut self.opaque, FORCED_WAR_WAVES_OPAQUE_KEY, |key, _| {
+            !wave_keys.iter().any(|k| k == key)
+        });
+        retain_opaque_rows(&mut self.opaque, REGULAR_WAR_CAPTURED_OPAQUE_KEY, |_, v| {
+            let ownera = v.get("ownerA").and_then(Value::as_i64);
+            let ownerb = v.get("ownerB").and_then(Value::as_i64);
+            ownera != Some(owner_id) && ownerb != Some(owner_id)
+        });
+        for klucz in [
+            DIPLOMACY_PAIR_META_OPAQUE_KEY,
+            DIPLOMACY_FACTOR_LOG_OPAQUE_KEY,
+        ] {
+            retain_opaque_rows(&mut self.opaque, klucz, |key, _| {
+                !diplo_pair_key_has_owner(key, owner_id)
+            });
+        }
     }
 }
 
