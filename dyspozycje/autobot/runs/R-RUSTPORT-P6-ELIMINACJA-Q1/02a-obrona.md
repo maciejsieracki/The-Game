@@ -48,3 +48,17 @@ Env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0, C
 RUNDY: 1/5 (obrona w rundzie 1 Operatora).
 NASTĘPNY KROK: Evaluator r2 na tym commicie (weryfikacja pkt 3 i 4 oraz komentarza naglowka). Orkiestrator decyduje o rejestracji ELIMINACJA-GRACZA-DEALS-WOJNY-Q2.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+## DODATEK r2 (Operator HAIKU, runda 2/5)
+BAZA: c7760f46c (FC r1). Jedyna poprawka: rust-port/engine/src/domain/eliminacja.rs, pusta linia `//!` przed "Wolanie z tur/walki" (doc_lazy_continuation). Tylko komentarz.
+BRAMKI (rustc 1.97.0, clippy 0.1.97, EXIT z tego worktree):
+- cargo fmt --check: 0
+- cargo clippy --all-targets -- -D warnings: 0
+- cargo test --lib: 0 (94 passed)
+- p6_eliminacja: 0 (3 passed)
+- p6_power_battle_acc: 0 (11 passed)
+- p6_power_acc_wiring: 0 (3 passed)
+Mutacja kontrolna: NIE_ZMIERZONO (poza zakresem dodatku).
+RUNDY: 2/5. NASTEPNY KROK: Evaluator r2 + FC na nowym SHA.
+DEPLOY/PUSH: NIE WYKONANO

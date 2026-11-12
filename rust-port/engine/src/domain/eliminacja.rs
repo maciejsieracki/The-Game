@@ -19,6 +19,7 @@
 //! - oblezenia (`oblegajacyOwnerId`, `siegeBesiegerByCity`) -> brak struktury oblezen w Rust.
 //!   Zakres dyspozycji (miasta, jednostki, akumulatory, relacje) tego nie obejmuje. Rejestracja jako osobny temat:
 //!   proponowane ID `ELIMINACJA-GRACZA-DEALS-WOJNY-Q2` (decyzja orkiestratora).
+//!
 //! Wolanie z tur/walki: osobny temat (brak wpiecia tutaj).
 //!
 //! Wejscie `wyeliminowani` jest jawne (web `eliminatedOwners`): wolajacy trzyma zbior. Modul nie zapisuje stanu
