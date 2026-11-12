@@ -295,7 +295,7 @@ Numery linii poniżej = pin `gra/src/battle/battleScene.ts`. Każdy krok pętli 
 | `BATTLE_FRAME_MAX_WALL_DELTA_MS` | `:2553` | 100 (clamp delty ściennej) |
 | pola stallu | `:2559` | `_stallSig`, `_stallTurns`, `_stalled` |
 | pola przewijania | `:2573-2576` | `_ffActive`, `_ffVirtualMs`, `_ffPendingAuto` (plus `_ffQueue`) |
-| token AUTO | `:2302` | `_autoBatchToken` (inkrement przy starcie fali, `:5726`, i przy przerwaniu `:17339`) |
+| token AUTO | `:2302` | `_autoBatchToken` (inkrement przy starcie fali, `:5730` = `const token = ++this._autoBatchToken`, i przy przerwaniu `:17339`) |
 | tura | `:2698` | `roundNo` (jedyne zwiększenie: `:5636`) |
 | zegar wirtualny | `:9403`, `:9500-9515` | `vNow`, `vLastWall`, `vTimers` `{due,cb,id}`, `vTimerSeq` |
 | `siegeWallCol` | `:4033` | ustawiane JEDNOKROTNIE w `_carveWallTiles` (`:4026`). Grep `siegeWallCol\s*=` nie daje innego przypisania |
@@ -305,7 +305,9 @@ Numery linii poniżej = pin `gra/src/battle/battleScene.ts`. Każdy krok pętli 
 ### K5.2 Wejście w pętlę
 
 1. `_kickoffBattleTurn` `:3615-3631`: start tury po fazie planowania. `roundNo === 0` → `_beginTurn` (`:3625`). AUTO bez oblężenia → `_beginAutoBatchTurnFromCurrentState` (`:5696-5705`). Inaczej `_activateNext` (`:3629`).
-2. Start przewijania (SKIP), `:3696-3704`: `_ffActive = true`, `_ffVirtualMs = 0`, `_ffQueue = []`, `_ffPendingAuto = _manualMode && busy`. Gdy `!_ffPendingAuto` → `_ffEnterAuto` (`:3709-3712`: jeśli RĘCZNY → `_toggleManualMode`; jeśli `_battleAwaitingOrders` → `_kickoffBattleTurn`).
+2. Wejście SKIP = `skip()` `:3680-3706` (deklaracja `:3680`; guard `if (this.finished || this._ffActive) return;` `:3681`; zapis `lastInstantDefBonus` `:3685`; `_endDeployPhase` przy `deployPhase`).
+   - 2a. Gałąź bez startu bitwy: `if (!this.started) { this._skipInstantFallback(); return; }` `:3691`. `_skipInstantFallback` `:3715-3749` NIE idzie przez pętlę: ustawia `finished = true` (`:3717`), opcjonalnie `wallEverBreached = true` (`:3721`, machina atakującego przy murze), wywołuje `computeInstantResult` (`:20389-20421`, czysty rachunek, `:3723`), ustawia `_endWinner`, `_endSurvivors` i woła `_showEndScreen` (`:3747`). NIE wywołuje `_checkEnd` ani `_beginTurn`. To drugi, niepętlowy tor końca bitwy; w K5 musi mieć własny wiersz (L30).
+   - 2b. Gałąź z startem (`started`): `paused = false` (`:3692`), start FF: `_ffActive = true` (`:3696`), `_ffVirtualMs = 0` (`:3697`), `_ffQueue = []` (`:3698`), `_ffPendingAuto = _manualMode && busy` (`:3703`). Gdy `!_ffPendingAuto` → `_ffEnterAuto` (`:3704`; `:3709-3712`: jeśli RĘCZNY → `_toggleManualMode`; jeśli `_battleAwaitingOrders` → `_kickoffBattleTurn`).
 3. Ramka `_startLoop` `:9245-9294`: w fazie rozstawiania zamrożony zegar (`deployPhase`). Gdy `_ffActive && !paused` (`:9267`) → `_runFastForward`. Inaczej `_advanceVClock` + `_drainTimers` + tickery klatki.
 
 ### K5.3 Jedna tura: kolejność kroków
@@ -333,14 +335,24 @@ Numery linii poniżej = pin `gra/src/battle/battleScene.ts`. Każdy krok pętli 
 - S3 brak kandydata → `_schedule(TURN_GAP_MS, _beginTurn)` (`:6002`).
 - S4 `:6008` `_activateUnit(u, done)`. Callback `done`: strażnik `_autoBattleSuspended` (`busy = false`, koniec). `acted = true`, chyba że bezczynna jednostka gracza w trybie ręcznym (`:6019-6025`). Potem `_schedule(ACT_GAP_MS, _activateNext)` (`:6028`).
 
-**`_activateUnit` `:6048-6299`** (kolejność gałęzi z odczytu początku funkcji `:6048-6110` i nazw wywołań. Reszta gałęzi NIE_ZMIERZONO w całości):
+**`_activateUnit` `:6048-6299`** (r1-obrona: każda gałąź ma numer linii pinu; kolejność = kolejność w kodzie):
 - U1 `finished` lub `dead/fadingOut` → `done`.
 - U2 `routed` → `_fleeStep` (`:9845`), koniec. Rozbita jednostka nigdy nie atakuje.
 - U3 `_applyTerrainRange(ru)` przed gałęziami (zasięg z pola, na którym stoi).
 - U4 tryb ręczny i strona gracza → `_performPlayerOrder` (`:18280`), K6.
 - U5 doktryna AUTO: pominięta dla obrońców w oblężeniu (`siegeDefenderNeverDoctrine`) i dla taranów/wież atakującego (`siegeMachineNeverDoctrine`, `isSiegeUnit`). Inaczej `_isUnitDoctrineAuto` → `_executeGroupDoctrineStep` (`:17966`).
 - U6 SURROUNDED: raz na jednostkę (`surroundApplied`), gdy ≥3 wrogów przy Manhattan = 1.
-- U7 dalsze gałęzie (wg nazw): kawaleria `_cavalryAction` `:6372`, falanga `_phalanxAction` `:6546`, strzelcy `_rangedAction` `:6656`. Wspólne: `_doMove` `:8685`, `_doAttack` `:8787`, `_doMeleeAttack` `:9096` → `_singleBlow` `:8809`. Jedyne `Math.random` w logice: `:8960` (`roll = Math.random() * 100` vs `hitPct`).
+- U7 gałęzie w kolejności kodu (każda z pinem):
+  - U7.1 `:6129-6171` `ru.onWallWalkway`: strzał (`canShoot` `:6136`, `_doAttack` `:6157`, `done` `:6162`), walka (`:6168`), `done` `:6170-6171`. Nigdy nie schodzi z muru.
+  - U7.2 `:6179-6180` wejście na wieżę: `_trySiegeTowerClimb` (`:8056`), `_siegeInfantryToTowerStep` (`:8087`).
+  - U7.3 `:6187-6220` machiny oblężnicze atakującego: taran `:6191` (brama z dystansu 1), katapulta `:6194` (najbliższy kafel muru), wieża `:6191`. Wszystkie wewnątrz `isSiegeUnit && side==='atk' && siegeWallCol>=0` (`:6187`).
+  - U7.4 `:6225-6235` SIEGE DEFENDER HOLD: `canShoot` `:6226`, `_doAttack` `:6228` / `:6232`, `done` `:6229` / `:6233`, `return` `:6235`.
+  - U7.5 `:6241` strzelec z amunicją → `_rangedAction` (`:6656`).
+  - U7.6 `:6249-6276` `primaryRanged` bez amunicji: `dryCol` `:6251`, atak z sąsiedztwa `:6257`, cofanie `FALLBACK_TILES` `:6266`, trzymanie `:6269-6271`, `return` `:6276`.
+  - U7.7 `:6284` kawaleria → `_cavalryAction` (`:6372`).
+  - U7.8 `:6290` falanga → `_phalanxAction` (`:6546`).
+  - U7.9 `:6293-6298` melee: `_targetInRange` `:6293`, `_doAttack` `:6295` (sąsiad), w przeciwnym razie `_advanceStep` `:6298`.
+  - Wspólne ruch/cios: `_doMove` `:8685`, `_doAttack` `:8787`, `_doMeleeAttack` `:9096` → `_singleBlow` `:8809`. Losowość w logice rozgrywki: tylko `roll = Math.random() * 100` `:8960`. Pozostałe `Math.random` w pinie (`:4890`, `:5014`, `:11030-11084`) są w kolorze terenu lub dźwięku, poza logiką.
 - Efekty ruchu i ciosu idą przez `_raf`/`_schedule` (czas wirtualny). Zakończenie wywołuje `done`, które planuje kolejną aktywację po `ACT_GAP_MS`.
 
 ### K5.4 Zegar, kolejka timerów, przewijanie
@@ -394,13 +406,13 @@ Stan bazy `a70375e52`. Wiersze K1, K1b i K4 dotyczą modułów z bazy. K2 i K3 N
 | L5 | `_beginTurn` (5631-5689) | brak | BRAK | K5f |
 | L6 | `_updateStallWatch` (5568-5581), wiersz 33.9 | brak | BRAK | K5b (czysta funkcja) |
 | L7 | `_checkEnd` (10153-10240) | częściowo: `battle_winner` (`siege_tactics_end.rs:56`), `siege_no_breach_repels_attack` (`:48`), `round_cap_verdict` (`siege_no_breach.rs:69`), `commanders_to_withdraw_after_army_break` (`army_leadership.rs:146`), `army_morale_ratio_without_commander` (`:123`) | PARTIAL | BRAK: bramka `_stalled` (blok 10172), PAT, `_startRout`, log, `_showEndScreen`. `repels` bez bramki: K5.9 |
-| L8 | `_armyMoraleRatio` (9988) | `army_leadership.rs:123` (wariant bez dowódcy) | PARTIAL | pełna wersja z dowódcą: NIE_ZMIERZONO |
+| L8 | `_armyMoraleRatio` (9988-9991) | `army_leadership.rs:123` (`army_morale_ratio_without_commander`) | PORTED | Pin ma JEDNĄ wersję: `return armyMoraleRatioWithoutCommander(arr)` (`:9990`). Sprawdzone r1-obrona: `grep` po pinie nie pokazuje wariantu z dowódcą (`armyMorale*` tylko `:103`, `:9988-9990`, wywołania). Brak luki. |
 | L9 | `_roundCapVerdict` (9449-9464) | `siege_no_breach.rs:69`, cap `:53`, dane `:27` | PORTED | wiring w pętli BRAK |
 | L10 | `_finishDraw` (9467-9479) | werdykt `RoundCapVerdict::Draw` (`siege_no_breach.rs:37`) | PARTIAL | efekty (log, survivors, UI) BRAK |
 | L11 | `_ffRoundCapResult` (9485-9497) | werdykt jak L9 | PARTIAL | efekty BRAK |
 | L12 | `_runFastForward` (9415-9437) | brak | BRAK | K5j |
 | L13 | `_advanceVClock`, `_scaledWallDelta` (9500-9515), wiersz 33.25 | brak | BRAK (G) | K5e. Tylko zegar wirtualny |
-| L14 | `_schedule`, `_drainTimers` (9595-9634) | brak. `domain/events.rs:412` (`schedule(turn, phase, event)`) to inny model, NIE sprawdzone pod kątem równoważności | BRAK | K5e |
+| L14 | `_schedule`, `_drainTimers` (9595-9634) | brak. `domain/events.rs:412` (`schedule(turn, phase, event)`) sprawdzone r1-obrona: klucz kolejki to `(tura, faza, sekwencja)`; pin ma `due = vNow + ms` i `id = vTimerSeq++`, wybór `due <= vNow` (remis `id`). NIE jest równoważne. Odrzucone jako baza. | BRAK | K5e (własna kolejka po czasie wirtualnym) |
 | L15 | `_tickProjectiles`, `_tickFades`, `_tickFloatLabels` (9326-9414), wiersz 33.24 | brak | BRAK (G) | `_tickFades` ustawia `dead = true` po zaniku. Wpływa na `aliveA/aliveD` w L7 |
 | L16 | `_beginAutoBatchTurnFromCurrentState` (5696-5705) | brak | BRAK | |
 | L17 | `_beginAutoBatchPhase`, `_snapshotAutoBatchIntents`, `_cloneForAutoBatchPlanning`, `_launchAutoBatchResolution`, `_finishAutoBatchPhase` (5707-5973), wiersz 33.10 | brak (`grep -rn auto_batch` pusty) | BRAK | zależy od `autoBatchPhase.ts` (osobny port) |
@@ -416,6 +428,7 @@ Stan bazy `a70375e52`. Wiersze K1, K1b i K4 dotyczą modułów z bazy. K2 i K3 N
 | L27 | `_haltAutoBattleTurn` (17333-17345), wiersz 35.29 | brak | BRAK | K6 |
 | L28 | `_performPlayerOrder` (18280), `_executeGroupDoctrineStep` (17966) | brak | BRAK | K6 / wiersze 36.x |
 | L29 | `_showEndScreen` (10666-10738), wiersz 33.32 | brak | BRAK (UI) | poza silnikiem |
+| L30 | `_skipInstantFallback` (3715-3749) + `computeInstantResult` (20389-20421), wiersz 35.x (Pomiń) | brak. Najbliższe: `computeInstantResult` (K-owe `resolve_combat` jednorazowe, Z-NB-2) | BRAK | Drugi tor końca (K5.2 pkt 2a): ustawia `finished` i `_endWinner` bez `_checkEnd`, bez pętli tur. Decyzja: K6 (Pomiń) albo osobny port; nie wchodzi do K5a–K5j. Wymaga zachowania `wallEverBreached` z `:3721` (K4). |
 
 ### K5.9 Odkrycie: gałąź SZTURM ODPARTY jest w pinie nieosiągalna
 
