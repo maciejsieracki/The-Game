@@ -9509,3 +9509,5 @@ R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1 (#138): FC FAIL r1 (regresja ai
 
 - 2026-11-12 FALA 661 WDROŻONA na ROBOCZĄ (FC 81c03affe + dd17894a4 + affa09bd5): W27 — zapis gry (Ctrl+S, szybki zapis, autozapis) zablokowany w trakcie bitwy z komunikatem, po bitwie działa (decyzja właściciela); W26 B4b — tylko test: B4b nie odtwarza się z pomiarem historycznym (kod gry bez zmian); W29 — tylko test fallbacku. Otwarte ABC: ujednolicić fallback czy udokumentować rozjazd.
 - 2026-11-12 W31 R-WEB-UI-DIPLO-RELATION-DEAL-TEXT-CONSISTENT-Q1: FC PASS-WITH-NOTES 15d5b0833 (kod 8b2eb4a41) — czeka na deploy FALA 662; ABC: ton czerwony wiersza przy symetrycznej ofercie; osobny temat: rozjazd „Relacja 11,6” vs „90/200”.
+
+- 2026-11-12 FALA 662 WDROŻONA na ROBOCZĄ (FC 15d5b0833, kod 8b2eb4a41): W31 — panel „Wpływ relacji na deal” nie pisze „musisz dać więcej”, gdy oferta AI→gracz ma aktywne „Przyjmij” (wariant incomingAccepted; reguły handlu bez zmian). Otwarte: ton czerwony wiersza przy symetrycznej ofercie (ABC), rozjazd „Relacja 11,6” vs „90/200” (osobny temat, task #275).
