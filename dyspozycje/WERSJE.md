@@ -1,3 +1,9 @@
+## ROBOCZA 915466b5 -- 2026-11-06 -- FALA 666: Etykiety relacji w oknie dyplomacji (perspektywa AI / gracza) i neutralny ton przy symetrycznej wymianie; narzędzie pomiaru fallbacku oblężenia (testowa)
+
+- R-WEB-UI-DIPLO-RELATION-LABELS-AND-TONE-Q1 (W37), R-WEB-SIEGE-FALLBACK-LOSS-MEASURE-Q1 (W39, tylko narzędzie)
+- Weryfikacja: logic 213/213, tech-tree 20/20, research 33/33, unit-replace 21/21, combat 6/6, labels 23/0, deal-text 6/0, acceptance-points 304/0, audio-sidecar PASS
+- Limity: pomiar pikselowy NIE_ZMIERZONO
+
 ## ROBOCZA 1309c7c6 -- 2026-11-06 -- FALA 665: FALA 665: górny limit nadpłaty w jednorazowych ofertach handlowych AI do gracza (W38) + odświeżona tabela bramek w R-PROC-AUTOBOT (W36) (testowa)
 
 - R-WEB-AI-TRADE-ONESHOT-OVERPAY-LIMIT-Q1 + R-PROC-GATE-REFERENCE-REFRESH-Q2 (dokumentacja)
