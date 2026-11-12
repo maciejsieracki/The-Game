@@ -156,6 +156,12 @@ impl TurnSeqEnv for SeqEnv {
         );
         let is_siege = st.siege_wall_col >= 0;
         assert_eq!(is_siege, flag(&v["isSiege"]), "isSiege");
+        // roundNo przekazany do _checkEnd musi byc tym, ktory sekwencja trzyma w stanie w tym miejscu.
+        let round_in_check = v["roundNo"].as_i64().expect("roundNo");
+        assert_eq!(
+            st.round_no, round_in_check,
+            "roundNo w _checkEnd: stan != wektor"
+        );
 
         EndCheckSnapshot {
             stalled: flag(&v["stalled"]),
@@ -299,6 +305,23 @@ fn assert_units(got: &[SeqUnit], want: &Value, side: &str, ctx: &str) {
         assert_eq!(g.id, w["id"].as_u64().expect("id"), "{ctx}: id {side}#{i}");
         assert_eq!(g.c.acted, flag(&w["acted"]), "{ctx}: acted {side}#{i}");
         assert_eq!(g.c.dead, flag(&w["dead"]), "{ctx}: dead {side}#{i}");
+        assert_eq!(
+            g.c.fading_out,
+            flag(&w["fadingOut"]),
+            "{ctx}: fadingOut {side}#{i}"
+        );
+        assert_eq!(g.c.routed, flag(&w["routed"]), "{ctx}: routed {side}#{i}");
+        assert_eq!(
+            g.c.removed,
+            flag(&w["removed"]),
+            "{ctx}: removed {side}#{i}"
+        );
+        assert!(
+            same(g.c.hp, num(&w["hp"])),
+            "{ctx}: hp {side}#{i}: {} != {}",
+            g.c.hp,
+            num(&w["hp"])
+        );
         assert!(
             same(g.c.move_left, num(&w["moveLeft"])),
             "{ctx}: moveLeft {side}#{i}: {} != {}",
