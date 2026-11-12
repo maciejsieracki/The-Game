@@ -299,3 +299,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   4. K5LOOP-AUTO-Q1 (#97) — `wf_54cdbdf9-c79`, Operator HAIKU, teraz; dispatch `55b9eb260`
 - **Uwaga o kolejce:** pozycje #101, #105, #117, #119, #126, #127, #130, #138, #141 są już zintegrowane (wg rejestru i gałęzi), a lista zadań ich nie odzwierciedla. Nie startowano ich ponownie. Do uporządkowania listy.
 - **Otwarte decyzje właściciela:** (a) alias `umowa_handlowa` / usunięcie `LegacyTradeAgreement`; (b) driver zdobycia miasta (W8) dla #115 i #114.
+
+## Przebieg (sprzątanie po zgodzie właściciela)
+- **Zgoda właściciela:** „Tak możesz wszystko posprzątać”.
+- **Zabezpieczenie:** `refs/keep/wt-*` dla HEAD-ów 15 worktree; FC-y dopchnięte jako gałęzie wip: `rust-port-wip/R-RUSTPORT-P6-R7K7C-WIRING-Q2-fc` (`240dd99f5`) i `rust-port-wip/R-RUSTPORT-P6-CRED-HAK-WYPOWIEDZENIE-Q1-fc` (`203c7d8d4`).
+- **Usunięte worktree:** tematy R7K7C-WIRING-Q2 (4), CRED-HAK-WYPOWIEDZENIE-Q1 (4), K5LOOP-AUTO-Q1 (2), K5LOOP-WIEZE-Q1 (2), K5-LOOP-WYLOM-Q1 (2) oraz worktree ZLOZE-WIRING-Q1 w scratchpadzie.
+- **Usunięte kopie:** w scratchpadzie `gra/` i `pin/` (kopie pinu; odtwarzalne przez `git show 07d2fbd72:...`).
+- **Zostawione:** `/home/user/reg-wt` (worktree rejestru), `.claude/worktrees/tgt-eval2` (348 MB, nieznany właściciel), pozostałe pliki scratchpada.
+- **Dysk:** 505 MB → 17 GB wolnego.
+- **Stan:** 0 aktywnych Workflow. Tematy #96, #97, #98 padły na braku miejsca i czekają na wznowienie. Kolejny krok: start 4 slotów z kolejki (#96–#98 + decyzja o driverze W8) po zgodzie właściciela na decyzje ABC.
