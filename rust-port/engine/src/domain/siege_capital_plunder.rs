@@ -18,6 +18,7 @@
 //!   dostarczony przez [`PlunderLabels::one_line`].
 //! * `eliminateOwner`, `markCityStateDirty`, `showHintMessage`, `recordCityCaptureEvent`, `recordCivElimEvent`,
 //!   `showTriumphCityStateNotice` - efekty uboczne po stronie wolajacego; tu tylko zapisywane w `ui_calls`.
+//!   Store po stronie wolajacego dla `recordCityCaptureEvent` / `recordCivElimEvent`: `siege_capture_events::CaptureEventStore` (Q7).
 //!
 //! Zalozenia (do akceptacji, brak w dispatchu):
 //! * Z-PL-1 `cityFoundOrder` zwraca `f64` (`INFINITY` dla id niepasujacego do `city<N>`), tak jak JS `Number`.
@@ -581,6 +582,7 @@ pub fn run_capital_capture_plunder<A: OwnerResourceAccess + ?Sized, L: PlunderLa
         let captor_label = labels.civ_label(new);
         ui.push(ui_call("civLabelForOwner", vec![json!(new)]));
         ui.push(ui_call(
+            // Efekt UI (Q7): store `siege_capture_events::CaptureEventStore::record_city_capture_event`.
             "recordCityCaptureEvent",
             vec![json!({
                 "cityId": city.id,
@@ -659,6 +661,7 @@ pub fn run_capital_capture_plunder<A: OwnerResourceAccess + ?Sized, L: PlunderLa
     let captor_label = labels.civ_label(new);
     ui.push(ui_call("civLabelForOwner", vec![json!(new)]));
     ui.push(ui_call(
+        // Efekt UI (Q7): store `siege_capture_events::CaptureEventStore::record_city_capture_event`.
         "recordCityCaptureEvent",
         vec![json!({
             "cityId": city.id,
@@ -711,6 +714,7 @@ pub fn run_capital_capture_plunder<A: OwnerResourceAccess + ?Sized, L: PlunderLa
         ));
     } else if new != 0 && old != 0 {
         ui.push(ui_call(
+            // Efekt UI (Q7): store `siege_capture_events::CaptureEventStore::record_civ_elim_event`.
             "recordCivElimEvent",
             vec![
                 json!(old),
