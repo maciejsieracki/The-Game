@@ -100,6 +100,46 @@ fn norm_terrain_wszystkie_punkty_kodowe() {
 }
 
 #[test]
+fn norm_terrain_sekwencje_znakow_laczacych() {
+    let v = load();
+    let cases = v["seq"].as_array().expect("seq");
+    assert!(cases.len() >= 2000, "seq: {}", cases.len());
+    for c in cases {
+        let s = c["s"].as_str().expect("s");
+        let want = c["out"].as_str().expect("out");
+        assert_eq!(norm_terrain(s), want, "seq {s:?}");
+    }
+}
+
+#[test]
+fn norm_terrain_pary_znakow_laczacych_wszystkie() {
+    // Kazda para (x, y) niestartowych (ccc>0) w sekwencji "a"+x+y: porzadek ccc jak w Node.
+    let v = load();
+    let cps: Vec<u32> = v["cccCps"]
+        .as_array()
+        .expect("cccCps")
+        .iter()
+        .map(|c| c.as_u64().expect("cp") as u32)
+        .collect();
+    assert!(cps.len() >= 900, "cccCps: {}", cps.len());
+    let chars: Vec<char> = cps.iter().filter_map(|&c| char::from_u32(c)).collect();
+    let mut outs: Vec<String> = Vec::with_capacity(chars.len() * chars.len());
+    for &x in &chars {
+        for &y in &chars {
+            outs.push(norm_terrain(&format!("a{x}{y}")));
+        }
+    }
+    assert_eq!(
+        outs.len() as u64,
+        v["cccPairCount"].as_u64().expect("count")
+    );
+    assert_eq!(
+        fnv64(outs.iter().map(String::as_str)),
+        v["cccPairFnv"].as_str().expect("fnv")
+    );
+}
+
+#[test]
 fn parse_defense_bonus_pct_wektory() {
     let v = load();
     let cases = v["bonus"].as_array().expect("bonus");
