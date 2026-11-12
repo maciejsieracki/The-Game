@@ -1,0 +1,97 @@
+{
+  "measured": true,
+  "aiOwnerId": 1,
+  "statusPrzedEndTurn": "pokoj",
+  "okno": {
+    "buttons": [
+      {
+        "act": "edit",
+        "text": "Edytuj",
+        "disabled": false
+      },
+      {
+        "act": "remove",
+        "text": "Usuń",
+        "disabled": false
+      },
+      {
+        "act": "edit",
+        "text": "Edytuj",
+        "disabled": false
+      },
+      {
+        "act": "remove",
+        "text": "Usuń",
+        "disabled": false
+      },
+      {
+        "act": "accept-package",
+        "text": "Przyjmij",
+        "disabled": false
+      },
+      {
+        "act": "reject-package",
+        "text": "Odrzuć",
+        "disabled": false
+      }
+    ],
+    "relRowsRaw": [
+      "Wpływ Relacji na deal−88,4%Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza"
+    ],
+    "linieRelacja": [
+      "zablokowana — wymaga Zaufania 30 (masz 0.6) i Relacji 110 (masz 90)",
+      "zablokowana — wymaga Zaufania 90 (masz 0.6) i Relacji 130 (masz 90)",
+      "zablokowana — wymaga Zaufania 45 (masz 0.6) i Relacji 100 (masz 90)",
+      "WPŁYW RELACJI NA DEAL",
+      "Relacja 11,6 · Twoja strona słabsza (−88,4% PW); oni: baza",
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy",
+      "RELACJE Z TOBĄ",
+      "Relacja",
+      "RELACJE Z INNYMI",
+      "ZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 0.6) I RELACJI 130 (MASZ 90)",
+      "ZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 0.6) I RELACJI 110 (MASZ 90)"
+    ],
+    "linieZaufanie": [
+      "zablokowana — wymaga Zaufania 30 (masz 0.6) i Relacji 110 (masz 90)",
+      "zablokowana — wymaga Zaufania 90 (masz 0.6) i Relacji 130 (masz 90)",
+      "zablokowana — wymaga Zaufania 45 (masz 0.6) i Relacji 100 (masz 90)",
+      "zablokowana — wymaga Zaufania 70 (masz 0.6)",
+      "zablokowana — wymaga Zaufania 50 (masz 0.6)",
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy",
+      "Zaufanie",
+      "(Zaufanie + Respekt)",
+      "ZABLOKOWANA — WYMAGA ZAUFANIA 90 (MASZ 0.6) I RELACJI 130 (MASZ 90)",
+      "ZABLOKOWANA — WYMAGA ZAUFANIA 30 (MASZ 0.6) I RELACJI 110 (MASZ 90)"
+    ],
+    "linieRespekt": [
+      "zablokowana — wymaga Respektu 70 (masz 50)",
+      "zablokowana — wymaga Respektu 70 (masz 50)",
+      "Stan bieżący: Relacja 90 / 200 · Zaufanie 1 / 100 · Respekt 89 / 100 · nastawienie: Życzliwy",
+      "Respekt",
+      "(Zaufanie + Respekt)",
+      "ZABLOKOWANA — WYMAGA RESPEKTU 70 (MASZ 50)"
+    ],
+    "linieWojna": [
+      "POKÓJ",
+      "Potencjał sojuszniczy",
+      "Wypowiedzenie wojny",
+      "Pakt o nieagresji",
+      "Sojusz (pełny lub defensywny)",
+      "Wspólny wróg / namowa do wojny",
+      "Propozycja pokoju / zawieszenia broni",
+      "niedostępna — nie trwa wojna",
+      "Potencjał sojuszniczy",
+      "W stanie wojny z",
+      "W sojuszu z",
+      "Pakt o nieagresji z"
+    ],
+    "linieMoc": [
+      "MOC",
+      "Moc militarna",
+      "Moc militarna"
+    ]
+  },
+  "pokazuje11_6": true,
+  "pokazuje90_200": true,
+  "consoleErrors": []
+}
