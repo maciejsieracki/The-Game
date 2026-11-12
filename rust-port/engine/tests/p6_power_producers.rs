@@ -163,20 +163,9 @@ fn ludki_equal_pobor_suma_ludkow_on_same_inputs() {
 }
 
 #[test]
-fn no_producer_keys_are_exactly_the_eight_open_components() {
-    assert_eq!(
-        no_producer_keys(),
-        vec![
-            "armia",
-            "bitwy",
-            "terytorium",
-            "infra",
-            "tech",
-            "ulepszenia",
-            "religia",
-            "zdobycze"
-        ]
-    );
+fn no_producer_keys_are_exactly_the_three_components_without_rust_producer() {
+    // Stan po POWER-SOURCES: armia, terytorium, infra, tech, religia maja producenta (RustProducer).
+    assert_eq!(no_producer_keys(), vec!["bitwy", "ulepszenia", "zdobycze"]);
 }
 
 #[test]
@@ -253,7 +242,20 @@ fn coverage_table_lists_all_twelve_components_with_explicit_status() {
             ComponentSource::NoProducer(_) => None,
         })
         .collect();
-    assert_eq!(producers, vec!["ludki", "rekruci", "miasta", "kultura"]);
+    assert_eq!(
+        producers,
+        vec![
+            "armia",
+            "ludki",
+            "rekruci",
+            "miasta",
+            "terytorium",
+            "infra",
+            "tech",
+            "kultura",
+            "religia"
+        ]
+    );
     for (key, source) in COMPONENT_SOURCES.iter() {
         if let ComponentSource::NoProducer(reason) = source {
             assert!(!reason.is_empty(), "brak uzasadnienia dla {key}");
