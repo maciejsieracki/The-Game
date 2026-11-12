@@ -90,13 +90,32 @@ NAMES=(
   "M4 zmiana zaokraglenia (obrazenia HP: damage_exact -> damage_exact.round())"
 )
 
+# Liczniki wystapien `attacker.armor,` i `defender.armor,` w zakresie modulu: "ATK DEF".
+armor_counts() {
+  local r
+  r="$(sed -n "${RANGE}p" "$SRC")"
+  printf '%s %s\n' "$(printf '%s\n' "$r" | grep -c 'attacker\.armor,')" "$(printf '%s\n' "$r" | grep -c 'defender\.armor,')"
+}
+
+# Ustawiane przez M2: 1 = zamiana pelna (kazde wystapienie zamienione), 0 = czesciowa.
+ARM_SWAP_OK=1
+
 apply_mutation() {
   case "$1" in
     1)
       sed -i "${RANGE}s/let hit = roll < hit_pct;/let hit = roll <= hit_pct;/" "$SRC"
       ;;
     2)
+      read -r ARM_A_BEFORE ARM_D_BEFORE <<< "$(armor_counts)"
       sed -i "${RANGE}s/defender\.armor,/@@ARM_A@@/; ${RANGE}s/attacker\.armor,/defender.armor,/; ${RANGE}s/@@ARM_A@@/attacker.armor,/" "$SRC"
+      read -r ARM_A_AFTER ARM_D_AFTER <<< "$(armor_counts)"
+      # Oczekiwany ksztalt: dokladnie jedno `attacker.armor,` i jedno `defender.armor,` (strzal i kontrastrzal)
+      # przed i po zamianie. Inaczej zamiana nie jest pelna/symetryczna i wynik bylby falszywy - wtedy BLAD.
+      if [ "$ARM_A_BEFORE" = 1 ] && [ "$ARM_D_BEFORE" = 1 ] && [ "$ARM_A_AFTER" = 1 ] && [ "$ARM_D_AFTER" = 1 ]; then
+        ARM_SWAP_OK=1
+      else
+        ARM_SWAP_OK=0
+      fi
       ;;
     3)
       sed -i "${RANGE}s/if total_rounds > max_rounds {/if false \&\& total_rounds > max_rounds {/" "$SRC"
@@ -115,11 +134,19 @@ for i in 1 2 3 4; do
   name="${NAMES[$((i-1))]}"
   echo "== $name =="
   cp "$BACKUP" "$SRC"
+  ARM_SWAP_OK=1
   apply_mutation "$i"
   if cmp -s "$BACKUP" "$SRC"; then
     echo "BLAD: mutacja M$i nie zmienila combat.rs"
     SUMMARY+=("M$i: BLAD (mutacja nie zastosowana)")
     ERRORS=$((ERRORS+1))
+    continue
+  fi
+  if [ "$ARM_SWAP_OK" != 1 ]; then
+    echo "BLAD: mutacja M$i niepelna (zamiana pancerza nie objela wszystkich wystapien)"
+    SUMMARY+=("M$i: BLAD (mutacja niepelna) - $name")
+    ERRORS=$((ERRORS+1))
+    cp "$BACKUP" "$SRC"
     continue
   fi
   OUT="$(run_harness)"
