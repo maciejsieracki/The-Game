@@ -1,3 +1,9 @@
+## ROBOCZA 6eee943a -- 2026-11-12 -- FALA 670: Powiadomienie kolejki pustej tylko gdy można coś zbudować (testowa)
+
+- bramka budynków, ulepszeń i odcisku używa predykatu panelu produkcji (buildingCanBuildNow); test behawioralny
+- Weryfikacja: tsc OK; logic 213/213; notif-empty-queue-buildable-test 16/0; dowód Chromium NIE_ZMIERZONO
+- Limity: brak dowodu w przeglądarce — smoke po deployu
+
 ## ROBOCZA eb4ecfaa -- 2026-11-12 -- FALA 669: Rozdzielanie armii: blokada wejścia na miasto i heks wroga (testowa)
 
 - rozdzielenie armii i ruch pod-stosu nie wchodzą na obce miasto ani heks z obcą jednostką (splitTargetPassable + wpięcie w main.ts)
