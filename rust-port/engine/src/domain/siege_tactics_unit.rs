@@ -19,6 +19,12 @@
 //! Nie portowano (efekty sceny, K5c/K5e): `_startRout` (rozbicie dowodcow, `occByKey`, log, sfx, kierunek ucieczki),
 //! `_applyMoraleDamage`, `_gainMorale`, `_checkMeleeScreenLost`, oraz zapisy `ru.dead = true` (`:9356`, `:9912`).
 //!
+//! Pola `hp`, `move_left`, `acted` sa czescia modelu z GOAL K5a, ale ZADEN z czterech predykatow pinu (`:5617`,
+//! `:10159-10160`, `:10263`, `:9783-9797`) ich nie czyta (grep fragmentow pinu: 0 odwolan). Nie maja wiec wektorow
+//! i nie sa weryfikowane wzgledem pinu w K5a; ich semantyka wejdzie z klockami, ktore je czytaja (K5c/K5e).
+//! `is_broken` jest aliasem `routed` wymaganym przez GOAL („alive/broken”); zaleznosci powinny uzywac
+//! [`is_out`] / [`alive_end`], nie `is_broken`.
+//!
 //! Wejscia `_checkEnd` nadal sa flagami (`EndCheckInput.alive_a` / `alive_d` / `total_dead` w
 //! `siege_tactics_endcheck.rs`). Miejsce podstawienia (bez refaktoru): wywolujacy budujacy `EndCheckInput` z listy
 //! `CombatUnit` podstawia `alive_a = side_alive_end(&atk)`, `alive_d = side_alive_end(&def)`, `total_dead = total_dead(..)`.

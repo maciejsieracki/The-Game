@@ -19247,7 +19247,7 @@
    "tag": "terrain_le1_hold"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": "NaN",
    "neverRout": false,
    "dead": false,
@@ -20270,7 +20270,7 @@
    "tag": "terrain_gt1_rout"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 46.1,
    "neverRout": false,
    "dead": false,
@@ -20897,7 +20897,7 @@
    "tag": "terrain_gt1_hold"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 0,
    "neverRout": false,
    "dead": false,
@@ -21095,7 +21095,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 0,
    "neverRout": false,
    "dead": false,
@@ -21359,7 +21359,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 49,
    "neverRout": false,
    "dead": false,
@@ -22789,7 +22789,7 @@
    "tag": "terrain_gt1_hold"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 1,
    "neverRout": false,
    "dead": false,
@@ -23504,7 +23504,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 49.25,
    "neverRout": false,
    "dead": true,
@@ -23515,7 +23515,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 13.8,
    "neverRout": false,
    "dead": false,
@@ -23955,7 +23955,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 49.25,
    "neverRout": true,
    "dead": false,
@@ -25143,7 +25143,7 @@
    "tag": "terrain_le1_rout"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 0,
    "neverRout": false,
    "dead": false,
@@ -25220,7 +25220,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": -2,
    "neverRout": false,
    "dead": false,
@@ -25671,7 +25671,7 @@
    "tag": "terrain_le1_rout_nan_morale"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 100,
    "neverRout": false,
    "dead": false,
@@ -26023,7 +26023,7 @@
    "tag": "terrain_le1_rout"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 9.65,
    "neverRout": false,
    "dead": false,
@@ -26045,7 +26045,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 34.15,
    "neverRout": true,
    "dead": false,
@@ -26144,7 +26144,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 0,
    "neverRout": false,
    "dead": false,
@@ -26375,7 +26375,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 1,
    "neverRout": false,
    "dead": false,
@@ -26408,7 +26408,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 5,
    "neverRout": false,
    "dead": false,
@@ -27024,7 +27024,7 @@
    "tag": "terrain_le1_hold"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 7.75,
    "neverRout": true,
    "dead": true,
@@ -27376,7 +27376,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 20,
    "neverRout": false,
    "dead": false,
@@ -28080,7 +28080,7 @@
    "tag": "terrain_gt1_hold"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 50,
    "neverRout": true,
    "dead": true,
@@ -28311,7 +28311,7 @@
    "tag": "terrain_le1_rout"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 25.75,
    "neverRout": true,
    "dead": false,
@@ -28685,7 +28685,7 @@
    "tag": "early_return"
   },
   {
-   "morale": 0,
+   "morale": "-0",
    "fleeMorale": 0,
    "neverRout": false,
    "dead": false,

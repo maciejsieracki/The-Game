@@ -176,7 +176,12 @@ for (let k = 0; k < 900; k++) {
 }
 
 // JSON bez NaN/Infinity: wartosci nieskonczone jako napisy.
-const jsonReplacer = (_k, v) => (typeof v === 'number' && !Number.isFinite(v) ? String(v) : v);
+// JSON.stringify(-0) daje "0", wiec -0 kodujemy jawnie jako napis "-0" (Rust num() parsuje go do -0.0).
+const jsonReplacer = (_k, v) => {
+  if (typeof v !== 'number') return v;
+  if (Object.is(v, -0)) return '-0';
+  return Number.isFinite(v) ? v : String(v);
+};
 
 const outDir = join(dirname(fileURLToPath(import.meta.url)), 'p6_siege_tactics_siege_tactics_unit_vectors');
 mkdirSync(outDir, { recursive: true });

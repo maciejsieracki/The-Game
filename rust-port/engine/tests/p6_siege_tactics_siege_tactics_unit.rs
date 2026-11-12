@@ -238,3 +238,19 @@ fn martwa_lub_rozbita_jednostka_nie_jest_ponownie_rozbijana() {
         50.0
     ));
 }
+
+#[test]
+fn wektory_zawieraja_minus_zero() {
+    // Odpowiedz na zarzut: -0 jest zakodowane jawnie jako napis "-0" (JSON.stringify(-0) dawalby "0").
+    let v = load();
+    let rout = v["rout"].as_array().expect("rout");
+    let neg0: Vec<&serde_json::Value> = rout
+        .iter()
+        .filter(|c| c["morale"].as_str() == Some("-0"))
+        .collect();
+    assert!(
+        !neg0.is_empty(),
+        "brak przypadku morale = -0 w wektorach rout"
+    );
+    assert!(num(&neg0[0]["morale"]).is_sign_negative());
+}
