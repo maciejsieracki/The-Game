@@ -18,7 +18,7 @@
 //! `_boostEnemiesOnBreak`, `_pushClash`) sa ZWRACANE jako jawna lista [`SceneEffect`]; ich cialo NIE jest portowane.
 //! Tekst logu (`this.log.push`) i dzwiek (`_sfxMelee`) sa poza portem.
 //!
-//! Semantyka liczb jak w JS: `Math.max`/`Math.min` propaguja NaN ([`js_max`], [`js_min`]); `Math.round` = `floor(x + 0.5)`
+//! Semantyka liczb jak w JS: `Math.max`/`Math.min` propaguja NaN ([`js_max`], [`js_min`]); `Math.round` jak w JS, bez `floor(x + 0.5)`
 //! ([`js_round`]); porownania z NaN sa falszywe. Wartosci `Infinity` przechodza tak samo jak w JS.
 
 use std::sync::OnceLock;
@@ -171,6 +171,9 @@ pub struct BlowOutput {
     pub extra_morale: f64,
     pub outcome: Outcome,
     pub effects: Vec<SceneEffect>,
+    /// `this.engaged.add(key)` (`battleScene.ts:8899`): tylko cios wrecz, zawsze (takze przy pudle).
+    /// Wywolujacy musi zapisac klucz pary w zbiorze `engaged` sceny.
+    pub engaged_add: bool,
 }
 
 /// `Math.max(a, b)` z JS: NaN propaguje.
@@ -191,9 +194,19 @@ pub fn js_min(a: f64, b: f64) -> f64 {
     }
 }
 
-/// `Math.round(x)` z JS dla przypadku `floor(x + 0.5)` (polowki w gore).
+/// `Math.round(x)` z JS: polowki w strone +Infinity, bez bledu zaokraglenia `x + 0.5`
+/// (dla `x = 0.49999999999999994` JS daje 0, a `floor(x + 0.5)` dawaloby 1).
+/// `x - floor(x)` jest dokladne dla |x| < 2^52; dla wiekszych |x| x jest calkowity i zwracany bez zmian.
 pub fn js_round(x: f64) -> f64 {
-    (x + 0.5).floor()
+    if !x.is_finite() {
+        return x;
+    }
+    let r = x.floor();
+    if x - r >= 0.5 {
+        r + 1.0
+    } else {
+        r
+    }
 }
 
 /// `hitChanceTw` z pinu (`combat.ts:440-447`): `clamp(hit_base + melee_attack - melee_defence + hit_bonus, hit_min, hit_max)`.
@@ -259,6 +272,7 @@ pub fn single_blow(input: &BlowInput, rolls: &mut dyn RollSource) -> BlowOutput 
             extra_morale: 0.0,
             outcome: Outcome::None,
             effects: Vec::new(),
+            engaged_add: !input.ranged,
         };
     }
 
@@ -308,6 +322,7 @@ pub fn single_blow(input: &BlowInput, rolls: &mut dyn RollSource) -> BlowOutput 
         extra_morale,
         outcome,
         effects,
+        engaged_add: !input.ranged,
     }
 }
 
@@ -378,4 +393,24 @@ pub fn resolve_outcome(
         },
     });
     (Outcome::MoraleOnly, effects)
+}
+
+#[cfg(test)]
+mod tests_js_round {
+    use super::js_round;
+
+    #[test]
+    fn js_round_jak_math_round() {
+        assert_eq!(js_round(0.49999999999999994), 0.0);
+        assert_eq!(js_round(0.5), 1.0);
+        assert_eq!(js_round(1.5), 2.0);
+        assert_eq!(js_round(2.5), 3.0);
+        assert_eq!(js_round(-2.5), -2.0);
+        assert_eq!(js_round(-0.5), 0.0);
+        assert_eq!(js_round(-2.6), -3.0);
+        assert_eq!(js_round(4503599627370497.0), 4503599627370497.0);
+        assert_eq!(js_round(f64::INFINITY), f64::INFINITY);
+        assert_eq!(js_round(f64::NEG_INFINITY), f64::NEG_INFINITY);
+        assert!(js_round(f64::NAN).is_nan());
+    }
 }
