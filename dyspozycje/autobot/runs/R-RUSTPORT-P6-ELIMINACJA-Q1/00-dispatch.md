@@ -5,3 +5,11 @@ GOAL: (1) zmierz na pinie, co robi eliminacja właściciela (grep w gra/src: eli
 ZAKAZ: gra/**, rust-port/engine/data/**, origin/main, WERSJE.md, Cargo.toml, Cargo.lock, push/integracja, osłabianie asercji. Brak wpinania w turn_war_* i combat.rs (osobne tematy).
 Allowlista: rust-port/engine/src/domain/{playable.rs (tylko pole/funkcja), war_turn_state.rs (tylko wywołanie), mod.rs}, rust-port/engine/src/domain/eliminacja*.rs (nowy), rust-port/engine/tests/p6_eliminacja* (nowe: .rs, _gen.mjs, _vectors/), dyspozycje/autobot/runs/R-RUSTPORT-P6-ELIMINACJA-Q1/**.
 Bramki (EXIT zapisany): cargo fmt --check (rust-port/engine); cargo clippy --all-targets -- -D warnings; cargo test --lib; p6_eliminacja*, p6_power_battle_acc, p6_power_acc_wiring. df < 6 GB → czyść tylko własny target; CARGO_TARGET_DIR tylko w worktree/scratchpad własnym, nigdy wspólne /tmp; kompiluj mimo to. Env: CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0. Commit obowiązkowy. Raport 01-operator-r1.md.
+
+---
+# DODATEK r2 (Operator HAIKU; runda 2/5) — FC r1 = FAIL (jedna poprawka: clippy)
+BAZA (jedyna obowiązująca): c7760f46c (= FC r1; zawiera kod 0bde9453f + raporty). Worktree: git fetch origin rust-port-wip/R-RUSTPORT-P6-ELIMINACJA-Q1 (lub wskazany SHA) && git checkout --detach c7760f46c. Jeżeli c7760f46c nie jest dostępny — użyj 0bde9453f.
+JEDYNA POPRAWKA: rust-port/engine/src/domain/eliminacja.rs:22 — doc-komentarz (lista bez wcięcia; clippy doc_lazy_continuation). Dodaj wcięcie linii 22 albo pustą linię `//!` przed nią. Tylko komentarz.
+BRAMKI z EXIT (obowiązkowe, na toolchainie z worktree — zapisz `rustc --version`, `cargo clippy --version`): cargo fmt --check; cargo clippy --all-targets -- -D warnings (MUSI być 0); cargo test --lib; p6_eliminacja; p6_power_battle_acc; p6_power_acc_wiring. Wcześniejsze raporty deklarujące clippy 0 były nieprawdziwe — nie przepisuj ich, mierz.
+NIE ROBIĆ: czyszczenia deals/forced/era-enter (osobny temat ELIMINACJA-GRACZA-DEALS-WOJNY-Q2), wektorów oblężeń.
+Raport 02a-obrona.md dopisz sekcję DODATEK r2 z SHA i wynikami bramek.
