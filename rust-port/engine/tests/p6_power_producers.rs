@@ -163,9 +163,9 @@ fn ludki_equal_pobor_suma_ludkow_on_same_inputs() {
 }
 
 #[test]
-fn no_producer_keys_are_exactly_the_three_components_without_rust_producer() {
-    // Stan po POWER-SOURCES: armia, terytorium, infra, tech, religia maja producenta (RustProducer).
-    assert_eq!(no_producer_keys(), vec!["bitwy", "ulepszenia", "zdobycze"]);
+fn no_producer_keys_are_exactly_the_two_components_without_rust_producer() {
+    // Stan po P6-POWER-ULEPSZENIA: armia, terytorium, infra, tech, ulepszenia, religia maja producenta (RustProducer).
+    assert_eq!(no_producer_keys(), vec!["bitwy", "zdobycze"]);
 }
 
 #[test]
@@ -252,6 +252,7 @@ fn coverage_table_lists_all_twelve_components_with_explicit_status() {
             "terytorium",
             "infra",
             "tech",
+            "ulepszenia",
             "kultura",
             "religia"
         ]

@@ -18,6 +18,7 @@ pub mod battle_mode;
 pub mod brake_inputs;
 pub mod brake_power;
 pub mod brake_power_army;
+pub mod brake_power_improvements;
 pub mod brake_power_producers;
 pub mod brake_power_rest;
 pub mod building_costs;

@@ -5,7 +5,7 @@
 //!   rekruci, kultura - wektory z p6_power_producers_vectors). Wyjatek: `miasta` nie ma wektora pinu
 //!   (generator go nie emituje) - test reczny (`ownerCities.length`).
 //! - Lista `RustProducer` jest zamknieta: nowy producent bez przypadku testowego w `check_key` panikuje.
-//! - Kazdy `NoProducer` jest jawnie wymieniony (bitwy, ulepszenia, zdobycze) i ma uzasadnienie z odwolaniem
+//! - Kazdy `NoProducer` jest jawnie wymieniony (bitwy, zdobycze) i ma uzasadnienie z odwolaniem
 //!   do pinu `plik.ts:linia`; zadna pozycja NoProducer nie jest wywolywana w tym tescie.
 //! - Tabela `REST_COMPONENT_SOURCES` (brake_power_rest) musi byc zgodna z `COMPONENT_SOURCES` (ten sam rodzaj).
 
@@ -13,6 +13,9 @@ use std::collections::{BTreeMap, HashSet};
 
 use civ_engine::domain::brake_power_army::{
     armia_for_owner, terytorium_for_owner, ArmyUnit, ArmyUnitDef, TerritoryCityInput,
+};
+use civ_engine::domain::brake_power_improvements::{
+    improvement_count_for_hex, ulepszenia_for_owner,
 };
 use civ_engine::domain::brake_power_producers::{
     kultura_for_owner, ludki_for_owner, miasta_for_owner, no_producer_keys, rekruci_ekw_for_owner,
@@ -23,6 +26,7 @@ use civ_engine::domain::brake_power_rest::{
     has_pin_file_line_ref, rest_no_producer_keys, set_size, ReligionCity, RestSource,
     REST_COMPONENT_SOURCES,
 };
+use civ_engine::domain::improvements::HexLike;
 use civ_engine::domain::order_effects_culture::PressureCity;
 use civ_engine::domain::recruitment::manpower::ManpowerCity;
 use civ_engine::domain::terrain::{FortImprovementType, FortNode};
@@ -33,6 +37,7 @@ use serde_json::Value;
 const ARMY_VECTORS: &str = include_str!("p6_power_army_vectors/vectors.json");
 const PRODUCERS_VECTORS: &str = include_str!("p6_power_producers_vectors/vectors.json");
 const REST_VECTORS: &str = include_str!("p6_power_rest_vectors/vectors.json");
+const IMPROVEMENTS_VECTORS: &str = include_str!("p6_power_improvements_vectors/vectors.json");
 
 fn load(json: &str, key: &str) -> Vec<Value> {
     let root: Value = serde_json::from_str(json).expect("vectors.json musi sie parsowac");
@@ -132,7 +137,69 @@ fn check_armia() -> usize {
     cases.len()
 }
 
-/// Producent `terytorium` na wektorach `terytorium` (p6_power_army_vectors).
+/// Producent `ulepszenia` na wektorach `ulepszenia` (p6_power_improvements_vectors).
+fn check_ulepszenia() -> usize {
+    let cases = load(IMPROVEMENTS_VECTORS, "owner");
+    for (idx, c) in cases.iter().enumerate() {
+        let cities: Vec<TerritoryCityInput> = c["cities"]
+            .as_array()
+            .expect("cities")
+            .iter()
+            .map(|city| TerritoryCityInput {
+                q: city["q"].as_i64().expect("q") as i32,
+                r: city["r"].as_i64().expect("r") as i32,
+                population: city["population"].as_f64().expect("pop"),
+                owner_id: city["ownerId"].as_i64().expect("ownerId"),
+            })
+            .collect();
+        let forts: Vec<FortNode> = c["forts"]
+            .as_array()
+            .expect("forts")
+            .iter()
+            .map(|f| FortNode {
+                q: f["q"].as_i64().expect("q") as i32,
+                r: f["r"].as_i64().expect("r") as i32,
+                owner_id: f["ownerId"].as_i64().expect("ownerId"),
+                kind: if f["type"].as_str() == Some("fort") {
+                    FortImprovementType::Fort
+                } else {
+                    FortImprovementType::Posterunek
+                },
+                contested_useless: f["contestedUseless"].as_bool(),
+            })
+            .collect();
+        let hexes: BTreeMap<(i32, i32), usize> = c["hexes"]
+            .as_object()
+            .expect("hexes")
+            .iter()
+            .map(|(k, v)| {
+                let (q, r) = k.split_once(',').expect("q,r");
+                let hex = HexLike {
+                    ulepszenie: v
+                        .get("ulepszenie")
+                        .and_then(Value::as_str)
+                        .map(str::to_owned),
+                    ulepszenia: v.get("ulepszenia").and_then(Value::as_array).map(|a| {
+                        a.iter()
+                            .filter_map(|x| x.as_str().map(str::to_owned))
+                            .collect()
+                    }),
+                    ..HexLike::default()
+                };
+                (
+                    (q.parse().expect("q"), r.parse().expect("r")),
+                    improvement_count_for_hex(&hex),
+                )
+            })
+            .collect();
+        let owner = c["owner"].as_i64().expect("owner");
+        let got = ulepszenia_for_owner(&cities, &forts, owner, &|q, r| hexes.get(&(q, r)).copied());
+        let exp = c["expect"].as_f64().expect("expect");
+        assert_eq!(got, exp, "ulepszenia[{idx}]");
+    }
+    cases.len()
+}
+
 fn check_terytorium() -> usize {
     let cases = load(ARMY_VECTORS, "terytorium");
     for (idx, case) in cases.iter().enumerate() {
@@ -343,6 +410,7 @@ fn check_key(key: &str) -> usize {
     match key {
         "armia" => check_armia(),
         "terytorium" => check_terytorium(),
+        "ulepszenia" => check_ulepszenia(),
         "infra" => check_infra(),
         "tech" => check_tech(),
         "religia" => check_religia(),
@@ -374,6 +442,7 @@ fn every_rust_producer_is_callable_and_matches_vector_input() {
             "terytorium",
             "infra",
             "tech",
+            "ulepszenia",
             "kultura",
             "religia"
         ]
@@ -381,7 +450,7 @@ fn every_rust_producer_is_callable_and_matches_vector_input() {
 }
 
 #[test]
-fn no_producer_entries_are_exactly_the_three_open_components() {
+fn no_producer_entries_are_exactly_the_two_open_components() {
     let no_producer: Vec<&str> = COMPONENT_SOURCES
         .iter()
         .filter_map(|(k, s)| match s {
@@ -389,7 +458,7 @@ fn no_producer_entries_are_exactly_the_three_open_components() {
             ComponentSource::RustProducer(_) => None,
         })
         .collect();
-    assert_eq!(no_producer, vec!["bitwy", "ulepszenia", "zdobycze"]);
+    assert_eq!(no_producer, vec!["bitwy", "zdobycze"]);
     assert_eq!(no_producer_keys(), no_producer);
     // Zadna pozycja NoProducer nie jest tez RustProducer (tabela ma 12 unikalnych kluczy).
     let unique: HashSet<&str> = COMPONENT_SOURCES.iter().map(|(k, _)| *k).collect();
