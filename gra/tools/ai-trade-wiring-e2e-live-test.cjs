@@ -12,8 +12,10 @@
  *   5. akceptacja (po wczytaniu zapisu): umowa w activeDeals, REALNY tick dostaw przenosi surowce
  *      (stany PRZED/PO obu stron), zapis/wczytanie w trakcie aktywnej umowy zachowuje umowe i dostawy trwaja,
  *   6. stary zapis (bez pol AI-TRADE) laduje sie bez bledu; zero console.error / pageerror,
- *   7. REALNE okno dyplomacji (klik karty HUD „Dyplomacja”, klik „Odrzuc”): oferta widoczna, przycisk „Przyjmij” ZABLOKOWANY
- *      ([DECISION_REQUIRED], patrz nizej), odrzucenie przyciskiem czysci stol.
+ *   7. REALNE okno dyplomacji (klik karty HUD „Dyplomacja”): oferta widoczna, przycisk „Przyjmij” AKTYWNY (previewIncomingPlayerAccept
+ *      net PW >= 0, bez haka forceAccept), przyjecie i odrzucenie REALNYMI przyciskami w oknie.
+ *   8. (R-WEB-AI-TRADE-WIRING-E2E-Q1 r3, ABC A1) tabela proporcji ofert AI: siatka give x recv dla kilku par surowcow w zywej grze,
+ *      surowe wyniki w AITW_RESULT (grid); kazda oferta, ktora przechodzi OBIE bramki (AI i podglad gracza), ma givePn == receivePn.
  *
  * Srodowisko: bundle budowany `vite build --outDir <poza repo>` i ladowany z file:// (ZAKAZ `npm run dev`/`build` w gra/ -- R-PROC-AUTOBOT sec. 9),
  * a NIE przez serwer Vite po HTTP; kod gry i hak ?civTest=1 sa te same.
@@ -28,9 +30,10 @@
  *   B. stary zapis: usunieta linia `aiResourceBarterLastProposalTurn.clear();` przy wczytaniu zapisu
  *      -> FAIL „stary zapis: ... cooldown barteru pusty” (cooldown dziedziczony z biezacej sesji).
  *
- * [DECISION_REQUIRED] (nie naprawiane tu -- zmiana zachowania/balansu AI): AI proponuje wymiane, w ktorej oddaje wielokrotnie wiecej PW
- *   niz dostaje (np. 1400 PW za 50 PW), wiec bramka podgladu gracza odrzuca ja jako „oferta nieuczciwa dla partnera” i przycisk „Przyjmij” jest
- *   zablokowany. Umowa i tick dostaw sa wiec mierzone przez akceptacje silnikowa (hak forceAccept), nie przyciskiem.
+ * ABC A1 (wlasciciel, R-WEB-AI-TRADE-WIRING-E2E-Q1 r3): dla ofert AI -> gracz bramka uczciwosci AI uzywa wspolczynnika relacji 1
+ *   (AI_PROPOSER_FAIRNESS_REL_TOTAL, diplomacy-proposals.ts) i selekcja/filtr enqueue wymagaja givePn <= receivePn (gorny limit = podglad
+ *   gracza). Przecieciem jest oferta „rowne za rowne” (np. 10 zelaza = 200 PW za 40 cegly = 200 PW). Podglad „Przyjmij” gracza NIE zmieniony.
+ *   Akceptacja w tym tescie idzie PRZYCISKIEM „Przyjmij” w oknie dyplomacji (bez forceAccept).
  */
 const fs = require('fs');
 const os = require('os');
@@ -44,8 +47,8 @@ const RESULT_FILE = process.env.AITW_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const H = 'window.__aiTradeWiringTestDebug';
-const GIVE = 'zelazo'; // AI: Odlewnia zelaza (stawka > 0 -> clamp per_turn jej nie zeruje), nadwyzka zapasu; graczowi brakuje
-const RECV = 'cegla'; // gracz: cegielnia (stawka > 0), nadwyzka zapasu; AI brakuje (zelazo 20 PW/szt. vs cegla 5 PW/szt.: para przechodzi bramke uczciwosci)
+const GIVE = 'cegla'; // r3 (A1): AI daje cegle (nadwyzka zapasu, Cegielnia = stawka > 0); graczowi brakuje
+const RECV = 'zelazo'; // r3 (A1): AI bierze zelazo (brak), gracz ma nadwyzke (Odlewnia). Para 4:1 (cegla 5 PW / zelazo 20 PW): 10 zelaza = 40 cegly = 200 PW
 const BIG = 400;
 
 let pass = 0;
@@ -130,8 +133,8 @@ async function setupScenario(page, info) {
     const myCity = st.cities.find(c => c.ownerId === 0);
     const aiBuilt = window.__civTest.adminState(aiCity.id).built;
     const myBuilt = window.__civTest.adminState(myCity.id).built;
-    window.__civTest.adminSetup(aiCity.id, [...new Set([...aiBuilt, 'odlewnia_zelaza'])], null, null, null);
-    window.__civTest.adminSetup(myCity.id, [...new Set([...myBuilt, 'cegielnia'])], null, null, null);
+    window.__civTest.adminSetup(aiCity.id, [...new Set([...aiBuilt, 'cegielnia'])], null, null, null);
+    window.__civTest.adminSetup(myCity.id, [...new Set([...myBuilt, 'odlewnia_zelaza'])], null, null, null);
   }, [info.ai]);
   await ev(page, ([ai, keys, give, recv, big]) => {
     const h = window.__aiTradeWiringTestDebug;
@@ -214,16 +217,45 @@ async function main() {
     assert('okno dyplomacji (klik karty HUD): otwarte, widoczny przycisk decyzji dla pakietu', ui1.clicked && ui1.buttons.some(b => b.act === 'accept-package' && b.visible), ui1.buttons);
     assert('okno dyplomacji: propozycja AI widoczna w oknie (Zelazo oferowane, 10 Cegla zadane)',
       /Zelazo|Żelazo/.test(ui1.text) && /Cegła|Cegla/.test(ui1.text) && /Ich propozycj|ICH PROPOZYCJA|Oni oferuj/i.test(ui1.text), ui1.text.slice(0, 300));
-    // [DECISION_REQUIRED] REALNY przycisk „Przyjmij” jest zablokowany (disabled) -- gracz nie moze przyjac oferty AI.
+    // REALNY przycisk „Przyjmij” jest AKTYWNY (A1) -- gracz moze przyjac oferte AI bez forceAccept.
     const accBtn = ui1.buttons.find(b => b.act === 'accept-package');
-    assert('[DECISION_REQUIRED] okno dyplomacji: przycisk „Przyjmij” ZABLOKOWANY (disabled) + komunikat „Przewaga u Ciebie”; „Odrzuć” aktywny',
-      !!accBtn && accBtn.disabled === true && /Przewaga u Ciebie/.test(ui1.text)
-      && ui1.buttons.some(b => b.act === 'reject-package' && !b.disabled), { accBtn, btns: ui1.buttons });
-    // Wycena (PW) z tych samych funkcji co wiring: AI oddaje wielokrotnie wiecej niz dostaje (przyczyna blokady przycisku).
-    assert('[DECISION_REQUIRED] wycena: AI oddaje wielokrotnie wiecej PW niz dostaje (givePn >> receivePn), bramka AI przechodzi, bramka gracza nie',
-      diagP.givePn > 2 * diagP.receivePn && diagP.fairBlock === null && diagP.playerOk === false, diagP);
-    await shot(page, '05-okno-dyplomacji-przyjmij-zablokowane.png');
+    assert('okno dyplomacji: przycisk „Przyjmij” AKTYWNY (nie disabled) i „Odrzuć” aktywny',
+      !!accBtn && accBtn.disabled === false && ui1.buttons.some(b => b.act === 'reject-package' && !b.disabled), { accBtn, btns: ui1.buttons });
+    assert('wycena A1: oferta rowna za rowne (givePn == receivePn), bramka AI przechodzi, bramka gracza przechodzi',
+      diagP.givePn === diagP.receivePn && diagP.givePn > 0 && diagP.fairBlock === null && diagP.playerOk === true, diagP);
+    await shot(page, '05-okno-dyplomacji-przyjmij-aktywne.png');
     await closeAudience(page);
+
+    // ---------- 1c. TABELA PROPORCJI (A1): siatka give x recv (10..200 krok 10), 6 par; surowe wyniki w AITW_RESULT (out.grid) ----------
+    // aiGateA1 = bramka AI (rel 1, handelFairnessGate) + gorny limit givePn <= receivePn (ta sama regula co selekcja/enqueue).
+    // playerOk = REALNY podglad „Przyjmij” gracza (previewIncomingPlayerAccept). both = oferta przechodzi obie.
+    const GRID_PAIRS = [['cegla', 'zelazo'], ['zelazo', 'cegla'], ['drewno', 'kamien'], ['kamien', 'drewno'], ['zelazo', 'kamien'], ['drewno', 'cegla']];
+    const grid = await ev(page, ([a, pairs]) => {
+      const h = window.__aiTradeWiringTestDebug;
+      return pairs.map(([gk, rk]) => {
+        let n = 0; let aiG = 0; let pl = 0; let both = 0; let bothNeq = 0; const ex = [];
+        for (let gq = 10; gq <= 200; gq += 10) {
+          for (let rq = 10; rq <= 200; rq += 10) {
+            n++;
+            const d = h.diagPayload(a, gk, gq, rk, rq);
+            const aiOk = d.fairBlock == null && d.givePn <= d.receivePn;
+            const plOk = !!d.playerOk;
+            if (aiOk) aiG++;
+            if (plOk) pl++;
+            if (aiOk && plOk) {
+              both++;
+              if (d.givePn !== d.receivePn) bothNeq++;
+              if (ex.length < 3) ex.push({ giveQty: gq, recvQty: rq, givePn: d.givePn, receivePn: d.receivePn });
+            }
+          }
+        }
+        return { give: gk, recv: rk, n, aiGateA1: aiG, playerOk: pl, both, bothNotEqual: bothNeq, examples: ex };
+      });
+    }, [ai, GRID_PAIRS]);
+    out.grid = grid;
+    console.log('  [grid] ' + grid.map(g => `${g.give}->${g.recv}: n=${g.n} aiA1=${g.aiGateA1} player=${g.playerOk} both=${g.both}`).join(' | '));
+    assert('tabela proporcji: kazda oferta przechodzaca OBIE bramki ma givePn == receivePn (rownosc PW)', grid.every(g => g.bothNotEqual === 0), grid);
+    assert('tabela proporcji: istnieja oferty „rowne za rowne” dla pary cegla->zelazo (both > 0)', grid[0].both > 0, grid[0]);
 
     // ---------- 2. ignorowanie: kolejny EOT, brak duplikatu ----------
     const canEnd = await ev(page, () => window.__aiTradeWiringTestDebug.canEnd());
@@ -280,7 +312,8 @@ async function main() {
     const stOk = await ev(page, ([a, g, r]) => ({
       aiGive: window.__aiTradeWiringTestDebug.stock(a, g), plRecv: window.__aiTradeWiringTestDebug.stock(0, r),
     }), [ai, GIVE, RECV]);
-    assert('odrzucenie nie zmienilo zapasow (brak transferu)', stOk.aiGive >= BIG && stOk.plRecv >= BIG, stOk);
+    // Brak umowy = brak transferu: mierzone przez stol/umowy (zapasy zmienia tez produkcja/zuzycie w tickach, wiec nie sa progiem).
+    assert('odrzucenie: brak umowy = brak transferu (activeDeals puste po dwoch turach)', sR2.cyclicDeals.length === 0, { stOk, sR2: sR2.cyclicDeals });
     await shot(page, '02-po-odrzuceniu-cooldown.png');
 
     // ---------- 5. akceptacja: wczytaj zapis z wiszaca propozycja, zaakceptuj, tick dostaw ----------
@@ -301,12 +334,13 @@ async function main() {
       h.setBarterCooldownTurn(a, h.state().turn);
       h.setStock(0, g, eg); h.setStock(a, r, er);
     }, [ai, GIVE, RECV, expGive, expRecv]);
-    const ctlB = await ev(page, ([a, g, r]) => ({ plGive: window.__aiTradeWiringTestDebug.stock(0, g), aiRecv: window.__aiTradeWiringTestDebug.stock(a, r) }), [ai, GIVE, RECV]);
+    const ctlB = await ev(page, ([a, g, r]) => ({ plGive: window.__aiTradeWiringTestDebug.stock(0, g), aiRecv: window.__aiTradeWiringTestDebug.stock(a, r), aiGive: window.__aiTradeWiringTestDebug.stock(a, g) }), [ai, GIVE, RECV]);
     await endTurnWait(page);
-    const ctlA = await ev(page, ([a, g, r]) => ({ plGive: window.__aiTradeWiringTestDebug.stock(0, g), aiRecv: window.__aiTradeWiringTestDebug.stock(a, r) }), [ai, GIVE, RECV]);
-    const ctlLossGive = ctlB.plGive - ctlA.plGive; // zuzycie zelaza u gracza przy zapasie = ilosc z umowy
-    const ctlLossRecv = ctlB.aiRecv - ctlA.aiRecv; // zuzycie cegly u AI
-    out.controlNoDeal = { ctlB, ctlA, ctlLossGive, ctlLossRecv };
+    const ctlA = await ev(page, ([a, g, r]) => ({ plGive: window.__aiTradeWiringTestDebug.stock(0, g), aiRecv: window.__aiTradeWiringTestDebug.stock(a, r), aiGive: window.__aiTradeWiringTestDebug.stock(a, g) }), [ai, GIVE, RECV]);
+    const ctlLossGive = ctlB.plGive - ctlA.plGive; // zuzycie towaru GIVE u gracza (odbiorca) przy zapasie = ilosc z umowy
+    const ctlLossRecv = ctlB.aiRecv - ctlA.aiRecv; // zuzycie towaru RECV u AI (odbiorca)
+    const ctlSellerDelta = ctlA.aiGive - ctlB.aiGive; // naturalna zmiana zapasu SPRZEDAWCY (AI, GIVE) w tym samym tiku bez umowy
+    out.controlNoDeal = { ctlB, ctlA, ctlLossGive, ctlLossRecv, ctlSellerDelta };
     // Wroc do stanu z wiszaca oferta (kontrola zmienila ture/zapasy).
     await ev(page, () => window.__aiTradeWiringTestDebug.loadSlot('aitw-pending'));
     await wait(800);
@@ -318,25 +352,26 @@ async function main() {
     }), [ai, GIVE, RECV]);
     const prevAcc = await ev(page, id => window.__aiTradeWiringTestDebug.previewAccept(id), sA.pending[0].id);
     out.previewAccept = prevAcc;
-    // ZNALEZISKO (DECISION_REQUIRED): przycisk „Przyjmij” gracza odrzuca KAZDA oferte barteru AI ("Przewaga u Ciebie"),
-    // bo bramka uczciwosci oferty AI (AI oddaje >= ~2x) jest sprzeczna z bramka podgladu gracza (net PW >= 0).
-    // Test dokumentuje stan faktyczny; dalszy tor (umowa + dostawy) idzie akceptacja BEZ podgladu (forceAccept).
-    assert('[DECISION_REQUIRED] podglad akceptacji gracza odrzuca oferte barteru AI (stan faktyczny, nie zamierzony)',
-      !!prevAcc && prevAcc.awaitingMe === true && prevAcc.accepted === false && /Przewaga u Ciebie/.test(prevAcc.reason || ''), prevAcc);
-    await ev(page, id => window.__aiTradeWiringTestDebug.accept(id), sA.pending[0].id);
-    const sStill = await state(page);
-    assert('[DECISION_REQUIRED] przycisk Przyjmij nie zdejmuje oferty ze stolu (brak umowy)', sStill.pending.length === 1 && sStill.cyclicDeals.length === 0, sStill);
-    const forced = await ev(page, id => window.__aiTradeWiringTestDebug.forceAccept(id), sA.pending[0].id);
-    out.forceAccept = forced;
-    assert('akceptacja silnikowa bez podgladu (resolvePlayerAcceptsAiPending + applyProposalOutcome): accepted', !!forced && forced.accepted === true, forced);
+    assert('podglad akceptacji gracza przepuszcza oferte AI (previewAccept.accepted=true, A1)',
+      !!prevAcc && prevAcc.awaitingMe === true && prevAcc.accepted === true, prevAcc);
+    // REALNE przyjecie: klik karty HUD „Dyplomacja” i przycisk „Przyjmij” w oknie (bez forceAccept).
+    const uiA = await openAudienceFromHud(page);
+    assert('przyjecie: okno dyplomacji z AKTYWNYM przyciskiem „Przyjmij”', uiA.clicked && uiA.buttons.some(b => b.act === 'accept-package' && !b.disabled), uiA.buttons);
+    await shot(page, '05b-okno-przed-przyjeciem.png');
+    await ev(page, () => { const b = document.querySelector('button[data-negot-act="accept-package"]'); if (b) b.click(); });
+    await wait(800);
+    await closeAudience(page);
+    await shot(page, '06-po-przyjeciu-przyciskiem.png');
     const sA1 = await state(page);
+    out.acceptedViaButton = sA1.cyclicDeals.length === 1 && sA1.pending.length === 0;
+    assert('przyjecie PRZYCISKIEM „Przyjmij” (bez forceAccept): oferta zdjeta ze stolu, umowa powstala', out.acceptedViaButton, sA1);
     out.afterAccept = sA1;
     assert('akceptacja: oferta zdjeta ze stolu, umowa cykliczna w activeDeals',
       sA1.pending.length === 0 && sA1.cyclicDeals.length === 1, sA1);
     const items = sA1.cyclicDeals[0]?.items ?? [];
     const gi = items.find(i => i.surowiecKey === GIVE);
     const ri = items.find(i => i.surowiecKey === RECV);
-    assert('umowa: dwie pozycje barteru (zelazo AI->gracz, cegla gracz->AI), ilosci z oferty znormalizowane do kroku 10',
+    assert('umowa: dwie pozycje barteru (GIVE AI->gracz, RECV gracz->AI), ilosci z oferty znormalizowane do kroku 10',
       !!gi && !!ri && gi.sellerOwnerId === ai && gi.buyerOwnerId === 0 && ri.sellerOwnerId === 0 && ri.buyerOwnerId === ai
       && gi.pakietyPerTura === Math.floor(offGive / 10) * 10 && ri.pakietyPerTura === Math.floor(offRecv / 10) * 10, items);
     await shot(page, '03-po-akceptacji-umowa.png');
@@ -351,8 +386,9 @@ async function main() {
     const dealGive = gi ? gi.pakietyPerTura : -1;
     // Sprzedawca placi dokladnie ilosc z umowy. Odbiorca dostaje ja w calosci; roznica wzgledem stanu po transferze to ZWYKLE zuzycie
     // ekonomii tury, zmierzone KONTROLA bez umowy (ctlLoss*) -- asercja wymaga rownosci, wiec dostawa niczego nie niszczy.
-    assert('REALNY tick dostaw: AI oddala dokladnie ilosc z umowy zelaza; gracz dostal ja w calosci minus zwykle zuzycie (kontrola bez umowy), rownosc',
-      before.aiGive - after1.aiGive === dealGive && dealGive === expGive && dG === dealGive - ctlLossGive && dG > 0, { before, after1, dG, dealGive, ctlLossGive });
+    assert('REALNY tick dostaw: AI (sprzedawca) oddala ilosc z umowy minus naturalna zmiane zapasu (kontrola bez umowy), rownosc; gracz dostaje ilosc minus zuzycie (kontrola)',
+      before.aiGive - after1.aiGive === dealGive - ctlSellerDelta && dealGive === expGive && dG === dealGive - ctlLossGive && dG > 0,
+      { before, after1, dG, dealGive, ctlLossGive, ctlSellerDelta });
     assert('REALNY tick dostaw: gracz oddal cegle, AI dostala ja w calosci minus zwykle zuzycie (kontrola), rownosc',
       !!ri && ri.pakietyPerTura === expRecv && dR === ri.pakietyPerTura - ctlLossRecv && dR > 0, { before, after1, dR, ctlLossRecv });
     out.deliveredGive = dG; out.deliveredRecv = dR;

@@ -1525,6 +1525,7 @@ import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplom
 import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBasket';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal, handelFairnessGate,
+  AI_PROPOSER_FAIRNESS_REL_TOTAL,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
@@ -20473,7 +20474,17 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
         const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
-        if (handelFairnessGate(givePn, receivePn, relationTotal(exactEvalCtx.relation), 1)) return;
+        if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
+        // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
+        // i oferta musi przejsc PODGLAD gracza („Przyjmij", previewIncomingPlayerAccept), ktory
+        // sam sie NIE zmienia. Sprawdzane na koncowym payloadzie (po clamp/trim).
+        if (givePn > receivePn) return;
+        const playerPreview = previewIncomingPlayerAccept('handel', balancedPayload, treatyEvalRelationTotal(exactEvalCtx.relation), {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: ownerId,
+          tempoGry: player.tempoGry ?? 'standardowa',
+        });
+        if (playerPreview && !playerPreview.accepted) return;
         const exactPreview = evaluateProposal({
           actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload: balancedPayload,
         }, exactEvalCtx);
@@ -23616,10 +23627,18 @@ async function boot(): Promise<void> {
           ...pnOpts,
           ...proposalPnTurnsMultiplier(payload),
         }),
-        fairnessGate: (givePn, receivePn) => handelFairnessGate(givePn, receivePn, relationTotal(evalCtx.relation), 1) == null,
+        // A1 (R-WEB-AI-TRADE-WIRING-E2E-Q1 r3): bramka AI (rel 1) + gorny limit givePn <= receivePn
+        // (= podglad gracza netPw >= 0) -- oferta „rowne za rowne".
+        fairnessGate: (givePn, receivePn) => handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1) == null
+          && givePn <= receivePn,
         evaluateExactPayload: payload => evaluateProposal({
           actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload,
-        }, evalCtx).accepted,
+        }, evalCtx).accepted
+          && (previewIncomingPlayerAccept('handel', payload, treatyEvalRelationTotal(evalCtx.relation), {
+            difficulty: _menuDifficulty,
+            proposerOwnerId: ownerId,
+            tempoGry: player.tempoGry ?? 'standardowa',
+          })?.accepted ?? true),
       });
     }
 
@@ -29836,7 +29855,7 @@ async function boot(): Promise<void> {
             actionId: 'handel' as const, tempoGry: player.tempoGry ?? 'standardowa',
             ...proposalPnTurnsMultiplier(payload),
           });
-          const fair = handelFairnessGate(givePn, receivePn, relationTotal(evalCtx.relation), 1);
+          const fair = handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1);
           const ev = evaluateProposal({ actionId: 'handel', proposerOwnerId: ai, responderOwnerId: ME(), payload }, evalCtx);
           return { givePn, receivePn, fairBlock: fair ?? null, playerOk: aiBarterAcceptableForPlayer(ai, payload, evalCtx.relation), accepted: ev.accepted, reason: (ev as any).reason ?? null, relTotal: relationTotal(evalCtx.relation) };
         },
