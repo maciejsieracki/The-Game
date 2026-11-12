@@ -335,8 +335,11 @@ pub fn power_raw_for_owner(
 
     // Jawne zera z uzasadnieniem (EXPLICIT_ZERO_REASONS): bitwy (oba modele), zdobycze.
     // ulepszenia: producent istnieje (brake_power_improvements, POWER-ULEPSZENIA-Q1), ale NIE jest podpiety
-    // do power_raw_for_owner w tym etapie (osobny temat). Zostaje ExplicitZero, bo PlayableState nie niesie
-    // ulepszen terenu w tej sciezce; web countImprovementsForOwner (main.ts:2643) liczy je z heksow.
+    // do power_raw_for_owner (BRAK, POWER-ULEPSZENIA-WIRING-Q1). Zostaje ExplicitZero, bo PlayableState nie niesie
+    // ulepszen terenu: PlayableTile ma tylko position/terrain/passable (playable.rs:256-260), a
+    // PlayableReplaceEconomy (playable.rs:371) to skarbiec/stock/jednostki. Brakujace wejscia: pola
+    // `ulepszenie`/`ulepszenia` heksa (BuildHex, improvement_build.rs:157-160) oraz dyski terytorium wezlow
+    // zalozycielskich. Web countImprovementsForOwner (main.ts:2643) liczy je z heksow.
     raw.wygrane_bitwy = Component::ExplicitZero;
     raw.bitwy_pkt_sum = Component::ExplicitZero;
     raw.ulepszenia_terenu = Component::ExplicitZero;
