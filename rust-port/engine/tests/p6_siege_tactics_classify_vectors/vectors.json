@@ -83,21 +83,21 @@
    "Mur tarcz (Sargonid)",
    "Miecznik galijski"
   ],
-  "nameCases": 856,
-  "cases": 922,
+  "nameCases": 872,
+  "cases": 1132,
   "note": "Wyjscia = wykonanie doslownych linii pinu (canShoot, isSiegeUnit, isSiegeTower, normName, _isRam) w harnessie. Wejscie w widoku Rust (null = null/undefined/brak stats, inaczej String(v)).",
   "categories": {
-   "isSiegeUnit:false": 492,
-   "isSiegeTower:false": 752,
-   "isRam:false": 718,
-   "isSiegeUnit:typ": 136,
-   "isRam:true": 138,
+   "isSiegeUnit:false": 495,
+   "isSiegeTower:false": 768,
+   "isRam:false": 726,
+   "isSiegeUnit:typ": 146,
+   "isRam:true": 146,
    "isSiegeTower:true": 104,
-   "isSiegeUnit:name": 228,
+   "isSiegeUnit:name": 231,
    "canShoot:false": 15,
    "canShoot:true": 5,
-   "normName:plain": 22,
-   "normName:changed": 24
+   "normName:plain": 51,
+   "normName:changed": 189
   }
  },
  "names": [
@@ -4663,6 +4663,166 @@
   },
   {
    "in": {
+    "typ": "Siege",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": false,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "﻿Siege",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "﻿Siege",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": "Siege﻿",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": "Siege﻿",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege ",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
+    "typ": " Siege\t",
+    "jednostka": "Bolt",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": false
+  },
+  {
+   "in": {
+    "typ": " Siege\t",
+    "jednostka": "Taran",
+    "nazwa": "x"
+   },
+   "isSiegeUnit": true,
+   "isSiegeTower": false,
+   "isRam": true
+  },
+  {
+   "in": {
     "typ": "siege",
     "jednostka": "Catapult",
     "nazwa": "Siege Tower"
@@ -8988,6 +9148,782 @@
   {
    "in": "Ñ ñ Ç ç",
    "out": "n n c c"
+  },
+  {
+   "in": "À",
+   "out": "a"
+  },
+  {
+   "in": "Á",
+   "out": "a"
+  },
+  {
+   "in": "Â",
+   "out": "a"
+  },
+  {
+   "in": "Ã",
+   "out": "a"
+  },
+  {
+   "in": "Ä",
+   "out": "a"
+  },
+  {
+   "in": "Å",
+   "out": "a"
+  },
+  {
+   "in": "Æ",
+   "out": "æ"
+  },
+  {
+   "in": "Ç",
+   "out": "c"
+  },
+  {
+   "in": "È",
+   "out": "e"
+  },
+  {
+   "in": "É",
+   "out": "e"
+  },
+  {
+   "in": "Ê",
+   "out": "e"
+  },
+  {
+   "in": "Ë",
+   "out": "e"
+  },
+  {
+   "in": "Ì",
+   "out": "i"
+  },
+  {
+   "in": "Í",
+   "out": "i"
+  },
+  {
+   "in": "Î",
+   "out": "i"
+  },
+  {
+   "in": "Ï",
+   "out": "i"
+  },
+  {
+   "in": "Ð",
+   "out": "ð"
+  },
+  {
+   "in": "Ñ",
+   "out": "n"
+  },
+  {
+   "in": "Ò",
+   "out": "o"
+  },
+  {
+   "in": "Ó",
+   "out": "o"
+  },
+  {
+   "in": "Ô",
+   "out": "o"
+  },
+  {
+   "in": "Õ",
+   "out": "o"
+  },
+  {
+   "in": "Ö",
+   "out": "o"
+  },
+  {
+   "in": "×",
+   "out": "×"
+  },
+  {
+   "in": "Ø",
+   "out": "ø"
+  },
+  {
+   "in": "Ù",
+   "out": "u"
+  },
+  {
+   "in": "Ú",
+   "out": "u"
+  },
+  {
+   "in": "Û",
+   "out": "u"
+  },
+  {
+   "in": "Ü",
+   "out": "u"
+  },
+  {
+   "in": "Ý",
+   "out": "y"
+  },
+  {
+   "in": "Þ",
+   "out": "þ"
+  },
+  {
+   "in": "ß",
+   "out": "ß"
+  },
+  {
+   "in": "à",
+   "out": "a"
+  },
+  {
+   "in": "á",
+   "out": "a"
+  },
+  {
+   "in": "â",
+   "out": "a"
+  },
+  {
+   "in": "ã",
+   "out": "a"
+  },
+  {
+   "in": "ä",
+   "out": "a"
+  },
+  {
+   "in": "å",
+   "out": "a"
+  },
+  {
+   "in": "æ",
+   "out": "æ"
+  },
+  {
+   "in": "ç",
+   "out": "c"
+  },
+  {
+   "in": "è",
+   "out": "e"
+  },
+  {
+   "in": "é",
+   "out": "e"
+  },
+  {
+   "in": "ê",
+   "out": "e"
+  },
+  {
+   "in": "ë",
+   "out": "e"
+  },
+  {
+   "in": "ì",
+   "out": "i"
+  },
+  {
+   "in": "í",
+   "out": "i"
+  },
+  {
+   "in": "î",
+   "out": "i"
+  },
+  {
+   "in": "ï",
+   "out": "i"
+  },
+  {
+   "in": "ð",
+   "out": "ð"
+  },
+  {
+   "in": "ñ",
+   "out": "n"
+  },
+  {
+   "in": "ò",
+   "out": "o"
+  },
+  {
+   "in": "ó",
+   "out": "o"
+  },
+  {
+   "in": "ô",
+   "out": "o"
+  },
+  {
+   "in": "õ",
+   "out": "o"
+  },
+  {
+   "in": "ö",
+   "out": "o"
+  },
+  {
+   "in": "÷",
+   "out": "÷"
+  },
+  {
+   "in": "ø",
+   "out": "ø"
+  },
+  {
+   "in": "ù",
+   "out": "u"
+  },
+  {
+   "in": "ú",
+   "out": "u"
+  },
+  {
+   "in": "û",
+   "out": "u"
+  },
+  {
+   "in": "ü",
+   "out": "u"
+  },
+  {
+   "in": "ý",
+   "out": "y"
+  },
+  {
+   "in": "þ",
+   "out": "þ"
+  },
+  {
+   "in": "ÿ",
+   "out": "y"
+  },
+  {
+   "in": "Ā",
+   "out": "a"
+  },
+  {
+   "in": "ā",
+   "out": "a"
+  },
+  {
+   "in": "Ă",
+   "out": "a"
+  },
+  {
+   "in": "ă",
+   "out": "a"
+  },
+  {
+   "in": "Ą",
+   "out": "a"
+  },
+  {
+   "in": "ą",
+   "out": "a"
+  },
+  {
+   "in": "Ć",
+   "out": "c"
+  },
+  {
+   "in": "ć",
+   "out": "c"
+  },
+  {
+   "in": "Ĉ",
+   "out": "c"
+  },
+  {
+   "in": "ĉ",
+   "out": "c"
+  },
+  {
+   "in": "Ċ",
+   "out": "c"
+  },
+  {
+   "in": "ċ",
+   "out": "c"
+  },
+  {
+   "in": "Č",
+   "out": "c"
+  },
+  {
+   "in": "č",
+   "out": "c"
+  },
+  {
+   "in": "Ď",
+   "out": "d"
+  },
+  {
+   "in": "ď",
+   "out": "d"
+  },
+  {
+   "in": "Đ",
+   "out": "đ"
+  },
+  {
+   "in": "đ",
+   "out": "đ"
+  },
+  {
+   "in": "Ē",
+   "out": "e"
+  },
+  {
+   "in": "ē",
+   "out": "e"
+  },
+  {
+   "in": "Ĕ",
+   "out": "e"
+  },
+  {
+   "in": "ĕ",
+   "out": "e"
+  },
+  {
+   "in": "Ė",
+   "out": "e"
+  },
+  {
+   "in": "ė",
+   "out": "e"
+  },
+  {
+   "in": "Ę",
+   "out": "e"
+  },
+  {
+   "in": "ę",
+   "out": "e"
+  },
+  {
+   "in": "Ě",
+   "out": "e"
+  },
+  {
+   "in": "ě",
+   "out": "e"
+  },
+  {
+   "in": "Ĝ",
+   "out": "g"
+  },
+  {
+   "in": "ĝ",
+   "out": "g"
+  },
+  {
+   "in": "Ğ",
+   "out": "g"
+  },
+  {
+   "in": "ğ",
+   "out": "g"
+  },
+  {
+   "in": "Ġ",
+   "out": "g"
+  },
+  {
+   "in": "ġ",
+   "out": "g"
+  },
+  {
+   "in": "Ģ",
+   "out": "g"
+  },
+  {
+   "in": "ģ",
+   "out": "g"
+  },
+  {
+   "in": "Ĥ",
+   "out": "h"
+  },
+  {
+   "in": "ĥ",
+   "out": "h"
+  },
+  {
+   "in": "Ħ",
+   "out": "ħ"
+  },
+  {
+   "in": "ħ",
+   "out": "ħ"
+  },
+  {
+   "in": "Ĩ",
+   "out": "i"
+  },
+  {
+   "in": "ĩ",
+   "out": "i"
+  },
+  {
+   "in": "Ī",
+   "out": "i"
+  },
+  {
+   "in": "ī",
+   "out": "i"
+  },
+  {
+   "in": "Ĭ",
+   "out": "i"
+  },
+  {
+   "in": "ĭ",
+   "out": "i"
+  },
+  {
+   "in": "Į",
+   "out": "i"
+  },
+  {
+   "in": "į",
+   "out": "i"
+  },
+  {
+   "in": "İ",
+   "out": "i"
+  },
+  {
+   "in": "ı",
+   "out": "ı"
+  },
+  {
+   "in": "Ĳ",
+   "out": "ĳ"
+  },
+  {
+   "in": "ĳ",
+   "out": "ĳ"
+  },
+  {
+   "in": "Ĵ",
+   "out": "j"
+  },
+  {
+   "in": "ĵ",
+   "out": "j"
+  },
+  {
+   "in": "Ķ",
+   "out": "k"
+  },
+  {
+   "in": "ķ",
+   "out": "k"
+  },
+  {
+   "in": "ĸ",
+   "out": "ĸ"
+  },
+  {
+   "in": "Ĺ",
+   "out": "l"
+  },
+  {
+   "in": "ĺ",
+   "out": "l"
+  },
+  {
+   "in": "Ļ",
+   "out": "l"
+  },
+  {
+   "in": "ļ",
+   "out": "l"
+  },
+  {
+   "in": "Ľ",
+   "out": "l"
+  },
+  {
+   "in": "ľ",
+   "out": "l"
+  },
+  {
+   "in": "Ŀ",
+   "out": "ŀ"
+  },
+  {
+   "in": "ŀ",
+   "out": "ŀ"
+  },
+  {
+   "in": "Ł",
+   "out": "l"
+  },
+  {
+   "in": "ł",
+   "out": "l"
+  },
+  {
+   "in": "Ń",
+   "out": "n"
+  },
+  {
+   "in": "ń",
+   "out": "n"
+  },
+  {
+   "in": "Ņ",
+   "out": "n"
+  },
+  {
+   "in": "ņ",
+   "out": "n"
+  },
+  {
+   "in": "Ň",
+   "out": "n"
+  },
+  {
+   "in": "ň",
+   "out": "n"
+  },
+  {
+   "in": "ŉ",
+   "out": "ŉ"
+  },
+  {
+   "in": "Ŋ",
+   "out": "ŋ"
+  },
+  {
+   "in": "ŋ",
+   "out": "ŋ"
+  },
+  {
+   "in": "Ō",
+   "out": "o"
+  },
+  {
+   "in": "ō",
+   "out": "o"
+  },
+  {
+   "in": "Ŏ",
+   "out": "o"
+  },
+  {
+   "in": "ŏ",
+   "out": "o"
+  },
+  {
+   "in": "Ő",
+   "out": "o"
+  },
+  {
+   "in": "ő",
+   "out": "o"
+  },
+  {
+   "in": "Œ",
+   "out": "œ"
+  },
+  {
+   "in": "œ",
+   "out": "œ"
+  },
+  {
+   "in": "Ŕ",
+   "out": "r"
+  },
+  {
+   "in": "ŕ",
+   "out": "r"
+  },
+  {
+   "in": "Ŗ",
+   "out": "r"
+  },
+  {
+   "in": "ŗ",
+   "out": "r"
+  },
+  {
+   "in": "Ř",
+   "out": "r"
+  },
+  {
+   "in": "ř",
+   "out": "r"
+  },
+  {
+   "in": "Ś",
+   "out": "s"
+  },
+  {
+   "in": "ś",
+   "out": "s"
+  },
+  {
+   "in": "Ŝ",
+   "out": "s"
+  },
+  {
+   "in": "ŝ",
+   "out": "s"
+  },
+  {
+   "in": "Ş",
+   "out": "s"
+  },
+  {
+   "in": "ş",
+   "out": "s"
+  },
+  {
+   "in": "Š",
+   "out": "s"
+  },
+  {
+   "in": "š",
+   "out": "s"
+  },
+  {
+   "in": "Ţ",
+   "out": "t"
+  },
+  {
+   "in": "ţ",
+   "out": "t"
+  },
+  {
+   "in": "Ť",
+   "out": "t"
+  },
+  {
+   "in": "ť",
+   "out": "t"
+  },
+  {
+   "in": "Ŧ",
+   "out": "ŧ"
+  },
+  {
+   "in": "ŧ",
+   "out": "ŧ"
+  },
+  {
+   "in": "Ũ",
+   "out": "u"
+  },
+  {
+   "in": "ũ",
+   "out": "u"
+  },
+  {
+   "in": "Ū",
+   "out": "u"
+  },
+  {
+   "in": "ū",
+   "out": "u"
+  },
+  {
+   "in": "Ŭ",
+   "out": "u"
+  },
+  {
+   "in": "ŭ",
+   "out": "u"
+  },
+  {
+   "in": "Ů",
+   "out": "u"
+  },
+  {
+   "in": "ů",
+   "out": "u"
+  },
+  {
+   "in": "Ű",
+   "out": "u"
+  },
+  {
+   "in": "ű",
+   "out": "u"
+  },
+  {
+   "in": "Ų",
+   "out": "u"
+  },
+  {
+   "in": "ų",
+   "out": "u"
+  },
+  {
+   "in": "Ŵ",
+   "out": "w"
+  },
+  {
+   "in": "ŵ",
+   "out": "w"
+  },
+  {
+   "in": "Ŷ",
+   "out": "y"
+  },
+  {
+   "in": "ŷ",
+   "out": "y"
+  },
+  {
+   "in": "Ÿ",
+   "out": "y"
+  },
+  {
+   "in": "Ź",
+   "out": "z"
+  },
+  {
+   "in": "ź",
+   "out": "z"
+  },
+  {
+   "in": "Ż",
+   "out": "z"
+  },
+  {
+   "in": "ż",
+   "out": "z"
+  },
+  {
+   "in": "Ž",
+   "out": "z"
+  },
+  {
+   "in": "ž",
+   "out": "z"
+  },
+  {
+   "in": "ſ",
+   "out": "ſ"
+  },
+  {
+   "in": "ĈĉĊċĖėĜĝĠġĤĥĨĩĮįĴĵŜŝŨũŲųŴŵŶŷ",
+   "out": "cccceegggghhiiiijjssuuuuwwyy"
+  },
+  {
+   "in": "Ĉiŝ Ėmėrytus Ġdańsk",
+   "out": "cis emerytus gdansk"
   }
  ]
 }

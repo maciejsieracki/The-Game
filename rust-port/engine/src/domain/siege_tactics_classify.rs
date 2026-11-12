@@ -17,10 +17,12 @@
 //! Zgodnosc: wektory `tests/p6_siege_tactics_classify_vectors/vectors.json` (generator `p6_siege_tactics_classify_gen.mts`
 //! WYKONUJE linie pinu w harnessie Node, straznik SHA-256). Test: `tests/p6_siege_tactics_classify.rs`.
 //!
-//! GRANICE (NIE_ZMIERZONO poza wektorami): `String.prototype.trim` (JS) i `str::trim` (Rust) moga sie roznic dla
-//! znakow spoza White_Space (np. U+FEFF); `norm_name` pokrywa dekompozycje NFD dla liter Latin-1 i Latin Extended-A
-//! uzywanych w danych i wektorach (tabela [`strip_diacritic`]), a nie pelne Unicode NFD; `to_lowercase` nie rozni
-//! sie od JS poza regula finalnego sigma (wektory bez `Σ`).
+//! `trim`: [`js_trim`] = `String.prototype.trim` (JS), a nie `str::trim` (Rust). Roznice zmierzone w Node dla BMP:
+//! U+0085 (NEL) jest bialym znakiem Rust, nie JS; U+FEFF (BOM) jest JS, nie Rust. Poza BMP zbiory sie nie roznia.
+//!
+//! GRANICE (NIE_ZMIERZONO poza wektorami): `norm_name` pokrywa dekompozycje NFD dla calego zakresu U+00C0..U+017F
+//! (Latin-1 Supplement + Latin Extended-A, kazdy znak wektorowany osobno), a nie pelne Unicode NFD (tabela
+//! [`strip_diacritic`]); `to_lowercase` nie rozni sie od JS poza regula finalnego sigma (wektory bez `Σ`).
 
 /// Wejscie klasyfikatora jednostki (`bu`): `bu.stats['Typ']`, `bu.stats['Jednostka']`, `bu.nazwa`.
 /// Kazde pole = `String(v)` dla `v` niepustego (nie null/undefined), `None` dla null/undefined/brak stats.
@@ -41,8 +43,15 @@ pub struct ShootUnit {
     pub ammo_left: f64,
 }
 
+/// `String.prototype.trim` (JS): obcina biale znaki JS (WhiteSpace + LineTerminator). Wzgledem `str::trim` (Rust):
+/// bez U+0085 (NEL, bialy znak Rust, nie JS) i z U+FEFF (BOM, JS, nie Rust). Zestawienie zmierzone w Node (BMP).
+pub fn js_trim(s: &str) -> &str {
+    s.trim_matches(|c: char| (c.is_whitespace() && c != '\u{0085}') || c == '\u{FEFF}')
+}
+
 /// Odpowiednik bazowej litery dla znaku z dekompozycja NFD (tylko diakrytyk; reszta bez zmian).
-/// Obejmuje Latin-1 Supplement i Latin Extended-A (litery uzywane w danych i wektorach).
+/// Obejmuje caly zakres U+00C0..U+017F, ktory ma dekompozycje NFD do litery bazowej (Latin-1 Supplement i Latin
+/// Extended-A; zbior zweryfikowany w Node: kazdy znak z dekompozycja ma wpis). Wektory: pelny zakres w `normName`.
 /// `ł`/`Ł` NIE sa tu: nie dekomponuja sie w NFD, obsluguje je [`norm_name`] osobno (`łŁ` -> `l`).
 fn strip_diacritic(c: char) -> char {
     match c {
@@ -62,6 +71,26 @@ fn strip_diacritic(c: char) -> char {
         'ñ' | 'ń' => 'n',
         'Ò' | 'Ó' | 'Ô' | 'Õ' | 'Ö' | 'Ō' | 'Ŏ' | 'Ő' => 'O',
         'ò' | 'ó' | 'ô' | 'õ' | 'ö' | 'ō' | 'ŏ' | 'ő' => 'o',
+        'Ĉ' | 'Ċ' => 'C',
+        'ĉ' | 'ċ' => 'c',
+        'Ė' => 'E',
+        'ė' => 'e',
+        'Ĝ' | 'Ġ' => 'G',
+        'ĝ' | 'ġ' => 'g',
+        'Ĥ' => 'H',
+        'ĥ' => 'h',
+        'Ĩ' | 'Į' => 'I',
+        'ĩ' | 'į' => 'i',
+        'Ĵ' => 'J',
+        'ĵ' => 'j',
+        'Ŝ' => 'S',
+        'ŝ' => 's',
+        'Ũ' | 'Ų' => 'U',
+        'ũ' | 'ų' => 'u',
+        'Ŵ' => 'W',
+        'ŵ' => 'w',
+        'Ŷ' => 'Y',
+        'ŷ' => 'y',
         'Ĺ' | 'Ļ' | 'Ľ' => 'L',
         'ĺ' | 'ļ' | 'ľ' => 'l',
         'Ģ' => 'G',
@@ -117,7 +146,7 @@ fn jednostka_or_nazwa(u: &ClassifyUnit) -> String {
 /// Web `isSiegeUnit(bu)` (`battleScene.ts:1552-1559`): `Typ` po trim rowny `Siege`, albo nazwa znormalizowana
 /// zawiera `taran`, `katapult`, `wieza oblezn`, `battering`, `catapult` lub `siege tower`.
 pub fn is_siege_unit(u: &ClassifyUnit) -> bool {
-    let typ = u.typ.as_deref().unwrap_or("").trim();
+    let typ = js_trim(u.typ.as_deref().unwrap_or(""));
     if typ == "Siege" {
         return true;
     }

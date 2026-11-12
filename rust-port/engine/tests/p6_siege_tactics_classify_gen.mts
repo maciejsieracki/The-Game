@@ -130,6 +130,12 @@ for (const n of EDGE_NAMES) {
   specs.push({ statsUndefined: true, typ: undefined, jednostka: undefined, nazwa: n });
   specs.push({ statsUndefined: false, typ: 'Siege', jednostka: n, nazwa: n });
 }
+// 2b) biale znaki w Typ: JS trim != Rust str::trim (U+0085 NEL: tylko Rust; U+FEFF BOM: tylko JS).
+//     Jednostka 'Bolt' bez slowa kluczowego: wynik zalezy wylacznie od trim pola Typ.
+for (const typ of ['\u0085Siege', 'Siege\u0085', '\u0085\u0085Siege', '﻿Siege', 'Siege﻿', ' Siege ', ' Siege ', ' Siege\t']) {
+  specs.push({ statsUndefined: false, typ, jednostka: 'Bolt', nazwa: 'x' });
+  specs.push({ statsUndefined: false, typ, jednostka: 'Taran', nazwa: 'x' });
+}
 // 3) deterministyczne losowanie kombinacji
 for (let i = 0; i < 400; i++) {
   specs.push({
@@ -188,7 +194,13 @@ for (const rb of [true, false]) {
 }
 
 // normName: rozklad (diakrytyki, wielkosc liter)
-const NORM_IN: string[] = [...EDGE_NAMES, 'Łódź', 'ŁÓDŹ', 'Ąęśćżźńó', 'Zażółć gęślą jaźń', 'Ŗ ŗ', 'É é È è Ü ü Ö ö', 'Ñ ñ Ç ç'];
+// Pelny zakres Latin-1 Supplement + Latin Extended-A (U+00C0..U+017F), kazdy znak osobno: wynik pinu dla kazdego
+// znaku, takze tych bez diakrytyka (dekompozycja NFD lub jej brak). Plus przypadki zlozone.
+const LATIN_RANGE: string[] = Array.from({ length: 0x180 - 0xc0 }, (_, i) => String.fromCodePoint(0xc0 + i));
+const NORM_IN: string[] = [
+  ...EDGE_NAMES, 'Łódź', 'ŁÓDŹ', 'Ąęśćżźńó', 'Zażółć gęślą jaźń', 'Ŗ ŗ', 'É é È è Ü ü Ö ö', 'Ñ ñ Ç ç',
+  ...LATIN_RANGE, 'ĈĉĊċĖėĜĝĠġĤĥĨĩĮįĴĵŜŝŨũŲųŴŵŶŷ', 'Ĉiŝ Ėmėrytus Ġdańsk',
+];
 const normCases = NORM_IN.map((s) => {
   const out = normName(s) as string;
   bump(out !== s.toLowerCase() ? 'normName:changed' : 'normName:plain');

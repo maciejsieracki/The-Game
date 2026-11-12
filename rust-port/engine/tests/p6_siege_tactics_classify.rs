@@ -7,7 +7,7 @@
 //! (kazda kategoria > 0 i rowna wynikowi pinu), (4) pokrycia wszystkich 75 jednostek z `gra/data/units.json` pinu.
 
 use civ_engine::domain::siege_tactics_classify::{
-    can_shoot, is_ram, is_siege_tower, is_siege_unit, norm_name, ClassifyUnit, ShootUnit,
+    can_shoot, is_ram, is_siege_tower, is_siege_unit, js_trim, norm_name, ClassifyUnit, ShootUnit,
 };
 use std::collections::BTreeMap;
 
@@ -75,7 +75,7 @@ fn name_classifiers_match_pin() {
             "isSiegeTower przypadek {i}: {u:?}"
         );
         assert_eq!(is_ram(&u), exp_ram, "_isRam przypadek {i}: {u:?}");
-        let typ_hit = u.typ.as_deref().unwrap_or("").trim() == "Siege";
+        let typ_hit = js_trim(u.typ.as_deref().unwrap_or("")) == "Siege";
         if exp_unit {
             *cats
                 .entry(
