@@ -133,3 +133,9 @@ DELTA-6, DYSTANS-MULT, OBLĘŻENIE-LIMIT-150, W1, ROZEJM 5/10/15, AI-ZAKUP, W2, 
 - FC PASS-WITH-NOTES poza parity-v2 (refs rust-port-wip/*): Q8 ee29d7906, K1 759621568, K1b 7276ed3da, K2 c6a253485, POWER-SOURCES-INTEG merge f7bb7b286 (2840 passed; merge-tree czysty vs 81e7840ba), W8 linia r3–r5 + EPOKA fa480bf2a, UNIT-REPLACE L3 etap 1/2.
 - Decyzje techniczne: K1 wiersz 30 PARTIAL zaakceptowany, reszta jako K1b/K3; epoka statyczna (wariant A); linia W8 wymaga adaptacji do PowerInputError (NAN-STRICT) w rundzie integracyjnej na końcu; K2/K1/Q8 przez rundę integracyjną (konflikt mod.rs).
 - W toku (4): INTEG-B11 (wf_6bb00f80-766), W8 r6 POP (wf_97d225f9-289), SIEGE-TAKTYKA-K3 (wf_475394da-12c), SIEGE-TAKTYKA-ENDCHECK (wf_524dfe35-f29). Dysk ~7,4 GB — nowe starty wstrzymane do ≥ 8 GB.
+
+## Przebieg 2026-11-12 04:2x UTC (orkiestrator Rust)
+- parity-v2 = e763d4a9a (batch 11 = INTEG-B11: Q8 + K1 + K2 na batch 10; pełne testy Operatora 2862 passed / 0 failed / 1 ignored, Evaluator odtworzył bramki).
+- FC PASS-WITH-NOTES poza parity-v2: Q9 d3b11f071 (merge-tree czysty), ENDCHECK 2f5096d99, K1b 7276ed3da, K3 aef5993e1, K4 a70375e52, POWER-SOURCES-INTEG merge f7bb7b286 — zebrane w INTEG-B12 (wf_eacac2cc-811, baza e763d4a9a); linia W8 (r3–r5 + EPOKA fa480bf2a + POP d11c995e6) czeka na STORES i adaptację do PowerInputError.
+- Decyzje techniczne: dług Q8 NaN/niecałkowite zamknięty typem i32 (Q9); K4 w domain/ (czyste przejścia z jawnym stanem); STORES r1 BLOCK z powodu zdania „baza: parity-v2” w skrypcie workflow — poprawiono skrypty (dispatch ma priorytet), STORES r2 na bazie d11c995e6.
+- W toku (4): INTEG-B12 (wf_eacac2cc-811), W8 r6 STORES r2 (wf_c14e29ce-9e3), SIEGE-TAKTYKA-KLASY (wf_57d26d89-3f6), DLUG-SIEGE-KOMENT (wf_52f56389-f6c).
