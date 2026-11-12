@@ -162,7 +162,7 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
+import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
@@ -29848,6 +29848,14 @@ async function boot(): Promise<void> {
           return ownerResourceStock(ownerId, key);
         },
         stock: (ownerId: number, key: string): number => ownerResourceStock(ownerId, key),
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ustawia Relacje (zaufanie+respekt=total, 0–200) pary ai↔gracz; zwraca total po zapisie. */
+        setRelationTotal: (ai: number, total: number): number => {
+          const t = Math.max(0, Math.min(200, Math.round(total)));
+          const rel = getDiploRelation(ai, ME());
+          const zaufanie = Math.floor(t / 2);
+          setDiploRelation(ai, ME(), { ...rel, zaufanie, respekt: t - zaufanie });
+          return relationTotal(getDiploRelation(ai, ME()));
+        },
         /** Odczyt selekcji barteru AI (ta sama funkcja co wiring) — do rozroznienia selekcja vs wiring. */
         probeBarter: (ai: number) => {
           const b = pickAiPlayerCyclicBarter(ai);
@@ -29902,6 +29910,11 @@ async function boot(): Promise<void> {
             payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
           })),
           tableLen: negotiationTable.length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
+          entries: negotiationTable.map(n => ({
+            id: n.id, actionId: n.actionId, cyclic: !!n.aiCyclicBarter,
+            proposer: n.proposerOwnerId, responder: n.responderOwnerId,
+          })),
           cyclicDeals: activeDeals.filter(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0).map(d => ({
             id: d.id, items: JSON.parse(JSON.stringify(d.handelSurowiecCykliczny)),
           })),
@@ -46326,6 +46339,8 @@ async function boot(): Promise<void> {
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: `?civSeed=` działa tylko przy `?civTest=1`; bez tego = PLAYTEST_MAPA_SEED.
+      const playtestRunSeed: number = civTestSeedOverride(typeof location !== 'undefined' ? location.search : '') ?? PLAYTEST_MAPA_SEED;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
       const ptMapDensity = resolvePlaytestMapaWorldDensity();
@@ -46340,7 +46355,7 @@ async function boot(): Promise<void> {
         speed: 'Normalna',
         worldType: 'Kontynenty',
         typSwiata: 'kontynenty',
-        seed: PLAYTEST_MAPA_SEED,
+        seed: playtestRunSeed,
         mapQualityLabel: qualityTierToLabel(mqTier),
         mapQuality: mqTier,
         renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
@@ -46364,9 +46379,9 @@ async function boot(): Promise<void> {
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
       const loadWallT0 = performance.now();
-      const loading = showMapLoadingOverlay({ seed: PLAYTEST_MAPA_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const loading = showMapLoadingOverlay({ seed: playtestRunSeed, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
       const mapGenWallT0 = performance.now();
-      const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
+      const newMap = await generujSwiatAsync(playtestRunSeed, rozmiar, 'kontynenty', {
         worldDensity: ptMapDensity.preset,
         mapSizeMenuLabel: 'Maly',
         difficulty: _menuDifficulty,
@@ -46549,7 +46564,7 @@ async function boot(): Promise<void> {
 
       showHintMessage(PLAYTEST_MAPA_HINT, 18000);
       console.log(
-        '[PlaytestMapa] seed=' + PLAYTEST_MAPA_SEED +
+        '[PlaytestMapa] seed=' + playtestRunSeed +
         ' miasto=' + (playerCity?.name ?? '?') +
         ' wrog=' + preset.enemyCityId +
         ' jednostek=' + units.length +

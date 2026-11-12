@@ -37,10 +37,13 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'measure-ai-trade-dist');
 const TURNS = parseInt(process.env.MEAS_TURNS || '150', 10);
 const ARM = process.env.MEAS_ARM === 'prepared' ? 'prepared' : 'natural';
+// R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ziarno (?civSeed, tylko z civTest=1) i Relacja (total 0–200; haki setRelationTotal).
+const SEED = process.env.MEAS_SEED ? parseInt(process.env.MEAS_SEED, 10) : null;
+const REL = process.env.MEAS_REL ? parseInt(process.env.MEAS_REL, 10) : null;
 // 480 s (nie 540): start + build + pętla muszą mieścić się w limicie 590 s pojedynczego wywołania bash (Evaluator r1, zarzut 10).
 const MAX_MS = parseInt(process.env.MEAS_MAX_SEC || '480', 10) * 1000;
 const RESULT_FILE = process.env.MEAS_RESULT || '';
-const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
+const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1' + (SEED != null ? '&civSeed=' + SEED : '');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -94,6 +97,7 @@ async function main() {
   const t00 = Date.now();
   const rep = {
     arm: ARM, seedNote: 'PLAYTEST_MAPA_SEED (stale, 1 ziarno)', relationNote: 'naturalny (brak haka ustawiania relacji)',
+    seed: SEED, relTotalSet: REL, relTotalAfter: null, offersCyclic: 0, offersOneShot: 0,
     turnsRequested: TURNS, turnsRun: 0, offers: 0, activePrzyjmij: 0, pairs: {}, cyclicDealsMax: 0,
     tableStart: 0, tableEnd: 0, tableGrowth: 0, scriptRejected: 0, rejectCooldownsMax: 0, per100: 0, aiOwner: null, stoppedBy: null,
     autoBattles: 0, consoleErrors: 0, offerLog: [], perTurn: [],
@@ -116,6 +120,7 @@ async function main() {
     rep.aiOwner = info.ai;
     if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('nie udalo sie zalozyc miasta gracza');
     if (ARM === 'prepared') await page.evaluate(ai => window.__aiTradeWiringTestDebug.prepare(ai), info.ai);
+    if (REL != null) rep.relTotalAfter = await page.evaluate(([ai, t]) => window.__aiTradeWiringTestDebug.setRelationTotal(ai, t), [info.ai, REL]);
 
     const seen = new Set();
     const s0 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
@@ -133,9 +138,18 @@ async function main() {
       st = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
       rep.turnsRun = i + 1;
       rep.cyclicDealsMax = Math.max(rep.cyclicDealsMax, st.cyclicDeals.length);
-      const fresh = st.pending.filter(p => p.proposer === info.ai && p.responder === 0 && !seen.has(p.id));
-      for (const p of fresh) {
-        seen.add(p.id);
+      // Wpisy stolu z typem (entries): jednorazowe liczone osobno (bez payloadu), cykliczne jak dotad (payload z pending).
+      const fresh = (st.entries || []).filter(e => e.proposer === info.ai && e.responder === 0 && !seen.has(e.id));
+      for (const e of fresh) {
+        seen.add(e.id);
+        if (!e.cyclic) {
+          rep.offersOneShot++; rep.offers++;
+          rep.offerLog.push({ turn: st.turn, type: 'jednorazowa', actionId: e.actionId });
+          continue;
+        }
+        const p = st.pending.find(x => x.id === e.id);
+        if (!p) continue;
+        rep.offersCyclic++;
         const pa = await page.evaluate(id => window.__aiTradeWiringTestDebug.previewAccept(id), p.id);
         const gi = p.payload.giveItems?.[0]?.id ?? '?';
         const ri = p.payload.receiveItems?.[0]?.id ?? '?';

@@ -102,6 +102,18 @@ export function isCivTestEnabled(search: string | undefined | null): boolean {
   }
 }
 
+/**
+ * R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ziarno przebiegu pomiaru z `?civSeed=<liczba>`.
+ * Dziala WYLACZNIE przy `?civTest=1` (ta sama bramka co reszta hakow); bez tego zwraca null,
+ * wiec zwykla gra i ziarno PLAYTEST_MAPA_SEED nie zmieniaja sie wcale.
+ */
+export function civTestSeedOverride(search: string | undefined | null): number | null {
+  if (!isCivTestEnabled(search)) return null;
+  const raw = new URLSearchParams(search ?? '').get('civSeed');
+  if (raw == null || !/^\d{1,9}$/.test(raw)) return null;
+  return Number(raw);
+}
+
 export interface CivTestApi {
   version: 1;
   state: () => unknown;
