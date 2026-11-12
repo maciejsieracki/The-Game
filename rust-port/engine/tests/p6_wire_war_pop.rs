@@ -30,6 +30,7 @@ fn plains_map(w: u16, h: u16) -> PlayableMap {
         width: w,
         height: h,
         tiles,
+        improvements: Vec::new(),
     }
 }
 

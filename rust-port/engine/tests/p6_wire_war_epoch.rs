@@ -116,6 +116,7 @@ fn plains_map() -> civ_engine::domain::playable::PlayableMap {
         width: 30,
         height: 30,
         tiles,
+        improvements: Vec::new(),
     }
 }
 

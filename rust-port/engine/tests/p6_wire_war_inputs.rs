@@ -55,6 +55,7 @@ fn plains_map(w: u16, h: u16) -> civ_engine::domain::playable::PlayableMap {
         width: w,
         height: h,
         tiles,
+        improvements: Vec::new(),
     }
 }
 
@@ -265,7 +266,8 @@ fn production_power_inputs_have_producers_for_all_stored_components() {
     assert!(matches!(raw.jednostki, Component::Provided(_)));
     assert_eq!(raw.wygrane_bitwy, Component::ExplicitZero);
     assert_eq!(raw.bitwy_pkt_sum, Component::ExplicitZero);
-    assert_eq!(raw.ulepszenia_terenu, Component::ExplicitZero);
+    // P6-STAN-ULEPSZENIA: ulepszenia maja producenta na warstwach stanu (bez warstw = realne 0, nie jawne zero).
+    assert_eq!(raw.ulepszenia_terenu, Component::Provided(0.0));
     assert_eq!(raw.zdobycze_power, Component::ExplicitZero);
     assert!(UNPRODUCED_POWER_COMPONENTS.is_empty());
     for model in [BattlePowerModel::FlatCount, BattlePowerModel::EnemyMSum] {
