@@ -70,6 +70,7 @@ fn act(q: i64, r: i64, side_atk: bool) -> ActivateUnit {
 fn melee_blow() -> FullBlowInput {
     FullBlowInput {
         ranged: false,
+        // Wartość bez znaczenia: `ProdBody` nadpisuje łuk przez `relative_hit` z aktualnego facing obrońcy.
         hit_arc: HitArc::Front,
         attacker: AttackerCu {
             weapon_damage: 5.0,
@@ -172,12 +173,14 @@ fn body_with(attacker: ActivateUnit, blow: Option<FullBlowInput>) -> ProdBody<Se
         melee_target: Some(0),
         blow,
         body_ms: 800.0,
+        facing: 0.0,
     };
     let d = ProdUnit {
         activate: act(1, 0, false),
         melee_target: None,
         blow: None,
         body_ms: 0.0,
+        facing: 0.0,
     };
     ProdBody::new([vec![a], vec![d]], scene(), SequenceRolls::new(vec![ROLL]))
 }

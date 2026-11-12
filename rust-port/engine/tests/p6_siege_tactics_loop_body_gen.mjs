@@ -14,10 +14,11 @@
 //   RNG: `Math.random` = kolejka rzutow z wektora (jeden rzut na cios).
 //   render/animacja: _doMeleeAttack (znacznik sladu `attack:<i>` + wywolanie PRAWDZIWEGO `_singleBlow`; kontratak,
 //     lunge i BLOW_HIT_T poza zakresem), _sfxMelee, _updateHpBar, _updateMoraleBar, _applyTerrainRange.
-//   STAN FACING (NIE_ZMIERZONO, osobny temat R-...-FACING; NIE jest to render): `_updateFacing` = no-op (`_nearestEnemy`
-//     zwraca null), wiec `facing` jednostek NIGDY sie nie zmienia w wektorach; przypisanie `attacker.facing` z `_doMeleeAttack`
-//     pominiete; `relativeHit` (battleScene.ts:385) zastapione `arcOf` (hasz wspolrzednych, ignoruje facing). Konsekwencja:
-//     `arc`/`hitArc` w wektorach NIE sa funkcja facing z pinu; zgodnosc lukow z pinem NIE jest dowiedziona.
+//   STAN FACING (r4, WYKONANE z tekstu pinu): `_updateFacing` + `_nearestEnemy` + `facingToward`/`facingFromTo`/`oppositeDir`/
+//     `relativeHit`/`manhattan` (battleScene.ts:347-400, 1917, 8296-8341) i przypisanie `attacker.facing` w `_doMeleeAttack`
+//     (battleScene.ts:9104). Enum `Dir` (const enum, poza strip-only) = prelude `{N:0,E:1,S:2,W:3}` strzezony liniami 316-319.
+//     Instrumentacja (nie logika): `_updateFacing` dopisuje do sladu `facing` (jak dotad), `relativeHit` zapisuje lukt w OUT.arc.
+//     `dirYaw` (yaw modelu, render) = stub 0. Lukt ciosu = relativeHit z AKTUALNEGO facing obroncy (nie szablon).
 //   ruch/doktryna/wieze: _fleeStep, _advanceStep, _cavalryAction, _phalanxAction, _fallBackStep, _rangedAction,
 //     _trySiegeTowerClimb, _siegeInfantryToTowerStep, _executeGroupDoctrineStep, _siegeRamTowerStep (slad + false).
 //   wybor celu: _targetInRange = wskazany przez wektor wrog, o ile `_enemiesOf` (zywy, nie znikajacy, nie uciekajacy) go zawiera.
@@ -51,6 +52,7 @@ const BLOW_SHA256 = 'b2f9e19f1e35644e0e2ea636a9d50a02dd10d729355de5eb3eb35668910
 const UNIT_FRAGMENT_SHA256 = 'd1b401a2275ab01569dd16ec1a6a3618ae56b592dd13c4f900b82b252755016c';
 const UNITS_SHA256 = '7b509817d1c613a526ea0e8066a62f340f46a29fedd6f79f0c647195727bc6d7';
 const DOATTACK_SHA256 = '592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d9461729b41c1';
+const FACING_SHA256 = '6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3';
 const N_SEQ = 320;
 const SEED = 2301;
 
@@ -92,6 +94,36 @@ const doAttackText = L(SCENE, 8787, 8797);
 const doAttackDigest = createHash('sha256').update(doAttackText).digest('hex');
 if (doAttackDigest !== DOATTACK_SHA256) throw new Error(`SHA _doAttack zmieniony: ${doAttackDigest}`);
 console.error(`activate sha256 = ${activateDigest}\ndoAttack sha256 = ${doAttackDigest}`);
+
+// ---- FACING (r4): tekst pinu facingToward/facingFromTo/oppositeDir/relativeHit/manhattan/_nearestEnemy/_updateFacing
+// oraz przypisanie attacker.facing w _doMeleeAttack (battleScene.ts:9104). Enum Dir (const enum, poza strip-only) to
+// prelude o tych samych wartosciach, strzezony sprawdzeniem linii 316-319.
+expectLine(SCENE, 316, 'N = 0');
+expectLine(SCENE, 317, 'E = 1');
+expectLine(SCENE, 318, 'S = 2');
+expectLine(SCENE, 319, 'W = 3');
+expectLine(SCENE, 347, 'export function facingToward(');
+expectLine(SCENE, 359, 'export function facingFromTo(');
+expectLine(SCENE, 370, 'export function oppositeDir(');
+expectLine(SCENE, 385, 'export function relativeHit(');
+expectLine(SCENE, 1917, 'function manhattan(');
+expectLine(SCENE, 8296, 'private _nearestEnemy(ru: RuntimeBattleUnit)');
+expectLine(SCENE, 8334, 'private _updateFacing(ru: RuntimeBattleUnit)');
+expectLine(SCENE, 9104, 'attacker.facing = facingFromTo(attacker.q, attacker.r, defender.q, defender.r, attacker.facing);');
+const DIR_PRELUDE = 'const Dir = { N: 0, E: 1, S: 2, W: 3 };';
+const facingParts = [
+  DIR_PRELUDE,
+  L(SCENE, 347, fnRange(SCENE, 347)[1]),
+  L(SCENE, 359, fnRange(SCENE, 359)[1]),
+  L(SCENE, 370, fnRange(SCENE, 370)[1]),
+  L(SCENE, 385, fnRange(SCENE, 385)[1]),
+  L(SCENE, 1917, fnRange(SCENE, 1917)[1]),
+  L(SCENE, 8296, sceneEnd(8296)),
+  L(SCENE, 8334, sceneEnd(8334)),
+  '  attacker.facing = facingFromTo(attacker.q, attacker.r, defender.q, defender.r, attacker.facing);',
+];
+const facingDigest = createHash('sha256').update(facingParts.join('\n---\n')).digest('hex');
+if (facingDigest !== FACING_SHA256) throw new Error(`SHA fragmentow facing zmieniony: ${facingDigest}`);
 
 // ---- fragmenty ciosu: identyczne skladanie jak w p6_siege_tactics_blow_full_gen.mjs ----
 const consts = { MORALE_HIT_LOSS_SCALE: 100, MORALE_FLANK_HIT: 8, MORALE_REAR_HIT: 15, MORALE_CHARGE_HIT: 15, MORALE_KILL_GAIN: 6 };
@@ -183,7 +215,6 @@ const tileHash = (q, r, k) => (Math.imul(q + 1, 73856093) ^ Math.imul(r + 1, 193
 const tileName = (q, r) => TERRAINS[tileHash(q, r, S.tseed) % 4];
 const fordAt = (q, r) => tileHash(q, r, S.tseed + 11) % 100 < 25;
 const shoreAt = (q, r) => tileHash(q, r, S.tseed + 23) % 100 < 35;
-const arcOf = (aq, ar, dq, dr) => ['front', 'front', 'flank', 'rear'][tileHash(aq * 16 + ar, dq * 16 + dr, S.tseed + 37) % 4];
 const ctrOf = (a, b) => {
   let h = S.ctrSeed;
   for (const ch of `${a}|${b}`) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
@@ -205,8 +236,8 @@ const stubs = {
     cuOwner.set(cu, bu.id);
     return cu;
   },
-  // NIE_ZMIERZONO: relativeHit z pinu (battleScene.ts:385) NIE wykonane; arc = hasz wspolrzednych, facing ignorowany.
-  relativeHit: (facing, aq, ar, dq, dr) => arcOf(aq, ar, dq, dr),
+  // Render (yaw modelu w _updateFacing): poza zakresem stanu; wartosc bez wplywu na facing.
+  dirYaw: () => 0,
   battleUnitCivBonusy: (bu, list) => list,
   civCombatStatMultipliers: (bonusy, cu) => S.byId[cuOwner.get(cu)].mods,
   mergeBuildingBonusIntoStatMultipliers: (mods) => mods,
@@ -244,6 +275,15 @@ const stubNames = Object.keys(stubs);
 
 const classSrc = [
   L(SCENE, 1142, 1143), L(SCENE, 1161, 1161), L(SCENE, 1917, 1919),
+  DIR_PRELUDE,
+  L(SCENE, 347, fnRange(SCENE, 347)[1]).replace(/^export /gm, ''),
+  L(SCENE, 359, fnRange(SCENE, 359)[1]).replace(/^export /gm, ''),
+  L(SCENE, 370, fnRange(SCENE, 370)[1]).replace(/^export /gm, ''),
+  // relativeHit z pinu, z przechwyceniem łuku (instrumentacja: wynik trafia do OUT.arc).
+  L(SCENE, 385, fnRange(SCENE, 385)[1]).replace(/^export /gm, '').replace('function relativeHit(', 'function relativeHitPin('),
+  // Przechwycenie łuku: OUT.arc jest zerowane przed każdą aktywacją; drugie wywołanie w tej samej aktywacji = błąd
+  // (inaczej ostatnie wywołanie po cichu wygrywałoby i instrumentacja nie byłaby jednoznaczna).
+  'function relativeHit(df, ac, ar, dc, dr) { const r = relativeHitPin(df, ac, ar, dc, dr); if (getOut().arc !== null) throw new Error("relativeHit wywolany wielokrotnie w aktywacji"); getOut().arc = r; return r; }',
   'class Harness {',
   '  constructor() { this.atk = []; this.def = []; this.finished = false; this._manualMode = false; this.siegeWallCol = -1; this.gateOpen = false;',
   '    this.wallTileHp = new Map(); this._autoBatchPlanning = null; this.__trace = []; this.engaged = new Set(); this.log = [];',
@@ -261,7 +301,8 @@ const classSrc = [
   '  _executeGroupDoctrineStep(ru, meta, done) { this.__trace.push("doctrineStep"); return false; }',
   '  _updateMoraleBar(ru) { this.__trace.push("moraleBar"); }',
   '  _startRout(ru) { if (ru.routed || ru.dead || ru.fadingOut) return; ru.routed = true; this.__trace.push("startRout"); }',
-  '  _updateFacing(ru) { this.__trace.push("facing"); }',
+  // Znacznik sladu 'facing' (jak dotad) + PRAWDZIWE cialo pinu _updateFacing (ponizej jako _updateFacingPin).
+  '  _updateFacing(ru) { this.__trace.push("facing"); return this._updateFacingPin(ru); }',
   '  _trySiegeTowerClimb(ru, done) { this.__trace.push("towerClimb"); return false; }',
   '  _siegeInfantryToTowerStep(ru, done) { this.__trace.push("infToTower"); return false; }',
   '  _siegeRamTowerStep(ru, done) { this.__trace.push("ramTower"); return false; }',
@@ -277,10 +318,9 @@ const classSrc = [
   '  _advanceStep(ru, done) { this.__trace.push("advanceStep"); }',
   '  _rangedTargetInRange(ru) { return null; }',
   '  _advanceCoord(ru) { return 0; }',
-  '  _nearestEnemy(ru) { return null; }',
   '  _targetInRange(ru) { const t = ru.__target; if (t === null) return null; const e = (ru.side === "atk" ? this.def : this.atk)[t]; return this._enemiesOf(ru).includes(e) ? e : null; }',
   '  _doRangedAttack(a, d, done) { throw new Error("strzal poza zakresem"); }',
-  '  _doMeleeAttack(a, d, done) { this.__trace.push("attack:" + d.__i); this.__lastBlow = this._singleBlow(a, d, false); }',
+  '  _doMeleeAttack(a, d, done) { this.__trace.push("attack:" + d.__i); a.facing = facingFromTo(a.q, a.r, d.q, d.r, a.facing); this.__lastBlow = this._singleBlow(a, d, false); }',
   '  _sfxMelee() {}',
   '  _updateHpBar(u) {}',
   '  _wallBonusProcFor(d) { return d.bu.wallBonus; }',
@@ -288,6 +328,8 @@ const classSrc = [
   `  ${L(SCENE, 6048, 6299).replace('private _activateUnit', '_activateUnit')}`,
   `  ${L(SCENE, 9783, sceneEnd(9783)).replace('private _checkRout', '_checkRout')}`,
   `  ${L(SCENE, 8291, 8294).replace('private _enemiesOf', '_enemiesOf')}`,
+  `  ${L(SCENE, 8296, sceneEnd(8296)).replace('private _nearestEnemy', '_nearestEnemy')}`,
+  `  ${L(SCENE, 8334, sceneEnd(8334)).replace('private _updateFacing', '_updateFacingPin')}`,
   `  ${doAttackText.replace('private _doAttack', '_doAttack')}`,
   `  _singleBlow(attacker, defender, ranged) {\n${tf.body}\n  }`,
   '}',
@@ -326,7 +368,7 @@ function genUnit(side, idx, q, r) {
   };
   return {
     side, idx, q, r,
-    facing: int(0, 5),
+    facing: int(0, 3),
     dead, fadingOut, routed,
     neverRout: chance(0.12),
     surroundApplied: chance(0.15),
@@ -373,7 +415,6 @@ function blowTemplate(a, d) {
     return v;
   };
   return {
-    arc: arcOf(a.q, a.r, d.q, d.r),
     atk: {
       weaponDamage: need(cuA.weaponDamage, 'weaponDamage'), piercing: need(cuA.piercing, 'piercing'),
       meleeAttack: need(cuA.meleeAttack, 'meleeAttack'), missileAttack: need(cuA.missileAttack ?? 0, 'missileAttack'),
@@ -457,7 +498,7 @@ function runSeq(seq) {
     neverRout: u.neverRout, surroundApplied: u.surroundApplied, morale: u.morale, fleeMorale: u.fleeMorale,
     range: 1, onWallWalkway: u.onWall, primaryRanged: false, mounted: u.mounted, phalanx: u.phalanx, shootingEnabled: true,
     dryCol: -1, heldAfterFallback: false, playerOrder: { type: 'none' }, moveLeft: u.moveLeft,
-    bu: { ...u.bu }, __target: u.target, __i: u.idx,
+    bu: { ...u.bu }, __target: u.target, __i: u.idx, group: { rotation: { y: 0 } },
   });
   h.atk = seq.atk.map(mk);
   h.def = seq.def.map(mk);
@@ -467,7 +508,7 @@ function runSeq(seq) {
     const ru = runtimeOf(a.side, a.idx);
     h.__trace = [];
     h.finished = a.finished;
-    OUT = { u: null, hitRet: null, outcome: null, bracesCalled: false };
+    OUT = { u: null, hitRet: null, outcome: null, bracesCalled: false, arc: null };
     h.__lastBlow = undefined;
     const rollsBefore = S.rollIdx;
     h._activateUnit(ru, () => h.__trace.push('done'));
@@ -485,12 +526,13 @@ function runSeq(seq) {
         defHpAfter: n2s(tgt.bu.hp),
         extraMorale: missed ? null : n2s(OUT.outcome.extra),
         isCharge: OUT.bracesCalled && !tgt.bu.braces,
+        arc: OUT.arc,
       };
       if (S.rollIdx !== rollsBefore + 1) throw new Error('cios zuzyl != 1 rzut');
     } else if (S.rollIdx !== rollsBefore) throw new Error('rzut bez ciosu');
     const state = (r) => ({
       hp: n2s(r.bu.hp), dead: r.dead, fadingOut: r.fadingOut, routed: r.routed, morale: n2s(r.morale),
-      surroundApplied: r.surroundApplied, moveLeft: n2s(r.moveLeft),
+      surroundApplied: r.surroundApplied, moveLeft: n2s(r.moveLeft), facing: n2s(r.facing),
     });
     expect.push({
       trace: h.__trace.slice(),
@@ -505,7 +547,7 @@ function runSeq(seq) {
 const encUnit = (u) => ({
   side: u.side, idx: u.idx, q: u.q, r: u.r, hp: n2s(u.hp), maxHp: n2s(u.maxHp), morale: n2s(u.morale), fleeMorale: n2s(u.fleeMorale),
   neverRout: u.neverRout, dead: u.dead, fadingOut: u.fadingOut, routed: u.routed, surroundApplied: u.surroundApplied,
-  moveLeft: n2s(u.moveLeft), onWall: u.onWall, mounted: u.mounted, phalanx: u.phalanx,
+  moveLeft: n2s(u.moveLeft), facing: n2s(u.facing), onWall: u.onWall, mounted: u.mounted, phalanx: u.phalanx,
   tdmOwn: n2s(tdmOf(tileName(u.q, u.r))), target: u.target, blow: u.blow,
 });
 
@@ -547,11 +589,21 @@ const cov = {
   withDead: sequences.filter((q) => q.units.some((u) => u.dead)).length,
   finishedActs: sequences.reduce((s, q) => s + q.acts.filter((a) => a.finished).length, 0),
   onWallDefender: sequences.filter((q) => q.units.some((u) => u.onWall)).length,
+  // Cios A->B, potem B->A w tej samej sekwencji z INNYM lukiem (zmiana facing obrony po ciosie / aktywacji).
+  reverseArcDiff: sequences.reduce((s, q) => s + q.expect.reduce((t, e, k) => {
+    if (!e.blow) return t;
+    const key = (side, idx) => `${side}${idx}`;
+    const me = key(q.acts[k].side, q.acts[k].idx);
+    const tgt = key(q.acts[k].side === 'atk' ? 'def' : 'atk', e.blow.target);
+    const hit = q.expect.slice(0, k).some((p, j) => p.blow && key(q.acts[j].side, q.acts[j].idx) === tgt
+      && key(q.acts[j].side === 'atk' ? 'def' : 'atk', p.blow.target) === me && p.blow.arc !== e.blow.arc);
+    return t + (hit ? 1 : 0);
+  }, 0), 0),
 };
 const outDir = join(here, 'p6_siege_tactics_loop_body_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), `${JSON.stringify({
   pin: PIN, activateSha256: activateDigest, blowSha256: blowDigest, unitFragmentSha256: uDigest, unitsSha256: unitsDigest,
-  doAttackSha256: doAttackDigest, seed: SEED, coverage: cov, sequences,
+  doAttackSha256: doAttackDigest, facingSha256: facingDigest, seed: SEED, coverage: cov, sequences,
 })}\n`);
 console.error(JSON.stringify(cov));
