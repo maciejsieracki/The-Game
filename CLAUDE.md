@@ -43,6 +43,22 @@ któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
 długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
+## ⚠ ZASADA MODELI — ZRÓŻNICOWANIE RÓL (właściciel, 2026-11-12; NIE WYMAGA PRZYPOMINANIA; czytaj przed KAŻDYM uruchomieniem Workflow)
+
+Limit zużycia schodzi szybko, więc role MAJĄ być zróżnicowane (zasada 2 niżej jest wiążąca, nie „wyjątkowa”):
+
+| Rola | Model |
+|---|---|
+| Operator | **HAIKU 5.5 — zawsze** |
+| Obrona Operatora | **HAIKU 5.5** |
+| Evaluator | SONNET 5.5 |
+| Final Control | SONNET 5.5 |
+| Integracja orkiestratora (merge-tree, FF, rejestry) | model sesji |
+
+Sonnet na Operatorze **wyłącznie** po DWÓCH nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL lub BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu — nigdy z góry „bo temat trudny”, nigdy „dla pewności”. Rundy integracyjne (merge + bramki), dokumentacyjne i audytowe = Haiku.
+Skrypt Workflow: wyłącznie `r-rustport-p6-w6s-wf_89e542b7-6b5.js` (Operator/Obrona = Haiku, Evaluator/FC = Sonnet). Skrypt z Operatorem na Sonnecie jest ZABLOKOWANY (plik `*.disabled`); odblokować tylko po spełnieniu warunku wyżej. Przed każdym `Workflow` sprawdź: czy model Operatora w skrypcie = Haiku.
+Nie startuj tematów „dla zapełnienia” czterech slotów, jeśli brak realnej pracy bez zależności od decyzji gameplay — oszczędzaj limit.
+
 ## STAŁE ZASADY ORKIESTRATORA (właściciel przypomina je co sesję — czytaj PRZED każdą decyzją)
 
 1. **Cała praca merytoryczna przez Workflow** (Operator → Evaluator → Obrona → Final Control, max 5 rund,
