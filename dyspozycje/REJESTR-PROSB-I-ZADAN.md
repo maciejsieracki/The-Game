@@ -9541,3 +9541,6 @@ Gra z pliku Gra-ROBOCZA.html pokazuje czerwony overlay „BOOT ERROR" z setkami 
 
 ### Zgłoszenie właściciela 2026-11-12: bitwa — jednostka barbarzyńców „z supermocą”
 Jednostka barbarzyńców o tej samej mocy co gracza zniszczyła jednostkę gracza bez strat po jego stronie. Temat R-WEB-BATTLE-BARB-UNIT-OVERPOWER-AUDIT-Q1 (audyt read-only, Operator HAIKU): tabela modyfikatorów obrażeń obu stron, przyczyna, propozycja poprawki (bez commita). Nie mylić z FALĄ 626 (×3 liczby jednostek barbarzyńców, nie siły). Pytania o parametry: do właściciela ABC po wyniku.
+
+### DECYZJA ABC właściciela 2026-11-12: stabilne wyniki bitew (wariant B)
+Źródła rozrzutu: AUTO upset 20% przy stosunku sił < 1,15 (auto-battle-params.ts:40–41); rzut Math.random na każde uderzenie (battleScene.ts ~9085, combat.ts rng). Temat R-WEB-BATTLE-DETERMINISTIC-EXPECTED-OUTCOME-Q1 — wartości oczekiwane zamiast losowania, AUTO=SKIP. Progi bez zmian bez ABC.
