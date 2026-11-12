@@ -1,0 +1,10 @@
+BUILD ok in 44 s
+RUN {"mode":"auto","winner":"remis","round":150,"breached":true,"wallS":33.6,"atk":{"lost":5,"remaining":12,"hp":2685},"def":{"lost":2,"remaining":4,"hp":144},"ev":222,"inside":2,"onBreachTile":0,"manual":null}
+PASS: B0 scenariusz oblezenia: obleznicza w rosterze, mur z kaflami
+PASS: B1 mur/brama padly: co najmniej jedno zdarzenie wylomu w AUTO (kafel muru lub brama), kafle muru ubyly lub brama otwarta
+PASS: B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)
+PASS: B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca
+FAIL: B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom) -- {"onBreachTile":0,"wallCol":40,"maxAtkQ":57}
+PASS: B4b ZNANY DEFEKT (osobny temat, nie ruszac tutaj): w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur
+PASS: B5 brak bledow JS
+--- 6 ok, 1 fail, 0 defekt(y) gry, 0 NIE_ZMIERZONO, 0 znany(ch) defekt(ow) (B4b)

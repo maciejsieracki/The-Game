@@ -6,8 +6,9 @@
  * deterministyczne ziarno Math.random + zegar wirtualny dt=16 ms) dla sciezek oblezenia, ktore mialy NIE_ZMIERZONO:
  *
  *   P1  AUTO w oblezeniu BEZ przeskoku == SKIP (parytet z FALI 618), 1x (skrocony scenariusz) i predkosc >1x (pelny)
- *   B   oblezenie z wylomem: mur pada -> wallEverBreached; B4 = atakujacy stoi NA zburzonym kaflu;
- *       B4b (DEFEKT-kandydat, exit 3) = oryginalne wymaganie szkicu: atakujacy wchodzi ZA mur (w AUTO 0, w trybie recznym >0)
+ *   B   oblezenie z wylomem: mur pada -> wallEverBreached; B4 = zywy atakujacy stoi NA zburzonym kaflu (HISTORYCZNIE,
+ *       co klatke po wylomie; stan koncowy tylko INFO);
+ *       B4b (R-WEB-SIEGE-AUTO-BREACH-ATTACKERS-ENTER-BEHIND-WALL-Q1) = PIECHUR (bez machin) ZA murem w ciagu 3 tur od wylomu
  *   R   "Rozegraj ponownie" po oblezeniu z wylomem: stan wylomu/muru/bramy wraca do poczatku
  *   M   bitwa reczna oblezenicza do konca, BEZ Skip
  *   F   _skipInstantFallback (sciezka awaryjna skip() przed startem) -- wynik, wylom z machiny w skladzie
@@ -89,6 +90,11 @@ const MUTS = {
   'ff-tick': [
     { from: 'this.vNow += FF_STEP_MS;\n      this._ffVirtualMs += FF_STEP_MS;', to: 'this.vNow += FF_STEP_MS * 2;\n      this._ffVirtualMs += FF_STEP_MS * 2;' },
   ],
+  // B4b: atakujacy NIE wchodza ZA linie muru (kolumna > kolumny muru) => B4/B4b CZERWONE (ruch = _moveCostForUnit).
+  'atk-no-inside': [
+    { from: 'if (!this.terrainMap.passable(col, row)) return Infinity;\n    const base = this.terrainMap.moveCost(col, row);',
+      to: 'if (!this.terrainMap.passable(col, row)) return Infinity;\n    if (ru.side === \'atk\' && this.siegeWallCol >= 0 && col > this.siegeWallCol) return Infinity;\n    const base = this.terrainMap.moveCost(col, row);' },
+  ],
   'fallback-breach': [
     { from: 'if (this.siegeWallCol >= 0 && this.atk.some(u => !u.dead && isSiegeUnit(u.bu))) {\n      this.wallEverBreached = true;\n    }\n    const result = computeInstantResult(',
       to: 'if (false) {\n      this.wallEverBreached = true;\n    }\n    const result = computeInstantResult(' },
@@ -144,6 +150,7 @@ function initDet(seed) {
       const q = window.__rafQ; window.__rafQ = [];
       window.__fakeNow += window.__dt;
       for (const cb of q) cb(window.__fakeNow);
+      if (window.__sampler) window.__sampler();
     }
     return !!(bs && bs.finished);
   };
@@ -175,6 +182,29 @@ function pageSetup(cfg) {
   bs._breachWallTile = (row) => { window.__breachEvents.push({ kind: 'mur', row, round: bs.roundNo }); return ow(row); };
   const og = bs._breachGate.bind(bs);
   bs._breachGate = () => { window.__breachEvents.push({ kind: 'brama', round: bs.roundNo }); return og(); };
+  // Probkowanie HISTORYCZNE (co klatke, od wylomu): stan koncowy (tura cap) gubi piechote, ktora przeszla wylom
+  // i zginela/poszla dalej; tu liczymy, czy w ktorejs klatce zywy piechur byl ZA murem / na kaflu wylomu.
+  window.__hist = { samples: 0, infOnBreach: 0, infInside: 0, anyOnBreach: 0, maxInfInside: 0, firstInfInsideRound: null, firstInfOnBreachRound: null };
+  const isSiegeU = (bu) => /Siege|Obl/i.test(String((bu.stats && (bu.stats['Typ'] || bu.stats['Rola (linia)'])) || ''));
+  window.__sampler = () => {
+    const b = window.__lastBattleScene;
+    if (!b || !b.wallEverBreached || !window.__tiles0) return;
+    const H = window.__hist; H.samples++;
+    const wc = b.siegeWallCol; const cols = b.terrainMap.cols; const T = b.terrainMap.tiles; const T0 = window.__tiles0;
+    const onB = (u) => {
+      if (u.dead || u.q !== wc) return false;
+      const i = u.r * cols + u.q;
+      return (T0[i] === 6 || T0[i] === 7) && T[i] !== 6 && T[i] !== 7;
+    };
+    const alive = b.atk.filter((u) => !u.dead);
+    const inf = alive.filter((u) => !isSiegeU(u.bu));
+    const infIn = inf.filter((u) => u.q > wc).length;
+    const infOn = inf.filter(onB).length;
+    if (infOn > 0) { H.infOnBreach++; if (H.firstInfOnBreachRound === null) H.firstInfOnBreachRound = b.roundNo; }
+    if (infIn > 0) { H.infInside++; if (H.firstInfInsideRound === null) H.firstInfInsideRound = b.roundNo; }
+    if (infIn > H.maxInfInside) H.maxInfInside = infIn;
+    if (alive.some(onB)) H.anyOnBreach++;
+  };
   window.__t0 = bs.vNow;
   bs._setSpeedIdx(cfg.speedIdx || 0, { clamp: true });
   return {
@@ -202,7 +232,7 @@ function pageMetrics() {
     breachEvents: window.__breachEvents, framesRun: window.__framesRun, virtMs: Math.round(bs.vNow - window.__t0),
     atk: { lost: a.lost, remaining: a.remaining, hp: Math.round(a.hp) },
     def: { lost: d.lost, remaining: d.remaining, hp: Math.round(d.hp) },
-    units, insideAtk, onBreachTile, wallCol: wc, maxAtkQ: Math.max(...bs.atk.filter((u) => !u.dead).map((u) => u.q)),
+    units, insideAtk, onBreachTile, hist: window.__hist, wallCol: wc, maxAtkQ: Math.max(...bs.atk.filter((u) => !u.dead).map((u) => u.q)),
     endLine: bs.log.find((l) => /PAT|SZTURM|Koniec bitwy/.test(l)) || null,
     logBreach: bs.log.filter((l) => /WYLOM|WYBURZON|BRAM/i.test(l)).length,
     logTail: bs.log.slice(-2),
@@ -274,7 +304,7 @@ function record(row) {
   if (process.env.SABR_OUT) fs.appendFileSync(process.env.SABR_OUT, JSON.stringify(row) + '\n', 'utf8');
 }
 function brief(r) {
-  return { mode: r.mode, winner: r.winner, round: r.round, breached: r.breached, wallS: r.wallS, atk: r.atk, def: r.def, ev: r.breachEvents && r.breachEvents.length, inside: r.insideAtk, onBreachTile: r.onBreachTile, manual: r.manual };
+  return { mode: r.mode, winner: r.winner, round: r.round, breached: r.breached, wallS: r.wallS, atk: r.atk, def: r.def, ev: r.breachEvents && r.breachEvents.length, inside: r.insideAtk, onBreachTile: r.onBreachTile, hist: r.hist, manual: r.manual };
 }
 function sameOutcome(a, b) {
   return a.winner === b.winner && a.round === b.round && a.breached === b.breached
@@ -352,10 +382,17 @@ async function main() {
       a.breachEvents.length > 0 && (a.wallTilesLeft < a.wallTilesInit || a.gateOpen), { ev: a.breachEvents, left: a.wallTilesLeft, init: a.wallTilesInit, gate: a.gateOpen });
     check('B2 wylom ustawia wallEverBreached (wynik bitwy niesie wallBreached -> miasto do zdobycia)', a.breached === true, a.breached);
     check('B3 wylom padl PRZED koncem bitwy (nie zalozony retroaktywnie): tura wylomu < tura konca', a.breachEvents.length > 0 && a.breachEvents[0].round <= a.round, { ev: a.breachEvents[0], round: a.round });
-    check('B4 SZTURM po wylomie: zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (przejscie przez wylom)', a.onBreachTile > 0, { onBreachTile: a.onBreachTile, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
-    // Zmierzone (AUTO MINI 150 tur, AUTO pelny 128x 180-240 tur, SKIP pelny 400 tur): max q atakujacego <= kolumna muru, nikt nie wchodzi ZA mur.
-    // Osobno od B4, bo to nie jest wymaganie z dispatchu, tylko obserwacja zachowania gry -- do decyzji wlasciciela (osobny temat), nie naprawiane tutaj.
-    known('B4b ZNANY DEFEKT (osobny temat, nie ruszac tutaj): w AUTO po wylomie zywy atakujacy wchodzi ZA linie muru (kolumna > kolumny muru) w limicie tur', a.insideAtk > 0, { inside: a.insideAtk, wallCol: a.wallCol, maxAtkQ: a.maxAtkQ });
+    // B4 mierzy HISTORYCZNIE (co klatke po wylomie), nie stan koncowy: stan koncowy (tura cap) gubi piechote, ktora przeszla
+    // wylom i zginela/poszla dalej. Wartosc koncowa (onBreachTile) zostaje w RUN jako INFO. Zmiana definicji pomiaru -- do akceptacji Evaluatora.
+    console.log('INFO B4 stan koncowy: onBreachTile=' + a.onBreachTile + ' (informacyjnie, nie asercja)');
+    check('B4 SZTURM po wylomie: w ktorejs klatce po wylomie zywy atakujacy stoi NA zburzonym kaflu muru / otwartej bramie (historycznie)', a.hist && a.hist.anyOnBreach > 0, { hist: a.hist, wallCol: a.wallCol });
+    // B4b (zaostrzona, dispatch R-WEB-SIEGE-AUTO-BREACH-ATTACKERS-ENTER-BEHIND-WALL-Q1): PIECHUR (nie machina obleznicza) ZA murem
+    // (q > kolumny muru) w klatce po wylomie, najpozniej 3 tury po pierwszym wylomie. Prog 3 tury: zmierzone w AUTO MINI
+    // (wylom tura 23, pierwszy piechur za murem tura 24, max jednoczesnie 4). Machiny celowo stoja w zasiegu (FIX 2) i sa wykluczone.
+    const breachRound = a.breachEvents && a.breachEvents.length ? a.breachEvents[0].round : null;
+    check('B4b PIECHOTA ZA MUREM: zywy piechur (bez machin) stoi ZA linia muru (q > kolumna muru) w ciagu 3 tur od wylomu (historycznie)',
+      !!a.hist && a.hist.firstInfInsideRound !== null && breachRound !== null && a.hist.firstInfInsideRound <= breachRound + 3,
+      { firstInfInsideRound: a.hist && a.hist.firstInfInsideRound, breachRound, maxInfInside: a.hist && a.hist.maxInfInside, insideAtkEnd: a.insideAtk });
     check('B5 brak bledow JS', a.errors.length === 0, a.errors);
   }
 
