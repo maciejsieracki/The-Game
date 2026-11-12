@@ -323,3 +323,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **R-RUSTPORT-P6-K5LOOP-AUTO-Q1 (#97): FAIL (FC).** Operator BLOCK bez kodu (zakres za duży). Diagnoza potwierdzona: `BeginAutoBatchPhase` i `FfEvent::EnterAuto` idą przez `halt_unsupported` (siege_tactics_loop.rs:260-261, 360-361); `begin_auto_batch_*` z siege_tactics_autobatch.rs nie ma wołającego. Wymagany podział na (a) wpięcie AUTO w SiegeLoop::apply z VirtualClock, (b) przełącznik trybu ręcznego, (c) wektory pinu z SHA-256, (d) test bez #[ignore]. Runda 2 tego samego ID z podziałem — do napisania. Pytanie architektoniczne (jedna pętla vs osobny sterownik): rekomendacja FC — jedna pętla; do decyzji orkiestratora (techniczna, nie gameplay).
 - **Start:** R-RUSTPORT-P6-TOWER-TARGET-Q1 (#116), baza `23e33793e`, dispatch w origin, workflow `wf_6bdb3440-bdd`. Pierwszy krok łańcucha wież.
 - **Aktywne Workflow (2):** K5-LOOP-WYLOM-Q1 (#98, `wf_577e24b7-908`), TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`). Slot wolny do decyzji ABC lub podziału AUTO r2.
+
+## Przebieg (po 23:1x): WYLOM BLOCK, start OUTCOME
+- **R-RUSTPORT-P6-K5-LOOP-WYLOM-Q1 (#98): BLOCK (FC PASS-WITH-NOTES na jakość raportu).** Funkcje wyłomu (`siege_tactics_breach.rs`) mają wołających tylko w testach; `ProdBody::start` odsyła bitwy oblężnicze do unported; `_resolveBlowOutcome` (rout po ciosie) nieportowany. Zależność: #109 → #112 → #113. Pin w dispatchu błędny: poprawnie `gra/src/battle/battleScene.ts` (`wallEverBreached` L2503, 3721, 7647, 7759, 8072–8073).
+- **Start R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1 (#109):** baza `23e33793e`, dispatch w origin, workflow `wf2qml924`. Warunek wstępny dla WYLOM.
+- **Aktywne Workflow (2):** TOWER-TARGET-Q1 (#116, `wf_6bdb3440-bdd`), K5LOOP-OUTCOME-Q1 (#109, `wf_5c18cda4-98d`).
+- **Do zrobienia:** AUTO r2 (podział na (a)–(d)) — dispatch jeszcze nie napisany; decyzja architektoniczna (jedna pętla) przyjęta przeze mnie zgodnie z rekomendacją FC.
