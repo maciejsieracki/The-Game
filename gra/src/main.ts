@@ -18730,7 +18730,8 @@ async function boot(): Promise<void> {
         affordIds.push(item.id);
       }
       const unitIds: string[] = [];
-      if (city.ownerId === 0) {
+      // Ta sama blokada oblężenia co w cityHasAffordableUnitRecruitment (odcisk ma być spójny z bramką).
+      if (city.ownerId === 0 && !isCityUnderSiege([city], city)) {
         const treasury = player.skarbiec;
         const ep = empireEpochForOwner(city.ownerId);
         const mpMults = civManpowerMultsForOwner(city.ownerId);
