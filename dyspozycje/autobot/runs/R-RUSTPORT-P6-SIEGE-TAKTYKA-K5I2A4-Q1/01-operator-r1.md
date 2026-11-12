@@ -23,6 +23,19 @@ BLOKADY: brak. Uwagi:
   3. Warianty "cywilizacja" i "trudnosc" NIE sa wejsciami toCombatUnit w pinie (civ i trudnosc wchodza przy skladaniu wejsc ciosu: civ_combat_stat_multipliers, battle_unit_difficulty_combat_mult z a2). Wariantami toCombatUnit sa awans/weteran (veteranBonusFrac), glod armii, deficyt zlota, flagi skip*, mnozniki, hp, brak stats, brak Jednostka - wszystkie pokryte.
   4. Uproszczenia modelu: wartosc logiczna w polu liczbowym units.json nie wystepuje w danych (w JS dalaby `true`, tu 1/0); pole unbreakable? nie jest ustawiane przez combatUnitFromDef - pominiete. Wektory zawieraja pola skalarne wierszy (bez Historia/Opis/Top3 - nieczytane).
   5. Rozbieznosci units.json Rust vs pin (zadanie 27): NIE rozstrzygane; wektory uzywaja WYLACZNIE danych pinu. Rust engine/data nie byl czytany ani zmieniany.
-RUNDY: 4/5 (dispatch: runda wg dodatku; plik 01-operator-r4.md)
-NASTĘPNY KROK: Evaluator
+RUNDY: 1/5 (dispatch: runda 1/5; plik przemianowany z 01-operator-r4.md po obronie Z4)
+NASTĘPNY KROK: Evaluator (ponowna ocena po obronie 02a-obrona.md)
 DEPLOY/PUSH: NIE WYKONANO
+
+## Uzupełnienie po zarzucie 5 (obrona 02a): rozbieżności units.json Rust vs pin
+
+Porównanie: pin `gra/data/units.json` @07d2fbd72 (75 jednostek) vs `rust-port/engine/data/units.json` @2f8b69ccd (75 jednostek). Dopasowanie po polu `Nazwa EN`; zbiory nazw identyczne (0 jednostek tylko w jednym pliku). Wynik: 71 różnic pól w wierszach, rozkład po polu: Tech 27, Zastąp specjalnie 21, fieldPower 9, Top3 3, Epoka 2, Historia 2, Atak/Obrona/Przebicie/Bonus vs Spearman %/meleeAttack/meleeDefence/piercing po 1 (wszystkie: Phalanx).
+
+Różnice liczbowe mające znaczenie bojowe (pin → Rust):
+- Phalanx: Atak 7 → 6; Obrona 12 → 10; Przebicie 4 → 2; Bonus vs Spearman % 30 → 0; meleeAttack 7 → 5; meleeDefence 12 → 10; piercing 4 → 2 (Top3 pina podaje „Obrona 12”, Rust „Obrona 10”).
+- Epoka: Horseman i Chinese Cavalry — pin „Żelazo”, Rust „Brąz”.
+- fieldPower (pole pochodne): Phalanx 58.5 → 52.5; Slinger 16 → 12; Slinger (Huaraca) 16 → 12; Archer 19 → 17.5; Egyptian Archer 18 → 15; Nubian Archer 19 → 16; Sumerian Archer 14 → 12; Akkadian Archer 18 → 15.5; Assyrian Archer 19 → 17.
+
+Różnice tekstowe / meta bez wpływu na funkcje portu: Tech (27 wierszy, np. „Sztuka wojenna” vs „Hutnictwo żelaza”/„Jeździectwo”/„Oblężnictwo”), Zastąp specjalnie (21), Top3 (Phalanx, Hieros Lochos, Shield Wall), Historia (Evocati, iButho with iklwa).
+
+Ustalenie: rozbieżności NIE są rozstrzygane w tym temacie (zadanie 27, decyzja gameplay właściciela). Wektory w tym temacie używają wyłącznie danych pinu. Wniosek dla kolejnych klocków: wołający wpięty w produkcję (K5I2b / K5-LOOP) nie może czytać `rust-port/engine/data/units.json` dla Phalanxa i dwóch kawalerii, dopóki zadanie 27 nie zostanie rozstrzygnięte.
