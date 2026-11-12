@@ -6,8 +6,11 @@
 //! separate domains and are not pulled into this vertical slice.
 
 use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
 use std::{error::Error, fmt};
 
+use super::turn_war_inputs::{build_war_inputs, production_config};
+use super::turn_war_pipeline::{run_war_turn, WarTurnContext};
 use super::war_turn_state::WarTurnState;
 use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
@@ -297,6 +300,22 @@ pub struct PlayableCity {
     pub name: String,
     pub position: PositionDto,
     pub is_capital: bool,
+    /// Populacja miasta (web `City.population`). Zapis sprzed W8 r6 klocek 2 nie ma pola: domyslnie
+    /// `FOUNDING_CITY_POPULATION` (1 = populacja zalozonego miasta, dotychczasowe zalozenie producentow).
+    /// `PlayableState` NIE symuluje fazy Economy, wiec wartosc nie rosnie miedzy turami (znana luka).
+    #[serde(default = "default_city_population")]
+    pub population: u32,
+    /// Skumulowana kultura miasta (web `kultura_skumulowana`); domyslnie 0 (zapis sprzed zmiany).
+    /// Nie rosnie miedzy turami (brak symulacji Economy, znana luka).
+    #[serde(default)]
+    pub culture: u32,
+}
+
+/// Populacja nowo zalozonego miasta (web: miasto startuje z `population` 1).
+pub const FOUNDING_CITY_POPULATION: u32 = 1;
+
+fn default_city_population() -> u32 {
+    FOUNDING_CITY_POPULATION
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -335,6 +354,37 @@ pub struct PlayableState {
     /// P6-WIRE-WAR-STATE (D1=B): stan wojny tury; pusty => pole pomijane w DTO i zapisie.
     #[serde(default, skip_serializing_if = "WarTurnState::is_default")]
     pub war: WarTurnState,
+    /// P6-WIRE-WAR-STORES (W8 r6 klocek 3): magazyny budynkow, badan i religii miast; pusty => pole
+    /// pomijane w DTO i zapisie (zapis sprzed zmiany ladowany przez `#[serde(default)]`).
+    #[serde(default, skip_serializing_if = "PlayableStores::is_default")]
+    pub stores: PlayableStores,
+}
+
+/// P6-WIRE-WAR-STORES: minimalne magazyny stanu potrzebne producentom `infra` / `tech` / `religia`
+/// skladnikow mocy. Klucze to surowe id (`CityId` / `PlayerId` jako `u64`). `PlayableState` NIE symuluje
+/// ekonomii ani badan, wiec magazyny zmieniaja sie wylacznie przez zapis / budowe stanu (znana luka):
+/// PUSTY magazyn to REALNY stan pusty (miasto bez budynkow, wlasciciel bez zbadanych technologii), nie
+/// brak danych. Dane juz wyprowadzalne ze stanu NIE sa duplikowane: religia panstwowa wlasciciela to
+/// religia jego cywilizacji (web `ownerReligionForOwnerId`, main.ts:5535), liczona z `players`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableStores {
+    /// Web `cityBuilt` (id miasta -> `blt`, lista id budynkow; `blt.length` zasila `infra`).
+    #[serde(default)]
+    pub buildings_by_city: BTreeMap<u64, Vec<String>>,
+    /// Web `ownerResearchedTechs(owner)` (czlowiek) / `aiResearchDone.get(owner)` (AI): zbior zbadanych technologii.
+    #[serde(default)]
+    pub researched_techs_by_owner: BTreeMap<u64, BTreeSet<String>>,
+    /// Web `cityRelig` (id miasta -> religia -> wyznawcy). Brak wpisu = web `cityRelig.get` undefined:
+    /// stan miasta wyprowadza `resolveCityReligionState` (religia cywilizacji wlasciciela x populacja).
+    #[serde(default)]
+    pub religion_by_city: BTreeMap<u64, BTreeMap<String, u32>>,
+}
+
+impl PlayableStores {
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
 }
 
 impl PlayableState {
@@ -354,6 +404,7 @@ impl PlayableState {
             last_advanced_phases: Vec::new(),
             status: "Brak aktywnej sesji.".to_owned(),
             war: WarTurnState::default(),
+            stores: PlayableStores::default(),
         }
     }
 }
@@ -370,6 +421,7 @@ pub enum PlayableError {
     DestinationOutOfRange { distance: u32, movement: u8 },
     TurnPhaseQueueIncomplete { expected: usize, actual: usize },
     DuplicatePlayer(u64),
+    WarTurn(String),
 }
 
 impl fmt::Display for PlayableError {
@@ -401,6 +453,7 @@ impl fmt::Display for PlayableError {
                 "turn phase queue resolved {actual} phases; expected {expected}"
             ),
             Self::DuplicatePlayer(id) => write!(formatter, "player {id} already exists"),
+            Self::WarTurn(message) => write!(formatter, "war turn: {message}"),
         }
     }
 }
@@ -431,6 +484,8 @@ impl PlayableGame {
             name: capital_name(&params),
             position: PositionDto::new(1, 1),
             is_capital: true,
+            population: FOUNDING_CITY_POPULATION,
+            culture: 0,
         }];
         let units = vec![PlayableUnit {
             id: UnitId::new(STARTING_UNIT_ID),
@@ -460,6 +515,7 @@ impl PlayableGame {
                 last_advanced_phases: Vec::new(),
                 status,
                 war: WarTurnState::default(),
+                stores: PlayableStores::default(),
             },
             phase_queue: EventQueue::new(),
         };
@@ -564,6 +620,9 @@ impl PlayableGame {
 
     pub fn advance_turn(&mut self) -> Result<(), PlayableError> {
         let current_turn = self.state.turn;
+        // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
+        let queue_before = self.phase_queue.clone();
+        let war_before = self.state.war.clone();
         let mut phases = Vec::with_capacity(PHASE_COUNT);
         while let Some(entry) = self.phase_queue.peek_next() {
             if entry.turn() != current_turn {
@@ -573,6 +632,13 @@ impl PlayableGame {
                 .phase_queue
                 .pop_next()
                 .expect("peeked event remains in queue");
+            if entry.phase() == TurnPhase::Diplomacy {
+                if let Err(error) = self.run_diplomacy_war_phase() {
+                    self.phase_queue = queue_before;
+                    self.state.war = war_before;
+                    return Err(error);
+                }
+            }
             phases.push(entry.phase());
         }
         if phases.len() != PHASE_COUNT {
@@ -591,6 +657,23 @@ impl PlayableGame {
         }
         self.enqueue_turn_phases(self.state.turn);
         self.state.status = format!("Tura {} rozpoczęta.", self.state.turn);
+        Ok(())
+    }
+
+    /// P6-WIRE-WAR-PIPELINE: jedyne wywolanie `run_war_turn` (faza Diplomacy).
+    /// Deklaracje wojny z hamulca nie maja jeszcze efektow (W4/W8); zwracane sa tylko przez raport.
+    fn run_diplomacy_war_phase(&mut self) -> Result<(), PlayableError> {
+        let inputs = build_war_inputs(&self.state, &self.state.war)
+            .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let config = production_config(&self.state)
+            .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let mut ctx = WarTurnContext {
+            war: &mut self.state.war,
+            turn: f64::from(self.state.turn),
+            inputs: &inputs,
+            config: &config,
+        };
+        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
@@ -693,5 +776,77 @@ fn event_for_phase(turn: u32, phase: TurnPhase) -> TurnEvent {
         TurnPhase::Barbarians => TurnEvent::BarbariansTick,
         TurnPhase::Victory => TurnEvent::VictoryCheck,
         TurnPhase::EndTurn => TurnEvent::TurnEnded(turn),
+    }
+}
+
+#[cfg(test)]
+mod war_pipeline_advance_tests {
+    use super::*;
+
+    /// Gracz AI z miastem = para fazy Diplomacy z produkcyjnymi wejsciami (W8 r4).
+    fn game_with_ai_city() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("scenario");
+        game.add_player(2, "AI".to_owned()).expect("ai");
+        game.state.cities.push(PlayableCity {
+            id: CityId::new(900),
+            owner_id: PlayerId::new(2),
+            name: "AI-city".to_owned(),
+            position: PositionDto::new(5, 5),
+            is_capital: true,
+            population: FOUNDING_CITY_POPULATION,
+            culture: 0,
+        });
+        game
+    }
+
+    #[test]
+    fn advance_turn_with_ai_city_passes_three_turns_after_stores() {
+        // r6 klocek 3 (WIRE-WAR-STORES): infra/tech/religia maja producentow z `PlayableStores` (puste
+        // magazyny = realny stan pusty), wiec ostatnie blokery `advance_turn` z AI z miastami znikaja.
+        // Zamiana oczekiwania z r6 klocek 2 (`PowerComponentsMissing` z "infra") na przejscie 3 tur.
+        let mut game = game_with_ai_city();
+        for expected in 2..=4 {
+            game.advance_turn().expect("advance_turn z AI z miastami");
+            assert_eq!(game.state().turn, expected);
+        }
+    }
+
+    #[test]
+    fn failing_war_phase_restores_queue_turn_and_war_state() {
+        // Zepsuty zapis blokad pokoju (nie tablica) = jawny blad producenta, stan wraca.
+        let mut game = game_with_ai_city();
+        game.state.war.opaque.insert(
+            "forcedEraPeaceUntilNextEraByPairKey".to_owned(),
+            serde_json::json!("zepsute"),
+        );
+        let queue_len = game.pending_phase_count();
+        let turn = game.state().turn;
+        let before = game.state().war.clone();
+        let err = game.advance_turn().expect_err("zly zapis blokad -> blad");
+        assert!(matches!(err, PlayableError::WarTurn(_)), "{err:?}");
+        assert_eq!(game.pending_phase_count(), queue_len, "kolejka cofnieta");
+        assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
+        assert_eq!(game.state().war, before, "stan wojny bez zmian");
+        assert!(game.state().last_advanced_phases.is_empty());
+    }
+
+    #[test]
+    fn repeated_advance_after_failure_fails_the_same_way_not_with_queue_incomplete() {
+        let mut game = game_with_ai_city();
+        game.state.war.opaque.insert(
+            "forcedEraPeaceUntilNextEraByPairKey".to_owned(),
+            serde_json::json!("zepsute"),
+        );
+        let first = game.advance_turn().expect_err("blad 1");
+        let second = game.advance_turn().expect_err("blad 2");
+        assert_eq!(first, second);
+        assert!(!matches!(
+            second,
+            PlayableError::TurnPhaseQueueIncomplete { .. }
+        ));
     }
 }

@@ -1,0 +1,3952 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "generator": "p6_wire_war_inputs_gen.mjs",
+ "pairParams": [
+  {
+   "civA": null,
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": null,
+   "civB": "chinczycy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": null,
+   "civB": "egipt",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "sumer",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": null,
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "egipt",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "sumer",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "grecy",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": null,
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "grecy",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "inkowie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "egipt",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "sumer",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "celtowie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "player-2",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "rzymianie",
+   "civB": "nieznana",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 1,
+    "n": 7
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "egipt",
+   "out": {
+    "prog": 13,
+    "n": 6
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "sumer",
+   "out": {
+    "prog": 8,
+    "n": 7
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "chinczycy",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": null,
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "grecy",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "egipt",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "sumer",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "player-2",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "inkowie",
+   "civB": "nieznana",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": null,
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "grecy",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "inkowie",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "egipt",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "sumer",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "celtowie",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "player-2",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "zulusi",
+   "civB": "nieznana",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 13,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "egipt",
+   "out": {
+    "prog": 13,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "sumer",
+   "out": {
+    "prog": 13,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "egipt",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 8,
+    "n": 7
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "egipt",
+   "out": {
+    "prog": 13,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "sumer",
+   "out": {
+    "prog": 8,
+    "n": 7
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "sumer",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": null,
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "grecy",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "inkowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "egipt",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "sumer",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "player-2",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "celtowie",
+   "civB": "nieznana",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "egipt",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "sumer",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "player-2",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": null,
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "grecy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "rzymianie",
+   "out": {
+    "prog": 43,
+    "n": 4
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "chinczycy",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "inkowie",
+   "out": {
+    "prog": 17,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "zulusi",
+   "out": {
+    "prog": 48,
+    "n": 4
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "egipt",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "sumer",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "celtowie",
+   "out": {
+    "prog": 31,
+    "n": 5
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "player-2",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  },
+  {
+   "civA": "nieznana",
+   "civB": "nieznana",
+   "out": {
+    "prog": 15,
+    "n": 6
+   }
+  }
+ ],
+ "tickBrake": [
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "38",
+     "respekt": "30",
+     "rel": "68",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "30",
+     "respekt": "30",
+     "rel": "60",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "18",
+     "respekt": "10",
+     "rel": "28",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "10",
+     "respekt": "10",
+     "rel": "20",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "58",
+     "respekt": "50",
+     "rel": "108",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "50",
+     "respekt": "50",
+     "rel": "100",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "3",
+     "respekt": "5",
+     "rel": "8",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "37",
+     "respekt": "30",
+     "rel": "67",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "31",
+     "respekt": "30",
+     "rel": "61",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "25",
+     "respekt": "30",
+     "rel": "55",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "22",
+     "respekt": "30",
+     "rel": "52",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "17",
+     "respekt": "10",
+     "rel": "27",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "11",
+     "respekt": "10",
+     "rel": "21",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "5",
+     "respekt": "10",
+     "rel": "15",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "2",
+     "respekt": "10",
+     "rel": "12",
+     "counter": 2,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "57",
+     "respekt": "50",
+     "rel": "107",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "51",
+     "respekt": "50",
+     "rel": "101",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "45",
+     "respekt": "50",
+     "rel": "95",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "42",
+     "respekt": "50",
+     "rel": "92",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "2",
+     "respekt": "5",
+     "rel": "7",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "player-2",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "38",
+     "respekt": "30",
+     "rel": "68",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "30",
+     "respekt": "30",
+     "rel": "60",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "18",
+     "respekt": "10",
+     "rel": "28",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "10",
+     "respekt": "10",
+     "rel": "20",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "58",
+     "respekt": "50",
+     "rel": "108",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "50",
+     "respekt": "50",
+     "rel": "100",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "3",
+     "respekt": "5",
+     "rel": "8",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "37",
+     "respekt": "30",
+     "rel": "67",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "31",
+     "respekt": "30",
+     "rel": "61",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "25",
+     "respekt": "30",
+     "rel": "55",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "22",
+     "respekt": "30",
+     "rel": "52",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "17",
+     "respekt": "10",
+     "rel": "27",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "11",
+     "respekt": "10",
+     "rel": "21",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "5",
+     "respekt": "10",
+     "rel": "15",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "2",
+     "respekt": "10",
+     "rel": "12",
+     "counter": 2,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "57",
+     "respekt": "50",
+     "rel": "107",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "51",
+     "respekt": "50",
+     "rel": "101",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "45",
+     "respekt": "50",
+     "rel": "95",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "42",
+     "respekt": "50",
+     "rel": "92",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "2",
+     "respekt": "5",
+     "rel": "7",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "grecy",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 15,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "38",
+     "respekt": "30",
+     "rel": "68",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "30",
+     "respekt": "30",
+     "rel": "60",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "18",
+     "respekt": "10",
+     "rel": "28",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "10",
+     "respekt": "10",
+     "rel": "20",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "58",
+     "respekt": "50",
+     "rel": "108",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "50",
+     "respekt": "50",
+     "rel": "100",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 1,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "3",
+     "respekt": "5",
+     "rel": "8",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "37",
+     "respekt": "30",
+     "rel": "67",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "34",
+     "respekt": "30",
+     "rel": "64",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "31",
+     "respekt": "30",
+     "rel": "61",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "25",
+     "respekt": "30",
+     "rel": "55",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "22",
+     "respekt": "30",
+     "rel": "52",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "17",
+     "respekt": "10",
+     "rel": "27",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "14",
+     "respekt": "10",
+     "rel": "24",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "11",
+     "respekt": "10",
+     "rel": "21",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "5",
+     "respekt": "10",
+     "rel": "15",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "2",
+     "respekt": "10",
+     "rel": "12",
+     "counter": 2,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "57",
+     "respekt": "50",
+     "rel": "107",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "54",
+     "respekt": "50",
+     "rel": "104",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "51",
+     "respekt": "50",
+     "rel": "101",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "45",
+     "respekt": "50",
+     "rel": "95",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "42",
+     "respekt": "50",
+     "rel": "92",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 2,
+   "epochB": 1,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "2",
+     "respekt": "5",
+     "rel": "7",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 2,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "40",
+   "r0": "30",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "36",
+     "respekt": "30",
+     "rel": "66",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "32",
+     "respekt": "30",
+     "rel": "62",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "28",
+     "respekt": "30",
+     "rel": "58",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "24",
+     "respekt": "30",
+     "rel": "54",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "20",
+     "respekt": "30",
+     "rel": "50",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "16",
+     "respekt": "30",
+     "rel": "46",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "20",
+   "r0": "10",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "16",
+     "respekt": "10",
+     "rel": "26",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "12",
+     "respekt": "10",
+     "rel": "22",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "8",
+     "respekt": "10",
+     "rel": "18",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "4",
+     "respekt": "10",
+     "rel": "14",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "10",
+     "rel": "10",
+     "counter": 3,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "60",
+   "r0": "50",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "56",
+     "respekt": "50",
+     "rel": "106",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "52",
+     "respekt": "50",
+     "rel": "102",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "48",
+     "respekt": "50",
+     "rel": "98",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "44",
+     "respekt": "50",
+     "rel": "94",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "40",
+     "respekt": "50",
+     "rel": "90",
+     "counter": 0,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "36",
+     "respekt": "50",
+     "rel": "86",
+     "counter": 0,
+     "warTriggerReady": false
+    }
+   ]
+  },
+  {
+   "civA": null,
+   "civB": "inkowie",
+   "epochA": 3,
+   "epochB": 3,
+   "z0": "5",
+   "r0": "5",
+   "brake": {
+    "prog": 17,
+    "n": 6
+   },
+   "turns": [
+    {
+     "turn": 1,
+     "zaufanie": "1",
+     "respekt": "5",
+     "rel": "6",
+     "counter": 1,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 2,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 2,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 3,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 3,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 4,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 4,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 5,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 5,
+     "warTriggerReady": false
+    },
+    {
+     "turn": 6,
+     "zaufanie": "0",
+     "respekt": "5",
+     "rel": "5",
+     "counter": 6,
+     "warTriggerReady": true
+    }
+   ]
+  }
+ ]
+}
