@@ -131,7 +131,7 @@ const BEFORE = {
     "Utrzymanie surowiec": "Brąz",
     "Utrzymanie surowiec (ilość)": 5,
     "Ruch": 4,
-    "Ruch w bitwie (heksy)": 6,
+    "Ruch w bitwie (heksy)": 7,
     "Widok pola": 4,
     "Próg dezercji (% health)": 0.3,
     "Morale bazowe": 70,

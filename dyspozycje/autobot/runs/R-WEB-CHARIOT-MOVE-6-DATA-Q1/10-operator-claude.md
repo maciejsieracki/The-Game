@@ -2,24 +2,33 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-CHARIOT-MOVE-6-DATA-Q1
 GOAL: w bitwie „Ruch w bitwie (heksy)” wpis „Konnica” = 7 (zmiana z 6); „Rydwan (woły)” = 5 bez zmian; pozostałe rydwany = 6 bez zmian; pole „Ruch” (mapa) bez zmian.
-BAZA: b77a0b7b940081f9b6da13f2b7cd9028bdf44394 (origin/main), worktree wf_d2f6f86e-073-1, detached.
+BAZA/KANDYDAT: 3a9f67bb55df5ca35589e9f542b8a9de7e2b8eec (origin/main, detached), worktree wf_32bba6a4-2d1-1.
+RUNDA: 2/5 (po FC FAIL r1; DODATEK orkiestratora rozszerzył allowlistę o dwa miejsca skutku decyzji).
 
-ZMIANY/COMMIT:
-- gra/data/units.json: jedna linia (610), wpis „Konnica”, pole „Ruch w bitwie (heksy)”: 6 -> 7. Pole „Ruch” (4) nietknięte.
-- gra/tools/chariot-move-6-data-test.cjs (nowy): sprawdza kryteria 1–3 (Konnica bitwa=7; Rydwan (woły)=5; wszystkie pozostałe „Rydwan*”=6; snapshot pola „Ruch” dla 75 jednostek z origin/main b77a0b7b9). Czerwieni się przy zmianie wartości.
-- SHA: patrz sekcja „SHA commita” poniżej.
+ZMIANY/COMMIT (runda 2):
+- gra/data/units.json: wpis „Konnica”, Top3[0].tytul „Ruch 4 (6 w bitwie)” -> „Ruch 4 (7 w bitwie)” (linia 655). Tylko ten tekst. Pole „Ruch w bitwie (heksy)” = 7 już było w kandydacie 7476f5410.
+- gra/tools/rydwan-konnica-x2-test.cjs: linia 134, blok „Konnica” w BEFORE: „Ruch w bitwie (heksy)” 6 -> 7. Nic więcej.
+- Pozostałe pliki z r1 (gra/tools/chariot-move-6-data-test.cjs, wpis Konnica w units.json) bez zmian.
+- SHA: patrz sekcja „SHA” na końcu (commit rundy 2 zawiera oba pliki kodu i ten raport).
+- git diff --stat: 2 pliki, 2 insertions, 2 deletions (przed raportem). git diff --check: czysto.
 
-TESTY:
-- node tools/chariot-move-6-data-test.cjs -> passed=163 failed=0, exit 0 (uruchomione z katalogu gra/).
-- Kontrola stanu wyjściowego (przed zmianą, odczyt z units.json): Rydwan (woły)=5, Konnica=6, pozostałe rydwany: Rydwan konny, egipski, sumeryjski, mykeński, Shang, celtycki, Kapadokijski = 6. Zgodne z dispatchem.
-- git diff --check: czysto.
-- tsc --noEmit: NIE_ZMIERZONO w sensie projektowym. W worktree brak gra/node_modules (brak zainstalowanych zależności; nie instalowałem, zgodnie z zasadą izolacji). Globalny tsc 6.0.2 (/opt/node22/bin/tsc) zwraca błąd konfiguracji tsconfig.json(15,5) TS5101 (baseUrl deprecated), zanim sprawdzi kod. Zmiana dotyczy wyłącznie danych JSON; nie wpływa na typy TS.
-- bramki referencyjne (npm run build/dev): ZAKAZANE dispatchem; nie uruchamiane.
+TESTY (surowe wyjście, runda 2):
+- cd gra && node tools/chariot-move-6-data-test.cjs -> `chariot-move-6-data-test: passed=163 failed=0` (exit 0).
+- cd gra && node tools/rydwan-konnica-x2-test.cjs -> `FAIL: 2 niezgodnosci`:
+    - Rydwan (woły).Surowiec: powinno pozostac "Brąz", jest "Drewno"
+    - Rydwan (woły).Utrzymanie surowiec: powinno pozostac "Brąz", jest "Drewno"
+  To są dokładnie dwie niezgodności długu bazowego z 3a9f67bb (zmierzone w r1 na bazie b77a0b7b9). Trzecia niezgodność (Konnica 6 -> 7) zniknęła, bo snapshot zmieniono na 7.
+- npm ci w gra/ (dysk przed startem: 7,2 GB wolne) -> `added 71 packages in 4s`, exit 0.
+- cd gra && node_modules/.bin/tsc --noEmit -> exit 0, bez wyjścia (0 linii).
+- Długi bazowe (ruch-swiata-tempo, structure-defense-bonus, fortify-pole, battle-natural-chariot-r5, Drewno/Brąz w rydwan-konnica-x2): NIE_ZMIERZONO w tej rundzie; nie są częścią tematu, zostają jako dług.
+- npm run build / npm run dev: NIE uruchamiane (zakaz).
 
-BLOKADY:
-- Dispatch w repo: plik 00-dispatch.md istnieje TYLKO na gałęzi origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (nie w origin/main). Plik 00-dispatch-DODATEK-claude.md NIE istnieje na żadnej z pobranych gałęzi. Wykonano wg 00-dispatch.md z zadania workflow (GOAL/allowlista/kryteria są tam zgodne z opisem tematu). Luka rozstrzygnięta założeniem: dodatek orkiestratora nieobecny, przyjęto zakres z 00-dispatch.md i zadania.
-- Dispatch podaje bazę aeb52465e845d29acb5f7b628370789af399d673; zadanie wskazuje b77a0b7b9. Sprawdzono: aeb52465 jest przodkiem b77a0b7b9 (merge-base OK). Pracę wykonano na b77a0b7b9 zgodnie z zadaniem. Stan danych w obu bazach dla wartości objętych zmianą jest identyczny (Konnica=6, rydwany jak wyżej) — NIE_ZMIERZONO dla aeb52465 osobno, założono brak różnic w tych polach.
+BLOKADY: brak w zakresie tematu. Luka: DODATEK podawał bazę 3a9f67bb jako „kod kandydata 7476f5410 bez zmian” — zgodne z git (3a9f67bb to commit raportu obrony na 7476f5410). Dispatch 00-dispatch.md istnieje tylko na gałęzi origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (nie w origin/main); DODATEK jest w tym samym pliku, sekcja na końcu.
 
-RUNDY: 1/5
-NASTĘPNY KROK: Evaluator (weryfikacja diffu allowlisty: tylko units.json pole Konnica + nowy test; test czerwony przy 6; decyzja o tsc po zainstalowaniu zależności projektu).
+ZAŁOŻENIA:
+- Rozszerzona allowlista z DODATKU obejmuje wyłącznie: units.json (pole tytul wpisu Konnica) i rydwan-konnica-x2-test.cjs (linia 134). Żadnych innych zmian.
+- Commit rundy 2 zawiera kod (oba pliki) i raport razem, bo Evaluator i FC potrzebują diffu kodu; dodano tylko ścieżki jawnie (nigdy -A).
+
+RUNDY: 2/5 (r1: Operator PASS-WITH-NOTES, Obrona BLOCK, Evaluator FAIL; r2: Operator PASS-WITH-NOTES)
+NASTĘPNY KROK: Evaluator r2 (diff: 2 pliki; oczekiwany wynik testu rydwan-konnica-x2 = 2 niezgodności jak w bazie), potem Obrona/FC.
 DEPLOY/PUSH: NIE WYKONANO
