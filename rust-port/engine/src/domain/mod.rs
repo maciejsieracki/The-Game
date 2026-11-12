@@ -100,6 +100,7 @@ pub mod siege_tactics_approach;
 pub mod siege_tactics_autobatch;
 pub mod siege_tactics_autophase;
 pub mod siege_tactics_blow;
+pub mod siege_tactics_blow_env;
 pub mod siege_tactics_blow_full;
 pub mod siege_tactics_blow_inputs;
 pub mod siege_tactics_breach;
