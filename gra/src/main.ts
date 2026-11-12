@@ -1525,6 +1525,7 @@ import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplom
 import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBasket';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal, handelFairnessGate,
+  AI_PROPOSER_FAIRNESS_REL_TOTAL,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
@@ -20473,7 +20474,17 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_wymiane_cykliczna') {
         const { givePn, receivePn } = resolveProposalPn(balancedPayload, pnBalanceOpts);
         const exactEvalCtx = buildProposalEvalContext(ownerId, ME());
-        if (handelFairnessGate(givePn, receivePn, relationTotal(exactEvalCtx.relation), 1)) return;
+        if (handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1)) return;
+        // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (A1): gorny limit — AI nie oddaje wiecej PW niz dostaje
+        // i oferta musi przejsc PODGLAD gracza („Przyjmij", previewIncomingPlayerAccept), ktory
+        // sam sie NIE zmienia. Sprawdzane na koncowym payloadzie (po clamp/trim).
+        if (givePn > receivePn) return;
+        const playerPreview = previewIncomingPlayerAccept('handel', balancedPayload, treatyEvalRelationTotal(exactEvalCtx.relation), {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: ownerId,
+          tempoGry: player.tempoGry ?? 'standardowa',
+        });
+        if (playerPreview && !playerPreview.accepted) return;
         const exactPreview = evaluateProposal({
           actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload: balancedPayload,
         }, exactEvalCtx);
@@ -23616,10 +23627,18 @@ async function boot(): Promise<void> {
           ...pnOpts,
           ...proposalPnTurnsMultiplier(payload),
         }),
-        fairnessGate: (givePn, receivePn) => handelFairnessGate(givePn, receivePn, relationTotal(evalCtx.relation), 1) == null,
+        // A1 (R-WEB-AI-TRADE-WIRING-E2E-Q1 r3): bramka AI (rel 1) + gorny limit givePn <= receivePn
+        // (= podglad gracza netPw >= 0) -- oferta „rowne za rowne".
+        fairnessGate: (givePn, receivePn) => handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1) == null
+          && givePn <= receivePn,
         evaluateExactPayload: payload => evaluateProposal({
           actionId: 'handel', proposerOwnerId: ownerId, responderOwnerId: ME(), payload,
-        }, evalCtx).accepted,
+        }, evalCtx).accepted
+          && (previewIncomingPlayerAccept('handel', payload, treatyEvalRelationTotal(evalCtx.relation), {
+            difficulty: _menuDifficulty,
+            proposerOwnerId: ownerId,
+            tempoGry: player.tempoGry ?? 'standardowa',
+          })?.accepted ?? true),
       });
     }
 
@@ -23691,7 +23710,7 @@ async function boot(): Promise<void> {
       return {
         type: 'zaproponuj_handel_surowiec',
         targetId: '0',
-        powod: `${verb}: ${offer.pakietyPerTura} szt./turę`
+        powod: `${verb}: ${offer.pakietyPerTura} sztuk na turę`
           + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(AI_RESOURCE_TRADE_DEFAULT_TURNS)}`
           + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
         surowiecKey: offer.surowiecKey,
@@ -23890,7 +23909,7 @@ async function boot(): Promise<void> {
           if (handelSurowiecCykliczny) {
             console.log(
               `[Dyplomacja] AI↔AI handel surowcem: ${ownerDiploLabel(bestOffer!.seller)} → ` +
-              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} szt./turę`,
+              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} sztuk na turę`,
             );
           }
           syncRelationFromDeals(a, b);
@@ -29749,6 +29768,176 @@ async function boot(): Promise<void> {
         ).map(({ q, r }) => `${q},${r}`);
       },
     });
+
+    // R-WEB-AI-TRADE-WIRING-E2E-Q1 — hak testowy WYLACZNIE dla tools/ai-trade-wiring-e2e-live-test.cjs
+    // (tylko przy ?civTest=1; zero wplywu bez parametru). SETUP: tech Wymiana, kontakt, pokoj, zapasy.
+    // Propozycja AI, akceptacja/odrzucenie, tick dostaw i zapis/odczyt ida REALNYMI sciezkami gry
+    // (endTurn -> decideAITurn -> enqueueNegotiationFromAiCmd; handleNegotiationAccept/Reject;
+    // tickCyclicResourceTradeDeals w endTurn; persistSaveToSlot/loadGameFromSlot). Hak tylko czyta/ustawia stan.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      /** Tylko diagnostyka hooka ?civTest=1: czy przycisk „Przyjmij” gracza (previewIncomingPlayerAccept, net PW >= 0) przepusci payload. */
+      function aiBarterAcceptableForPlayer(
+        ownerId: number,
+        payload: import('./game/diplomacy-proposals').ProposalPayload,
+        relation: Relation,
+      ): boolean {
+        const r = previewIncomingPlayerAccept('handel', payload, treatyEvalRelationTotal(relation), {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: ownerId,
+          tempoGry: player.tempoGry ?? 'standardowa',
+        });
+        return r == null || r.accepted;
+      }
+
+      (window as any).__aiTradeWiringTestDebug = {
+        info: () => {
+          const ai = aiStartHexes[0]?.ownerId ?? null;
+          return {
+            me: ME(), ai, turn,
+            myCities: cities.filter(c => c.ownerId === ME()).length,
+            aiCities: ai == null ? 0 : cities.filter(c => c.ownerId === ai).length,
+            aiOwners: aiStartHexes.map(h => h.ownerId),
+            pricedKeys: Object.keys(diplomacyHandelSurowceCatalog()),
+            pack: diplomacyHandelSurowcePakietWielkosc(),
+          };
+        },
+        /** Zaklada pierwsze miasto gracza (bramka awaitingFirstPlayerCity). */
+        foundFirstCity: (): boolean => {
+          if (!isAwaitingFirstPlayerCity()) return true;
+          return playerStartHex ? tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r) : false;
+        },
+        /** SETUP: tech Wymiana obu stron, kontakt, pokoj, wypłacalny skarbiec. Zwraca stan bramek. */
+        prepare: (ai: number) => {
+          addOwnerResearchedTechs(ME(), [TRADE_TECH]);
+          addOwnerResearchedTechs(ai, [TRADE_TECH]);
+          getDiplomaticContacts().add(ai);
+          diplomaticContactEstablishedSet().add(ai);
+          diplomaticallyDiscoveredOwnersSet().add(ai); // AI poza mgla: relacjeDip gracza budowane tylko dla odkrytych
+          const rel = getDiploRelation(ai, ME());
+          if (rel.status === 'wojna') setDiploRelation(ai, ME(), { ...rel, status: 'pokoj' });
+          setOwnerTreasury(ai, Math.max(ownerTreasury(ai), 300));
+          rejectedOfferCooldowns = [];
+          // Inne, wyzej priorytetowe propozycje handlowe AI (umowa handlowa / dar / handel surowcem za zloto)
+          // zaslanialyby barter (ai.ts `continue`) -- wyciszone REALNYMI cooldownami tych klas (nie logika testu).
+          aiTradeAgreementLastProposalTurn.set(ai, turn);
+          aiOneShotGiftLastTurn.set(ai, turn);
+          aiResourceTradeLastProposalTurn.set(ai, turn);
+          return {
+            techMe: ownerHasTradeTech(ME()), techAi: ownerHasTradeTech(ai),
+            contact: diplomaticContactEstablishedSet().has(ai),
+            discovered: diplomaticallyDiscoveredOwnersSet().has(ai),
+            status: getDiploRelation(ai, ME()).status,
+          };
+        },
+        /** SETUP zapasu: ustawia absolutny zapas surowca wlasciciela (zerowanie + kredyt w jednym miescie). */
+        setStock: (ownerId: number, key: string, amount: number): number => {
+          for (const c of cities) if (c.ownerId === ownerId && c.surowce) c.surowce[key] = 0;
+          creditOwnerResourceStock(cities, ownerId, key, amount);
+          return ownerResourceStock(ownerId, key);
+        },
+        stock: (ownerId: number, key: string): number => ownerResourceStock(ownerId, key),
+        /** Odczyt selekcji barteru AI (ta sama funkcja co wiring) — do rozroznienia selekcja vs wiring. */
+        probeBarter: (ai: number) => {
+          const b = pickAiPlayerCyclicBarter(ai);
+          return b ? { giveKey: b.giveKey, giveQty: b.giveQty, receiveKey: b.receiveKey, receiveQty: b.receiveQty } : null;
+        },
+        /** Diagnostyka wyceny: PN stron, bramka uczciwosci i pelna ewaluacja dla konkretnego payloadu (te same funkcje co wiring). */
+        diagPayload: (ai: number, giveKey: string, giveQty: number, recvKey: string, recvQty: number) => {
+          const turnsN = AI_RESOURCE_TRADE_DEFAULT_TURNS;
+          const payload: ProposalPayload = {
+            giveItems: [{ typ: 'surowiec_ilosc', id: giveKey, ilosc: giveQty }],
+            receiveItems: [{ typ: 'surowiec_ilosc', id: recvKey, ilosc: recvQty }],
+            resourceTradeMode: 'per_turn', turns: turnsN, exchangeDurationTurns: turnsN,
+          };
+          const evalCtx = buildProposalEvalContext(ai, ME());
+          const { givePn, receivePn } = resolveProposalPn(payload, {
+            difficulty: effectiveGameDifficultyForOwner(ai), proposerOwnerId: ai, playerOwnerId: ME(),
+            actionId: 'handel' as const, tempoGry: player.tempoGry ?? 'standardowa',
+            ...proposalPnTurnsMultiplier(payload),
+          });
+          const fair = handelFairnessGate(givePn, receivePn, AI_PROPOSER_FAIRNESS_REL_TOTAL, 1);
+          const ev = evaluateProposal({ actionId: 'handel', proposerOwnerId: ai, responderOwnerId: ME(), payload }, evalCtx);
+          return { givePn, receivePn, fairBlock: fair ?? null, playerOk: aiBarterAcceptableForPlayer(ai, payload, evalCtx.relation), accepted: ev.accepted, reason: (ev as any).reason ?? null, relTotal: relationTotal(evalCtx.relation) };
+        },
+        /** Diagnostyka selekcji: deficyty (te same funkcje co wiring), stawki netto i zapasy kluczy. */
+        diag: (ai: number, keys: string[]) => {
+          const mk = (who: number) => {
+            const goods = tradableGoodsForAiDiplo(who);
+            const rates = mergedResourceRatesForOwner(who);
+            const pack = diplomacyHandelSurowcePakietWielkosc();
+            return {
+              deficitKeys: resourceDeficitKeysForOwner(who),
+              per: keys.map(k => {
+                const have = goods.find(g => g.key === k)?.ilosc ?? 0;
+                return { k, have, rate: rates[k] ?? 0, need: classifyTradeNeedNet(have, rates[k] ?? 0, pack) };
+              }),
+            };
+          };
+          return { ai: mk(ai), me: mk(ME()), tradeTech: [ownerHasTradeTech(ai), ownerHasTradeTech(ME())] };
+        },
+        endTurn: () => { triggerPlayerEndTurn(); },
+        isEndTurnInProgress: () => endTurnInProgress,
+        canEnd: () => canPlayerInitiateEndTurn(),
+        /** Czysci kooldowny tej klasy (dla scenariusza odrzucenia/ponowienia). */
+        clearBarterCooldown: (ai: number) => { aiResourceBarterLastProposalTurn.delete(ai); },
+        setBarterCooldownTurn: (ai: number, t: number) => { aiResourceBarterLastProposalTurn.set(ai, t); },
+        state: () => ({
+          turn,
+          barterCooldown: Array.from(aiResourceBarterLastProposalTurn.entries()),
+          rejectCooldowns: JSON.parse(JSON.stringify(rejectedOfferCooldowns)),
+          pending: negotiationTable.filter(n => n.aiCyclicBarter).map(n => ({
+            id: n.id, proposer: n.proposerOwnerId, responder: n.responderOwnerId, actionId: n.actionId,
+            payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
+          })),
+          tableLen: negotiationTable.length,
+          cyclicDeals: activeDeals.filter(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0).map(d => ({
+            id: d.id, items: JSON.parse(JSON.stringify(d.handelSurowiecCykliczny)),
+          })),
+        }),
+        /** Podglad akceptacji gracza (ta sama funkcja co przycisk „Przyjmij”): zwraca accepted + reason. */
+        previewAccept: (id: string) => {
+          const e = negotiationTable.find(n => n.id === id);
+          if (!e) return null;
+          const r = previewNegotiationEntry(e);
+          return { accepted: r.accepted, reason: r.reason ?? null, awaitingMe: isMe(e.awaitingOwnerId) };
+        },
+        /**
+         * Akceptacja BEZ bramki podgladu gracza (previewNegotiationEntry): reszta identyczna jak handleNegotiationAccept
+         * (resolvePlayerAcceptsAiPending + applyProposalOutcome). Potrzebna, bo bramka podgladu odrzuca KAZDA oferte barteru AI
+         * (DECISION_REQUIRED: sprzeczne bramki uczciwosci) -- bez niej nie da sie zmierzyc umowy/dostaw po stronie silnika.
+         */
+        forceAccept: (id: string): { accepted: boolean; reason: string | null } | null => {
+          const idx = negotiationTable.findIndex(n => n.id === id);
+          if (idx < 0) return null;
+          const entry = negotiationTable[idx]!;
+          negotiationTable.splice(idx, 1);
+          const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
+          const result = resolvePlayerAcceptsAiPending(
+            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech },
+          );
+          applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+          refreshD1bHud();
+          return { accepted: !!result.accepted, reason: result.reason ?? null };
+        },
+        accept: (id: string): void => { handleNegotiationAccept(id); },
+        reject: (id: string): void => { handleNegotiationReject(id); },
+        /** REALNY zapis do slotu / odczyt slotu (te same funkcje co menu gry). */
+        quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'ai-trade-wiring-test')).ok,
+        loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+        /** Kopia slotu w formacie SPRZED pol AI-TRADE (brak aiResourceBarterLastProposalTurn, brak aiCyclicBarter/rejectCooldownKey). */
+        writeLegacySlot: async (srcSlot: string, dstSlot: string): Promise<boolean> => {
+          const sv: any = await loadFromLocal(srcSlot);
+          if (!sv) return false;
+          const meta: any = { ...sv.meta };
+          delete meta.aiResourceBarterLastProposalTurn;
+          meta.negotiationTable = (meta.negotiationTable ?? []).map((n: any) => {
+            const { aiCyclicBarter: _a, ...rest } = n;
+            return rest;
+          });
+          return (await saveToLocal(dstSlot, { ...sv, meta })).ok;
+        },
+      };
+    }
 
     // R-WEB-SIEGE-BADGE-TURNS-TO-SURRENDER-Q1 — hak testowy WYLACZNIE dla tools/siege-surrender-forecast-live-test.cjs
     // (tylko przy ?civTest=1): ustawia stan oblezenia na zywym miescie i odswieza plakietki; zero wplywu bez parametru.
@@ -42409,6 +42598,11 @@ async function boot(): Promise<void> {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       } else if (cmd.type === 'zaproponuj_handel_surowiec') {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_wymiane_cykliczna') {
+                        // R-WEB-AI-TRADE-WIRING-E2E-Q1: AI->gracz cykliczna wymiana (R-WEB-AI-TRADE-PROPOSALS-TO-PLAYER-Q1)
+                        // byla generowana (ai.ts) i wyceniana w enqueueNegotiationFromAiCmd, ale ten lancuch nie kierowal
+                        // jej na stol -- komenda ginela po cichu (dowod: tools/ai-trade-wiring-e2e-live-test.cjs).
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       } else if (cmd.type === 'zaproponuj_pakt') {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       }
@@ -47431,6 +47625,9 @@ async function boot(): Promise<void> {
       if (savedResourceTradeCooldown?.length) {
         for (const [oid, t] of savedResourceTradeCooldown) aiResourceTradeLastProposalTurn.set(oid, t);
       }
+      // R-WEB-AI-TRADE-WIRING-E2E-Q1: wczytanie zapisu bez tego pola (stary zapis) / innego zapisu NIE moze dziedziczyc
+      // cooldownu barteru z biezacej sesji (dowod: tools/ai-trade-wiring-e2e-live-test.cjs, faza stary zapis).
+      aiResourceBarterLastProposalTurn.clear();
       const savedResourceBarterCooldown = saved.meta?.aiResourceBarterLastProposalTurn as Array<[number, number]> | undefined;
       if (savedResourceBarterCooldown?.length) {
         for (const [oid, t] of savedResourceBarterCooldown) aiResourceBarterLastProposalTurn.set(oid, t);

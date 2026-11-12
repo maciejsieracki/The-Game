@@ -89,7 +89,7 @@ Wszystkie parametry ustawiasz na jednym ekranie (krok 4):
 | Parametr | Opcje | Default (E1) |
 |----------|-------|--------------|
 | **Trudność** | Łatwy · Normalny · Trudny | Normalny |
-| **Rozmiar mapy** | Malenki · Mały · **Standardowy** · Duży · Ogromny | Standardowy (84×60 heksów) |
+| **Rozmiar mapy** | Maleńki · Mały · **Standardowy** · Duży · Ogromny | Standardowy (84×60 heksów) |
 | **Typ świata** | Kontynenty · Pangea · Wyspy · Ziemia | Kontynenty |
 | **Tempo gry** | Szybka · Standard · Długa | Standard |
 | **Gęstość świata** | Mało · Średnio · Dużo | Średnio |

@@ -2,6 +2,7 @@
  * diplomacy-proposals.ts — ocena propozycji dyplomatycznych v1.1 (lane CYW).
  * SILNIK/UI wołają evaluateProposal; EKO tick osobno po akceptacji trybutu.
  */
+import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
   clampRelationForWar,
@@ -502,7 +503,7 @@ export function resolveNapDealExpiry(
     return { wygasaTura: null, label: 'Pakt nieagresji (bezterminowy)' };
   }
   const turns = clamp(raw ?? 15, 10, 20);
-  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
+  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${formatTurCountAcc(turns)}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -1028,6 +1029,15 @@ function handelFairnessReject(
       + `(wymagane ≥ ${requiredPn} PW, oferujesz ${givePn} PW)`,
   };
 }
+
+/**
+ * R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): relTotal bramki uczciwosci dla ofert AI
+ * (proponent) -> gracz (responder). 100 = wspolczynnik relacji 1 (handelRequiredPn clampuje
+ * do 100): wymagane givePn >= receivePn. Podglad „Przyjmij" gracza (previewIncomingPlayerAccept,
+ * netPw >= 0) wymaga receivePn >= givePn -- przeciecie to oferty „rowne za rowne".
+ * Bramka gracz->AI NIE uzywa tej stalej.
+ */
+export const AI_PROPOSER_FAIRNESS_REL_TOTAL = 100;
 
 /**
  * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
@@ -1557,6 +1567,9 @@ export function evaluateProposal(
       // komentarz bloku handelWillingnessMultiplier wyżej (naprawa regresji rundy 2).
       const responderIsPlayer = responderOwnerId === 0;
       const handelMultiplier = handelWillingnessMultiplier(stance, p, responderIsPlayer);
+      // R-WEB-AI-TRADE-WIRING-E2E-Q1 r3 (ABC A1): AI proponent -> gracz: bramka uczciwosci
+      // z wspolczynnikiem 1 (AI oddaje co najwyzej tyle PW, ile dostaje). Gracz->AI bez zmian.
+      const fairnessRelTotal = responderIsPlayer ? AI_PROPOSER_FAIRNESS_REL_TOTAL : relTotal;
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
       if (proposalHasResourceAccess(payload)) {
@@ -1572,9 +1585,9 @@ export function evaluateProposal(
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (cyklFairnessReject) return cyklFairnessReject;
-        const cyklPwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        const cyklPwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
@@ -1597,16 +1610,16 @@ export function evaluateProposal(
           accepted: true,
           reason: payload.exchangeDurationTurns === null
             ? 'Umowa handlowa (surowiec co turę) bezterminowa'
-            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
           deal,
           pwBalance: cyklPwBalance,
         };
       }
 
       if (hasPnPath) {
-        const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        const fairnessReject = handelFairnessGate(givePn, receivePn, fairnessRelTotal, handelMultiplier);
         if (fairnessReject) return fairnessReject;
-        const pwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        const pwBalance = givePn - handelRequiredPn(receivePn, fairnessRelTotal, handelMultiplier);
         return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true, pwBalance };
       }
 
@@ -1954,7 +1967,7 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'zaproponuj_pakt':
       return cmd.turns != null && cmd.turns <= 0
         ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
-        : `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
+        : `Proponujemy pakt nieagresji na ${formatTurCountAcc(cmd.turns ?? 15)} — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
       return cmd.rodzaj === 'rozejm'
         ? 'Proponujemy rozejm — na czas ustalony w propozycji wstrzymujemy działania wojenne.'
@@ -1973,11 +1986,11 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
       const reasonSuffix = cmd.reasonHandlu ? ` Uzasadnienie: ${cmd.reasonHandlu}` : '';
       if (cmd.kierunek === 'zakup') {
-        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
-          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} sztuk na turę`
+          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
       }
-      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
-        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} sztuk na turę`
+        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${formatTurCountAcc(cmd.turns)}.${reasonSuffix}`;
     }
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
@@ -2345,7 +2358,7 @@ export function resolvePlayerAcceptsAiPending(
           accepted: true,
           reason: payload.exchangeDurationTurns === null
             ? 'Umowa handlowa (surowiec co turę) bezterminowa'
-            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+            : `Umowa handlowa (surowiec co turę) na ${formatTurCountAcc(turns)}`,
           deal,
         };
       }

@@ -150,8 +150,14 @@ const sprzedazPayload = {
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 24 }],
 };
 const sprzedazResult = evaluateProposal(prop('handel', 3, 0, sprzedazPayload), ctx());
-ok(sprzedazResult.accepted === true, `KRYTERIUM 4: 'sprzedaz' (AI sprzedaje) nadal działa identycznie -> canAccept===true, pwBalance=0 (${JSON.stringify(sprzedazResult)})`);
-ok(sprzedazResult.pwBalance === 0, `KRYTERIUM 4: pwBalance nadal dokładnie 0 (na granicy), jak w rundzie 1 (${sprzedazResult.pwBalance})`);
+// R-WEB-AI-TRADE-WIRING-E2E-Q1 r4 (zarzut Evaluatora 2; ABC A1 z DODATKU 3): ta sciezka to bramka
+// evaluateProposal dla AI→gracz (responderIsPlayer), ktora A1 celowo liczy ze wspolczynnikiem relacji 1
+// (AI_PROPOSER_FAIRNESS_REL_TOTAL). Dawna asercja "pwBalance dokladnie 0" opisywala relTotal=60 i jest
+// nieaktualna. Nowe, zmierzone: 20 żelaza = 40 PW, AI dostaje 24 zlota -> givePn 40, required 24 -> pwBalance 16
+// (nadplata AI 16 PW; to jest otwarty punkt zarzutu 3 — podglad „Przyjmij" gracza tu by odrzucil, netPw<0).
+// Kierunek 'sprzedaz' generatora (targetResourceTradePaymentPn) nie zmienia sie — asercje z linii 141-146 zostaja.
+ok(sprzedazResult.accepted === true, `KRYTERIUM 4 (A1): 'sprzedaz' AI→gracz, bramka AI z relTotal 100 -> accepted===true (${JSON.stringify(sprzedazResult)})`);
+ok(sprzedazResult.pwBalance === 16, `KRYTERIUM 4 (A1): pwBalance = 40 PW (20 żelaza) - 24 PW (wymagane @ rel 1) = 16 (${sprzedazResult.pwBalance})`);
 
 // -- 5. BRAK REGRESU: oferta GRACZA (proposerIsPlayer, ownerId=0 jako proponent) do AI,
 //    celowo zaniżona -> nadal poprawnie zablokowana (bramka symetryczna, nietknięta). --

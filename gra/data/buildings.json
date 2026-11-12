@@ -999,7 +999,7 @@
     "opis": "Palisada to najwcześniejsza fortyfikacja miasta, zwiększająca procentowo jego obronę, dopóki nie zastąpią jej kamienne Mury.",
     "top3": [
       { "tytul": "Bonus obrony miasta", "tekst": "Zwiększa obronę miasta o stały bonus +100%, niezależnie od poziomu rozbudowy." },
-      { "tytul": "Zastępowana przez Mury", "tekst": "Po wybudowaniu kamiennych Murów w tym mieście, dających wyższy bonus, Palisada zostaje usunięta jako zbędna." },
+      { "tytul": "Zastępowana przez Mury", "tekst": "Po wybudowaniu Murów kamiennych w tym mieście, dających wyższy bonus, Palisada zostaje usunięta jako zbędna." },
       { "tytul": "Otwiera Obróbkę drewna", "tekst": "Budowla staje się dostępna po zbadaniu technologii Obróbka drewna, pierwszej fortyfikacji dostępnej w grze." }
     ],
     "techUnlock": "Obróbka drewna",
@@ -1210,7 +1210,7 @@
       },
       {
         "tytul": "Dodatkowa linia handlowa",
-        "tekst": "Emporion daje miastu dodatkowy slot linii wymiany. Wymaga badania Handel i Targowiska w tym samym mieście."
+        "tekst": "Emporion daje miastu dodatkową linię wymiany. Wymaga badania Handel i Targowiska w tym samym mieście."
       }
     ],
     "techUnlock": "Handel",

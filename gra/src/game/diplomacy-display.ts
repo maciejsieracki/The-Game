@@ -19,6 +19,7 @@ import {
   type WiarygodnoscRozbicie,
 } from './diplomacy-credibility';
 import { nazwaWyswietlana } from './text-names';
+import { formatTurCountAcc } from '../ui/formatPl';
 
 const MATRIX = loadCivMatrix();
 
@@ -31,7 +32,7 @@ const WIARYGODNOSC_TOOLTIP_DEF_PL =
 
 const WIARYGODNOSC_TOOLTIP_PL =
   WIARYGODNOSC_TOOLTIP_DEF_PL
-  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
+  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal” (±%).';
 
 interface TagRule {
   paramId: string;
@@ -472,7 +473,7 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       if (perTurn) {
         const base = `${amt} ¤ na turę`;
         if (turns != null && turns > 0 && !omitTotal) {
-          return `${base} (łącznie ${amt * turns} ¤ przez ${turns} tur)`;
+          return `${base} (łącznie ${amt * turns} ¤ przez ${formatTurCountAcc(turns)})`;
         }
         return base;
       }
@@ -501,7 +502,7 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       if (perTurn) {
         const base = `${szt} ${label} na turę`;
         if (turns != null && turns > 0 && !omitTotal) {
-          return `${base} (łącznie ${szt * turns} ${label} przez ${turns} tur)`;
+          return `${base} (łącznie ${szt * turns} ${label} przez ${formatTurCountAcc(turns)})`;
         }
         return base;
       }
@@ -553,9 +554,9 @@ export function formatNegotiationDealParts(
 
   if (turns != null && turns > 0) {
     if (perTurn) {
-      parts.schedule = `Wymiana co turę przez ${turns} tur`;
+      parts.schedule = `Wymiana co turę przez ${formatTurCountAcc(turns)}`;
     } else {
-      parts.schedule = `Jednorazowa wymiana (umowa na ${turns} tur)`;
+      parts.schedule = `Jednorazowa wymiana (umowa na ${formatTurCountAcc(turns)})`;
     }
   } else if (perTurn) {
     parts.schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
@@ -592,8 +593,8 @@ export function splitNegotiationDealPlayerSides(
   let schedule: string | undefined;
   if (turns != null && turns > 0) {
     schedule = perTurn
-      ? `Wymiana co turę przez ${turns} tur`
-      : `Jednorazowa wymiana (umowa na ${turns} tur)`;
+      ? `Wymiana co turę przez ${formatTurCountAcc(turns)}`
+      : `Jednorazowa wymiana (umowa na ${formatTurCountAcc(turns)})`;
   } else if (perTurn) {
     schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
   }

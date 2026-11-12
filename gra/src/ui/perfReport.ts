@@ -6,6 +6,7 @@ import type { MapGenPhaseTimings } from '../map/mapGenProgress';
 import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
 import { getRiverGenEnabled, getRiverGenPhase } from '../map/riverGenSwitch';
 import type { SceneBuildTimings } from '../render/scene';
+import { mapSizeDisplayLabel } from '../util/map-size-display';
 
 export const PERF_REPORT_STORAGE_KEY = 'civ-last-perf-report';
 export const PERF_REPORT_FILENAME_KEY = 'civ-last-perf-filename';
@@ -75,7 +76,7 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
   lines.push(`Data: ${new Date().toLocaleString('pl-PL')}`);
 
   const metaParts: string[] = [];
-  if (opts.rozmiarLabel) metaParts.push(`rozmiar: ${opts.rozmiarLabel}`);
+  if (opts.rozmiarLabel) metaParts.push(`rozmiar: ${mapSizeDisplayLabel(opts.rozmiarLabel)}`);
   const ksztalt = opts.ksztaltLabel ?? opts.typLabel;
   if (ksztalt) metaParts.push(`kształt: ${ksztalt}`);
   if (metaParts.length) lines.push(metaParts.join(' · '));
