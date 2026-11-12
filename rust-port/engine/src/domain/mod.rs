@@ -104,6 +104,7 @@ pub mod siege_transfer_effects;
 pub mod siege_transfer_q5;
 pub mod siege_turn;
 pub mod siege_wonder_watch;
+pub mod siege_wonder_wrappers;
 pub mod society_breakdown;
 pub mod start_position;
 mod state;

@@ -51,9 +51,14 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
         "wasIndependentCityStateBeforeCapture",
         EffectStatus::CallerSide("Z-TR-1: parametr was_independent_city_state"),
     ),
-    // BRAK wrappera (Q8): rdzen planera (`snapshotWonderTerritoryOwners`/`planWonderTransfers`/`applyWonderTransfers`)
-    // jest w `siege_wonder_watch` (Q8, czysty); brak wrappera watch z main.ts (stan gry + efekty UI).
-    ("beginWonderTransferWatch", EffectStatus::Missing),
+    // R-RUSTPORT-P6-SIEGE-TRANSFER-Q9-Q1: wrapper watch z main.ts (4232) jako funkcja czysta; wejscia jawne
+    // (cuda, wezly, territoryOwnerAt wstrzykiwany). NIE podpiety w apply_transfer (zaleznosc W8: wiring w produkcji).
+    (
+        "beginWonderTransferWatch",
+        EffectStatus::Ported(
+            "siege_wonder_wrappers::begin_wonder_transfer_watch (wektory: tests/p6_siege_wonder_wrappers.rs; NIE podpiete w apply_transfer)",
+        ),
+    ),
     // Wykonane przez apply_transfer_with_effects gdy TransferExtras::pop_loss = Some (tryb legacy apply_transfer: NIE).
     // Generator pinu (p6_siege_transfer_gen.mjs) nadal stubuje to wolanie - wektory NIE zostaly przegenerowane.
     (
@@ -78,8 +83,14 @@ pub const TRANSFER_EFFECTS: &[(&str, EffectStatus)] = &[
             "ZALEZNOSC W8 r4 (NIE_ZMIERZONO): force=true (omija isPeaceLockedBetween, czysci peaceUntilTurn) i powod 'wymuszona_inna' nie maja odpowiednika w diplomacy_truce_flow::declare_war_opts (tylko skip_n2)",
         ),
     ),
-    // BRAK (Q8): wrapper settle z main.ts; rdzen planu w `siege_wonder_watch` (Q8), efekty UI nieportowane.
-    ("settleWonderTransfer", EffectStatus::Missing),
+    // R-RUSTPORT-P6-SIEGE-TRANSFER-Q9-Q1: wrapper settle z main.ts (4240) jako funkcja czysta; efekty UI jako
+    // jawne zdarzenia (WonderTransferEvent) i lista wolan UI (SettleOutcome::ui_calls). NIE podpiete w apply_transfer.
+    (
+        "settleWonderTransfer",
+        EffectStatus::Ported(
+            "siege_wonder_wrappers::settle_wonder_transfer (wektory: tests/p6_siege_wonder_wrappers.rs; NIE podpiete w apply_transfer)",
+        ),
+    ),
     (
         "noteCityCapture",
         EffectStatus::Ported(
