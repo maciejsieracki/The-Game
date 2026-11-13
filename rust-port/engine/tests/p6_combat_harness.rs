@@ -594,18 +594,31 @@ fn p6_combat_harness_znak_zera_w_polach_zdarzen() {
     let mut checked = 0u64;
     for (n, row) in cases.iter().enumerate() {
         let (res, _) = run_row(row);
-        for (k, shot) in res.shots.iter().enumerate() {
-            for (name, v) in [
-                ("hitPct", shot.hit_pct),
-                ("damage", shot.damage),
-                ("targetHp", shot.target_hp),
+        let exp_shots = row["expected"]["shots"].as_array().expect("expected.shots");
+        assert_eq!(
+            res.shots.len(),
+            exp_shots.len(),
+            "przypadek {n}: liczba zdarzen strzalow"
+        );
+        for (k, (shot, exp)) in res.shots.iter().zip(exp_shots.iter()).enumerate() {
+            for (name, v, exp_v) in [
+                ("hitPct", shot.hit_pct, &exp["hitPct"]),
+                ("damage", shot.damage, &exp["damage"]),
+                ("targetHp", shot.target_hp, &exp["targetHp"]),
             ] {
                 checked += 1;
                 if v == 0.0 {
                     zera += 1;
+                    // Znak zera porownywany z pinem (napis "-0" w wektorze = -0.0), nie z zalozeniem na sztywno.
                     assert!(
-                        !v.is_sign_negative(),
-                        "przypadek {n} strzal {k}: pole {name} = -0 w zdarzeniu (pin daje +0)"
+                        !exp_v.is_null(),
+                        "przypadek {n} strzal {k}: pole {name} = 0 bez wartosci w pinie"
+                    );
+                    let exp_f = num(exp_v);
+                    assert_eq!(
+                        v.is_sign_negative(),
+                        exp_f.is_sign_negative(),
+                        "przypadek {n} strzal {k}: znak zera pola {name} rozni sie od pina"
                     );
                 }
             }
