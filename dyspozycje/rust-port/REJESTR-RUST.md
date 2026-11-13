@@ -455,3 +455,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Ponowny start:** `wf_1ae8dfd8-9fe` (`w5hjocfx6`). Operator (HAIKU), Obrona (HAIKU), Evaluator i FC (SONNET).
 - **Zabezpieczenie w toku:** przy każdym sprawdzeniu porównać `git diff --stat 003d53f97 <HEAD>`. Jeśli wynik ma tysiące plików, zatrzymać zadanie.
 - **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` przed tym wpisem = `d1c1395e9`.
+
+## Przebieg (CRED-WOJNA-Q1, runda 4 zamknięta): FC PASS-WITH-NOTES, weryfikacja integracji w toku
+- **Runda 4 (`wf_1ae8dfd8-9fe`), baza `003d53f97`:** Operator (HAIKU) PASS-WITH-NOTES, Obrona PASS-WITH-NOTES, Evaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES. Commit `cfa1edd31` (lokalny w rundzie, wypchnięty jako `rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-r4-fc`). Refy: `refs/keep/R-RUSTPORT-P6-CRED-WOJNA-Q1-r4-{fc,obrona,eval}`.
+- **Kryterium końca zweryfikowane przeze mnie:** `git diff --numstat 003d53f97 cfa1edd31 -- rust-port/engine/tests` pokazuje 0 usuniętych linii. Dodane tylko 3 pliki `*_r2*` (generator 455 linii, testy 376, vectors.json 1 linia). Pliki parity przywrócone bajt-w-bajt. Ancestry: `003d53f97` jest przodkiem `cfa1edd31`.
+- **Zakres poza testami:** `01-operator-r2.md` nadpisany wersją r2 z `811f607ee` (48+/30−). Dispatch r4 tego wymagał. Wersja z parity jest w historii `003d53f97`.
+- **Weryfikacja integracyjna (w toku):** `cargo fmt --check`, `cargo test --no-fail-fast`, `cargo clippy -D warnings` na `cfa1edd31`, w detached worktree `.claude/worktrees/integ-r4`, target w scratchpadzie. Operator podał 3261/0/1. Evaluator i Obrona NIE_ZMIERZONO (dysk). Integracja po zielonych wynikach: FF `rust-port/parity-v2` na `cfa1edd31`.
+- **Zabezpieczenie:** runda 4 zatrzymana restartem, potem zatrzymana przy złej bazie (`5d0c5f8d1`, obca historia). Worktree usunięte. Nic nie wypchnięto na parity.
+- **Dysk:** 8,8 GB po sprzątaniu worktree rundy 4 i cache (`tgt-eval`, `tt`, `tgt-k5c`, `ev_target`).
+- **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` przed tym wpisem = `92ae3d172` → `0233e7420` (rejestr).
