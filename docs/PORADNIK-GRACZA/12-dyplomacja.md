@@ -5,6 +5,8 @@
 
 Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **relacja** decydują, czy możesz handlować, podpisać pakt czy wypowiedzieć wojnę. Handel używa **punktów wartości (PN)**. Ten rozdział opisuje model relacji, audiencję króla, progi akcji i przemarsz — minimum v1.0 plus roadmap v1.1.
 
+**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku” opisują zasady jeszcze niewdrożone — nie obecny stan gry.
+
 ---
 
 ## 74. Model relacji

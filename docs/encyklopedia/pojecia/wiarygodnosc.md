@@ -12,7 +12,7 @@
 
 ## Wiki‑S
 
-**Wiarygodność (W)** to globalna reputacja twojego państwa (−100…+100). Wpływa na tempo budowania Zaufania u wszystkich nacji. Sojusz wymaga **W ≥ 0**, pakt o nieagresji **W ≥ −40**. Prezenty dają max **+5 Zaufania/turę** — ten sam limit dla każdego (bez bonusu od wysokiej W).
+**Wiarygodność (W)** to globalna reputacja twojego państwa (−100…+100). Wpływa na tempo budowania Zaufania u wszystkich nacji. Sojusz i pakt o nieagresji wymagają **W ≥ 0**. Prezenty dają max **+5 Zaufania/turę** — ten sam limit dla każdego (bez bonusu od wysokiej W).
 
 ---
 
@@ -46,7 +46,7 @@ Zaufanie + Respekt = Relacja (0–200)
 
 | Traktat | Min. W |
 |---------|--------|
-| Pakt o nieagresji (NAP) | **−40** |
+| Pakt o nieagresji (NAP) | **0** |
 | Sojusz wojskowy | **0** |
 
 ### Dary i limit Zaufania
@@ -72,6 +72,51 @@ Gracz z **W = +15** (Uczciwy) proponuje **sojusz** — bramka W≥0 **spełniona
 → `docs/PORADNIK-GRACZA/12-dyplomacja.md` §74
 
 ---
+
+## Plusy i minusy
+
+**Dla gracza**
+- Plus: wysoka Wiarygodność przyspiesza budowanie Zaufania u wszystkich nacji i daje dostęp do sojuszu (W ≥ 0).
+- Plus: dotrzymywanie traktatów (sojusz, pakt, handel) podnosi W co turę, a 30 tur bez wojny daje dodatkowe +3.
+- Minus: złamanie paktu (−18), sojuszu (−25) albo atak w oknie karencji (−12) gwałtownie obniża W i blokuje późniejsze traktaty.
+- Minus: ujemna W spowalnia wzrost Zaufania i zamyka pakt o nieagresji oraz sojusz (oba wymagają W ≥ 0).
+
+**Dla AI**
+- Plus: AI z wysoką W rośnie szybciej w Zaufaniu do gracza, który ją trzyma.
+- Minus: wiarołomna AI traci tempo budowania Zaufania.
+
+## Parametry
+
+Wartości z `gra/data/diplomacy.json` (sekcja `params`). Każda wartość w tabeli jest sprawdzana testem `gra/tools/diplo-civpedia-values-test.cjs`.
+
+| Wartość | Skąd (plik:klucz) |
+|--------:|-------------------|
+| -100 | `diplomacy.json:params.wiarygodnoscSkalaMin` |
+| 100 | `diplomacy.json:params.wiarygodnoscSkalaMax` |
+| 40 | `diplomacy.json:params.wiarygodnoscProgWzorCnoty` |
+| -40 | `diplomacy.json:params.wiarygodnoscProgWiarolomny` |
+| 40 | `diplomacy.json:params.wiarygodnoscStartLatwy` |
+| 20 | `diplomacy.json:params.wiarygodnoscStartNormalny` |
+| 0 | `diplomacy.json:params.wiarygodnoscStartTrudny` |
+| -10 | `diplomacy.json:params.wiarygodnoscN1BezOstrzezenia` |
+| -18 | `diplomacy.json:params.wiarygodnoscN2ZlamaniePaktuNap` |
+| -25 | `diplomacy.json:params.wiarygodnoscN2ZlamaniePaktuSojusz` |
+| -12 | `diplomacy.json:params.wiarygodnoscN3AtakWOknieKarencji` |
+| -15 | `diplomacy.json:params.wiarygodnoscN4OdmowaObowiazkuSojuszu` |
+| -6 | `diplomacy.json:params.wiarygodnoscN5ZerwanieTraktatCzasowy` |
+| -4 | `diplomacy.json:params.wiarygodnoscN5ZerwanieHandelCzasowy` |
+| -2 | `diplomacy.json:params.wiarygodnoscN6NiedotrzymanieHandluCyklicznego` |
+| -2 | `diplomacy.json:params.wiarygodnoscN7NieautoryzowanyPrzemarsz` |
+| 10 | `diplomacy.json:params.wiarygodnoscP1FiniszSojusz` |
+| 5 | `diplomacy.json:params.wiarygodnoscP2FiniszNap` |
+| 5 | `diplomacy.json:params.wiarygodnoscP2FiniszHandel` |
+| 1 | `diplomacy.json:params.wiarygodnoscP3FiniszHandelCykliczny` |
+| 3 | `diplomacy.json:params.wiarygodnoscP4BezWojny30Tur` |
+| 20 | `diplomacy.json:params.wiarygodnoscP5PomocSojusznikowi` |
+| 0.03 | `diplomacy.json:params.wiarygodnoscZaufanieDryfNa100` |
+| 0 | `diplomacy.json:params.wiarygodnoscProgSojuszMin` |
+| 0 | `diplomacy.json:params.wiarygodnoscProgNapMin` |
+| 0.1 | `diplomacy.json:params.wiarygodnoscTrwalaPodlogaProcent` |
 
 ## Historia / decyzje
 
