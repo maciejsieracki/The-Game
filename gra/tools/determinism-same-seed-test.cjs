@@ -119,20 +119,37 @@ check('C1 main.ts: Math.random tylko w starcie nowej gry (SEED, newSeed)', mainB
 // D1: kazde wolanie resolveAutoBattleByPower({...}) w gra/src podaje klucz rng (bez Math.random w grze).
 // D2: main.ts wiaze strumien z ziarnem (autoBattleRng) i przekazuje go do mapFieldBattle.
 const SRC_DIR = path.join(GRA, 'src');
-const callRe = /resolveAutoBattleByPower\(\s*\{([^}]*)\}\s*\)/g;
+const CALL_HEAD = 'resolveAutoBattleByPower(';
+// Dopasowanie nawiasow zamiast regex [^}]*: obsluguje zagniezdzone klamry i nawiasy w argumentach.
+function callArgs(txt, openIdx) {
+  let depth = 0;
+  for (let i = openIdx; i < txt.length; i++) {
+    const c = txt[i];
+    if (c === '(') depth++;
+    else if (c === ')') { depth--; if (depth === 0) return txt.slice(openIdx + 1, i); }
+  }
+  return null;
+}
 const autoCalls = [];
 for (const f of walk(SRC_DIR, [])) {
   const txt = fs.readFileSync(f, 'utf8');
-  let m;
-  while ((m = callRe.exec(txt)) !== null) {
-    const line = txt.slice(0, m.index).split('\n').length;
-    // bare = brak klucza rng ALBO rng z Math.random (regresja do nieseedowanego losowania)
-    autoCalls.push({ where: path.relative(GRA, f) + ':' + line, bare: !/\brng\s*:/.test(m[1]) || /Math\.random/.test(m[1]) });
+  let idx = -1;
+  while ((idx = txt.indexOf(CALL_HEAD, idx + 1)) !== -1) {
+    // pomin definicje (function resolveAutoBattleByPower) i import
+    const before = txt.slice(Math.max(0, idx - 9), idx);
+    if (/function\s*$/.test(before) || /import\s*\{[^}]*$/.test(txt.slice(Math.max(0, idx - 200), idx))) continue;
+    const args = callArgs(txt, idx + CALL_HEAD.length - 1);
+    if (args === null) continue;
+    const line = txt.slice(0, idx).split('\n').length;
+    // ZRODLO: rng musi byc strumieniem z ziarna gry (autoBattleRng lub deps.autoBattleRng?.), nie dowolnym kluczem
+    const rngM = /\brng\s*:\s*([^,}]*)/.exec(args);
+    const good = !!rngM && /(^|[.\s])autoBattleRng\??\.?\(/.test(rngM[1]) && !/Math\.random/.test(rngM[1]);
+    autoCalls.push({ where: path.relative(GRA, f) + ':' + line, bare: !good });
   }
 }
 const bareCalls = autoCalls.filter((c) => c.bare);
-check('D1 kazde wolanie resolveAutoBattleByPower w gra/src podaje rng', autoCalls.length >= 6 && bareCalls.length === 0,
-  bareCalls.length ? 'BEZ rng: ' + bareCalls.map((c) => c.where).join(', ') : 'wolan=' + autoCalls.length + ' (oczekiwane >= 6)');
+check('D1 kazde wolanie resolveAutoBattleByPower w gra/src podaje rng = autoBattleRng(...) (strumien z ziarna)', autoCalls.length >= 6 && bareCalls.length === 0,
+  bareCalls.length ? 'RNG NIE Z ZIARNA: ' + bareCalls.map((c) => c.where).join(', ') : 'wolan=' + autoCalls.length + ' (oczekiwane >= 6)');
 const mainTxt = fs.readFileSync(MAIN_TS, 'utf8');
 const mfbDeps = mainTxt.slice(mainTxt.indexOf('const mapFieldBattleDeps = {'), mainTxt.indexOf('const mapFieldBattleDeps = {') + 400);
 check('D2 main.ts: autoBattleRng z ziarna gry wiazany i przekazany do mapFieldBattleDeps',
