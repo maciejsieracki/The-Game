@@ -9725,3 +9725,6 @@ R-WEB-DIPLO-NEGOTIATION-ROUND-COUNTER-UNIFY-Q1 (#320): jednolity napis „runda 
 ## 2026-11-13 — FALA 676 wdrożona na ROBOCZĄ (main bff897c9, MD5 552766890b42af2cf7e0d8f4de6e5c4d)
 R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 (r4, decyzja „jak w bazie” dla 1366 px): FC PASS-WITH-NOTES, kod acc1b1677. Test bigger-numbers 63/0 (z wygenerowaną bazą hud.__base.ts, usuniętą po teście). Zrzut Chromium 1280/maxw potwierdza jeden rząd (FC). Do obejrzenia na ROBOCZEJ.
 R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1 (#298/#322, decyzja B): wygrana_bitwa (+5 Respekt) podpięta; FC PASS-WITH-NOTES, kod c6db60173, test 24/0. Przewaga_militarna i slabszy_militarnie NIEpodpięte (ABC A–D w toku), clamp wojenny 29 bez zmian.
+
+## 2026-11-13 — FALA 677 wdrożona na ROBOCZĄ (main 5d0c5f8d, MD5 1f0d44474eb9106f0c0b01e467679753)
+R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 (#327): wiersz „Administrator państwa” w skarbcu Państwa; teksty gracza tylko „administrator państwa” (cały Państwo) i „administrator miasta” (jedno miasto). Kod d1b3f9810, FC PASS-WITH-NOTES; tsc 0, logic 213/213, names-test 26/0, city-gate 36/0. Raw MD5 zgodne. Chromium NIE_ZMIERZONO: render wiersza Państwa, tooltip, icon, live-verify. Do decyzji: docs/encyklopedia/pojecia/administrator-miasta.md:29 (mieszanie zakresów, poza allowlistą).
