@@ -24,3 +24,35 @@ ZAKAZ: gra/**, Cargo.toml, Cargo.lock, push do parity, UI, hooki testowe, osłab
 ## RAPORT
 `01-operator-r1.md`: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY (kody wyjścia)/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH (NIE WYKONANO).
 Operator: Haiku. Commit BEZ linii `Co-Authored-By` z nazwą modelu (CLAUDE.md), z `Claude-Session`. Pełna bramka przed commitem. RUNDY: 1/5.
+
+---
+
+## DODATEK r2 (po FC FAIL r1, 13.11)
+
+**BAZA r2: `b3fcba586`** (kod operatora `52385c502` + dokument; potomek `0ca58770e`). Pierwszy krok: `git checkout --detach b3fcba586`. Świeże uruchomienie (bez cache r1).
+
+### Przyczyna FAIL r1
+1. Brak wektorów z pina (kryterium 1): testy wiringu są pisane ręcznie, bez generatora wykonującego pin.
+2. Flaga `graczKiedysMialMiasto` ma `#[serde(skip)]` — po wczytaniu gracz bez miast traci przegraną. To odstępstwo od pina.
+3. Brak wpięcia: ustawianie flagi przy zakładaniu/przejęciu miasta (pin `main.ts:16508, 17816, 36218, 45646, 45877-8`), druga ścieżka przegranej po utracie miasta (`main.ts:34018-34025`), reset przy wczytaniu (`main.ts:47333`).
+4. Brak testu przegranej po eliminacji i test resetu był tautologiczny.
+
+### Decyzje orkiestratora (parytet z pinem, bez pytania do właściciela)
+- **Zapis flagi:** sprawdzić w pinie `gra/src/save.ts` (grep `graczKiedysMialMiasto`), czy pin serializuje to pole.
+  - Jeśli TAK: odwzorować w Rust zapis (pole w kopercie zapisu). Jeśli golden `p6_unit_replace_l3_state` zmienia się wyłącznie przez to pole — rozszerzyć allowlistę o ten golden i zaktualizować go **tylko** o pole z pina.
+  - Jeśli NIE: zostawić odtwarzanie heurystyką pina (`main.ts:46368-46370`) na wczytaniu, bez `serde(skip)` na polu używanym do oceny; usunąć martwy `Option`.
+- **Allowlista r2 rozszerzona** o miejsca tworzenia i przejęcia miast w Rust (moduły, w których pin ustawia flagę) — tylko ustawianie flagi, bez zmiany innego zachowania.
+- **Druga ścieżka przegranej** (`main.ts:34018-34025`) — wpiąć.
+
+### Wymagania (kryteria r2)
+1. **Generator** `rust-port/engine/tests/p6_victory_wiring_gen.mjs` wykonujący tekst pina (`checkVictory`, odrzucanie komend, reset, ścieżka utraty miasta), wektory w `p6_victory_wiring_vectors/**`, SHA fragmentu pina w teście. Asercje ręczne nie liczą się jako kryterium 1.
+2. Testy: przegrana po eliminacji; przegrana po utracie wszystkich miast; wczytanie zapisu po zakończonej grze; zakładanie miasta w turze i utrata w tej samej turze (flaga ustawiona).
+3. Potęgi: zbiory `potegiWszystkich` (pin `43448-43452`) porównać wektorem z `power_raw` — dopasować, jeśli się różnią.
+4. `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --lib`, nowe testy — kody wyjścia.
+5. **Pełny `cargo test --no-fail-fast`: 0 failed** (kod wyjścia w raporcie). Przy timeoucie narzędzia — w tle i odczyt logu.
+
+### Zakazy
+Bez osłabiania asercji, bez `#[ignore]`, bez usuwania testów. Zmiany spoza wskazanej allowlisty = FAIL, o ile nie są wymagane przez decyzje powyżej (wtedy opisać w raporcie).
+
+### Gate dyskowy
+Start dopiero przy ≥ 8 GB wolnego.
