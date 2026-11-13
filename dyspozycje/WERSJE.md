@@ -1,3 +1,9 @@
+## ROBOCZA 4ae92a00 -- 2026-11-13 -- FALA 679: Liczby zaufania (rozejm 10, pokój 20, sąsiedztwo -3/-4/-5, bez religii, karencja) oraz przygotowanie siły militarnej (testowa)
+
+- Po rozejmie zaufanie ustawia się na 10, po pokoju na 20; kara za sąsiedztwo -3/-4/-5 i wstrzymana w karencji; religia nie wpływa na zaufanie; dodane (jeszcze niepodpięte) funkcja siły militarnej i licznik wygranych bitew pary w wojnie oraz bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; trust-numbers 22/0; military-strength 27/0; battle-counter 35/0; diplomacy-test 148/0; war-trust-only 11/0; military-events 24/0; vite build OK
+- Limity: Siła militarna i licznik bitew nie są jeszcze używane w decyzjach (kroki 3 i 4); wykonanie w żywej grze NIE_ZMIERZONO; Civpedia dyplomacji czeka na aktualizację do nowych liczb
+
 ## ROBOCZA f4230eb2 -- 2026-11-13 -- FALA 678: Wojna obniza tylko zaufanie do zera (relacja i respekt bez obcinania do 29) (testowa)
 
 - W wojnie zaufanie jest sprowadzane do 0, respekt nietkniety, relacja = zaufanie + respekt bez limitu 29; ocena pokoju korzysta z prawdziwej relacji; dopisek w UI zmieniony.
