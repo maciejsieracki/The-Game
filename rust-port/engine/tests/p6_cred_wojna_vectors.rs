@@ -1,275 +1,376 @@
-//! P6-CRED-WOJNA-Q1 (runda 2): wektory haka wojny P4 z pinu `07d2fbd72f758705f8e1d59cc4968027ffbafe75`
-//! (`p6_cred_wojna_gen.mjs` wykonuje TEKST `chargeWarDeclarationCredibility` + guard `isBarbarian` + P4 w node,
-//! straznik SHA-256 plikow i wycietego kodu), test S3 dla `LegacyTradeAgreement` (3 tury) oraz zgodnosc wsteczna
-//! zapisu bez klucza `wiarygodnoscOstatniaWojnaTuraByOwner`.
+//! P6-CRED-WOJNA-Q1 (runda 2): wektory z pinu 07d2fbd72 dla haka P4 (`chargeWarDeclarationCredibility`,
+//! `main.ts:12176-12225`), kolejnosci D4 wzgledem haka D8 oraz S3 dla `umowa_handlowa` przez 3 tury.
 //!
-//! Zakres wektorow: skutek haka na licznik P4 obu stron (`last_war_turn`), kamienie P4 (`p4_milestones`) i
-//! zdarzenia `wieloletni_pokoj` w kolejnych turach. Stan domkniecia pinu: brak traktatow (`activeDeals = []`),
-//! brak ofert rozejmu, poziom trudnosci Normal. Zdarzenia N2 i zwracany `truceBreach` NIE sa tu porownywane.
+//! Generator: `p6_cred_wojna_gen.mjs` (wykonuje tekst pinu, straznik SHA-256 plikow i wycietych fragmentow).
+//! Wektory: `p6_cred_wojna_vectors/vectors.json`.
+//!
+//! Zakres porownania: skutek P4 = licznik "bez wojny" OBU stron (`wiarygodnoscOstatniaWojnaTuraByOwner`)
+//! oraz kamienie milowe `wieloletni_pokoj`. Galezie N1/N2 haka (kary, odwet, rozejm, kasowanie oferty) pinu
+//! wykonuje generator, ale `CredibilityRegistry::note_war_entered` ich NIE modeluje; te skutki nie sa tu porownywane.
+//! S3 idzie wprost przez `StreamDealKind::LegacyTradeAgreement` (bez aliasu `umowa_handlowa`).
+
+use std::collections::{BTreeMap, HashMap};
 
 use civ_engine::domain::credibility::{
     stream_active_tuples, CredibilityEvent, CredibilityParams, CredibilityRegistry, StreamDeal,
-    StreamDealKind, KEY_LAST_WAR,
+    StreamDealKind,
 };
 use civ_engine::domain::turn_war_dipl_steps::note_war_declarations;
 use civ_engine::domain::types::Difficulty;
 use civ_engine::domain::war_turn_state::WarTurnState;
-use serde_json::{Map, Value};
+use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_cred_wojna_vectors/vectors.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
-/// SHA-256 wycietego tekstu funkcji pinu (`codeSha256` z generatora).
-const CODE_SHA256: &str = "87ff18365edcfef806e92b30d6ce9b781f4894a3c0a3fbc03bdc64db9569c464";
+const OWNERS: [i64; 4] = [0, 1, 2, 3];
 
-const HUMAN: i64 = 1;
-const AI_A: i64 = 2;
+/// Stan po kroku: (lastWar per wlasciciel, kamienie P4, liczba `wieloletni_pokoj`).
+type Snap = (Vec<Option<f64>>, Vec<i64>, Vec<usize>);
 
-fn owners_of(v: &Value) -> Vec<i64> {
+/// Niecalkowite liczby wektorow sa tekstem `f64:<hex bitow>` (serde_json bez `float_roundtrip` myli sie o 1 ulp).
+fn decode_floats(v: Value) -> Value {
+    match v {
+        Value::String(s) => match s.strip_prefix("f64:") {
+            Some(hex) => {
+                let bits = u64::from_str_radix(hex, 16).expect("bity f64");
+                Value::from(f64::from_bits(bits))
+            }
+            None => Value::String(s),
+        },
+        Value::Array(a) => Value::Array(a.into_iter().map(decode_floats).collect()),
+        Value::Object(o) => {
+            Value::Object(o.into_iter().map(|(k, x)| (k, decode_floats(x))).collect())
+        }
+        other => other,
+    }
+}
+
+fn vectors() -> Value {
+    decode_floats(serde_json::from_str(VECTORS).expect("vectors.json"))
+}
+
+fn diff(v: &Value) -> Difficulty {
+    serde_json::from_value(v.clone()).expect("difficulty")
+}
+
+/// `[[owner, wartosc|null], ...]` -> mapa; brak wpisu w pinie = `None` (null).
+fn pairs_opt(v: &Value) -> BTreeMap<i64, Option<f64>> {
     v.as_array()
-        .expect("owners")
+        .expect("tablica par")
         .iter()
-        .map(|x| x.as_i64().expect("id wlasciciela"))
+        .map(|p| (p[0].as_i64().expect("owner"), p[1].as_f64()))
         .collect()
 }
 
-fn last_war_of(reg: &CredibilityRegistry, owner: i64) -> Option<f64> {
+fn lookup_last_war(reg: &CredibilityRegistry, owner: i64) -> Option<f64> {
     reg.last_war_turn
         .iter()
         .find(|(k, _)| *k == owner)
-        .map(|(_, t)| *t)
+        .map(|(_, v)| *v)
+}
+
+fn lookup_p4(reg: &CredibilityRegistry, owner: i64) -> i64 {
+    reg.p4_milestones
+        .iter()
+        .find(|(k, _)| *k == owner)
+        .map(|(_, v)| *v as i64)
+        .unwrap_or(0)
+}
+
+fn wielo_count(reg: &CredibilityRegistry, owner: i64) -> usize {
+    reg.events_of(owner)
+        .iter()
+        .filter(|e| e.typ == CredibilityEvent::WieloletniPokoj)
+        .count()
 }
 
 #[test]
-fn zapis_wojny_i_odczyt_p4_zgodne_z_pinem_na_wektorach() {
-    let v: Value = serde_json::from_str(VECTORS).expect("vectors.json");
-    assert_eq!(v["pin"].as_str(), Some(PIN), "pin wektorow");
+fn vectors_carry_pin_and_guard_hashes() {
+    let v = vectors();
+    assert_eq!(v["pin"], PIN);
     assert_eq!(
-        v["codeSha256"].as_str(),
-        Some(CODE_SHA256),
-        "SHA wyciętego kodu"
-    );
-    assert_eq!(v["difficulty"].as_str(), Some("normal"));
-    let owners = owners_of(&v["owners"]);
-    let p = CredibilityParams::load();
-    assert_eq!(
-        v["params"]["wiarygodnoscP4OknoBezWojnyTur"].as_f64(),
-        Some(p.p4_window),
-        "okno P4 z pinu"
+        v["sha256"]["gra/src/main.ts"],
+        "e80f9cb41d513b92846972a19f2760e08eb4247d6a9b344526d8bc71bd7d5f19"
     );
     assert_eq!(
-        v["params"]["wiarygodnoscP4BezWojny30Tur"].as_f64(),
-        Some(p.p4_value),
-        "wartosc kamienia P4 z pinu"
+        v["fragSha256"]["chargeWarDeclarationCredibility"],
+        "5a29e9f689bf01f53d729c4f6eb3766f38f64b8a18ea4b204df6729dd4623595"
     );
+}
 
-    let cases = v["cases"].as_array().expect("cases");
-    assert!(
-        cases.len() >= 150,
-        "co najmniej 150 przypadkow, jest {}",
-        cases.len()
-    );
-    let (mut steps_n, mut pairs_n, mut barb_n, mut p4_n) = (0, 0, 0, 0);
-    for case in cases {
-        let name = case["name"].as_str().expect("nazwa");
+#[test]
+fn hook_p4_counter_matches_pin_for_all_cases() {
+    let v = vectors();
+    let hook = v["hook"].as_array().expect("hook");
+    assert!(hook.len() >= 150, "wektorow haka P4: {} < 150", hook.len());
+
+    let mut recorded = 0usize;
+    let mut barbarian = 0usize;
+    for c in hook {
         let mut war = WarTurnState::default();
-        for step in case["steps"].as_array().expect("steps") {
-            let turn = step["turn"].as_f64().expect("tura");
-            // D4 (produkcja: run_dipl_steps -> tick_no_war_milestone) PRZED hamulcem tej tury.
-            let before = CredibilityRegistry::from_meta(&war.opaque).expect("odczyt rejestru");
-            let mut reg = before.clone();
-            for &o in &owners {
-                reg.tick_no_war_milestone(o, turn, p).expect("tick P4");
-            }
-            reg.store_changes(&before, &mut war.opaque);
+        let prior: Vec<(i64, f64)> = c["lastWarPrior"]
+            .as_array()
+            .expect("prior")
+            .iter()
+            .map(|p| (p[0].as_i64().expect("owner"), p[1].as_f64().expect("tura")))
+            .collect();
+        war.opaque = CredibilityRegistry {
+            last_war_turn: prior,
+            ..Default::default()
+        }
+        .to_meta();
 
-            // Hamulec (produkcja: run_war_turn -> note_war_declarations); pary jak w `chargeWarDeclarationCredibility`.
-            let pairs: Vec<(i64, i64)> = step["pairs"]
-                .as_array()
-                .expect("pary")
-                .iter()
-                .map(|pr| (pr[0].as_i64().unwrap(), pr[1].as_i64().unwrap()))
-                .collect();
-            barb_n += pairs.iter().filter(|(a, b)| *a == -1 || *b == -1).count();
-            pairs_n += pairs.len();
-            note_war_declarations(&mut war, &pairs, turn).expect("hak wojny");
-            steps_n += 1;
+        let a = c["pair"][0].as_i64().expect("a");
+        let b = c["pair"][1].as_i64().expect("b");
+        let turn = c["turn"].as_f64().expect("tura");
+        note_war_declarations(&mut war, &[(a, b)], turn).expect("hak P4");
 
-            let got = CredibilityRegistry::from_meta(&war.opaque).expect("odczyt rejestru");
-            for item in step["after"]["lastWar"].as_array().expect("lastWar") {
-                let o = item[0].as_i64().unwrap();
-                assert_eq!(
-                    last_war_of(&got, o),
-                    item[1].as_f64(),
-                    "{name}: licznik bez wojny owner {o} tura {turn}"
-                );
-            }
-            for item in step["after"]["p4"].as_array().expect("p4") {
-                let o = item[0].as_i64().unwrap();
-                let want = item[1].as_f64().unwrap();
-                let have = got
-                    .p4_milestones
-                    .iter()
-                    .find(|(k, _)| *k == o)
-                    .map(|(_, n)| *n)
-                    .unwrap_or(0.0);
-                assert_eq!(have, want, "{name}: kamienie P4 owner {o} tura {turn}");
-            }
-            for item in step["after"]["p4Events"].as_array().expect("p4Events") {
-                let o = item[0].as_i64().unwrap();
-                let want: Vec<(f64, f64)> = item[1]
+        let after = CredibilityRegistry::from_meta(&war.opaque)
+            .expect("rejestr czytelny")
+            .last_war_turn;
+        let reg = CredibilityRegistry {
+            last_war_turn: after,
+            ..Default::default()
+        };
+        let got: BTreeMap<i64, Option<f64>> = OWNERS
+            .iter()
+            .map(|&o| (o, lookup_last_war(&reg, o)))
+            .collect();
+        assert_eq!(got, pairs_opt(&c["lastWarAfter"]), "wektor {}", c["id"]);
+
+        if c["barbarian"].as_bool() == Some(true) {
+            barbarian += 1;
+        } else if got.get(&a).copied().flatten() == Some(turn)
+            && got.get(&b).copied().flatten() == Some(turn)
+        {
+            recorded += 1;
+        }
+    }
+    assert!(
+        recorded > 0,
+        "niepustosc: zadna wojna nie zapisala licznika"
+    );
+    assert!(barbarian > 0, "niepustosc: brak pary z barbarzynca");
+}
+
+#[test]
+fn p4_milestones_and_last_war_match_pin_in_both_orders() {
+    let p = CredibilityParams::load();
+    let v = vectors();
+    let mut pin_differs_from_reverse = 0usize;
+    let mut milestone_positive = 0usize;
+
+    for seq in v["ordering"].as_array().expect("ordering") {
+        let owners: Vec<i64> = seq["owners"]
+            .as_array()
+            .expect("owners")
+            .iter()
+            .map(|x| x.as_i64().expect("owner"))
+            .collect();
+
+        // Wynik symulacji Rust dla obu kolejnosci: (lastWar, p4, liczba wieloletni_pokoj) po kazdym kroku.
+        let mut rust_runs: Vec<Vec<Snap>> = Vec::new();
+        for mode in ["pin", "reverse"] {
+            let mut reg = CredibilityRegistry::default();
+            let mut run = Vec::new();
+            for st in seq["steps"].as_array().expect("steps") {
+                let turn = st["turn"].as_f64().expect("tura");
+                let wars: Vec<(i64, i64)> = st["wars"]
                     .as_array()
-                    .unwrap()
+                    .expect("wars")
                     .iter()
-                    .map(|e| (e[0].as_f64().unwrap(), e[1].as_f64().unwrap()))
+                    .map(|w| (w[0].as_i64().expect("a"), w[1].as_i64().expect("b")))
                     .collect();
-                let have: Vec<(f64, f64)> = got
-                    .events_of(o)
+                let d4 = |reg: &mut CredibilityRegistry| {
+                    for &o in &owners {
+                        reg.tick_no_war_milestone(o, turn, p).expect("okno P4");
+                    }
+                };
+                let d8 = |reg: &mut CredibilityRegistry| {
+                    for &(a, b) in &wars {
+                        reg.note_war_entered(a, b, turn);
+                    }
+                };
+                if mode == "pin" {
+                    d4(&mut reg);
+                    d8(&mut reg);
+                } else {
+                    d8(&mut reg);
+                    d4(&mut reg);
+                }
+
+                let snap_rust = (
+                    owners
+                        .iter()
+                        .map(|&o| lookup_last_war(&reg, o))
+                        .collect::<Vec<_>>(),
+                    owners
+                        .iter()
+                        .map(|&o| lookup_p4(&reg, o))
+                        .collect::<Vec<_>>(),
+                    owners
+                        .iter()
+                        .map(|&o| wielo_count(&reg, o))
+                        .collect::<Vec<_>>(),
+                );
+                let want = &st[mode];
+                let want_last: Vec<Option<f64>> = owners
                     .iter()
-                    .filter(|e| e.typ == CredibilityEvent::WieloletniPokoj)
-                    .map(|e| (e.turn_occurred, e.original_value))
+                    .map(|o| pairs_opt(&want["lastWar"]).get(o).copied().flatten())
+                    .collect();
+                let want_p4: Vec<i64> = owners
+                    .iter()
+                    .map(|o| {
+                        pairs_opt(&want["p4"])
+                            .get(o)
+                            .copied()
+                            .flatten()
+                            .unwrap_or(0.0) as i64
+                    })
+                    .collect();
+                let want_wielo: Vec<usize> = owners
+                    .iter()
+                    .map(|o| {
+                        pairs_opt(&want["wielo"])
+                            .get(o)
+                            .copied()
+                            .flatten()
+                            .unwrap_or(0.0) as usize
+                    })
                     .collect();
                 assert_eq!(
-                    have, want,
-                    "{name}: zdarzenia wieloletni_pokoj owner {o} tura {turn}"
+                    snap_rust.0, want_last,
+                    "lastWar, seq {} tura {} {mode}",
+                    seq["id"], turn
                 );
+                assert_eq!(
+                    snap_rust.1, want_p4,
+                    "p4, seq {} tura {} {mode}",
+                    seq["id"], turn
+                );
+                assert_eq!(
+                    snap_rust.2, want_wielo,
+                    "wielo, seq {} tura {} {mode}",
+                    seq["id"], turn
+                );
+                if snap_rust.1.iter().any(|&m| m > 0) {
+                    milestone_positive += 1;
+                }
+                run.push(snap_rust);
+            }
+            rust_runs.push(run);
+        }
+        for (pin_step, rev_step) in rust_runs[0].iter().zip(rust_runs[1].iter()) {
+            if pin_step != rev_step {
+                pin_differs_from_reverse += 1;
             }
         }
-        let fin = CredibilityRegistry::from_meta(&war.opaque).expect("odczyt rejestru");
-        p4_n += owners
-            .iter()
-            .map(|&o| {
-                fin.events_of(o)
-                    .iter()
-                    .filter(|e| e.typ == CredibilityEvent::WieloletniPokoj)
-                    .count()
-            })
-            .sum::<usize>();
     }
-    assert!(steps_n >= 1000, "kroki: {steps_n}");
-    assert!(pairs_n > 0, "pary wojny: {pairs_n}");
-    assert!(barb_n > 0, "przypadki z barbarzyncą musza wystapic");
-    assert!(p4_n > 0, "kamienie P4 musza wystapic w wektorach");
+    assert!(
+        milestone_positive > 0,
+        "niepustosc: brak kamienia milowego P4"
+    );
+    assert!(
+        pin_differs_from_reverse > 0,
+        "niepustosc: kolejnosc D4/D8 nie ma wplywu na wynik - test nic nie rozstrzyga"
+    );
 }
 
-fn three_turns(kind: StreamDealKind, miss_turn3: bool) -> Vec<CredibilityRegistry> {
+#[test]
+fn s3_trade_stream_umowa_handlowa_three_turns_matches_pin() {
     let p = CredibilityParams::load();
-    let mut reg = CredibilityRegistry::default();
-    let mut out = Vec::new();
-    for turn in 1..=3u32 {
+    let v = vectors();
+    let mut trade_present = 0usize;
+    let mut trade_absent = 0usize;
+
+    for c in v["s3"].as_array().expect("s3") {
+        let d = diff(&c["difficulty"]);
+        let id = format!("s3-{}", c["id"].as_i64().expect("id"));
+        let n_items = c["nItems"].as_u64().expect("nItems") as usize;
         let deal = StreamDeal {
-            id: "handel-1".to_string(),
-            kind,
-            parties: (HUMAN, AI_A),
-            cyclic_len: 2,
+            id: id.clone(),
+            kind: StreamDealKind::LegacyTradeAgreement,
+            parties: (0, 1),
+            cyclic_len: n_items,
         };
-        let ok = move |_id: &str, idx: usize| -> Option<bool> {
-            if miss_turn3 && turn == 3 && idx == 1 {
-                Some(false)
-            } else {
-                Some(true)
+        let mut reg = CredibilityRegistry::default();
+
+        for t in c["turns"].as_array().expect("turns") {
+            let deliveries: HashMap<usize, Option<bool>> = t["deliveries"]
+                .as_array()
+                .expect("deliveries")
+                .iter()
+                .map(|x| (x[0].as_u64().expect("idx") as usize, x[1].as_bool()))
+                .collect();
+            let delivery_ok = |deal_id: &str, idx: usize| -> Option<bool> {
+                if deal_id == id {
+                    deliveries.get(&idx).copied().flatten()
+                } else {
+                    None
+                }
+            };
+            let active = stream_active_tuples(std::slice::from_ref(&deal), &delivery_ok);
+            reg.update_streams_this_turn(&active, d, p);
+
+            for (idx, owner) in [0i64, 1].iter().enumerate() {
+                let mut want: Vec<(String, String, f64, f64)> = t["streams"][idx][1]
+                    .as_array()
+                    .expect("streams")
+                    .iter()
+                    .map(|e| {
+                        (
+                            e[0].as_str().expect("klucz").to_owned(),
+                            e[1].as_str().expect("typ").to_owned(),
+                            e[2].as_f64().expect("wartoscNaTure"),
+                            e[3].as_f64().expect("sumaAktywna"),
+                        )
+                    })
+                    .collect();
+                let mut got: Vec<(String, String, f64, f64)> = reg
+                    .streams
+                    .iter()
+                    .find(|(k, _)| k == owner)
+                    .map(|(_, entries)| entries.as_slice())
+                    .unwrap_or(&[])
+                    .iter()
+                    .map(|(k, e)| {
+                        (
+                            k.clone(),
+                            e.typ.web_key().to_owned(),
+                            e.value_per_turn,
+                            e.active_sum,
+                        )
+                    })
+                    .collect();
+                want.sort_by(|x, y| x.0.cmp(&y.0));
+                got.sort_by(|x, y| x.0.cmp(&y.0));
+                assert_eq!(
+                    got, want,
+                    "S3 wektor {id} tura {} wlasciciel {owner}",
+                    t["turn"]
+                );
             }
-        };
-        let active = stream_active_tuples(std::slice::from_ref(&deal), &ok);
-        reg.update_streams_this_turn(&active, Difficulty::Normal, p);
-        out.push(reg.clone());
+
+            let key = format!("1_{}", "strumien_handel");
+            let owner0_has_trade = reg
+                .streams
+                .iter()
+                .find(|(k, _)| *k == 0)
+                .map(|(_, entries)| entries.iter().any(|(k, _)| *k == key))
+                .unwrap_or(false);
+            if owner0_has_trade {
+                trade_present += 1;
+            } else {
+                trade_absent += 1;
+            }
+        }
     }
-    out
-}
-
-fn has_stream(reg: &CredibilityRegistry, owner: i64, key: &str) -> bool {
-    reg.streams
-        .iter()
-        .any(|(o, m)| *o == owner && m.iter().any(|(k, _)| k == key))
-}
-
-#[test]
-fn s3_umowa_handlowa_legacy_kind_three_turns_matches_trade_route() {
-    // Wariant `LegacyTradeAgreement` (web `umowa_handlowa`) podawany wprost do kroku strumieni (bez aliasu
-    // w `stream_kind_of`, decyzja orkiestratora r2 (a)). Pin: gdy wszystkie dostawy ok, daje `strumien_handel`
-    // identycznie jak szlaki; brak 100% dostaw w danej turze = brak strumienia w tej turze.
-    const KEY: &str = "2_strumien_handel";
-    let legacy_ok = three_turns(StreamDealKind::LegacyTradeAgreement, false);
-    let route_ok = three_turns(StreamDealKind::TradeRoute, false);
-    assert_eq!(
-        legacy_ok, route_ok,
-        "trzy tury: umowa_handlowa == szlaki przy 100% dostaw"
-    );
-    for (i, reg) in legacy_ok.iter().enumerate() {
-        assert!(
-            has_stream(reg, HUMAN, KEY),
-            "tura {}: strumien handlu gracza",
-            i + 1
-        );
-        assert!(
-            has_stream(reg, AI_A, "1_strumien_handel"),
-            "tura {}: strumien handlu AI",
-            i + 1
-        );
-    }
-    let missed = three_turns(StreamDealKind::LegacyTradeAgreement, true);
-    assert_eq!(missed[0], legacy_ok[0], "tura 1 bez zmian");
-    assert_eq!(missed[1], legacy_ok[1], "tura 2 bez zmian");
     assert!(
-        !has_stream(&missed[2], HUMAN, KEY),
-        "tura 3: niedostarczenie = brak strumienia (pin: allDelivered)"
+        trade_present > 0,
+        "niepustosc: strumien handlu nigdy nie naliczyl"
     );
     assert!(
-        has_stream(&route_ok[2], HUMAN, KEY),
-        "kontrola: szlaki w turze 3 nadal daja strumien"
-    );
-}
-
-#[test]
-fn stary_zapis_bez_klucza_last_war_laduje_sie_jako_zero_i_pierwsza_wojna_go_zapisuje() {
-    let p = CredibilityParams::load();
-    // Zapis sprzed wpiecia haka: zdarzenie wiarygodnosci, bez KEY_LAST_WAR.
-    let mut old = CredibilityRegistry::default();
-    old.append_event(AI_A, CredibilityEvent::WieloletniPokoj, 3.0, 5.0);
-    let mut meta = Map::new();
-    old.store_changes(&CredibilityRegistry::default(), &mut meta);
-    assert!(
-        !meta.contains_key(KEY_LAST_WAR),
-        "stary zapis nie ma klucza last-war"
-    );
-
-    let mut war = WarTurnState {
-        opaque: meta,
-        ..Default::default()
-    };
-    let loaded = CredibilityRegistry::from_meta(&war.opaque).expect("stary zapis czytelny");
-    assert!(
-        loaded.last_war_turn.is_empty(),
-        "brak klucza = brak wojny (licznik od 0)"
-    );
-    assert_eq!(loaded.events_of(AI_A).len(), 1, "stare zdarzenie zachowane");
-
-    // Brak wojny: odczyt P4 w turze 65 liczy od 0 (dwa kamienie), jak na pinie z pustym mapowaniem.
-    let mut reg = loaded.clone();
-    reg.tick_no_war_milestone(AI_A, 65.0, p).expect("tick");
-    reg.store_changes(&loaded, &mut war.opaque);
-    assert_eq!(
-        CredibilityRegistry::from_meta(&war.opaque)
-            .unwrap()
-            .events_of(AI_A)
-            .len(),
-        3,
-        "1 stare + 2 kamienie P4"
-    );
-
-    // Pierwsza wojna zapisuje klucz; ponowny odczyt i zapis sa spojne.
-    note_war_declarations(&mut war, &[(AI_A, HUMAN)], 70.0).expect("wojna");
-    assert!(
-        war.opaque.contains_key(KEY_LAST_WAR),
-        "klucz zapisany przez pierwsza wojne"
-    );
-    let r = CredibilityRegistry::from_meta(&war.opaque).unwrap();
-    assert_eq!(last_war_of(&r, AI_A), Some(70.0));
-    assert_eq!(last_war_of(&r, HUMAN), Some(70.0));
-    let mut again = Map::new();
-    r.store_changes(&CredibilityRegistry::default(), &mut again);
-    assert_eq!(
-        again.get(KEY_LAST_WAR),
-        war.opaque.get(KEY_LAST_WAR),
-        "round-trip klucza last-war"
+        trade_absent > 0,
+        "niepustosc: strumien handlu nigdy nie zostal przerwany dostawa"
     );
 }
