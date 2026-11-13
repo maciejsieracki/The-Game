@@ -1163,6 +1163,7 @@ import {
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
+import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -22399,6 +22400,11 @@ async function boot(): Promise<void> {
      * is restored to `true` (retry on next trigger instead of permanent freeze) and the
      * error is logged instead of vanishing silently.
      */
+    // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: prognoza po turze dla fotela gracza (cache HUD, liczona w
+    // refreshLiveEmpireRatesUnsafe) + łączny zysk dźwigni „rozwiązanie wszystkich jednostek”.
+    let _nnsHumanForecast: NnsProjection | null = null;
+    let _nnsZyskSkarbiec = 0;
+    let _nnsZyskSpichlerz = 0;
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
@@ -22420,6 +22426,7 @@ async function boot(): Promise<void> {
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
         _livePracaForecast = null;
+        _nnsHumanForecast = null;
         return;
       }
       const ownerCivMap = new Map<number, string>();
@@ -22515,6 +22522,35 @@ async function boot(): Promise<void> {
         readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: prognoza po turze (skarbiec = obecny + netto HUD, ta sama
+      // arytmetyka co blok „Bank treasury”; spichlerz = realne advanceEmpireFood na KOPII stanu).
+      try {
+        const nnsFood = projectEmpireFoodAfterTick({
+          ownerId: ME(),
+          states: empireFoodStates,
+          econ: preview as unknown as Parameters<typeof projectEmpireFoodAfterTick>[0]['econ'],
+          units: playerEconUnitsForUpkeep,
+          upkeep: loadUpkeepParams(data.econParams, _menuDifficulty),
+          params: buildEmpireFoodParams(data.econParams, _menuDifficulty),
+          foodTable: unitFoodTbl,
+          builtByCity: cityBuilt,
+          resolveOwnerEra: empireEpochForOwner,
+        });
+        const skarbiecObecnyNns = playerStateByHuman.get(ME())?.skarbiec ?? 0;
+        _nnsHumanForecast = {
+          turn,
+          skarbiecObecny: skarbiecObecnyNns,
+          skarbiecPo: skarbiecObecnyNns + _lastBogactwoRate,
+          spichlerzObecny: empireFoodStates.get(ME())?.zapasyPanstwa ?? 0,
+          spichlerzPo: nnsFood.spichlerzPo,
+        };
+        _nnsZyskSkarbiec = Math.max(0, bogactwoUpkeepPreview.utrzymanieJednostki);
+        _nnsZyskSpichlerz = Math.max(0, nnsFood.kosztArmii);
+      } catch (errNns) {
+        // Brak prognozy = brak blokady (bezpieczny kierunek: nigdy nie zakleszcza tury).
+        _nnsHumanForecast = null;
+        console.error('[NNS] prognoza po turze nie powiodła się — brak blokady „Zakończ turę”:', errNns);
+      }
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
       // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
       // Pracy za trwałe ulepszenia terenu (computePracaUpkeepByOwner, civ-wide/ture),
@@ -38801,6 +38837,26 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: bramka skarbca/spichlerza dla fotela gracza (tury ≥ 11). */
+    function nnsGateForPlayer(): NnsGateResult {
+      refreshLiveEmpireRates(); // dirty-gated: przelicza tylko po zmianie stanu ekonomii
+      const f = _nnsHumanForecast;
+      if (!f) return { blokada: false, komunikat: '' };
+      // Zarzut 4 (Evaluator): obecne salda czytane NA ŻYWO (cache dirty-gated mógłby mieć stare
+      // saldo po grantGold/transferze złota bez markCityStateDirty). Z cache zostaje tylko DELTA
+      // prognozy (netto tury), która zależy wyłącznie od ekonomii.
+      const skLive = playerStateByHuman.get(ME())?.skarbiec ?? 0;
+      const spLive = empireFoodStates.get(ME())?.zapasyPanstwa ?? 0;
+      const live: NnsProjection = {
+        turn: f.turn,
+        skarbiecObecny: skLive,
+        skarbiecPo: skLive + (f.skarbiecPo - f.skarbiecObecny),
+        spichlerzObecny: spLive,
+        spichlerzPo: spLive + (f.spichlerzPo - f.spichlerzObecny),
+      };
+      return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz);
+    }
+
     function canPlayerInitiateEndTurn(): boolean {
       healStaleEndTurnBlockers();
       if (playtestWalkaActive) {
@@ -38853,6 +38909,11 @@ async function boot(): Promise<void> {
         console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
         return false;
       }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: skarbiec/spichlerz po turze < 0 i istnieje ruch naprawczy.
+      if (nnsGateForPlayer().blokada) {
+        console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
+        return false;
+      }
       return true;
     }
 
@@ -38884,6 +38945,12 @@ async function boot(): Promise<void> {
       }
       if (endTurnInProgress) {
         showHintMessage('Trwa przejście tury — poczekaj chwilę.', 2500);
+        return;
+      }
+      // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: komunikat co zmienić (kwota i zasób).
+      const nnsHint = nnsGateForPlayer();
+      if (nnsHint.blokada) {
+        showHintMessage(nnsHint.komunikat, 6000);
         return;
       }
       if (aiTurnAwaitingBattle || aiCmdResume) {
