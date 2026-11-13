@@ -54,7 +54,7 @@
     "bazaBrakDanych": 5
   },
   "zmeczenie": {
-    "_wzor": "udzial = maksUdzial * min(1, turyWojny / T); T = min(maksTur, bazaTur + wagaAgresja*ai_agresywnosc). Progi (e): ulamek min(1, t/T) >= progSygnaluPokoju. Pelne zmeczenie najpozniej po maksTur (20) turach (D4).",
+    "_wzor": "R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zrodlem poziomu zmeczenia jest jeden licznik warWearinessLevel (war-weariness-params.json: 5%/ture + 10%/miasto, pelne po 20 turach). Sygnal (e) aiPeaceSignals: warWearinessLevel >= progSygnaluPokoju. Pola T/bazaTur/wagaAgresja/maksUdzial/zmeczenieT nie steruja juz decyzjami (pozostaly tylko w resolverze profilu; do usuniecia w osobnym temacie).",
     "maksUdzial": 0.5,
     "bazaTur": 15,
     "wagaAgresja": 1,

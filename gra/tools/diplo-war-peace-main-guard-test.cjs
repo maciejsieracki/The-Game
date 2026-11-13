@@ -92,8 +92,9 @@ check('mutacja R1 (stała 5 w ai.ts) jest wykrywalna',
   count(AI.replace('const turnsAtWarRel = rel.stanWojny ? Math.max(0, rel.turnsAtWar ?? 0) : 0;', 'const turnsAtWarRel = rel.stanWojny ? 5 : 0;'), 'Math.max(0, rel.turnsAtWar ?? 0)') === 0);
 
 // ---- R4: zmęczenie w stance używa T(civ) ----
-check('R4: stance liczy zmęczenie przez warWearinessShare + zmeczenieT',
-  DIPLO.includes('warWearinessShare(') && DIPLO.includes('.zmeczenieT'));
+// R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (drugi zegar T/zmeczenieT usunięty z chęci pokoju).
+check('R4: stance liczy zmęczenie przez warWearinessLevel (jeden licznik 20 tur)',
+  DIPLO.includes('warWearinessLevel(') && !DIPLO.includes('warWearinessShare(') && !DIPLO.includes('.zmeczenieT'));
 check('R4: stała /20 usunięta z diplomacy.ts', !DIPLO.includes('context.turnsAtWar / 20'));
 
 // ---- R3 / R6: sygnały pokoju i próg wojny per cywilizacja w ai.ts ----

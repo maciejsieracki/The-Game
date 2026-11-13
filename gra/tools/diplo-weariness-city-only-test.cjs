@@ -86,13 +86,13 @@ function behaviour(W) {
 
   // (a) przegrywajacy = slabsza wg sily militarnej
   {
-    const { deps } = mk({ turn: 400, turnsAtWar: 150, share1: 0.15, weaker: 1, lostA: 3, assets: CITY_ASSETS });
+    const { deps } = mk({ turn: 400, turnsAtWar: 15, share1: 0.15, weaker: 1, lostA: 3, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('a: slabsza strona (sila militarna) skfrada oferte miast', r.action !== 'none');
   }
   // (a2) Power a sila militarna sie nie zgadzaja: slabsza wg sily = 1 (Power wskazuje 2); 2 ma 1 miasto -> nie oferuje
   {
-    const { deps } = mk({ turn: 400, turnsAtWar: 150, share1: 0.9, weaker: 1, lostA: 3, cityCount: (o) => (o === 2 ? 1 : 6), assets: CITY_ASSETS });
+    const { deps } = mk({ turn: 400, turnsAtWar: 15, share1: 0.9, weaker: 1, lostA: 3, cityCount: (o) => (o === 2 ? 1 : 6), assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('a2: regula wg sily militarnej, nie Power (slabsza 1 z 6 miastami oferuje)', r.action !== 'none');
   }
@@ -100,42 +100,49 @@ function behaviour(W) {
   {
     const assets = [A('zloto', 'zloto', 100000, 100000), A('surowiec_ilosc', 'zelazo', 50, 50), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800), A('miasto', 'cap', 1, 9999, true)];
     // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: wejscie ponizej progu konca zmeczenia (0,8) — oferta miast.
-    const { deps } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, assets });
+    const { deps } = mk({ turn: 400, turnsAtWar: 10, share1: 0.15, weaker: 1, lostA: 1, assets });
     const r = W.runWarWearinessTick(deps)[0];
     chk('b: oferta bez zlota i surowcow (histogram zloto=0, surowiec=0)',
       r.action !== 'none' && r.plan && r.plan.histogram.zloto === 0 && r.plan.histogram.surowiec_ilosc === 0);
   }
   // (c) brak pokoju bez zaplaty PRZED progiem konca zmeczenia: remis sil, zmeczenie < 0.8, brak miast -> brak pokoju
   {
-    const { deps, log } = mk({ turn: 300, turnsAtWar: 90, share1: 0.5, weaker: 2, winnerNeed: 0, assets: [] });
+    const { deps, log } = mk({ turn: 300, turnsAtWar: 10, share1: 0.5, weaker: 2, winnerNeed: 0, assets: [] });
     const r = W.runWarWearinessTick(deps)[0];
     chk('c: remis sil + zmeczenie: bez miasta brak pokoju (oferta odrzucona, brak finalize)',
       r.action === 'offer_rejected' && !log.some((x) => x.ev === 'peace'));
   }
   // (d) przegrywajacy z JEDNYM miastem (zmeczenie < 0.8): brak oferty i brak pokoju
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.15, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 1 : 6), assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.15, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 1 : 6), assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('d: przegrywajacy z jednym miastem nie kupuje pokoju (action none, brak finalize)',
       r.action === 'none' && !log.some((x) => x.ev === 'peace' || x.ev === 'pay'));
   }
-  // (e1) ochrona z miastem: chroniony (3 utraty) oddaje miasto -> pokoj, dluzsza karencja
+  // (e1) ochrona (3 utraty, R-WEB-DIPLO-WEARINESS-20-TURNS-Q1): 3 utraty w 10. turze = poziom 0,5+0,3 = 0,8 -> koniec
+  // zmeczenia: pokoj BEZWARUNKOWY (bez miasta), karencja chronionego (100). Oferta miast chronionego juz nie wystepuje.
   {
-    const { deps, log } = mk({ turn: 160, turnsAtWar: 60, since: 3, share1: 0.1, weaker: 1, lostA: 3, cityCount: (o) => (o === 1 ? 5 : 6), winnerNeed: 0, assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 160, turnsAtWar: 10, since: 3, share1: 0.1, weaker: 1, lostA: 3, cityCount: (o) => (o === 1 ? 5 : 6), winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     const pe = log.find((x) => x.ev === 'peace');
-    chk('e1: ochrona z miastem -> pokoj z miastem i karencja chronionego',
-      r.action === 'offer_accepted' && r.plan.histogram.miasto >= 1 && pe && pe.lock === PP.karencjaChronionegoTur);
+    chk('e1: ochrona na koncu zmeczenia (0,8) -> pokoj bezwarunkowy i karencja chronionego',
+      r.action === 'mutual_peace' && !log.some((x) => x.ev === 'pay') && pe && pe.lock === PP.karencjaChronionegoTur);
+  }
+  // (e1b) ochrona przed koncem zmeczenia: 1 utrata + 3 miasta obrony = ochrona (ownCities<=3), poziom 0,6 -> brak oferty miast (<4 miast)
+  {
+    const { deps, log } = mk({ turn: 160, turnsAtWar: 10, since: 3, share1: 0.1, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 3 : 6), winnerNeed: 0, assets: CITY_ASSETS });
+    const r = W.runWarWearinessTick(deps)[0];
+    chk('e1b: chroniony z 3 miastami (poziom 0,6) nie oddaje miasta ponizej minMiastPoOddaniu', r.action !== 'offer_accepted' && !log.some((x) => x.ev === 'peace'));
   }
   // (e2) ochrona bez miasta do oddania (3 miasta = minMiastPoOddaniu) -> brak pokoju mimo ochrony
   {
-    const { deps, log } = mk({ turn: 140, turnsAtWar: 40, since: 5, share1: 0.2, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 3 : 6), winnerNeed: 0, assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 140, turnsAtWar: 10, since: 5, share1: 0.2, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 3 : 6), winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('e2: chroniony bez miasta do oddania nie kupuje pokoju', r.action === 'offer_rejected' && !log.some((x) => x.ev === 'peace'));
   }
   // (f) karencja z war-weariness-params.json: zwykly 40, chroniony 100
   {
-    const { deps, log } = mk({ turn: 130, turnsAtWar: 30, since: 10, share1: 0.2, weaker: 1, lostA: 1, cities: 6, winnerNeed: 300, assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 130, turnsAtWar: 10, since: 10, share1: 0.2, weaker: 1, lostA: 1, cities: 6, winnerNeed: 300, assets: CITY_ASSETS });
     W.runWarWearinessTick(deps);
     const pe = log.find((x) => x.ev === 'peace');
     chk('f: zwykly pokoj -> karencja z JSON (40)',
@@ -144,13 +151,13 @@ function behaviour(W) {
   }
   // (g) remis sil: slabsza strona (regula compareMilitaryStrength: wiekszy id) placi miastem przy zmeczeniu
   {
-    const { deps } = mk({ turn: 330, turnsAtWar: 200, share1: 0.5, weaker: 2, lostB: 1, winnerNeed: 0, assets: CITY_ASSETS });
+    const { deps } = mk({ turn: 330, turnsAtWar: 16, share1: 0.5, weaker: 2, lostB: 1, winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
     chk('g: remis sil - slabsza strona oferuje miasto (nie none)', r.action !== 'none');
   }
   // (g2) R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: przed progiem konca zmeczenia (0,8) remis sil: slabsza (2) placi miastem
   {
-    const { deps, log } = mk({ turn: 400, turnsAtWar: 90, share1: 0.5, weaker: 2, assets: CITY_ASSETS });
+    const { deps, log } = mk({ turn: 400, turnsAtWar: 10, share1: 0.5, weaker: 2, assets: CITY_ASSETS });
     W.runWarWearinessTick(deps);
     chk('g2: remis sil przed progiem: przegrywa slabsza strona (2) i placi miastem', log.some((x) => x.ev === 'pay' && x.l === 2));
   }
@@ -192,8 +199,8 @@ const MUTANTS = [
     gate: 'jedno miasto => brak pokoju (d)' },
   { id: 'M4-bez-wymogu-miasta', from: 'const cityGiven = priceZero || plan.histogram.miasto > 0;', to: 'const cityGiven = true;',
     gate: 'pokoj tylko z miastem (c, e2)' },
-  { id: 'M5-karencja-bez-ochrony', from: 'd.finalize(loser, winner, protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur);',
-    to: 'd.finalize(loser, winner, L.karencjaPoPokojuTur);', gate: 'karencja 40/100 (e1, f)' },
+  { id: 'M5-karencja-bez-ochrony', from: 'const lockEnd = protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur;',
+    to: 'const lockEnd = L.karencjaPoPokojuTur;', gate: 'karencja 40/100 (e1, f)' },
   { id: 'M6-remis-bez-klampu', from: 'const shareForDespair = Math.min(loserShare, L.udzialWyraznie);', to: 'const shareForDespair = loserShare;',
     gate: 'remis sil: slabsza placi miastem (g)' },
   { id: 'M7-udzial-stala', from: 'return silaX + silaY > 0 ? silaX / (silaX + silaY) : 0.5;', to: 'return 0.5;',

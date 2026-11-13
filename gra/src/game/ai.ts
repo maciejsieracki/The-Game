@@ -78,7 +78,7 @@ import {
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
 import {
-  resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile, warWearinessFraction,
+  resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile,
   PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC, progPrzewagiWypowiedzeniaWojnyProc,
 } from './diplomacy-war-peace-profile';
 import {
@@ -6977,6 +6977,8 @@ export function decideAIDiplomacy(
       militaryRatio,
       currentTurn:  0,       // nie wpływa na logikę v0.1
       turnsAtWar:   turnsAtWarRel,
+      // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: miasta zmienione właścicielem w tej wojnie (obie strony) — jeden licznik zmęczenia.
+      lostCitiesTotal: rel.stanWojny ? Math.max(0, rel.lostCitiesInWar ?? 0) + Math.max(0, rel.zdobyteMiastaPartnera ?? 0) : 0,
       civMatrixDifficulty: difficulty,
       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner (druga strona stance) z aktywną flagą agresora.
       celAgresorAktywny: rel.celAgresorAktywny === true,
@@ -7164,7 +7166,8 @@ export function decideAIDiplomacy(
       // nie czynią AI „słabszą" — wtedy zostaje fallback (aiPeaceProposalKind po turach wojny).
       const weakerByPower = rw <= progPokojSlabosc;
       const peaceKindAi = aiTruceOrPeaceMode({
-        fatigueFraction: warWearinessFraction(turnsAtWarRel, warProfile.zmeczenieT),
+        // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: ułamek zmęczenia = ten sam jeden licznik (warWearinessLevel), bez drugiego zegara.
+        fatigueFraction: wearyLevel,
         willingnessPeace: stance.willingnessPeace,
         zaufanie: rel.relation?.zaufanie ?? 0,
         weaker: weakerByPower,
