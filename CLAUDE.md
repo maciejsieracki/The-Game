@@ -102,6 +102,10 @@ Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"
    NOWE starty, nie kończące się rundy.
 8. **Komunikacja z właścicielem po polsku**, krótko, uczciwie: NIE_ZMIERZONO tam, gdzie nie zmierzono;
    żadnych zapewnień bez dowodu (SHA, liczby, MD5).
+9. **Gameplay = parytet z wersją webową (właściciel, 2026-11-13; wiążące).** Wdrażaj 1:1 wg pina
+   (`gra/src` przy `07d2fbd72`). NIE pytaj, czy coś ma być jak w webie. Pytaj WYŁĄCZNIE o świadome
+   odstępstwa od webu albo o zakres, którego web nie rozstrzyga. Decyzje techniczne podejmuj sam
+   i zapisuj w `dyspozycje/rust-port/REJESTR-RUST.md`.
 
 ## Bariery krytyczne
 
