@@ -1,0 +1,2155 @@
+{
+  "arm": "natural",
+  "seedNote": "ziarno z ?civSeed=2222 (tylko z civTest=1)",
+  "relationNote": "naturalny (brak haka ustawiania relacji)",
+  "seed": 2222,
+  "relTotalSet": null,
+  "relTotalAfter": null,
+  "offersCyclic": 0,
+  "offersOneShot": 0,
+  "offersOneShotAll": 2,
+  "otherActions": {
+    "rozejm": 2
+  },
+  "turnsRequested": 40,
+  "turnsRun": 40,
+  "offers": 0,
+  "activePrzyjmij": 0,
+  "pairs": {},
+  "cyclicDealsMax": 0,
+  "tableStart": 0,
+  "tableEnd": 0,
+  "tableGrowth": 0,
+  "scriptRejected": 0,
+  "rejectCooldownsMax": 0,
+  "per100": 0,
+  "aiOwner": 1,
+  "stoppedBy": "koniec przebiegu",
+  "autoBattles": 1,
+  "battleActs": {
+    "auto": 1,
+    "summary": 1
+  },
+  "consoleMatches": [],
+  "fastMode": true,
+  "consoleErrors": 0,
+  "offerLog": [
+    {
+      "turn": 11,
+      "type": "jednorazowa",
+      "actionId": "rozejm",
+      "trade": false
+    },
+    {
+      "turn": 17,
+      "type": "jednorazowa",
+      "actionId": "rozejm",
+      "trade": false
+    }
+  ],
+  "perTurn": [
+    {
+      "t": 2,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 50,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4921,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 27,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 24
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 3,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 9,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4831,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 54,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 48
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 4,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 11,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4741,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 81,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 72
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 5,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 13,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4651,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 108,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 96
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 6,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 16,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4561,
+          "1": 7,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 135,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 120
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 7,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 18,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4475,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 162,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 144
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 8,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 18,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 1,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4389,
+          "1": 13,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 189,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 168
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 9,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 18,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 2,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4303,
+          "1": 98,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 216,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 192
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 10,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 24,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4217,
+          "1": 108,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 251,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 234
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 11,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 26,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4131,
+          "1": 117,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 286,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 283
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 12,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 28,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 4045,
+          "1": 128,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 321,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 332,
+            "sol": 75
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 13,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 28,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3959,
+          "1": 141,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 356,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 381,
+            "sol": 150
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 14,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 28,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3873,
+          "1": 157,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 391,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 430,
+            "sol": 225
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 15,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 28,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3787,
+          "1": 175,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 426,
+            "kamien": 0
+          },
+          "1": {
+            "glina": 479,
+            "sol": 300
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 16,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 32,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3701,
+          "1": 152,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 461,
+            "kamien": 0
+          },
+          "1": {
+            "drewno": 53,
+            "glina": 540,
+            "kamien": 141,
+            "sol": 375
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 17,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 32,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 3,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3618,
+          "1": 153,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 496,
+            "kamien": 0
+          },
+          "1": {
+            "drewno": 152,
+            "glina": 601,
+            "kamien": 282,
+            "sol": 450
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 18,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 34,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3535,
+          "1": 172,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 531,
+            "kamien": 0
+          },
+          "1": {
+            "drewno": 150,
+            "glina": 662,
+            "kamien": 423,
+            "sol": 525
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 19,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 37,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3452,
+          "1": 136,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 566,
+            "kamien": 0
+          },
+          "1": {
+            "drewno": 159,
+            "glina": 723,
+            "kamien": 564,
+            "sol": 600
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 20,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 39,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3369,
+          "1": 148,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 601,
+            "kamien": 0
+          },
+          "1": {
+            "drewno": 3,
+            "glina": 808,
+            "kamien": 701,
+            "sol": 675
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 21,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 41,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3286,
+          "1": 179,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 636,
+            "kamien": 0
+          },
+          "1": {
+            "ceramika": 72,
+            "drewno": 0,
+            "glina": 783,
+            "kamien": 778,
+            "sol": 750
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 22,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 42,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3203,
+          "1": 171,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 671,
+            "kamien": 0
+          },
+          "1": {
+            "ceramika": 172,
+            "drewno": 7,
+            "glina": 708,
+            "kamien": 793,
+            "sol": 825
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 23,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 44,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3120,
+          "1": 203,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 706,
+            "kamien": 0
+          },
+          "1": {
+            "ceramika": 269,
+            "drewno": 4,
+            "glina": 651,
+            "kamien": 879,
+            "sol": 900
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 24,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 47,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 3037,
+          "1": 241,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 741,
+            "kamien": 0
+          },
+          "1": {
+            "ceramika": 338,
+            "drewno": 3,
+            "glina": 619,
+            "kamien": 902,
+            "sol": 975
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 25,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 49,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2954,
+          "1": 274,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 776,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 225,
+            "ceramika": 436,
+            "drewno": 4,
+            "glina": 395,
+            "kamien": 997,
+            "sol": 1050
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 26,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 51,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 6,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2871,
+          "1": 313,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 811,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 290,
+            "ceramika": 531,
+            "drewno": 677,
+            "glina": 189,
+            "kamien": 809,
+            "sol": 1125
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 27,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 53,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 9,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2788,
+          "1": 360,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 846,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 420,
+            "ceramika": 452,
+            "drewno": 21,
+            "kamien": 431,
+            "sol": 1200
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 28,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 58,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 11,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2705,
+          "1": 467,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 881,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 707,
+            "ceramika": 489,
+            "drewno": 27,
+            "glina": 237,
+            "kamien": 453,
+            "sol": 1275
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 29,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 60,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2622,
+          "1": 505,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 916,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 1379,
+            "ceramika": 501,
+            "drewno": 1112,
+            "glina": 331,
+            "kamien": 434,
+            "sol": 1350
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 30,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 61,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2539,
+          "1": 538,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 951,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 1885,
+            "ceramika": 434,
+            "drewno": 685,
+            "glina": 450,
+            "kamien": 43,
+            "sol": 1425
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 31,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 62,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2460,
+          "1": 595,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 986,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 2548,
+            "ceramika": 553,
+            "drewno": 649,
+            "glina": 382,
+            "kamien": 9,
+            "sol": 1500
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 32,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 63,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2381,
+          "1": 632,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1021,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 3436,
+            "ceramika": 759,
+            "drewno": 30,
+            "glina": 10,
+            "kamien": 1494,
+            "sol": 1575
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 33,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 64,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2302,
+          "1": 679,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1056,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 4402,
+            "ceramika": 627,
+            "drewno": 34,
+            "kamien": 3355,
+            "sol": 1650
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 34,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 65,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2223,
+          "1": 703,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1091,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 5352,
+            "ceramika": 984,
+            "drewno": 16,
+            "glina": 486,
+            "kamien": 5718,
+            "sol": 1725
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 35,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 66,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2144,
+          "1": 708,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1126,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 6912,
+            "ceramika": 1300,
+            "drewno": 14,
+            "glina": 757,
+            "kamien": 8510,
+            "sol": 1800
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 36,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 67,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 2065,
+          "1": 735,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1161,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 8469,
+            "ceramika": 1665,
+            "drewno": 45,
+            "glina": 991,
+            "kamien": 11329,
+            "ruda": 450,
+            "ruda_cyny": 150,
+            "sol": 1875
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 37,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 68,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 1986,
+          "1": 772,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1198,
+            "kamien": 0
+          },
+          "1": {
+            "cegla": 10026,
+            "ceramika": 2022,
+            "drewno": 33,
+            "glina": 1258,
+            "kamien": 14024,
+            "ruda": 900,
+            "ruda_cyny": 300,
+            "sol": 1950
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 38,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 70,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 1907,
+          "1": 868,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1235,
+            "kamien": 0
+          },
+          "1": {
+            "braz": 50,
+            "cegla": 11583,
+            "ceramika": 2363,
+            "drewno": 42,
+            "glina": 1584,
+            "kamien": 16755,
+            "ruda": 1300,
+            "ruda_cyny": 445,
+            "sol": 2025
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 39,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 71,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 1828,
+          "1": 1026,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1272,
+            "kamien": 0
+          },
+          "1": {
+            "braz": 150,
+            "cegla": 13140,
+            "ceramika": 2698,
+            "drewno": 2126,
+            "glina": 1928,
+            "kamien": 19601,
+            "ruda": 1650,
+            "ruda_cyny": 585,
+            "sol": 2100
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 40,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 71,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 12,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 1749,
+          "1": 1210,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1309,
+            "kamien": 0
+          },
+          "1": {
+            "braz": 250,
+            "cegla": 12497,
+            "ceramika": 3014,
+            "drewno": 1884,
+            "glina": 2329,
+            "kamien": 20202,
+            "ruda": 2000,
+            "ruda_cyny": 725,
+            "sol": 2175
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    },
+    {
+      "t": 41,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": null,
+      "relTotalAi": 72,
+      "relAtDecision": null,
+      "digest": {
+        "units": {
+          "0": 3,
+          "1": 13,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "treasury": {
+          "0": 1670,
+          "1": 1406,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0
+        },
+        "stock": {
+          "0": {
+            "drewno": 0,
+            "glina": 1346,
+            "kamien": 0
+          },
+          "1": {
+            "braz": 350,
+            "cegla": 12892,
+            "ceramika": 3322,
+            "drewno": 24,
+            "glina": 2752,
+            "kamien": 20877,
+            "ruda": 2350,
+            "ruda_cyny": 865,
+            "sol": 2225
+          },
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {}
+        }
+      }
+    }
+  ],
+  "secs": 33,
+  "trajectorySha256_12": "3034535b8eff",
+  "digestFirst": {
+    "units": {
+      "0": 3,
+      "1": 1,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0
+    },
+    "treasury": {
+      "0": 4921,
+      "1": 1,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0
+    },
+    "stock": {
+      "0": {
+        "drewno": 0,
+        "glina": 27,
+        "kamien": 0
+      },
+      "1": {
+        "glina": 24
+      },
+      "2": {},
+      "3": {},
+      "4": {},
+      "5": {},
+      "6": {}
+    }
+  },
+  "digestLast": {
+    "units": {
+      "0": 3,
+      "1": 13,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0
+    },
+    "treasury": {
+      "0": 1670,
+      "1": 1406,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0
+    },
+    "stock": {
+      "0": {
+        "drewno": 0,
+        "glina": 1346,
+        "kamien": 0
+      },
+      "1": {
+        "braz": 350,
+        "cegla": 12892,
+        "ceramika": 3322,
+        "drewno": 24,
+        "glina": 2752,
+        "kamien": 20877,
+        "ruda": 2350,
+        "ruda_cyny": 865,
+        "sol": 2225
+      },
+      "2": {},
+      "3": {},
+      "4": {},
+      "5": {},
+      "6": {}
+    }
+  },
+  "relTotalFirst": 50,
+  "relTotalLast": 72,
+  "relDrift": null,
+  "relAtDecisionAllPinned": null,
+  "relAtDecisionDistinct": [
+    null
+  ],
+  "relPinnedBeforeEnd": null,
+  "consoleErrorSample": []
+}

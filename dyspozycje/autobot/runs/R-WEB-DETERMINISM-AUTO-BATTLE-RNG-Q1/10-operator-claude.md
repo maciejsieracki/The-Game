@@ -123,3 +123,77 @@ ANALIZA (nie zreprodukowano, NIE naprawiono — poza allowlistą): `_detIdSeq` (
 Evaluator (SONNET): zweryfikować diff (main.ts 5 wywołań + helper + dep, mapFieldBattle.ts, test D1/D2, mutacje), wynik pomiaru (6 różnych skrótów, rozjazd skarbca AI od t22) i decyzję o temacie skarbca AI (UWAGA 1).
 
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# RUNDA 2 (2026-11-13) — R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 — Operator (Haiku), baza 3f6fb4879
+
+STATUS: BLOCK (bez zmian kodu gry; źródło dryfu NIE zidentyfikowane)
+DOMAIN: GAME
+TEMAT: R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1
+GOAL: ten sam skrót stanu dla tego samego ziarna we wszystkich przebiegach (z bitwami automatycznymi i oblężeniami), bez zmiany reguł gry.
+ZMIANY-COMMIT: brak zmian w gra/src ani w gra/tools. Commit tylko tego raportu i dowodów (patrz sekcja DOWODY). Czubek pracy: commit tego raportu (SHA w polu sha wyniku Operatora).
+
+## Co zrobiono w rundzie 2
+
+1. Odczytano dispatch rundy 2 (DODATEK w gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0; oryginalny 00-dispatch.md jest w tej samej gałęzi, nie w origin/main) i stan kandydata 3f6fb4879 (zawiera commit r1 38752ec01 i obronę r2).
+2. Uruchomiono pomiar przyspieszony (MEAS_FAST=1), ziarno 2222, 40 tur, natural, na zbudowanym bundlu (vite build poza repo, 27 s). Jeden przebieg trwa ok. 1 min 46 s, więc mieści się w jednym wywołaniu Bash.
+3. Porównano trzy przebiegi tego samego ziarna i tej samej konfiguracji (skrót z perTurn, pola digest per tura).
+4. Przeszukano kod pod kątem źródeł niedeterminizmu (lista poniżej).
+
+## Wyniki pomiaru (surowe liczby z plików JSON)
+
+| przebieg | trajectorySha256_12 | pierwsza rozbieżność digest |
+|---|---|---|
+| A (f2222-a.json) | bc1e99ec053f | — |
+| B (f2222-b.json) | 3034535b8eff | tura 28, treasury[1]: 469 vs 467 |
+| C (f2222-c.json, z MEAS_LOGRE) | beb31cc01c39 | tura 27, treasury[1]: 360 vs 359 (vs A) |
+
+- Wszystkie trzy przebiegi: turnsRun = 40, stoppedBy = koniec przebiegu.
+- Różnice są w skarbcu AI właściciela 1 (kilka sztuk), a w przebiegu C także w stock[1] (drewno 27 vs 42, ceramika 489 vs 491) i w units[1] (12 vs 11) od tury 29. Właściciel 0 (gracz) jest identyczny.
+- Skrót nie jest powtarzalny nawet dla tego samego ziarna w tej samej konfiguracji (A, B, C różne). Pierwsza rozbieżność przesuwa się między przebiegami (t27 / t28), co wskazuje na zależność od czasu rzeczywistego, a nie na stały błąd w logice.
+- Logi konsoli z przebiegu C (MEAS_LOGRE): nie widać „Force-clearing stuck transition” ani „orphan”. Uwaga: runner trzyma tylko ostatnie 60 dopasowań (`shift`), więc wcześniejsze wpisy mogły zostać odrzucone; to NIE_ZMIERZONO w całości.
+
+Hipoteza z dispatchu o `Date.now()` w ID (armyMerge.ts:75, cities.ts:89) jest OSŁABIONA: stackGroupId jest używany wyłącznie do porównań równościowych (`stackGroupIdOf(a) === stackGroupIdOf(b)`), a `budowa-lista-*` nie jest sortowany. Nie znaleziono sortowania po tych ID wpływającego na skarbiec. Nie jest to jednak wykluczone w 100 % (nie prześledzono każdej ścieżki tych ID).
+
+## Przegląd źródeł niedeterminizmu (grep, bez zmian)
+
+- Math.random w gra/src/game/**: wszystkie wołania w ścieżce tury podają rng (zgodnie z WYJATKAMI testu); pozostałe domyślne są martwe w grze. Test determinism-same-seed-test.cjs: PASS (wszystkie checki A1–D2).
+- Math.random poza gra/src/game: battleScene.ts:11308/11345/11379/11397/11499/11503 (dźwięk i efekty, zakaz edycji); map/gen-helpers i generator.ts (Date.now jako fallback ziarna mapy, tylko gdy seed=0); main.ts:2005 i 45764 (ziarno nowej gry, poza turą).
+- Czas rzeczywisty w logice tury (kandydaci):
+  - main.ts:38695 i 44426: `endTurnStartedAt`/`Date.now()`; wymuszone wyczyszczenie „stuck transition” po 8 s (`stuckMs > 8000`) zmienia stan (`endTurnInProgress`, `aiTurnAwaitingBattle`, `aiCmdResume`). To jedyna ścieżka czasowa, która mutuje stan tury.
+  - ui/preBattle.ts:251/362: `enqueuedAt: Date.now()` i `oldestPendingAutoPreBattleAgeMs()` używane przez healStaleEndTurnBlockers (próg 8 s) — zależne od czasu.
+  - main.ts:44866–44895: pętla renderu liczy `dt` z performance.now() (cap 100 ms) i napędza `anim.t`; jeśli postęp animacji bramkuje kroki AI, interleaving zależy od zegara.
+  - main.ts:44547 i 45686/45698: `setTimeout` (100 ms wait na bitwę gracza; yieldMainThread 0 ms) w sekwencji runWorldEndTurn — punkty oddania wątku, w których inne callbacki (render, runner) mogą wejść między krokami AI.
+- Wniosek roboczy: najbardziej prawdopodobne źródło to przeplot kroków AI z callbackami czasowymi (yield/timery/animacja), a nie generator RNG. Nie udowodniono tego: NIE_ZMIERZONO.
+
+## Dlaczego BLOCK, a nie naprawa
+
+- Bisekcja dryfu wymaga instrumentacji wewnątrz runWorldEndTurn (zapis skarbca per krok AI) i kilku przebiegów na krok. Jeden przebieg kosztuje ok. 2 min, więc ukończenie bisekcji i pomiaru po naprawie (≥6 przebiegów przyspieszonych ×40 tur na dwóch ziarnach + ≥3 normalne) wymaga wielu wywołań, na które ta runda nie miała budżetu.
+- Nie wprowadzono zmiany źródła, bo żadne z podejrzanych miejsc nie zostało wskazane dowodem (zgodnie z zasadą „hipotezy do SPRAWDZENIA, nie do zgadywania”).
+- Mutacja i kryteria końca (tsc, logic 213/213, tech-tree, research, unit-replace, combat, determinism-same-seed-test z mniejszą listą wyjątków): NIE_ZMIERZONO w tej rundzie (brak zmian kodu). Determinism-same-seed-test.cjs uruchomiony na bazie: PASS, WYNIK PASS (lista wyjątków bez zmian).
+
+## Proponowany kolejny krok (runda 3, do decyzji orkiestratora)
+
+1. Bisekcja po stronie instrumentacji: w runWorldEndTurn (main.ts ok. 38915) zapisać treasury[owner 1] po każdym kroku AI (zamiast tylko per tura) i porównać dwa przebiegi A/B aż do pierwszego kroku rozbieżnego.
+2. Równolegle sprawdzić, czy dryf znika, gdy wyłączyć wall-clock w ścieżce tury (np. stuck-force-clear przy `stuckMs > 8000` i healStaleEndTurnBlockers w trybie civTest), jako mutację diagnostyczną (bez commitu do main). Jeśli dryf znika, źródło to ścieżka czasowa, a nie RNG.
+3. Po zidentyfikowaniu: naprawa minimalna (np. zastąpienie zegara licznikiem kroków w trybie testowym albo deterministyczne kolejkowanie), potem pomiar zgodnie z dispatchem.
+4. Rozważyć osobny temat na R-WEB-DETERMINISM-AI-TURN-TIMING-Q1, jeśli okaże się, że bramkowanie kroków AI animacją/zegarem jest zamierzone (wtedy to kwestia projektowa, nie błąd RNG).
+
+## Uwagi dla orkiestratora (poza zakresem; bez tworzenia sesji)
+
+- Dispatch rundy 2 nie jest w origin/main; istnieje tylko w gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (oryginał 00-dispatch.md). Warto to odnotować w procesie.
+- Runner tools/measure-ai-trade-offer-frequency.cjs trzyma w `consoleMatches` tylko 60 ostatnich dopasowań; przy diagnostyce zdarzeń czasowych warto podnieść limit lub zapisywać wszystkie.
+- Runner dla ?civTest=1 zakłada skrót stanu z digest per tura — to wystarcza do wykrycia dryfu, ale nie do lokalizacji (potrzebny zapis per krok AI).
+
+## DOWODY
+
+- Pliki surowe: dyspozycje/autobot/runs/R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1/evidence/r2-f2222-a.json, r2-f2222-b.json, r2-f2222-c.json (trajectorySha256_12 bc1e99ec053f, 3034535b8eff, beb31cc01c39).
+- Skrypt porównania: nie commitowany (scratchpad).
+
+TESTY: determinism-same-seed-test.cjs — PASS (wszystkie checki). Pozostałe bramki: NIE_ZMIERZONO (brak zmian kodu).
+BLOKADY: (1) źródło dryfu nieznane — wymaga instrumentacji per krok AI; (2) czas jednego przebiegu ~2 min, więc pełny pomiar po naprawie nie zmieścił się w rundzie; (3) brak dostępu do przeglądarki poza runnerem (bez ręcznej weryfikacji).
+RUNDY: 2/5 (ten przebieg). Ostatni werdykt FC r1: FAIL (pomiar). Decyzja wymagana: czy kontynuować bisekcję w rundzie 3 i na jakim modelu. Operator Haiku ma w tym temacie już FAIL r1 i BLOCK r2 (bez kodu); zgodnie z zasadą modeli Sonnet na Operatorze wymaga pisemnego uzasadnienia w dispatchu.
+NASTĘPNY KROK: runda 3 — bisekcja per krok AI (sekcja „Proponowany kolejny krok”).
+DEPLOY/PUSH: NIE WYKONANO
