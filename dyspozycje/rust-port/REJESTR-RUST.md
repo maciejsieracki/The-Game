@@ -734,3 +734,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **FF `parity-v2`: `90448d3aa` → `94feb5e37`** (zawiera port gałęzi zloze, wektory 207 przypadków z pina, FC).
 - Worktree `integ-zloza` i jego cache usunięte.
 - Zakres pozostały: osiem gałęzi `transferBasketItems` (ZŁOŻA-B-REST) — do dispatchu.
+
+## Przebieg (13.11, ~18:40): integracja ZLOZA-B i trzy nowe tematy
+- **ZLOZA-B (gałąź zloze) zintegrowane:** FF `parity-v2` `90448d3aa` → `94feb5e37`. Pełny test: **3284 passed, 0 failed, 1 ignored**.
+- **Dysk:** 9,5 GB po sprzątaniu → progi startów spełnione.
+- **Uruchomione (baza `94feb5e37`):**
+  - EKONOMIA-BRAZ-ERA-Q1, runda 2 (świeże uruchomienie, bez cache rundy 1) — `wf_c1642f58-ebd`.
+  - ZWYCIESTWO-WIRING-Q1 (wpięcie końca gry do stanu i pętli tury, P6.19-C) — `wf_8db013b1-9ec`.
+  - ZLOZA-B-REST-Q1 (pozostałe gałęzie `transferBasketItems`, z jawnym NIE_ZMIERZONO tam, gdzie brak stanu w Rust) — `wf_28623be9-aa1`.
+- **Dispatche:** `dyspozycje/autobot/runs/<ID>/00-dispatch.md` (commit `42f58b3ab`).
+- **Uwaga:** runda 2 bronze-era nie używa cache rundy 1 (ta zawierała wynik BLOCK/FAIL), żeby nie odtworzyć starego werdyktu.
