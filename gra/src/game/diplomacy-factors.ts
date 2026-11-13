@@ -64,7 +64,6 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   zdrada: 'Zdrada / atak z zaskoczenia',
   szpieg_wykryty: 'Szpiegostwo wykryte',
   tarcia_graniczne: 'Tarcia graniczne',
-  wspolna_religia: 'Wspólna religia (nawiązanie)',
   wojna_wypowiedziana: 'Wypowiedzenie wojny',
   wojna_casus_belli: 'Wypowiedzenie wojny (casus belli)',
   pokoj: 'Zawarcie pokoju',

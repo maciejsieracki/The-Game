@@ -302,7 +302,7 @@
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Brak kosztu walutowego; wysokie ryzyko reputacyjne przy nieuzasadnionym użyciu",
-      "Efekt": "Spełnienie: warunek zrealizowany, −5 Relacja u adresata. Odmowa: casus belli. UPR: tylko poddanie się"
+      "Efekt": "Spełnienie: warunek zrealizowany, −5 Zaufanie (a więc także −5 Relacja) u adresata. Odmowa: casus belli. UPR: tylko poddanie się"
     },
     {
       "Akcja": "10. Propozycja pokoju / zawieszenia broni",

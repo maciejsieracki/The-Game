@@ -144,7 +144,6 @@ eq(r1.zaufanie, 20, 'dar returns +0 (PN trust in silnik)');
 eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            20, 'handel +0 Z (W1-A PN)');
 eq(applyDiplomaticEvent(rel(20, 30), 'pomoc_sojusznikowi').zaufanie, 30, 'pomoc sojusznikowi +10 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              20, 'dar +0 Z (PN w silniku)');
-eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna religia seed +1 Z');
 {
   const r = applyDiplomaticEvent(rel(20, 30), 'wspolny_wrog');
   eq(r.zaufanie, 25, 'wspolny wrog +5 Z');

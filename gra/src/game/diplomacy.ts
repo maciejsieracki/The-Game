@@ -872,7 +872,6 @@ export type DiplomaticEvent =
   | 'tarcia_graniczne'          // border friction event (jednorazowe zdarzenie; ciągła kara za granicę osobno, per tura)
   // trust bonuses
   | 'dar'                       // gift (free resource / Pieniadz)
-  | 'wspolna_religia'           // same religion established (one-shot +1 seed)
   | 'pomoc_sojusznikowi'        // helped ally in war (+10 Zaufanie)
   // respect events
   | 'wygrana_bitwa'             // won a battle (+5 Respekt)
@@ -999,11 +998,6 @@ export function applyDiplomaticEvent(
     case 'dar':
       // D4-WYMIANA-PN: Zaufanie z wartości PN (diplomacyGiftTrustFromPn w silniku), nie flat +6.
       dZ = 0;
-      break;
-
-    case 'wspolna_religia':
-      // Approximated as one-shot seed: +1 Zaufanie (per-turn handled by engine)
-      dZ = 1;
       break;
 
     case 'pomoc_sojusznikowi':
