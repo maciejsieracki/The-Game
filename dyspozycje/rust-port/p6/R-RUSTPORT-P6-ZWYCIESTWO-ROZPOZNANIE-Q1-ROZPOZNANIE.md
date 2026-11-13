@@ -1,0 +1,69 @@
+# P6.19-ZWYCIESTWO (#182) — rozpoznanie: warunki zwycięstwa i porażki
+
+- Temat: `R-RUSTPORT-P6-ZWYCIESTWO-ROZPOZNANIE-Q1` (runda 1, Operator, bez zmian kodu)
+- Baza: `5e8b116e8` (czubek `origin/rust-port/parity-v2`, melee zintegrowane)
+- Pin (tylko odczyt): `07d2fbd72` — `gra/src/game/victory.ts` (dalej `victory.ts`), `gra/src/main.ts` (dalej `main.ts`), `gra/src/data/e-start-params-loader.ts`
+- Zakres: warunki globalne (dominacja, przegrana, nauka). `_checkEnd` bitwy oblężniczej (ENDCHECK) POZA zakresem — zrobiony.
+- Legenda statusu: PORTOWANE / CZĘŚCIOWO / BRAK / NIE_PORTOWAĆ / NIE_ZMIERZONO.
+
+## 1. Tabela: element → pin → Rust → status
+
+| ID | Element (warunek) | Pin (plik:linia) | Rust (plik:linia) | Status |
+|---|---|---|---|---|
+| E1 | Dominacja: Power gracza > `PROG_DOMINACJI_POWER` (0.5) sumy Power, tylko gdy `graczEra >= ostatniaEpoka` | `victory.ts:36-39` (stałe), `victory.ts:149-157` (`isDominacjaVictory`), `victory.ts:141-146` (`powerShare`) | BRAK ewaluatora. Parametry: `rust-port/engine/src/data/economy_society_part2.rs:153-161` (`EStartParamsZwyciestwo`), `rust-port/engine/data/e-start-params.json:123-127` (wartości 3 / 0.5 / true / true). Konsument parametrów: 0 trafień poza definicją. Moc: `rust-port/engine/src/domain/brake_power.rs:298` (`objective_power_for_owner`), `:195` (`compute_objective_power`). Epoka: `rust-port/engine/src/domain/player.rs:283` (`era: i64`). | BRAK (wiring + logika) |
+| E2 | Przegrana: brak miast gracza po tym, jak kiedykolwiek miał miasto (`checkDefeat`) | `victory.ts:214-219`; blok końca tury `main.ts:43436-43500` (guard `!gameOver`, `rebelProtectionTestSkipVictoryCheck`); ścieżka po bitwie `main.ts:34017-34035` (`sprawdzPrzegranaPoUtracieMiasta`), `main.ts:34037-34040` (`onBarbarianCityBattleResolved`) | BRAK `checkDefeat`. Flaga `graczKiedysMialMiasto`: BRAK pola w `PlayableState` (`rust-port/engine/src/domain/playable.rs:487-500`). Funkcja `record_player_ever_owned_city` istnieje, ale operuje na `BTreeSet` przekazywanym z zewnątrz: `rust-port/engine/src/domain/siege_transfer_q5.rs:107`, wołana z komentarzem o wiringu: `rust-port/engine/src/domain/siege_transfer.rs:175-177`. `rust-port/engine/src/domain/player.rs:97-102` (`is_awaiting_first_player_city`) to inna reguła (pierwsze miasto), nie przegrana. | BRAK (stan + reguła + wiring) |
+| E3 | Nauka: wszystkie tech w zakresie gry zbadane ORAZ rakieta wystrzelona (`NAUKA_WYMAGA_RAKIETY`) | `victory.ts:160-166` (`isNaukaVictory`), `victory.ts:170-178` (`allTechInScopeResearched`), `victory.ts:182-186` (`EPOKI_W_SCOPE`), `victory.ts:189-201` (`techIdsInGameScope`), `main.ts:43462-43479` (wejścia: `scopeIds` 43462, `wszystkieTechZbadane` 43476, `rakietaWystrzelona` 43478) | Dane: `rust-port/engine/src/domain/player.rs:276` (`zbadane: BTreeSet<String>`), `player.rs:283` (`era: i64`), `rust-port/engine/src/domain/playable.rs:530` (`researched_techs_by_owner`), `rust-port/engine/src/domain/player.rs:300-301` (`rakieta_wystrzelona`), pole `Epoka` tech JEST w Rust: `rust-port/engine/src/data/buildings_tech.rs:392-395` (`Technologia.technologia`, `Technologia.epoka`). Powiązanie z graczem NIE_ZMIERZONO: `PlayablePlayer` (`playable.rs:339-344`) nie niesie epoki ani zbadanych; `PlayableState` nie odwołuje się do typu `PlayerState` (0 trafień w `playable.rs`). BRAK helpera zakresu (`techIdsInGameScope`, `allTechInScopeResearched`, `EPOKI_W_SCOPE`): 0 trafień w `rust-port/engine/src`. | CZĘŚCIOWO (dane są, logika brak) |
+| E4 | Kolejność rozstrzygania: dominacja → przegrana → nauka; pierwszy trafiony wygrywa | `victory.ts:228-259` (`checkVictory`) | BRAK | BRAK |
+| E5 | Filtr trybu zwycięstwa (`victoryModeAllowsDominacja` / `victoryModeAllowsMoc`) | `victory.ts:61-70`; domyślny tryb `main.ts:43479` (`?? 'moc_i_dominacja'`) | Pole `victory_mode: String` `rust-port/engine/src/domain/playable.rs:65`, domyślna wartość `playable.rs:84`. Brak konsumenta. | BRAK (pole bez konsumenta) |
+| E6 | Faza końca tury `VictoryCheck` (ewaluacja po fazach AI i barbarzyńców) | blok `main.ts:43436-43500`, `setTurnTransition(98, 'Sprawdzanie zwycięstwa…')` | Enum fazy: `rust-port/engine/src/domain/events.rs:33, 60, 170`; kolejkowanie: `rust-port/engine/src/domain/playable.rs:1127-1129`; mapowanie: `playable.rs:1223`. `advance_turn` (`playable.rs:1058-1100`) tylko zbiera nazwy faz do `last_advanced_phases` — BRAK obsługi zdarzenia `VictoryCheck` (wystąpienia tylko w testach: `rust-port/engine/tests/events.rs:134`, `rust-port/engine/tests/save_load.rs:68`). | BRAK (faza pusta) |
+| E7 | Stan końca gry (`gameOver = true`, blokada kolejnych sprawdzeń) | `main.ts:12734` (`let gameOver`), `main.ts:43481-43483`, `main.ts:34025` | Brak flagi w `PlayableState` (`playable.rs:487-500`; jedyne pole tekstowe to `status: String`, `playable.rs:499`). | BRAK |
+| E8 | Przegrana po bitwie poza końcem tury (atak barbarzyńców na miasto gracza; wywołanie asynchroniczne) | `main.ts:34017-34040` | BRAK. Zależy od portu zdobycia miasta: task #115 `ZDOBYCIE-MIASTA-WIRING` (pending w rejestrze zadań sesji); `rust-port/engine/src/domain/siege_transfer.rs` ma logikę przejęcia, bez podpięcia do przegranej. | BRAK, ZALEŻNOŚĆ od #115 |
+| E9 | Wejście Power dla każdego właściciela (`potegiWszystkich`, `objectivePowerForOwner`) | `main.ts:43448-43466` (budowa `allOwners`, `potegiWszystkich`) | `rust-port/engine/src/domain/brake_power.rs:298` (`objective_power_for_owner`), `rust-port/engine/src/domain/turn_war_inputs.rs:213` (`power_raw_for_owner`) | ISTNIEJE (do potwierdzenia testem zbiorczym dla wszystkich właścicieli z `vPlayers`) |
+| E10 | Eliminacja właściciela AI (wejście do listy graczy i Power) | `main.ts:35348-35352` (`eliminateOwner`, no-op dla `ownerId === 0`) | `rust-port/engine/src/domain/eliminacja.rs:48` (`eliminate_owner`), `:66` (`power_clear_eliminated_owner`) | PORTOWANE (poza samymi warunkami zwycięstwa) |
+| E11 | Hooki testowe: `truceTestSuppressVictory`, `rebelProtectionTestSkipVictoryCheck`, `suppressVictoryForTest`, `disableVictoryCheckForTest`, `__defeatTestDebug` | `main.ts:12735`, `main.ts:13636`, `main.ts:28503`, `main.ts:28641` | BRAK (świadomie) | NIE_PORTOWAĆ (wyłącznie testy przeglądarkowe) |
+| E12 | Ekran zwycięstwa / przegranej (UI) | `gra/src/ui/victoryScreen.ts` (pin); `buildVictoryScreenData`, `showVictoryScreen`, `formatVictoryTitle` w `main.ts` | Plik TS istnieje: `src-tauri/frontend-v2/src/ui/victoryScreen.ts`. Czy jest podpięty do stanu Rust: NIE_ZMIERZONO (nie czytano wiringu). | NIE_ZMIERZONO |
+| E13 | `_checkEnd` bitwy oblężniczej (ENDCHECK) | pin poza zakresem | `rust-port/engine/src/domain/siege_tactics_endcheck.rs` | POZA ZAKRESEM (zrobiony wg rejestru) |
+| E14 | Rakieta: `rakietaWystrzelona` na pinie nigdzie nie jest ustawiane na `true`. Przy `NAUKA_WYMAGA_RAKIETY=true` zwycięstwo naukowe jest na pinie NIEOSIĄGALNE (zarzut ewaluatora r1, pkt 1, zweryfikowany) | Ustawiane tylko na `false`: `gra/src/game/playerState.ts:155`, `gra/src/main.ts:34963`; odczyt `main.ts:43478`; `victory.ts:253` (`input.rakietaWystrzelona`); `git grep` po `gra/src`: 0 przypisań `= true` | Ustawiane tylko z inicjalizacji: `rust-port/engine/src/domain/player.rs:381` (`init.rakieta_wystrzelona`), wartość domyślna `rust-port/engine/data/derived/player-state-params.json:56` (`false`). 0 setterów `= true` w `rust-port/engine/src` i `tests` (poza `tests/p6_1b_playerstate.rs:144`, odczyt). | ZGODNE Z PINEM (oba nieosiągalne). Decyzja właściciela: parytet vs naprawa, do P6.19-A |
+| E15 | Konsumenci `gameOver` (blokada komend i końca tury, reset) | Pin: blokada `main.ts:37997`, `:38043`, `:43827` (`!gameOver` w warunku końca tury), `:34018`; ustawienie `:34025`, `:43483`; reset `:45160`, `:45431`, `:45686`, `:45920`, `:47333`; `:12734` (deklaracja), `:28643` (`isGameOver`) | BRAK flagi, BRAK blokady `end_turn` po końcu gry (`playable.rs`: 0 trafień) | BRAK |
+| E16 | Szczegóły ewaluatora (zarzut ewaluatora r1, pkt 3): dominacja wymaga `potegi.length > 0` (`victory.ts:240`); `powerShare` przycina `Math.max(0, p)` (`victory.ts:143`) i zwraca 0 gdy suma ≤ 0 (`victory.ts:144`); helper `isEliminated` (`victory.ts:136`, używany przez `checkDefeat`); fallbacki `epokaKoncowa`/`naukaUkonczona` (`victory.ts:252-253`, deprecated); wygrywa zawsze `winner: gracz` (wywołanie tylko dla gracza 0, `main.ts:43466` `gracz: 0`); AI nie wygrywa | Brak odpowiedników | BRAK | BRAK (do portu w P6.19-A/B) |
+| E17 | Zapis/wczytanie `graczKiedysMialMiasto` (zarzut ewaluatora r1, pkt 5): po wczytaniu `playerEverOwnedCityByOwner` odtwarzane heurystycznie z miast (`main.ts:46368-46370`); zapisy do zbioru: `main.ts:16508`, `:17816`, `:36218`, `:45646`, `:45877-45878` (preset); czyszczenia `:45071`, `:45397`, `:45645`, `:46368` | Brak zapisu w `PlayableState`/save | BRAK | BRAK. Decyzja: flaga w zapisie vs heurystyka (wpływa na P6.19-C i P6.20-22) |
+
+Uwagi do tabeli:
+- Parametry progu (0.5), ostatniej epoki (3) i flag (`dominacja_wymaga_ostatniej_epoki`, `nauka_wymaga_rakiety`) zgadzają się między loaderem pinu (`gra/src/data/e-start-params-loader.ts:132-147`, wartości domyślne 3 / 0.5 / true / true) a JSON w Rust (`e-start-params.json:123-127`). Plik pinu `gra/data/e-start-params.json` nie został porównany bajt po bajcie: NIE_ZMIERZONO.
+- Numery linii pinu z `git show 07d2fbd72:<ścieżka>` + `grep -n`; numery Rust z `git grep -n` na `5e8b116e8`.
+
+## 2. Lista brakujących elementów (plik:linia)
+
+1. Ewaluator `checkVictory` / `checkDefeat` / `isDominacjaVictory` / `isNaukaVictory` / `powerShare` — brak modułu w `rust-port/engine/src/domain/` (pin: `victory.ts:141-259`).
+2. Helpery zakresu technologii — `techIdsInGameScope`, `allTechInScopeResearched`, `EPOKI_W_SCOPE` (pin: `victory.ts:170-201`).
+3. Parametry `EStartParamsZwyciestwo` (`economy_society_part2.rs:153-161`) bez konsumenta w logice.
+4. Pole `graczKiedysMialMiasto` w stanie gry (pin: `main.ts:43472`, `main.ts:34022` przez `playerEverOwnedCityByOwner`; poprawka po zarzucie ewaluatora: wcześniej błędne `43463-43464`); Rust ma tylko funkcję bez stanu (`siege_transfer_q5.rs:107`).
+5. Obsługa zdarzenia `VictoryCheck` w `advance_turn` (`playable.rs:1058-1100`, mapowanie `playable.rs:1223`).
+6. Flaga końca gry w `PlayableState` (`playable.rs:487-500`) i blokada kolejnych sprawdzeń (pin: `main.ts:43481`, `main.ts:12734`).
+7. Konsument `victory_mode` (`playable.rs:65`, `:84`); pin `main.ts:43479` (poprawka: wcześniej `43484`).
+8. Ścieżka przegranej po bitwie (pin: `main.ts:34017-34040`) — zależna od #115 (`ZDOBYCIE-MIASTA-WIRING`).
+9. Raport zwycięstwa dla UI (pin: `main.ts:43487-43498`, `buildVictoryScreenData`) — status NIE_ZMIERZONO (E12).
+10. Flaga/decyzja rakiety: `rakietaWystrzelona` nigdy `true` na pinie (E14). Przy `NAUKA_WYMAGA_RAKIETY=true` wektor "nauka osiągalna" nie istnieje; port `isNaukaVictory` bez decyzji właściciela da zgodność z pinem (nieosiągalna), a nie grę. DECISION_REQUIRED.
+11. Blokady po końcu gry (E15): `end_turn` i komendy po `gameOver` (pin `main.ts:37997`, `:38043`, `:43827`) oraz resety przy nowej grze/wczytaniu (`:45160`, `:45431`, `:45686`, `:45920`, `:47333`). Zakres P6.19-C, nie tylko flaga w `PlayableState`.
+12. Zapis/wczytanie `graczKiedysMialMiasto` (E17): decyzja "flaga w zapisie vs heurystyka z miast" przed P6.19-C i P6.20-22.
+13. Elementy ewaluatora pominięte w r1 (E16): `potegi.length > 0`, `Math.max(0, …)` w `powerShare`, `isEliminated`, fallbacki `epokaKoncowa`/`naukaUkonczona`. Do wektorów P6.19-A/B.
+
+## 3. Propozycja podziału P6.19 na tematy wykonawcze
+
+Szacunki rund opierają się na liczbie i rodzaju elementów z tabeli (czysta logika vs. wiring stanu), nie na zmierzonej historii. Oznaczone jako SZACUNEK.
+
+- **P6.19-A — logika czysta i zakres technologii** (E3 logika, E4 kolejność, E5 filtr trybu). Pliki: nowy moduł `rust-port/engine/src/domain/victory.rs` (pure, bez stanu), testy wektorowe z pinu `victory.ts:141-259`. Zależności: brak. SZACUNEK: 1–2 rundy.
+- **P6.19-B — dominacja i przegrana jako funkcje czyste** (E1, E2 reguła `checkDefeat`). Zależy od A (moduł `victory.rs`). Wejście mocy z `brake_power.rs:298` (E9). Testy: granica `>` 0.5, warunek epoki, `checkDefeat` przy `graczKiedysMialMiasto = false` → brak przegranej. SZACUNEK: 1–2 rundy.
+- **P6.19-C — wiring tury i stan końca gry** (E2 stan, E6, E7). Zależy od A i B. Zmiany: pole `graczKiedysMialMiasto` w `PlayableState` (wołanie `record_player_ever_owned_city` przy wejściu garnizonu, wzór: `siege_transfer.rs:175-177`), flaga końca gry, obsługa `TurnPhase::Victory` w `advance_turn`. Dotyka save/load (`tests/save_load.rs:68`). SZACUNEK: 2–3 rundy.
+- **P6.19-D — przegrana po bitwie** (E8). Zależy od C i od #115 `ZDOBYCIE-MIASTA-WIRING`. SZACUNEK: 1–2 rundy po zamknięciu #115; bez #115 nie ma miejsca na podpięcie.
+- **P6.19-E — UI ekranu zwycięstwa** (E12). Dotyczy `src-tauri/frontend-v2/src/ui/victoryScreen.ts`, poza `rust-port/engine`. Zależy od C. Wymaga decyzji zakresu (czy UI wchodzi w P6.19) oraz zbadania wiringu, którego nie zmierzono.
+
+Kolejność: A → B → C → D (D po #115); E równolegle po C. A i B nie dotykają `playable.rs`, więc mogą startować równolegle z innymi tematami P6.
+
+Decyzje do właściciela przed startem C: (1) czy hooki testowe z E11 mają mieć odpowiedniki w Rust (rekomendacja: nie); (2) czy E12 wchodzi w P6.19; (3) nauka przy `NAUKA_WYMAGA_RAKIETY=true` i nieustawianej rakiecie na pinie (E14): parytet (nauka nieosiągalna) czy naprawa pinu; (4) flaga `graczKiedysMialMiasto` w zapisie vs heurystyka z miast (E17).
+
+## 4. Granice rozpoznania
+
+- Zero zmian w `rust-port/**`, `gra/**`, testach, `Cargo.*`. Push do `rust-port/parity-v2` nie wykonano.
+- Nie uruchamiano `cargo` ani testów (rozpoznanie dokumentacyjne): TESTY NIE DOTYCZY.
+- Przeszukano `rust-port/engine/src` i `rust-port/engine/tests` na `5e8b116e8`. Nie zweryfikowano w działającej grze, czy jakakolwiek ścieżka Rust poza wymienionymi wywołuje ewaluację zwycięstwa.
