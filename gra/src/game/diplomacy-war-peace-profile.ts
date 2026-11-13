@@ -46,6 +46,24 @@ export interface WarPeaceParams {
 /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: próg Zaufania pary dla wypowiedzenia wojny przez AI (30). */
 export const PROG_WOJNA_ZAUFANIE: number = (paramsRaw as unknown as WarPeaceParams).wypowiedzenieZaufanie.progZaufaniaWojny;
 
+interface PrzesuniecieProguWojny { wspolczynnikPpNaJednostke: number; min: number; max: number }
+
+/**
+ * R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1: efektywny próg przewagi siły militarnej (w %) do wypowiedzenia
+ * wojny przez AI = bazowy progPrzewagiProc + przesunięcie charakteru (warSilaBonus z resolveDiplomacyCivBias),
+ * obcięty do [min, max] z przesunieciProguWojnyCharakter. Brak bonusu (0) → sama baza.
+ */
+export function progPrzewagiWypowiedzeniaWojnyProc(
+  bazaProc: number,
+  warSilaBonus: number,
+  params: { przesuniecieProguWojnyCharakter?: PrzesuniecieProguWojny } = paramsRaw as unknown as { przesuniecieProguWojnyCharakter?: PrzesuniecieProguWojny },
+): number {
+  const cfg = params.przesuniecieProguWojnyCharakter;
+  if (!cfg || !Number.isFinite(warSilaBonus)) return bazaProc;
+  const przesuniecie = cfg.wspolczynnikPpNaJednostke * warSilaBonus;
+  return Math.min(cfg.max, Math.max(cfg.min, bazaProc + przesuniecie));
+}
+
 export const WAR_PEACE_PARAMS = paramsRaw as unknown as WarPeaceParams;
 
 /** Maksymalny udział zmęczenia wojną (0..0.5) — "pełne zmęczenie" po T turach. */

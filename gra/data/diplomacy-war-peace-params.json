@@ -95,6 +95,12 @@
     "_opis": "R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (decyzja wlasciciela 2026-11-13) — AI moze wypowiedziec wojne (priorytet 4 decideAIDiplomacy) tylko gdy Zaufanie pary jest ponizej progZaufaniaWojny ORAZ przewaga sily militarnej AI wynosi co najmniej progPrzewagiProc (diplomacy-military-strength-params.json). Charakter cywilizacji (effAgresja, willingnessWar) nadal decyduje, czy wykorzysta mozliwosc.",
     "progZaufaniaWojny": 30
   },
+  "przesuniecieProguWojnyCharakter": {
+    "_opis": "R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1 (decyzja wlasciciela ABC B, 2026-11-13) — prog przewagi sily militarnej, przy ktorym AI wypowiada wojne (priorytet 4), = bazowy progPrzewagiProc (diplomacy-military-strength-params.json, 20%) + przesuniecie z charakteru cywilizacji. Zrodlo przesuniecia: bias.warSilaBonus z resolveDiplomacyCivBias (ai.ts) — ten sam bonus, ktory dawniej przesuwal prog rw (0,6) w commicie 3950aae12. Wzor: przesuniecie_pp = wspolczynnikPpNaJednostke * warSilaBonus (ujemne = agresywna, dodatnie = ostrozna), wynik obciety do [min, max]. Wartosci wyjsciowe DO AKCEPTACJI wlasciciela.",
+    "wspolczynnikPpNaJednostke": 100,
+    "min": 10,
+    "max": 35
+  },
   "hamulecRelacji": {
     "_opis": "R7 — hamulec wojny. OD R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 licznik kryzysu liczy kolejne tury, w ktorych Zaufanie pary = 0 (p6.kryzysProgZaufania w diplomacy-tick-params.json), a nie lacznej Relacji; liczba tur N = clamp(round(bazaN - wagaProgWojny*dip_prog_wojny), minN, maxN) bez zmian. Silniejsza strona wg sily militarnej (diplomacy-military-strength.ts) wypowiada wojne po N turach. progKryzysuMinusPunkty i progWojnyRelacji zostaja w danych; prog Relacji z nich nie steruje juz licznikiem kryzysu (zostaje tylko jako informacja w getBrakeParams / tekstach).",
     "progKryzysuMinusPunkty": 15,
