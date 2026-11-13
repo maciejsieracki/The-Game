@@ -442,3 +442,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Uwaga do atrybucji:** harness dołącza do commitów linię `Co-Authored-By` z nazwą modelu. CLAUDE.md tego zakazuje w artefaktach repo. Commit `cc4554ec7` (r2 FC) jest już na `rust-port-wip` z taką linią. Nie przepisuję opublikowanej gałęzi bez decyzji właściciela.
 - **Dysk:** 7,2 GB po sprzątaniu rundy 3.
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `7eda73831`.
+
+## Przebieg (restart kontenera, CRED-WOJNA-Q1 runda 4 wznowiona od nowa): 1 aktywny temat (1 z 4 slotów)
+- **Restart:** runda 4 (`wf_09962ba6-668`) została przerwana restartem kontenera. Journal miał tylko start Operatora, bez wyniku. Częściowa praca Operatora w worktree (nowe pliki `*_r2*`, zmieniony raport r2, bez commitów) została skopiowana do scratchpada jako referencja i nie jest commitowana. Worktree zwolniono.
+- **Ponowny start:** runda 4 uruchomiona z tym samym dispatchem (DODATEK r4 `7eda73831`, baza parity `003d53f97`). Workflow `wf_beebb55a-e4e`. Operator (HAIKU), Obrona (HAIKU), Evaluator i FC (SONNET).
+- **Sprzątanie:** usunięto worktree rundy 3 FC (`wf_a4483abe-c33-4`, refy zapisane). Dysk 5,5 GB po sprzątaniu (3,2 GB przed).
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `3a8b8c22c`.
