@@ -1,3 +1,13 @@
+# R-WEB-DIPLO-CIVPEDIA-Q1 — DODATEK orkiestratora, RUNDA 2 (2026-11-13) — CZYTAJ NAJPIERW
+
+Kandydat rundy 1 (FC PASS): 872078bf2 (potomek d09df3e0b), raporty ad184c7ee. Od tego czasu origin/main (478cefaed) dostał liczby zaufania, więc hasła i test wartości są nieaktualne. Zadanie rundy 2 (startuj od origin/main 478cefaed, NIE od kandydata):
+1. `git merge --no-ff 872078bf2` na czubku origin/main; konflikt w gra/src/data/wikiBundle.json rozwiąż regeneracją skryptem `node gra/tools/bundle-wiki-for-game.cjs` (nie ręcznie).
+2. Zaktualizuj hasła do NOWEGO obecnego stanu kodu (przenieś z bloku „zatwierdzone, jeszcze niewdrożone” do opisu obecnych reguł): kary za sąsiedztwo −3/−4/−5 (Kamień/Brąz/Żelazo) i ich wstrzymanie w karencji po pokoju lub rozejmie; religia nie zmienia zaufania (wiersze o ±0,5 usuń z tabel obecnych zmian, wspomnij w historii); po zawarciu rozejmu zaufanie pary = 10, po pokoju = 20 (ustawiane od razu; rozejm→pokój = 20). Sprawdź w kodzie i JSON (nie z pamięci): gra/data/diplomacy.json, gra/src/main.ts (finalizePeaceTreatyBetween). Zaktualizuj też liczby w pliku wiarygodnosc.md, jeśli zależą.
+3. Zostaw w bloku „zatwierdzone, jeszcze niewdrożone”: siła militarna (funkcja i licznik bitew istnieją w kodzie, ale nie są jeszcze używane do decyzji), nowe zasady wypowiadania wojny, rozejmu i pokoju, etykiety nastawienia (Wrogi poniżej 10).
+4. Test gra/tools/diplo-civpedia-values-test.cjs: zaktualizuj oczekiwane wartości (kary −3/−4/−5, brak religii, zaufanie 10/20) i dopisz sprawdzenie nowych kluczy z JSON; mutacja liczby w haśle czerwieni test.
+5. Kryteria jak w rundzie 1 (tsc 0, logic 213/213, test wartości zielony, admin-panstwo-panel-names-test zielony, wikiBundle z regeneracji). Zakres tylko docs, wikiBundle.json, test.
+
+---
 # R-WEB-DIPLO-CIVPEDIA-Q1 — DODATEK orkiestratora (runda 1)
 
 ## Zasada nadrzędna
