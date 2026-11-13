@@ -545,3 +545,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięto worktree nieudanego przebiegu (`wf_e18d3b41-1c6-1..3`) i cache `/tmp/claude-0/{tgt-ev,tgt-eval,tgt}` (nieużywane przez procesy). Refy: `refs/keep/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1-failed-{wip,eval,det}`. Dysk: 0,78 GB → 12 GB.
 - **Wznowienie:** `wmuwt571m` z `resumeFromRunId` (wykonane etapy z cache, Obrona i FC od nowa).
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `07a0851c5`.
+
+## Przebieg (13.11): JS-MAX (#110) — awaria przez dysk, wznowienie z cache
+- **Awaria:** `wf_e18d3b41-1c6` padł na tworzeniu worktree (`WorktreeIsolationError`): dysk 0,78 GB. Operator i Evaluator zakończyły się poprawnie: kod `cd7cf1b77` (ancestry z `cfa1edd31` potwierdzone), Evaluator PASS-WITH-NOTES. Padło na Obronie/FC.
+- **Sprzątanie:** usunięto worktree nieudanego przebiegu (`wf_e18d3b41-1c6-1..3`) i cache `/tmp/claude-0/{tgt-ev,tgt-eval,tgt}` (nieużywane przez procesy). Refy: `refs/keep/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1-failed-{wip,eval,det}`. Dysk: 0,78 GB → 12 GB.
+- **Wznowienie:** `wmuwt571m` z `resumeFromRunId` (wykonane etapy z cache, Obrona i FC od nowa).
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `07a0851c5`.
