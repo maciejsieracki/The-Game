@@ -703,3 +703,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Baza r2:** `d30e3ea24` (parity-v2 po JS-MAX), nie `5e8b116e8`. Dispatch z DODATKIEM r2 wypchnięty (`claude/rust-sivvrn`).
 - **Start r2:** dopiero przy ≥ 8 GB wolnego. Dziś po zakończeniu r1 było 3,9 GB, więc nie startuję.
 - **Sprzątanie:** worktree nieudanej rundy usunięty, ref `refs/keep/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r1-fc` zapisany.
+
+## ZWYCIESTWO-IMPL-Q1 (P6.19-A, #182): FC PASS-WITH-NOTES (8fc46b8d7), integracja OCZEKUJE na pełny test
+- **Zakres kodu:** `rust-port/engine/src/domain/victory.rs` (nowy), jedna linia w `domain/mod.rs`, testy `p6_victory.rs` + generator `.mjs` (wykonuje pin `victory.ts`, 223+ przypadków), wektory. Commity: `3a4c55929` (operator), `8a31afd24` (obrona), `8fc46b8d7` (FC). **Baza: `5e8b116e8`** — łańcuch trzeba przenieść (cherry-pick) na `parity-v2` `d30e3ea24`.
+- **Wykonane bramki (przez Operatora i FC):** fmt OK; clippy `--lib` i `--test p6_victory` z `-D warnings` OK; `cargo test --lib victory` 10 passed; `p6_victory` 7 passed; generator bajt w bajt zgodny.
+- **NIE wykonane (brak miejsca na dysku, ENOSPC):** pełny `cargo test --no-fail-fast` oraz `clippy --all-targets`. Operator w obronie raportuje wykonanie przy 7,2 GB, ale to nie pokrywa pełnego zestawu po integracji na `d30e3ea24`. **Przed FF wymagany pełny test na tipie integracji.**
+- **Luka zakresu (NIE_ZMIERZONO w tym temacie):** flaga końca gry i `graczKiedysMialMiasto` nie są w `PlayableState` (plik poza allowlistą); wpięcie końca gry do pętli tury (odrzucanie komend, `main.ts:37997, 38043, 43827`) — nie zrobione. **Decyzja orkiestratora:** osobny temat **ZWYCIESTWO-WIRING** z allowlistą `playable.rs` i pętlą tury. Zakres parytetu, bez pytania do właściciela.
+- **Poza zakresem (decyzje orkiestratora, parytet/technika):** hooki testowe pinu — nie portować; UI ekranu zwycięstwa — poza silnikiem P6.19; odczyt rakiety (`main.ts:43478`) — zgodnie z pinem (rakieta nieustawiana, nauka nieosiągalna).
+- **Drobne ustalenie z obrony:** NaN w `powerShare` — Rust `f64::max` dawał 0,0, JS `Math.max` daje NaN. Naprawione w obronie (`js_max0` zachowuje NaN), test `power_share_propaguje_nan_jak_math_max`.
+- **Stan:** ta sesja nie integruje — brak miejsca na dysku na pełny test. Integrację wykonam, gdy dysk będzie ≥ 8 GB.
