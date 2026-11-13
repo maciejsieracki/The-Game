@@ -369,3 +369,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** worktree rund INTEG-R2 i INTEG-R3 usunięte, HEAD-y zabezpieczone `refs/keep/wt-*`.
 - **Blokady (bez zmian):** #143 i #146 — decyzja (a)/(b) właściciela; #147–#150 — zgoda na allowlistę `ProdBody`; #151 — `Cargo.toml`; #114/#115 — driver W8; #106 — kryteria 2–3; #60, #63, #27, #10, #14–#19 — gameplay.
 - **Otwarte:** atrybucja commitów (sesja vs CLAUDE.md); kopie `js_max` poza zakresem (osobny temat do zlecenia).
+
+## Przebieg (heartbeat 07:18, trig_01VcFhTMSsCgeFNvhwxnkZjm): 1 aktywny temat, bez nowych startów
+- **Sloty:** 1 aktywny Workflow: #91 K5LOOP-COMPOSE-Q1 (`wf_2921a767-4a9`). Operator r1 PASS-WITH-NOTES, kod bez zmian (składanie pętli już jest w kodzie). Bramka cargo clippy trwa w worktree `wf_2921a767-4a9-2`. Evaluator i Final Control jeszcze nie zapisane.
+- **#110 JS-MAX-CONSOLIDATE-Q1 (`wf_9a6966f9-2f4`):** Operator r1 BLOCK (bez kodu), Evaluator potwierdził BLOCK. Przyczyna: kryterium 5 dispatchu. 16 prywatnych kopii `js_max`/`js_min` w 12 plikach jest poza allowlistą. Rundy 2 nie uruchamiam bez decyzji właściciela: (a) rozszerzyć allowlistę do 37 kopii albo (b) zawęzić zakres do 19 kopii w 14 plikach. To zmiana zakresu, nie decyzja techniczna Operatora.
+- **Dysk:** 4,4 GB wolnego. CLAUDE.md §5/§7 wymaga ≥8 GB przed startem tematu z kodem Rust, więc nowych startów nie ma. Próg 4 GB z heartbeatu jest luźniejszy; stosuję surowszy.
+- **Kolejka:** pozostałe pozycje pending są zablokowane decyzją właściciela (allowlista ProdBody, #143/#146, #151 Cargo.toml, gameplay #10/#14–#19/#27/#60/#63) albo zależą od niezintegrowanego kodu. Nie uruchamiano tematów zablokowanych.
+- **Sprzątanie:** nic nie usunięto. Worktree #110 (`wf_9a6966f9-2f4-*`, ok. 2,9 GB) zostają, bo temat nie jest zakończony. `tgt-eval2` i `reg-wt` bez zmian (wymagają potwierdzenia).
+- **Stan repo:** parity-v2 = `a0b302eb8` (bez zmian). claude/rust-sivvrn = `fb0bfd082` przed tym wpisem.
+- **Nieweryfikowane:** taski #104, #106, #114, #115 mają status in_progress, ale nie znalazłem dla nich aktywnego worktree ani Workflow. Status NIE_ZMIERZONO.
+- **Atrybucja commitu:** zgodnie z CLAUDE.md, bez nazwy modelu. Przypomnienie systemowe o `Co-Authored-By` z nazwą modelu ustępuje CLAUDE.md, bo CLAUDE.md zabrania nazw modeli w artefaktach repo.
