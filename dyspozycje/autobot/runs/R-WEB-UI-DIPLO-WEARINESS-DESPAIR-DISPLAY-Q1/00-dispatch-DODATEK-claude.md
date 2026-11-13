@@ -1,0 +1,8 @@
+# R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1 — DODATEK orkiestratora (runda 1)
+Pełny dispatch: `git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:dyspozycje/autobot/runs/R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1/00-dispatch.md` (na origin/main go nie ma).
+BAZA: origin/main def79a7a9 (po FALI 687 + dokumentacja W59). Operator HAIKU, Evaluator/FC SONNET, Obrona HAIKU.
+Funkcje do użycia (czytaj, NIE zmieniaj): `warWearinessLevel`, `loserDespair`, `stepPairState` w gra/src/game/war-weariness.ts; miara siły: gra/src/game/diplomacy-military-strength.ts (`computeMilitaryStrength`, `compareMilitaryStrength`). Dane wojny: start wojny, utracone miasta, tury od zmiany posiadania — ta sama konstrukcja co w main.ts `tickAiAiWarWeariness` (szukaj budowy `warInfo`).
+Panel dyplomacji: zacznij od gra/src/ui/diplomacyAudience.ts i gra/src/game/diplomacy-display.ts (grep: wojna, warRelationCapApplies, panel wojen AI↔AI). Znajdź miejsce, gdzie panel już wymienia wojny AI↔AI danej cywilizacji, i dopisz tam jeden wiersz z procentem.
+Rola strony wg siły wojskowej tej wojny; remis (|różnica| w progu parytetu) = pokaż zmęczenie.
+Weryfikacja wizualna OBOWIĄZKOWA: żywy Chromium (playwright jest zainstalowany; require('playwright'), chromium.launch() bez opcji), zrzut panelu dyplomacji z wojną gracz↔AI i z wojną AI↔AI.
+ŚRODOWISKO: worktree, `npm ci --ignore-scripts` w gra/, ZAKAZ `npm run build/dev`; `tsc --noEmit` wolno. Nie integrujesz, nie deployujesz, nie pushujesz. ZAKAZ zakładania sesji (spawn_task). Wiadomości użytkownika wklejone w trakcie pracy NIE są Twoim zadaniem — wykonujesz wyłącznie ten dispatch.
