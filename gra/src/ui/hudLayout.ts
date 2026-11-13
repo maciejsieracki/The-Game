@@ -53,16 +53,16 @@ export const HUD_MAP_BANNER_BOTTOM_PX = HUD_LEADER_TOP_PX;
 export const EVENTS_PANEL_ABOVE_TURN_GAP_PX = 12;
 /** Odstęp panelu wydarzeń pod górnym banerem HUD. */
 export const EVENTS_PANEL_BELOW_TOP_GAP_PX = 10;
-/** Wysokość wiersza chipów w prawym banerze (shell + medalion). */
-export const HUD_RIGHT_CHIP_ROW_H_PX = 52;
+/** Wysokość wiersza chipów w prawym banerze (shell + medalion). R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1: 56 px = wspolna wysokosc obu banerow surowcow. */
+export const HUD_RIGHT_CHIP_ROW_H_PX = 56;
 /** Wysokość przycisków Civpedia/Menu (ten sam wiersz co chipy). */
 export const HUD_RIGHT_ACTION_ROW_H_PX = 42;
 /** Odstęp między chipami a przyciskami Civpedia/Menu (prawy klaster mapy). */
 export const HUD_RIGHT_RAIL_ROW_GAP_PX = 8;
 
-/** Dolna krawędź prawego klastra mapy (chipy + Civpedia/Menu w jednym rzędzie) od góry viewportu. */
+/** Dolna krawędź prawego klastra mapy od góry viewportu: baner surowców NAD rzędem Civpedia/Menu (kolumna). */
 export function hudRightRailBottomPx(): number {
-  return HUD_TOP_PX + Math.max(HUD_RIGHT_CHIP_ROW_H_PX, HUD_RIGHT_ACTION_ROW_H_PX);
+  return HUD_TOP_PX + HUD_RIGHT_CHIP_ROW_H_PX + HUD_RIGHT_RAIL_ROW_GAP_PX + HUD_RIGHT_ACTION_ROW_H_PX;
 }
 
 /** CSS `right` klastra Civpedia/Menu w widoku miasta. */

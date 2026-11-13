@@ -148,7 +148,10 @@ async function main() {
       for (const n of ORDER) ratios.push([st, n, +(a.cells[n].fontVal / b.cells[n].fontVal).toFixed(3), b.cells[n].fontVal, a.cells[n].fontVal]);
     }
     const minRatio = Math.min(...ratios.map((r) => r[2]));
-    ok(minRatio >= 1.25, `${w}: B1 font glownej liczby >= 1,25x PRZED (min ${minRatio.toFixed(3)})`, ratios.filter((r) => r[2] < 1.25));
+    // DECYZJA WLASCICIELA (ABC 2026-11-13, "Jak w bazie"): przy 1366 px NIE wymagamy skali >= 1,25x (jeden rzad zetonow
+    // wymusza mniejsza czcionke, do 0,78x jest akceptowane); brak nowego progu. Pozostale szerokosci bez zmian.
+    if (w === 1366) console.log(`   B1 ${w}: bez progu (decyzja wlasciciela) -- min ratio ${minRatio.toFixed(3)}`);
+    else ok(minRatio >= 1.25, `${w}: B1 font glownej liczby >= 1,25x PRZED (min ${minRatio.toFixed(3)})`, ratios.filter((r) => r[2] < 1.25));
     // B2 brak przycinania
     for (const st of Object.keys(STATES)) {
       const m = res['after/' + w + '/' + st];
