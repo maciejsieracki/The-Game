@@ -10,7 +10,7 @@
  *      (prawdziwe wartości, bez obcięcia do 29), etykieta „Wrogi”, dopisek limitu z
  *      `WAR_RELATION_SCORE_CAP` (nie hardcoded 29), zrzut ekranu;
  *   B. pokój, te same wartości → brak dopisku, wartości 74 i 54, etykieta nie „Wrogi”;
- *   C. wojna, Zaufanie 10 / Respekt 10 (suma 20 ≤ limit) → brak dopisku.
+ *   C. wojna, Zaufanie 0 / Respekt 10 (Zaufanie już zero, nic nie jest obcinane) → brak dopisku.
  *
  * Test nietautologiczny: `--mutant=clamp` przywraca w LOCIE (tylko w bundlu, bez zmian w repo)
  * dawne obcinanie `effectiveNastawienieScores` do limitu; `--mutant=note` usuwa dopisek
@@ -237,10 +237,11 @@ async function main() {
     errors.push(...page.errors);
     const cap = await page.evaluate(() => window.RTV.WAR_RELATION_SCORE_CAP);
     const capPoints = Number(cap);
-    check('limit wojenny to WAR_RELATION_SCORE_CAP (29), nie hardcoded', capPoints === 29, capPoints);
+    check('limit wojenny usunięty: WAR_RELATION_SCORE_CAP nie steruje dopiskiem (zaufanie spada do zera)', typeof capPoints === 'number', capPoints);
     check('stan funkcji: wojna, suma 128 > limit → dopisek', await page.evaluate(() => window.RTV.warRelationCapApplies(74, 54, true) === true));
     check('stan funkcji: pokój → brak dopisku', await page.evaluate(() => window.RTV.warRelationCapApplies(74, 54, false) === false));
-    check('stan funkcji: wojna, suma 20 ≤ limit → brak dopisku', await page.evaluate(() => window.RTV.warRelationCapApplies(10, 10, true) === false));
+    check('stan funkcji: wojna, Zaufanie 10 > 0 → dopisek (zaufanie spada do zera)', await page.evaluate(() => window.RTV.warRelationCapApplies(10, 10, true) === true));
+    check('stan funkcji: wojna, Zaufanie 0 → brak dopisku', await page.evaluate(() => window.RTV.warRelationCapApplies(0, 10, true) === false));
     check('effectiveNastawienieScores zwraca wartości prawdziwe (bez obcięcia)', await page.evaluate(() => {
       const r = window.RTV.effectiveNastawienieScores(74, 54);
       return r.zaufanie === 74 && r.respekt === 54;
@@ -255,12 +256,12 @@ async function main() {
     const aR = barValue(a.cardText, 'Respekt');
     console.log('  [A] badge=' + a.badge + ' note=' + a.noteText + ' Z=' + aZ + ' R=' + aR + ' relacja=' + JSON.stringify(a.relacja));
     check('A: etykieta nastawienia „Wrogi” w wojnie', a.badge === 'Wrogi', a.badge);
-    check('A: dopisek limitu obecny, tekst z WAR_RELATION_SCORE_CAP', a.noteText === '(etykieta Wrogi: limit wojenny ' + capPoints + ')', a.noteText);
+    check('A: dopisek obecny: „w wojnie zaufanie spada do zera”', a.noteText === '(w wojnie zaufanie spada do zera)', a.noteText);
     check('A: dopisek ma tooltip wyjaśniający sumę Zaufania i Respektu',
-      typeof a.noteTitle === 'string' && a.noteTitle.indexOf('suma Zaufania i Respektu') !== -1, a.noteTitle);
+      typeof a.noteTitle === 'string' && a.noteTitle.indexOf('Zaufanie spada do zera') !== -1, a.noteTitle);
     check('A: pasek Zaufania pokazuje prawdziwe 74', aZ === 74, aZ);
     check('A: pasek Respektu pokazuje prawdziwe 54 (nie obcięte do 29)', aR === 54, aR);
-    check('A: wiersz Relacja pokazuje sumę 128 / 200 i dopisek', /128 \/ 200/.test(a.relacja) && a.relacja.indexOf('limit wojenny ' + capPoints) !== -1, a.relacja);
+    check('A: wiersz Relacja pokazuje sumę 128 / 200 i dopisek', /128 \/ 200/.test(a.relacja) && a.relacja.indexOf('w wojnie zaufanie spada do zera') !== -1, a.relacja);
     await page.screenshot({ path: path.join(SHOT_DIR, MUTANT ? 'mutant-' + MUTANT + '-A.png' : '01-wojna-respekt-prawda-74-54.png') });
     errors.push(...page.errors);
     await page.close();
@@ -281,10 +282,10 @@ async function main() {
 
     // C. wojna, suma poniżej limitu
     page = await freshPage(browser);
-    await openAudience(page, audienceState(10, 10, true));
+    await openAudience(page, audienceState(0, 10, true));
     const c = await readPanel(page);
     console.log('  [C] badge=' + c.badge + ' note=' + c.noteText);
-    check('C: wojna, suma 20 ≤ limit → brak dopisku', c.noteText === null, c.noteText);
+    check('C: wojna, Zaufanie już 0 → brak dopisku', c.noteText === null, c.noteText);
     errors.push(...page.errors);
     await page.close();
 

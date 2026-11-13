@@ -1116,7 +1116,9 @@ export function isRelationAtWar(
 
 /**
  * W stanie wojny score relacji nie może utrzymywać nastawienia „Przyjazny"/„Życzliwy".
- * Obniża Zaufanie, potem Respekt, do WAR_RELATION_SCORE_CAP (29).
+ * Decyzja właściciela (2026-11-13): w wojnie obniżane jest WYŁĄCZNIE Zaufanie — do zera.
+ * Respekt nie jest zmieniany z powodu wojny (brak limitu 29 na sumę).
+ * WAR_RELATION_SCORE_CAP pozostaje wyeksportowane wyłącznie jako stała referencyjna (nie steruje clampem).
  */
 /**
  * R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1: czysta decyzja „kto dostaje 'wygrana_bitwa'”.
@@ -1140,16 +1142,8 @@ export function militaryWinRespectPair(
 
 export function clampRelationForWar(rel: Relation): Relation {
   if (rel.status !== 'wojna') return rel;
-  const score = relationScore(rel);
-  if (score <= WAR_RELATION_SCORE_CAP) return rel;
-  let excess = score - WAR_RELATION_SCORE_CAP;
-  let z = rel.zaufanie;
-  let r = rel.respekt;
-  const takeZ = Math.min(excess, z);
-  z -= takeZ;
-  excess -= takeZ;
-  r = Math.max(0, r - excess);
-  return { ...rel, zaufanie: z, respekt: r };
+  if (rel.zaufanie === 0) return rel;
+  return { ...rel, zaufanie: 0 };
 }
 
 // ---------------------------------------------------------------------------

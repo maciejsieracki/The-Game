@@ -708,7 +708,7 @@ export function treatyBasePnFromConfig(
   return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
 }
 
-/** Relacja do progu PN traktatu — w wojnie z podłogą score (spójne z clampRelationForWar / UI). */
+/** Relacja do progu PN traktatu — w wojnie Zaufanie = 0 (clampRelationForWar), bez limitu 29 na sumę. */
 export function treatyEvalRelationTotal(rel: Relation): number {
   const clamped = rel.status === 'wojna' ? clampRelationForWar(rel) : rel;
   return relationTotal(clamped);

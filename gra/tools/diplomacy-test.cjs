@@ -168,13 +168,13 @@ eq(applyDiplomaticEvent(rel(20, 30), 'trybut_zaakceptowany').respekt, 40, 'trybu
 {
   const r = applyDiplomaticEvent(rel(60, 40), 'zdrada');
   eq(r.zaufanie, 0,      'zdrada -50 Z, potem clamp wojny');
-  eq(r.respekt,  29,     'zdrada clamp R (score<=29)');
+  eq(r.respekt,  40,     'zdrada: Respekt nietknięty przez wojnę (bez limitu 29)');
   eq(r.status,  'wojna', 'zdrada sets status wojna');
 }
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_wypowiedziana');
   eq(r.zaufanie, 0,      'wojna — clamp Z (podłoga Wrogi, bez kary N1 deklaracji)');
-  eq(r.respekt,  29,     'wojna — clamp R do score<=29');
+  eq(r.respekt,  30,     'wojna — Respekt nietknięty (wojna obniża tylko Zaufanie)');
   eq(r.status,  'wojna', 'wojna_wypowiedziana sets wojna');
 }
 {
@@ -196,7 +196,7 @@ eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 2
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_casus_belli');
   eq(r.zaufanie, 0,     'wojna z casus belli -10 Z, potem clamp wojny');
-  eq(r.respekt,  29,    'wojna casus belli clamp R');
+  eq(r.respekt,  30,    'wojna casus belli: Respekt nietknięty');
   eq(r.status,  'wojna', 'wojna_casus_belli sets wojna');
 }
 eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');

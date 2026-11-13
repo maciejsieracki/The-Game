@@ -15,7 +15,6 @@ import {
   wiarygodnoscTooltipDefPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
-import { WAR_RELATION_SCORE_CAP } from '../game/diplomacy';
 import {
   wiarygodnoscLabelPl,
   wiarygodnoscTooltipRozbiciePl,
@@ -1281,13 +1280,13 @@ function stanceBadgeHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** Dopisek „limit wojenny 29” — tylko przy wojnie, gdy surowa wartość jest obcinana w etykiecie. */
+/** Dopisek „w wojnie zaufanie spada do zera” — tylko przy wojnie, gdy Zaufanie jest obcinane do zera. */
 function warCapNoteHtml(st: DiplomacyAudienceState): string {
   if (!warRelationCapApplies(st.zaufanie, st.respekt, audienceAtWar(st))) return '';
   return ' <span class="da-war-cap-note" title="' + esc(
-    'Limit wojenny: w wojnie suma Zaufania i Respektu nie może przekroczyć ' + WAR_RELATION_SCORE_CAP
-    + ' (nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”). Wartości powyżej są prawdziwe.',
-  ) + '">(etykieta Wrogi: limit wojenny ' + WAR_RELATION_SCORE_CAP + ')</span>';
+    'W trakcie wojny Zaufanie spada do zera. Respekt nie zmienia się przez wojnę. '
+    + 'Nastawienie nie może być przyjazne — etykieta ograniczona do „Wrogi”.',
+  ) + '">(w wojnie zaufanie spada do zera)</span>';
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
