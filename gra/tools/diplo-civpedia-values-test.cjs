@@ -273,6 +273,71 @@ if (fs.existsSync(zaufaniePath)) {
   ok(res.problems.some((p) => p.includes('startZaufanie')), 'mutacja liczby startZaufanie NIE została wykryta');
 }
 
+// ---- Sekcja 3d: liczby w tabeli „Zmiany na turę” i w prozie (sąsiedztwo, ustawienia po umowie) ----
+const SASIEDZTWO_KLUCZE = { 'Kamień': 'ekspansjaGranica_zaufanie_perTura', 'Brąz': 'ekspansjaGranicaBraz_zaufanie_perTura', 'Żelazo': 'ekspansjaGranicaZelazo_zaufanie_perTura' };
+// Tabela „Zmiany na turę” w zaufanie.md: wiersz „| Sąsiedztwo granicą, <epoka> | −N |” (znak minus U+2212 lub ASCII).
+function checkProzaSasiedztwo(text, name) {
+  const problems = [];
+  let found = 0;
+  for (const [epoka, key] of Object.entries(SASIEDZTWO_KLUCZE)) {
+    const re = new RegExp('^\\|\\s*Sąsiedztwo granicą, ' + epoka + '\\s*\\|\\s*[−-](\\d+(?:\\.\\d+)?)\\s*\\|', 'm');
+    const m = text.match(re);
+    if (!m) { problems.push(name + ': brak wiersza tabeli „Sąsiedztwo granicą, ' + epoka + '”'); continue; }
+    found += 1;
+    const shown = Number(m[1]);
+    // w tabeli prozy kara jest podana jako wielkość (3), w JSON jako wartość ze znakiem (-3)
+    if (shown !== -dip[key]) problems.push(name + ': proza „Sąsiedztwo, ' + epoka + '” = −' + shown + ', a params.' + key + ' = ' + dip[key]);
+  }
+  if (found === 0) problems.push(name + ': brak wierszy sąsiedztwa w tabeli prozy');
+  return problems;
+}
+// Zdania „ustawia Zaufanie pary na **N**” w rozejm-pokoj.md i w zaufanie.md (Ustawiane wartości po umowie).
+function checkProzaUstawienia(text, name, re, key) {
+  const m = text.match(re);
+  if (!m) return [name + ': brak zdania ustawienia Zaufania (' + key + ')'];
+  return Number(m[1]) === dip[key] ? [] : [name + ': proza ustawienia = ' + m[1] + ', a params.' + key + ' = ' + dip[key]];
+}
+const ZAUFANIE_ROZEJM_RE = /po zawarciu \*\*rozejmu\*\* Zaufanie pary wynosi \*\*(\d+)\*\*/;
+const ZAUFANIE_POKOJ_RE = /po \*\*pokoju\*\* — \*\*(\d+)\*\*/;
+const ROZEJM_PROZA_RE = /Zawarcie rozejmu ustawia Zaufanie pary na \*\*(\d+)\*\*/;
+const POKOJ_PROZA_RE = /Zawarcie pokoju ustawia Zaufanie pary na \*\*(\d+)\*\*/;
+{
+  const zp = path.join(POJECIA, 'zaufanie.md');
+  const rp = path.join(POJECIA, 'rozejm-pokoj.md');
+  if (fs.existsSync(zp)) {
+    const t = readText(zp);
+    const probs = [...checkProzaSasiedztwo(t, 'zaufanie.md'),
+      ...checkProzaUstawienia(t, 'zaufanie.md', ZAUFANIE_ROZEJM_RE, 'rozejm_zaufanie_ustawienie'),
+      ...checkProzaUstawienia(t, 'zaufanie.md', ZAUFANIE_POKOJ_RE, 'pokoj_zaufanie_ustawienie')];
+    for (const pr of probs) ok(false, pr);
+    ok(probs.length === 0, 'zaufanie.md: proza zgodna z JSON');
+  }
+  if (fs.existsSync(rp)) {
+    const t = readText(rp);
+    const probs = [...checkProzaUstawienia(t, 'rozejm-pokoj.md', ROZEJM_PROZA_RE, 'rozejm_zaufanie_ustawienie'),
+      ...checkProzaUstawienia(t, 'rozejm-pokoj.md', POKOJ_PROZA_RE, 'pokoj_zaufanie_ustawienie')];
+    for (const pr of probs) ok(false, pr);
+    ok(probs.length === 0, 'rozejm-pokoj.md: proza zgodna z JSON');
+  }
+}
+
+// ---- Sekcja 4d: samo-test mutacji prozy (zmiana liczby poza tabelą Parametry MUSI być wykryta) ----
+if (fs.existsSync(zaufaniePath)) {
+  const orig = readText(zaufaniePath);
+  const mutZelazo = orig.replace(/^(\|\s*Sąsiedztwo granicą, Żelazo\s*\|\s*)−5(\s*\|)/m, '$1−6$2');
+  ok(mutZelazo !== orig, 'mutacja prozy: brak wiersza „Sąsiedztwo granicą, Żelazo | −5” w zaufanie.md');
+  ok(checkProzaSasiedztwo(mutZelazo, 'zaufanie.md (mutacja)').length > 0, 'mutacja kary Żelazo w tabeli prozy (−5→−6) NIE została wykryta');
+  const mutRozejm = orig.replace('wynosi **10**', 'wynosi **11**');
+  ok(mutRozejm !== orig, 'mutacja prozy: brak zdania „wynosi **10**” w zaufanie.md');
+  ok(checkProzaUstawienia(mutRozejm, 'zaufanie.md (mutacja)', ZAUFANIE_ROZEJM_RE, 'rozejm_zaufanie_ustawienie').length > 0, 'mutacja ustawienia po rozejmie w prozie NIE została wykryta');
+}
+if (fs.existsSync(path.join(POJECIA, 'rozejm-pokoj.md'))) {
+  const orig = readText(path.join(POJECIA, 'rozejm-pokoj.md'));
+  const mut = orig.replace('Zawarcie pokoju ustawia Zaufanie pary na **20**', 'Zawarcie pokoju ustawia Zaufanie pary na **21**');
+  ok(mut !== orig, 'mutacja prozy: brak zdania „Zawarcie pokoju ustawia Zaufanie pary na **20**”');
+  ok(checkProzaUstawienia(mut, 'rozejm-pokoj.md (mutacja)', POKOJ_PROZA_RE, 'pokoj_zaufanie_ustawienie').length > 0, 'mutacja ustawienia po pokoju w prozie NIE została wykryta');
+}
+
 if (fails > 0) {
   console.log('\nWYNIK: CZERWONY — ' + fails + ' z ' + checks + ' sprawdzeń niezgodnych');
   process.exit(1);
