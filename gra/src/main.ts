@@ -1522,6 +1522,7 @@ import {
   showAllianceObligationModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
   type AudienceOtherRelations, type AudienceRelationPartner,
+  negotiationRoundCounterText,
 } from './ui/diplomacyAudience';
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
@@ -19073,7 +19074,7 @@ async function boot(): Promise<void> {
           id: n.id,
           icon: '\u{1F91D}',
           title: 'Dyplomacja: ' + ownerDiploLabel(aiOwnerId),
-          subtitle: negotiationSummary(n, true) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
+          subtitle: negotiationSummary(n, true) + ` (${negotiationRoundCounterText(n.round, NEGOTIATION_MAX_ROUNDS)})`,
           kind: 'diplo',
           blocking: true,
         });
