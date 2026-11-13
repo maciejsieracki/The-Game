@@ -40,11 +40,11 @@ Legenda statusu: JEST (odczyt i/lub zapis zaimplementowane w Rust), CZĘŚCIOWO 
 | `autoMarch` | `save.ts:418` | `SaveSnapshot.auto_march` `save_load.rs:133` (pole), `SavedAutoMarch` `save_load.rs:147-170` | JEST |
 | `plannedMarches` | `save.ts:421` | `planned_marches` `save_load.rs:130` + `SavedPlannedMarch` `save_load.rs:326` | JEST |
 | `recruitFollowGeneralDefault` / `recruitGeneralId` / `recruitGeneralNoticeShown` | `save.ts:429`, `save.ts:432`, `save.ts:434` | 0 trafień (`recruitGeneralId` 0 w całym `rust-port/engine/src`) | BRAK |
-| `rallyPoints` | `save.ts:437` | 0 trafień w modułach zapisu (3 trafienia w domenie) | BRAK w kopercie |
+| `rallyPoints` | `save.ts:437` | domena: `rust-port/engine/src/domain/pathfinding.rs:1574` (`rally_points_to_save`), `:1605`, `:1682` (`rally_points_from_save`); w `pathfinding.rs` 5 trafień (1573, 1574, 1605, 1681, 1682); testy `tests/p6_4_rally.rs`; 0 trafień w modułach zapisu | CZĘŚCIOWO (domena JEST, brak w kopercie) |
 | `meta` | `save.ts:440` | `meta: Option<SaveMeta>` `save_load.rs:545`, `SaveMeta` `save_load.rs:177` | JEST (szczegóły §2b) |
 | `tradeRoutes` | `save.ts:447` | 0 trafień w modułach zapisu | BRAK |
 | `mapQuality` / `renderQuality` / `mapDetailQuality` | `save.ts:450`, `:452`, `:454` | 0 trafień w modułach zapisu | BRAK (dot. UI, niski priorytet) |
-| `mapSnapshot` (P-WCZYTYWANIE) | `save.ts:468`; zapis `main.ts:37483`; walidacja `save.ts:745-751` | 0 trafień w modułach zapisu | BRAK |
+| `mapSnapshot` (P-WCZYTYWANIE) | `save.ts:468`; zapis `main.ts:37483`; walidacja `save.ts:745-751` | domena: `rust-port/engine/src/domain/map_snapshot.rs:318` (`serialize_map_for_save`), `:613` (`is_valid_map_snapshot`); brak pola w kopercie `SnapshotWire` (0 trafień w `save_load.rs`/`save_migrations.rs`) | CZĘŚCIOWO (port domeny JEST, brak pola w kopercie) |
 
 ### 2b. Pola `meta` (pin `buildSaveGameSnapshot`, `main.ts:37171`, blok `meta` od `main.ts:37253`)
 
@@ -60,7 +60,7 @@ Rust `SaveMeta` zachowuje nieznane klucze przez `#[serde(flatten)] extra` (`save
 | `warRulesForcedEraDeclared` | `main.ts:37409` (gated) | — | passthrough `extra` | CZĘŚCIOWO |
 | `ownerEraByOwner` (AI) | `main.ts:37438` | — | `save_load.rs:223-225` (`owner_era_entries`), `owner_eras_from_save` `save_load.rs:564-580` | JEST |
 | `ownerStartEraByOwner` | `main.ts:37439` | — | passthrough; `start_era_fallback` `save_load.rs:231` | CZĘŚCIOWO |
-| `eliminatedOwners` | `main.ts:37437` | `main.ts:46469-46472` | passthrough (0 odczytów w Rust) | CZĘŚCIOWO (dane, bez logiki odczytu) |
+| `eliminatedOwners` | `main.ts:37437` | `main.ts:46469-46472` | passthrough w `SaveMeta` (0 odczytów w `save_load.rs`/`save_migrations.rs`); logika i jawne wejście w domenie: `domain/eliminacja.rs:4-26` (zbiór `wyeliminowani`), `domain/brake_inputs.rs:178`, `domain/war_turn_forced.rs:81` | CZĘŚCIOWO (domena JEST; w zapisie tylko passthrough) |
 | `wonderBuildSites` | `main.ts:37451` | `main.ts:46462-46463` (surowy `slice()`, BEZ migracji) | 0 trafień w `rust-port/engine/src` | BRAK |
 | `forcedWarWavesByPairKey` (§0c kolejka poz. 8) | `main.ts:37434` (`serializeForcedWarWaves`) | `main.ts:46690` (`restoreForcedWarWaves`) | `war_forced_waves.rs:469` (`serialize_forced_war_waves`), `:522` (`restore_forced_war_waves`); wołane tylko z `ai_war_march_plan.rs:251` i testów `p6_forced_war_g3*.rs`; NIE wpięte w `SaveMeta`/`SaveSnapshot` (klucz tylko passthrough `save_load.rs:203-205`); komentarz `war_turn_forced.rs:13` potwierdza, że fale nie są mutowane | CZĘŚCIOWO |
 | `forcedEraPeaceUntilNextEraByPairKey` | `main.ts:37431` (`serializeForcedEraPeaceLocks`) | — | passthrough | CZĘŚCIOWO |
@@ -78,12 +78,12 @@ Pin: kolejność w `restoreGameFromSave` (`main.ts:46225`): najpierw degradacja 
 | Migracja | Pin (plik:linia) | Rust (plik:linia) | Status |
 |---|---|---|---|
 | Nadmiar wodzów ponad limit epoki (R-WEB-GENERALS-OVER-LIMIT-Q1) | `main.ts:47024-47026` (`planGeneralLimitDemotions`), limit `generalLimitForEra` | `plan_general_limit_demotions` `save_migrations.rs:58-81`; `demote_generals_over_limit` `save_migrations.rs:256-277`; wołane przez `migrate_loaded_state` `save_migrations.rs:342`; epoka z `owner_eras` `save_load.rs:690-698` | JEST (tylko przy wczytaniu) |
-| Siatka stosu > limit, przy wczytaniu | `main.ts:47031` (`enforceArmyStackLimit('wczytanie zapisu')`), limit `BATTLE_MAX_PER_SIDE` `main.ts:4358-4359` | `enforce_army_stack_limit` `save_migrations.rs:282-`; `ARMY_STACK_LIMIT = 500` `save_migrations.rs:221`, `ARMY_STACK_MAX_RADIUS = 6` `save_migrations.rs:224`; wołane `save_migrations.rs:344` | JEST (load); limit 500 zgodny z pinem co do wartości? NIE_ZMIERZONO (nie czytano `BATTLE_MAX_PER_SIDE`) |
+| Siatka stosu > limit, przy wczytaniu | `main.ts:47031` (`enforceArmyStackLimit('wczytanie zapisu')`), limit `BATTLE_MAX_PER_SIDE` = `MAX_PER_SIDE` (pin `gra/src/battle/battleScene.ts:721,723`); `main.ts:4358-4359` to funkcja `armyStackLimit()`, nie definicja stałej | `enforce_army_stack_limit` `save_migrations.rs:282-`; `ARMY_STACK_LIMIT = 500` `save_migrations.rs:221`, `ARMY_STACK_MAX_RADIUS = 6` `save_migrations.rs:224`; wołane `save_migrations.rs:344` | JEST (load); limit 500 zgodny z pinem co do wartości: TAK (zmierzone: pin `MAX_PER_SIDE = 500`, `gra/src/battle/battleScene.ts:721`) |
 | Siatka stosu na STARCIE TURY (siatka bezpieczeństwa) | `main.ts:38138` (`enforceArmyStackLimit('start tury')`) | BRAK — jedyny wołający `enforce_army_stack_limit` to `migrate_loaded_state` (grep: 0 wywołań w `advance_turn`/pipeline tury) | BRAK |
 | Playerowa epoka wojny (`playerEpochWarEnabled`) | `main.ts:47190` | `save_load.rs:309-317` (odczyt, default true) | JEST (odczyt) |
 | `autoBuildEnabled` | `main.ts:47163` | `save_load.rs:303-307` | JEST (odczyt) |
 | Niespójny właściciel cudu (`wonderBuildSites`) | pin: BRAK migracji (`main.ts:46462-46463` surowy odczyt) — §0b: „web: NIE wykonana” | BRAK | BRAK (po obu stronach; nic do portu, patrz D3) |
-| Usunięcie farm na lesie (R-ULEPSZENIA-FARMA-LESIE) | `save.ts:575` (`migrateLegacyFarmsOnForestInSave`), wołane w `deserializeGame` `save.ts:759` | BRAK (0 trafień „farm” w `save_load.rs`/`save_migrations.rs`) | BRAK — poza §0b, zgłaszam jako lukę |
+| Usunięcie farm na lesie (R-ULEPSZENIA-FARMA-LESIE) | `save.ts:575` (`migrateLegacyFarmsOnForestInSave`), wołane w `deserializeGame` `save.ts:759` | port helperów JEST: `domain/improvement_build.rs:305` (`is_legacy_farm_on_forest_layer`), `:313` (`strip_legacy_farm_on_forest`), test `tests/p6_m16_rules.rs:55,63`; wpięcia w `migrate_loaded_state` BRAK (0 trafień w `save_load.rs`/`save_migrations.rs`) | CZĘŚCIOWO (port JEST, brak wpięcia w wczytanie) — poza §0b, zgłaszam jako lukę |
 | Odrzucenie zapisu v<3 (ABC-4) | `save.ts:705-706` | BRAK odpowiednika (Rust nie zna `wersja`) | BRAK (kontrakt różny; patrz D1) |
 | Migracja v1→v2 snapshotu | — (nie dotyczy webu) | `migrate_v1` `save_load.rs:863`, gałąź `LEGACY_SNAPSHOT_VERSION` `save_load.rs:800-803` | JEST (Rust-only) |
 
@@ -125,14 +125,14 @@ Zależności: D1 (decyzja o formacie) blokuje wszystko poza migracjami na `SaveM
 | T2 | Producenci `playerEpochWarEnabled` / `autoBuildEnabled` w zapisie | zapis z `SaveSnapshot` do `SaveMeta.extra` | T0 | NIE_ZMIERZONO |
 | T3 | `forcedWarWavesByPairKey` w zapisie | wpięcie `serialize_forced_war_waves`/`restore_forced_war_waves` (`war_forced_waves.rs:469/522`) do `SaveMeta` i do pipeline wojny | T0; wspólne z kolejką poz. 5 | NIE_ZMIERZONO |
 | T4 | Top-level pola web w kopercie | `cityProd`, `cityBuilt`, `tradeRoutes`, `humanOwnerIds`, ... | T0 (bez T0 nie ma sensu) | NIE_ZMIERZONO |
-| T5 | Migracja farm-na-lesie | `save.ts:575` → Rust | T0 | NIE_ZMIERZONO |
+| T5 | Wpięcie migracji farm-na-lesie (zakres ZREDUKOWANY: port helperów JEST) | `improvement_build.rs:305/313` → wołający w `migrate_loaded_state`; pin `save.ts:575/759` | T0 (lub niezależnie) | NIE_ZMIERZONO (jedno miejsce wpięcia + test; bez pomiaru rund) |
 | T6 | Testy round-trip zapisu web | wektory z pina `save.ts:533/679` | T0 | NIE_ZMIERZONO |
 
-Szacunek rund: NIE_ZMIERZONO. Nie ma metody pomiaru rund z tego rozpoznania; zgadywanie liczb zabronione (dispatch). Dla T1–T3 można oszacować po przeczytaniu hunków pipeline tury (`turn_*.rs`) w rundzie wykonawczej.
+Szacunek rund: NIE_ZMIERZONO przez Operatora. Szacunek PLANU (nie pomiar): `PLAN-PORT-RUST-TAURI-20261020.md` §0c poz. 8 (`R-RUSTPORT-P6-ZAPIS-MIGRACJE-FALA509-Q1`) podaje „2–3” rundy dla CAŁEJ pozycji (T1–T6 plus `forcedWarWavesByPairKey`), bez podziału na T1–T6. Podział po T0 (D1) może ten szacunek zmienić. Liczb per-temat nie zgadywano (dispatch). Dla T1–T3 można oszacować po przeczytaniu hunków pipeline tury (`turn_*.rs`) w rundzie wykonawczej.
 
 ## 7. Pytania do właściciela (ABC)
 
-- **D1 — format zapisu.** A) Rust czyta web `SaveGame` v3 przez warstwę mapującą (zachowuje pliki webu, większy zakres T4). B) Rust ma własny format; zapisy web nie są wymagane (T4 znika, ale plan §0b „wsteczna kompatybilność” wymaga decyzji). C) Mieszany: mapowanie tylko `meta` + pola gry. Rekomendacja: C (najmniejszy zakres dający pełną grę na tym samym stanie). Kontekst: `save_load.rs:532-550`, `save.ts:336-470`.
+- **D1 — format zapisu.** A) Rust czyta web `SaveGame` v3 przez warstwę mapującą (zachowuje pliki webu, większy zakres T4). B) Rust ma własny format; zapisy web nie są wymagane (T4 znika, ale plan §0b „wsteczna kompatybilność” wymaga decyzji). C) Mieszany: mapowanie tylko `meta` + pola gry. Rekomendacja Operatora: C. To OPINIA, nie wynik pomiaru: koszt wariantów A/B/C NIE_ZMIERZONO. Jedyne liczby osadzone w tym rozpoznaniu: 11 wierszy BRAK w §2a (w tym `explored`/`gracz`, odrzucane celowo) oraz 9 pozycji zakresu w §5; T4 (top-level pola web) nie został wyceniony. Kontekst: `save_load.rs:532-550`, `save.ts:336-470`.
 - **D2 — siatka stosu na starcie tury.** Czy wpinamy ją w tym temacie (T1), czy zostawiamy na próg wczytania? Rekomendacja: wpiąć (pin `main.ts:38138` to część zachowania gry).
 - **D3 — `wonderBuildSites`.** Web nie ma migracji (§0b: NIE wykonana). Czy Rust ma być „mądrzejszy” niż web? Rekomendacja: nie; zgodność z pinem.
 
@@ -142,3 +142,5 @@ Szacunek rund: NIE_ZMIERZONO. Nie ma metody pomiaru rund z tego rozpoznania; zga
 - Lista kluczy `meta` pinu nie zweryfikowana linia-po-linii (§2b).
 - Plan §0b odczytany z gałęzi `claude/rust-sivvrn`, nie z bazy — linie planu nie są cytowane w bazie.
 - Typy pól (np. `tura`, `seed`, `units`) nie porównywane z `GameStateDto` — NIE_ZMIERZONO.
+- Kryterium 1 dispatchu NIE jest spełnione w całości: §2b opisuje klucze `meta` zbiorczo (~180 wg szacunku, bez linii na klucz). Grep `^\s+ident:` w `main.ts:37253-37440` daje 93 dopasowania; to NIE jest liczba kluczy meta (zawiera klucze zagnieżdżone i nie-meta). Pełna tabela per-klucz = NIE_ZMIERZONO, do rundy wykonawczej.
+- Dryf numeracji pina: komentarze Rust cytują `main.ts:46701` (autoBuild) i `main.ts:46706` (playerEpochWarEnabled): `rust-port/engine/src/domain/save_load.rs:303`, `:309`; `rust-port/engine/tests/p6_zapis_migracje_meta_flags.rs:2-3`; `rust-port/engine/tests/p6_zapis_migracje_snapshot_flags.rs:3`. W pinie `07d2fbd72` te odczyty są pod `main.ts:47163` i `:47190`. Komentarze są nieaktualne; NIE poprawiane w tej rundzie (poza allowlistą).
