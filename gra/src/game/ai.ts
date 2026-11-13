@@ -7125,7 +7125,11 @@ export function decideAIDiplomacy(
     // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ----
     // Sygnały: (a) rw <= progPokojSlabosc(civ); (b) utracone miasto i rw <= 0.5; (d) pat;
     // (e) zmęczenie wojną >= próg. Sygnał (c) zdrowie armii — NIEZAIMPLEMENTOWANY (brak HP armii).
-    const peaceSignals = rel.stanWojny
+    // R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: sygnały (a) rw <= progPokojSlabosc oraz (b) utracone
+    // miasto i rw <= progRwMiasta mierzą Power (rw), nie siłę militarną — wypadają z bramki. Słabość wobec
+    // partnera bierze się wyłącznie z peacePosMil (sygnał 'f' niżej). Zostają sygnały niezależne od miary:
+    // (d) pat, (e) zmęczenie wojną, (c) zdrowie armii.
+    const peaceSignalsRaw = rel.stanWojny
       ? aiPeaceSignals(
           {
             rw,
@@ -7137,6 +7141,8 @@ export function decideAIDiplomacy(
           { ...warProfile, progPokojSlabosc },
         )
       : { wantsPeace: false, reasons: [] as string[] };
+    const peaceSignalsNonRw = peaceSignalsRaw.reasons.filter(r => r !== 'a' && r !== 'b');
+    const peaceSignals = { wantsPeace: peaceSignalsNonRw.length > 0, reasons: peaceSignalsNonRw };
     // Spójność (R5 ↔ R3): AI NIE proponuje pokoju, gdy sama odrzuciłaby pokój od gracza jako
     // „czuje się silniejsze" (isFeelingStronger = bramka R5b) ANI gdy odrzuciłaby go jako
     // „za wcześnie" (turnsAtWar < minTurWojny = bramka R5a). Obie bramki są stosowane przez
@@ -7146,7 +7152,8 @@ export function decideAIDiplomacy(
     // DODATEK 1 (R-WEB-DIPLO-PEACE-BALANCE-ACCEPT-DIAG-Q1, wlasciciel 2026-11-09), AI vs GRACZ:
     // (a) przewaga militarna > prog (20%, diplomacy-war-peace-params.json) i brak zmeczenia wojna -> AI NIE proponuje pokoju;
     // (b) slabsza o >= prog -> AI MOZE proponowac pokoj (sygnal 'f'); (c) pomiedzy -> reguly dotychczasowe.
-    // Miara sily = rw (objectivePower, jak wszystkie galezie pokoju). Zadanie miasta N1b wyzej NIE jest objete (ABC do orkiestratora).
+    // Miara sily = peacePosMil (siła militarna, decyzja właściciela krok 4a; R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1 — dawniej rw/Power).
+    // Zadanie miasta N1b wyzej NIE jest objete (ABC do orkiestratora).
     const advantageVsHuman = rel.stanWojny && rel.partnerId === '0';
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: słabsza militarnie AI zawsze szuka pokoju (sygnał 'f');
     // silniejsza nie proponuje (aiFeelsStronger wyżej). Zmęczenie wojną nie zdejmuje już blokady.
@@ -7158,26 +7165,27 @@ export function decideAIDiplomacy(
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: wobec gracza słabsza AI proponuje pokój WYŁĄCZNIE
     // z miastem (blok N1a wyżej). Gdy nie ma miasta do oddania — brak propozycji (ZAŁOŻENIE Z5).
     const peaceWeakerNoCityVsPlayer = rel.partnerId === '0' && peacePosMil === 'slabsza';
-    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: słabość = siła militarna (peacePosMil), nie rw (Power).
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === 'slabsza' || peaceSignals.wantsPeace)) {
       // R-WEB-DIPLO-TRUCE-IMPL-Q1 (E): tryb wg pozycji i zmęczenia wojną (zaufanie z relacji);
       // bez sygnałów rozstrzygających — dotychczasowy wybór po turach wojny (aiPeaceProposalKind).
       // Sygnały: zmęczenie (ułamek t/T), willingnessPeace ze stance (gotowość do pokoju) i Zaufanie.
-      // `weaker` = tylko słabość względna (rw); sygnały z peaceSignals (utrata miasta, pat, zmęczenie)
+      // `weaker` = tylko słabość militarna (peacePosMil === 'slabsza'); sygnały z peaceSignals (pat, zmęczenie)
       // nie czynią AI „słabszą" — wtedy zostaje fallback (aiPeaceProposalKind po turach wojny).
-      const weakerByPower = rw <= progPokojSlabosc;
+      const weakerByStrength = peacePosMil === 'slabsza';
       const peaceKindAi = aiTruceOrPeaceMode({
         // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: ułamek zmęczenia = ten sam jeden licznik (warWearinessLevel), bez drugiego zegara.
         fatigueFraction: wearyLevel,
         willingnessPeace: stance.willingnessPeace,
         zaufanie: rel.relation?.zaufanie ?? 0,
-        weaker: weakerByPower,
+        weaker: weakerByStrength,
         fallbackKind: aiPeaceProposalKind(turnsAtWarRel),
       });
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
         rodzaj:   peaceKindAi,
-        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; gotowosc pokoju=${stance.willingnessPeace.toFixed(2)}; tury wojny=${turnsAtWarRel}): proponujemy ${peaceKindAi === 'rozejm' ? 'rozejm' : 'pokoj'}`,
+        powod:    `slabszy militarnie w wojnie (pozycja=${peacePosMil}; respektWzgledny=${rw.toFixed(2)}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; gotowosc pokoju=${stance.willingnessPeace.toFixed(2)}; tury wojny=${turnsAtWarRel}): proponujemy ${peaceKindAi === 'rozejm' ? 'rozejm' : 'pokoj'}`,
       });
       continue;
     }
