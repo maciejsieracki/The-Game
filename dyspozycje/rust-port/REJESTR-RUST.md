@@ -744,3 +744,17 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - ZLOZA-B-REST-Q1 (pozostałe gałęzie `transferBasketItems`, z jawnym NIE_ZMIERZONO tam, gdzie brak stanu w Rust) — `wf_28623be9-aa1`.
 - **Dispatche:** `dyspozycje/autobot/runs/<ID>/00-dispatch.md` (commit `42f58b3ab`).
 - **Uwaga:** runda 2 bronze-era nie używa cache rundy 1 (ta zawierała wynik BLOCK/FAIL), żeby nie odtworzyć starego werdyktu.
+
+## EKONOMIA-BRAZ-ERA-Q1, runda 2 — BLOCK przed startem (dysk), nie FAIL merytoryczny
+- Operator r2 sprawdził dysk przed startem: **6,9 GB** (dispatch r2 wymaga ≥ 8 GB). Kod nie został napisany, commit kodu nie istnieje, bramki nie były uruchomione.
+- Przyczyna: w tym samym czasie startowały dwa inne tematy (ZWYCIESTWO-WIRING, ZLOZA-B-REST), które zużyły miejsce na worktree.
+- Ewaluator i FC oceniły pustą rundę i dały FAIL. **Traktuję to jako błąd proceduralny (brak kodu), nie merytoryczny** — runda merytoryczna nie została wykonana, więc nie zużywa rundy 1/5. Obrona r2 (`b4833db8c`, tylko dokument) nie zmienia kodu.
+- **Następny krok:** ponowny start EKONOMIA-BRAZ-ERA r2 **po zakończeniu obu tematów** (zwolnienie worktree), od `git checkout --detach 94feb5e37`, bez cache (świeże uruchomienie).
+- Uwaga procesowa: Operator r2 przełączył worktree z e6776801b (ROBOCZA, inna historia) na gałąź od `94feb5e37` — zgodnie z dispatchem.
+
+## KOREKTA (13.11, ~18:55): ZWYCIESTWO-IMPL NIE BYŁ na parity-v2
+- **Mój błąd:** w poprzednim wpisie napisałem „integracja czeka na pełny test”, ale nie przeniosłem commitów `3a4c55929`, `8a31afd24`, `8fc46b8d7` na `parity-v2`. Dispatch ZWYCIESTWO-WIRING błędnie zakładał, że `victory.rs` jest już na parity.
+- **Skutek:** Operator ZWYCIESTWO-WIRING wydał **BLOCK** (poprawnie: brak `victory.rs` na bazie `94feb5e37`). Wynik tego BLOCK jest w cache i nie może być wznowiony — potrzebny świeży start po integracji.
+- **Działanie:** cherry-pick `3a4c55929 8a31afd24 8fc46b8d7` na `origin/rust-port/parity-v2` (`94feb5e37`) w worktree `integ-victory`; pełny test w tle. FF po zielonym wyniku.
+- **Następnie:** świeży start ZWYCIESTWO-WIRING (baza = nowy parity). EKONOMIA-BRAZ-ERA r2 — świeży start (nie wznawiać).
+- **Dysk:** awaria ENOSPC przy starcie trzeciego tematu; usunięto worktree trzech zakończonych/nieudanych uruchomień (EKONOMIA r2, ZWYCIESTWO-WIRING, COUNTER, ZLOZA-B-PORT, ZWYCIESTWO-IMPL). Dysk: 16 GB wolne. Worktree ZLOZA-B-REST (w toku) zachowane.
