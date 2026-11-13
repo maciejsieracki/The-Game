@@ -246,7 +246,7 @@
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "NIE",
       "Koszt": "Negocjacja — może wymagać opłaty lub wymiany technologii jako gwarantu",
-      "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Zaufanie). Czas: bezterminowy"
+      "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Wiarygodności, kara tylko dla odmawiającego). Czas: bezterminowy"
     },
     {
       "Akcja": "4. Traktat przemarszu",
@@ -318,7 +318,7 @@
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "TAK",
       "Koszt": "Brak kosztu walutowego; koszt reputacyjny zależny od kontekstu",
-      "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: −25 Relacja u wszystkich, −20 Zaufanie, flaga agresor"
+      "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: sama deklaracja nie zmienia Zaufania ani Relacji; kara Wiarygodności N1 (−10 pkt, jednorazowo, gdy atak w tej samej turze lub w karencji), flaga agresor"
     },
     {
       "Akcja": "12. Wasalizacja",
@@ -468,7 +468,7 @@
       "Zmiana": "-40",
       "Znak (+/−)": "-",
       "Typ (co turę / jednorazowo)": "jednorazowo",
-      "Uwagi": "Informacja rozchodzi się do sąsiadów (-5 Relacja u każdego)"
+      "Uwagi": "Kara na relację z poszkodowanym (zdarzenie zlamana_obietnica). W kodzie nie znaleziono rozchodzenia się informacji do sąsiadów (brak −5 Relacja u każdego)"
     },
     {
       "Zdarzenie / Działanie": "Złamany pakt przez AI",

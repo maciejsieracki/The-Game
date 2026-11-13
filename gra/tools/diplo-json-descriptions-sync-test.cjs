@@ -150,6 +150,27 @@ function checkDescriptions(data, code) {
       `efekt traktatu handlowego bez „+${P.handel_zaufanie_perTura} Zaufanie/turę”`);
   }
 
+  // 5b. Odmowa obowiązku sojuszniczego: kara N4 to Wiarygodność, nie Zaufanie (params).
+  if (sojusz) {
+    const want = `${MINUS}${Math.abs(P.wiarygodnoscN4OdmowaObowiazkuSojuszu)} Wiarygodności`;
+    expect(sojusz.Efekt.includes(want),
+      `efekt sojuszu bez kary odmowy „${want}” (params.wiarygodnoscN4OdmowaObowiazkuSojuszu)`);
+    expect(!sojusz.Efekt.includes(`odmowa: ${MINUS}${Math.abs(P.wiarygodnoscN4OdmowaObowiazkuSojuszu)} Zaufanie`),
+      'efekt sojuszu podaje odmowę jako utratę Zaufania (to Wiarygodność N4)');
+  }
+
+  // 5c. Wypowiedzenie wojny bez casus belli: sama deklaracja nie obniża Zaufania
+  // (kod: case 'wojna_wypowiedziana' bez dZ); kara to Wiarygodność N1.
+  const wojna = findAkcja(data, '11. Wypowiedzenie wojny');
+  expect(wojna !== null, 'brak akcji „11. Wypowiedzenie wojny”');
+  if (wojna) {
+    expect(!wojna.Efekt.includes(`${MINUS}20 Zaufanie`),
+      'efekt wypowiedzenia wojny podaje −20 Zaufanie (kod: deklaracja nie zmienia Zaufania)');
+    const karaN1 = `Wiarygodności N1 (${MINUS}${Math.abs(P.wiarygodnoscN1BezOstrzezenia)} pkt`;
+    expect(wojna.Efekt.includes(karaN1),
+      `efekt wypowiedzenia wojny bez kary N1 „${karaN1}” (params.wiarygodnoscN1BezOstrzezenia)`);
+  }
+
   // 6. Tabela D: tempo co turę — NAP +nap, sojusz +sojusz, przyrost handlu.
   walk(data, (o) => {
     const name = o['Stan / zdarzenie ciągłe'];
@@ -214,6 +235,14 @@ const mutations = [
     walk(d, (o) => {
       if (o['Stan / zdarzenie ciągłe'] === 'Ekspansja przy granicy') o['Δ Zaufanie/turę'] = -2;
     });
+  }],
+  ['odmowa sojuszu: Wiarygodność → Zaufanie', (d) => {
+    const a = findAkcja(d, '3. Sojusz');
+    a.Efekt = a.Efekt.replace('−15 Wiarygodności', '−15 Zaufanie');
+  }],
+  ['wypowiedzenie wojny: powrót −20 Zaufanie', (d) => {
+    const a = findAkcja(d, '11. Wypowiedzenie wojny');
+    a.Efekt = a.Efekt.replace('sama deklaracja nie zmienia Zaufania ani Relacji', '−20 Zaufanie');
   }],
   ['próg sojuszu 130 → 120', (d) => {
     walk(d, (o) => {
