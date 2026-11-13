@@ -47868,12 +47868,12 @@ async function boot(): Promise<void> {
             id: `city-impadmin-migration-${turn}`,
             icon: 'ADM-IMP',
             title: 'Auto-ulepszenia terenu wymagają administratora państwa',
-            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem państwa (${formatMiastaCount(affectedImp.length)} bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
+            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko przy działającym administratorze państwa (jeden na całe Państwo). Wstrzymane dla: ${formatMiastaCount(affectedImp.length)}. Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
             kind: 'enemy',
             turnCreated: turn,
           });
           trimWarEventLog();
-          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem państwa — ${formatMiastaCount(affectedImp.length)} bez niego (patrz „Ważne”)`, 6000);
+          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko przy administratorze państwa — wstrzymane dla: ${formatMiastaCount(affectedImp.length)} (patrz „Ważne”)`, 6000);
         }
       }
       if (!cityAdministratorNoticeShown) {
