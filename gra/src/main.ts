@@ -1628,6 +1628,7 @@ import {
   normalizeTruceDuration,
   TRUCE_DEFAULT_TURNS,
   isTruceWindowBreach,
+  isTruceActive,
   peaceFinalizeTrustEvent,
   truceEndTickPair,
   truceEndToWarCore,
@@ -12079,16 +12080,26 @@ async function boot(): Promise<void> {
       const cur = getDiploRelation(proposerId, responderId);
       // (C) peaceFinalizeTrustEvent: rozejm (poprawna długość 5/10/15) → null (0 Zaufania); pokój stały → 'pokoj'.
       const isTruce = peaceFinalizeTrustEvent(truceTurns) === null;
+      // R-WEB-DIPLO-TRUST-NUMBERS-Q1: Zaufanie pary USTAWIANE od razu w chwili zawarcia —
+      // rozejm 10, pokój 20 (zostaje; rozejm → pokój daje 20). Wartości w diplomacy.json.
+      const trustSetpoint = isTruce
+        ? _diplomacyParams().rozejm_zaufanie_ustawienie
+        : _diplomacyParams().pokoj_zaufanie_ustawienie;
       if (isTruce) {
-        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C): rozejm NIE daje Zaufania (0) — tylko zmiana statusu
-        // na 'pokoj' (rozejm = status 'pokoj' + truceUntilTurn; pokój stały nadal +5).
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C) + R-WEB-DIPLO-TRUST-NUMBERS-Q1: rozejm = status 'pokoj' + truceUntilTurn,
+        // zaufanie ustawione na rozejm_zaufanie_ustawienie.
         setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
+        setDiploRelation(proposerId, responderId, { ...getDiploRelation(proposerId, responderId), zaufanie: trustSetpoint });
       } else {
-        setDiploRelation(
-          proposerId,
-          responderId,
-          applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
-        );
+        // Silnik zdarzenia 'pokoj' (+5 w applyDiplomaticEvent) nie jest tu używany do Zaufania:
+        // Zaufanie = pokoj_zaufanie_ustawienie. Respekt liczony jak w applyDiploEventTracked.
+        const afterPeace = applyDiplomaticEvent(cur, 'pokoj');
+        const dRPeace = afterPeace.respekt - cur.respekt;
+        if (dRPeace !== 0) recordDiploFactor(proposerId, responderId, 'pokoj_respekt', dRPeace);
+        setDiploRelation(proposerId, responderId, { ...afterPeace, zaufanie: trustSetpoint });
+      }
+      if (trustSetpoint !== cur.zaufanie) {
+        recordDiploFactor(proposerId, responderId, isTruce ? 'rozejm' : 'pokoj', trustSetpoint - cur.zaufanie);
       }
       if (isTruce) {
         // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
@@ -23163,14 +23174,18 @@ async function boot(): Promise<void> {
         }),
         dobraWolaAktywna: brakeFlags.dobraWolaAktywna,
         wspolnyWrog: brakeFlags.wspolnyWrog,
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
-        karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-          empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
-        ),
+        // R-WEB-DIPLO-TRUST-NUMBERS-Q1: kara za sąsiedztwo = 0 w karencji po pokoju lub rozejmie
+        // (żeby ustawione 10/20 nie zostało natychmiast zjedzone). Flaga karaWspolnaGranica zostaje
+        // dla relacji (NAP); wpływ na Zaufanie niesie wyłącznie karaWspolnaGranicaDelta.
+        karaWspolnaGranicaDelta: (isPeaceLockedBetween(a, b)
+          || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn))
+          ? 0
+          : sharedBorderPenaltyForEpochs(
+            empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
+          ),
         wiarygodnoscSelf: atWar || !playerInPair
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
@@ -23207,8 +23222,6 @@ async function boot(): Promise<void> {
             : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
         karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
