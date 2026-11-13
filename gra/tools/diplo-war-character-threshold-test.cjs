@@ -172,6 +172,31 @@ async function main() {
   ok(wojny(decideAIDiplomacy(input({ ...AGR, przewagaProc: -25 }), undefined, 1, 1, 'normal')).length === 0,
     'agresywna AI słabsza o 25% → brak wypowiedzenia');
 
+  // ---- (f) granice porównania: przewaga równa progowi = wypowiedzenie (>=), o jeden punkt niżej = brak ----
+  console.log('(f) granice progu: przewaga równa progowi (≥) i o 1 pkt niżej');
+  ok(fires(AGR, 14) === true, 'agresywna + przewaga dokładnie 14% (= próg) → wypowiedzenie (≥)');
+  ok(fires(AGR, 13) === false, 'agresywna + przewaga 13% (< 14%) → brak');
+  ok(fires(OST, 28) === true, 'ostrożna + przewaga dokładnie 28% (= próg) → wypowiedzenie (≥)');
+  ok(fires(OST, 27) === false, 'ostrożna + przewaga 27% (< 28%) → brak');
+
+  // ---- (g) realne cywilizacje z data/civ-ai.json: przesunięcie i efektywny próg (tabela z raportu) ----
+  console.log('(g) realne cywilizacje z civ-ai.json → efektywny próg');
+  const civList = JSON.parse(fs.readFileSync(path.resolve(GRA, 'data', 'civ-ai.json'), 'utf8')).cywilizacje;
+  const oczekiwane = {
+    'Chińczycy': 28, 'Sumerowie': 28, 'Harappa': 28, 'Fenicjanie': 28,
+    'Grecy': 20, 'Inkowie': 20, 'Egipt': 20, 'Hetyci': 20, 'Słowianie': 20, 'Babilonia': 20,
+    'Celtowie': 14, 'Germanie': 14, 'Asyria': 14,
+    'Rzymianie': 10, 'Zulusi': 10,
+  };
+  const realne = Object.fromEntries(civList.map((c) => {
+    const b = resolveDiplomacyCivBias(1.0, c.sklonnoscDoPodboju, c.agresywnosc, c.tolerancjaRyzyka).warSilaBonus;
+    return [c.Cywilizacja, progPrzewagiWypowiedzeniaWojnyProc(BAZA, b)];
+  }));
+  ok(civList.length === Object.keys(oczekiwane).length, `civ-ai.json: ${civList.length} cywilizacji = ${Object.keys(oczekiwane).length} w tabeli`);
+  for (const [nazwa, prog] of Object.entries(oczekiwane)) {
+    ok(Math.abs((realne[nazwa] ?? NaN) - prog) < 1e-9, `${nazwa}: efektywny próg ${realne[nazwa]}% (oczek. ${prog}%)`);
+  }
+
   console.log(`\ndiplo-war-character-threshold-test${mutate ? ' [MUTACJA]' : ''}: ${pass} OK, ${fail} FAIL`);
   try { fs.unlinkSync(entryFile); } catch { /* ignore */ }
   try { fs.unlinkSync(BUNDLE); } catch { /* ignore */ }
