@@ -1,0 +1,41 @@
+## A. Składowe ΔZaufania/turę w wojnie (computeTickZaufanieDelta, atWar=true)
+- granica −2 (epoka <Brąz) + wspólny wróg +1 + odmienna religia −0,5 (SKŁAD REALNY, założony): ΔZ = -1.5
+- granica −2 + odmienna religia −0,5 (bez wspólnego wroga): ΔZ = -2.5
+- granica −2 + wspólna religia +0,5 (SKŁAD r3, NIEOSIĄGALNY dla pary): ΔZ = -1.5
+- granica −3 (Brąz) + wspólny wróg +1 + odmienna −0,5: ΔZ = -2.5
+- granica −4 (Żelazo) + wspólny wróg +1 + odmienna −0,5: ΔZ = -3.5
+- sharedBorderPenaltyForEpochs(0,0)=-2, (2,0)=-3, (3,1)=-4
+
+## B. Trajektoria 30 tur wojny, skład realny, start Z=40 R=30 (jak r3, tylko zapisany R, BEZ wejścia mocy)
+| tura | Z | R (zapisany) | Z+R | ΔZ/turę |
+|---|---|---|---|---|
+| 1 | 0 | 29 | 29 | -1.5 |
+| 2 | 0 | 29 | 29 | -1.5 |
+| 3 | 0 | 29 | 29 | -1.5 |
+| 5 | 0 | 29 | 29 | -1.5 |
+| 10 | 0 | 29 | 29 | -1.5 |
+| 15 | 0 | 29 | 29 | -1.5 |
+| 20 | 0 | 29 | 29 | -1.5 |
+| 25 | 0 | 29 | 29 | -1.5 |
+| 30 | 0 | 29 | 29 | -1.5 |
+
+## C. Ścieżka silnika z wejściem mocy (AI-share zapisywany co turę, wojna, 30 tur)
+Scenariusz: gracz 10× silniejszy (potPlr=100, potAI=10); skład realny; start Z=40.
+| tura | Z (silnik) | R zapisany = AI-share | R panelu = udział GRACZA (computeRespekt(100,10)) | Z+R zapisany |
+|---|---|---|---|---|
+| 1 | 20 | 9 | 91 | 29 |
+| 2 | 18.5 | 9 | 91 | 27.5 |
+| 3 | 17 | 9 | 91 | 26 |
+| 5 | 14 | 9 | 91 | 23 |
+| 10 | 6.5 | 9 | 91 | 15.5 |
+| 15 | 0 | 9 | 91 | 9 |
+| 20 | 0 | 9 | 91 | 9 |
+| 25 | 0 | 9 | 91 | 9 |
+| 30 | 0 | 9 | 91 | 9 |
+
+- computeRespekt(10,100)=9 (AI-share), computeRespekt(100,10)=91 (udział gracza).
+
+## D. Zdarzenia militarne w wojnie (applyDiplomaticEvent + tick, skład realny)
+- wygrana_bitwa (Respekt +5): po zdarzeniu R=29, po ticku R=29, Z=0
+- przewaga_militarna (Respekt +15): po zdarzeniu R=29, po ticku R=29, Z=0
+
