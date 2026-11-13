@@ -329,15 +329,24 @@ export function truceUntilTurnLabelPl(
   return 'Rozejm do tury ' + Math.floor(truceUntilTurn as number);
 }
 
-/** Nastawienie z score Zaufania+Respektu; w wojnie co najmniej „Wrogi". */
+/**
+ * Progi etykiety nastawienia wg ZAUFANIA (R-WEB-DIPLO-LABELS-TRUST-THRESHOLDS-Q1, ABC „C”, 2026-11-13).
+ * Osobne od progów umów (progMinimalnyRelacja = 30 pozostaje dla paktu/sojuszu) — nie wiązać ich.
+ * Zaufanie < NASTAWIENIE_PROG_WROGI_ZAUFANIE → „Wrogi”; < NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE → „Nieufny”.
+ */
+export const NASTAWIENIE_PROG_WROGI_ZAUFANIE = 10;
+export const NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE = 30;
+
+/** Nastawienie z Zaufania (progi niskie) i sumy Zaufania+Respektu (od Zaufania ≥ 30); w wojnie co najmniej „Wrogi". */
 export function nastawienieLabelFromScore(
   zaufanie: number,
   respekt: number,
   opts?: { atWar?: boolean },
 ): string {
   if (opts?.atWar) return 'Wrogi';
+  if (zaufanie < NASTAWIENIE_PROG_WROGI_ZAUFANIE) return 'Wrogi';
+  if (zaufanie < NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE) return 'Nieufny';
   const s = Math.max(0, Math.min(200, Math.round(zaufanie + respekt)));
-  if (s < 30) return 'Wrogi';
   if (s < 45) return 'Nieufny';
   if (s < 60) return 'Neutralny';
   if (s < 120) return 'Życzliwy';

@@ -71,7 +71,8 @@ const KOD_CHECKS = {
     const src = readText(path.join(SRC_GAME, 'diplomacy.ts'));
     return /Math\.round\(100 \* potegaSelf \/ sum\)/.test(src) ? 100 : null;
   },
-  'etykieta-wrogi': () => labelThreshold('Wrogi'),
+  'etykieta-wrogi': () => constNumber('diplomacy-display.ts', 'NASTAWIENIE_PROG_WROGI_ZAUFANIE'),
+  'etykieta-nieufny-zaufanie': () => constNumber('diplomacy-display.ts', 'NASTAWIENIE_PROG_NIEUFNY_ZAUFANIE'),
   'etykieta-nieufny': () => labelThreshold('Nieufny'),
   'etykieta-neutralny': () => labelThreshold('Neutralny'),
   'etykieta-zyczliwy': () => labelThreshold('Życzliwy'),
@@ -203,7 +204,7 @@ ok(dip.ekspansjaGranica_zaufanie_perTura === -3 && dip.ekspansjaGranicaBraz_zauf
 ok(dip.wspolnaReligia_zaufanie_perTura === 0 && dip.odmiennaReligia_zaufanie_perTura === 0, 'religia wpływa na Zaufanie (oczekiwane 0/0)');
 ok(dip.rozejm_zaufanie_ustawienie === 10 && dip.pokoj_zaufanie_ustawienie === 20, 'ustawienie Zaufania po rozejmie/pokoju ≠ 10/20');
 ok(readText(path.join(ROOT, 'gra', 'src', 'main.ts')).includes('rozejm_zaufanie_ustawienie'), 'rozejm_zaufanie_ustawienie nie jest czytany w gra/src/main.ts');
-ok(expectedValue('kod:etykieta-wrogi').value === 30 && expectedValue('kod:etykieta-nieufny').value === 45 && expectedValue('kod:etykieta-neutralny').value === 60 && expectedValue('kod:etykieta-zyczliwy').value === 120, 'progi etykiet ≠ 30/45/60/120');
+ok(expectedValue('kod:etykieta-wrogi').value === 10 && expectedValue('kod:etykieta-nieufny-zaufanie').value === 30 && expectedValue('kod:etykieta-nieufny').value === 45 && expectedValue('kod:etykieta-neutralny').value === 60 && expectedValue('kod:etykieta-zyczliwy').value === 120, 'progi etykiet ≠ zaufanie 10/30, relacja 45/60/120');
 const pw = jsonByName('power-params.json').skladniki;
 ok(pw.jednostka_wojskowa.pkt === 2.5 && pw.rekrut_ekw_jednostki.pkt === 10 && pw.miasto.pkt === 50 && pw.tech_zbadane.pkt === 80, 'składniki Power ≠ oczekiwane');
 const wz = jsonByName('war-weariness-params.json');

@@ -55,6 +55,10 @@ Gracz nie jest wciągany w wojnę automatycznie przez te przesłanki; wypowiada 
 - Plus: AI, która ma przewagę siły i wysoką agresję, może wypowiedzieć wojnę, gdy relacja jest zbyt niska.
 - Minus: hamulec relacji opóźnia wojnę o kilka tur od chwili spadku Relacji poniżej progu kryzysu.
 
+### Etykiety nastawienia przy wypowiadaniu wojny
+
+Etykieta nastawienia przy niskim Zaufaniu: Wrogi poniżej Zaufania 10, Nieufny przy Zaufaniu 10–29 (szczegóły: hasło **Relacja**).
+
 ### Zasady zatwierdzone, jeszcze niewdrożone
 
 > **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
@@ -63,7 +67,6 @@ Gracz nie jest wciągany w wojnę automatycznie przez te przesłanki; wypowiada 
 - Przy Zaufaniu **0** silniejsza strona wypowiada wojnę (po kilku turach od zera, z ostrzeżeniem).
 - Cywilizacja słabsza o ponad **20%** siły militarnej nigdy sama nie wypowiada wojny (poza wojną epoki).
 - Gracz nigdy nie zostaje wciągnięty automatycznie.
-- Etykiety nastawienia: Wrogi poniżej 10, Nieufny 10–29 (patrz hasło **Relacja**).
 
 ---
 

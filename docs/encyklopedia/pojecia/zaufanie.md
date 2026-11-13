@@ -100,7 +100,7 @@ Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 zostały wdrożone
 
 ## Przykład liczbowy
 
-Dwie cywilizacje mają Zaufanie 20 i Respekt 30 (Relacja 50, czyli „Neutralny"). Zawierają umowę handlową: bez jednorazowego bonusu, potem +1 co turę z handlu (plus dryf z Wiarygodności, jeśli jest dodatni). Po 10 turach handlu Zaufanie wynosi około 20 + 10 = 30, co już pozwala na pakt o nieagresji pod względem Zaufania (≥ 30), jeśli Relacja osiągnie 110.
+Dwie cywilizacje mają Zaufanie 20 i Respekt 30 (Relacja 50, ale przy Zaufaniu poniżej 30 etykieta to „Nieufny"). Zawierają umowę handlową: bez jednorazowego bonusu, potem +1 co turę z handlu (plus dryf z Wiarygodności, jeśli jest dodatni). Po 10 turach handlu Zaufanie wynosi około 20 + 10 = 30, co już pozwala na pakt o nieagresji pod względem Zaufania (≥ 30), jeśli Relacja osiągnie 110.
 
 ---
 

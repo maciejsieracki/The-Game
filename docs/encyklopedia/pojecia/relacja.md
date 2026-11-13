@@ -25,13 +25,17 @@
 
 Relacja = Zaufanie + Respekt, zaokrąglona do pełnej liczby i ograniczona do 0–200.
 
-| Relacja | Etykieta nastawienia |
-|--------:|----------------------|
-| poniżej 30 | Wrogi |
-| 30–44 | Nieufny |
-| 45–59 | Neutralny |
-| 60–119 | Życzliwy |
-| 120 i więcej | Przyjazny |
+Etykieta zależy najpierw od **Zaufania** (przy niskim Zaufaniu), a dopiero od 30 Zaufania od Relacji:
+
+| Warunek | Etykieta nastawienia |
+|---------|----------------------|
+| W wojnie (niezależnie od liczb) | Wrogi |
+| Zaufanie poniżej 10 | Wrogi |
+| Zaufanie 10–29 | Nieufny |
+| Zaufanie od 30, Relacja poniżej 45 | Nieufny |
+| Zaufanie od 30, Relacja 45–59 | Neutralny |
+| Zaufanie od 30, Relacja 60–119 | Życzliwy |
+| Zaufanie od 30, Relacja 120 i więcej | Przyjazny |
 
 W wojnie etykieta jest **zawsze Wrogi**, niezależnie od liczby.
 
@@ -58,12 +62,6 @@ W wojnie etykieta jest **zawsze Wrogi**, niezależnie od liczby.
 
 Szczegóły zaufania: hasło **Zaufanie**. Szczegóły respektu: hasło **Respekt**.
 
-### Zasady zatwierdzone, jeszcze niewdrożone
-
-> **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
-
-- Etykiety nastawienia zmieniają progi: Wrogi poniżej 10, Nieufny 10–29, od 30 Relacja jak dziś.
-
 ---
 
 ## Przykład liczbowy
@@ -82,7 +80,8 @@ Zaufanie 85 i Respekt 60 dają Relację 145 (etykieta Przyjazny). Sojusz wymaga 
 
 | Wartość | Skąd (plik:klucz) |
 |--------:|-------------------|
-| 30 | `kod:etykieta-wrogi` (próg Wrogi/Nieufny, `diplomacy-display.ts`) |
+| 10 | `kod:etykieta-wrogi` (próg Wrogi/Nieufny po Zaufaniu, `diplomacy-display.ts`) |
+| 30 | `kod:etykieta-nieufny-zaufanie` (próg Nieufny/Relacja po Zaufaniu, `diplomacy-display.ts`) |
 | 45 | `kod:etykieta-nieufny` (próg Nieufny/Neutralny, `diplomacy-display.ts`) |
 | 60 | `kod:etykieta-neutralny` (próg Neutralny/Życzliwy, `diplomacy-display.ts`) |
 | 120 | `kod:etykieta-zyczliwy` (próg Życzliwy/Przyjazny, `diplomacy-display.ts`) |
