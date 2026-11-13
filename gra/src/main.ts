@@ -36614,13 +36614,24 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: udział SIŁY MILITARNEJ prośącego w parze (nie Power/respekt).
+     * Decyzja właściciela (krok 4a): rozejm i pokój oceniane wg siły militarnej; słabszy szuka, silniejszy odrzuca.
+     */
+    function aiAiMilitaryRequesterShare(requesterId: number, otherId: number): number {
+      return requesterShare(
+        diploMilitarySideOf(requesterId, otherId, true).sila,
+        diploMilitarySideOf(otherId, requesterId, true).sila,
+      );
+    }
+
     /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój/rozejm do zwycięzcy (`otherId`); start licznika tur. */
     function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string, kind: AiPeaceKind): void {
       if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
       if (peaceProposalIsTooEarly(requesterId, otherId, kind)) return;
       // „Wyraźnie przegrywa": prośby z sygnałów pat/zmęczenia przy równowadze sił nie tworzą przymusu pokoju.
       refreshObjectivePowerCache();
-      const share = requesterShare(objectivePowerForOwner(requesterId), objectivePowerForOwner(otherId));
+      const share = aiAiMilitaryRequesterShare(requesterId, otherId);
       if (!isClearlyLosing(share)) return;
       const key = diploPairKey(requesterId, otherId);
       if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn, kind)) {
@@ -36661,7 +36672,7 @@ async function boot(): Promise<void> {
         store: aiAiPeaceRequestByPairKey,
         turn,
         pairEligible: aiAiForcedPeacePairEligible,
-        requesterShareOf: (rq, ot) => requesterShare(objectivePowerForOwner(rq), objectivePowerForOwner(ot)),
+        requesterShareOf: (rq, ot) => aiAiMilitaryRequesterShare(rq, ot),
         peaceAllowed: (loser, winner) =>
           diploWarStateFor(loser, winner).turnsAtWar >= PEACE_PROPOSAL_MIN_WAR_TURNS,
         gateVerdict: (winner, loser) => {
