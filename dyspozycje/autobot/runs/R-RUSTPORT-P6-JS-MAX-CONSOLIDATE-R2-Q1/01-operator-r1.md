@@ -1,9 +1,9 @@
-STATUS: PENDING-TESTS
+STATUS: PASS
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1
 GOAL: jedna wspolna implementacja js_max/js_min/js_max0/js_max_sign/js_min_sign (`domain/js_math.rs`), bez zmiany obserwowalnego zachowania zadnego callera.
-ZMIANY/COMMIT: patrz sekcja "Zmiany" i SHA na koncu.
-TESTY: patrz sekcja "Bramki".
+ZMIANY/COMMIT: 31 plikow (js_math.rs NOWY, mod.rs, 28 plikow domeny, p6_js_math_equiv.rs NOWY, ten raport); kod: cd7cf1b77 (baza cfa1edd31), gałąź wip/R-RUSTPORT-P6-JS-MAX-CONSOLIDATE-R2-Q1; raport aktualizowany w kolejnym commicie.
+TESTY: fmt/clippy/lib/nowy test/pelny cargo test EXIT 0 (patrz Bramki).
 BLOKADY: brak
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator
@@ -78,3 +78,25 @@ jest sprawdzona na calej siatce 19x19 wartosci brzegowych (+-0, NaN, +-Inf, subn
 2. Test rownowaznosci: PASS (patrz Bramki).
 3. Istniejace wektory: zielone, treść nietknieta.
 5. Brak `#[ignore]`, brak oslabionych asercji.
+
+## Bramki (CARGO_TARGET_DIR=/tmp/claude-0/jsmax-target, poza repo; usuniety po bramkach)
+
+- `cargo fmt --check`: EXIT 0
+- `cargo clippy --all-targets -- -D warnings`: EXIT 0
+- `cargo test --lib`: 100 passed, 0 failed, 0 ignored, EXIT 0
+- `cargo test --test p6_js_math_equiv`: 6 passed, 0 failed
+- Pelny `cargo test --no-fail-fast` uruchomiony PARTIAMI po 12 binariow integracyjnych (`--test a --test b ...`) + `cargo test --doc`,
+  bo wspolny dysk (3 inne agenty buduja rownoczesnie) spadl do ~170 MB wolnego; po kazdej partii kasowane binaria testowe.
+  Wynik: 38 partii, wszystkie BATCH_EXIT=0; 453 suity `test result` (452 pliki `tests/*.rs` + doc), **3167 passed, 0 failed, 1 ignored**;
+  `cargo test --doc` EXIT 0. Lib (100) liczony osobno powyzej i nie wchodzi do 3167 (partie uruchamialy tylko `--test`).
+- 1 ignored = `e2e::dump_tick1_econ_for_web_generator` (istniejacy `#[ignore]`, generator dla web, NIE moj; nie dodalem zadnego `#[ignore]`).
+- Istniejace wektory zielone: p6_8j_guards, p6_js_max0, p6_js_max0_rest, p6_js_max_sign, p6_siege_tactics_inputs_pos (pliki nietkniete).
+- Kryterium 1 zweryfikowane: `git grep -E 'fn js_(max|min)[a-z0-9_]*\(' -- rust-port/engine/src` na HEAD daje wylacznie `js_math.rs`.
+
+## Uwagi dla Evaluatora
+
+- `js_max_sign`/`js_min_sign` w `js_math` DELEGUJA do `js_max`/`js_min` (stare ciala byly z `f64::max`); rownowaznosc bit-w-bit pokryta testem
+  `p6_js_math_sign_rownowazne_kanonicznym` (siatka 19x19). Gdyby Evaluator wolal zostawic dosłowne stare ciala - mozliwe, ale to druga implementacja.
+- Warianty `_std` zachowuja `f64::max/min` ze znakiem zera NIEGWARANTOWANYM (jak dotad) - to swiadomie NIE jest ujednolicone do JS (poza zakresem; zmieniloby wyniki).
+- `pub mod js_math` zamiast `mod js_math` (patrz Zmiany).
+- Kopie w crate `rust-port/renderer` (js_max/js_min/js_max0 itd.) nie dotkniete - poza allowlista.
