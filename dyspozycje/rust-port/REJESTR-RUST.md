@@ -531,3 +531,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dispatche** (baza parity `cfa1edd31`): `b03bd0e29`.
 - **Raport etapów P0–P11 i P6.x:** `scratchpad/raport-etapy-P-2026-11-13.md`, wysłany właścicielowi.
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `b03bd0e29`.
+
+## Przebieg (13.11): L-1 (#153) runda 1 FAIL, runda 2 uruchomiona
+- **Runda 1 (`wf_cd6b3e71-a5e`):** Operator HAIKU zrobił kod (`a53d46932`: 21 wpisów „Zastąp specjalnie”, test 3/3). FC FAIL: pełny `cargo test` nie ma EXIT 0. Dwa strażniki w `p6_1d_civ_bonuses` (`dataFnv.units`, `dataStringXor`) przypinają hashe sprzed tematu, a `tests/p6_1d_vectors/web-vectors.json` jest poza allowlistą. Refy: `refs/keep/R-RUSTPORT-REPIN-UNIT-REPLACE-DATA-Q1-r1-{op,rep,eval}`. Worktree rundy 1 usunięte.
+- **Decyzja techniczna orkiestratora:** rozszerzyć allowlistę o `web-vectors.json`, zaktualizować tylko pola hashy (wektory muszą pozostać bajt-w-bajt). Dispatch DODATEK r2: `040846e67`.
+- **Runda 2 (`wf_8202e9b6-65f`):** baza `a53d46932`. Bramki: fmt, clippy, lib, `p6_1d_civ_bonuses`, nowy test, pełny `cargo test`.
+- **Atrybucja:** dispatch i moje commity bez nazwy modelu. Linia `Co-Authored-By` z harnessu nie jest przeze mnie kontrolowana (zgłoszone w poprzednim wpisie).
+- **Dysk:** 2,3 GB → 6,6 GB po sprzątaniu worktree rundy 1.
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `040846e67`.
