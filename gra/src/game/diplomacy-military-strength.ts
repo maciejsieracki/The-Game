@@ -240,3 +240,60 @@ export function militaryBrakeOutcome(
   const victim = declarer === a.id ? b.id : a.id;
   return { declarer, victim, mayDeclare: !isPlayer(declarer) };
 }
+
+/** Próg różnicy siły dla pokoju w % (0 = każda różnica; wartość z diplomacy-war-peace-params.json). */
+export const DEFAULT_PEACE_STRENGTH_GAP_PROC = 0;
+
+/**
+ * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): pozycja strony `a`
+ * względem `b` przy rozejmie/pokoju wg siły militarnej.
+ *  - 'silniejsza' — większa siła (idealny remis: reguła compareMilitaryStrength). Silniejsza strona
+ *    ODRZUCA pokój, chyba że oferta zawiera miasto o wartości PN ≥ ceny;
+ *  - 'slabsza'    — mniejsza siła. Zawsze szuka rozejmu lub pokoju (AI sama proponuje, z miastem);
+ *  - 'pasmo'      — różnica w paśmie progu (progRozniceProc > 0): brak ograniczeń.
+ * ZAŁOŻENIE: przy progu 0 (domyślnie) pasma nie ma — każda różnica decyduje.
+ * / EN: war-peace military position of side `a` against `b`.
+ */
+export type PeaceMilitaryPosition = 'silniejsza' | 'slabsza' | 'pasmo';
+
+export function peaceMilitaryPosition(
+  a: MilitarySide,
+  b: MilitarySide,
+  progRozniceProc: number = DEFAULT_PEACE_STRENGTH_GAP_PROC,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): PeaceMilitaryPosition {
+  const sa = nonNeg(a.sila);
+  const sb = nonNeg(b.sila);
+  const prog = nonNeg(progRozniceProc);
+  const withinBand = sa * 100 < sb * (100 + prog) && sb * 100 < sa * (100 + prog);
+  if (prog > 0 && withinBand) return 'pasmo';
+  const silniejszy = compareMilitaryStrength(a, b, params).silniejszyId;
+  return silniejszy === a.id ? 'silniejsza' : 'slabsza';
+}
+
+/**
+ * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 r3: JEDNO miejsce wiązania pozycji militarnej przy
+ * rozejmie/pokoju (main.ts: diploProposalWarState, gateVerdict AI↔AI; ai.ts: decideAIDiplomacy).
+ * `self` = strona, której pozycję liczymy; `partner` = druga strona. Id zawsze zamieniane na napis,
+ * więc remis rozstrzyga ten sam klucz (liczba 1 i napis '1' dają ten sam wynik).
+ * / EN: single wiring point for the peace military position (self vs partner), canonical string ids.
+ */
+export interface PeaceStanceSide {
+  id: number | string;
+  sila: number;
+  armiaPkt: number;
+}
+
+export function peaceStanceOf(
+  self: PeaceStanceSide,
+  partner: PeaceStanceSide,
+  progRozniceProc: number = DEFAULT_PEACE_STRENGTH_GAP_PROC,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): PeaceMilitaryPosition {
+  return peaceMilitaryPosition(
+    { id: String(self.id), sila: self.sila, armiaPkt: self.armiaPkt },
+    { id: String(partner.id), sila: partner.sila, armiaPkt: partner.armiaPkt },
+    progRozniceProc,
+    params,
+  );
+}

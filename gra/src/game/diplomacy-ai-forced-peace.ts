@@ -270,6 +270,15 @@ export function decideAiPeaceRequest(inp: AiPeaceDecisionInput): AiPeaceDecision
   if (turnsSince >= limit) {
     return { action: 'force', reason: `limit ${limit} tur od prośby`, balanceBefore, balanceAfter, turnsSince };
   }
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): silniejsza militarnie
+  // strona przyjmuje pokój WYŁĄCZNIE za miasto o pełnej wartości PN (plan składa się z samych miast,
+  // patrz runAiAiPeaceTick). Bez pełnego pokrycia miastami — czeka (do limitu tur).
+  if (inp.winnerGateVerdict === 'stronger') {
+    if (inp.plan.full) {
+      return { action: 'accept_paid', reason: 'silniejsza AI: pełne pokrycie miastami', balanceBefore, balanceAfter, turnsSince };
+    }
+    return { action: 'wait', reason: 'bramka zwycięzcy: stronger (brak miast o pełnej wartości PN)', balanceBefore, balanceAfter, turnsSince };
+  }
   if (inp.winnerGateVerdict !== 'ok') {
     return { action: 'wait', reason: `bramka zwycięzcy: ${inp.winnerGateVerdict}`, balanceBefore, balanceAfter, turnsSince };
   }
@@ -344,7 +353,10 @@ export function runAiAiPeaceTick(d: AiPeaceTickDeps): AiPeaceTickOutcome[] {
     const price = d.price(winner, loser, kind);
     const skipCities = new Set<string>();
     const planFor = (): PeacePaymentPlan => {
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13, D2): złoto i surowce
+      // NIE są słodzikiem pokoju w żadnym kierunku — pokój AI↔AI płaci wyłącznie miastami.
       const assets = d.assets(loser, winner, skipCities)
+        .filter(a => a.kind === 'miasto')
         .map(a => (d.battlePending && a.kind === 'miasto' ? { ...a, forbidden: true } : a));
       return planPeacePayment(price.requiredPn, assets);
     };

@@ -244,6 +244,8 @@ function runAI({ rw, turnsAtWar, lost = 0, miastaAI }) {
     partnerId: '0', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: rw, stanWojny: true,
     peaceLocked: false, hasNapTreaty: false, partnerTypCywilizacji: 'rzymianie', turnsAtWar, lostCitiesInWar: lost,
     zdobyteMiastaPartnera: lost, turnsSinceCityChange: turnsAtWar, miastaPartnera: [],
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja militarna (siła) zamiast rw; rw → siły 1000:(1−rw)·1000.
+    silaMilitarnaAI: { sila: rw * 1000, armiaPkt: 0 }, silaMilitarnaPartner: { sila: (1 - rw) * 1000, armiaPkt: 0 },
   };
   return M.decideAIDiplomacy({ myPlayerId: '1', relacje: [rel], agresja: 0.5, agresywnoscRaw: 5, ekspansywnosc: 3,
     miastaAI, myTypCywilizacji: 'grecy', currentTurn: 60, skarbiecGold: 0, sklonnoscDoPodboju: 2 });

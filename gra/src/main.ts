@@ -1615,9 +1615,9 @@ import {
 } from './game/diplomacy-pn-engine';
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
-  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome,
+  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
 } from './game/diplomacy-military-strength';
-import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
+import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
 import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
@@ -11747,11 +11747,20 @@ async function boot(): Promise<void> {
     ): ProposalEvalContext['warState'] {
       if (getDiploRelation(proposerId, responderId).status !== 'wojna') return undefined;
       const s = diploWarStateFor(responderId, proposerId);
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja respondenta = siła militarna (nie rw).
+      const resp = diploMilitarySideOf(responderId, proposerId);
+      const prop = diploMilitarySideOf(proposerId, responderId);
+      const responderPozycjaMilitarna = peaceStanceOf(
+        { id: responderId, sila: resp.sila, armiaPkt: resp.armiaPkt },
+        { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
+        PEACE_STRENGTH_GAP_PROC,
+      );
       return {
         turnsAtWar: s.turnsAtWar,
         lostCitiesResponder: s.lostCities,
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
+        responderPozycjaMilitarna,
       };
     }
 
@@ -36568,8 +36577,20 @@ async function boot(): Promise<void> {
           const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
           const warW = diploWarStateFor(winner, loser);
           if (warW.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) return 'too_early';
+          // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja zwycięzcy = siła militarna (nie rw).
+          const wSide = diploMilitarySideOf(winner, loser);
+          const lSide = diploMilitarySideOf(loser, winner);
           return evaluatePeaceAiGate(
-            { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
+            {
+              rw: winnerRw,
+              turnsAtWar: warW.turnsAtWar,
+              lostCitiesInWar: warW.lostCities,
+              pozycjaMilitarna: peaceStanceOf(
+                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },
+                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },
+                PEACE_STRENGTH_GAP_PROC,
+              ),
+            },
             resolveWarPeaceProfile(civKeyForOwnerId(winner)),
           ).verdict;
         },

@@ -78,11 +78,12 @@ import {
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
 import {
-  resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, militaryAdvantageClass,
-  peaceBlockedByMilitaryAdvantage, type WarPeaceProfile, warWearinessFraction,
-  PROG_WOJNA_ZAUFANIE,
+  resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile, warWearinessFraction,
+  PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC,
 } from './diplomacy-war-peace-profile';
-import { compareMilitaryStrength, type MilitarySide } from './diplomacy-military-strength';
+import {
+  compareMilitaryStrength, peaceStanceOf, type MilitarySide, type PeaceMilitaryPosition,
+} from './diplomacy-military-strength';
 import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
   AI_IMPROVEMENT_PRIORITY,
@@ -6197,7 +6198,6 @@ import {
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
-  AI_TRIBUTE_PEACE_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
   AI_TRADE_AGREEMENT_SWEETENER_MAX,
   scaleAiGenerousGoldOffer,
@@ -6591,7 +6591,7 @@ export type AIDiplomacyCommand =
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
    * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
    */
-  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number }
+  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; rodzaj?: 'pokoj' | 'rozejm' }
   /**
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
    */
@@ -6807,7 +6807,8 @@ export function resolveDiplomacyCivBias(
  *
  * Dla każdej relacji (`relacje`) zwraca co najwyżej jedną komendę.
  * Priorytet komend (od najwyższego):
- *   1. oferuj_trybut_za_pokoj  (b. słaby w wojnie: respektWzgledny <= 0.25)
+ *   1. oferuj_miasto_za_pokoj  (słabsza militarnie AI wobec gracza: miasto AI jako jedyny słodzik;
+ *                               R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1, złoto usunięte)
  *   2. zaproponuj_pokoj        (słaby w wojnie:    respektWzgledny <= PROG_POKOJ_SLABOSC)
  *   3. zadaj_trybut            (duża przewaga, !stanWojny: respektWzgledny >= PROG_TRYBUT,
  *                               agresja średnia; preferowane przed wojną gdy b. silny)
@@ -7000,11 +7001,17 @@ export function decideAIDiplomacy(
     // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
     // silniejsze" z R5a/R5b (ta sama definicja co zaproponuj_pokoj niżej) obowiązują także dla
     // oddania miasta (N1a) i żądania miasta (N1b). Przeniesione wyżej, przed bloki miast.
-    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
-      rw,
-      turnsAtWar: turnsAtWarRel,
-      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
-    });
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja AI wg SIŁY MILITARNEJ (nie rw).
+    // Brak danych siły = 'pasmo' (bez ograniczeń, jak dotąd dla braku danych).
+    const peacePosMil: PeaceMilitaryPosition = rel.silaMilitarnaAI && rel.silaMilitarnaPartner
+      ? peaceStanceOf(
+          // Te same id co w main.ts (String(ownerId)) — remis rozstrzyga compareMilitaryStrength po id.
+          { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt },
+          { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },
+          PEACE_STRENGTH_GAP_PROC,
+        )
+      : 'pasmo';
+    const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';
     const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
 
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
@@ -7034,7 +7041,9 @@ export function decideAIDiplomacy(
       && !csBlocksCession
       && !aiFeelsStronger
       && aiPeaceTimeOk
-      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw) + wearyCityBonus
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: słabsza militarnie AI (siła) zawsze wyrównuje
+      // miastem; stara bramka rw (aiMiastoPrzekazRwProg) nie decyduje już o oddaniu miasta wobec gracza.
+      && peacePosMil === 'slabsza'
     ) {
       const wearyMinMiast = wearyDespair > 0 ? WAR_WEARINESS_PARAMS.czlowiek.minMiastAi : undefined;
       const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, {
@@ -7042,13 +7051,17 @@ export function decideAIDiplomacy(
         cenaPn: AI_MIASTO_CENA_POKOJU_PN * wearyOfferMult,
       }) ?? aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, { minMiast: wearyMinMiast });
       if (pick) {
+        // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
+        // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
+        const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);
         komendy.push({
           type:       'oferuj_miasto_za_pokoj',
           targetId:   rel.partnerId,
-          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
+          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za ${cityOfferKind === 'rozejm' ? 'rozejm' : 'pokoj'}`,
           cityId:     pick.cityId,
           cityPn:     pick.cityPn,
           cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
+          rodzaj:     cityOfferKind,
         });
         continue;
       }
@@ -7079,20 +7092,11 @@ export function decideAIDiplomacy(
       }
     }
 
-    // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2, zarzut 1 Evaluatora r2): ZŁOTO NIE JEST słodzikiem
+    // pokoju w żadnym kierunku. Dawna gałąź „oferuj_trybut_za_pokoj" (złoto za pokój, b. słaby) została
+    // USUNIĘTA; słabsza militarnie AI oddaje wyłącznie miasto (blok N1a wyżej), a przy braku miasta nie
+    // proponuje pokoju wobec gracza (peaceWeakerNoCityVsPlayer). `csBlocksTribute` zostaje dla zadaj_trybut.
     const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
-    if (rel.stanWojny && rw <= p.progTrybutKrytyczny && !csBlocksTribute) {
-      const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
-      if (peaceGold > 0) {
-        komendy.push({
-          type:     'oferuj_trybut_za_pokoj',
-          targetId: rel.partnerId,
-          powod:    `krytyczna slabosz w wojnie (respektWzgledny=${rw.toFixed(2)}): oferujemy ${peaceGold} ¤ za pokoj`,
-          goldOnce: peaceGold,
-        });
-        continue;
-      }
-    }
 
     // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ----
     // Sygnały: (a) rw <= progPokojSlabosc(civ); (b) utracone miasto i rw <= 0.5; (d) pat;
@@ -7120,13 +7124,17 @@ export function decideAIDiplomacy(
     // (b) slabsza o >= prog -> AI MOZE proponowac pokoj (sygnal 'f'); (c) pomiedzy -> reguly dotychczasowe.
     // Miara sily = rw (objectivePower, jak wszystkie galezie pokoju). Zadanie miasta N1b wyzej NIE jest objete (ABC do orkiestratora).
     const advantageVsHuman = rel.stanWojny && rel.partnerId === '0';
-    const aiAdvantageBlocksPeace = advantageVsHuman && peaceBlockedByMilitaryAdvantage(rw, wearyLevel);
-    const aiWeakerByAdvantageProg = advantageVsHuman && militaryAdvantageClass(rw) === 'niedobor';
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: słabsza militarnie AI zawsze szuka pokoju (sygnał 'f');
+    // silniejsza nie proponuje (aiFeelsStronger wyżej). Zmęczenie wojną nie zdejmuje już blokady.
+    const aiWeakerByAdvantageProg = rel.stanWojny && peacePosMil === 'slabsza';
     if (aiWeakerByAdvantageProg) {
       peaceSignals.reasons.push('f');
       peaceSignals.wantsPeace = true;
     }
-    if (!aiAdvantageBlocksPeace && rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: wobec gracza słabsza AI proponuje pokój WYŁĄCZNIE
+    // z miastem (blok N1a wyżej). Gdy nie ma miasta do oddania — brak propozycji (ZAŁOŻENIE Z5).
+    const peaceWeakerNoCityVsPlayer = rel.partnerId === '0' && peacePosMil === 'slabsza';
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       // R-WEB-DIPLO-TRUCE-IMPL-Q1 (E): tryb wg pozycji i zmęczenia wojną (zaufanie z relacji);
       // bez sygnałów rozstrzygających — dotychczasowy wybór po turach wojny (aiPeaceProposalKind).
       // Sygnały: zmęczenie (ułamek t/T), willingnessPeace ze stance (gotowość do pokoju) i Zaufanie.
@@ -7308,10 +7316,10 @@ export function decideAIDiplomacy(
     // (20%, diplomacy-military-strength-params.json). Charakter (effAgresja, willingnessWar) nadal
     // decyduje, czy AI z tej możliwości skorzysta. Brak danych siły = brak przewagi.
     const milAiSide = rel.silaMilitarnaAI
-      ? { id: 'ai', sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt }
+      ? { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt }
       : undefined;
     const milPartnerSide = rel.silaMilitarnaPartner
-      ? { id: 'partner', sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
+      ? { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
       : undefined;
     const aiMaPrzewageMilitarna = milAiSide !== undefined
       && milPartnerSide !== undefined

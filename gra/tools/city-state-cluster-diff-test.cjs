@@ -243,9 +243,11 @@ const dipMajorTribute = decideAIDiplomacy({
   skarbiecGold: 100,
   isMinorCivSelf: false,
 });
+// R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2, runda 3): złoto NIE jest słodzikiem pokoju —
+// pełne AI w wojnie nie oferuje już trybutu za pokój (stara asercja „może oferować" była o starej regule).
 assert(
-  dipMajorTribute.some(c => c.type === 'oferuj_trybut_za_pokoj'),
-  'T7b: pełne AI w wojnie nadal może oferować trybut za pokój',
+  !dipMajorTribute.some(c => c.type === 'oferuj_trybut_za_pokoj'),
+  'T7b: pełne AI w wojnie NIE oferuje trybutu za pokój (D2: złoto nie jest słodzikiem pokoju)',
 );
 
 console.log(`\n=== city-state-cluster-diff-test: ${passed} passed, ${failed} failed ===`);

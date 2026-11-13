@@ -103,6 +103,10 @@
     "minN": 3,
     "maxN": 7
   },
+  "progRozniceSilyPokoj": {
+    "wartosc": 0,
+    "opis": "R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (decyzja właściciela 2026-11-13): próg różnicy siły militarnej w procentach przy rozejmie i pokoju. 0 = każda różnica siły decyduje (silniejsza odrzuca bez miasta, słabsza szuka pokoju). Wartość 20 = różnica w paśmie ±20% nie wymusza ani odrzucenia, ani miasta. Zmiana bez kodu."
+  },
   "pokojAiAi": {
     "_opis": "R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1 (decyzja wlasciciela 2026-11-09): pokoj/rozejm miedzy DWIEMA cywilizacjami AI nie moze zostac zawarty, gdy bilans PW ktorejkolwiek z nich (po zaplacie) jest nizszy niz minBilansPW. Wyjatek gracza (pokoj zawsze do przyjecia przez gracza) NIE dotyczy tej sekcji.",
     "minBilansPW": 0

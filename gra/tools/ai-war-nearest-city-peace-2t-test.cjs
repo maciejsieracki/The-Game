@@ -203,7 +203,7 @@ function suite(E) {
     reg({ store: savedStore }, 104);
     const restoredStore = new Map(JSON.parse(JSON.stringify(Array.from(savedStore.entries()))));
     let elapsed = 9;
-    const h = harness({ assets: [gold(700)], peaceAllowed: () => elapsed >= 10 });
+    const h = harness({ assets: [city('c1', 700)], peaceAllowed: () => elapsed >= 10 });
     for (const [key, req] of restoredStore) h.store.set(key, req);
     if (h.deps(109).peaceAllowed(1, 2) !== false) return 'peaceAllowed harness hook missing';
     const before = tick(h, 109)[0];
@@ -212,39 +212,45 @@ function suite(E) {
     const after = tick(h, 110)[0];
     return after.action === 'force' && h.log.fin.length === 1 && !h.store.has('1_2') || JSON.stringify(after);
   });
-  t('B3 przegrany placi zlotem: pokoj przechodzi PRZED limitem, bilans przed < 0, po >= 0, platnosc wykonana przed finalizacja', () => {
-    const h = harness({ assets: [gold(700)] }); reg(h, 10);
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2): zloto/surowce NIE są słodzikiem pokoju AI↔AI — płaci miasto.
+  t('B3 przegrany placi miastem: pokoj przechodzi PRZED limitem, bilans przed < 0, po >= 0, platnosc wykonana przed finalizacja', () => {
+    const h = harness({ assets: [city('c1', 700)] }); reg(h, 10);
     const o = tick(h, 10);
     const d = o[0] && o[0].decision;
     return (o[0].action === 'accept_paid' && d.balanceBefore < 0 && d.balanceAfter >= 0
-      && h.log.pay.length === 1 && h.log.fin.length === 1 && h.log.pay[0].plan.histogram.zloto === 1
-      && h.log.pay[0].plan.coveredPn === 500 && !h.store.has('1_2')) || JSON.stringify(o);
+      && h.log.pay.length === 1 && h.log.fin.length === 1 && h.log.pay[0].plan.histogram.miasto === 1
+      && h.log.pay[0].plan.histogram.zloto === 0 && h.log.pay[0].plan.coveredPn === 700 && !h.store.has('1_2')) || JSON.stringify(o);
   });
   t('B4 czesciowa zaplata (bilans zwyciezcy po zaplacie < 0): odmowa takze w T+2 (brak wymuszenia)', () => {
-    const h = harness({ assets: [gold(200)] }); reg(h, 10);
+    const h = harness({ assets: [city('c1', 200)] }); reg(h, 10);
     const a = tick(h, 11)[0].action;
     const o = tick(h, 12)[0];
     return (a === 'wait' && o.action === 'wait' && h.log.pay.length === 0 && h.log.fin.length === 0) || `${a}/${o.action}`;
   });
   t('B5 cesja miasta gdy zloto nie wystarcza; stolica (forbidden) nigdy; niewykonalna cesja pomijana', () => {
-    // c-small 450 + zloto 100 >= 500 => bilans zwyciezcy >= 0 (regula nieujemnego bilansu AI<->AI 2026-11-09).
-    const h = harness({ assets: [gold(100), city('capital', 900, true), city('c-small', 450), city('c-big', 800)],
+    // Tylko miasta (D2): stolica (forbidden) i c-big (cesja niewykonalna) pomijane; c-small 450 pokrywa najwiecej mozliwego.
+    const h = harness({ assets: [city('capital', 900, true), city('c-small', 520), city('c-big', 800)],
       cityOk: (id) => id !== 'c-big' }); reg(h, 10);
     const o = tick(h, 12)[0];
     const items = h.log.pay[0].plan.items.map(i => i.kind + ':' + i.id).join(',');
-    return (!items.includes('capital') && !items.includes('c-big') && items.includes('miasto:c-small')) || items;
+    return (!items.includes('capital') && !items.includes('c-big') && items.includes('miasto:c-small') && h.log.pay[0].plan.histogram.zloto === 0) || items;
   });
   t('B6 bramka zwyciezcy stronger/too_early wstrzymuje wczesna akceptacje, nie limit', () => {
-    const h = harness({ assets: [gold(700)], verdict: () => 'stronger' }); reg(h, 10);
+    // Silniejsza AI bez miasta (tylko zloto, D2 nie liczy sie): brak pokrycia miastem => wait takze po limicie
+    // (bilans zwyciezcy ujemny blokuje, patrz B1).
+    const h = harness({ assets: [{ kind: 'zloto', id: 'zloto', amount: 700, pn: 700 }], verdict: () => 'stronger' }); reg(h, 10);
     const early = tick(h, 11)[0].action;
     const late = tick(h, 12)[0].action;
-    return (early === 'wait' && late === 'force') || `${early}/${late}`;
+    // Silniejsza AI z miastem o pelnej wartosci: przyjmuje od razu (R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1).
+    const h2 = harness({ assets: [city('c1', 700)], verdict: () => 'stronger' }); reg(h2, 10);
+    const cityNow = tick(h2, 11)[0].action;
+    return (early === 'wait' && late === 'wait' && cityNow === 'accept_paid') || `${early}/${late}/${cityNow}`;
   });
-  t('B7 surowce pokrywaja reszte zanim ruszy miasto', () => {
+  t('B7 surowce NIE pokrywaja reszty: plan = samo miasto (zloto i surowce pominiete, D2)', () => {
     const h = harness({ assets: [gold(100), resAsset('zelazo', 450), city('c1', 600)] }); reg(h, 10);
     const o = tick(h, 10)[0];
     const hist = h.log.pay[0] && h.log.pay[0].plan.histogram;
-    return (o.action === 'accept_paid' && hist.surowiec_ilosc === 1 && hist.miasto === 0) || JSON.stringify(hist);
+    return (o.action === 'accept_paid' && hist.surowiec_ilosc === 0 && hist.zloto === 0 && hist.miasto === 1) || JSON.stringify(hist);
   });
   t('B8 gracz nie jest zmuszany: para z czlowiekiem nieuprawniona; prosba usuwana', () => {
     const base = { aIsHuman: false, bIsHuman: false, aIsMajorAi: true, bIsMajorAi: true, eliminated: false, forcedEpochWar: false, atWar: true };
@@ -262,24 +268,24 @@ function suite(E) {
       && P.isForcedPeaceEligiblePair({ ...base, atWar: false }) === false || 'wyjatki';
   });
   t('B10 ROZEJM != POKOJ: prosba "rozejm" wyceniana baza rozejmu (200) i konczona rozejmem (kind=rozejm do finalize)', () => {
-    const h = harness({ assets: [gold(250)] }); reg(h, 10, 'rozejm');
+    const h = harness({ assets: [city('c1', 250)] }); reg(h, 10, 'rozejm');
     const o = tick(h, 10)[0];
     return (o.action === 'accept_paid' && h.log.priceKinds[0] === 'rozejm' && h.log.fin[0].kind === 'rozejm'
-      && h.log.pay[0].plan.coveredPn === 200) || JSON.stringify([o.action, h.log.priceKinds, h.log.fin]);
+      && h.log.pay[0].plan.coveredPn === 250) || JSON.stringify([o.action, h.log.priceKinds, h.log.fin]);
   });
   t('B11 prosba "pokoj" i brak pola kind (stary zapis) = pokoj z baza 500 i finalize bez rozejmu', () => {
-    const h = harness({ assets: [gold(900)] });
+    const h = harness({ assets: [city('c1', 900)] });
     h.store.set('1_2', { requesterId: 1, otherId: 2, sinceTurn: 10 });
     tick(h, 10);
-    return (h.log.priceKinds[0] === 'pokoj' && h.log.fin[0].kind === 'pokoj' && h.log.pay[0].plan.coveredPn === 500) || JSON.stringify(h.log.fin);
+    return (h.log.priceKinds[0] === 'pokoj' && h.log.fin[0].kind === 'pokoj' && h.log.pay[0].plan.coveredPn === 900) || JSON.stringify(h.log.fin);
   });
-  t('B12 T+2 mimo bitwy oczekujacej: bez cesji miast; bilans zwyciezcy < 0 => pokoj NIE wchodzi; zloto 500 => force bez miasta', () => {
+  t('B12 T+2 mimo bitwy oczekujacej: bez cesji miast; bilans zwyciezcy < 0 => pokoj NIE wchodzi; samo zloto nie pokrywa (D2) => wait', () => {
     const h = harness({ assets: [gold(100), city('c-small', 600)], battlePending: true }); reg(h, 10);
     const o = tick(h, 12)[0];
     const h2 = harness({ assets: [gold(500), city('c-small', 600)], battlePending: true, verdict: () => 'stronger' }); reg(h2, 10);
     const o2 = tick(h2, 12)[0];
-    return (o.action === 'wait' && h.log.fin.length === 0 && o2.action === 'force' && h2.log.fin.length === 1
-      && h2.log.pay[0].plan.histogram.miasto === 0) || JSON.stringify([o.action, o2.action]);
+    return (o.action === 'wait' && h.log.fin.length === 0 && o2.action === 'wait' && h2.log.fin.length === 0
+      && h2.log.pay.length === 0) || JSON.stringify([o.action, o2.action]);
   });
   t('B13 przegrany zweryfikowany: prosba pat (udzial > 0.45) nie jest rejestrowana; silniejszy prosacy w ticku -> prosba wygasa', () => {
     const regOk = P.isClearlyLosing(0.30) === true && P.isClearlyLosing(0.50) === false && P.isClearlyLosing(0.46) === false;

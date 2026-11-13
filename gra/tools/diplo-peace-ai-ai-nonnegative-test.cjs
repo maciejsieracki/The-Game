@@ -63,7 +63,8 @@ function runTick({ winnerGap, loserGap, turnsSince = 0, gate = 'ok', gold = 1000
       loserBalanceFor: c => loserGap - c,
       tolerancePn: 20,
     }),
-    assets: () => (gold > 0 ? [{ kind: 'zloto', id: 'zloto', amount: gold, pn: gold }] : []),
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2): zaplata pokoju AI<->AI to WYLACZNIE miasta (parametr gold = PN jednego miasta).
+    assets: () => (gold > 0 ? [{ kind: 'miasto', id: 'm1', amount: 1, pn: gold }] : []),
     cityCessionOk: () => true,
     battlePending: false,
     pay: (l, w, plan) => { paid = plan; },
@@ -76,7 +77,7 @@ function runTick({ winnerGap, loserGap, turnsSince = 0, gate = 'ok', gold = 1000
   check('T1: AI<->AI, bilanse nieujemne -> pokoj zawarty', r.finalized !== null && r.out[0].action === 'accept_paid', r.out[0]);
 }
 {
-  const r = runTick({ winnerGap: -80, loserGap: 200, gold: 1000 });
+  const r = runTick({ winnerGap: -80, loserGap: 200, gold: 100 });
   check('T2: bilans zwyciezcy ujemny przed zaplata, zaplata go wyrownuje -> zgoda', r.finalized !== null && r.paid.coveredPn >= 80, r.out[0]);
 }
 {
@@ -123,7 +124,8 @@ function weariness({ winnerGap, loserGap, gold = 1000 }) {
       loserBalanceFor: c => loserGap - c,
       tolerancePn: 20,
     }),
-    assets: () => (gold > 0 ? [{ kind: 'zloto', id: 'zloto', amount: gold, pn: gold }] : []),
+    // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (D2): zaplata pokoju AI<->AI to WYLACZNIE miasta (parametr gold = PN jednego miasta).
+    assets: () => (gold > 0 ? [{ kind: 'miasto', id: 'm1', amount: 1, pn: gold }] : []),
     cityCessionOk: () => true,
     battlePending: false,
     pay: () => {},
