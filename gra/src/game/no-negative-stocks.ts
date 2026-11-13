@@ -196,11 +196,16 @@ export interface NnsAiLeverInput {
   /** Dodatkowy dochód skarbca po podniesieniu podatku (0 = podatek niedostępny / bez zmiany). */
   podatekSkarbiec: number;
   /** Pozycje kolejki/budowy do wstrzymania; `zysk` = koszt złota/żywności nieponiesiony w tej turze. */
-  wstrzymania: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number }>;
+  wstrzymania?: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number }>;
   /** Jednostki wsparcia (nie obronne) do rozwiązania. `koszt` = wartość do sortowania (najdroższe pierwsze). */
   jednostkiWsparcia: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
   /** Ostatnie jednostki obronne miasta — nigdy nie są rozwiązywane przez AI (zob. `eliminujeCywilizacje`). */
   jednostkiObronne: ReadonlyArray<{ id: string; stock: NnsStock; zysk: number; koszt: number }>;
+  /**
+   * C3: zysk spichlerza (żywność/turę) z obniżenia racji/suwaka wzrostu (tania dźwignia, ranga „podatek”,
+   * przed rozwiązywaniem jednostek). 0/brak = dźwignia niedostępna.
+   */
+  suwakZywnosc?: number;
 }
 
 /**
@@ -217,7 +222,13 @@ export function buildAiLevers(input: NnsAiLeverInput): NnsLever[] {
       zysk: input.podatekSkarbiec, koszt: 0, eliminujeCywilizacje: false,
     });
   }
-  for (const w of input.wstrzymania) {
+  if (input.suwakZywnosc !== undefined && dobre(input.suwakZywnosc)) {
+    out.push({
+      id: 'suwak-zywnosc', rodzaj: 'podatek', stock: 'spichlerz',
+      zysk: input.suwakZywnosc, koszt: 0, eliminujeCywilizacje: false,
+    });
+  }
+  for (const w of input.wstrzymania ?? []) {
     if (!dobre(w.zysk)) continue;
     out.push({ id: w.id, rodzaj: 'wstrzymanie', stock: w.stock, zysk: w.zysk, koszt: 0, eliminujeCywilizacje: false });
   }
@@ -412,4 +423,46 @@ export function decideEndTurnGate(
   ];
   if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '' };
   return { blokada: true, komunikat: v.komunikat };
+}
+
+
+// ---------------------------------------------------------------------------
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1 (C3) — jednostki jako dźwignie (per jednostka, nie średnia).
+// ---------------------------------------------------------------------------
+
+/** Jednostka AI opisana dla planera: koszt utrzymania w złocie i żywności per jednostka. */
+export interface NnsAiUnitInfo {
+  id: string;
+  /** Utrzymanie złota/turę tej jednostki (tabela units.json × mnożniki, nie średnia). */
+  zloto: number;
+  /** Żywność/turę tej jednostki. */
+  zywnosc: number;
+  /** true = jednostka obronna (garnizon, jednostka w mieście własnym, wódz, oblężenie) — nigdy nie rozwiązywana. */
+  obronna: boolean;
+}
+
+/** Rozdziela jednostki na dźwignie (id `<unit>|g` = złoto, `<unit>|f` = żywność). */
+export function nnsAiUnitLeverInputs(units: readonly NnsAiUnitInfo[]): Pick<NnsAiLeverInput, 'jednostkiWsparcia' | 'jednostkiObronne'> {
+  const wsparcie: Array<{ id: string; stock: NnsStock; zysk: number; koszt: number }> = [];
+  const obronne: Array<{ id: string; stock: NnsStock; zysk: number; koszt: number }> = [];
+  for (const u of units) {
+    const target = u.obronna ? obronne : wsparcie;
+    if (u.zloto > 0) target.push({ id: u.id + '|g', stock: 'skarbiec', zysk: u.zloto, koszt: u.zloto });
+    if (u.zywnosc > 0) target.push({ id: u.id + '|f', stock: 'spichlerz', zysk: u.zywnosc, koszt: u.zywnosc });
+  }
+  return { jednostkiWsparcia: wsparcie, jednostkiObronne: obronne };
+}
+
+/** Id jednostek (bez sufiksu stocka) wybranych w planie do rozwiązania, bez duplikatów, w kolejności planu. */
+export function nnsUnitIdsFromPlan(plan: NnsAiPlan): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const a of plan.akcje) {
+    if (a.rodzaj !== 'rozwiazanie') continue;
+    const id = a.leverId.replace(/\|[gf]$/, '');
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
 }
