@@ -9728,3 +9728,7 @@ R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRE-Q1 (#298/#322, decyzja B): wygrana_bitw
 
 ## 2026-11-13 — FALA 677 wdrożona na ROBOCZĄ (main 5d0c5f8d, MD5 1f0d44474eb9106f0c0b01e467679753)
 R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 (#327): wiersz „Administrator państwa” w skarbcu Państwa; teksty gracza tylko „administrator państwa” (cały Państwo) i „administrator miasta” (jedno miasto). Kod d1b3f9810, FC PASS-WITH-NOTES; tsc 0, logic 213/213, names-test 26/0, city-gate 36/0. Raw MD5 zgodne. Chromium NIE_ZMIERZONO: render wiersza Państwa, tooltip, icon, live-verify. Do decyzji: docs/encyklopedia/pojecia/administrator-miasta.md:29 (mieszanie zakresów, poza allowlistą).
+
+## 2026-11-13 — FALA 678 wdrożona na ROBOCZĄ (main d09df3e0b, MD5 f4230eb2925f4aeae21bba78c260c42e)
+R-WEB-DIPLO-WAR-TRUST-ZERO-NOT-RELATION-Q1 (krok 1 z 4): w wojnie zaufanie spada do zera, respekt i relacja nie są obcinane do 29; ocena pokoju korzysta z prawdziwej relacji. Kod a3dd5524e, FC PASS-WITH-NOTES; tsc 0, logic 213/213, diplo-war-trust-only 11/0, diplomacy-test 148/0, military-events 24/0. Uwaga: etykieta „Wrogi” w wojnie nadal twarda (krok 3). Raw MD5 i sidecary audio zgodne.
+W toku (4 operatorów): W42 siła militarna (krok 2), W43 liczby zaufania (rozejm 10, pokój 20, sąsiedztwo −3/−4/−5, bez religii, karencja), W44 Civpedia dyplomacji, W35 r4 pomiar ofert handlowych AI (Sonnet po 2 porażkach Haiku).
