@@ -1,78 +1,72 @@
-# R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1 — raport obrony Operatora (runda 1, odpowiedź na zarzuty Evaluatora)
+# R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1 — Obrona Operatora (runda 3, odpowiedź na zarzuty Evaluatora)
 
-STATUS: PASS-WITH-NOTES (zarzuty 1–8 przyjęte lub odrzucone z dowodem; kryterium „≥ 4 z 6” spełnione tylko przy jawnej definicji, patrz zarzut 1)
-DOMAIN: GAME (weryfikacja zachowania gry; zero zmian w `gra/src/`)
+STATUS: PASS-WITH-NOTES (obrona; wynik zależy od interpretacji kryterium „≥ 4 z 6" — patrz zarzut 2; werdykt należy do Final Control)
+DOMAIN: GAME (pomiar w uruchomionej grze; zero zmian `gra/src/**`)
 TEMAT: R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1
-GOAL: wykonać na żywo (Chromium, `?playtest=mapa`, bundle w `/tmp/civ-live-verify`) scenariusze kroków 1–4b i odpowiedzieć na każdy zarzut Evaluatora.
-BAZA: `70213043e1a2efdb85be673c83c57f895061b7c7` (kandydat Operatora, runda 1). Worktree wrócił do tego SHA (detached).
-RUNDY: 2/5 (runda obrony 1; Evaluator r1 zakończony zarzutami 1–8)
+GOAL: odpowiedzieć na każdy zarzut Evaluatora (PRZYJMUJĘ z poprawką i dowodem albo ODRZUCAM z cytatem/wynikiem), uzupełnić bramki referencyjne, sprawdzić powtarzalność pomiaru S2.c.
+BAZA: kandydat 1d5c4dddb (checkout detached w worktree `wf_44449e84-d41-3`)
+ZMIANY-COMMIT: wyłącznie ten plik raportu. Zero zmian w `gra/src/**`, JSON balansu, WERSJE.md, gra-robocza/, rust-port/. Plik `evidence/S2c.json` po ponownym pomiarze przywrócony do wersji zacommitowanej (różnica tylko w znacznikach czasu; liczby identyczne, patrz zarzut 4).
+RUNDY: 3/5 (obrona do zarzutów Evaluatora, 7 punktów)
 
-## Odpowiedzi na zarzuty
+## Odpowiedzi na zarzuty (nr zarzutu wg Evaluatora)
 
-**Zarzut 1 — kryterium „≥ 4 z 6 scenariuszy zmierzone” (PRZYJMUJĘ, częściowo)**
-Po poprawkach scenariusze z pomiarem na żywo w zasadniczych punktach: S1 (5/5 PASS), S2 (a, b: rozejm 10 i pokój 20 — PASS), S4 (a, b, c — PASS), S5 (wartości 0/9/10/29/30 i nazwy nastawienia — PASS). S3 mierzony częściowo (próg Power i dwie tury: PASS d, f; progi charakteru i N tur NIE_ZMIERZONO). S6 NIE_ZMIERZONO.
-Przy definicji „zasadnicze punkty zmierzone” wychodzi 4/6. Przy definicji „wszystkie punkty dispatchu bez NIE_ZMIERZONO” wychodzi 2/6 (S1, S5). Nie wybieram definicji za Evaluatora: obie liczby podaję; orkiestrator decyduje, czy kryterium uznać za spełnione.
+### Zarzut 1 — S3.c: wypowiedzenie wojny przy zaufaniu 0 przez N tur nie zaobserwowane — PRZYJMUJĘ (status zaniżony)
+- Zgadzam się, że kryterium dispatchu „zaufanie 0 przez N tur → silniejsza AI wypowiada" NIE jest spełnione. Zmierzono wyłącznie licznik (start 4, po turze 1: 5, po turze 2: 6 = N; `evidence/S3c.json`: `licznik` 5 i 6, `status` neutralni, `ostrzezenie.found` false).
+- Zaufanie nie utrzymało się na 0: w `tury[].zaufanie` = 1 po obu turach, mimo `zaufanieUstawione` = 0 przed turą. Mechanizm wskazany w kodzie (nie zmierzony na żywo, wartość W nie odczytana): pasywny dryf Wiarygodności poza wojną, ΔZaufanie = clamp(W) × 0,03 (`gra/src/game/diplomacy-factors.ts:166`, `gra/src/game/diplomacy-credibility.ts:635-643`). Wynik 1 po turze odpowiadałby W ≈ 33 — to hipoteza, NIE_ZMIERZONO. Przez to pomiar „zaufanie 0 przez N tur" był w praktyce resetem przed każdą turą, nie utrzymaniem zera.
+- Siły militarnej AI nie da się ustawić hakiem (potwierdzone w raporcie operatora), więc wypowiedzenie przy N pozostaje NIE_ZMIERZONO.
+- Korekta raportu: wiersz S3 c = **licznik zmierzony (4→5→6=N), wypowiedzenie przy N NIE_ZMIERZONO, warunek „zaufanie 0 przez N tur" NIE spełniony (dryf +1/turę)**.
 
-**Zarzut 2 — S4: wiek wojny 5 zamiast ≥ 10 (PRZYJMUJĘ; ODRZUCAM część wniosku)**
-- PRZYJMUJĘ: narzędzie ustawiało wiek 5 (`setPlayerWarWithAi(id, 5)`). Poprawka: `setPlayerWarWithAi(id, 12)`, a wiek odczytywany hakiem `getWarTurns` i zapisywany w `wiekWojnyPrzedOfertą` (`evidence/S4.json`: `turnsAtWar: 12`). Bramka 10 tur (`diplomacy-peace-proposal-timing.ts:2`) przestała blokować: `S4.a` nadal blokuje przy 1 turze, a oferta na wieku 12 jest oceniana przez silnik.
-- ODRZUCAM: wniosek, że brakująca gałąź to „AI czuje się silniejsze”. Ten komunikat i bramka R5b dotyczą propozycji składanej PRZEZ AI (`src/game/ai.ts:7077`, `7121`). Oferta gracza jest oceniana przez bilans PW w `diplomacy-proposals.ts:1551` i silnik zwraca „Brakuje 428 PW do uczciwej oferty pokoju @ Relacji (baza 475 PW)”. Dowód: `evidence/S4.json` — `silniejszaAI_ocena.accepted: false`, toast w DOM z tym samym tekstem. Zamiast gałęzi R5b mierzę to, co faktycznie odrzuca ofertę bez miasta.
+### Zarzut 2 — „≥ 4 z 6" tylko przy łagodnej interpretacji; S2.d, S4.d/e, S6 NIE_ZMIERZONO — PRZYJMUJĘ (jawne podwójne liczenie)
+- Ścisła interpretacja („scenariusz zmierzony w całości"): S1 PASS (5/5), S5 PASS → **2/6**. Częściowo: S2 (a, b, c-stawka/tyk PASS; d NIE), S3 (d PASS, c częściowo, a/b/e NIE), S4 (a, b, c PASS; d, e NIE). S6 NIE.
+- Łagodna interpretacja („rdzeń scenariusza zmierzony"): **4/6** (S1, S2, S4, S5). Proszę FC o świadomy wybór; nie przyjmuję w raporcie stwierdzenia „spełnione" bez tej adnotacji.
+- 2a. S2.d (religia) — sprawdzenie źródeł w tej rundzie: `grep` po `gra/src/game/civ-test-hooks.ts`, hakach `__*TestDebug` w `gra/src/main.ts` i `gra/tools/diplo-live-verify-s2c-s3c.cjs` nie znajduje żadnego settera religii pary. Flaga `wspolnaReligia` jest wyliczana z realnego stanu (`gra/src/main.ts:42136-42141`, `ownerReligionForOwnerId`), a tyk ją ignoruje: `gra/src/game/diplomacy.ts:1817` („Religia nie zmienia Zaufania … flagi ctx ignorowane"). Nawet przy ustawionej religii, zgodnie z kodem, wynik tyku się nie zmienia. Status: NIE_ZMIERZONO (live, brak haka) z dowodem kodowym. Odrzucam twierdzenie „zmierzone".
+- S4.d/e i S6 — nie były w zakresie rundy 3 (dispatch r3 wskazuje S2.c, S3.c i S2.d „jeśli się da"); pozostają NIE_ZMIERZONO jak w raporcie operatora. Nie ponawiam tu poszukiwania haków.
 
-**Zarzut 3 — S1.d pusty dowód (PRZYJMUJĘ)**
-Odczyt w UI (`objectiveRespektPctTowardEffective`) to wartość efektywna z mocy (100), nie zapisana. Dodano odczyt zapisanej wartości: w wojnie zaufanie = 0, więc `relationScore(rel) = zaufanie + respekt` (`getRelationTotal`) równa się zapisanemu respektowi. Wynik: zapisany respekt po wypowiedzeniu wojny = 60, po turze 1 = 60 (`evidence/S1.json`, `zapisanyRespektPoWypowiedzeniu` / `zapisanyRespektPoTurze1`; oczekiwane 60). Test sprawdza `> 29`, więc wróciłby FAIL, gdyby zapisany respekt był obcięty do 29. Nadal nie badam wprost kodu clampu (poza zakresem); pomiar jest na poziomie zapisanego stanu.
+### Zarzut 3 — karencja S2.c mierzy wartość stawki, nie realny tyk — PRZYJMUJĘ część, ODRZUCAM wniosek „brak dowodu"
+- Przyjmuję: wygaśnięcie karencji po 5 turach NIE zmierzone; pomiar „karencja" to stawka w stanie rozejm/pokój, nie tyk po wielu turach.
+- Odrzucam, że stawka nie dowodzi braku kary: w kodzie wartość stawki jest tą, która wchodzi do tyku. `gra/src/main.ts:23267-23271`: `karaWspolnaGranicaDelta = (isPeaceLockedBetween(a,b) || isTruceActive(truceUntilTurn, turn)) ? 0 : sharedBorderPenaltyForEpochs(...)`; ta sama wartość trafia do tyku w `main.ts:23309-23310` (`karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta`); `gra/src/game/diplomacy.ts` (blok `if (ctx.karaWspolnaGranica)`, ok. l. 1819-1821): `dZ += ctx.karaWspolnaGranicaDelta ?? …`. Delta 0 ⇒ składnik kary w tyku 0.
+- Dowód live tyku poza karencją: `evidence/S2c.json` `epoki[].tickDelta` (−2,16 / −3,06 / −3,96 …) zgodne z `previewDelta`.
 
-**Zarzut 4 — dowody S3 z innej wersji skryptu (PRZYJMUJĘ)**
-Usunięto stare `S3-turns.json` i `S3-probe.json` (z 17:38 i 17:43) oraz S1/S2/S4/S5/S6 z poprzedniej wersji. Wszystkie pliki w `evidence/` zostały wygenerowane aktualnym narzędziem z tego commita. Raport 10-operator (stary) jest nieaktualny w liczbach — poniższa tabela go zastępuje.
-Wynik przeskanowania progu (`evidence/S3-probe.json`, zaufanie 25, Power, nie siła wojskowa): `mayDeclare` przełącza się przy `ratio = 0` (AI Power = Power gracza: `ratio −0,10 → 0`, `0,00 → 2`). To NIE zgadza się z progami 14/20/28% i 25% z dispatchu. Nie rozstrzygam tego w tym temacie: hak nie wystawia siły wojskowej z kroku 2 ani charakteru AI. Rozbieżność zostaje otwarta (zob. UWAGI).
+### Zarzut 4 — narzędzie nie odtworzyło się w środowisku Evaluatora (TimeoutError 180 s w startTwoAiGame) — PRZYJMUJĘ jako ryzyko powtarzalności; POWTÓRZONE
+- Powtórzenie w tej rundzie (Obrona, worktree `wf_44449e84-d41-3`): build `node ./node_modules/vite/bin/vite.js build --outDir <scratch> --emptyOutDir` → exit 0 (16,94 s, poza repo); `CIV_LIVE_BUILD_DIR=<scratch>/civ-live-build node tools/diplo-live-verify-s2c-s3c.cjs --scenario=2c` → **exit 0**, start 20:17:39Z, koniec 20:22:41Z (**5 min 2 s**), `errors: []`.
+- Wartości identyczne z zacommitowanym `evidence/S2c.json`: stawki (1,1)→−3; (2,2)→−4; (3,3)→−5; (2,3)→−5; (1,3)→−5; (4,4)→−5; tickDelta jak wyżej; karencja rozejm stawka 0 (status pokoj, truceUntilTurn 6); pokój stawka 0 (peaceUntilTurn 11). Różnią się tylko `started` i `zakonczone` (diff: 2 linie).
+- Czas 5 min 2 s to ponad 3 min 40 s z rundy 3 Operatora. Wniosek: pomiar jest długi i wrażliwy na obciążenie maszyny; timeout 180 s w `startTwoAiGame` to czekanie na załadowanie mapy (`tools/diplo-live-verify-s2c-s3c.cjs`, ok. l. 85–101), nie błąd logiki. Nie zmieniałem narzędzia. Zalecenie dla FC: uruchamiać 2c w pierwszym planie z timeoutem ≥ 590 s.
+- Log powtórzenia: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/run2c.log`; kopia wyniku: `.../scratchpad/S2c-repro.json`.
 
-**Zarzut 5 — etykiety S5 nie odczytane (PRZYJMUJĘ)**
-Poprzedni selektor (kontener `.da-rel-row`) nie obejmował nagłówka „Nastawienie”. Teraz etykiety czytane są z `document.body.innerText`. Wyniki (`evidence/S5.json`): zaufanie 0 → WROGI, 9 → WROGI, 10 → NIEUFNY, 29 → NIEUFNY, 30 → PRZYJAZNY. Oczekiwane wartości liczone z progów `diplomacy-display.ts:337–353` (`< 10` Wrogi, `< 30` Nieufny, potem suma Zaufania+Respektu). Dla 30 wynik zgodny z kodem, bo respekt w UI jest efektywny (100): `s = 30 + 100 = 130 ≥ 120` → Przyjazny. Zrzuty: `evidence/live-S5-zaufanie-29.png` i `-30.png` (tylko 29 i 30; narzędzie nie robi zrzutów dla 0/9/10 — przyjęte jako braki, zrzut był opcjonalny: „jeśli się da”).
-Zrzut 30 pokazuje baner „BRAK KONTAKTU” (górny pasek audiencji), mimo `prepareContact`. Nie rozstrzygnięte: nie znalazłem źródła tego napisu w `src/ui/diplomacyAudience.ts` (tekst „brak kontaktu” jest w komentarzach i logice `trade-routes.ts`, `diplomacy-layers.ts`, `diplomacy-locks.ts`). Wiarygodność odczytów panelu traktuję jako NIE_ZMIERZONO w tym zakresie; liczby (zaufanie 30/100, Relacja 130/200, Przyjazny) są spójne z formułami.
+### Zarzut 5 — S2.json pokazuje S2.c = NIE_ZMIERZONO, a S2c.json mierzy to samo — PRZYJMUJĘ (wyjaśnienie; surowego pliku nie edytuję)
+- `evidence/S2.json` to surowy wynik rundy 1 (narzędzie `diplo-live-verify-steps-1-4.cjs` nie miało haka 2c). Wiersz S2.c w tabeli raportu odwołuje się do `evidence/S2c.json` i ten wiersz **zastępuje** wpis NIE_ZMIERZONO z `S2.json`. Surowego JSON nie przepisuję.
 
-**Zarzut 6 — brak dowodu nietautologiczności / mutacyjnego (PRZYJMUJĘ jako NIE WYKONANO)**
-Nie przeprowadzono mutacji. Wymagałoby zmiany kodu gry w buildzie testowym, a dispatch zakazuje zmian kodu gry. Skutek: S1.b, S2.a, S2.b, S4.a, S4.b są pomiarami stanu po ustawieniu hakiem i nie są dowiedzione jako niezależne od reguły. Nie twierdzę inaczej w tabeli.
+### Zarzut 6 — przestarzałe asercje w `gra/tools/diplomacy-border-era-penalty-live-test.cjs` — PRZYJMUJĘ fakt, ODRZUCAM poprawkę w tym temacie
+- Fakt potwierdzony w kodzie: `gra/tools/diplomacy-border-era-penalty-live-test.cjs` l. 88 i 116 oczekują `rate === -4` dla pary epok (2,3) (`assert.equal(evidence.rate, -4)`); l. 126–129 oczekują `-3` dla pary (2,2) (`changed.rate === -3`, `reversed.rate === -3`). Kod (`gra/src/game/diplomacy.ts:602-611`, `gra/data/diplomacy.json:28-30`: −3/−4/−5) daje dla max epoki 3 → −5, a dla (2,2) → −4. Live (`S2c.json`): (2,3)→−5; (2,2)→−4.
+- Poprawka tego testu leży poza allowlistą tematu (`gra/tools/` dozwolone tylko dla nowego narzędzia i plików pomocniczych tematu), więc nie zmieniam go tutaj. Wpis do UWAGI-DLA-ORKIESTRATORA.
 
-**Zarzut 7 — „brak hooka” bez przeszukania (PRZYJMUJĘ częściowo)**
-Przyjęte: `getWarTurns` istnieje (`main.ts:29240`) i jest używany (S4). Nie przyjęte: `__peaceRulesTestDebug` nie wystawia lostCities ani siły wojskowej (kroku 2), więc S6 i S3.b nadal nie mają hooka do odczytu. Sformułowanie „brak hooka” zamieniam na „w tym temacie nie dodano hooka; nie przeszukiwałem wszystkich narzędzi”.
+### Zarzut 7 — tsc i pięć bramek referencyjnych nie były uruchomione — PRZYJMUJĘ; uruchomione teraz
+- Świeże `npm ci --ignore-scripts` w `gra/` (71 pakietów, exit 0), potem surowe wyjścia:
+  - `node ./node_modules/typescript/bin/tsc --noEmit` → **exit 0**, bez komunikatów.
+  - `node tools/logic-test.cjs` → exit 0; `LOGIC OK (213/213)`.
+  - `node tools/tech-tree-test.cjs` → exit 0; `tech-tree-test: 20 pass, 0 fail`.
+  - `node tools/research-test.cjs` → exit 0; `PASSED: 33 / FAILED: 0 / TOTAL: 33`.
+  - `node tools/unit-replace-test.cjs` → exit 0; `[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)`.
+  - `node tools/combat-test.cjs` → exit 0; `COMBAT TEST: 6/6 pass`.
+- Logi: katalog `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/` (`tsc.log`, `logic-test.log`, `tech-tree-test.log`, `research-test.log`, `unit-replace-test.log`, `combat-test.log`).
 
-**Zarzut 8 — drobne (mieszane)**
-- `?civTest=1` vs `?playtest=mapa` — ODRZUCAM: `diplo-war-peace-live-test.cjs:36` używa `?playtest=mapa` i tą drogą działają `__peaceRulesTestDebug` (`main.ts`); `civTest=1` bramkuje wyłącznie `window.__civTest` (`civ-test-hooks.ts:5`), którego ten skrypt nie używa.
-- S3.d „2 tury” — PRZYJMUJĘ: nazwa poprawiona na „1 tura”; N tur w S3.c nie podany w dispatchu i nie zmierzone (NIE_ZMIERZONO).
-- S3.e `ostrzezenieWLogu` po 0 turach — PRZYJMUJĘ: pole nie jest rozstrzygające, S3.e pozostaje NIE_ZMIERZONO.
-- S3.d „status neutralni”: PRZYJMUJĘ, że przy `neutralni` przed pomiarem nie wykluczono losowania gotowości; oba przebiegi tury (c, d) dały `neutralni`, bez dalszej analizy.
-- „S1 PASS 5/5 wbrew zarzutowi 3” — po poprawce S1.d jest mierzony na zapisanym respekcie (PASS 5/5 teraz z właściwym dowodem).
+## Uwagi do orkiestratora (poza zakresem tematu, bez zmian kodu)
+1. `gra/tools/diplomacy-border-era-penalty-live-test.cjs` — asercje −4 (2,3) i −3 (2,2) są nieaktualne względem −3/−4/−5 (zarzut 6). Do osobnego tematu naprawczego testu.
+2. Dryf +1/turę przy zaufaniu 0 poza wojną (`diplomacy-factors.ts:166`) — jeśli reguła ma być „zaufanie 0 utrzymuje się", to wymaga decyzji właściciela (ABC), nie poprawki pomiaru.
+3. `startTwoAiGame` czeka do 180 s na mapę; na obciążonej maszynie pomiar 2c trwa ponad 5 min.
 
-## Wyniki (surowe, z `evidence/*.json` tego commita)
+## TESTY
+- tsc i pięć bramek referencyjnych: zielone (wyniki wyżej, z surowego wyjścia).
+- Build `vite` do katalogu poza repo: exit 0.
+- Powtórzenie `--scenario=2c`: exit 0, 5 min 2 s, `errors: []`, liczby zgodne z zacommitowanym `S2c.json`.
+- `--scenario=3c` NIE powtarzane w tej rundzie (zarzut 1 dotyczy interpretacji i dryfu, nie odtwarzalności licznika; koszt ~4 min).
 
-| Scenariusz | Wynik | Dowód |
-|---|---|---|
-| S1 — wojna: zaufanie → 0; respekt zapisany bez obcięcia | PASS 5/5 (a–e) | `S1.json`: zaufanie 40→0→0→0; zapisany respekt 60 po wypowiedzeniu i po turze 1 |
-| S2 — rozejm 10 / pokój 20 | PASS 3 / NZ 2 (c, d) | `S2.json`: „Rozejm zawarty”, zaufanie 10; pokój zaufanie 20; kara sąsiedztwa i religia NZ (brak hooka w tym temacie) |
-| S3 — wypowiedzenie wojny przez AI | PASS 2 (d, f) / NZ 4 (a, b, c, e) | `S3-probe.json`: flip `mayDeclare` przy ratio 0 (Power); `S3-turns.json`: 1 tura, `neutralni` (c: NZ; d: PASS — silniejszy gracz nie wypowiada wojny w 1 turze) |
-| S4 — rozejm/pokój: minimalny czas, silniejsza AI, słabsza AI | PASS 4 / NZ 2 (d, e) | `S4.json`: wiek 12 (`getWarTurns`); a: blokada 1 tura („po 10 pełnych turach”); b: silniejsza odrzuca bilansem PW (428 PW); c: słabsza AI akceptuje tę samą ofertę („Warunki pokoju spełnione”) |
-| S5 — etykiety dla zaufania 0, 9, 10, 29, 30 | PASS 7 (wartości 5/5 + nazwy + błędy) | `S5.json`: 0/9 → WROGI, 10/29 → NIEUFNY, 30 → PRZYJAZNY (zgodnie z progami) |
-| S6 — zmęczenie wojną | NIE_ZMIERZONO (2) | brak hooka (siła militarna, lostCities) w tym temacie |
+## BLOKADY
+- Wypowiedzenie wojny przy N (S3.c), wygaśnięcie karencji po 5 turach (S2.c), religia (S2.d — brak haka), S3.a/b/e, S4.d/e, S6: NIE_ZMIERZONO (brak haków lub brak siły militarnej AI).
+- Brak blokad procesowych.
 
-Kontrola bez zmian gry: `git diff --name-only` obejmuje tylko `gra/tools/diplo-live-verify-steps-1-4.cjs` i `dyspozycje/autobot/runs/R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1/**`. `gra/src/` nie zmieniane. `node --check` narzędzia: OK. `git diff --check`: OK.
+## RUNDY
+3/5 — odpowiedź na zarzuty Evaluatora (1–7) z dowodami; bramki i powtórzenie 2c wykonane w tej rundzie.
 
-## Czego nie udało się zmierzyć i dlaczego
-
-- S2.c (kara za sąsiedztwo, karencja) i S2.d (religia): brak fixtury granicy i hooka religii w tym temacie.
-- S3.b (progi 25/19/27% i charakter AI): brak hooka charakteru i siły wojskowej.
-- S3.c (wypowiedzenie przy zaufaniu 0): N tur nieokreślone w dispatchu; zmierzono 1 turę (bez wypowiedzenia). Koszt: ok. 100 s na turę w swiftshader.
-- S3.e (ostrzeżenie raz na epizod): nie mierzone osobno.
-- S4.d (pokój z miastem), S4.e (oferta ze złotem): brak hooka oferty z miastem/złotem po stronie gracza.
-- S5 zrzuty 0/9/10: narzędzie ich nie robi.
-- S6: brak hooka zmęczenia wojną.
-- Mutacja (zarzut 6): nie wykonana.
-
-## UWAGI-DLA-ORKIESTRATORA
-
-1. Rozbieżność progów S3: `mayDeclare` przełącza się przy parytecie Power (ratio 0), a dispatch podaje progi 14/20/28% i 25% (siła wojskowa, charakter). Do rozstrzygnięcia: czy hak powinien czytać siłę wojskową z kroku 2 (osobny temat; wymaga zgody zakresu, nie zmieniam kodu gry w tym temacie).
-2. Baner „BRAK KONTAKTU” na zrzucie S5 przy 30 mimo `prepareContact`: źródło napisu nieznalezione w `src/ui/diplomacyAudience.ts`. Warto sprawdzić przed uznaniem wiarygodności panelu.
-3. Dispatch wspomina o „silniejsza AI odrzuca ofertę gracza”. Kod tego nie robi tą gałęzią (R5b to propozycja AI); oferta gracza jest oceniana bilansem PW. Orkiestrator decyduje, czy kryterium S4.b dotyczy bilansu, czy gałęzi AI-proponującej.
-4. Definicja „≥ 4 z 6” wymaga decyzji orkiestratora (zob. zarzut 1).
-5. Bramka `neutralni` w S3: hak ustawia status `neutralni` (`setRelationForBrake`), a komentarz hamulca mówi, że liczy tylko pary z miastami AI. Nie zbadane, czy to wpływa na S3.c.
-6. Stan sprzątania: po commicie usunę `gra/node_modules` i `/tmp/civ-live-verify` (zob. sekcję sprzątania w odpowiedzi).
-
-NASTĘPNY KROK: Evaluator (Sonnet) — weryfikacja poprawek S1.d, S4, S5 na podstawie `evidence/*.json` tego commita oraz decyzja orkiestratora w sprawie definicji kryterium „≥4/6” i rozbieżności progów S3 (UWAGI 1, 4).
+NASTĘPNY KROK: Final Control (Sonnet) — rozstrzygnięcie kryterium „≥ 4 z 6" (ścisłe 2/6 vs łagodne 4/6) i statusu S3.c; zarzut 6 jako uwaga poza tematem.
 DEPLOY/PUSH: NIE WYKONANO
