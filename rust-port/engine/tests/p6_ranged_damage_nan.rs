@@ -120,6 +120,21 @@ fn p6_ranged_damage_nan_jawne_przypadki_js() {
 }
 
 #[test]
+fn p6_ranged_damage_nan_pancerz_minus_zero_jak_js() {
+    // Pancerz -0: missile - (-0) === missile (JS); wynik dodatni, bez znaku ujemnego.
+    let dmg = ranged_shot_damage_f64(None, None, 10.0, -0.0, 1.0);
+    assert_eq!(dmg, 10.0);
+    assert!(dmg.is_sign_positive());
+    // Math.max(1, -0) === 1 (podloga): obrazenia ze zerowym missile i pancerzem ze znakiem zera nie daja -0.
+    let floor = ranged_shot_damage_f64(None, None, -0.0, 0.0, 1.0);
+    assert_eq!(floor, 1.0);
+    assert!(floor.is_sign_positive());
+    let floor_neg = ranged_shot_damage_f64(None, None, -0.0, -0.0, -0.0);
+    assert_eq!(floor_neg, 1.0);
+    assert!(floor_neg.is_sign_positive());
+}
+
+#[test]
 fn p6_ranged_damage_nan_roll_mniejsze_od_nan_to_pudlo() {
     // Celnosc NaN (melee NaN): hitChanceTw(NaN) = NaN; `roll < NaN` jest false -> pudlo, bez obrazen.
     let attacker = side(

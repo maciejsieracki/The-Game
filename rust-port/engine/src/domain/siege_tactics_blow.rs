@@ -177,39 +177,13 @@ pub struct BlowOutput {
 }
 
 /// `Math.max(a, b)` z JS: NaN propaguje, `+0` wygrywa z `-0` (`Math.max(-0, 0) === +0`).
+/// Jedna implementacja dla calego modulu siege (wraz z `js_min`): `siege_tactics_inputs_pos::js_max_sign`.
 /// `f64::max` ignoruje NaN i dla `(-0, +0)` nie gwarantuje znaku, stad reczna wersja.
-pub fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a == 0.0 && b == 0.0 {
-        if a.is_sign_positive() || b.is_sign_positive() {
-            0.0
-        } else {
-            -0.0
-        }
-    } else if a > b {
-        a
-    } else {
-        b
-    }
-}
+pub use crate::domain::siege_tactics_inputs_pos::js_max_sign as js_max;
 
 /// `Math.min(a, b)` z JS: NaN propaguje, `-0` wygrywa z `+0` (`Math.min(0, -0) === -0`).
-pub fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else if a == 0.0 && b == 0.0 {
-        if a.is_sign_negative() || b.is_sign_negative() {
-            -0.0
-        } else {
-            0.0
-        }
-    } else if a < b {
-        a
-    } else {
-        b
-    }
-}
+/// Jedna implementacja: `siege_tactics_inputs_pos::js_min_sign`.
+pub use crate::domain::siege_tactics_inputs_pos::js_min_sign as js_min;
 
 /// `Math.round(x)` z JS: polowki w strone +Infinity, bez bledu zaokraglenia `x + 0.5`
 /// (dla `x = 0.49999999999999994` JS daje 0, a `floor(x + 0.5)` dawaloby 1).
