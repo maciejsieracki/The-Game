@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4ae92a00cc5df83157537fdcebaa474f",
-  "bundleSha256": "fbe3f767af8222a2f648e0bef13f65d14fa06ae686e2feee266e48bfa7cf564d",
-  "bundleBytes": 14567961,
+  "bundleMd5": "57b393b86c3b97778a317d64121f6994",
+  "bundleSha256": "1d95c48935055f9de720860ba53108fdc0d095a0fdae4b25ac8c7c0868722807",
+  "bundleBytes": 14643156,
   "sourceSnapshot": {
-    "source": "Kandydaci FC: 42bf2d9df, 3950aae12, e8f3a80ab",
+    "source": "Kandydaci FC: 9b9e851a6, 84032f962, 2b6f6576f",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 679: Po rozejmie zaufanie ustawia się na 10, po pokoju na 20; kara za sąsiedztwo -3/-4/-5 i wstrzymana w karencji; religia nie wpływa na zaufanie; dodane (jeszcze niepodpięte) funkcja siły militarnej i licznik wygranych bitew pary w wojnie oraz bonus trybutu."
+    "FALA 680: Zaufanie poniżej 10 = Wrogi, 10-29 = Nieufny, od 30 etykieta wg relacji; nowe hasła encyklopedii o dyplomacji, zaufaniu, respekcie, relacji, wiarygodności, Power i zasadach wojny i pokoju; narzędzie pomiaru częstości ofert handlowych AI (hak tylko za ?civTest=1)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; trust-numbers 22/0; military-strength 27/0; battle-counter 35/0; diplomacy-test 148/0; war-trust-only 11/0; military-events 24/0; vite build OK"
+    "tsc 0; logic 213/213; labels 21/21; civpedia-values 129; diplomacy 148/0; display 45/0; admin-panstwo 26/0; trust-numbers 22/0; vite build OK"
   ],
   "limits": [
-    "Siła militarna i licznik bitew nie są jeszcze używane w decyzjach (kroki 3 i 4); wykonanie w żywej grze NIE_ZMIERZONO; Civpedia dyplomacji czeka na aktualizację do nowych liczb"
+    "Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; relationTier w diplomacy.ts nadal progi 30 (druga etykieta Relacja: Wrogi może rozjechać się z Nastawieniem); pomiar ofert niepowtarzalny (niedeterminizm gry)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES: siła militarna 42bf2d9df, licznik bitew 3950aae12, liczby zaufania e8f3a80ab; funkcje siły i licznik jeszcze niepodpięte do decyzji gry."
+    "notes": "FC: etykiety wg zaufania 9b9e851a6, Civpedia r2 84032f962, pomiar ofert W35 2b6f6576f."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T14:22:01",
+  "hubGeneratedAt": "2026-11-13T14:45:58",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4ae92a00cc5df83157537fdcebaa474f",
-      "sizeBytes": 14567961
+      "md5": "57b393b86c3b97778a317d64121f6994",
+      "sizeBytes": 14643156
     }
   ],
-  "md5": "4ae92a00cc5df83157537fdcebaa474f",
+  "md5": "57b393b86c3b97778a317d64121f6994",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

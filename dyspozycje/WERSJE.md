@@ -1,3 +1,9 @@
+## ROBOCZA 57b393b8 -- 2026-11-13 -- FALA 680: Etykiety nastawienia wg zaufania (Wrogi poniżej 10, Nieufny 10-29), Civpedia dyplomacji, pomiar ofert handlowych AI (testowa)
+
+- Zaufanie poniżej 10 = Wrogi, 10-29 = Nieufny, od 30 etykieta wg relacji; nowe hasła encyklopedii o dyplomacji, zaufaniu, respekcie, relacji, wiarygodności, Power i zasadach wojny i pokoju; narzędzie pomiaru częstości ofert handlowych AI (hak tylko za ?civTest=1).
+- Weryfikacja: tsc 0; logic 213/213; labels 21/21; civpedia-values 129; diplomacy 148/0; display 45/0; admin-panstwo 26/0; trust-numbers 22/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; relationTier w diplomacy.ts nadal progi 30 (druga etykieta Relacja: Wrogi może rozjechać się z Nastawieniem); pomiar ofert niepowtarzalny (niedeterminizm gry)
+
 ## ROBOCZA 4ae92a00 -- 2026-11-13 -- FALA 679: Liczby zaufania (rozejm 10, pokój 20, sąsiedztwo -3/-4/-5, bez religii, karencja) oraz przygotowanie siły militarnej (testowa)
 
 - Po rozejmie zaufanie ustawia się na 10, po pokoju na 20; kara za sąsiedztwo -3/-4/-5 i wstrzymana w karencji; religia nie wpływa na zaufanie; dodane (jeszcze niepodpięte) funkcja siły militarnej i licznik wygranych bitew pary w wojnie oraz bonus trybutu.
