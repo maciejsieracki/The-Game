@@ -1,3 +1,60 @@
+# Obrona Operatora — runda 3 (HAIKU) — R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1
+GOAL: panel dyplomacji pokazuje zmęczenie wojną (strona wygrywająca) i desperację (strona przegrywająca) w wojnach gracz↔AI i AI↔AI; obrona r3 domyka zarzuty Evaluatora w fixturach testu wyprowadzonych ze skali 20 tur.
+ZMIANY/COMMIT: baza 9f5befa49 (kandydat r3); commit obrony 804ca6735 (tylko gra/tools/diplo-weariness-display-test.cjs, 10 insertions / 10 deletions); ten raport w osobnym commicie (tylko ten plik). Brak zmian w gra/src, war-weariness*.ts ani JSON. Brak git add -A.
+TESTY (surowe wyjścia; gra/ po `npm ci --ignore-scripts`; worktree na 804ca6735):
+- tsc --noEmit: exit 0
+- logic-test: `LOGIC OK (213/213)`
+- tech-tree-test: `tech-tree-test: 20 pass, 0 fail`
+- research-test: `ALL GREEN`
+- unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`
+- combat-test: `All sanity checks passed.` (bez liczby; exit 0)
+- diplo-weariness-display-test: `PASSED: 52 / FAILED: 0 / TOTAL: 52`, `ALL PASSED`
+- diplo-weariness-20-turns-test: `PASS=30 FAIL=0`
+- diplo-weariness-city-only-test: `PASS=30 FAIL=0`
+- diplo-weariness-unconditional-end-test: `PASS=22 FAIL=0`
+- Nie wykonano: npm run build/dev (zakaz dispatchu); zrzutów Chromium nie powtórzono (zarzut 3).
+
+## Odpowiedzi na zarzuty Evaluatora (977c80999)
+
+### Zarzut 1 — PRZYJMUJĘ
+Fixtury A1, A3, A4, E1, E3 nie były wyprowadzone z WAR_WEARINESS_PARAMS (120/150/10/300 tur). Zmiany:
+- A1, A3, E1 (oba widoki): `turnsAtWar` = `T(0.5)` (= round(0,5 · pelneTur) = 10). Poziom = 0,5 + 0,1·2 = 0,7, bez nasycenia do 1,0.
+- A4: `turnsAtWar` = `T(0.5)` (spójność; A4 nie sprawdza poziomu).
+- E3 (wejście pary): `turnsAtWar` = `T(1.5)` = 30, zgodnie z poziomem `lvl` liczonym z `T(1.5)`.
+- Komentarz A1 poprawiony: „0,5·pelneTur tur wojny (T(0.5)=10 → poziom 0,5+0,2=0,7)”.
+Dowód: `grep -nE 'turnsAtWar: [0-9]'` po zmianie nie zwraca literałów tur w wywołaniach fixtur; pozostałe liczby to siły, armiaPkt albo zero (E4, bez wpływu na poziom). Asercje bez zmian. Wynik 52/0.
+
+### Zarzut 2 — ODRZUCAM (zmiana asercji nie osłabia testu)
+Tolerancja `< 1e-9` zastępuje `===` tylko w asercjach porównujących desperację z selektora z wartością z `loserDespair` (A1, A5, E2e/E2f, E3a). Dowód floatowy (node, to środowisko):
+- `1 - 0.8` = `0.19999999999999996`, `200/1000` = `0.2`, `1-0.8 === 0.2` → `false`, różnica `5.55e-17`.
+- Selektor liczy udział przegrywającego jako `1 - shareA` (war-weariness-view.ts:108), oczekiwanie w teście jako `200/1000`: ta sama wielkość, inny zapis w float.
+Tolerancja 1e-9 jest o ~7 rzędów większa od tego szumu, więc nie przepuści realnej rozbieżności (błąd `peak`, zamiana stron). Nie przywracam `===`.
+
+### Zarzut 3 — NIE_ZMIERZONO (poprawki nie wprowadzam w tym temacie)
+Zrzuty w `evidence/` pochodzą z r2 (przed scaleniem FALI 689). Runda 3 zmienia wyłącznie plik testu (dispatch r3: „ŻADNYCH zmian w gra/src”). Ponowna weryfikacja w Chromium wymaga builda gry (zakaz `npm run build/dev` w dispatchu) i nie była częścią zakresu r3. Stan: NIE_ZMIERZONO po merge FALI 689. Decyzja o pomiarze należy do orkiestratora / Final Control.
+
+## Mutacje
+Mutantów D3/D5 nie uruchamiałem ponownie: zmiana dotyczy wyłącznie wejść liczbowych fixtur, a asercje porównujące z `loserDespair`/`warWearinessLevel` i wiązanie D1–D8 są bez zmian (test 52/52 po zmianie). Wynik mutacji z r3 (na 9f5befa49, wg zarzutów Evaluatora): mutacja 1 → 49/52, mutacja 2 → 51/52 — NIE_ZMIERZONO ponownie na 804ca6735.
+
+## BLOKADY
+brak (zarzut 3 pozostaje NIE_ZMIERZONO, bez wpływu na bramki testowe)
+
+## RUNDY
+3/5 (obrona w rundzie 3; Operator HAIKU)
+
+## NASTĘPNY KROK
+Evaluator r4 (weryfikacja commita 804ca6735 i tego raportu); Final Control po PASS; orkiestrator decyduje o pomiarze wizualnym po FALI 689 (zarzut 3).
+
+## UWAGI-DLA-ORKIESTRATORA
+- Worktree startował na ec00fc0e3 (ROBOCZA); przełączono na 9f5befa49 (detached) zgodnie z dispatchem, commit fixtur 804ca6735 ponad nim.
+- Katalog runu nie istniał w 9f5befa49; plik utworzony w nowym katalogu. Historia r1–r3 jest w 977c80999 (Evaluator r3) i 10-operator-claude.md.
+- Brak push i integracji. Nie wywołano żadnego narzędzia tworzącego sesje.
+
+DEPLOY/PUSH: NIE WYKONANO
 # R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1 — obrona, runda 2 (odpowiedź na zarzuty Evaluatora)
 
 STATUS: PASS-WITH-NOTES (kod i testy gotowe; dowód live ograniczony do tury 1 — patrz zarzut 1)
