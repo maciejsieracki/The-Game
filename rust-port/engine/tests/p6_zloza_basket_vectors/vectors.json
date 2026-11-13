@@ -88,6 +88,30 @@
    ]
   },
   {
+   "name": "zloze z hexKey=null -> klucz = id (?? na null)",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z4",
+     "hexKey": null
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z4",
+     "hexKey": "z4",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
    "name": "kolejnosc pozycji zachowana",
    "fromOwnerId": 1,
    "toOwnerId": 2,

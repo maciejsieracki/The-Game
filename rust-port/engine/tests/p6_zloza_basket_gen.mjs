@@ -108,6 +108,7 @@ addCase('pusta lista pozycji', [], 1, 2, undefined);
 addCase('zloze z hexKey, bez dealId', [{ typ: 'zloze', id: 'z1', hexKey: 'h1' }], 1, 2, undefined);
 addCase('zloze bez hexKey -> klucz = id', [{ typ: 'zloze', id: 'z2' }], 3, 1, 'd9');
 addCase('zloze z pustym hexKey zostaje pusty', [{ typ: 'zloze', id: 'z3', hexKey: '' }], 2, 4, 'd1');
+addCase('zloze z hexKey=null -> klucz = id (?? na null)', [{ typ: 'zloze', id: 'z4', hexKey: null }], 1, 3, 'd2');
 addCase('kolejnosc pozycji zachowana', [
   { typ: 'zloze', id: 'a', hexKey: 'ha' },
   { typ: 'jednostka', id: 'u1' },
