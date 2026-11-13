@@ -127,3 +127,90 @@ export function compareMilitaryStrength(
 
   return { przewaga, stosunek, silniejszyId: silniejsza.id };
 }
+
+/**
+ * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1 — stan pary: punkty wygranych bitew z BIEŻĄCEJ wojny (osobno
+ * dla strony o niższym i wyższym id) oraz czasowy bonus trybutu. Czysty kształt pól, bez importu
+ * silnika: DiploPairMeta (diplomacy-pn-engine.ts) zawiera te pola jako OPCJONALNE.
+ * Brak pola = 0 bitew / brak bonusu (stary zapis).
+ *
+ * / EN: Per-pair war battle points (low/high id) and time-limited tribute bonus. Pure helpers.
+ */
+export interface WarBattlePointsPair {
+  /** Punkty strony o niższym id (a w parze a_b, a < b). */
+  niski: number;
+  /** Punkty strony o wyższym id. */
+  wysoki: number;
+}
+
+export interface TributeBonusState {
+  /** Właściciel, który pobiera trybut (dostaje bonus). */
+  dla: number;
+  /** Bonus aktywny, dopóki tura < doTury (wygasa w turze doTury). */
+  doTury: number;
+}
+
+export interface MilitaryPairFields {
+  wojnaBitwyPkt?: WarBattlePointsPair;
+  trybutBonus?: TributeBonusState;
+}
+
+/**
+ * Dopisuje punkty wygranej bitwy do licznika pary (zwycięzca = winnerId).
+ * Zwraca nowy obiekt meta; poza wojną (inWar=false), dla zerowych/ujemnych punktów
+ * albo gdy zwycięzca nie należy do pary — zwraca meta bez zmian.
+ */
+export function addWarBattlePoints<T extends MilitaryPairFields>(
+  meta: T,
+  lowId: number,
+  highId: number,
+  winnerId: number,
+  pkt: number,
+  inWar: boolean,
+): T {
+  if (!inWar || !(pkt > 0)) return meta;
+  if (winnerId !== lowId && winnerId !== highId) return meta;
+  const cur: WarBattlePointsPair = meta.wojnaBitwyPkt ?? { niski: 0, wysoki: 0 };
+  const next: WarBattlePointsPair = winnerId === lowId
+    ? { ...cur, niski: nonNeg(cur.niski) + pkt }
+    : { ...cur, wysoki: nonNeg(cur.wysoki) + pkt };
+  return { ...meta, wojnaBitwyPkt: next };
+}
+
+/** Zeruje licznik bitew (start nowej wojny / koniec wojny). */
+export function resetWarBattlePoints<T extends MilitaryPairFields>(meta: T): T {
+  return { ...meta, wojnaBitwyPkt: undefined };
+}
+
+/**
+ * Punkty wygranych bitew strony z meta pary. Poza wojną zawsze 0 (licznik jest nieczytelny).
+ * Strona spoza pary → 0.
+ */
+export function readWarBattlePoints(
+  meta: MilitaryPairFields | undefined,
+  sideId: number,
+  lowId: number,
+  highId: number,
+  inWar: boolean,
+): number {
+  if (!inWar || !meta?.wojnaBitwyPkt) return 0;
+  if (sideId === lowId) return nonNeg(meta.wojnaBitwyPkt.niski);
+  if (sideId === highId) return nonNeg(meta.wojnaBitwyPkt.wysoki);
+  return 0;
+}
+
+/** Ustawia bonus trybutu dla pobierającego: aktywny przez trybutBonusTur tur od `turn`. */
+export function grantTributeBonus<T extends MilitaryPairFields>(
+  meta: T,
+  receiverId: number,
+  turn: number,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): T {
+  return { ...meta, trybutBonus: { dla: receiverId, doTury: turn + nonNeg(params.trybutBonusTur) } };
+}
+
+/** Czy bonus trybutu jest aktywny dla właściciela w turze T (T < doTury). */
+export function isTributeBonusActive(meta: MilitaryPairFields | undefined, ownerId: number, turn: number): boolean {
+  const b = meta?.trybutBonus;
+  return b !== undefined && b.dla === ownerId && turn < b.doTury;
+}

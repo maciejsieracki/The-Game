@@ -1613,6 +1613,9 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
+import {
+  addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
+} from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
 import {
@@ -11550,10 +11553,15 @@ async function boot(): Promise<void> {
       // forced wars, and truce expiry on the exact turn, and preserves the start through save/load.
       if (rel.status === 'wojna' && prevStatus !== 'wojna') {
         const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
-        if (meta.wojnaStartTura === undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: nowa wojna = licznik punktów bitew od zera.
+        const base = resetWarBattlePoints(meta);
+        if (meta.wojnaStartTura === undefined) setDiploPairMeta(a, b, { ...base, wojnaStartTura: turn } as DiploPairMeta);
+        else setDiploPairMeta(a, b, base as DiploPairMeta);
       } else if (prevStatus === 'wojna' && rel.status !== 'wojna') {
         const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
         if (meta.wojnaStartTura !== undefined) setDiploPairMeta(a, b, { ...meta, wojnaStartTura: undefined } as DiploPairMeta);
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: koniec wojny — licznik nieczytelny (zerowany).
+        if (meta.wojnaBitwyPkt !== undefined) setDiploPairMeta(a, b, resetWarBattlePoints(getDiploPairMeta(a, b)) as DiploPairMeta);
       }
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
@@ -11639,6 +11647,29 @@ async function boot(): Promise<void> {
       if (meta.wojnaStartTura !== undefined) return meta.wojnaStartTura;
       setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
       return turn;
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: punkty wygranej bitwy (ta sama wartość co składnik
+     * „Wygrane bitwy" w Power) dopisywane do licznika pary TYLKO gdy para jest w wojnie.
+     * Dotyczy każdego właściciela (gracz, AI↔AI). Power ani Respekt nie są zmieniane.
+     */
+    function diploRecordWarBattlePoints(winnerId: number, loserId: number, pts: number): void {
+      if (winnerId === loserId) return;
+      if (getDiploRelation(winnerId, loserId).status !== 'wojna') return;
+      const lowId = Math.min(winnerId, loserId);
+      const highId = Math.max(winnerId, loserId);
+      const meta = getDiploPairMeta(lowId, highId);
+      setDiploPairMeta(lowId, highId, addWarBattlePoints(meta, lowId, highId, winnerId, pts, true) as DiploPairMeta);
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: zaakceptowany trybut → czasowy bonus siły (+trybutBonusProc
+     * przez trybutBonusTur tur) dla pobierającego. Nie zmienia Power ani Respektu.
+     */
+    function diploGrantTributeBonusFor(receiverId: number, payerId: number): void {
+      const meta = getDiploPairMeta(receiverId, payerId);
+      setDiploPairMeta(receiverId, payerId, grantTributeBonus(meta, receiverId, turn, loadMilitaryStrengthParams()) as DiploPairMeta);
     }
 
     /**
@@ -24999,6 +25030,8 @@ async function boot(): Promise<void> {
       } else if (cywAction === 'trybut_zadanie') {
         const cur = getDiploRelation(proposerId, responderId);
         setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_zaakceptowany'));
+        // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: pobierający (żądający) dostaje bonus siły trybutu.
+        diploGrantTributeBonusFor(proposerId, responderId);
       }
     }
 
@@ -35057,6 +35090,9 @@ async function boot(): Promise<void> {
             sumRosterFieldM(loserRoster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) }))),
           );
           battlePowerPtsByOwner.set(winOid, (battlePowerPtsByOwner.get(winOid) ?? 0) + pts);
+          // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: ten sam pts do licznika pary (tylko w wojnie).
+          const loserOid = mapWinner === 'atakujacy' ? defRoster[0]?.ownerId : atkRoster[0]?.ownerId;
+          if (loserOid !== undefined) diploRecordWarBattlePoints(winOid, loserOid, pts);
         }
       }
 
