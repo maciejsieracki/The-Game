@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "867807d8bc73555ed6bcbf49785eb0ae",
-  "bundleSha256": "4563e658091aa8602981224245863e8c9cf9586fb6074757d23bffde46378f7d",
-  "bundleBytes": 14654321,
+  "bundleMd5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+  "bundleSha256": "07376b684b26006a54fe1804e84659712f3f7ce37227c2cc3743f533afb0c234",
+  "bundleBytes": 14657291,
   "sourceSnapshot": {
-    "source": "origin/main 507d312ce + merge FC f59974e03",
+    "source": "origin/main d419d3eaf + merge FC b82d6dd88",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 692: W oknie „Umowa wymiany surowców” dodanie pozycji po którejkolwiek stronie (oferujemy / oferują) dopisuje ją w miejscu, bez przebudowy całego okna: zostają przewinięcie, tryb (jednorazowo / co turę), czas umowy, zaznaczone kafle i wpisane ilości w obu panelach. Obie strony można uzupełnić w dowolnej kolejności jedną propozycją; przy pustej stronie pojawia się neutralna podpowiedź zamiast ostrzeżenia o odrzuceniu. Wycena i reguły dyplomacji bez zmian."
+    "FALA 693: Od tury 11 przycisk „Zakończ turę” jest blokowany, gdy prognoza po turze wychodzi poniżej zera w skarbcu lub spichlerzu państwa i gracz ma ruch naprawczy (rozwiązanie jednostek); po kliknięciu pojawia się komunikat, czego brakuje. W turach 1–10 bez blokady. Bez ruchu naprawczego tura może się zakończyć, żeby gra się nie zakleszczyła. Kary za deficyt zostają jako siatka bezpieczeństwa."
   ],
   "verification": [
-    "tsc 0; logic 213/213; testy: okno wymiany bez przeładowania 19/19 (mutacja powrotu do innerHTML czerwieni), basket duplicate-ui 31/31, edit 25/25, transfer 24/24, diplomacy 149/0, ai 297/0; test w żywym Chromium na komponencie; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; testy: bramka końca tury 19/0, projekcja 49/0, logika 25/0, gold-deficit 55/0, diplomacy 149/0, ai 297/0; mutacje bramki czerwienią test; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Nie zmierzono w pełnej grze w Chromium; tryby traktat/pokój/wasal klikane na żywo niezmierzone; wygląd neutralnej podpowiedzi do obejrzenia przez właściciela"
+    "Bramka liczy tylko rozwiązanie jednostek (nie podatki i kolejkę), komunikat tylko jako powiadomienie po kliknięciu; AI jeszcze się nie równoważy (podtemat C w toku); żywy Chromium niezmierzony; mgla-sciezka-inwariant 41/1 i end-turn-modal A5 to dług sprzed tematu"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES f59974e03: okno „Umowa wymiany surowców” — dodanie pozycji nie przebudowuje całego okna (aktualizacja w miejscu), obie strony w jednym rzucie, neutralna podpowiedź przy pustej stronie. NIE ZMIERZONO: żywa pełna gra, tryby traktat/pokój/wasal klikane na żywo, wygląd podpowiedzi."
+    "notes": "FC PASS-WITH-NOTES b82d6dd88: blokada „Zakończ turę” gracza przy prognozie skarbca/spichlerza < 0 po turze (od tury 11). Uwagi: bramka liczy tylko rozwiązanie jednostek jako dźwignię (bez podatków i kolejki) — łagodniejsza niż reguła, bez zakleszczenia; komunikat jest toastem po kliknięciu; żywy Chromium NIE ZMIERZONO."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T20:14:38",
+  "hubGeneratedAt": "2026-11-13T20:26:39",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
+      "sizeBytes": 14657291
     }
   ],
-  "md5": "867807d8bc73555ed6bcbf49785eb0ae",
+  "md5": "3aaec6cbc17ac7b2654af2cc888b0bff",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
