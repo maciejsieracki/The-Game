@@ -19,6 +19,7 @@ import {
   type WiarygodnoscRozbicie,
 } from './diplomacy-credibility';
 import { nazwaWyswietlana } from './text-names';
+import { isTruceActive } from './diplomacy-peace-lock';
 import { formatTurCountAcc } from '../ui/formatPl';
 
 const MATRIX = loadCivMatrix();
@@ -312,6 +313,20 @@ export function resolveFormalDiplomaticStatus(input: FormalDiplomaticInput): For
     return { label: 'Pokój', kind: 'pokoj' };
   }
   return { label: 'Brak kontaktu', kind: 'brak' };
+}
+
+/**
+ * R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1 (#306/#319): napis „Rozejm do tury N” w relacji
+ * dyplomacji. N = tura końca rozejmu z danych pary (`truceUntilTurn`), nie stała.
+ * Zwraca null, gdy rozejm nie jest aktywny (brak pola, albo `currentTurn >= N`) — wtedy napisu brak.
+ * Logika aktywności = isTruceActive (diplomacy-peace-lock.ts), bez zmian reguł rozejmu.
+ */
+export function truceUntilTurnLabelPl(
+  truceUntilTurn: number | null | undefined,
+  currentTurn: number,
+): string | null {
+  if (!isTruceActive(truceUntilTurn, currentTurn)) return null;
+  return 'Rozejm do tury ' + Math.floor(truceUntilTurn as number);
 }
 
 /** Nastawienie z score Zaufania+Respektu; w wojnie co najmniej „Wrogi". */

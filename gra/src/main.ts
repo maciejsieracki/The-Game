@@ -25658,6 +25658,8 @@ async function boot(): Promise<void> {
           return {
             formalStatus,
             formalStatusDetail,
+            truceUntilTurn: pairMeta.truceUntilTurn ?? null,
+            currentTurn: turn,
             playerTitle: 'Władca · ' + epochLabelForOwner(ME()),
             playerCivName,
             otherTitle: 'Przedstawiciel',
