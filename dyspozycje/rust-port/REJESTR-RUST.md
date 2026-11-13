@@ -639,3 +639,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **D3 (wonderBuildSites):** parytet z pinem.
 - **D1 (format zapisu):** decyzja techniczna orkiestratora, do zapisu w temacie P6.20; kierunek: zgodność z zapisem webowym wersji 3 tam, gdzie to możliwe.
 - **Zmiana statusu relacji z hamulca (DYPLOMACJA, T3-A):** parytet z pinem (main.ts:11705-11713) — wpinać, bez pytania.
+
+## Przebieg (13.11, heartbeat 16:51): cztery sloty
+- **Stan przed heartbeatem:** 0 aktywnych Workflow z wynikiem bez FC (rozpoznania EKONOMIA, DYPLOMACJA, SAVE-LOAD zakończone i zintegrowane; ZWYCIESTWO padło na worktree; INTEG-JS-MAX bez wyniku od 16:24, niezweryfikowany).
+- **Uruchomione (baza `5e8b116e8`, parity-v2):**
+  - EKONOMIA-BRAZ-ERA-Q1 (T-A, implementacja brązu per epoka wg pina) — `wf_5b797905-328`, Operator HAIKU.
+  - COMBAT-WEJSCIA-ROZPOZNANIE-R2-Q1 (rozpoznanie, runda 2 na właściwej bazie) — `wf_2fc2f4dd-d01`, Operator HAIKU.
+  - ZLOZA-B-PORT-Q1 (port `transferBasketItems` z pina, implementacja) — `wf_f811df3e-f53`, Operator HAIKU.
+  - ZWYCIESTWO-ROZPOZNANIE-Q1 (wznowienie z cache, etapy FC) — `wf_0900e902-b40`.
+- **Dispatche:** `dyspozycje/autobot/runs/<ID>/00-dispatch.md`, commit `fcecbad3c`. Skrypty: `workflows/scripts/topic-<ID>.js`.
+- **Dysk:** 11 GB wolne przed startem.
+- **Zasada parytetu gameplay** (CLAUDE.md, zasada 9) obowiązuje we wszystkich czterech tematach; pytania tylko przy odstępstwach od webu.
