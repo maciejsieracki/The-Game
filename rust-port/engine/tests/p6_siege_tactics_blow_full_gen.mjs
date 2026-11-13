@@ -357,9 +357,15 @@ const TERRAINS = ['Rzeka', 'Plaskie (rownina/laka)', 'Wzgorza', 'Las'];
 const KATEGORIE = ['Piechota', 'Lucznik', 'Kawaleria', 'Oblezenie'];
 const OVR_FIELDS = ['meleeAttack', 'missileAttack', 'weaponDamage', 'meleeDefence', 'armor', 'piercing', 'chargeBonus'];
 
+// Piesi lucznicy z PINU (galaz rangedDamageMultFor: Typ 'Distance' + Jednostka 'Łucznik…', unit-power.ts:26-32).
+const LUCZNIK_IDX = UNIT_ROWS.flatMap((u, i) => (String(u.Typ ?? '').trim() === 'Distance'
+  && String(u.Jednostka ?? '').trim().toLowerCase().startsWith('łucznik') ? [i] : []));
+if (LUCZNIK_IDX.length === 0) throw new Error('pin: brak wierszy piesich lucznikow w units.json');
+
 // Losowanie jednostki: wiersz z PINU + wejscia wywolania toCombatUnit (weteran, glod, deficyt) + rzadkie nadpisanie NaN/Inf.
-function unitDraw() {
-  const idx = int(0, UNIT_ROWS.length - 1);
+// preferLucznik: strzelec dystansowy - z szansa 0,25 wymuszony wiersz piesego lucznika (pokrycie galezi, bez zmiany zakresu).
+function unitDraw(preferLucznik = false) {
+  const idx = preferLucznik && chance(0.25) ? pick(LUCZNIK_IDX) : int(0, UNIT_ROWS.length - 1);
   const ovr = chance(0.15) ? { [pick(OVR_FIELDS)]: pick([NaN, Infinity, -Infinity]) } : {};
   return {
     idx,
@@ -381,7 +387,7 @@ function makeCase(i) {
   const onWall = chance(0.2);
   const isCity = chance(0.3);
   const wallTotal = chance(0.5) ? uni(0, 500) : 0;
-  const unitA = unitDraw();
+  const unitA = unitDraw(ranged);
   const unitD = unitDraw();
   const mods = () => ({
     atk: pick([0, 0.1, -0.25, 0.5, 1]),
