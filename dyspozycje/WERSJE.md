@@ -1,3 +1,9 @@
+## ROBOCZA 91b26d7e -- 2026-11-13 -- FALA 683: Etykieta Relacja zgodna z zaufaniem: Wrogi tylko poniżej 10 (testowa)
+
+- Skala Relacja: Wrogi tylko przy zaufaniu poniżej 10; zaufanie 10-29 przy relacji poniżej 60 pokazuje Neutralny; progi 60 i 130, wojna i sojusz bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; relation-tier OK (mutacja 7 czerwonych); diplomacy 149/0; alliance-gate 19/0; display 45/0; labels-trust OK; civpedia 129; json-sync 36/36; vite build OK
+- Limity: Relacja Neutralny a Nastawienie Nieufny dla zaufania 10-29 (brak osobnego stopnia); wykonanie w żywej grze NIE_ZMIERZONO
+
 ## ROBOCZA 272e14e4 -- 2026-11-13 -- FALA 682: Opisy w pliku dyplomacji zgodne z parametrami (bez zmiany zachowania gry) (testowa)
 
 - Poprawione opisy akcji i tabele referencyjne w danych dyplomacji: religia nie wpływa na zaufanie, kary za sąsiedztwo -3/-4/-5, wypowiedzenie wojny karze wiarygodność a nie zaufanie, odmowa obowiązku sojuszu to -15 wiarygodności; poprawione komentarze w kodzie dyplomacji; nowy test zgodności opisów z parametrami.
