@@ -986,10 +986,11 @@ export function applyDiplomaticEvent(
       //     REDEFINICJA-Q1: „Ekspansja przy granicy" — nazwa myląco sugerowała ekspansję
       //     zamiast sąsiedztwa) żyje osobno, w `computeTickZaufanieDelta`
       //     (`if (ctx.karaWspolnaGranica) dZ += ...`), i jest naliczany KAŻDEJ tury.
-      //     Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
-      // UI („−2/turę", `diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
-      // i jest ZGODNE ze specyfikacją (`Dyplomacja/Dyplomacja-zasady.md` §3.2). Defektem
-      // był wyłącznie ten komentarz.
+      //     Pomiar (historyczny, przy −2/turę): Zaufanie 50 → 48/46/44/42/40 w 5 turach.
+      //     Aktualne wartości: −3/−4/−5 wg epoki (`ekspansjaGranica*_zaufanie_perTura`).
+      // UI (`diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
+      // (specyfikacja: `Dyplomacja/Dyplomacja-zasady.md` §3.2). Wartość liczbowa w tym
+      // komentarzu nie jest źródłem prawdy — źródłem są parametry.
       dZ = p.ekspansjaGranica_zaufanie_perTura;
       break;
 
@@ -1102,8 +1103,10 @@ export function applyDiplomaticEvent(
 }
 
 /**
- * Maks. score (Zaufanie + Respekt) w stanie wojny — nastawienie co najmniej „Wrogi"
- * (relationTier / nastawienieLabelFromScore: score < progMinimalnyRelacja = 30).
+ * Stała referencyjna: progMinimalnyRelacja − 1 (= 29). NIE steruje clampem.
+ * W stanie wojny obniżane jest WYŁĄCZNIE Zaufanie (do zera, `clampRelationForWar`);
+ * Respekt nie jest zmieniany przez wojnę i nie ma limitu 29 na sumę.
+ * Nastawienie liczone wg Relacji (relationTier, próg 30) — osobno od etykiet wg Zaufania.
  */
 export const WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
 
