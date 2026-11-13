@@ -36,8 +36,8 @@ ok(G.isCityAutoBuildAllowed(0, [0], true, false) === false, 'ON bez administrato
 ok(G.isCityAutoBuildAllowed(0, [0], true, true) === true, 'ON z działającym administratorem miasta => autobudowa działa');
 ok(G.isCityAutoBuildAllowed(3, [0], false, false) === true, 'AI: autobudowa bez bramki administratora, niezależnie od opcji');
 ok(G.isCityAutoImprovementAllowed(0, [0], false, true) === false, 'OFF: auto-ulepszenia terenu zablokowane');
-ok(G.isCityAutoImprovementAllowed(0, [0], true, false) === false, 'ON bez administratora ulepszeń => zablokowane (zasady IMPROVEMENT)');
-ok(G.isCityAutoImprovementAllowed(0, [0], true, true) === true, 'ON z administratorem ulepszeń => działa');
+ok(G.isCityAutoImprovementAllowed(0, [0], true, false) === false, 'ON bez administratora państwa => zablokowane (zasady IMPROVEMENT)');
+ok(G.isCityAutoImprovementAllowed(0, [0], true, true) === true, 'ON z administratorem państwa => działa');
 ok(G.isCityAutoImprovementAllowed(3, [0], false, false, false) === true, 'AI (ai_wymaga_administratora=false): auto-ulepszenia jak dotąd, opcja OFF');
 ok(G.administratorsFromSaveMeta(undefined) === false && G.administratorsFromSaveMeta('true') === false && G.administratorsFromSaveMeta(1) === false, 'zapis bez pola / nie-boolean => WYŁĄCZONE');
 ok(G.administratorsFromSaveMeta(true) === true && G.administratorsFromSaveMeta(false) === false, 'zapis: round-trip boolean');
@@ -78,9 +78,9 @@ ok(!/^\s*autoBuildEnabled,\s*$/m.test(main) && !/let autoBuildEnabled/.test(main
 ok(/shouldShowLegacyAutomationMigration\(saved\.meta[\s\S]{0,200}?hadHiredAdministrator\)/.test(main) && /LEGACY_AUTOMATION_NOTICE_TITLE/.test(main) && /administrators-legacy-migration/.test(main), 'main.ts: migracja starego zapisu + jednorazowe powiadomienie w „Ważne”');
 ok(/if \(!administratorsEnabled\) \{[\s\S]{0,400}?delete \(c as \{ administrator\?: unknown \}\)\.administrator;[\s\S]{0,200}?administratorUlepszen/.test(main), 'main.ts: wczytanie przy OFF usuwa administratorów gracza (brak bonusów/utrzymania)');
 ok(/function hireCityAdministratorForPlayer[\s\S]{0,300}?if \(!administratorsEnabled\) return false;/.test(main), 'main.ts: zatrudnienie administratora miasta przy OFF odrzucone');
-ok(/function hireImprovementAdministratorForPlayer[\s\S]{0,300}?if \(!administratorsEnabled\) return false;/.test(main), 'main.ts: zatrudnienie administratora ulepszeń przy OFF odrzucone');
+ok(/function hireImprovementAdministratorForPlayer[\s\S]{0,300}?if \(!administratorsEnabled\) return false;/.test(main), 'main.ts: zatrudnienie administratora państwa przy OFF odrzucone');
 ok(/function cityAdministratorUiState[\s\S]{0,300}?!administratorsEnabled && isHuman\(city\.ownerId\)\) return null/.test(main), 'main.ts: UI administratora miasta przy OFF = brak (przyciski/chipy/koszty)');
-ok(/function improvementAdministratorUiState[\s\S]{0,300}?!administratorsEnabled && isHuman\(city\.ownerId\)\) return null/.test(main), 'main.ts: UI administratora ulepszeń przy OFF = brak');
+ok(/function improvementAdministratorUiState[\s\S]{0,300}?!administratorsEnabled && isHuman\(city\.ownerId\)\) return null/.test(main), 'main.ts: UI administratora państwa przy OFF = brak');
 ok(/function isCityAutoBuildActive\(city: City\): boolean \{\s*return isCityAutoBuildAllowed\(/.test(main), 'main.ts: isCityAutoBuildActive = opcja + administrator miasta');
 const impl = main.indexOf('const autoImpCities = selectCitiesForAutoImprovement(');
 ok(impl > 0 && /isAutoBuildAllowedFor\(hOid\)/.test(main.slice(impl, impl + 500)), 'EOT: auto-ulepszenia terenu gracza za bramką opcji');

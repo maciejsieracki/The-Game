@@ -10,10 +10,10 @@
  *      zatrudnienie -> ten sam panel pokazuje stan + „Zwolnij”;
  *  (B) DANE, nie hardkod: wariant bundla z podmienionym JSON (koszt/utrzymanie/efekty) zmienia liczby w panelu;
  *  (C) panel budowy: bez działającego administratora kontrolki automatyzacji (profile, suwaki, „Własne ustawienia”,
- *      lokalny split) są disabled + aria-disabled + adnotacja „Wymaga administratora ulepszeń”, a klik (także po
+ *      lokalny split) są disabled + aria-disabled + adnotacja „Wymaga administratora państwa”, a klik (także po
  *      zdjęciu `disabled`, tj. guard w handlerze) NIE wywołuje config.onUlepszenia*; z administratorem działają;
  *      zakres państwo/miasto (państwo zablokowane tylko gdy ŻADNE miasto nie ma działającego administratora);
- *  (D) przycisk „Administrator ulepszeń +” otwiera panel, a klik w panel nie wychodzi z trybu budowy (onExit);
+ *  (D) przycisk „Administrator państwa +” otwiera panel, a klik w panel nie wychodzi z trybu budowy (onExit);
  *  (E) MUTACJE: usunięcie gatingu / usunięcie bonusów-kosztów z panelu czerwieni test (te same asercje, mutowany bundle).
  *
  * Opcjonalnie: ADM_PANEL_SHOTS_DIR=<katalog> — zrzuty ekranu.
@@ -112,7 +112,7 @@ async function runSuite(browser, code, label) {
   await page.evaluate(() => { window.__confirms = []; window.__confirmAnswer = true; window.confirm = (m) => { window.__confirms.push(String(m)); return window.__confirmAnswer; }; });
   const shot = async (n) => { if (SHOTS_DIR && label === 'base') { fs.mkdirSync(SHOTS_DIR, { recursive: true }); await page.screenshot({ path: path.join(SHOTS_DIR, n) }); } };
 
-  // ---------- (A) panel administratora ulepszeń ----------
+  // ---------- (A) panel administratora państwa ----------
   const A = await page.evaluate(() => {
     const T = window.__T;
     const calls = { hire: 0, dismiss: 0, close: 0 };
@@ -147,7 +147,7 @@ async function runSuite(browser, code, label) {
   await shot('panel-ulepszen-przed-zatrudnieniem.png');
   const r = A.r;
   check('A1 panel otwarty jako role=dialog aria-modal z tytułem, fokus w środku', r.open && r.aria && r.focusInside, r);
-  check('A2 opis „czym jest / do czego służy” (z JSON opis_gracza)', r.lead.includes('Administrator to osoba') && r.lead.includes(PARAMS.administrator_ulepszen.opis_gracza), r.lead);
+  check('A2 opis „czym jest / do czego służy” (zakres całego Państwa, bez JSON „w tym mieście”)', r.lead.includes('Administrator państwa to jedna osoba na całe Państwo') && r.lead.includes('dla wszystkich miast Państwa') && !r.lead.includes('w tym mieście'), r.lead);
   check('A3 bonusy ulepszeń: automatyczne ulepszanie, bez bonusów do produkcji', /ulepszanie terenu/.test(r.bonuses) && /Bez dodatkowych bonusów/.test(r.bonuses), r.bonuses);
   check('A4 koszt = JSON (40) jako chip ikona+liczba', r.cost.includes(String(PARAMS.administrator_ulepszen.koszt_zatrudnienia_pieniadz)) && r.costHtml.includes('bld-res-chip') && r.costHtml.includes('<svg'), r.costHtml);
   check('A5 utrzymanie = JSON (2) na turę', r.upkeep.includes(String(PARAMS.administrator_ulepszen.utrzymanie_pieniadz_na_ture)) && /na turę/.test(r.upkeep), r.upkeep);
@@ -306,7 +306,7 @@ async function runSuite(browser, code, label) {
     L1.before.empireBtns.length > 0 && L1.before.empireBtns.every((b) => b.d && b.a === 'true')
     && L1.before.cityBtns.length > 0 && L1.before.cityBtns.every((b) => b.d && b.a === 'true')
     && L1.before.empireSlider === true && L1.before.citySlider === true && L1.before.override === true, L1.before);
-  check('C2 adnotacja „Wymaga administratora ulepszeń” (państwo i miasto)', L1.before.noteEmpire && L1.before.noteCity && L1.before.text.includes('Wymaga administratora ulepszeń'), L1.before.text);
+  check('C2 adnotacja „Wymaga administratora państwa” (państwo i miasto)', L1.before.noteEmpire && L1.before.noteCity && L1.before.text.includes('Wymaga administratora państwa'), L1.before.text);
   check('C3 klik/zmiana (także po zdjęciu disabled) NIE wywołuje żadnego config.onUlepszenia*', L1.calls.length === 0, L1.calls);
 
   const L2 = await hudRun({ adm: { a: { hired: true, working: true }, b: { hired: true, working: true } }, selected: 'a', override: true });
@@ -359,7 +359,7 @@ async function runSuite(browser, code, label) {
     const afterBtn = hud.el.querySelector('[data-imp-admin-open]');
     return { btnInfo, opened, hiredImmediately, exitAfterPanelClick, calls, hiredState, dismissVisible, closed, afterLabel: afterBtn && afterBtn.textContent.trim() };
   });
-  check('D1 przycisk „Administrator ulepszeń +” z tooltipem „Wybierz administratora — koszt, utrzymanie”', /Administrator ulepszeń \+/.test(E.btnInfo.label) && /Wybierz administratora/.test(E.btnInfo.title) && /koszt 40/.test(E.btnInfo.title) && /utrzymanie 2/.test(E.btnInfo.title) && !E.btnInfo.disabled, E.btnInfo);
+  check('D1 przycisk „Administrator państwa +” z tooltipem „Wybierz administratora — koszt, utrzymanie”', /Administrator państwa \+/.test(E.btnInfo.label) && /Wybierz administratora/.test(E.btnInfo.title) && /koszt 40/.test(E.btnInfo.title) && /utrzymanie 2/.test(E.btnInfo.title) && !E.btnInfo.disabled, E.btnInfo);
   check('D2 klik otwiera panel i NIE zatrudnia od razu', E.opened && !E.hiredImmediately, E);
   check('D3 klik w panel nie wychodzi z trybu budowy (onExit = 0)', E.exitAfterPanelClick === 0, E);
   check('D4 „Zatrudnij” w panelu wykonuje onHire; panel pokazuje Zwolnij; Esc zamyka; przycisk zmienia się na ✓', E.calls.join() === 'hire' && E.hiredState === true && E.dismissVisible && E.closed && /✓/.test(E.afterLabel || ''), E);
@@ -420,7 +420,7 @@ async function main() {
       return { imp: strip(imp), city: strip(city) };
     });
     await pg.close();
-    allResults.push({ name: '[data] opis z JSON (administrator_ulepszen.opis_gracza) idzie do panelu', ok: dat.imp.includes(PARAMS.administrator_ulepszen.opis_gracza.slice(0, 40)), detail: dat.imp });
+    allResults.push({ name: '[data] opis zakresu Państwa idzie do panelu (nie JSON „w tym mieście”)', ok: dat.imp.includes('Administrator państwa to jedna osoba na całe Państwo') && !dat.imp.includes('w tym mieście'), detail: dat.imp });
     allResults.push({ name: '[data] model z koszt/utrzymanie 77/9 -> liczby 77 i 9 w panelu', ok: /\b77\b/.test(dat.imp) && /\b9\b/.test(dat.imp), detail: dat.imp });
     allResults.push({ name: '[data] podmieniony JSON efekty_bazowe.korupcja 14% -> panel miasta pokazuje −14%', ok: dat.city.includes('−14%'), detail: dat.city });
 

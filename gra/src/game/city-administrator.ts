@@ -186,7 +186,7 @@ export type ImprovementHireBlockReason = 'ma_administratora' | 'brak_srodkow';
 
 export function improvementAdministratorHireBlockText(reason: ImprovementHireBlockReason): string {
   return reason === 'ma_administratora'
-    ? 'Miasto ma już administratora ulepszeń'
+    ? 'Państwo ma już administratora państwa'
     : `Brak środków w skarbcu: zatrudnienie kosztuje ${improvementAdministratorHireCost()} Pieniądza`;
 }
 

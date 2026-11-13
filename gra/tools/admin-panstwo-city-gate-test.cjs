@@ -100,10 +100,10 @@ const migCities = [
 ];
 const mig = M.migrateCityImprovementAdministratorsToState(migCities);
 ok(mig.byOwner.size === 1 && mig.byOwner.get(HUMAN).hiredTurn === 5, 'jeden administrator Państwa (pierwsze miasto w kolejności tablicy)');
-ok(mig.clearedCityIds.join(',') === 'X,Y', 'pola administratora ulepszeń miast X,Y oznaczone do wyczyszczenia');
+ok(mig.clearedCityIds.join(',') === 'X,Y', 'pola administratora miast X,Y oznaczone do wyczyszczenia');
 ok(M.totalAdministratorUpkeepForOwner(migCities, new Map(), HUMAN, mig.byOwner.get(HUMAN)) === M.improvementAdministratorUpkeep(),
   'utrzymanie po migracji = jedno utrzymanie administratora Państwa (nie dwa)');
-ok(M.migrateCityImprovementAdministratorsToState([{ id: 'Q', ownerId: HUMAN }]).byOwner.size === 0, 'brak administratora ulepszeń w zapisie => brak migracji');
+ok(M.migrateCityImprovementAdministratorsToState([{ id: 'Q', ownerId: HUMAN }]).byOwner.size === 0, 'brak administratora państwa w zapisie => brak migracji');
 
 console.log('(9) wpięcie w main.ts (test statyczny: regex na źródle, NIE wykonanie tury)');
 const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
@@ -113,7 +113,7 @@ ok(/refreshAdministratorState\(cities, cityBuilt, ownerTreasury, stateAdmByOwner
 ok(/hireOwnerImprovementAdministrator\(cur, city\.ownerId, treasury, turn\)/.test(mainSrc), 'zatrudnienie Państwa przez hireOwnerImprovementAdministrator');
 ok(/stateImprovementAdministrators: \[\.\.\.stateAdmByOwner\.values\(\)\]/.test(mainSrc), 'zapis gry niesie stan administratora Państwa');
 ok(/Array\.isArray\(savedStateAdm\)/.test(mainSrc) && /migrateCityImprovementAdministratorsToState\(cities\)/.test(mainSrc), 'wczytanie: gałąź zapisu nowego i gałąź migracji starego');
-ok(/for \(const c of cities\) delete \(c as \{ administratorUlepszen\?: unknown \}\)\.administratorUlepszen;/.test(mainSrc), 'wczytanie kasuje pola administratora ulepszeń miast po migracji');
+ok(/for \(const c of cities\) delete \(c as \{ administratorUlepszen\?: unknown \}\)\.administratorUlepszen;/.test(mainSrc), 'wczytanie kasuje pola administratora miast po migracji');
 ok(/if \(!administratorsEnabled\) \{[\s\S]{0,600}?stateAdmByOwner\.delete\(o\)/.test(mainSrc), 'wczytanie przy OFF usuwa administratora Państwa gracza');
 ok(!/effectiveUlepszeniaForCity\(c\)\.tryb/.test(mainSrc), 'Z4: w main.ts nie ma odczytu trybu automatyzacji per miasto');
 ok(/c => ulepszeniaEmpireForOwner\(c\.ownerId\)\.tryb === 'auto'/.test(mainSrc), 'Z4: tryb auto z polityki Państwa właściciela (selectCitiesForAutoImprovement)');

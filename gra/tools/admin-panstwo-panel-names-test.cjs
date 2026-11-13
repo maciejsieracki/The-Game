@@ -93,6 +93,10 @@ const GAME_TEXT_FILES = [
   'src/game/civ-test-hooks.ts',
   'data/city-administrator-params.json',
   'src/data/wikiBundle.json',
+  // R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1 r2: także testy przeglądarkowe (asercje na napisy).
+  ...fs.readdirSync(path.join(ROOT, 'tools'))
+    .filter((n) => n.endsWith('.cjs') && n !== path.basename(__filename))
+    .map((n) => path.join('tools', n)),
 ];
 const offenders = [];
 for (const f of GAME_TEXT_FILES) {
