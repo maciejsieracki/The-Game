@@ -1,3 +1,9 @@
+## ROBOCZA 2e3318f1 -- 2026-11-13 -- FALA 686: Próg wojny wg charakteru cywilizacji, administrator bez okien przeglądarki, zmęczenie wojną tylko miastami (krok 4b) (testowa)
+
+- Agresywne cywilizacje wypowiadają wojnę przy przewadze siły militarnej od 14%, neutralne od 20%, ostrożne od 28% (zakres 10-35%); zatrudnienie i zwolnienie administratora bez natywnego okna przeglądarki, teksty administratora państwa i miasta rozdzielone; zmęczenie wojną liczone siłą militarną, przegrywający płaci wyłącznie miastami, pokój wzajemny bez zapłaty usunięty, strona z jednym miastem nie kupuje pokoju.
+- Weryfikacja: tsc 0; logic 213/213; character-threshold 42/0; weariness-city-only 28/0; ai-ai-nonnegative 21/0; weariness-peace 98/0; ai-test 297/0; diplomacy 149/0; admin testy zielone; vite build OK
+- Limity: Wykonanie w żywej grze NIE_ZMIERZONO; zwolnienie administratora jednym przyciskiem (pytanie do właściciela); chroniony przegrywający z co najmniej 2 miastami przy cenie 0 (decyzja właściciela: cena 0 = bez miasta i bezwarunkowy pokój na końcu zmęczenia — do wdrożenia)
+
 ## ROBOCZA cdf4ac78 -- 2026-11-13 -- FALA 685: Rozejm i pokój wg siły militarnej: słabsza strona szuka, silniejsza odrzuca, słodzik tylko miasto; porządki w danych dyplomacji (testowa)
 
 - Słabsza militarnie strona szuka rozejmu lub pokoju, silniejsza odrzuca; opór przełamuje tylko oddanie miasta (cena PN jak dotąd); złoto i surowce nie słodzą pokoju w żadnym kierunku; słabsza AI dołącza miasto także do rozejmu; strona z jednym miastem nie kupi pokoju; wymuszony pokój AI-AI tylko za miasto; usunięte martwe zdarzenia religii i ultimatum; opisy w danych dyplomacji zgodne z kodem.
