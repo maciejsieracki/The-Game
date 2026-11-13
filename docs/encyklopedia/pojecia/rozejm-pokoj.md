@@ -35,10 +35,10 @@
 
 ### Zasady pokoju (wdrożone)
 
-- **Słabsza strona szuka pokoju, silniejsza go odrzuca.** Silniejsza strona wg siły militarnej (patrz hasło **Siła militarna**) odrzuca pokój bez miasta. Słabsza strona i strona w paśmie wyrównania rozpatrywane są dalej.
+- **Słabsza strona szuka pokoju, silniejsza go odrzuca.** Silniejsza strona wg siły militarnej (patrz **Siła militarna** w haśle **Moc (Power) i jej podział na wojskowy i gospodarczy**) odrzuca pokój bez miasta. Słabsza strona i strona w paśmie wyrównania rozpatrywane są dalej.
 - **Próg różnicy siły w grze wynosi 0**: każda różnica decyduje. Wartość w `diplomacy-war-peace-params.json:progRozniceSilyPokoj` można zmienić bez kodu (np. 20 = różnica ±20% nie wymusza odrzucenia).
 - **Miasto jako jedyny słodzik.** Ceny pokoju są płacone wyłącznie miastami. Złoto i surowce nie wchodzą w ofertę pokoju.
-- **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`).
+- **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`). Niezależnie od profilu obowiązuje wspólna blokada: pierwsze 10 pełnych tur wojny nie przyjmuje żadnej propozycji pokoju ani rozejmu, także od AI (`PEACE_PROPOSAL_MIN_WAR_TURNS = 10`, `diplomacy-peace-proposal-timing.ts`). Obie bramki obowiązują jednocześnie.
 - **Mnożnik ceny cywilizacji**: po **20** turach wojny (`cenaPokoju.turyBezOgraniczenAi`) mnożnik ceny jest ograniczony do **1,0**.
 
 ### Zmęczenie wojną a pokój
@@ -46,14 +46,15 @@
 Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
 - **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
 - **80%** — silniejsza strona sama proponuje pokój bezwarunkowy (cena 0 = bez miasta);
-- **100%** — wojna wygasa.
+- **100%** — bez osobnego skutku: kod nie wygasza wojny przy 100%; koniec zmęczenia to próg **80%** (patrz wyżej).
 
 Pierwsze propozycje pokoju AI pojawiają się od tury 10 wojny.
 
 ### Kiedy AI proponuje rozejm, a kiedy pokój
 
-- AI nie proponuje pokoju, gdy jest militarnie silniejsza, ani zanim nie minie minimalny czas wojny.
-- AI proponuje, gdy jest słabsza (wobec gracza wyłącznie z miastem), albo gdy zachodzi jeden z sygnałów: utrata miasta w tej wojnie, pat (brak zmiany miast przez 10 tur po 15 turach wojny), zdrowie armii poniżej progu albo zmęczenie wojną co najmniej **0,4**.
+- AI nie proponuje pokoju, gdy jest militarnie silniejsza (siła militarna, patrz **Siła militarna**), ani przed minimalnym czasem wojny z profilu i przed turą 10.
+- AI proponuje pokój, gdy jest militarnie słabsza (wtedy zawsze, sygnał `f` w `ai.ts`), albo gdy zachodzi jeden z sygnałów (`diplomacy-war-peace-params.json:sygnalyPokoju`, `aiPeaceSignals`): (a) rw ≤ **0,4** (`progPokojSlabosc`), gdzie słabość mierzy respekt względny, a nie siła militarna; (b) co najmniej jedno miasto utracone w tej wojnie i rw ≤ **0,5** (`progRwMiasta`); (c) zdrowie armii poniżej progu z profilu (`progZdrowia`); (d) pat: co najmniej **15** tur wojny (`patTurWojny`) i brak zmiany miast przez **10** tur (`patBrakZmianyTur`); (e) zmęczenie wojną co najmniej **0,4** (`progSygnaluPokoju`).
+- Wobec gracza słabsza AI proponuje pokój wyłącznie z miastem. Gdy nie ma miasta do oddania, nie proponuje wcale (`ai.ts`, `peaceWeakerNoCityVsPlayer`).
 - Tryb: **pokój stały**, gdy zmęczenie osiągnęło 1, gotowość AI do pokoju wynosi co najmniej **0,7** albo Zaufanie co najmniej **60**; w pozostałych przypadkach **rozejm**. (Wartości z `diplomacy-peace-lock.ts`.)
 
 ### Plusy i minusy
@@ -104,6 +105,9 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 | 0.4 | `diplomacy-war-peace-params.json:zmeczenie.progSygnaluPokoju` |
 | 0.5 | `war-weariness-params.json:zmeczenie.progChetnosci` |
 | 0.8 | `war-weariness-params.json:zmeczenie.progWzajemnyPokoj` |
+| 0.5 | `diplomacy-war-peace-params.json:sygnalyPokoju.progRwMiasta` |
+| 15 | `diplomacy-war-peace-params.json:sygnalyPokoju.patTurWojny` |
+| 10 | `diplomacy-war-peace-params.json:sygnalyPokoju.patBrakZmianyTur` |
 
 ---
 

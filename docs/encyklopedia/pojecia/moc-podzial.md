@@ -56,13 +56,13 @@ Składnik „Wygrana bitwa” liczy siłę pokonanego składu wojsk **przed walk
 
 ### Jak Moc wpływa na dyplomację
 
-Respekt pary to udział Mocy jednej nacji w sumie Mocy obu nacji (patrz hasło **Respekt**). Obecnie decyzje o pokoju i wojnie korzystają z **całkowitej Mocy** (ta sama miara co w rankingu); osobna siła wojskowa do tych decyzji to zasada niewdrożona (patrz niżej).
+Respekt pary to udział Mocy jednej nacji w sumie Mocy obu nacji (patrz hasło **Respekt**). Decyzje o wojnie i pokoju korzystają z **Siły militarnej** (osobnej miary, patrz niżej), a nie z całkowitej Mocy. Moc pozostaje miarą rankingu i Respektu.
 
-### Zasady zatwierdzone, jeszcze niewdrożone
+### Siła militarna
 
-> **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
-
-- Siła militarna do wojny i pokoju jest osobną miarą: armia + rekruci + wygrane bitwy z bieżącej wojny + czasowy bonus trybutu (+10% na 10 tur). Gospodarka do niej nie wchodzi. Moc (ta z tabeli) pozostaje do rankingu i Respektu.
+- **Siła militarna** = (armia + rekruci + wagaBitew × wygrane bitwy z bieżącej wojny) × (1 + 10% przy aktywnym bonusie trybutu). Wzór: `diplomacy-military-strength-params.json:_formula` i `diplomacy-military-strength.ts` (`computeMilitaryStrength`). Gospodarka do niej nie wchodzi.
+- Przewaga militarna istnieje, gdy jedna strona ma co najmniej 20% więcej siły (`progPrzewagiProc` = 20 w `diplomacy-military-strength-params.json`). Bonus trybutu: +10% przez 10 tur (`trybutBonusProc`, `trybutBonusTur`).
+- Moc (ta z tabeli) pozostaje do rankingu i Respektu.
 
 ---
 

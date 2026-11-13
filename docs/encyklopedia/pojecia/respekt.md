@@ -60,11 +60,9 @@ Siła, z której liczony jest Respekt, to **Moc** (patrz hasło **Moc — podzia
 
 Start: **30**.
 
-### Zasady zatwierdzone, jeszcze niewdrożone
+### Siła militarna a Respekt
 
-> **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
-
-- Siła militarna (armia + rekruci + wygrane bitwy z bieżącej wojny + czasowy bonus trybutu) służy do decyzji o wojnie i pokoju i nie wchodzi do niej gospodarka. Patrz hasło **Wypowiadanie wojny**.
+- Siła militarna (armia + rekruci + wygrane bitwy z bieżącej wojny + czasowy bonus trybutu) służy do decyzji o wojnie i pokoju. Respekt pary liczy się z Mocy, nie z siły militarnej; gospodarka do siły militarnej nie wchodzi (wdrożone, patrz **Moc (Power) i jej podział na wojskowy i gospodarczy**, sekcja **Siła militarna**).
 
 ---
 

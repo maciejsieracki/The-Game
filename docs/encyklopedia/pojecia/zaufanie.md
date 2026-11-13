@@ -94,7 +94,7 @@ Wiarygodność (reputacja dotrzymywania słowa, patrz hasło **Wiarygodność**)
 
 ### Zasady zatwierdzone, jeszcze niewdrożone
 
-Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 są wdrożone: kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju, a w wojnie Zaufanie wynosi 0. Wypowiedzenie wojny przy Zaufaniu poniżej 30 i zerowe Zaufanie przez kilka tur opisują hasła **Wypowiadanie wojny** i **Rozejm i pokój**; siła militarna, od której zależą te decyzje, jest opisana w haśle **Siła militarna**.
+Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 są wdrożone: kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju, a w wojnie Zaufanie wynosi 0. Wypowiedzenie wojny przy Zaufaniu poniżej 30 i zerowe Zaufanie przez kilka tur opisują hasła **Wypowiadanie wojny** i **Rozejm i pokój**; siła militarna, od której zależą te decyzje, jest opisana w sekcji **Siła militarna** haśła **Moc (Power) i jej podział na wojskowy i gospodarczy**.
 
 ---
 

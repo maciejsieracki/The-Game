@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Wojnę wypowiada się** wobec innej cywilizacji. Gracz decyduje sam. AI wypowiada wojnę, gdy ma wrogie nastawienie, **Zaufanie** pary spadło poniżej **30** i ma **przewagę siły militarnej** nad drugą stroną (armia, rekruci i wygrane bitwy, patrz hasło **Siła militarna**). Gdy Zaufanie pary utrzymuje się na **zerze** przez kilka tur, silniejsza strona wypowiada wojnę po tym czasie, a gracz nigdy nie zostaje wciągnięty w wojnę automatycznie. Wojna wymuszona przez epokę ma własne zasady startu.
+**Wojnę wypowiada się** wobec innej cywilizacji. Gracz decyduje sam. AI wypowiada wojnę, gdy ma wrogie nastawienie, **Zaufanie** pary spadło poniżej **30** i ma **przewagę siły militarnej** nad drugą stroną (armia, rekruci i wygrane bitwy, patrz **Siła militarna** w haśle **Moc (Power) i jej podział na wojskowy i gospodarczy**). Gdy Zaufanie pary utrzymuje się na **zerze** przez kilka tur, silniejsza strona wypowiada wojnę po tym czasie, a gracz nigdy nie zostaje wciągnięty w wojnę automatycznie. Wojna wymuszona przez epokę ma własne zasady startu.
 
 ---
 
