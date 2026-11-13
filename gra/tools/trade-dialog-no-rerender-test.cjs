@@ -10,27 +10,8 @@
  *  (b) obie strony można uzupełnić w dowolnej kolejności i wysłać jedną propozycją;
  *  (c) gdy jedna strona jest pusta, zamiast ostrzeżenia o odrzuceniu pokazuje podpowiedź.
  *
- * Usage (z gra/): node tools/trade-dialog-no-rerender-test.cjs
- */
-'use strict';
-/**
- * trade-dialog-no-rerender-test.cjs — P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE,
- * warstwa INTEGRACYJNA (dopisane przez Evaluatora przy recenzji commita fc17538f).
- *
- * PO CO OSOBNY PLIK OBOK `diplomacy-basket-duplicate-test.cjs`:
- * tamten test sprawdza WYŁĄCZNIE wyeksportowaną funkcję `addOrMergeBasketItem`. To za mało,
- * żeby przypiąć zgłoszony bug — zweryfikowane mutacją: przywrócenie w handlerze
- * `.cdb-add-btn` starego `giveItems = [...giveItems, item]` (helper NIETKNIĘTY) sprawia, że
- * 4× "Dodaj propozycję" znów daje 4 wiersze w UI, a tamten test dalej świeci 17/17 na
- * zielono. Regresja w SAMYM PODŁĄCZENIU naprawy jest więc dla niego niewidoczna.
- *
- * Ten test klika PRAWDZIWE przyciski wyrenderowanego `showTradeBasketModal` (jsdom) i liczy
- * wiersze koszyka w DOM — dokładnie to, co widzi gracz na zrzucie ze zgłoszenia (4×
- * "Obróbka drewna" jako osobne wiersze).
- *
- * UWAGA dla przyszłych zmian: `refresh()` przebudowuje całą zawartość modala, więc formularz
- * "Co dodajesz" RESETUJE się do typu domyślnego po każdym dodaniu. Wierny scenariusz
- * użytkownika musi wybrać typ i pozycję PRZED każdym kliknięciem "Dodaj" (patrz addTech()).
+ * Mutacja (kryterium d): przywrócenie `box.innerHTML = inner` w `renderBasket` czerwieni (a)
+ * na identyczności węzłów (.cdb-body-scroll, .cdb-col strony B).
  *
  * Usage (z gra/): node tools/trade-dialog-no-rerender-test.cjs
  */
@@ -222,8 +203,28 @@ async function main() {
   ok(recvColBefore && recvAddForm() && recvAddForm().querySelector('.cdb-tech[data-side="recv"]')?.value === 'Garncarstwo',
     'panel kontrpropozycji: wybrany kafel „Garncarstwo" ustawiony przed dodaniem po stronie A');
 
+  // Stan ustawiony PRZED dodaniem po stronie A: tryb „Co turę", czas umowy 7, pozycja przewinięcia
+  // 40 i zaznaczone ultimatum wojenne (o ile renderowane w tym trybie) — wszystko ma przeżyć.
+  click(qa('.cdb-chip-mode').find(x => x.getAttribute('data-value') === 'per_turn'));
+  const turnsInp = boxEl().querySelector('.cdb-deal-turns');
+  turnsInp.value = '7';
+  turnsInp.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+  scrollBefore.scrollTop = 40;
+  const warCb = boxEl().querySelector('.cdb-war-threat-cb');
+  if (warCb) { warCb.checked = true; warCb.dispatchEvent(new dom.window.Event('change', { bubbles: true })); }
+
   addTech('Obróbka drewna'); // dodanie po stronie A (oferujemy)
   ok(giveRows().length === 1, `dodanie po stronie A → 1 wiersz „oferujemy" (got ${giveRows().length})`);
+  ok(qa('.cdb-chip-mode').find(x => x.getAttribute('data-value') === 'per_turn')?.classList.contains('selected') === true,
+    'tryb „Co turę" zachowany po dodaniu pozycji po stronie A');
+  ok(boxEl().querySelector('.cdb-deal-turns')?.value === '7',
+    'czas umowy (7 tur) zachowany po dodaniu pozycji po stronie A');
+  ok(boxEl().querySelector('.cdb-body-scroll') === scrollBefore && scrollBefore.scrollTop === 40,
+    'pozycja przewinięcia (40) zachowana na tym samym węźle .cdb-body-scroll');
+  if (warCb) {
+    ok(boxEl().querySelector('.cdb-war-threat-cb')?.checked === true,
+      'ustawienie „Ultimatum wojenne" zachowane po dodaniu pozycji');
+  }
   ok(boxEl().querySelector('.cdb-body-scroll') === scrollBefore,
     'kontener przewijania (.cdb-body-scroll) to TEN SAM węzeł po dodaniu pozycji');
   ok(recvCol() === recvColBefore,

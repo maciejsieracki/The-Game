@@ -317,6 +317,7 @@ ${DIPLO_1E_SHARED_CSS}
   background:rgba(30,36,48,0.8);border:1px solid rgba(232,216,138,.18);font-size:0.78em;line-height:1.55;}
 .civ-diplo-basket .cdb-summary b{color:#e8d88a;}
 .civ-diplo-basket .cdb-warn{color:#e0a868;margin-top:4px;}
+.civ-diplo-basket .cdb-neutral-hint{color:#b8b09a;margin-top:4px;font-style:italic;}
 .civ-diplo-basket .cdb-split{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,216,138,.15);
   display:flex;flex-direction:column;gap:3px;font-size:0.95em;}
 .civ-diplo-basket .cdb-verdict{margin-top:7px;padding:6px 9px;border-radius:7px;font-weight:700;font-size:0.92em;}
