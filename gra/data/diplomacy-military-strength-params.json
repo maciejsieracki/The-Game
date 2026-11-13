@@ -1,0 +1,20 @@
+{
+  "_opis": "Siła militarna pary w wojnie (R-WEB-DIPLO-WAR-MILITARY-STRENGTH-Q1). Osobna miara: NIE zmienia Power, Respektu, Zaufania ani etykiet relacji. Gospodarka (miasta, technologie, kultura, budynki) nie wchodzi do siły militarnej.",
+  "_formula": "siła = (armiaPkt + rekrutPkt + wagaBitew × punktyWygranychBitewWojna) × (trybutBonusAktywny ? 1 + trybutBonusProc/100 : 1)",
+  "progPrzewagiProc": {
+    "wartosc": 20,
+    "opis": "Przewaga strony A istnieje, gdy siła A ≥ siła B × (1 + progPrzewagiProc/100), czyli o co najmniej 20%. Poniżej progu żadna strona nie ma przewagi (wynik 'brak')."
+  },
+  "wagaBitew": {
+    "wartosc": 1,
+    "opis": "Mnożnik punktów wygranych bitew z bieżącej wojny tej pary (start od zera przy wybuchu wojny). Domyślnie 1: punkty bitew pochodzą z tego samego modelu co składnik 'wygrane_bitwy' w Power (power-objective.ts, enemy_m_sum), więc 1 punkt bitwy = 1 punkt siły militarnej przed korektą."
+  },
+  "trybutBonusProc": {
+    "wartosc": 10,
+    "opis": "Czasowy bonus siły dla strony pobierającej trybut: +10% siły przez czas z trybutBonusTur."
+  },
+  "trybutBonusTur": {
+    "wartosc": 10,
+    "opis": "Liczba tur, przez które trwa bonus trybutu (trybutBonusProc). Licznik tur jest po stronie integracji (kroki 3 i 4), nie w tej funkcji."
+  }
+}
