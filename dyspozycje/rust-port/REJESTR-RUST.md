@@ -610,3 +610,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zgłoszenie dla właściciela (proces):** w jednym z wcześniejszych przebiegów Operator usunął poza repo plik `/home/user/tmp/x` (7,3 MB). Plik nie istnieje, nie da się go odtworzyć z repo.
 - **Dysk:** 10 GB wolne po sprzątaniu worktree rozpoznań ZŁOŻA i CRED-HAK (refy `refs/keep/…-fc`, `…-wip`).
 - **Odpowiedź właściciela (ABC, gameplay):** wojna klastra państw-miast wobec gracza **wchodzi do P6 teraz** (wariant rekomendowany). Odblokowuje T5 haka CRED-HAK (#120/#171); T1–T4 nie zależą od tej decyzji.
+
+## Przebieg (13.11, heartbeat sloty): cztery aktywne rozpoznania P6
+- **Sloty:** przed heartbeatem brak aktywnych Workflow z wynikiem bez FC (ostatnie cztery rozpoznania zakończone). Uruchomiono cztery rozpoznania doc-only, baza `5e8b116e8` (parity-v2):
+  - EKONOMIA-8I2 (#180) — `wf_9d0712b1-a18`
+  - DYPLOMACJA-MULTIWAR (#181) — `wf_f638a0ba-62e`
+  - ZWYCIESTWO (#182, P6.19) — `wf_0900e902-b40`
+  - SAVE-LOAD-MIGRACJE (#184, P6.20–P6.22) — `wf_a300014c-ff5`
+  Dispatche: `dyspozycje/autobot/runs/<ID>/00-dispatch.md` (commit `6669cb03f`), skrypty: `workflows/scripts/topic-<ID>.js`.
+- **Nie uruchomiono:** COMBAT-WEJSCIA runda 2 (wymaga dispatchu z bazą `5e8b116e8`, do napisania), ZLOŻA-B port `transferBasketItems` (#172, do napisania dispatch), CRED-HAK T1–T5 (T5 odblokowany decyzją właściciela 13.11).
+- **Dysk:** 8,9 GB wolne przed startem czterech rozpoznań.
+- **Brak zmian kodu** w tym przebiegu; zmiany tylko w dyspozycjach.
