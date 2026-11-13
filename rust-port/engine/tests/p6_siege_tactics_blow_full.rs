@@ -566,6 +566,11 @@ fn zgodnosc_z_pinem_end_to_end() {
     for (name, n) in checks {
         assert!(n > 0, "galaz bez pokrycia: {name}");
     }
+    assert!(
+        cov.lucznik_ranged >= 14,
+        "pokrycie lucznik_ranged {} < 14",
+        cov.lucznik_ranged
+    );
     assert!(cov.total >= 500);
 }
 
