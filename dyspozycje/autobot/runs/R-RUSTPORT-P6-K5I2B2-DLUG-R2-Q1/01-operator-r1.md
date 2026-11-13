@@ -28,7 +28,7 @@ TESTY:
 - cargo test --test p6_siege_tactics_blow_env: 3 passed (w tym zgodnosc_z_pinem_end_to_end: 1200 przypadkow, nazwy kafli zgodne z pinem, gory_cases > 0).
 - Brak #[ignore]. Brak osłabionych asercji (poprzednia asercja name()=="" dla poza siatka zastapiona wlasciwa nazwa plaska).
 - Bramki uruchomione z CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; CARGO_TARGET_DIR poza repo.
-- NIE_ZMIERZONO: mutacja testu (czulosc na usuniecie galezi Gory) nie byla wykonana w tej rundzie.
+- Mutacja (wylaczenie galezi `2 if is_mountain => "Gory"`, `if false &&`): test `zgodnosc_z_pinem_end_to_end` FAIL, np. `#1 env combatTerrainName(0,0): rust=Wzgorza pin=Gory`; plik przywrocony (git checkout), brak zmian poza commitem.
 
 BLOKADY: brak.
 RUNDY: 1/5
