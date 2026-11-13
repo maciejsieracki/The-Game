@@ -225,6 +225,7 @@ async function main() {
     await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
     // mgla wojny OFF (klawisz F = toggleDevFogFull)
     await page.keyboard.press('f'); await wait(800);
+    if (process.env.MEAS_FAST !== '0') { const fm = await page.evaluate(() => (window.__aiTradeWiringTestDebug && window.__aiTradeWiringTestDebug.setFastMode ? window.__aiTradeWiringTestDebug.setFastMode(true) : null)); emit({ ev: 'fast-mode', on: fm }); }
     emit({ ev: 'world-ready', at: new Date().toISOString() });
 
     const snap = async (full) => page.evaluate(async (full) => {
