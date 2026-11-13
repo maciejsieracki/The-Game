@@ -693,3 +693,13 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - ZLOZA-B-PORT-Q1 — w toku (etap Evaluatora) — `wf_f811df3e-f53`.
   - ZWYCIESTWO-IMPL-Q1 — w toku (etap Obrony) — `wf_b8c4665f-81f`.
 - **Dysk:** 8,3 GB wolne przed startami.
+
+## EKONOMIA-BRAZ-ERA-Q1 (T-A, #15): FC FAIL r1 → DODATEK r2 (decyzje orkiestratora)
+- **Wynik r1:** Operator BLOCK (kod niezacommitowany, pełny test nie zakończony), Evaluator FAIL, FC FAIL. Dwa istniejące testy (`p6_turn_econ_res_pipeline.rs`) wymagają zmiany oczekiwań brązu, bo stare wektory zakładały mnożenie przez m(e); pin ma osobne wiersze per epoka. Brak wierszy `budynek_huta_braz_epoka2/3_przepustowosc` w `econ-params.json`.
+- **Decyzje (parytet z pinem, bez pytania):**
+  1. Allowlista rozszerzona o `p6_turn_econ_res_pipeline.rs` i `p6_7b_vectors/**` — wyłącznie oczekiwania brązu zgodne z pinem, bez osłabiania asercji.
+  2. Dodać wiersze `budynek_huta_braz_epoka2/3_przepustowosc` (50 / 75) z pinu do `econ-params.json`.
+  3. Test obu ścieżek pina (`turn-economy.ts` ~:1503 i ~:2484) na wektorach pina.
+- **Baza r2:** `d30e3ea24` (parity-v2 po JS-MAX), nie `5e8b116e8`. Dispatch z DODATKIEM r2 wypchnięty (`claude/rust-sivvrn`).
+- **Start r2:** dopiero przy ≥ 8 GB wolnego. Dziś po zakończeniu r1 było 3,9 GB, więc nie startuję.
+- **Sprzątanie:** worktree nieudanej rundy usunięty, ref `refs/keep/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r1-fc` zapisany.
