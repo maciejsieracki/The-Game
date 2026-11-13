@@ -1,3 +1,9 @@
+## ROBOCZA 272e14e4 -- 2026-11-13 -- FALA 682: Opisy w pliku dyplomacji zgodne z parametrami (bez zmiany zachowania gry) (testowa)
+
+- Poprawione opisy akcji i tabele referencyjne w danych dyplomacji: religia nie wpływa na zaufanie, kary za sąsiedztwo -3/-4/-5, wypowiedzenie wojny karze wiarygodność a nie zaufanie, odmowa obowiązku sojuszu to -15 wiarygodności; poprawione komentarze w kodzie dyplomacji; nowy test zgodności opisów z parametrami.
+- Weryfikacja: tsc 0; logic 213/213; json-descriptions-sync 36/36; civpedia-values 129; diplomacy 148/0; audience-actions 20/0; vite build OK
+- Limity: Parametry bez zmian (zachowanie gry bez zmian); kilka opisów NIE_ZMIERZONO w kodzie (zadanie w kolejce)
+
 ## ROBOCZA 0971e48c -- 2026-11-13 -- FALA 681: Nowe zasady wypowiadania wojny przez AI: zaufanie poniżej 30 i 20% przewagi siły militarnej, wojna przy zerowym zaufaniu (testowa)
 
 - AI wypowiada wojnę przy zaufaniu pary poniżej 30 i przewadze siły militarnej o co najmniej 20% (decyduje charakter cywilizacji); przy zerowym zaufaniu przez N tur silniejsza strona wypowiada wojnę; gracz nigdy automatycznie; ostrzeżenie dla gracza raz na epizod; siła liczona jako armia, rekruci, wygrane bitwy z tej wojny i bonus trybutu.
