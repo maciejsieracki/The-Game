@@ -571,7 +571,9 @@ fn converter_throughputs_for_era_match_web_vectors() {
                 "nieznany"
             };
             // REPIN-BRAZ-ERA: brąz (3 receptury) ma wiersze per epoka właściciela zamiast mnożnika m(e).
-            // Pin converters.ts:177-185 + econ-params (epoka2=50, epoka3=75; era<=1/NaN/Inf -> wiersz epoki 2).
+            // Pin 07d2fbd72: converters.ts:99,100,102 (throughputEraParamKeys 2/3), konsument :177-185;
+            // gra/data/econ-params.json:369 (epoka2=50) i :376 (epoka3=75); era<=1/NaN/Inf -> wiersz epoki 2.
+            // Wartości te są stałymi z pinu (nie z wektora); wektor pinu z SHA: p6_ekonomia_braz_era.rs.
             if matches!(
                 r.id,
                 "odlewnia_brazu" | "odlewnia_zelaza__braz" | "wielka_odlewnia__braz"
