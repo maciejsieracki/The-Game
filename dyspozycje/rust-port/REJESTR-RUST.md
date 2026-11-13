@@ -401,3 +401,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - **Lista zadań jest nieaktualna:** #91 zamknięte (FC PASS-WITH-NOTES, FF docs-only). #104, #106, #114, #115 mają status in_progress bez worktree i bez Workflow. Status NIE_ZMIERZONO.
 - **Dysk:** 9,5 GB. Próg 8 GB z CLAUDE.md spełniony.
 - **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` = `d1f0e3c59` po dispatchu r2.
+
+## Przebieg (heartbeat 08:47, trig_01DiSPBEtwmKWjgEKvcGWm7W): 1 aktywny temat, dysk ratowany
+- **Sloty:** 1 aktywny Workflow: CRED-WOJNA-Q1 runda 2/5 (`wf_f60f7f97-86e`). Operator r2 (HAIKU) zwrócił DECISION_REQUIRED: wektory S3, hak P4 i kolejność D4/D8 gotowe, bramki zielone. Pokrycie ścieżek wymuszonych wojen jest niepełne: pin 41931 prowadzi do `war_turn_declare.rs`, poza allowlistą. Evaluator (SONNET) trwa, pełny `cargo test`.
+- **Decyzja do podjęcia przez właściciela** (przed rundą 3): rozszerzyć allowlistę o `war_turn_declare.rs` (zakres wymuszonych wojen, powiązany z #120) albo odłożyć tę ścieżkę do #120.
+- **Dysk:** spadł do 1,6 GB przy trwającej bramce. Usunięto cache kompilacji zakończonych tematów: `tgt-b22`, `tgt`, `fc-r7k7c-w4`, `fc4target`, `fc-target-deser`, `ev` (łącznie ok. 8 GB, bez otwartych przez procesy). Nie ruszano `ev_target` (w użyciu przez bramkę). Po sprzątaniu 6,3 GB. Próg 8 GB do startów z kodem Rust nadal niespełniony, więc nowych startów nie ma.
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `8a856eba4`.
