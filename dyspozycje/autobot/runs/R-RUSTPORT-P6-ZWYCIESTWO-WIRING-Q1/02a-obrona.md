@@ -1,45 +1,55 @@
-# 02a-obrona: R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1 (runda 2, Operator obrona, Haiku)
+# 02a-obrona: R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1 (runda 2, obrona Operatora na ocenę Evaluatora 70567f574, Haiku)
 
-STATUS: PASS-WITH-NOTES (kod poprawiony w 4 punktach; 6 zarzutów przyjętych bez poprawki i przekazanych do decyzji FC; 2 odrzucone z dowodem)
+STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1
-GOAL: odpowiedź na 10 zarzutów Evaluatora r1 (02-evaluator.md, commit 71567984d)
-BAZA: eb60780e2 (kod Operatora r1), detached; poprawka: 52385c502
-ZMIANY/COMMIT: 52385c502 (rust-port/engine/src/domain/playable.rs, rust-port/engine/tests/p6_victory_wiring.rs). Cargo.lock nie commitowany.
-TESTY: cargo fmt --check: kod 0. cargo clippy --all-targets -- -D warnings: kod 0. cargo test --lib: 111 passed, 0 failed (przed poprawką 110). cargo test --test p6_victory_wiring: 6 passed, 0 failed. Pełny cargo test: patrz PEŁNY TEST.
-RUNDY: 2/5
+GOAL: odpowiedź na 11 zarzutów Evaluatora (02-evaluator.md, commit 70567f574, ocena commitu 3a2e16b3d)
+BAZA: 3a2e16b3d (kod Operatora r2), detached
+ZMIANY/COMMIT: poprawka dokumentacyjna w rust-port/engine/src/domain/playable.rs (zarzut 9 i adnotacja do zarzutu 5); commit SHA w sekcji DEPLOY/PUSH. Bez zmian zachowania, bez zmian testów. Cargo.lock nie commitowany.
+TESTY:
+- cargo fmt --check (rust-port/engine): kod 0 (po obu poprawkach).
+- git diff --check: kod 0.
+- cargo clippy / cargo test: NIE_ZMIERZONO w tej rundzie. Zmiana jest czysto komentarzowa (bez zmiany kodu wykonywalnego); pełna bramka z r2 (3320/0/1) dotyczy kodu 3a2e16b3d, a Evaluator r2 odtworzył lib 113/0 i p6_victory_wiring 7/0. Nie uruchamiałem ponownie z powodu dysku i czasu.
+- generator p6_victory_wiring_gen.mjs: bez zmian (nie dotykany).
+BLOKADY: zarzuty 1, 2, 4 (częściowo), 6, 7 (część), 8, 10 wymagają zmian poza allowlistą lub nowego zakresu (ZDOBYCIE-MIASTA-WIRING #115, produkcyjna ścieżka wczytania, ekstraktor tekstu pina). Bez decyzji orkiestratora kryteria 1–3 r2 pozostają niespełnione.
+RUNDY: 2/5 (runda obrony tej samej rundy kodu; kolejna runda Operatora wymaga decyzji zakresu)
+NASTĘPNY KROK: decyzja orkiestratora: (A) rozszerzyć zakres o #115 i ekstraktor pina, albo (B) zamknąć R-...-WIRING-Q1 jako wąskie (flaga + reset + odrzucanie komend + generator victory.ts) i przenieść pozostałe pozycje do osobnych tematów.
+DEPLOY/PUSH: NIE WYKONANO
+
+## Korekta wcześniejszego raportu
+
+W 01-operator-r2.md napisano, że "stolica startowa ustawia flagę (main.ts:16508)". To nieprecyzyjne: pin main.ts:16508 dodaje do `playerEverOwnedCityByOwner` fotel `ME()` przy KAŻDYM założeniu miasta (kontekst: `playerEverOwnedCityByOwner.add(ME())` po `spawnPendingSameTypeRivals`), a nie tylko stolicy startowej. Zarzut 7 to potwierdza.
 
 ## Odpowiedzi na zarzuty
 
-1. PRZYJMUJĘ, NIEZREALIZOWANE. Brak tests/p6_victory_wiring_gen.mjs i tests/p6_victory_wiring_vectors/**. Wektory nie są generowane z tekstu pina i nie ma SHA fragmentu. Nie zrobiłem tego w r2: generator wymaga ekstraktora tekstu pina (main.ts:43441-43483, 37997, 43827, 34018-34025, 46368-46370), to osobny zakres. Stan: BLOCK na kryterium 1. Decyzja FC: osobny temat generatora czy kolejna runda Operatora.
+1. PRZYJMUJĘ, NIENAPRAWIONE. Generator `p6_victory_wiring_gen.mjs` wykonuje tylko `victory.ts` z pina. Odrzucanie komend po końcu gry, resety (main.ts:45160/45431/45686/45920/47333), flaga (`graczKiedysMialMiasto`) i `sprawdzPrzegranaPoUtracieMiasta` (main.ts:34018-34025) są w generatorze tylko kotwicami tekstowymi (10/10). Brak wektorów dla odrzucenia komendy i resetu. Naprawa wymaga ekstraktora, który wykonuje fragmenty `main.ts` w izolowanym kontekście. To nowy zakres; nie zrobiłem tego w tej rundzie.
 
-2. PRZYJMUJĘ, NAPRAWIONE. Dodany test w module playable.rs: przegrana_po_utracie_wszystkich_miast_konczy_gre (kamien: tura z miastem ustawia flagę Some(true), usunięcie miast gracza 1 i kolejna tura daje koniec_gry = Przegrana). Zielony w cargo test --lib. Test nie jest wektorem z pina (ustawia stan bezpośrednio).
+2. PRZYJMUJĘ, NIENAPRAWIONE. Wektory testują `check_victory` / `check_defeat` z `victory.rs` (zakres ZWYCIESTWO-IMPL), a nie wiring. Logika `flagaPinu = zapamietana || owns` jest liczona w JS wewnątrz generatora, a `flaga || miasto` w `evaluate_victory` oraz faza Victory w `advance_turn` nie są porównane z pinem wektorem. Zgoda, że test wektorowy wobec wiringu jest w dużej mierze niedowodzący.
 
-3. PRZYJMUJĘ, NAPRAWIONE CZĘŚCIOWO.
-   - Test tautologiczny zastąpiony testem wczytania: wczytanie_zapisu_po_zakonczonej_grze_resetuje_koniec_gry (zapis serde, wczytanie serde, asercja koniec_gry == None i brak klucza koniecGry w JSON).
-   - Pole koniec_gry ma #[serde(skip)]. Pin nie zapisuje gameOver i resetuje go przy wczytaniu (main.ts:47333: gameOver = false), więc to jest wpięcie resetu na jedynej ścieżce wczytania w Rust (serde).
-   - Reset przy nowej grze to PlayableGame::new (nowy stan), nie ma osobnej operacji do wywołania.
-   - Brak produkcyjnej funkcji load poza serde. Pozostałe pola resetu z pina 47333 (selectedId, zaznaczenia UI) są poza zakresem. NIE_ZMIERZONO dla reszty.
+3. PRZYJMUJĘ, NIENAPRAWIONE. Sprawdzone w `vectors.json`: `potegiWszystkich` to arbitralne pary wartości (np. `[0.9, 0.2]`), a nie wynik `power_raw` ani `objectivePowerForOwner`. Punkt 3 r2 (porównanie z pinem main.ts:43448-43452) nie został wykonany. Różnica zbiorów właścicieli (pin: jednostki + miasta bez barbarzyńców; Rust: `power_raw` + gracz) jest NIE_ZMIERZONO; nie potwierdzam ani nie odrzucam.
 
-4. PRZYJMUJĘ, NIENAPRAWIONE. Odstępstwo od pina istnieje: flaga nie jest zapisywana, po wczytaniu = Some(false), wraca dopiero przy kolejnym sprawdzeniu, jeśli gracz ma miasto. Naprawa (zapis flagi) zmienia JSON i łamie golden p6_unit_replace_l3_state, który jest poza allowlistą. Wymaga decyzji FC (rozszerzenie allowlisty o golden, albo uznanie odstępstwa za FAIL do zmiany zakresu).
+4. PRZYJMUJĘ, NIENAPRAWIONE. Odstępstwo istnieje. Pin (main.ts:43466-43483 w `checkVictory`) i tura: wyjątek jest łapany przez `try/catch`, tura trwa. Rust (playable.rs, faza Victory w `advance_turn`, ok. linii 1131-1142): przy `Err` przywraca `phase_queue` i `war`, zwraca `Err`, tura nie przechodzi. Brak udokumentowanej decyzji. Zmiana semantyki błędu to decyzja zakresu (zachowanie poza pinem = FAIL), nie poprawka w tej rundzie. Wymagana decyzja orkiestratora: czy przyjąć semantykę pina (log + kontynuacja) i wtedy poprawka w tej samej rundzie, czy udokumentowany wyjątek.
 
-5. PRZYJMUJĘ, NIENAPRAWIONE. Flaga jest ustawiana tylko w fazie Victory. Pin ustawia ją przy zakładaniu i przejęciu miasta (main.ts:16508, 17816, 36218, 45646, 45877-45878). Miasto założone i utracone w jednej turze nie ustawi flagi. Wpięcie wymaga hooków w miejscach tworzenia miast w playable.rs, czego nie zrobiłem w r2.
+5. PRZYJMUJĘ CZĘŚCIOWO.
+   - `victoryMode`: PRZYJMUJĘ, NAPRAWIONE jako adnotacja w kodzie (commit, zob. sekcja DEPLOY/PUSH). Pin czyta `_menuAdvanced?.victoryMode ?? 'moc_i_dominacja'`. Rust nie ma menu (UI poza zakresem), więc stała `MocIDominacja` odpowiada wartości domyślnej pina. Wariant z menu jest NIE_ZMIERZONO.
+   - `wszystkie_tech_zbadane=false`, `rakieta_wystrzelona=false`: ODRZUCAM jako błąd wyniku. Dowód z r2 pozostaje: `is_nauka_victory` przy `NAUKA_WYMAGA_RAKIETY=true` wymaga rakiety, a pin nigdzie nie ustawia `rakietaWystrzelona=true`. Zastrzeżenie: pin czyta `allTechInScopeResearched` zamiast stałej; to odnotowane w komentarzu w kodzie, bez wektora.
 
-6. PRZYJMUJĘ, NIENAPRAWIONE. Druga ścieżka przegranej (main.ts:34018-34025, sprawdzPrzegranaPoUtracieMiasta) nie jest wpięta. Wymaga hooka przy utracie miasta w ścieżkach walki i przejęcia.
+6. PRZYJMUJĘ, NIENAPRAWIONE. Druga ścieżka przegranej po utracie wszystkich miast poza fazą tury (main.ts:34018-34025) nie jest wpięta. Wymaga hooka w ścieżkach walki i przejęcia miasta w `PlayableState`, czyli #115 (poza allowlistą r2).
 
-7. PRZYJMUJĘ jako NIE_ZMIERZONO. Pin buduje potegiWszystkich z właścicieli jednostek i miast (main.ts:43448-43452, pętle po units i cities, potem objectivePowerForOwner dla każdego oid). Rust bierze klucze z inputs.power_raw plus człowieka (victory_power_inputs). Czy zbiory się różnią, nie sprawdziłem: brak wektora. Nie odrzucam i nie potwierdzam.
+7. PRZYJMUJĘ, CZĘŚCIOWO NIENAPRAWIONE.
+   - Brak hooków przy zakładaniu i przejęciu miasta (pin 16508, 17816, 36218, 45646, 45877-45878): PRZYJMUJĘ, NIENAPRAWIONE (#115).
+   - `PlayableGame::new` ustawia `true` na sztywno: PRZYJMUJĘ, że to przybliżenie. Pin ustawia flagę przy każdym założeniu miasta, a Rust tego nie odwzorowuje. Sprostowanie korekty powyżej.
 
-8. ODRZUCAM w obu częściach.
-   - victoryMode: pin main.ts:43479 ma `_menuAdvanced?.victoryMode ?? 'moc_i_dominacja'`. Bez menu wynik to dokładnie MocIDominacja, zgodnie z pinem. Wybór z menu jest poza zakresem wg dispatchu (UI poza zakresem).
-   - wszystkieTechZbadane=false: bez wpływu na wynik. Nauka wymaga rakiety przy NAUKA_WYMAGA_RAKIETY=true (victory.rs: is_nauka_victory). Pin nigdzie nie przypisuje rakietaWystrzelona=true (grep `rakietaWystrzelona\s*=` i `rakietaWystrzelona:\s*true` w gra/src/main.ts @07d2fbd72 nie daje trafień; jest init false w ok. 34963 i odczyt w 43478). Nauka nie może zajść ani w pinie, ani w Rust, więc flaga nie zmienia wyniku.
+8. PRZYJMUJĘ, NIENAPRAWIONE. Potwierdzone przez grep: `odtworz_flage_zwyciestwa_ze_miast` ma jednego wołającego, test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata` (playable.rs). Brak produkcyjnej ścieżki wczytania w `PlayableState` (jedyna ścieżka to serde). Konsekwencja zgodna z zarzutem: przy utracie miast przed pierwszą oceną po wczytaniu przegrana się gubi, a pin odtwarza flagę przy wczytaniu (main.ts:46368-46370). Dodałem w komentarzu jawną adnotację "BRAK wolajacego w produkcji". Wpięcie wymaga produkcyjnej funkcji wczytania (poza zakresem r2).
 
-9. PRZYJMUJĘ, NAPRAWIONE w kodzie (bez testu wymuszającego błąd). advance_turn snapshotuje koniec_gry i gracz_kiedys_mial_miasto przed pętlą faz i przywraca je przy TurnPhaseQueueIncomplete (jedyny błąd po fazie Victory). Test wymuszający ten błąd nie został zbudowany: NIE_ZMIERZONO testem.
+9. PRZYJMUJĘ, NAPRAWIONE (commit). Zarzut prawdziwy: wstawiona metoda `odtworz_flage_zwyciestwa_ze_miast` przejęła komentarz "Adapter zdarzenia 'wygrana bitwy'", a `power_record_battle_win` straciła swój doc-comment. Poprawka: komentarz "wygrana bitwy" wraca nad `power_record_battle_win`, a nad `odtworz_flage_zwyciestwa_ze_miast` jest własny opis P6-ZWYCIESTWO-WIRING. Zmiana tylko w komentarzach (`git diff --check` 0, `cargo fmt --check` 0).
 
-10. PRZYJMUJĘ, NIENAPRAWIONE. Test dominacji w epoce żelaza (dominacja_w_epoce_zelaza_konczy_gre_po_turze) potwierdza ścieżkę, nie zgodność z pinem. Mapowanie gracz 0 pina = PlayerId 1 w Rust jest niezweryfikowane wektorem. Część zarzutu do kryterium 1.
+10. PRZYJMUJĘ, NIENAPRAWIONE. Test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata` składa `PlayableGame { state, phase_queue }` ręcznie i omija produkcyjną ścieżkę wczytania (której nie ma). Nie dowodzi wiringu. Usunięcie lub przepisanie wymaga produkcyjnej ścieżki wczytania (jak w zarzucie 8).
 
-## PEŁNY TEST
-Pełny cargo test --no-fail-fast na 52385c502 (kod, bez dokumentu): FULL_RC=0, 460 binariów, passed 3308, failed 0, ignored 1 (ignorowany test istnieje wcześniej, bez zmian w tym commicie; diff nie dodaje #[ignore]). Log: scratchpad/fulltest2.log. Pierwszy przebieg przerwany timeoutem 590 s (rc=124) po 1856 passed / 0 failed, bez FAILED.
+11. PRZYJMUJĘ. Raport Operatora r2 ma STATUS BLOCK i wymaga decyzji orkiestratora. Przy obecnym zakresie kryteria r2 pkt 1–3 nie są spełnione. Ten raport ma status DECISION_REQUIRED.
 
-## NASTĘPNY KROK
-FC: decyzja w sprawie zarzutów 1, 4, 5, 6, 7, 10 (kryterium 1 i odstępstwa od pina). Zarzuty 2, 3, 8, 9 zamknięte kodem lub dowodem.
-DEPLOY/PUSH: NIE WYKONANO (commit lokalny w worktree, bez push).
+## Podsumowanie dla FC
+
+- Zmiany kodu w tej rundzie: tylko komentarze (zarzut 5 i 9). Zachowanie bez zmian, testy nie zmieniane.
+- Zarzuty przyjęte bez poprawki: 1, 2, 3, 4, 6, 7 (część), 8, 10, 11. Odrzucony: część zarzutu 5 (nauka/rakieta).
+- Do decyzji orkiestratora: zakres (#115 + ekstraktor pina + produkcyjne wczytanie) albo wąskie zamknięcie tematu oraz semantyka błędu victory (zarzut 4).

@@ -558,12 +558,10 @@ impl PlayableStores {
 }
 
 impl PlayableState {
-    /// Adapter zdarzenia "wygrana bitwy" dla akumulatora mocy (R-RUSTPORT-P6-POWER-AKUMULATORY-WIRING-Q1).
-    /// Deleguje do `WarTurnState::record_battle_win` (web main.ts:34487-34490). BRAK wolajacego w produkcji:
-    /// petla walki Rust (`combat::resolve_combat`) nie ma produkcyjnego wywolania - patrz raport.
     /// P6-ZWYCIESTWO-WIRING: odtworzenie flagi `graczKiedysMialMiasto` ze miast po wczytaniu zapisu
     /// (pin main.ts:46368-46370: `playerEverOwnedCityByOwner` = fotele z miastem). Wywolywac po
     /// deserializacji, PRZED pierwsza tura; bez tego flaga po wczytaniu = false (pole nie jest w zapisie).
+    /// BRAK wolajacego w produkcji (tylko test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata`).
     pub fn odtworz_flage_zwyciestwa_ze_miast(&mut self) {
         self.gracz_kiedys_mial_miasto = self.gracz_kiedys_mial_miasto
             || self
@@ -572,6 +570,9 @@ impl PlayableState {
                 .any(|city| city.owner_id == HUMAN_PLAYER_ID);
     }
 
+    /// Adapter zdarzenia "wygrana bitwy" dla akumulatora mocy (R-RUSTPORT-P6-POWER-AKUMULATORY-WIRING-Q1).
+    /// Deleguje do `WarTurnState::record_battle_win` (web main.ts:34487-34490). BRAK wolajacego w produkcji:
+    /// petla walki Rust (`combat::resolve_combat`) nie ma produkcyjnego wywolania - patrz raport.
     pub fn power_record_battle_win(&mut self, winner_owner_id: i64, enemy_field_m: f64) {
         self.war.record_battle_win(winner_owner_id, enemy_field_m);
     }
@@ -1209,6 +1210,11 @@ impl PlayableGame {
                 .map(|c| c.owner_id.get() as i64)
                 .collect(),
             gracz,
+            // Pin (main.ts:43479): `_menuAdvanced?.victoryMode ?? 'moc_i_dominacja'`. Brak menu w Rust
+            // (UI poza zakresem tematu), wiec zawsze domyslny tryb pina. Pin czyta tez
+            // `allTechInScopeResearched` i `rakietaWystrzelona` (ponizej stale false): nauka nieosiagalna
+            // przy NAUKA_WYMAGA_RAKIETY=true, bo pin nigdzie nie ustawia rakiety. Odstepstwo NIE_ZMIERZONO
+            // dla wariantu menu, zob. 02a-obrona.md.
             victory_mode: Some(VictoryMode::MocIDominacja),
             potega_gracza: Some(potega),
             potegi_wszystkich: Some(powers.values().copied().collect()),
