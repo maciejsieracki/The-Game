@@ -363,3 +363,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dispatche (zdalnie):** `bce95a514` — JS-MAX-SIGN-R2, K5I2B2-POKRYCIE-R2, COMBAT-HARNESS-R3, K5I2B2-DLUG-R2 (baza `23e33793e`).
 - **Aktywne Workflow (4):** JS-MAX-SIGN-R2 (#142, `wf_b2ecc0c9-7e9`), K5I2B2-POKRYCIE-R2 (#143, `wf_5a6c0cc5-796`), COMBAT-HARNESS-R3 (#144, `wf_3ebd25da-b46`), K5I2B2-DLUG-R2 (#145, `wf_33a86f3d-cdf`). Operator HAIKU, Evaluator/FC SONNET.
 - **W kolejce (blokada):** #146 K5-LOOP-WIEZE-R2 (gotowy, czeka na slot); #147 OUTCOME, #148 KONTRATAK-STRZELEC, #149 AUTO, #150 WYLOM — fundament ProdBody poza allowlistą; #151 float_roundtrip — Cargo.toml.
+
+## Przebieg (heartbeat 05:47): parity-v2 = a0b302eb8, 0 aktywnych Workflow
+- **Integracja na parity-v2 (FF):** JS-MAX-SIGN-R2 (#142), COMBAT-HARNESS-R3 (#144) przez `efc77e0cf` (pełny cargo test 3256/0/1); DLUG-R2 (#145) przez `a0b302eb8` (pełny cargo test 3257/0/1, merge czysty). Refy: `refs/keep/R-RUSTPORT-P6-INTEG-R2-Q1`, `refs/keep/R-RUSTPORT-P6-INTEG-R3-Q1`, gałęzie `rust-port-wip/*`.
+- **Sprzątanie:** worktree rund INTEG-R2 i INTEG-R3 usunięte, HEAD-y zabezpieczone `refs/keep/wt-*`.
+- **Blokady (bez zmian):** #143 i #146 — decyzja (a)/(b) właściciela; #147–#150 — zgoda na allowlistę `ProdBody`; #151 — `Cargo.toml`; #114/#115 — driver W8; #106 — kryteria 2–3; #60, #63, #27, #10, #14–#19 — gameplay.
+- **Otwarte:** atrybucja commitów (sesja vs CLAUDE.md); kopie `js_max` poza zakresem (osobny temat do zlecenia).
