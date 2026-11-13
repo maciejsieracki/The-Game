@@ -1,73 +1,70 @@
-# R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 — raport Operatora (runda 1/5)
+# R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 — Operator, runda 2/5 (Haiku)
 
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1
-GOAL: przepisać gra/tools/diplo-war-peace-sim-test.cjs tak, by sprawdzał zatwierdzone zachowanie kodu (3 FAIL na bazie: S3, S4b, M_TUR), bez osłabiania asercji.
-BAZA: a99445016 (origin/main), wykonano `git checkout --detach a99445016`.
-ZMIANY-COMMIT: brak zmian w kodzie i w teście. Zatrzymanie zgodnie z dispatchem (diagnoza wskazała błąd w KODZIE gry, allowlista nie pozwala go naprawić). Commit zawiera wyłącznie ten raport.
+GOAL: opcja A (decyzja właściciela 2026-11-13): AI nie proponuje pokoju przed 10. pełną turą wojny dla wszystkich cywilizacji (bramka gracza PEACE_PROPOSAL_MIN_WAR_TURNS = 10); sim-test 24/24+ bez FAIL, tsc 0, bramki referencyjne zielone.
+BAZA: 551034cb3 (detach), kod operatora = jeden commit nad bazą (SHA w sekcji ZMIANY-COMMIT).
+ZMIANY-COMMIT: gra/src/game/ai.ts (aiPeaceTimeOk + import stałej), gra/tools/diplo-war-peace-sim-test.cjs, ten raport.
 
-## Wynik bazowy (surowe wyjście, bez zmian w repo)
+## Zmiana w kodzie (gra/src/game/ai.ts, allowlista: tylko bramka czasu)
+- l. ~7019: `aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)` (było: `>= warProfile.minTurWojny`, zulusi = 7).
+- Import `PEACE_PROPOSAL_MIN_WAR_TURNS` z `./diplomacy-peace-proposal-timing` (jedna linia; konieczna, by nie wpisywać liczby 10). Progi, miara siły i reszta ai.ts nietknięte. Fragment audytu W73 (l. 7126–7186) nietknięty.
+- aiPeaceTimeOk steruje też oddaniem/żądaniem miasta (N1a/N1b, zgodnie z komentarzem w kodzie) — ta sama bramka czasu, bez innej zmiany.
 
-`node tools/diplo-war-peace-sim-test.cjs` na a99445016: `diplo-war-peace-sim-test: 19 pass / 3 fail`.
-FAIL: S3, S4b, M_TUR. Zgodne z dispatchem.
+## Zmiany w teście (gra/tools/diplo-war-peace-sim-test.cjs)
+| Scenariusz | Powód zmiany | Nowa asercja |
+|---|---|---|
+| S1 / S1a | Harmonogram AI słabszej: od minTurWojny (7) → od max(7,10) = tura 10 | tury 10,13,…,28; każda ≥ 10 |
+| S5 | pierwsza propozycja AI słabszej militarnie | midFirstT === 10 |
+| S6 / S6b / M_HEALTH | sprawdzenie w turze 7 → 10 (pierwsza tura po bramce) | healthLow/healthHigh w turze 10 |
+| S2 / S2b / S3 / S3b / S3c / S4 / S4b / S7 / S7b | bez zmian asercji (już zgodne z regułą) | — |
+| Eksport | ENTRY bundla eksportuje PEACE_PROPOSAL_MIN_WAR_TURNS (S1 czyta stałą, nie liczbę) | — |
+| M_TUR | `from` dopasowany do nowej linii (stary tekst już nie istniał → applied=0) | bez bramki czasu AI składa propozycję w turze 1; earlyViolations > 0 |
+| M_REV (NOWY) | cofnięcie naprawy: `>= warProfile.minTurWojny` | AI proponuje w turach 7–9 → S7b pada |
+| M_FEEL | sprawdzenie „AI silniejsze chce pokoju w t=8/9" było pod bramką czasu (zawsze fałsz) → sprawdzenie od tury 10 | strongFirstT !== null |
+| M_WEAR | DEAD MUTANT: mutował `warWearinessFraction` (diplomacy-war-peace-profile.ts), którego ścieżka decyzji AI nie używa; asercja (midFirstT !== 8) była pusta. Mutant przeniesiony na licznik tur w `warWearinessLevel` (war-weariness.ts, używany przez ai.ts) | siatka rw×miasta×tury 1–30 różni się od bazy |
 
-## Diagnoza każdego z trzech scenariuszy
+Wynik sim-testu po zmianach (surowe wyjście): `diplo-war-peace-sim-test: 25 pass / 0 fail` (dispatch wymagał 24/24+). S7b zielone; wszystkie mutanty (M_SIG, M_FEEL, M_WEAR, M_HEALTH, M_TUR, M_REV, M_GATE, M_STRONG) wykrywane; (0) każdy mutant podmienił dokładnie 1 miejsce.
 
-| Scenariusz | Przyczyna starego FAIL | Zatwierdzona reguła (dispatch) | Propozycja asercji |
-|---|---|---|---|
-| S3 (tury 7-9, silna AI, bez utraty) | Test oczekuje powodu „czuje się silniejsze", a kod zwraca „Pokój i rozejm dostępne po 10 pełnych turach wojny" (bramka `peaceProposalBlocked`, `PEACE_PROPOSAL_MIN_WAR_TURNS = 10`, `diplomacy-peace-proposal-timing.ts`). Kolejność bramek jest poprawna: najpierw czas wojny, potem siła. | „pierwsze propozycje pokoju od tury 10"; silniejsza AI odrzuca bez limitu czasu | Tury 7-9: powód „po 10 pełnych turach wojny" (odrzucenie czasowe). Od tury 10: powód „militarnie silniejsza" (już sprawdza S3b/S3c). Test-side, bez zmiany kodu. |
-| S4b (kontrola, tura 8, bez utraty) | Ta sama przyczyna: tura 8 < 10, więc kod zwraca bramkę czasu. | jw. | Kontrolę przenieść na turę 10 (`pvs[9]`) i sprawdzać „militarnie silniejsza". Test-side. |
-| M_TUR (mutant: `aiPeaceTimeOk = true`) | Dwa powody. (1) `isTooEarly` szuka regexu `/za wcześnie/`, a kod pisze „po 10 pełnych turach wojny", więc `earlyViolations` zawsze wychodzi 0 i asercja S7b jest pusta. (2) Mutant rzeczywiście składa propozycję w turze 1 (potwierdzone w wyjściu FAIL: `t:1`, „tury wojny=1"). | „AI nie proponuje pokoju przed 10 turą" | Regex poprawić na `/za wcześnie|po 10 pełnych turach/`. Wtedy M_TUR i S7b stają się czytelne, ale patrz sekcja BŁĄD KODU poniżej. |
+## TESTY (surowe wyniki, po zmianach)
+- `npx tsc --noEmit`: exit 0.
+- Bramki referencyjne (gra/): logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `ALL GREEN`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `All sanity checks passed.`; unit-power-test `6 pass, 0 fail`.
+- ai-test: `297 passed, 0 failed`.
+- diplomacy-test: `149 passed, 0 failed`.
+- Testy pokoju/zmęczenia:
+  - ai-war-weariness-peace-test: `PASS=99 FAIL=0`
+  - diplo-peace-balance-accept-test: `32 pass / 0 fail`
+  - diplo-peace-stance-wiring-test: `10 pass / 0 fail`
+  - diplo-weariness-20-turns-test: `PASS=30 FAIL=0`; diplo-weariness-city-only-test: `PASS=30 FAIL=0`; diplo-weariness-display-test: `PASSED: 52 / FAILED: 0`; diplo-weariness-unconditional-end-test: `PASS=22 FAIL=0`
+  - diplo-war-peace-d7-test `8/0`; diplo-war-peace-profile-unit-test `198/0`; diplomacy-peace-lock-test `9/0`.
+- Testy pokoju, których NIE da się zieleni bez edycji plików POZA allowlistą (patrz BLOKADY):
+  - diplo-peace-weaker-seeks-city-only-test: 28 pass / 4 fail (baza 551034cb3: 29 / 3). Nowy FAIL h3 (wojna 5 tur, 6 miast, oczekuje oferty miasta za rozejm) — zgodnie z nową bramką oferta miasta w turze 5 jest zakazana. Stare FAIL h2, h4, h5 istnieją też na bazie.
+  - ai-losing-war-asks-peace-vs-player-test: 11 PASS / 1 FAIL (baza: exit 0). FAIL (1) Harappa: 6 miast, t=3 → oczekiwano komendy pokojowej, teraz 0 (bramka 10 tur). Zgodne z nową regułą, test pisany pod starą.
+  - diplo-war-peace-main-guard-test: 33 pass / 2 fail (baza: 34 / 1). Nowy FAIL „R3 spojnosc": test sprawdza literał `const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;` — literał zmieniony przez naprawę. Stary FAIL „R6/ZT" istnieje też na bazie.
+  - diplo-war-peace-gate-test: 23 pass / 1 fail (FAIL „G" — identyczny jak na bazie).
+  - diplo-war-peace-live-test: przekroczył timeout 280 s (exit 124); nie uruchamiałem ponownie. Przy pierwszym uruchomieniu nadpisał dwa pliki PNG w dyspozycje/autobot/runs/R-WEB-PEACE-RULES-Q1/evidence/ — przywrócone `git checkout`, nie ma ich w commicie.
+- `git diff --check`: czysto; `node --check` sim-testu: OK.
 
-## BŁĄD KODU GRY (wymaga decyzji właściciela)
-
-Po poprawieniu regexu (diagnostyczna kopia testu w `gra/tools/`, usunięta po użyciu; repo czyste) baza pokazuje:
-
-- `earlyViolations`: 12 naruszeń (rw 0.2 i 0.5, lost 0 i 1, tury 7, 8, 9). AI składa `zaproponuj_pokoj` w turach 7-9, a ocena tej samej propozycji przez `evaluateProposal` zwraca „dostępne po 10 pełnych turach wojny".
-- Źródło: `ai.ts` ~l.7019 `aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny` (dla zulusi minTurWojny = 7, potwierdzone wyjściem S1: `[7,10,13,...]`). Bramka AI używa profilu cywilizacji, a bramka gracza (`PEACE_PROPOSAL_MIN_WAR_TURNS = 10`) jest globalna. Obie działają, ale się nie zgadzają.
-- Sprzeczność z zatwierdzoną regułą „pierwsze propozycje pokoju od tury 10": AI proponuje w turze 7, zanim reguła na to pozwala.
-- Test S7b („AI nigdy nie proponuje pokoju w stanie 'za wcześnie'") miał to wykrywać, ale przez błędny regex był pusty. Naprawa regexu ujawnia błąd w kodzie, a nie w teście.
-- Zgodność z S1 (test oczekuje propozycji od tury minTurWojny, czyli 7) jest rozbieżna z regułą „od tury 10". Ten sam konflikt, dwa miejsca.
-
-Decyzja wymagana (ABC, do właściciela):
-- A) Podnieść AI do tury 10: `aiPeaceTimeOk` = `max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)` albo wprost 10. Zmiana w `ai.ts` (poza allowlistą). Test S1 zmienić na tury 10,13,16... Mutant M_TUR nadal wykrywany (pierwsza propozycja w turze 1).
-- B) Zostawić minTurWojny per cywilizacja i zmienić bramkę gracza na profil (usunąć globalne 10). Zmiana w `diplomacy-proposals.ts` i `diplomacy-peace-proposal-timing.ts`, też poza allowlistą. Zmienia też zachowanie gracza.
-- C) Uznać rozbieżność za zamierzoną i zapisać ją w regule (np. „AI może proponować od minTurWojny, gracz od 10"). Wtedy S7b jest błędnym oczekiwaniem i trzeba go przepisać.
-
-Rekomendacja Operatora: A. Jedna reguła, zgodna z zatwierdzeniem „od tury 10", najmniejsza zmiana (jedna linia w `ai.ts`).
-
-## Plan po decyzji (do wykonania w następnej rundzie)
-
-1. Test-side (nie zależy od decyzji): poprawić regex `isTooEarly` na `/za wcześnie|po 10 pełnych turach/`; S3 i S4b przepisać jak w tabeli; M_TUR zostawić jako mutant pierwszej propozycji (`weakSchedule[0].t === 1`).
-2. Zależnie od decyzji A/B/C: zmienić S1 i S7b, albo zostawić S7b jako wykrywający błąd (wtedy test jest czerwony do naprawy kodu, co jest właściwe).
-3. Mutanty: dodać mutant „AI proponuje w turze 7" (żeby S7b/S1 wykrywały częściową naprawę) po decyzji.
-4. Bramki (tsc 0, 5 bramek, diplomacy-test 149/0, ai-test 297/0): NIE_ZMIERZONO w tej rundzie, bo nie zmieniono kodu ani testu. Zostaną uruchomione po wdrożeniu poprawki.
-
-## TESTY (ta runda)
-
-- `node tools/diplo-war-peace-sim-test.cjs` (baza a99445016): 19 pass / 3 fail (S3, S4b, M_TUR), zgodnie z dispatchem.
-- Diagnostyka z poprawionym regexem (kopia tymczasowa): earlyViolations 12 (t=7,8,9), consistencyViolations 0, weakSchedule [7,10,13,16,19,22,25,28], midFirstT 7, strongFirstT null, playerVsStrong tury 7-9 „po 10 pełnych turach", tury 10+ „militarnie silniejsza".
-- Kopia tymczasowa `tools/_tmp-diag-warpeace.cjs` usunięta; `git status` czysty.
-- `node_modules` w `gra/` zainstalowane przez `npm ci` na potrzeby testu (ignorowane przez git); do usunięcia po pracy.
+## Dlaczego tych 4 testów nie zmieniałem
+Allowlista rundy 2: gra/tools/diplo-war-peace-sim-test.cjs, gra/src/game/ai.ts (tylko aiPeaceTimeOk), runs/**. Trzy z nich (weaker-seeks h3, ai-losing Harappa, main-guard R3) testują ten sam stary harmonogram (tura 7) i wymagają przepisania pod „od tury 10" — poza allowlistą. Nie ruszałem ich.
 
 ## BLOKADY
-
-- Błąd w kodzie gry (ai.ts minTurWojny 7 vs gracz 10): wymaga decyzji właściciela A/B/C. Zgodnie z dispatchem nie zmieniam kodu.
-- Bez tej decyzji nie da się osiągnąć „22/22 bez FAIL" bez osłabienia asercji S7b, czego dispatch zakazuje.
+- DECISION_REQUIRED: potrzebna zgoda na rozszerzenie allowlisty o trzy pliki testów (przepisanie pod „od tury 10"):
+  1. gra/tools/diplo-peace-weaker-seeks-city-only-test.cjs: h3 — wojna 5 → 12 tur (zakres <20).
+  2. gra/tools/ai-losing-war-asks-peace-vs-player-test.cjs: (1) Harappa — t=3 → t≥10 dla „6 miast".
+  3. gra/tools/diplo-war-peace-main-guard-test.cjs: R3 — literał aiPeaceTimeOk → nowa linia z Math.max(...,PEACE_PROPOSAL_MIN_WAR_TURNS).
+  Bez tego: 3 testy pokoju czerwone (wcześniej zielone lub z tym samym FAIL). Kryterium „testy pokoju zielone" z dispatchu NIESPEŁNIONE w tych trzech plikach.
+- Stare FAIL-e (nie z tego tematu, na bazie też): weaker-seeks h2/h4/h5; main-guard R6/ZT; gate-test G.
 
 ## RUNDY
-
-1/5. Zatrzymanie: DECISION_REQUIRED (nie FAIL, nie BLOCK).
+2/5 (Operator, Haiku). Poprzednia: runda 1 (obrona, DECISION_REQUIRED S7b) — S7b teraz zielone po naprawie.
 
 ## UWAGI-DLA-ORKIESTRATORA
+- Naprawa wymaga także importu jednej stałej w ai.ts (ponad „tylko aiPeaceTimeOk"); to jedyna inna zmiana w tym pliku.
+- Zmiana dotyka oddania/żądania miast przez AI (N1a/N1b), bo używają tej samej bramki; to zgodne z komentarzem w kodzie, ale warto to potwierdzić przy ocenie.
+- Stary mutant M_WEAR (profil) był martwy; zastąpiony mutantem na ścieżce decyzji — do odnotowania przy Evaluatorze.
+- Operator nie uruchamiał bramek poza wymienionymi (np. pełnego zestawu testów gry); NIE_ZMIERZONO: npm run build (zakaz), testy przeglądarkowe.
 
-- Dispatch wskazuje `00-dispatch.md` na origin/main, ale plik jest tylko na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Treść odczytano z gałęzi.
-- Zadanie #352 w rejestrze właściciela („dług testowy sim") jest powiązane z tym błędem kodu. Decyzja A/B/C dotyczy też #372 („bramka pokoju AI liczy słabość respektem, nie siłą militarną").
-- Sprawdzić, czy dla propozycji AI do gracza `evaluateProposal` powinien w ogóle stosować bramkę 10 tur (obecnie stosuje). To część decyzji B/C.
-
-## NASTĘPNY KROK
-
-Decyzja właściciela A/B/C dotycząca bramki pokoju AI w turach 7-9. Po decyzji: runda 2 (Operator Haiku) z tabelą z sekcji „Plan po decyzji".
-
+NASTĘPNY KROK: decyzja właściciela/orkiestratora w sprawie allowlisty dla trzech testów (BLOKADY 1–3); po zgodzie — runda 3 (Operator) lub bezpośredni Evaluator na tej rundzie.
 DEPLOY/PUSH: NIE WYKONANO
