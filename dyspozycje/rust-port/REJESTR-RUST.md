@@ -904,3 +904,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - Zakres: koniec gry w stanie, sprawdzenie po turze, odrzucanie komend po końcu gry, generator wektorów wiringu z pina, flaga bez zapisu (pin `save.ts`).
 - **Poza zakresem (osobne tematy):** `ZWYCIESTWO-LOAD` (produkcyjne wczytanie stanu, odtwarzanie flagi ze miast), zakładanie/przejęcie miasta i druga ścieżka przegranej w bitwie (zależne od #115 ZDOBYCIE-MIASTA).
 - Worktree `integ-victory2` usunięty.
+
+## Przebieg (13.11, heartbeat 22:18): sloty puste, brak trwających Workflow
+- **Trwających Workflow: 0 (4 sloty puste).** Zakończone etapy: ZWYCIESTWO-WIRING r4 (FC — zintegrowane, `a381dd13f`), ZLOZA-B-REST r3 (FC — zintegrowane, `e51b61637`), ZDOBYCIE-MIASTA-ROZPOZNANIE (FC — dokumenty zintegrowane).
+- **Kandydaci bez gotowego dispatchu:** ZDOBYCIE-MIASTA-WIRING (#115 — rozbić na tematy wg rozpoznania: węzeł P9, bramki zdobycia, cesja, druga ścieżka przegranej), CRED-HAK-WYPOWIEDZENIE (#120 — rozpoznanie gotowe, T1–T5), ZLOZA-WIRING (#104/#172 — rozpoznanie gotowe), ZWYCIESTWO-LOAD (produkcyjne wczytanie stanu i flaga ze miast). Startu bez dispatchu nie wykonuję; napisanie dispatchów to kolejny krok.
+- **Dysk:** 11 GB. **Parity:** `a381dd13f`.
