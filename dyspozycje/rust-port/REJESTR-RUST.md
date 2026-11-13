@@ -728,3 +728,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zintegrowane:** COUNTER-FALANGITA — FF `parity-v2` do `90448d3aa`.
 - **W integracji:** ZLOZA-B (gałąź zloze) — cherry-pick na `90448d3aa` w worktree `integ-zloza` (`94feb5e37`). Pełny test w tle: **1158 passed (w toku), 0 failed**; fmt i clippy `-D warnings` przeszły. FF po zakończeniu testu.
 - **Nie uruchomiono nowych tematów:** dysk 5,5 GB. Próg z CLAUDE.md §5 dla nowych startów Rust to 8 GB; heartbeat przewiduje 4 GB. Stosuję wyższy próg (projektowy), żeby nie powtórzyć awarii ENOSPC w trakcie integracji. Do uruchomienia po zakończeniu testu: ZLOZA-B-REST, EKONOMIA-BRAZ-ERA r2, ZWYCIESTWO-WIRING.
+
+## ZLOZA-B (gałąź zloze, #172): zintegrowane na parity-v2
+- Pełny test na tipie integracji: **3284 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
+- **FF `parity-v2`: `90448d3aa` → `94feb5e37`** (zawiera port gałęzi zloze, wektory 207 przypadków z pina, FC).
+- Worktree `integ-zloza` i jego cache usunięte.
+- Zakres pozostały: osiem gałęzi `transferBasketItems` (ZŁOŻA-B-REST) — do dispatchu.
