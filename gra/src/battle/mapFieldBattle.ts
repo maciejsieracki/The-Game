@@ -55,6 +55,8 @@ export interface MapFieldBattleLaunchDeps {
   cities: City[];
   units: RuntimeUnit[];
   turn: number;
+  /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: strumien z ziarna gry dla rzutu upsetu auto-walki (main.ts). */
+  autoBattleRng?: (defQ: number, defR: number, atkId: string | number) => () => number;
   getTerrainAt: (q: number, r: number) => string;
   getStructBonus: (q: number, r: number) => number;
   unitDefFor: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
@@ -473,7 +475,11 @@ export function launchFieldBattleFromMap(
         deps.fortifyScaledDefFor,
         deps.terrainCombatData,
       );
-      const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+      const powerRes = resolveAutoBattleByPower({
+        mAtk,
+        mDef,
+        rng: deps.autoBattleRng?.(city!.q, city!.r, anchor!.id),
+      });
       if (powerRes.winner === 'none') {
         deps.showHint('Atak: brak sil bojowych w skladzie', 3000);
         deps.clearBattleUiState();

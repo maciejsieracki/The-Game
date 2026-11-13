@@ -1,0 +1,141 @@
+{
+ "note": "MEAS_PHASE=1 (znaczniki T_* tymczasowe, nie w kodzie), ziarno 2222, tryb przyspieszony, przebieg A vs B; pierwszy rozny krok = T_CMD 1:foundCityAt (tura 21) = skutek komendy 0:foundCityAt",
+ "steps": [
+  {
+   "i": 530,
+   "k": "ECONOMY",
+   "d": "",
+   "turn": 21,
+   "hashA": "a0c78407",
+   "hashB": "a0c78407"
+  },
+  {
+   "i": 531,
+   "k": "AI_START",
+   "d": "",
+   "turn": 21,
+   "hashA": "c7f87a29",
+   "hashB": "c7f87a29"
+  },
+  {
+   "i": 532,
+   "k": "AI_CIV_START",
+   "d": "1",
+   "turn": 21,
+   "hashA": "c7f87a29",
+   "hashB": "c7f87a29"
+  },
+  {
+   "i": 533,
+   "k": "T_a_start",
+   "d": "",
+   "turn": 21,
+   "hashA": "c7f87a29",
+   "hashB": "c7f87a29"
+  },
+  {
+   "i": 534,
+   "k": "T_b_upgraded",
+   "d": "",
+   "turn": 21,
+   "hashA": "c7f87a29",
+   "hashB": "c7f87a29"
+  },
+  {
+   "i": 535,
+   "k": "T_b2_prediplo",
+   "d": "",
+   "turn": 21,
+   "hashA": "c7f87a29",
+   "hashB": "c7f87a29"
+  },
+  {
+   "i": 536,
+   "k": "T_c_predecide",
+   "d": "",
+   "turn": 21,
+   "hashA": "96949153",
+   "hashB": "96949153"
+  },
+  {
+   "i": 537,
+   "k": "T_d_decided",
+   "d": "",
+   "turn": 21,
+   "hashA": "96949153",
+   "hashB": "96949153"
+  },
+  {
+   "i": 538,
+   "k": "T_e_precmds",
+   "d": "",
+   "turn": 21,
+   "hashA": "96949153",
+   "hashB": "96949153"
+  },
+  {
+   "i": 539,
+   "k": "T_CMD",
+   "d": "0:foundCityAt",
+   "turn": 21,
+   "hashA": "96949153",
+   "hashB": "96949153"
+  },
+  {
+   "i": 540,
+   "k": "T_CMD",
+   "d": "1:foundCityAt",
+   "turn": 21,
+   "hashA": "9a62d993",
+   "hashB": "d7565e9f"
+  },
+  {
+   "i": 541,
+   "k": "T_CMD",
+   "d": "2:build",
+   "turn": 21,
+   "hashA": "9a62d993",
+   "hashB": "d7565e9f"
+  },
+  {
+   "i": 542,
+   "k": "T_CMD",
+   "d": "3:build",
+   "turn": 21,
+   "hashA": "b6096430",
+   "hashB": "e6a12e24"
+  },
+  {
+   "i": 543,
+   "k": "T_CMD",
+   "d": "4:build",
+   "turn": 21,
+   "hashA": "9e3f99e2",
+   "hashB": "55b2530c"
+  },
+  {
+   "i": 544,
+   "k": "T_CMD",
+   "d": "5:build",
+   "turn": 21,
+   "hashA": "f63f65e5",
+   "hashB": "54b7ddd1"
+  },
+  {
+   "i": 545,
+   "k": "T_CMD",
+   "d": "6:build",
+   "turn": 21,
+   "hashA": "a6206265",
+   "hashB": "ef25a3a1"
+  }
+ ],
+ "cityFieldDiffAt540": {
+  "city_enemy_1": [
+   "population"
+  ],
+  "city3": [
+   "population"
+  ]
+ }
+}
