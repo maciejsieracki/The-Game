@@ -54,6 +54,9 @@ eq(B.computeTickZaufanieDelta({ turn: 1, karaWspolnaGranica: true, karaWspolnaGr
   '(e) po karencji kara wraca (−4 Brąz)');
 ok(/karaWspolnaGranicaDelta: \(isPeaceLockedBetween\(a, b\)\s*\|\|\s*isTruceActive\(getDiploPairMeta\(a, b\)\.truceUntilTurn, turn\)\)\s*\?\s*0\s*:\s*sharedBorderPenaltyForEpochs\(/.test(MAIN),
   '(e) main: kara = 0 gdy para w karencji pokoju lub aktywnym rozejmie');
+// (e) obrona r1 (zarzut 1): główny tick pary gracz↔AI też zeruje karę w karencji
+ok(/karaWspolnaGranicaDelta: \(isPeaceLockedBetween\(ME\(\), ownerId\)\s*\|\|\s*isTruceActive\(getDiploPairMeta\(ME\(\), ownerId\)\.truceUntilTurn, turn\)\)\s*\?\s*0\s*:\s*sharedBorderPenaltyForEpochs\(/.test(MAIN),
+  '(e) główny tick gracz↔AI: kara = 0 w karencji pokoju lub aktywnym rozejmie');
 ok(/export function isTruceActive\(until: number \| null \| undefined, currentTurn: number\)/.test(LOCK),
   '(e) isTruceActive zdefiniowany w diplomacy-peace-lock.ts');
 

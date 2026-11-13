@@ -42001,9 +42001,13 @@ async function boot(): Promise<void> {
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
                     cities.filter(c => c.ownerId === ME()).length > 2 &&
                     ownersShareLandBorderLive(ownerId, ME()),
-                  karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-                    empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
-                  ),
+                  // R-WEB-DIPLO-TRUST-NUMBERS-Q1 (obrona r1, zarzut 1): karencja zeruje karę także w głównym ticku pary gracz↔AI.
+                  karaWspolnaGranicaDelta: (isPeaceLockedBetween(ME(), ownerId)
+                    || isTruceActive(getDiploPairMeta(ME(), ownerId).truceUntilTurn, turn))
+                    ? 0
+                    : sharedBorderPenaltyForEpochs(
+                      empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
+                    ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
