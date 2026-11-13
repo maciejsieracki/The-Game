@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "6cb9e6c47fb146bac4c02d36d68316f8",
-  "bundleSha256": "e918bf6fd8966065261e5c671f1456c74c0d67832c0c296b1d41ce2272998ec2",
-  "bundleBytes": 14562057,
+  "bundleMd5": "6207fb7baf0313602bb4bbdcbb53a888",
+  "bundleSha256": "9de7ef17f082292ce298a2e89d9886f69fd7c3f84f4f7e5bbe7fe0f8318c8761",
+  "bundleBytes": 14562085,
   "sourceSnapshot": {
-    "source": "dispatch R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1, FC 13d5cb0b7",
+    "source": "dispatch R-WEB-DIPLO-NEGOTIATION-ROUND-COUNTER-UNIFY-Q1, FC ad050c821",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 674: napis 'Rozejm do tury N' w relacji dyplomacji przy aktywnym rozejmie (2 linie main.ts: truceUntilTurn/currentTurn; diplomacy-display.ts; diplomacyAudience.ts; test diplo-truce-until-turn-test.cjs)"
+    "FALA 675: jednolity napis 'runda N/M' w karcie negocjacji i w zdarzeniu tury (helper negotiationRoundCounterText; M z NEGOTIATION_MAX_ROUNDS)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; test truce 15/0; vite build OK; FC PASS-WITH-NOTES 13d5cb0b7; Chromium NIE_ZMIERZONO"
+    "tsc 0; logic 213/213; test round-counter 4/0; vite build OK; FC PASS-WITH-NOTES ad050c821; Chromium NIE_ZMIERZONO"
   ],
   "limits": [
-    "napis nieobejrzany w grze; wymagany podgląd na ROBOCZEJ"
+    "zmiana tekstu: 'Kontroferta N/M' -> 'runda N/M' (decyzja ABC do potwierdzenia); napis nieobejrzany w grze"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES (13d5cb0b7): napis Rozejm do tury N; wiring main.ts 2 linie; Chromium NIE_ZMIERZONO - obejrzec w grze."
+    "notes": "FC PASS-WITH-NOTES (ad050c821): napis licznika rund (runda N/M) jednolity w karcie i w zdarzeniu tury; Chromium NIE_ZMIERZONO."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T02:28:56",
+  "hubGeneratedAt": "2026-11-13T02:39:19",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
-      "sizeBytes": 14562057
+      "md5": "6207fb7baf0313602bb4bbdcbb53a888",
+      "sizeBytes": 14562085
     }
   ],
-  "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+  "md5": "6207fb7baf0313602bb4bbdcbb53a888",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

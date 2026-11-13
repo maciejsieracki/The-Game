@@ -1,3 +1,9 @@
+## ROBOCZA 6207fb7b -- 2026-11-12 -- FALA 675: Licznik rund negocjacji (#320) (testowa)
+
+- jednolity napis 'runda N/M' w karcie negocjacji i w zdarzeniu tury (helper negotiationRoundCounterText; M z NEGOTIATION_MAX_ROUNDS)
+- Weryfikacja: tsc 0; logic 213/213; test round-counter 4/0; vite build OK; FC PASS-WITH-NOTES ad050c821; Chromium NIE_ZMIERZONO
+- Limity: zmiana tekstu: 'Kontroferta N/M' -> 'runda N/M' (decyzja ABC do potwierdzenia); napis nieobejrzany w grze
+
 ## ROBOCZA 6cb9e6c4 -- 2026-11-12 -- FALA 674: Relacja: Rozejm do tury N (#319) (testowa)
 
 - napis 'Rozejm do tury N' w relacji dyplomacji przy aktywnym rozejmie (2 linie main.ts: truceUntilTurn/currentTurn; diplomacy-display.ts; diplomacyAudience.ts; test diplo-truce-until-turn-test.cjs)
