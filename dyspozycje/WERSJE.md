@@ -1,3 +1,9 @@
+## ROBOCZA f4230eb2 -- 2026-11-13 -- FALA 678: Wojna obniza tylko zaufanie do zera (relacja i respekt bez obcinania do 29) (testowa)
+
+- W wojnie zaufanie jest sprowadzane do 0, respekt nietkniety, relacja = zaufanie + respekt bez limitu 29; ocena pokoju korzysta z prawdziwej relacji; dopisek w UI zmieniony.
+- Weryfikacja: tsc 0; logic 213/213; diplo-war-trust-only 11/0; diplomacy-test 148/0; military-events 24/0; vite build OK
+- Limity: Etykieta Wrogi w wojnie nadal twarda (krok 3); Chromium NIE_ZMIERZONO
+
 ## ROBOCZA 1f0d4447 -- 2026-11-12 -- FALA 677: Administrator państwa: panel Państwa i nazwy w tekstach (#327) (testowa)
 
 - wiersz 'Administrator państwa' w skarbcu Państwa; teksty gracza tylko 'administrator państwa' (cały Państwo) i 'administrator miasta' (jedno miasto)
