@@ -9768,3 +9768,6 @@ W toku po restarcie kontenera: W61 r3 (determinizm walk, Operator Sonnet po 2 ni
 ## 2026-11-13 — FALA 690 wdrożona na ROBOCZĄ (main 88b257d50, MD5 4265f100)
 FALA 690: panel dyplomacji pokazuje zmęczenie wojną strony wygrywającej i desperację strony przegrywającej (gracz↔AI oba, AI↔AI jedna wartość); FC 84f1a54fc, W64 (3 rundy: r1 brak wpięcia w main.ts przez błąd allowlisty orkiestratora, r3 fixtury testu pod skalę 20 tur). Uwaga: zrzuty Chromium sprzed FALI 689 — zalecana krótka kontrola wizualna.
 Podtemat skarbiec/spichlerz: W66 r1 FC FAIL (moduł niewpięty) → rozbicie na A (projekcja po ticku, W67 w toku), B (blokada tury gracza), C (równoważenie AI + runner 15×3×150). Decyzja orkiestratora: blokada gdy prognoza <0 i istnieje ruch naprawczy (bez zakleszczenia). Nowy temat właściciela: okno „Umowa wymiany surowców” bez przeładowania, obie strony w jednym rzucie — W68 w toku.
+
+## 2026-11-13 — FALA 691 wdrożona na ROBOCZĄ (main 507d312ce, MD5 803a70a2)
+FALA 691: fundament zasady „skarbiec i spichlerz nie poniżej zera po turze” — moduł no-negative-stocks.ts z projekcją skarbca i spichlerza po turze (tylko odczyt; FC f2aa0b9b6, podtemat A/W67); BEZ zmiany zachowania gry (niewpięty). Dalej: B (W69: blokada „Zakończ turę” gracza + komunikat) w toku, C (równoważenie AI + runner 15×3×150) w kolejce.
