@@ -593,3 +593,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Aktywne (2 z 4):** `wf_de513810-763` (COMBAT-RESOLVE-PETLA, #136) i `wf_a86b3a78-394` (INTEG-JS-MAX, #110).
 - **Dysk:** 12 GB (≥ 8 GB, starty z kodem Rust dozwolone).
 - **Stan repo:** `parity-v2` = `fc2ed160f`. `claude/rust-sivvrn` przed tym wpisem = `463f11474`.
+
+## Przebieg (13.11): sprzątanie dysku, wypychanie, cztery aktywne tematy, 10 nowych zadań
+- **Dysk:** 3 GB → 11 GB. Usunięto cache `scratchpad/tgt` (nieużywany) i worktree zakończonego portu (`wf_de513810-763-1..4`). Refy: `refs/keep/R-RUSTPORT-P6-COMBAT-RESOLVE-PETLA-Q1-{fc,op,obrona}`. Wypchnięto gałęzie `rust-port-wip/…-COMBAT-RESOLVE-PETLA-Q1-fc` (265ee6e09) i `rust-port-wip/…-K5I2B2-POKRYCIE-R2-Q1-fc` (b69c8bc72).
+- **Port fazy zwarcia (#136):** FC PASS-WITH-NOTES `265ee6e09`, 1716 kroków zgodnych bitowo, pełny test 3266/0/1 w obronie.
+- **Integracja melee w toku:** cherry-pick na `fc2ed160f` (HEAD 5e8b116e8), pełny test (191+ binarek, 0 błędów). FF po zakończeniu.
+- **Aktywne Workflow (4 z 4):** rozpoznanie #120 (`wf_1fa2d0ed-706`), rozpoznanie #104 (`wf_3b370ba3-2bc`), rozpoznanie #135 (`wf_a0b2e4d7-2ae`), integracja js-max (`wf_a86b3a78-394`).
+- **Nowe zadania:** #165–#174.
+- **Stan repo:** `parity-v2` = `fc2ed160f`. `claude/rust-sivvrn` przed tym wpisem = `a2962f58b`.
