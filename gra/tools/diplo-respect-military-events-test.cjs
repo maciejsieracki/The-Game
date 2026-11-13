@@ -8,7 +8,7 @@
  *
  * Sekcje:
  *  A. silnik: 'wygrana_bitwa' poza wojną daje +5 Respekt (delta = p.wygraBitwa_respekt)
- *  B. silnik: w wojnie wynik zgodny z clampRelationForWar (pomiar; cap = WAR_RELATION_SCORE_CAP)
+ *  B. silnik: w wojnie wynik zgodny z clampRelationForWar (Zaufanie do 0, Respekt nietknięty)
  *  C. wiring (main.ts): applyMilitaryWinRespectEvent wołane w applyMapBattleOutcome,
  *     helper zawiera gate „wygrał gracz” i wywołanie applyDiploEventTracked(...,'wygrana_bitwa')
  *  D. wiring: przewaga_militarna / slabszy_militarnie NIE są podpinane (poza zakresem, DECISION_REQUIRED)
@@ -76,11 +76,11 @@ async function main() {
   const warHigh = { zaufanie: 60, respekt: 60, status: 'wojna' };
   const warHighAfter = applyDiplomaticEvent(warHigh, 'wygrana_bitwa');
   const scoreAfter = relationScore(warHighAfter);
-  ok(scoreAfter <= WAR_RELATION_SCORE_CAP,
-    `wojna, score powyżej capu: clamp ścina do <= ${WAR_RELATION_SCORE_CAP} (zmierzone ${scoreAfter})`);
-  const clampDirect = clampRelationForWar({ zaufanie: 60, respekt: 60, status: 'wojna' });
+  ok(warHighAfter.zaufanie === 0 && warHighAfter.respekt === warHigh.respekt + DIPLOMACY_PARAMS.wygraBitwa_respekt,
+    `wojna: Zaufanie do 0, Respekt nietknięty (+${DIPLOMACY_PARAMS.wygraBitwa_respekt}, bez limitu 29) (zmierzone Z=${warHighAfter.zaufanie} R=${warHighAfter.respekt})`);
+  const clampDirect = clampRelationForWar(warHighAfter);
   ok(JSON.stringify(warHighAfter) === JSON.stringify(clampDirect),
-    'wynik zdarzenia w wojnie = clampRelationForWar(wynik zdarzenia) (zgodność z clampem)');
+    'wynik zdarzenia w wojnie = clampRelationForWar(wynik zdarzenia) (idempotentny clamp)');
   console.log(`  POMIAR wojna wysoka: przed Z=60 R=60 score=${relationScore(warHigh)}; po Z=${warHighAfter.zaufanie} R=${warHighAfter.respekt} score=${scoreAfter}`);
 
   // ---- C. wiring main.ts ----

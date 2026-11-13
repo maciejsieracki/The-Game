@@ -708,7 +708,7 @@ export function treatyBasePnFromConfig(
   return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
 }
 
-/** Relacja do progu PN traktatu — w wojnie z podłogą score (spójne z clampRelationForWar / UI). */
+/** Relacja do progu PN traktatu — w wojnie Zaufanie = 0 (clampRelationForWar), bez limitu 29 na sumę. */
 export function treatyEvalRelationTotal(rel: Relation): number {
   const clamped = rel.status === 'wojna' ? clampRelationForWar(rel) : rel;
   return relationTotal(clamped);
@@ -1413,6 +1413,8 @@ export function evaluateProposal(
       // ujemny WE WSZYSTKICH (np. -450/-355/-355), bo `partnerTreatyPnRequired(basePn)`=basePn
       // (500 dla pokoju) jest STAŁA, porównywana z rabatowaną `effectiveTreatyPnRequired`
       // ograniczoną przez `clampRelationForWar` (wywoływaną wewnątrz `treatyEvalRelationTotal`)
+      // [AKTUALIZACJA R-WEB-DIPLO-WAR-TRUST-ZERO: limit 29 zniesiony; w wojnie obniżane jest
+      // tylko Zaufanie do 0. Liczby poniżej (29/145/69/101) opisują stan SPRZED tej zmiany.]
       // do relTotal<=WAR_RELATION_SCORE_CAP(29) w trakcie wojny — `effectiveTreatyPnRequired
       // (500,29)`=145 << 500, więc bilans jest ujemny NIEZALEŻNIE od tego, jak dobra jest
       // relacja, dopóki trwa wojna (co dla 'pokoj' jest ZAWSZE prawdą — `!stanWojny` guard
@@ -1437,7 +1439,7 @@ export function evaluateProposal(
       // gałąź gracz-proponent (`givePn` pomaga, `receivePn` szkodzi — zweryfikowane testem
       // regresji, w tym scenariuszem daru) — zmieniony WYŁĄCZNIE `relTotal` wejściowy dla
       // gałęzi AI-proponenta: `relationTotal(relation)` SUROWA (bez `clampRelationForWar`),
-      // zamiast `treatyEvalRelationTotal` (wojennie ograniczonej do <=29). `clampRelationForWar`
+      // zamiast `treatyEvalRelationTotal` (wojennie: Zaufanie=0, dawniej także limit 29 — usunięty). `clampRelationForWar`
       // istnieje po to, by relacja WYŚWIETLANA (etykieta "Przyjazny"/"Życzliwy") i INNE traktaty
       // (sojusz, NAP — progi Relacji, które dawałyby "przyjazny" status mimo trwającej wojny)
       // nie ujawniały fałszywie dobrego stanu w trakcie wojny — nie po to, by WEWNĘTRZNA
@@ -1472,9 +1474,10 @@ export function evaluateProposal(
       // przycisk Przyjmij zawsze aktywny dla oferowanego pokoju. Sama liczba bilansu może
       // nadal być pokazywana informacyjnie, ale nie decyduje o canAccept." Powód (dowód
       // matematyczny Evaluatora rundy 3, patrz OBRONA runda 3 wyżej): podczas wojny
-      // `clampRelationForWar` ogranicza relTotal<=29, a AI w ogóle proponuje gołą (bez
+      // `clampRelationForWar` (sprzed R-WEB-DIPLO-WAR-TRUST-ZERO: ograniczał relTotal<=29; dziś zeruje
+      // tylko Zaufanie) a AI w ogóle proponuje gołą (bez
       // koszyka) ofertę pokoju WYŁĄCZNIE gdy jest słabsze — realny sufit relTotal w tym
-      // stanie to 69, co nigdy nie wystarcza do `partnerTreatyPnRequired`(=500 dla pokoju)
+      // stanie (sprzed zmiany) to 69, co nigdy nie wystarcza do `partnerTreatyPnRequired`(=500 dla pokoju)
       // przy jakiejkolwiek realnie osiągalnej Relacji podczas wojny — SAMA formuła
       // (nawet po naprawie kierunku rundy 3) nie da się naprawić bez zmiany zasad gry,
       // więc właściciel zdecydował: dla 'pokoj' (OBA kierunki — proposerIsPlayer=true I
