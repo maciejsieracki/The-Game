@@ -20,6 +20,7 @@ const AUDIENCE = path.resolve(GRA, 'src', 'ui', 'diplomacyAudience.ts');
 const ENTRY = path.resolve(GRA, 'src', '.dip-truce-until-turn-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.dip-truce-until-turn.cjs');
 const BUNDLE_M1 = path.resolve(__dirname, '.dip-truce-until-turn-m1.cjs');
+const MAIN = path.resolve(GRA, 'src', 'main.ts');
 
 let pass = 0;
 let fail = 0;
@@ -49,7 +50,11 @@ async function bundle(outfile, plugins) {
   } finally {
     fs.unlinkSync(ENTRY);
   }
-  return require(outfile);
+  try {
+    return require(outfile);
+  } finally {
+    fs.unlinkSync(outfile);
+  }
 }
 
 function mutantPlugin(from, to) {
@@ -99,6 +104,11 @@ function mutantPlugin(from, to) {
   check('diplomacyAudience importuje truceUntilTurnLabelPl', /truceUntilTurnLabelPl,/.test(aud));
   check('formalBannerHtml liczy truceLabel i dokleja do podpisu', /const truceLabel = [\s\S]*?truceUntilTurnLabelPl\(st\.truceUntilTurn, st\.currentTurn\)[\s\S]*?subParts\.push\(truceLabel\)/.test(aud));
   check('napis pomijany dla wojny (kind !== wojna)', /formalStatus\.kind !== 'wojna'/.test(aud));
+  // Wiring danych: getState audiencji w main.ts MUSI przekazywać truceUntilTurn i currentTurn
+  // (bez tego napis nigdy się nie pojawi w grze). Test źródłowy — nie dowodzi renderu w przeglądarce.
+  const mainSrc = fs.readFileSync(MAIN, 'utf8');
+  check('main.ts getState audiencji przekazuje truceUntilTurn z pairMeta', /truceUntilTurn: pairMeta\.truceUntilTurn \?\? null,/.test(mainSrc));
+  check('main.ts getState audiencji przekazuje currentTurn: turn', /formalStatusDetail,\s*truceUntilTurn: pairMeta[^\n]*\n\s*currentTurn: turn,/.test(mainSrc));
 
   console.log('\nWYNIK: ' + pass + ' PASS / ' + fail + ' FAIL');
   process.exitCode = fail === 0 ? 0 : 1;
