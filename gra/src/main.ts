@@ -36677,6 +36677,8 @@ async function boot(): Promise<void> {
           diploWarStateFor(loser, winner).turnsAtWar >= PEACE_PROPOSAL_MIN_WAR_TURNS,
         gateVerdict: (winner, loser) => {
           const pot = (o: number): number => objectivePowerForOwner(o);
+          // Pole `rw` (Power) jest WYMAGANE typem PeaceAiGateInput, ale werdykt evaluatePeaceAiGate go nie czyta
+          // (R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: decyduje wyłącznie pozycjaMilitarna + turnsAtWar).
           const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
           const warW = diploWarStateFor(winner, loser);
           if (warW.turnsAtWar < PEACE_PROPOSAL_MIN_WAR_TURNS) return 'too_early';
