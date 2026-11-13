@@ -4,7 +4,7 @@
 //! czyta cialo `_singleBlow` (battleScene.ts:8812-9010):
 //! * [`blow_hit_arc`] = `relativeHit(defender.facing, attacker.q, attacker.r, defender.q, defender.r)` (battleScene.ts:385-400);
 //! * [`blow_env_for`] = `isFordTile` / `isShoreAdjacentToFord` (battleScene.ts:1897-1914) na [`TileMap`],
-//!   `combatTerrainName` (mapa nazw), `terrainDefenseMultiplier` / `cityGatedTerrainMultiplier` (combat.ts:639-671,
+//!   `combatTerrainName` (z kodu kafla, battle-terrain.ts:802-806), `terrainDefenseMultiplier` / `cityGatedTerrainMultiplier` (combat.ts:639-671,
 //!   city-defense.ts:180-190) na wierszach terenu, `_wallBonusProcFor` (battleScene.ts:7459-7464) przez
 //!   [`wall_bonus_proc_for`] oraz `terrainRiverAttackMultiplier` (combat.ts:677-687) w postaci dwoch flag
 //!   (`atk_tile_is_river`, `river_row_exists`) czytanych przez [`crate::domain::siege_tactics_blow_inputs::terrain_river_attack_multiplier`].
@@ -30,35 +30,47 @@ use crate::domain::siege_tactics_inputs_wall::{has_mur, wall_bonus_proc_for};
 /// Teren, ktory `_singleBlow` podstawia za obroncę na chodniku muru (battleScene.ts:8831-8833).
 pub const WALKWAY_TERRAIN: &str = "Plaskie (rownina/laka)";
 
-/// Mapa kafli bitwy: kod `BTerrain` (0..7) i nazwa kombatowa (`combatTerrainName`) per kafel.
-/// Indeks kafla = `r * cols + q`. Poza siatka: kod `Plains` (0) i nazwa pusta (jak `BattleTerrainMap.at`).
+/// Nazwa kafla dla `combatTerrainName` z pinu (battle-terrain.ts:802-806), tekst dla danych terenu.
+pub const COMBAT_PLAINS: &str = "Plaskie (rownina/laka)";
+
+/// `COMBAT_NAME[code]` (battle-terrain.ts:150-159) dla kodow `BTerrain` 0..7; `Wzgorza` -> `Gory` na preset gorski
+/// (`preset.isMountain`, battle-terrain.ts:804). Kod spoza tabeli -> nazwa plaska (`?? 'Plaskie...'`).
+fn combat_name_for(code: u8, is_mountain: bool) -> &'static str {
+    match code {
+        1 => "Las",
+        2 if is_mountain => "Gory",
+        2 => "Wzgorza",
+        3 | 4 => "Rzeka",
+        _ => COMBAT_PLAINS,
+    }
+}
+
+/// Mapa kafli bitwy: kody `BTerrain` (0..7) per kafel; nazwy kombatowe wyprowadzane z kodu (jak w pinie).
+/// Indeks kafla = `r * cols + q`. Poza siatka: kod `Plains` (0), wiec nazwa plaska (`BattleTerrainMap.at`, battle-terrain.ts:781-784).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TileMap {
     cols: i32,
     rows: i32,
     codes: Vec<u8>,
-    names: Vec<String>,
+    /// `preset.isMountain` (mapa swiata "Gory"): zmienia nazwe Wzgorz na `Gory`.
+    is_mountain: bool,
 }
 
 impl TileMap {
-    /// Buduje mape; blad gdy dlugosci wektorow nie zgadzaja sie z `cols * rows`.
-    pub fn new(cols: i32, rows: i32, codes: Vec<u8>, names: Vec<String>) -> Result<Self, String> {
+    /// Buduje mape; blad gdy dlugosc wektora kodow nie zgadza sie z `cols * rows`.
+    pub fn new(cols: i32, rows: i32, codes: Vec<u8>, is_mountain: bool) -> Result<Self, String> {
         if cols <= 0 || rows <= 0 {
             return Err(format!("mapa: wymiary {cols}x{rows}"));
         }
         let n = usize::try_from(cols * rows).map_err(|e| e.to_string())?;
-        if codes.len() != n || names.len() != n {
-            return Err(format!(
-                "mapa: {} kodow / {} nazw, oczekiwano {n}",
-                codes.len(),
-                names.len()
-            ));
+        if codes.len() != n {
+            return Err(format!("mapa: {} kodow, oczekiwano {n}", codes.len()));
         }
         Ok(Self {
             cols,
             rows,
             codes,
-            names,
+            is_mountain,
         })
     }
 
@@ -75,9 +87,9 @@ impl TileMap {
         self.idx(q, r).map_or(0, |i| self.codes[i])
     }
 
-    /// `terrainMap.combatTerrainName(col,row)`; poza siatka = pusty napis.
-    pub fn name(&self, q: i32, r: i32) -> &str {
-        self.idx(q, r).map_or("", |i| self.names[i].as_str())
+    /// `terrainMap.combatTerrainName(col,row)` (battle-terrain.ts:802-806); poza siatka = nazwa plaska.
+    pub fn name(&self, q: i32, r: i32) -> &'static str {
+        combat_name_for(self.at(q, r), self.is_mountain)
     }
 }
 
@@ -233,10 +245,9 @@ mod tests {
         }
     }
 
-    fn ctx_with(codes: Vec<u8>, names: Vec<&str>) -> BlowSceneCtx {
+    fn ctx_with(codes: Vec<u8>) -> BlowSceneCtx {
         BlowSceneCtx {
-            map: TileMap::new(2, 2, codes, names.into_iter().map(str::to_string).collect())
-                .expect("mapa 2x2"),
+            map: TileMap::new(2, 2, codes, false).expect("mapa 2x2"),
             terrain_data: vec![
                 row("Płaskie (równina/łąka)", Some("+0%")),
                 row("Las", Some("+50%")),
@@ -276,20 +287,34 @@ mod tests {
     }
 
     #[test]
-    fn mapa_poza_siatka_to_plains_i_pusta_nazwa() {
-        let m = TileMap::new(
-            2,
-            2,
-            vec![0, 4, 3, 1],
-            vec!["a".into(), "b".into(), "c".into(), "d".into()],
-        )
-        .expect("mapa");
+    fn mapa_poza_siatka_to_plains_i_nazwa_plaska() {
+        // battle-terrain.ts:781-784: at() poza siatka = Plains; combatTerrainName -> COMBAT_NAME[Plains].
+        let m = TileMap::new(2, 2, vec![0, 4, 3, 1], false).expect("mapa");
         assert_eq!(m.at(-1, 0), 0);
         assert_eq!(m.at(2, 1), 0);
-        assert_eq!(m.name(0, 2), "");
+        assert_eq!(m.name(0, 2), COMBAT_PLAINS);
         assert_eq!(m.at(1, 0), 4);
-        assert_eq!(m.name(1, 1), "d");
-        assert!(TileMap::new(2, 2, vec![0], vec![]).is_err());
+        assert_eq!(m.name(1, 1), "Las", "kod 1 na (1,1)");
+        assert!(TileMap::new(2, 2, vec![0], false).is_err());
+    }
+
+    #[test]
+    fn nazwa_kombatowa_z_kodu_jak_w_pinie() {
+        // battle-terrain.ts:150-159 (COMBAT_NAME) i :802-806 (Wzgorza -> Gory tylko na preset gorski).
+        let plain = TileMap::new(4, 1, vec![0, 1, 2, 3], false).expect("mapa");
+        assert_eq!(plain.name(0, 0), COMBAT_PLAINS);
+        assert_eq!(plain.name(1, 0), "Las");
+        assert_eq!(plain.name(2, 0), "Wzgorza");
+        assert_eq!(plain.name(3, 0), "Rzeka");
+        let gory = TileMap::new(4, 1, vec![2, 4, 5, 6], true).expect("mapa");
+        assert_eq!(gory.name(0, 0), "Gory");
+        assert_eq!(
+            gory.name(1, 0),
+            "Rzeka",
+            "Ford ma nazwe Rzeka niezaleznie od isMountain"
+        );
+        assert_eq!(gory.name(2, 0), COMBAT_PLAINS, "Rocks -> plaskie");
+        assert_eq!(gory.name(3, 0), COMBAT_PLAINS, "Wall -> plaskie (chodnik)");
     }
 
     #[test]
@@ -309,15 +334,7 @@ mod tests {
     #[test]
     fn brod_i_brzeg_z_mapy() {
         // 2x2: (0,0)=Ford, (1,0)=Plains (brzeg obok brodu), (0,1)=Plains, (1,1)=River.
-        let ctx = ctx_with(
-            vec![4, 0, 0, 3],
-            vec![
-                "Rzeka",
-                "Płaskie (równina/łąka)",
-                "Płaskie (równina/łąka)",
-                "Rzeka",
-            ],
-        );
+        let ctx = ctx_with(vec![4, 0, 0, 3]);
         let env = blow_env_for(&ctx, &place((0, 1), (1, 0), 0, false));
         assert!(!env.atk_on_ford, "atakujacy na (0,1) nie jest brodem");
         assert!(!env.def_on_ford_raw);
@@ -328,7 +345,8 @@ mod tests {
 
     #[test]
     fn rzeka_flagi_daja_ten_sam_mnoznik_co_po_nazwie() {
-        let ctx = ctx_with(vec![0, 0, 0, 0], vec!["Rzeka", "Las", "Rzeka", "Wzgórza"]);
+        // Kody: Rzeka=3, Las=1, Rzeka=3, Wzgorza=2.
+        let ctx = ctx_with(vec![3, 1, 3, 2]);
         for (a, d) in [((0, 0), (1, 0)), ((1, 0), (0, 0)), ((0, 1), (1, 1))] {
             let p = place(a, d, 0, false);
             let env = blow_env_for(&ctx, &p);
@@ -357,7 +375,7 @@ mod tests {
 
     #[test]
     fn chodnik_muru_podstawia_plaskie_i_wzgorze_miasta() {
-        let mut ctx = ctx_with(vec![0, 0, 0, 0], vec!["Las", "Las", "Las", "Las"]);
+        let mut ctx = ctx_with(vec![1, 1, 1, 1]);
         ctx.is_city_defense_battle = true;
         ctx.wall_defense_total_proc = 200.0;
         ctx.siege_wall_col = 0.0;
@@ -373,7 +391,7 @@ mod tests {
     fn odbiorca_strony_atk_nie_dostaje_bonusu_muru() {
         // Riposta: pin wola _singleBlow(defender, attacker, false); odbiorca ma side 'atk' -> _wallBonusProcFor = 0,
         // nawet na chodniku i za linia muru (q > siegeWallCol). Regresja: wczesniej side_def bylo na sztywno true.
-        let mut ctx = ctx_with(vec![0, 0, 0, 0], vec!["Las", "Las", "Las", "Las"]);
+        let mut ctx = ctx_with(vec![1, 1, 1, 1]);
         ctx.is_city_defense_battle = true;
         ctx.wall_defense_total_proc = 200.0;
         ctx.siege_wall_col = 0.0;
