@@ -122,6 +122,68 @@ fn melee_vectors_counts_agree_with_cases_and_are_nonempty() {
     );
 }
 
+/// Wejscia (input) musza byc bez null i bez surowych liczb niecalkowitych: NaN/Infinity/-0
+/// i niecalkowite wartosci zapisane jako napisy (generator: enc / encRec). Pola liczbowe
+/// musza dac sie sparsowac przez `num`.
+fn assert_input_encoded(v: &Value, path: &str, key: &str) {
+    const NUM_KEYS: &[&str] = &[
+        "meleeAttack",
+        "meleeDefence",
+        "armor",
+        "chargeBonus",
+        "weaponDamage",
+        "piercing",
+        "atk",
+        "obrona",
+        "pancerz",
+        "uderzenie",
+        "atkDiffMult",
+        "defDiffMult",
+        "terrRiverMult",
+        "hpAtk",
+        "hpDef",
+        "defFinalObrona",
+        "ctrAtkVsDef",
+        "ctrDefVsAtk",
+        "routAtk",
+        "routDef",
+    ];
+    match v {
+        Value::Null => panic!("{path}: null w wejsciu (NaN/Infinity zgubione przez JSON)"),
+        Value::Number(n) => assert!(
+            n.is_i64() || n.is_u64(),
+            "{path}: surowa liczba niecalkowita {n} (wymagany napis)"
+        ),
+        Value::String(s) => {
+            if NUM_KEYS.contains(&key) {
+                let _ = num(v);
+                assert!(!s.is_empty(), "{path}: pusty napis liczbowy");
+            }
+        }
+        Value::Bool(_) => {}
+        Value::Object(m) => {
+            for (k, x) in m {
+                assert_input_encoded(x, &format!("{path}.{k}"), k);
+            }
+        }
+        Value::Array(a) => {
+            for (i, x) in a.iter().enumerate() {
+                assert_input_encoded(x, &format!("{path}[{i}]"), key);
+            }
+        }
+    }
+}
+
+#[test]
+fn melee_vectors_inputs_have_no_null_and_no_raw_floats() {
+    let root: Value = serde_json::from_str(VEC).expect("vectors.json jest poprawnym JSON");
+    for (i, c) in root["cases"].as_array().expect("cases").iter().enumerate() {
+        for key in ["attacker", "defender", "modsCharge", "modsRound"] {
+            assert_input_encoded(&c["input"][key], &format!("przypadek {i}.{key}"), key);
+        }
+    }
+}
+
 #[test]
 fn melee_vectors_each_case_has_draw_per_step() {
     let root: Value = serde_json::from_str(VEC).expect("vectors.json jest poprawnym JSON");

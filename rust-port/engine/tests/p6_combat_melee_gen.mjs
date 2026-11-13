@@ -159,6 +159,9 @@ const enc = (x) => {
   // Niecalkowite liczby jako napisy (JS shortest round-trip): Rust parsuje napis poprawnie zaokraglonym f64::from_str.
   return Number.isSafeInteger(x) ? x : String(x);
 };
+// Obiekt z liczbami (statystyki, mnozniki): kazda liczba przez enc(); bez tego JSON.stringify
+// zamienia NaN/Infinity na null, a -0 na 0, a niecalkowite liczby zostaja surowe (ryzyko 1 ulp w parsowaniu).
+const encRec = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'number' ? enc(v) : v]));
 const decJs = (s) => (typeof s === 'string' ? Number(s) : s);
 const parseNum = (s) => {
   if (s === 'NaN') return NaN;
@@ -182,6 +185,8 @@ function genScalar(edges, lo, hi, pEdge = 0.35) {
 }
 // Statystyki i mnozniki: rzadziej wartosci brzegowe (NaN w statystyce zeruje trafienia i zamyka wiekszosc krokow).
 const genStat = (lo, hi) => genScalar(NUM_EDGE, lo, hi, 0.04);
+// Mnozniki roznicy/rzeki: wartosci brzegowe (NaN, 0, -0) w ~5% przypadkow, nie w 1/8 (NaN w mnoznikach dawal ~1/3 krokow z NaN).
+const pickMult = (base) => (rnd() < 0.05 ? pick([NaN, 0, -0]) : pick(base));
 
 const genMods = () => ({
   atk: genScalar(NUM_EDGE, 0, 2, 0.04),
@@ -209,10 +214,10 @@ function genCase(i) {
   const c = {
     attacker, defender,
     attackerMoved: rnd() < 0.8,
-    atkDiffMult: pick([1, 0.5, 1.25, 1, 1, NaN, 0, -0]),
-    defDiffMult: pick([1, 0.5, 1.25, 1, 1, NaN, 0, -0]),
+    atkDiffMult: pickMult([1, 0.5, 1.25, 1]),
+    defDiffMult: pickMult([1, 0.5, 1.25, 1]),
     defenderTerrain: pick(['', 'Las', 'Rzeka']),
-    terrRiverMult: pick([1, 0.5, 0.75, 1, 1, NaN, 0, -0, 2]),
+    terrRiverMult: pickMult([1, 0.5, 0.75, 1, 2]),
     hpAtk: rnd() < 0.3 ? pick(HP_EDGE) : ri(0, 200) + pick([0, 0.5]),
     hpDef: rnd() < 0.3 ? pick(HP_EDGE) : ri(0, 200) + pick([0, 0.5]),
     totalRounds,
@@ -327,7 +332,7 @@ for (let i = 0; i < N; i++) {
   if (steps.length > draws.length) throw new Error(`przypadek ${i}: wiecej krokow niz losowan`);
   cases.push({
     input: {
-      attacker: c.attacker, defender: c.defender,
+      attacker: encRec(c.attacker), defender: encRec(c.defender),
       attackerMoved: c.attackerMoved,
       atkDiffMult: enc(c.atkDiffMult), defDiffMult: enc(c.defDiffMult),
       defenderTerrain: c.defenderTerrain,
@@ -337,8 +342,8 @@ for (let i = 0; i < N; i++) {
       defFinalObrona: enc(c.defFinalObrona),
       ctrAtkVsDef: enc(c.ctrAtkVsDef), ctrDefVsAtk: enc(c.ctrDefVsAtk),
       routAtk: enc(c.routAtk), routDef: enc(c.routDef),
-      modsCharge: { atk: c.modsCharge.atkA, def: c.modsCharge.defA },
-      modsRound: { atk: c.modsRound.atkA, def: c.modsRound.defA },
+      modsCharge: { atk: encRec(c.modsCharge.atkA), def: encRec(c.modsCharge.defA) },
+      modsRound: { atk: encRec(c.modsRound.atkA), def: encRec(c.modsRound.defA) },
     },
     draws: draws.slice(0, steps.length).map(enc),
     expected: {
