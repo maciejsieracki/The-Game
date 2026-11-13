@@ -717,3 +717,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **ZWYCIESTWO-IMPL-Q1 (#182):** FC PASS-WITH-NOTES `8fc46b8d7`, integracja czeka na pełny test (opis wyżej). Refy `refs/keep/R-RUSTPORT-P6-ZWYCIESTWO-IMPL-Q1-{fc,wip,obrona}` zapisane lokalnie (push refs/keep odrzucony przez remote); FC wypchnięty jako gałąź `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-IMPL-Q1-fc`. Worktree trzech etapów usunięty.
 - **Aktywne Workflow:** 2 z 4 — COUNTER-FALANGITA-Q1 (Ewaluator, SONNET), ZLOZA-B-PORT-Q1 (Obrona, HAIKU).
 - **Nie uruchomiono:** EKONOMIA-BRAZ-ERA r2 (wymaga ≥ 8 GB), ZWYCIESTWO-WIRING (dispatch do napisania po integracji). Dysk po sprzątaniu ~7 GB, poniżej progu 8 GB dla nowych startów Rust (CLAUDE.md §5).
+
+## Przebieg (13.11, ~18:05): COUNTER-FALANGITA zintegrowany, ZLOZA-B w integracji
+- **COUNTER-FALANGITA-Q1:** FC PASS-WITH-NOTES `90448d3aa`. Operator zmierzył pełny `cargo test` na `ce02748e0`: exit 0, 0 failed. Różnica liczby testów (3279 vs 3275) wyjaśniona w obronie. **FF `parity-v2`: `d30e3ea24` → `90448d3aa`** (różnica między `ce02748e0` a FC to tylko dokumentacja). Parytet: mnożnik falangita → włócznik = 1,30 wg pina `07d2fbd72`.
+- **ZLOZA-B-PORT-Q1 (#172):** FC PASS-WITH-NOTES `ab9ae03da`. Zakres: **tylko gałąź `zloze`** `transferBasketItems` (`46da76cea`, obrona `8186d7464`, FC `94feb5e37` po cherry-pick na `parity-v2`). Osiem pozostałych gałęzi (zloto, praca, zywnosc, tech, surowiec_boolean, surowiec_ilosc, miasto, jednostka) nie ma odpowiednika w Rust — **to luka parytetu**, nie decyzja do właściciela. Otwieram osobny temat **ZLOZA-B-REST** (bez pytania; zakres z pina).
+- **Integracja ZLOZA-B:** cherry-pick na `90448d3aa`, pełny test w tle (tracked command). FF po zielonym wyniku.
