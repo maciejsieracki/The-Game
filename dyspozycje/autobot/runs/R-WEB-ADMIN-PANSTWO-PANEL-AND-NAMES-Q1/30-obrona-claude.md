@@ -60,3 +60,59 @@ Orkiestrator: decyzja o rozszerzeniu allowlisty dla Z1 (docs/encyklopedia + rege
 
 ## DEPLOY/PUSH
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 4 — odpowiedź na zarzuty Evaluatora r3
+
+Kandydat wejściowy: e37dde00d (raport Evaluatora: 5e202254b, `20-evaluator-claude.md`). Zarzuty Evaluatora: zero blokujących, trzy nieblokujące (N1–N3).
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (napisy i test nazw; bez zmian reguł, kosztów, progów)
+TEMAT: R-WEB-ADMIN-PANSTWO-PANEL-AND-NAMES-Q1
+GOAL: bez zmian względem dispatchu (panel Państwa pokazuje administratora państwa; teksty gracza: „administrator państwa” i „administrator miasta”).
+
+## Odpowiedzi na zarzuty
+
+**N1 — PRZYJMUJĘ (poprawka + dowód + commit 9624d532a).**
+Zmiana w `gra/tools/admin-panstwo-panel-names-test.cjs`: `OLD_NAME` z `/administrator\w*\s+ulepszeń/i` na `/administrator\p{L}*\s+ulepszeń/iu`. Dowód (uruchomione w tej rundzie):
+`old regex hits: false   new regex hits: true` dla tekstu „Administratorów ulepszeń: pracuje”.
+Dodana mutacja realna: w `src/ui/cityPanel.ts` podmiana na formę „Administratorów ulepszeń” jest wykrywana (sekcja 3 testu, `ok mutacja realna: forma „administratorów ulepszeń” jest wykrywana`).
+
+**N2 — PRZYJMUJĘ (poprawka + commit 9624d532a).**
+Test rozszerzony o: wszystkie `gra/data/**/*.json` (nie tylko `city-administrator-params.json`) oraz `docs/encyklopedia/**/*.md` (177 plików, skan wszystkich linii, bez filtra komentarzy, bo Markdown używa `*` jako wypunktowania). `src/data/wikiBundle.json` był już w liście. Wynik: `trafienia: 0` dla gry, danych i encyklopedii.
+
+**N3 — ODRZUCAM jako zarzut blokujący; przyjmuję jako informację. Bez zmian kodu.**
+Dowód: `grep -rlP 'administrator\p{L}*\s+ulepszeń' -i gra/src gra/data gra/tools docs/encyklopedia` daje trafienia wyłącznie w:
+- `gra/src/main.ts` (10), `gra/src/ui/buildModeHud.ts` (8), `gra/src/game/city-administrator.ts` (6), `gra/src/ui/cityPanel.ts` (2), `gra/src/ui/administratorPanel.ts` (2), `gra/src/game/auto-build-gate.ts` (3), `gra/src/game/civ-test-hooks.ts` (1), `gra/src/game/cities.ts` (1) — łącznie 33 wiersze, wszystkie zaczynające się od `//`, `*` lub `/*` (komentarze kodu; grep z filtrem prefiksu dał 0 linii niebędących komentarzami w `gra/src`),
+- `gra/tools/admin-panstwo-panel-names-test.cjs` (4) — komunikat testu i literały mutacji (nie tekst gracza).
+Test ich świadomie nie liczy (`isCommentLine`), a `docs/encyklopedia` i `gra/data` mają 0 trafień (sprawdza test, sekcja 2). Zmiana komentarzy poza allowlistą byłaby zbędnym diffem bez wpływu na grę.
+
+## ZMIANY-COMMIT
+- 9624d532a — `gra/tools/admin-panstwo-panel-names-test.cjs` (N1, N2): 38 insertions, 2 deletions. Allowlista: tak (test nowy w tym temacie).
+- Ten raport (30-obrona-claude.md) — commit po tej sekcji; SHA końcowy w odpowiedzi orkiestratorowi.
+- Kod gry (`gra/src`, `gra/data`, `docs`): bez zmian w tej rundzie.
+
+## TESTY (surowe wyjście, runda 4)
+- Środowisko: lokalne `gra/node_modules` było niepełne (4 wpisy). Wykonane `npm ci --ignore-scripts` w `gra/` — exit 0, TypeScript 5.9.3 zgodnie z `package-lock.json`. Wcześniejsze `npx tsc` bez lokalnego TS użyło globalnego TypeScript 6.0.2 i dało `error TS5101: Option 'baseUrl' is deprecated` (exit 2) — to błąd środowiska, nie kodu; repo nie ma zmian w `tsconfig.json`/`package.json`/`package-lock.json` względem 7fa2da030.
+- `npx tsc --noEmit` (TS 5.9.3): exit 0, bez wyjścia.
+- `node tools/logic-test.cjs`: `LOGIC OK (213/213)`, exit 0.
+- `node tools/tech-tree-test.cjs`: `tech-tree-test: 20 pass, 0 fail`, exit 0.
+- `node tools/research-test.cjs`: `PASSED: 33 / FAILED: 0 / TOTAL: 33`, `ALL GREEN`, exit 0.
+- `node tools/unit-replace-test.cjs`: `[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)`, exit 0.
+- `node tools/combat-test.cjs`: `COMBAT TEST: 6/6 pass`, exit 0.
+- `node tools/admin-panstwo-panel-names-test.cjs`: `admin-panstwo-panel-names-test: 26 pass, 0 fail`, exit 0 (w r3: 24 pass; +1 mutacja N1, +1 sprawdzenie skanu docs).
+- NIE_ZMIERZONO w tej rundzie: `admin-panstwo-city-gate-test`, `improvement-administrator-test`, `administrators-wizard-test`, `administrator-panel-real-render-test` (Chromium), testy tooltip/icon i live-verify. Zmiana r4 dotyczy wyłącznie `gra/tools/admin-panstwo-panel-names-test.cjs` (żaden z tych testów go nie importuje, a kod gry nie zmienił się od e37dde00d); wyniki r3 z 2026-11-13 pozostają aktualne dla tego kodu i nie są tu ponownie mierzone.
+- Ręczny dowód N1 (regex): `node -e` — wynik podany wyżej.
+
+## BLOKADY
+Brak blokad technicznych. Otwarte tylko punkty NIE_ZMIERZONO z sekcji TESTY (decyzja orkiestratora, czy wymagane w tej rundzie).
+
+## RUNDY
+Runda 4 (odpowiedź na Evaluatora r3). Poprzednie: r1, r2, r3 (zob. wyżej).
+
+## NASTĘPNY KROK
+Evaluator: weryfikacja 9624d532a (test N1/N2) i surowych wyników powyżej. Final Control po PASS. Orkiestrator decyduje o uruchomieniu pozostałych testów przeglądarkowych.
+
+## DEPLOY/PUSH
+DEPLOY/PUSH: NIE WYKONANO
