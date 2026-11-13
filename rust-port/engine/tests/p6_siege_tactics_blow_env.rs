@@ -189,12 +189,7 @@ fn scene_ctx(i: &serde_json::Value, top: &serde_json::Value) -> BlowSceneCtx {
         .iter()
         .map(|v| v.as_u64().expect("kod kafla") as u8)
         .collect();
-    let names: Vec<String> = m["names"]
-        .as_array()
-        .expect("names")
-        .iter()
-        .map(|v| v.as_str().expect("nazwa kafla").to_string())
-        .collect();
+    let is_mountain = m["isMountain"].as_bool().expect("isMountain");
     let terrain_data: Vec<TerrainRow> = i["terrain"]
         .as_array()
         .expect("terrain")
@@ -208,7 +203,7 @@ fn scene_ctx(i: &serde_json::Value, top: &serde_json::Value) -> BlowSceneCtx {
         })
         .collect();
     BlowSceneCtx {
-        map: TileMap::new(cols, rows, codes, names).expect("mapa z wektora"),
+        map: TileMap::new(cols, rows, codes, is_mountain).expect("mapa z wektora"),
         terrain_data,
         is_city_defense_battle: i["isCity"].as_bool().expect("isCity"),
         wall_defense_total_proc: num(&i["wallTotal"]),
@@ -219,6 +214,16 @@ fn scene_ctx(i: &serde_json::Value, top: &serde_json::Value) -> BlowSceneCtx {
         brod_bonus_brzegu: num(&top["brod"]["bonusObronaBrzegu"]),
         fortify_obrona_proc: num(&top["fortify"]),
     }
+}
+
+/// Nazwy kafli z wektora (`in.map.names`): WYKONANIE `combatTerrainName` z pinu (battle-terrain.ts:802-806).
+fn pin_names(i: &serde_json::Value) -> Vec<String> {
+    i["map"]["names"]
+        .as_array()
+        .expect("names")
+        .iter()
+        .map(|v| v.as_str().expect("nazwa kafla").to_string())
+        .collect()
 }
 
 /// Ulozenie ciosu z wektora (pozycje, zwrot obroncy, stan muru, rola atakujacego z `cuA`).
@@ -308,6 +313,20 @@ fn env_mismatches(
     let pl = placement(i, &cu_a.rola);
     let env = blow_env_for(&ctx, &pl);
     let mut out = Vec::new();
+    // combatTerrainName wyprowadzony z kodow (Rust) vs nazwy z wykonania pinu, kafel po kaflu.
+    let m = &i["map"];
+    let cols = m["cols"].as_i64().expect("cols") as i32;
+    let rows = m["rows"].as_i64().expect("rows") as i32;
+    let names_pin = pin_names(i);
+    for r in 0..rows {
+        for q in 0..cols {
+            let want = &names_pin[(r * cols + q) as usize];
+            let got = ctx.map.name(q, r);
+            if got != want {
+                out.push(format!("combatTerrainName({q},{r}): rust={got} pin={want}"));
+            }
+        }
+    }
     let arc_js = i["hitArc"].as_str().expect("hitArc");
     if blow_hit_arc(&pl) != arc(arc_js) {
         out.push(format!("hitArc: rust={:?} js={arc_js}", blow_hit_arc(&pl)));
@@ -370,6 +389,7 @@ struct Cover {
     counter_not_one: usize,
     wall_nan_inf: usize,
     neg_zero_cu: usize,
+    gory_cases: usize,
 }
 
 #[test]
@@ -421,6 +441,9 @@ fn zgodnosc_z_pinem_end_to_end() {
         let input = build_input(c, &v, &units);
         for m in env_mismatches(c, &v, &units) {
             failures.push(format!("#{id} env {m}"));
+        }
+        if pin_names(&c["in"]).iter().any(|n| n == "Gory") {
+            cov.gory_cases += 1;
         }
         let o = &c["out"];
         let u = num(&c["in"]["u"]);
@@ -730,6 +753,11 @@ fn zgodnosc_z_pinem_end_to_end() {
         "mur: brak przypadkow NaN/Inf w sumie obrony"
     );
     assert!(cov.neg_zero_cu > 0, "brak -0 w CombatUnit pinu");
+    // K5I2B2-DLUG-R2: galaz 'Gory' (Wzgorza na preset gorski) musi byc pokryta wektorami pinu.
+    assert!(
+        cov.gory_cases > 0,
+        "brak przypadkow z kaflem 'Gory' w wektorach"
+    );
 }
 
 #[test]
