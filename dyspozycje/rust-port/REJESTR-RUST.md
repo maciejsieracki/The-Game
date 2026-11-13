@@ -779,3 +779,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Czwarty slot pusty:** brak gotowego dispatchu. Pozostałe pozycje z kolejki (#96–#119) są zablokowane albo wymagają rozpoznania; nie startuję tematu bez dispatchu.
 - **Dysk:** 9,1 GB wolne. Progi spełnione, brak awarii.
 - **Parity:** `0ca58770e` (bez zmian). Worktree: 11.
+
+## ZLOZA-B-REST-Q1: FC FAIL r2 (`d10bbdc9a`) → DODATEK r3
+- **Wynik r2:** Operator dodał kod dla tech, surowiec_boolean, surowiec_ilosc, praca (`5a6adf3fb`, 12 testów basket, pełny test 3308/0/1 deklarowany). FC: **FAIL** — brak **wektorów z pina** dla tych czterech gałęzi (test wrappera vs helpery Rust to nie dowód parytetu). Zloto, miasto, jednostka, zywnosc: ODDANE z uzasadnieniem.
+- **Decyzja:** runda 3 (to samo ID) z zakresem: rozszerzyć `p6_zloza_basket_gen.mjs` o wykonanie pina z rejestrującym harnessem stanu i wygenerować wektory dla czterech gałęzi. Baza r3: `5a6adf3fb`. DODATEK r3 wypchnięty.
+- **Start r3:** świeże uruchomienie (bez cache). Wstrzymany: dysk 4,8 GB < 8 GB.
