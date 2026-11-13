@@ -1,3 +1,9 @@
+## ROBOCZA 7bbebf6b -- 2026-11-13 -- FALA 689: Zmęczenie wojną zamyka się w 20 turach (testowa)
+
+- Zmęczenie wojną ma jeden licznik: 5% na turę od startu wojny + 10% za każde miasto, które zmieniło właściciela (bez zastoju i bez drugiego zegara). Progi: 50% (tura 10) silniejszy obniża cenę pokoju, słabszy szuka pokoju; 80% (tura 16) pokój bezwarunkowy; 100% (tura 20) wojna wygasa. Szansa AI na pokój i sygnały pokoju czytają ten sam licznik; hasło Civpedii przepisane na 20 tur.
+- Weryfikacja: tsc 0; logic 213/213; testy: zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, ai-war-weariness-peace 99/0, ai-losing-war-asks 12/0, diplomacy 149/0, ai 297/0, civpedia-values 129, truce-impl 94/0; FC PASS-WITH-NOTES
+- Limity: Pierwsze propozycje pokoju AI nadal od tury 10 (stała PEACE_PROPOSAL_MIN_WAR_TURNS) — decyzja właściciela otwarta; pełna gra AI↔AI i cykl wojna-pokój-wojna NIE ZMIERZONO; znane FAIL diplo-war-peace-sim S3/S4b/M_TUR i main-guard R6/ZT sprzed tematu
+
 ## ROBOCZA 2d74db6a -- 2026-11-13 -- FALA 688: Koniec zmęczenia wojną: pokój bezwarunkowy, cena 0 bez miasta (testowa)
 
 - Zmęczenie wojną kończy się pokojem bezwarunkowym: gdy zmęczenie pary dojdzie do progu końca (0,8), silniejsza strona sama proponuje pokój bez żądania miasta i płatności (AI↔AI zawierane od razu, AI→gracz jako propozycja do decyzji gracza). Gdy cena pokoju wynosi zero, miasto nie jest oddawane (wyjątek od reguły ochrony jednego miasta).
