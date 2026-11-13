@@ -25,26 +25,26 @@ const once = (src, s) => count(src, s) === 1;
 
 // ---- D7: gracz nie wypowiada wojny z hamulca ----
 check('D7: gracz jako silniejsza strona nie deklaruje (guard mayDeclare w processDiploCrisisQueue)',
-  once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'brakeWarOutcome(') === 2);
+  once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'diploMilitaryBrakeOutcome(') === 3);
 check('D7: brak ostrzeżenia o automatycznej wojnie gdy gracz silniejszy (warOutcome.mayDeclare)',
   MAIN.includes('&& warOutcome.mayDeclare) {'));
 // mutacje D7 (zachowaniowy test: diplo-war-peace-d7-test.cjs)
 check('mutacja D7 (usunięty guard) jest wykrywalna',
   count(MAIN.replace('if (!outcome.mayDeclare) continue;', ''), 'if (!outcome.mayDeclare) continue;') === 0);
 
-// ---- R7: hamulec feeds łączną Relację, N/prog per para ----
-check('R7: diploBrakeCrisisStep czyta relationScore (nie samo Zaufanie)',
-  MAIN.includes('const relacja = relationScore(getDiploRelation(a, b));'));
-check('R7: krok kryzysu z progiem i N per para',
-  MAIN.includes('{ ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n })'));
+// ---- R7 (R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1): hamulec liczy ZAUFANIE = 0, N per para ----
+check('R7/ZT: diploBrakeCrisisStep czyta Zaufanie pary (nie łączną Relację)',
+  MAIN.includes('const zaufanie = getDiploRelation(a, b).zaufanie;') && !MAIN.includes('const zaufanie = relationScore('));
+check('R7/ZT: krok kryzysu z progiem zerowego Zaufania (p6) i N per para',
+  MAIN.includes('crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, atWar, { ...diploTickP6, kryzysTurDoWojny: w.n })'));
 check('R7: wywołania bez wartości Zaufania (AI↔AI, gracz↔AI)',
   once(MAIN, 'diploBrakeCrisisStep(a, b);') && once(MAIN, 'diploBrakeCrisisStep(ME(), oid);'));
 check('R7: próg i N z wyższej strony pary (diploBrakeWarParams)',
   MAIN.includes('const higher = pa.progWojnyRelacji >= pb.progWojnyRelacji ? pa : pb;') || MAIN.includes('return { prog: brakeRelationThreshold(higher.progWojnyRelacji), n: higher.hamulecN };'));
 check('R7: kolejka używa N per para (nPair)', MAIN.includes('if (counter >= nPair) ready.push'));
-// mutacja R7: powrót do Zaufania
-check('mutacja R7 (feed Zaufania) jest wykrywalna',
-  count(MAIN.replace('const relacja = relationScore(getDiploRelation(a, b));', 'const relacja = getDiploRelation(a, b).zaufanie ?? 0;'), 'relationScore(getDiploRelation(a, b))') === 0);
+// mutacja R7/ZT: powrót do łącznej Relacji w liczniku kryzysu
+check('mutacja R7/ZT (feed Relacji) jest wykrywalna',
+  MAIN.replace('const zaufanie = getDiploRelation(a, b).zaufanie;', 'const zaufanie = relationScore(getDiploRelation(a, b));').includes('const zaufanie = relationScore(getDiploRelation(a, b));'));
 
 // ---- R2: licznik utraconych miast per wojna, oba lejki przejęcia ----
 check('R2: recordWarCityLossForPair w obu lejkach przejęcia miasta',
@@ -89,7 +89,10 @@ check('R4: stała /20 usunięta z diplomacy.ts', !DIPLO.includes('context.turnsA
 
 // ---- R3 / R6: sygnały pokoju i próg wojny per cywilizacja w ai.ts ----
 check('R3: priorytet 2 używa sygnałów (aiPeaceSignals)', AI.includes('aiPeaceSignals(') && AI.includes('peaceSignals.wantsPeace'));
-check('R6: priorytet 4 używa progu wojny per cywilizacja', AI.includes('const progMinimalnyRelacja = warProfile.progWojnyRelacji;'));
+check('R6/ZT: priorytet 4 używa progu Zaufania (PROG_WOJNA_ZAUFANIE) i przewagi siły militarnej',
+  AI.includes('(rel.relation.zaufanie) < PROG_WOJNA_ZAUFANIE') || AI.includes('rel.relation.zaufanie < PROG_WOJNA_ZAUFANIE'));
+check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)',
+  AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A'"));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
   const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc)');

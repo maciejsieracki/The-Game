@@ -952,7 +952,7 @@ import aiParamsRaw from '../data/ai-params.json';
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
 import {
   aiAiPairs, crisisStepForPair, dobraWolaTurnStep, isAiAiEligibleOwner, isDiploTickWarBrakeEnabled,
-  parseCrisisCounters, brakeWarOutcome, sortCrisisQueue, tradeTrustBonusPerTura,
+  parseCrisisCounters, sortCrisisQueue, tradeTrustBonusPerTura,
 } from './game/diplomacy-tick-war-brake';
 import {
   resolveAutoBattleByPower,
@@ -1615,6 +1615,7 @@ import {
 } from './game/diplomacy-pn-engine';
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
+  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -11673,6 +11674,44 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 2 → 3): siła militarna właściciela w parze, OSOBNO
+     * od Power. Armia i rekruci = składniki Power (`armia`, `rekruci`), wygrane bitwy = licznik
+     * BIEŻĄCEJ wojny pary (poza wojną 0), bonus trybutu aktywny w tej turze. Gospodarka nie wchodzi.
+     * / EN: military strength of owner in the pair (army + recruits from Power, war battle points, tribute bonus).
+     */
+    function diploMilitarySideOf(ownerId: number, otherId: number): { sila: number; armiaPkt: number } {
+      const res = objectivePowerByOwner.get(ownerId) ?? buildObjectivePowerForOwner(ownerId);
+      const armiaPkt = res.components.find(c => c.key === 'armia')?.points ?? 0;
+      const rekrutPkt = res.components.find(c => c.key === 'rekruci')?.points ?? 0;
+      const lo = Math.min(ownerId, otherId);
+      const hi = Math.max(ownerId, otherId);
+      const meta = getDiploPairMeta(ownerId, otherId);
+      const inWar = getDiploRelation(ownerId, otherId).status === 'wojna';
+      const sila = computeMilitaryStrength({
+        armiaPkt,
+        rekrutPkt,
+        punktyWygranychBitewWojna: readWarBattlePoints(meta, ownerId, lo, hi, inWar),
+        trybutBonusAktywny: isTributeBonusActive(meta, ownerId, turn),
+      });
+      return { sila, armiaPkt };
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): hamulec zerowego Zaufania — strona silniejsza
+     * wg siły militarnej wypowiada; gdy to gracz, mayDeclare = false (D7, bez automatycznej wojny).
+     */
+    function diploMilitaryBrakeOutcome(a: number, b: number): { declarer: number; victim: number; mayDeclare: boolean } {
+      const sa = diploMilitarySideOf(a, b);
+      const sb = diploMilitarySideOf(b, a);
+      const out = militaryBrakeOutcome(
+        { id: String(a), sila: sa.sila, armiaPkt: sa.armiaPkt },
+        { id: String(b), sila: sb.sila, armiaPkt: sb.armiaPkt },
+        (id) => isMe(Number(id)),
+      );
+      return { declarer: Number(out.declarer), victim: Number(out.victim), mayDeclare: out.mayDeclare };
+    }
+
+    /**
      * R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii właściciela = Σ hp / Σ hpMax jednostek BOJOWYCH
      * (hp z RuntimeUnit, hpMax z effectiveRuntimeUnitMaxHp). Brak jednostek bojowych → undefined
      * (sygnał c nie działa; NIE_ZMIERZONO dla pustej armii).
@@ -11753,14 +11792,15 @@ async function boot(): Promise<void> {
 
     /**
      * P6: jeden krok histerezy kryzysu dla pary; licznik 0 = wpis usunięty.
-     * R-WEB-PEACE-RULES-Q1 R7 (D2): licznik liczy ŁĄCZNĄ Relację (relationScore), nie samo Zaufanie.
+     * R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): licznik liczy kolejne tury, w których ZAUFANIE
+     * pary = 0 (p6.kryzysProgZaufania), a nie łączną Relację. Para w wojnie nie liczy (crisisStepForPair).
      */
     function diploBrakeCrisisStep(a: number, b: number): ReturnType<typeof crisisStepForPair> {
       const key = diploPairKey(a, b);
       const atWar = getDiploRelation(a, b).status === 'wojna';
-      const relacja = relationScore(getDiploRelation(a, b));
+      const zaufanie = getDiploRelation(a, b).zaufanie;
       const w = diploBrakeWarParams(a, b);
-      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, relacja, atWar, { ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n });
+      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, atWar, { ...diploTickP6, kryzysTurDoWojny: w.n });
       if (step.counter > 0) diplomacyCrisisCounters.set(key, step.counter);
       else diplomacyCrisisCounters.delete(key);
       return step;
@@ -11840,19 +11880,17 @@ async function boot(): Promise<void> {
         }
         // R-WEB-PEACE-RULES-Q1 R7: N per para (wyższy progWojnyRelacji), ostrzeżenie 2 tury przed.
         const nPair = diploBrakeWarParams(sa, sb).n;
-        const warnAtPair = nPair - diploTickP6.kryzysOstrzezenieTurPrzed;
         // D7 (właściciel 2026-10-30): gdy silniejsza strona pary to GRACZ, wojna z hamulca nie
         // wybucha — ostrzeżenie o automatycznej wojnie z jego strony też nie jest pokazywane.
-        const warOutcome = brakeWarOutcome(
-          { ownerId: sa, power: objectivePowerForOwner(sa) },
-          { ownerId: sb, power: objectivePowerForOwner(sb) },
-          (o) => isMe(o),
-        );
-        if ((isMe(sa) || isMe(sb)) && counter >= warnAtPair && counter < nPair && warOutcome.mayDeclare) {
+        // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): siła militarna (nie Power).
+        const warOutcome = diploMilitaryBrakeOutcome(sa, sb);
+        // Ostrzeżenie dla gracza: JEDNO powiadomienie na epizod zerowego Zaufania (counter === 1 =
+        // pierwsza tura zera; licznik wraca do 0, gdy Zaufanie wzrośnie powyżej 0).
+        if ((isMe(sa) || isMe(sb)) && counter === 1 && counter < nPair && warOutcome.mayDeclare) {
           const other = isMe(sa) ? sb : sa;
           showHintMessage(
-            'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (nPair - counter) + ' tur do wypowiedzenia (łączna Relacja ≤ ' + diploBrakeWarParams(sa, sb).prog + ')',
-            4000,
+            'Zaufanie spadło do zera — grozi wojna z ' + ownerDiploLabel(other) + ' za ' + (nPair - counter) + ' tur',
+            4500,
           );
         }
         if (counter >= nPair) ready.push({ ownerA: sa, ownerB: sb, counter });
@@ -11865,11 +11903,8 @@ async function boot(): Promise<void> {
           continue;
         }
         if (isPeaceLockedBetween(e.ownerA, e.ownerB)) continue;
-        const outcome = brakeWarOutcome(
-          { ownerId: e.ownerA, power: objectivePowerForOwner(e.ownerA) },
-          { ownerId: e.ownerB, power: objectivePowerForOwner(e.ownerB) },
-          (o) => isMe(o),
-        );
+        // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (krok 3): silniejsza wg siły militarnej (remis: armia, id).
+        const outcome = diploMilitaryBrakeOutcome(e.ownerA, e.ownerB);
         // D7 (właściciel 2026-10-30): gracz NIGDY nie wypowiada wojny automatycznie z hamulca.
         // Gdy silniejsza strona to gracz, para zostaje w kolejce bez deklaracji (AI↔AI bez zmian).
         if (!outcome.mayDeclare) continue;
@@ -42066,6 +42101,9 @@ async function boot(): Promise<void> {
                   partnerId: String(ME()),
                   relation: relTicked as unknown as Relation,
                   respektWzgledny: respektWzglednyPlr,
+                  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
+                  silaMilitarnaAI: diploMilitarySideOf(ownerId, ME()),
+                  silaMilitarnaPartner: diploMilitarySideOf(ME(), ownerId),
                   stanWojny: (relTicked as any).status === 'wojna',
                   lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
                   hasHandelTreaty: tickCtx.aktywnyHandel,
@@ -42134,6 +42172,9 @@ async function boot(): Promise<void> {
                   partnerId: String(otherId),
                   relation: relAi,
                   respektWzgledny: respektWzgAi,
+                  // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
+                  silaMilitarnaAI: diploMilitarySideOf(ownerId, otherId),
+                  silaMilitarnaPartner: diploMilitarySideOf(otherId, ownerId),
                   stanWojny: relAi.status === 'wojna',
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.
