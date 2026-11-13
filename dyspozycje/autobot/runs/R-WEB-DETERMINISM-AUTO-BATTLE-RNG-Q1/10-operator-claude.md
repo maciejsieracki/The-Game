@@ -197,3 +197,72 @@ BLOKADY: (1) źródło dryfu nieznane — wymaga instrumentacji per krok AI; (2)
 RUNDY: 2/5 (ten przebieg). Ostatni werdykt FC r1: FAIL (pomiar). Decyzja wymagana: czy kontynuować bisekcję w rundzie 3 i na jakim modelu. Operator Haiku ma w tym temacie już FAIL r1 i BLOCK r2 (bez kodu); zgodnie z zasadą modeli Sonnet na Operatorze wymaga pisemnego uzasadnienia w dispatchu.
 NASTĘPNY KROK: runda 3 — bisekcja per krok AI (sekcja „Proponowany kolejny krok”).
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 — Operator, RUNDA 3/5 (SONNET; uzasadnienie: dwie nieudane rundy Haiku tego samego tematu)
+
+STATUS: PASS
+DOMAIN: GAME
+TEMAT: R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1
+GOAL: to samo ziarno => ten sam skrot stanu we wszystkich przebiegach (z AI, miastami, zakladaniem miast), bez zmiany regul gry.
+BAZA: 7b721f7a8 (origin/main kandydat r2), worktree detached.
+ZMIANY/COMMIT: SHA w polu sha wyniku. Pliki: gra/src/main.ts (2 wolania `evaluateFoundCityAffordance` dostaja `rand` ze strumienia ziarna + hak diagnostyczny tylko-odczyt `snapshotSectionObj`), gra/tools/determinism-same-seed-test.cjs (kontrola E1 + aktualizacja uzasadnien wyjatkow), gra/tools/measure-ai-trade-offer-frequency.cjs (instrumentacja MEAS_PHASE=1), evidence/r3-*.json, ten raport.
+
+## 1. ZRODLO DRYFU (zidentyfikowane, z dowodem)
+
+`gra/src/main.ts` (przed zmiana ok. l.43381, wykonanie komendy AI `foundCityAt`): `evaluateFoundCityAffordance(praca, miastaOwnera, ownerId)` BEZ `rand`. Domyslny `rand` w `city-founding.ts` (`pickSourceCityForFounding`, remis wielkosci miast-zrodel: „losowe miasto sposrod najwiekszych”) to `Math.random`. Zrodlo wybiera, KTORE miasto traci ludnosc (`src.population -= kosztLudnosc`, main.ts ~43403). Planista w ai.ts uzywal deterministycznego `aiFoundingRand`, ale WYKONANIE komendy w main.ts liczylo afordancje drugi raz z `Math.random` — dlatego poprzednie rundy (grep tylko po `gra/src/game`, a hipoteza „Date.now w ID / zegar / stuck-clear”) nic nie znalazly. Ten sam wzorzec w sciezce gracza (main.ts ~16731, klik zalozenia miasta) — tez naprawiony.
+
+Lancuch skutkow: inne miasto-zrodlo traci populacje => inna produkcja/rekruci/skarbiec AI => skarbiec AI wlasciciela 1 rozjezdza sie od tury 21–28 (wczesniej raportowane 22–26). Nie byly zrodlem: auto-walki (autoBattles=0), zegar, kolejnosc Map, ID z Date.now.
+
+### Bisekcja per krok (wymaganie 1 dispatchu)
+Narzedzie: `MEAS_PHASE=1` w runnerze (tylko gra/tools/): Proxy tablicy `window.__civPhaseLog` przechwytuje kazdy `phaseMark` i zapisuje skrot calej migawki zapisu + skroty sekcji + skroty POL kazdego miasta (hak `__turnSlowdownTestDebug.snapshotInfo` istniejacy + nowy tylko-odczyt `snapshotSectionObj('cities')`). Dwa przebiegi tego samego ziarna (2222, tryb przyspieszony, 40 tur, 360 krokow):
+- Etap 1 (znaczniki gry): pierwszy rozny krok = `AI_END` tury 21/24/28 (przebiegi A-B, A-C, 1-2); rozne tylko sekcja `cities`, pola `population` i `manpower`; wlasciciel 1.
+- Etap 2 (tymczasowe znaczniki T_* wstawione do main.ts na czas pomiaru i USUNIETE; nie w commicie): pierwszy rozny krok = `T_CMD 1:foundCityAt` (tura 21), czyli skutek komendy 0 `foundCityAt`; rozne pola: `city_enemy_1.population`, `city3.population` (dwa miasta-zrodla o rownej wielkosci — remis). Skroty krokow 536..545 w `evidence/r3-bisect-steps-2222.json`.
+Skroty powtarzaly sie miedzy sesjami z maly zbiorem (843e6c40f1bd, 4917febd9c04, e4f668f2cf6b...) — to dyskretny rzut (remis 2 miast), nie dryf ciagly.
+
+## 2. NAPRAWA (minimalna)
+- main.ts (AI): `evaluateFoundCityAffordance(..., ownerId, { rand: gameStreamRng(_gameSeed, turn, 'found-source', ownerId) })`.
+- main.ts (gracz, klik zalozenia): `{ rand: gameStreamRng(_gameSeed, turn, 'found-source', ME()) }`.
+- Bez zmiany rozkladu (nadal rowne szanse miedzy remisujacymi miastami) i regul; zasada „Trafienia: losowe / pewne” nietknieta.
+- Pozostawione `Math.random` (uzasadnione w tescie zrodlowym): domyslny `rand` w city-founding.ts (jedyny wolajacy bez rand: podpowiedz kosztu `getFoundCityLockHint`, main.ts ~27158, tylko odczyt etykiety), city-state-difficulty/scout/ai-cs-absorption (main podaje strumien), combat.ts:890 i siege.ts:659 (patrz UWAGI), auto-battle-power.ts (wszystkie wolania podaja rng — D1).
+- Test zrodlowy `determinism-same-seed-test.cjs`: dodane E1 (kazde wolanie `evaluateFoundCityAffordance` w main.ts poza podpowiedzia kosztu podaje `rand: gameStreamRng(_gameSeed, turn, 'found-source'...)`); poprawione bledne uzasadnienia wyjatkow city-founding („ai.ts podaje rand” — pomijalo main.ts). Wynik: PASS (A1–A7, B1–B2, C1, D1–D2, E1).
+
+## 3. POMIAR PO NAPRAWIE (surowe pliki: evidence/r3-*.json; runner z hakiem digest; scenariusz prepared, REL=20, 40 tur)
+
+| Konfiguracja | Przebiegi | trajectorySha256_12 |
+|---|---|---|
+| ziarno 2222, przyspieszony | 6 x 40 tur | fd702b9340d6 (6/6 identyczne) |
+| ziarno 1717, przyspieszony | 6 x 40 tur | 84692144bbe6 (6/6 identyczne) |
+| ziarno 2222, NORMALNY (bez trybu przyspieszonego), bez wznawiania | 3 x 40 tur (fix-n2222-4,5,6; ~300–560 s/przebieg) | fd702b9340d6 (3/3 identyczne; rowny skrotowi trybu przyspieszonego) |
+| ziarno 2222, normalny, 3 przebiegi czesciowe (29/30/29 tur, limit 200 s/520 s) | wspolny prefiks 29 tur | 287f7fc5a43f (3/3 identyczny prefiks) |
+
+Przed naprawa (ten sam runner, ta sama konfiguracja): 6/6 roznych skrotow 2222 przyspieszony (r1/r2).
+
+### Mutacja (przywrocenie zrodla dryfu)
+- Pomiar: build z usunietym `rand` w sciezce AI (jedyna zmiana), 2222 przyspieszony 3 x 40: skroty a0ff384a2492, fd702b9340d6, 4917febd9c04 — NIE jest jeden skrot (zrodlo przywrocone => dryf wraca; jeden przebieg trafil w ten sam rzut co poprawna wersja).
+- Test zrodlowy: mutacja AI (usuniecie `rand` l.43380) => FAIL E1 (BEZ RAND: 43380); mutacja gracza (l.16732) => FAIL E1 (BEZ RAND: 16732). Pliki przywrocone (cmp OK).
+
+### Zastrzezenie pomiarowe (uczciwie, NIE ukrywane)
+Runner `MEAS_PROFILE` (wznawianie przez quickSave/loadSlot) NIE zachowuje determinizmu: trzy wznawiane przebiegi normalne (res-n2222-1/2/3) dali 3a2f3d5b5357, 3a2f3d5b5357, 249cb72a5448 — przebiegi wznowione z TEJ SAMEJ tury sa identyczne (1=2), przebieg wznowiony z innej tury rozni sie; i wznowiony przebieg rozni sie od nieprzerwanego juz w pierwszej turze po wczytaniu (prefiks 29 tur: 287f7fc5a43f vs d67fd94e2dcc). To jest odrebny, istniejacy problem save/load (stan poza zapisem: m.in. licznik `_detIdSeq`, patrz pkt 5) — NIE objety pomiarem fix; pomiar normalny wykonano bez wznawiania (trzy pelne przebiegi w jednym wywolaniu ~300 s kazdy).
+
+## 4. BRAMKI (surowe wyjscie)
+- `npx tsc --noEmit` (gra/): exit 0.
+- logic-test: `LOGIC OK (213/213)`; tech-tree-test: `20 pass, 0 fail`; research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`; unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test: `COMBAT TEST: 6/6 pass`; determinism-same-seed-test: `WYNIK: PASS` (exit 0). Asercje losowe nie byly osłabiane.
+- Build vite tylko poza repo (scratchpad); `npm run build/dev` nie uruchamiano. `npm ci --ignore-scripts` w worktree.
+
+## 5. Pytanie 5 z dispatchu (kolizja `_detIdSeq` po wczytaniu zapisu)
+Potwierdzenie obserwacyjne: wznawianie z zapisu zmienia przebieg (pkt 3, zastrzezenie). `_detIdSeq` (main.ts ~2008) nie jest w zapisie; po loadzie w tej samej turze `gameIdSuffix(seed, turn, salt, seq)` moze powtorzyc sufiksy istniejacych ID. Nie zbadano ktora konkretnie skladowa stanu rozjezdza wznowienie (NIE_ZMIERZONO). Nie naprawiano (save.ts poza allowlista, nie zmierzony jedyny winowajca).
+
+## 6. UWAGI-DLA-ORKIESTRATORA
+1. Zrodlo dryfu domkniete (afordancja zalozenia miasta); determinizm AI dla nieprzerwanych przebiegow potwierdzony (2 ziarna, 2 tryby).
+2. `combat.ts:890` (`resolveCombat` bez rng: battleScene.ts:20795 „Pomin” i manualBattle.ts:1062) nadal na `Math.random` — wplyw na stan TAK, poza allowlista r3; kandydat na osobny temat (autoBattles=0 w scenariuszu, wiec pomiar tego nie obejmuje).
+3. Wznawianie przebiegu z zapisu (loadSlot) nie jest bit-identyczne — proponowany osobny temat „R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1” (kandydaci: `_detIdSeq`, stan spoza migawki).
+4. Dispatch `00-dispatch.md` tego tematu nie istnieje w origin/main (tylko w gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0) — pierwsze wywolanie `git show origin/main:...` zwraca blad.
+5. Instrumentacja per krok jest teraz w runnerze (`MEAS_PHASE=1`): wystarczy dopisac `phaseMark(...)` w main.ts na czas diagnozy; ~5 min na 3 przebiegi.
+
+## RUNDY
+3/5. Poprzednie: r1 FAIL (pomiar), r2 FAIL (brak bisekcji). Ostatni werdykt FC r2: FAIL.
+NASTEPNY KROK: Evaluator (SONNET) -> Final Control; weryfikacja diffu (2 miejsca w main.ts + test E1 + runner), powtorzenie pomiaru (6x2222, 6x1717 przyspieszone; 3x normalne bez wznawiania) i mutacji.
+DEPLOY/PUSH: NIE WYKONANO

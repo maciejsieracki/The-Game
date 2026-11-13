@@ -50,9 +50,9 @@ check('A7 sufiks ID powtarzalny', R.gameIdSuffix(2222, 25, 'prod_', 7) === R.gam
 // Lista jawna wyjatkow. Wartosci = uzasadnienie + status wplywu na stan.
 const WYJATKI = {
   'city-founding.ts|rand: () => number = Math.random,':
-    'parametr domyslny pickSourceCityForFounding; wywolanie z ai.ts:3215 podaje rand (aiFoundingRand). Wplyw na stan: tak, tylko gdy wolajacy nie podaje rand (brak takiego wywolania w kodzie gry).',
+    'parametr domyslny pickSourceCityForFounding; wywolania z ai.ts (aiFoundingRand) i z main.ts (gameStreamRng "found-source", kontrola E1) podaja rand. Wplyw na stan: tylko bez rand (jedyny wolajacy bez rand = podpowiedz kosztu getFoundCityLockHint, tylko odczyt etykiety).',
   'city-founding.ts|const rand = opts?.rand ?? Math.random;':
-    'domyslny rand w evaluateFoundCityAffordance; ai.ts:3215 podaje rand. Wplyw na stan: tylko bez rand (brak w kodzie gry).',
+    'domyslny rand w evaluateFoundCityAffordance; ai.ts, main.ts (zalozenie miasta gracza i wykonanie foundCityAt AI) podaja rand ze strumienia ziarna (E1). Wplyw na stan: tylko bez rand (tylko podpowiedz kosztu, odczyt).',
   'city-state-difficulty.ts|rng: () => number = Math.random,':
     'resolveClusterCityStateWarOnPlayer (line ~120) i shouldCityStateRollWarOnPlayer (line ~146): main.ts podaje gameStreamRng (klaster wojny). Domyslny nieuzywany w grze.',
   'scout-auto-explore.ts|rng: () => number = Math.random,':
@@ -155,6 +155,27 @@ const mfbDeps = mainTxt.slice(mainTxt.indexOf('const mapFieldBattleDeps = {'), m
 check('D2 main.ts: autoBattleRng z ziarna gry wiazany i przekazany do mapFieldBattleDeps',
   /autoBattleRng\(defQ/.test(mainTxt) && /gameStreamRng\(_gameSeed, turn, 'auto-battle:'/.test(mainTxt) && mfbDeps.includes('autoBattleRng:'),
   mfbDeps.includes('autoBattleRng:') ? '' : 'brak autoBattleRng w mapFieldBattleDeps');
+
+// ---- E. zalozenie miasta: remis miast-zrodel (R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 r3 — zrodlo dryfu populacji/rekrutow AI) ----
+// E1: kazde wolanie evaluateFoundCityAffordance w main.ts (poza podpowiedzia kosztu `pc, 0`) podaje rand = gameStreamRng(_gameSeed, turn, 'found-source', ...).
+const EVAL_HEAD = 'evaluateFoundCityAffordance(';
+const evalCalls = [];
+{
+  let idx = -1;
+  while ((idx = mainTxt.indexOf(EVAL_HEAD, idx + 1)) !== -1) {
+    if (/import|^\s*$/.test(mainTxt.slice(Math.max(0, idx - 3), idx)) && mainTxt.slice(Math.max(0, idx - 40), idx).includes('  evaluateFoundCityAffordance,')) continue;
+    const args = callArgs(mainTxt, idx + EVAL_HEAD.length - 1);
+    if (args === null) continue;
+    const line = mainTxt.slice(0, idx).split('\n').length;
+    const good = /rand\s*:\s*gameStreamRng\(_gameSeed, turn, 'found-source'/.test(args);
+    const hint = /\bpc\s*,\s*0\s*$/.test(args.trim());
+    evalCalls.push({ line, good, hint });
+  }
+}
+const evalBad = evalCalls.filter((c) => !c.good && !c.hint);
+check('E1 main.ts: wolania evaluateFoundCityAffordance (zalozenie miasta gracza + foundCityAt AI) podaja rand z ziarna gry',
+  evalCalls.filter((c) => c.good).length === 2 && evalBad.length === 0,
+  evalBad.length ? 'BEZ RAND: ' + evalBad.map((c) => c.line).join(', ') : 'z rand=' + evalCalls.filter((c) => c.good).length + ', podpowiedz kosztu=' + evalCalls.filter((c) => c.hint).length);
 
 console.log(failed === 0 ? 'WYNIK: PASS' : 'WYNIK: FAIL (' + failed + ')');
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* sprzatanie best-effort */ }

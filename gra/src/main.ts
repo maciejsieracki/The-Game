@@ -16728,7 +16728,10 @@ async function boot(): Promise<void> {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
       // to jest ownerId FAKTYCZNIE zakładającego miasto fotela (aktywny w chwili kliku/B).
       const playerCities = cities.filter(c => c.ownerId === ME());
-      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME());
+      // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): remis wielkosci miast-zrodel losowany ze strumienia ziarna gry (nie Math.random).
+      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME(), {
+        rand: gameStreamRng(_gameSeed, turn, 'found-source', ME()),
+      });
       if (!aff.ok) {
         showHintMessage(aff.reason ?? 'Nie stać', 3000);
         return false;
@@ -31237,6 +31240,13 @@ async function boot(): Promise<void> {
         for (const [k, v] of Object.entries(meta)) put('meta.' + k, v);
         return { bytes: json.length, hash: fnv(norm(json)), ms, sections, sectionHashes };
       },
+      /** R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3, diagnostyka, tylko odczyt): sekcja migawki zapisu jako obiekt (znormalizowane ID grup stosu
+       *  bez zegara) — do bisekcji dryfu per element/pole przez tools/measure-ai-trade-offer-frequency.cjs (MEAS_PHASE=1). */
+      snapshotSectionObj: (name: string): unknown => {
+        const snap = buildSaveGameSnapshot('turn-slowdown-test') as unknown as Record<string, unknown>;
+        const norm = (s: string): string => s.replace(/"sg(-?\d+)_[0-9a-z]+_([0-9a-z]+)"/g, '"sg$1_T_$2"');
+        return JSON.parse(norm(JSON.stringify(snap[name] ?? null)));
+      },
       collections: (): Record<string, number> => ({
         _menuCivIdByOwner: _menuCivIdByOwner.size,
         siegeTurnByCity: siegeTurnByCity.size,
@@ -43371,6 +43381,9 @@ async function boot(): Promise<void> {
                     aiPracaPoolByOwner.get(ownerId) ?? 0,
                     cities.filter(c => c.ownerId === ownerId),
                     ownerId,
+                    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): ZRODLO dryfu — remis wielkosci miast-zrodel (Math.random) rozjezdzal
+                    // populacje/rekrutow miast AI przy tym samym ziarnie; strumien z ziarna gry + tura + wlasciciel.
+                    { rand: gameStreamRng(_gameSeed, turn, 'found-source', ownerId) },
                   );
                   if (!aff.ok) continue;
                   // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09):

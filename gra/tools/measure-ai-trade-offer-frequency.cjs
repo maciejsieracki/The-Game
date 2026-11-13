@@ -59,6 +59,7 @@ const SAVE_SLOT = 'meas-cell';
 const TRADE_ACTIONS = new Set(['handel', 'umowa_handlowa', 'umowa_szlakow']);
 // MEAS_FAST (domyslnie 1): tryb przyspieszony = hak setFastMode (pomija renderer.render; tylko ?civTest=1). MEAS_FAST=0 wylacza.
 const FAST = process.env.MEAS_FAST !== '0';
+const PHASE = process.env.MEAS_PHASE === '1';
 const PLAYTEST_SEED_DEFAULT = 271828;
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa' + (GATE ? '' : '&civTest=1') + (SEED != null ? '&civSeed=' + SEED : '');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -141,6 +142,28 @@ async function main() {
   try {
     page = PROFILE ? await browser.newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', e => consoleErrors.push('[pageerror] ' + e.message));
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r3): MEAS_PHASE=1 — instrumentacja per krok tury (bisekcja dryfu). `phaseMark` (main.ts)
+    // pushuje do `window.__civPhaseLog`; podstawiamy Proxy tablicy, ktory przy KAZDYM znaczniku fazy (WORLD_START, ECONOMY, AI_START,
+    // AI_CIV_START per wlasciciel, AI_END, ...) zapisuje skrot calej migawki zapisu i skroty sekcji (hak __turnSlowdownTestDebug.snapshotInfo,
+    // sekcje bez zegara). Tylko narzedzie pomiarowe; kod gry nietkniety.
+    if (PHASE) await page.addInitScript(() => {
+      const rec = []; window.__phaseRec = rec;
+      const arr = [];
+      window.__civPhaseLog = new Proxy(arr, { get(t, p) {
+        if (p === 'push') return (e) => {
+          try {
+            const h = window.__turnSlowdownTestDebug && window.__turnSlowdownTestDebug.snapshotInfo();
+            const fnv = (str) => { let x = 0x811c9dc5; for (let i = 0; i < str.length; i++) { x ^= str.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16); };
+            const cs = window.__turnSlowdownTestDebug.snapshotSectionObj('cities');
+            const cityF = {};
+            if (Array.isArray(cs)) for (const c of cs) { const f = {}; for (const [k, v] of Object.entries(c)) f[k] = fnv(JSON.stringify(v ?? null)); cityF[c.id ?? (c.q + ',' + c.r)] = f; }
+            rec.push({ k: e.k, d: e.d, turn: e.turn, hash: h ? h.hash : null, sec: h ? h.sectionHashes : null, cityF });
+          } catch (x) { rec.push({ k: e.k, d: e.d, turn: e.turn, err: String(x) }); }
+          return 1;
+        };
+        return t[p];
+      } });
+    });
     // MEAS_LOGRE: regex (diagnostyka) — pasujace linie konsoli trafiaja do rep.consoleMatches (ostatnie 60, bufor kolowy, z numerem tury gry).
     const LOGRE = process.env.MEAS_LOGRE ? new RegExp(process.env.MEAS_LOGRE, 'i') : null;
     if (LOGRE) page.on('console', m => { const t = m.text(); if (LOGRE.test(t)) { rep.consoleMatches.push({ turnsRun: rep.turnsRun, text: t.slice(0, 220) }); if (rep.consoleMatches.length > 60) rep.consoleMatches.shift(); } });
@@ -250,6 +273,12 @@ async function main() {
       // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
       rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
       // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: skrot stanu (jednostki, skarbiec, zasoby) co ture — digest z hooka.
+      if (PHASE) {
+        // Zapis krokow tury per tura (migawka sekcji po kazdym znaczniku fazy) + migawka na koniec tury (po przejsciu).
+        const rec = await page.evaluate(() => { const r = window.__phaseRec.splice(0); return r; });
+        const endSnap = await page.evaluate(() => { const h = window.__turnSlowdownTestDebug.snapshotInfo(); return { hash: h.hash, sec: h.sectionHashes }; });
+        (rep.phaseSteps = rep.phaseSteps || []).push(...rec, { k: 'TURN_END_SNAP', d: '', turn: st.turn, hash: endSnap.hash, sec: endSnap.sec });
+      }
       rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi, relAtDecision: st.relAtDecision, digest: st.digest ?? null });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
