@@ -830,3 +830,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zachowane:** kod r2 `53d409a44` jako `rust-port-wip/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r2-kod`; raport r3 `afd5a1b90` jako `…-r3-raport`.
 - **Nie uruchamiać więcej rund EKONOMIA** do czasu REPIN econ.
 - **Konflikt atrybucji** (Co-Authored-By w commitach Operatora): nadal do rozstrzygnięcia procesowego — do potwierdzenia przez właściciela.
+
+## ZWYCIESTWO-WIRING: FC FAIL r2 → DECYZJA ZAKRESU → r3 (zawężony)
+- **Wynik r2:** Operator BLOCK/DECISION_REQUIRED (`43519f552`), Evaluator FAIL, FC FAIL (`d1ce84a34`). Generator wiringu wykonywał tylko `victory.ts`; testy wiringu ręczne; potęgi arbitralne; semantyka błędu odbiegała od pina (try/catch → kontynuacja tury, nie cofanie).
+- **Decyzje orkiestratora:** (B) zawężenie zakresu do: flaga końca gry, reset, odrzucanie komend, sprawdzenie po turze, generator wektorów wiringu, semantyka błędu jak w pinie. **Poza zakresem (osobne tematy):** ZDOBYCIE-MIASTA (#115), flaga przy zakładaniu/przejęciu miasta, druga ścieżka przegranej w bitwie, produkcyjne wczytanie `PlayableState`, `potegiWszystkichMF` vs `power_raw`.
+- **Baza r3:** `d1ce84a34`. Start r3: `wf_00652ce1-d2a` (świeżo). Dispatch DODATEK r3 wypchnięty.
+- **Sprzątanie:** usunięto worktree zakończonych rund EKONOMIA r3 i ZWYCIESTWO r2 (FC FAIL). Zachowane gałęzie: `rust-port-wip/…-EKONOMIA…-r3-fc` (`3ad431966`), `…-ZWYCIESTWO-WIRING-Q1-r2-fc` (`d1ce84a34`). Dysk przed startem: 11 GB.
+- **Trwa:** ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`).
