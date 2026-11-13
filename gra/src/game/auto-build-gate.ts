@@ -109,7 +109,7 @@ export function shouldShowImprovementAdminMigration(noticeShown: boolean, affect
 }
 
 /** Podpowiedź UI: auto-ulepszenia terenu wymagają działającego administratora ulepszeń. */
-export const AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT = 'Auto-ulepszenia terenu w tym mieście wymagają działającego administratora ulepszeń';
+export const AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT = 'Auto-ulepszenia terenu wymagają działającego administratora państwa (jeden na całe Państwo)';
 
 /** Podpowiedź UI: autobudowa wymaga działającego administratora miasta. */
 export const AUTO_BUILD_NEEDS_ADMINISTRATOR_HINT = 'Autobudowa w tym mieście wymaga działającego administratora';

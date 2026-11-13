@@ -1,3 +1,9 @@
+## ROBOCZA 1f0d4447 -- 2026-11-12 -- FALA 677: Administrator państwa: panel Państwa i nazwy w tekstach (#327) (testowa)
+
+- wiersz 'Administrator państwa' w skarbcu Państwa; teksty gracza tylko 'administrator państwa' (cały Państwo) i 'administrator miasta' (jedno miasto)
+- Weryfikacja: tsc 0; logic 213/213; names-test 26/0; city-gate 36/0; vite build OK; FC PASS-WITH-NOTES d1b3f9810; Chromium NIE_ZMIERZONO (render wiersza Państwa, tooltip, icon, live-verify)
+- Limity: stare nazwy tylko w komentarzach kodu; administrator-miasta.md:29 mieszał zakresy (poza allowlistą, zostaje do decyzji)
+
 ## ROBOCZA 55276689 -- 2026-11-12 -- FALA 676: HUD baner w jednym rzędzie (r4) + Respekt: wygrana bitwy podpięta (testowa)
 
 - HUD: surowce w jednym rzedzie na gorze, boczne bloki nizej, 1366 px jak w bazie (acc1b1677); Respekt: wygrana_bitwa +5 (c6db60173); przewaga/slabszy do decyzji A-D

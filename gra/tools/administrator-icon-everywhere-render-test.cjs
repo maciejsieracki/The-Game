@@ -7,7 +7,7 @@
  * Test BEHAWIORALNY w Chromium na PRAWDZIWYCH funkcjach renderujących:
  *  A. Helper ikony + wartości (administratorIcon.ts): administratorUpkeepValueHtml(n) daje
  *     ikonę SVG i tekst „−n”; zero daje „—” (bez ikony). administratorChipInnerHtml daje ten sam
- *     komponent dla chipa miasta i chipa administratora ulepszeń (klasa .civ-adm-ic, rozmiar).
+ *     komponent dla chipa miasta i chipa administratora państwa (klasa .civ-adm-ic, rozmiar).
  *  B. Wiersz „Utrzymanie administratorów (to miasto)” w bilansie miasta (appendCitySkarbiecBalance,
  *     cityPanel.ts) w wyrenderowanym DOM: z administratorem -> ikona SVG + „−2”; z wartością 0
  *     (np. opcja „Administratorzy” wyłączona) -> „—” i zero ikon administratora w tym wierszu.
@@ -21,7 +21,7 @@
  * dodawane. Test NIE przełącza prawdziwej opcji kreatora (to robi gra; patrz main.ts).
  *
  * NIE objęte tym testem (NIE_ZMIERZONO): chip nagłówka miasta (renderTopBarGarrison, prywatna
- * funkcja), przycisk „Administrator ulepszeń +” i test mutacyjny.
+ * funkcja), przycisk „Administrator państwa +” i test mutacyjny.
  *
  * Opcjonalnie: ADM_ICON_SHOTS_DIR=<katalog> — zrzuty panelu.
  * Uruchomienie (z gra/): node tools/administrator-icon-everywhere-render-test.cjs
@@ -203,7 +203,7 @@ async function main() {
       out.helperText = upk2.replace(/<[^>]+>/g, '').trim();
       out.helperZero = upk0;
       const chipCity = T.administratorChipInnerHtml('city', true, 'Administrator');
-      const chipImp = T.administratorChipInnerHtml('improvements', false, 'Administrator ulepszeń');
+      const chipImp = T.administratorChipInnerHtml('improvements', false, 'Administrator państwa');
       out.chipCityHasIcon = /data-adm-icon="city"/.test(chipCity) && /is-ok/.test(chipCity);
       out.chipImpHasIcon = /data-adm-icon="improvements"/.test(chipImp) && /is-idle/.test(chipImp) && /civ-adm-ic-pick/.test(chipImp);
       out.chipSameSize = (chipCity.match(/<svg[^>]*width="(\d+)"/) || [])[1] === (chipImp.match(/<svg[^>]*width="(\d+)"/) || [])[1];
@@ -274,7 +274,7 @@ async function main() {
       out.empireOffRowFound = Array.from(eOff.querySelectorAll('div')).some(d => (d.textContent || '').indexOf('Utrzymanie administratorów') === 0);
 
       // D. Civpedia
-      const md = T.markdownToHtml('**{{ikona-administratora}} Administrator miasta** to osoba.\n\n**{{ikona-administratora-ulepszen}} Administrator ulepszeń** to osoba.');
+      const md = T.markdownToHtml('**{{ikona-administratora}} Administrator miasta** to osoba.\n\n**{{ikona-administratora-ulepszen}} Administrator państwa** to osoba.');
       out.wikiCityIcon = /civ-adm-ic/.test(md) && !/\{\{ikona-administratora\}\}/.test(md);
       out.wikiImpIcon = /civ-adm-ic-pick/.test(md) && !/\{\{ikona-administratora-ulepszen\}\}/.test(md);
       out.wikiRaw = /\{\{/.test(md);
@@ -290,7 +290,7 @@ async function main() {
     check('A: chip miasta ma data-adm-icon=city i stan ok', res.chipCityHasIcon);
     check('A: chip ulepszeń ma data-adm-icon=improvements, stan idle i kilof', res.chipImpHasIcon);
     check('A: oba chipy mają ikonę tego samego rozmiaru', res.chipSameSize);
-    check('A: etykiety chipów (wykrzyknik stanu „idle” nie liczy się do etykiety)', res.chipCityLabel === 'Administrator' && res.chipImpLabel.replace(/^!/, '') === 'Administrator ulepszeń', res.chipCityLabel + ' / ' + res.chipImpLabel);
+    check('A: etykiety chipów (wykrzyknik stanu „idle” nie liczy się do etykiety)', res.chipCityLabel === 'Administrator' && res.chipImpLabel.replace(/^!/, '') === 'Administrator państwa', res.chipCityLabel + ' / ' + res.chipImpLabel);
     check('B: wiersz bilansu miasta znaleziony', res.cityRowFound);
     check('B: wiersz miasta z administratorem ma ikonę SVG', res.cityRowIcon);
     check('B: wiersz miasta z administratorem pokazuje „−2”', /−2/.test(res.cityRowText), res.cityRowText);

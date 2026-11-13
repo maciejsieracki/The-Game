@@ -10219,10 +10219,10 @@ async function boot(): Promise<void> {
         resumed: ['Administrator wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora.`],
       };
       const textImp: Record<AdministratorChange['kind'], [string, string]> = {
-        ended_no_building: ['Administrator ulepszeń odszedł', `${ch.city.name}: koniec służby administratora ulepszeń.`],
-        ended_owner_changed: ['Administrator ulepszeń odszedł', `${ch.city.name}: miasto zmieniło właściciela — koniec służby administratora ulepszeń.`],
-        stopped_no_funds: ['Administrator ulepszeń nie pracuje', `${ch.city.name}: brak środków w skarbcu państwa na utrzymanie — auto-ulepszenia terenu wstrzymane, dopóki skarbiec nie pokryje utrzymania.`],
-        resumed: ['Administrator ulepszeń wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora ulepszeń.`],
+        ended_no_building: ['Administrator państwa odszedł', `${ch.city.name}: koniec służby administratora państwa.`],
+        ended_owner_changed: ['Administrator państwa odszedł', `${ch.city.name}: miasto zmieniło właściciela — koniec służby administratora państwa.`],
+        stopped_no_funds: ['Administrator państwa nie pracuje', `${ch.city.name}: brak środków w skarbcu państwa na utrzymanie — auto-ulepszenia terenu wstrzymane, dopóki skarbiec nie pokryje utrzymania.`],
+        resumed: ['Administrator państwa wrócił do pracy', `${ch.city.name}: skarbiec pokrył utrzymanie administratora państwa.`],
       };
       const [title, subtitle] = (ch.role === 'ulepszenia' ? textImp : text)[ch.kind];
       warEventLog.unshift({ id: evId, icon: ch.role === 'ulepszenia' ? 'ADM-IMP' : 'ADM', title, subtitle, kind: 'enemy', turnCreated: turn });
@@ -10340,7 +10340,7 @@ async function boot(): Promise<void> {
     function improvementAdministratorUiState(cityId: string) {
       const city = cities.find(c => c.id === cityId);
       if (!city) return null;
-      if (!administratorsEnabled && isHuman(city.ownerId)) return null; // OFF: brak sekcji administratora ulepszeń gracza
+      if (!administratorsEnabled && isHuman(city.ownerId)) return null; // OFF: brak sekcji administratora państwa gracza
       const adm = stateAdmByOwner.get(city.ownerId);
       const hired = ownerHasStateImprovementAdministrator(adm, city.ownerId);
       const reason = hired ? null : ownerImprovementAdministratorHireBlockReason(adm, city.ownerId, ownerTreasury(city.ownerId));
@@ -10353,6 +10353,17 @@ async function boot(): Promise<void> {
         blockReason: reason,
         treasury: ownerTreasury(city.ownerId),
         description: improvementAdministratorDescription(),
+      };
+    }
+    /** Administrator państwa właściciela do panelu Państwa (skarbiec): stan + koszty z silnika. */
+    function stateAdministratorPanelRow(ownerId: number) {
+      const adm = stateAdmByOwner.get(ownerId);
+      return {
+        hired: ownerHasStateImprovementAdministrator(adm, ownerId),
+        working: ownerHasWorkingStateImprovementAdministrator(adm, ownerId),
+        upkeep: improvementAdministratorUpkeep(),
+        hireCost: improvementAdministratorHireCost(),
+        treasury: ownerTreasury(ownerId),
       };
     }
     /** R-WEB-CITY-ADMINISTRATOR-Q1: AI (parytet): zatrudnia, gdy stać i ma budynek administracyjny; płaci ze skarbca państwa. */
@@ -22712,6 +22723,8 @@ async function boot(): Promise<void> {
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
         // R-WEB-UI-ADMINISTRATOR-ICON-EVERYWHERE-Q1 (zarzut 1): OFF -> undefined -> panel nie pokazuje wiersza.
         bogactwoUtrzymanieAdministratorow: administratorsEnabled ? Math.floor(_lastBogactwoUtrzymanieAdministratorow) : undefined,
+        // Panel Państwa: administrator państwa (jeden na Państwo). OFF -> undefined (brak wiersza).
+        administratorPanstwa: administratorsEnabled ? stateAdministratorPanelRow(ME()) : undefined,
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
@@ -27111,7 +27124,7 @@ async function boot(): Promise<void> {
           // zostaje w swoich dwoch prawowitych miejscach: panel imperium
           // (`empireDetailPanel.ts`) i panel miasta (`cityPanel.ts`) — oba nietkniete.
           onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
-            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             pol.focus = focus;
             pol.tryb = 'auto';
@@ -27120,7 +27133,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaEmpireTrybChange: (tryb: UlepszeniaTryb) => {
-            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             pol.tryb = tryb;
             ulepszeniaEmpireByOwner.set(0, pol);
@@ -27131,7 +27144,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
-            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('empire')) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const pol = ulepszeniaEmpireForOwner(0);
             // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny suwak automatu (pole (b))
             // ma własny zakres 0–100% — clampUlepszeniaPracaPercent clampuje do
@@ -27147,7 +27160,7 @@ async function boot(): Promise<void> {
             return city?.ulepszeniaOverride === true;
           },
           onUlepszeniaCityOverrideChange: (cityId: string, override: boolean) => {
-            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = override;
@@ -27173,7 +27186,7 @@ async function boot(): Promise<void> {
             return effectiveUlepszeniaForCity(city);
           },
           onUlepszeniaCityFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
-            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
@@ -27183,7 +27196,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaCityTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
-            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
@@ -27197,7 +27210,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           onUlepszeniaCityPracaPercentChange: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => {
-            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora ulepszeń', 2800); return; }
+            if (improvementAutomationChangeBlocked('city', cityId)) { showHintMessage('Wymaga administratora państwa', 2800); return; }
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
@@ -47854,13 +47867,13 @@ async function boot(): Promise<void> {
           warEventLog.unshift({
             id: `city-impadmin-migration-${turn}`,
             icon: 'ADM-IMP',
-            title: 'Auto-ulepszenia terenu wymagają administratora ulepszeń',
-            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko w miastach z działającym administratorem ulepszeń (${formatMiastaCount(affectedImp.length)} bez niego). Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
+            title: 'Auto-ulepszenia terenu wymagają administratora państwa',
+            subtitle: `Automatyczne ulepszanie terenu działa teraz tylko przy działającym administratorze państwa (jeden na całe Państwo). Wstrzymane dla: ${formatMiastaCount(affectedImp.length)}. Zatrudnij go w panelu ulepszeń (koszt ${improvementAdministratorHireCost()} Pieniądza).`,
             kind: 'enemy',
             turnCreated: turn,
           });
           trimWarEventLog();
-          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko z administratorem ulepszeń — ${formatMiastaCount(affectedImp.length)} bez niego (patrz „Ważne”)`, 6000);
+          showHintMessage(`Auto-ulepszenia terenu działają teraz tylko przy administratorze państwa — wstrzymane dla: ${formatMiastaCount(affectedImp.length)} (patrz „Ważne”)`, 6000);
         }
       }
       if (!cityAdministratorNoticeShown) {

@@ -1,9 +1,9 @@
 'use strict';
 /**
  * R-WEB-UI-IMPROVEMENT-AUTOMATION-LOCKED-WITHOUT-ADMIN-Q1 — dowód w REALNEJ grze (Chromium, bundle z vite build):
- *  (1) panel budowy 🔨 bez administratora ulepszeń: kontrolki automatyzacji disabled + adnotacja „Wymaga administratora ulepszeń”,
+ *  (1) panel budowy 🔨 bez administratora państwa: kontrolki automatyzacji disabled + adnotacja „Wymaga administratora państwa”,
  *      a wymuszony klik (po zdjęciu `disabled`) NIE zmienia polityki państwa/miasta (guard w handlerze + w main.ts);
- *  (2) klik „Administrator ulepszeń +” otwiera panel wyboru (opis, bonusy, koszt, utrzymanie); brak środków -> Zatrudnij nieaktywne;
+ *  (2) klik „Administrator państwa +” otwiera panel wyboru (opis, bonusy, koszt, utrzymanie); brak środków -> Zatrudnij nieaktywne;
  *      Esc / klik w tło zamykają; „Zatrudnij” zmienia stan jak dotąd (skarbiec −40), a kontrolki stają się aktywne i działają;
  *  (3) panel miasta: „Administrator +” (administrator miasta) otwiera panel z bonusami wg poziomu budynku; zatrudnienie i zwolnienie.
  * Usage: ROBOCZA_HTML=<index.html z vite build> EVID_DIR=<katalog> node tools/live-verify-administrator-panel.cjs
@@ -80,7 +80,7 @@ const panelInfo = (page) => page.evaluate(() => {
     out.c1 = await controls(page);
     await page.screenshot({ path: C.EVID + '/01-panel-budowy-bez-administratora-zablokowany.png' });
     ok(out.c1.empire.length > 0 && out.c1.empire.every((d) => d === true) && out.c1.empireSlider === true && out.c1.override === true, 'bez administratora: kontrolki państwa i „Własne ustawienia” disabled', out.c1);
-    ok(out.c1.notes.some((n) => /Wymaga administratora ulepszeń/.test(n)), 'adnotacja „Wymaga administratora ulepszeń”', out.c1.notes);
+    ok(out.c1.notes.some((n) => /Wymaga administratora państwa/.test(n)), 'adnotacja „Wymaga administratora państwa”', out.c1.notes);
     const pol0 = await policy(page);
     await page.evaluate(() => {
       document.querySelectorAll('[data-ulepszenia-empire-focus],[data-ulepszenia-empire-reczny],[data-ulepszenia-city-override]').forEach((b) => { b.removeAttribute('disabled'); b.click(); });
@@ -98,7 +98,7 @@ const panelInfo = (page) => page.evaluate(() => {
     await wait(500);
     out.p0 = await panelInfo(page);
     await page.screenshot({ path: C.EVID + '/02-panel-administratora-ulepszen-brak-srodkow.png' });
-    ok(out.p0 && out.p0.kind === 'improvements' && out.p0.role === 'dialog' && out.p0.hired === '0', 'klik „Administrator ulepszeń +” otwiera panel (role=dialog)', out.p0);
+    ok(out.p0 && out.p0.kind === 'improvements' && out.p0.role === 'dialog' && out.p0.hired === '0', 'klik „Administrator państwa +” otwiera panel (role=dialog)', out.p0);
     ok(out.p0 && /40/.test(out.p0.cost) && /2/.test(out.p0.upkeep) && out.p0.chips >= 2 && out.p0.lead && out.p0.bonuses, 'panel: opis, bonusy, koszt 40, utrzymanie 2 (chipy z ikoną)', out.p0);
     ok(out.p0 && out.p0.confirmDisabled === true && /30/.test(out.p0.shortfall || ''), 'brak środków (10 < 40): Zatrudnij nieaktywne, „Brakuje 30”', out.p0);
     await page.keyboard.press('Escape'); await wait(300);

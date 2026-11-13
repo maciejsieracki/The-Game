@@ -308,7 +308,7 @@
           "Wyłączone"
         ],
         "descs": [
-          "Możesz zatrudniać administratorów miast i ulepszeń (koszt ze skarbca państwa); tylko z nimi działa automatyczna budowa budynków i automatyczne ulepszenia terenu. Wybór obowiązuje przez całą grę",
+          "Możesz zatrudniać administratora państwa i administratorów miast (koszt ze skarbca państwa); tylko z nimi działa automatyczna budowa budynków i automatyczne ulepszenia terenu. Wybór obowiązuje przez całą grę",
           "Brak administratorów i automatyzacji budowy — budynki i ulepszenia terenu budujesz ręcznie. Wybór obowiązuje przez całą grę"
         ],
         "domyslny": 1

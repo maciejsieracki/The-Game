@@ -135,7 +135,7 @@ console.log('(F) behawioralnie: administrator Państwa odblokowuje auto-ulepszen
   M.refreshAdministratorState(world, new Map(), () => 100, st);
   ok(select(world, 0, st) === 'a,b', 'skarbiec wraca => automat wraca');
   ok(select(world, 7, st) === 'ai', 'AI bez bramki (flaga false)');
-  // migracja starego zapisu: administrator ulepszeń przypisany do miasta 'a' -> stan Państwa (koszt nie płacony ponownie)
+  // migracja starego zapisu: administrator państwa przypisany do miasta 'a' -> stan Państwa (koszt nie płacony ponownie)
   const legacy = [
     { id: 'a', ownerId: 0, tryb: 'auto', administratorUlepszen: { ownerId: 0, hiredTurn: 1, pracuje: true } },
     { id: 'b', ownerId: 0, tryb: 'auto' },
@@ -154,7 +154,7 @@ console.log('(F) behawioralnie: administrator Państwa odblokowuje auto-ulepszen
 console.log('(E) sondy wpięcia');
 const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 const hud = fs.readFileSync(path.join(SRC, 'ui', 'buildModeHud.ts'), 'utf8');
-ok(/selectCitiesForAutoImprovement\(\s*cities, hOid,[\s\S]{0,400}isCityAutoImprovementActive,/.test(main), 'main.ts: filtr miast auto-ulepszeń EOT = selectCitiesForAutoImprovement z bramką administratora ulepszeń');
+ok(/selectCitiesForAutoImprovement\(\s*cities, hOid,[\s\S]{0,400}isCityAutoImprovementActive,/.test(main), 'main.ts: filtr miast auto-ulepszeń EOT = selectCitiesForAutoImprovement z bramką administratora państwa');
 ok(/improvementAdministratorNoticeShown = saved\.meta\?\.improvementAdministratorNoticeShown === true/.test(main) && /shouldShowImprovementAdminMigration\(improvementAdministratorNoticeShown/.test(main) && /^\s*improvementAdministratorNoticeShown,$/m.test(main), 'main.ts: OSOBNA flaga migracji ulepszeń (zapis/odczyt/użycie)');
 ok(/isCityAutoImprovementAllowed\(\s*city\.ownerId, humanSeats\.humanOwnerIds, administratorsEnabled,\s*ownerHasWorkingStateImprovementAdministrator\(stateAdmByOwner\.get\(city\.ownerId\), city\.ownerId\),\s*aiRequiresImprovementAdministrator\(\)/.test(main), 'main.ts: bramka = stan administratora Państwa właściciela + flaga AI z JSON');
 ok(/stateAdmByOwner\.set\(city\.ownerId, next\)/.test(main) && !/cityHasWorkingImprovementAdministrator|cityHasImprovementAdministrator/.test(main), 'main.ts: zatrudnienie zapisuje stan na właścicielu (brak odwołań do stanu miasta)');
