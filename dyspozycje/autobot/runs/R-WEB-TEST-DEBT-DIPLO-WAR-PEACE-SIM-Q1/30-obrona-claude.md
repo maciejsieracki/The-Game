@@ -1,92 +1,50 @@
-# R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 — Obrona Operatora (odpowiedź na zarzuty Evaluatora, runda 1)
+# R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 — Obrona Operatora, runda 2 (odpowiedź na zarzuty Evaluatora 0a73dc1fb)
 
 STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1
-GOAL: przepisać gra/tools/diplo-war-peace-sim-test.cjs tak, by sprawdzał zatwierdzone zachowanie kodu (3 FAIL na bazie: S3, S4b, M_TUR), bez osłabiania asercji. Kryterium (a) 22/22 zależy od decyzji właściciela (A/B/C) o bramce pokoju AI w turach 7-9 (S7b, poza allowlistą kod ai.ts).
-BAZA: f0c32fe1e (origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0, raport Operatora 10-operator-claude.md). Checkout: `git checkout --detach f0c32fe1e`.
-ZMIANY-COMMIT: patrz sekcja "Commit" na końcu (jeden commit: gra/tools/diplo-war-peace-sim-test.cjs + ten raport). Kod gry (gra/src, gra/data) nietknięty.
+GOAL: opcja A — AI nie proponuje pokoju przed 10. pełną turą wojny (dla wszystkich cywilizacji); sim-test 24/24+ bez FAIL; tsc 0; testy pokoju zielone.
+BAZA: e51dcd18a (kandydat r2), worktree odłączony na tym SHA. Bez zmian kodu w tej rundzie.
 
-## Odpowiedzi na zarzuty Evaluatora (45d42fb35)
+## Odpowiedzi na zarzuty
 
-| Nr | Zarzut | Decyzja | Dowód |
-|---|---|---|---|
-| 1 | Kryterium 22/22 niespełnione (19/3) | PRZYJMUJĘ jako fakt; poprawiłem wszystko, co nie zależy od decyzji. Po poprawkach: 23 pass / 1 fail. Jedyny FAIL to S7b, świadomie zostawiony czerwony (patrz niżej). | Surowe wyjście `node tools/diplo-war-peace-sim-test.cjs` poniżej. |
-| 2 | Operator nie zrobił części test-side (regex, S3, S4b, M_TUR) | PRZYJMUJĘ i wykonałem w tym commicie: regex `isTooEarly`, S3 przepisane, S4b przeniesione na turę 10, mutanty M_GATE i M_STRONG dopisane dla przepisanych scenariuszy. | `git diff --stat`: 1 plik, 29+/6-. |
-| 3 | Ścieżka 00-dispatch.md nie istnieje na origin/main | PRZYJMUJĘ jako uwagę dokumentacyjną. Treść odczytano z origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (plik tam istnieje). Rozstrzyga orkiestrator. | `git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:dyspozycje/autobot/runs/R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1/00-dispatch.md` zwraca dispatch. |
+### Zarzut 1 (h3 w diplo-peace-weaker-seeks-city-only-test, regresja z e51dcd18a) — PRZYJMUJĘ, NIE NAPRAWIONO (wymaga decyzji orkiestratora)
+- Dowód regresji (surowe wyjście, uruchomione tu):
+  - baza 551034cb3: `diplo-peace-weaker-seeks-city-only-test: 29 pass / 3 fail` (FAIL: h2, h4, h5)
+  - kandydat e51dcd18a: `28 pass / 4 fail` (FAIL: h2, h3, h4, h5), h3 = `[]`
+- Przyczyna: h3 wywołuje `aiDecide(5, 5000, 6, 100, 200)` (turnsAtWar=5). Nowa bramka AI `Math.max(minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS)` wymaga 10 tur.
+- Dowód poprawki (scratch, cofnięte, NIE scommitowane): zmiana `aiDecide(5,` na `aiDecide(10,` w tym pliku na kandydacie daje `29 pass / 3 fail`, FAIL tylko h2, h4, h5. h3 przechodzi.
+- Dlaczego nie zmieniam: plik `gra/tools/diplo-peace-weaker-seeks-city-only-test.cjs` jest POZA allowlistą rundy 2 (TYLKO `gra/tools/diplo-war-peace-sim-test.cjs`, `gra/src/game/ai.ts` w obrębie aiPeaceTimeOk, `runs/**`). Edycja byłaby naruszeniem granic. Decyzja: orkiestrator rozszerza allowlistę o ten plik albo przypisuje zmianę do tematu długu (jedna linia: tury 5 → 10 w h3, z opisem w komentarzu testu).
 
-## Zmiany w teście (wyłącznie gra/tools/diplo-war-peace-sim-test.cjs)
+### Zarzut 2 (h2, h4, h5 czerwone już na bazie) — ODRZUCAM jako regresję tego tematu, POTWIERDZAM jako dług
+- Dowód: baza 551034cb3 daje FAIL h2, h4, h5 (patrz wyżej). Kandydat daje te same trzy FAIL plus h3 z zarzutu 1.
+- Powód FAIL (kandydat, wyjście): `koniec zmeczenia wojna (zmeczenie 1.00, tury wojny=30): pokoj bezwarunkowy (bez miasta i zaplaty)`. To reguła „koniec zmęczenia", nie bramka czasu. Poza zakresem tego tematu. Do osobnego tematu długu testowego.
 
-| Scenariusz | Przyczyna starego FAIL | Zatwierdzona reguła (dispatch) | Nowa asercja |
-|---|---|---|---|
-| S3 | Test oczekiwał „czuje się silniejsze" w turach 7-9. Kod zwraca „Pokój i rozejm dostępne po 10 pełnych turach wojny", bo `peaceProposalBlocked` (diplomacy-proposals.ts:1131-1133) wyprzedza bramkę siły. | „pierwsze propozycje pokoju od tury 10" | Tury 7-9 dla silnej AI bez utraty: powód pasuje do `/po 10 pełnych turach/`. Mutant: M_GATE. |
-| S4b | Kontrola w turze 8 trafia w bramkę czasu (8 < 10). | jw. | Kontrola przeniesiona na turę 10 (`pvs[9]`, pierwsza tura po bramce): powód „militarnie silniejsza". Mutant: M_STRONG. |
-| M_TUR | (1) Regex `/za wcześnie/` nie trafia w tekst kodu, więc `earlyViolations` zawsze 0 i S7b jest puste. (2) Mutant rzeczywiście składa propozycję w turze 1 (`t:1`). | „AI nie proponuje pokoju przed 10 turą" | Regex `isTooEarly` = `/za wcześnie|po 10 pełnych turach/`. Mutant bez zmian (wykrywa t=1). |
+### Zarzut 3 (kandydat nie zawiera origin/main f196422) — PRZYJMUJĘ jako uwagę, NIE SCALAŁEM
+- `git merge-base HEAD origin/main` = a994450166; origin/main = f196422ef.
+- Próba `git merge-tree --write-tree HEAD origin/main` (bez zapisu): `ai.ts` scala się automatycznie. KONFLIKT tylko w `gra/tools/diplo-war-peace-sim-test.cjs` (origin/main zmienia ten plik: 30 insertions, 82 deletions względem e51dcd18a). Plik jest w allowliście, ale rozwiązanie konfliktu zmienia zakres testu. To decyzja orkiestratora, nie autonomiczne merge. Nie scalałem.
 
-Nowe mutanty (kryterium c):
-- M_GATE: `PEACE_PROPOSAL_MIN_WAR_TURNS = 10` → `= 1` (diplomacy-peace-proposal-timing.ts). Wykrywa S3.
-- M_STRONG: `if (r5Gate.verdict === 'stronger') {` → `if (false) {` (diplomacy-proposals.ts). Wykrywa S3b/S4b. Każdy mutant ma sprawdzenie `applied === 1` w check (0).
+### Zarzut 4 (M_HEALTH przeniesiony na asercję braku zmiany) — PRZYJMUJĘ jako uwagę, bez zmian
+- Wyjście: `PASS: M_HEALTH (przeniesiony): wyłączenie sygnału zdrowia nie zmienia decyzji słabszej militarnie AI`. Opisane w teście, zgodne z regułą siły militarnej. Brak poprawki.
 
-## Świadomie czerwone: S7b (błąd w KODZIE, decyzja właściciela)
+## Wyniki bramek (kandydat e51dcd18a, surowe wyjście)
+- `npx tsc --noEmit`: exit 0
+- `node tools/diplo-war-peace-sim-test.cjs`: `25 pass / 0 fail` (M_TUR, M_GATE, M_STRONG, M_REV, M_FEEL, M_WEAR, M_HEALTH wykryte)
+- `node tools/diplo-peace-weaker-seeks-city-only-test.cjs`: `28 pass / 4 fail` (baza 29/3)
+- Nie mierzono w tej rundzie: ai-test, diplomacy-test, pozostałe testy pokoju z listy (zob. raport Evaluatora, bez powtórki).
 
-S7b („AI nigdy nie proponuje pokoju w stanie 'za wcześnie'") nie zostało osłabione. Po poprawce regexu wykrywa realne naruszenie zatwierdzonej reguły: AI składa `zaproponuj_pokoj` w turach 7-9. Przyczyna: `ai.ts` `aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny` (zulusi = 7), a gracz ma bramkę globalną 10. Pierwsze 5 naruszeń z surowego wyjścia:
-`[{"rw":0.2,"lost":0,"t":7},{"rw":0.2,"lost":0,"t":8},{"rw":0.2,"lost":0,"t":9},{"rw":0.2,"lost":1,"t":7},{"rw":0.2,"lost":1,"t":8}]`
-
-Ta sama rozbieżność dotyka S1: test nadal oczekuje propozycji AI od tury 7 (zgodne z obecnym kodem, sprzeczne z „od tury 10"). S1 NIE zostało zmienione, bo to decyzja A/B/C z raportu 10-operator:
-- A (rekomendacja Operatora): AI od tury 10 → S1 zmienić na tury 10,13,16...; S7b zielone.
-- B: bramka per cywilizacja (zmiana gracza) → S3/S4b/S7b do przepisania po decyzji.
-- C: rozbieżność zamierzona → S7b przepisać jako oczekiwanie „AI od minTurWojny".
-
-## Wynik testu (surowe wyjście, po zmianach)
-
-```
-PASS: (0) każdy mutant podmienił dokładnie 1 miejsce
-PASS: S1 ... (zulusi: tury 7,10,13,16,19,22,25,28)
-PASS: S1a / S1b / S2 / S2b
-PASS: S3: gracz (silna AI, bez utraty) w turach 7-9 dostaje odrzucenie czasowe „po 10 pełnych turach wojny"
-PASS: S3b / S3c / S4 / S4b (kontrola: tura 10)
-PASS: S5 / S5b / S6 / S6b / S7
-FAIL: S7b: spójność — AI nigdy nie proponuje pokoju w stanie „za wcześnie" — [pierwsze 5 naruszeń jak wyżej]
-PASS: M_SIG / M_FEEL / M_WEAR / M_TUR (wykryty: t=1)
-PASS: M_GATE wykryty: bramka czasu gracza zdjęta do 1 tury — S3 (tury 7-9) nie dostaje już odrzucenia czasowego
-PASS: M_STRONG wykryty: bez odrzucenia „militarnie silniejsza" gracz dostaje odrzucenie inne niż siła w turze 10
-PASS: M_HEALTH (przeniesiony)
-
-diplo-war-peace-sim-test: 23 pass / 1 fail
-```
-
-Baza f0c32fe1e przed zmianami (ta sama komenda, surowe wyjście Operatora): `19 pass / 3 fail` (S3, S4b, M_TUR).
-
-Kontrola składni: `node --check tools/diplo-war-peace-sim-test.cjs` → OK. `git diff --check` → czysto.
-
-## TESTY i BRAMKI
-
-- Test celowy: 23 pass / 1 fail (S7b). Kryterium (a) 22/22: NIESPEŁNIONE, wymaga decyzji właściciela.
-- Kryterium (c) mutacje: każdy przepisany scenariusz ma mutant, który go czerwieni (M_GATE → S3, M_STRONG → S3b/S4b, M_TUR → S7b/S1). Zachowane istniejące mutanty.
-- tsc 0, 5 bramek, diplomacy-test 149/0, ai-test 297/0: NIE_ZMIERZONO. Powód: zmiana dotyczy tylko pliku narzędziowego tools/*.cjs, kod gry (gra/src, gra/data) nie zmieniony; bramki nie zmieniają się przez ten commit.
+## ZMIANY/COMMIT
+- Brak zmian kodu w tej rundzie. Commit tylko tego raportu.
 
 ## BLOKADY
-
-- DECISION_REQUIRED: S7b czerwone, bo `ai.ts` (poza allowlistą) używa `minTurWojny` (zulusi 7) zamiast zatwierdzonej bramki „od tury 10". Wymagana decyzja właściciela A/B/C (raport 10-operator-claude.md).
-- Po decyzji A: runda 2 (Haiku) — S1 na tury 10+, S7b zielone, kryterium 22/22 do sprawdzenia.
+1. Zarzut 1: poprawka h3 wymaga pliku spoza allowlisty — decyzja orkiestratora.
+2. Konflikt z origin/main w `diplo-war-peace-sim-test.cjs` — decyzja orkiestratora przed integracją.
+3. Dług h2/h4/h5 (reguła zmęczenia) — osobny temat.
 
 ## RUNDY
-
-1/5 (obrona). Werdykt Evaluatora r1: PASS-WITH-NOTES. Ta odpowiedź: 3 zarzuty przyjęte (1 częściowo, 2 w pełni, 3 jako uwaga).
-
-## UWAGI-DLA-ORKIESTRATORA
-
-- Ścieżka `00-dispatch.md` w zadaniu wskazuje origin/main, a pliku tam nie ma (zarzut 3). Dispatch jest na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0.
-- Zadanie #352 (dług sim) zostaje in_progress do decyzji A/B/C. Powiązane: #372 (bramka pokoju AI liczy słabość respektem, nie siłą militarną).
-- Zgodnie z dispatchem nie zmieniano ai.ts ani diplomacy-*.ts; mutanty M_GATE/M_STRONG działają tylko w bundlach testowych.
-- Zainstalowano `gra/node_modules` (npm ci) w worktree na potrzeby testu. Usunięto po zakończeniu.
+2/5. Ostatni werdykt Evaluatora: PASS-WITH-NOTES (0a73dc1fb). Decyzja wymagana.
 
 ## NASTĘPNY KROK
-
-Decyzja właściciela A/B/C dla bramki pokoju AI (ai.ts minTurWojny vs PEACE_PROPOSAL_MIN_WAR_TURNS). Po decyzji: runda 2 zgodnie z wybraną opcją.
-
-## Commit
-
-Commit obejmuje wyłącznie: `gra/tools/diplo-war-peace-sim-test.cjs` oraz `dyspozycje/autobot/runs/R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1/30-obrona-claude.md`. Push nie wykonany.
+Orkiestrator: (a) rozszerzyć allowlistę o `gra/tools/diplo-peace-weaker-seeks-city-only-test.cjs` i zastosować tury 5 → 10 w h3, albo przypisać do długu; (b) rozstrzygnąć konflikt z origin/main w sim-teście; (c) założyć temat długu h2/h4/h5.
 
 DEPLOY/PUSH: NIE WYKONANO
