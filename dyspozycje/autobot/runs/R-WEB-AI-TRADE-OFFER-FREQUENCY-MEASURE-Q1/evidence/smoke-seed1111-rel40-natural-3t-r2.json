@@ -1,0 +1,64 @@
+{
+  "arm": "natural",
+  "seedNote": "PLAYTEST_MAPA_SEED (stale, 1 ziarno)",
+  "relationNote": "naturalny (brak haka ustawiania relacji)",
+  "seed": 1111,
+  "relTotalSet": 40,
+  "relTotalAfter": 40,
+  "offersCyclic": 0,
+  "offersOneShot": 0,
+  "turnsRequested": 3,
+  "turnsRun": 3,
+  "offers": 0,
+  "activePrzyjmij": 0,
+  "pairs": {},
+  "cyclicDealsMax": 0,
+  "tableStart": 0,
+  "tableEnd": 0,
+  "tableGrowth": 0,
+  "scriptRejected": 0,
+  "rejectCooldownsMax": 0,
+  "per100": 0,
+  "aiOwner": 1,
+  "stoppedBy": "koniec przebiegu",
+  "autoBattles": 2,
+  "consoleErrors": 0,
+  "offerLog": [],
+  "perTurn": [
+    {
+      "t": 2,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0
+    },
+    {
+      "t": 3,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0
+    },
+    {
+      "t": 4,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0
+    }
+  ],
+  "secs": 21,
+  "consoleErrorSample": [],
+  "labelsBeforeRelabel": {
+    "offers": 0,
+    "offersOneShot": 0,
+    "offersOneShotAll": null,
+    "otherActions": null
+  },
+  "offersOneShotAll": 0,
+  "otherActions": {},
+  "relabelNote": "etykiety przeliczone z offerLog (klasyfikacja jak w measure-ai-trade-offer-frequency-matrix.cjs); pierwotne w labelsBeforeRelabel"
+}
