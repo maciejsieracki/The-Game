@@ -784,3 +784,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Wynik r2:** Operator dodał kod dla tech, surowiec_boolean, surowiec_ilosc, praca (`5a6adf3fb`, 12 testów basket, pełny test 3308/0/1 deklarowany). FC: **FAIL** — brak **wektorów z pina** dla tych czterech gałęzi (test wrappera vs helpery Rust to nie dowód parytetu). Zloto, miasto, jednostka, zywnosc: ODDANE z uzasadnieniem.
 - **Decyzja:** runda 3 (to samo ID) z zakresem: rozszerzyć `p6_zloza_basket_gen.mjs` o wykonanie pina z rejestrującym harnessem stanu i wygenerować wektory dla czterech gałęzi. Baza r3: `5a6adf3fb`. DODATEK r3 wypchnięty.
 - **Start r3:** świeże uruchomienie (bez cache). Wstrzymany: dysk 4,8 GB < 8 GB.
+
+## Przebieg (13.11, heartbeat 19:10): ZLOZA-B-REST r3 wystartowany
+- **Dysk:** spadł do 2,8 GB przy dwóch trwających tematach. Usunięto worktree zakończonych rund ZLOZA-B-REST (r1 i r2, FC FAIL). Round 2 FC zapisany jako gałąź `rust-port-wip/R-RUSTPORT-P6-ZLOZA-B-REST-Q1-r2-fc` (`d10bbdc9a`). Dysk: 12 GB.
+- **Start ZLOZA-B-REST r3** (świeżo, baza `5a6adf3fb`) — `wf_d3ddfaff-163`, Operator HAIKU.
+- **Trwają:** ZWYCIESTWO-WIRING-Q1 (`wf_ba1cfc1f-3e1`, Operator HAIKU, od 18:40); EKONOMIA-BRAZ-ERA-Q1 r2 (`wf_a01b7169-2d9`, Operator HAIKU, od 18:40). Oba bez wyniku.
