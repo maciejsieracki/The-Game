@@ -1,3 +1,9 @@
+## ROBOCZA 55276689 -- 2026-11-12 -- FALA 676: HUD baner w jednym rzędzie (r4) + Respekt: wygrana bitwy podpięta (testowa)
+
+- HUD: surowce w jednym rzedzie na gorze, boczne bloki nizej, 1366 px jak w bazie (acc1b1677); Respekt: wygrana_bitwa +5 (c6db60173); przewaga/slabszy do decyzji A-D
+- Weryfikacja: tsc 0; logic 213/213; bigger-numbers real-render 63/0; respect 24/0; vite build OK; FC PASS-WITH-NOTES (HUD acc1b1677, Respekt c6db60173); Chromium NIE_ZMIERZONO poza zrzutem FC HUD
+- Limity: przewaga_militarna i slabszy_militarnie niepodpiete (decyzja ABC); clamp wojenny 29 bez zmian; napis HUD i Respekt do obejrzenia na ROBOCZEJ
+
 ## ROBOCZA 6207fb7b -- 2026-11-12 -- FALA 675: Licznik rund negocjacji (#320) (testowa)
 
 - jednolity napis 'runda N/M' w karcie negocjacji i w zdarzeniu tury (helper negotiationRoundCounterText; M z NEGOTIATION_MAX_ROUNDS)
