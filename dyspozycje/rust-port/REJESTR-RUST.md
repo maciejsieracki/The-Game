@@ -806,3 +806,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **EKONOMIA-BRAZ-ERA r3:** gotowa (DODATEK r3, baza `b611211fc`), start wstrzymany — dysk 7,8 GB < 8 GB.
 - **Sprzątanie:** usunięto worktree zakończonej rundy EKONOMIA r2; obrona r2 zapisana jako gałąź `rust-port-wip/R-RUSTPORT-P6-EKONOMIA-BRAZ-ERA-Q1-r2-obrona` (`b611211fc`).
 - **Parity:** `0ca58770e`.
+
+## ZWYCIESTWO-WIRING-Q1: FC FAIL r1 → DODATEK r2
+- **Wynik r1:** kod wiringu zielony (fmt, clippy, lib 110, p6_victory_wiring 6, pełny test deklarowany 3307/0; r2 Operatora: 3308/0/1). FC FAIL, bo: (1) brak wektorów z pina (kryterium 1), (2) flaga końca gry `serde(skip)` — gracz bez miast po wczytaniu nie przegrywa, (3) brak wpięcia ustawiania flagi przy zakładaniu/przejęciu miasta, drugiej ścieżki przegranej i resetu przy wczytaniu, (4) test resetu tautologiczny.
+- **Decyzje orkiestratora (parytet, bez pytania):** zapis flagi według tego, co pin faktycznie serializuje (sprawdzenie `save.ts`); allowlista rozszerzona o miejsca tworzenia miast tylko dla flagi; druga ścieżka przegranej wpięta; generator wektorów pina obowiązkowy.
+- **Baza r2:** `b3fcba586`. Kod r1 zachowany jako gałąź `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r1-doc`. Worktree r1 usunięte.
+- **Start r2:** wstrzymany — dysk 6,8 GB < 8 GB.
