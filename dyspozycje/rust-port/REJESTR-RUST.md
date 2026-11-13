@@ -789,3 +789,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** spadł do 2,8 GB przy dwóch trwających tematach. Usunięto worktree zakończonych rund ZLOZA-B-REST (r1 i r2, FC FAIL). Round 2 FC zapisany jako gałąź `rust-port-wip/R-RUSTPORT-P6-ZLOZA-B-REST-Q1-r2-fc` (`d10bbdc9a`). Dysk: 12 GB.
 - **Start ZLOZA-B-REST r3** (świeżo, baza `5a6adf3fb`) — `wf_d3ddfaff-163`, Operator HAIKU.
 - **Trwają:** ZWYCIESTWO-WIRING-Q1 (`wf_ba1cfc1f-3e1`, Operator HAIKU, od 18:40); EKONOMIA-BRAZ-ERA-Q1 r2 (`wf_a01b7169-2d9`, Operator HAIKU, od 18:40). Oba bez wyniku.
+
+## Przebieg (13.11, heartbeat 19:18): trzy aktywne
+- **Aktywne Workflow (3 z 4):** ZWYCIESTWO-WIRING-Q1 (Operator, HAIKU, od 18:40, `wf_ba1cfc1f-3e1`); EKONOMIA-BRAZ-ERA-Q1 r2 (Evaluator, SONNET, Operator zakończony, `wf_a01b7169-2d9`); ZLOZA-B-REST-Q1 r3 (Operator, HAIKU, od 19:10, `wf_d3ddfaff-163`). Żaden bez wyniku FC.
+- **Czwarty slot pusty:** brak gotowego dispatchu.
+- **Dysk:** 13 GB. **Parity:** `0ca58770e`.
