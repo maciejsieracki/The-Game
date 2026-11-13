@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4265f100facdf3ac600446a8b86a8e8e",
-  "bundleSha256": "b408e62ff594429a73b229a3db779b474d95b8542aca475236bbaf23d2f42e38",
+  "bundleMd5": "803a70a2f05f3511c775ffb895ced715",
+  "bundleSha256": "5c24df38c32168004f2555747d0f6ca787cef3a0750e0bf8988b6a340c44aca2",
   "bundleBytes": 14652877,
   "sourceSnapshot": {
-    "source": "origin/main ec00fc0e3 + merge FC 84f1a54fc",
+    "source": "origin/main 88b257d50 + merge FC f2aa0b9b6",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 690: W panelu dyplomacji przy wojnie z graczem widać zmęczenie wojną strony wygrywającej i desperację strony przegrywającej, a przy wojnach AI↔AI wymienionych obok wojny danej cywilizacji jedną wartość: desperację (gdy ta cywilizacja przegrywa) albo zmęczenie (gdy wygrywa), z podpowiedzią co to znaczy. Wartości liczone tymi samymi funkcjami co gra."
+    "FALA 691: Dodano moduł liczący, ile będzie w skarbcu i spichlerzu państwa po turze (tylko odczyt, zgodny z realnym tickiem). Moduł nie jest jeszcze wpięty w grę, więc zachowanie gry się nie zmienia; służy do zasady „skarbiec i spichlerz nigdy poniżej zera po turze” (blokada tury gracza i równoważenie AI w kolejnych tematach)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; testy: panel zmęczenia 52/0, zmęczenie 20 tur 30/0, tylko miastami 30/0, koniec zmęczenia 22/0, diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; testy: projekcja 49/0, logika 25/0, gold-deficit 55/0, empire-food-b5 34/0, ai 297/0, diplomacy 149/0; mutacje projekcji czerwienią test; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Zrzuty z żywego Chromium sprzed FALI 689 — zalecana krótka kontrola wizualna panelu po wdrożeniu; wartości procentowe w nowej wojnie zaczynają od 0%"
+    "Moduł niewpięty w grę (podtematy B i C); parytet skarbca zweryfikowany odczytem arytmetyki z main.ts, nie uruchomieniem pełnego endTurn; koszt wołania per owner niezmierzony"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 84f1a54fc: panel dyplomacji pokazuje zmęczenie wojną strony wygrywającej i desperację przegrywającej (gracz↔AI oba, AI↔AI jedna wartość). Uwaga: zrzuty Chromium sprzed FALI 689; zalecana krótka kontrola wizualna po wdrożeniu."
+    "notes": "FC PASS-WITH-NOTES f2aa0b9b6: fundament pod zasadę „skarbiec i spichlerz nie poniżej zera po turze” — moduł no-negative-stocks.ts z projekcją skarbca i spichlerza po turze (tylko odczyt, jeszcze niewpięty w grę, brak zmiany zachowania). Wpięcie: podtematy B (blokada tury gracza) i C (równoważenie AI)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T19:45:07",
+  "hubGeneratedAt": "2026-11-13T19:59:36",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4265f100facdf3ac600446a8b86a8e8e",
+      "md5": "803a70a2f05f3511c775ffb895ced715",
       "sizeBytes": 14652877
     }
   ],
-  "md5": "4265f100facdf3ac600446a8b86a8e8e",
+  "md5": "803a70a2f05f3511c775ffb895ced715",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

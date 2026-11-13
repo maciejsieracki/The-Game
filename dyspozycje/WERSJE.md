@@ -1,3 +1,9 @@
+## ROBOCZA 803a70a2 -- 2026-11-13 -- FALA 691: Fundament: projekcja skarbca i spichlerza po turze (bez zmiany zachowania gry) (testowa)
+
+- Dodano moduł liczący, ile będzie w skarbcu i spichlerzu państwa po turze (tylko odczyt, zgodny z realnym tickiem). Moduł nie jest jeszcze wpięty w grę, więc zachowanie gry się nie zmienia; służy do zasady „skarbiec i spichlerz nigdy poniżej zera po turze” (blokada tury gracza i równoważenie AI w kolejnych tematach).
+- Weryfikacja: tsc 0; logic 213/213; testy: projekcja 49/0, logika 25/0, gold-deficit 55/0, empire-food-b5 34/0, ai 297/0, diplomacy 149/0; mutacje projekcji czerwienią test; FC PASS-WITH-NOTES
+- Limity: Moduł niewpięty w grę (podtematy B i C); parytet skarbca zweryfikowany odczytem arytmetyki z main.ts, nie uruchomieniem pełnego endTurn; koszt wołania per owner niezmierzony
+
 ## ROBOCZA 4265f100 -- 2026-11-13 -- FALA 690: Panel dyplomacji: zmęczenie wojną i desperacja (testowa)
 
 - W panelu dyplomacji przy wojnie z graczem widać zmęczenie wojną strony wygrywającej i desperację strony przegrywającej, a przy wojnach AI↔AI wymienionych obok wojny danej cywilizacji jedną wartość: desperację (gdy ta cywilizacja przegrywa) albo zmęczenie (gdy wygrywa), z podpowiedzią co to znaczy. Wartości liczone tymi samymi funkcjami co gra.
