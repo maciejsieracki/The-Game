@@ -572,3 +572,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** cherry-pick trzech commitów na `2fb290cf7` (bez konfliktów; brak nakładania się zmian), test `p6_siege_tactics_blow_full` 3/3, FF `parity-v2` = `c85e4e451`. Pełny test na zintegrowanym stanie NIE_ZMIERZONO; na bazie przed integracją 3261/0/1 (Operator i Obrona).
 - **Uwagi FC (decyzje techniczne):** próg 14 zbyt niski wobec 69 → zadanie #163. Procarz spadł 4 → 1 → zadanie #164 (SLINGER-POKRYCIE).
 - **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `7d84093a9`.
+
+## Przebieg (13.11): aktualizacja zadań, nowy temat SLINGER-POKRYCIE, port w toku
+- **Aktywne Workflow (2 z 4 slotów):**
+  - `wf_de513810-763` — COMBAT-RESOLVE-PETLA-Q1 (#136), Operator SONNET. W worktree widać zmiany w `combat.rs` i `p6_combat_melee.rs`.
+  - `wf_4613cb38-d39` — SLINGER-POKRYCIE-Q1 (#163, #164), Operator HAIKU. Dispatch `914a80a8f`, baza `c85e4e451`.
+- **Statusy zweryfikowane:** #114 ELIMINACJA-GRACZA zintegrowana (INTEG-B21, `cf281d785`) → completed. #104 ZLOŻA i #115 ZDOBYCIE-MIASTA: brak commitów i dispatchów → pending. #106 R7K7C-WIRING: dispatche Q1/Q2 istnieją, integracja nieznana → pending.
+- **Sprzątanie:** usunięto worktree zakończonych pokryć (`wf_07422301-117-1..4`) i stary worktree JS-MAX (`wf_e18d3b41-1c6-4`). Refy: `refs/keep/K5I2B2-POKRYCIE-R2-Q1-wt-final`, `…-failed-det4`. Dysk 16 GB.
+- **Stan repo:** `parity-v2` = `c85e4e451`. `claude/rust-sivvrn` przed tym wpisem = `914a80a8f`.
