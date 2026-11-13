@@ -183,7 +183,9 @@ impl CombatResult {
 ///
 /// Explicit data wins. The fallback is the editable table
 /// `data/derived/counter-multipliers.json` (P3-23 etap 3), which mirrors every
-/// confirmed attack counter in `gra/data/counters.json`; pairs outside the table
+/// confirmed attack counter in `gra/data/counters.json` (pin 07d2fbd72; all 64
+/// type pairs are checked against the pin by `tests/p6_counter_falangita.rs`,
+/// vectors from `tests/p6_counter_falangita_gen.mjs`); pairs outside the table
 /// give 1.0 (no bonus).
 pub fn counter_multiplier(
     attacker_type: &str,
