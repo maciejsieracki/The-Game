@@ -249,13 +249,18 @@ async function main() {
       }
       // rejectCooldowns z hooka: mierzy, czy odrzucenia wymuszone przez skrypt wplywaja na kooldowny ofert (zarzut 9).
       rep.rejectCooldownsMax = Math.max(rep.rejectCooldownsMax, st.rejectCooldowns.length);
-      rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi, relAtDecision: st.relAtDecision });
+      // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: skrot stanu (jednostki, skarbiec, zasoby) co ture — digest z hooka.
+      rep.perTurn.push({ t: st.turn, cities: st.playerCities, pending: st.pending.length, deals: st.cyclicDeals.length, table: st.tableLen, rejCd: st.rejectCooldowns.length, scriptRejectedSoFar: rep.scriptRejected, relBeforeEnd, relTotalAi: st.relTotalAi, relAtDecision: st.relAtDecision, digest: st.digest ?? null });
     }
     const sEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.state());
     rep.tableEnd = sEnd.tableLen;
     rep.tableGrowth = rep.tableEnd - rep.tableStart;
     rep.per100 = rep.turnsRun > 0 ? +(rep.offers * 100 / rep.turnsRun).toFixed(2) : 0;
     rep.secs = Math.round((Date.now() - tStart) / 1000);
+    // Skrot calej trajektorii: sha256 z perTurn (tury + pola stanu + digest). Dwa przebiegi o tym samym skrocie = ten sam przebieg.
+    rep.trajectorySha256_12 = require('crypto').createHash('sha256').update(JSON.stringify(rep.perTurn)).digest('hex').slice(0, 12);
+    rep.digestFirst = rep.perTurn.length ? rep.perTurn[0].digest : null;
+    rep.digestLast = rep.perTurn.length ? rep.perTurn[rep.perTurn.length - 1].digest : null;
     rep.relTotalFirst = rep.perTurn.length ? rep.perTurn[0].relTotalAi : null;
     rep.relTotalLast = rep.perTurn.length ? rep.perTurn[rep.perTurn.length - 1].relTotalAi : null;
     rep.relDrift = (rep.relTotalSet != null && rep.perTurn.length) ? rep.perTurn.some(x => x.relTotalAi !== rep.relTotalSet) : null;

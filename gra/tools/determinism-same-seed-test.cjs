@@ -60,11 +60,11 @@ const WYJATKI = {
   'ai-cs-absorption.ts|rng: () => number = Math.random,':
     'rollAiCsAccept: main.ts (trybut/wasal) podaje gameStreamRng(cs-accept). Domyslny tylko dla testow. Wplyw na stan: tak, gdy brak rng.',
   'combat.ts|const rng = opts.rng ?? (() => Math.random());':
-    'resolveBattle-owy domyslny rng walki. NIE_ZMIERZONO: nie zbadano wszystkich wolajacych w turze; wplyw na stan: mozliwy. Kandydat do osobnego tematu.',
+    'resolveCombat: wolajacy w gra/src bez rng = battleScene.ts:20795 (skip-resolve "Pomin", zmienia wynik) i battle/manualBattle.ts:1062 (bitwa reczna). Wplyw na stan: TAK. Poza allowlista tego tematu (battleScene = zakaz; manualBattle spoza allowlisty). Kandydat do osobnego tematu.',
   'siege.ts|const rng = opts.rng ?? (() => Math.random());':
-    'domyslny rng resolveSiegeAttack. NIE_ZMIERZONO: nie zbadano wolajacych; wplyw na stan: mozliwy. Kandydat do osobnego tematu.',
+    'resolveSiegeAttack: brak wolajacych w gra/src (wolajacy tylko w tools/*.cjs, testy). Wplyw na stan w grze: brak (martwa domyslna sciezka). Pozostaje jako zabezpieczenie API.',
   'auto-battle-power.ts|const rng = input.rng ?? Math.random;':
-    'resolveAutoBattleByPower: wolane z main.ts (6 miejsc) i battle/mapFieldBattle.ts:476 BEZ rng. Wplyw na stan: TAK (rozstrzyga walke automatyczna). NIE naprawione w tym temacie (poza allowlista). Kandydat do osobnego tematu.',
+    'resolveAutoBattleByPower: domyslny rng tylko dla wolajacych BEZ rng (testy). Wszystkie wolania w gra/src podaja rng (kontrola D1/D2). Wplyw na stan w grze: brak od R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1.',
 };
 
 function walk(dir, out) {
@@ -114,6 +114,30 @@ const MAIN_ALLOWED = [
 const mainBad = mainHits.filter((h) => !MAIN_ALLOWED.some((a) => h.t.startsWith(a)));
 check('C1 main.ts: Math.random tylko w starcie nowej gry (SEED, newSeed)', mainBad.length === 0 && mainHits.length === 2,
   mainBad.length ? 'NIEDOZWOLONE: ' + mainBad.map((h) => h.i + ' ' + h.t).join(' ;; ') : 'trafien=' + mainHits.length + ' (oczekiwane 2)');
+
+// ---- D. walka automatyczna (resolveAutoBattleByPower) z ziarnem gry ---------
+// D1: kazde wolanie resolveAutoBattleByPower({...}) w gra/src podaje klucz rng (bez Math.random w grze).
+// D2: main.ts wiaze strumien z ziarnem (autoBattleRng) i przekazuje go do mapFieldBattle.
+const SRC_DIR = path.join(GRA, 'src');
+const callRe = /resolveAutoBattleByPower\(\s*\{([^}]*)\}\s*\)/g;
+const autoCalls = [];
+for (const f of walk(SRC_DIR, [])) {
+  const txt = fs.readFileSync(f, 'utf8');
+  let m;
+  while ((m = callRe.exec(txt)) !== null) {
+    const line = txt.slice(0, m.index).split('\n').length;
+    // bare = brak klucza rng ALBO rng z Math.random (regresja do nieseedowanego losowania)
+    autoCalls.push({ where: path.relative(GRA, f) + ':' + line, bare: !/\brng\s*:/.test(m[1]) || /Math\.random/.test(m[1]) });
+  }
+}
+const bareCalls = autoCalls.filter((c) => c.bare);
+check('D1 kazde wolanie resolveAutoBattleByPower w gra/src podaje rng', autoCalls.length >= 6 && bareCalls.length === 0,
+  bareCalls.length ? 'BEZ rng: ' + bareCalls.map((c) => c.where).join(', ') : 'wolan=' + autoCalls.length + ' (oczekiwane >= 6)');
+const mainTxt = fs.readFileSync(MAIN_TS, 'utf8');
+const mfbDeps = mainTxt.slice(mainTxt.indexOf('const mapFieldBattleDeps = {'), mainTxt.indexOf('const mapFieldBattleDeps = {') + 400);
+check('D2 main.ts: autoBattleRng z ziarna gry wiazany i przekazany do mapFieldBattleDeps',
+  /autoBattleRng\(defQ/.test(mainTxt) && /gameStreamRng\(_gameSeed, turn, 'auto-battle:'/.test(mainTxt) && mfbDeps.includes('autoBattleRng:'),
+  mfbDeps.includes('autoBattleRng:') ? '' : 'brak autoBattleRng w mapFieldBattleDeps');
 
 console.log(failed === 0 ? 'WYNIK: PASS' : 'WYNIK: FAIL (' + failed + ')');
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* sprzatanie best-effort */ }
