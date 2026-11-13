@@ -1,0 +1,278 @@
+{
+  "arm": "natural",
+  "seedNote": "ziarno z ?civSeed=1111 (tylko z civTest=1)",
+  "relationNote": "przypiete haka setRelationTotal=40 przed kazdym endTurn (relacja po turze moze dryfowac; patrz relDrift)",
+  "seed": 1111,
+  "relTotalSet": 40,
+  "relTotalAfter": 40,
+  "offersCyclic": 0,
+  "offersOneShot": 0,
+  "offersOneShotAll": 2,
+  "otherActions": {
+    "rozejm": 2
+  },
+  "turnsRequested": 20,
+  "turnsRun": 20,
+  "offers": 0,
+  "activePrzyjmij": 0,
+  "pairs": {},
+  "cyclicDealsMax": 0,
+  "tableStart": 0,
+  "tableEnd": 1,
+  "tableGrowth": 1,
+  "scriptRejected": 0,
+  "rejectCooldownsMax": 0,
+  "per100": 0,
+  "aiOwner": 1,
+  "stoppedBy": "koniec przebiegu",
+  "autoBattles": 10,
+  "battleActs": {
+    "auto": 10,
+    "summary": 10
+  },
+  "consoleMatches": [],
+  "fastMode": true,
+  "consoleErrors": 0,
+  "offerLog": [
+    {
+      "turn": 11,
+      "type": "jednorazowa",
+      "actionId": "rozejm",
+      "trade": false
+    },
+    {
+      "turn": 17,
+      "type": "jednorazowa",
+      "actionId": "rozejm",
+      "trade": false
+    }
+  ],
+  "perTurn": [
+    {
+      "t": 2,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 3,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 4,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 5,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 6,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 7,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 8,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 9,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 10,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 0,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 11,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 12,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 13,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 14,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 15,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 16,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 17,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 18,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 19,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 20,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    },
+    {
+      "t": 21,
+      "cities": 1,
+      "pending": 0,
+      "deals": 0,
+      "table": 1,
+      "rejCd": 0,
+      "scriptRejectedSoFar": 0,
+      "relBeforeEnd": 40,
+      "relTotalAi": 29
+    }
+  ],
+  "secs": 32,
+  "relTotalFirst": 29,
+  "relTotalLast": 29,
+  "relDrift": true,
+  "relPinnedBeforeEnd": true,
+  "consoleErrorSample": []
+}

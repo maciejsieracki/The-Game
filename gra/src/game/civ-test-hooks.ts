@@ -102,6 +102,31 @@ export function isCivTestEnabled(search: string | undefined | null): boolean {
   }
 }
 
+/**
+ * R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ziarno przebiegu pomiaru z `?civSeed=<liczba>`.
+ * Dziala WYLACZNIE przy `?civTest=1` (ta sama bramka co reszta hakow); bez tego zwraca null,
+ * wiec zwykla gra i ziarno PLAYTEST_MAPA_SEED nie zmieniaja sie wcale.
+ */
+export function civTestSeedOverride(search: string | undefined | null): number | null {
+  if (!isCivTestEnabled(search)) return null;
+  const raw = new URLSearchParams(search ?? '').get('civSeed');
+  if (raw == null || !/^\d{1,9}$/.test(raw)) return null;
+  return Number(raw);
+}
+
+/**
+ * R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony pomiaru — pomija `renderer.render`
+ * w petli renderu. Flaga ustawiana WYLACZNIE z haka `__aiTradeWiringTestDebug.setFastMode`, ktory istnieje
+ * tylko przy `?civTest=1`; domyslnie false, wiec zwykla gra rysuje jak dotad.
+ */
+export const civTestRuntime: {
+  skipRender: boolean;
+  /** R4/Z1: przypieta Relacja (total 0-200) pary AI<->gracz, wymuszana PO tiku dyplomacji, a PRZED decyzjami AI w tej samej turze. */
+  relPin: { ai: number; total: number } | null;
+  /** R4/Z1: Relacja total ZAPISANA po wymuszeniu pinu w ostatniej turze (tylko gdy relPin ustawiony). Nie jest niezaleznym odczytem tego, co widza decyzje AI. */
+  relAtDecision: number | null;
+} = { skipRender: false, relPin: null, relAtDecision: null };
+
 export interface CivTestApi {
   version: 1;
   state: () => unknown;

@@ -19,17 +19,17 @@ const params = B.getEffectiveDiplomacyParams('normal');
 
 // Owner-era resolution is symmetric and honors the owner's current epoch on each call.
 for (const [a, b, expected, label] of [
-  [1, 1, -2, 'Stone/Stone'], [1, 2, -3, 'Stone/Bronze'],
-  [2, 1, -3, 'Bronze/Stone'], [2, 3, -4, 'Bronze/Iron'],
-  [3, 2, -4, 'Iron/Bronze'], [1, 3, -4, 'Stone/Iron'],
-  [3, 3, -4, 'Iron/Iron'],
+  [1, 1, -3, 'Stone/Stone'], [1, 2, -4, 'Stone/Bronze'],
+  [2, 1, -4, 'Bronze/Stone'], [2, 3, -5, 'Bronze/Iron'],
+  [3, 2, -5, 'Iron/Bronze'], [1, 3, -5, 'Stone/Iron'],
+  [3, 3, -5, 'Iron/Iron'],
 ]) {
   eq(B.sharedBorderPenaltyForEpochs(a, b, params), expected, `${label}: higher era rate`);
   eq(B.sharedBorderPenaltyForEpochs(b, a, params), expected, `${label}: reversed owner order`);
 }
 
 // The same resolved pair rate is consumed by the live tick and shown in continuous factors.
-for (const [a, b, expected, label] of [[1, 1, -2, 'stone'], [1, 2, -3, 'mixed stone/bronze'], [2, 3, -4, 'mixed bronze/iron']]) {
+for (const [a, b, expected, label] of [[1, 1, -3, 'stone'], [1, 2, -4, 'mixed stone/bronze'], [2, 3, -5, 'mixed bronze/iron']]) {
   for (const [ownerA, ownerB] of [[a, b], [b, a]]) {
     const rate = B.sharedBorderPenaltyForEpochs(ownerA, ownerB, params);
     const ctx = { turn: 1, karaWspolnaGranica: true, karaWspolnaGranicaDelta: rate };

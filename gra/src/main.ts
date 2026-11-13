@@ -164,7 +164,7 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { installCivTestHooks, isCivTestEnabled } from './game/civ-test-hooks';
+import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, setSiegeEntryBlocker, siegeScopeMemo, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit, buildMoveOccupancy, trimSegmentEndOffPassThrough, type MoveOccupancy } from './units/setup';
 import { enterCityAfterSurrender } from './game/siege-enter-city';
 import { isCityUnderSiege, isSiegeEntryBlocked, besiegedCityAtHex, CITY_SIEGE_RECRUIT_BLOCK_PL } from './game/city-siege-state';
@@ -1632,6 +1632,7 @@ import {
   normalizeTruceDuration,
   TRUCE_DEFAULT_TURNS,
   isTruceWindowBreach,
+  isTruceActive,
   peaceFinalizeTrustEvent,
   truceEndTickPair,
   truceEndToWarCore,
@@ -12163,16 +12164,26 @@ async function boot(): Promise<void> {
       const cur = getDiploRelation(proposerId, responderId);
       // (C) peaceFinalizeTrustEvent: rozejm (poprawna długość 5/10/15) → null (0 Zaufania); pokój stały → 'pokoj'.
       const isTruce = peaceFinalizeTrustEvent(truceTurns) === null;
+      // R-WEB-DIPLO-TRUST-NUMBERS-Q1: Zaufanie pary USTAWIANE od razu w chwili zawarcia —
+      // rozejm 10, pokój 20 (zostaje; rozejm → pokój daje 20). Wartości w diplomacy.json.
+      const trustSetpoint = isTruce
+        ? _diplomacyParams().rozejm_zaufanie_ustawienie
+        : _diplomacyParams().pokoj_zaufanie_ustawienie;
       if (isTruce) {
-        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C): rozejm NIE daje Zaufania (0) — tylko zmiana statusu
-        // na 'pokoj' (rozejm = status 'pokoj' + truceUntilTurn; pokój stały nadal +5).
+        // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C) + R-WEB-DIPLO-TRUST-NUMBERS-Q1: rozejm = status 'pokoj' + truceUntilTurn,
+        // zaufanie ustawione na rozejm_zaufanie_ustawienie.
         setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
+        setDiploRelation(proposerId, responderId, { ...getDiploRelation(proposerId, responderId), zaufanie: trustSetpoint });
       } else {
-        setDiploRelation(
-          proposerId,
-          responderId,
-          applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
-        );
+        // Silnik zdarzenia 'pokoj' (+5 w applyDiplomaticEvent) nie jest tu używany do Zaufania:
+        // Zaufanie = pokoj_zaufanie_ustawienie. Respekt liczony jak w applyDiploEventTracked.
+        const afterPeace = applyDiplomaticEvent(cur, 'pokoj');
+        const dRPeace = afterPeace.respekt - cur.respekt;
+        if (dRPeace !== 0) recordDiploFactor(proposerId, responderId, 'pokoj_respekt', dRPeace);
+        setDiploRelation(proposerId, responderId, { ...afterPeace, zaufanie: trustSetpoint });
+      }
+      if (trustSetpoint !== cur.zaufanie) {
+        recordDiploFactor(proposerId, responderId, isTruce ? 'rozejm' : 'pokoj', trustSetpoint - cur.zaufanie);
       }
       if (isTruce) {
         // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
@@ -23247,14 +23258,18 @@ async function boot(): Promise<void> {
         }),
         dobraWolaAktywna: brakeFlags.dobraWolaAktywna,
         wspolnyWrog: brakeFlags.wspolnyWrog,
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
-        karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-          empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
-        ),
+        // R-WEB-DIPLO-TRUST-NUMBERS-Q1: kara za sąsiedztwo = 0 w karencji po pokoju lub rozejmie
+        // (żeby ustawione 10/20 nie zostało natychmiast zjedzone). Flaga karaWspolnaGranica zostaje
+        // dla relacji (NAP); wpływ na Zaufanie niesie wyłącznie karaWspolnaGranicaDelta.
+        karaWspolnaGranicaDelta: (isPeaceLockedBetween(a, b)
+          || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn))
+          ? 0
+          : sharedBorderPenaltyForEpochs(
+            empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams(),
+          ),
         wiarygodnoscSelf: atWar || !playerInPair
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
@@ -23291,8 +23306,6 @@ async function boot(): Promise<void> {
             : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
-        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
-        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
         karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
@@ -30000,6 +30013,37 @@ async function boot(): Promise<void> {
           return ownerResourceStock(ownerId, key);
         },
         stock: (ownerId: number, key: string): number => ownerResourceStock(ownerId, key),
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ustawia Relacje (zaufanie+respekt=total, 0–200) pary ai↔gracz; zwraca total po zapisie. */
+        setRelationTotal: (ai: number, total: number): number => {
+          const t = Math.max(0, Math.min(200, Math.round(total)));
+          const rel = getDiploRelation(ai, ME());
+          const zaufanie = Math.floor(t / 2);
+          setDiploRelation(ai, ME(), { ...rel, zaufanie, respekt: t - zaufanie });
+          return relationTotal(getDiploRelation(ai, ME()));
+        },
+        /** R4/Z1: przypina Relacje (total) pary ai<->gracz — wymuszana w kazdym ticku PRZED decyzjami AI; null = zdejmij pin. */
+        setRelationPin: (ai: number, total: number | null): number | null => {
+          civTestRuntime.relPin = total == null ? null : { ai, total: Math.max(0, Math.min(200, Math.round(total))) };
+          civTestRuntime.relAtDecision = null;
+          return civTestRuntime.relPin ? civTestRuntime.relPin.total : null;
+        },
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony (bez renderer.render); tylko za ?civTest=1. */
+        setFastMode: (on: boolean): boolean => { civTestRuntime.skipRender = !!on; return civTestRuntime.skipRender; },
+        isFastMode: (): boolean => civTestRuntime.skipRender,
+        /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): stan okien bitwy blokujacych koniec tury. */
+        battleState: () => ({
+          preBattleOpen: isPreBattleOpen(), pendingAuto: hasPendingAutoPreBattle(),
+          sceneOpen: isBattleSceneOpen(), summaryOpen: isPostBattleSummaryOpen(), resolving: battleUiResolving,
+        }),
+        /** Wymusza pokazanie odlozonej bitwy z kolejki (ten sam flush co watchdog), gdy nic jej nie blokuje. */
+        flushBattles: (): boolean => {
+          if (isBattleSceneOpen() || isPostBattleSummaryOpen() || isPreBattleOpen()) return false;
+          if (!hasPendingAutoPreBattle()) return false;
+          flushDeferredPreBattleSafely('civTest');
+          return true;
+        },
+        /** Zamyka podsumowanie po bitwie (gdy otwarte). */
+        closeBattleSummary: (): boolean => { if (!isPostBattleSummaryOpen()) return false; hidePostBattleSummary(); return true; },
         /** Odczyt selekcji barteru AI (ta sama funkcja co wiring) — do rozroznienia selekcja vs wiring. */
         probeBarter: (ai: number) => {
           const b = pickAiPlayerCyclicBarter(ai);
@@ -30054,6 +30098,16 @@ async function boot(): Promise<void> {
             payload: JSON.parse(JSON.stringify(n.payload)), createdTurn: (n as any).createdTurn ?? null,
           })),
           tableLen: negotiationTable.length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): liczba miast gracza (pomiar nie ma sensu po ich utracie). */
+          relAtDecision: civTestRuntime.relAtDecision,
+          playerCities: cities.filter(c => c.ownerId === ME()).length,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: Relacja total pary AI(start)↔gracz — do pomiaru dryfu co turę. */
+          relTotalAi: aiStartHexes[0]?.ownerId != null ? relationTotal(getDiploRelation(aiStartHexes[0].ownerId, ME())) : null,
+          /** R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: WSZYSTKIE wpisy stolu z typem (cykliczne i jednorazowe). */
+          entries: negotiationTable.map(n => ({
+            id: n.id, actionId: n.actionId, cyclic: !!n.aiCyclicBarter,
+            proposer: n.proposerOwnerId, responder: n.responderOwnerId,
+          })),
           cyclicDeals: activeDeals.filter(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0).map(d => ({
             id: d.id, items: JSON.parse(JSON.stringify(d.handelSurowiecCykliczny)),
           })),
@@ -42089,12 +42143,25 @@ async function boot(): Promise<void> {
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
                     cities.filter(c => c.ownerId === ME()).length > 2 &&
                     ownersShareLandBorderLive(ownerId, ME()),
-                  karaWspolnaGranicaDelta: sharedBorderPenaltyForEpochs(
-                    empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
-                  ),
+                  // R-WEB-DIPLO-TRUST-NUMBERS-Q1 (obrona r1, zarzut 1): karencja zeruje karę także w głównym ticku pary gracz↔AI.
+                  karaWspolnaGranicaDelta: (isPeaceLockedBetween(ME(), ownerId)
+                    || isTruceActive(getDiploPairMeta(ME(), ownerId).truceUntilTurn, turn))
+                    ? 0
+                    : sharedBorderPenaltyForEpochs(
+                      empireEpochForOwner(ownerId), empireEpochForOwner(ME()), _diplomacyParams(),
+                    ),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
-                const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                let relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r4/Z1): pin Relacji tylko z haka ?civTest=1 (relPin domyslnie null) —
+                // wymusza wartosc PO tiku, a PRZED decyzjami AI (relacjeDip, pickAiPlayerCyclicBarter); relAtDecision = to, co widzi AI.
+                if (civTestRuntime.relPin && civTestRuntime.relPin.ai === ownerId) {
+                  const pt = civTestRuntime.relPin.total;
+                  const pz = Math.floor(pt / 2);
+                  relTicked = { ...(relTicked as any), zaufanie: pz, respekt: pt - pz };
+                  // Zapis wartosci PO wymuszeniu pinu (nie niezalezny dowod tego, co widzi AI; tautologia wzgledem pinu).
+                  civTestRuntime.relAtDecision = relationTotal(relTicked as any);
+                }
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
@@ -45074,7 +45141,8 @@ async function boot(): Promise<void> {
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
       if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
-      renderer.render(scene, camera);
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 (r3): tryb przyspieszony pomiaru (flaga tylko z haka ?civTest=1).
+      if (!civTestRuntime.skipRender) renderer.render(scene, camera);
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;
         let instancedCount = 0;
@@ -46510,6 +46578,8 @@ async function boot(): Promise<void> {
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: `?civSeed=` działa tylko przy `?civTest=1`; bez tego = PLAYTEST_MAPA_SEED.
+      const playtestRunSeed: number = civTestSeedOverride(typeof location !== 'undefined' ? location.search : '') ?? PLAYTEST_MAPA_SEED;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
       const ptMapDensity = resolvePlaytestMapaWorldDensity();
@@ -46524,7 +46594,7 @@ async function boot(): Promise<void> {
         speed: 'Normalna',
         worldType: 'Kontynenty',
         typSwiata: 'kontynenty',
-        seed: PLAYTEST_MAPA_SEED,
+        seed: playtestRunSeed,
         mapQualityLabel: qualityTierToLabel(mqTier),
         mapQuality: mqTier,
         renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
@@ -46548,9 +46618,9 @@ async function boot(): Promise<void> {
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
       const loadWallT0 = performance.now();
-      const loading = showMapLoadingOverlay({ seed: PLAYTEST_MAPA_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const loading = showMapLoadingOverlay({ seed: playtestRunSeed, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
       const mapGenWallT0 = performance.now();
-      const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
+      const newMap = await generujSwiatAsync(playtestRunSeed, rozmiar, 'kontynenty', {
         worldDensity: ptMapDensity.preset,
         mapSizeMenuLabel: 'Maly',
         difficulty: _menuDifficulty,
@@ -46733,7 +46803,7 @@ async function boot(): Promise<void> {
 
       showHintMessage(PLAYTEST_MAPA_HINT, 18000);
       console.log(
-        '[PlaytestMapa] seed=' + PLAYTEST_MAPA_SEED +
+        '[PlaytestMapa] seed=' + playtestRunSeed +
         ' miasto=' + (playerCity?.name ?? '?') +
         ' wrog=' + preset.enemyCityId +
         ' jednostek=' + units.length +

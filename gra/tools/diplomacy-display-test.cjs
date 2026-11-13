@@ -96,8 +96,9 @@ const trade = mod.resolveFormalDiplomaticStatus({
 });
 ok(trade.kind === 'handel' && trade.label === 'Traktat handlowy', 'formal: traktat handlowy');
 
-ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
-ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
+ok(mod.nastawienieLabelFromScore(9, 100) === 'Wrogi', 'nastawienie: zaufanie 9 (< 10) → Wrogi mimo wysokiego respektu');
+ok(mod.nastawienieLabelFromScore(10, 10) === 'Nieufny', 'nastawienie: zaufanie 10 (10–29) → Nieufny');
+ok(mod.nastawienieLabelFromScore(30, 20) === 'Neutralny', 'nastawienie: zaufanie 30, relacja 50 → Neutralny');
 ok(mod.nastawienieLabelFromScore(74, 54, { atWar: true }) === 'Wrogi', 'nastawienie: wojna → Wrogi mimo wysokiego score');
 ok(mod.effectiveNastawienieScores(74, 54).zaufanie === 74, 'effective scores: prawdziwa wartość Z (bez obcięcia wojną)');
 ok(mod.effectiveNastawienieScores(74, 54).respekt === 54, 'effective scores: prawdziwa wartość R (bez obcięcia wojną)');

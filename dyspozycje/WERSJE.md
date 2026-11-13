@@ -1,3 +1,21 @@
+## ROBOCZA 0971e48c -- 2026-11-13 -- FALA 681: Nowe zasady wypowiadania wojny przez AI: zaufanie poniżej 30 i 20% przewagi siły militarnej, wojna przy zerowym zaufaniu (testowa)
+
+- AI wypowiada wojnę przy zaufaniu pary poniżej 30 i przewadze siły militarnej o co najmniej 20% (decyduje charakter cywilizacji); przy zerowym zaufaniu przez N tur silniejsza strona wypowiada wojnę; gracz nigdy automatycznie; ostrzeżenie dla gracza raz na epizod; siła liczona jako armia, rekruci, wygrane bitwy z tej wojny i bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; zero-trust 43/0; main-guard 35/0; tick-brake 51/0; ai-test 296/0; diplomacy 148/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; usunięty bonus skłonności do wojny z bramki (do decyzji); zasady rozejmu i pokoju (krok 4) jeszcze stare; ostrzeżenie nie jest zapisywane w zapisie gry
+
+## ROBOCZA 57b393b8 -- 2026-11-13 -- FALA 680: Etykiety nastawienia wg zaufania (Wrogi poniżej 10, Nieufny 10-29), Civpedia dyplomacji, pomiar ofert handlowych AI (testowa)
+
+- Zaufanie poniżej 10 = Wrogi, 10-29 = Nieufny, od 30 etykieta wg relacji; nowe hasła encyklopedii o dyplomacji, zaufaniu, respekcie, relacji, wiarygodności, Power i zasadach wojny i pokoju; narzędzie pomiaru częstości ofert handlowych AI (hak tylko za ?civTest=1).
+- Weryfikacja: tsc 0; logic 213/213; labels 21/21; civpedia-values 129; diplomacy 148/0; display 45/0; admin-panstwo 26/0; trust-numbers 22/0; vite build OK
+- Limity: Wykonanie w żywej grze i Chromium NIE_ZMIERZONO; relationTier w diplomacy.ts nadal progi 30 (druga etykieta Relacja: Wrogi może rozjechać się z Nastawieniem); pomiar ofert niepowtarzalny (niedeterminizm gry)
+
+## ROBOCZA 4ae92a00 -- 2026-11-13 -- FALA 679: Liczby zaufania (rozejm 10, pokój 20, sąsiedztwo -3/-4/-5, bez religii, karencja) oraz przygotowanie siły militarnej (testowa)
+
+- Po rozejmie zaufanie ustawia się na 10, po pokoju na 20; kara za sąsiedztwo -3/-4/-5 i wstrzymana w karencji; religia nie wpływa na zaufanie; dodane (jeszcze niepodpięte) funkcja siły militarnej i licznik wygranych bitew pary w wojnie oraz bonus trybutu.
+- Weryfikacja: tsc 0; logic 213/213; trust-numbers 22/0; military-strength 27/0; battle-counter 35/0; diplomacy-test 148/0; war-trust-only 11/0; military-events 24/0; vite build OK
+- Limity: Siła militarna i licznik bitew nie są jeszcze używane w decyzjach (kroki 3 i 4); wykonanie w żywej grze NIE_ZMIERZONO; Civpedia dyplomacji czeka na aktualizację do nowych liczb
+
 ## ROBOCZA f4230eb2 -- 2026-11-13 -- FALA 678: Wojna obniza tylko zaufanie do zera (relacja i respekt bez obcinania do 29) (testowa)
 
 - W wojnie zaufanie jest sprowadzane do 0, respekt nietkniety, relacja = zaufanie + respekt bez limitu 29; ocena pokoju korzysta z prawdziwej relacji; dopisek w UI zmieniony.

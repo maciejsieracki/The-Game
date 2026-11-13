@@ -128,4 +128,6 @@
 
 ## Pojęcia (ręczne)
 
+Dyplomacja (R-WEB-DIPLO-CIVPEDIA-Q1, stan 2026-11-13): [Zaufanie](pojecia/zaufanie.md) · [Respekt](pojecia/respekt.md) · [Relacja](pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](pojecia/moc-podzial.md) · [Wypowiadanie wojny](pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](pojecia/zmeczenie-wojna.md) · [Wiarygodność](pojecia/wiarygodnosc.md) (zaktualizowana).
+
 Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md), [Wiarygodność](pojecia/wiarygodnosc.md), [Manpower — rekruci](pojecia/manpower-rekruci.md), [Założenie miasta](pojecia/zalozanie-miasta.md), [Administrator miasta](pojecia/administrator-miasta.md), [Administrator państwa](pojecia/administrator-ulepszen.md)…
