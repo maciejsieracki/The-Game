@@ -33,3 +33,13 @@ NAPRAWA 5: mutacja — poprawka układu musi czerwienić test 1280/maxw; mutacja
 
 KRYTERIA KOŃCA: tsc --noEmit 0 błędów; 5 bramek referencyjnych (logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6); one-row (1920/1600/1366/1280-maxw) 0 fail; grid-gross-net 0 fail; no-labels 94/0; bigger-numbers 62/0 — liczby z surowego wyjścia; Y monet 0 px zmiany; zrzuty Chromium 1280/1600 (2×) jeśli wykonalne, inaczej NIE_ZMIERZONO z powodem.
 Raport: 10-operator-claude.md (runda 3). Nie integrujesz, nie pushujesz na main.
+
+## DODATEK (runda 4/5, 2026-11-13) — DECYZJA WŁAŚCICIELA: „Jak w bazie”; MODEL: OPERATOR SONNET (uzasadnienie niżej), Obrona HAIKU
+DECYZJA WŁAŚCICIELA (ABC, 2026-11-13): przy 1366 px zachowujemy zachowanie bazy 8c447758e. NIE wprowadzamy progu skali 1,25× ani nowej asercji. Czcionka liczb przy 1366 może spaść do 0,78× — to akceptowane.
+UZASADNIENIE SONNET: dwie porażki Haiku (r1, r2) + r3 FC BLOCK; temat wymaga zmiany asercji B1 bez osłabiania pozostałych testów i potwierdzenia układu jednego rzędu przy 1280/maxw.
+BAZA: kandydat r3 4ed8339a3 (FC BLOCK; zarzuty 1 i 4 dotyczyły progu B1 — rozstrzygnięte decyzją). Merge origin/main dozwolony, jeśli mechaniczny.
+ZADANIE:
+1. Test bigger-numbers (B1 przy 1366): przywróć asercję bazy (wynik 62/0 jak na 8c447758e). Usuń wymóg ≥1,25× i nie dodawaj nowego progu.
+2. Zachowaj: one-row 1920/1600/1366/1280-maxw bez przeskoku monet (Y 0 px); układ jednego rzędu przy 1280/maxw (naprawa r3) — nie cofać; grid-gross-net 1150/0; no-labels 94/0; tolerancja 1,5 px (przywrócona r3) — NIE luzować.
+3. Nie zmieniaj reguł gry ani balansu. Tylko HUD i jego testy.
+KRYTERIA KOŃCA: tsc 0; 5 bramek referencyjnych z surowym wyjściem; bigger-numbers 62/0; one-row 0 fail; grid-gross-net 0 fail; no-labels 94/0; mutacja układu czerwieni one-row; raport 10-operator-claude.md (runda 4). Nie integrujesz, nie pushujesz na main.
