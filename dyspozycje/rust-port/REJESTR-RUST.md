@@ -773,3 +773,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - EKONOMIA-BRAZ-ERA-Q1 (runda 2) — `wf_a01b7169-2d9`, Operator HAIKU.
 - **Dysk:** 16 GB wolne przed startem.
 - **Dispatche:** baza zaktualizowana do `0ca58770e` (commit `61f507f12`).
+
+## Przebieg (13.11, heartbeat 18:47): trzy aktywne, bez wyników FC
+- **Aktywne Workflow (3 z 4):** ZWYCIESTWO-WIRING-Q1 (Operator, HAIKU, `wf_ba1cfc1f-3e1`), ZLOZA-B-REST-Q1 (Obrona, HAIKU, `wf_6615211b-a5e`), EKONOMIA-BRAZ-ERA-Q1 r2 (Operator, HAIKU, `wf_a01b7169-2d9`). Żaden nie ma jeszcze wyniku FC.
+- **Czwarty slot pusty:** brak gotowego dispatchu. Pozostałe pozycje z kolejki (#96–#119) są zablokowane albo wymagają rozpoznania; nie startuję tematu bez dispatchu.
+- **Dysk:** 9,1 GB wolne. Progi spełnione, brak awarii.
+- **Parity:** `0ca58770e` (bez zmian). Worktree: 11.
