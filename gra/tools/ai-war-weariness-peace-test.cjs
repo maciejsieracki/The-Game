@@ -86,6 +86,14 @@ ok(p2.histogram.miasto >= 1 && p2.histogram.miasto <= 2 && p2.full, 'miasta dopi
 ok(!p2.items.some(i => i.id === 'cap'), 'stolica/zakazane nigdy nie oddawane');
 
 // ---- 4. tick AI-AI ----
+// R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: asercje ponizej dotycza STARYCH regul (oferty miast, cooldown, mnozniki)
+// przed koncem zmeczenia. Koniec zmeczenia (progKoncaZmeczenia, domyslnie 0,8) jest testowany z parametrami produkcyjnymi
+// w tools/diplo-weariness-unconditional-end-test.cjs; tutaj wylaczamy go (2 = nieosiagalny), by nie maskowac tych regul.
+const PRE_END_PARAMS = (() => {
+  const pj = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'war-weariness-params.json'), 'utf8'));
+  pj.zmeczenie.progKoncaZmeczenia = 2;
+  return pj;
+})();
 function mkDeps(o) {
   const log = [];
   const deps = {
@@ -98,6 +106,7 @@ function mkDeps(o) {
     assets: () => o.assets ?? [],
     cityCessionOk: () => true,
     battlePending: false,
+    params: PRE_END_PARAMS,
     pay: (l, w, plan) => log.push({ ev: 'pay', l, w, plan }),
     finalize: (l, w, lock) => log.push({ ev: 'peace', l, w, lock }),
   };
@@ -261,7 +270,15 @@ const CITIES = [{ cityId: 'a', cityPn: 400, zakazane: false }, { cityId: 'b', ci
 const cession = (cmds) => cmds.find(c => c.type === 'oferuj_miasto_za_pokoj');
 ok(cession(runAI({ rw: 0.30, turnsAtWar: 10, miastaAI: CITIES })) === undefined, 'krotka wojna rw 0.30: bez oddania miasta (balans nietkniety)');
 ok(cession(runAI({ rw: 0.12, turnsAtWar: 10, miastaAI: CITIES })) === undefined, 'bazowo <3 miasta => brak oddania w krotkiej wojnie');
-ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES })) !== undefined, '200 tur + straty: AI oddaje miasto (eskalacja, 2 miasta wystarcza)');
+// R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: przed koncem zmeczenia (90 tur + 2 straty = poziom ~0,75) AI nadal oddaje miasto (eskalacja).
+ok(cession(runAI({ rw: 0.12, turnsAtWar: 90, lost: 2, miastaAI: CITIES })) !== undefined, '90 tur + straty (poziom ~0,75 < 0,8, przed koncem zmeczenia): AI oddaje miasto (eskalacja, 2 miasta wystarcza)');
+// Koniec zmeczenia (200 tur + straty, poziom 1): AI sama proponuje pokoj BEZWARUNKOWY (bez miasta i ceny).
+{
+  const cmds = runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES });
+  const pk = cmds.find(c => c.type === 'zaproponuj_pokoj' && /koniec zmeczenia/.test(c.powod || ''));
+  ok(cession(cmds) === undefined && !!pk && pk.cityId === undefined && pk.cityPn === undefined,
+    '200 tur + straty (koniec zmeczenia): AI proponuje pokoj bezwarunkowy, bez oddania miasta');
+}
 ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0, 1) })) === undefined, 'jedno miasto => nigdy nie oddaje');
 
 // ---- 6. straznik okablowania main.ts ----
