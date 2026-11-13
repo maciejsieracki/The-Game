@@ -208,7 +208,8 @@ async function main() {
   const MAIN = SRC('main.ts');
   ok(!AI.includes('rw >= effProgWojnaSila'), 'ai.ts: brak starego progu siły względnej rw w bramce wojny');
   ok(!AI.includes('score < progMinimalnyRelacja'), 'ai.ts: brak starego warunku Relacji < progMinimalnyRelacja');
-  ok(AI.includes('< PROG_WOJNA_ZAUFANIE') && AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A'"),
+  // R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1: próg przewagi = progPrzewagiWojnyProc (baza + charakter), nie surowy default.
+  ok(AI.includes('< PROG_WOJNA_ZAUFANIE') && AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide, {") && AI.includes("progPrzewagiProc: progPrzewagiWojnyProc") && AI.includes("przewaga === 'A'"),
     'ai.ts: bramka = Zaufanie < PROG_WOJNA_ZAUFANIE + przewaga militarna AI');
   ok(MAIN.includes('const zaufanie = getDiploRelation(a, b).zaufanie;') && !MAIN.includes('const zaufanie = relationScore('),
     'main.ts: licznik kryzysu czyta Zaufanie pary');

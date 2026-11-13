@@ -79,10 +79,11 @@ import {
 import { hexKeysWithinRadius } from './okolica';
 import {
   resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile, warWearinessFraction,
-  PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC,
+  PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC, progPrzewagiWypowiedzeniaWojnyProc,
 } from './diplomacy-war-peace-profile';
 import {
   compareMilitaryStrength, peaceStanceOf, type MilitarySide, type PeaceMilitaryPosition,
+  DEFAULT_MILITARY_STRENGTH_PARAMS,
 } from './diplomacy-military-strength';
 import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
@@ -7321,9 +7322,18 @@ export function decideAIDiplomacy(
     const milPartnerSide = rel.silaMilitarnaPartner
       ? { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
       : undefined;
+    // R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1: próg przewagi = baza 20% (JSON) + przesunięcie charakteru
+    // (bias.warSilaBonus), obcięte do [10%, 35%]. Agresywna AI wypowiada przy mniejszej przewadze.
+    const progPrzewagiWojnyProc = progPrzewagiWypowiedzeniaWojnyProc(
+      DEFAULT_MILITARY_STRENGTH_PARAMS.progPrzewagiProc,
+      bias.warSilaBonus,
+    );
     const aiMaPrzewageMilitarna = milAiSide !== undefined
       && milPartnerSide !== undefined
-      && compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A';
+      && compareMilitaryStrength(milAiSide, milPartnerSide, {
+        ...DEFAULT_MILITARY_STRENGTH_PARAMS,
+        progPrzewagiProc: progPrzewagiWojnyProc,
+      }).przewaga === 'A';
     if (
       !rel.stanWojny &&
       !rel.peaceLocked &&
@@ -7337,7 +7347,7 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'wypowiedz_wojne',
         targetId: rel.partnerId,
-        powod:    `zaufanie pary ${rel.relation.zaufanie} < ${PROG_WOJNA_ZAUFANIE}, przewaga sily militarnej AI >= 20% (rw=${rw.toFixed(2)}), willingnessWar=${stance.willingnessWar.toFixed(2)}, effAgresja (${effAgresja.toFixed(2)}): wypowiadamy wojne`,
+        powod:    `zaufanie pary ${rel.relation.zaufanie} < ${PROG_WOJNA_ZAUFANIE}, przewaga sily militarnej AI >= ${progPrzewagiWojnyProc.toFixed(1)}% (rw=${rw.toFixed(2)}), willingnessWar=${stance.willingnessWar.toFixed(2)}, effAgresja (${effAgresja.toFixed(2)}): wypowiadamy wojne`,
       });
       continue;
     }
