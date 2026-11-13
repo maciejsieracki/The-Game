@@ -2073,19 +2073,28 @@ function summaryHtml(
     : 0;
 
   let html = '<div class="cdb-summary">';
+  // R-WEB-UI-TRADE-DIALOG-NO-RERENDER-BOTH-SIDES-Q1: gdy jedna strona jest jeszcze pusta,
+  // zamiast ostrzeżenia o odrzuceniu (fair min liczony od pustej strony) — neutralna podpowiedź.
+  const oneSideEmpty = mode === 'trade' && (giveItems.length === 0) !== (receiveItems.length === 0);
   if (mode === 'trade') {
-    html += renderPnBalancePanelFromBasket(
-      givePn,
-      receivePn,
-      rel,
-      'Wymiana',
-      ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
-    );
+    if (!oneSideEmpty) {
+      html += renderPnBalancePanelFromBasket(
+        givePn,
+        receivePn,
+        rel,
+        'Wymiana',
+        ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
+      );
+    }
   }
 
   if (mode === 'trade') {
     html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PW</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PW</b></div>';
-    if (givePn != null && receivePn != null) {
+    if (oneSideEmpty) {
+      html += '<div class="cdb-neutral-hint">' + esc(receiveItems.length === 0
+        ? 'Dodaj, co chcesz dostać w zamian — albo wyślij jako dar'
+        : 'Dodaj, co oddasz w zamian — albo wyślij jako dar') + '</div>';
+    } else if (givePn != null && receivePn != null) {
       const fairMin = diplomacyFairGivePn(receivePn, rel);
       html += '<div>Fair min (Rel ' + rel + '): <b>' + fairMin + ' PW</b></div>';
       const preview = diplomacyTradeTrustFromDeal(givePn, receivePn, rel, trustGained);
@@ -2293,6 +2302,105 @@ function balanceButtonHtml(visible: boolean): string {
   return '<button type="button" class="dip-muted-btn cdb-balance-btn" style="margin-top:8px">Wyrównaj (fair @ Rel)</button>';
 }
 
+/**
+ * R-WEB-UI-TRADE-DIALOG-NO-RERENDER-BOTH-SIDES-Q1: zamiast `box.innerHTML = …` przy każdym
+ * odświeżeniu (dodanie pozycji przebudowywało całe okno: kasowało wpisane ilości i kafle,
+ * przewinięcie oraz układ) — łatanie DOM „w miejscu". Węzeł, którego wyrenderowany markup
+ * (skrót) się nie zmienił, zostaje TYM SAMYM elementem, więc jego stan (wpisane wartości,
+ * zaznaczenia, przewinięcie) przeżywa odświeżenie. Zmienione węzły dostają nową treść;
+ * przy `preserve` ich pola formularza zachowują bieżące wartości/zaznaczenia.
+ */
+const BASKET_RENDER_STAMP = 'data-rhtml';
+const BASKET_FORM_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
+/** false = edycja pozycji (formularz ma być przewypełniony z pozycji) → bez zachowania stanu. */
+let basketPreserveFormState = true;
+
+function basketHash(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36) + ':' + s.length;
+}
+
+function basketStampSubtree(el: Element, hashes: Map<Element, string>): void {
+  el.setAttribute(BASKET_RENDER_STAMP, hashes.get(el) ?? '');
+  el.querySelectorAll('*').forEach(d => d.setAttribute(BASKET_RENDER_STAMP, hashes.get(d) ?? ''));
+}
+
+function basketSyncAttributes(live: Element, fresh: Element, preserve: boolean): void {
+  const wasSelected = live.classList.contains('selected');
+  for (const name of Array.from(live.getAttributeNames())) {
+    if (name !== BASKET_RENDER_STAMP && !fresh.hasAttribute(name)) live.removeAttribute(name);
+  }
+  for (const name of Array.from(fresh.getAttributeNames())) {
+    if (name === BASKET_RENDER_STAMP) continue;
+    live.setAttribute(name, fresh.getAttribute(name) ?? '');
+  }
+  if (preserve && live.classList.contains('selected') !== wasSelected) {
+    live.classList.toggle('selected', wasSelected);
+  }
+}
+
+function basketMorphChildren(
+  live: Element,
+  fresh: Element,
+  hashes: Map<Element, string>,
+  preserve: boolean,
+): void {
+  const liveKids = Array.from(live.childNodes);
+  const out: Node[] = [];
+  let cursor = 0;
+  for (const fk of Array.from(fresh.childNodes)) {
+    if (fk.nodeType !== 1) {
+      out.push(fk);
+      continue;
+    }
+    const fe = fk as Element;
+    const cls = fe.getAttribute('class');
+    let old: Element | null = null;
+    for (let j = cursor; j < liveKids.length; j++) {
+      const c = liveKids[j];
+      if (!c) continue;
+      if (c.nodeType === 1 && (c as Element).tagName === fe.tagName && (c as Element).getAttribute('class') === cls) {
+        old = c as Element;
+        cursor = j + 1;
+        break;
+      }
+    }
+    const hash = hashes.get(fe) ?? '';
+    if (old) {
+      if (old.getAttribute(BASKET_RENDER_STAMP) === hash) {
+        out.push(old);
+        continue;
+      }
+      basketSyncAttributes(old, fe, preserve);
+      old.setAttribute(BASKET_RENDER_STAMP, hash);
+      basketMorphChildren(old, fe, hashes, preserve);
+      if (BASKET_FORM_TAGS.has(old.tagName) && !preserve) {
+        const ctl = old as HTMLInputElement;
+        const src = fe as HTMLInputElement;
+        if (ctl.type === 'checkbox' || ctl.type === 'radio') ctl.checked = src.checked;
+        else ctl.value = src.value;
+      }
+      out.push(old);
+    } else {
+      basketStampSubtree(fe, hashes);
+      out.push(fe);
+    }
+  }
+  live.replaceChildren(...out);
+}
+
+function morphBasketMarkup(box: HTMLDivElement, inner: string): void {
+  const fresh = box.ownerDocument.createElement('div');
+  fresh.innerHTML = inner;
+  const hashes = new Map<Element, string>();
+  fresh.querySelectorAll('*').forEach(el => hashes.set(el, basketHash(el.outerHTML)));
+  basketMorphChildren(box, fresh, hashes, basketPreserveFormState);
+}
+
 function renderBasket(
   box: HTMLDivElement,
   mode: TradeBasketMode,
@@ -2369,11 +2477,11 @@ function renderBasket(
         + '<div class="cdb-land-side">' + summaryBlock + '</div>'
         + '</div>';
     box.className = 'civ-diplo-basket cdb-treaty-mode cdb-treaty-only-mode cdb-landscape-mode';
-    box.innerHTML =
+    morphBasketMarkup(box,
       '<h3>' + esc(title) + '</h3>' +
       '<div class="cdb-sub">' + sub + '</div>' +
       '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
-      '<div class="cdb-footer">' + treatyOnlyFooter + '</div>';
+      '<div class="cdb-footer">' + treatyOnlyFooter + '</div>');
     return;
   }
 
@@ -2488,11 +2596,11 @@ function renderBasket(
 
   const modeCls = mode === 'treaty' ? ' cdb-treaty-mode' : (mode === 'trade' ? ' cdb-trade-mode' : '');
   box.className = 'civ-diplo-basket cdb-landscape-mode' + (mode === 'gift' ? ' cdb-gift' : '') + modeCls;
-  box.innerHTML =
+  morphBasketMarkup(box,
     '<h3>' + esc(title) + '</h3>' +
     '<div class="cdb-sub">' + sub + '</div>' +
     '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
-    '<div class="cdb-footer">' + footerBlock + '</div>';
+    '<div class="cdb-footer">' + footerBlock + '</div>');
 }
 
 export interface TradeBasketModalOptions {
@@ -2587,7 +2695,27 @@ export function showTradeBasketModal(
     if (hidden) resourceTradeMode = hidden.value === 'per_turn' ? 'per_turn' : 'once';
   };
 
+  /** Węzły przeżywają odświeżenia (morphBasketMarkup) — listener na danym węźle i typie
+   *  zdarzenia dodajemy tylko raz. Handlery czytają stan w chwili kliknięcia (zmienne
+   *  domknięcia + atrybuty), więc pierwszy zarejestrowany pozostaje poprawny. */
+  const boundListeners = new WeakMap<EventTarget, Set<string>>();
+  const listen = (target: EventTarget | null | undefined, type: string, fn: EventListener): void => {
+    if (!target) return;
+    let types = boundListeners.get(target);
+    if (!types) {
+      types = new Set<string>();
+      boundListeners.set(target, types);
+    }
+    if (types.has(type)) return;
+    types.add(type);
+    target.addEventListener(type, fn);
+  };
+  /** Poprzedni render był w trybie edycji pozycji (formularz przewypełniony z pozycji). */
+  let prevRenderEditing: EditingItemRef | null = null;
+
   const refresh = (): void => {
+    basketPreserveFormState = editingItem === null && prevRenderEditing === null;
+    prevRenderEditing = editingItem;
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
@@ -2615,10 +2743,10 @@ export function showTradeBasketModal(
       closeModal();
       cb?.();
     };
-    box.querySelector('.cdb-cancel')?.addEventListener('click', dismiss);
+    listen(box.querySelector('.cdb-cancel'), 'click', dismiss);
 
     box.querySelectorAll('.cdb-chip-typ').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
         selectChipInGroup(btn, 'cdb-chip-typ', '.cdb-typ', (value) => {
           const prefix = side === 'give' ? 'give' : 'recv';
@@ -2634,20 +2762,20 @@ export function showTradeBasketModal(
     // renderują się (patrz buildAddForm), więc `querySelectorAll` tu byłoby zawsze puste.
 
     box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         selectChipInGroup(btn, 'cdb-chip-tech', '.cdb-tech');
       });
     });
 
     // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w pokoju.
     box.querySelectorAll('.cdb-chip-miasto').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         selectChipInGroup(btn, 'cdb-chip-miasto', '.cdb-miasto');
       });
     });
     // Formularz traktatu pokoju/wasala: klik miasta = dołożenie pozycji 'miasto' do giveItems.
     box.querySelectorAll('.cdb-city-pick').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const id = btn.getAttribute('data-value') ?? '';
         const opt = ctx.miastoOptions?.find(m => m.id === id);
         if (!opt) return;
@@ -2666,7 +2794,7 @@ export function showTradeBasketModal(
     // odczytuje `.selected` z DOM, refresh() dopiero potem przerysowuje resztę formularza
     // (nową listę technologii dla wybranego kierunku).
     box.querySelectorAll('.cdb-treaty-tech-dir').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         box.querySelectorAll('.cdb-treaty-tech-dir').forEach(c => c.classList.toggle('selected', c === btn));
         refresh();
       });
@@ -2674,14 +2802,14 @@ export function showTradeBasketModal(
 
     // Sposób zapłaty (Gotówka/Technologia) — sam wzorzec co przełącznik kierunku wyżej.
     box.querySelectorAll('.cdb-treaty-tech-pay').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         box.querySelectorAll('.cdb-treaty-tech-pay').forEach(c => c.classList.toggle('selected', c === btn));
         refresh();
       });
     });
 
     box.querySelectorAll('.cdb-chip-resqty').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side');
         selectChipInGroup(btn, 'cdb-chip-resqty', '.cdb-res-qty-sel', (value, max) => {
           if (!side) return;
@@ -2716,7 +2844,7 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-chip-mode').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         box.querySelectorAll('.cdb-chip-mode').forEach(c => c.classList.toggle('selected', c === btn));
         const hidden = box.querySelector('.cdb-res-mode') as HTMLInputElement | null;
         const mode = btn.getAttribute('data-value') === 'per_turn' ? 'per_turn' : 'once';
@@ -2736,7 +2864,7 @@ export function showTradeBasketModal(
     // dodatkowo lądował jako 10 przez clamp). Adresat wynika teraz z sekcji, w której
     // FAKTYCZNIE leży kliknięty przycisk (`btn.closest(...)`), nie z zawartości modala.
     box.querySelectorAll('.cdb-chip-turn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
         const treatyRoot = btn.closest('.cdb-treaty');
         if (treatyRoot) {
@@ -2760,11 +2888,11 @@ export function showTradeBasketModal(
       });
     });
 
-    box.querySelector('.cdb-war-threat-cb')?.addEventListener('change', (ev) => {
+    listen(box.querySelector('.cdb-war-threat-cb'), 'change', (ev) => {
       warThreat = (ev.target as HTMLInputElement).checked;
     });
 
-    box.querySelector('.cdb-balance-btn')?.addEventListener('click', () => {
+    listen(box.querySelector('.cdb-balance-btn'), 'click', () => {
       readDealTurnsFromDom();
       readResourceTradeModeFromDom();
       const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns);
@@ -2787,7 +2915,7 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-qty-step').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side');
         const target = btn.getAttribute('data-target');
         const delta = parseInt(btn.getAttribute('data-delta') ?? '0', 10);
@@ -2809,7 +2937,7 @@ export function showTradeBasketModal(
       });
     });
 
-    box.querySelector('.cdb-duration-indefinite')?.addEventListener('click', () => {
+    listen(box.querySelector('.cdb-duration-indefinite'), 'click', () => {
       exchangeDurationTurns = null;
       refresh();
     });
@@ -2819,7 +2947,7 @@ export function showTradeBasketModal(
       updateTypFields(box, uiSide);
     }
 
-    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => {
+    listen(box.querySelector('.cdb-deal-turns'), 'input', () => {
       const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
       exchangeDurationTurns = inp ? Math.max(1, Math.min(30, parseInt(inp.value, 10) || 15)) : undefined;
       refresh();
@@ -2828,8 +2956,8 @@ export function showTradeBasketModal(
     box.querySelectorAll(
       '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
     ).forEach(el => {
-      el.addEventListener('change', () => refresh());
-      el.addEventListener('input', () => refresh());
+      listen(el, 'change', () => refresh());
+      listen(el, 'input', () => refresh());
     });
 
     // P-DYPLO-PRZEMARSZ-CHECKBOX-PRZYCISK-Q1: `.cdb-treaty-mil`/`.cdb-treaty-barb` są teraz
@@ -2838,7 +2966,7 @@ export function showTradeBasketModal(
     // to dwa NIEZALEŻNE przełączniki (nie grupa wzajemnie wykluczająca) — każdy przycisk
     // przełącza WYŁĄCZNIE swój własny stan `selected`.
     box.querySelectorAll('.cdb-treaty-mil, .cdb-treaty-barb').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         btn.classList.toggle('selected');
         refresh();
       });
@@ -2850,7 +2978,7 @@ export function showTradeBasketModal(
     // NIE dzielić z nimi wspólnego klampu 10–20 zapisanego w listenerze `.cdb-chip-turn`
     // wyżej — widełki tej umowy to 5–15 (BARBARIAN_COOPERATION_DURATION_CHOICES).
     box.querySelectorAll('.cdb-chip-barbturns').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const turns = parseInt(btn.getAttribute('data-turns') ?? String(BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS), 10);
         const val = turns <= 0 ? 0 : Math.max(5, Math.min(15, turns));
         const inp = box.querySelector('.cdb-treaty-barbturns') as HTMLInputElement | null;
@@ -2863,14 +2991,14 @@ export function showTradeBasketModal(
     // R-WEB-TRUCE-Q1 (N5): przelacznik pokoj/rozejm i wybor dlugosci rozejmu (klasy dedykowane,
     // poza wspolnym klampem `.cdb-chip-turn`).
     box.querySelectorAll('.cdb-chip-peacekind').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const inp = box.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null;
         if (inp) inp.value = btn.getAttribute('data-kind') === 'rozejm' ? 'rozejm' : 'pokoj';
         refresh();
       });
     });
     box.querySelectorAll('.cdb-chip-truceturns').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const t = parseInt(btn.getAttribute('data-turns') ?? '10', 10);
         const inp = box.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null;
         if (inp) inp.value = String(normalizeTruceDuration(t) ?? TRUCE_DEFAULT_TURNS);
@@ -2879,7 +3007,7 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-add-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
         const item = readItemFromForm(side, box, ctx);
         if (!item) return;
@@ -2904,7 +3032,7 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-edit-item').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side') === 'receive' ? 'receive' : 'give';
         const idx = parseInt(btn.getAttribute('data-idx') ?? '-1', 10);
         if (idx < 0) return;
@@ -2914,14 +3042,14 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-edit-cancel').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         editingItem = null;
         refresh();
       });
     });
 
     box.querySelectorAll('.cdb-rm').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const side = btn.getAttribute('data-side');
         const idx = parseInt(btn.getAttribute('data-idx') ?? '-1', 10);
         if (idx < 0) return;
@@ -2954,7 +3082,7 @@ export function showTradeBasketModal(
     };
 
     box.querySelectorAll('.cdb-row-qty-step').forEach(btn => {
-      btn.addEventListener('click', () => {
+      listen(btn, 'click', () => {
         const row = btn.closest('.cdb-row-qty');
         if (!row) return;
         const sideAttr = row.getAttribute('data-side');
@@ -2968,7 +3096,7 @@ export function showTradeBasketModal(
     });
 
     box.querySelectorAll('.cdb-row-qty-inp').forEach(inp => {
-      inp.addEventListener('change', () => {
+      listen(inp, 'change', () => {
         const row = inp.closest('.cdb-row-qty');
         if (!row) return;
         const sideAttr = row.getAttribute('data-side');
@@ -2978,7 +3106,7 @@ export function showTradeBasketModal(
       });
     });
 
-    box.querySelector('.cdb-submit')?.addEventListener('click', () => {
+    listen(box.querySelector('.cdb-submit'), 'click', () => {
       const blocked = (mode === 'trade' && (ctx.relacjaTotal ?? 0) < (ctx.progHandelRelacja ?? PROG_HANDEL_REL))
         || (mode === 'gift' && (ctx.relacjaTotal ?? 0) < (ctx.progDarRelacja ?? diplomacyProgDarRelacja()));
       readDealTurnsFromDom();
