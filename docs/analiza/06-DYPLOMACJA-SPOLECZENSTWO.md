@@ -20,7 +20,7 @@ Pliki wyłączności:
 ### ZROBIONE (WPIĘTE do kanonu)
 - **Dyplomacja** (`diplomacy.ts`):
   - Model relacji dwuwymiarowy: **Zaufanie** (0..200) + **Respekt** (0..200), start=50
-  - **5 tierów relacji**: Wojna(<15) / Wrogi(15..30) / Neutralny(30..60) / Przyjazny(60..120) / Sojusz(>=120) + `TIER_NAMES`
+  - **5 tierów relacji** (`relationTier`, diplomacy.ts:1534-1560): Wojna (status) / Wrogi (Zaufanie<10) / Neutralny (score<60) / Przyjazny (score<130) / Sojusz (score>=130 lub status) + `TIER_NAMES`
   - **`computeRespekt`** (T1=A ratio-share, zatwierdzone przez Macieja):
     - `50=parytet`; słabszy ulega, nie atakuje silniejszego
     - Wagi komponentów (ratios): POTĘGA 28% / JEDNOSTKI 20% / MIASTA 18% / TECHNOLOGIE 14% / EKONOMIA 12% / DYPLOMACJA 8%
@@ -70,7 +70,7 @@ Pliki wyłączności:
 - **T3=A** Bonusy strukturalne (religia jako bonusy[]) — ZATWIERDZONY (mechanizacja cross-lane)
 - **T4=B** Spryt od trudności (agresjaMnoznik/dyplomacjaAktywnosc/celObranie wg poziomu) — ZATWIERDZONY (w AI)
 - **Model dwuwymiarowy** Zaufanie + Respekt (0..200, start 50) — ZATWIERDZONY
-- **5 tierów** + progi (<15/<30/<60/<120/>=120) — ZATWIERDZOWANE
+- **5 tierów** + progi (Wrogi = Zaufanie<10; score <60/<130/>=130) — ZATWIERDZOWANE
 - **9 religii** w Spoleczenstwo-parametry.xlsx (vs 7 json — re-eksport wiszący)
 - **Tempo gry** = mnożnik kosztu badań (szybka ×0.2 / standard ×1 / długa ×5)
 - **Rozdzielczość AI**: profil cywilizacji ZOSTAJE w panelu AI (ai-params.json), NIE w civs.json (decyzja 24.06)
