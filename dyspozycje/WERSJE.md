@@ -1,3 +1,9 @@
+## ROBOCZA 5e0a88f4 -- 2026-11-13 -- FALA 695: Bramka pokoju AI wg sily militarnej (testowa)
+
+- bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej
+- Weryfikacja: tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test
+- Limity: NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3
+
 ## ROBOCZA ca7979f1 -- 2026-11-13 -- FALA 694: Determinizm: założenie miasta i walki automatyczne z ziarna gry (testowa)
 
 - To samo ziarno gry daje teraz ten sam przebieg także przy zakładaniu miast (remis między miastami-źródłami ludności rozstrzygał dotąd losowanie spoza ziarna — rozjazd od ok. tury 21) oraz przy walkach automatycznych (strumień z ziarna, tury i identyfikatora walki, z licznikiem walk). Rozkład losowości i reguły gry bez zmian.

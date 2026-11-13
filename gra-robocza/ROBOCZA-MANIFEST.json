@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ca7979f17c5495a2da59897d9a70ba82",
-  "bundleSha256": "21cd7ff530277a39ceea21fcb993add381e05c30f3e0d0b7430448ff9691a73a",
-  "bundleBytes": 14658375,
+  "bundleMd5": "5e0a88f40ef9f70894631f9da3775af6",
+  "bundleSha256": "84ddf85cfadf136e1b442689cf27b58d77a37370d0d9f905737540246c3ab936",
+  "bundleBytes": 14658523,
   "sourceSnapshot": {
-    "source": "origin/main a99445016 + merge FC 24001d62c",
+    "source": "main 28c949e46 (FC 785d0f3e0)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 694: To samo ziarno gry daje teraz ten sam przebieg także przy zakładaniu miast (remis między miastami-źródłami ludności rozstrzygał dotąd losowanie spoza ziarna — rozjazd od ok. tury 21) oraz przy walkach automatycznych (strumień z ziarna, tury i identyfikatora walki, z licznikiem walk). Rozkład losowości i reguły gry bez zmian."
+    "FALA 695: bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej"
   ],
   "verification": [
-    "tsc 0; logic 213/213; test determinizmu PASS (kontrole D1/D2/E1); pomiar: ziarno 2222 tryb przyspieszony 6/6 = ten sam skrót, ziarno 1717 6/6, tryb normalny 3×40 tur identyczny z przyspieszonym; mutacja przywraca rozjazd; diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test"
   ],
   "limits": [
-    "Wznowienie przebiegu z zapisu nadal nie jest deterministyczne (zadanie #373); walka taktyczna na żywo i combat.ts/siege.ts nadal korzystają z Math.random; pomiar z autoBattles tylko na ziarnie 1717"
+    "NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 24001d62c: to samo ziarno = ten sam przebieg także dla założenia miasta (remis źródeł miast rozstrzygał Math.random) i dla walk automatycznych (licznik walk w soli strumienia). NIE ZMIERZONO: wznowienie z zapisu (osobny temat #373), walka taktyczna na żywo i combat.ts/siege.ts nadal na Math.random."
+    "notes": "FC PASS-WITH-NOTES 785d0f3e0 (raport f53aab86b): bramka pokoju AI liczy słabość siłą militarną, nie respektem względnym; progi bez zmian. NIE ZMIERZONO: balans pasma równej siły w pełnej grze. Dług bazowy bez zmian: weaker-seeks 29/3, main-guard 34/1, sim 19/3."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T21:22:15",
+  "hubGeneratedAt": "2026-11-13T21:41:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ca7979f17c5495a2da59897d9a70ba82",
-      "sizeBytes": 14658375
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     }
   ],
-  "md5": "ca7979f17c5495a2da59897d9a70ba82",
+  "md5": "5e0a88f40ef9f70894631f9da3775af6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
