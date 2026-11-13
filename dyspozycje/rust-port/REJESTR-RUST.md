@@ -837,3 +837,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Baza r3:** `d1ce84a34`. Start r3: `wf_00652ce1-d2a` (świeżo). Dispatch DODATEK r3 wypchnięty.
 - **Sprzątanie:** usunięto worktree zakończonych rund EKONOMIA r3 i ZWYCIESTWO r2 (FC FAIL). Zachowane gałęzie: `rust-port-wip/…-EKONOMIA…-r3-fc` (`3ad431966`), `…-ZWYCIESTWO-WIRING-Q1-r2-fc` (`d1ce84a34`). Dysk przed startem: 11 GB.
 - **Trwa:** ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`).
+
+## Przebieg (13.11, heartbeat 20:47)
+- **Aktywne Workflow (3 z 4):** ZWYCIESTWO-WIRING-Q1 r3 (Operator, HAIKU, od 20:45, `wf_00652ce1-d2a`); ZLOZA-B-REST-Q1 r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`); ZDOBYCIE-MIASTA-ROZPOZNANIE-Q1 (Operator, HAIKU, od 20:48, `wf_c9403e5f-f13`, rozpoznanie doc-only, baza `0ca58770e`, dispatch `e5cb8ce8d`).
+- **Czwarty slot pusty:** brak kolejnego gotowego dispatchu.
+- **Dysk:** 9,7 GB. **Parity:** `0ca58770e`.
