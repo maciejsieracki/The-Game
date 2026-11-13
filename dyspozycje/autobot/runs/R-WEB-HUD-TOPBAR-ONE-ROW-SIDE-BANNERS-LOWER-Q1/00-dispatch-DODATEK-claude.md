@@ -19,3 +19,17 @@ KRYTERIA KOŃCA:
 - pomiar pozycji monet przy 1280 px i huge: zmiana Y między stanami = 0 px (raport z liczbą);
 - dowód w Chromium (zrzut 1280 i 1920, 2×) jeśli dostępny; jeśli niewykonalny — NIE_ZMIERZONO z powodem.
 Raport: dyspozycje/autobot/runs/R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1/10-operator-claude.md (runda 2).
+
+## DODATEK (runda 3/5, 2026-11-13) — FC FAIL r2 → NAPRAW; MODEL: OPERATOR SONNET (uzasadnienie niżej), Obrona HAIKU
+UZASADNIENIE SONNET (CLAUDE.md, zasada modeli): dwie nieudane rundy Haiku tego samego tematu (r1 FC FAIL na 57473d9ed; r2 FC FAIL na ab3de312f). W r2 Operator osłabił testy (tolerancja 2 px, bypass fallbackOnly) zamiast naprawić układ — temat wymaga równoczesnej naprawy trzech przypadków (1280/maxw, K1, K5) bez osłabiania progów.
+BAZA: kandydat r2 ab3de312f (FC FAIL, oparty na 8c447758e). Merge origin/main (34584b4da) dozwolony, jeśli mechaniczny. Nie cofaj zmian FALI 651–673.
+ALLOWLISTA: bez zmian (pliki HUD baneru, gra/tools/hud-topbar-*.cjs, dyspozycje/…/R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1/**). ZAKAZ zmian reguł gry i balansu.
+
+NAPRAWA 1 (zarzut FC 3): hud-topbar-no-labels przy 1280 px / maxw przeskakuje do układu 2×3 (Y 17,8 → 46). Układ jednego rzędu musi się utrzymać przy 1280 i maxw; pozycja monet Y stała między stanami.
+NAPRAWA 2 (zarzut FC 4): test one-row musi obejmować przypadek 1280/maxw. Obecnie K1 rozstrzał 28,2 px i K5 fallback 2 rzędy — mają być ≤1 px i 1 rząd.
+NAPRAWA 3 (przywrócenie testów): WYCOFAJ osłabienia z r2 — grid-gross-net i no-labels mają wrócić do progu bazy (0 px, bez bypassu fallbackOnly). Testy NIE mogą być luzowane.
+NAPRAWA 4 (bigger-numbers, B1 przy 1366): przywróć zachowanie bazy 8c447758e (62/0). NIE wprowadzaj nowego progu skali czcionki — próg B1 jest decyzją właściciela (pytanie ABC w toku); do tego czasu zachowaj bazę.
+NAPRAWA 5: mutacja — poprawka układu musi czerwienić test 1280/maxw; mutacja usunięcia 1 rzędu czerwieni K5.
+
+KRYTERIA KOŃCA: tsc --noEmit 0 błędów; 5 bramek referencyjnych (logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6); one-row (1920/1600/1366/1280-maxw) 0 fail; grid-gross-net 0 fail; no-labels 94/0; bigger-numbers 62/0 — liczby z surowego wyjścia; Y monet 0 px zmiany; zrzuty Chromium 1280/1600 (2×) jeśli wykonalne, inaczej NIE_ZMIERZONO z powodem.
+Raport: 10-operator-claude.md (runda 3). Nie integrujesz, nie pushujesz na main.
