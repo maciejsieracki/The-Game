@@ -9,6 +9,7 @@ import {
   warRelationCapApplies,
   nastawienieLabelFromScore,
   TRAKTAT_HANDLOWY_LABEL,
+  truceUntilTurnLabelPl,
   wiarygodnoscBadgeHtml,
   wiarygodnoscTooltipPl,
   wiarygodnoscTooltipDefPl,
@@ -211,6 +212,12 @@ export interface DiplomacyAudienceState {
    * (nie ma traktatu, do którego by się to odnosiło).
    */
   formalStatusDetail?: { sinceTurns?: number; breakPenaltyLabel?: string };
+  /**
+   * R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1: tura końca aktywnego rozejmu tej pary (null/brak = brak rozejmu)
+   * oraz bieżąca tura. Napis „Rozejm do tury N” pokazuje się tylko przy aktywnym rozejmie.
+   */
+  truceUntilTurn?: number | null;
+  currentTurn?: number;
 
   /**
    * C-DYP-Q1=A (2026-07-26, Maciej — pełny stół negocjacyjny z kontrofertą): wpisy
@@ -1242,6 +1249,10 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
   const icon = dipBrandIconHtml(iconByKind[st.formalStatus.kind] ?? 'dip-peace', 19, 'da-b-ic');
   const detail = st.formalStatusDetail;
   const subParts: string[] = [];
+  const truceLabel = st.currentTurn !== undefined && st.formalStatus.kind !== 'wojna'
+    ? truceUntilTurnLabelPl(st.truceUntilTurn, st.currentTurn)
+    : null;
+  if (truceLabel) subParts.push(truceLabel);
   if (detail?.sinceTurns !== undefined) subParts.push('obowiązuje od ' + detail.sinceTurns + ' tur');
   if (detail?.breakPenaltyLabel) subParts.push('zerwanie: ' + detail.breakPenaltyLabel);
   const sub = subParts.length > 0
