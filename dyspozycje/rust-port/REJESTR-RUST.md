@@ -496,3 +496,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego bez startów:** wszystkie pozostałe pozycje pending czekają na decyzję właściciela albo zależą od niezintegrowanego kodu.
 - **Dysk:** 8,8 GB.
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `2a28da212`.
+
+## Przebieg (polecenie właściciela: „odpalaj kolejne tematy”, sprzątanie dysku): 1 aktywny temat (1 z 4 slotów)
+- **Dysk:** usunięto cache kompilacji zakończonych tematów (scratchpad: `target`, `target-r2`, `tgt-fc`, `target-k5loop`, `ev-cw`, `cred`; `/tmp`: `k5i2a2-target`, `fc-target-nan`, `tgt-k4`, `ev2`, `fc-k3-target`). Dysk: 8,8 GB → 20 GB. Nie ruszano `tgt-eval2` w `.claude/worktrees` (właściciel niepotwierdzony) ani `pin` w scratchpadzie (źródło pinu).
+- **Nowe zadania w liście (#152–#162):** 11 pozycji. Weryfikacja statusów, L-1, odświeżenie KOLEJKI, raport poranny, pytania ABC, wektory AUTO, pokrycie generatora, konsolidacja js_max, wypowiedzenie gracza, DYSTANS, ProdBody.
+- **Aktywny temat:** REPIN-UNIT-REPLACE-DATA-Q1 (#153, L-1), Workflow `wf_cd6b3e71-a5e`. Operator HAIKU, Obrona HAIKU, Evaluator i FC SONNET. Dispatch `f189ce037`, baza parity `cfa1edd31`.
+- **Korekta dispatchu:** klucz JSON to `"Zastąp specjalnie"` (wszystkie 75 jednostek), nie `zastap_specjalnie` (to nazwa w strukturze Rust). Poprawka w dispatchu przed startem.
+- **Blokady pozostałych slotów:** każdy pozostały temat wymaga decyzji właściciela (pytania w #156) albo zgody na allowlistę (#162, #111/#158), albo jest zablokowany DYSTANSEM (#161).
+- **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `f189ce037`.
