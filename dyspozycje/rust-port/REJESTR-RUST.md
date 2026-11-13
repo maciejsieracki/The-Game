@@ -424,3 +424,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** 2,9 GB przed sprzątaniem, 7,3 GB po. Próg 8 GB do startów z kodem Rust nadal niespełniony.
 - **Zamknięte w liście zadań:** #129 (wektory `_defenderCounters`, wykonane przez K5LOOP-KONTRATAK-Q1, FC PASS-WITH-NOTES, w parity-v2).
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `da7c192ed`.
+
+## Przebieg (heartbeat 09:49, trig_01DiSPBEtwmKWjgEKvcGWm7W): runda 3 CRED-WOJNA — zarzut osłabienia testów
+- **Sloty:** 1 aktywny Workflow: CRED-WOJNA-Q1 runda 3/5 (`wf_a4483abe-c33`). Operator r3 (HAIKU) PASS, `330c6a9ac`, pełny `cargo test` 3258/0/1. Obrona (HAIKU) zakończona. FC (SONNET) w toku.
+- **Zarzut ewaluatora (ISTOTNY):** przeniesienie `811f607ee` nadpisało wersje plików testowych już zintegrowanych na parity (`66d181ea5`). Stare pokrycie to 200 przypadków i 1063 kroki. Nowe to 160 hak, 60 sekwencji, 20 S3. Usunięto test zgodności wstecz `stary_zapis_bez_klucza_last_war_laduje_sie_jako_zero_i_pierwsza_wojna_go_zapisuje` oraz test czuły mutacyjnie na wyłączenie zapisu. To osłabienie, nie uzupełnienie. Raport r3 pisze „bez zmian”, a diff vs baza to +667/−351.
+- **Decyzja techniczna (moja, nie właściciela):** zestawy nie mogą się nadpisywać. Stare pliki parity zostają bajt-w-bajt, a wektory r2 idą pod nowymi nazwami (np. `p6_cred_wojna_vectors_r2.rs`). Jeśli FC da FAIL, runda 4 tego samego ID z DODATKIEM r4 o tym zakresie.
+- **Nadpisany raport:** `01-operator-r2.md` został zmieniony przez r3. Do przywrócenia z refu `refs/keep/R-RUSTPORT-P6-CRED-WOJNA-Q1-r2-code` w rundzie 4.
+- **Dysk:** 2,1 GB przy trwającym `cargo test` w worktree rundy 3. Próg 2 GB z CLAUDE.md: nie zaczynam nowych startów, kończące się rundy idą dalej. Worktree rundy 3 zostają do werdyktu FC.
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `1d946fe0b`.
