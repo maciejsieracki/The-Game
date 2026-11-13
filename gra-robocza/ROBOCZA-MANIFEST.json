@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-  "bundleSha256": "8e528a59d315f77194d1f3eb0ef7bb13ba2fe0a829f2d3c1bc6dcf152b285afe",
-  "bundleBytes": 14647237,
+  "bundleMd5": "cdf4ac78213cf8ad83a106d1930f1c10",
+  "bundleSha256": "22e3a720b43bac189039d4b50dffae4564f72b9481ce5b0df3d29dbd7a9448d0",
+  "bundleBytes": 14648300,
   "sourceSnapshot": {
-    "source": "Kandydat FC 42555395c",
+    "source": "Kandydaci FC: 5a50a5958, 341f2f8ed",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 684: Cała armia (piechota, strzelcy, konnica, machiny) idzie tempem najwolniejszej jednostki strony aż do pierwszego wzwarcia wręcz; sufit tempa liczony w punktach ruchu; nowy test na produkcyjnej pętli tury z 6 składami i 5 mutacjami."
+    "FALA 685: Słabsza militarnie strona szuka rozejmu lub pokoju, silniejsza odrzuca; opór przełamuje tylko oddanie miasta (cena PN jak dotąd); złoto i surowce nie słodzą pokoju w żadnym kierunku; słabsza AI dołącza miasto także do rozejmu; strona z jednym miastem nie kupi pokoju; wymuszony pokój AI-AI tylko za miasto; usunięte martwe zdarzenia religii i ultimatum; opisy w danych dyplomacji zgodne z kodem."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; pace-equal-line 23/0 (0 z 12 tur z różnicą >1 hex), W19 PASS, cavalry-flank PASS, standoff PASS; vite build OK"
+    "tsc 0; logic 213/213; peace-weaker-seeks 32/0; stance-wiring 10/0; balance-accept 32/0; main-guard 35/0; ai-test 297/0; diplomacy 149/0; json-sync 46/46; zero-trust 43/0; mutacje 16/16; vite build OK"
   ],
   "limits": [
-    "Teren o zmiennym koszcie ruchu NIE_ZMIERZONO (sufit w punktach ruchu, nie w hexach); weryfikacja na żywo w Chromium NIE_ZMIERZONO; test mierzy stronę atakującą"
+    "Wiring w main.ts sprawdzany strukturalnie, nie behawioralnie; wykonanie w żywej grze NIE_ZMIERZONO; martwe mapowanie oferuj_trybut_za_pokoj zostaje; krok 4b (zmęczenie wojną) w toku"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES 42555395c: równe tempo mieszanej armii do pierwszego wzwarcia (sufit tempa dla całej strony); teren o zmiennym koszcie i weryfikacja w Chromium NIE_ZMIERZONO."
+    "notes": "FC PASS-WITH-NOTES: krok 4a rozejm i pokój 5a50a5958; resztki religii i opisów 341f2f8ed."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T16:06:00",
+  "hubGeneratedAt": "2026-11-13T16:08:20",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
-      "sizeBytes": 14647237
+      "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
+      "sizeBytes": 14648300
     }
   ],
-  "md5": "2110e07f6f786fb46c3f1c9ae20c0d96",
+  "md5": "cdf4ac78213cf8ad83a106d1930f1c10",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

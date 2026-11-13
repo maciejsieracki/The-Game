@@ -1,3 +1,9 @@
+## ROBOCZA cdf4ac78 -- 2026-11-13 -- FALA 685: Rozejm i pokój wg siły militarnej: słabsza strona szuka, silniejsza odrzuca, słodzik tylko miasto; porządki w danych dyplomacji (testowa)
+
+- Słabsza militarnie strona szuka rozejmu lub pokoju, silniejsza odrzuca; opór przełamuje tylko oddanie miasta (cena PN jak dotąd); złoto i surowce nie słodzą pokoju w żadnym kierunku; słabsza AI dołącza miasto także do rozejmu; strona z jednym miastem nie kupi pokoju; wymuszony pokój AI-AI tylko za miasto; usunięte martwe zdarzenia religii i ultimatum; opisy w danych dyplomacji zgodne z kodem.
+- Weryfikacja: tsc 0; logic 213/213; peace-weaker-seeks 32/0; stance-wiring 10/0; balance-accept 32/0; main-guard 35/0; ai-test 297/0; diplomacy 149/0; json-sync 46/46; zero-trust 43/0; mutacje 16/16; vite build OK
+- Limity: Wiring w main.ts sprawdzany strukturalnie, nie behawioralnie; wykonanie w żywej grze NIE_ZMIERZONO; martwe mapowanie oferuj_trybut_za_pokoj zostaje; krok 4b (zmęczenie wojną) w toku
+
 ## ROBOCZA 2110e07f -- 2026-11-13 -- FALA 684: Równe tempo mieszanej armii do pierwszego starcia (najwyżej 1 hex różnicy) (testowa)
 
 - Cała armia (piechota, strzelcy, konnica, machiny) idzie tempem najwolniejszej jednostki strony aż do pierwszego wzwarcia wręcz; sufit tempa liczony w punktach ruchu; nowy test na produkcyjnej pętli tury z 6 składami i 5 mutacjami.
