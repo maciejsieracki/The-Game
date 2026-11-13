@@ -9775,3 +9775,6 @@ FALA 691: fundament zasady „skarbiec i spichlerz nie poniżej zera po turze”
 ## 2026-11-13 — FALA 692 wdrożona na ROBOCZĄ (main d419d3eaf, MD5 867807d8)
 FALA 692: okno „Umowa wymiany surowców” bez przeładowania (aktualizacja w miejscu, obie strony w jednym rzucie, neutralna podpowiedź przy pustej stronie); FC f59974e03, W68. Nie zmierzono: pełna gra w Chromium, tryby traktat/pokój/wasal na żywo, wygląd podpowiedzi — do obejrzenia przez właściciela.
 W toku: W61 r3 (determinizm walk, Sonnet), W60 r3 (pomiar na żywo S2.c/S3.c), W69 (blokada tury gracza przy minusie, podtemat B), W70 (równoważenie AI, podtemat C).
+
+## 2026-11-13 — FALA 693 wdrożona na ROBOCZĄ (main 88440e4a7, MD5 3aaec6cb)
+FALA 693: blokada „Zakończ turę” gracza przy prognozie skarbca/spichlerza < 0 (od tury 11, gdy istnieje ruch naprawczy; podtemat B/W69, FC b82d6dd88). Znane luki (zadanie #368): bramka liczy tylko rozwiązanie jednostek (bez podatków i kolejki), komunikat jako toast po kliknięciu, brak stałego tooltipu na przycisku, żywy Chromium niezmierzony. AI jeszcze się nie równoważy (podtemat C: W70 r2 w toku). Równolegle: W61 r3, W60 r3, W41 r2 (audyt miedzi).
