@@ -1,3 +1,88 @@
+# R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 — Obrona Operatora (runda 3, odpowiedź na zarzuty Evaluatora 1ad6dc050)
+
+STATUS: PASS-WITH-NOTES (obrona; werdykt końcowy należy do Final Control)
+DOMAIN: GAME
+TEMAT: R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1
+GOAL: to samo ziarno => ten sam skrót stanu, bez zmiany reguł gry; domknięcie zarzutów Evaluatora r3.
+BAZA: 68c9a3cf341393440831ea7540c8d9f18dbfc1f7 (kandydat r3). Obrona: Haiku.
+ZMIANY/COMMIT: gra/src/main.ts (tylko autoBattleRng: licznik walk w turze w soli strumienia) + ten raport. SHA w polu sha wyniku.
+
+## Odpowiedzi na zarzuty
+
+### Zarzut 1 (allowlista: main.ts poza literalną listą r3) — PRZYJMUJĘ (formalnie); rozszerzenie allowlisty NALEŻY DO ORKIESTRATORA
+- Zmiany (a) `rand: gameStreamRng(_gameSeed, turn, 'found-source', ME())` (main.ts ~16731) i (b) `{ rand: gameStreamRng(_gameSeed, turn, 'found-source', ownerId) }` (main.ts ~43381) to miejsca wskazane bisekcją (T_CMD 1:foundCityAt, tura 21, raport r3 §1). Bez nich źródło dryfu nie jest usunięte.
+- Hak (c) `snapshotSectionObj` (main.ts ~31240) jest tylko-odczytowy i ma ten sam wzorzec co istniejące hooki w obiekcie `__turnSlowdownTestDebug` (main.ts ~31113). Nie zmienia stanu gry. Nie potwierdziłem osobnej bramki `?civTest=1` wokół tego przypisania (Evaluator o niej pisze; w miejscu przypisania widzę bezwarunkowe `window.__turnSlowdownTestDebug = {...}`). Do oceny FC.
+- Wniosek: orkiestrator powinien post factum rozszerzyć allowlistę o main.ts dla (a), (b), (c). Tej akceptacji nie przyznaję sobie sam.
+
+### Zarzut 2 (pomiar nie obejmuje auto-walk) — PRZYJMUJĘ z KOREKTĄ faktów
+- Zgoda: mutacja ścieżki auto-walki (usunięcie rng z resolveAutoBattleByPower) NIE była mierzona; pokrycie to testy źródłowe D1/D2 oraz licznik (zarzut 3).
+- Korekta: Evaluator pisze, że w zmierzonym scenariuszu `autoBattles=0`. To prawda tylko dla ziarna 2222. Ziarno 1717 ma w evidence `autoBattles=3` (`battleActs={"auto":3,"summary":3}`, plik r3-fix-f1717-1.json), a 6/6 przebiegów po naprawie daje 84692144bbe6. Auto-walka jest więc w pomiarze częściowo (ziarno 1717), ale bez mutacji tej ścieżki.
+- NIE_ZMIERZONO: mutacja samej ścieżki auto-walki w pomiarze.
+
+### Zarzut 3 (brak licznika walk w soli strumienia auto-battle) — PRZYJMUJĘ, WDROŻONE
+Wymaganie DODATKU r2 pkt 1 nie było spełnione w r3; naprawiam w tej rundzie:
+```
+let _autoBattleSeqTurn = -1;
+let _autoBattleSeq = 0;
+const autoBattleRng = (defQ, defR, atkId) => {
+  if (_autoBattleSeqTurn !== turn) { _autoBattleSeqTurn = turn; _autoBattleSeq = 0; }
+  _autoBattleSeq += 1;
+  return gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId) + ':' + _autoBattleSeq);
+};
+```
+- Licznik resetuje się przy zmianie tury, więc jest deterministyczny w przebiegu nieprzerwanym. Dwie walki o ten sam heks i tego samego atakującego w jednej turze dostają różne strumienie.
+- Ograniczenie (pkt 5 dispatchu): po wczytaniu zapisu licznik startuje od 0 w tej samej turze, tak jak `_detIdSeq`. To ta sama klasa problemu save/load, NIE naprawiona tutaj (save.ts poza allowlistą).
+- Test D1/D2 nadal zielony (regex `gameStreamRng\(_gameSeed, turn, 'auto-battle:'` pasuje).
+
+### Zarzut 4 (tryb normalny bez wznawiania; wznawialny runner niedeterministyczny) — PRZYJMUJĘ jako znany, otwarty problem; NIE naprawiony
+- Wymóg „≥3 × ≥40 tur normalnie" spełniony pełnymi przebiegami bez wznawiania: r3-fix-n2222-4/5/6, każdy turnsRun=40, skrót fd702b9340d6 (3/3, równy trybowi przyspieszonemu).
+- Wznawialny runner (MEAS_PROFILE/loadSlot) rzeczywiście nie jest deterministyczny (evidence r3-res-n2222-1/2/3: 3a2f3d5b5357, 3a2f3d5b5357, 249cb72a5448). To osobny problem save/load (stan poza zapisem, `_detIdSeq`). Nie naprawiany w tym temacie (save.ts poza allowlistą; dispatch pkt 5: naprawa tylko jeśli w allowliście i bezpieczna — nie jest).
+- Propozycja: osobny temat R-WEB-DETERMINISM-SAVE-LOAD-RESUME-Q1 (decyzja orkiestratora).
+
+## Pomiar kontrolny po zmianie licznika
+Bundle budowany poza repo: `node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>/bundle-r4` (19,07 s, built OK). Runner: `MEAS_ARM=prepared MEAS_REL=20 MEAS_TURNS=40 MEAS_FAST=1 MEAS_MAX_SEC=500 SKIP_BUILD=1 node tools/measure-ai-trade-offer-frequency.cjs`.
+
+| Ziarno | Przebieg (po liczniku) | turnsRun | stoppedBy | trajectorySha256_12 | autoBattles | Evidence r3 (przed licznikiem) |
+|---|---|---|---|---|---|---|
+| 2222 przyspieszony | 1 | 40 | koniec przebiegu | fd702b9340d6 | 0 | fd702b9340d6 (6/6) |
+| 1717 przyspieszony | 1 | 40 | koniec przebiegu | 84692144bbe6 | 3 | 84692144bbe6 (6/6, autoBattles=3) |
+
+- Pełne 6×/6× nie powtórzone w tej rundzie. NIE_ZMIERZONO: 6 przebiegów po liczniku; 1 przebieg na ziarno to kontrola, nie pełny pomiar.
+- Wynik 1717: skrót identyczny mimo zmiany soli dla 3 walk auto. Nie rozstrzygam, czy wynik walk nie zależał od rzutu, czy rzut nie zmienił rozstrzygnięcia w tych trzech walkach.
+- Mutacja licznika: NIE_ZMIERZONO.
+
+## Bramki (surowe wyjście, po zmianie licznika)
+- `npx tsc --noEmit` (gra/): exit 0.
+- `node tools/logic-test.cjs`: `LOGIC OK (213/213)`, exit 0.
+- `node tools/tech-tree-test.cjs`: `tech-tree-test: 20 pass, 0 fail`, exit 0.
+- `node tools/research-test.cjs`: `PASSED: 33 / FAILED: 0 / TOTAL: 33`, exit 0.
+- `node tools/unit-replace-test.cjs`: `WSZYSTKIE TESTY ZIELONE (21/21)`, exit 0.
+- `node tools/army-hunger-combat-test.cjs` (combat): `COMBAT TEST: 6/6 pass`, exit 0.
+- `node tools/determinism-same-seed-test.cjs`: A1–A7, B1–B2, C1 (2), D1 (wolan=6), D2, E1 (z rand=2, podpowiedz kosztu=1): `WYNIK: PASS`, exit 0.
+- `npm ci --ignore-scripts` w gra/: exit 0. `npm run build`/`dev` NIE uruchamiane; bundle tylko vite poza repo.
+
+## Pytanie 5 (kolizja _detIdSeq po wczytaniu) — bez zmian względem r3
+Licznik walk i `_detIdSeq` nie są w zapisie; po wczytaniu w tej samej turze mogą powtórzyć sufiksy. Nie zbadano dokładnie, który składnik rozjeżdża wznowienie (NIE_ZMIERZONO).
+
+## BLOKADY
+- Allowlista: wymagana decyzja orkiestratora dla main.ts (zarzut 1).
+- Wznawianie z zapisu nie jest deterministyczne (zarzut 4): osobny temat.
+- combat.ts:890 (manualBattle.ts:1062, battleScene.ts:20795) i siege.ts:659 nadal na Math.random poza allowlistą: kandydat na osobny temat.
+
+## UWAGI-DLA-ORKIESTRATORA
+1. Evaluator, zarzut 2: ziarno 1717 ma autoBattles=3 (korekta faktu, patrz wyżej).
+2. Evaluator, zarzut 1: do sprawdzenia, czy hak `snapshotSectionObj` jest objęty bramką `?civTest=1` (nie potwierdziłem).
+
+## RUNDY
+Obrona r3 (Haiku). Runda tematu 3/5 po Evaluatorze; FC r2 = FAIL, r1 = FAIL.
+NASTĘPNY KROK: Evaluator (sprawdzenie licznika i odpowiedzi) -> Final Control; decyzja orkiestratora w sprawie allowlisty main.ts.
+DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# ARCHIWUM: poprzednia obrona (runda 2)
+
 # R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 — Obrona Operatora (runda 2, HAIKU)
 
 STATUS: BLOCK (bez zmian kodu gry; zrodlo dryfu skarbca AI NIE ZIDENTYFIKOWANE; dwie hipotezy wykluczone jako jedyne zrodlo)

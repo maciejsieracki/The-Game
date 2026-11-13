@@ -2008,8 +2008,15 @@ async function boot(): Promise<void> {
     let _detIdSeq = 0;
     const detIdSuffix = (salt: string): string => { _detIdSeq += 1; return gameIdSuffix(_gameSeed, turn, salt, _detIdSeq); };
     // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1: rzut upsetu auto-walki z ziarna gry (tura + heks obrony + lider atakujacego).
-    const autoBattleRng = (defQ: number, defR: number, atkId: string | number): (() => number) =>
-      gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId));
+    // R-WEB-DETERMINISM-AUTO-BATTLE-RNG-Q1 (r4, DODATEK r2 pkt 1): licznik walk w turze w soli strumienia —
+    // dwie walki o ten sam heks i tego samego atakujacego w jednej turze nie maja identycznego strumienia.
+    let _autoBattleSeqTurn = -1;
+    let _autoBattleSeq = 0;
+    const autoBattleRng = (defQ: number, defR: number, atkId: string | number): (() => number) => {
+      if (_autoBattleSeqTurn !== turn) { _autoBattleSeqTurn = turn; _autoBattleSeq = 0; }
+      _autoBattleSeq += 1;
+      return gameStreamRng(_gameSeed, turn, 'auto-battle:' + defQ + ':' + defR + ':' + String(atkId) + ':' + _autoBattleSeq);
+    };
     const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
     const unitFoodTbl = buildUnitFoodTable(data.units as unknown as Record<string, unknown>[]);
 
