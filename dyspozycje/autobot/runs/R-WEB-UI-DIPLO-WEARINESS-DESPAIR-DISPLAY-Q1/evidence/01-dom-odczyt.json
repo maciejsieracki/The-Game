@@ -1,0 +1,20 @@
+{
+  "turns": 0,
+  "worldTurn": 1,
+  "info": {
+    "hasCard": true,
+    "wear": [
+      "Zmęczenie wojną 0%",
+      "Zmęczenie wojną 0%",
+      "Zmęczenie wojną 0%"
+    ],
+    "partners": [
+      "Ty",
+      "Chińczycy Zmęczenie wojną 0%",
+      "Inkowie",
+      "Zulusi",
+      "Egipt"
+    ],
+    "cardText": "Grecy\nPerykles\nPrzedstawiciel · Brąz\nW +20 · Uczciwy\nWROGI\nATRYBUTY\nMoc militarna\n279\nRekruci\n8 000 / 8 000\nPotencjał sojuszniczy\nNiski\nRELACJE Z TOBĄ\nZaufanie\n0 / 100\nRespekt\n91 / 100\nRelacja z perspektywy gracza\n91 / 200\n(Zaufanie + Respekt)\nTy\nZmęczenie wojną 0%\nGrecy\nZmęczenie wojną 0%\nDOBRA HANDLOWE\n▸\nSurowce\n—\n▸\nTechnologie\n—\n▸\nInne\n—\nRELACJE Z INNYMI\nW stanie wojny z\nTy\nChińczycy Zmęczenie wojną 0%\nW sojuszu z\nInkowie\nPakt o nieagresji z\nZulusi\nHandluje z\nEgipt\nKultura: Grecka · obca kultura\nHandlowy\nLojalny"
+  }
+}

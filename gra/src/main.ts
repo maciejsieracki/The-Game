@@ -1625,6 +1625,7 @@ import {
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
 import { runWarWearinessTick, militaryWearinessWiring, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -8496,8 +8497,13 @@ async function boot(): Promise<void> {
         isPlayer: id === 0,
       });
       const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
+      // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — jedna wartość dla rozmówcy (strona otherOwnerId).
+      const wars = base.wars.map(w => (w.ownerId === 0 ? w : {
+        ...w,
+        warWeariness: warWearinessSideView(diploWarWearinessPairView(otherOwnerId, w.ownerId, 'tick'), String(otherOwnerId)).own,
+      }));
       return {
-        wars: base.wars,
+        wars,
         alliances: base.alliances,
         naps,
         deals: base.deals,
@@ -11646,6 +11652,18 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: odczyt stanu wojny BEZ zapisu do gry (ścieżka renderu panelu).
+     * Te same wartości co diploWarStateFor: wojna bez stempla → początek = bieżąca tura (to samo, co zwróciłby
+     * diploEnsureWarStart, ale bez zapisu); pokój → zera. Stempla nie zdejmuje — robi to ścieżka tury.
+     */
+    function diploWarStateForRead(a: number, b: number): { turnsAtWar: number; lostCities: number; turnsSinceCityChange: number } {
+      if (getDiploRelation(a, b).status !== 'wojna') return { turnsAtWar: 0, lostCities: 0, turnsSinceCityChange: 0 };
+      const meta = diplomacyPairMeta.get(diploPairKey(a, b)) as (DiploPairMeta & WarPairMetaR1) | undefined;
+      const od = meta?.wojnaStartTura ?? turn;
+      return warStateFromRecord(meta?.wojnaMiasta, od, String(a), turn);
+    }
+
+    /**
      * R-WEB-PEACE-RULES-Q1 R1: tura początku BIEŻĄCEJ wojny pary. Stempel `wojnaStartTura` ustawiany
      * przy pierwszym zaobserwowaniu wojny (niezależnie od ścieżki wypowiedzenia — część ścieżek
      * nie ustawia wojnaOdTury) i zdejmowany przy pokoju w diploWarStateFor. ZAŁOŻENIE: ≤ 1 tura
@@ -11687,13 +11705,16 @@ async function boot(): Promise<void> {
      * BIEŻĄCEJ wojny pary (poza wojną 0), bonus trybutu aktywny w tej turze. Gospodarka nie wchodzi.
      * / EN: military strength of owner in the pair (army + recruits from Power, war battle points, tribute bonus).
      */
-    function diploMilitarySideOf(ownerId: number, otherId: number): { sila: number; armiaPkt: number } {
+    function diploMilitarySideOf(ownerId: number, otherId: number, readOnly = false): { sila: number; armiaPkt: number } {
       const res = objectivePowerByOwner.get(ownerId) ?? buildObjectivePowerForOwner(ownerId);
       const armiaPkt = res.components.find(c => c.key === 'armia')?.points ?? 0;
       const rekrutPkt = res.components.find(c => c.key === 'rekruci')?.points ?? 0;
       const lo = Math.min(ownerId, otherId);
       const hi = Math.max(ownerId, otherId);
-      const meta = getDiploPairMeta(ownerId, otherId);
+      // readOnly (ścieżka renderu panelu): bez zapisu domyślnego wpisu do diplomacyPairMeta.
+      const meta = readOnly
+        ? (diplomacyPairMeta.get(diploPairKey(ownerId, otherId)) ?? freshDiploPairMeta())
+        : getDiploPairMeta(ownerId, otherId);
       const inWar = getDiploRelation(ownerId, otherId).status === 'wojna';
       const sila = computeMilitaryStrength({
         armiaPkt,
@@ -11702,6 +11723,30 @@ async function boot(): Promise<void> {
         trybutBonusAktywny: isTributeBonusActive(meta, ownerId, turn),
       });
       return { sila, armiaPkt };
+    }
+
+    /**
+     * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: widok zmęczenia/desperacji pary (a, b) dla panelu dyplomacji.
+     * Wejścia IDENTYCZNE z tickiem AI↔AI (tickAiAiWarWeariness: warInfo + diploMilitarySideOf); szczyt pary z
+     * warWearinessByPairKey tylko gdy stan dotyczy BIEŻĄCEJ wojny (warStart jak w tiku); brak stanu → bieżący poziom.
+     */
+    function diploWarWearinessPairView(a: number, b: number, reference: WarWearinessReference): WarWearinessPairView {
+      const wa = diploWarStateForRead(a, b);
+      const wb = diploWarStateForRead(b, a);
+      const sa = diploMilitarySideOf(a, b, true);
+      const sb = diploMilitarySideOf(b, a, true);
+      // Szczyt tylko w trybie 'tick' (AI↔AI); ai.ts (gracz↔AI) liczy z bieżącego poziomu.
+      const peak = reference === 'tick'
+        ? peakForCurrentWar(warWearinessByPairKey.get(diploPairKey(a, b)), turn - wa.turnsAtWar)
+        : undefined;
+      return warWearinessPairView({
+        turnsAtWar: wa.turnsAtWar,
+        turnsSinceCityChange: wa.turnsSinceCityChange,
+        a: { id: String(a), sila: sa.sila, armiaPkt: sa.armiaPkt, lostCities: wa.lostCities },
+        b: { id: String(b), sila: sb.sila, armiaPkt: sb.armiaPkt, lostCities: wb.lostCities },
+        peak,
+        reference,
+      });
     }
 
     /**
@@ -25838,6 +25883,10 @@ async function boot(): Promise<void> {
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             otherRelations: buildAudienceOtherRelations(ownerId),
+            // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojna gracz↔rozmówca — zmęczenie/desperacja obu stron.
+            warWeariness: getDiploRelation(ME(), ownerId).status === 'wojna'
+              ? (() => { const s = warWearinessSideView(diploWarWearinessPairView(ME(), ownerId, 'ai'), String(ME())); return { player: s.own, other: s.rival }; })()
+              : undefined,
             relationBreakdown: getRelationBreakdown(ME(), ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),

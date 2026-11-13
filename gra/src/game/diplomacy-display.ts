@@ -372,6 +372,32 @@ export function warRelationCapApplies(zaufanie: number, respekt: number, atWar: 
   return c.zaufanie !== zaufanie || c.respekt !== respekt;
 }
 
+/** R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: procent 0–100 z wartości 0..1 (obcięte do zakresu). */
+export function warWearinessPercentPl(value: number): string {
+  const v = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
+  return Math.round(v * 100) + '%';
+}
+
+/** Etykieta i podpowiedź (jedno zdanie) dla zmęczenia wojną („wygrywa"/„rowny") albo desperacji („przegrywa"). */
+export function warWearinessLabelPl(view: {
+  zmeczenie?: number;
+  desperacja?: number;
+}): { label: string; tooltip: string } | null {
+  if (view.desperacja !== undefined) {
+    return {
+      label: 'Desperacja ' + warWearinessPercentPl(view.desperacja),
+      tooltip: 'Desperacja przegrywającego rośnie ze zmęczeniem wojną, słabością militarną i utratą miast; wysoka oznacza gotowość oddania miast za pokój.',
+    };
+  }
+  if (view.zmeczenie !== undefined) {
+    return {
+      label: 'Zmęczenie wojną ' + warWearinessPercentPl(view.zmeczenie),
+      tooltip: 'Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.',
+    };
+  }
+  return null;
+}
+
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
 export function nastawienieHintPl(atWar?: boolean): string {
   if (atWar) {

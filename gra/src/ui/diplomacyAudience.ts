@@ -13,6 +13,7 @@ import {
   wiarygodnoscBadgeHtml,
   wiarygodnoscTooltipPl,
   wiarygodnoscTooltipDefPl,
+  warWearinessLabelPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
 import {
@@ -238,6 +239,27 @@ export interface DiplomacyAudienceState {
    * `undefined` = silnik nie dostarczył danych (np. rozmówca poza aktywną dyplomacją).
    */
   otherRelations?: AudienceOtherRelations;
+  /**
+   * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: widok zmęczenia/desperacji w wojnie GRACZ↔rozmówca (tylko gdy
+   * w wojnie). `player` = strona gracza, `other` = strona rozmówcy (struktura z war-weariness-view.ts; `undefined`
+   * = silnik nie dostarczył danych). Struktura jest zgodna strukturalnie, bez importu game/ w tym pliku.
+   */
+  warWeariness?: AudienceWarWearinessPair;
+}
+
+/**
+ * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: widok jednej strony wojny. `zmeczenie` (0..1) dla strony
+ * wygrywającej i remisu; `desperacja` (0..1) dla strony przegrywającej.
+ */
+export interface AudienceWarWearinessView {
+  rola: 'wygrywa' | 'przegrywa' | 'rowny';
+  zmeczenie?: number;
+  desperacja?: number;
+}
+
+export interface AudienceWarWearinessPair {
+  player: AudienceWarWearinessView;
+  other: AudienceWarWearinessView;
 }
 
 /** Jeden partner w sekcji „Relacje z innymi" — patrz `DiplomacyAudienceState.otherRelations`. */
@@ -246,6 +268,11 @@ export interface AudienceRelationPartner {
   name: string;
   /** true = ten partner to gracz (id===0) — UI pokazuje „Ty" zamiast nazwy. */
   isPlayer?: boolean;
+  /**
+   * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — JEDNA wartość dla rozmówcy w tej wojnie
+   * (desperacja, gdy przegrywa; zmęczenie, gdy wygrywa lub remis). Brak = bez wiersza procentu.
+   */
+  warWeariness?: AudienceWarWearinessView;
 }
 
 /**
@@ -1494,6 +1521,7 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
         progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust', st.zaufanieDeltaPerTurn) +
         progressBarHtml('Respekt', relScores.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
         relacjaTotalHtml(st) +
+        warWearinessRowsHtml(st.warWeariness, st.otherCivName) +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
@@ -1533,11 +1561,38 @@ function relationPartnerListHtml(title: string, partners: readonly AudienceRelat
     html += '<div class="da-rel-partner-empty">Brak.</div>';
   } else {
     for (const p of partners) {
-      html += '<div class="da-rel-partner-row">' + esc(p.isPlayer ? 'Ty' : p.name) + '</div>';
+      html += '<div class="da-rel-partner-row">' + esc(p.isPlayer ? 'Ty' : p.name)
+        + warWearinessPartnerSuffixHtml(p.warWeariness) + '</div>';
     }
   }
   html += '</div>';
   return html;
+}
+
+/**
+ * R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: jeden wiersz z procentem dla strony w wojnie (gracz lub rozmówca).
+ * Brak widoku = pusty napis (bez wiersza).
+ */
+function warWearinessRowHtml(who: string, view: AudienceWarWearinessView): string {
+  const info = warWearinessLabelPl(view);
+  if (!info) return '';
+  return '<div class="da-rel-row war-weariness"' + ' title="' + esc(info.tooltip) + '">'
+    + '<span>' + esc(who) + '</span>'
+    + '<span class="v">' + esc(info.label) + '</span>'
+    + '</div>';
+}
+
+/** Wiersze zmęczenia/desperacji w wojnie GRACZ↔rozmówca (karta rozmówcy, sekcja „Relacje z Tobą"). */
+function warWearinessRowsHtml(pair: AudienceWarWearinessPair | undefined, otherName: string): string {
+  if (!pair) return '';
+  return warWearinessRowHtml('Ty', pair.player) + warWearinessRowHtml(otherName, pair.other);
+}
+
+/** Procent przy wojnie AI↔AI na liście „W stanie wojny z" — jedna wartość dla rozmówcy w tej wojnie. */
+function warWearinessPartnerSuffixHtml(view: AudienceWarWearinessView | undefined): string {
+  const info = view ? warWearinessLabelPl(view) : null;
+  if (!info) return '';
+  return ' <span class="da-rel-war-wear" title="' + esc(info.tooltip) + '">' + esc(info.label) + '</span>';
 }
 
 /** Suma Zaufanie + Respekt (0–200) — widoczna w panelu relacji audiencji. */
