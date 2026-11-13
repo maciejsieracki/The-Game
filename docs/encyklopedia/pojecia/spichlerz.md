@@ -30,6 +30,15 @@
 - Pojemność: **100 × N** Spichlerzy (normal).  
 - Wojsko przy zapasach **&lt;0**: **−8%** max HP/t (głód).
 
+### Nie poniżej zera po turze (od tury 11)
+
+Skarbiec i spichlerz państwa (zapasy żywności) nie mogą zakończyć tury poniżej zera (decyzja właściciela 2026-11-13, wariant A):
+- **Tury 1–10**: brak blokady i brak równoważenia AI.
+- **Gracz**: gdy prognoza stanu po ticku tury jest poniżej zera i gorsza niż stan obecny, przycisk „Zakończ turę” jest zablokowany, jeśli gracz ma ruch naprawczy (podatki, rozwiązanie jednostki, usunięcie pozycji z kolejki). Stary zapis z ujemnym stanem, którego prognoza nie pogarsza, nie blokuje gry.
+- **AI**: plan równoważenia (najpierw tańsze środki, bez eliminacji cywilizacji) istnieje w `no-negative-stocks.ts` (`planAiBalance`), ale **nie jest jeszcze wywoływany w pętli tury** (`main.ts`). Stan faktyczny: AI nie równoważy się automatycznie przed końcem tury.
+
+Kod: `gra/src/game/no-negative-stocks.ts`, `main.ts` (`nnsGateForPlayer`, `decideEndTurnGate`).
+
 ### SP1–SP6 (Maciej 2026-07-01)
 
 | ID | Ustalenie |

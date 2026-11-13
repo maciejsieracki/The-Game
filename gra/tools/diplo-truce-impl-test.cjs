@@ -333,8 +333,8 @@ function makeWorld() {
     /fatigueFraction: wearyLevel\b/.test(eBody));
   check('E: ai.ts — willingnessPeace z stance (aiDiplomacyStance)',
     /willingnessPeace: stance\.willingnessPeace/.test(eBody));
-  check('E: ai.ts — weaker tylko z progu słabości rw (sygnały peaceSignals nie czynią słabszym)',
-    /weaker: weakerByPower,/.test(eBody) && /const weakerByPower = rw <= progPokojSlabosc;/.test(aiSrc));
+  check('E: ai.ts — weaker tylko z pozycji militarnej peacePosMil (sygnały peaceSignals nie czynią słabszym)',
+    /weaker: weakerByStrength,/.test(eBody) && /const weakerByStrength = peacePosMil === 'slabsza';/.test(aiSrc));
   check('E: ai.ts — rodzaj wybrany przez aiTruceOrPeaceMode trafia do komendy (rodzaj: peaceKindAi)',
     /rodzaj:\s+peaceKindAi,/.test(aiSrc));
   check('E: AI↔AI — rodzaj z cmd.rodzaj (decideAIDiplomacy), nie osobny wybór',

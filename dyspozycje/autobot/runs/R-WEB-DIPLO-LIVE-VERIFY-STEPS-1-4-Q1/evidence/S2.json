@@ -1,0 +1,128 @@
+{
+  "scenario": "2",
+  "checks": [
+    {
+      "id": "S2.a",
+      "label": "rozejm (akceptacja realną ścieżką) → zaufanie = 10",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 10,
+        "akceptacja": {
+          "accepted": true,
+          "reason": "Rozejm zawarty"
+        }
+      }
+    },
+    {
+      "id": "S2.b",
+      "label": "pokój (finalizePeaceTreatyBetween) → zaufanie = 20",
+      "ok": "PASS",
+      "detail": {
+        "zaufanie": 20
+      }
+    },
+    {
+      "id": "S2.c",
+      "label": "kara za sąsiedztwo (−3/−4/−5 wg epoki, wyłączona w karencji)",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka ustawiającego wspólną granicę i karencję w tym scenariuszu; wymaga fixtury granicy (osobny hak, poza zakresem bez zmian kodu)"
+      }
+    },
+    {
+      "id": "S2.d",
+      "label": "religia nie zmienia zaufania",
+      "ok": "NIE_ZMIERZONO",
+      "detail": {
+        "powod": "brak hooka ustawiającego wspólną/odmienną religię pary; wpływ ±0,5 sprawdzony tylko w testach jednostkowych"
+      }
+    },
+    {
+      "id": "S2.e",
+      "label": "brak błędów JS w scenariuszu",
+      "ok": "PASS",
+      "detail": []
+    }
+  ],
+  "measured": {
+    "wojna": {
+      "zaufanie": 0,
+      "respekt": 100,
+      "trustRaw": "0 / 100",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "WOJNA",
+        "Sojusz (pełny lub defensywny)",
+        "WROGI",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie0 / 100",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza100 / 200(Zaufanie + Respekt)"
+      ]
+    },
+    "rozejm": {
+      "zaufanie": 10,
+      "respekt": 100,
+      "trustRaw": "10 / 100 +0.7 / turę",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "Rozejm do tury 6",
+        "Sojusz (pełny lub defensywny)",
+        "rozejm",
+        "NIEUFNY",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz",
+        "Rozejm zawarty"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie10 / 100 +0.7 / turę",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza110 / 200 +0.7 / turę(Zaufanie + Respekt)"
+      ]
+    },
+    "rozejmStan": {
+      "status": "pokoj",
+      "truceUntilTurn": 6,
+      "peaceUntilTurn": null,
+      "turn": 1
+    },
+    "akceptacjaRozejmu": {
+      "accepted": true,
+      "reason": "Rozejm zawarty"
+    },
+    "pokoj": {
+      "zaufanie": 20,
+      "respekt": 100,
+      "trustRaw": "20 / 100 +0.7 / turę",
+      "respektRaw": "100 / 100",
+      "tierLines": [
+        "Sojusz (pełny lub defensywny)",
+        "rozejm",
+        "NIEUFNY",
+        "Relacja z perspektywy gracza",
+        "Wojna",
+        "Pokój",
+        "Sojusz",
+        "Rozejm zawarty"
+      ],
+      "rows": [
+        "Wiarygodność+20 · Uczciwy",
+        "Zaufanie20 / 100 +0.7 / turę",
+        "Respekt100 / 100",
+        "Relacja z perspektywy gracza120 / 200 +0.7 / turę(Zaufanie + Respekt)"
+      ]
+    }
+  },
+  "startedAt": "2026-11-13T18:38:46.851Z",
+  "errorsTotal": 0,
+  "finishedAt": "2026-11-13T18:40:17.158Z"
+}

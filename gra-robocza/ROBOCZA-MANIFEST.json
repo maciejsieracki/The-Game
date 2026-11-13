@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "867807d8bc73555ed6bcbf49785eb0ae",
-  "bundleSha256": "4563e658091aa8602981224245863e8c9cf9586fb6074757d23bffde46378f7d",
-  "bundleBytes": 14654321,
+  "bundleMd5": "5e0a88f40ef9f70894631f9da3775af6",
+  "bundleSha256": "84ddf85cfadf136e1b442689cf27b58d77a37370d0d9f905737540246c3ab936",
+  "bundleBytes": 14658523,
   "sourceSnapshot": {
-    "source": "origin/main 507d312ce + merge FC f59974e03",
+    "source": "main 28c949e46 (FC 785d0f3e0)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 692: W oknie „Umowa wymiany surowców” dodanie pozycji po którejkolwiek stronie (oferujemy / oferują) dopisuje ją w miejscu, bez przebudowy całego okna: zostają przewinięcie, tryb (jednorazowo / co turę), czas umowy, zaznaczone kafle i wpisane ilości w obu panelach. Obie strony można uzupełnić w dowolnej kolejności jedną propozycją; przy pustej stronie pojawia się neutralna podpowiedź zamiast ostrzeżenia o odrzuceniu. Wycena i reguły dyplomacji bez zmian."
+    "FALA 695: bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej"
   ],
   "verification": [
-    "tsc 0; logic 213/213; testy: okno wymiany bez przeładowania 19/19 (mutacja powrotu do innerHTML czerwieni), basket duplicate-ui 31/31, edit 25/25, transfer 24/24, diplomacy 149/0, ai 297/0; test w żywym Chromium na komponencie; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test"
   ],
   "limits": [
-    "Nie zmierzono w pełnej grze w Chromium; tryby traktat/pokój/wasal klikane na żywo niezmierzone; wygląd neutralnej podpowiedzi do obejrzenia przez właściciela"
+    "NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES f59974e03: okno „Umowa wymiany surowców” — dodanie pozycji nie przebudowuje całego okna (aktualizacja w miejscu), obie strony w jednym rzucie, neutralna podpowiedź przy pustej stronie. NIE ZMIERZONO: żywa pełna gra, tryby traktat/pokój/wasal klikane na żywo, wygląd podpowiedzi."
+    "notes": "FC PASS-WITH-NOTES 785d0f3e0 (raport f53aab86b): bramka pokoju AI liczy słabość siłą militarną, nie respektem względnym; progi bez zmian. NIE ZMIERZONO: balans pasma równej siły w pełnej grze. Dług bazowy bez zmian: weaker-seeks 29/3, main-guard 34/1, sim 19/3."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T20:14:38",
+  "hubGeneratedAt": "2026-11-13T21:41:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "867807d8bc73555ed6bcbf49785eb0ae",
-      "sizeBytes": 14654321
+      "md5": "5e0a88f40ef9f70894631f9da3775af6",
+      "sizeBytes": 14658523
     }
   ],
-  "md5": "867807d8bc73555ed6bcbf49785eb0ae",
+  "md5": "5e0a88f40ef9f70894631f9da3775af6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

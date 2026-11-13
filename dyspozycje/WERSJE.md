@@ -1,3 +1,21 @@
+## ROBOCZA 5e0a88f4 -- 2026-11-13 -- FALA 695: Bramka pokoju AI wg sily militarnej (testowa)
+
+- bramka AI 'proponuje pokoj' (priorytet 2 i wybor rodzaju) liczy slabosc pozycja militarna (peacePosMil) zamiast respektu wzglednego rw; progi bez zmian; AI-AI wniosek o pokoj tez wg sily militarnej
+- Weryfikacja: tsc 0; logic 213/213; ai-test 297/0; diplomacy-test 149/0; peace-gate-military-strength 14/0; ai-war-weariness-peace 99/0; mutacja bramki na rw czerwieni test
+- Limity: NIE ZMIERZONO: balans pasma rownej sily w pelnej grze; dlug bazowy weaker-seeks 29/3, main-guard 34/1, sim 19/3
+
+## ROBOCZA ca7979f1 -- 2026-11-13 -- FALA 694: Determinizm: założenie miasta i walki automatyczne z ziarna gry (testowa)
+
+- To samo ziarno gry daje teraz ten sam przebieg także przy zakładaniu miast (remis między miastami-źródłami ludności rozstrzygał dotąd losowanie spoza ziarna — rozjazd od ok. tury 21) oraz przy walkach automatycznych (strumień z ziarna, tury i identyfikatora walki, z licznikiem walk). Rozkład losowości i reguły gry bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; test determinizmu PASS (kontrole D1/D2/E1); pomiar: ziarno 2222 tryb przyspieszony 6/6 = ten sam skrót, ziarno 1717 6/6, tryb normalny 3×40 tur identyczny z przyspieszonym; mutacja przywraca rozjazd; diplomacy 149/0, ai 297/0; FC PASS-WITH-NOTES
+- Limity: Wznowienie przebiegu z zapisu nadal nie jest deterministyczne (zadanie #373); walka taktyczna na żywo i combat.ts/siege.ts nadal korzystają z Math.random; pomiar z autoBattles tylko na ziarnie 1717
+
+## ROBOCZA 3aaec6cb -- 2026-11-13 -- FALA 693: Blokada „Zakończ turę” przy minusie w skarbcu lub spichlerzu (testowa)
+
+- Od tury 11 przycisk „Zakończ turę” jest blokowany, gdy prognoza po turze wychodzi poniżej zera w skarbcu lub spichlerzu państwa i gracz ma ruch naprawczy (rozwiązanie jednostek); po kliknięciu pojawia się komunikat, czego brakuje. W turach 1–10 bez blokady. Bez ruchu naprawczego tura może się zakończyć, żeby gra się nie zakleszczyła. Kary za deficyt zostają jako siatka bezpieczeństwa.
+- Weryfikacja: tsc 0; logic 213/213; testy: bramka końca tury 19/0, projekcja 49/0, logika 25/0, gold-deficit 55/0, diplomacy 149/0, ai 297/0; mutacje bramki czerwienią test; FC PASS-WITH-NOTES
+- Limity: Bramka liczy tylko rozwiązanie jednostek (nie podatki i kolejkę), komunikat tylko jako powiadomienie po kliknięciu; AI jeszcze się nie równoważy (podtemat C w toku); żywy Chromium niezmierzony; mgla-sciezka-inwariant 41/1 i end-turn-modal A5 to dług sprzed tematu
+
 ## ROBOCZA 867807d8 -- 2026-11-13 -- FALA 692: Okno wymiany surowców bez przeładowania, obie strony w jednym rzucie (testowa)
 
 - W oknie „Umowa wymiany surowców” dodanie pozycji po którejkolwiek stronie (oferujemy / oferują) dopisuje ją w miejscu, bez przebudowy całego okna: zostają przewinięcie, tryb (jednorazowo / co turę), czas umowy, zaznaczone kafle i wpisane ilości w obu panelach. Obie strony można uzupełnić w dowolnej kolejności jedną propozycją; przy pustej stronie pojawia się neutralna podpowiedź zamiast ostrzeżenia o odrzuceniu. Wycena i reguły dyplomacji bez zmian.

@@ -106,8 +106,8 @@ check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
   // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: warunek priorytetu 2 ma postać z pozycją militarną.
-  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)';
-  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc)');
+  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\' || peaceSignals.wantsPeace)';
+  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === \'slabsza\')');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
     AI.includes(R3_COND) && mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
 }

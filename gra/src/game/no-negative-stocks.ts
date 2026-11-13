@@ -280,6 +280,8 @@ export interface NnsFoodProjection {
   /** Wartość zapisywana przez realny tick (po klamrze do 0 i capie) — z kopii, stan nie tknięty. */
   zapasyPoRealne: number;
   glodWojska: boolean;
+  /** Koszt żywności armii po ticku (dźwignia: rozwiązanie jednostek odzyskuje tę kwotę). */
+  kosztArmii: number;
 }
 
 /**
@@ -299,11 +301,12 @@ export function projectEmpireFoodAfterTick(input: NnsFoodProjectionInput): NnsFo
       input.foodTable, input.builtByCity, input.resolveOwnerEra,
     );
     const t = res.byOwner.get(input.ownerId);
-    if (!t) return { spichlerzPo: obecny, zapasyPoRealne: obecny, glodWojska: false };
+    if (!t) return { spichlerzPo: obecny, zapasyPoRealne: obecny, glodWojska: false, kosztArmii: 0 };
     return {
       spichlerzPo: t.spichlerzStolicy - t.kosztArmii,
       zapasyPoRealne: t.zapasyPo,
       glodWojska: t.glodWojska,
+      kosztArmii: t.kosztArmii,
     };
   } finally {
     restoreEmpireFoodRuntime(snap);
@@ -378,4 +381,35 @@ export function decideAiOwnerBalance(
     rozwiazJednostki: plan.akcje.filter(a => a.rodzaj === 'rozwiazanie').map(a => a.leverId),
     plan,
   };
+}
+
+// R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1 — bramka „Zakończ turę” dla gracza.
+// ---------------------------------------------------------------------------
+
+export interface NnsGateResult {
+  /** true = „Zakończ turę” zablokowane (prognoza < 0 ORAZ istnieje ruch naprawczy). */
+  blokada: boolean;
+  /** Komunikat po polsku (pusty gdy brak blokady). */
+  komunikat: string;
+}
+
+/**
+ * Decyzja bramki gracza. `zyskSkarbiec` / `zyskSpichlerz` = łączna poprawa salda po ZDJĘCIU
+ * wszystkich jednostek (rozwiązanie = odzyskany utrzymanie / koszt armii). Podatki nie są tu
+ * liczone (brak wiarygodnej projekcji) — ich pominięcie to strona BEZPIECZNA: brak dźwigni →
+ * brak blokady, czyli żadnego zakleszczenia tury.
+ */
+export function decideEndTurnGate(
+  p: NnsProjection,
+  zyskSkarbiec: number,
+  zyskSpichlerz: number,
+): NnsGateResult {
+  const v = evaluateEndTurnStocks(p);
+  if (!v.blokada) return { blokada: false, komunikat: '' };
+  const levers: NnsLever[] = [
+    { id: 'rozwiaz-skarbiec', rodzaj: 'rozwiazanie', stock: 'skarbiec', zysk: Math.max(0, zyskSkarbiec), koszt: 0, eliminujeCywilizacje: false },
+    { id: 'rozwiaz-spichlerz', rodzaj: 'rozwiazanie', stock: 'spichlerz', zysk: Math.max(0, zyskSpichlerz), koszt: 0, eliminujeCywilizacje: false },
+  ];
+  if (!czyRuchNaprawczy(v.brakuje, levers)) return { blokada: false, komunikat: '' };
+  return { blokada: true, komunikat: v.komunikat };
 }
