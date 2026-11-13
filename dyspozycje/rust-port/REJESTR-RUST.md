@@ -812,3 +812,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Decyzje orkiestratora (parytet, bez pytania):** zapis flagi według tego, co pin faktycznie serializuje (sprawdzenie `save.ts`); allowlista rozszerzona o miejsca tworzenia miast tylko dla flagi; druga ścieżka przegranej wpięta; generator wektorów pina obowiązkowy.
 - **Baza r2:** `b3fcba586`. Kod r1 zachowany jako gałąź `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r1-doc`. Worktree r1 usunięte.
 - **Start r2:** wstrzymany — dysk 6,8 GB < 8 GB.
+
+## Przebieg (13.11, heartbeat 20:09): dwa świeże starty
+- **Start ZWYCIESTWO-WIRING r2** (baza `b3fcba586`, świeżo) — `wf_87db356b-8ec`, Operator HAIKU.
+- **Start EKONOMIA-BRAZ-ERA r3** (baza `b611211fc`, świeżo, wektory z pina `07d2fbd72`) — `wf_208a3a6e-7a9`, Operator HAIKU.
+- **Trwa:** ZLOZA-B-REST r3 (Obrona, HAIKU, od 19:10, `wf_d3ddfaff-163`).
+- **Dysk:** 11 GB przed startami. **Parity:** `0ca58770e`.
