@@ -665,6 +665,12 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .hud-chip-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;
   column-gap:6px;row-gap:4px;align-items:center;}
 .civ-hud .hud-left-fallback .hud-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+/* R-WEB-HUD-TOPBAR-ONE-ROW-SIDE-BANNERS-LOWER-Q1 (r2): w jednym rzedzie komorki maja STALE pudelko (52 px,
+   wysrodkowane w wierszu o wysokosci wnetrza powloki 44 px). Wysokosc tresci zalezy od skali (--hud-k) i liczb,
+   wiec bez stalego pudelka gorna krawedz komorki (i jej srodek przy innej wysokosci) skakalaby przy zmianie liczb.
+   Tresc (max ~52 px przy 1920 px) miesci sie w pudelku; wiersz nie rosnie, bo ma stala wysokosc. */
+.civ-hud .civ-hud-banner-left:not(.hud-left-fallback)>.civ-hud-banner-shell>.hud-chip-grid{height:100%;grid-template-rows:100%;align-items:center;}
+.civ-hud .civ-hud-banner-left:not(.hud-left-fallback) .civ-hud-chip-cell{height:54px;}  /* 54 = 52 tresci + 2 px paddingu klikalnego zetonu */
 .civ-hud .civ-hud-chip-line{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:0;height:auto;}
 .civ-hud .civ-hud-chip-figs{display:inline-flex;flex-direction:row;align-items:baseline;gap:3px;flex-shrink:0;
   margin-left:0;height:auto;line-height:1.1;font-size:calc(var(--hud-cell-val) * .7 * var(--hud-k,1));}
