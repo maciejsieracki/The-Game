@@ -897,3 +897,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** cherry-pick kodu r1–r4 zrobiony jako **jeden** diff (5 plików) na `parity-v2` `e51b61637` w worktree `integ-victory2`, z czystym komunikatem (bez trailerów modelu). Commit lokalny; pełny test w tle; FF po zielonym wyniku.
 - **Gałęzie zachowane:** `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r4-fc` (`1573860a2`), `…-r3-wip` (`1e3939b4d`). Worktree rund r4 usunięte.
 - **Rundy:** 4/5 wykorzystane. Piąta runda = ostatnia; jeśli FAIL — eskalacja do właściciela.
+
+## ZWYCIESTWO-WIRING (P6.19-C): zintegrowane na parity-v2 (`a381dd13f`)
+- Pełny test na tipie: **3324 passed, 0 failed, 1 ignored** (exit 0); fmt OK; clippy `-D warnings` OK.
+- **FF `parity-v2`: `e51b61637` → `a381dd13f`.** Jeden czysty commit (kod r1–r4 jako jeden diff, bez trailerów modelu).
+- Zakres: koniec gry w stanie, sprawdzenie po turze, odrzucanie komend po końcu gry, generator wektorów wiringu z pina, flaga bez zapisu (pin `save.ts`).
+- **Poza zakresem (osobne tematy):** `ZWYCIESTWO-LOAD` (produkcyjne wczytanie stanu, odtwarzanie flagi ze miast), zakładanie/przejęcie miasta i druga ścieżka przegranej w bitwie (zależne od #115 ZDOBYCIE-MIASTA).
+- Worktree `integ-victory2` usunięty.
