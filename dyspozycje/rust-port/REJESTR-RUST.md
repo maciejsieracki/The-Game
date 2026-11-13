@@ -407,3 +407,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Decyzja do podjęcia przez właściciela** (przed rundą 3): rozszerzyć allowlistę o `war_turn_declare.rs` (zakres wymuszonych wojen, powiązany z #120) albo odłożyć tę ścieżkę do #120.
 - **Dysk:** spadł do 1,6 GB przy trwającej bramce. Usunięto cache kompilacji zakończonych tematów: `tgt-b22`, `tgt`, `fc-r7k7c-w4`, `fc4target`, `fc-target-deser`, `ev` (łącznie ok. 8 GB, bez otwartych przez procesy). Nie ruszano `ev_target` (w użyciu przez bramkę). Po sprzątaniu 6,3 GB. Próg 8 GB do startów z kodem Rust nadal niespełniony, więc nowych startów nie ma.
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `8a856eba4`.
+
+## Przebieg (CRED-WOJNA-Q1, runda 2 zamknięta, runda 3 uruchomiona): korekta bazy
+- **Błąd orkiestratora:** DODATEK r2 (`d1f0e3c59`) twierdził, że baza `15d85c2ee` jest przodkiem `origin/claude/rust-sivvrn`. To fałsz. `15d85c2ee` jest 155 commitów za `parity-v2` (`003d53f97`). Wpisałem to z pamięci, bez `merge-base --is-ancestor`. Nie integrować `811f607ee`, bo cofnąłby 155 commitów.
+- **Runda 2 (`wf_f60f7f97-86e`):** Operator (HAIKU) dodał 4 pliki testowe: `p6_cred_wojna_gen.mjs`, `p6_cred_wojna_vectors.rs`, `vectors.json`, raport. Bez zmian w `src/`. Bramki zielone: fmt, clippy, pełny cargo test 3190/0/1. Evaluator i FC (SONNET) PASS-WITH-NOTES (FC `cc4554ec7`). **DECISION_REQUIRED** w kryterium 1: hak w `declare_forced_wars` (`war_turn_declare.rs:105`, pin 41931) poza allowlistą. Zapisano refy `refs/keep/CRED-WOJNA-Q1-r2-{fc,code,obrona}`. FC wypchnięty na `rust-port-wip/R-RUSTPORT-P6-CRED-WOJNA-Q1-r2-fc`.
+- **Sprzeczność w źródłach:** FC r1 w historii parity (`03-final-control.md`) to FAIL. FC r1 w `rust-port-wip/...-fc` (`6a4fc2d51`) to PASS-WITH-NOTES. Obie na różnych bazach. Do rozstrzygnięcia przez właściciela, nie przeze mnie.
+- **Runda 3 (`wf_a4483abe-c33`), baza `003d53f97`:** przeniesienie 4 plików testowych z r2 na parity, bez `src/`, bez `war_turn_declare.rs`. Dispatch DODATEK r3: `721dae521`. Zadanie: testy przechodzą na parity, generator zgodny bajt-w-bajt z `vectors.json`.
+- **Otwarte decyzje właściciela:** (1) `war_turn_declare.rs` do allowlisty czy do #120; (2) alias `umowa_handlowa`; (3) harness pipeline dla kolejności D4/D8 (test woła prymitywy, nie `run_war_turn`); (4) które FC r1 jest wiążące.
+- **Dysk:** 4,2 GB przy starcie rundy 3.
+- **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` = `721dae521`.
