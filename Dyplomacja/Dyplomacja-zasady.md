@@ -83,9 +83,9 @@ Ten dokument zastępuje rozsypaną wiedzę (szablon + json + kod) jednym streszc
 | Aktywny pakt (NAP/sojusz) | +1 |
 | Efekt dobrej woli (podarunek) | +1 (przez `turyEfektuPodarunku`) |
 | Wspólny wróg (kooperacja) | +1 |
-| Wspólna religia | +0.5 (max +15) |
-| Odmienna religia | −0.5 (max −10) |
-| Ekspansja przy granicy | −2 |
+| Wspólna religia | 0 (religia nie wpływa na Zaufanie; `wspolnaReligia_zaufanie_perTura = 0`) |
+| Odmienna religia | 0 (`odmiennaReligia_zaufanie_perTura = 0`) |
+| Ekspansja przy granicy | −3 / −4 / −5 wg epoki pary (Kamień / Brąz / Żelazo; `ekspansjaGranica*_zaufanie_perTura`) |
 | Urazy historyczne | −2 (zanikają co 20 tur) |
 
 ### 3.3 Zdarzenia z akcji (szablon §1) — literały w kodzie, poza `params`
@@ -97,12 +97,10 @@ Pochodzą z tabel akcji (nie z tabeli modyfikatorów §3.3), więc są wartości
 | `wojna_wypowiedziana` (bez casus belli) | Zaufanie −20 | wojna |
 | `wojna_casus_belli` (z casus belli) | Zaufanie −10 | wojna |
 | `pokoj` | Zaufanie +5 | pokój |
-| `ultimatum_spelnione` | Zaufanie −5 | — |
 | `ultimatum_bezpodstawne` | Zaufanie −10, Respekt −10 | — |
 | `trybut_odmowa` | Zaufanie −10 | — |
 | `trybut_oferta_przyjeta` | Zaufanie +5 | — |
 | `wymiana_tech_gratis` | Zaufanie +5 | — |
-| `wspolna_religia` (seed) | Zaufanie +1 | — |
 
 *Każda zmiana jest clampowana do [0, 100] per składowa; Relacja wynika z sumy.*
 

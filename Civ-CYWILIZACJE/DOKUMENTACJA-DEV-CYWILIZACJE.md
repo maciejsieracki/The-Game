@@ -236,10 +236,10 @@ Status `'wojna'` lub `'sojusz'` jest nadrzędny nad punktowym wynikiem.
 | Tier | Nazwa | Warunek |
 |------|-------|---------|
 | 0 | Wojna | `status === 'wojna'` (override) |
-| 1 | Wrogi | score < 30 |
-| 2 | Neutralny | score ∈ [30, 60) |
-| 3 | Przyjazny | score ∈ [60, 120) |
-| 4 | Sojusz | `status === 'sojusz'` (override) lub score ≥ 120 |
+| 1 | Wrogi | Zaufanie < 10 (`RELATION_TIER_PROG_WROGI_ZAUFANIE`) |
+| 2 | Neutralny | Zaufanie ≥ 10 i score < 60 |
+| 3 | Przyjazny | score ∈ [60, 130) |
+| 4 | Sojusz | `status === 'sojusz'` (override) lub score ≥ 130 |
 
 `TIER_NAMES = ['Wojna', 'Wrogi', 'Neutralny', 'Przyjazny', 'Sojusz']`
 
@@ -289,14 +289,12 @@ tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): RelacjaDyplomatyczna
 | `zdrada` | Zaufanie −50, status='wojna' |
 | `tarcia_graniczne` | Zaufanie −2 |
 | `dar` | Zaufanie +6 × mnoznikPodarunku |
-| `wspolna_religia` | Zaufanie +1 (seed; per-tura → silnik) |
 | `pomoc_sojusznikowi` | Zaufanie +10 |
 | `wygrana_bitwa` | Respekt +5 |
 | `przewaga_militarna` | Respekt +15 |
 | `slabszy_militarnie` | Respekt −10 |
 | `trybut_zaakceptowany` | Respekt +10 |
 | `wojna_casus_belli` | Zaufanie −10, status='wojna' |
-| `ultimatum_spelnione` | Zaufanie −5 |
 | `ultimatum_bezpodstawne` | Zaufanie −10, Respekt −10 |
 | `trybut_odmowa` | Zaufanie −10 |
 | `trybut_oferta_przyjeta` | Zaufanie +5 |
@@ -311,9 +309,9 @@ tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): RelacjaDyplomatyczna
 | Aktywny pakt NAP/sojusz | +1 |
 | Efekt podarunku (przez `turyEfektuPodarunku`=5 tur) | +1 |
 | Wspólny wróg | +1 |
-| Wspólna religia | +0.5 |
-| Odmienna religia | −0.5 |
-| Ekspansja przy granicy | −2 |
+| Wspólna religia | 0 (religia nie wpływa na Zaufanie) |
+| Odmienna religia | 0 |
+| Ekspansja przy granicy | −3 / −4 / −5 wg epoki pary |
 | Urazy historyczne (zanikają co 20 tur) | −2 |
 
 ### 4.6 Progi akcji
@@ -391,9 +389,9 @@ Przesuwa `RelacjaDyplomatyczną` o jedną turę do przodu. SILNIK wywołuje raz 
 | `aktywnyPakt` | boolean? | +1 Zaufanie/turę (NAP lub sojusz) |
 | `dobraWolaAktywna` | boolean? | +1 Zaufanie/turę (efekt podarunku) |
 | `wspolnyWrog` | boolean? | +1 Zaufanie/turę |
-| `wspolnaReligia` | boolean? | +0.5 Zaufanie/turę |
-| `odmiennaReligia` | boolean? | −0.5 Zaufanie/turę |
-| `ekspansjaPrzyGranicy` | boolean? | −2 Zaufanie/turę |
+| `wspolnaReligia` | boolean? | 0 Zaufanie/turę (bez wpływu) |
+| `odmiennaReligia` | boolean? | 0 Zaufanie/turę (bez wpływu) |
+| `ekspansjaPrzyGranicy` | boolean? | −3 / −4 / −5 Zaufanie/turę wg epoki pary |
 
 **Zanik urazów:** co 20 tur (`turn % 20 === 0`) pole `urazyHistoryczne` zmniejsza się o krok 2 ku 0.
 

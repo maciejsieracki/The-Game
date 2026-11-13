@@ -175,9 +175,9 @@ const nowa = applyDiplomaticEvent(rel, 'dar', params);
 | `aktywnyPakt_zaufanie_perTura` | 1 | dotrzymany pakt NAP/sojusz |
 | `dobraWola_zaufanie_perTura` | 1 | efekt dobrej woli po podarunku |
 | `wspolnyWrog_zaufanie_perTura` | 1 | trwająca kooperacja |
-| `wspolnaReligia_zaufanie_perTura` | 0.5 | wspólna religia (max +15) |
-| `odmiennaReligia_zaufanie_perTura` | −0.5 | odmienna religia (max −10) |
-| `ekspansjaGranica_zaufanie_perTura` | −2 | ekspansja/osadnictwo przy granicy |
+| `wspolnaReligia_zaufanie_perTura` | 0 | wspólna religia — bez wpływu na Zaufanie |
+| `odmiennaReligia_zaufanie_perTura` | 0 | odmienna religia — bez wpływu na Zaufanie |
+| `ekspansjaGranica_zaufanie_perTura` | −3 | ekspansja/osadnictwo przy granicy (Kamień); Brąz `ekspansjaGranicaBraz_…` −4, Żelazo `ekspansjaGranicaZelazo_…` −5 |
 | `urazyHistoryczne_zaufanie_perTura` | −2 | urazy (zanik co 20 tur) |
 
 ### 5.4 Progi akcji (panel C)
@@ -219,12 +219,10 @@ Modyfikatory z §3.3 szablonu używają kluczy `params` (tabele 5.1–5.2). Doda
 | `wojna_casus_belli` (z casus belli) | Zaufanie −10 | wojna |
 | `pokoj` | Zaufanie +5 | pokój |
 | `zdrada` | Zaufanie −50 | wojna |
-| `ultimatum_spelnione` | Zaufanie −5 | — |
 | `ultimatum_bezpodstawne` | Zaufanie −10, Respekt −10 | — |
 | `trybut_odmowa` | Zaufanie −10 | — |
 | `trybut_oferta_przyjeta` | Zaufanie +5 | — |
 | `wymiana_tech_gratis` | Zaufanie +5 | — |
-| `wspolna_religia` (seed) | Zaufanie +1 | — |
 | (pozostałe: `handel`, `dar`, `wspolny_wrog`, `pomoc_sojusznikowi`, `zlamana_obietnica[_ai]`, `tarcia_graniczne`, `wygrana_bitwa`, `przewaga_militarna`, `slabszy_militarnie`, `trybut_zaakceptowany`) | wg `params` 5.1–5.2 | — |
 
 Każda zmiana clampowana do [0,100] per składowa. Nieznane zdarzenie = no-op.
@@ -304,7 +302,7 @@ Każda zmiana clampowana do [0,100] per składowa. Nieznane zdarzenie = no-op.
 | **Civ-EKONOMIA** | stan skarbca, czy odblokowana Waluta, transfer Pieniądza | kwoty/efekty akcji: posłaniec 5, łapówki 30–150, trybut ≥10/turę, reparacje 50–500, wymiana tech 50–300, granice 10–60; strumienie handlu | API skarbca przy zawieraniu/utrzymaniu umów — **wysoki** |
 | **Civ - Dane Cywilizacji** | `TypCywilizacji` (archetyp) + **religia** każdej cyw. z `civs.json` | — | tabele archetypów (agresja/handel/lojalność) + delty religijne zależą od tych danych — **wysoki** |
 | **Civ - Units / Battle** | wynik bitew (wygrana/przegrana), próg siły 2×/5×, komponenty siły wojska | — | emituje zdarzenia `wygrana_bitwa` (+5R), `przewaga_militarna` (+15R), `slabszy_militarnie` (−10R) — **wysoki** |
-| **Civ MAPA** | sąsiedztwo (nawiązanie kontaktu), sygnał osadnictwa/ruchu wojsk przy granicy | — | `kontaktNawiazany`; per-turn `ekspansjaGranica` (−2) — średni |
+| **Civ MAPA** | sąsiedztwo (nawiązanie kontaktu), sygnał osadnictwa/ruchu wojsk przy granicy | — | `kontaktNawiazany`; per-turn `ekspansjaGranica` (−3 / −4 / −5 wg epoki) — średni |
 | **Civ - Silnik** | wpięcie do pętli tury, `loadDiplomacyParams(json)` przy starcie, wstawianie `respekt`+`militaryRatio` z militariów, wołanie funkcji, save/load | cały model (API §4) | **integrator — krytyczny** (bez niego dyplomacja nie działa w grze) |
 | **Civ-UI** | — | bieżące Zaufanie/Respekt/Relacja, dostępność akcji wg progów (§6.4), dźwignia negocjacyjna | okno/panel dyplomacji — średni |
 | **Civ-MIASTO** | liczba miast i terytorium (15% Respektu), zakładanie miast przy granicy | skutki akcji 12: wasalizacja/wchłonięcie (przejęcie miast, niezadowolenie N tur), trybut do skarbca | wpływ na Respekt + wasal/wchłonięcie — średni |
