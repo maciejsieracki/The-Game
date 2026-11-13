@@ -558,3 +558,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja odłożona:** Obrona zmieniła kod po pełnym teście Operatora, więc wymagany jest pełny `cargo test` na `f946ee378` przed FF. Dysk 7,3 GB przy 28 procesach cargo z trzech innych tematów. Uruchomię po ich zakończeniu.
 - **Uwagi zaakceptowane:** `pub mod js_math` (test integracyjny w `tests/`); warianty `*_std`/`*_tie_b` (decyzja dispatchu). Otwarte: 39 vs 38 definicji (nieweryfikowane).
 - **Stan repo:** `parity-v2` = `cfa1edd31`. `claude/rust-sivvrn` przed tym wpisem = `d4f63e0cc`.
+
+## Przebieg (13.11): L-1 zintegrowane, melee FC, port fazy zwarcia uruchomiony
+- **L-1 (#153) zintegrowane:** FF `rust-port/parity-v2` = `2fb290cf7` (łańcuch z `cfa1edd31` potwierdzony; po pełnym teście Operatora zmian kodu nie było, tylko dokumentacja). Pełny `cargo test` 3264/0/1 (test Operatora na `6ea387a19`). Zmiana wartości zamienników dla 21 jednostek to zamierzony parytet z pinem (decyzja #27). Refy: `refs/keep/…-r2-{fc,op}`.
+- **Melee wektory (#134) FC PASS-WITH-NOTES** na `fc74b6d1a` (gałąź `rust-port-wip/…-COMBAT-MELEE-VEKTORY-Q1-fc`). Runda 1 FAIL (NaN/Inf/-0 jako null, surowe floaty), runda 2 naprawiła. Refy zapisane. Worktree usunięte. **Brak pełnego cargo test** na tym commicie (dysk).
+- **Port fazy zwarcia (#136) uruchomiony:** `wf_de513810-763`, Operator SONNET (uzasadniony), baza `fc74b6d1a`, dispatch `e49dfe78d`.
+- **Do zrobienia przed FF:** pełny `cargo test` dla `fc74b6d1a` (melee) i dla `f946ee378` (js_max); oba po zakończeniu tematów, żeby nie przeciążyć dysku.
+- **Dysk:** 9,6 GB po sprzątaniu worktree melee i L-1.
+- **Stan repo:** `parity-v2` = `2fb290cf7`. `claude/rust-sivvrn` przed tym wpisem = `e49dfe78d`.
