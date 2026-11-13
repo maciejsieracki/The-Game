@@ -1,3 +1,9 @@
+## ROBOCZA 6cb9e6c4 -- 2026-11-12 -- FALA 674: Relacja: Rozejm do tury N (#319) (testowa)
+
+- napis 'Rozejm do tury N' w relacji dyplomacji przy aktywnym rozejmie (2 linie main.ts: truceUntilTurn/currentTurn; diplomacy-display.ts; diplomacyAudience.ts; test diplo-truce-until-turn-test.cjs)
+- Weryfikacja: tsc 0; logic 213/213; test truce 15/0; vite build OK; FC PASS-WITH-NOTES 13d5cb0b7; Chromium NIE_ZMIERZONO
+- Limity: napis nieobejrzany w grze; wymagany podgląd na ROBOCZEJ
+
 ## ROBOCZA 853a8ff7 -- 2026-11-12 -- FALA 673: Administrator państwa — silnik: stan Państwa, koszt raz, tryb auto jeden dla Państwa, migracja (testowa)
 
 - administrator ulepszeń jako stan Państwa; jeden koszt utrzymania na Państwo; auto-ulepszenia w miastach wg trybu Państwa; migracja zapisu z administratora miasta

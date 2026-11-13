@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "853a8ff715264d05b39c53822d5e5d20",
-  "bundleSha256": "ba90e8c6d83364f84592148fb242800731c9a65cebefd9d0bc13b049e99f2b67",
-  "bundleBytes": 14561822,
+  "bundleMd5": "6cb9e6c47fb146bac4c02d36d68316f8",
+  "bundleSha256": "e918bf6fd8966065261e5c671f1456c74c0d67832c0c296b1d41ce2272998ec2",
+  "bundleBytes": 14562057,
   "sourceSnapshot": {
-    "source": "R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1 FC 68ea765ec",
+    "source": "dispatch R-WEB-DIPLO-TRUCE-UNTIL-TURN-DISPLAY-Q1, FC 13d5cb0b7",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 673: administrator ulepszeń jako stan Państwa; jeden koszt utrzymania na Państwo; auto-ulepszenia w miastach wg trybu Państwa; migracja zapisu z administratora miasta"
+    "FALA 674: napis 'Rozejm do tury N' w relacji dyplomacji przy aktywnym rozejmie (2 linie main.ts: truceUntilTurn/currentTurn; diplomacy-display.ts; diplomacyAudience.ts; test diplo-truce-until-turn-test.cjs)"
   ],
   "verification": [
-    "tsc OK; logic 213/213; admin-panstwo-city-gate-test 36/0; Chromium NIE_ZMIERZONO"
+    "tsc 0; logic 213/213; test truce 15/0; vite build OK; FC PASS-WITH-NOTES 13d5cb0b7; Chromium NIE_ZMIERZONO"
   ],
   "limits": [
-    "UI panelu Państwa i nazwy — #327; dług handlerów per miasto w UI; smoke w grze"
+    "napis nieobejrzany w grze; wymagany podgląd na ROBOCZEJ"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES (68ea765ec): silnik administratora Państwa; tryb auto jeden dla Państwa; UI per miasto — dług #327; Chromium NIE_ZMIERZONO."
+    "notes": "FC PASS-WITH-NOTES (13d5cb0b7): napis Rozejm do tury N; wiring main.ts 2 linie; Chromium NIE_ZMIERZONO - obejrzec w grze."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-12T23:11:59",
+  "hubGeneratedAt": "2026-11-13T02:28:56",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "853a8ff715264d05b39c53822d5e5d20",
-      "sizeBytes": 14561822
+      "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
+      "sizeBytes": 14562057
     }
   ],
-  "md5": "853a8ff715264d05b39c53822d5e5d20",
+  "md5": "6cb9e6c47fb146bac4c02d36d68316f8",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
