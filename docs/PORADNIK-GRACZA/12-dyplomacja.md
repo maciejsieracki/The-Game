@@ -57,7 +57,6 @@ Wysoka relacja — handel, pakt, sojusz. Niska — ultimatum, wojna. Profil cywi
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -92,7 +91,6 @@ Powiadomienie „Spotkano nową cywilizację". Opcjonalna audiencja — zwykle n
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -147,7 +145,6 @@ Oczekująca propozycja wroga może być **blocking** (katalog A1-Q9). W wojnie c
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -197,7 +194,6 @@ Deklaracja wojny — zawsze możliwa (kary relacji). **Dwa różne sposoby strac
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -258,7 +254,6 @@ Za każde **100 PN** nadwyżki w korzystnej umowie → **+1 zaufanie**. **Max +5
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -293,7 +288,6 @@ Utrzymanie armii + głód wojska. Handel z wrogiem wstrzymany. Sojusznicy mogą 
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 
@@ -367,7 +361,6 @@ Dedykowanego „eventu" handlu jednorazowego nie ma, ale **stół negocjacji 3-k
 ### Przykład liczbowy
 
 Relacja **+15** (neutralna). Prezent **+8** PN → **+23** — odblokowuje handel (próg **+20**).
-Wspólna religia **+10** relacji — sąsiad z twoją wiarą szybciej zgadza się na pakt.
 
 ### Strategia gracza
 

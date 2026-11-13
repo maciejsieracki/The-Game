@@ -25,9 +25,11 @@
 
 - Do wyboru są rozejmy na **5, 10 albo 15 tur**; domyślnie **10**.
 - Po zakończeniu rozejmu pojawia się propozycja pokoju; zgoda oznacza pokój, brak zgody oznacza wznowienie wojny.
+- Zawarcie rozejmu ustawia Zaufanie pary na **10** (od razu, `diplomacy.json:rozejm_zaufanie_ustawienie`).
 
 ### Pokój
 
+- Zawarcie pokoju ustawia Zaufanie pary na **20** (od razu; także przy pokoju po rozejmie, `diplomacy.json:pokoj_zaufanie_ustawienie`).
 - Pokój jest stały. Po pokoju następuje **karencja** 40 tur; dla chronionego przegrywającego (patrz hasło **Zmęczenie wojną**) karencja trwa 100 tur.
 - Pokój z przegrywającym może kosztować miasta: przegrywający, który jest już wyczerpany wojną, oferuje miasta.
 
@@ -62,7 +64,6 @@ AI na początku wojny proponuje **rozejm**. Pokój stały proponuje, gdy spełni
 - Słabsza strona proponuje pokój, silniejsza (o co najmniej 20%) odrzuca.
 - Pokój wyrównuje wyłącznie oddanie miasta; siła militarna wynosi 20% (miasto jako jedyny słodzik).
 - Zmęczenie wojną kończy wojny tylko miastami.
-- Zaufanie po rozejmie wraca do 10, po pokoju do 20 (od razu).
 - Znika warunek „czuje się silniejsze” i mnożnik ceny od siły; zostaje minimalny czas wojny.
 
 ---

@@ -34,7 +34,7 @@ Zaufanie jest liczone w zakresie **0–100** dla każdego składnika zdarzenia.
 - Plus: handel i traktaty dają go co turę bez wysiłku; dobra wola po wymianie dodaje +1 przez kilka tur.
 - Minus: złamany pakt (−40) lub zdrada (−50) kasuje miesiące budowania.
 - Minus: w wojnie Zaufanie spada do zera i wraca dopiero po jej zakończeniu.
-- Minus: sąsiedztwo granicą cofa Zaufanie co turę, tym mocniej im nowsza epoka.
+- Minus: sąsiedztwo granicą cofa Zaufanie co turę, tym mocniej im nowsza epoka (w karencji po pokoju lub rozejmie kara jest wstrzymana).
 
 **Dla AI**
 - Plus: AI z wysokim Zaufaniem akceptuje więcej ofert i chętniej wchodzi w sojusz.
@@ -49,13 +49,15 @@ Zaufanie jest liczone w zakresie **0–100** dla każdego składnika zdarzenia.
 | Sojusz | +3 | wyłączny z paktem (jeden tier); nie wyklucza handlu, który dodaje się osobno |
 | Wspólny wróg | +1 | |
 | Dobra wola po wymianie | +1 | przez 3 tury (`dobra_wola_tur`); patrz rozbieżność w Historii |
-| Wspólna religia | +0,5 | do usunięcia — patrz sekcja niewdrożona |
-| Odmienna religia | −0,5 | do usunięcia — patrz sekcja niewdrożona |
-| Sąsiedztwo granicą, Kamień | −2 | wspólna granica lądowa |
-| Sąsiedztwo granicą, Brąz | −3 | wyższa epoka pary |
-| Sąsiedztwo granicą, Żelazo | −4 | wyższa epoka pary |
+| Sąsiedztwo granicą, Kamień | −3 | wspólna granica lądowa; wstrzymane w karencji po pokoju lub rozejmie |
+| Sąsiedztwo granicą, Brąz | −4 | wyższa epoka pary; wstrzymane w karencji po pokoju lub rozejmie |
+| Sąsiedztwo granicą, Żelazo | −5 | wyższa epoka pary; wstrzymane w karencji po pokoju lub rozejmie |
 | Uraz historyczny | −2 | |
 | Nieautoryzowany przemarsz | −5 | |
+
+Religia nie wpływa na Zaufanie: wspólna i odmienna religia nie dają już wartości na turę (klucze w JSON mają wartość 0; patrz Historia).
+
+**Ustawiane wartości po umowie:** po zawarciu **rozejmu** Zaufanie pary wynosi **10**, po **pokoju** — **20**. Wartość jest ustawiana od razu w chwili zawarcia (rozejm → pokój daje 20).
 
 Uwagi do tabeli: osobnego tieru „pokój” (+1) w grze nie ma — jego miejsce zajął dryf z Wiarygodności (patrz hasło **Wiarygodność**), więc para bez paktu i sojuszu nie dostaje stałego plusu za sam kontakt pokojowy. Parametr `aktywnyPakt` był wycofany w 2026-07 i nie wpływa na grę. Szpieg wykryty (−15, `szpiegWykryty_zaufanie`) nie ma wywołania w grze i został usunięty z tabeli Parametry.
 
@@ -92,12 +94,7 @@ Wiarygodność (reputacja dotrzymywania słowa, patrz hasło **Wiarygodność**)
 
 ### Zasady zatwierdzone, jeszcze niewdrożone
 
-> **DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku.** Ten blok NIE opisuje obecnego stanu gry.
-
-- Po rozejmie Zaufanie wraca do **10**, po pokoju do **20** (od razu).
-- Kara za sąsiedztwo rośnie do **−3 / −4 / −5** (Kamień / Brąz / Żelazo) i jest wstrzymana w okresie karencji po pokoju i rozejmie.
-- Religia przestaje wpływać na Zaufanie (usunięcie wspólnej i odmiennej religii).
-- W wojnie Zaufanie nadal spada do zera (to już obowiązuje).
+Zasady dotyczące Zaufania z decyzji właściciela 2026-11-13 zostały wdrożone (kara za sąsiedztwo −3/−4/−5 z wstrzymaniem w karencji, religia bez wpływu, ustawienie 10/20 po rozejmie i pokoju) i opisane wyżej w obecnych regułach. Dalsze zasady (siła militarna, wypowiadanie wojny, rozejm i pokój, etykiety nastawienia) są w haśle **Wypowiedzenie wojny** i **Rozejm i pokój**.
 
 ---
 
@@ -127,11 +124,13 @@ Każda liczba w tabeli jest sprawdzana testem `gra/tools/diplo-civpedia-values-t
 | 3 | `diplomacy.json:params.sojusz_zaufanie_perTura` |
 | 2 | `diplomacy.json:params.nap_zaufanie_perTura` |
 | 1 | `diplomacy.json:params.wspolnyWrog_zaufanie_perTura` |
-| 0.5 | `diplomacy.json:params.wspolnaReligia_zaufanie_perTura` |
-| -0.5 | `diplomacy.json:params.odmiennaReligia_zaufanie_perTura` |
-| -2 | `diplomacy.json:params.ekspansjaGranica_zaufanie_perTura` |
-| -3 | `diplomacy.json:params.ekspansjaGranicaBraz_zaufanie_perTura` |
-| -4 | `diplomacy.json:params.ekspansjaGranicaZelazo_zaufanie_perTura` |
+| 0 | `diplomacy.json:params.wspolnaReligia_zaufanie_perTura` (religia bez wpływu) |
+| 0 | `diplomacy.json:params.odmiennaReligia_zaufanie_perTura` (religia bez wpływu) |
+| -3 | `diplomacy.json:params.ekspansjaGranica_zaufanie_perTura` |
+| -4 | `diplomacy.json:params.ekspansjaGranicaBraz_zaufanie_perTura` |
+| -5 | `diplomacy.json:params.ekspansjaGranicaZelazo_zaufanie_perTura` |
+| 10 | `diplomacy.json:params.rozejm_zaufanie_ustawienie` (ustawienie po rozejmie) |
+| 20 | `diplomacy.json:params.pokoj_zaufanie_ustawienie` (ustawienie po pokoju) |
 | -2 | `diplomacy.json:params.urazyHistoryczne_zaufanie_perTura` |
 | 5 | `diplomacy.json:params.karaPrzemarszNieautoryzowany_zaufanie_perTura` (wartość kary; w grze odejmowana: −5 na turę) |
 | 10 | `diplomacy.json:params.pomocSojusznikowi_zaufanie` |
@@ -152,6 +151,8 @@ Uwaga: wiersz `kod:` (−15 za dobrowolne zerwanie traktatu) nie ma klucza w `pa
 ---
 
 ## Historia / decyzje
+
+Runda 2 (orkiestrator, DECYZJA WŁAŚCICIELA 2026-11-13, wdrożona w kodzie w 478cefaed, FALA 679): kara za sąsiedztwo −3/−4/−5 (wcześniej −2/−3/−4) z wstrzymaniem w karencji po pokoju lub rozejmie (`main.ts`, `karaWspolnaGranicaDelta`); religia usunięta z wpływu na Zaufanie (wcześniej ±0,5 na turę, wiersze usunięte z tabel obecnych zmian); po rozejmie Zaufanie = 10, po pokoju = 20 (`main.ts`, `finalizePeaceTreatyBetween`, `rozejm_zaufanie_ustawienie` / `pokoj_zaufanie_ustawienie`). Kod: `diplomacy.ts` `sharedBorderPenaltyForEpochs` (linie 608–610), `computeTickZaufanieDelta`.
 
 Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona Operatora, zarzuty 1–3): usunięto z opisu martwe źródła (handel +2, dar +6, aktywny pakt +1) i poprawiono zdanie o sumowaniu tierów; kod: `diplomacy.ts` case 'handel' i 'dar' (dZ = 0), `computeTickZaufanieDelta` (switch tieru: sojusz/nap). Sekcja „Zasady zatwierdzone, jeszcze niewdrożone” wynika z DECYZJI WŁAŚCICIELA 2026-11-13.
 

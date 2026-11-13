@@ -199,7 +199,10 @@ ok(totalRows >= 60, 'za mało sprawdzonych wierszy parametrów: ' + totalRows);
 const dip = jsonByName('diplomacy.json').params;
 ok(dip.startZaufanie === 20, 'start zaufania ≠ 20');
 ok(dip.startRespekt === 30, 'start respektu ≠ 30');
-ok(dip.ekspansjaGranica_zaufanie_perTura === -2 && dip.ekspansjaGranicaBraz_zaufanie_perTura === -3 && dip.ekspansjaGranicaZelazo_zaufanie_perTura === -4, 'kary sąsiedztwa ≠ −2/−3/−4');
+ok(dip.ekspansjaGranica_zaufanie_perTura === -3 && dip.ekspansjaGranicaBraz_zaufanie_perTura === -4 && dip.ekspansjaGranicaZelazo_zaufanie_perTura === -5, 'kary sąsiedztwa ≠ −3/−4/−5');
+ok(dip.wspolnaReligia_zaufanie_perTura === 0 && dip.odmiennaReligia_zaufanie_perTura === 0, 'religia wpływa na Zaufanie (oczekiwane 0/0)');
+ok(dip.rozejm_zaufanie_ustawienie === 10 && dip.pokoj_zaufanie_ustawienie === 20, 'ustawienie Zaufania po rozejmie/pokoju ≠ 10/20');
+ok(readText(path.join(ROOT, 'gra', 'src', 'main.ts')).includes('rozejm_zaufanie_ustawienie'), 'rozejm_zaufanie_ustawienie nie jest czytany w gra/src/main.ts');
 ok(expectedValue('kod:etykieta-wrogi').value === 30 && expectedValue('kod:etykieta-nieufny').value === 45 && expectedValue('kod:etykieta-neutralny').value === 60 && expectedValue('kod:etykieta-zyczliwy').value === 120, 'progi etykiet ≠ 30/45/60/120');
 const pw = jsonByName('power-params.json').skladniki;
 ok(pw.jednostka_wojskowa.pkt === 2.5 && pw.rekrut_ekw_jednostki.pkt === 10 && pw.miasto.pkt === 50 && pw.tech_zbadane.pkt === 80, 'składniki Power ≠ oczekiwane');
@@ -253,6 +256,13 @@ const zaufaniePath = path.join(POJECIA, 'zaufanie.md');
     ok(mutated !== orig, 'mutacja prozy: brak wzorca „Start: **20**” w zaufanie.md');
     ok(checkProzaStart(mutated, 'zaufanie.md (mutacja)', 'startZaufanie') !== null, 'mutacja liczby w prozie „Start” NIE została wykryta');
   }
+}
+if (fs.existsSync(zaufaniePath)) {
+  const orig0 = readText(zaufaniePath);
+  const needleZ = '| -5 | `diplomacy.json:params.ekspansjaGranicaZelazo_zaufanie_perTura` |';
+  ok(orig0.includes(needleZ), 'mutacja: brak wiersza kary Żelazo (−5) w zaufanie.md');
+  const mutZ = orig0.replace(needleZ, '| -4 | `diplomacy.json:params.ekspansjaGranicaZelazo_zaufanie_perTura` |');
+  ok(checkDocText(mutZ, 'zaufanie.md (mutacja)').problems.some((p) => p.includes('ekspansjaGranicaZelazo')), 'mutacja kary sąsiedztwa Żelazo NIE została wykryta');
 }
 if (fs.existsSync(zaufaniePath)) {
   const orig = readText(zaufaniePath);
