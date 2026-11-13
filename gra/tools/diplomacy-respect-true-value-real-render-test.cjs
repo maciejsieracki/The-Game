@@ -6,9 +6,9 @@
  *
  * Dowód w żywym headless Chromium (nie jsdom): otwiera PRAWDZIWY `showDiplomacyAudience`
  * z bundla esbuild (z prawdziwym CSS i prawdziwym DOM), dla trzech stanów:
- *   A. wojna, Zaufanie 74 / Respekt 54 (suma 128 > limit wojenny) → panel pokazuje 74 i 54
- *      (prawdziwe wartości, bez obcięcia do 29), etykieta „Wrogi”, dopisek limitu z
- *      `WAR_RELATION_SCORE_CAP` (nie hardcoded 29), zrzut ekranu;
+ *   A. wojna, Zaufanie 74 / Respekt 54 → panel pokazuje 74 i 54
+ *      (prawdziwe wartości, bez obcięcia), etykieta „Wrogi”, dopisek „w wojnie zaufanie spada do zera”
+ *      (R-WEB-DIPLO-WAR-TRUST-ZERO; dawny limit 29 usunięty), zrzut ekranu;
  *   B. pokój, te same wartości → brak dopisku, wartości 74 i 54, etykieta nie „Wrogi”;
  *   C. wojna, Zaufanie 0 / Respekt 10 (Zaufanie już zero, nic nie jest obcinane) → brak dopisku.
  *
@@ -235,10 +235,8 @@ async function main() {
     const errors = [];
     let page = await freshPage(browser);
     errors.push(...page.errors);
-    const cap = await page.evaluate(() => window.RTV.WAR_RELATION_SCORE_CAP);
-    const capPoints = Number(cap);
-    check('limit wojenny usunięty: WAR_RELATION_SCORE_CAP nie steruje dopiskiem (zaufanie spada do zera)', typeof capPoints === 'number', capPoints);
-    check('stan funkcji: wojna, suma 128 > limit → dopisek', await page.evaluate(() => window.RTV.warRelationCapApplies(74, 54, true) === true));
+    check('stan funkcji: wojna, Zaufanie 74 > 0 → dopisek', await page.evaluate(() => window.RTV.warRelationCapApplies(74, 54, true) === true));
+    check('stan funkcji: wojna, Respekt 80 nie uruchamia dopisku (Zaufanie 0)', await page.evaluate(() => window.RTV.warRelationCapApplies(0, 80, true) === false));
     check('stan funkcji: pokój → brak dopisku', await page.evaluate(() => window.RTV.warRelationCapApplies(74, 54, false) === false));
     check('stan funkcji: wojna, Zaufanie 10 > 0 → dopisek (zaufanie spada do zera)', await page.evaluate(() => window.RTV.warRelationCapApplies(10, 10, true) === true));
     check('stan funkcji: wojna, Zaufanie 0 → brak dopisku', await page.evaluate(() => window.RTV.warRelationCapApplies(0, 10, true) === false));
