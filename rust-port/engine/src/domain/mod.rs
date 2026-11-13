@@ -168,6 +168,7 @@ pub mod unit_replace;
 pub mod unit_replace_cost;
 pub mod unit_replace_defs;
 pub mod unit_replace_wiring;
+pub mod victory;
 pub mod war_all_in_capital;
 pub mod war_all_in_capital_nav;
 pub mod war_all_in_capital_plan;
