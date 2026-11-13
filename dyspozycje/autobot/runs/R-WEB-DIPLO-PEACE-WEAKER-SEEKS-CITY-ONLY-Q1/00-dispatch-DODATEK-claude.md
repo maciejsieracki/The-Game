@@ -1,3 +1,23 @@
+# R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — DODATEK orkiestratora, RUNDA 2/5 (2026-11-13) — CZYTAJ NAJPIERW
+
+Final Control rundy 1: FAIL (raport 92c852b5d). KANDYDAT STARTOWY: f2367587e (kod 063ce970b). Najpierw `git merge --no-ff origin/main` (ed95085a2 po FALI 681; konflikty rozwiąż zachowując obie zmiany, tylko w plikach z allowlisty) i sprawdź tsc. Ten sam ID i ta sama gałąź robocza.
+
+## Decyzje orkiestratora (w mocy decyzji właściciela „tylko miasto jako słodzik”)
+D1. ALLOWLISTA ROZSZERZONA o gra/src/game/diplomacy-ai-forced-peace.ts (wymóg AI↔AI „silniejsza przyjmuje tylko za miasto” nie da się spełnić bez niego); wymuszony pokój po limicie tur ma przestrzegać nowej reguły albo być wyraźnie opisany jako mechanizm zmęczenia (krok 4b) — wtedy zostaw i zapisz w raporcie jako NIE ROBIONE w 4a.
+D2. Złoto i surowce NIE są dozwolonym słodzikiem pokoju ani rozejmu w żadnym kierunku (także słabsza AI → silniejszy gracz). „Trybut” jako osobna umowa (żądanie danin z Respektem +10) nie jest pokojem i nie podlega tej zmianie.
+D3. Z5 (słabsza strona ma ≤ 1 miasto): nie może kupić pokoju/rozejmu (brak miasta do oddania) — zachowaj, opisz w raporcie jako „zostaje do kroku 4b/ochrony przegrywającego” i dodaj test.
+
+## Zarzuty FC do zamknięcia (każdy z dowodem w danych/mutacji)
+1. Regresje względem bazy 646d95248: diplo-peace-balance-accept-test 24/5 (A1, A4, A5, B1, C1; baza 29/0) i diplo-war-peace-main-guard-test 32/3 (R3; baza 35/0). Asercje o starej regule (przewaga rw > 20%, „czuje się silniejsze”, mnożnik ceny) przepisz na nową regułę (siła militarna, słabsza szuka, miasto jako słodzik); żaden test nie osłabiony poza tym. sim-test: dług bazowy 3 FAIL (S3, S4b, M_TUR) — nie więcej.
+2. Brak dowodu mutacyjnego (h): dla KAŻDEJ bramki egzekwującej nową regułę w evaluatePeaceAiGate, diplomacy-proposals.ts (cityGivePn ≥ basePn), forced-peace, ai.ts (pozycja słabsza/silniejsza), main.ts (pozycjaMilitarna) — mutacja usuwająca bramkę musi zaczerwienić test behawioralny (nie regex). Pokaż surowe wyniki mutacji.
+3. Rozejm z miastem słabszej AI niewdrożony: słabsza AI proponuje rozejm i pokój razem z miastem (oferuj_miasto_za_pokoj dla pokoju działa; dodaj rozejm).
+4. Testy pasma (progRozniceSilyPokoj > 0) i przypadku jednego miasta (D3).
+5. Remis rozstrzygany tak samo w ai.ts i main.ts (naprawione w r1 — utrzymaj, test).
+
+## Kryteria końca runda 2 (binarne)
+tsc 0; pięć bramek zielone; diplo-peace-balance-accept-test 29/0 (przepisane asercje), diplo-war-peace-main-guard-test 35/0, diplo-war-peace-sim-test ≤ 3 FAIL (te same), nowy test z mutacjami; raport 10-operator-claude.md.
+
+---
 # R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — DODATEK orkiestratora (runda 1)
 
 ## Decyzje właściciela (2026-11-13), w kolejności
