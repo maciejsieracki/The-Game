@@ -56,3 +56,34 @@ Bez osłabiania asercji, bez `#[ignore]`, bez usuwania testów. Zmiany spoza wsk
 
 ### Gate dyskowy
 Start dopiero przy ≥ 8 GB wolnego.
+
+---
+
+## DODATEK r3 (po FC FAIL r2 i DECISION_REQUIRED, 13.11) — zawężony zakres
+
+**BAZA r3: `d1ce84a34`** (FC r2; kod potomek `0ca58770e`). Pierwszy krok: `git checkout --detach d1ce84a34`. Świeże uruchomienie.
+
+### Decyzje orkiestratora (techniczne/zakresowe, bez pytania)
+1. **Zakres zawężony (opcja B).** W tej rundzie: flaga końca gry, reset przy nowej grze, odrzucanie komend po końcu gry, sprawdzenie zwycięstwa po turze, semantyka błędu jak w pinie, generator wektorów wiringu. **Poza zakresem** (osobne tematy, nie w tej rundzie): ZDOBYCIE-MIASTA (#115), ustawianie flagi przy zakładaniu/przejęciu miasta, druga ścieżka przegranej po utracie miasta w bitwie, produkcyjne wczytanie `PlayableState` i odtwarzanie flagi ze miast, porównanie `potegiWszystkich` z `power_raw`.
+2. **Semantyka błędu jak w pinie:** `evaluate_victory` błąd → log i kontynuacja tury (pin: try/catch), NIE cofanie tury. Udokumentować w kodzie i testem.
+3. **Flaga końca gry** zgodnie z pinem: po zakończeniu gry komendy są odrzucane (`main.ts:37997, 38043, 43827`); reset przy nowej grze (`main.ts:45160, 45431, 45686, 45920`); `PlayableGame::new` bez sztywnego `true`, tylko stan startowy zgodny z pinem.
+4. **victoryMode** z menu: pin czyta `_menuAdvanced?.victoryMode` — w Rust domyślnie `MocIDominacja` (brak menu w tym zakresie), z adnotacją i testem.
+5. **Zapis flagi `graczKiedysMialMiasto`** — pozostaje `serde(skip)` w tej rundzie; zmiana razem z produkcyjnym wczytaniem (osobny temat).
+6. **Martwy kod:** `odtworz_flage_zwyciestwa_ze_miast` — albo usunąć, albo oznaczyć `#[cfg(test)]` z komentarzem; NIE zostawiać jako pseudo-produkcyjny.
+
+### Kryteria r3
+1. **Generator** `p6_victory_wiring_gen.mjs` wykonuje tekst pina dla: odrzucania komend po końcu gry, resetu, sprawdzenia po turze (wektory wiringu, nie tylko `victory.ts`). SHA fragmentów w testach. Wektory w `p6_victory_wiring_vectors/**`.
+2. Testy wiringu porównują WYJŚCIA Rust z wektorami (nie tylko wartości domyślne).
+3. Doc-comment w `playable.rs` nie może być rozbity; adnotacje zgodne z kodem.
+4. `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --lib`, `p6_victory_wiring`, PEŁNY `cargo test --no-fail-fast` 0 failed (kody wyjścia).
+
+### Allowlista r3
+- `rust-port/engine/src/domain/playable.rs` (flaga, reset, odrzucanie komend, sprawdzenie po turze, adnotacje)
+- `rust-port/engine/src/domain/victory.rs` (wyłącznie jeśli semantyka błędu tego wymaga)
+- `rust-port/engine/src/domain/turn*.rs` (miejsce sprawdzenia po turze i odrzucania komend — wskazać plik w raporcie)
+- `rust-port/engine/tests/p6_victory_wiring*.rs`, `p6_victory_wiring_gen.mjs`, `p6_victory_wiring_vectors/**`
+- `dyspozycje/autobot/runs/<ID>/**`
+Zakaz: gra/, Cargo.*, push do parity, osłabianie asercji, `#[ignore]`, zmiana zapisu (`save_load.rs`).
+
+### Gate dyskowy
+Start dopiero przy ≥ 8 GB wolnego.
