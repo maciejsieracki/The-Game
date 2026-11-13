@@ -30,6 +30,7 @@ const ENTRY_SRC = [
   "export { evaluateProposal, createNegotiation, negotiationAsProposal } from './game/diplomacy-proposals';",
   "export { evaluatePeaceAiGate, resolveWarPeaceProfile } from './game/diplomacy-war-peace-profile';",
   "export { peaceMilitaryPosition } from './game/diplomacy-military-strength';",
+  "export { aiCommandToPendingProposal } from './game/diplomacy-proposals';",
   "",
 ].join('\n');
 
@@ -98,6 +99,25 @@ async function main() {
     check('d2 surowce nie są słodzikiem rozejmu — odrzucone', goods.accepted === false && /Złoto i surowce/.test(goods.reason || ''), goods);
     const truceNoCity = evalP('rozejm', {}, 'silniejsza');
     check('f1 rozejm: silniejsza AI odrzuca bez miasta', truceNoCity.accepted === false, truceNoCity);
+
+    // (f2) wymóg 3: słabsza AI proponuje ROZEJM z miastem (komenda rodzaj 'rozejm' → actionId 'rozejm').
+    const truceCmd = mod.aiCommandToPendingProposal(
+      { type: 'oferuj_miasto_za_pokoj', targetId: '1', powod: 't', cityId: 'c9', cityPn: 900, cityWeight: 1, rodzaj: 'rozejm' }, 0, 1, 80);
+    check('f2 słabsza AI: oferuj_miasto_za_pokoj rodzaj rozejm → actionId rozejm, miasto w giveItems',
+      truceCmd && truceCmd.actionId === 'rozejm' && truceCmd.payload.turns > 0
+      && truceCmd.payload.giveItems.some(i => i.typ === 'miasto' && i.id === 'c9'), truceCmd);
+    const peaceCmd = mod.aiCommandToPendingProposal(
+      { type: 'oferuj_miasto_za_pokoj', targetId: '1', powod: 't', cityId: 'c9', cityPn: 900, cityWeight: 1 }, 0, 1, 80);
+    check('f3 bez rodzaju: oferuj_miasto_za_pokoj = pokój (zachowanie dotychczasowe)', peaceCmd && peaceCmd.actionId === 'pokoj', peaceCmd);
+
+    // (d3) jedno miasto słabszej strony poniżej ceny nie kupuje pokoju (ZAŁOŻENIE Z5/D3: brak nadwyżki PN).
+    const oneSmall = evalP('pokoj', { giveItems: [{ typ: 'miasto', id: 'only', ilosc: 1, cityPn: 10, cityWeight: 1 }] }, 'silniejsza');
+    check('d3 jedno miasto (PN < ceny) nie kupuje pokoju od silniejszej AI', oneSmall.accepted === false, oneSmall);
+
+    // (g) pasmo (progRozniceSilyPokoj > 0): różnica w paśmie → 'pasmo'; poza pasmem → decyduje siła.
+    check('g1 pasmo 20%: 105 vs 100 => pasmo', pos(S('ai', 105), S('p', 100), 20) === 'pasmo');
+    check('g2 pasmo 20%: 130 vs 100 => silniejsza (poza pasmem)', pos(S('ai', 130), S('p', 100), 20) === 'silniejsza');
+    check('g3 pasmo 20%: 100 vs 130 => slabsza (poza pasmem)', pos(S('ai', 100), S('p', 130), 20) === 'slabsza');
 
     console.log('');
     console.log('diplo-peace-weaker-seeks-city-only-test: ' + pass + ' pass / ' + fail + ' fail');

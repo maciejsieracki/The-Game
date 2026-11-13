@@ -2026,7 +2026,9 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'oferuj_trybut_za_pokoj':
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'oferuj_miasto_za_pokoj':
-      return 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
+      return cmd.rodzaj === 'rozejm'
+        ? 'Oferujemy rozejm w zamian za przekazanie jednego z naszych miast.'
+        : 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
     case 'zada_miasto_za_pokoj':
       return 'Warunkiem pokoju jest przekazanie jednego z twoich miast.';
     case 'wypowiedz_wojne':
@@ -2117,6 +2119,18 @@ export function aiCommandToPendingProposal(
       };
     case 'oferuj_miasto_za_pokoj':
       // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI (proponent) oddaje swoje miasto → giveItems.
+      // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): rodzaj 'rozejm' → rozejm z tym samym miastem.
+      if (cmd.rodzaj === 'rozejm') {
+        return {
+          ...base,
+          id: makeDealId('pending-rozejm-miasto', turn, fromOwnerId, toOwnerId),
+          actionId: 'rozejm',
+          payload: {
+            turns: TRUCE_DEFAULT_TURNS,
+            giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+          },
+        };
+      }
       return {
         ...base,
         id: makeDealId('pending-pokoj-miasto', turn, fromOwnerId, toOwnerId),

@@ -6592,7 +6592,7 @@ export type AIDiplomacyCommand =
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
    * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
    */
-  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number }
+  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; rodzaj?: 'pokoj' | 'rozejm' }
   /**
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
    */
@@ -7051,13 +7051,17 @@ export function decideAIDiplomacy(
         cenaPn: AI_MIASTO_CENA_POKOJU_PN * wearyOfferMult,
       }) ?? aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, { minMiast: wearyMinMiast });
       if (pick) {
+        // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
+        // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
+        const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);
         komendy.push({
           type:       'oferuj_miasto_za_pokoj',
           targetId:   rel.partnerId,
-          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
+          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za ${cityOfferKind === 'rozejm' ? 'rozejm' : 'pokoj'}`,
           cityId:     pick.cityId,
           cityPn:     pick.cityPn,
           cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
+          rodzaj:     cityOfferKind,
         });
         continue;
       }

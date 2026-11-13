@@ -104,18 +104,21 @@ check('R6/ZT: priorytet 4 liczy przewagę przez compareMilitaryStrength (≥20%)
   AI.includes("compareMilitaryStrength(milAiSide, milPartnerSide).przewaga === 'A'"));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
-  const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc)');
+  // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: warunek priorytetu 2 ma postać z pozycją militarną.
+  const R3_COND = '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)';
+  const mutR3 = AI.replace(R3_COND, '!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (rw <= progPokojSlabosc)');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
-    mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
+    AI.includes(R3_COND) && mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
 }
 // R3(c)/R3 spójność: zdrowie armii podpięte, AI nie proponuje gdy czuje się silniejsze
 check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai.ts',
   count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
-check('R3 spojnosc: AI nie proponuje pokoju gdy czuje sie silniejsze (isFeelingStronger)',
-  AI.includes('const aiFeelsStronger = rel.stanWojny && isFeelingStronger({') && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
+// R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: „czuje się silniejsze" = pozycja militarna 'silniejsza' (nie rw).
+check('R3 spojnosc: AI nie proponuje pokoju gdy jest militarnie silniejsza (peacePosMil)',
+  AI.includes("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';") && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
 {
-  const mutSpojn = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw', 'rel.stanWojny && aiPeaceTimeOk && (rw');
-  check('mutacja spojnosci R3 (AI proponuje mimo czucia sily) jest wykrywalna', mutSpojn !== AI);
+  const mutSpojn = AI.replace("const aiFeelsStronger = rel.stanWojny && peacePosMil === 'silniejsza';", 'const aiFeelsStronger = false;');
+  check('mutacja spojnosci R3 (AI proponuje mimo siły militarnej) jest wykrywalna', mutSpojn !== AI);
 }
 
 // ---- R5: bramka pokoju podpięta w buildProposalEvalContext ----
