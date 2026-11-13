@@ -9735,3 +9735,7 @@ W toku (4 operatorów): W42 siła militarna (krok 2), W43 liczby zaufania (rozej
 
 ## 2026-11-13 — FALA 679 wdrożona na ROBOCZĄ (main 478cefaed, MD5 4ae92a00cc5df83157537fdcebaa474f)
 Liczby zaufania (R-WEB-DIPLO-TRUST-NUMBERS-Q1, kod e8f3a80ab): po rozejmie zaufanie 10, po pokoju 20; kara za sąsiedztwo −3/−4/−5 wstrzymana w karencji; religia bez wpływu na zaufanie. Przygotowanie kroków 3–4: siła militarna (42bf2d9df) i licznik wygranych bitew + bonus trybutu (3950aae12), niepodpięte do decyzji. tsc 0, logic 213/213, trust-numbers 22/0, military-strength 27/0, battle-counter 35/0, diplomacy 148/0. Civpedia dyplomacji (872078bf2) NIE wdrożona — po scaleniu test wartości był czerwony (6 liczb), runda 2 w toku.
+
+## 2026-11-13 — FALA 680 wdrożona na ROBOCZĄ (main 52fc1d5ca, MD5 57b393b86c3b97778a317d64121f6994)
+Etykiety nastawienia wg zaufania (R-WEB-DIPLO-LABELS-TRUST-THRESHOLDS-Q1, 9b9e851a6): zaufanie <10 Wrogi, 10–29 Nieufny, od 30 wg relacji. Civpedia dyplomacji (R-WEB-DIPLO-CIVPEDIA-Q1 r2, 84032f962). Pomiar częstości ofert handlowych AI (R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1 r4, 2b6f6576f): prepared 3 ziarna × 3 relacje × 150 tur = 12 ofert (0,89/100 tur), tabela niepowtarzalna. Uwaga: relationTier w diplomacy.ts ma jeszcze progi 30.
+Krok 3 (wypowiadanie wojny, 646d95248) FC PASS-WITH-NOTES — do wdrożenia w FALI 681. Zgłoszenia: porządek opisów w diplomacy.json (#345), niedeterminizm gry (#346), usunięty offset warSilaBonus w bramce wojny (decyzja właściciela).
