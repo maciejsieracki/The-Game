@@ -650,3 +650,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dispatche:** `dyspozycje/autobot/runs/<ID>/00-dispatch.md`, commit `fcecbad3c`. Skrypty: `workflows/scripts/topic-<ID>.js`.
 - **Dysk:** 11 GB wolne przed startem.
 - **Zasada parytetu gameplay** (CLAUDE.md, zasada 9) obowiązuje we wszystkich czterech tematach; pytania tylko przy odstępstwach od webu.
+
+## ZWYCIESTWO-ROZPOZNANIE (P6.19, #182): FC PASS-WITH-NOTES (7d8a78bec), zintegrowane
+- Ustalenia: brak ewaluatora `checkVictory` / `checkDefeat` w Rust; brak flagi końca gry w `PlayableState`; faza Victory w `advance_turn` nieobsłużona. Istnieją parametry zwycięstwa (`economy_society_part2.rs:153-161`, bez konsumenta), `eliminate_owner` (`eliminacja.rs:48`), `record_player_ever_owned_city` (`siege_transfer_q5.rs:107`, bez stanu).
+- **Decyzje orkiestratora (parytet/technika, bez pytania):**
+  - Nauka przy `NAUKA_WYMAGA_RAKIETY=true`: pin nigdy nie ustawia `rakietaWystrzelona` na true, więc zwycięstwo naukowe jest nieosiągalne. **Parytet: port 1:1, bez naprawy.**
+  - Hooki testowe pinu (`truceTestSuppressVictory`, `rebelProtectionTestSkipVictoryCheck`, `__defeatTestDebug`): **nie portować** (narzędzia testowe, nie gameplay).
+  - UI ekranu zwycięstwa (`victoryScreen.ts`): **poza zakresem silnika P6.19** (warstwa frontendu).
+  - `graczKiedysMialMiasto`: **flaga w zapisie**, nie heurystyka z miast — technicznie czystsze i spójne z P6.20–P6.22; zmiana wymaga zgodności wczytywania z pinem (heurystyka `main.ts:46368-46370` zostaje jako ścieżka zgodności dla starych zapisów).
+- **Zgłoszenie procesowe:** commity Operatora `ebb607fb3` i `d37f55774` (DYPLOMACJA) zawierają linię `Co-Authored-By` z nazwą modelu, wbrew CLAUDE.md. Do nowych commitów nie przenosiłem tych linii; historii już wypchniętej nie przepisuję.
