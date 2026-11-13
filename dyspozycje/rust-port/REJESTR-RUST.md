@@ -448,3 +448,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Ponowny start:** runda 4 uruchomiona z tym samym dispatchem (DODATEK r4 `7eda73831`, baza parity `003d53f97`). Workflow `wf_beebb55a-e4e`. Operator (HAIKU), Obrona (HAIKU), Evaluator i FC (SONNET).
 - **Sprzątanie:** usunięto worktree rundy 3 FC (`wf_a4483abe-c33-4`, refy zapisane). Dysk 5,5 GB po sprzątaniu (3,2 GB przed).
 - **Stan repo:** `parity-v2` = `003d53f97` (bez zmian). `claude/rust-sivvrn` przed tym wpisem = `3a8b8c22c`.
+
+## Przebieg (heartbeat 10:24, CRED-WOJNA-Q1 runda 4): zła baza, zatrzymanie i ponowny start z bezpiecznikiem
+- **Problem:** runda 4 (`wf_beebb55a-e4e`) wystartowała na obcej historii: worktree na commicie `5d0c5f8d1` („FALA 677”, ok. 10 000 zmienionych plików, setki usuniętych linii w testach). Operator nie ustawił bazy `003d53f97`. Zatrzymano zadanie (TaskStop). Zepsuty worktree usunięto. Nic nie wypchnięto: parity `003d53f97` i `claude/rust-sivvrn` bez zmian. Obca historia (`5d0c5f8d1`) istnieje tylko na pre-existing gałęziach `origin/main` i `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie jest efektem tej rundy.
+- **Poprawka:** DODATEK r4 KROK 0 (`d1c1395e9`): `checkout -B` na `003d53f97`, sprawdzenie pełnego SHA, STOP przy niezgodności, kryterium: `git diff --stat` tylko z allowlisty.
+- **Ponowny start:** `wf_1ae8dfd8-9fe` (`w5hjocfx6`). Operator (HAIKU), Obrona (HAIKU), Evaluator i FC (SONNET).
+- **Zabezpieczenie w toku:** przy każdym sprawdzeniu porównać `git diff --stat 003d53f97 <HEAD>`. Jeśli wynik ma tysiące plików, zatrzymać zadanie.
+- **Stan repo:** `parity-v2` = `003d53f97`. `claude/rust-sivvrn` przed tym wpisem = `d1c1395e9`.
