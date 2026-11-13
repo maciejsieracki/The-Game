@@ -677,3 +677,8 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **EKONOMIA-BRAZ-ERA-Q1 (T-A):** pierwszy etap Operatora zakończony, drugi etap padł na tworzeniu worktree (ENOSPC). Wznowienie z cache po zwolnieniu miejsca: `resumeFromRunId: wf_5b797905-328`.
 - **Sprzątanie:** usunięto worktree zakończonych tematów (ZWYCIESTWO-FC, DYPLOMACJA-FC, SAVE-LOAD, JS-MAX-stary FC, EKONOMIA-nieudana). Dysk: z 132 KB do ok. 8 GB.
 - **Zasada:** nowe starty tylko przy ≥ 8 GB wolnego, wznowienia przy ≥ 4 GB.
+
+## INTEG-JS-MAX (#110/#174): zintegrowane na parity-v2
+- Cherry-pick `cd7cf1b77 8ae2f1864 f946ee378` na `5e8b116e8` bez konfliktów.
+- Bramki: `cargo fmt --check` OK, `cargo clippy --all-targets -- -D warnings` OK, pełny `cargo test --no-fail-fast`: **3275 passed, 0 failed, 1 ignored** (exit 0). Pierwszy przebieg padł na braku miejsca na dysku (ENOSPC), nie na kodzie.
+- **FF `parity-v2`: `5e8b116e8` → `d30e3ea24`.** Ref `refs/keep/R-RUSTPORT-P6-JS-MAX-INTEG-Q1-parity`. Worktree `integ-jsmax` usunięty.
