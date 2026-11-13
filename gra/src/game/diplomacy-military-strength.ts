@@ -270,3 +270,30 @@ export function peaceMilitaryPosition(
   const silniejszy = compareMilitaryStrength(a, b, params).silniejszyId;
   return silniejszy === a.id ? 'silniejsza' : 'slabsza';
 }
+
+/**
+ * R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 r3: JEDNO miejsce wiązania pozycji militarnej przy
+ * rozejmie/pokoju (main.ts: diploProposalWarState, gateVerdict AI↔AI; ai.ts: decideAIDiplomacy).
+ * `self` = strona, której pozycję liczymy; `partner` = druga strona. Id zawsze zamieniane na napis,
+ * więc remis rozstrzyga ten sam klucz (liczba 1 i napis '1' dają ten sam wynik).
+ * / EN: single wiring point for the peace military position (self vs partner), canonical string ids.
+ */
+export interface PeaceStanceSide {
+  id: number | string;
+  sila: number;
+  armiaPkt: number;
+}
+
+export function peaceStanceOf(
+  self: PeaceStanceSide,
+  partner: PeaceStanceSide,
+  progRozniceProc: number = DEFAULT_PEACE_STRENGTH_GAP_PROC,
+  params: MilitaryStrengthParams = DEFAULT_MILITARY_STRENGTH_PARAMS,
+): PeaceMilitaryPosition {
+  return peaceMilitaryPosition(
+    { id: String(self.id), sila: self.sila, armiaPkt: self.armiaPkt },
+    { id: String(partner.id), sila: partner.sila, armiaPkt: partner.armiaPkt },
+    progRozniceProc,
+    params,
+  );
+}

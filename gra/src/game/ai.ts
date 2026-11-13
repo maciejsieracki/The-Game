@@ -82,7 +82,7 @@ import {
   PROG_WOJNA_ZAUFANIE, PEACE_STRENGTH_GAP_PROC,
 } from './diplomacy-war-peace-profile';
 import {
-  compareMilitaryStrength, peaceMilitaryPosition, type MilitarySide, type PeaceMilitaryPosition,
+  compareMilitaryStrength, peaceStanceOf, type MilitarySide, type PeaceMilitaryPosition,
 } from './diplomacy-military-strength';
 import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
@@ -7004,7 +7004,7 @@ export function decideAIDiplomacy(
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja AI wg SIŁY MILITARNEJ (nie rw).
     // Brak danych siły = 'pasmo' (bez ograniczeń, jak dotąd dla braku danych).
     const peacePosMil: PeaceMilitaryPosition = rel.silaMilitarnaAI && rel.silaMilitarnaPartner
-      ? peaceMilitaryPosition(
+      ? peaceStanceOf(
           // Te same id co w main.ts (String(ownerId)) — remis rozstrzyga compareMilitaryStrength po id.
           { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt },
           { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt },

@@ -1,95 +1,84 @@
-# R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — raport Operatora (runda 2/5)
+# R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 — raport Operatora (runda 3/5)
 
-STATUS: BLOCK (runda 2 domknięta w większości; jedna bramka nie ma dowodu mutacyjnego w main.ts, a dług D2 (trybut) i krok 4b są poza zakresem tej rundy — patrz BLOKADY)
+STATUS: PASS-WITH-NOTES (zarzut 2 / punkt 2 dispatchu r3 domknięty: wiązanie pozycji militarnej w jednej funkcji, mutacje M12/M13 zabite; punkt 3 — martwe mapowanie — ZOSTAWIONE, bo testy na nim polegają; patrz BLOKADY)
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1
-GOAL: rozejm i pokój wg siły militarnej: słabsza strona szuka rozejmu/pokoju, silniejsza go odrzuca, opór silniejszej przełamuje wyłącznie miasto (cena PN jak dotąd); bez pieniędzy i surowców jako słodzika. Dotyczy gracza i AI.
-BAZA: f2367587e (kandydat startowy wg DODATKU) → merge origin/main (ed95085a2) → commit operatora r2 (SHA w polu sha wyniku).
-RUNDY: 2/5 (ta runda = Operator r2)
+GOAL: rozejm i pokój wg siły militarnej: słabsza strona szuka rozejmu/pokoju, silniejsza go odrzuca, opór silniejszej przełamuje wyłącznie miasto (cena PN jak dotąd); złoto i surowce NIE są słodzikiem (D2). Dotyczy gracza i AI.
+BAZA: 7465018358 (origin/main, detached) + `git merge --no-ff origin/main` (f0853a6cc, FALE 682–683) → commit operatora r3 (SHA w polu sha wyniku).
+RUNDY: 3/5 (Operator r3; poprzedni werdykt FC rundy 2: FAIL, raport 408c37b6d)
 MODEL: Operator = Haiku (zasada 2). Brak eskalacji do Sonneta.
 
-## Zarzuty FC rundy 1 — stan
+## Odpowiedź na zarzut FC rundy 2 (brak dowodu behawioralnego okablowania main.ts)
 
-| nr | zarzut | status | dowód |
-|---|---|---|---|
-| 1 | regresje diplo-peace-balance-accept-test (5 FAIL) i diplo-war-peace-main-guard-test (3 FAIL) | ZAMKNIĘTE | balance-accept: 32 pass / 0 fail (A1–A7, B1–B6, C1–C3, Z1–Z3, M1–M3, G1–G7, P0/P0b); main-guard: 35 pass / 0 fail (R3 i mutacje przepisane na pozycję militarną). Sim: 19 pass / 3 fail = S3, S4b, M_TUR (dług bazowy, bez nowych). |
-| 2 | dowód mutacyjny (h) dla bramek | CZĘŚCIOWO | Nowy skrypt gra/tools/diplo-peace-gate-mutation-run.cjs: 9/9 mutantów ZABITYCH (patrz TESTY). Brak mutanta dla bramki main.ts (pozycjaMilitarna w diploProposalWarState i w bramce ABC AI↔AI): test zachowania nie ładuje main.ts → NIE_ZMIERZONO. |
-| 3 | rozejm z miastem słabszej AI niewdrożony | ZAMKNIĘTE | ai.ts N1a: komenda oferuj_miasto_za_pokoj dostaje rodzaj = aiPeaceProposalKind(tury wojny) (rozejm w okresie rozejmowym); diplomacy-proposals.ts: rodzaj 'rozejm' → actionId 'rozejm', payload.turns = TRUCE_DEFAULT_TURNS, giveItems z miastem. Test f2/f3. |
-| 4 | testy pasma (progRozniceSilyPokoj > 0) i przypadku jednego miasta (D3) | ZAMKNIĘTE (poziom funkcji) | g1–g3 (pasmo 20%) i d3 (jedno miasto PN < ceny nie kupuje pokoju). Ścieżka gry z progiem > 0 przez main.ts NIE_ZMIERZONO. |
-| 5 | remis rozstrzygany tak samo w ai.ts i main.ts | ZAMKNIĘTE (r1) + test | ai.ts używa id = myPlayerId/partnerId jak main.ts (String(ownerId)); test M1–M3 (deterministyczny remis, dokładnie jedna strona silniejsza). |
+Zrobione w tej rundzie:
+- Nowa funkcja `peaceStanceOf(self, partner, progRozniceProc, params)` w `gra/src/game/diplomacy-military-strength.ts` (obok `peaceMilitaryPosition`). Konwertuje id przez `String()` i wywołuje `peaceMilitaryPosition` z kolejnością (self, partner). To jedyne miejsce wiązania.
+- `gra/src/main.ts`: `diploProposalWarState` (self = respondent, partner = proposer) i `gateVerdict` AI↔AI (self = zwycięzca, partner = przegrany) wołają wyłącznie `peaceStanceOf`. Zero bezpośrednich wywołań `peaceMilitaryPosition` w main.ts.
+- `gra/src/game/ai.ts` (`decideAIDiplomacy`): wywołanie przez `peaceStanceOf` (self = `inp.myPlayerId`, partner = `rel.partnerId`). Remis rozstrzyga ten sam klucz w obu ścieżkach.
 
-## Decyzje orkiestratora z DODATKU — realizacja
+## Zmiany (pliki, allowlista r3)
 
-- D1 (allowlista + forced-peace): diplomacy-ai-forced-peace.ts zmieniony. Reguła AI↔AI: zwycięzca 'stronger' przyjmuje pokój TYLKO gdy plan składa się z samych miast i pokrywa cenę (plan.full → accept_paid; inaczej wait). Po limicie tur (force) zostaje mechanizm zmęczenia (krok 4b) — ZOSTAWIONY, opisany poniżej jako ZAŁOŻENIE.
-- D2 (złoto/surowce nie są słodzikiem): w proposals odrzucane w każdym kierunku (c/d1/d2 testy). W forced-peace planPeacePayment dostaje tylko aktywa 'miasto' (filter). Tribute (oferuj_trybut_za_pokoj, zadaj_trybut) NIE zmieniany — poza tą rundą (ZAŁOŻENIE: trybut to osobna umowa, DODATEK D2).
-- D3 (jedno miasto słabszej strony): słabsza AI bez miasta nie proponuje pokoju wobec gracza (ai.ts peaceWeakerNoCityVsPlayer); gracz-słabszy z jednym miastem PN < ceny jest odrzucany (test d3). Brak nowej mechaniki (ZAŁOŻENIE Z5).
+- `gra/src/game/diplomacy-military-strength.ts` — +`PeaceStanceSide`, +`peaceStanceOf`.
+- `gra/src/main.ts` — 2 call-site'y przepięte na `peaceStanceOf`; import (lista z `militaryBrakeOutcome`) zamieniony `peaceMilitaryPosition` → `peaceStanceOf`.
+- `gra/src/game/ai.ts` — 1 call-site przepięty; import zamieniony.
+- `gra/tools/diplo-peace-weaker-seeks-city-only-test.cjs` — eksport `peaceStanceOf`; nowe asercje a6–a11: kolejność stron (M12), pasmo przez stance, zgodność remisu dla id liczbowych (main) i napisowych (ai), odwrócenie stron przy remisie.
+- `gra/tools/diplo-peace-stance-wiring-test.cjs` (NOWY) — kontrola strukturalna: s1 brak `peaceMilitaryPosition(` w main.ts i ai.ts; s2a/s2b kolejność (self, partner) w obu miejscach main.ts; s3 ai.ts; s4 konwersja `String()` w `peaceStanceOf`. Potrzebna, bo main.ts nie jest importowalny w harnessie cjs (M13 nie da się zabić testem behawioralnym).
+- `gra/tools/diplo-peace-gate-mutation-run.cjs` — +M12 (odwrócenie stron w `peaceStanceOf`, killer: weaker-seeks test), +M13 (zamiana kolejności w gateVerdict main.ts, killer: wiring test).
+- `gra/tools/city-state-cluster-diff-test.cjs` — T7b przepisana na regułę D2 (była: „pełne AI w wojnie może oferować trybut za pokój", czyli stara reguła złota; teraz: NIE oferuje). Ten test padał od r2 (regresja r2, nie zgłoszona w raporcie r2) — naprawione tu, bo wynika z tej samej decyzji D2.
 
-## Zmiany (commit operatora r2) — pliki
-- gra/src/game/ai.ts — oferuj_miasto_za_pokoj z polem rodzaj (rozejm/pokój); komentarz wymogu 3.
-- gra/src/game/diplomacy-proposals.ts — oferuj_miasto_za_pokoj rodzaj 'rozejm' → actionId 'rozejm' + turns; opis komendy dla rozejmu.
-- gra/src/game/diplomacy-ai-forced-peace.ts — decideAiPeaceRequest: 'stronger' tylko przy pełnym pokryciu miastami; runAiAiPeaceTick: aktywa tylko miasta (D2).
-- gra/tools/diplo-peace-balance-accept-test.cjs — przepisany na pozycję militarną (32/0).
-- gra/tools/diplo-war-peace-main-guard-test.cjs — R3 i mutacje na peacePosMil (35/0).
-- gra/tools/diplo-peace-weaker-seeks-city-only-test.cjs — +f2, f3, d3, g1–g3 (21/0).
-- gra/tools/diplo-peace-gate-mutation-run.cjs — NOWY: dowód mutacyjny (9 mutantów, przywraca oryginał).
-- gra/tools/ai-war-nearest-city-peace-2t-test.cjs — fixture gold → miasto (zgodnie z D2); asercje B3/B7/B10/B11/B12 przepisane; B6 rozdzielony (stronger+miasto = accept; stronger+zloto = wait).
-- gra/tools/ai-war-weariness-peace-test.cjs — runAI podaje silaMilitarnaAI/Partner (wcześniejsza regresja N1a z rundy 1: 95/1 → 96/0).
-- gra/tools/diplo-peace-ai-ai-nonnegative-test.cjs — runTick/weariness: aktywa = miasto (D2); T2 z miastem 100 PN.
+## Punkty dispatchu r3
 
-## TESTY (surowe liczby z tej rundy)
-- npx tsc --noEmit: EXIT 0
-- logic-test: EXIT 0
-- tech-tree-test: EXIT 0
-- research-test: EXIT 0
-- unit-replace-test: EXIT 0
-- combat-test: EXIT 0
-- diplomacy-test: 148 passed, 0 failed
-- diplo-military-strength-test: RESULT 27 PASS / 0 FAIL
-- diplo-war-battle-counter-test: 35 PASS / 0 FAIL
-- diplo-war-declare-zero-trust-test: 43 OK, 0 FAIL
-- diplo-trust-numbers-test: 22 pass, 0 fail
-- diplo-war-peace-gate-test: 24 pass / 0 fail
-- diplo-war-peace-profile-unit-test: 198 pass / 0 fail
-- diplo-war-peace-d7-test: 8 pass / 0 fail
-- diplo-war-peace-main-guard-test: 35 pass / 0 fail (była 32/3)
-- diplo-peace-balance-accept-test: 32 pass / 0 fail (była 24/5; kryterium z DODATKU 29/0 — liczba asercji zwiększona, nie zmniejszona)
-- diplo-peace-weaker-seeks-city-only-test: 21 pass / 0 fail (była 15/0)
-- diplo-war-peace-sim-test: 19 pass / 3 fail — FAIL dokładnie S3, S4b, M_TUR = dług bazowy (kryterium ≤3 spełnione, bez nowych)
-- ai-war-nearest-city-peace-2t-test: WYNIK PASS, MUTACJE 16/16 zabite (była FAIL na 8 asercjach — przepisane wg D2)
-- ai-war-weariness-peace-test: PASS=96 FAIL=0 (była 95/1)
-- diplo-peace-ai-ai-nonnegative-test: 20 PASS, 0 FAIL (była 19/1)
-- diplo-peace-gate-mutation-run: MUTACJE BRAMEK 9/9 zabite:
-  - M1 bramka 'silniejsza' (evaluatePeaceAiGate): zabity (weaker-seeks FAIL=2; balance FAIL=3)
-  - M2 bramka miasto ≥ PN (proposals r5Gate): zabity (weaker-seeks FAIL=1)
-  - M3 odrzucenie złota/surowców (proposals): zabity (weaker-seeks FAIL=2)
-  - M4 aiFeelsStronger=false (ai.ts): zabity (balance FAIL=5)
-  - M5 peaceWeakerNoCityVsPlayer=false (ai.ts): zabity (balance FAIL=2)
-  - M6 forced-peace 'stronger' → accept (ai-war-nearest-city FAIL=1)
-  - M7 forced-peace filtr tylko miast usunięty (ai-war-nearest-city FAIL=3)
-  - M8 rozejm z miastem (proposals rodzaj): zabity (weaker-seeks FAIL=1)
-  - M9 pasmo (diplomacy-military-strength): zabity (weaker-seeks FAIL=2)
-- Pozostałe: diplomacy-tests w pełnym zestawie NIE uruchamiane w tej rundzie poza wymienionymi (NIE_ZMIERZONO: diplomacy-proposals-*, diplo-peace-* poza wymienionymi).
+1. Wiązanie pozycji militarnej do czystej funkcji — ZROBIONE (`peaceStanceOf`). main.ts tylko zbiera dane i wywołuje. ai.ts używa tej samej funkcji.
+2. Mutacje M12 i M13 + test zgodności tie-breaku ai.ts vs main.ts — ZROBIONE (M12 zabita przez `diplo-peace-weaker-seeks-city-only-test` FAIL=6; M13 zabita przez `diplo-peace-stance-wiring-test` FAIL=1). Test zgodności: asercje a9–a11 (liczba vs napis przy remisie daje ten sam wynik; odwrócenie stron zmienia wynik).
+3. Usunięcie martwego mapowania `oferuj_trybut_za_pokoj` w `diplomacy-proposals.ts` i `main.ts` — NIE WYKONANO, bo testy na nim polegają (dispatch: „jeśli test polega — zostaw i opisz"):
+   - `tools/ai-war-nearest-city-peace-2t-test.cjs:381` sprawdza tekst `main.ts` pod kątem `cmd.type === 'oferuj_trybut_za_pokoj'` (rejestracja prośby AI→AI); usunięcie z main.ts zrywa asercję wiringu.
+   - `tools/diplomacy-layers-test.cjs:156` i `tools/city-state-cluster-diff-test.cjs:231` używają typu jako wejścia filtra (miasta-państwa).
+   - `diplomacy-proposals.ts` (`enrichAiCommandWithTreasury`, `aiCommandToPendingProposal`, `formatAiDiplomacyPlayerMessage`): usunięcie zmienia typ `AIDiplomacyCommand` w `ai.ts` (union l. ~6602), który jest także używany w `diplomacy-layers.ts`. To szerszy diff niż dozwolona allowlista r3.
+   - ZAŁOŻENIE: AI nie emituje już tego typu (r2), więc mapowanie jest martwe w ścieżce AI. Propozycja: osobny temat „usuń typ oferuj_trybut_za_pokoj z AIDiplomacyCommand i main.ts/diplomacy-layers/testów" — do decyzji orkiestratora.
+4. Reszta bez zmian — ZROBIONE (krok 4b, minimalny czas wojny, rozejm/pokój, D3 — bez zmian).
 
-## BLOKADY (otwarte)
-1. Dowód mutacyjny bramek w main.ts (pozycjaMilitarna w diploProposalWarState ~main.ts:11753 i w tickAiAiPeaceRequests gateVerdict ~main.ts:36588) — NIE_ZMIERZONO: brak testu zachowania ładującego main.ts. Wymaga osobnego harnessu albo decyzji orkiestratora, czy wystarcza test regex (lekcja W45/W47 mówi, że nie).
-2. Tribute AI (oferuj_trybut_za_pokoj, priorytet 1) i zadaj_trybut nadal używają złota jako elementu — D2 stwierdza, że trybut to osobna umowa; NIE zmieniono (wymaga potwierdzenia właściciela, czy trybut jest wyjątkiem).
-3. Krok 4b (zmęczenie wojną kończy wojny tylko miastami, miara = siła militarna) — poza zakresem; forced-peace 'force' po limicie tur zostaje jako mechanizm zmęczenia i nadal może zapłacić częściowo miastem (ZAŁOŻENIE do kroku 4b).
-4. Ścieżka pasma w grze (progRozniceSilyPokoj > 0 przez main.ts) — NIE_ZMIERZONO (pokryte na poziomie funkcji g1–g3).
-5. Test c3 (miasto PN ≥ ceny nie odrzucane) jest słabszy niż nazwa sugeruje: harness nie rozwiązuje wartości miasta po id, więc asercja sprawdza tylko brak komunikatu o mieście; ścieżka akceptacji miasta o PN ≥ ceny NIE jest zmierzona. Ten sam problem dotyczy usuniętego f4. Wymaga fixtury stanu z wyceną miasta.
+## TESTY (surowe wyniki z tej rundy)
 
-## ZAŁOŻENIA (luki rozstrzygnięte bez pytania)
-- Z5/D3: słabsza AI bez miasta nie proponuje pokoju wobec gracza; propozycja gracza-słabszego z 1 miastem poniżej ceny jest odrzucana.
-- Forced-peace: planPeacePayment ogranicza się do jednego miasta (limit istniejącej reguły); cover = najtańsze miasto pokrywające resztę, w przeciwnym razie najcenniejsze.
-- Rozejm z miastem słabszej AI: rodzaj wg aiPeaceProposalKind (okres rozejmowy wg tur wojny), nie wg aiTruceOrPeaceMode.
-- Dług testowy diplo-war-peace-sim-test (S3, S4b, M_TUR) nie jest objęty tą rundą.
+- `npx tsc --noEmit -p .` → exit 0
+- `tools/logic-test.cjs` → `LOGIC OK (213/213)`
+- `tools/tech-tree-test.cjs` → `tech-tree-test: 20 pass, 0 fail`
+- `tools/research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`
+- `tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`
+- `tools/combat-test.cjs` → `COMBAT TEST: 6/6 pass`
+- `tools/diplo-peace-balance-accept-test.cjs` → `diplo-peace-balance-accept-test: 32 pass / 0 fail`
+- `tools/diplo-war-peace-main-guard-test.cjs` → `diplo-war-peace-main-guard-test: 35 pass / 0 fail`
+- `tools/ai-test.cjs` → `ai-test: 297 passed, 0 failed`
+- `tools/diplomacy-test.cjs` → `[diplomacy-test] 149 passed, 0 failed (total 149)`
+- `tools/diplo-war-declare-zero-trust-test.cjs` → `43 OK, 0 FAIL`
+- `tools/diplo-trust-numbers-test.cjs` → `[diplo-trust-numbers-test] 22 pass, 0 fail`
+- `tools/diplo-json-descriptions-sync-test.cjs` → `WYNIK: 36/36 OK, FAIL: 0`
+- `tools/diplo-peace-weaker-seeks-city-only-test.cjs` → `32 pass / 0 fail`
+- `tools/diplo-peace-stance-wiring-test.cjs` → `6 pass / 0 fail`
+- `tools/ai-losing-war-asks-peace-vs-player-test.cjs` → `WYNIK: 12 PASS / 0 FAIL`
+- `tools/city-state-cluster-diff-test.cjs` → `=== city-state-cluster-diff-test: 31 passed, 0 failed ===` (po przepisaniu T7b; przed: 30/1)
+- `tools/diplo-war-peace-sim-test.cjs` → `19 pass / 3 fail` (FAIL: S3, S4b, M_TUR — dług bazowy, bez zmiany liczby)
+- `tools/diplo-peace-gate-mutation-run.cjs` → `MUTACJE BRAMEK: 13/13 zabite` (M1 2+3 FAIL; M2 1; M3 2; M4 5+1; M5 2+1; M6 1; M7 3; M8 1; M9 3; M10 3; M11 1; M12 6; M13 1 — surowy wynik z tego uruchomienia)
+- `git diff --check` → czysto.
+- Ogólnie: `npm ci --ignore-scripts` w `gra/` → exit 0; `npm run build` / `dev` NIE uruchamiane (zakaz).
+
+## ZAŁOŻENIA
+
+- `peaceStanceOf` przyjmuje id jako `number | string`; konwersja `String()` jest w środku funkcji, nie u wywołującego (zamyka rozjazd remisu liczba/napis).
+- Test M13 jest strukturalny (regex na tekst main.ts) — zgodnie z lekcją W45/W47 jest to jedyna dostępna kontrola dla wywołania w main.ts, a nie zastępstwo za test zachowania; zachowanie samej funkcji jest pokryte M12.
+- T7b w `city-state-cluster-diff-test` przepisana na D2 (asercja odwrócona: brak złota za pokój). Zakres: tylko ta asercja.
+
+## BLOKADY
+
+- Punkt 3 dispatchu (martwe mapowanie `oferuj_trybut_za_pokoj`) — NIE WYKONANO; powód i zakres wyżej. Wymaga decyzji orkiestratora (osobny temat).
+- Dług bazowy `diplo-war-peace-sim-test` (3 FAIL: S3, S4b, M_TUR) — poza zakresem, bez zmiany.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Harness testu ai-war-nearest-city-peace-2t-test i diplo-peace-ai-ai-nonnegative-test przepisany na miasta zamiast złota; to zmiana fixtur zgodna z D2, a nie osłabienie asercji (ta sama logika bilansu, inne aktywa).
-- Regresja N1a z rundy 1 (ai-war-weariness-peace-test: 200 tur + straty) wynikała z przejścia bramki na peacePosMil bez danych siły w teście; naprawione w teście (silaMilitarnaAI/Partner = rw·1000 / (1−rw)·1000), kod nietknięty.
-- Brak sesji nowych: w tej rundzie nie użyto żadnych narzędzi tworzących sesje/zadania (zakaz z dispatchu).
-- Tokeny: uruchomienie pełnej pętli testów diplomacy zajęło duży budżet; nie ma timeoutów.
+
+- Regresja r2 (nie zgłoszona w raporcie r2): `tools/city-state-cluster-diff-test.cjs` T7b padał po usunięciu gałęzi złota w `ai.ts`. Naprawione w tej rundzie (przepisanie asercji na D2). Zalecam dopisanie tego testu do pakietu regresji tematu.
+- Nie tworzyłem żadnych sesji, zadań ani kart „Suggested task"; nie integrowałem, nie pushowałem na main, nie deployowałem.
+- Commit operatora zawiera wyłącznie pliki z allowlisty r3 (podane po nazwie, bez `git add -A`), plus ten raport.
 
 ## NASTĘPNY KROK
-Orkiestrator: (a) decyzja, czy dowód mutacyjny main.ts wystarcza przez regex (wtedy zamknąć BLOKADĘ 1), czy wymagany harness; (b) potwierdzenie czy trybut (D2) jest wyjątkiem; (c) runda 3 tego samego ID: fixtura wyceny miasta (c3/f4), harness main.ts (jeśli wymagany), krok 4b poza tematem.
 
-DEPLOY/PUSH: NIE WYKONANO (commit lokalny na gałęzi detached worktree; bez push na main; bez integracji)
+Final Control rundy 3 (Sonnet): sprawdzić `git merge-base --is-ancestor <SHA operatora> <SHA FC>` i `git diff --stat` względem 7465018358 + f0853a6cc; zwłaszcza kolejność argumentów w `peaceStanceOf` w main.ts (2 miejsca) i w ai.ts (1 miejsce).
+
+DEPLOY/PUSH: NIE WYKONANO

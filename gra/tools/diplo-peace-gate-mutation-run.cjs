@@ -44,6 +44,14 @@ const MUTANTS = [
   { name: 'M11 rodzaj oferty miasta zawsze pokoj (ai.ts cityOfferKind)', file: 'src/game/ai.ts',
     from: 'const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);', to: "const cityOfferKind = 'pokoj' as const;",
     tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
+  { name: 'M12 odwrocone strony w peaceStanceOf (wiazanie pozycji)', file: 'src/game/diplomacy-military-strength.ts',
+    from: "    { id: String(self.id), sila: self.sila, armiaPkt: self.armiaPkt },\n    { id: String(partner.id), sila: partner.sila, armiaPkt: partner.armiaPkt },",
+    to: "    { id: String(partner.id), sila: partner.sila, armiaPkt: partner.armiaPkt },\n    { id: String(self.id), sila: self.sila, armiaPkt: self.armiaPkt },",
+    tests: ['tools/diplo-peace-weaker-seeks-city-only-test.cjs'] },
+  { name: 'M13 zla kolejnosc stron w wywolaniu main.ts (gateVerdict AI<->AI)', file: 'src/main.ts',
+    from: "              pozycjaMilitarna: peaceStanceOf(\n                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },\n                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },",
+    to: "              pozycjaMilitarna: peaceStanceOf(\n                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },\n                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },",
+    tests: ['tools/diplo-peace-stance-wiring-test.cjs'] },
 ];
 
 const ONLY = process.argv[2];

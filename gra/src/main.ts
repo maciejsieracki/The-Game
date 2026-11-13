@@ -1615,7 +1615,7 @@ import {
 } from './game/diplomacy-pn-engine';
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
-  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceMilitaryPosition,
+  computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
 } from './game/diplomacy-military-strength';
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, PEACE_STRENGTH_GAP_PROC, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
@@ -11750,9 +11750,9 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: pozycja respondenta = siła militarna (nie rw).
       const resp = diploMilitarySideOf(responderId, proposerId);
       const prop = diploMilitarySideOf(proposerId, responderId);
-      const responderPozycjaMilitarna = peaceMilitaryPosition(
-        { id: String(responderId), sila: resp.sila, armiaPkt: resp.armiaPkt },
-        { id: String(proposerId), sila: prop.sila, armiaPkt: prop.armiaPkt },
+      const responderPozycjaMilitarna = peaceStanceOf(
+        { id: responderId, sila: resp.sila, armiaPkt: resp.armiaPkt },
+        { id: proposerId, sila: prop.sila, armiaPkt: prop.armiaPkt },
         PEACE_STRENGTH_GAP_PROC,
       );
       return {
@@ -36585,9 +36585,9 @@ async function boot(): Promise<void> {
               rw: winnerRw,
               turnsAtWar: warW.turnsAtWar,
               lostCitiesInWar: warW.lostCities,
-              pozycjaMilitarna: peaceMilitaryPosition(
-                { id: String(winner), sila: wSide.sila, armiaPkt: wSide.armiaPkt },
-                { id: String(loser), sila: lSide.sila, armiaPkt: lSide.armiaPkt },
+              pozycjaMilitarna: peaceStanceOf(
+                { id: winner, sila: wSide.sila, armiaPkt: wSide.armiaPkt },
+                { id: loser, sila: lSide.sila, armiaPkt: lSide.armiaPkt },
                 PEACE_STRENGTH_GAP_PROC,
               ),
             },

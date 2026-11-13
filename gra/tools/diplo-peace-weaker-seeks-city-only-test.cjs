@@ -29,7 +29,7 @@ function check(name, cond, detail) {
 const ENTRY_SRC = [
   "export { evaluateProposal, createNegotiation, negotiationAsProposal } from './game/diplomacy-proposals';",
   "export { evaluatePeaceAiGate, resolveWarPeaceProfile } from './game/diplomacy-war-peace-profile';",
-  "export { peaceMilitaryPosition } from './game/diplomacy-military-strength';",
+  "export { peaceMilitaryPosition, peaceStanceOf } from './game/diplomacy-military-strength';",
   "export { aiCommandToPendingProposal } from './game/diplomacy-proposals';",
   "export { decideAIDiplomacy } from './game/ai';",
   "",
@@ -49,7 +49,7 @@ async function main() {
       outfile: BUNDLE, absWorkingDir: GRA, loader: { '.ts': 'ts', '.json': 'json' }, logLevel: 'silent',
     });
     const mod = require(BUNDLE);
-    const { peaceMilitaryPosition: pos, evaluatePeaceAiGate, resolveWarPeaceProfile } = mod;
+    const { peaceMilitaryPosition: pos, peaceStanceOf: stance, evaluatePeaceAiGate, resolveWarPeaceProfile } = mod;
     const PROFILE = resolveWarPeaceProfile('rzymianie');
 
     // (a) pozycja militarna
@@ -61,6 +61,20 @@ async function main() {
     const r2 = pos(S('1', 100), S('0', 100), 0);
     check('a4 remis deterministyczny: dokładnie jedna strona silniejsza', (r1 === 'silniejsza') !== (r2 === 'silniejsza'), { r1, r2 });
     check('a5 pasmo: próg 20%, różnica 10%', pos(S('ai', 110), S('p', 100), 20) === 'pasmo');
+
+    // (a6)-(a9) jedno wiązanie pozycji (peaceStanceOf: self = strona liczona, partner = druga). Odwrócenie
+    // stron w tej funkcji (mutacja M12) musi zaczerwienić te asercje.
+    const SS = (id, sila) => ({ id, sila, armiaPkt: 0 });
+    check('a6 stance self=101 vs partner=100 -> silniejsza (kolejność stron)', stance(SS(1, 101), SS(0, 100), 0) === 'silniejsza');
+    check('a7 stance self=100 vs partner=101 -> słabsza (kolejność stron)', stance(SS(1, 100), SS(0, 101), 0) === 'slabsza');
+    check('a8 stance pasmo: próg 20%, różnica 10%', stance(SS(1, 110), SS(0, 100), 20) === 'pasmo');
+    // (a9) zgodność tie-breaku: id liczbowe (main.ts) i napisowe (ai.ts) dają ten sam wynik przy remisie
+    const tieNum = stance(SS(1, 100), SS(0, 100), 0);
+    const tieStr = stance(SS('1', 100), SS('0', 100), 0);
+    const tieOpp = stance(SS(0, 100), SS(1, 100), 0);
+    check('a9 tie-break: liczby i napisy dają ten sam wynik', tieNum === tieStr, { tieNum, tieStr });
+    check('a10 tie-break: przy remisie dokładnie jedna strona silniejsza (odwrócenie stron)', tieNum !== tieOpp, { tieNum, tieOpp });
+    check('a11 tie-break zgodny z peaceMilitaryPosition (id napisowe)', tieStr === pos(S('1', 100), S('0', 100), 0), { tieStr });
 
     // (b) bramka AI
     const gStr = evaluatePeaceAiGate({ rw: 0.5, turnsAtWar: 9, lostCitiesInWar: 0, pozycjaMilitarna: 'silniejsza' }, PROFILE);
