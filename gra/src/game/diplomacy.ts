@@ -869,7 +869,7 @@ export type DiplomaticEvent =
   | 'zlamana_obietnica'         // player broke a pact (-40 Zaufanie)
   | 'zlamana_obietnica_ai'      // AI broke a pact (-20 Zaufanie)
   | 'zdrada'                    // surprise attack (-50 Zaufanie)
-  | 'tarcia_graniczne'          // border friction / expansion near border (one-shot -2)
+  | 'tarcia_graniczne'          // border friction event (jednorazowe zdarzenie; ciągła kara za granicę osobno, per tura)
   // trust bonuses
   | 'dar'                       // gift (free resource / Pieniadz)
   | 'wspolna_religia'           // same religion established (one-shot +1 seed)
@@ -889,7 +889,7 @@ export type DiplomaticEvent =
   | 'trybut_odmowa'             // 1.8 tribute demand refused (-10 Zaufanie; casus belli)
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
   | 'wymiana_tech_gratis'       // 1.6 free technology exchange (+5 Zaufanie)
-  | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; modelowane jako −10 Zaufanie, patrz case w applyDiplomaticEvent)
   // R-WEB-TREATY-TRADE-FREE-BREAK-AFTER-10-Q1: dobrowolne zerwanie umowy handlowej po ≥10 turach
   // od zawarcia — zdarzenie śledzone (status/ślad), ale BEZ kary Zaufania (dZ=0).
   | 'zerwanie_handlu_bez_kary'
@@ -986,10 +986,11 @@ export function applyDiplomaticEvent(
       //     REDEFINICJA-Q1: „Ekspansja przy granicy" — nazwa myląco sugerowała ekspansję
       //     zamiast sąsiedztwa) żyje osobno, w `computeTickZaufanieDelta`
       //     (`if (ctx.karaWspolnaGranica) dZ += ...`), i jest naliczany KAŻDEJ tury.
-      //     Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
-      // UI („−2/turę", `diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
-      // i jest ZGODNE ze specyfikacją (`Dyplomacja/Dyplomacja-zasady.md` §3.2). Defektem
-      // był wyłącznie ten komentarz.
+      //     Pomiar (historyczny, przy −2/turę): Zaufanie 50 → 48/46/44/42/40 w 5 turach.
+      //     Aktualne wartości: −3/−4/−5 wg epoki (`ekspansjaGranica*_zaufanie_perTura`).
+      // UI (`diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
+      // (specyfikacja: `Dyplomacja/Dyplomacja-zasady.md` §3.2). Wartość liczbowa w tym
+      // komentarzu nie jest źródłem prawdy — źródłem są parametry.
       dZ = p.ekspansjaGranica_zaufanie_perTura;
       break;
 
@@ -1102,8 +1103,10 @@ export function applyDiplomaticEvent(
 }
 
 /**
- * Maks. score (Zaufanie + Respekt) w stanie wojny — nastawienie co najmniej „Wrogi"
- * (relationTier / nastawienieLabelFromScore: score < progMinimalnyRelacja = 30).
+ * Stała referencyjna: progMinimalnyRelacja − 1 (= 29). NIE steruje clampem.
+ * W stanie wojny obniżane jest WYŁĄCZNIE Zaufanie (do zera, `clampRelationForWar`);
+ * Respekt nie jest zmieniany przez wojnę i nie ma limitu 29 na sumę.
+ * Tier „Relacja" (relationTier) jest liczony osobno: Wrogi wg Zaufania < 10 (RELATION_TIER_PROG_WROGI_ZAUFANIE).
  */
 export const WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
 
@@ -1535,12 +1538,23 @@ export function toRelation(rdip: RelacjaDyplomatyczna): Relation {
 export const TIER_NAMES = ['Wojna', 'Wrogi', 'Neutralny', 'Przyjazny', 'Sojusz'] as const;
 
 /**
+ * Próg wrogości tieru UI: „Wrogi" tylko przy Zaufaniu poniżej tej wartości.
+ * Ta sama wartość co NASTAWIENIE_PROG_WROGI_ZAUFANIE w diplomacy-display.ts (źródło prawdy
+ * etykiety Nastawienia). Import z diplomacy-display.ts jest cykliczny (display importuje
+ * ten moduł), więc wartość jest powielona; zgodność pilnuje diplo-relation-tier-trust-test.cjs.
+ */
+export const RELATION_TIER_PROG_WROGI_ZAUFANIE = 10;
+
+/**
  * Maps a Relation to one of five UI tiers:
- *   0 = Wojna      (status === 'wojna', overrides score)
- *   1 = Wrogi      (score <  30  = DIPLOMACY_PARAMS.progMinimalnyRelacja)
- *   2 = Neutralny  (score <  60  -- fixed midpoint between progMinimalny/progSojusz)
- *   3 = Przyjazny  (score < 130  = DIPLOMACY_PARAMS.progSojuszRelacja)
- *   4 = Sojusz     (status === 'sojusz' overrides score; OR score >= 130)
+ *   0 = Wojna      (status === 'wojna', overrides everything)
+ *   1 = Wrogi      (Zaufanie < RELATION_TIER_PROG_WROGI_ZAUFANIE = 10; Respekt nie łagodzi)
+ *   2 = Neutralny  (Zaufanie >= 10 oraz score < 60)
+ *   3 = Przyjazny  (score >= 60 i < 130 = DIPLOMACY_PARAMS.progSojuszRelacja)
+ *   4 = Sojusz     (status === 'sojusz' overrides everything; OR score >= 130)
+ *
+ * Score = relationScore (Zaufanie + Respekt z mnożnikami). Brak osobnego tieru „Nieufny":
+ * Zaufanie 10–29 mieści się w tierze 2 (5 stopni UI zostaje bez zmian).
  *
  * Status is SOVEREIGN over score:
  *   - 'wojna'  -> always 0, regardless of score
@@ -1550,8 +1564,9 @@ export function relationTier(rel: Relation): 0 | 1 | 2 | 3 | 4 {
   if (rel.status === 'wojna')  return 0;
   if (rel.status === 'sojusz') return 4;
 
+  if (rel.zaufanie < RELATION_TIER_PROG_WROGI_ZAUFANIE) return 1; // Wrogi (Zaufanie < 10)
+
   const s = relationScore(rel);
-  if (s < DIPLOMACY_PARAMS.progMinimalnyRelacja) return 1; // Wrogi  (< 30)
   if (s < 60)                                    return 2; // Neutralny (< 60)
   if (s < DIPLOMACY_PARAMS.progSojuszRelacja)    return 3; // Przyjazny (< 130)
   return 4;                                                // Sojusz (>= 130)

@@ -234,7 +234,7 @@
     },
     {
       "Akcja": "2. Pakt o nieagresji",
-      "Opis": "Obie strony zobowiązują się nie atakować przez N tur. Wymaga Relacji i Zaufania ≥ 30. Złamanie: −30 Relacja, −20 Zaufanie, kara reputacyjna u sąsiadów.",
+      "Opis": "Obie strony zobowiązują się nie atakować przez N tur. Wymaga Relacji ≥ 110 i Zaufania ≥ 30. Złamanie: −40 Zaufanie (a więc także −40 Relacja), kara reputacyjna u sąsiadów.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Brak kosztu walutowego; wartość polityczna",
@@ -242,11 +242,11 @@
     },
     {
       "Akcja": "3. Sojusz (pełny lub defensywny)",
-      "Opis": "Formalne przymierze: pełny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie: −25 Relacja, −20 Zaufanie.",
+      "Opis": "Formalne przymierze: pełny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie (zerwanie traktatu): −15 Zaufanie (a więc także −15 Relacja).",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "NIE",
       "Koszt": "Negocjacja — może wymagać opłaty lub wymiany technologii jako gwarantu",
-      "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Zaufanie). Czas: bezterminowy"
+      "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Wiarygodności, kara tylko dla odmawiającego). Czas: bezterminowy"
     },
     {
       "Akcja": "4. Traktat przemarszu",
@@ -258,11 +258,11 @@
     },
     {
       "Akcja": "5. Traktat handlowy",
-      "Opis": "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −15 Relacja, −10 Zaufanie.",
+      "Opis": "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −10 Zaufanie (a więc także −10 Relacja); po ≥10 turach od zawarcia zerwanie jest bez kary Zaufania.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Określony w treści umowy (np. 10 Pieniędzy/tura za dostęp do rudy)",
-      "Efekt": "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
+      "Efekt": "Szlaki handlowe; +1 Zaufanie/turę (a więc także +1 Relacja/turę) przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
     },
     {
       "Akcja": "14. Umowa wymiany surowców",
@@ -318,7 +318,7 @@
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "TAK",
       "Koszt": "Brak kosztu walutowego; koszt reputacyjny zależny od kontekstu",
-      "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: −25 Relacja u wszystkich, −20 Zaufanie, flaga agresor"
+      "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: sama deklaracja nie zmienia Zaufania ani Relacji; kara Wiarygodności N1 (−10 pkt, jednorazowo, gdy atak w tej samej turze lub w karencji), flaga agresor"
     },
     {
       "Akcja": "12. Wasalizacja",
@@ -441,26 +441,26 @@
     {
       "Zdarzenie / Działanie": "Wspólna religia",
       "Parametr": "Zaufanie",
-      "Zmiana": "+0.5 (max +15)",
-      "Znak (+/−)": "+",
+      "Zmiana": "0 (brak wpływu)",
+      "Znak (+/−)": "0",
       "Typ (co turę / jednorazowo)": "co turę",
-      "Uwagi": "Pasywny bonus gdy obie cywilizacje wyznają tę samą religię"
+      "Uwagi": "Religia nie wpływa na Zaufanie (wspolnaReligia_zaufanie_perTura = 0); brak pasywnego bonusu"
     },
     {
       "Zdarzenie / Działanie": "Odmienna religia",
       "Parametr": "Zaufanie",
-      "Zmiana": "-0.5 (max -10)",
-      "Znak (+/−)": "-",
+      "Zmiana": "0 (brak wpływu)",
+      "Znak (+/−)": "0",
       "Typ (co turę / jednorazowo)": "co turę",
-      "Uwagi": "Pasywne tarcia; istotniejsze w epoce religijnej"
+      "Uwagi": "Religia nie wpływa na Zaufanie (odmiennaReligia_zaufanie_perTura = 0); brak pasywnych tarć"
     },
     {
       "Zdarzenie / Działanie": "Ekspansja / osadnictwo przy granicy",
       "Parametr": "Zaufanie",
-      "Zmiana": "-2",
+      "Zmiana": "-3 / -4 / -5 (wg epoki)",
       "Znak (+/−)": "-",
       "Typ (co turę / jednorazowo)": "co turę",
-      "Uwagi": "Gracz lub AI zakłada miasto / przesuwa wojska przy granicy"
+      "Uwagi": "Gracz lub AI zakłada miasto / przesuwa wojska przy granicy; co turę, wstrzymane w karencji po pokoju lub rozejmie"
     },
     {
       "Zdarzenie / Działanie": "Złamany pakt przez gracza",
@@ -468,7 +468,7 @@
       "Zmiana": "-40",
       "Znak (+/−)": "-",
       "Typ (co turę / jednorazowo)": "jednorazowo",
-      "Uwagi": "Informacja rozchodzi się do sąsiadów (-5 Relacja u każdego)"
+      "Uwagi": "Kara na relację z poszkodowanym (zdarzenie zlamana_obietnica). W kodzie nie znaleziono rozchodzenia się informacji do sąsiadów (brak −5 Relacja u każdego)"
     },
     {
       "Zdarzenie / Działanie": "Złamany pakt przez AI",
@@ -710,7 +710,7 @@
         },
         {
           "Akcja / warunek": "Sojusze osiągalne gdy Relacja ≥",
-          "Próg": 120,
+          "Próg": 130,
           "Opis": "Powyżej sojusze są realistyczne"
         }
       ]
@@ -725,8 +725,8 @@
         },
         {
           "Stan / zdarzenie ciągłe": "Aktywny pakt NAP / sojusz",
-          "Δ Zaufanie/turę": 1,
-          "Uwagi": "+1/turę przez czas paktu"
+          "Δ Zaufanie/turę": 2,
+          "Uwagi": "+2/turę przez czas paktu NAP; sojusz wojskowy: +3/turę"
         },
         {
           "Stan / zdarzenie ciągłe": "Efekt dobrej woli (podarunek)",
@@ -740,18 +740,18 @@
         },
         {
           "Stan / zdarzenie ciągłe": "Wspólna religia",
-          "Δ Zaufanie/turę": 0.5,
-          "Uwagi": "+0.5/turę biernie, gdy ta sama religia"
+          "Δ Zaufanie/turę": 0,
+          "Uwagi": "Brak wpływu: religia nie zmienia Zaufania (wspolnaReligia_zaufanie_perTura = 0)"
         },
         {
           "Stan / zdarzenie ciągłe": "Odmienna religia",
-          "Δ Zaufanie/turę": -0.5,
-          "Uwagi": "−0.5/turę biernie przy innych religiach"
+          "Δ Zaufanie/turę": 0,
+          "Uwagi": "Brak wpływu: religia nie zmienia Zaufania (odmiennaReligia_zaufanie_perTura = 0)"
         },
         {
           "Stan / zdarzenie ciągłe": "Ekspansja przy granicy",
-          "Δ Zaufanie/turę": -2,
-          "Uwagi": "−2/turę przy osadnictwie / wojskach przy granicy"
+          "Δ Zaufanie/turę": -3,
+          "Uwagi": "−3/−4/−5 wg epoki (Kamień/Brąz/Żelazo) przy osadnictwie / wojskach przy granicy; wstrzymane w karencji"
         },
         {
           "Stan / zdarzenie ciągłe": "Urazy historyczne (zanikające)",
