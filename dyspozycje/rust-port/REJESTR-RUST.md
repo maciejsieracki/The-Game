@@ -794,3 +794,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Aktywne Workflow (3 z 4):** ZWYCIESTWO-WIRING-Q1 (Operator, HAIKU, od 18:40, `wf_ba1cfc1f-3e1`); EKONOMIA-BRAZ-ERA-Q1 r2 (Evaluator, SONNET, Operator zakończony, `wf_a01b7169-2d9`); ZLOZA-B-REST-Q1 r3 (Operator, HAIKU, od 19:10, `wf_d3ddfaff-163`). Żaden bez wyniku FC.
 - **Czwarty slot pusty:** brak gotowego dispatchu.
 - **Dysk:** 13 GB. **Parity:** `0ca58770e`.
+
+## EKONOMIA-BRAZ-ERA-Q1: FC FAIL r2 (`b611211fc`) → DODATEK r3
+- **Wynik r2:** kod brązu i nowe testy OK (fmt, clippy, lib 110, p6_ekonomia_braz_era 9). Pełny test: **7 failed** w testach „running web” (`p6_adv_*`, `p6_empirefood_e2e`).
+- **Przyczyna:** wektory tych testów pochodzą z pina **4bbef081d** (brąz = huta × m(e)), a parytet docelowy to **07d2fbd72** (brąz 50/75 per epoka). To wersja pina w wektorach, nie błąd kodu.
+- **Decyzja orkiestratora:** rozszerzyć allowlistę o te testy/wektory/generatory i zregenerować z pina 07d2fbd72. Bez osłabiania asercji. DODATEK r3 wypchnięty, baza `b611211fc`, start świeży.
+- **Start r3:** wstrzymany — dysk 7,3 GB < 8 GB (próg dla pełnego testu).
