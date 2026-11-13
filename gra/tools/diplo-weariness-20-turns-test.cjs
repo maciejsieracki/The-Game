@@ -101,8 +101,49 @@ try {
   check('c-zrodlo: diplomacy.ts (chec pokoju) nie uzywa zmeczenieT', !/zmeczenieT/.test(peaceBlock));
   check('c-zrodlo: diplomacy.ts (chec pokoju) czyta warWearinessLevel', /warWearinessLevel\(/.test(peaceBlock));
 
+  // (f) wiazanie zrodel: ai.ts przekazuje lostCitiesTotal do AIDiplomacyContext i uzywa jednego licznika;
+  //     profil (aiPeaceSignals, sygnal e) czyta warWearinessLevel, nie drugiego zegara.
+  const AI_SRC = fs.readFileSync(path.join(SRC, 'game', 'ai.ts'), 'utf8');
+  const PROFILE_SRC = fs.readFileSync(path.join(SRC, 'game', 'diplomacy-war-peace-profile.ts'), 'utf8');
+  const aiCtx = (AI_SRC.match(/const ctx: AIDiplomacyContext = \{[\s\S]*?\n    \};/) || [''])[0];
+  check('f1-ai.ts: ctx AIDiplomacyContext zawiera lostCitiesTotal (utracone miasta obu stron)', /lostCitiesTotal:/.test(aiCtx));
+  check('f2-ai.ts: fatigueFraction (wybor rozejm/pokoj) czyta jeden licznik wearyLevel, nie warWearinessFraction',
+    /fatigueFraction:\s*wearyLevel\b/.test(AI_SRC) && !/warWearinessFraction/.test(AI_SRC));
+  const sygnaly = (PROFILE_SRC.match(/export function aiPeaceSignals[\s\S]*?\n}\n/) || [''])[0];
+  check('f3-profil: sygnal (e) aiPeaceSignals liczy warWearinessLevel, nie warWearinessFraction/zmeczenieT',
+    /warWearinessLevel\(/.test(sygnaly) && !/warWearinessFraction|zmeczenieT/.test(sygnaly));
+
   const W = loadW(ORIG);
   for (const [name, ok] of behaviour(W)) check(name, ok);
+
+  // (g) AI<->AI bez strat miast: tick (runWarWearinessTick) daje pokoj w turze 16 (poziom 0,8 = 16/20), nie pozniej niz 24.
+  //     Przed 10. turą wojny tick nie wykonuje żadnej akcji (PEACE_PROPOSAL_MIN_WAR_TURNS).
+  {
+    const store = new Map();
+    let firstPeace = -1;
+    let anyEarly = false;
+    for (let t = 1; t <= 24; t++) {
+      const deps = {
+        store, turn: 400 + t, pairs: [{ a: 1, b: 2 }],
+        pairKey: (a, b) => `${Math.min(a, b)}-${Math.max(a, b)}`,
+        warInfo: () => ({ warStart: 400, turnsAtWar: t, lostA: 0, lostB: 0, turnsSinceCityChange: t }),
+        shareOf: () => 0.5,
+        weakerOf: () => 2,
+        cityCountOf: () => 6,
+        price: () => ({ requiredPn: 500, balanceFor: (c) => c, tolerancePn: 20 }),
+        assets: () => [],
+        cityCessionOk: () => true,
+        battlePending: false,
+        pay: () => {},
+        finalize: () => {},
+      };
+      const out = W.runWarWearinessTick(deps)[0];
+      if (out.action === 'mutual_peace' && firstPeace < 0) firstPeace = t;
+      if (t < 10 && out.action !== 'none') anyEarly = true;
+    }
+    check('g1: AI<->AI bez strat: pokoj (mutual_peace) w turze 16, nie pozniej niz 24', firstPeace === 16);
+    check('g2: AI<->AI bez strat: przed 10. tura wojny zadna akcja tickera', !anyEarly);
+  }
 
   // (e) mutanty: kazdy musi czerwienic test
   const mutants = [
