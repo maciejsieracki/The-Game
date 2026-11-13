@@ -74,20 +74,8 @@ fn or0(a: f64, b: f64) -> f64 {
     }
 }
 
-/// JS `Math.max(a, b)`: NaN zaraza wynik, `+0` wygrywa z `-0`.
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_positive() { a } else { b };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+use crate::domain::js_math::js_max;
 
 /// Web `hexDistanceAxial` na liczbach rzeczywistych (kolejnosc dzialan jak w `gen-helpers.ts:135`).
 fn dist_f(aq: f64, ar: f64, bq: f64, br: f64) -> f64 {

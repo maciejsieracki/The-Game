@@ -114,14 +114,8 @@ pub fn defender_inside_fortification(
     siege_wall_col >= 0.0 && q > siege_wall_col
 }
 
-/// `Math.max(0, x)`: NaN -> NaN, -0 -> +0.
-fn js_max0(x: f64) -> f64 {
-    if x.is_nan() || x > 0.0 {
-        x
-    } else {
-        0.0
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0`.
+use crate::domain::js_math::js_max0;
 
 /// `fortificationDefenseBonusForUnit` (city-defense.ts:124-129): `Math.max(0, wallTotalProc)` (NaN zostaje NaN).
 pub fn fortification_defense_bonus_for_unit(

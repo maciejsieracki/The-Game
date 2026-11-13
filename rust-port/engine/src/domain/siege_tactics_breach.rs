@@ -31,7 +31,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::siege_tactics_approach::ApproachWallState;
-use super::siege_tactics_blow::js_max;
 
 /// Stan muru/bramy/wiez potrzebny do automatu wylomu (pola sceny web).
 #[derive(Debug, Clone, PartialEq)]
@@ -73,10 +72,8 @@ impl WallState {
     }
 }
 
-/// Web `Math.max(0, hp)`: NaN zostaje NaN (w Rust `f64::max` zwrocilby 0).
-fn js_max0(x: f64) -> f64 {
-    js_max(0.0, x)
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0`.
+use crate::domain::js_math::js_max0;
 
 /// Web `_breachWallTile(wallRow)` (`battleScene.ts:7638-7647`), skutki na stan wylomu.
 ///

@@ -317,35 +317,11 @@ pub mod army_merge {
     // Semantyka JS (Math.min / Math.max / Math.round / porownanie napisow)
     // -----------------------------------------------------------------------
 
-    /// Web `Math.min(a, b)`: `NaN`, gdy ktorykolwiek argument to `NaN`; `Math.min(0, -0)` to `-0`.
-    pub fn js_min(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            f64::NAN
-        } else if a < b {
-            a
-        } else if b < a {
-            b
-        } else if a.is_sign_negative() {
-            a
-        } else {
-            b
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+    pub use crate::domain::js_math::js_min;
 
-    /// Web `Math.max(a, b)`: `NaN`, gdy ktorykolwiek argument to `NaN`; `Math.max(-0, 0)` to `0`.
-    pub fn js_max(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            f64::NAN
-        } else if a > b {
-            a
-        } else if b > a {
-            b
-        } else if a.is_sign_positive() {
-            a
-        } else {
-            b
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+    pub use crate::domain::js_math::js_max;
 
     /// Web `Math.round(x)`: polowki w strone `+Infinity`, `-0` dla malych ujemnych, `NaN`/`Infinity` bez zmian.
     pub fn js_round(x: f64) -> f64 {

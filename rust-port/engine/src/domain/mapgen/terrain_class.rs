@@ -49,35 +49,11 @@ pub type ReliefDensityTier = DensityTier;
 // Narzedzia: semantyka liczb JS
 // ---------------------------------------------------------------------------------------------
 
-/// JS `Math.max(a, b)`: `NaN` propaguje, `+0` wygrywa z `-0`.
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_negative() { b } else { a };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+use crate::domain::js_math::js_max;
 
-/// JS `Math.min(a, b)`: `NaN` propaguje, `-0` wygrywa z `+0`.
-fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == 0.0 && b == 0.0 {
-        return if a.is_sign_negative() { a } else { b };
-    }
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+use crate::domain::js_math::js_min;
 
 /// JS `Math.round(x)`: zaokragla w kierunku `+inf` w polowie (`-2.5 -> -2`), zachowuje `-0`.
 fn js_round(x: f64) -> f64 {

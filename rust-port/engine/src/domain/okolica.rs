@@ -157,14 +157,8 @@ pub fn js_floor_nonneg(x: f64) -> f64 {
     crate::domain::siege_tactics_blow::js_max(0.0, x.floor())
 }
 
-/// JS `Math.max(a, b)` — NaN propaguje się.
-fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        f64::NAN
-    } else {
-        a.max(b)
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max_std`.
+use crate::domain::js_math::js_max_std as js_max;
 
 /// Wynik komparatora JS: `d < 0` -> mniejszy, `d > 0` -> większy, inaczej (w tym NaN) remis.
 fn js_cmp_diff(d: f64) -> Ordering {

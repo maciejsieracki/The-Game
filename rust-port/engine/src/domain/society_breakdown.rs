@@ -141,35 +141,11 @@ pub fn js_round(x: f64) -> f64 {
     }
 }
 
-/// JS `Math.max(a, b)`: NaN propaguje; `+0` wygrywa z `-0`.
-pub fn js_max(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == b {
-        return if a.is_sign_positive() { a } else { b };
-    }
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+pub use crate::domain::js_math::js_max;
 
-/// JS `Math.min(a, b)`: NaN propaguje; `-0` wygrywa z `+0`.
-pub fn js_min(a: f64, b: f64) -> f64 {
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    if a == b {
-        return if a.is_sign_negative() { a } else { b };
-    }
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+pub use crate::domain::js_math::js_min;
 
 /// JS prawdziwosc liczby: `0`, `-0` i `NaN` sa falsy.
 fn js_truthy(x: f64) -> bool {

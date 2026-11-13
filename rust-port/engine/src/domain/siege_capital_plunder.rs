@@ -124,14 +124,8 @@ impl<A: OwnerResourceAccess + ?Sized> OwnerResourceAccess for BarbarianCaptorAcc
     }
 }
 
-/// JS `Math.max(0, x)`: NaN propaguje sie (w odroznieniu od `f64::max`).
-pub fn js_max0(x: f64) -> f64 {
-    if x.is_nan() {
-        f64::NAN
-    } else {
-        x.max(0.0)
-    }
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0_std`.
+pub use crate::domain::js_math::js_max0_std as js_max0;
 
 /// Web `cityFoundOrder(id)` (capital-capture.ts): N z `^city(\d+)$`, inaczej `+Infinity`.
 pub fn city_found_order(id: &str) -> f64 {

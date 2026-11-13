@@ -417,10 +417,8 @@ pub fn apply_praca_upkeep_post(
     }
 }
 
-/// `Math.max(0, x)` (NaN -> NaN, `-0` -> `0`).
-fn js_max0(x: f64) -> f64 {
-    crate::domain::recruitment::army_merge::js_max(0.0, x)
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0`.
+use crate::domain::js_math::js_max0;
 
 /// Pomocnik testowy: `load_econ_params` wymaga `&Value`; eksport dla spojnosci z `turn_economy_wire`.
 pub fn pop_cap_params_of(econ_params: &Value, difficulty: &str) -> PopCapParams {

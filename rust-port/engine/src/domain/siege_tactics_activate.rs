@@ -35,7 +35,6 @@
 //! (KLASY nie ma na bazie K5h). Przywrocenie `ru.range = origRange` w galezi muru jest no-op (nic w galezi nie
 //! zmienia `range`), wiec nie ma zdarzenia.
 
-use super::siege_tactics_blow::js_max;
 use super::siege_tactics_unit::{effective_flee_threshold, should_rout, CombatUnit};
 
 /// Web `MORALE_SURROUND_HIT` (`battleScene.ts:1142`).
@@ -182,10 +181,8 @@ fn manhattan(ac: i64, ar: i64, bc: i64, br: i64) -> i64 {
     (ac - bc).abs() + (ar - br).abs()
 }
 
-/// `Math.max(0, x)` z zachowaniem NaN.
-fn js_max0(x: f64) -> f64 {
-    js_max(0.0, x)
-}
+// Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max0`.
+use crate::domain::js_math::js_max0;
 
 /// Web `_checkRout(ru)` (`battleScene.ts:9783-9797`) przez K5A.
 fn check_rout(u: &mut ActivateUnit, out: &mut ActivateResult) {

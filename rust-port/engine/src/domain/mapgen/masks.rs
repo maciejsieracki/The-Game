@@ -57,35 +57,11 @@ pub mod v8math {
         f64::from_bits(u64::from(high) << 32)
     }
 
-    /// `Math.max(a, b)` (NaN propaguje, `+0 > -0`).
-    pub fn js_max(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            return f64::NAN;
-        }
-        if a == 0.0 && b == 0.0 {
-            return if a.is_sign_positive() { a } else { b };
-        }
-        if a > b {
-            a
-        } else {
-            b
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_max`.
+    pub use crate::domain::js_math::js_max;
 
-    /// `Math.min(a, b)` (NaN propaguje, `-0 < +0`).
-    pub fn js_min(a: f64, b: f64) -> f64 {
-        if a.is_nan() || b.is_nan() {
-            return f64::NAN;
-        }
-        if a == 0.0 && b == 0.0 {
-            return if a.is_sign_negative() { a } else { b };
-        }
-        if a < b {
-            a
-        } else {
-            b
-        }
-    }
+    // Wspolna implementacja (konsolidacja #110): `domain::js_math::js_min`.
+    pub use crate::domain::js_math::js_min;
 
     /// `Math.hypot(a, b)` jak w V8 (skalowanie przez maksimum i sumowanie Kahana).
     pub fn js_hypot(a: f64, b: f64) -> f64 {
