@@ -6599,7 +6599,7 @@ export type AIDiplomacyCommand =
    */
   | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
   /** R-WEB-TRUCE-Q1 r4 (N4): 'rozejm' gdy wojna < AI_ROZEJM_DO_TUR; brak pola = pokój (dawne zachowanie). */
-  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm' }
+  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm'; bezwarunkowy?: boolean }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
@@ -7051,6 +7051,8 @@ export function decideAIDiplomacy(
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
         rodzaj:   'pokoj',
+        // Flaga dla main.ts (enqueueNegotiationFromAiCmd): bez żądania płatności i bez wymogu oddania miasta.
+        bezwarunkowy: true,
         powod:    `koniec zmeczenia wojna (zmeczenie ${wearyLevel.toFixed(2)}, tury wojny=${turnsAtWarRel}): pokoj bezwarunkowy (bez miasta i zaplaty)`,
       });
       continue;

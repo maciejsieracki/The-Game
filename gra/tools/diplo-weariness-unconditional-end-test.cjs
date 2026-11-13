@@ -23,6 +23,7 @@ const SRC = path.resolve(GRA_ROOT, 'src');
 const WW = path.join(SRC, 'game', 'war-weariness.ts');
 const PARAMS = path.join(GRA_ROOT, 'data', 'war-weariness-params.json');
 const AI_TS = path.join(SRC, 'game', 'ai.ts');
+const MAIN_TS = path.join(SRC, 'main.ts');
 const J = (p) => JSON.stringify(path.join(SRC, p));
 const TAG = `${process.pid}`;
 const ENTRY = path.resolve(__dirname, `.uend-${TAG}-entry.ts`);
@@ -32,6 +33,7 @@ fs.writeFileSync(ENTRY, `export * as W from ${J('game/war-weariness')};\n`);
 const ORIG = fs.readFileSync(WW, 'utf8');
 const PJ = JSON.parse(fs.readFileSync(PARAMS, 'utf8'));
 const AI_SRC = fs.readFileSync(AI_TS, 'utf8');
+const MAIN_SRC = fs.readFileSync(MAIN_TS, 'utf8');
 
 /** Buduje modul war-weariness z podana trescia zrodla (mutanty); plik tymczasowy obok oryginalu. */
 function loadW(src) {
@@ -178,7 +180,16 @@ function behaviour(W) {
 function aiWiringOk(aiSrc) {
   const cnt = (s, t) => s.split(t).length - 1;
   return cnt(aiSrc, 'wearinessUnconditionalEndDue(wearyLevel)') === 1
-    && cnt(aiSrc, "koniec zmeczenia wojna (zmeczenie") === 1;
+    && cnt(aiSrc, "koniec zmeczenia wojna (zmeczenie") === 1
+    && cnt(aiSrc, 'bezwarunkowy: true') === 1;
+}
+
+/** Wiazanie main.ts (AI->gracz): flaga bezwarunkowy znosi zadanie platnosci i przepuszcza goly pokoj. */
+function mainWiringOk(mainSrc) {
+  const cnt = (s, t) => s.split(t).length - 1;
+  return cnt(mainSrc, 'const unconditionalEnd = workingCmd.bezwarunkowy === true;') === 1
+    && cnt(mainSrc, 'const neededPn = unconditionalEnd ? 0 : peaceOfferAiRequestPn(') === 1
+    && cnt(mainSrc, "peaceBareAllowed = (workingCmd.rodzaj === 'rozejm' || unconditionalEnd)") === 1;
 }
 
 /** Mutacje zrodla war-weariness.ts: kazda musi czerwienic co najmniej jeden test behawioralny. */
@@ -207,6 +218,10 @@ function run() {
   report(aiWiringOk(AI_SRC), 'ai.ts: brak jednej galezi pokoju bezwarunkowego (wearinessUnconditionalEndDue(wearyLevel))');
   const aiMut = AI_SRC.replace('wearinessUnconditionalEndDue(wearyLevel)', 'false');
   report(!aiWiringOk(aiMut), 'mutant AI-U6 (wiazanie ai.ts) PRZESZEDL - test statyczny go nie wykrywa');
+
+  report(mainWiringOk(MAIN_SRC), 'main.ts: brak wiazania flagi bezwarunkowy (enqueueNegotiationFromAiCmd)');
+  const mainMut = MAIN_SRC.replace('const unconditionalEnd = workingCmd.bezwarunkowy === true;', 'const unconditionalEnd = false;');
+  report(!mainWiringOk(mainMut), 'mutant MAIN-U7 (flaga bezwarunkowy w main.ts) PRZESZEDL - test statyczny go nie wykrywa');
 
   for (const m of MUTANTS) {
     const hits = ORIG.split(m.from).length - 1;

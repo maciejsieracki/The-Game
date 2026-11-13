@@ -20548,7 +20548,9 @@ async function boot(): Promise<void> {
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
-        const neededPn = peaceOfferAiRequestPn(
+        // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: koniec zmęczenia = pokój BEZWARUNKOWY (bez płatności).
+        const unconditionalEnd = workingCmd.bezwarunkowy === true;
+        const neededPn = unconditionalEnd ? 0 : peaceOfferAiRequestPn(
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
@@ -20559,7 +20561,7 @@ async function boot(): Promise<void> {
         }
         // Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
         // pokoju, decyzja o pokoju poza tym tematem; patrz raport R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1).
-        peaceBareAllowed = workingCmd.rodzaj === 'rozejm'
+        peaceBareAllowed = (workingCmd.rodzaj === 'rozejm' || unconditionalEnd)
           && neededPn <= 0
           && !converted.payload.giveItems?.length
           && !converted.payload.receiveItems?.length
