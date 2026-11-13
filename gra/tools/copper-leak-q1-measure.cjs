@@ -32,7 +32,20 @@ if (s.includes('__phaseT.ruda')) { console.log('juz zapatchowany (ruda)'); proce
 const needle = '      return { turn, units: units.length, cities: cities.length, sizes, phase: (window as any).__phaseT };';
 const hits = s.split(needle).length - 1;
 if (hits !== 1) throw new Error('needle dump return: znaleziono ' + hits);
-const add = '      { const __cu: Record<string, number> = {}; for (const c of cities as any[]) { const k = String(c.ownerId); __cu[k] = (__cu[k] || 0) + Number((c.surowce && c.surowce.ruda) || 0); } (window as any).__phaseT.ruda = __cu; }\n';
+const add = '      { const __cu: Record<string, number> = {}; for (const c of cities as any[]) { const k = String(c.ownerId); __cu[k] = (__cu[k] || 0) + Number((c.surowce && c.surowce.ruda) || 0); } (window as any).__phaseT.ruda = __cu; const __er: Record<string, number> = {}; for (const k of Object.keys(__cu)) { try { __er[k] = empireEpochForOwner(Number(k)); } catch (_) { __er[k] = -1; } } (window as any).__phaseT.era = __er; (window as any).__phaseT.ry = JSON.parse(JSON.stringify((globalThis as any).__ry || {})); (globalThis as any).__ry = {}; (window as any).__phaseT.mines = JSON.parse(JSON.stringify((globalThis as any).__mines || {})); }\n';
 s = s.replace(needle, () => add + needle);
 fs.writeFileSync(file, s);
 console.log('dopisano odczyt ruda per owner w', file);
+
+// Runda 4: instrumentacja zrodla przyrostu (TYLKO kopia poza repo): surowy kredyt `ruda` z terytorium per owner
+// (suma terrYield.ruda i liczba miast) -> phase.ry, oraz heksy kopalni miedzi (owner, zloze, nakladka) -> phase.mines.
+const te = path.join(root, 'src', 'game', 'turn-economy.ts');
+let t = fs.readFileSync(te, 'utf8');
+const a = "    creditTerritory('ruda', terrYield.ruda);\n";
+if (t.split(a).length !== 2) throw new Error('needle turn-economy ruda');
+t = t.replace(a, () => "    if (!stopAfterProduction && terrYield.ruda && terrYield.ruda > 0) { const __g: any = globalThis as any; const __m = (__g.__ry = __g.__ry || {}); const __o = (__m[ownerId] = __m[ownerId] || { raw: 0, n: 0 }); __o.raw += terrYield.ruda; __o.n++; }\n" + a);
+const b = "      if (!yieldRow) continue;\n      const rec = out.get(cityId) ?? {};";
+if (t.split(b).length !== 2) throw new Error('needle turn-economy yieldRow');
+t = t.replace(b, () => "      if (!yieldRow) continue;\n      if (yieldRow.resourceKey === 'ruda') { const __g: any = globalThis as any; const __mm = (__g.__mines = __g.__mines || {}); __mm[q + ',' + r] = { o: owner, c: cityId, z: String((hex as any).zloze ?? ''), n: String((hex as any).nakladka ?? ''), a: yieldRow.amount }; }\n      const rec = out.get(cityId) ?? {};");
+fs.writeFileSync(te, t);
+console.log('dopisano ry/mines w', te);
