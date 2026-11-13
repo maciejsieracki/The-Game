@@ -87,3 +87,32 @@ Zakaz: gra/, Cargo.*, push do parity, osłabianie asercji, `#[ignore]`, zmiana z
 
 ### Gate dyskowy
 Start dopiero przy ≥ 8 GB wolnego.
+
+---
+
+## DODATEK r4 (po FAIL r3, 13.11) — naprawa regresji roundtripu
+
+**BAZA r4: `02eef7219`** (kod r3 + obrona r3). Pierwszy krok: `git checkout --detach 02eef7219`. Świeże uruchomienie.
+
+### Przyczyna FAIL r3
+Pełny test: 1 failed — `p6_stan_ulepszenia::new_fields_roundtrip_and_default_is_omitted` (`tests/p6_stan_ulepszenia.rs:270`). Pole `gracz_kiedys_mial_miasto` ma `#[serde(skip)]`, więc po roundtripie jest `false` przy `true` w stanie. To regresja wprowadzona przez ten temat (baza `0ca58770e` miała 3284/0/1).
+
+### Decyzja orkiestratora (parytet + spójność z testem)
+- **Pole persystowane, pominięte gdy `false`:** `#[serde(default, skip_serializing_if = "is_false")]`. Zgodne z nazwą testu „default_is_omitted” (domyślna wartość nie trafia do JSON).
+- **Najpierw sprawdzić pin:** `git show 07d2fbd72:gra/src/save.ts | grep -n graczKiedysMialMiasto`.
+  - Jeśli pin **zapisuje** pole — zostać przy powyższym.
+  - Jeśli pin **nie zapisuje** pola — NIE persystować; zamiast tego odtwarzać flagę przy wczytaniu wg pina (`main.ts:46368-46370`, z miast). Test roundtripu zmienić na oczekiwanie zgodne z pinem (po wczytaniu flaga = wyliczona z miast). Zapisać wybór i dowód w raporcie.
+- **Allowlista r4 rozszerzona o:** `rust-port/engine/tests/p6_stan_ulepszenia.rs` (WYŁĄCZNIE asercje dotyczące tej flagi) oraz golden `p6_unit_replace_l3_state` — TYLKO jeśli zmienia się wyłącznie o nowe pole `gracz_kiedys_mial_miasto` (dopisać je z wartością z pina). Zakaz zmian innych pól golden.
+- `odtworz_flage_zwyciestwa_ze_miast`: po wybranym wariancie — produkcyjne wołanie przy wczytaniu, jeśli wariant „derywacja z miast”; w przeciwnym razie usunąć `#[cfg(test)]`-martwy kod.
+
+### Kryteria r4
+1. Pełny `cargo test --no-fail-fast`: **0 failed** (kod wyjścia i liczba w raporcie). Przy timeoucie narzędzia — w tle, odczyt logu.
+2. `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --lib`, `p6_victory_wiring` — kody wyjścia.
+3. Dowód z `save.ts` pina (wynik grep) w raporcie.
+4. Raport `01-operator-r4.md` z SHA.
+
+### Zakazy
+Bez osłabiania innych asercji, bez `#[ignore]`, bez usuwania testów. Poza wymienioną allowlistą — FAIL.
+
+### Gate dyskowy
+Start dopiero przy ≥ 8 GB wolnego.
