@@ -1,0 +1,7421 @@
+{
+ "pin": {
+  "commit": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "file": "gra/src/main.ts",
+  "file_sha256": "e80f9cb41d513b92846972a19f2760e08eb4247d6a9b344526d8bc71bd7d5f19",
+  "function": "transferBasketItems",
+  "fragment_lines": [
+   12566,
+   12678
+  ],
+  "fragment_sha256": "c6f7b25b3d9b745ea12c85acaf7164750ba17357cbac300e169fdd62d6d5b192"
+ },
+ "cases": [
+  {
+   "name": "pusta lista pozycji",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "zloze z hexKey, bez dealId",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z1",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z1",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "zloze bez hexKey -> klucz = id",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "dealId": "d9",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z2",
+     "hexKey": "z2",
+     "active": true,
+     "dealId": "d9"
+    }
+   ]
+  },
+  {
+   "name": "zloze z pustym hexKey zostaje pusty",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z3",
+     "hexKey": ""
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z3",
+     "hexKey": "",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "kolejnosc pozycji zachowana",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "dealId": "dX",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "a",
+     "hexKey": "ha"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u1"
+    },
+    {
+     "typ": "zloze",
+     "id": "b"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "a",
+     "hexKey": "ha",
+     "active": true,
+     "dealId": "dX"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "b",
+     "hexKey": "b",
+     "active": true,
+     "dealId": "dX"
+    }
+   ]
+  },
+  {
+   "name": "tylko jednostka -> brak grantow",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "dealId": "dX",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u2"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 0",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 1",
+   "fromOwnerId": 0,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z1_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z1_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u1_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z1_0",
+     "hexKey": "z1_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z1_1",
+     "hexKey": "z1_1",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 2",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u2_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z2_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z2_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z2_3",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z2_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z2_2",
+     "hexKey": "z2_2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z2_3",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 3",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z3_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z3_0",
+     "hexKey": "z3_0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 4",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u4_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 5",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z5_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z5_1",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u5_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z5_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z5_0",
+     "hexKey": "z5_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z5_1",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z5_3",
+     "hexKey": "z5_3",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 6",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z6_0",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z6_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z6_0",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z6_1",
+     "hexKey": "z6_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 7",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u7_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z7_1",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z7_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z7_1",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z7_2",
+     "hexKey": "z7_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 8",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z8_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z8_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z8_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z8_3",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z8_0",
+     "hexKey": "z8_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z8_1",
+     "hexKey": "z8_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z8_2",
+     "hexKey": "z8_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z8_3",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 9",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u9_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 10",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 11",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z11_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z11_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z11_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u11_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z11_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z11_0",
+     "hexKey": "z11_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z11_1",
+     "hexKey": "z11_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z11_2",
+     "hexKey": "z11_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z11_4",
+     "hexKey": "z11_4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 12",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z12_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u12_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z12_0",
+     "hexKey": "z12_0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 13",
+   "fromOwnerId": 0,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z13_0",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z13_0",
+     "hexKey": "h6",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 14",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 15",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z15_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z15_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z15_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z15_0",
+     "hexKey": "z15_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z15_1",
+     "hexKey": "z15_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z15_2",
+     "hexKey": "z15_2",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 16",
+   "fromOwnerId": 4,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z16_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u16_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z16_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z16_0",
+     "hexKey": "z16_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z16_2",
+     "hexKey": "z16_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 17",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z17_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u17_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z17_2",
+     "hexKey": "h8"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z17_0",
+     "hexKey": "z17_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z17_2",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 18",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z18_0",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z18_1",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u18_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z18_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z18_0",
+     "hexKey": "h7",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z18_1",
+     "hexKey": "h0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z18_3",
+     "hexKey": "z18_3",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 19",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z19_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z19_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z19_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z19_0",
+     "hexKey": "z19_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z19_1",
+     "hexKey": "z19_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z19_2",
+     "hexKey": "z19_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 20",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u20_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z20_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z20_2",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z20_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z20_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z20_1",
+     "hexKey": "z20_1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z20_2",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z20_3",
+     "hexKey": "z20_3",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z20_4",
+     "hexKey": "z20_4",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 21",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z21_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z21_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z21_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z21_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z21_0",
+     "hexKey": "z21_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z21_1",
+     "hexKey": "z21_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z21_2",
+     "hexKey": "z21_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z21_3",
+     "hexKey": "z21_3",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 22",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z22_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z22_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z22_0",
+     "hexKey": "z22_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z22_1",
+     "hexKey": "z22_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 23",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z23_0",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u23_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z23_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z23_3",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z23_4",
+     "hexKey": "h4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z23_0",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z23_2",
+     "hexKey": "z23_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z23_3",
+     "hexKey": "h5",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z23_4",
+     "hexKey": "h4",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 24",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z24_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z24_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z24_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z24_0",
+     "hexKey": "z24_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z24_1",
+     "hexKey": "z24_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z24_2",
+     "hexKey": "z24_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 25",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 26",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z26_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z26_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z26_2",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z26_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z26_0",
+     "hexKey": "z26_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z26_1",
+     "hexKey": "z26_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z26_2",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z26_3",
+     "hexKey": "z26_3",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 27",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z27_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z27_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z27_0",
+     "hexKey": "z27_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z27_1",
+     "hexKey": "z27_1",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 28",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z28_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z28_0",
+     "hexKey": "z28_0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 29",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u29_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u29_1"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 30",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z30_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z30_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z30_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z30_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z30_0",
+     "hexKey": "z30_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z30_1",
+     "hexKey": "z30_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z30_2",
+     "hexKey": "z30_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z30_3",
+     "hexKey": "z30_3",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 31",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z31_0",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z31_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z31_2",
+     "hexKey": "h8"
+    },
+    {
+     "typ": "zloze",
+     "id": "z31_3",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z31_0",
+     "hexKey": "h3",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z31_1",
+     "hexKey": "z31_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z31_2",
+     "hexKey": "h8",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z31_3",
+     "hexKey": "h5",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 32",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z32_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z32_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u32_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z32_0",
+     "hexKey": "z32_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z32_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 33",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u33_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z33_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u33_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z33_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u33_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z33_1",
+     "hexKey": "z33_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z33_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 34",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 35",
+   "fromOwnerId": 1,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u35_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 36",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 37",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u37_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z37_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z37_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z37_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z37_2",
+     "hexKey": "z37_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 38",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u38_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z38_1",
+     "hexKey": "h3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z38_1",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 39",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z39_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z39_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u39_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z39_0",
+     "hexKey": "z39_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z39_1",
+     "hexKey": "z39_1",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 40",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z40_0",
+     "hexKey": "h3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z40_0",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 41",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 42",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u42_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 43",
+   "fromOwnerId": 4,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 44",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z44_0",
+     "hexKey": "h9"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z44_0",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 45",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u45_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z45_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z45_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z45_1",
+     "hexKey": "z45_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z45_2",
+     "hexKey": "z45_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 46",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u46_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u46_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z46_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z46_2",
+     "hexKey": "z46_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 47",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u47_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u47_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z47_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z47_3",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z47_4",
+     "hexKey": "h2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z47_2",
+     "hexKey": "z47_2",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z47_3",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z47_4",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 48",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u48_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z48_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z48_2",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u48_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u48_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z48_1",
+     "hexKey": "z48_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z48_2",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 49",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z49_0",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u49_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z49_0",
+     "hexKey": "h9",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 50",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z50_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z50_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u50_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z50_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z50_0",
+     "hexKey": "z50_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z50_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z50_3",
+     "hexKey": "z50_3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 51",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 52",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z52_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z52_0",
+     "hexKey": "z52_0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 53",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 54",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 55",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 56",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u56_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z56_1",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z56_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u56_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u56_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z56_1",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z56_2",
+     "hexKey": "z56_2",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 57",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z57_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z57_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z57_2",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z57_0",
+     "hexKey": "z57_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z57_1",
+     "hexKey": "z57_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z57_2",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 58",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u58_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u58_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z58_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z58_2",
+     "hexKey": "z58_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 59",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z59_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z59_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z59_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z59_3",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z59_4",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z59_0",
+     "hexKey": "z59_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z59_1",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z59_2",
+     "hexKey": "z59_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z59_3",
+     "hexKey": "h7",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z59_4",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 60",
+   "fromOwnerId": 1,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z60_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z60_1",
+     "hexKey": "h2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z60_0",
+     "hexKey": "z60_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z60_1",
+     "hexKey": "h2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 61",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z61_0",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z61_0",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 62",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u62_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z62_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z62_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u62_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z62_1",
+     "hexKey": "z62_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z62_2",
+     "hexKey": "z62_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 63",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z63_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z63_1",
+     "hexKey": "h2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z63_0",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z63_1",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 64",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u64_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z64_1",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z64_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z64_3",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z64_4",
+     "hexKey": "h8"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z64_1",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z64_2",
+     "hexKey": "z64_2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z64_3",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z64_4",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 65",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z65_0",
+     "hexKey": "h9"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z65_0",
+     "hexKey": "h9",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 66",
+   "fromOwnerId": 0,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u66_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z66_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z66_2",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z66_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z66_1",
+     "hexKey": "z66_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z66_2",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z66_3",
+     "hexKey": "z66_3",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 67",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 68",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u68_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 69",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u69_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z69_1",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z69_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 70",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z70_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z70_1",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z70_2",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z70_3",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z70_0",
+     "hexKey": "z70_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z70_1",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z70_2",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z70_3",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 71",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 72",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z72_0",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z72_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z72_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z72_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z72_0",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z72_1",
+     "hexKey": "z72_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z72_2",
+     "hexKey": "z72_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z72_3",
+     "hexKey": "z72_3",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 73",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z73_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z73_0",
+     "hexKey": "z73_0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 74",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z74_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z74_0",
+     "hexKey": "z74_0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 75",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 76",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 77",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z77_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z77_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z77_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u77_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u77_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z77_0",
+     "hexKey": "z77_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z77_1",
+     "hexKey": "z77_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z77_2",
+     "hexKey": "z77_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 78",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z78_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z78_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z78_0",
+     "hexKey": "z78_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z78_1",
+     "hexKey": "z78_1",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 79",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 80",
+   "fromOwnerId": 1,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z80_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z80_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z80_0",
+     "hexKey": "z80_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z80_1",
+     "hexKey": "z80_1",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 81",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 82",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u82_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 83",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z83_0",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u83_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z83_2",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z83_3",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z83_0",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z83_2",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z83_3",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 84",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z84_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u84_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z84_2",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z84_3",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z84_4",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z84_0",
+     "hexKey": "z84_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z84_2",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z84_3",
+     "hexKey": "h7",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z84_4",
+     "hexKey": "h6",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 85",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 86",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u86_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z86_1",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z86_2",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z86_3",
+     "hexKey": "h4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z86_1",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z86_2",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z86_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 87",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z87_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z87_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z87_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z87_0",
+     "hexKey": "z87_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z87_1",
+     "hexKey": "z87_1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z87_2",
+     "hexKey": "z87_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 88",
+   "fromOwnerId": 0,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z88_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z88_1",
+     "hexKey": "h8"
+    },
+    {
+     "typ": "zloze",
+     "id": "z88_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z88_0",
+     "hexKey": "z88_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z88_1",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z88_2",
+     "hexKey": "z88_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 89",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 90",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z90_0",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z90_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z90_2",
+     "hexKey": "h3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z90_0",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z90_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z90_2",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 91",
+   "fromOwnerId": 4,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z91_0",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z91_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z91_2",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z91_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z91_0",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z91_1",
+     "hexKey": "z91_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z91_2",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z91_3",
+     "hexKey": "z91_3",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 92",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u92_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z92_1",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z92_2",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z92_1",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z92_2",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 93",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z93_0",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z93_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z93_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z93_3",
+     "hexKey": "h7"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z93_0",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z93_1",
+     "hexKey": "z93_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z93_2",
+     "hexKey": "z93_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z93_3",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 94",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z94_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u94_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z94_2",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u94_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u94_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z94_0",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z94_2",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 95",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z95_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z95_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z95_2",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u95_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z95_0",
+     "hexKey": "h4",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z95_1",
+     "hexKey": "z95_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z95_2",
+     "hexKey": "h0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 96",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 97",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z97_0",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u97_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z97_2",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z97_3",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z97_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z97_0",
+     "hexKey": "h5",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z97_2",
+     "hexKey": "h2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z97_3",
+     "hexKey": "h3",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z97_4",
+     "hexKey": "z97_4",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 98",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u98_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 99",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u99_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 100",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z100_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u100_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z100_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z100_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z100_0",
+     "hexKey": "z100_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z100_2",
+     "hexKey": "z100_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z100_3",
+     "hexKey": "z100_3",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 101",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u101_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z101_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z101_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z101_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z101_2",
+     "hexKey": "z101_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 102",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z102_0",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z102_1",
+     "hexKey": "h7"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z102_0",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z102_1",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 103",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z103_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z103_1",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z103_0",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z103_1",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 104",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z104_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z104_0",
+     "hexKey": "z104_0",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 105",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u105_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z105_1",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z105_1",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 106",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 107",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z107_0",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z107_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z107_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z107_3",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z107_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z107_0",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z107_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z107_2",
+     "hexKey": "z107_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z107_3",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z107_4",
+     "hexKey": "z107_4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 108",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u108_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 109",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z109_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z109_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u109_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z109_3",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z109_0",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z109_1",
+     "hexKey": "z109_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z109_3",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 110",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 111",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z111_0",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z111_1",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z111_2",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z111_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z111_4",
+     "hexKey": "h7"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z111_0",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z111_1",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z111_2",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z111_3",
+     "hexKey": "z111_3",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z111_4",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 112",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z112_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u112_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z112_2",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u112_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u112_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z112_0",
+     "hexKey": "z112_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z112_2",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 113",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z113_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z113_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z113_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z113_0",
+     "hexKey": "z113_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z113_1",
+     "hexKey": "z113_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z113_2",
+     "hexKey": "z113_2",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 114",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u114_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z114_1",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z114_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z114_1",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z114_2",
+     "hexKey": "z114_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 115",
+   "fromOwnerId": 4,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u115_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u115_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z115_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z115_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z115_4",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z115_2",
+     "hexKey": "z115_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z115_3",
+     "hexKey": "z115_3",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z115_4",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 116",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u116_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z116_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z116_1",
+     "hexKey": "z116_1",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 117",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z117_0",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z117_1",
+     "hexKey": "h3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z117_0",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z117_1",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 118",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z118_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z118_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z118_2",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z118_3",
+     "hexKey": "h9"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z118_0",
+     "hexKey": "z118_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z118_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z118_2",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z118_3",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 119",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z119_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z119_1",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z119_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z119_3",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z119_4",
+     "hexKey": "h8"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z119_0",
+     "hexKey": "z119_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z119_1",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z119_2",
+     "hexKey": "z119_2",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z119_3",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z119_4",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 120",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z120_0",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u120_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z120_2",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z120_0",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z120_2",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 121",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z121_0",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z121_1",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z121_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z121_0",
+     "hexKey": "h9",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z121_1",
+     "hexKey": "h5",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z121_2",
+     "hexKey": "z121_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 122",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z122_0",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z122_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z122_2",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z122_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z122_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z122_0",
+     "hexKey": "h9",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z122_1",
+     "hexKey": "z122_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z122_2",
+     "hexKey": "h7",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z122_3",
+     "hexKey": "z122_3",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z122_4",
+     "hexKey": "z122_4",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 123",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u123_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z123_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z123_1",
+     "hexKey": "z123_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 124",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u124_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z124_1",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u124_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u124_3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u124_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z124_1",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 125",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z125_0",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z125_0",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 126",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u126_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z126_1",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z126_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z126_1",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z126_2",
+     "hexKey": "z126_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 127",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u127_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z127_1",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u127_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z127_3",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z127_1",
+     "hexKey": "h4",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z127_3",
+     "hexKey": "h6",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 128",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z128_0",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z128_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z128_2",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z128_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z128_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z128_0",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z128_1",
+     "hexKey": "z128_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z128_2",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z128_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z128_4",
+     "hexKey": "z128_4",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 129",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u129_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z129_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z129_1",
+     "hexKey": "z129_1",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 130",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u130_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z130_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z130_2",
+     "hexKey": "h8"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u130_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z130_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z130_2",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 131",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z131_0",
+     "hexKey": "h7"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z131_0",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 132",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z132_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z132_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z132_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u132_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z132_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z132_0",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z132_1",
+     "hexKey": "z132_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z132_2",
+     "hexKey": "z132_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z132_4",
+     "hexKey": "z132_4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 133",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u133_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z133_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u133_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u133_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z133_1",
+     "hexKey": "z133_1",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 134",
+   "fromOwnerId": 4,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u134_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z134_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z134_1",
+     "hexKey": "z134_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 135",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z135_0",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z135_1",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z135_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z135_3",
+     "hexKey": "h2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z135_0",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z135_1",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z135_2",
+     "hexKey": "z135_2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z135_3",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 136",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z136_0",
+     "hexKey": "h8"
+    },
+    {
+     "typ": "zloze",
+     "id": "z136_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z136_0",
+     "hexKey": "h8",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z136_1",
+     "hexKey": "z136_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 137",
+   "fromOwnerId": 1,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z137_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z137_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z137_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u137_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z137_0",
+     "hexKey": "z137_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z137_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z137_2",
+     "hexKey": "z137_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 138",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 139",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z139_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z139_0",
+     "hexKey": "z139_0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 140",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z140_0",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z140_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u140_2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u140_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z140_0",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z140_1",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 141",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z141_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z141_1",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z141_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z141_0",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z141_1",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z141_2",
+     "hexKey": "z141_2",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 142",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z142_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z142_1",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z142_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z142_0",
+     "hexKey": "h4",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z142_1",
+     "hexKey": "h3",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z142_2",
+     "hexKey": "z142_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 143",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u143_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 144",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z144_0",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u144_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z144_0",
+     "hexKey": "h7",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 145",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z145_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z145_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z145_0",
+     "hexKey": "z145_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z145_1",
+     "hexKey": "z145_1",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 146",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z146_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z146_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u146_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z146_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z146_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z146_0",
+     "hexKey": "z146_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z146_1",
+     "hexKey": "z146_1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z146_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z146_4",
+     "hexKey": "z146_4",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 147",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z147_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z147_1",
+     "hexKey": "h9"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z147_0",
+     "hexKey": "z147_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z147_1",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 148",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z148_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u148_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z148_2",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z148_3",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u148_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z148_0",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z148_2",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z148_3",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 149",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z149_0",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u149_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z149_2",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z149_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z149_0",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z149_2",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z149_3",
+     "hexKey": "z149_3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 150",
+   "fromOwnerId": 1,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z150_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z150_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u150_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z150_3",
+     "hexKey": "h8"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z150_0",
+     "hexKey": "z150_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z150_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z150_3",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 151",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 152",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 153",
+   "fromOwnerId": 2,
+   "toOwnerId": 1,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 154",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u154_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 155",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z155_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z155_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z155_2",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z155_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z155_4",
+     "hexKey": "h8"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z155_0",
+     "hexKey": "z155_0",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z155_1",
+     "hexKey": "z155_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z155_2",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z155_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z155_4",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 156",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z156_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z156_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z156_2",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z156_0",
+     "hexKey": "z156_0",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z156_1",
+     "hexKey": "z156_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z156_2",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 157",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u157_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z157_1",
+     "hexKey": "h9"
+    },
+    {
+     "typ": "zloze",
+     "id": "z157_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z157_1",
+     "hexKey": "h9",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z157_2",
+     "hexKey": "z157_2",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 158",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u158_0"
+    }
+   ],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 159",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u159_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z159_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z159_2",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z159_1",
+     "hexKey": "z159_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z159_2",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 160",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z160_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z160_1",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z160_2",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z160_3",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z160_4",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z160_0",
+     "hexKey": "z160_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z160_1",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z160_2",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z160_3",
+     "hexKey": "h2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z160_4",
+     "hexKey": "h0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 161",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z161_0",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z161_1",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z161_2",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u161_3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z161_4",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z161_0",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z161_1",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z161_2",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z161_4",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 162",
+   "fromOwnerId": 3,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 163",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u163_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z163_1",
+     "hexKey": "h9"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z163_1",
+     "hexKey": "h9",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 164",
+   "fromOwnerId": 0,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 165",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 166",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z166_0",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z166_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z166_2",
+     "hexKey": "h4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z166_0",
+     "hexKey": "h5",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z166_1",
+     "hexKey": "z166_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z166_2",
+     "hexKey": "h4",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 167",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "dealId": "",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 168",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z168_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u168_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z168_0",
+     "hexKey": "z168_0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 169",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "d2",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 170",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 171",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z171_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u171_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z171_2",
+     "hexKey": "h1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z171_0",
+     "hexKey": "z171_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z171_2",
+     "hexKey": "h1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 172",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z172_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z172_1",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z172_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z172_0",
+     "hexKey": "z172_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z172_1",
+     "hexKey": "h0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z172_2",
+     "hexKey": "z172_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 173",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z173_0",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z173_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z173_2",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z173_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z173_0",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z173_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z173_2",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z173_3",
+     "hexKey": "z173_3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 174",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z174_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u174_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z174_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z174_3",
+     "hexKey": "h2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z174_0",
+     "hexKey": "h0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z174_2",
+     "hexKey": "z174_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z174_3",
+     "hexKey": "h2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 175",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u175_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z175_1",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z175_1",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 176",
+   "fromOwnerId": 4,
+   "toOwnerId": 2,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z176_0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z176_0",
+     "hexKey": "z176_0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 177",
+   "fromOwnerId": 2,
+   "toOwnerId": 0,
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 178",
+   "fromOwnerId": 1,
+   "toOwnerId": 2,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z178_0",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z178_1",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z178_0",
+     "hexKey": "h0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z178_1",
+     "hexKey": "h0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 179",
+   "fromOwnerId": 0,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z179_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z179_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z179_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z179_3",
+     "hexKey": "h5"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z179_0",
+     "hexKey": "z179_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z179_1",
+     "hexKey": "z179_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z179_2",
+     "hexKey": "z179_2",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z179_3",
+     "hexKey": "h5",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 180",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z180_0",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z180_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z180_0",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z180_1",
+     "hexKey": "z180_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 181",
+   "fromOwnerId": 0,
+   "toOwnerId": 3,
+   "dealId": "d2",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u181_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z181_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z181_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z181_3",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z181_4",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z181_1",
+     "hexKey": "z181_1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z181_2",
+     "hexKey": "z181_2",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z181_3",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": "d2"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z181_4",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d2"
+    }
+   ]
+  },
+  {
+   "name": "losowy 182",
+   "fromOwnerId": 2,
+   "toOwnerId": 3,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u182_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z182_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z182_2",
+     "hexKey": "h6"
+    },
+    {
+     "typ": "zloze",
+     "id": "z182_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z182_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z182_1",
+     "hexKey": "z182_1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z182_2",
+     "hexKey": "h6",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z182_3",
+     "hexKey": "h4",
+     "active": true
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z182_4",
+     "hexKey": "z182_4",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 183",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 184",
+   "fromOwnerId": 3,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u184_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z184_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z184_2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z184_3",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z184_1",
+     "hexKey": "h1",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z184_2",
+     "hexKey": "z184_2",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z184_3",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 185",
+   "fromOwnerId": 0,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z185_0",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z185_1",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z185_0",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 0,
+     "partnerId": 0,
+     "zlozeId": "z185_1",
+     "hexKey": "h6",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 186",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z186_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u186_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z186_2",
+     "hexKey": "h3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z186_0",
+     "hexKey": "z186_0",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z186_2",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 187",
+   "fromOwnerId": 2,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z187_0",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "zloze",
+     "id": "z187_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z187_2",
+     "hexKey": "h0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u187_3"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z187_0",
+     "hexKey": "h2",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z187_1",
+     "hexKey": "z187_1",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z187_2",
+     "hexKey": "h0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 188",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z188_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z188_1"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u188_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z188_0",
+     "hexKey": "z188_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z188_1",
+     "hexKey": "z188_1",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 189",
+   "fromOwnerId": 4,
+   "toOwnerId": 3,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z189_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u189_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 3,
+     "partnerId": 3,
+     "zlozeId": "z189_0",
+     "hexKey": "z189_0",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 190",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z190_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z190_1",
+     "hexKey": "h7"
+    },
+    {
+     "typ": "zloze",
+     "id": "z190_2",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z190_0",
+     "hexKey": "z190_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z190_1",
+     "hexKey": "h7",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z190_2",
+     "hexKey": "h6",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 191",
+   "fromOwnerId": 4,
+   "toOwnerId": 4,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z191_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z191_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z191_2",
+     "hexKey": "h0"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z191_0",
+     "hexKey": "z191_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z191_1",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z191_2",
+     "hexKey": "h0",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 192",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z192_0",
+     "hexKey": "h2"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u192_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z192_0",
+     "hexKey": "h2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 193",
+   "fromOwnerId": 3,
+   "toOwnerId": 0,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 194",
+   "fromOwnerId": 3,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [],
+   "expectedGrants": []
+  },
+  {
+   "name": "losowy 195",
+   "fromOwnerId": 2,
+   "toOwnerId": 2,
+   "dealId": "",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z195_0",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "zloze",
+     "id": "z195_1",
+     "hexKey": "h8"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u195_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z195_0",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": ""
+    },
+    {
+     "granterOwnerId": 2,
+     "granteeOwnerId": 2,
+     "partnerId": 2,
+     "zlozeId": "z195_1",
+     "hexKey": "h8",
+     "active": true,
+     "dealId": ""
+    }
+   ]
+  },
+  {
+   "name": "losowy 196",
+   "fromOwnerId": 0,
+   "toOwnerId": 4,
+   "dealId": "d1",
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z196_0",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u196_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z196_2",
+     "hexKey": "h3"
+    },
+    {
+     "typ": "zloze",
+     "id": "z196_3",
+     "hexKey": "h4"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u196_4"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z196_0",
+     "hexKey": "h5",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z196_2",
+     "hexKey": "h3",
+     "active": true,
+     "dealId": "d1"
+    },
+    {
+     "granterOwnerId": 0,
+     "granteeOwnerId": 4,
+     "partnerId": 4,
+     "zlozeId": "z196_3",
+     "hexKey": "h4",
+     "active": true,
+     "dealId": "d1"
+    }
+   ]
+  },
+  {
+   "name": "losowy 197",
+   "fromOwnerId": 3,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z197_0"
+    },
+    {
+     "typ": "jednostka",
+     "id": "u197_1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z197_2"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z197_0",
+     "hexKey": "z197_0",
+     "active": true
+    },
+    {
+     "granterOwnerId": 3,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z197_2",
+     "hexKey": "z197_2",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 198",
+   "fromOwnerId": 1,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "zloze",
+     "id": "z198_0",
+     "hexKey": "h5"
+    },
+    {
+     "typ": "zloze",
+     "id": "z198_1",
+     "hexKey": "h1"
+    },
+    {
+     "typ": "zloze",
+     "id": "z198_2",
+     "hexKey": "h6"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z198_0",
+     "hexKey": "h5",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z198_1",
+     "hexKey": "h1",
+     "active": true
+    },
+    {
+     "granterOwnerId": 1,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z198_2",
+     "hexKey": "h6",
+     "active": true
+    }
+   ]
+  },
+  {
+   "name": "losowy 199",
+   "fromOwnerId": 4,
+   "toOwnerId": 1,
+   "items": [
+    {
+     "typ": "jednostka",
+     "id": "u199_0"
+    },
+    {
+     "typ": "zloze",
+     "id": "z199_1"
+    }
+   ],
+   "expectedGrants": [
+    {
+     "granterOwnerId": 4,
+     "granteeOwnerId": 1,
+     "partnerId": 1,
+     "zlozeId": "z199_1",
+     "hexKey": "z199_1",
+     "active": true
+    }
+   ]
+  }
+ ]
+}

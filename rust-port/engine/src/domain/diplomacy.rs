@@ -1780,6 +1780,15 @@ pub struct BasketItem {
     pub quantity: f64,
     #[serde(rename = "poziom", alias = "level")]
     pub level: Option<u32>,
+    /// Web `BasketItem.hexKey?` (pin `gra/src/game/diplomacy-pn-engine.ts`): klucz heksa złoża
+    /// dla pozycji `zloze`. `None` = `undefined` na pinie (wtedy klucz = `id`).
+    #[serde(
+        rename = "hexKey",
+        alias = "hex_key",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub hex_key: Option<String>,
 }
 
 fn default_basket_quantity() -> f64 {
@@ -1793,6 +1802,7 @@ impl BasketItem {
             id: id.into(),
             quantity,
             level: None,
+            hex_key: None,
         }
     }
 

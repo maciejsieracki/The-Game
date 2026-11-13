@@ -32,6 +32,7 @@ pub mod credibility;
 pub mod diplomacy;
 pub mod diplomacy_aggressor;
 pub mod diplomacy_ai_forced_peace;
+pub mod diplomacy_basket;
 pub mod diplomacy_locks;
 pub mod diplomacy_multiwar;
 pub mod diplomacy_multiwar_gate;
