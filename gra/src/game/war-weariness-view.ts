@@ -39,6 +39,12 @@ export interface WarWearinessPairInput {
   turnsSinceCityChange?: number;
   a: WarWearinessSideInput;
   b: WarWearinessSideInput;
+  /**
+   * Szczyt zmęczenia pary = `warWearinessByPairKey.get(key).peak` (stepPairState). Tick AI↔AI
+   * (runWarWearinessTick) używa WŁAŚNIE szczytu, nie bieżącego poziomu, zarówno do decyzji o pokoju,
+   * jak i do loserDespair. Gdy podany, panel pokazuje ten sam poziom co AI. Gdy brak: bieżący warWearinessLevel.
+   */
+  peak?: number;
 }
 
 /** Widok jednej strony. `zmeczenie` dla 'wygrywa' i 'rowny'; `desperacja` dla 'przegrywa'. Wszystko 0..1. */
@@ -62,7 +68,7 @@ export function warWearinessPairView(
   inp: WarWearinessPairInput,
   P: WarWearinessParams = WAR_WEARINESS_PARAMS,
 ): WarWearinessPairView {
-  const level = clamp01(warWearinessLevel(
+  const current = clamp01(warWearinessLevel(
     {
       turnsAtWar: inp.turnsAtWar,
       lostCitiesTotal: Math.max(0, inp.a.lostCities) + Math.max(0, inp.b.lostCities),
@@ -70,6 +76,8 @@ export function warWearinessPairView(
     },
     P,
   ));
+  // Ten sam wybór co w runWarWearinessTick (lvl = st.peak): szczyt pary, gdy podany.
+  const level = inp.peak === undefined ? current : clamp01(inp.peak);
 
   const sideA: MilitarySide = { id: inp.a.id, sila: inp.a.sila, armiaPkt: inp.a.armiaPkt };
   const sideB: MilitarySide = { id: inp.b.id, sila: inp.b.sila, armiaPkt: inp.b.armiaPkt };

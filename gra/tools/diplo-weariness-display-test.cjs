@@ -39,7 +39,7 @@ async function main() {
   const BUNDLE_A = path.resolve(__dirname, '.dip-weariness-view-bundle.cjs');
   fs.writeFileSync(ENTRY_A, [
     "export { warWearinessPairView } from '../src/game/war-weariness-view.ts';",
-    "export { warWearinessLevel, loserDespair, WAR_WEARINESS_PARAMS } from '../src/game/war-weariness.ts';",
+    "export { warWearinessLevel, loserDespair, wearinessMilitaryShare, WAR_WEARINESS_PARAMS } from '../src/game/war-weariness.ts';",
   ].join('\n'), 'utf8');
   await esbuild.build({
     entryPoints: [ENTRY_A], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -99,6 +99,22 @@ async function main() {
       b: { id: 'b', sila: 0, armiaPkt: 0, lostCities: 0 },
     });
     ok(r.a.rola === 'rowny' && r.b.rola === 'rowny', '[A4] obie siły 0 → rowny');
+  }
+  {
+    // A5: szczyt pary (peak z warWearinessByPairKey) zastępuje bieżący poziom — jak w runWarWearinessTick (lvl = st.peak).
+    const base = {
+      turnsAtWar: 20,
+      a: { id: 'a', sila: 800, armiaPkt: 500, lostCities: 0 },
+      b: { id: 'b', sila: 200, armiaPkt: 150, lostCities: 2 },
+    };
+    const current = V.warWearinessLevel({ turnsAtWar: 20, lostCitiesTotal: 2 });
+    const peak = Math.min(1, current + 0.3);
+    const r = V.warWearinessPairView({ ...base, peak });
+    const expDespair = V.loserDespair({ level: peak, share: Math.min(1 - V.wearinessMilitaryShare(800, 200), P.przegrywajacy.udzialWyraznie), lostCities: 2 });
+    ok(r.level === peak && r.a.zmeczenie === peak, '[A5] z peak: zmęczenie wygrywającego = peak (nie bieżący poziom)');
+    ok(r.b.desperacja === expDespair, '[A5] z peak: desperacja liczona z peak (jak w ticku AI↔AI)');
+    const noPeak = V.warWearinessPairView(base);
+    ok(noPeak.level === current, '[A5] bez peak: zachowanie bez zmian (bieżący warWearinessLevel)');
   }
 
   // ===========================================================================
