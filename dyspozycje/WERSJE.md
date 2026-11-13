@@ -1,3 +1,9 @@
+## ROBOCZA 1a92cad2 -- 2026-11-13 -- FALA 687: Losowania w pętli tury z ziarna gry: to samo ziarno daje ten sam przebieg (testowa)
+
+- Nagrody z wiosek, wojna klastra państw-miast, automatyczny zwiad zwiadowców, akceptacja AI i sufiksy identyfikatorów używają generatora z ziarna gry; hak testowy ustawia ziarno gry; zwykła gra: ziarno nowej gry nadal losowe, format zapisu bez zmian; nowy test powtarzalności i zakaz Math.random w pętli tury.
+- Weryfikacja: tsc 0; logic 213/213; determinism-same-seed PASS; diplomacy 149/0; ai-test 297/0; character-threshold 42/0; pomiar ziarno 2222: 6/6 fast i 3/3 normal identyczne, ziarno 1717 3/3; vite build OK
+- Limity: Walki automatyczne i oblężenia nadal na Math.random (temat W61); pomiar tylko 30 tur, skrót stanu bez jednostek/skarbca/zasobów; wykonanie w żywej grze NIE_ZMIERZONO
+
 ## ROBOCZA 2e3318f1 -- 2026-11-13 -- FALA 686: Próg wojny wg charakteru cywilizacji, administrator bez okien przeglądarki, zmęczenie wojną tylko miastami (krok 4b) (testowa)
 
 - Agresywne cywilizacje wypowiadają wojnę przy przewadze siły militarnej od 14%, neutralne od 20%, ostrożne od 28% (zakres 10-35%); zatrudnienie i zwolnienie administratora bez natywnego okna przeglądarki, teksty administratora państwa i miasta rozdzielone; zmęczenie wojną liczone siłą militarną, przegrywający płaci wyłącznie miastami, pokój wzajemny bez zapłaty usunięty, strona z jednym miastem nie kupuje pokoju.
