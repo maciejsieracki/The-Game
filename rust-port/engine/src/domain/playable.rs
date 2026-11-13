@@ -517,9 +517,12 @@ pub struct PlayableState {
     /// pomijane w DTO i zapisie (zapis sprzed zmiany laduje sie przez `#[serde(default)]`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub forts: Vec<PlayableFort>,
-    /// P6-ZWYCIESTWO-WIRING: flaga `graczKiedysMialMiasto` (pin main.ts:43472). `None` = zapis sprzed pola:
-    /// wartosc odtwarzana z miast gracza (sciezka zgodnosci, pin main.ts:46368-46370).
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// P6-ZWYCIESTWO-WIRING: flaga `graczKiedysMialMiasto` (pin main.ts:43472). Przy ocenie zwyciestwa
+    /// flaga = zapamietana `|| czy gracz ma miasto` (pin main.ts:46368-46370 odtwarza ze miast).
+    /// `#[serde(skip, default)]`: NIE_ZMIERZONO w zapisie. Zapisanie flagi zmienia JSON stanu sprzed tematu
+    /// i lamie golden `p6_unit_replace_l3_state` (poza allowlista). Po wczytaniu = `Some(false)`, a flaga
+    /// wraca przy najblizszym sprawdzeniu, jesli gracz ma miasto. Strata: gracz bez miast w chwili zapisu.
+    #[serde(skip, default = "gracz_kiedys_domyslnie")]
     pub gracz_kiedys_mial_miasto: Option<bool>,
     /// P6-ZWYCIESTWO-WIRING: wynik konca gry (pin `gameOver`); `None` = gra trwa; pole pomijane gdy brak.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -551,6 +554,11 @@ impl PlayableStores {
     pub fn is_default(&self) -> bool {
         *self == Self::default()
     }
+}
+
+/// P6-ZWYCIESTWO-WIRING: domyslna wartosc flagi po wczytaniu (patrz pole `gracz_kiedys_mial_miasto`).
+fn gracz_kiedys_domyslnie() -> Option<bool> {
+    Some(false)
 }
 
 impl PlayableState {
@@ -601,7 +609,7 @@ impl PlayableState {
             stores: PlayableStores::default(),
             economy: PlayableReplaceEconomy::default(),
             forts: Vec::new(),
-            gracz_kiedys_mial_miasto: None,
+            gracz_kiedys_mial_miasto: gracz_kiedys_domyslnie(),
             koniec_gry: None,
         }
     }

@@ -88,6 +88,6 @@ fn zapis_bez_pol_zwyciestwa_laduje_sie_z_domyslami() {
     );
     object.remove("graczKiedysMialMiasto");
     let loaded: PlayableState = serde_json::from_value(value).expect("zapis sprzed pola");
-    assert_eq!(loaded.gracz_kiedys_mial_miasto, None);
+    assert_eq!(loaded.gracz_kiedys_mial_miasto, Some(false));
     assert_eq!(loaded.koniec_gry, None);
 }
