@@ -120,9 +120,9 @@ eq(DIPLOMACY_PARAMS.progHandelRelacja,     0, 'prog Handel Relacja = 0');
 eq(DIPLOMACY_PARAMS.startZaufanie,           20, 'start Zaufanie = 20');
 eq(DIPLOMACY_PARAMS.startRespekt,            30, 'start Respekt = 30');
 eq(DIPLOMACY_PARAMS.turyEfektuPodarunku,      5, 'tury efektu podarunku = 5');
-approx(DIPLOMACY_PARAMS.wspolnaReligia_zaufanie_perTura,  0.5, 'wspolna religia +0.5/ture');
-approx(DIPLOMACY_PARAMS.odmiennaReligia_zaufanie_perTura, -0.5, 'odmienna religia -0.5/ture');
-eq(DIPLOMACY_PARAMS.ekspansjaGranica_zaufanie_perTura,   -2, 'ekspansja granica -2/ture');
+approx(DIPLOMACY_PARAMS.wspolnaReligia_zaufanie_perTura,  0, 'wspolna religia 0/ture (R-WEB-DIPLO-TRUST-NUMBERS-Q1)');
+approx(DIPLOMACY_PARAMS.odmiennaReligia_zaufanie_perTura, 0, 'odmienna religia 0/ture (R-WEB-DIPLO-TRUST-NUMBERS-Q1)');
+eq(DIPLOMACY_PARAMS.ekspansjaGranica_zaufanie_perTura,   -3, 'ekspansja granica -3/ture');
 
 // ===========================================================================
 // 2. relationScore -- Relacja = Zaufanie + Respekt, clamp [0,200]
@@ -155,7 +155,7 @@ eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna 
 eq(applyDiplomaticEvent(rel(60, 30), 'zlamana_obietnica').zaufanie,    20, 'zlamana obietnica gracz -40 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'zlamana_obietnica').zaufanie,     0, 'zlamana obietnica clamps at 0');
 eq(applyDiplomaticEvent(rel(50, 30), 'zlamana_obietnica_ai').zaufanie, 30, 'zlamana obietnica AI -20 Z');
-eq(applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne').zaufanie,     18, 'tarcia graniczne -2 Z');
+eq(applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne').zaufanie,     17, 'tarcia graniczne -3 Z');
 eq(applyDiplomaticEvent(rel(20, 30), 'szpiegostwo_wykryte' /* not an event */).zaufanie, 20, 'unknown event is a no-op');
 
 // ---- respect events ----
@@ -515,7 +515,7 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
 {
   // ekspansja przy granicy -> -2 Zaufanie/turę
   const r = tickDiplomacy(mkRdip(50, 30), { turn: 5, karaWspolnaGranica: true });
-  eq(r.zaufanie, 48, 'tickDiplomacy: ekspansja -> -2 Zaufanie');
+  eq(r.zaufanie, 47, 'tickDiplomacy: ekspansja -> -3 Zaufanie');
 }
 {
   // Clamp: Zaufanie nie schodzi poniżej 0

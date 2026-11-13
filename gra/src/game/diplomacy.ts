@@ -154,16 +154,20 @@ export const DIPLOMACY_PARAMS = {
   dobraWola_zaufanie_perTura:       1,
   /** "Wspolny wrog (kooperacja trwa)" (+1/ture) */
   wspolnyWrog_zaufanie_perTura:     1,
-  /** "Wspolna religia" (+0.5/ture, max +15) */
-  wspolnaReligia_zaufanie_perTura:  0.5,
-  /** "Odmienna religia" (-0.5/ture, max -10) */
-  odmiennaReligia_zaufanie_perTura: -0.5,
-  /** "Kara za wspólną granicę" dla epoki Kamienia (-2/turę). */
-  ekspansjaGranica_zaufanie_perTura: -2,
-  /** Kara za wspólną granicę dla epoki Brązu (-3/turę). */
-  ekspansjaGranicaBraz_zaufanie_perTura: -3,
-  /** Kara za wspólną granicę dla epoki Żelaza (-4/turę). */
-  ekspansjaGranicaZelazo_zaufanie_perTura: -4,
+  /** Religia NIE wpływa na Zaufanie (R-WEB-DIPLO-TRUST-NUMBERS-Q1). Klucze zostają w JSON, wartość 0. */
+  wspolnaReligia_zaufanie_perTura:  0,
+  /** Religia NIE wpływa na Zaufanie (R-WEB-DIPLO-TRUST-NUMBERS-Q1). Klucz zostaje w JSON, wartość 0. */
+  odmiennaReligia_zaufanie_perTura: 0,
+  /** "Kara za wspólną granicę" dla epoki Kamienia (-3/turę). */
+  ekspansjaGranica_zaufanie_perTura: -3,
+  /** Kara za wspólną granicę dla epoki Brązu (-4/turę). */
+  ekspansjaGranicaBraz_zaufanie_perTura: -4,
+  /** Kara za wspólną granicę dla epoki Żelaza (-5/turę). */
+  ekspansjaGranicaZelazo_zaufanie_perTura: -5,
+  /** Zaufanie ustawiane OD RAZU w chwili zawarcia rozejmu (R-WEB-DIPLO-TRUST-NUMBERS-Q1). */
+  rozejm_zaufanie_ustawienie: 10,
+  /** Zaufanie ustawiane OD RAZU w chwili zawarcia pokoju i zostaje (R-WEB-DIPLO-TRUST-NUMBERS-Q1). */
+  pokoj_zaufanie_ustawienie: 20,
   /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
   urazyHistoryczne_zaufanie_perTura: -2,
 
@@ -934,7 +938,6 @@ export function applyDiplomaticEvent(
       break;
 
     case 'pokoj':
-      // paragraph 1.10: +5 Relacja after time -- soft approximation as +5 Zaufanie.
       dZ = 5;
       newStatus = 'pokoj';
       break;
@@ -1808,8 +1811,7 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   }
   if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
-  if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
-  if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
+  // Religia nie zmienia Zaufania (R-WEB-DIPLO-TRUST-NUMBERS-Q1): flagi ctx ignorowane.
   if (ctx.karaWspolnaGranica) {
     dZ += ctx.karaWspolnaGranicaDelta ?? p.ekspansjaGranica_zaufanie_perTura;
   }

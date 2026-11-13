@@ -178,13 +178,9 @@ export function buildRelationBreakdown(
     pushRow(pozytywne, negatywne, 'Trwający pakt o nieagresji', params.nap_zaufanie_perTura, true);
   }
   // tier „pokoj" (+1) — zastąpiony dryfem z Wiarygodności (REL-WIARYG-DRIFT-Q1)
-  if (continuous.wspolnaReligia) {
-    pushRow(pozytywne, negatywne, 'Wspólna religia', params.wspolnaReligia_zaufanie_perTura, true);
-  }
-  if (continuous.odmiennaReligia) {
-    pushRow(pozytywne, negatywne, 'Odmienna religia', params.odmiennaReligia_zaufanie_perTura, true);
-  }
-  if (continuous.karaWspolnaGranica) {
+  // Religia nie wpływa na Zaufanie (R-WEB-DIPLO-TRUST-NUMBERS-Q1) — brak wiersza.
+  // Kara za granicę nie pokazuje się, gdy jest zawieszona w karencji (wartość 0).
+  if (continuous.karaWspolnaGranica && (continuous.karaWspolnaGranicaZaufaniePerTura ?? -1) !== 0) {
     pushRow(pozytywne, negatywne, 'Kara za wspólną granicę',
       continuous.karaWspolnaGranicaZaufaniePerTura ?? params.ekspansjaGranica_zaufanie_perTura, true);
   }
