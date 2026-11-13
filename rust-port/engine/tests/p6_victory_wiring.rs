@@ -68,13 +68,19 @@ fn po_koncu_gry_koniec_tury_jest_odrzucany_bez_zmiany_stanu() {
 }
 
 #[test]
-fn nowa_gra_po_zakonczonej_resetuje_koniec_gry() {
+fn wczytanie_zapisu_po_zakonczonej_grze_resetuje_koniec_gry() {
+    // Pin main.ts:47333 ustawia gameOver=false przy wczytaniu; Rust: pole koniec_gry jest #[serde(skip)],
+    // wiec zapis go nie zawiera i wczytanie zawsze daje brak konca gry (test na prawdziwej sciezce serde).
     let mut finished = PlayableGame::new(params_with_epoch("zelazo")).expect("nowa gra");
     finished.advance_turn().expect("koniec tury");
     assert!(finished.state().koniec_gry.is_some());
-    let fresh = PlayableGame::new(params_with_epoch("zelazo")).expect("nowa gra");
-    assert_eq!(fresh.state().koniec_gry, None);
-    assert_eq!(fresh.state().gracz_kiedys_mial_miasto, Some(false));
+    let json = serde_json::to_string(finished.state()).expect("zapis");
+    assert!(
+        !json.contains("koniecGry"),
+        "koniec gry nie trafia do zapisu"
+    );
+    let loaded: PlayableState = serde_json::from_str(&json).expect("wczytanie");
+    assert_eq!(loaded.koniec_gry, None, "po wczytaniu gra trwa");
 }
 
 #[test]

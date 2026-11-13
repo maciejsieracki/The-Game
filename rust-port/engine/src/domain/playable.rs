@@ -524,8 +524,9 @@ pub struct PlayableState {
     /// wraca przy najblizszym sprawdzeniu, jesli gracz ma miasto. Strata: gracz bez miast w chwili zapisu.
     #[serde(skip, default = "gracz_kiedys_domyslnie")]
     pub gracz_kiedys_mial_miasto: Option<bool>,
-    /// P6-ZWYCIESTWO-WIRING: wynik konca gry (pin `gameOver`); `None` = gra trwa; pole pomijane gdy brak.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// P6-ZWYCIESTWO-WIRING: wynik konca gry (pin `gameOver`). `#[serde(skip)]`: pin nie zapisuje
+    /// `gameOver` i resetuje go do `false` przy wczytaniu (main.ts:47333), wiec po wczytaniu gra trwa.
+    #[serde(skip)]
     pub koniec_gry: Option<VictoryResult>,
 }
 
@@ -1097,6 +1098,9 @@ impl PlayableGame {
         // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
         let queue_before = self.phase_queue.clone();
         let war_before = self.state.war.clone();
+        // Migawka pol zwyciestwa: blad po fazie Victory (np. niekompletna kolejka) cofa tez koniec gry i flage.
+        let koniec_before = self.state.koniec_gry;
+        let flag_before = self.state.gracz_kiedys_mial_miasto;
         let mut phases = Vec::with_capacity(PHASE_COUNT);
         while let Some(entry) = self.phase_queue.peek_next() {
             if entry.turn() != current_turn {
@@ -1137,6 +1141,8 @@ impl PlayableGame {
             phases.push(entry.phase());
         }
         if phases.len() != PHASE_COUNT {
+            self.state.koniec_gry = koniec_before;
+            self.state.gracz_kiedys_mial_miasto = flag_before;
             return Err(PlayableError::TurnPhaseQueueIncomplete {
                 expected: PHASE_COUNT,
                 actual: phases.len(),
@@ -1573,5 +1579,28 @@ mod unit_replace_error_tests {
             Err(PlayableError::NonFiniteEconomy)
         );
         assert!(game.state().economy.city_stock.is_empty(), "stan bez zmian");
+    }
+
+    /// P6-ZWYCIESTWO-WIRING (kryterium 1, pin main.ts:34018-34025 / checkDefeat): gracz, ktory mial miasto
+    /// i stracil wszystkie, przegrywa na fazie Victory. Test w module, bo wymaga ustawienia stanu miast.
+    #[test]
+    fn przegrana_po_utracie_wszystkich_miast_konczy_gre() {
+        let mut game = PlayableGame::new(StartGameParams {
+            epoch_id: "kamien".to_owned(),
+            ..StartGameParams::default()
+        })
+        .expect("nowa gra");
+        game.advance_turn().expect("tura z miastem");
+        assert_eq!(game.state.gracz_kiedys_mial_miasto, Some(true));
+        assert_eq!(game.state.koniec_gry, None, "kamien: brak dominacji");
+        game.state
+            .cities
+            .retain(|city| city.owner_id != HUMAN_PLAYER_ID);
+        game.advance_turn().expect("tura po eliminacji");
+        let result = game.state.koniec_gry.expect("przegrana po eliminacji");
+        assert_eq!(
+            result.rodzaj,
+            crate::domain::victory::VictoryKind::Przegrana
+        );
     }
 }
