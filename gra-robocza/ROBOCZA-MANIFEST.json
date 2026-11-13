@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1a92cad2262ef270943157848a12ef4b",
-  "bundleSha256": "cc3e3cb7089a2dc20e409c13f10fe1a117eca08608845820b5b8befd765ca849",
-  "bundleBytes": 14648689,
+  "bundleMd5": "2d74db6a967eb996da4d58cabb52f090",
+  "bundleSha256": "019dc9f9c7e29723659c09ff5447181b39bcb1ad1f00d2198a09c0cf6c264a61",
+  "bundleBytes": 14649448,
   "sourceSnapshot": {
-    "source": "Kandydat FC ff25b42ad",
+    "source": "origin/main def79a7a9 + merge FC 5bdda07b4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 687: Nagrody z wiosek, wojna klastra państw-miast, automatyczny zwiad zwiadowców, akceptacja AI i sufiksy identyfikatorów używają generatora z ziarna gry; hak testowy ustawia ziarno gry; zwykła gra: ziarno nowej gry nadal losowe, format zapisu bez zmian; nowy test powtarzalności i zakaz Math.random w pętli tury."
+    "FALA 688: Zmęczenie wojną kończy się pokojem bezwarunkowym: gdy zmęczenie pary dojdzie do progu końca (0,8), silniejsza strona sama proponuje pokój bez żądania miasta i płatności (AI↔AI zawierane od razu, AI→gracz jako propozycja do decyzji gracza). Gdy cena pokoju wynosi zero, miasto nie jest oddawane (wyjątek od reguły ochrony jednego miasta)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; determinism-same-seed PASS; diplomacy 149/0; ai-test 297/0; character-threshold 42/0; pomiar ziarno 2222: 6/6 fast i 3/3 normal identyczne, ziarno 1717 3/3; vite build OK"
+    "tsc 0; logic 213/213; testy: koniec zmęczenia 22/0 (mutanty U1–U5, MAIN-U7), zmęczenie tylko miastami 29/0, ai-war-weariness-peace 99/0, diplomacy 149/0, ai 297/0, nonnegative 21/0; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Walki automatyczne i oblężenia nadal na Math.random (temat W61); pomiar tylko 30 tur, skrót stanu bez jednostek/skarbca/zasobów; wykonanie w żywej grze NIE_ZMIERZONO"
+    "Próg końca zmęczenia 0,8 to założenie do potwierdzenia; ścieżka wymuszonego pokoju po limicie tur nie ma ceny 0; AI→gracz niezmierzone na żywo; diplo-war-peace-sim ma 3 znane FAIL (S3, S4b, M_TUR)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES ff25b42ad: losowania w pętli tury z ziarna gry; walki automatyczne i oblężenia nadal na Math.random (osobny temat)."
+    "notes": "FC PASS-WITH-NOTES 5bdda07b4: koniec zmęczenia wojną (>=0,8) = pokój bezwarunkowy AI↔AI i AI→gracz; cena 0 = bez miasta. Próg 0,8 to założenie do potwierdzenia; ścieżka forced-peace po limicie tur bez ceny 0; AI→gracz niezmierzone w uruchomionej grze."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-13T16:45:15",
+  "hubGeneratedAt": "2026-11-13T17:07:43",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1a92cad2262ef270943157848a12ef4b",
-      "sizeBytes": 14648689
+      "md5": "2d74db6a967eb996da4d58cabb52f090",
+      "sizeBytes": 14649448
     }
   ],
-  "md5": "1a92cad2262ef270943157848a12ef4b",
+  "md5": "2d74db6a967eb996da4d58cabb52f090",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
