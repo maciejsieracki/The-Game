@@ -21,7 +21,7 @@
  */
 
 import type { EconomyTickResult, EconUnit, OwnerEraResolver } from './turn-economy';
-import { sumEconomyForOwner } from './turn-economy';
+import { sumEconomyForOwner, sumEconomyForPlayerCities } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
 import {
   advanceEmpireFood,
@@ -203,8 +203,16 @@ export function projectTreasuryAfterTick(
   skarbiecObecny: number,
   econ: Pick<EconomyTickResult, 'perCity' | 'upkeepByOwner'>,
   ownerId: number,
+  cities?: ReadonlyArray<{ id: string; ownerId: number }>,
 ): number {
-  let s = skarbiecObecny + sumEconomyForOwner(econ, ownerId).pieniadz;
+  // Źródło dochodu jak w realnym ticku main.ts (zob. blok „Bank treasury”):
+  //  - fotel człowieka: sumEconomyForPlayerCities(econ, cities, ownerId) (filtr po liście miast),
+  //  - AI: sumEconomyForOwner(econ, ownerId) (filtr po perCity.ownerId).
+  // Przy podaniu `cities` wołający deklaruje fotel człowieka; rozjazd starych zapisów daje ten sam wynik co tick.
+  const dochod = cities
+    ? sumEconomyForPlayerCities(econ, cities, ownerId)
+    : sumEconomyForOwner(econ, ownerId);
+  let s = skarbiecObecny + dochod.pieniadz;
   const u = econ.upkeepByOwner.get(ownerId)?.utrzymanieRazem ?? 0;
   if (u > 0) s -= u;
   return s;

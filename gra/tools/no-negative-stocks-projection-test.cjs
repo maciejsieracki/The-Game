@@ -230,6 +230,21 @@ checkScenario({
   ok(mutUp === 143 && mutUp !== 150, 'mutacja utrzymania 7 zmienia prognoze (jest ' + mutUp + ')');
 }
 
+// (d) źródło dochodu jak w realnym ticku (zarzut 2 Evaluatora): fotel człowieka filtruje po liście
+// miast (sumEconomyForPlayerCities), AI po perCity.ownerId (sumEconomyForOwner). Stary zapis: w
+// perCity jest wpis właściciela 1 dla miasta „duch”, którego NIE ma na liście miast gracza 1.
+{
+  const econ = econOf([
+    city1('a', 10, 5, { pieniadz: 50 }),
+    city1('duch', 10, 5, { pieniadz: 30 }),
+  ], { 1: 0 });
+  const miasta = [{ id: 'a', ownerId: 1 }];
+  const aiDochod = M.projectTreasuryAfterTick(100, econ, 1);
+  const humanDochod = M.projectTreasuryAfterTick(100, econ, 1, miasta);
+  ok(aiDochod === 180, 'parytet-zrodla: AI (sumEconomyForOwner) = 100+50+30 = 180 (jest ' + aiDochod + ')');
+  ok(humanDochod === 150, 'parytet-zrodla: czlowiek (lista miast) = 100+50 = 150 (jest ' + humanDochod + ')');
+}
+
 console.log('no-negative-stocks-projection-test: ' + passed + ' passed, ' + failed + ' failed');
 try { fs.unlinkSync(ENTRY); } catch (e) { /* ignore */ }
 try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
