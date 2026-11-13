@@ -427,6 +427,8 @@ fn zgodnosc_z_pinem_end_to_end() {
 
     let mut cov = Cover::default();
     let mut failures: Vec<String> = Vec::new();
+    // K5I2B2-DLUG-R2 (zarzut Evaluatora 2): pokrycie kazdej nazwy kombatowej z pinu, nie tylko 'Gory'.
+    let mut seen_names: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
 
     for c in cases {
         let id = c["id"].as_u64().expect("id");
@@ -442,7 +444,9 @@ fn zgodnosc_z_pinem_end_to_end() {
         for m in env_mismatches(c, &v, &units) {
             failures.push(format!("#{id} env {m}"));
         }
-        if pin_names(&c["in"]).iter().any(|n| n == "Gory") {
+        let names_here = pin_names(&c["in"]);
+        seen_names.extend(names_here.iter().cloned());
+        if names_here.iter().any(|n| n == "Gory") {
             cov.gory_cases += 1;
         }
         let o = &c["out"];
@@ -758,6 +762,13 @@ fn zgodnosc_z_pinem_end_to_end() {
         cov.gory_cases > 0,
         "brak przypadkow z kaflem 'Gory' w wektorach"
     );
+    // K5I2B2-DLUG-R2: kazda nazwa osiagalna z COMBAT_NAME/combatTerrainName musi wystapic w wektorach pinu.
+    for name in ["Plaskie (rownina/laka)", "Las", "Wzgorza", "Rzeka", "Gory"] {
+        assert!(
+            seen_names.contains(name),
+            "brak kafla o nazwie '{name}' w wektorach pinu"
+        );
+    }
 }
 
 #[test]
