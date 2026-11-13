@@ -890,3 +890,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Zmiana r4 (wg FC):** tylko `rust-port/engine/tests/p6_stan_ulepszenia.rs` (test roundtripu flagi). Funkcja `odtworz_flage_zwyciestwa_ze_miast` zostaje `#[cfg(test)]` — produkcyjnej ścieżki wczytania `PlayableState` nie ma (do osobnego tematu).
 - **Dysk:** 3,6 GB (poniżej progu startów; test FC w toku).
 - **Parity:** `e51b61637`.
+
+## ZWYCIESTWO-WIRING-Q1 (P6.19-C): FC PASS-WITH-NOTES (r4, `1573860a2`), integracja w toku
+- **Stan r4 (wg Evaluatora):** pełny `cargo test` 3315/0/1 zgłoszony przez Evaluatora (nie powtórzony przeze mnie); test `new_fields_roundtrip_and_default_is_omitted` zmieniony na flagę `false` po roundtripie — zgodne z pinem, bo `save.ts` nie zapisuje pola (grep = 0). Obrona zgłasza, że lepsza byłaby asercja na wartość efektywną (`flaga || gracz ma miasto`); przyjmuję tę uwagę jako **notę**, a nie blokadę: w obu wariantach obserwowalna różnica dotyczy tylko wczytania bez ewaluacji, czyli osobnego tematu `ZWYCIESTWO-LOAD`.
+- **Decyzje zakresowe (orkiestrator):** produkcyjne wczytanie `PlayableState` i odtwarzanie flagi ze miast (`main.ts:46368-46370`) → osobny temat **ZWYCIESTWO-LOAD**. Zakładanie/przejęcie miasta (`main.ts:16508, 17816, 36218, 45646`) → zależne od #115 (**ZDOBYCIE-MIASTA**). Druga ścieżka przegranej w bitwie (`34018-34025`) → razem z #115.
+- **Integracja:** cherry-pick kodu r1–r4 zrobiony jako **jeden** diff (5 plików) na `parity-v2` `e51b61637` w worktree `integ-victory2`, z czystym komunikatem (bez trailerów modelu). Commit lokalny; pełny test w tle; FF po zielonym wyniku.
+- **Gałęzie zachowane:** `rust-port-wip/R-RUSTPORT-P6-ZWYCIESTWO-WIRING-Q1-r4-fc` (`1573860a2`), `…-r3-wip` (`1e3939b4d`). Worktree rund r4 usunięte.
+- **Rundy:** 4/5 wykorzystane. Piąta runda = ostatnia; jeśli FAIL — eskalacja do właściciela.
