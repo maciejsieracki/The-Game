@@ -722,3 +722,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **COUNTER-FALANGITA-Q1:** FC PASS-WITH-NOTES `90448d3aa`. Operator zmierzył pełny `cargo test` na `ce02748e0`: exit 0, 0 failed. Różnica liczby testów (3279 vs 3275) wyjaśniona w obronie. **FF `parity-v2`: `d30e3ea24` → `90448d3aa`** (różnica między `ce02748e0` a FC to tylko dokumentacja). Parytet: mnożnik falangita → włócznik = 1,30 wg pina `07d2fbd72`.
 - **ZLOZA-B-PORT-Q1 (#172):** FC PASS-WITH-NOTES `ab9ae03da`. Zakres: **tylko gałąź `zloze`** `transferBasketItems` (`46da76cea`, obrona `8186d7464`, FC `94feb5e37` po cherry-pick na `parity-v2`). Osiem pozostałych gałęzi (zloto, praca, zywnosc, tech, surowiec_boolean, surowiec_ilosc, miasto, jednostka) nie ma odpowiednika w Rust — **to luka parytetu**, nie decyzja do właściciela. Otwieram osobny temat **ZLOZA-B-REST** (bez pytania; zakres z pina).
 - **Integracja ZLOZA-B:** cherry-pick na `90448d3aa`, pełny test w tle (tracked command). FF po zielonym wyniku.
+
+## Przebieg (13.11, heartbeat 18:18): sloty
+- **Stan przed heartbeatem:** 0 aktywnych Workflow z wynikiem bez FC. COUNTER-FALANGITA i ZLOZA-B zakończone FC PASS-WITH-NOTES.
+- **Zintegrowane:** COUNTER-FALANGITA — FF `parity-v2` do `90448d3aa`.
+- **W integracji:** ZLOZA-B (gałąź zloze) — cherry-pick na `90448d3aa` w worktree `integ-zloza` (`94feb5e37`). Pełny test w tle: **1158 passed (w toku), 0 failed**; fmt i clippy `-D warnings` przeszły. FF po zakończeniu testu.
+- **Nie uruchomiono nowych tematów:** dysk 5,5 GB. Próg z CLAUDE.md §5 dla nowych startów Rust to 8 GB; heartbeat przewiduje 4 GB. Stosuję wyższy próg (projektowy), żeby nie powtórzyć awarii ENOSPC w trakcie integracji. Do uruchomienia po zakończeniu testu: ZLOZA-B-REST, EKONOMIA-BRAZ-ERA r2, ZWYCIESTWO-WIRING.
