@@ -51,14 +51,14 @@ async function main() {
   const T = (frakcja) => Math.round(frakcja * P.zmeczenie.pelneTur);
 
   {
-    // A1: a silny (800 vs 200 = 4x), b przegrywa, 2 miasta stracone przez b, 0,6·pelneTur tur wojny.
+    // A1: a silny (800 vs 200 = 4x), b przegrywa, 2 miasta stracone przez b, 0,5·pelneTur tur wojny (T(0.5)=10 → poziom 0,5+0,2=0,7).
     const inp = {
-      turnsAtWar: 120,
+      turnsAtWar: T(0.5),
       a: { id: 'a', sila: 800, armiaPkt: 500, lostCities: 0 },
       b: { id: 'b', sila: 200, armiaPkt: 150, lostCities: 2 },
     };
     const r = V.warWearinessPairView(inp);
-    const level = V.warWearinessLevel({ turnsAtWar: 120, lostCitiesTotal: 2 });
+    const level = V.warWearinessLevel({ turnsAtWar: T(0.5), lostCitiesTotal: 2 });
     ok(r.a.rola === 'wygrywa' && r.b.rola === 'przegrywa', '[A1] rola: silniejszy = wygrywa, słabszy = przegrywa');
     ok(r.a.zmeczenie === level && r.a.desperacja === undefined, '[A1] wygrywający dostaje zmęczenie = warWearinessLevel');
     const share = 200 / 1000;
@@ -82,12 +82,12 @@ async function main() {
   {
     // A3: odwrócone strony (a słabszy) → te same wartości, zamienione role.
     const fwd = V.warWearinessPairView({
-      turnsAtWar: 150,
+      turnsAtWar: T(0.5),
       a: { id: 'x', sila: 900, armiaPkt: 600, lostCities: 0 },
       b: { id: 'y', sila: 300, armiaPkt: 200, lostCities: 3 },
     });
     const rev = V.warWearinessPairView({
-      turnsAtWar: 150,
+      turnsAtWar: T(0.5),
       a: { id: 'y', sila: 300, armiaPkt: 200, lostCities: 3 },
       b: { id: 'x', sila: 900, armiaPkt: 600, lostCities: 0 },
     });
@@ -97,7 +97,7 @@ async function main() {
   {
     // A4: brak siły po obu stronach → remis (brak przewagi), bez wyjątku.
     const r = V.warWearinessPairView({
-      turnsAtWar: 10,
+      turnsAtWar: T(0.5),
       a: { id: 'a', sila: 0, armiaPkt: 0, lostCities: 0 },
       b: { id: 'b', sila: 0, armiaPkt: 0, lostCities: 0 },
     });
@@ -279,7 +279,7 @@ async function main() {
   {
     // E1: orientacja — strona o danym id dostaje swój widok, niezależnie od kolejności a/b.
     const strongA = V.warWearinessPairView({
-      turnsAtWar: 120,
+      turnsAtWar: T(0.5),
       a: { id: '0', sila: 800, armiaPkt: 500, lostCities: 0 },
       b: { id: '1', sila: 200, armiaPkt: 150, lostCities: 2 },
     });
@@ -289,7 +289,7 @@ async function main() {
     ok(s1.own.rola === 'przegrywa' && s1.rival.rola === 'wygrywa', '[E1b] own=1 (słaby) → przegrywa, rival=0 → wygrywa');
     ok(s0.own === strongA.a && s0.rival === strongA.b, '[E1c] own/rival to dokładnie strony a/b wskazane po id');
     const weakA = V.warWearinessPairView({
-      turnsAtWar: 120,
+      turnsAtWar: T(0.5),
       a: { id: '1', sila: 200, armiaPkt: 150, lostCities: 2 },
       b: { id: '0', sila: 800, armiaPkt: 500, lostCities: 0 },
     });
@@ -319,7 +319,7 @@ async function main() {
     let found = null;
     for (let sb = 700; sb <= 1000 && found === null; sb++) {
       const v = V.warWearinessPairView({
-        turnsAtWar: 300,
+        turnsAtWar: T(1.5),
         a: { id: '0', sila: 1000, armiaPkt: 500, lostCities: 0 },
         b: { id: '1', sila: sb, armiaPkt: 300, lostCities: 3 },
       });
@@ -331,7 +331,7 @@ async function main() {
       const lvl = V.warWearinessLevel({ turnsAtWar: T(1.5), lostCitiesTotal: 3 });
       ok(lvl >= P.zmeczenie.progChetnosci, '[E3-pre2] precondycja: poziom ≥ progChetnosci (bramka isWarWeary przechodzi)');
       const input = {
-        turnsAtWar: 300,
+        turnsAtWar: T(1.5),
         a: { id: '0', sila: 1000, armiaPkt: 500, lostCities: 0 },
         b: { id: '1', sila: found.sb, armiaPkt: 300, lostCities: 3 },
       };
